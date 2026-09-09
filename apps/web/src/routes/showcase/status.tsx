@@ -148,6 +148,26 @@ function Page() {
         </Row>
       </Demo>
 
+      <Demo label="ProgressBar · bracket — the same value as a mono readout">
+        <Row>
+          <ProgressBar label="Chapter 3" value={40} trackStyle="bracket" />
+          <ProgressBar label="Chapter 4" value={90} trackStyle="bracket" />
+        </Row>
+      </Demo>
+
+      <Demo label="ProgressBar · segments — a run cut into uneven chapters">
+        <Row>
+          <ProgressBar label="Course" value={45} segments={[3, 1, 2]} />
+          <ProgressBar
+            label="Session"
+            valueLabel="live"
+            value={62}
+            pendingValue={72}
+            segments={[2, 1, 1, 3]}
+          />
+        </Row>
+      </Demo>
+
       <Demo label="ProgressCircle · determinate">
         <Row>
           <ProgressCircle aria-label="Loading" value={25} size="S" />
@@ -213,6 +233,7 @@ function Page() {
           <Meter label="Uptime" variant="positive" value={62} />
           <Meter label="Memory" variant="notice" value={78} />
           <Meter label="CPU" variant="negative" value={96} />
+          <Meter label="Latency" variant="metric" value={48} />
         </Row>
       </Demo>
 

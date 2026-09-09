@@ -25,6 +25,25 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "trackStyle",
+          "type": "ProgressBarTrackStyle",
+          "values": [
+            "'bar'",
+            "'bracket'"
+          ],
+          "required": false,
+          "default": "'bar'",
+          "description": "How the track is drawn. `\"bar\"` is the filled 8px recess; `\"bracket\"` replaces it with the register's mono readout of the same value — `[▮▮▮▮▯▯▯▯▯▯]` — for rows that live inside a terminal well, where a painted bar reads as a foreign object among text. The bracket is decorative (`aria-hidden`): the accessible value is the `progressbar` role's own, identical in both forms. Indeterminate progress always draws the bar — a fixed glyph run cannot sweep without inventing motion. Local addition — no S2 counterpart.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "segments",
+          "type": "number[]",
+          "required": false,
+          "description": "Relative widths of the track's sections, e.g. `[3, 1, 2]` for a three-chapter run. The bar is cut into that many sections, each proportional to its number and split from its neighbour by a hairline gap; the fill (and the `pendingValue` dither) flows across them exactly as it does across the undivided bar. Values ≤ 0 and arrays shorter than two entries are ignored. Purely visual — the accessible value is unchanged. Local addition — no S2 counterpart.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "minValue",
           "type": "number",
           "required": false,
@@ -187,6 +206,14 @@
     "ProgressBarProps": [
       {
         "prop": "pendingValue",
+        "kind": "only-here"
+      },
+      {
+        "prop": "trackStyle",
+        "kind": "only-here"
+      },
+      {
+        "prop": "segments",
         "kind": "only-here"
       }
     ]

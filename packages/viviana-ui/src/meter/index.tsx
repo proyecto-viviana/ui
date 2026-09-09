@@ -44,7 +44,11 @@ import {
 } from "../button/spectrum-context";
 
 type MeterSize = "S" | "M" | "L" | "XL";
-type MeterVariant = "informative" | "positive" | "notice" | "negative";
+/* `metric` is the register's fourth status channel — the cyan that reports a
+ * measurement rather than a state. Badge and StatusLight already expose it; without it
+ * a metric meter has to borrow `informative`, which is a different channel reporting a
+ * different thing. Local addition — no S2 counterpart. */
+type MeterVariant = "informative" | "positive" | "notice" | "negative" | "metric";
 /* `success` and `warning` are accepted alias names for `positive`/`notice` — the
  * negative/warning/success status trio Button and Badge also expose — folded onto
  * the canonical channel by normalizeVariant before styling. */
@@ -84,7 +88,12 @@ export interface MeterProps {
    * continuous.
    */
   segments?: number;
-  /** The visual style variant. `success`/`warning` alias `positive`/`notice`. @default 'informative' */
+  /**
+   * The visual style variant. `success`/`warning` alias `positive`/`notice`.
+   * `metric` is a local addition — no S2 counterpart — for the register's cyan
+   * measurement channel.
+   * @default 'informative'
+   */
   variant?: MeterVariantProp;
   /** The label to display above the meter. */
   label?: JSX.Element;
@@ -230,13 +239,16 @@ const trackStyles = style<MeterStyleState>({
     forcedColors: "ButtonText",
   },
   zIndex: 1,
+  /* The register's bar is 8px, so the band is shifted one rung up to put the DEFAULT
+   * size on the drawn value instead of two rungs under it. Four distinct rungs are
+   * kept — the size axis still moves, it just starts where the register draws. */
   height: {
-    default: 6,
+    default: 8,
     size: {
-      S: 4,
-      M: 6,
-      L: 8,
-      XL: 10,
+      S: 6,
+      M: 8,
+      L: 10,
+      XL: 12,
     },
   },
 });
@@ -259,17 +271,31 @@ const trackRimStyles = style({
   boxShadow: "edge-glass",
 });
 
+/* One channel map, three call sites: the bar's fill, and the blocks' border and their
+ * fill. The register reports a status with a CHANNEL TOKEN, not with a ramp stop —
+ * `--status-info` · `--status-signal` · `--status-metric` · `--status-fault` are the
+ * same four a log line and a StatusLight dot use, so a meter can no longer drift into
+ * a different red from the dot reporting the same fault. They are the ink-strength
+ * stops of each channel deliberately: a bar is a non-text graphic held to 3:1, and the
+ * raw signal FILL (`--yellow-500`) reads ~1.6:1 against a daylight track where
+ * `--status-signal` clears the floor. `positive` has no status channel — success is the
+ * library's own green — and keeps its ramp pair. */
+const channelFill = {
+  default: "[var(--status-info)]",
+  variant: {
+    positive: lightDark("positive-800", "positive-900"),
+    notice: "[var(--status-signal)]",
+    negative: "[var(--status-fault)]",
+    metric: "[var(--status-metric)]",
+  },
+} as const;
+
 const fillStyles = style<MeterStyleState>({
   height: "full",
   borderStyle: "none",
   borderRadius: "none",
   backgroundColor: {
-    default: lightDark("informative-800", "informative-900"),
-    variant: {
-      positive: lightDark("positive-800", "positive-900"),
-      notice: lightDark("notice-800", "notice-900"),
-      negative: lightDark("negative-800", "negative-900"),
-    },
+    ...channelFill,
     isStaticColor: "transparent-overlay-900",
     forcedColors: "ButtonText",
   },
@@ -301,24 +327,14 @@ const segmentStyles = style<MeterSegmentStyleState>({
   borderStyle: "solid",
   borderWidth: 1,
   borderColor: {
-    default: lightDark("informative-800", "informative-900"),
-    variant: {
-      positive: lightDark("positive-800", "positive-900"),
-      notice: lightDark("notice-800", "notice-900"),
-      negative: lightDark("negative-800", "negative-900"),
-    },
+    ...channelFill,
     isStaticColor: "transparent-overlay-900",
     forcedColors: "ButtonText",
   },
   backgroundColor: {
     default: "transparent",
     isFilled: {
-      default: lightDark("informative-800", "informative-900"),
-      variant: {
-        positive: lightDark("positive-800", "positive-900"),
-        notice: lightDark("notice-800", "notice-900"),
-        negative: lightDark("negative-800", "negative-900"),
-      },
+      ...channelFill,
       isStaticColor: "transparent-overlay-900",
       forcedColors: "ButtonText",
     },

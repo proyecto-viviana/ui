@@ -161,6 +161,26 @@ const badgeStyles = style<{
       },
     },
     justifyContent: "center",
+    /* The stamp's own geometry, which `control()` cannot carry: it is a build-time
+     * helper shared with buttons and chips, and only the badge is drawn `4px 9px`
+     * with mono tracking (TerminalGlassLab.tsx:237-240).
+     *
+     * 9px is off the spacing ramp (0/2/4/8/12/…) so it enters as an arbitrary value;
+     * 4px is `spacing-75` and enters by name. Flat across the size axis, for the same
+     * reason `control()` flattened the corner: the register draws ONE badge, and its
+     * padding is a property of the stamp rather than of a size step. Size still moves
+     * the type (`controlFontStep(2)` above).
+     *
+     * `control()` leaves paddingY unset, so before this a badge had ZERO vertical
+     * padding and its height came from the line box alone — the pill collapsed onto
+     * its own text. */
+    paddingX: "[9px]",
+    paddingY: 4,
+    /* The register's micro-mono track. 0.12em is drawn; the theme's tracking scale
+     * (style/spectrum-theme.ts) stops at 0.1em, which is the rung it declares FOR this
+     * mono micro role — so the badge takes it rather than minting a sixth rung for a
+     * 0.02em difference. */
+    letterSpacing: "0.1em",
     color: {
       fillStyle: {
         bold: {
@@ -170,11 +190,16 @@ const badgeStyles = style<{
             yellow: "black",
             chartreuse: "black",
             celery: "black",
-            /* Metric's cyan and LIVE's fuchsia are mid-luminance in both
-               schemes; black clears 4.5:1, white does not (LIVE white-on-#ff4fc3
-               is 2.93:1, black 7.16:1). Same black-ink family as notice/yellow. */
+            /* LIVE's fuchsia is mid-luminance in both schemes; black clears
+               4.5:1, white does not (white-on-#ff4fc3 is 2.93:1, black 7.16:1).
+               Same black-ink family as notice/yellow. */
             live: "black",
-            metric: "black",
+            /* Metric is the one channel whose token crosses the ink threshold
+               between schemes: light `--cyan-500` is #0a7a9f (black 4.30:1 —
+               BELOW AA, white 4.89:1) while dark #48daff takes black at 12.75:1.
+               One ink per scheme rather than one ink for both; measured against
+               the token, not eyeballed. */
+            metric: lightDark("white", "black"),
           },
         },
         /* A subtle badge is the register's tinted-plate chip — same-channel ink
@@ -185,18 +210,28 @@ const badgeStyles = style<{
            the decorative variants keep the plain ink for the same reasons they
            are absent from the outline map.
 
-           Accent/informative text uses `--text-link`, not accent-900: the brand
-           blue is the 3:1 decorative mark (SegmentedControl already made this
-           split). Notice/negative/positive step to the AA stop of the same ramp
-           Button uses for those channels as fills. */
+           Accent/informative text is the one place the mirror breaks, and the
+           wash is why: `--text-link` (light #0f6adb) on the light accent-subtle
+           plate (#dae9fb) measures 4.14:1 — the ink is sized for a panel, not for
+           a tinted plate of its own hue. One stop deeper, blue-1000, clears it in
+           both columns (light 5.07:1, dark 6dc3ff-on-020e1b 10.08:1) without
+           leaving the channel. Outline keeps `--text-link`, which mirrors its own
+           border and sits on the page, not on a wash. Notice/negative/positive
+           step to the AA stop of the same ramp Button uses for those channels as
+           fills. */
         subtle: {
           default: "gray-1000",
           variant: {
-            accent: "[var(--text-link)]",
-            informative: "[var(--text-link)]",
+            accent: "blue-1000",
+            informative: "blue-1000",
             positive: "positive-1000",
-            notice: "notice-1100",
-            negative: "negative-1000",
+            /* DUE and DEGRADED are register CHANNELS, not ramp stops: the signal
+               yellow ink (`--status-signal` = `--yellow-text`) and the fault red, the
+               same two tokens a well's log line and a StatusLight dot use for the same
+               states. Ramp stops drifted from them scheme by scheme — one channel, one
+               token, in every component that reports it. */
+            notice: "[var(--status-signal)]",
+            negative: "[var(--status-fault)]",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },
@@ -216,8 +251,8 @@ const badgeStyles = style<{
             accent: "[var(--text-link)]",
             informative: "[var(--text-link)]",
             positive: "positive-1000",
-            notice: "notice-1100",
-            negative: "negative-1000",
+            notice: "[var(--status-signal)]",
+            negative: "[var(--status-fault)]",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },
@@ -231,16 +266,17 @@ const badgeStyles = style<{
             /* Text-bearing fills use the AA pair Button already ships: interactive-fill
                under white for the blue channel, and the 900/700 pair for negative/
                positive. Neutral/gray need a dark-scheme fill deeper than gray-500
-               (white on #a0a6ae is 2.45:1). */
+               (white on #a0a6ae is 2.45:1) — deeper than gray-300 too: white on
+               its dark #737d8b is 4.17:1, so the pair lands on gray-200 (6.48:1). */
             accent: "interactive-fill",
             informative: "interactive-fill",
-            neutral: lightDark("gray-600", "gray-300"),
+            neutral: lightDark("gray-600", "gray-200"),
             positive: lightDark("positive-900", "positive-700"),
             notice: "notice",
             negative: lightDark("negative-900", "negative-700"),
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
-            gray: lightDark("gray-600", "gray-300"),
+            gray: lightDark("gray-600", "gray-200"),
             red: lightDark("negative-900", "negative-700"),
             yellow: "yellow",
             chartreuse: "chartreuse",
@@ -266,8 +302,12 @@ const badgeStyles = style<{
             informative: "informative-subtle",
             neutral: "neutral-subtle",
             positive: "positive-subtle",
-            notice: "notice-subtle",
-            negative: "negative-subtle",
+            /* The streak chip: signal ink on a signal-tinted plate, mixed from the
+               channel's own fill rather than taken from the ramp's *-subtle stop —
+               the same color-mix recipe live/metric already use below, so the four
+               register channels share one tinted-plate rule. */
+            notice: "[color-mix(in srgb, var(--yellow-500) 16%, transparent)]",
+            negative: "[color-mix(in srgb, var(--red-500) 15%, transparent)]",
             /* No ramp → no *-subtle token; the island's own tinted-plate recipe
                instead (color-mix over transparent, e.g. glasselated.css:2968). */
             live: "[color-mix(in srgb, var(--accent-live) 15%, transparent)]",
@@ -327,8 +367,8 @@ const badgeStyles = style<{
             informative: "[var(--text-link)]",
             neutral: lightDark("gray-500", "gray-600"),
             positive: "positive-1000",
-            notice: "notice-1100",
-            negative: "negative-1000",
+            notice: "[var(--status-signal)]",
+            negative: "[var(--status-fault)]",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },

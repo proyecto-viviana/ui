@@ -77,11 +77,12 @@
             "'success'",
             "'informative'",
             "'positive'",
-            "'notice'"
+            "'notice'",
+            "'metric'"
           ],
           "required": false,
           "default": "'informative'",
-          "description": "The visual style variant. `success`/`warning` alias `positive`/`notice`.",
+          "description": "The visual style variant. `success`/`warning` alias `positive`/`notice`. `metric` is a local addition — no S2 counterpart — for the register's cyan measurement channel.",
           "origin": "viviana-ui"
         },
         {
@@ -199,7 +200,8 @@
         "kind": "values",
         "here": [
           "'warning'",
-          "'success'"
+          "'success'",
+          "'metric'"
         ],
         "there": []
       }

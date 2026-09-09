@@ -41,8 +41,8 @@ type StatusLightVariant =
   | "positive"
   | "notice"
   | "negative"
-  /* The register's metric channel — the sky-blue that replaced the retired
-   * violet (`--status-metric`). Without it the fourth status channel simply
+  /* The register's metric channel — the cyan that replaced the retired violet
+   * (`--status-metric`). Without it the fourth status channel simply
    * has no StatusLight mapping (Panel07's mirror substituted `neutral` and
    * noted "the metrics channel simply goes missing"). */
   | "metric"
@@ -138,8 +138,8 @@ const wrapperStyles = style<{
         neutral: "gray-600",
         informative: "[var(--text-link)]",
         positive: "positive-1000",
-        notice: "notice-1100",
-        negative: "negative-1000",
+        notice: "[var(--status-signal)]",
+        negative: "[var(--status-fault)]",
         metric: "[var(--status-metric)]",
       },
     },
@@ -161,13 +161,20 @@ const lightStyles = style<{
       XL: 14,
     },
   },
+  /* The DOT is the channel, so it is painted from the channel tokens rather than from
+   * the ramp: `--status-info` · `--status-signal` · `--status-metric` · `--status-fault`
+   * are what the register's status well uses to report the same four states, and a dot
+   * that says "degraded" in a different red from the log line beside it is the drift
+   * this mapping exists to stop. `positive` has no status channel — success is the
+   * library's own green (semantic trio) — and the decorative palette variants are
+   * categories, not statuses, so both keep their ramp fills. */
   fill: {
     variant: {
-      informative: "informative",
+      informative: "[var(--status-info)]",
       neutral: "neutral",
       positive: "positive",
-      notice: "notice",
-      negative: "negative",
+      notice: "[var(--status-signal)]",
+      negative: "[var(--status-fault)]",
       metric: "[var(--status-metric)]",
       celery: "celery",
       chartreuse: "chartreuse",

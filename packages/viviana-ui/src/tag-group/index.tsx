@@ -236,16 +236,11 @@ const tagStyle = style<TagGroupStyleProps>({
    * columns (#e5eaf1 / #43474d), so the chips read as flat grey plates on a page whose
    * every other surface is glass or well: 10 elements in dark, 10 in light.
    *
-   * Hover has no drawn counterpart — the handoff's chips are static — so it takes
-   * `surface-hover`, the register's one hover surface, rather than a second ramp step. */
+   * Hover no longer swaps the FILL. The register lights a resting well from its edge and
+   * its ink, not by exchanging its surface (see the borderColor and color maps below), and
+   * a chip that changes plate on hover reads as a different chip. */
   backgroundColor: {
     default: "well",
-    isHovered: {
-      default: "surface-hover",
-    },
-    isFocusVisible: {
-      default: "surface-hover",
-    },
     isSelected: {
       default: baseColor("neutral"),
       isEmphasized: {
@@ -275,8 +270,21 @@ const tagStyle = style<TagGroupStyleProps>({
     forcedColors: "none",
   },
   backgroundSize: "[4px 4px]",
+  /* Well ink, not ramp ink. A chip is a well the size of a word, so its resting label is
+   * the well's quiet stop (`--terminal-dim`) and its hover label the well's bright one
+   * (`--terminal-fg`) — the same two stops a log line steps between, which is what makes a
+   * row of chips read as terminal output rather than as buttons.
+   *
+   * This ink step IS the hover, in place of the handoff's `brightness(1.1)` on the whole
+   * chip: a filter multiplies the label as well as the plate, and measured on the light
+   * column that lands `--terminal-dim` (#5e6e80) on a clipped-white plate at 4.47:1 —
+   * under the 4.5:1 floor, i.e. the lift would have broken the label to brighten it.
+   * Stepping the ink up instead moves contrast the right way in both columns
+   * (light 4.52 → 12.4, dark 6.13 → 17.6). */
   color: {
-    default: baseColor("neutral"),
+    default: "[var(--terminal-dim)]",
+    isHovered: "[var(--terminal-fg)]",
+    isFocusVisible: "[var(--terminal-fg)]",
     isSelected: {
       default: "gray-25",
       isEmphasized: "white",
@@ -313,6 +321,12 @@ const tagStyle = style<TagGroupStyleProps>({
    * both spellings resolve to the same stop and both step to gray-900 on hover/press. */
   borderColor: {
     default: "well-border",
+    /* The other half of the hover: the well's edge picks up the accent. This is the
+     * register's own hover gesture — the rim is the only part of a matte surface that can
+     * change without the surface changing — and it is a non-text graphic, so the accent
+     * clears its 3:1 floor against the well on both columns. */
+    isHovered: "interactive-fill",
+    isFocusVisible: "interactive-fill",
     isSelected: {
       default: baseColor("gray-800"),
       isEmphasized: {

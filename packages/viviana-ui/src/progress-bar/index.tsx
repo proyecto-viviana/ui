@@ -16,6 +16,7 @@
 
 import {
   type JSX,
+  For,
   createContext,
   createMemo,
   createUniqueId,
@@ -29,6 +30,7 @@ import { keyframes } from "../style/style-macro" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   centerPadding,
+  controlFontStep,
   controlSize,
   fieldInput,
   fieldLabel,
@@ -48,6 +50,14 @@ import {
 export type ProgressBarSize = "S" | "M" | "L" | "XL";
 export type ProgressBarStaticColor = "white" | "black" | "auto";
 export type ProgressBarLabelPosition = "top" | "side";
+export type ProgressBarTrackStyle = "bar" | "bracket";
+
+/* The register draws its bracket at ten cells (`[▮▮▮▮▯▯▯▯▯▯]`), so a percentage maps
+ * to one cell per 10%. Fixed rather than a prop: the glyph run's whole point is that
+ * every bracket in a log column is the same width, so rows stack into a chart. */
+const BRACKET_CELLS = 10;
+const BRACKET_FILLED = "▮";
+const BRACKET_EMPTY = "▯";
 
 export interface ProgressBarProps {
   /** The current value. @default 0 */
@@ -59,6 +69,29 @@ export interface ProgressBarProps {
    * stays `value`. Ignored while indeterminate.
    */
   pendingValue?: number;
+  /**
+   * How the track is drawn. `"bar"` is the filled 8px recess; `"bracket"` replaces it
+   * with the register's mono readout of the same value — `[▮▮▮▮▯▯▯▯▯▯]` — for rows that
+   * live inside a terminal well, where a painted bar reads as a foreign object among
+   * text. The bracket is decorative (`aria-hidden`): the accessible value is the
+   * `progressbar` role's own, identical in both forms. Indeterminate progress always
+   * draws the bar — a fixed glyph run cannot sweep without inventing motion.
+   *
+   * Local addition — no S2 counterpart.
+   * @default 'bar'
+   */
+  trackStyle?: ProgressBarTrackStyle;
+  /**
+   * Relative widths of the track's sections, e.g. `[3, 1, 2]` for a three-chapter run.
+   * The bar is cut into that many sections, each proportional to its number and split
+   * from its neighbour by a hairline gap; the fill (and the `pendingValue` dither)
+   * flows across them exactly as it does across the undivided bar. Values ≤ 0 and
+   * arrays shorter than two entries are ignored. Purely visual — the accessible value
+   * is unchanged.
+   *
+   * Local addition — no S2 counterpart.
+   */
+  segments?: number[];
   /** The smallest value allowed. @default 0 */
   minValue?: number;
   /** The largest value allowed. @default 100 */
@@ -102,6 +135,7 @@ type ProgressBarStyleState = {
   labelAlign?: "start" | "end";
   isStaticColor: boolean;
   isIndeterminate: boolean;
+  hasSegments: boolean;
 };
 
 const progressBarIndeterminateLtr = keyframes(`
@@ -256,14 +290,25 @@ const trackStyles = style<ProgressBarStyleState>({
     forcedColors: "ButtonText",
   },
   zIndex: 1,
+  /* The register's bar is 8px (the XP bar, TerminalGlassLab.tsx:763-770), so the band
+   * is shifted one rung up to put the DEFAULT size on the drawn value rather than two
+   * rungs under it. Four distinct rungs are kept — the size axis still moves, it just
+   * starts where the register draws. */
   height: {
-    default: 6,
+    default: 8,
     size: {
-      S: 4,
-      M: 6,
-      L: 8,
-      XL: 10,
+      S: 6,
+      M: 8,
+      L: 10,
+      XL: 12,
     },
+  },
+  /* A divided bar has to SHOW the division, and the only thing that can show it is the
+   * track's own recess between the sections — this register has no rules and no drop
+   * shadows to draw a separator with. `overflow: hidden` above clips the gap's outer
+   * halves at the ends, so the run still starts and finishes flush. */
+  columnGap: {
+    hasSegments: 2,
   },
 });
 
@@ -331,6 +376,80 @@ const pendingStyles = style<ProgressBarStyleState>({
   },
 });
 
+/* One section of a divided bar. It is a track in miniature — the fill and the pending
+ * dither are the SAME two elements as in the undivided bar, just clipped to this slice
+ * — so a chapter bar cannot drift away from a plain one. Width is inline: it is data
+ * (the caller's ratio), not a style variant. */
+const segmentStyles = style({
+  position: "relative",
+  height: "full",
+  display: "flex",
+  overflow: "hidden",
+  flexShrink: 0,
+});
+
+/* The bracket form. Mono at the readout's own step so the glyph run and the "40%"
+ * beside it sit on one baseline in one face — the two are read as a single line of
+ * terminal output, which is the whole reason this form exists. No tracking: the cells
+ * are meant to touch, the way they do inside a bracket in a log. */
+const bracketStyles = style<ProgressBarStyleState>({
+  gridArea: "bar",
+  alignSelf: "center",
+  fontFamily: "code",
+  fontSize: controlFontStep(1),
+  fontWeight: "normal",
+  whiteSpace: "nowrap",
+  color: {
+    default: "accent",
+    isStaticColor: "transparent-overlay-900",
+    forcedColors: "ButtonText",
+  },
+});
+
+/**
+ * The bracket's glyph run for a percentage: filled cells, then empty ones, inside
+ * literal brackets. Rounds rather than floors so a bar that is visually nearly full
+ * does not read `▮▮▮▮▮▮▮▮▮▯` at 99%; 0 and 100 are exact because clamping happens on
+ * the percentage before it arrives.
+ */
+function bracketRun(percentage: number): string {
+  const filled = clamp(Math.round((percentage / 100) * BRACKET_CELLS), 0, BRACKET_CELLS);
+  return `[${BRACKET_FILLED.repeat(filled)}${BRACKET_EMPTY.repeat(BRACKET_CELLS - filled)}]`;
+}
+
+/**
+ * Turns the caller's relative weights into painted sections: each one carries its share
+ * of the track's width plus the fraction of ITSELF that the fill and the pending dither
+ * cover. Non-finite and non-positive weights are dropped (a zero-width section is not a
+ * section), and fewer than two survivors means there is nothing to divide — the caller
+ * gets the plain bar back rather than a single section pretending to be one.
+ */
+function resolveSegments(
+  weights: number[] | undefined,
+  percentage: number,
+  pendingWidth: number,
+): { width: number; fill: number; pending: number }[] | null {
+  if (!weights) {
+    return null;
+  }
+  const usable = weights.filter((weight) => Number.isFinite(weight) && weight > 0);
+  if (usable.length < 2) {
+    return null;
+  }
+  const total = usable.reduce((sum, weight) => sum + weight, 0);
+  const filledEnd = percentage;
+  const pendingEnd = percentage + pendingWidth;
+  let start = 0;
+  return usable.map((weight) => {
+    const width = (weight / total) * 100;
+    const end = start + width;
+    const fill = (clamp(filledEnd, start, end) - start) / width;
+    const pending = (clamp(pendingEnd, start, end) - start) / width - fill;
+    start = end;
+    return { width, fill: fill * 100, pending: pending * 100 };
+  });
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -372,6 +491,8 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const [local] = splitProps(merged, [
     "value",
     "pendingValue",
+    "trackStyle",
+    "segments",
     "minValue",
     "maxValue",
     "valueLabel",
@@ -405,6 +526,7 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
     labelAlign,
     isStaticColor: isStaticColor(),
     isIndeterminate: isIndeterminate(),
+    hasSegments: segments() != null,
   });
   const accessibleLabelledBy = () =>
     local["aria-labelledby"] ?? (!local["aria-label"] && local.label ? labelId : undefined);
@@ -461,6 +583,13 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
     const pendingPercentage = ((pending - minValue) / safeRange(minValue, maxValue)) * 100;
     return Math.max(0, pendingPercentage - percentage());
   });
+  /* Indeterminate wins over both local forms: neither a fixed glyph run nor a set of
+   * fixed sections can express "unknown", and faking either would report a value the
+   * component does not have. */
+  const isBracket = () => local.trackStyle === "bracket" && !isIndeterminate();
+  const segments = createMemo(() =>
+    isIndeterminate() ? null : resolveSegments(local.segments, percentage(), pendingWidth() ?? 0),
+  );
   const valueText = () =>
     local.valueLabel ?? (progressAria.progressBarProps["aria-valuetext"] as string | undefined);
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
@@ -492,23 +621,50 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
       {local.label && !isIndeterminate() && (
         <span class={valueStyles(state("end"))}>{valueText()}</span>
       )}
-      <div class={trackStyles(state())}>
-        <div
-          class={fillStyles(state())}
-          style={{
-            width: isIndeterminate() ? undefined : `${percentage()}%`,
-            animation: isIndeterminate() ? indeterminateAnimation(locale().direction) : undefined,
-          }}
-        />
-        {!isIndeterminate() && pendingWidth() != null && (
-          <div
-            aria-hidden="true"
-            class={pendingStyles(state())}
-            style={{ width: `${pendingWidth()}%` }}
-          />
-        )}
-        <div aria-hidden="true" class={trackRimStyles} />
-      </div>
+      {isBracket() ? (
+        <span aria-hidden="true" class={bracketStyles(state())}>
+          {bracketRun(percentage())}
+        </span>
+      ) : (
+        <div class={trackStyles(state())}>
+          {segments() ? (
+            <For each={segments()!}>
+              {(segment) => (
+                <div class={segmentStyles} style={{ width: `${segment.width}%` }}>
+                  <div class={fillStyles(state())} style={{ width: `${segment.fill}%` }} />
+                  {segment.pending > 0 && (
+                    <div
+                      aria-hidden="true"
+                      class={pendingStyles(state())}
+                      style={{ width: `${segment.pending}%` }}
+                    />
+                  )}
+                </div>
+              )}
+            </For>
+          ) : (
+            <>
+              <div
+                class={fillStyles(state())}
+                style={{
+                  width: isIndeterminate() ? undefined : `${percentage()}%`,
+                  animation: isIndeterminate()
+                    ? indeterminateAnimation(locale().direction)
+                    : undefined,
+                }}
+              />
+              {!isIndeterminate() && pendingWidth() != null && (
+                <div
+                  aria-hidden="true"
+                  class={pendingStyles(state())}
+                  style={{ width: `${pendingWidth()}%` }}
+                />
+              )}
+            </>
+          )}
+          <div aria-hidden="true" class={trackRimStyles} />
+        </div>
+      )}
     </div>
   );
 }
