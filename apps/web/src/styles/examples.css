@@ -1,0 +1,149 @@
+/* Layout for the /examples screens — and layout ONLY.
+ *
+ * Everything scoped under `[data-examples]`, so these rules are inert on the
+ * rest of the site, and every class is `ex-*`. There is deliberately not one
+ * colour, border, font, shadow or keyframe in this file: the examples exist to
+ * prove @proyecto-viviana/ui can build a whole product surface, and a paint
+ * declaration here would be the app quietly doing the library's job. The
+ * declaration allowlist is enforced by `scripts/check-examples-purity.ts`.
+ *
+ * Box metrics only: grid placement, flex fill, fixed rail and drawer widths,
+ * the shell inset, and the responsive collapse. */
+
+/* ── shell ─────────────────────────────────────────────────────────────── */
+
+[data-examples].ex-root {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+[data-examples] .ex-plane {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* The app frame: command bar across the top, 52px icon rail down the left.
+   1180px is the drawn canvas width — narrower than that and the three-column
+   screens stack (see the media query at the end). */
+[data-examples] .ex-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-width: 1180px;
+  padding: 12px 14px;
+}
+
+[data-examples] .ex-cmdbar {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* Pushes the counters, the screen's own controls and the asks to the right. */
+[data-examples] .ex-cmdbar-spacer {
+  flex: 1 1 auto;
+}
+
+[data-examples] .ex-cmdbar-count {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 4px;
+}
+
+[data-examples] .ex-rail {
+  box-sizing: border-box;
+  width: 52px;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* Drops the avatar to the foot of the rail. */
+[data-examples] .ex-rail-spacer {
+  flex: 1 1 auto;
+  min-height: 8px;
+}
+
+[data-examples] .ex-main {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── screen scaffolding ────────────────────────────────────────────────── */
+
+/* A screen's own content plane inside .ex-main. */
+[data-examples] .ex-screen {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  align-content: start;
+}
+
+/* Scaffolded screen body: a heading and the registry's description of what the
+   screen will compose. Replaced batch by batch as the real screens land. */
+[data-examples] .ex-placeholder {
+  display: grid;
+  gap: 8px;
+  max-width: 60ch;
+  align-content: start;
+}
+
+/* The landing screen has no app chrome, so it owns the whole plane. */
+[data-examples] .ex-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 24px 48px;
+}
+
+/* ── gallery ───────────────────────────────────────────────────────────── */
+
+[data-examples] .ex-gallery {
+  box-sizing: border-box;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: grid;
+  gap: 24px;
+}
+
+[data-examples] .ex-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+[data-examples] .ex-gallery-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 14px 16px;
+  min-height: 96px;
+}
+
+/* ── responsive ────────────────────────────────────────────────────────── */
+
+/* Below the drawn canvas width the stacked screens go single column. The three
+   cinematic screens (theater, live, lesson) do NOT: their composition is a
+   fixed-aspect canvas with chrome pinned to its edges, and reflowing it would
+   be showing a different design rather than the same one smaller — so they keep
+   the 1180px canvas and scroll horizontally inside the frame. */
+@media (max-width: 1179px) {
+  [data-examples] .ex-shell {
+    min-width: 0;
+  }
+
+  [data-examples] .ex-stack {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  [data-examples] .ex-canvas {
+    min-width: 1180px;
+  }
+
+  [data-examples] .ex-main {
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,216 @@
+/* The examples taxonomy — the ten Terminal Glass product screens, one child
+   route each under /examples. Where the showcase panels are organised by
+   COMPONENT ("here is every Button"), the examples are organised by SCREEN
+   ("here is a whole product page built from them"), so `components` lists the
+   exported names each screen is responsible for putting to work and `needs`
+   names the register capabilities the screen still waits on. Both are lists of
+   plain strings so the registry test can check them against the package's real
+   export surface and against workstream B's plan. */
+import { seo } from "@/seo";
+
+export interface ExampleDef {
+  /** Route slug under /examples/. */
+  readonly slug: string;
+  /** Two-digit screen number, in register voice ("01"). */
+  readonly num: string;
+  readonly title: string;
+  readonly blurb: string;
+  /** Public @proyecto-viviana/ui export names this screen composes. */
+  readonly components: readonly string[];
+  /** Register capabilities this screen still needs from the library. */
+  readonly needs: readonly string[];
+  /** What carries this screen's single filled fuchsia ask, or "" for none. */
+  readonly fuchsiaFill: string;
+}
+
+export const EXAMPLES: readonly ExampleDef[] = [
+  {
+    slug: "landing",
+    num: "01",
+    title: "Landing",
+    blurb: "The front door: scene, hero, and one filled ask — no app chrome.",
+    components: ["Button", "Card", "Heading", "Link", "Text", "Well", "ActionButton", "Flex"],
+    needs: ["display-xl type role", "scan sweep", "HUD brackets", "boot-in log", "dither veil"],
+    fuchsiaFill: "+ Start free",
+  },
+  {
+    slug: "home",
+    num: "02",
+    title: "Home",
+    blurb: "The daily surface: focus, streak, level, what to continue, what is due.",
+    components: [
+      "Card",
+      "CardPreview",
+      "Well",
+      "Badge",
+      "Button",
+      "ProgressBar",
+      "Meter",
+      "Image",
+      "Grid",
+      "Flex",
+      "Heading",
+      "Text",
+    ],
+    needs: [
+      "pixel focus ring",
+      "streak blocks",
+      "dithered progress lead",
+      "HUD brackets",
+      "media HUD readout",
+      "signal card",
+      "terminal list rows",
+      "tutor well",
+    ],
+    fuchsiaFill: "Review 4 · ~6 min",
+  },
+  {
+    slug: "explore",
+    num: "03",
+    title: "Explore",
+    blurb: "The index four days in: filter chips, a hero journey, and four tiles.",
+    components: ["TagGroup", "Tag", "Card", "CardPreview", "Image", "Button", "Grid", "Heading"],
+    needs: ["HUD brackets", "corner tag"],
+    fuchsiaFill: "+ Create",
+  },
+  {
+    slug: "explore-empty",
+    num: "04",
+    title: "Explore — empty",
+    blurb: "The same index on day zero: shimmer skeletons and an outline tree.",
+    components: ["Card", "Well", "Skeleton", "SkeletonCollection", "TagGroup", "Tag", "Heading"],
+    needs: ["shimmer grid", "outline tree well"],
+    fuchsiaFill: "+ Create",
+  },
+  {
+    slug: "lesson",
+    num: "05",
+    title: "Lesson",
+    blurb: "The workbench: player, code well, checkpoint quiz, tutor.",
+    components: [
+      "Tabs",
+      "TabList",
+      "Tab",
+      "Well",
+      "Card",
+      "CardPreview",
+      "Button",
+      "Switch",
+      "RadioGroup",
+      "Radio",
+      "Heading",
+      "Text",
+    ],
+    needs: [
+      "skyline + perspective grid backdrop",
+      "video player chrome",
+      "chapter segment bar",
+      "code well",
+      "RUN button",
+      "checkpoint quiz",
+      "square toggle",
+      "typed reply",
+      "boot-in log",
+    ],
+    fuchsiaFill: "+ Create",
+  },
+  {
+    slug: "theater",
+    num: "06",
+    title: "Theater",
+    blurb: "Full-bleed playback with a transcript drawer and a speed menu.",
+    components: ["Card", "Tabs", "TabList", "Tab", "SearchField", "Menu", "MenuTrigger", "Badge"],
+    needs: [
+      "CRT scanline overlay",
+      "scan sweep",
+      "HUD brackets",
+      "HUD readouts",
+      "caption box",
+      "transcript drawer rows",
+      "player chrome",
+    ],
+    fuchsiaFill: "● 214 WATCHING",
+  },
+  {
+    slug: "live",
+    num: "07",
+    title: "Live",
+    blurb: "A live session: poll, chat, raise hand, and one fuchsia LIVE badge.",
+    components: ["Badge", "Card", "Well", "RadioGroup", "Radio", "Meter", "ToggleButton", "Avatar"],
+    needs: ["pixel radio", "boot-in log", "non-seekable segment progress"],
+    fuchsiaFill: "● LIVE · 214",
+  },
+  {
+    slug: "profile",
+    num: "08",
+    title: "Profile",
+    blurb: "A person as a terminal: stats, an activity map, journeys, badges.",
+    components: ["Avatar", "Badge", "Button", "Card", "Well", "Grid", "Heading", "Image"],
+    needs: ["dither veil", "activity heat map", "ELSH type role", "bracket progress", "badge grid"],
+    fuchsiaFill: "+ Create",
+  },
+  {
+    slug: "settings",
+    num: "09",
+    title: "Settings",
+    blurb: "Preferences as an rc file: nineteen numbered lines you can edit.",
+    components: [
+      "Card",
+      "Well",
+      "Switch",
+      "SegmentedControl",
+      "SegmentedControlItem",
+      "TextField",
+      "InlineAlert",
+      "Button",
+    ],
+    needs: ["rc-file editor row"],
+    fuchsiaFill: "",
+  },
+  {
+    slug: "playground",
+    num: "10",
+    title: "Playground",
+    blurb: "A render viewport with five parameter sliders and a running log.",
+    components: ["Card", "Well", "Tabs", "TabList", "Tab", "Slider", "Image", "Grid"],
+    needs: ["pixel slider", "HUD brackets", "HUD readouts"],
+    fuchsiaFill: "+ Create",
+  },
+];
+
+export function exampleBySlug(slug: string): ExampleDef | undefined {
+  return EXAMPLES.find((example) => example.slug === slug);
+}
+
+/**
+ * Head tags for one example screen, derived from its registry entry.
+ *
+ * Mirrors the showcase's `panelSeo`: the blurb alone runs ~55 characters, so
+ * the component names are appended up to the 158-character description budget
+ * — they are the words someone actually searches for. Deriving it here rather
+ * than writing it per route is what keeps the tab, the search result and the
+ * on-page heading from drifting apart.
+ */
+export function exampleSeo(slug: string) {
+  const def = exampleBySlug(slug);
+  if (!def) {
+    throw new Error(`exampleSeo: no example screen named "${slug}".`);
+  }
+
+  let description = def.blurb;
+  const names: string[] = [];
+  for (const name of def.components) {
+    const next = [...names, name].join(", ");
+    if (`${description} ${next}.`.length > 158) break;
+    names.push(name);
+  }
+  if (names.length > 0) {
+    description = `${description} ${names.join(", ")}.`;
+  }
+
+  return seo({
+    title: `${def.title} · Examples`,
+    description,
+    path: `/examples/${def.slug}`,
+  });
+}
