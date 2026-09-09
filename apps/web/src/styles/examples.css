@@ -703,6 +703,87 @@
   }
 }
 
+/* ── ex: playground ────────────────────────────────────────────────────── */
+
+/* The render viewport and a 330px column of controls. As with home, this
+   section is appended after the shared responsive block, so it restates its
+   own collapse at the foot — a later rule of equal specificity wins. */
+
+[data-examples] .ex-pg {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) 330px;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-pg-left {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The kicker row above the file's name: label left, state flush right. */
+[data-examples] .ex-pg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* The frame the readouts are pinned over. */
+[data-examples] .ex-pg-viewport {
+  position: relative;
+  min-width: 0;
+}
+
+[data-examples] .ex-pg-readout-top {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+[data-examples] .ex-pg-readout-bottom {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+/* The convergence bar takes the slack between the two chips. */
+[data-examples] .ex-pg-track {
+  flex: 1;
+  min-width: 0;
+}
+
+[data-examples] .ex-pg-right {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-pg-params {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 1179px) {
+  [data-examples] .ex-pg {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ── ex: settings ──────────────────────────────────────────────────────── */
 
 /* The file on the left, what it paints on the right. */
