@@ -1304,9 +1304,11 @@ export const style = createTheme({
     /* Viviana UI v2 (Glasselated): Spectrum's theme has no tracking vocabulary at
      * all, but the register declares it as part of its type roles — +0.01em on
      * every pixel-face role (`--type-display/title/headline/label-track`) and
-     * +0.1em on the mono micro role (`--type-micro-track`). Additive: no existing
-     * style() call names the property, so nothing can regress. */
-    letterSpacing: ["0em", "0.01em", "0.1em"] as const,
+     * +0.1em on the mono micro role (`--type-micro-track`). Terminal Glass adds the
+     * two hero tracks: the pixel face needs LESS tracking as it grows, so display-xl
+     * takes 0.005em and display-lg 0.008em. Additive: no existing style() call names
+     * the property, so nothing can regress. */
+    letterSpacing: ["0em", "0.005em", "0.008em", "0.01em", "0.1em"] as const,
     textAlign: ["start", "center", "end", "justify"] as const,
     verticalAlign: [
       "baseline",

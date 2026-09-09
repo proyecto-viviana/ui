@@ -598,6 +598,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "focus",
+          "type": "() => void",
+          "required": false,
+          "description": "Function to focus the option, overriding the default DOM focus. Forwarded into `createSelectableItem` (`useSelectableItem` `focus`).",
+          "origin": "solidaria"
+        },
+        {
           "name": "allowsDifferentPressOrigin",
           "type": "boolean",
           "values": [

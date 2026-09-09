@@ -190,3 +190,74 @@ describe("corner ladder", () => {
     expect(resolve("dark", "--radius-md")).toBe("8px");
   });
 });
+
+/* The type ladder is published twice as well: `typeRoles` compiles it into atoms for the
+ * components, `--type-*` hands it to host CSS. The roles are macro calls, so they cannot be
+ * imported without the style plugin — the source is read instead, which is enough to catch
+ * the two failure modes that matter: a role silently drifting off the register's numbers,
+ * and a sub-16px role taking the pixel face, where the ELSH axis stops resolving and the
+ * text turns to mush. */
+const roleSource = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), "../src/text/type-roles.ts"),
+  "utf8",
+);
+
+function role(name: string): { font: string; size?: number; lineHeight?: string } {
+  const match = roleSource.match(
+    new RegExp(`\\n  "?${name}"?: style\\(\\{([\\s\\S]*?)\\n  \\}\\)`),
+  );
+  if (!match) throw new Error(`type role ${name} is missing`);
+  const body = match[1];
+  const size = body.match(/fontSize: "\[([\d.]+)px\]"/);
+  const lineHeight = body.match(/lineHeight: "\[([\d.]+)\]"/);
+  return {
+    font: (body.match(/font: "([^"]+)"/) as RegExpMatchArray)[1],
+    size: size ? Number(size[1]) : undefined,
+    lineHeight: lineHeight?.[1],
+  };
+}
+
+/* Grandfathered: the handoff itself sets the pixel floor at its own `--type-label`, 13.5px,
+ * and `headline` sits just above it. Nothing new may join them. */
+const PIXEL_FLOOR_EXEMPT = new Set(["headline", "label"]);
+
+describe("type roles", () => {
+  it("publishes the register's twelve roles at their exact metrics", () => {
+    for (const [name, size, lineHeight] of [
+      ["display-xl", 66, "0.98"],
+      ["display-lg", 56, "1.02"],
+      ["display-md", 40, "1.08"],
+      ["display", 28, "1.15"],
+      ["title", 20, "1.2"],
+      ["headline", 15, "1.3"],
+      ["label", 13.5, "1.15"],
+      ["meta", 12, "1.5"],
+      ["micro", 10, "1.2"],
+      ["terminal", 11.5, "1.95"],
+      ["button", 13, undefined],
+    ] as const) {
+      const declared = role(name);
+      expect(declared.size, `${name} size`).toBe(size);
+      if (lineHeight) expect(declared.lineHeight, `${name} line-height`).toBe(lineHeight);
+    }
+  });
+
+  it("keeps the pixel face off every role below the ELSH floor", () => {
+    for (const name of roleSource.matchAll(/\n  "?([a-z-]+)"?: style\(\{/g)) {
+      const declared = role(name[1]);
+      const isPixel = declared.font.startsWith("heading-");
+      if (!isPixel || PIXEL_FLOOR_EXEMPT.has(name[1])) continue;
+      expect(
+        declared.size ?? 16,
+        `${name[1]} takes the pixel face below 16px`,
+      ).toBeGreaterThanOrEqual(16);
+    }
+  });
+
+  it("keeps the button role on the mono ladder the token file publishes", () => {
+    /* The register spends mono 13px on control labels; 15px sans was the v1 value and read
+     * as a second body size beside the pixel labels. */
+    expect(role("button").font).toBe("ui");
+    expect(resolve("dark", "--type-button")).toBe("400 13px/1 var(--font-mono)");
+  });
+});
