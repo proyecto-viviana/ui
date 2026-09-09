@@ -148,6 +148,147 @@
   }
 }
 
+/* ── ex: home ──────────────────────────────────────────────────────────── */
+
+/* The daily surface: a wide left plane of tiles and a 330px right column.
+   These rules are appended after the shared responsive block, so the screen
+   restates its own collapse at the foot of this section — a later rule of equal
+   specificity wins over the earlier `.ex-stack` override. */
+
+[data-examples] .ex-home {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+/* Row 1: focus, streak, level. Row 2: what to continue, what is due. */
+[data-examples] .ex-home-left {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Card's `size` fixes a standalone card's width (S is 192px), which is right
+   for a card in a rail and wrong for one filling a grid cell — the cell already
+   decides the width. Same lever as `.ex-rail`, in the other direction. */
+[data-examples] .ex-home-card {
+  width: 100%;
+}
+
+/* Card's `size` fixes a standalone card's width (S is 192px), which is right
+   for a card in a rail and wrong for one filling a grid cell — the cell already
+   decides the width. Same lever as `.ex-rail`, in the other direction. */
+[data-examples] .ex-home-card {
+  width: 100%;
+}
+
+[data-examples] .ex-home-continue {
+  grid-column: span 2;
+}
+
+[data-examples] .ex-home-right {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* A tile is a fixed-size mark beside its reading. */
+[data-examples] .ex-home-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+[data-examples] .ex-home-tile-body {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-home-flame {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+}
+
+[data-examples] .ex-home-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Media half beside the text half. */
+[data-examples] .ex-home-continue-body {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+}
+
+/* The frame is the positioning context for the HUD readout and the 4px bar. */
+[data-examples] .ex-home-media {
+  position: relative;
+  min-width: 0;
+}
+
+[data-examples] .ex-home-media-readout {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+[data-examples] .ex-home-media-bar {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+}
+
+[data-examples] .ex-home-due {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+[data-examples] .ex-home-due-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+[data-examples] .ex-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+@media (max-width: 1179px) {
+  [data-examples] .ex-home,
+  [data-examples] .ex-home-left,
+  [data-examples] .ex-home-continue-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  [data-examples] .ex-home-continue {
+    grid-column: auto;
+  }
+}
+
 /* ── ex: lesson ────────────────────────────────────────────────────────── */
 
 /* The workbench canvas. SceneBackdrop is `position: absolute; inset: 0`, so it
