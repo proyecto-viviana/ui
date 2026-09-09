@@ -162,7 +162,9 @@ if (unknown.length > 0) {
   );
   for (const [token, fileSet] of unknown.slice(0, 25)) {
     const sample = [...fileSet].slice(0, 3).join(", ");
-    console.error(`  ${token}  (${fileSet.size} file(s): ${sample}${fileSet.size > 3 ? ", …" : ""})`);
+    console.error(
+      `  ${token}  (${fileSet.size} file(s): ${sample}${fileSet.size > 3 ? ", …" : ""})`,
+    );
   }
   if (unknown.length > 25) {
     console.error(`  … ${unknown.length - 25} more`);

@@ -166,7 +166,7 @@ observable output. A component must run every applicable driver.
 | D11 | Timing             | Warmup, cooldown, auto-dismiss, pause, long-press, and cleanup under a mocked clock.                                                                                          |
 | D12 | SSR and hydration  | Server HTML, stable ids, hydrated DOM, and post-hydration behavior.                                                                                                           |
 | D13 | Journeys           | Multi-step mouse, keyboard, touch, and time sequences; every step diffs DOM, ARIA, focus, form value, overlay geometry and opacity, list scroll, events, AX tree, and pixels. |
-| D14 | Native validity    | Native constraint validation: `ValidityState` flags, `:invalid`, `validationMessage`, and submit blocked vs allowed.                                                             |
+| D14 | Native validity    | Native constraint validation: `ValidityState` flags, `:invalid`, `validationMessage`, and submit blocked vs allowed.                                                          |
 
 Specialized drivers cover behavior that the base catalog does not model.
 D-scroll compares virtualized visible windows, position metadata, scroll

@@ -7,19 +7,19 @@ parent: 136
 status: merged
 history:
   - {
-    state: open,
-    at: 2026-09-08,
-    note: "filed from #508 / Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+      state: open,
+      at: 2026-09-08,
+      note: "filed from #508 / Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
     }
   - {
-    state: in-progress,
-    at: 2026-09-08,
-    note: "append formValue=key hidden input after Provider/ComboBoxChildren; last child of the root div; no aria-hidden",
+      state: in-progress,
+      at: 2026-09-08,
+      note: "append formValue=key hidden input after Provider/ComboBoxChildren; last child of the root div; no aria-hidden",
     }
   - {
-    state: merged,
-    at: 2026-09-08,
-    note: "solidaria-components ComboBox appends the formValue=key hidden input after children (RAC ComboBox.tsx:373-374). One selectedKey() input; no aria-hidden; not HiddenSelect. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: ComboBox.test.tsx 92 passed; comparison:build pass; ComboBox D13 0/2 (titles still red); Picker D13 0/2 (regression). M8 left open-arrow-enter-reopen-scroll-escape step-0 field dom (Expected -2 / +8; no first-child vs last-child-after-span hunk). Remaining ComboBox click: M6 Dismiss aria-hidden, M5 data-placement, M7 form vs template, M1 input data-open, M2 chevron data-focused/open/pressed, M4 root data-hovered. Keyboard: M3 chevron data-focused, M4 root data-focus-visible. Picker: M10 svg data-open, M9 Select root focus data-*. Waivers []. git diff --check pass. Did not start #513/#514/#502/#511.",
+      state: merged,
+      at: 2026-09-08,
+      note: "solidaria-components ComboBox appends the formValue=key hidden input after children (RAC ComboBox.tsx:373-374). One selectedKey() input; no aria-hidden; not HiddenSelect. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: ComboBox.test.tsx 92 passed; comparison:build pass; ComboBox D13 0/2 (titles still red); Picker D13 0/2 (regression). M8 left open-arrow-enter-reopen-scroll-escape step-0 field dom (Expected -2 / +8; no first-child vs last-child-after-span hunk). Remaining ComboBox click: M6 Dismiss aria-hidden, M5 data-placement, M7 form vs template, M1 input data-open, M2 chevron data-focused/open/pressed, M4 root data-hovered. Keyboard: M3 chevron data-focused, M4 root data-focus-visible. Picker: M10 svg data-open, M9 Select root focus data-*. Waivers []. git diff --check pass. Did not start #513/#514/#502/#511.",
     }
 ---
 
