@@ -100,6 +100,7 @@ const AA_PAIRS: Array<[string, string, string[]]> = [
   ["--fuchsia-ink", "--fuchsia-500", []],
   ["--yellow-text", "--surface-app", []],
   ["--yellow-ink", "--yellow-500", []],
+  ["--blue-ink", "--blue-500", []],
   ["--text-on-accent", "--interactive-fill", []],
   ["--status-fault", "--surface-card", ["--surface-app"]],
   ["--terminal-fg", "--surface-well", []],

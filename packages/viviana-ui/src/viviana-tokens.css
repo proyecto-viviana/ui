@@ -305,6 +305,12 @@
   --fuchsia-ink: #1a0512;
   --yellow-text: var(--yellow-500);
   --yellow-ink: #141000;
+  /* Blue completes the family. `--text-link` is blue AS ink on a surface; this is
+     what goes ON the blue 500 when the 500 is the fill — a filled accent chip or
+     the docs' source link. It flips the other way round from the text tokens:
+     night's accent is a bright blue, so its ink is the blue-tinted floor, and
+     daylight's accent is a deep blue, so its ink is white. */
+  --blue-ink: #04101d;
 
   /* Terminal wells — matte / opaque, NEVER glass */
   --surface-well: #030405;
@@ -698,6 +704,7 @@
   --fuchsia-ink: #ffffff;
   --yellow-text: #7a5f00;
   --yellow-ink: #141000;
+  --blue-ink: #ffffff;
 
   /* Terminal wells — matte; the deep well is the same plate in daylight, where
      depth reads from the border and the scan line rather than from darkness. */

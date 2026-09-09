@@ -234,7 +234,10 @@ function ButtonLink(props: { href: string; children: string }) {
         padding: "10px 20px",
         "border-radius": "var(--radius-lg)",
         background: "var(--color-accent)",
-        color: "var(--color-grey-900)",
+        /* The fill is the register's accent blue, which is BRIGHT at night and DEEP in
+           daylight; `--color-grey-900` is dark in both, so daylight read 3.5:1. The
+           channel ink flips with the fill. */
+        color: "var(--blue-ink)",
         "text-decoration": "none",
       }}
     >
