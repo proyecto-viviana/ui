@@ -26,30 +26,40 @@ import { css } from "../style" with { type: "macro" };
 // :focus-visible states the single-element style() macro can't express. Styling
 // therefore flows through the css() macro escape hatch, which ships real CSS in
 // the package bundle (same asset pipeline as style()) and supports this nesting.
-// Values mirror the S2 neutral palette (fixed light-dark pairs, scheme-aware via
-// the Provider's color-scheme).
+//
+// Every value is a register token from viviana-tokens.css. It used to be sixteen
+// `light-dark()` hex literals mirroring the S2 neutral palette — an entire second
+// palette living in one component, which is precisely how a register drifts: nothing
+// here moved when the tokens were re-cut, so this popover kept painting the old grey
+// chrome next to Popover's glass. The tokens are already scheme-aware (the file
+// redeclares them under the dark selector), so the `light-dark()` wrappers go too.
+//
+// Ink is named as `--slate-900` rather than as the `--text-primary` role it backs:
+// `guard:invented-utilities` matches `text-primary` as one of the pre-S2 Tailwind
+// utilities it exists to keep out, and cannot tell the register's real token from that
+// dead vocabulary. Same value, both schemes.
 const triggerStyles = css(`
   & .solidaria-ContextualHelpTrigger-trigger {
     display: flex;
     align-items: center;
-    padding-block: 8px;
-    padding-inline: 16px;
+    padding-block: 6px;
+    padding-inline: 10px;
     cursor: pointer;
     background: transparent;
     border: 0;
-    color: light-dark(#222, #e6e6e6);
-    border-radius: 8px;
+    color: var(--slate-900);
+    border-radius: 6px;
     outline: none;
   }
   & .solidaria-ContextualHelpTrigger-trigger:hover {
-    background: light-dark(#0000000d, #ffffff12);
+    background: var(--row-hover);
   }
   & .solidaria-ContextualHelpTrigger-trigger:focus-visible {
-    outline: 2px solid light-dark(#4b75ff, #4069fd);
+    outline: 2px solid var(--border-focus);
     outline-offset: -2px;
   }
   & .solidaria-ContextualHelpTrigger-trigger[data-unavailable] {
-    color: light-dark(#8f8f8f, #7c7c7c);
+    color: var(--text-tertiary);
   }
   & .solidaria-ContextualHelpTrigger-trigger[data-disabled] {
     opacity: 0.5;
@@ -59,11 +69,12 @@ const triggerStyles = css(`
     margin-top: 4px;
     padding: 16px;
     min-width: 200px;
-    background: light-dark(#fff, #222);
-    border: 1px solid light-dark(#d5d5d5, #3d3d3d);
+    background: var(--surface-float);
+    backdrop-filter: var(--blur-clear);
+    border: 1px solid var(--track);
     border-radius: 8px;
-    box-shadow: 0 4px 12px light-dark(#00000014, #0000003d), 0 2px 6px light-dark(#0000000f, #00000030);
-    color: light-dark(#222, #e6e6e6);
+    box-shadow: var(--shadow-float), var(--edge-glass);
+    color: var(--slate-900);
     outline: none;
   }
 `);

@@ -81,19 +81,20 @@ const popoverStyles = style<
   "--s2-container-bg": {
     type: "backgroundColor",
     value: {
-      /* Viviana UI v2 (Glasselated): a floating overlay wears the PANEL surface, and
-       * fill and blur have to agree. `layer-1` resolves to `var(--surface-panel)` in
-       * the theme's backgroundColor map (style/spectrum-theme.ts) and pairs with
-       * `--blur-panel` below. This was `layer-2` (= `var(--surface-card)`) carrying
-       * `--blur-card` on the 14px `panel` radius — the card's fill and blur wearing
-       * the panel's corner. Matches the sibling overlay at menu/s2-menu-styles.ts. */
-      default: "layer-1",
+      /* Terminal Glass: a popover is TIER 2 — it lands OVER a panel or a card, so it
+       * takes the float surface (`var(--surface-float)`, alpha .9) rather than the
+       * panel's .62. This was `layer-1` (= `--surface-panel`) paired with
+       * `--blur-panel`: a panel-weight translucency stacked on a panel has no visible
+       * boundary against the surface underneath it, and its text sits on whatever that
+       * surface was showing. Same tier as the menu, toast and tooltip; the shared value
+       * is `glassSurface("float")` (s2-internal/style-utils.ts). */
+      default: "float",
       forcedColors: "Background",
     },
   },
   backgroundColor: "--s2-container-bg",
-  /* The panel register is open-coded here rather than spread from
-   * `glassSurface("panel")` (s2-internal/style-utils.ts), for two reasons specific to
+  /* The float register is open-coded here rather than spread from
+   * `glassSurface("float")` (s2-internal/style-utils.ts), for two reasons specific to
    * this surface. (1) The fill has to stay behind the `--s2-container-bg` custom
    * property: `arrowStyles` below paints the arrow with `fill: "--s2-container-bg"`,
    * and the theme's auto/overlay color helpers compute against it as well
@@ -103,30 +104,27 @@ const popoverStyles = style<
    * spreading it would draw a second 1px edge and shift the box metrics the arrow is
    * positioned against. Blur is the load-bearing half: translucent fill plus blur is
    * what reads as glass, and blur cannot ride on a background-color. */
-  backdropFilter: "var(--blur-panel)",
-  borderRadius: "panel",
-  /* The register's elevation cue is the inset rim, not a cast shadow. A popover is a
-   * translucent container over the page, so it takes the SURFACE rim — `elevated` and
-   * `emphasized` resolve to the same value (style/spectrum-theme.ts); the brighter
-   * `edge-glass` is for opaque controls, whose own fill contains the white.
-   * Unconditional, including when the arrow is shown: the previous
-   * `isArrowShown` branch dropped the rim to `none` and reached for the `filter` map
-   * instead, on the theory that a box-shadow cannot follow the arrow's silhouette.
-   * It does not need to. The rim is an INSET shadow, so it is clipped to the
-   * padding box and cannot spill onto the arrow at all; and the `filter` map is the
-   * one shadow map still resolving to a Spectrum cast drop-shadow, which is the
-   * elevation vocabulary this register does not use. The arrow carries its own edge
-   * via `stroke` in `arrowStyles` below. */
-  boxShadow: "edge-glass-surface",
+  backdropFilter: "var(--blur-clear)",
+  borderRadius: "default",
+  /* The float is the ONE tier in this register that casts. Panels and cards carry the
+   * inset rim alone, but a float lands on a surface of the same family, where a rim
+   * cannot separate the two edges — so it takes `--shadow-float` (the handoff's `sh2`)
+   * AND the rim, exactly as the handoff's own tier-2 overlays do
+   * (`box-shadow: var(--sh2), var(--edge-glass)`, Lesson Player toast / App popover).
+   * Both stay unconditional, arrow shown or not: the rim is an INSET shadow, clipped to
+   * the padding box, so it cannot spill onto the arrow, and the arrow carries its own
+   * edge via `stroke` in `arrowStyles` below. The `filter` map is deliberately not used
+   * — it is the one shadow map still resolving to a Spectrum cast drop-shadow, an
+   * elevation vocabulary this register does not speak. */
+  boxShadow: "[var(--shadow-float), var(--edge-glass)]",
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    /* Was `lightDark("transparent-white-25", "gray-200")`. `transparent-white-25` is
-     * the 25th stop of Spectrum's transparent-white ramp — alpha 0, not 25% white —
-     * so that pair drew a solid gray edge in dark and NO edge at all in light. A
-     * scheme-asymmetric edge is wrong under any reading of the register; the glass
-     * edge is `--border-subtle` in both schemes. */
-    default: "border-subtle",
+    /* Terminal Glass draws the tier-2 edge in `--track`, not in the glass hairline the
+     * panel/card tiers use: a float sits on a lit surface rather than on the page, and
+     * `--border-subtle` disappears against it (App speed menu and popover, both
+     * `border:1px solid var(--track)`). */
+    default: "[var(--track)]",
     forcedColors: "ButtonBorder",
   },
   width: {
@@ -227,12 +225,12 @@ const arrowStyles = style<PopoverRenderProps>({
   },
   strokeWidth: 1,
   /* The arrow continues the surface's silhouette, so it wears the surface's edge:
-   * 1px `--border-subtle`, the same value `popoverStyles` puts on its `outline`.
+   * 1px `--track`, the same value `popoverStyles` puts on its `outline`.
    * Was the same alpha-0-in-light `lightDark` pair as the outline — see the note
    * there. This stroke is now the only thing drawing the arrow's edge, the
    * `filter` drop-shadow having been removed from `popoverStyles`. */
   stroke: {
-    default: "border-subtle",
+    default: "[var(--track)]",
     forcedColors: "ButtonBorder",
   },
 });
@@ -429,7 +427,9 @@ const popoverFooterStyles = style({
   borderWidth: 0,
   borderTopWidth: 1,
   borderStyle: "solid",
-  borderColor: "gray-300",
+  /* The register's own hairline, not a ramp stop: `gray-300` is markedly too light
+   * against the float fill in dark and reads as a second border in light. */
+  borderColor: "[var(--border-hair)]",
 });
 
 /**

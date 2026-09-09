@@ -24,7 +24,6 @@ import {
   controlFont,
   controlSize,
 } from "../s2-internal/style-utils" with { type: "macro" };
-import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 
 export type S2MenuSize = "S" | "M" | "L" | "XL";
 
@@ -38,12 +37,21 @@ export interface S2MenuItemStyleProps
   isLink?: boolean;
 }
 
+/* The row's inline inset is FLAT in this register, not a per-size ramp. `edgeToText(h)`
+ * is Spectrum's `height * 3/8`, so the same menu inset 9px at S and 18px at XL; the
+ * handoff draws every row at `6px 10px` regardless of the control size around it
+ * (TerminalGlassLab.tsx:598, :1027). This is the same correction `control()` already
+ * made for the corner — it replaced Spectrum's height-derived radius ramp with the flat
+ * 6px row corner — applied to the axis the subgrid owns. The size map is kept rather
+ * than collapsed so the size prop stays the single place a future rung would land. */
+const rowEdgeToText = "10px";
+
 const menuItemGrid = {
   size: {
-    S: [edgeToText(24), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(24)],
-    M: [edgeToText(32), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(32)],
-    L: [edgeToText(40), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(40)],
-    XL: [edgeToText(48), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(48)],
+    S: [rowEdgeToText, "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", rowEdgeToText],
+    M: [rowEdgeToText, "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", rowEdgeToText],
+    L: [rowEdgeToText, "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", rowEdgeToText],
+    XL: [rowEdgeToText, "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", rowEdgeToText],
   },
 } as const;
 
@@ -86,8 +94,9 @@ export const menuItem = style<S2MenuItemStyleProps>({
   /* Viviana UI v2 (Glasselated): a register row is never painted. The handoff's nav and
    * list rows are transparent at rest, on hover and when selected — state is carried by
    * ink (the label shifting toward the accent) and by the leading mark fading in, not by
-   * a fill. `baseColor("gray-100").isFocusVisible` baked an opaque ramp stop here, a
-   * solid bar the register does not draw at any time.
+   * a fill — with one exception, the selected row, noted on `backgroundColor` below.
+   * `baseColor("gray-100").isFocusVisible` baked an opaque ramp stop here, a solid bar
+   * the register does not draw at rest or on hover.
    * Keyboard focus is not weakened: `focusRing()` above still draws a 2px ring on
    * isFocusVisible, and it cannot be clipped here — the `menu` container that scrolls
    * (`overflow: "auto"`) carries `padding: 8`, so the ring's 2px offset plus 2px width
@@ -98,6 +107,14 @@ export const menuItem = style<S2MenuItemStyleProps>({
    * needs us to paint Highlight ourselves, paired with HighlightText in `color` below. */
   backgroundColor: {
     default: "transparent",
+    /* The one exception to "never painted": a SELECTED row. The handoff's own selected
+     * row carries `--surface-active` (the accent at low alpha), and a menu needs it more
+     * than a nav list does — a menu row's selection also shows as the checkmark in the
+     * `checkmark` grid area, but that mark is off in the leading column, far from a long
+     * label, and it is the only cue on a row that can scroll past under the pointer.
+     * Ordered before `isFocused` has no effect (they are separate properties), but it is
+     * ordered after `default` so an unselected row stays transparent. */
+    isSelected: "[var(--surface-active)]",
     forcedColors: {
       default: "transparent",
       isFocused: "Highlight",

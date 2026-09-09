@@ -1,8 +1,11 @@
 /* Panel 09 — Overlays. Every demo opens from a trigger inside a Row — the
    panel is about what floats above the mono face, not the trigger itself.
-   Popovers and dialogs wear the panel's glass (blur-panel, layer-1); a
-   tooltip stays opaque and unblurred, since frosting a 200ms transient just
-   makes it harder to read. */
+   All five surfaces here are TIER 2 of the register's glass: --surface-float
+   at alpha .9 over --blur-clear, the --shadow-float cast plus the --edge-glass
+   rim, and a --track edge. The tooltip included — it is the smallest float,
+   not an opaque label — so the whole panel reads as one family whichever
+   trigger you open. Corners: 8 for the popover and the menu, 12 for a dialog,
+   5 for a tooltip. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For } from "solid-js";
 import {

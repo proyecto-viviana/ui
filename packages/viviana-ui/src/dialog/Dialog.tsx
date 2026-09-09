@@ -296,8 +296,12 @@ const dialogModal = style<ModalRenderProps & { size: ModalDialogSize }>({
   display: "flex",
   flexDirection: "column",
   pointerEvents: "auto",
+  /* Terminal Glass corner, not Spectrum's. `xl` is 16px — the S2 modal corner; the
+   * register's largest drawn corner is 12 (`lg`, style/spectrum-theme.ts), and a modal
+   * is the same tier-2 float as a popover, only bigger. A takeover has no corner to
+   * round. */
   borderRadius: {
-    default: "xl",
+    default: "lg",
     size: {
       fullscreenTakeover: "none",
     },
@@ -338,14 +342,31 @@ const dialogModal = style<ModalRenderProps & { size: ModalDialogSize }>({
       fullscreenTakeover: "[100vh]",
     },
   },
+  /* Terminal Glass tier 2. A modal lands over the whole app — panel, card and all — so
+   * it takes the FLOAT surface (`var(--surface-float)`, alpha .9) rather than the card's
+   * .55: at card weight the page's own layout reads straight through the dialog's body
+   * copy, which is exactly what a modal exists to stop. Kept behind the
+   * `--s2-container-bg` custom property because the theme's auto/overlay color helpers
+   * (`autoStaticColor`, style/tokens.ts) compute the dialog's ink against it. */
   "--s2-container-bg": {
     type: "backgroundColor",
-    value: "layer-2",
+    value: "float",
   },
   backgroundColor: "--s2-container-bg",
-  // Glasselated: frost the scene behind the surface — the container bg is the
-  // translucent `--surface-card`; the blur is what makes it read as glass.
-  backdropFilter: "var(--blur-card)",
+  // The blur is what makes the translucent fill read as glass rather than as a weak
+  // colour; `--blur-clear` is the float tier's, matching Popover, Menu and Toast.
+  backdropFilter: "var(--blur-clear)",
+  /* The float is the one tier that casts: `--shadow-float` (the handoff's `sh2`) plus
+   * the `--edge-glass` rim, the same pair the handoff puts on its own tier-2 overlays.
+   * The dialog had NO elevation at all — a takeover-sized surface sitting flush on the
+   * scrim. Not applied to `fullscreenTakeover`, which covers the viewport and has no
+   * edge left to light. */
+  boxShadow: {
+    default: "[var(--shadow-float), var(--edge-glass)]",
+    size: {
+      fullscreenTakeover: "none",
+    },
+  },
   // Transparent outline for WHCM.
   outlineStyle: "solid",
   outlineWidth: 1,
@@ -543,7 +564,9 @@ const dialogFooter = style({
   paddingTop: 16,
   borderTopStyle: "solid",
   borderTopWidth: 1,
-  borderColor: "gray-200",
+  /* The register's hairline. `gray-200` is a ramp stop, and over the float fill it
+   * reads as a second, heavier edge inside the dialog's own rim. */
+  borderColor: "[var(--border-hair)]",
 });
 
 const dialogButtonGroup = style({
@@ -568,7 +591,7 @@ const fullscreenDialogHeader = style({
   paddingY: 24,
   borderBottomStyle: "solid",
   borderBottomWidth: 1,
-  borderColor: "gray-200",
+  borderColor: "[var(--border-hair)]",
 });
 
 const fullscreenDialogContent = style({

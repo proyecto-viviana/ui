@@ -68,6 +68,7 @@ import {
   type ToastOptions as StatelyToastOptions,
 } from "@proyecto-viviana/solid-stately";
 import { ActionButton, Button } from "../button";
+import type { StaticColor } from "../button/types";
 import { CenterBaseline } from "../CenterBaseline";
 import { CloseButton } from "../dialog";
 import { AlertDiamondIcon } from "../icon/s2wf-icons/AlertDiamondIcon";
@@ -455,7 +456,10 @@ const toastRegion = style<{
   },
   boxSizing: "border-box",
   maxHeight: "full",
-  borderRadius: "panel",
+  /* The float corner, 8px. `panel` is 14 — the biggest corner in the ladder, on the
+   * smallest surface in the register; a toast is a tier-2 float like the popover and
+   * the menu, not a panel. */
+  borderRadius: "default",
 });
 
 const toastList = style<{ placement: ToastEdge; isExpanded?: boolean }>({
@@ -517,20 +521,45 @@ const toastStyle = style<{ variant: ToastVariant; isExpanded?: boolean }>({
   boxSizing: "border-box",
   flexShrink: 0,
   font: "ui",
-  /* Every fill but `notice` is dark enough to carry white ink. The notice fill is the
-   * register's yellow, whose ramp is bright in BOTH columns (glasselated-ramps.ts): white
-   * on it is 2.3-2.5:1, so this channel — and the static controls hung on it below —
-   * flips to black, the same ink InlineAlert's boldFill and Badge already spend there. */
+  /* Every fill but `notice` and `info` is dark enough to carry white ink. The notice fill
+   * is the register's yellow, whose ramp is bright in BOTH columns (glasselated-ramps.ts):
+   * white on it is 2.3-2.5:1, so this channel — and the static controls hung on it below —
+   * flips to black, the same ink InlineAlert's boldFill and Badge already spend there.
+   * `info` is now the CTA fuchsia (below) and takes the ink that channel already owns:
+   * `create-ink` flips with the ground — white on the daylight fill (4.74:1), near-black
+   * #1a0512 on the night fill (6.66:1), where white would be 2.9:1. */
   color: {
     default: "white",
     variant: {
+      info: "create-ink",
       notice: "black",
+    },
+  },
+  /* Mirrors `backgroundColor` below. Needed so the static controls hung on the toast
+   * (`staticColor="auto"` on the action button and the close button) can compute their
+   * own ink and overlay fills against the toast's actual fill instead of assuming white
+   * — see `autoStaticColor` / `generateOverlayColorScale` in style/tokens.ts. */
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      variant: {
+        neutral: "neutral-subdued",
+        info: "cta",
+        positive: "positive",
+        negative: "negative",
+        notice: lightDark("notice-900", "notice-700"),
+      },
     },
   },
   backgroundColor: {
     variant: {
       neutral: "neutral-subdued",
-      info: "informative",
+      /* THE ASK is fuchsia in this register, and an informational toast is the ask
+       * arriving: "someone replied", "your review is ready". `informative` was the blue
+       * accent, which the register spends on STRUCTURE — rails, tabs, selected rows — so
+       * a blue toast read as another piece of chrome rather than as something addressed
+       * to the reader. Same `cta` token as the +Create button and the LIVE badge. */
+      info: "cta",
       positive: "positive",
       negative: "negative",
       /* The warning channel, on the SAME fill stops Button's `warning` variant uses —
@@ -543,8 +572,12 @@ const toastStyle = style<{ variant: ToastVariant; isExpanded?: boolean }>({
     type: "fill",
     value: "currentColor",
   },
+  /* The float elevation: `--shadow-float` (the handoff's `sh2`) plus the `--edge-glass`
+   * rim — literally the pair the handoff puts on its own toast. `elevated` is Spectrum's
+   * cast drop-shadow, the elevation vocabulary this register replaced. Stacked toasts
+   * drop it, as before, so the stack reads as one slab. */
   boxShadow: {
-    default: "elevated",
+    default: "[var(--shadow-float), var(--edge-glass)]",
     isExpanded: "none",
   },
   willChange: "transform",
@@ -956,6 +989,15 @@ export function Toast(props: ToastProps): JSX.Element {
   const content = () => local.toast.content;
   const contentDomProps = () => filterDOMProps(content() as Record<string, unknown>);
   const variant = () => normalizeVariant(content().variant, content().type);
+  /* The ink the static controls hung on the toast must spend. Three fills, three
+   * answers: the yellow `notice` fill takes black, the fuchsia `info` fill takes
+   * whichever of the two the ground calls for — `auto` resolves it from the
+   * `--s2-container-bg` the toast sets, matching the `create-ink` flip on the label —
+   * and every remaining fill is dark enough for white in both schemes. Hardcoding
+   * "white" here was what put white-on-fuchsia (2.9:1 in the dark scheme) on the close
+   * and action buttons the moment the info channel moved to the CTA colour. */
+  const staticInk = (): StaticColor =>
+    variant() === "notice" ? "black" : variant() === "info" ? "auto" : "white";
   const title = () => content().children ?? content().title;
   const actionLabel = () => content().actionLabel ?? content().action?.label;
   const actionHandler = () => content().onAction ?? content().action?.onAction;
@@ -1059,7 +1101,7 @@ export function Toast(props: ToastProps): JSX.Element {
             <Show when={local.canExpand && !isExpanded() && visibleToasts().length > 1}>
               <ActionButton
                 isQuiet
-                staticColor={variant() === "notice" ? "black" : "white"}
+                staticColor={staticInk()}
                 styles={toastExpand}
                 UNSAFE_className={useComponentTransition() ? "toast-expand" : undefined}
                 onPress={local.onToggleExpanded}
@@ -1077,7 +1119,7 @@ export function Toast(props: ToastProps): JSX.Element {
               <Button
                 variant="secondary"
                 fillStyle="outline"
-                staticColor={variant() === "notice" ? "black" : "white"}
+                staticColor={staticInk()}
                 styles={toastAction}
                 UNSAFE_className={useComponentTransition() ? "toast-action" : undefined}
                 onPress={handleAction}
@@ -1088,7 +1130,7 @@ export function Toast(props: ToastProps): JSX.Element {
           </div>
 
           <CloseButton
-            staticColor={variant() === "notice" ? "black" : "white"}
+            staticColor={staticInk()}
             onPress={handleCloseToast}
             UNSAFE_className={useComponentTransition() ? "toast-close" : undefined}
             aria-label={stringFormatter().format("dialog.dismiss")}

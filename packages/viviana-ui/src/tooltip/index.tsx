@@ -65,22 +65,50 @@ const tooltip = style<TooltipRenderProps & { colorScheme: ColorScheme | null }>(
   boxSizing: "border-box",
   font: "ui-sm",
   color: {
-    default: "gray-25",
+    /* The float tier's ink. `gray-25` was the near-white that paired with the opaque
+     * `neutral` fill below; over a translucent LIGHT-scheme float it is near-white on
+     * near-white. `gray-800` is the stop the register pins to its primary ink and the
+     * one `heading`/`title` already resolve to (style/spectrum-theme.ts), so it flips
+     * with the scheme the way the surface under it does. */
+    default: "gray-800",
     forcedColors: "ButtonText",
   },
   borderWidth: {
+    default: 1,
     forcedColors: 1,
   },
   borderStyle: {
+    default: "solid",
     forcedColors: "solid",
   },
   borderColor: {
+    default: "[var(--track)]",
     forcedColors: "transparent",
   },
-  backgroundColor: "neutral",
-  // Glasselated: a tooltip is a small opaque label, closer to a control than to a
-  // panel — the handoff draws no tooltip, so it takes the control corner and stays
-  // unblurred, since frosting a 200ms transient just makes it harder to read.
+  /* Terminal Glass tier 2. A tooltip is the smallest float, but it is a float: it lands
+   * over a panel, a card or a control, and it is the same family as the popover and the
+   * menu that can open from the same trigger. It was the one overlay left opaque
+   * (`neutral`, a solid dark ramp stop), which read as a Spectrum tooltip parked on a
+   * Terminal Glass page — and in the light scheme it was a black chip.
+   *
+   * Kept behind `--s2-container-bg` so `arrowStyles` below can paint the arrow with the
+   * same fill; without the custom property the arrow would need its own copy of the
+   * token and would drift from the body the first time the surface moved. */
+  "--s2-container-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "float",
+      forcedColors: "Background",
+    },
+  },
+  backgroundColor: "--s2-container-bg",
+  backdropFilter: "var(--blur-clear)",
+  /* Float elevation: `--shadow-float` plus the `--edge-glass` rim, the pair the handoff
+   * puts on every tier-2 overlay. A tooltip needs it more than the others do — it is the
+   * smallest surface and the one most often shown over dense content. */
+  boxShadow: "[var(--shadow-float), var(--edge-glass)]",
+  // The register's control corner: a tooltip is label-sized, so it keeps the 5px
+  // button corner rather than the 8px the larger floats take.
   borderRadius: "control",
   fontFamily: "code",
   paddingX: "edge-to-text",
@@ -125,7 +153,9 @@ const tooltip = style<TooltipRenderProps & { colorScheme: ColorScheme | null }>(
 
 const arrowStyles = style<TooltipRenderProps>({
   display: "block",
-  fill: "gray-800",
+  /* Same fill as the body — `gray-800` was the opaque neutral's near-match and left a
+   * solid dark spike hanging off a translucent tooltip. */
+  fill: "--s2-container-bg",
   width: 10,
   height: 5,
   rotate: {
