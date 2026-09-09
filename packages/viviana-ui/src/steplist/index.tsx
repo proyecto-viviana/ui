@@ -23,6 +23,7 @@ import {
   type StepProps as HeadlessStepProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createId, type Key } from "@proyecto-viviana/solid-stately";
+import { visuallyHiddenStyles } from "@proyecto-viviana/solidaria";
 import { useProviderProps } from "../provider";
 import { style, focusRing, lightDark } from "../style" with { type: "macro" };
 
@@ -123,21 +124,6 @@ const markStyles = style<StepStyleState>({
     isSelected: "[var(--accent-primary)]",
   },
 });
-
-/** Visually-hidden pattern used for the parts of the accessible name that carry
- * no visual weight (the step number and the state prefix). */
-const visuallyHidden = {
-  border: 0,
-  clip: "rect(0 0 0 0)",
-  "clip-path": "inset(50%)",
-  height: "1px",
-  margin: "-1px",
-  overflow: "hidden",
-  padding: 0,
-  position: "absolute" as const,
-  width: "1px",
-  "white-space": "nowrap" as const,
-};
 
 const labelStyles = style<StepStyleState>({
   transition: "default",
@@ -284,11 +270,11 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
           {stepMark(props.renderProps)}
         </span>
         {/* Visually-hidden step number, referenced by aria-labelledby only. */}
-        <span id={numberId} style={visuallyHidden}>
+        <span id={numberId} style={visuallyHiddenStyles}>
           {props.stepNumber}
         </span>
         {/* Visually-hidden state prefix, referenced by aria-labelledby only. */}
-        <span id={stateId} style={visuallyHidden}>
+        <span id={stateId} style={visuallyHiddenStyles}>
           {stepStateLabel(props.renderProps)}
         </span>
         <span id={labelId} aria-hidden="true" class={labelStyles(state())}>
