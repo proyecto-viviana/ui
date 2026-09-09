@@ -7,12 +7,13 @@ type MeshVariant = "ambient" | "signal";
 
 /* A frosted panel/card carrying the woven hex-mesh background + the signature
    cursor scan-band and spreading border-ring (driven by the `.mesh-card` CSS +
-   the island's mesh field). `amber` swaps the ring/weave to the signal channel. */
+   the island's mesh field). `signal` swaps the ring to the detail channel — the
+   register has no amber; the signal hue is the detail yellow. */
 export function MeshCard(props: {
   readonly variant?: MeshVariant;
   readonly seed?: number;
   readonly surface?: "panel" | "card";
-  readonly amber?: boolean;
+  readonly signal?: boolean;
   readonly appear?: boolean;
   readonly class?: string;
   /** Emits `data-panel` — the anchor the spec/mirror side-by-side diffs on. */
@@ -26,7 +27,7 @@ export function MeshCard(props: {
     meshStrip({ dark: theme() === "dark", variant: props.variant ?? "ambient", seed: props.seed });
   return (
     <div
-      class={`mesh-card${props.amber ? " mesh-amber" : ""}${props.class ? ` ${props.class}` : ""}`}
+      class={`mesh-card${props.signal ? " mesh-signal" : ""}${props.class ? ` ${props.class}` : ""}`}
       data-appear={props.appear === false ? undefined : ""}
       data-panel={props.panelId}
       style={{

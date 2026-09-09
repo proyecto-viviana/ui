@@ -1,5 +1,5 @@
-import { createSignal, onMount } from "solid-js";
-import { dualWipe } from "@/lib/glasselated";
+import { createThemeTransition } from "@proyecto-viviana/ui";
+import { createRoot, createSignal, onMount } from "solid-js";
 
 export type Theme = "dark" | "light";
 
@@ -22,9 +22,21 @@ function resolveTheme(): Theme {
 const [globalTheme, setGlobalTheme] = createSignal<Theme>("dark");
 let initialized = false;
 
+/* One transition for the whole site, not one per `useTheme()` caller: the
+   primitive listens for the pointerdown that opens the wipe, so a copy in every
+   header/doc-route would stack duplicate document listeners and each would take
+   its own snapshot of the page. Owned by a detached root because the theme
+   signal above already outlives every component that reads it. The host is
+   `<body>`, not `<html>`: the primitive clones the host, and a clone of
+   `<html>` would re-mount every `<style>` in `<head>` into the live document. */
+let themeTransition: ((onSwap: () => void) => void) | undefined;
+function runThemeTransition(onSwap: () => void): void {
+  themeTransition ??= createRoot(() => createThemeTransition(() => document.body));
+  themeTransition(onSwap);
+}
+
 function applyTheme(theme: Theme): void {
   if (typeof document === "undefined") return;
-  document.documentElement.setAttribute("data-theme", theme);
   document.documentElement.setAttribute("data-color-scheme", theme);
 }
 
@@ -55,7 +67,7 @@ export function useTheme() {
       swap();
       return;
     }
-    dualWipe(document.documentElement, { onCovered: swap });
+    runThemeTransition(swap);
   };
 
   const isDark = () => globalTheme() === "dark";

@@ -14,7 +14,7 @@ async function setTheme(page: Page, theme: "dark" | "light") {
   }, theme);
   await page.reload();
   await page.waitForFunction(
-    (targetTheme) => document.documentElement.getAttribute("data-theme") === targetTheme,
+    (targetTheme) => document.documentElement.getAttribute("data-color-scheme") === targetTheme,
     theme,
   );
 }

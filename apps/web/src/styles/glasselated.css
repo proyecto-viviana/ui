@@ -315,7 +315,7 @@
    from the frozen design repo's glasselated.css (the `.mesh-card`, `.tgl-nav`
    and `.glx-caret` blocks) for the Parity tab, where the hand-built spec panels
    need exactly this paint to sit beside their viviana-ui twins. The frozen
-   `[data-theme="light"]` island scope is re-keyed onto our site-wide
+   island-local light scope is re-keyed onto our site-wide
    `[data-color-scheme="light"]` switch; everything stays under
    `[data-glasselated]` so it is inert elsewhere.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -366,11 +366,11 @@
   isolation: isolate;
   --ring-c: color-mix(in srgb, var(--accent-primary) 55%, transparent);
 }
-[data-glasselated] .mesh-amber {
-  --ring-c: color-mix(in srgb, var(--amber-500) 60%, transparent);
+[data-glasselated] .mesh-signal {
+  --ring-c: color-mix(in srgb, var(--yellow-500) 60%, transparent);
 }
-[data-color-scheme="light"] [data-glasselated] .mesh-amber {
-  --ring-c: color-mix(in srgb, var(--amber-500) 65%, transparent);
+[data-color-scheme="light"] [data-glasselated] .mesh-signal {
+  --ring-c: color-mix(in srgb, var(--yellow-500) 65%, transparent);
 }
 [data-glasselated] .mesh-card::after {
   content: "";

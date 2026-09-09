@@ -78,11 +78,13 @@ export { pressScale } from "./pressScale";
 // ActionMenu / Menu
 export { ActionMenu, ActionMenuContext } from "./menu/ActionMenu";
 export type { ActionMenuProps } from "./menu/ActionMenu";
+// `MenuButton` is a local addition: S2 composes MenuTrigger + Button. apps/web
+// still uses this convenience. (Kept out of the block below — a comment inside
+// an `export {}` list hides the name from the barrel-parsing coverage tests.)
 export {
   Collection,
   ContextualHelpTrigger,
   Menu,
-  // Local addition: S2 composes MenuTrigger + Button. apps/web still uses this convenience.
   MenuButton,
   MenuContext,
   MenuItem,

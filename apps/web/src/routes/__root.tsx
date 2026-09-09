@@ -98,13 +98,14 @@ function ErrorFallback(props: { error: Error; reset: () => void }) {
 
 function RootDocument(props: { children: JSX.Element }) {
   return (
-    <html lang="en" data-theme="dark">
+    <html lang="en" data-color-scheme="dark">
       <head>
         <HydrationScript />
         <HeadContent />
         {/* Resolve theme before paint: localStorage → system preference → dark.
-            Sets both data-theme (legacy) and data-color-scheme (the styling switch). */}
-        <script>{`(function(){try{var t=localStorage.getItem('pv-theme');var s=(t==='dark'||t==='light')?t:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',s);document.documentElement.setAttribute('data-color-scheme',s)}catch(e){}})()`}</script>
+            `data-color-scheme` is the one switch — the register keys every token
+            block off it, and the retired `data-theme` mirror only ever drifted. */}
+        <script>{`(function(){try{var t=localStorage.getItem('pv-theme');var s=(t==='dark'||t==='light')?t:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-color-scheme',s)}catch(e){}})()`}</script>
       </head>
       <body
         style={{ "-webkit-font-smoothing": "antialiased", "-moz-osx-font-smoothing": "grayscale" }}

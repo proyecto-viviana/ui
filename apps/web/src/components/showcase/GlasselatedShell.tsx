@@ -2,8 +2,8 @@
    (`data-glasselated`), the fixed scene/veil backdrop, the cursor-tracked mesh
    field, and the portal host — no page chrome of its own. Ported from the
    frozen design repo's GlasselatedShell, re-keyed onto the site-wide
-   `data-color-scheme` theme (via `useTheme`) instead of an island-local
-   `data-theme`, and wrapping children in the library `Provider` so locale and
+   `data-color-scheme` theme (via `useTheme`) instead of an island-local scheme
+   attribute, and wrapping children in the library `Provider` so locale and
    color-scheme contexts reach every component. */
 import { createEffect, createSignal, onMount, type Accessor, type JSX } from "solid-js";
 import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";

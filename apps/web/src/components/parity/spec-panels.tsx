@@ -105,7 +105,7 @@ const CONSOLE_CARDS = [
     btnBg: "var(--accent-create-bg)",
     btnBorder: "var(--accent-create-border)",
     variant: "signal" as const,
-    amber: true,
+    signal: true,
   },
   {
     path: "~/journeys/colorspaces",
@@ -118,7 +118,7 @@ const CONSOLE_CARDS = [
     btnBg: "var(--surface-raised)",
     btnBorder: "var(--border-subtle)",
     variant: "ambient" as const,
-    amber: false,
+    signal: false,
   },
 ];
 
@@ -470,8 +470,8 @@ export function SpecPanel03(): JSX.Element {
             "font-size": "11px",
             "font-weight": 700,
             "letter-spacing": "0.02em",
-            color: "var(--amber-600)",
-            "background-color": "var(--amber-100)",
+            color: "var(--status-signal)",
+            "background-color": "color-mix(in srgb, var(--yellow-500) 16%, transparent)",
             "border-radius": "5px",
             padding: "4px 11px 4px 7px",
             "box-shadow": "var(--edge-glass)",
@@ -555,8 +555,8 @@ export function SpecPanel04(): JSX.Element {
                       "font-family": MONO,
                       "font-size": "10px",
                       "font-weight": 700,
-                      color: "var(--amber-600)",
-                      "background-color": "var(--amber-100)",
+                      color: "var(--status-signal)",
+                      "background-color": "color-mix(in srgb, var(--yellow-500) 16%, transparent)",
                       "border-radius": "999px",
                       padding: "2px 8px",
                     }}
@@ -807,7 +807,7 @@ export function SpecPanel06(): JSX.Element {
             <MeshCard
               surface="card"
               variant={w.variant}
-              amber={w.amber}
+              signal={w.signal}
               style={{ overflow: "hidden" }}
             >
               <div

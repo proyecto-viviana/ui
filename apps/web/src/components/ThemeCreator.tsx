@@ -145,9 +145,9 @@ export function ThemeCreator(props: ThemeCreatorProps) {
 
   const [appearance, setAppearance] = createSignal<"dark" | "light">("dark");
 
-  // Sync appearance with data-theme attribute
+  // Sync appearance with the register's one scheme attribute
   createEffect(() => {
-    document.documentElement.setAttribute("data-theme", appearance());
+    document.documentElement.setAttribute("data-color-scheme", appearance());
   });
 
   const shades = ["100", "200", "300", "400", "500", "600", "700", "800"];
