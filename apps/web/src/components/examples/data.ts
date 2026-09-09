@@ -7,6 +7,8 @@
    Solid hydration trusts the server DOM, so a value that differed between the
    server render and the client would mismatch on every load. */
 
+import type { TerminalLogLine } from "@proyecto-viviana/ui";
+
 /* ── curriculum ────────────────────────────────────────────────────────── */
 
 export type LessonState = "done" | "now" | "todo";
@@ -389,6 +391,32 @@ export const EXPLORE_HERO: HeroJourney = {
 
 /** How the index is ordered, read out at the end of the filter row. */
 export const EXPLORE_SORT = "sort: in progress first";
+
+/* ── explore, empty ────────────────────────────────────────────────────── */
+
+/* The transcript above the empty state: the command, the scan, the verdict. */
+export const EXPLORE_EMPTY_LOG: readonly TerminalLogLine[] = [
+  {
+    channel: "prompt",
+    spans: [
+      { text: "$ ", channel: "metric" },
+      { text: "akade index ~/journeys --filter " },
+      { text: '""', channel: "signal" },
+    ],
+  },
+  { channel: "metric", text: "scanning 3 journeys · 29 lessons · 116 renders" },
+  { channel: "muted", text: "no filter set — nothing to show yet" },
+];
+
+/** What the empty index offers instead of results. */
+export const EXPLORE_SUGGESTIONS: readonly string[] = [
+  "#pathtracing",
+  "#colorspaces",
+  "#raymarching",
+];
+
+/** How many shimmer blocks stand in for the results that are not there yet. */
+export const EXPLORE_SHIMMER = 32;
 
 /* ── profile screen ────────────────────────────────────────────────────── */
 

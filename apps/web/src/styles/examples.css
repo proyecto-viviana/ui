@@ -396,3 +396,57 @@
     height: 100%;
   }
 }
+
+/* ── ex: explore-empty ─────────────────────────────────────────────────── */
+
+/* The recessed console strip at the head of a panel card. */
+[data-examples] .ex-cardbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 14px;
+}
+
+/* Index left, outline right — stacked below the canvas width. */
+[data-examples] .ex-empty {
+  align-content: start;
+}
+
+@media (min-width: 1180px) {
+  [data-examples] .ex-empty {
+    grid-template-columns: minmax(0, 1fr) 330px;
+    align-items: start;
+  }
+}
+
+[data-examples] .ex-empty-body {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* The one thing the screen has to say, centred in the space the results left. */
+[data-examples] .ex-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 0 24px;
+}
+
+/* Eight shimmer blocks across, four rows of them — the handoff's stand-in for
+   the results that are not indexed yet. The blocks themselves are library
+   `Image`s under `Skeleton`; only their box is the app's business. */
+[data-examples] .ex-shimmer {
+  display: grid;
+  grid-template-columns: repeat(8, 12px);
+  grid-auto-rows: 12px;
+  gap: 4px;
+}
+
+[data-examples] .ex-shimmer > * {
+  width: 12px;
+  height: 12px;
+  min-width: 0;
+}
