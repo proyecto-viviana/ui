@@ -784,6 +784,74 @@
   }
 }
 
+/* ── ex: landing ───────────────────────────────────────────────────────── */
+
+/* The front door has no app chrome, so the screen itself is the stacking
+   context the scene sits behind and the HUD frame sits on. */
+[data-examples] .ex-land {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+}
+
+[data-examples] .ex-land-frame {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+[data-examples] .ex-land-inner {
+  display: grid;
+  gap: 32px;
+  padding: 24px;
+  min-width: 0;
+}
+
+/* Pushes what follows to the far edge of a Flex row. */
+[data-examples] .ex-land-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The pitch at 620px against the 330px live column, as drawn. */
+[data-examples] .ex-land-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 620px) 330px;
+  justify-content: space-between;
+  align-items: start;
+  gap: 32px;
+  padding-top: 48px;
+  padding-bottom: 32px;
+  min-width: 0;
+}
+
+[data-examples] .ex-land-pitch {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-land-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+[data-examples] .ex-land-journeys {
+  min-width: 0;
+}
+
+@media (max-width: 1179px) {
+  [data-examples] .ex-land-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-examples] .ex-land-journeys {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ── ex: settings ──────────────────────────────────────────────────────── */
 
 /* The file on the left, what it paints on the right. */
