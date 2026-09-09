@@ -144,6 +144,21 @@ function Page() {
         </Tabs>
       </Demo>
 
+      <Demo label="Tabs · terminal — the matte command strip: dithered well, filled chip on the active tab, readout parked flush right in the trailing slot">
+        <Tabs aria-label="Console channels" variant="terminal" defaultSelectedKey="output">
+          <TabList trailing="24 lines · 0 errors">
+            <Tab id="output">Output</Tab>
+            <Tab id="problems">Problems</Tab>
+            <Tab id="ports">Ports</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="output">Build finished in 1.4s.</TabPanel>
+            <TabPanel id="problems">Nothing to report.</TabPanel>
+            <TabPanel id="ports">3000, 4000 forwarded.</TabPanel>
+          </TabPanels>
+        </Tabs>
+      </Demo>
+
       <Demo label="Breadcrumbs · items collection — children is a per-item render function (Breadcrumb ≡ BreadcrumbItem)">
         <Row>
           <Breadcrumbs aria-label="Path" items={CRUMBS} getKey={(item) => item.id}>

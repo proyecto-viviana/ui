@@ -55,14 +55,13 @@ import {
 } from "../button/spectrum-context";
 import { IconContext } from "../icon";
 import Checkmark from "../icon/ui-icons/Checkmark";
-import Chevron from "../icon/ui-icons/Chevron";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
-import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
+import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -269,9 +268,6 @@ const emptyState = style({
   font: "body-sm",
 });
 
-const selectedBackground = colorMix("gray-25", "gray-900", 7);
-const selectedActiveBackground = colorMix("gray-25", "gray-900", 10);
-
 type TreeRowLayerProps = Partial<TreeItemRenderProps> & {
   isLink?: boolean;
   selectionStyle?: TreeSelectionStyle;
@@ -341,30 +337,36 @@ const treeViewRowBackground = style<TreeRowLayerProps>({
   inset: 0,
   backgroundColor: {
     default: "gray-25",
+    /* Glasselated: the register paints tree rows with its own three-step row
+     * vocabulary — `--surface-hover` under the pointer, `--surface-active-soft`
+     * on the current row, `--surface-active` when the current row is also
+     * hovered or pressed. It draws one "current row" look regardless of how the
+     * row got selected, so both selection styles land on the same fills. */
     isHovered: {
-      default: "gray-900/5",
+      default: "surface-hover",
       selectionStyle: {
-        checkbox: selectedBackground,
+        checkbox: "[var(--surface-active-soft)]",
       },
     },
     isPressed: {
-      default: "gray-900/10",
+      default: "[var(--surface-active)]",
       selectionStyle: {
-        checkbox: selectedActiveBackground,
+        checkbox: "[var(--surface-active)]",
       },
     },
     isSelected: {
+      default: "[var(--surface-active-soft)]",
       selectionStyle: {
         checkbox: {
-          default: selectedBackground,
-          isHovered: selectedActiveBackground,
-          isPressed: selectedActiveBackground,
-          isFocusVisible: selectedActiveBackground,
+          default: "[var(--surface-active-soft)]",
+          isHovered: "[var(--surface-active)]",
+          isPressed: "[var(--surface-active)]",
+          isFocusVisible: "[var(--surface-active)]",
         },
         highlight: {
-          default: colorMix("gray-25", "blue-900", 10),
-          isHovered: colorMix("gray-25", "blue-900", 15),
-          isPressed: colorMix("gray-25", "blue-900", 15),
+          default: "[var(--surface-active-soft)]",
+          isHovered: "[var(--surface-active)]",
+          isPressed: "[var(--surface-active)]",
         },
       },
     },
@@ -442,15 +444,25 @@ const treeExpandButton = style<TreeRowLayerProps>({
   disableTapHighlight: true,
 });
 
-const treeExpandIcon = style<TreeRowLayerProps>({
+/* Glasselated: the register draws an OUTLINE tree — the disclosure affordance is
+ * the same mono ">" mark the nav rail and the list rows use, rotated 90° when the
+ * branch is open, not a filled chevron glyph. */
+const treeExpandMark = style<TreeRowLayerProps>({
+  fontFamily: "code",
+  fontSize: "[12px]",
+  fontWeight: "semi-bold",
+  lineHeight: "[1]",
+  color: {
+    default: "[var(--accent-primary)]",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
   rotate: {
     isExpanded: 90,
   },
   transition: "default",
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
 });
 
 const treeCheckbox = style({
@@ -527,6 +539,10 @@ const treeLabel = style<TreeRowLayerProps>({
   minWidth: 0,
   alignSelf: "center",
   font: controlFont(),
+  /* Glasselated: tree rows are list rows — mono 12.5/600, same as ListView. */
+  fontFamily: "code",
+  fontSize: "[12.5px]",
+  fontWeight: "semi-bold",
   color: "inherit",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -538,8 +554,10 @@ const treeDescription = style<TreeRowLayerProps>({
   minWidth: 0,
   alignSelf: "center",
   font: "ui-sm",
+  fontFamily: "code",
+  fontSize: "[11px]",
   color: {
-    default: baseColor("neutral-subdued"),
+    default: "[var(--terminal-dim)]",
     isDisabled: {
       default: "disabled",
       forcedColors: "GrayText",
@@ -1204,7 +1222,12 @@ export function TreeExpandButton(
           return typeof rawChildren === "function"
             ? rawChildren(renderState())
             : (rawChildren ?? (
-                <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded: false })} />
+                <span
+                  aria-hidden="true"
+                  class={treeExpandMark({ ...renderState(), isExpanded: false })}
+                >
+                  {">"}
+                </span>
               ));
         })()}
       </button>
@@ -1220,7 +1243,9 @@ export function TreeExpandButton(
     >
       {local.children ??
         (({ isExpanded }: { isExpanded: boolean }) => (
-          <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded })} />
+          <span aria-hidden="true" class={treeExpandMark({ ...renderState(), isExpanded })}>
+            {">"}
+          </span>
         ))}
     </HeadlessTreeExpandButton>
   );

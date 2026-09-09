@@ -83,7 +83,7 @@ export type TabsLabelBehavior = "show" | "hide";
  * a pixel icon over a micro label, spread space-around. `pill` is that form; it
  * is horizontal-only and never collapses into the overflow picker (it IS the
  * small-screen form). */
-export type TabsVariant = "line" | "pill";
+export type TabsVariant = "line" | "pill" | "terminal";
 
 export interface TabsProps<T> extends Omit<
   HeadlessTabsProps<T>,
@@ -98,8 +98,13 @@ export interface TabsProps<T> extends Omit<
   /**
    * Visual form of the tab strip. `line` is the default underlined strip;
    * `pill` is the register's glass tab bar — stacked icon-over-label slots in a
-   * full-radius glass capsule. `pill` is horizontal-only and never collapses
-   * into the overflow picker.
+   * full-radius glass capsule. `terminal` is the register's matte command strip
+   * — the whole row sits in a dithered well and the active tab is a filled
+   * chip. `pill` and `terminal` are horizontal-only and never collapse into the
+   * overflow picker.
+   *
+   * Local addition — no S2 counterpart. S2 Tabs ships the `line` form only;
+   * `pill` and `terminal` are Glasselated register forms.
    */
   variant?: TabsVariant;
   /** Accessible label for the tab list. Required when aria-labelledby is not provided. */
@@ -126,6 +131,16 @@ export interface TabListProps<T> extends Omit<
 > {
   /** Static tabs or a render function for collection items. */
   children?: JSX.Element | ((item: T) => JSX.Element);
+  /**
+   * Content parked flush right inside the tab strip — the register's readout
+   * (a count, a status, a keyboard hint). Rendered as a sibling of the
+   * `role="tablist"` element, never inside it, so it cannot violate
+   * `aria-required-children`. Decorative by default; give it its own
+   * accessible text if it carries meaning.
+   *
+   * Local addition — no S2 counterpart.
+   */
+  trailing?: JSX.Element;
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
@@ -283,6 +298,9 @@ const tabList = style<TabsStyleState>({
       /* Pill slots are spread by space-around alone; any gap minimum would
        * overflow a width-capped bar. */
       pill: 0,
+      /* Glasselated command strip: 4px between chips inside the well's own 4px
+       * inset, so the strip reads as one control rather than a row of buttons. */
+      terminal: "[4px]",
     },
   },
   marginEnd: {
@@ -349,11 +367,93 @@ const tabList = style<TabsStyleState>({
   },
 });
 
-const tabListWrapper = style({
+/* Glasselated `terminal`: the matte command strip is painted on the WRAPPER,
+ * not on the tab list, because the strip's right-hand readout (`TabList
+ * trailing`) must live inside the well while staying outside `role="tablist"` —
+ * a non-tab child of the list would break `aria-required-children`. The
+ * wrapper's other children (the hidden measurement frame, the overflow menu)
+ * are absolutely positioned or display:none, so they add nothing to the row. */
+const tabListWrapper = style<TabsStyleState>({
   position: "relative",
   minWidth: 0,
   flexShrink: 0,
   flexGrow: 0,
+  display: {
+    variant: {
+      terminal: "flex",
+    },
+  },
+  alignItems: {
+    variant: {
+      terminal: "center",
+    },
+  },
+  backgroundColor: {
+    variant: {
+      terminal: "well",
+    },
+  },
+  /* The register's dither, restated rather than spread from wellScan(): the
+   * conditional shape needs the variant key, and a spread plus a re-declaration
+   * of the same key is a duplicate-key error in the macro. */
+  backgroundImage: {
+    variant: {
+      terminal: {
+        default: "[repeating-conic-gradient(var(--well-scan) 0% 25%, transparent 0% 50%)]",
+        forcedColors: "none",
+      },
+    },
+  },
+  backgroundSize: {
+    variant: {
+      terminal: "[var(--dither-tile) var(--dither-tile)]",
+    },
+  },
+  borderWidth: {
+    variant: {
+      terminal: 1,
+    },
+  },
+  borderStyle: {
+    variant: {
+      terminal: "solid",
+    },
+  },
+  borderColor: {
+    variant: {
+      terminal: "well-border",
+    },
+  },
+  borderRadius: {
+    variant: {
+      terminal: "default",
+    },
+  },
+  boxShadow: {
+    variant: {
+      /* The strip is opaque matte, so it takes the CONTROL rim, not the
+       * softened surface rim the glass pill bar uses. */
+      terminal: "edge-glass",
+    },
+  },
+  padding: {
+    variant: {
+      terminal: "[4px]",
+    },
+  },
+});
+
+/* The command strip's right-hand readout: a muted mono value parked flush right
+ * inside the well. Local addition — see `TabListProps.trailing`. */
+const tabListTrailing = style({
+  marginStart: "auto",
+  flexShrink: 0,
+  fontFamily: "code",
+  fontSize: "[11.5px]",
+  lineHeight: "[1.2]",
+  color: "[var(--text-tertiary)]",
+  paddingX: "[8px]",
+  whiteSpace: "nowrap",
 });
 
 const hiddenTabListFrame = style({
@@ -453,8 +553,52 @@ const tab = style<TabsStyleState>({
        * TerminalGlassLab.tsx:594). */
       vertical: "[10px]",
     },
+    /* Glasselated command strip: the active tab is a 6px/14px chip, so every
+     * tab carries that box whether or not it is the selected one. */
+    variant: {
+      terminal: "[14px]",
+    },
   },
-  borderRadius: "row",
+  paddingY: {
+    variant: {
+      terminal: "[6px]",
+    },
+  },
+  borderRadius: {
+    default: "row",
+    variant: {
+      terminal: "control",
+    },
+  },
+  /* The strip's chips reserve their ring at every state so selecting one does
+   * not reflow the row; only the color changes. */
+  borderWidth: {
+    variant: {
+      terminal: 1,
+    },
+  },
+  borderStyle: {
+    variant: {
+      terminal: "solid",
+    },
+  },
+  borderColor: {
+    variant: {
+      terminal: {
+        default: "transparent",
+        isSelected: "[var(--accent-primary-ring)]",
+      },
+    },
+  },
+  backgroundColor: {
+    variant: {
+      terminal: {
+        default: "transparent",
+        isHovered: "surface-hover",
+        isSelected: "[var(--surface-active)]",
+      },
+    },
+  },
   gap: {
     default: "text-to-visual",
     variant: {
@@ -464,6 +608,14 @@ const tab = style<TabsStyleState>({
   color: {
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("accent"),
+    /* The strip marks its active chip with a fill, so the ink stays neutral —
+     * accent ink on the accent-ringed fill would read as two selections. */
+    variant: {
+      terminal: {
+        default: "[var(--text-tertiary)]",
+        isSelected: "neutral",
+      },
+    },
     isDisabled: "disabled",
     forcedColors: {
       isSelected: "Highlight",
@@ -490,6 +642,8 @@ const tabText = style<TabsStyleState>({
   fontSize: {
     variant: {
       pill: "[10px]",
+      /* Command-strip chips label in mono 11.5 (`.tgl-tab`, glasselated.css). */
+      terminal: "[11.5px]",
     },
     orientation: {
       vertical: "[12px]",
@@ -498,6 +652,7 @@ const tabText = style<TabsStyleState>({
   fontWeight: {
     variant: {
       pill: "bold",
+      terminal: "semi-bold",
     },
     orientation: {
       vertical: "semi-bold",
@@ -724,8 +879,13 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     },
     showTabs,
     setShowTabs(value) {
-      // The pill bar IS the small-screen form — it never collapses into the menu.
-      setShowTabsSignal(orientation() === "vertical" || variant() === "pill" ? true : value);
+      // The pill bar IS the small-screen form, and the command strip is a fixed
+      // matte well — neither ever collapses into the overflow menu.
+      setShowTabsSignal(
+        orientation() === "vertical" || variant() === "pill" || variant() === "terminal"
+          ? true
+          : value,
+      );
     },
     menuId,
     menuButtonId,
@@ -751,7 +911,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
 
   requireTabsLabel(labelProps);
   createEffect(() => {
-    if (orientation() === "vertical" || variant() === "pill") {
+    if (orientation() === "vertical" || variant() === "pill" || variant() === "terminal") {
       setShowTabsSignal(true);
     }
   });
@@ -792,6 +952,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
     "UNSAFE_style",
     "class",
     "slot",
+    "trailing",
   ]);
   const className =
     (isHidden = false) =>
@@ -1000,7 +1161,11 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
         wrapperElement = element;
         setWrapperRef(element);
       }}
-      class={tabListWrapper}
+      class={tabListWrapper({
+        orientation: context.orientation,
+        density: context.density,
+        variant: context.variant,
+      })}
       data-tabs-overflow-owner={context.menuId}
     >
       <div class={hiddenTabListFrame} aria-hidden="true" inert>
@@ -1034,6 +1199,11 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
       >
         {local.children}
       </HeadlessTabList>
+      <Show when={local.trailing}>
+        <div class={tabListTrailing} data-rsp-slot="trailing">
+          {local.trailing}
+        </div>
+      </Show>
       <TabsMenu items={pickerItems()} disabledKeys={disabledKeys()} />
     </div>
   );
@@ -1163,7 +1333,13 @@ export function Tab(props: TabProps): JSX.Element {
 
     return (
       <>
-        <Show when={context.orientation !== "vertical" && context.variant !== "pill"}>
+        <Show
+          when={
+            context.orientation !== "vertical" &&
+            context.variant !== "pill" &&
+            context.variant !== "terminal"
+          }
+        >
           <SelectionIndicator
             class={tabIndicator({
               orientation: context.orientation,

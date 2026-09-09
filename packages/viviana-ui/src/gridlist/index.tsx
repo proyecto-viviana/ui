@@ -314,7 +314,10 @@ const listViewItem = style<ListViewRowLayerProps>({
   boxSizing: "border-box",
   columnGap: 0,
   paddingX: 0,
-  paddingY: 8,
+  /* Glasselated: the register's list rows are 9px/12px — tighter than S2's 8px
+   * with a 4px gutter, and the 12px inset is what lets the leading ">" mark sit
+   * clear of the row edge (glasselated.css `.tgl-row`). */
+  paddingY: "[9px]",
   backgroundColor: "transparent",
   color: {
     default: baseColor("neutral-subdued"),
@@ -343,12 +346,16 @@ const listViewItem = style<ListViewRowLayerProps>({
   gridColumnStart: 1,
   gridColumnEnd: -1,
   display: "grid",
+  /* `mark` is a Glasselated addition: a permanently reserved leading track for
+   * the row's ">" caret. It is reserved rather than inserted on selection so a
+   * row's content does not shift sideways when it becomes current. */
   gridTemplateAreas: [
-    ". dragbutton . checkmark icon label       actions actionmenu trailing-icon .",
-    ". .          . .         .    description actions actionmenu trailing-icon .",
+    ". mark dragbutton . checkmark icon label       actions actionmenu trailing-icon .",
+    ". .    .          . .         .    description actions actionmenu trailing-icon .",
   ],
   gridTemplateColumns: [
-    4,
+    12,
+    "auto",
     "auto",
     8,
     "auto",
@@ -357,7 +364,7 @@ const listViewItem = style<ListViewRowLayerProps>({
     "auto",
     "auto",
     "var(--trailing-icon-width)",
-    6,
+    12,
   ],
   gridTemplateRows: "1fr auto",
   rowGap: {
@@ -405,7 +412,8 @@ const listViewItem = style<ListViewRowLayerProps>({
   },
   "--radius": {
     type: "borderTopStartRadius",
-    value: "default",
+    /* 6px — the register's row radius, one step tighter than a card. */
+    value: "row",
   },
   forcedColorAdjust: "none",
 });
@@ -610,6 +618,44 @@ const listViewItemCell = style({
   display: "contents",
 });
 
+/* Glasselated: every list row leads with the register's mono ">" mark — invisible
+ * at rest, ghosted in on hover (0.55) and pinned solid on the selected row, sliding
+ * 3px into place (glasselated.css:441-462). Same affordance as the vertical Tabs
+ * rail caret, so the two read as one navigation vocabulary. */
+const listViewMark = style<GridListItemRenderProps>({
+  gridArea: "mark",
+  gridRowEnd: "span 2",
+  alignSelf: "center",
+  width: "[12px]",
+  marginEnd: "[4px]",
+  fontFamily: "code",
+  fontSize: "[12px]",
+  fontWeight: "semi-bold",
+  lineHeight: "[1.2]",
+  color: {
+    default: "[var(--accent-primary)]",
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  opacity: {
+    default: 0,
+    isHovered: 0.55,
+    isFocusVisible: 0.55,
+    isSelected: 1,
+  },
+  translateX: {
+    default: "[-3px]",
+    isHovered: 0,
+    isFocusVisible: 0,
+    isSelected: 0,
+  },
+  transition: "default",
+  transitionDuration: 130,
+});
+
 const listViewCheckbox = style<GridListItemRenderProps>({
   gridArea: "checkmark",
   gridRowEnd: "span 2",
@@ -705,6 +751,11 @@ const listViewLabel = style<GridListItemRenderProps & { overflowMode?: GridListO
   minWidth: 0,
   alignSelf: "center",
   font: controlFont(),
+  /* Glasselated row title: mono 12.5/600. `font` above still owns the ramp; these
+   * come after it so the shorthand cannot clobber them. */
+  fontFamily: "code",
+  fontSize: "[12.5px]",
+  fontWeight: "semi-bold",
   color: "inherit",
   overflow: "hidden",
   textOverflow: {
@@ -727,8 +778,11 @@ const listViewDescription = style<
   minWidth: 0,
   alignSelf: "center",
   font: "ui-sm",
+  /* Glasselated row meta: mono 11px in the terminal's dim ink. */
+  fontFamily: "code",
+  fontSize: "[11px]",
   color: {
-    default: baseColor("neutral-subdued"),
+    default: "[var(--terminal-dim)]",
     isDisabled: "disabled",
   },
   overflow: "hidden",
@@ -1287,6 +1341,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
                     excludeFromTabOrder
                   />
                 ) : null}
+                <span class={listViewMark(renderProps)} aria-hidden="true" data-rsp-slot="mark">
+                  {">"}
+                </span>
                 <div
                   class={listViewRowBackground(getRowLayerProps(renderProps))}
                   aria-hidden="true"

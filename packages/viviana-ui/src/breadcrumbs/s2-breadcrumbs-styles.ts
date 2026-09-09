@@ -89,10 +89,16 @@ export const breadcrumbStyles = style<{
    * dead geometry — it shapes the hover fill and the focus-ring corner. */
   borderRadius: "row",
   font: controlFont(),
+  /* Glasselated: breadcrumbs are the register's command-bar path — a cwd line, so
+   * mono 11.5 with the structure channel on the walkable segments and the plain
+   * primary ink on the leaf. `font` above still owns the ramp; these follow it so
+   * the shorthand cannot clobber them. */
+  fontFamily: "code",
+  fontSize: "[11.5px]",
   color: {
-    default: baseColor("neutral-subdued"),
+    default: "[var(--status-info)]",
     isDisabled: baseColor("neutral-subdued"),
-    isCurrent: baseColor("neutral"),
+    isCurrent: "neutral",
     forcedColors: {
       default: "LinkText",
       isDisabled: "GrayText",
@@ -122,11 +128,30 @@ export const breadcrumbStyles = style<{
 
 export const currentStyles = style<{ size: S2BreadcrumbsSize }>({
   font: controlFont(),
+  fontFamily: "code",
+  fontSize: "[11.5px]",
   fontWeight: "bold",
   color: {
     default: "neutral",
     forcedColors: "ButtonText",
   },
+});
+
+/* Glasselated: the path separator is a literal "/" in the muted ink, not a chevron —
+ * the register writes breadcrumbs as a shell path (`~/projects/viviana`). The
+ * overflow MENU keeps its chevron: that one is a disclosure affordance, not a
+ * separator. */
+export const separatorStyles = style({
+  fontFamily: "code",
+  fontSize: "[11.5px]",
+  lineHeight: "[1.2]",
+  alignSelf: "center",
+  flexShrink: 0,
+  color: {
+    default: "[var(--text-tertiary)]",
+    forcedColors: "GrayText",
+  },
+  userSelect: "none",
 });
 
 export const chevronStyles = style<{ direction?: "ltr" | "rtl"; isMenu?: boolean }>({

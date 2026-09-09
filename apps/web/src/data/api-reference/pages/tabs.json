@@ -42,11 +42,12 @@
           "name": "variant",
           "type": "TabsVariant",
           "values": [
+            "'terminal'",
             "'line'",
             "'pill'"
           ],
           "required": false,
-          "description": "Visual form of the tab strip. `line` is the default underlined strip; `pill` is the register's glass tab bar — stacked icon-over-label slots in a full-radius glass capsule. `pill` is horizontal-only and never collapses into the overflow picker.",
+          "description": "Visual form of the tab strip. `line` is the default underlined strip; `pill` is the register's glass tab bar — stacked icon-over-label slots in a full-radius glass capsule. `terminal` is the register's matte command strip — the whole row sits in a dithered well and the active tab is a filled chip. `pill` and `terminal` are horizontal-only and never collapse into the overflow picker. Local addition — no S2 counterpart. S2 Tabs ships the `line` form only; `pill` and `terminal` are Glasselated register forms.",
           "origin": "viviana-ui"
         },
         {
@@ -290,6 +291,13 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "trailing",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Content parked flush right inside the tab strip — the register's readout (a count, a status, a keyboard hint). Rendered as a sibling of the `role=\"tablist\"` element, never inside it, so it cannot violate `aria-required-children`. Decorative by default; give it its own accessible text if it carries meaning. Local addition — no S2 counterpart.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "styles",
           "type": "StyleString",
           "required": false,
@@ -529,6 +537,12 @@
     "TabsProps": [
       {
         "prop": "variant",
+        "kind": "only-here"
+      }
+    ],
+    "TabListProps": [
+      {
+        "prop": "trailing",
         "kind": "only-here"
       }
     ]

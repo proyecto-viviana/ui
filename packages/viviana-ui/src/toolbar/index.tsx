@@ -30,11 +30,29 @@ export type ToolbarProps = HeadlessToolbarProps;
 // controls stack with no rhythm. Layout only — flex along the toolbar axis
 // with a consistent gap; the controls keep their own paint. `alignSelf: start`
 // stops column-flex parents from stretching the row full-width.
+// Glasselated: the toolbar is the register's COMMAND STRIP — the same matte
+// treatment as terminal Tabs and the ActionBar: an opaque well under the
+// register's dither, hairline `--well-border`, control rim, 4px inset with 4px
+// between controls. The strip is what makes a run of ActionButtons read as one
+// instrument rather than as loose buttons.
 const toolbarStyles = style<{ orientation: "horizontal" | "vertical" }>({
   display: "flex",
   alignSelf: "start",
   justifySelf: "start",
-  gap: 8,
+  gap: "[4px]",
+  backgroundColor: "well",
+  backgroundImage: {
+    default: "[repeating-conic-gradient(var(--well-scan) 0% 25%, transparent 0% 50%)]",
+    forcedColors: "none",
+  },
+  backgroundSize: "[var(--dither-tile) var(--dither-tile)]",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "well-border",
+  borderRadius: "default",
+  boxShadow: "edge-glass",
+  padding: "[4px]",
+  boxSizing: "border-box",
   flexDirection: {
     orientation: {
       horizontal: "row",

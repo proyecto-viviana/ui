@@ -97,6 +97,23 @@ function Page() {
         </ListBox>
       </Demo>
 
+      <Demo label="ListView · selected row — the leading '>' mark ghosts in on hover and pins solid on the current row">
+        <ListView
+          aria-label="Lessons — selection"
+          items={LIST_ROWS}
+          isQuiet
+          selectionMode="single"
+          selectionStyle="highlight"
+          defaultSelectedKeys={["r2"]}
+        >
+          {(row) => (
+            <ListViewItem id={row.id} textValue={row.title} description={row.meta}>
+              <Text slot="label">{row.title}</Text>
+            </ListViewItem>
+          )}
+        </ListView>
+      </Demo>
+
       <Demo label="ListView · rows with description">
         <ListView aria-label="Lessons" items={LIST_ROWS} isQuiet>
           {(row) => (
@@ -194,7 +211,7 @@ function Page() {
         </ActionBarContainer>
       </Demo>
 
-      <Demo label="Toolbar">
+      <Demo label="Toolbar — the register's command strip: dithered matte well, 4px inset, controls keep their own paint">
         <Toolbar aria-label="Formatting tools">
           <ActionButton>Bold</ActionButton>
           <ActionButton>Italic</ActionButton>

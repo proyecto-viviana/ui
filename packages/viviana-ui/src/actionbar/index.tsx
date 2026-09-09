@@ -37,7 +37,7 @@ import {
 import { mergeProps, FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { controlSize, staticColor } from "../s2-internal/style-utils" with { type: "macro" };
 import { ActionButtonGroup } from "../actionbuttongroup";
@@ -72,20 +72,28 @@ const actionBarStyles = style<ActionBarAnimationState>({
   "--s2-container-bg": {
     type: "backgroundColor",
     value: {
-      default: "elevated",
+      default: "well",
       isEmphasized: "neutral",
     },
   },
   backgroundColor: "--s2-container-bg",
-  // Glasselated: frost the scene behind the surface — the container bg is the
-  // translucent `--surface-card`; the blur is what makes it read as glass.
-  backdropFilter: "var(--blur-card)",
-  boxShadow: "elevated",
+  // Glasselated: the action bar is a COMMAND STRIP, so it takes the matte
+  // treatment the terminal Tabs strip and the Toolbar take — an opaque well
+  // under the register's dither, hairline `--well-border`, control rim. It is
+  // explicitly NOT glass: the handoff's wells are "never glass", and a bar that
+  // frosts the selection it is acting on makes that selection unreadable.
+  backgroundImage: {
+    default: "[repeating-conic-gradient(var(--well-scan) 0% 25%, transparent 0% 50%)]",
+    isEmphasized: "none",
+    forcedColors: "none",
+  },
+  backgroundSize: "[var(--dither-tile) var(--dither-tile)]",
+  boxShadow: "edge-glass",
   boxSizing: "border-box",
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
+    default: "well-border",
     isEmphasized: "transparent",
     forcedColors: "ButtonBorder",
   },

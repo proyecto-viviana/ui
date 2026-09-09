@@ -118,14 +118,17 @@ const linkStyles = style<
     fontWeight: {
       isStandalone: "medium",
     },
+    /* Glasselated: a STANDALONE link is a piece of chrome — the register draws it
+     * bare and reveals the underline on hover/focus, the same reveal the nav rows
+     * use. An INLINE link keeps its underline at rest: inside running text the
+     * underline is the only non-colour cue that the run is a link, and dropping it
+     * would leave colour as the sole indicator (WCAG 1.4.1). */
     textDecoration: {
       default: "underline",
       isStandalone: {
-        isQuiet: {
-          default: "none",
-          isHovered: "underline",
-          isFocusVisible: "underline",
-        },
+        default: "none",
+        isHovered: "underline",
+        isFocusVisible: "underline",
       },
     },
     outlineColor: {

@@ -59,6 +59,7 @@ import { s2IntlStrings } from "../intl";
 import {
   breadcrumbStyles,
   chevronStyles,
+  separatorStyles,
   currentStyles,
   wrapperStyles,
   type S2BreadcrumbsSize,
@@ -788,7 +789,6 @@ function BreadcrumbMenu<T>(props: {
  */
 export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const context = useContext(InternalBreadcrumbsContext) ?? defaultInternalBreadcrumbsContext;
-  const locale = useLocale();
   const providerProps = useProviderProps(props) as BreadcrumbProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
@@ -872,7 +872,9 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
         children={renderChildren}
       />
       <Show when={context.showSeparator() && !isCurrent()}>
-        <ChevronIcon size="M" class={chevronStyles({ direction: locale().direction })} />
+        <span aria-hidden="true" data-rsp-slot="separator" class={separatorStyles}>
+          {"/"}
+        </span>
       </Show>
     </span>
   );
