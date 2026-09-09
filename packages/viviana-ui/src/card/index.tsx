@@ -48,6 +48,8 @@ import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
 import { color, focusRing, lightDark, space, style } from "../style" with { type: "macro" };
 import { meshStrip } from "../style/meshStrip";
+import { createMeshField } from "./mesh-field";
+import { css } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
@@ -152,6 +154,94 @@ type CardStyleState = Partial<GridListItemRenderProps | LinkRenderProps> & {
   isCardView?: boolean;
   isLink?: boolean;
 };
+
+/* Film grain, 180×180. The hover spotlight is seen through it, so the weave
+ * lights up as grains rather than as a clean radial wash. Verbatim from the
+ * handoff's `GRAIN` (glasselated.js). */
+const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'>" +
+    "<feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/>" +
+    "<feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.6 -0.3'/></filter>" +
+    "<rect width='100%' height='100%' filter='url(#n)' fill='#fff'/></svg>",
+)}")`;
+
+/* The mesh card's two signature layers, a port of the handoff's `.mesh-card`
+ * rules. They are `css()` and not `style()` because both are pseudo-elements
+ * with multi-layer masks and an animated registered property — none of which
+ * the style macro can express.
+ *   ::after  — the cursor spotlight: an accent pool plus a brighter copy of the
+ *              card's own weave (`--gl-weave`), masked by the film grain so the
+ *              light reads as pixels. `z-index: -1` keeps it under the content,
+ *              which is why the root needs `isolation: isolate`.
+ *   ::before — the border ring, a radial mask on the padding box whose diameter
+ *              (`--bd`) steps outward from the cursor on hover.
+ * Both hover rules exclude a card that contains a hovered card, so nesting one
+ * mesh card inside another lights only the innermost one. */
+const meshField = css(`
+  position: relative;
+  isolation: isolate;
+  --ring-c: color-mix(in srgb, var(--accent-primary) 70%, transparent);
+  --scan-c: var(--accent-primary);
+
+  &[data-mesh="signal"] {
+    --ring-c: color-mix(in srgb, var(--yellow-500) 70%, transparent);
+    --scan-c: var(--yellow-500);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    background:
+      radial-gradient(circle var(--spot-r, 160px) at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--scan-c) 22%, transparent), transparent 100%),
+      var(--gl-weave, none);
+    background-position: 0 0, var(--gl-pos, 0 0);
+    mask-image:
+      var(--gl-grain, linear-gradient(#000, #000)),
+      radial-gradient(circle var(--spot-m, 150px) at var(--mx, 50%) var(--my, 50%), #000, transparent);
+    mask-size: 180px 180px, 100% 100%;
+    mask-composite: intersect;
+  }
+
+  &:hover:not(:has([data-mesh]:hover))::after {
+    opacity: 1;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: calc(var(--ring-w, 1px) + 1px);
+    pointer-events: none;
+    background: var(--ring-c);
+    transition:
+      --bd 0.6s steps(10, end),
+      padding 0.15s ease;
+    mask:
+      radial-gradient(ellipse var(--bd) var(--bd) at var(--mx, 50%) var(--my, 50%), #000 0% 66%, rgba(0, 0, 0, 0.55) 66% 84%, rgba(0, 0, 0, 0.25) 84% 94%, transparent 94%),
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: intersect, exclude;
+  }
+
+  &:hover:not(:has([data-mesh]:hover))::before {
+    --bd: 175%;
+    --ring-w: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after,
+    &::before {
+      transition: none;
+    }
+  }
+`);
 
 const card = style<CardStyleState>(
   {
@@ -782,9 +872,15 @@ function cardClassName(
     variant: CardVariant;
     isCardView?: boolean;
     isLink?: boolean;
+    hasMesh?: boolean;
   },
 ): string {
-  return [local.UNSAFE_className, local.class, card(renderProps, local.styles)]
+  return [
+    renderProps.hasMesh === true ? meshField : undefined,
+    local.UNSAFE_className,
+    local.class,
+    card(renderProps, local.styles),
+  ]
     .filter(Boolean)
     .join(" ");
 }
@@ -884,12 +980,33 @@ export function Card(props: CardProps): JSX.Element {
     return `var(--lightningcss-light, ${light}) var(--lightningcss-dark, ${dark})`;
   });
   const meshVariant = () => (meshBackground() != null ? local.mesh : undefined);
+  /* The spotlight paints a brighter copy of the same weave, so it has to be the
+   * same seeded string boosted — a second, unrelated weave would shear against
+   * the resting one under the cursor. Both ride the space-toggle atoms, like
+   * meshBackground(), and both are deterministic so SSR and hydration agree. */
+  const meshSpotlight = createMemo(() => {
+    const mesh = meshVariant();
+    if (mesh == null) return undefined;
+    const options = { variant: mesh, seed: local.meshSeed, boost: 2.4 } as const;
+    const light = meshStrip({ dark: false, ...options });
+    const dark = meshStrip({ dark: true, ...options });
+    return `var(--lightningcss-light, ${light}) var(--lightningcss-dark, ${dark})`;
+  });
   const rootStyle = () => {
     const backgroundImage = meshBackground();
     return backgroundImage == null
       ? local.UNSAFE_style
-      : { "background-image": backgroundImage, ...local.UNSAFE_style };
+      : {
+          "background-image": backgroundImage,
+          "--gl-weave": meshSpotlight(),
+          "--gl-grain": GRAIN,
+          ...local.UNSAFE_style,
+        };
   };
+  createMeshField(
+    () => rootElement,
+    () => meshVariant() != null,
+  );
   const children = () => (
     <CardProviders size={size()} layout={layout} isSkeleton={isSkeleton}>
       {renderCardChildren(local.children, { size: size() })}
@@ -915,6 +1032,7 @@ export function Card(props: CardProps): JSX.Element {
             variant: variant(),
             isCardView: false,
             isLink: true,
+            hasMesh: meshVariant() != null,
           })
         }
         style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
@@ -952,6 +1070,7 @@ export function Card(props: CardProps): JSX.Element {
           density: density(),
           variant: variant(),
           isCardView: ElementType !== "div",
+          hasMesh: meshVariant() != null,
         })}
         style={rootStyle()}
         data-size={size()}
@@ -986,6 +1105,7 @@ export function Card(props: CardProps): JSX.Element {
           variant: variant(),
           isCardView: true,
           isLink: !!local.href,
+          hasMesh: meshVariant() != null,
         })
       }
       style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}

@@ -9,6 +9,9 @@ export interface MeshStripOptions {
   readonly dark?: boolean | undefined;
   readonly variant?: "ambient" | "signal" | undefined;
   readonly seed?: number | undefined;
+  /* Multiplies the stroke opacity. The hover spotlight paints a second, brighter
+   * copy of the same weave under the cursor pool; `2.4` is the handoff's value. */
+  readonly boost?: number | undefined;
 }
 
 /* Returns a `url("data:image/svg+xml,…")` string.
@@ -33,6 +36,8 @@ export function meshStrip(opts: MeshStripOptions = {}): string {
     baseOp = dark ? 0.045 : 0.09;
     mix = [dark ? "#36A8FF" : "#2E6FB8", dark ? "#D95FB0" : "#B80F7A"];
   }
+
+  if (opts.boost != null) baseOp *= opts.boost;
 
   let sd = seed >>> 0;
   const rnd = (): number => (sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296;
