@@ -59,13 +59,8 @@ function Page() {
       <Demo label="Card · mesh — the register trio: ambient/signal weaves behind the glass, console strips recessed on the inset surface">
         <Row>
           <Card id="mesh-sdf-raymarching" mesh="ambient" meshSeed={7}>
-            <CardPreview>
+            <CardPreview tag="SHADERS">
               <Image src="/glasselated/thumb-1.png" alt="" />
-              <div style={{ position: "absolute", top: "10px", left: "10px" }}>
-                <Badge variant="neutral" size="S">
-                  SHADERS
-                </Badge>
-              </div>
             </CardPreview>
             <Content>
               <Text slot="title">SDF Raymarching</Text>
@@ -284,6 +279,19 @@ function Page() {
             <Image src="/glasselated/thumb-1.png" alt="Thumbnail" width={120} height={80} />
             <Image src="/glasselated/avatar-2.png" alt="Avatar" width={80} height={80} />
           </ImageCoordinator>
+        </Row>
+      </Demo>
+
+      <Demo label="Image · isPixelated — nearest-neighbour scaling keeps a low-res thumb in blocks instead of blurring it">
+        <Row>
+          <Image src="/glasselated/thumb-1.png" alt="Smoothed" width={160} height={160} />
+          <Image
+            src="/glasselated/thumb-1.png"
+            alt="Pixelated"
+            width={160}
+            height={160}
+            isPixelated
+          />
         </Row>
       </Demo>
 

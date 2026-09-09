@@ -186,6 +186,23 @@ function Page() {
         </Well>
       </Demo>
 
+      <Demo label="Well · tone and size — `deep` is the darker plate the nav and tutor wells take; `S` is the 8px container inset for rows that carry their own padding">
+        <Flex direction="row" gap="md" wrap>
+          <Well style={{ "max-width": "18rem" }}>
+            <div class={typeRoles.terminal}>tone=&quot;well&quot; · size=&quot;M&quot;</div>
+            <div class={typeRoles.terminal} style={{ color: "var(--well-mid)" }}>
+              the reading plate: log and status content
+            </div>
+          </Well>
+          <Well tone="deep" size="S" style={{ "max-width": "18rem" }}>
+            <div class={typeRoles.terminal}>tone=&quot;deep&quot; · size=&quot;S&quot;</div>
+            <div class={typeRoles.terminal} style={{ color: "var(--well-mid)" }}>
+              the container plate: nav rows and the tutor prompt
+            </div>
+          </Well>
+        </Flex>
+      </Demo>
+
       <Demo label="Flex · gap sweep">
         <Flex direction="column" gap="md">
           <For each={FLEX_GAPS}>

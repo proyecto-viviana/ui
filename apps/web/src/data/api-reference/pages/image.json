@@ -101,6 +101,18 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "isPixelated",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Local addition — no S2 counterpart. Renders the bitmap with nearest-neighbour scaling (`image-rendering: pixelated`) instead of the browser's smoothing, so the register's low-resolution pixel thumbs stay crisp blocks when they are scaled up rather than turning into a blur. It is a rendering mode of the element, not a design token, so it has no place on the style ramp and is carried as a boolean here.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "styles",
           "type": "StyleString | (() => StyleString | undefined)",
           "required": false,
@@ -188,5 +200,12 @@
       ]
     }
   ],
-  "divergence": {}
+  "divergence": {
+    "ImageProps": [
+      {
+        "prop": "isPixelated",
+        "kind": "only-here"
+      }
+    ]
+  }
 }

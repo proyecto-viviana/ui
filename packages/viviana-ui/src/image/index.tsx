@@ -19,6 +19,7 @@ import {
 import { mergeProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
+import { css } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
@@ -61,6 +62,16 @@ export interface ImageProps {
   referrerPolicy?: JSX.ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
   width?: number;
   height?: number;
+  /**
+   * Local addition — no S2 counterpart. Renders the bitmap with nearest-neighbour
+   * scaling (`image-rendering: pixelated`) instead of the browser's smoothing, so
+   * the register's low-resolution pixel thumbs stay crisp blocks when they are
+   * scaled up rather than turning into a blur. It is a rendering mode of the
+   * element, not a design token, so it has no place on the style ramp and is
+   * carried as a boolean here.
+   * @default false
+   */
+  isPixelated?: boolean;
   styles?: StyleString | (() => StyleString | undefined);
   renderError?: () => JSX.Element;
   group?: ImageGroup;
@@ -129,6 +140,15 @@ const imageStyles = style({
   },
   transitionDuration: 500,
 });
+
+/* `image-rendering` has no property on the S2 style ramp (style/spectrum-theme.ts),
+ * and it is not a design decision that a token could carry — it is how the raster is
+ * resampled. The css() escape hatch is the sanctioned route for exactly this
+ * (docs/adr/0001-s2-styling-source-of-truth.md), and it still compiles into the
+ * package's shipped styles.css. */
+const pixelatedStyle = css(`
+  image-rendering: pixelated;
+`);
 
 const pictureStyles = style({
   objectFit: "inherit",
@@ -252,6 +272,7 @@ export function Image(props: ImageProps): JSX.Element {
     "referrerPolicy",
     "width",
     "height",
+    "isPixelated",
     "styles",
     "renderError",
     "group",
@@ -398,10 +419,15 @@ export function Image(props: ImageProps): JSX.Element {
       itemProp={local.itemProp}
       onLoad={handleLoad}
       onError={handleError}
-      class={imageStyles({
-        isRevealed: revealed(),
-        isTransitioning: transitioning(),
-      })}
+      class={[
+        imageStyles({
+          isRevealed: revealed(),
+          isTransitioning: transitioning(),
+        }),
+        local.isPixelated ? pixelatedStyle : undefined,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       {...({ fetchpriority: local.fetchPriority } as Record<string, string | undefined>)}
     />
   );

@@ -2,8 +2,28 @@ import { type JSX, splitProps } from "solid-js";
 import { style } from "../style" with { type: "macro" };
 import { wellScan } from "../s2-internal/style-utils" with { type: "macro" };
 
+export type WellTone = "well" | "deep";
+export type WellSize = "S" | "M";
+
 export interface WellProps extends JSX.HTMLAttributes<HTMLDivElement> {
   class?: string;
+  /**
+   * Local addition — no S2 counterpart (S2 retired Well). The plate's depth:
+   * `well` is the register's standard matte terminal plate, `deep` the darker
+   * `--surface-well-deep` the handoff spends on the containers that hold other
+   * controls — the nav well and the tutor prompt well (TerminalGlassLab.tsx §07).
+   * Both are matte; depth is the only axis, so a deep well is not a second look.
+   * @default 'well'
+   */
+  tone?: WellTone;
+  /**
+   * Local addition — no S2 counterpart. The plate's inset. `M` is the reading
+   * well the handoff draws at 14px/16px for log and status content; `S` is the
+   * 8px container inset used when the well is holding rows that carry their own
+   * padding, so the plate does not double it.
+   * @default 'M'
+   */
+  size?: WellSize;
 }
 
 // Well has no Spectrum 2 upstream (S2 retired it), so its look is composed from
@@ -27,9 +47,17 @@ export interface WellProps extends JSX.HTMLAttributes<HTMLDivElement> {
 // because it composes its look from tokens directly and never routes through
 // `control()`. `lg` is already the handoff's 10px well corner, so the radius needed
 // no change; only the two grays did.
-const wellStyles = style({
+const wellStyles = style<{ tone: WellTone; size: WellSize }>({
   display: "block",
-  backgroundColor: "well",
+  /* `well-tutor` is the theme name for `--surface-well-tutor`, which
+   * viviana-tokens.css aliases onto `--surface-well-deep` — the depth, not a
+   * second surface family. */
+  backgroundColor: {
+    default: "well",
+    tone: {
+      deep: "well-tutor",
+    },
+  },
   ...wellScan(),
   borderWidth: 1,
   borderStyle: "solid",
@@ -38,7 +66,16 @@ const wellStyles = style({
    * thumbs. `lg` used to be 10px and read as the well corner; it is now the 12px card
    * corner, a step too round for a terminal plate. */
   borderRadius: "default",
-  padding: 16,
+  /* 14px is the drawn log/status inset (TerminalGlassLab.tsx §07); 16 is the
+   * nearest ramp step and was already this component's padding, so `M` keeps it
+   * rather than dropping to an arbitrary value for 2px. `S` is the 8px container
+   * inset the nav well takes. */
+  padding: {
+    default: 16,
+    size: {
+      S: 8,
+    },
+  },
 });
 
 /**
@@ -46,9 +83,10 @@ const wellStyles = style({
  * emphasized region — for example a code sample or a callout block.
  */
 export function Well(props: WellProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "children", "tone", "size"]);
+  const wellClass = () => wellStyles({ tone: local.tone ?? "well", size: local.size ?? "M" });
   return (
-    <div {...domProps} class={[wellStyles, local.class].filter(Boolean).join(" ")}>
+    <div {...domProps} class={[wellClass(), local.class].filter(Boolean).join(" ")}>
       {local.children}
     </div>
   );

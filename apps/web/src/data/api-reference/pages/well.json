@@ -15,6 +15,30 @@
           "required": false,
           "description": "",
           "origin": "viviana-ui"
+        },
+        {
+          "name": "tone",
+          "type": "WellTone",
+          "values": [
+            "'well'",
+            "'deep'"
+          ],
+          "required": false,
+          "default": "'well'",
+          "description": "Local addition — no S2 counterpart (S2 retired Well). The plate's depth: `well` is the register's standard matte terminal plate, `deep` the darker `--surface-well-deep` the handoff spends on the containers that hold other controls — the nav well and the tutor prompt well (TerminalGlassLab.tsx §07). Both are matte; depth is the only axis, so a deep well is not a second look.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "WellSize",
+          "values": [
+            "'S'",
+            "'M'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "Local addition — no S2 counterpart. The plate's inset. `M` is the reading well the handoff draws at 14px/16px for log and status content; `S` is the 8px container inset used when the well is holding rows that carry their own padding, so the plate does not double it.",
+          "origin": "viviana-ui"
         }
       ]
     }

@@ -208,6 +208,13 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "tag",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Local addition — no S2 counterpart. A corner tag pinned over the top-start of the media, drawn on the register's glass scrim: the media card's category stamp (TerminalGlassLab.tsx, §06). It cannot be a plain child because the preview clips its content to the card radius and the tag has to float above that clip; and it cannot be a context-styled `Badge`, because `getAllowedOverrides()` admits only positioning properties, so the scrim fill could not ride a `styles` override.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "styles",
           "type": "StyleString",
           "required": false,
@@ -273,6 +280,10 @@
     "CardPreviewProps": [
       {
         "prop": "background",
+        "kind": "only-here"
+      },
+      {
+        "prop": "tag",
         "kind": "only-here"
       }
     ]

@@ -19,6 +19,7 @@
 import {
   type Accessor,
   type JSX,
+  Show,
   createContext,
   createMemo,
   splitProps,
@@ -118,6 +119,16 @@ export interface CardPreviewProps extends JSX.HTMLAttributes<HTMLDivElement> {
    * full-bleed header bar reads sunk into the card rather than flush with it.
    */
   background?: "inset";
+  /**
+   * Local addition — no S2 counterpart. A corner tag pinned over the top-start of
+   * the media, drawn on the register's glass scrim: the media card's category
+   * stamp (TerminalGlassLab.tsx, §06). It cannot be a plain child because the
+   * preview clips its content to the card radius and the tag has to float above
+   * that clip; and it cannot be a context-styled `Badge`, because
+   * `getAllowedOverrides()` admits only positioning properties, so the scrim fill
+   * could not ride a `styles` override.
+   */
+  tag?: JSX.Element;
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
@@ -153,6 +164,10 @@ type CardStyleState = Partial<GridListItemRenderProps | LinkRenderProps> & {
   variant: CardVariant;
   isCardView?: boolean;
   isLink?: boolean;
+  /* The weave variant, so the signal card can take its own edge. Only the paint
+   * layers read `data-mesh`; the border is a real declared property, so it has to
+   * come through the style call rather than off the attribute. */
+  mesh?: CardMeshVariant;
 };
 
 /* Film grain, 180×180. The hover spotlight is seen through it, so the weave
@@ -289,6 +304,15 @@ const card = style<CardStyleState>(
     borderWidth: 1,
     borderColor: {
       default: "border-subtle",
+      /* The signal card is the register's one "look here" surface: the yellow detail
+       * weave behind the glass, and the edge tinted to match it so the card reads as a
+       * single yellow object rather than a neutral card with a yellow interior
+       * (TerminalGlassLab.tsx:248, the `ring-signal` card in §06). `detail-soft` is the
+       * 14%-alpha yellow the handoff draws — a tint of the edge, not a second border
+       * weight. Yellow, never fuchsia: fuchsia is reserved for the filled ask. */
+      mesh: {
+        signal: "detail-soft",
+      },
       variant: {
         tertiary: "transparent",
         quiet: "transparent",
@@ -606,6 +630,31 @@ const previewClip = style({
   overflow: "clip",
 });
 
+/* The media card's corner stamp. Pinned 10px in from the top-start corner over a
+ * blurred black scrim so it stays legible on any cover art, in the same micro-mono
+ * track the badge takes (`badge/index.tsx`): the theme's tracking scale stops at
+ * 0.1em, which is the rung it declares for this mono micro role, so the tag takes it
+ * rather than minting a rung for the drawn 0.12em. White ink on
+ * `transparent-black-700` (rgba(0,0,0,.69)) clears AA on any underlying image and
+ * does not flip by scheme — the scrim, not the page, is the ground. */
+const previewTag = style({
+  position: "absolute",
+  top: "[10px]",
+  insetStart: "[10px]",
+  zIndex: 1,
+  fontFamily: "code",
+  fontSize: "ui-xs",
+  fontWeight: "bold",
+  letterSpacing: "0.1em",
+  color: "white",
+  backgroundColor: "transparent-black-700",
+  backdropFilter: "blur(6px)",
+  borderRadius: "control",
+  paddingX: "[8px]",
+  paddingY: "[3px]",
+  pointerEvents: "none",
+});
+
 const collection = style({
   display: "grid",
   gridTemplateColumns: "repeat(3, 1fr)",
@@ -632,14 +681,14 @@ const collectionImage = style({
   userSelect: "none",
 });
 
+/* The register draws the asset card as a media card: a fixed 110px cover band with
+ * the art cropped to fill it (TerminalGlassLab.tsx, §06), not S2's square
+ * letterboxed thumbnail. The height is the same in both card-view layouts because
+ * the band is a property of the card, not of the layout that packs it. */
 const assetImage = style({
   width: "full",
-  aspectRatio: {
-    layout: {
-      grid: "square",
-    },
-  },
-  objectFit: "contain",
+  height: "[110px]",
+  objectFit: "cover",
   pointerEvents: "none",
   userSelect: "none",
 });
@@ -649,7 +698,7 @@ const assetIllustrationWrapper = style({
   alignItems: "center",
   justifyContent: "center",
   backgroundColor: "gray-100",
-  aspectRatio: "square",
+  height: "[110px]",
 });
 
 const assetIllustration = style({
@@ -872,6 +921,7 @@ function cardClassName(
     variant: CardVariant;
     isCardView?: boolean;
     isLink?: boolean;
+    mesh?: CardMeshVariant;
     hasMesh?: boolean;
   },
 ): string {
@@ -1032,6 +1082,7 @@ export function Card(props: CardProps): JSX.Element {
             variant: variant(),
             isCardView: false,
             isLink: true,
+            mesh: meshVariant(),
             hasMesh: meshVariant() != null,
           })
         }
@@ -1070,6 +1121,7 @@ export function Card(props: CardProps): JSX.Element {
           density: density(),
           variant: variant(),
           isCardView: ElementType !== "div",
+          mesh: meshVariant(),
           hasMesh: meshVariant() != null,
         })}
         style={rootStyle()}
@@ -1105,6 +1157,7 @@ export function Card(props: CardProps): JSX.Element {
           variant: variant(),
           isCardView: true,
           isLink: !!local.href,
+          mesh: meshVariant(),
           hasMesh: meshVariant() != null,
         })
       }
@@ -1146,6 +1199,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
   const [local, domProps] = splitProps(props, [
     "children",
     "background",
+    "tag",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -1189,6 +1243,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
     >
       {context.isQuiet && <SelectionIndicator />}
       {context.isQuiet && context.isCheckboxSelection && <CardCheckbox />}
+      <Show when={local.tag}>{(tag) => <div class={previewTag}>{tag()}</div>}</Show>
       <div class={previewClip}>
         {isAssetPreview ? (
           <IconContext.Provider
@@ -1228,11 +1283,14 @@ export function CollectionCardPreview(props: CardPreviewProps): JSX.Element {
 }
 
 export function AssetCard(props: AssetCardProps): JSX.Element {
-  const { layout } = useContext(InternalCardViewContext);
   return (
     <Card {...props} density="regular">
       {(renderProps) => (
-        <ImageContext.Provider value={{ alt: "", styles: assetImage({ layout }) }}>
+        /* `assetImage` no longer takes a `layout` condition — the register's cover band
+           is one height in both card-view layouts — so the macro bakes it to a class
+           string rather than a selector function, and calling it would throw. Same trap
+           `collectionImage` documents a few components up. */
+        <ImageContext.Provider value={{ alt: "", styles: assetImage }}>
           <IllustrationContext.Provider
             value={{
               render: (icon) => (
