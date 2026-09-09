@@ -4,7 +4,7 @@
 // should live outside the main S2 export path.
 
 // Provider
-export { ColorSchemeContext, Provider, useTheme } from "./provider";
+export { ColorSchemeContext, createThemeTransition, Provider, useTheme } from "./provider";
 export type {
   ColorScheme,
   ProviderContextValue,
@@ -12,6 +12,7 @@ export type {
   ProviderProps,
   Scale,
   ThemeContextValue,
+  ThemeTransitionOptions,
   ValidationState,
 } from "./provider";
 

@@ -300,3 +300,6 @@ export function Provider(props: ProviderProps): JSX.Element {
     </ProviderContext.Provider>
   );
 }
+
+export { createThemeTransition } from "./theme-transition";
+export type { ThemeTransitionOptions } from "./theme-transition";

@@ -90,6 +90,7 @@
       "ContrastIcon",
       "createIcon",
       "createIllustration",
+      "createThemeTransition",
       "CustomDialog",
       "DateField",
       "DateFieldContext",
