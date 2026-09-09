@@ -450,3 +450,104 @@
   height: 12px;
   min-width: 0;
 }
+
+/* ── ex: theater ───────────────────────────────────────────────────────── */
+
+/* The picture fills the canvas and every control floats over it, so the screen
+   is two stacked planes: the framed still underneath, the chrome above it. */
+[data-examples] .ex-theater {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+[data-examples] .ex-theater-stage {
+  position: absolute;
+  inset: 0;
+}
+
+[data-examples] .ex-theater-frame,
+[data-examples] .ex-theater-image {
+  width: 100%;
+  height: 100%;
+}
+
+/* Top strip, then the body (readouts and caption left, drawer right), then the
+   player chrome — all of it above the picture. */
+[data-examples] .ex-theater-plane {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 12px;
+  height: 100%;
+  min-height: 100%;
+  padding: 12px;
+}
+
+[data-examples] .ex-theater-topbar {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* The readouts sit at the top of the left column and the caption at its foot,
+   with the picture showing between them. */
+[data-examples] .ex-theater-readout {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  justify-self: start;
+  max-width: 260px;
+}
+
+[data-examples] .ex-theater-caption {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: end;
+  max-width: 640px;
+}
+
+[data-examples] .ex-theater-drawer {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-examples] .ex-theater-drawer-body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-height: 0;
+  height: 100%;
+}
+
+[data-examples] .ex-theater-panels {
+  overflow: auto;
+  min-height: 0;
+  max-height: 100%;
+}
+
+[data-examples] .ex-theater-ask {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-examples] .ex-theater-chrome {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+[data-examples] .ex-theater-track {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-examples] .ex-theater-spacer {
+  flex: 1 1 auto;
+}
