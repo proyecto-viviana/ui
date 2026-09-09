@@ -24,11 +24,12 @@ const GEN = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", 
  * shape fails loudly instead of quietly sweeping an empty list and reporting
  * green — the failure mode this whole spec is here to prevent. Raised from 60
  * to 140 when the generated `/docs` reference added 82 routes; raised to 155
- * when `/viviana-ui/docs` added 6 unique paths (parsed 154 → 160). The gap is
- * headroom for pages being removed one at a time, not for the parser silently
- * returning a fraction of the tree.
+ * when `/viviana-ui/docs` added 6 unique paths (parsed 154 → 160); raised to
+ * 169 when `/examples` added 11 (parsed 174). The gap is headroom for pages
+ * being removed one at a time, not for the parser silently returning a
+ * fraction of the tree.
  */
-export const MINIMUM_EXPECTED_ROUTES = 155;
+export const MINIMUM_EXPECTED_ROUTES = 169;
 
 export function parseRoutes(): string[] {
   const source = readFileSync(GEN, "utf8");

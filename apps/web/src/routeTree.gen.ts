@@ -12,11 +12,23 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DocsRouteRouteImport } from './routes/docs/route'
+import { Route as ExamplesRouteRouteImport } from './routes/examples/route'
 import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
 import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
 import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as VivianaUiRouteRouteImport } from './routes/viviana-ui/route'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as ExamplesIndexRouteImport } from './routes/examples/index'
+import { Route as ExamplesExploreRouteImport } from './routes/examples/explore'
+import { Route as ExamplesExploreEmptyRouteImport } from './routes/examples/explore-empty'
+import { Route as ExamplesHomeRouteImport } from './routes/examples/home'
+import { Route as ExamplesLandingRouteImport } from './routes/examples/landing'
+import { Route as ExamplesLessonRouteImport } from './routes/examples/lesson'
+import { Route as ExamplesLiveRouteImport } from './routes/examples/live'
+import { Route as ExamplesPlaygroundRouteImport } from './routes/examples/playground'
+import { Route as ExamplesProfileRouteImport } from './routes/examples/profile'
+import { Route as ExamplesSettingsRouteImport } from './routes/examples/settings'
+import { Route as ExamplesTheaterRouteImport } from './routes/examples/theater'
 import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
 import { Route as ShowcaseButtonsRouteImport } from './routes/showcase/buttons'
 import { Route as ShowcaseCardsRouteImport } from './routes/showcase/cards'
@@ -194,6 +206,11 @@ const DocsRouteRoute = DocsRouteRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamplesRouteRoute = ExamplesRouteRouteImport.update({
+  id: '/examples',
+  path: '/examples',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
   id: '/showcase',
   path: '/showcase',
@@ -218,6 +235,61 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DocsRouteRoute,
+} as any)
+const ExamplesIndexRoute = ExamplesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesExploreRoute = ExamplesExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesExploreEmptyRoute = ExamplesExploreEmptyRouteImport.update({
+  id: '/explore-empty',
+  path: '/explore-empty',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesHomeRoute = ExamplesHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesLandingRoute = ExamplesLandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesLessonRoute = ExamplesLessonRouteImport.update({
+  id: '/lesson',
+  path: '/lesson',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesLiveRoute = ExamplesLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesPlaygroundRoute = ExamplesPlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesProfileRoute = ExamplesProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesSettingsRoute = ExamplesSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ExamplesRouteRoute,
+} as any)
+const ExamplesTheaterRoute = ExamplesTheaterRouteImport.update({
+  id: '/theater',
+  path: '/theater',
+  getParentRoute: () => ExamplesRouteRoute,
 } as any)
 const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
   id: '/',
@@ -1114,6 +1186,7 @@ const VivianaUiDocsHooksCreatePressRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/docs': typeof DocsRouteRouteWithChildren
+  '/examples': typeof ExamplesRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/viviana-ui': typeof VivianaUiRouteRouteWithChildren
@@ -1121,6 +1194,16 @@ export interface FileRoutesByFullPath {
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/viviana-ui/docs': typeof VivianaUiDocsRouteRouteWithChildren
+  '/examples/explore': typeof ExamplesExploreRoute
+  '/examples/explore-empty': typeof ExamplesExploreEmptyRoute
+  '/examples/home': typeof ExamplesHomeRoute
+  '/examples/landing': typeof ExamplesLandingRoute
+  '/examples/lesson': typeof ExamplesLessonRoute
+  '/examples/live': typeof ExamplesLiveRoute
+  '/examples/playground': typeof ExamplesPlaygroundRoute
+  '/examples/profile': typeof ExamplesProfileRoute
+  '/examples/settings': typeof ExamplesSettingsRoute
+  '/examples/theater': typeof ExamplesTheaterRoute
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
   '/showcase/chips': typeof ShowcaseChipsRoute
@@ -1140,6 +1223,7 @@ export interface FileRoutesByFullPath {
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
   '/docs/': typeof DocsIndexRoute
+  '/examples/': typeof ExamplesIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
   '/viviana-ui/': typeof VivianaUiIndexRoute
@@ -1286,6 +1370,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/theme': typeof ThemeRoute
+  '/examples/explore': typeof ExamplesExploreRoute
+  '/examples/explore-empty': typeof ExamplesExploreEmptyRoute
+  '/examples/home': typeof ExamplesHomeRoute
+  '/examples/landing': typeof ExamplesLandingRoute
+  '/examples/lesson': typeof ExamplesLessonRoute
+  '/examples/live': typeof ExamplesLiveRoute
+  '/examples/playground': typeof ExamplesPlaygroundRoute
+  '/examples/profile': typeof ExamplesProfileRoute
+  '/examples/settings': typeof ExamplesSettingsRoute
+  '/examples/theater': typeof ExamplesTheaterRoute
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
   '/showcase/chips': typeof ShowcaseChipsRoute
@@ -1305,6 +1399,7 @@ export interface FileRoutesByTo {
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
   '/docs': typeof DocsIndexRoute
+  '/examples': typeof ExamplesIndexRoute
   '/showcase': typeof ShowcaseIndexRoute
   '/solid-spectrum': typeof SolidSpectrumIndexRoute
   '/viviana-ui': typeof VivianaUiIndexRoute
@@ -1451,6 +1546,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/docs': typeof DocsRouteRouteWithChildren
+  '/examples': typeof ExamplesRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/viviana-ui': typeof VivianaUiRouteRouteWithChildren
@@ -1458,6 +1554,16 @@ export interface FileRoutesById {
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/viviana-ui/docs': typeof VivianaUiDocsRouteRouteWithChildren
+  '/examples/explore': typeof ExamplesExploreRoute
+  '/examples/explore-empty': typeof ExamplesExploreEmptyRoute
+  '/examples/home': typeof ExamplesHomeRoute
+  '/examples/landing': typeof ExamplesLandingRoute
+  '/examples/lesson': typeof ExamplesLessonRoute
+  '/examples/live': typeof ExamplesLiveRoute
+  '/examples/playground': typeof ExamplesPlaygroundRoute
+  '/examples/profile': typeof ExamplesProfileRoute
+  '/examples/settings': typeof ExamplesSettingsRoute
+  '/examples/theater': typeof ExamplesTheaterRoute
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
   '/showcase/chips': typeof ShowcaseChipsRoute
@@ -1477,6 +1583,7 @@ export interface FileRoutesById {
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
   '/docs/': typeof DocsIndexRoute
+  '/examples/': typeof ExamplesIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
   '/viviana-ui/': typeof VivianaUiIndexRoute
@@ -1624,6 +1731,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/docs'
+    | '/examples'
     | '/showcase'
     | '/solid-spectrum'
     | '/viviana-ui'
@@ -1631,6 +1739,16 @@ export interface FileRouteTypes {
     | '/theme'
     | '/solid-spectrum/docs'
     | '/viviana-ui/docs'
+    | '/examples/explore'
+    | '/examples/explore-empty'
+    | '/examples/home'
+    | '/examples/landing'
+    | '/examples/lesson'
+    | '/examples/live'
+    | '/examples/playground'
+    | '/examples/profile'
+    | '/examples/settings'
+    | '/examples/theater'
     | '/showcase/buttons'
     | '/showcase/cards'
     | '/showcase/chips'
@@ -1650,6 +1768,7 @@ export interface FileRouteTypes {
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
     | '/docs/'
+    | '/examples/'
     | '/showcase/'
     | '/solid-spectrum/'
     | '/viviana-ui/'
@@ -1796,6 +1915,16 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/theme'
+    | '/examples/explore'
+    | '/examples/explore-empty'
+    | '/examples/home'
+    | '/examples/landing'
+    | '/examples/lesson'
+    | '/examples/live'
+    | '/examples/playground'
+    | '/examples/profile'
+    | '/examples/settings'
+    | '/examples/theater'
     | '/showcase/buttons'
     | '/showcase/cards'
     | '/showcase/chips'
@@ -1815,6 +1944,7 @@ export interface FileRouteTypes {
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
     | '/docs'
+    | '/examples'
     | '/showcase'
     | '/solid-spectrum'
     | '/viviana-ui'
@@ -1960,6 +2090,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/docs'
+    | '/examples'
     | '/showcase'
     | '/solid-spectrum'
     | '/viviana-ui'
@@ -1967,6 +2098,16 @@ export interface FileRouteTypes {
     | '/theme'
     | '/solid-spectrum/docs'
     | '/viviana-ui/docs'
+    | '/examples/explore'
+    | '/examples/explore-empty'
+    | '/examples/home'
+    | '/examples/landing'
+    | '/examples/lesson'
+    | '/examples/live'
+    | '/examples/playground'
+    | '/examples/profile'
+    | '/examples/settings'
+    | '/examples/theater'
     | '/showcase/buttons'
     | '/showcase/cards'
     | '/showcase/chips'
@@ -1986,6 +2127,7 @@ export interface FileRouteTypes {
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
     | '/docs/'
+    | '/examples/'
     | '/showcase/'
     | '/solid-spectrum/'
     | '/viviana-ui/'
@@ -2132,6 +2274,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DocsRouteRoute: typeof DocsRouteRouteWithChildren
+  ExamplesRouteRoute: typeof ExamplesRouteRouteWithChildren
   ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
   SolidSpectrumRouteRoute: typeof SolidSpectrumRouteRouteWithChildren
   VivianaUiRouteRoute: typeof VivianaUiRouteRouteWithChildren
@@ -2160,6 +2303,13 @@ declare module '@tanstack/solid-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/examples': {
+      id: '/examples'
+      path: '/examples'
+      fullPath: '/examples'
+      preLoaderRoute: typeof ExamplesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/showcase': {
@@ -2196,6 +2346,83 @@ declare module '@tanstack/solid-router' {
       fullPath: '/docs/'
       preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof DocsRouteRoute
+    }
+    '/examples/': {
+      id: '/examples/'
+      path: '/'
+      fullPath: '/examples/'
+      preLoaderRoute: typeof ExamplesIndexRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/explore': {
+      id: '/examples/explore'
+      path: '/explore'
+      fullPath: '/examples/explore'
+      preLoaderRoute: typeof ExamplesExploreRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/explore-empty': {
+      id: '/examples/explore-empty'
+      path: '/explore-empty'
+      fullPath: '/examples/explore-empty'
+      preLoaderRoute: typeof ExamplesExploreEmptyRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/home': {
+      id: '/examples/home'
+      path: '/home'
+      fullPath: '/examples/home'
+      preLoaderRoute: typeof ExamplesHomeRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/landing': {
+      id: '/examples/landing'
+      path: '/landing'
+      fullPath: '/examples/landing'
+      preLoaderRoute: typeof ExamplesLandingRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/lesson': {
+      id: '/examples/lesson'
+      path: '/lesson'
+      fullPath: '/examples/lesson'
+      preLoaderRoute: typeof ExamplesLessonRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/live': {
+      id: '/examples/live'
+      path: '/live'
+      fullPath: '/examples/live'
+      preLoaderRoute: typeof ExamplesLiveRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/playground': {
+      id: '/examples/playground'
+      path: '/playground'
+      fullPath: '/examples/playground'
+      preLoaderRoute: typeof ExamplesPlaygroundRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/profile': {
+      id: '/examples/profile'
+      path: '/profile'
+      fullPath: '/examples/profile'
+      preLoaderRoute: typeof ExamplesProfileRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/settings': {
+      id: '/examples/settings'
+      path: '/settings'
+      fullPath: '/examples/settings'
+      preLoaderRoute: typeof ExamplesSettingsRouteImport
+      parentRoute: typeof ExamplesRouteRoute
+    }
+    '/examples/theater': {
+      id: '/examples/theater'
+      path: '/theater'
+      fullPath: '/examples/theater'
+      preLoaderRoute: typeof ExamplesTheaterRouteImport
+      parentRoute: typeof ExamplesRouteRoute
     }
     '/showcase/': {
       id: '/showcase/'
@@ -3507,6 +3734,38 @@ const DocsRouteRouteWithChildren = DocsRouteRoute._addFileChildren(
   DocsRouteRouteChildren,
 )
 
+interface ExamplesRouteRouteChildren {
+  ExamplesExploreRoute: typeof ExamplesExploreRoute
+  ExamplesExploreEmptyRoute: typeof ExamplesExploreEmptyRoute
+  ExamplesHomeRoute: typeof ExamplesHomeRoute
+  ExamplesLandingRoute: typeof ExamplesLandingRoute
+  ExamplesLessonRoute: typeof ExamplesLessonRoute
+  ExamplesLiveRoute: typeof ExamplesLiveRoute
+  ExamplesPlaygroundRoute: typeof ExamplesPlaygroundRoute
+  ExamplesProfileRoute: typeof ExamplesProfileRoute
+  ExamplesSettingsRoute: typeof ExamplesSettingsRoute
+  ExamplesTheaterRoute: typeof ExamplesTheaterRoute
+  ExamplesIndexRoute: typeof ExamplesIndexRoute
+}
+
+const ExamplesRouteRouteChildren: ExamplesRouteRouteChildren = {
+  ExamplesExploreRoute: ExamplesExploreRoute,
+  ExamplesExploreEmptyRoute: ExamplesExploreEmptyRoute,
+  ExamplesHomeRoute: ExamplesHomeRoute,
+  ExamplesLandingRoute: ExamplesLandingRoute,
+  ExamplesLessonRoute: ExamplesLessonRoute,
+  ExamplesLiveRoute: ExamplesLiveRoute,
+  ExamplesPlaygroundRoute: ExamplesPlaygroundRoute,
+  ExamplesProfileRoute: ExamplesProfileRoute,
+  ExamplesSettingsRoute: ExamplesSettingsRoute,
+  ExamplesTheaterRoute: ExamplesTheaterRoute,
+  ExamplesIndexRoute: ExamplesIndexRoute,
+}
+
+const ExamplesRouteRouteWithChildren = ExamplesRouteRoute._addFileChildren(
+  ExamplesRouteRouteChildren,
+)
+
 interface ShowcaseRouteRouteChildren {
   ShowcaseButtonsRoute: typeof ShowcaseButtonsRoute
   ShowcaseCardsRoute: typeof ShowcaseCardsRoute
@@ -3757,6 +4016,7 @@ const VivianaUiRouteRouteWithChildren = VivianaUiRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DocsRouteRoute: DocsRouteRouteWithChildren,
+  ExamplesRouteRoute: ExamplesRouteRouteWithChildren,
   ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
   SolidSpectrumRouteRoute: SolidSpectrumRouteRouteWithChildren,
   VivianaUiRouteRoute: VivianaUiRouteRouteWithChildren,

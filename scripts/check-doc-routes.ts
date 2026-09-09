@@ -5,7 +5,9 @@
  * the moment someone adds a page without rebuilding — the file exists, the page
  * 404s, and nothing else notices. Two docs trees now feed it: the hand-authored
  * solid-spectrum tree and the generated `/docs` reference, whose 82 route files
- * are written by `vp run api:extract`.
+ * are written by `vp run api:extract`. The `/examples` screens ride the same
+ * check: they are hand-authored, one file per product screen, and stale exactly
+ * the same way.
  */
 import { readdir, readFile } from "node:fs/promises";
 
@@ -21,7 +23,15 @@ const trees = [
     segment: "hooks",
   },
   { basePath: "/docs", dir: "apps/web/src/routes/docs/components", segment: "components" },
+  /* The examples screens sit directly under the base path, so there is no
+     intermediate segment to join. */
+  { basePath: "/examples", dir: "apps/web/src/routes/examples", segment: "" },
 ];
+
+/* Layout and index files are not pages: `route.tsx` is the layout wrapper and
+   `index.tsx` is the base path itself, neither of which is a `<base>/<slug>`
+   entry in the route tree. */
+const NON_PAGE_ROUTES = new Set(["route", "index"]);
 
 const routeTreeFile = "apps/web/src/routeTree.gen.ts";
 
@@ -30,13 +40,15 @@ async function listRouteSlugs(dir: string): Promise<string[]> {
   return entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".tsx"))
     .map((entry) => entry.name.replace(".tsx", ""))
+    .filter((slug) => !NON_PAGE_ROUTES.has(slug))
     .sort();
 }
 
 const expectedPaths: string[] = [];
 for (const tree of trees) {
   const slugs = await listRouteSlugs(tree.dir);
-  expectedPaths.push(...slugs.map((slug) => `${tree.basePath}/${tree.segment}/${slug}`));
+  const prefix = tree.segment === "" ? tree.basePath : `${tree.basePath}/${tree.segment}`;
+  expectedPaths.push(...slugs.map((slug) => `${prefix}/${slug}`));
 }
 
 const routeTree = await readFile(routeTreeFile, "utf8");

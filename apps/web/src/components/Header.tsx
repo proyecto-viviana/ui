@@ -174,6 +174,9 @@ export function Header() {
           <NavLink href="/solid-spectrum/docs" isActive={isActive("/solid-spectrum")}>
             solid-spectrum
           </NavLink>
+          <NavLink href="/examples" isActive={isActive("/examples")}>
+            ≡ Examples
+          </NavLink>
           <NavLink href="/theme" isActive={isActive("/theme")}>
             Theme
           </NavLink>

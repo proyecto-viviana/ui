@@ -45,6 +45,10 @@ export function ShowcaseTopbar(): JSX.Element {
         <Link to={"/showcase/parity" as "/showcase"} class="gls-navlink">
           ≡≡ Parity
         </Link>
+        {/* Not a panel either — the ten whole product screens at /examples. */}
+        <Link to="/examples" class="gls-navlink">
+          ≡ Examples
+        </Link>
       </nav>
       {/* Narrow-width equivalent of the tab strip above — same order, one control. */}
       <select
