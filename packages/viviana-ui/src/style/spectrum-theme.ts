@@ -98,20 +98,26 @@ type ColorScale =
   | "informative"
   | "negative"
   | "notice"
-  | "positive"
-  // Brand ramps published under their brand names as well as the Spectrum slots they
-  // occupy (amber also fills `orange`, violet stands alone). Naming them here is what lets
-  // component styles say `amber-900` instead of borrowing Spectrum's vocabulary for a
-  // colour that is ours.
-  | "amber"
-  | "violet";
+  // Terminal Glass v2 removed `amber` and `violet`: the warm channel is `yellow` (which
+  // also backs `notice`) and the metric channel is `cyan`, both of which are Spectrum
+  // scale names already listed above, so brand ramps and Spectrum vocabulary coincide.
+  | "positive";
 /** Brand colours with no Spectrum equivalent and no ramp — see glasselatedCreateColors. */
 type VivianaColor =
   | "interactive-fill"
   | "create-bg"
   | "create-bg-deep"
   | "create-border"
-  | "create-ink";
+  | "create-ink"
+  | "cta"
+  | "cta-soft"
+  | "cta-ring"
+  | "detail"
+  | "detail-soft"
+  | "fuchsia-text"
+  | "fuchsia-ink"
+  | "yellow-text"
+  | "yellow-ink";
 type TransparentScale = "transparent-white" | "transparent-black" | "transparent-overlay";
 type HighContrastColor =
   | "Background"

@@ -1,53 +1,62 @@
-/* Glasselated color ramps for Viviana UI.
+/* Glasselated color ramps for Viviana UI — Terminal Glass v2.
  *
  * These replace the Adobe Spectrum ramps that @adobe/spectrum-tokens supplies. The style
  * macro bakes color into per-property atomic CSS at BUILD time, so a ramp cannot be
  * retargeted from a consuming app's stylesheet — it has to happen here, and the package
  * must be rebuilt for any edit below to reach the browser.
  *
- * ANCHORING. Every value here is derived from the brand palette declared in the island's
- * own stylesheet (apps/akade/src/styles/design-handoff-v2.css) — `--slate-*`, `--blue-*`,
- * `--amber-*`, `--red-500`, `--violet-500`. Brand stops are interpolated at their true
+ * ANCHORING. Every value here is derived from the Terminal Glass handoff palette
+ * (`tokens/colors.css` in the design handoff) — `--slate-*`, `--blue-*`, `--cyan-500`,
+ * `--fuchsia-*`, `--yellow-*`, `--red-500`. Brand stops are interpolated at their true
  * OKLCh values (no global rescale), so the vivid mid stops land on the brand hexes; only
- * Spectrum's extra-dark tail, which the brand ramp simply doesn't have, is extrapolated
- * along each ramp's own trajectory.
+ * the extra-dark / extra-light tails, which the brand ramp simply doesn't have, are
+ * extrapolated along each ramp's own trajectory.
  *
- * Do NOT regenerate these from hue math. An earlier revision synthesised gray/blue/red/
- * orange/yellow/green from OKLCh hue anchors; it validated clean for contrast and
- * monotonicity and was still the wrong palette, because nothing had checked the anchors
- * against the island. The island is the source of truth.
+ * THE FOUR CHANNELS. The handoff assigns colour by job, not by decoration:
+ *   blue/cyan  permanent structure — nav, links, primary fill, progress, prompts, metrics
+ *   fuchsia    the ask — CTAs (+Create, Review, Join), LIVE, mentions, notifications
+ *   yellow     transient detail — streak, XP, DUE, warn, unsaved dots; never a fill/button
+ *   red        fault only
+ * Orange and amber are REMOVED, with no aliases: the previous revision published `amber`
+ * under Spectrum's `orange` slot, which is exactly what made warm pixels reachable. Notice
+ * now resolves onto `yellow`, and `orange` falls back to Adobe's own ramp, unreachable
+ * because no public prop exposes it any more (Badge's `"orange"` variant is gone).
+ * `violet` is removed too — the metric channel is cyan now.
  *
  * ACCESSIBILITY. Semantic fills with white text are pinned to >= 4.5:1. Blue is the
- * exception at the ramp level: accent-900 remains the brand `--accent-primary` #2e90fa
- * in both columns for decorative marks, where it only needs the 3:1 non-text floor.
- * Text-bearing accent surfaces use the standalone `interactive-fill` token below
- * (#135fc0 / #3670ae), matching `--interactive-fill` in viviana-tokens.css. Keeping
- * decoration and readable fill as separate semantic roles prevents a contrast repair
- * from moving every focus ring, indicator, and glow off the published brand accent.
+ * exception at the ramp level: accent-900 is the handoff `--blue-500` (#0f6adb / #3dadff)
+ * for marks and links, and the text-bearing fill is the standalone `interactive-fill`
+ * token below (`--blue-600`, #0b5dc2 / #0a6fef — 6.25:1 / 4.63:1 under white). Fuchsia
+ * and yellow fills carry their own inks (`fuchsia-ink`, `yellow-ink`) rather than white,
+ * because white fails AA on both in dark.
  *
  * Two invariants to hold when editing:
  *   - Emit EVERY stop of a ramp. A missing stop silently keeps the Adobe value.
  *   - Keep lightness monotonic, with a perceptible gap (>= 0.02 OKLCh L) between adjacent
  *     stops. `nextColorStop` implements :hover/:active by stepping to the adjacent stop,
  *     so a reversal inverts the state change and too small a gap makes it invisible.
+ *     Two ramps run out of headroom and are exempted, by name, in the monotonicity test:
+ *     gray's dark 800..1000 tail (see below) and yellow's dark 1000..1600 tail (the brand
+ *     signal yellow sits at 900 with L 0.90, leaving 0.1 of L for six stops). Nothing
+ *     steps off either tail today; both are strictly monotonic, just not perceptibly so.
  *
  * KNOWN LIMITATION — THE INK STOP. `gray` carries the primary ink at 800, because that is
  * where Spectrum's `neutral-content-color-default` resolves (spectrum-theme.ts maps `neutral`
- * to it). That leaves only the 800..1000 tail above the ink in dark, where the ink is already
- * near-white, so the dark 800/900/1000 gaps sit just under this file's own 0.02 floor and the
- * hover step off gray-800 is near-flat in dark. The ramp cannot solve that alone. The clean
- * fix is one level up: repoint `neutral-content-color-default` to gray-900 in spectrum-theme.ts
- * and give gray-800 its intermediate value back, which restores both the gap and the hover
- * step. Do not "fix" it by moving the ink off 800 here — that only unpaints the ink.
+ * to it). Light 800 is `--slate-900` #0f1622; dark 800 is `--terminal-fg` #f4f8ff (the
+ * handoff's dark primary text is literally #ffffff, which 1000 must stay, so the ink takes
+ * the near-white it uses for terminal copy). That leaves ~0.027 of L above the ink for two
+ * stops, so the dark 800/900/1000 gaps sit under the 0.02 floor and the hover step off
+ * gray-800 is near-flat in dark. The clean fix is one level up: repoint
+ * `neutral-content-color-default` to gray-900 in spectrum-theme.ts. Do not "fix" it by
+ * moving the ink off 800 here — that only unpaints the ink.
  *
  * Negative, notice, and positive *ink* (HelpText, StatusLight, Badge outline) is remapped
- * at the theme (`spectrum-theme.ts` `color.negative` → 1000). Do not floor 900 here to
+ * at the theme (`spectrum-theme.ts` `color.negative` -> 1000). Do not floor 900 here to
  * make HelpText pass on the panel composite — 900 is the white-on-fill stop.
  *
- * The 13 decorative ramps (purple, indigo, seafoam, cyan, celery, chartreuse, magenta,
- * fuchsia, pink, turquoise, brown, silver, cinnamon) are intentionally left on Adobe
- * values; nothing in the system surfaces them today, but a component exposing
- * `color="purple"` directly would visibly clash.
+ * The 12 decorative ramps (purple, indigo, seafoam, celery, chartreuse, magenta, pink,
+ * turquoise, brown, silver, cinnamon, orange) are intentionally left on Adobe values;
+ * nothing in the system surfaces them today.
  */
 import type { ColorToken } from "./tokens";
 
@@ -55,179 +64,156 @@ import type { ColorToken } from "./tokens";
 type Ramp = Record<number, readonly [light: string, dark: string]>;
 
 const RAMPS: Record<string, Ramp> = {
-  /* Cool slate neutrals — brand `--slate-*`. Drives all text, borders, dividers and
+  /* Cool slate neutrals — handoff `--slate-*`. Drives all text, borders, dividers and
    *   disabled states, so this is the highest-blast-radius ramp here.
    *
-   *   BOTH columns are read off the island, and they are read off DIFFERENT declarations.
-   *   `--slate-*` is not merely inverted in dark: design-handoff-v2.css re-declares it
-   *   de-saturated (:216-221) against the light values at :32-38. An earlier revision derived
-   *   dark by inverting the light hexes, which kept the light column's blue tint and left the
-   *   whole dark neutral band reading cooler than the island it copies. Anchors, per column:
-   *     light  400/500/700 = `--slate-400/500/700` (:35,34,33)
-   *     dark   400/500/700 = `--slate-400/500/700` (:219,218,217)
-   *     dark   25          = `--surface-app` (:176)
-   *   600 is interpolated between its neighbours in each column; 25/50/75/100/200/300 hold
-   *   the charcoal-glass ends the island's dark surfaces sit on.
+   *   Anchors, per column (colors.css):
+   *     light 25 #ffffff · 50 `--surface-app` #f3f6fa · 400 `--slate-500` · 500 `--slate-700`
+   *           800 `--slate-900` · 1000 #000000
+   *     dark  25 `--surface-app` #040506 · 400 `--slate-500` · 500 `--slate-700`
+   *           800 `--terminal-fg` · 1000 #ffffff
+   *   400 IS THE TERTIARY INK and 500 THE SECONDARY INK: `--text-tertiary` is `--slate-500`
+   *   and `--text-secondary` is `--slate-700`, and `neutral-subdued-content-color-default`
+   *   is repointed onto 500 in spectrum-theme.ts (Adobe resolves it to gray-700, two rungs
+   *   too heavy for labels, unselected tabs, slider labels and breadcrumbs).
+   *   800 IS THE PRIMARY INK — see the header note.
    *
-   *   800 IS THE INK STOP. Spectrum's `neutral-content-color-default` resolves to gray-800,
-   *   so this stop is what paints ordinary label and control text. It is pinned to the
-   *   island's `--text-primary`: `--slate-900` #17212e in light (:32,42) and the hardcoded
-   *   neutral #f2f3f5 in dark (:170). 900/1000 are then the extrapolated tail past the ink —
-   *   the island has no token beyond it in either direction.
-   *
-   *   500 IS THE SECONDARY INK STOP, by the same logic one rung quieter: it is pinned to
-   *   `--text-secondary` in viviana-tokens.css, in NEITHER column to `--slate-500`. Dark never
-   *   was — the island de-tints its dark ink away from the slate ramp (#97a1ab) exactly as it
-   *   does at 800 — and light no longer is either: `--slate-500` #64748b reads 3.67-4.38:1 on
-   *   our light surfaces, so both `--text-secondary` and this stop step one notch darker to
-   *   #556478 (4.65:1 at worst) and dark lifts #9aa0a8 -> #a0a6ae (4.36 -> 4.68:1 on
-   *   `--surface-raised`, the binding surface in dark). The palette rungs themselves are
-   *   untouched; what moved is an ink role, and the two files must move together.
-   *   `neutral-subdued-content-color-default` is repointed onto this stop in spectrum-theme.ts;
-   *   Adobe resolves it to gray-700, which paints field labels, unselected tab and segment
-   *   labels, slider labels and breadcrumbs two rungs too heavy (61 elements, both schemes).
-   *
-   *   Light 300/400 were #c5d0de/#93a3b8 — each exactly one off the island's #c4d0de/#94a3b8
-   *   in the red channel. That is a round-trip through OKLCh, not a transcription; the values
-   *   are now copied from the declarations. Read every anchored stop off the CSS, never
-   *   recompute it: a one-digit drift still fails an equality check against the token.
-   *
-   *   The dark 800->900->1000 gaps are ~0.018 OKLCh L, just under the >= 0.02 this file asks
-   *   for below. That is a ceiling, not a choice: the dark ink is already at L 0.964 and 1000
-   *   must stay pure white (it is consumed as an alpha base, e.g. `gray-1000/42`), so 0.036 is
-   *   the entire remaining headroom. Consequence to know: `baseColor("gray-800")` steps to
-   *   gray-800 -> gray-900 on hover, so ink hover and the S2 primary-button fill hover are
-   *   near-flat in dark. See the note in the header about where that is better fixed.
-   *
-   *   100/200 stay OPAQUE. The island's dark `--slate-100/200` are alpha whites
-   *   (rgba(255,255,255,.06/.1), :220-221), which is why its surfaces read as glass. A ramp
-   *   stop cannot carry that here: these values are baked into atomic CSS with no knowledge of
-   *   the backdrop, so their composited lightness — and therefore the monotonicity and the
-   *   hover step `nextColorStop` derives from it — would vary per surface. The glass edge has
-   *   its own tokens instead (`border-subtle`, `border-default`, `well-border`). */
+   *   Stops stay OPAQUE. The handoff's glass edges are alpha (`--border-subtle` and friends
+   *   are rgba over an unknown backdrop); a ramp stop is baked into atomic CSS with no
+   *   knowledge of what it sits on, so its composited lightness — and the hover step
+   *   `nextColorStop` derives from it — would vary per surface. The glass edge keeps its own
+   *   CSS variables instead (`border-subtle`, `border-default`, `well-border`). */
   gray: {
-    25: ["#ffffff", "#0c0d10"],
-    50: ["#f6f8fa", "#1d1e20"],
-    75: ["#edf1f5", "#313336"],
-    100: ["#e5eaf1", "#43474d"],
-    200: ["#dbe3ed", "#555c64"],
-    300: ["#c4d0de", "#67717d"],
-    400: ["#94a3b8", "#7c8794"],
-    500: ["#556478", "#a0a6ae"],
-    600: ["#465569", "#a8b2c0"],
-    700: ["#33455c", "#b9c4d6"],
-    800: ["#17212e", "#f2f3f5"],
-    900: ["#131b26", "#f8f9fa"],
+    25: ["#ffffff", "#040506"],
+    50: ["#f3f6fa", "#0b0f12"],
+    75: ["#d4d9e1", "#22272d"],
+    100: ["#b5bdc8", "#3b424a"],
+    200: ["#97a2af", "#565f6a"],
+    300: ["#7a8897", "#737d8b"],
+    400: ["#5e6e80", "#929dae"],
+    500: ["#3b4552", "#c6cfdc"],
+    600: ["#2b3541", "#d5dce8"],
+    700: ["#1d2531", "#e5eaf3"],
+    800: ["#0f1622", "#f4f8ff"],
+    900: ["#05070b", "#fafcff"],
     1000: ["#000000", "#ffffff"],
   },
-  /* Brand `--blue-*` (`--accent-primary` is `--blue-500` #2e90fa). Aliased by BOTH
-   *   accent-color-* and informative-color-*, so this drives buttons, links, focus rings,
-   *   selection and every informative state at once.
-   *
-   *   900 IS THE ACCENT STOP, by the same argument that pins gray-800 to the ink: it is
-   *   `--accent-primary` #2e90fa, and it is the same value in BOTH columns because the
-   *   island genuinely does not override it in dark (design-handoff-v2.css declares
-   *   `--accent-primary: var(--blue-500)` at :76 and the dark block never restates it).
-   *   Almost everything accent-coloured resolves here — slider fills, radio and checkbox
-   *   marks, the selected menu row, the table resize bar, tab indicators, links in light.
-   *   It was #1474e4 / #338cfe, one rung either side of the accent, which is why the
-   *   single largest off-register cluster in both schemes was accent-coloured (24 light
-   *   elements, 15 dark).
-   *
-   *   700's DARK column remains #3670ae because it was the historical landing point for
-   *   interactive fills. The actual semantic fill is now explicit below rather than
-   *   encoded as a cross-scheme ramp pair: #135fc0 in light and #3670ae in dark. A filled
-   *   accent button is a large area of colour; the island damps it and leaves the small
-   *   accent marks at full strength.
-   *
-   *   The damped fill carries white label text, so it answers to 4.5:1 with white. The
-   *   island's #407fc1 gave 4.18:1; this column is #3670ae (5.14:1), and viviana-tokens.css
-   *   moves `--interactive-fill` to the same hex — the two are one value in two files.
-   *   That also repairs a gap this ramp's own rule forbade: #407fc1 sat 0.009 OKLCh L below
-   *   800, so `nextColorStop`'s hover step off the dark fill was invisible; #3670ae restores
-   *   it to 0.051/0.058 either side.
-   *
-   *   Nothing else here is pinned. The island publishes no accent hover, so 800 (dark
-   *   hover, one step brighter than the damped fill) and 1000 (light hover, one step
-   *   deeper) are ours; they exist to give a state the handoff never drew somewhere
-   *   consistent to land. */
+  /* Handoff `--blue-*`. Aliased by BOTH accent-color-* and informative-color-*, so this
+   *   drives buttons, links, focus rings, selection and every informative state at once.
+   *   900 IS THE ACCENT STOP: `--blue-500` (#0f6adb light / #3dadff dark), what
+   *   `--accent-primary` resolves to. 700 light is `--blue-400` #3d9be8 (glyphs, prompt
+   *   marks) and 1100 dark is its dark counterpart #99d8ff; `--blue-600`, the primary fill,
+   *   lands at 1000 light / 800 dark and is also published flat as `interactive-fill`
+   *   below, because a fill is a role, not a ramp position. */
   blue: {
-    100: ["#f6faff", "#0b0d10"],
-    200: ["#ecf3fe", "#1c2027"],
-    300: ["#ddebfe", "#27313e"],
-    400: ["#bfd9fe", "#2d415d"],
-    500: ["#9cc4fc", "#2f507f"],
-    600: ["#7bb0fa", "#2e5fa1"],
-    700: ["#5c9ff9", "#3670ae"],
-    800: ["#398dfa", "#267ce7"],
-    900: ["#2e90fa", "#2e90fa"],
-    1000: ["#0e64c8", "#569eff"],
-    1100: ["#0752a7", "#75afff"],
-    1200: ["#07448a", "#92c0ff"],
-    1300: ["#0a3b77", "#adcfff"],
-    1400: ["#093367", "#c7deff"],
-    1500: ["#001f4b", "#e0edff"],
+    100: ["#f6faff", "#03080f"],
+    200: ["#dae9fb", "#020e1b"],
+    300: ["#bed9f8", "#011d39"],
+    400: ["#a1caf5", "#002c59"],
+    500: ["#83baf1", "#003d7a"],
+    600: ["#63abed", "#004e9e"],
+    700: ["#3d9be8", "#005ec6"],
+    800: ["#2283e2", "#0a6fef"],
+    900: ["#0f6adb", "#3dadff"],
+    1000: ["#0b5dc2", "#6dc3ff"],
+    1100: ["#094aa2", "#99d8ff"],
+    1200: ["#063884", "#b2deff"],
+    1300: ["#032766", "#c7e5ff"],
+    1400: ["#01164a", "#daecff"],
+    1500: ["#000730", "#ebf4ff"],
     1600: ["#000017", "#fafcff"],
   },
-  /* Brand `--amber-*` (`--accent-warm` #f79009). Occupies Spectrum's `orange` slot AND
-   *   carries notice/warning (see the overrides below): the island assigns amber the
-   *   signal/due channel, so warning states belong here. */
-  amber: {
-    100: ["#fffbf8", "#120f0c"],
-    200: ["#fdf2e9", "#28201a"],
-    300: ["#ffe9d6", "#402e1f"],
-    400: ["#ffdcbe", "#593a1d"],
-    500: ["#ffca9d", "#75440f"],
-    600: ["#ffb572", "#8e4f00"],
-    700: ["#fea040", "#a35c00"],
-    800: ["#f58f06", "#b96900"],
-    900: ["#af6400", "#ce7600"],
-    1000: ["#a65e00", "#de872a"],
-    1100: ["#995600", "#e69b54"],
-    1200: ["#804700", "#efae74"],
-    1300: ["#713e00", "#f9c08f"],
-    1400: ["#623601", "#ffd3ae"],
-    1500: ["#422100", "#ffe7d4"],
-    1600: ["#090000", "#fffbf7"],
+  /* Handoff `--cyan-500` promoted to a full ramp. Cyan is the METRIC channel (the job
+   *   `violet` used to hold, which this revision deletes): counters, gauges, data marks.
+   *   900 carries the brand hex in both columns; no semantic role aliases it, so it is
+   *   reached by name (`color="cyan"`) and through `--status-metric`. */
+  cyan: {
+    100: ["#f2fdff", "#080d0f"],
+    200: ["#dcedf0", "#071419"],
+    300: ["#c1dce3", "#102b35"],
+    400: ["#a6ccd7", "#194553"],
+    500: ["#8cbccb", "#236072"],
+    600: ["#71acc0", "#2c7d94"],
+    700: ["#569bb4", "#369bb6"],
+    800: ["#388baa", "#3fbada"],
+    900: ["#0a7a9f", "#48daff"],
+    1000: ["#046989", "#6edfff"],
+    1100: ["#015973", "#8be4ff"],
+    1200: ["#00495f", "#a4eaff"],
+    1300: ["#003a4b", "#baefff"],
+    1400: ["#002b38", "#cff3ff"],
+    1500: ["#001d26", "#e4f8ff"],
+    1600: ["#001016", "#f7fdff"],
   },
-  /* Brand `--red-500` #f04438 promoted to a full ramp. Aliased by negative-color-*. */
+  /* Handoff `--fuchsia-*` promoted to a full ramp. Fuchsia is THE ASK: +Create, Review,
+   *   Join, LIVE, mentions, notification dots. 900 is `--fuchsia-500`, the CTA fill;
+   *   1000 light / 800 dark is `--fuchsia-600` (the pressed/deep step, published flat as
+   *   `create-bg-deep`); 700 light / 1100 dark is `--fuchsia-400`, which is what dark-scheme
+   *   fuchsia TEXT must use — the 500 fails AA as ink on the dark floor. */
+  fuchsia: {
+    100: ["#fff7fc", "#0f070c"],
+    200: ["#ffe7f6", "#1a0713"],
+    300: ["#ffd4ef", "#360d28"],
+    400: ["#ffc0e7", "#55123f"],
+    500: ["#fface0", "#761656"],
+    600: ["#ff95d8", "#99186d"],
+    700: ["#ff7dd0", "#be1985"],
+    800: ["#ed53b0", "#e5179c"],
+    900: ["#d9128f", "#ff4fc3"],
+    1000: ["#b80f7a", "#ff7bcf"],
+    1100: ["#990b68", "#ff9edb"],
+    1200: ["#7c0756", "#ffb2e1"],
+    1300: ["#600444", "#ffc4e8"],
+    1400: ["#460233", "#ffd6ee"],
+    1500: ["#2d0121", "#ffe7f5"],
+    1600: ["#170010", "#fff8fc"],
+  },
+  /* Handoff `--yellow-*` promoted to a full ramp, and the base that notice-color-* now
+   *   resolves to. Yellow is TRANSIENT DETAIL — streak blocks, XP, DUE bars, warn lines,
+   *   string literals, unsaved dots — and is never a button fill. 900 is `--yellow-500`
+   *   dark / `--yellow-600` light: the light column steps one rung deeper than the brand
+   *   hex because #f5c800 as a *mark* on a white app floor is decoration, not signal, and
+   *   `--status-signal` is an ink (`--yellow-text`) rather than this stop. Yellow fills
+   *   carry `yellow-ink` #141000, never white. See the header for the dark tail exemption. */
+  yellow: {
+    100: ["#fffef7", "#0d0b04"],
+    200: ["#fdf4c0", "#181404"],
+    300: ["#ffeb80", "#362d08"],
+    400: ["#fce36c", "#57490c"],
+    500: ["#fada56", "#7c670e"],
+    600: ["#f7d13a", "#a2860e"],
+    700: ["#f5c800", "#cba60a"],
+    800: ["#dfb400", "#f5c800"],
+    900: ["#c9a000", "#ffe03a"],
+    1000: ["#aa8900", "#fff3a6"],
+    1100: ["#8c7200", "#fff5b5"],
+    1200: ["#6f5c00", "#fff6c3"],
+    1300: ["#544600", "#fff8d0"],
+    1400: ["#3b3200", "#fffadc"],
+    1500: ["#241e00", "#fffbe8"],
+    1600: ["#0f0c00", "#fffdf3"],
+  },
+  /* Handoff `--red-500` promoted to a full ramp. Aliased by negative-color-*, and FAULT
+   *   ONLY — the handoff spends no red on anything else. 900 is the brand hex in both
+   *   columns (#d92d20 / #ff6b5e), the white-ink fill stop; 1000 is the ink stop (see the
+   *   header note and the contrast test). */
   red: {
-    100: ["#fffbfa", "#0f0d0c"],
-    200: ["#fcf2f1", "#241e1d"],
-    300: ["#fee8e5", "#3b2c2a"],
-    400: ["#fed7d0", "#543833"],
-    500: ["#febab0", "#753e37"],
-    600: ["#fc9385", "#9a3d33"],
-    700: ["#f7695a", "#c0362c"],
-    800: ["#ee4337", "#e0332a"],
-    900: ["#db2e26", "#f3493c"],
-    1000: ["#bb241e", "#fc6657"],
-    1100: ["#9d211a", "#ff8475"],
-    1200: ["#85241d", "#ff9f92"],
-    1300: ["#75261e", "#ffb8ae"],
-    1400: ["#65201a", "#ffcfc8"],
-    1500: ["#460a07", "#ffe5e1"],
-    1600: ["#090000", "#fffbfa"],
-  },
-  /* Brand `--violet-500` #8b5cf6 promoted to a full ramp. The island gives violet the
-   *   metrics channel, so it is available by name but aliased by no semantic role. */
-  violet: {
-    100: ["#fbfaff", "#0d0d10"],
-    200: ["#f3f2fd", "#201f26"],
-    300: ["#eceafc", "#302e3b"],
-    400: ["#e2defe", "#403c55"],
-    500: ["#cfc7fe", "#504875"],
-    600: ["#b7a7fd", "#61509d"],
-    700: ["#9d82fb", "#7355c9"],
-    800: ["#875bf7", "#8559f4"],
-    900: ["#793cef", "#946eff"],
-    1000: ["#6d2ade", "#a186ff"],
-    1100: ["#5e22c2", "#af9cff"],
-    1200: ["#501ea5", "#beb0ff"],
-    1300: ["#451d8f", "#cdc4ff"],
-    1400: ["#3c197c", "#dcd7ff"],
-    1500: ["#28025c", "#ece9ff"],
-    1600: ["#030014", "#fcfbff"],
+    100: ["#fffbfa", "#0b0705"],
+    200: ["#ffe4dd", "#190b04"],
+    300: ["#fdcdc2", "#331809"],
+    400: ["#f9b6a7", "#512511"],
+    500: ["#f59e8d", "#71331b"],
+    600: ["#f08673", "#924128"],
+    700: ["#e96d59", "#b54f37"],
+    800: ["#e2513f", "#da5d49"],
+    900: ["#d92d20", "#ff6b5e"],
+    1000: ["#ba2419", "#ff8575"],
+    1100: ["#9b1c13", "#ff9c8c"],
+    1200: ["#7e130c", "#ffb0a2"],
+    1300: ["#610b06", "#ffc4b8"],
+    1400: ["#460503", "#ffd7ce"],
+    1500: ["#2d0101", "#ffe9e4"],
+    1600: ["#160000", "#fffbfa"],
   },
   /* The success channel. The island genuinely has no green (its status channels are
    *   "cyan=info · amber=signal/due · violet=metrics · red=fault", design-handoff-v2.css:90),
@@ -269,54 +255,71 @@ const RAMPS: Record<string, Ramp> = {
 };
 
 /* Spectrum's semantic ramps are pure aliases resolved through `ref`: accent-color-* and
- * informative-color-* -> blue, negative-color-* -> red, positive-color-* -> GREEN, and
- * notice-color-* -> ORANGE. Blue and red land on the brand ramps above for free, and green
- * now does too — the real `green` ramp added above backs `positive`/`success`. Only `orange`
- * is retargeted here: the brand's warm base is `--amber-*`, so amber is republished under the
- * `orange`/`notice` keys the Spectrum tokens actually reference. */
+ * informative-color-* -> blue, negative-color-* -> red, positive-color-* -> green, and
+ * notice-color-* -> {orange-N}. Blue, red and green land on the ramps above for free.
+ * Only notice needs retargeting, and it is the ONE override left: the warm channel is
+ * `yellow` now, and Spectrum has no notice base of its own to point at.
+ *
+ * There is deliberately no `orange` key any more. Publishing a brand ramp under `orange`
+ * is what used to make warm fills reachable everywhere; with the key gone, `orange-*`
+ * falls back to Adobe's real orange and no public prop resolves to it. */
 const SEMANTIC_OVERRIDES: Record<string, Ramp> = {
-  /* The brand's warm is `--amber-*`, and Spectrum's warm base ramp is named `orange`.
-   * Publishing amber under BOTH keys is what actually retires Adobe's orange: a ramp named
-   * `amber` overrides nothing, because no Spectrum token references that name. */
-  orange: RAMPS.amber,
-  /* RESOLVED (was "no green"). `positive`/`success` used to alias RAMPS.blue, which the
-   * island's four-channel palette (no success slot) technically supported but which made
-   * positive read identically to accent/informative — flagged here as needing an owner
-   * decision. The owner added a success channel: a real `green` ramp now lives in RAMPS
-   * above and positive-color-* (a ref to {green-N}) resolves onto it, so `positive`/`success`
-   * and by-name `green` all paint the new green. Distinct from accent (blue) and from the
-   * warm channel (amber/notice) — the status trio red/amber/green now reads as three states. */
-  /* Warning -> amber. The island states the channel assignment outright
-   * (design-handoff-v2.css:90 "amber=signal/due · violet=metrics") and paints every warning
-   * it has in amber: `warn:` log lines #ffb45e, the DUE badge #f9b45c, streak chips
-   * rgba(247,144,9,.22). An earlier revision routed notice -> violet, which left the library
-   * with literally zero warm pixels while the spec beside it had fourteen.
-   *
-   * This key is redundant today — `orange` above already carries amber, and notice-color-*
-   * refs {orange-N} — but it is kept explicit so warning survives if the orange slot is ever
-   * repurposed. Note the key is `notice`, NOT `notice-color`: colorScale() strips the
-   * "-color" segment when building its keys (tokens.ts:84), so the scale lands in
-   * `baseColors` as notice-100..notice-1600 and an override has to use the stripped name to
-   * collide with it. Getting this wrong fails silently — the override is just an unread key. */
-  notice: RAMPS.amber,
+  /* Note the key is `notice`, NOT `notice-color`: colorScale() strips the "-color" segment
+   * when building its keys (tokens.ts:84), so the scale lands in `baseColors` as
+   * notice-100..notice-1600 and an override has to use the stripped name to collide with
+   * it. Getting this wrong fails silently — the override is just an unread key. */
+  notice: RAMPS.yellow,
 };
 
-/* Standalone semantic colours with no honest ramp. The create-yellow CTA
- * (`--accent-create-*`) declares exactly three values per scheme and does not sit on the
- * amber trajectory. `interactive-fill` is likewise a role rather than a blue stop: it is
- * the AA-safe fill under white text, while accent-900 remains the decorative brand blue.
+/* Standalone semantic colours with no honest ramp position. These are ROLES: the handoff
+ * declares them as flat tokens (`--interactive-fill`, `--accent-cta*`, `--accent-detail*`,
+ * the channel inks) precisely because their value is chosen for the job — AA under a
+ * specific ink, or a specific alpha over glass — not for where it sits on a ramp.
  *
  * Spread into `baseColors` alongside the ramps, so `backgroundColor: "create-bg"` resolves
  * like any other token. Hover/press cannot use `nextColorStop` here (no adjacent stop
- * exists), so the button styles name the border colour explicitly for those states. */
+ * exists), so the button styles name the deep colour explicitly for those states. */
 export const glasselatedCreateColors: Record<string, ColorToken> = {
-  "interactive-fill": { type: "color", light: "#135fc0", dark: "#3670ae" },
-  "create-bg": { type: "color", light: "#ffedb0", dark: "#ffde81" },
-  "create-border": { type: "color", light: "#f5d88a", dark: "#ffde81" },
-  "create-ink": { type: "color", light: "#7a5600", dark: "#3a2e00" },
-  /* One step deeper, for :hover / :pressed. Derived by darkening the fill ~4% L while
-   * holding hue, the same latitude the AA pass uses. */
-  "create-bg-deep": { type: "color", light: "#f8dd8f", dark: "#f5cd63" },
+  /* `--interactive-fill`: the primary button / active chip fill, `--blue-600`. Carries
+   * white ink at 6.25:1 (light) and 4.63:1 (dark); accent-900 stays the brighter
+   * decorative blue so a contrast repair here never moves the focus rings. */
+  "interactive-fill": { type: "color", light: "#0b5dc2", dark: "#0a6fef" },
+  /* +Create is now the CTA fuchsia, not the old create-yellow. `create-ink` is
+   * `--fuchsia-ink`: white in light, near-black #1a0512 in dark, where white fails AA. */
+  "create-bg": { type: "color", light: "#d9128f", dark: "#ff4fc3" },
+  "create-border": { type: "color", light: "#d9128f", dark: "#ff4fc3" },
+  "create-ink": { type: "color", light: "#ffffff", dark: "#1a0512" },
+  /* One step deeper, for :hover / :pressed — `--fuchsia-600`. */
+  "create-bg-deep": { type: "color", light: "#b80f7a", dark: "#e5179c" },
+  /* The ask, by name: LIVE, mentions, notification dots, Review/Join. Same value as
+   * `create-bg`; kept as its own token because the handoff names the role separately and
+   * a future CTA re-tint must not silently move every LIVE badge. */
+  cta: { type: "color", light: "#d9128f", dark: "#ff4fc3" },
+  "cta-soft": {
+    type: "color",
+    light: "rgba(217, 18, 143, 0.12)",
+    dark: "rgba(255, 79, 195, 0.18)",
+  },
+  "cta-ring": {
+    type: "color",
+    light: "rgba(217, 18, 143, 0.5)",
+    dark: "rgba(255, 79, 195, 0.55)",
+  },
+  /* Transient detail: `--accent-detail` is `--yellow-500` in BOTH columns' own terms. */
+  detail: { type: "color", light: "#f5c800", dark: "#ffe03a" },
+  "detail-soft": {
+    type: "color",
+    light: "rgba(245, 200, 0, 0.18)",
+    dark: "rgba(255, 224, 58, 0.14)",
+  },
+  /* Channel INKS — the only sanctioned way to put channel colour on text. `fuchsia-text`
+   * is the 600 in light and the 400 in dark; `yellow-text` is a deep olive in light and
+   * the 500 in dark. Both clear 4.5:1 on the app floor; the `-ink` pair is what goes ON
+   * the corresponding 500 fill. */
+  "fuchsia-text": { type: "color", light: "#b80f7a", dark: "#ff9edb" },
+  "fuchsia-ink": { type: "color", light: "#ffffff", dark: "#1a0512" },
+  "yellow-text": { type: "color", light: "#7a5f00", dark: "#ffe03a" },
+  "yellow-ink": { type: "color", light: "#141000", dark: "#141000" },
 };
 
 export const glasselatedRamps: Record<string, ColorToken> = Object.fromEntries(

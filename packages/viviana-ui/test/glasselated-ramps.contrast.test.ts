@@ -121,3 +121,81 @@ describe("glasselated negative ink vs fill", () => {
     }
   });
 });
+
+/* The v2 palette is four channels wide (blue/cyan · fuchsia · yellow · red) and the ramps
+ * are interpolated, not hand-typed, so the failure modes worth naming are structural:
+ * a stop dropped in an edit silently falls back to Adobe's value, and a reversal or a
+ * flat step breaks `nextColorStop`, which derives :hover/:active by walking one stop. */
+const GRAY_STOPS = [25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+const FULL_STOPS = [
+  100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600,
+];
+
+/* Documented in glasselated-ramps.ts: both tails run out of OKLCh headroom. They must stay
+ * strictly monotonic; they cannot stay perceptibly so. */
+const FLAT_TAIL_EXEMPT = new Set([
+  /* Dark gray sits above the ink at 800 (L 0.973) with pure white pinned at 1000. */
+  "gray:dark:900",
+  "gray:dark:1000",
+  /* Dark yellow's signal stop is the brand #ffe03a at 900 (L 0.90); six stops share the
+   * 0.1 of L left below white. */
+  ...[1000, 1100, 1200, 1300, 1400, 1500, 1600].map((stop) => `yellow:dark:${stop}`),
+]);
+
+describe("glasselated ramps", () => {
+  it("emits every stop of every brand ramp", () => {
+    for (const [ramp, stops] of [
+      ["gray", GRAY_STOPS],
+      ["blue", FULL_STOPS],
+      ["cyan", FULL_STOPS],
+      ["fuchsia", FULL_STOPS],
+      ["yellow", FULL_STOPS],
+      ["red", FULL_STOPS],
+      ["green", FULL_STOPS],
+      ["notice", FULL_STOPS],
+    ] as const) {
+      for (const stop of stops) {
+        expect(glasselatedRamps[`${ramp}-${stop}`], `${ramp}-${stop}`).toBeDefined();
+      }
+    }
+  });
+
+  it("keeps every ramp monotonic in both columns, so hover never inverts", () => {
+    for (const [ramp, stops] of [
+      ["gray", GRAY_STOPS],
+      ["blue", FULL_STOPS],
+      ["cyan", FULL_STOPS],
+      ["fuchsia", FULL_STOPS],
+      ["yellow", FULL_STOPS],
+      ["red", FULL_STOPS],
+      ["green", FULL_STOPS],
+    ] as const) {
+      for (const scheme of ["light", "dark"] as const) {
+        /* Light ramps darken with the stop number; dark ramps lighten. */
+        const sign = scheme === "light" ? -1 : 1;
+        for (let i = 1; i < stops.length; i += 1) {
+          const previous = oklabL(rampHex(`${ramp}-${stops[i - 1]}`, scheme));
+          const current = oklabL(rampHex(`${ramp}-${stops[i]}`, scheme));
+          const delta = (current - previous) * sign;
+          expect(delta, `${ramp}-${stops[i]} (${scheme}) reverses`).toBeGreaterThan(0);
+          if (FLAT_TAIL_EXEMPT.has(`${ramp}:${scheme}:${stops[i]}`)) continue;
+          expect(
+            delta,
+            `${ramp}-${stops[i]} (${scheme}) steps too small for :hover`,
+          ).toBeGreaterThanOrEqual(0.0125);
+        }
+      }
+    }
+  });
+
+  it("publishes no amber, violet, or orange ramp", () => {
+    /* The v2 brief removes the warm/violet channels outright. `orange` is the one that
+     * actually mattered: the previous revision republished amber under Spectrum's `orange`
+     * key, which is what made warm fills reachable through notice-color-* and every
+     * `color="orange"` prop. Leaving that override in place would silently keep the old
+     * palette alive even after every hex above changed. */
+    for (const key of Object.keys(glasselatedRamps)) {
+      expect(key).not.toMatch(/^(amber|violet|orange)-/);
+    }
+  });
+});
