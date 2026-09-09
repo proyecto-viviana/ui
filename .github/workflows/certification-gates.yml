@@ -178,6 +178,14 @@ jobs:
         id: guard_docs_routes
         run: pnpm run guard:docs-routes
 
+      # The /examples screens must compose from @proyecto-viviana/ui alone: no
+      # app-authored colour, type, motion or off-allowlist import. Without this
+      # the screens can quietly stop being evidence that the library carries a
+      # whole product surface.
+      - name: guard examples-purity
+        id: guard_examples_purity
+        run: pnpm run guard:examples-purity
+
       # Re-derives every reference page from the packages' TypeScript types and
       # fails if the committed JSON or routes disagree. This is what makes the
       # `/docs` tree unable to advertise a prop the package does not ship —
@@ -304,6 +312,7 @@ jobs:
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
           O_GUARD_INVENTED_UTILITIES: ${{ steps.guard_invented_utilities.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
+          O_GUARD_EXAMPLES_PURITY: ${{ steps.guard_examples_purity.outcome }}
           O_GUARD_API_REFERENCE: ${{ steps.guard_api_reference.outcome }}
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
           O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
@@ -360,6 +369,7 @@ jobs:
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
             echo "| \`guard:invented-utilities\` | $(icon "$O_GUARD_INVENTED_UTILITIES") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
+            echo "| \`guard:examples-purity\` | $(icon "$O_GUARD_EXAMPLES_PURITY") |"
             echo "| \`guard:api-reference\` | $(icon "$O_GUARD_API_REFERENCE") |"
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
             echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
