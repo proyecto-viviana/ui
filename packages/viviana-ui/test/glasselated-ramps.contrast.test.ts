@@ -122,6 +122,38 @@ describe("glasselated negative ink vs fill", () => {
   });
 });
 
+/* The v1 warm channel was a burnt orange dark enough to carry white ink; v2 re-values
+ * `notice` onto the register's YELLOW, which is bright in both columns. Every filled
+ * surface that inherited "white ink on the warning fill" therefore silently dropped to
+ * ~2.4:1 — a live AA failure that nothing else here would catch, because the ramp itself
+ * is fine and each component's ink is a separate literal in a separate file. */
+const NOTICE_INK_SOURCES: Array<[string, string]> = [
+  ["../src/button/s2-button-styles.ts", 'warning: "black"'],
+  ["../src/toast/index.tsx", 'notice: "black",'],
+];
+
+describe("notice fills are inked for yellow", () => {
+  it("proves white is unreadable on the notice fill stops both schemes use", () => {
+    /* The guard-rail for the assertions below: if a future re-value made white legible
+     * again, this test — not a screenshot — is where that shows up. */
+    for (const [scheme, stop] of [
+      ["light", "notice-900"],
+      ["dark", "notice-700"],
+    ] as const) {
+      const [r, g, b] = parseRgb(rampHex(stop, scheme));
+      expect(contrastRatio("#ffffff", [r, g, b]), `white on ${stop}`).toBeLessThan(4.5);
+      expect(contrastRatio("#000000", [r, g, b]), `black on ${stop}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("inks every filled notice surface in black", () => {
+    for (const [file, declaration] of NOTICE_INK_SOURCES) {
+      const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), file), "utf8");
+      expect(source, file).toContain(declaration);
+    }
+  });
+});
+
 /* The v2 palette is four channels wide (blue/cyan · fuchsia · yellow · red) and the ramps
  * are interpolated, not hand-typed, so the failure modes worth naming are structural:
  * a stop dropped in an edit silently falls back to Adobe's value, and a reversal or a

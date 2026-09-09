@@ -99,6 +99,12 @@ const AA_PAIRS: Array<[string, string, string[]]> = [
   ["--text-on-accent", "--interactive-fill", []],
   ["--status-fault", "--surface-card", ["--surface-app"]],
   ["--terminal-fg", "--surface-well", []],
+  /* The legacy `--color-*` compat ladder is still the paint for the playground and the
+   * headless demos, and its 100-on-700 pairing is a real button. It is the one pair here
+   * that no register token names, so re-valuing the ladder onto the new blue silently
+   * dropped it to 3.7:1 until 700 was moved down a stop. */
+  ["--color-primary-100", "--color-primary-700", []],
+  ["--color-blue-100", "--color-blue-700", []],
 ];
 
 describe("viviana tokens", () => {

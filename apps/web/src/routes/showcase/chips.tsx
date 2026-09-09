@@ -27,7 +27,6 @@ const BADGE_VARIANTS = [
   "metric",
   "gray",
   "red",
-  "orange",
   "yellow",
   "blue",
   "purple",

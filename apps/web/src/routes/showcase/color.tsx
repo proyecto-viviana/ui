@@ -1,5 +1,5 @@
 /* Panel 11 — Color. Every color-family component, wired to real register
-   palette values (blues/ambers/violets/reds — no green), composed from the
+   palette values (blue/cyan/fuchsia/red — the register's channels), composed from the
    shared Panel/Demo/Row chrome. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { For } from "solid-js";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/showcase/color")({
 const FIELD_SIZES = ["S", "M", "L", "XL"] as const;
 const SWATCH_SIZES = ["XS", "S", "M", "L"] as const;
 const SWATCH_ROUNDING = ["default", "none", "full"] as const;
-const PALETTE = ["#2e90fa", "#f79009", "#8b5cf6", "#f04438"] as const;
+const PALETTE = ["#3dadff", "#48daff", "#ff4fc3", "#ff6b5e"] as const;
 
 function ColorPanel() {
   const def = panelBySlug("color")!;
@@ -79,7 +79,7 @@ function ColorPanel() {
         </Row>
       </Demo>
 
-      <Demo label="ColorSwatchPicker · palette — blues, ambers, violets, reds, no green">
+      <Demo label="ColorSwatchPicker · palette — the register's blue, cyan, fuchsia and red">
         <ColorSwatchPicker aria-label="Accent color" defaultValue={PALETTE[0]}>
           <For each={PALETTE}>{(color) => <ColorSwatch color={color} />}</For>
         </ColorSwatchPicker>

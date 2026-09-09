@@ -221,17 +221,17 @@ const RAMPS: Record<string, Ramp> = {
    *   give `success`/`positive` a real green instead of aliasing it to blue (which made
    *   positive read identically to accent/informative; see the resolved note under
    *   SEMANTIC_OVERRIDES). Hue is Untitled-UI Success green (152 deg OKLCh), the same source
-   *   family as the brand's other anchors (blue #2e90fa, red #f04438, amber #f79009, violet
-   *   #8b5cf6 are Untitled-UI Blue/Error/Orange/Purple 500).
+   *   family as the brand's other anchors (blue #2e90fa and red #f04438 are Untitled-UI
+   *   Blue/Error 500; the warm and violet anchors of that set are retired).
    *
    *   NOT synthesised from hue math in isolation. Every stop is L-solved to carry the SAME
-   *   WCAG contrast-on-white as its amber sibling, so the red/amber/green status trio read at
-   *   identical weight wherever they sit together (Badge, StatusLight, Meter, InlineAlert). The
-   *   consequence that matters: `notice`(amber) already works as fill and as ink in all those
-   *   components, so `positive`(this green) at the same contrast works identically — this is a
-   *   retrofit guarantee, not just an aesthetic one. The light 900..1600 tail departs from a
-   *   pure amber match to keep >= 0.02 OKLCh L gaps (a visible :hover step) once 900 is floored
-   *   to AA. 800 holds the vivid brand green; 900(light)/700(dark) are the white-ink fills,
+   *   WCAG contrast-on-white as its RED sibling, so the red/green pair reads at identical
+   *   weight wherever the two sit together (Badge, StatusLight, Meter, InlineAlert): both are
+   *   white-ink fills, so `positive` retrofits onto every surface `negative` already works on.
+   *   The third status channel, `notice`, cannot join that pairing — it is the register's
+   *   yellow and is inked BLACK on its fills (see the ink note under yellow). The light
+   *   900..1600 tail departs from a pure contrast match to keep >= 0.02 OKLCh L gaps (a
+   *   visible :hover step) once 900 is floored to AA. 800 holds the vivid brand green; 900(light)/700(dark) are the white-ink fills,
    *   pinned >= 4.5:1 (900 light #1a8346 = 4.80, 700 dark #1c7d43 = 5.17) exactly as the header
    *   ACCESSIBILITY note requires of every semantic fill. */
   green: {

@@ -517,22 +517,25 @@ const toastStyle = style<{ variant: ToastVariant; isExpanded?: boolean }>({
   boxSizing: "border-box",
   flexShrink: 0,
   font: "ui",
-  color: "white",
+  /* Every fill but `notice` is dark enough to carry white ink. The notice fill is the
+   * register's yellow, whose ramp is bright in BOTH columns (glasselated-ramps.ts): white
+   * on it is 2.3-2.5:1, so this channel — and the static controls hung on it below —
+   * flips to black, the same ink InlineAlert's boldFill and Badge already spend there. */
+  color: {
+    default: "white",
+    variant: {
+      notice: "black",
+    },
+  },
   backgroundColor: {
     variant: {
       neutral: "neutral-subdued",
       info: "informative",
       positive: "positive",
       negative: "negative",
-      /* The warning channel. A Toast paints a flat white ink over its fill and
-       * hangs white staticColor controls (close/action/expand) on top, so the
-       * fill has to carry white ink — which the bare `notice` token can't: it
-       * resolves to the light peach (notice-600 light) InlineAlert's boldFill
-       * pairs with BLACK ink. Rather than fork the whole white-ink model to
-       * black, this uses the SAME dark-amber fill Button's `warning` variant
-       * uses — lightDark("notice-900","notice-700"), both stops ≥4.7:1 white —
-       * so warning reads as the same orange across the button and the toast and
-       * every existing control stays legible untouched. */
+      /* The warning channel, on the SAME fill stops Button's `warning` variant uses —
+       * lightDark("notice-900","notice-700") — so warning reads as one yellow across the
+       * button and the toast. Both stops clear 7.7:1 against the black ink above. */
       notice: lightDark("notice-900", "notice-700"),
     },
   },
@@ -1056,7 +1059,7 @@ export function Toast(props: ToastProps): JSX.Element {
             <Show when={local.canExpand && !isExpanded() && visibleToasts().length > 1}>
               <ActionButton
                 isQuiet
-                staticColor="white"
+                staticColor={variant() === "notice" ? "black" : "white"}
                 styles={toastExpand}
                 UNSAFE_className={useComponentTransition() ? "toast-expand" : undefined}
                 onPress={local.onToggleExpanded}
@@ -1074,7 +1077,7 @@ export function Toast(props: ToastProps): JSX.Element {
               <Button
                 variant="secondary"
                 fillStyle="outline"
-                staticColor="white"
+                staticColor={variant() === "notice" ? "black" : "white"}
                 styles={toastAction}
                 UNSAFE_className={useComponentTransition() ? "toast-action" : undefined}
                 onPress={handleAction}
@@ -1085,7 +1088,7 @@ export function Toast(props: ToastProps): JSX.Element {
           </div>
 
           <CloseButton
-            staticColor="white"
+            staticColor={variant() === "notice" ? "black" : "white"}
             onPress={handleCloseToast}
             UNSAFE_className={useComponentTransition() ? "toast-close" : undefined}
             aria-label={stringFormatter().format("dialog.dismiss")}

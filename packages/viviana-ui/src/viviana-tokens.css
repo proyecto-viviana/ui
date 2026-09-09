@@ -67,7 +67,10 @@
   --color-grey-800: #161a21;
   --color-grey-900: #0e1014;
 
-  /* Blue scale — wayfinding / selection */
+  /* Blue scale — wayfinding / selection. The legacy `--color-*` compat ladder the
+   * playground and the headless demos paint from. 700 is the FILL the 100 ink sits on
+   * (headless-demos.css), so it takes the register's blue-700 dark stop rather than the
+   * brighter 800 the interactive fill uses: 100-on-800 is 3.7:1. */
   --color-blue-50: #e8f6ff;
   --color-blue-100: #cbeaff;
   --color-blue-200: #99d8ff;
@@ -75,7 +78,7 @@
   --color-blue-400: #52b8ff;
   --color-blue-500: #3dadff;
   --color-blue-600: #1f8bf5;
-  --color-blue-700: #0a6fef;
+  --color-blue-700: #005ec6;
   --color-blue-800: #0a56b8;
   --color-blue-900: #08325f;
 
@@ -95,7 +98,7 @@
   --color-primary-400: #52b8ff;
   --color-primary-500: #3dadff;
   --color-primary-600: #1f8bf5;
-  --color-primary-700: #0a6fef;
+  --color-primary-700: #005ec6;
   --color-primary-800: #0a56b8;
   --color-primary-900: #08325f;
 

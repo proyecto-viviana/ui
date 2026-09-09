@@ -70,8 +70,8 @@ export function MirrorPanel03(): JSX.Element {
             it exposes no knob for; in this centred flex row that reads as full-height. */}
         <Divider orientation="vertical" size="S" />
 
-        {/* `live` is a real register channel now: white ink on --accent-live (#ff6b35),
-            the exact orange-red the spec's LIVE pill uses (badge/index.tsx:228,170-172),
+        {/* `live` is a real register channel now: black ink on --accent-live (#ff4fc3),
+            the exact CTA fuchsia the spec's LIVE pill uses (badge/index.tsx),
             and the glxPulse breathing comes free — badgeStyles animates `live` with a 2s
             ease-in-out infinite livePulse (badge/index.tsx:329-347), reduced-motion aware.
             So both former GAPs — the missing orange-red channel and the dropped pulse —
@@ -99,11 +99,11 @@ export function MirrorPanel03(): JSX.Element {
         </Badge>
 
         {/* The streak chip is the register's tinted-plate fill. `notice` + `subtle` now
-            renders the spec's amber-on-amber pairing directly: notice-800/900 ink on a
+            renders the spec's yellow-on-yellow pairing directly: notice-800/900 ink on a
             notice-subtle plate (badge/index.tsx:183-194) — the ink follows the channel,
             no longer resetting to black/white. The flame is the register's own
             PixelFlameIcon (createIcon), so Badge's icon pipeline baseline-centres and
-            sizes it and it inks from the badge's amber currentColor, where the spec's
+            sizes it and it inks from the badge's yellow currentColor, where the spec's
             raster <img> arrived un-centred and had to be hand-sized. <Text> is explicit
             because mixed children (icon + label) skip Badge's text-only fast path that
             otherwise applies the label styles. */}

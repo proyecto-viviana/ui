@@ -109,7 +109,6 @@ export interface IconStyle {
     | "notice"
     | "gray"
     | "red"
-    | "orange"
     | "yellow"
     | "chartreuse"
     | "celery"

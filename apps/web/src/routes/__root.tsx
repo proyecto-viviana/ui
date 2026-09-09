@@ -51,8 +51,8 @@ function ThemedApp() {
      light-dark() fills lightningcss downlevels into a var() pair guarded by
      --lightningcss-light/dark. Those guards exist only on the atoms
      setColorScheme() emits, which the library Provider is what applies —
-     without an ancestor Provider a fill like light-dark(#2e90fa,#407fc1)
-     collapses to the garbage "#2e90fa#407fc1" and the control paints
+     without an ancestor Provider a fill like light-dark(#3dadff,#0f6adb)
+     collapses to the garbage "#3dadff#0f6adb" and the control paints
      transparent. /showcase and /solid-spectrum wrap their own Providers;
      this root one covers the remaining top-level pages (landing, Theme
      Studio, admin). No `background` prop, so it paints nothing itself —

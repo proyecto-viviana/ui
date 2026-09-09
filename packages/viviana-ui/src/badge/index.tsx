@@ -52,7 +52,6 @@ export type BadgeVariant =
   | "metric"
   | "gray"
   | "red"
-  | "orange"
   | "yellow"
   | "chartreuse"
   | "celery"
@@ -128,8 +127,8 @@ export const BadgeContext = createContext<SpectrumContextValue<BadgeProps>>(null
 const livePulse = tglPulse();
 
 /* `live` and `metric` are the two register channels the ramps don't carry
- * (glasselated-ramps.ts covers gray/blue/red/orange/yellow/green): the LIVE
- * pulse is a one-off orange-red (`--accent-live`, its own channel by design)
+ * (glasselated-ramps.ts covers gray/blue/red/yellow/green): the LIVE
+ * pulse rides the CTA fuchsia (`--accent-live` aliases `--accent-cta`)
  * and metric is the sky-blue that replaced the retired violet. Both live in
  * viviana-tokens.css per scheme, so they enter here as arbitrary `[var(--…)]`
  * values — the same pattern the token file's header prescribes — rather than
@@ -168,20 +167,19 @@ const badgeStyles = style<{
           default: "white",
           variant: {
             notice: "black",
-            orange: "black",
             yellow: "black",
             chartreuse: "black",
             celery: "black",
-            /* Metric's sky-blue and LIVE's orange-red are mid-luminance in both
-               schemes; black clears 4.5:1, white does not (LIVE white-on-#ff6b35
-               is 2.84:1). Same black-ink family as notice/orange/yellow. */
+            /* Metric's cyan and LIVE's fuchsia are mid-luminance in both
+               schemes; black clears 4.5:1, white does not (LIVE white-on-#ff4fc3
+               is 2.93:1, black 7.16:1). Same black-ink family as notice/yellow. */
             live: "black",
             metric: "black",
           },
         },
         /* A subtle badge is the register's tinted-plate chip — same-channel ink
-           on a same-channel wash (the spec's streak chip is amber-600 ink on an
-           amber-100 plate, TerminalGlassLab.tsx:466-467). The ink mirrors the
+           on a same-channel wash (the spec's streak chip is signal ink on a
+           signal-tinted plate). The ink mirrors the
            outline map below value-for-value, exactly as outline's ink mirrors
            its border: one channel, two strengths, nothing can drift. Neutral and
            the decorative variants keep the plain ink for the same reasons they
@@ -210,7 +208,7 @@ const badgeStyles = style<{
            `neutral` is deliberately NOT mirrored, even though it does have a border
            entry below (gray-500/gray-600). Those are rule weights, picked to read as
            a hairline; at badge size they would not carry as text. It keeps the
-           neutral ink. The decorative variants (gray, red, orange, …) have no entry
+           neutral ink. The decorative variants (gray, red, yellow, …) have no entry
            in that map at all — no channel to mirror — so they keep it too. */
         outline: {
           default: "gray-1000",
@@ -244,7 +242,6 @@ const badgeStyles = style<{
             metric: "[var(--status-metric)]",
             gray: lightDark("gray-600", "gray-300"),
             red: lightDark("negative-900", "negative-700"),
-            orange: "orange",
             yellow: "yellow",
             chartreuse: "chartreuse",
             celery: "celery",
@@ -277,7 +274,6 @@ const badgeStyles = style<{
             metric: "[color-mix(in srgb, var(--status-metric) 15%, transparent)]",
             gray: "gray-subtle",
             red: "red-subtle",
-            orange: "orange-subtle",
             yellow: "yellow-subtle",
             chartreuse: "chartreuse-subtle",
             celery: "celery-subtle",

@@ -30,8 +30,8 @@ import { useGlasselatedTheme } from "../glasselated-theme";
      • cy (passed) -> "positive". Reads as a success in the spec and resolves to the
        same blue by design — glasselated-ramps.ts retargets positive off green onto
        blue citing THIS line ("checkpoint 0x3D passed ✓") as its evidence.
-     • am (signal) -> "notice"; notice-color-* refs the orange slot, which now carries
-       brand amber.
+     • am (signal) -> "notice"; notice-color-* is retargeted onto the register's yellow
+       ramp, which is the signal channel now.
      • rd (fault)  -> "negative"; negative-color-* refs the brand red.
      • vi (metric) -> "metric". StatusLight now carries the register's metric channel —
        the sky-blue that replaced the retired violet (--status-metric, statuslight/

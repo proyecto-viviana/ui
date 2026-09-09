@@ -84,8 +84,8 @@ export interface CardProps extends Omit<
   variant?: CardVariant;
   /**
    * The register's woven hex-mesh weave, painted behind the glass fill —
-   * `ambient` is the quiet mixed gray/blue/orange weave, `signal` the warm
-   * single-hue amber one. Only the filled variants take it; `tertiary` and
+   * `ambient` is the quiet mixed slate/blue/fuchsia weave, `signal` the
+   * single-hue detail-yellow one. Only the filled variants take it; `tertiary` and
    * `quiet` have no fill for a weave to sit under.
    */
   mesh?: CardMeshVariant;

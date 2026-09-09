@@ -58,7 +58,6 @@
             "'metric'",
             "'gray'",
             "'red'",
-            "'orange'",
             "'yellow'",
             "'chartreuse'",
             "'celery'",
@@ -162,7 +161,9 @@
           "'live'",
           "'metric'"
         ],
-        "there": []
+        "there": [
+          "'orange'"
+        ]
       }
     ]
   }

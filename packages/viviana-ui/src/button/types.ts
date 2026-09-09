@@ -25,14 +25,14 @@ export type ButtonVariant =
   /**
    * The destructive/negative action — saturated red fill, white ink. Its two semantic
    * counterparts below (`warning`, `success`) complete the status trio: the same
-   * saturated-fill-with-white-ink treatment on the warm (amber) and success (green)
+   * saturated-fill treatment on the signal (yellow) and success (green)
    * channels, so a consumer can express the full negative/warning/success spectrum on a
    * button the same way Badge/StatusLight/Meter/InlineAlert do.
    */
   | "negative"
-  /** Warm caution — the amber/`notice` channel (deep burnt-orange fill, white ink). Kept
-   * visually apart from `create`: warning is a saturated fill with white ink, `create` is a
-   * pale-yellow wash with dark ink, so they never read as the same warm affordance. */
+  /** Caution — the yellow/`notice` channel (deep yellow fill, black ink). Kept visually
+   * apart from `create`: warning is a saturated deep-yellow fill, `create` is the CTA
+   * fuchsia, so they never read as the same affordance. */
   | "warning"
   /** Success — the green/`positive` channel (green fill, white ink). */
   | "success"

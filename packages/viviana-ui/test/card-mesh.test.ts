@@ -1,20 +1,22 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import { meshStrip } from "../src/style/meshStrip";
 
-const cardSource = readFileSync(
-  fileURLToPath(new URL("../src/card/index.tsx", import.meta.url)),
-  "utf8",
-);
-const meshFieldSource = readFileSync(
-  fileURLToPath(new URL("../src/card/mesh-field.ts", import.meta.url)),
-  "utf8",
-);
-const tokens = readFileSync(
-  fileURLToPath(new URL("../src/viviana-tokens.css", import.meta.url)),
-  "utf8",
-);
+/* Resolved against the working directory, not `import.meta.url`: this file is read
+ * by the DOM-environment runner from the repo root, where `import.meta.url` is an
+ * http URL and `fileURLToPath` throws before a single test runs. */
+function readSource(relative: string): string {
+  for (const base of ["packages/viviana-ui", "."]) {
+    const candidate = resolve(process.cwd(), base, relative);
+    if (existsSync(candidate)) return readFileSync(candidate, "utf8");
+  }
+  throw new Error(`cannot locate ${relative} from ${process.cwd()}`);
+}
+
+const cardSource = readSource("src/card/index.tsx");
+const meshFieldSource = readSource("src/card/mesh-field.ts");
+const tokens = readSource("src/viviana-tokens.css");
 
 /* The mesh card's paint is a css() escape hatch, so nothing about it typechecks and
  * every one of these lines is load-bearing: drop it and the card still renders, just

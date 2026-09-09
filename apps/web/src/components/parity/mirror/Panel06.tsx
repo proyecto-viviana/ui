@@ -35,13 +35,12 @@ import { useGlasselatedTheme } from "../glasselated-theme";
 
 /* Same rows, same order, same strings as the spec's CONSOLE_CARDS.
    The spec colours its dot and state label straight from --status-signal / --status-metric.
-   `notice` resolves to amber, i.e. --status-signal, so the DUE row carries over directly.
+   `notice` resolves to the register's yellow, i.e. --status-signal, so the DUE row carries
+   over directly.
 
-   The NEW row used `purple`, on the reading that --status-metric is the island's violet
-   channel. It is not: --status-metric is #1c8fc9 / #5ac2ee (glasselated.css:97/:212), a
-   cyan-blue. The island does spend violet on metrics, but this token is not that channel,
-   so `purple` was painting a violet chip where the spec paints a blue one — a hue leak
-   introduced here, not by the library. `informative` is the semantic blue on the themed
+   The NEW row used `purple`, on the reading that --status-metric was a violet channel. It
+   is not: --status-metric is the register's cyan, so `purple` was painting a violet chip
+   where the spec paints a blue one — a hue leak introduced here, not by the library. `informative` is the semantic blue on the themed
    ramps, so it is both the right hue and the right kind of variant: the state now carries
    meaning rather than being a bare colour name. */
 const CONSOLE_CARDS = [

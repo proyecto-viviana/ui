@@ -51,23 +51,20 @@ interface ListRow {
    changes shape: the spec paints each tag as bare micro text in a channel colour,
    so each row's channel is restated here as the nearest Badge variant.
 
-   The mapping costs two of the four channels:
+   The mapping costs the two channels the library does not publish:
      • --text-tertiary (READ) -> "neutral". Right family, wrong weight: every
        fillStyle resolves neutral ink to gray-1000, the STRONGEST neutral, and the
        badge has no subdued/dim rung. The spec's deliberately-receding READ tag
        comes out as loud as the live one.
      • --status-info (RUNNING) -> "informative". The only exact hit; informative-*
        aliases the brand blue this channel is defined as.
-     • --accent-live (● LIVE) -> "negative". `--accent-live` is #ff6b35 and the
-       island comments it as "its own channel" precisely because it is neither a
-       status nor a brand ramp. Nothing in the library carries it; red (#f04438) is
-       the nearest published hue, and it arrives with "this is an error" attached.
-     • --status-metric (NEW) -> "neutral" as well. Violet is published as a base
-       ramp but aliased by no semantic role, and Badge's decorative variants
-       (purple/indigo/…) are still on Adobe values the library itself warns would
-       clash. Same call, and same loss, as the metrics channel in mirror panel 07:
-       it goes missing rather than being faked in an off-palette hue. The visible
-       consequence is that READ and NEW, four rows apart in the spec, are now
+     • --accent-live (● LIVE) -> "live". Exact: the library publishes the channel
+       as a Badge variant painted from --accent-live itself, pulse included.
+     • --status-metric (NEW) -> "neutral". The channel is the register's cyan, but
+       Badge's decorative `cyan` is still an Adobe visual colour rather than
+       --cyan-500, so the tag goes missing rather than being faked in an off-palette
+       hue — same call, and same loss, as the metrics channel in mirror panel 07. The
+       visible consequence is that READ and NEW, four rows apart in the spec, are now
        indistinguishable. */
 const LIST_ROWS: ListRow[] = [
   {
@@ -89,7 +86,7 @@ const LIST_ROWS: ListRow[] = [
     title: "SDF Raymarching — Live w/ Shader School",
     meta: "Today 18:00 · 214 waiting",
     tag: "● LIVE",
-    variant: "negative",
+    variant: "live",
   },
   {
     id: "firefly",

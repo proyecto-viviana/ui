@@ -154,7 +154,7 @@ export const s2Button = style<S2ButtonStyleProps>(
               isFocusVisible: lightDark("negative-1000", "negative-600"),
             },
             /* warning/success are negative's status counterparts: the same saturated-fill
-             * idiom on the warm (notice -> amber) and success (positive -> green) channels.
+             * idiom on the signal (notice -> yellow) and success (positive -> green) channels.
              * Border mirrors the fill stop for stop, exactly as accent/negative do. */
             warning: {
               default: lightDark("notice-900", "notice-700"),
@@ -226,9 +226,9 @@ export const s2Button = style<S2ButtonStyleProps>(
               isPressed: lightDark("negative-1000", "negative-600"),
               isFocusVisible: lightDark("negative-1000", "negative-600"),
             },
-            /* warning/success fills mirror negative on the warm (notice -> amber) and success
-             * (positive -> green) channels. The green ramp is L-solved to carry the same
-             * white-ink contrast as amber, so all three status fills clear AA identically
+            /* warning/success fills mirror negative on the signal (notice -> yellow) and
+             * success (positive -> green) channels. The green ramp is L-solved to carry the
+             * same white-ink contrast as red, so both dark fills clear AA identically
              * (see style/glasselated-ramps.ts). */
             warning: {
               default: lightDark("notice-900", "notice-700"),
@@ -299,12 +299,16 @@ export const s2Button = style<S2ButtonStyleProps>(
             secondary: baseColor("neutral"),
             accent: "white",
             negative: "white",
-            /* warning/success carry white ink on their saturated fills, like accent/negative.
-             * The fill stops (notice/positive -900/-700) are pinned >= 4.5:1 on white. */
-            warning: "white",
+            /* Success carries white ink on its saturated fill, like accent/negative: the
+             * positive fill stops (-900/-700) are pinned >= 4.5:1 on white. Warning cannot —
+             * the notice ramp is the register's yellow, bright in BOTH columns, so white on
+             * it is 2.3-2.5:1 and black is 7.7:1. Same ink Badge and InlineAlert spend on
+             * this channel. */
+            warning: "black",
             success: "white",
-            /* Dark ink on a pale fill — the inverse of every Spectrum variant. #7a5600 on
-             * #ffedb0 is 6.4:1, so this clears AA comfortably in both schemes. */
+            /* Create is the CTA fuchsia, and its ink flips with the ground rather than
+             * staying white: near-black #1a0512 on the night fill is 6.66:1, white on the
+             * daylight fill 4.74:1, so both schemes clear AA. */
             create: "create-ink",
           },
           isDisabled: "disabled",

@@ -24,7 +24,7 @@ export function SiteBackdrop(props: { variant?: "calm" | "scene" }): JSX.Element
   if (props.variant === "scene") {
     return (
       <>
-        {/* scene photograph — desaturated at night, full-colour by day */}
+        {/* scene photograph — graded by the register's --scene-filter, which is themed */}
         <div
           aria-hidden="true"
           style={{
@@ -34,7 +34,7 @@ export function SiteBackdrop(props: { variant?: "calm" | "scene" }): JSX.Element
             "background-image": `url('/glasselated/${dark() ? "bg-scene-night" : "bg-scene"}.png')`,
             "background-size": "cover",
             "background-position": "center",
-            filter: dark() ? "saturate(0) brightness(0.62)" : "none",
+            filter: "var(--scene-filter)",
             opacity: dark() ? "0.75" : "1",
             "pointer-events": "none",
           }}

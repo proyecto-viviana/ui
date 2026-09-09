@@ -32,7 +32,7 @@ import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
 
 /* Same four rows, same order, same lowercase labels as the spec's NAV_ITEMS.
-   `count` is the spec's amber pill on `review`; the colours are deliberately absent —
+   `count` is the spec's signal-yellow pill on `review`; the colours are deliberately absent —
    the spec hard-codes a per-item `fg`, the twin lets the component own selected/rest. */
 const NAV_ITEMS = [
   { id: "home", label: "home", count: null as number | null },

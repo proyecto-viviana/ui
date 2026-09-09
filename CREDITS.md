@@ -98,6 +98,9 @@ design repository
   generated from the lane's pixel-art SVG set
   (`apps/akade/public/glasselated/icons`); owner-owned, MIT with the rest of
   our work.
+- **[Pixelarticons](https://github.com/halfmage/pixelarticons)** (MIT) — the pixel
+  icon set the lane's SVGs were drawn from; the source for
+  `packages/viviana-ui/src/icon/pixel-icons/*`.
 - **[Geist, Geist Mono & Geist Pixel](https://vercel.com/font)** (SIL OFL 1.1) —
   the register's three type faces, loaded from Google Fonts; not vendored.
 

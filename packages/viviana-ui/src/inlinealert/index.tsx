@@ -139,8 +139,8 @@ const inlineAlert = style<InlineAlertStyleProps & { isFocusVisible?: boolean }>(
           variant: {
             /* With fillStyle="border" the 1px edge is the only carrier of variant
              * identity, so it has to clear 3:1 in both schemes, and stops 700/800 do
-             * not: the amber and blue light columns stay bright that far up (amber only
-             * reaches a dark value at 900, #af6400), putting notice and positive under
+             * not: the yellow and blue light columns stay bright that far up (yellow only
+             * reaches a dark value at 900, #c9a000), putting notice and positive under
              * 2:1 on the light card. The 900/1000 pair lands every channel at ~4.3-4.5
              * light / ~5.9-6.8 dark and follows the lightDark() pair idiom the outline
              * Badge already uses. It also retires the unexplained 700-vs-800 split.
