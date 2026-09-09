@@ -302,6 +302,13 @@ export const PANELS: readonly PanelDef[] = [
       "Well",
     ],
   },
+  {
+    slug: "scene",
+    num: "15",
+    title: "Scene & HUD",
+    blurb: "The atmosphere layer: graded scenes, corner brackets, scanlines, sweeps.",
+    components: ["SceneBackdrop", "HudFrame"],
+  },
 ];
 
 export function panelBySlug(slug: string): PanelDef | undefined {

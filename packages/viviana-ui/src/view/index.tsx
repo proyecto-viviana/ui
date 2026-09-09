@@ -21,3 +21,6 @@ export {
   ViewFooter as Footer,
 } from "./Content";
 export type { ContentProps, ViewHeaderProps, ViewFooterProps } from "./Content";
+
+export { SceneBackdrop } from "./SceneBackdrop";
+export type { SceneBackdropProps } from "./SceneBackdrop";

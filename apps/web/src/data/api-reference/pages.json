@@ -146,6 +146,10 @@
       "title": "ListView"
     },
     {
+      "slug": "hudframe",
+      "title": "HudFrame"
+    },
+    {
       "slug": "icon",
       "title": "SpectrumIcon"
     },
@@ -326,9 +330,13 @@
       "title": "UserCard"
     },
     {
+      "slug": "view",
+      "title": "SceneBackdrop"
+    },
+    {
       "slug": "well",
       "title": "Well"
     }
   ],
-  "propCount": 3475
+  "propCount": 3492
 }

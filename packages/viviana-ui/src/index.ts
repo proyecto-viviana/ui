@@ -803,6 +803,14 @@ export type {
   TerminalLogChannel,
 } from "./well";
 
+// HudFrame
+export { HudFrame } from "./hudframe";
+export type { HudFrameProps, HudFrameBrackets, HudFrameChannel } from "./hudframe";
+
+// SceneBackdrop
+export { SceneBackdrop } from "./view";
+export type { SceneBackdropProps } from "./view";
+
 // Support exports — hooks, helpers, and collection data.
 // Mirrors React S2's re-exports of the underlying React Aria / React Stately
 // utilities; here they come from our equivalent workspace packages. The

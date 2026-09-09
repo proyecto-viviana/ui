@@ -1,0 +1,92 @@
+{
+  "slug": "view",
+  "title": "SceneBackdrop",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SceneBackdropProps",
+      "component": "SceneBackdrop",
+      "source": "packages/viviana-ui/src/view/SceneBackdrop.tsx",
+      "props": [
+        {
+          "name": "src",
+          "type": "string",
+          "required": false,
+          "description": "The scene image. Omit it to keep only the generated layers.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "veil",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Darken the scene under the content with the register's veil.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "sweep",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Run a scan line down the scene.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "skyline",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Draw the pixel skyline along the horizon.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "grid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Draw the perspective floor grid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

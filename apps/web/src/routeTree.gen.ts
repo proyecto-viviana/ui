@@ -29,6 +29,7 @@ import { Route as ShowcaseNavigationRouteImport } from './routes/showcase/naviga
 import { Route as ShowcaseOverlaysRouteImport } from './routes/showcase/overlays'
 import { Route as ShowcaseParityRouteImport } from './routes/showcase/parity'
 import { Route as ShowcasePickersRouteImport } from './routes/showcase/pickers'
+import { Route as ShowcaseSceneRouteImport } from './routes/showcase/scene'
 import { Route as ShowcaseSelectionRouteImport } from './routes/showcase/selection'
 import { Route as ShowcaseSlidersRouteImport } from './routes/showcase/sliders'
 import { Route as ShowcaseStatusRouteImport } from './routes/showcase/status'
@@ -75,6 +76,7 @@ import { Route as DocsComponentsDropzoneRouteImport } from './routes/docs/compon
 import { Route as DocsComponentsFiletriggerRouteImport } from './routes/docs/components/filetrigger'
 import { Route as DocsComponentsFormRouteImport } from './routes/docs/components/form'
 import { Route as DocsComponentsGridlistRouteImport } from './routes/docs/components/gridlist'
+import { Route as DocsComponentsHudframeRouteImport } from './routes/docs/components/hudframe'
 import { Route as DocsComponentsIconRouteImport } from './routes/docs/components/icon'
 import { Route as DocsComponentsIllustratedmessageRouteImport } from './routes/docs/components/illustratedmessage'
 import { Route as DocsComponentsImageRouteImport } from './routes/docs/components/image'
@@ -120,6 +122,7 @@ import { Route as DocsComponentsToolbarRouteImport } from './routes/docs/compone
 import { Route as DocsComponentsTooltipRouteImport } from './routes/docs/components/tooltip'
 import { Route as DocsComponentsTreeRouteImport } from './routes/docs/components/tree'
 import { Route as DocsComponentsUsercardRouteImport } from './routes/docs/components/usercard'
+import { Route as DocsComponentsViewRouteImport } from './routes/docs/components/view'
 import { Route as DocsComponentsWellRouteImport } from './routes/docs/components/well'
 import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
 import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
@@ -274,6 +277,11 @@ const ShowcaseParityRoute = ShowcaseParityRouteImport.update({
 const ShowcasePickersRoute = ShowcasePickersRouteImport.update({
   id: '/pickers',
   path: '/pickers',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseSceneRoute = ShowcaseSceneRouteImport.update({
+  id: '/scene',
+  path: '/scene',
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const ShowcaseSelectionRoute = ShowcaseSelectionRouteImport.update({
@@ -524,6 +532,11 @@ const DocsComponentsGridlistRoute = DocsComponentsGridlistRouteImport.update({
   path: '/components/gridlist',
   getParentRoute: () => DocsRouteRoute,
 } as any)
+const DocsComponentsHudframeRoute = DocsComponentsHudframeRouteImport.update({
+  id: '/components/hudframe',
+  path: '/components/hudframe',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
 const DocsComponentsIconRoute = DocsComponentsIconRouteImport.update({
   id: '/components/icon',
   path: '/components/icon',
@@ -763,6 +776,11 @@ const DocsComponentsTreeRoute = DocsComponentsTreeRouteImport.update({
 const DocsComponentsUsercardRoute = DocsComponentsUsercardRouteImport.update({
   id: '/components/usercard',
   path: '/components/usercard',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsViewRoute = DocsComponentsViewRouteImport.update({
+  id: '/components/view',
+  path: '/components/view',
   getParentRoute: () => DocsRouteRoute,
 } as any)
 const DocsComponentsWellRoute = DocsComponentsWellRouteImport.update({
@@ -1114,6 +1132,7 @@ export interface FileRoutesByFullPath {
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
   '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/scene': typeof ShowcaseSceneRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
   '/showcase/status': typeof ShowcaseStatusRoute
@@ -1160,6 +1179,7 @@ export interface FileRoutesByFullPath {
   '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
   '/docs/components/form': typeof DocsComponentsFormRoute
   '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/hudframe': typeof DocsComponentsHudframeRoute
   '/docs/components/icon': typeof DocsComponentsIconRoute
   '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
   '/docs/components/image': typeof DocsComponentsImageRoute
@@ -1205,6 +1225,7 @@ export interface FileRoutesByFullPath {
   '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
   '/docs/components/tree': typeof DocsComponentsTreeRoute
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/view': typeof DocsComponentsViewRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
@@ -1276,6 +1297,7 @@ export interface FileRoutesByTo {
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
   '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/scene': typeof ShowcaseSceneRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
   '/showcase/status': typeof ShowcaseStatusRoute
@@ -1322,6 +1344,7 @@ export interface FileRoutesByTo {
   '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
   '/docs/components/form': typeof DocsComponentsFormRoute
   '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/hudframe': typeof DocsComponentsHudframeRoute
   '/docs/components/icon': typeof DocsComponentsIconRoute
   '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
   '/docs/components/image': typeof DocsComponentsImageRoute
@@ -1367,6 +1390,7 @@ export interface FileRoutesByTo {
   '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
   '/docs/components/tree': typeof DocsComponentsTreeRoute
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/view': typeof DocsComponentsViewRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
@@ -1445,6 +1469,7 @@ export interface FileRoutesById {
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
   '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/scene': typeof ShowcaseSceneRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
   '/showcase/status': typeof ShowcaseStatusRoute
@@ -1491,6 +1516,7 @@ export interface FileRoutesById {
   '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
   '/docs/components/form': typeof DocsComponentsFormRoute
   '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/hudframe': typeof DocsComponentsHudframeRoute
   '/docs/components/icon': typeof DocsComponentsIconRoute
   '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
   '/docs/components/image': typeof DocsComponentsImageRoute
@@ -1536,6 +1562,7 @@ export interface FileRoutesById {
   '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
   '/docs/components/tree': typeof DocsComponentsTreeRoute
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/view': typeof DocsComponentsViewRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
@@ -1615,6 +1642,7 @@ export interface FileRouteTypes {
     | '/showcase/overlays'
     | '/showcase/parity'
     | '/showcase/pickers'
+    | '/showcase/scene'
     | '/showcase/selection'
     | '/showcase/sliders'
     | '/showcase/status'
@@ -1661,6 +1689,7 @@ export interface FileRouteTypes {
     | '/docs/components/filetrigger'
     | '/docs/components/form'
     | '/docs/components/gridlist'
+    | '/docs/components/hudframe'
     | '/docs/components/icon'
     | '/docs/components/illustratedmessage'
     | '/docs/components/image'
@@ -1706,6 +1735,7 @@ export interface FileRouteTypes {
     | '/docs/components/tooltip'
     | '/docs/components/tree'
     | '/docs/components/usercard'
+    | '/docs/components/view'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/viviana-ui/docs/installation'
@@ -1777,6 +1807,7 @@ export interface FileRouteTypes {
     | '/showcase/overlays'
     | '/showcase/parity'
     | '/showcase/pickers'
+    | '/showcase/scene'
     | '/showcase/selection'
     | '/showcase/sliders'
     | '/showcase/status'
@@ -1823,6 +1854,7 @@ export interface FileRouteTypes {
     | '/docs/components/filetrigger'
     | '/docs/components/form'
     | '/docs/components/gridlist'
+    | '/docs/components/hudframe'
     | '/docs/components/icon'
     | '/docs/components/illustratedmessage'
     | '/docs/components/image'
@@ -1868,6 +1900,7 @@ export interface FileRouteTypes {
     | '/docs/components/tooltip'
     | '/docs/components/tree'
     | '/docs/components/usercard'
+    | '/docs/components/view'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/viviana-ui/docs/installation'
@@ -1945,6 +1978,7 @@ export interface FileRouteTypes {
     | '/showcase/overlays'
     | '/showcase/parity'
     | '/showcase/pickers'
+    | '/showcase/scene'
     | '/showcase/selection'
     | '/showcase/sliders'
     | '/showcase/status'
@@ -1991,6 +2025,7 @@ export interface FileRouteTypes {
     | '/docs/components/filetrigger'
     | '/docs/components/form'
     | '/docs/components/gridlist'
+    | '/docs/components/hudframe'
     | '/docs/components/icon'
     | '/docs/components/illustratedmessage'
     | '/docs/components/image'
@@ -2036,6 +2071,7 @@ export interface FileRouteTypes {
     | '/docs/components/tooltip'
     | '/docs/components/tree'
     | '/docs/components/usercard'
+    | '/docs/components/view'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/viviana-ui/docs/installation'
@@ -2243,6 +2279,13 @@ declare module '@tanstack/solid-router' {
       path: '/pickers'
       fullPath: '/showcase/pickers'
       preLoaderRoute: typeof ShowcasePickersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/scene': {
+      id: '/showcase/scene'
+      path: '/scene'
+      fullPath: '/showcase/scene'
+      preLoaderRoute: typeof ShowcaseSceneRouteImport
       parentRoute: typeof ShowcaseRouteRoute
     }
     '/showcase/selection': {
@@ -2567,6 +2610,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof DocsComponentsGridlistRouteImport
       parentRoute: typeof DocsRouteRoute
     }
+    '/docs/components/hudframe': {
+      id: '/docs/components/hudframe'
+      path: '/components/hudframe'
+      fullPath: '/docs/components/hudframe'
+      preLoaderRoute: typeof DocsComponentsHudframeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
     '/docs/components/icon': {
       id: '/docs/components/icon'
       path: '/components/icon'
@@ -2880,6 +2930,13 @@ declare module '@tanstack/solid-router' {
       path: '/components/usercard'
       fullPath: '/docs/components/usercard'
       preLoaderRoute: typeof DocsComponentsUsercardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/view': {
+      id: '/docs/components/view'
+      path: '/components/view'
+      fullPath: '/docs/components/view'
+      preLoaderRoute: typeof DocsComponentsViewRouteImport
       parentRoute: typeof DocsRouteRoute
     }
     '/docs/components/well': {
@@ -3308,6 +3365,7 @@ interface DocsRouteRouteChildren {
   DocsComponentsFiletriggerRoute: typeof DocsComponentsFiletriggerRoute
   DocsComponentsFormRoute: typeof DocsComponentsFormRoute
   DocsComponentsGridlistRoute: typeof DocsComponentsGridlistRoute
+  DocsComponentsHudframeRoute: typeof DocsComponentsHudframeRoute
   DocsComponentsIconRoute: typeof DocsComponentsIconRoute
   DocsComponentsIllustratedmessageRoute: typeof DocsComponentsIllustratedmessageRoute
   DocsComponentsImageRoute: typeof DocsComponentsImageRoute
@@ -3353,6 +3411,7 @@ interface DocsRouteRouteChildren {
   DocsComponentsTooltipRoute: typeof DocsComponentsTooltipRoute
   DocsComponentsTreeRoute: typeof DocsComponentsTreeRoute
   DocsComponentsUsercardRoute: typeof DocsComponentsUsercardRoute
+  DocsComponentsViewRoute: typeof DocsComponentsViewRoute
   DocsComponentsWellRoute: typeof DocsComponentsWellRoute
 }
 
@@ -3394,6 +3453,7 @@ const DocsRouteRouteChildren: DocsRouteRouteChildren = {
   DocsComponentsFiletriggerRoute: DocsComponentsFiletriggerRoute,
   DocsComponentsFormRoute: DocsComponentsFormRoute,
   DocsComponentsGridlistRoute: DocsComponentsGridlistRoute,
+  DocsComponentsHudframeRoute: DocsComponentsHudframeRoute,
   DocsComponentsIconRoute: DocsComponentsIconRoute,
   DocsComponentsIllustratedmessageRoute: DocsComponentsIllustratedmessageRoute,
   DocsComponentsImageRoute: DocsComponentsImageRoute,
@@ -3439,6 +3499,7 @@ const DocsRouteRouteChildren: DocsRouteRouteChildren = {
   DocsComponentsTooltipRoute: DocsComponentsTooltipRoute,
   DocsComponentsTreeRoute: DocsComponentsTreeRoute,
   DocsComponentsUsercardRoute: DocsComponentsUsercardRoute,
+  DocsComponentsViewRoute: DocsComponentsViewRoute,
   DocsComponentsWellRoute: DocsComponentsWellRoute,
 }
 
@@ -3458,6 +3519,7 @@ interface ShowcaseRouteRouteChildren {
   ShowcaseOverlaysRoute: typeof ShowcaseOverlaysRoute
   ShowcaseParityRoute: typeof ShowcaseParityRoute
   ShowcasePickersRoute: typeof ShowcasePickersRoute
+  ShowcaseSceneRoute: typeof ShowcaseSceneRoute
   ShowcaseSelectionRoute: typeof ShowcaseSelectionRoute
   ShowcaseSlidersRoute: typeof ShowcaseSlidersRoute
   ShowcaseStatusRoute: typeof ShowcaseStatusRoute
@@ -3477,6 +3539,7 @@ const ShowcaseRouteRouteChildren: ShowcaseRouteRouteChildren = {
   ShowcaseOverlaysRoute: ShowcaseOverlaysRoute,
   ShowcaseParityRoute: ShowcaseParityRoute,
   ShowcasePickersRoute: ShowcasePickersRoute,
+  ShowcaseSceneRoute: ShowcaseSceneRoute,
   ShowcaseSelectionRoute: ShowcaseSelectionRoute,
   ShowcaseSlidersRoute: ShowcaseSlidersRoute,
   ShowcaseStatusRoute: ShowcaseStatusRoute,

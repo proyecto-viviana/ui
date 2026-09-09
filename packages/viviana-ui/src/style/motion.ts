@@ -107,7 +107,9 @@ export function typeIn(this: MacroContext | void): string {
   );
 }
 
-/** Theater scan sweep: one bright line falling through the frame. */
+/** Theater scan sweep: one bright line falling through the frame. Travel is
+ * `--scan-travel`, defaulting to the handoff's full-viewport theater; a bounded
+ * frame sets it to its own height so the line stays inside the frame. */
 export function scanDown(this: MacroContext | void): string {
   return keyframes.call(
     this,
@@ -117,7 +119,7 @@ export function scanDown(this: MacroContext | void): string {
   }
 
   to {
-    transform: translateY(100vh);
+    transform: translateY(var(--scan-travel, 100vh));
   }
 `,
   );

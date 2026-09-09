@@ -1,0 +1,100 @@
+{
+  "slug": "hudframe",
+  "title": "HudFrame",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "HudFrameProps",
+      "component": "HudFrame",
+      "source": "packages/viviana-ui/src/hudframe/index.tsx",
+      "props": [
+        {
+          "name": "brackets",
+          "type": "HudFrameBrackets",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The bracket arm length.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "channel",
+          "type": "HudFrameChannel",
+          "values": [
+            "'live'",
+            "'info'"
+          ],
+          "required": false,
+          "default": "'info'",
+          "description": "The channel the brackets and the sweep report on.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "scanlines",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Lay the CRT line grille over the content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "sweep",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Run a scan line down the frame.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The framed content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}
