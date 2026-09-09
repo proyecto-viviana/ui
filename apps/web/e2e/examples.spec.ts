@@ -59,27 +59,117 @@ async function fuchsiaFills(page: Page): Promise<{ cta: string; filled: string[]
   });
 }
 
-/** Every visible interactive element's rendered box, smallest first. */
+/**
+ * Every interactive target that fails WCAG 2.2 2.5.8, by its real hit box.
+ *
+ * Two failure modes this has to tell apart:
+ *
+ * 1. A native `input` inside the library's `Radio`, `Switch` or `Checkbox` is
+ *    the accessibility anchor, not the target. `visuallyHiddenStyles` land on a
+ *    wrapper span, so the input measures ~13x13 while the box a finger actually
+ *    hits is its `label`. Measuring the input would red the whole screen over a
+ *    control the user never points at, so a visually hidden control is measured
+ *    through its labelling box — which is then asserted like any other target,
+ *    so a genuinely undersized radio label still fails.
+ * 2. 2.5.8's own spacing exception: an undersized target passes only while a
+ *    24px circle on its centre clears every neighbouring target (and every
+ *    other undersized target's circle). Crowd two 16px labels together and this
+ *    still reds; the register's 24px radio pitch is exactly what the exception
+ *    is for.
+ */
 async function undersizedTargets(page: Page): Promise<string[]> {
   return page.evaluate((min) => {
     const selector = "button, a[href], input, select, textarea, [role=button], [tabindex='0']";
-    const small: string[] = [];
+
+    /** The visually-hidden recipe the library emits (solidaria `visuallyHiddenStyles`). */
+    const isVisuallyHidden = (el: Element): boolean => {
+      const style = getComputedStyle(el);
+      if (style.clip.replace(/\s+/g, " ").trim() === "rect(0px, 0px, 0px, 0px)") return true;
+      if (style.clipPath.replace(/\s+/g, " ").trim() === "inset(50%)") return true;
+      const box = el.getBoundingClientRect();
+      return style.overflow === "hidden" && box.width <= 1 && box.height <= 1;
+    };
+
+    /** The clip sits on the wrapper span, not on the input it hides. */
+    const isHidden = (el: Element): boolean => {
+      for (let node: Element | null = el; node; node = node.parentElement) {
+        if (isVisuallyHidden(node)) return true;
+      }
+      return false;
+    };
+
+    /** The box a pointer actually hits for a visually hidden control. */
+    const labellingBox = (el: Element): Element | null => {
+      const wrapping = el.closest("label");
+      if (wrapping) return wrapping;
+      const labelledBy = el.getAttribute("aria-labelledby");
+      if (labelledBy) {
+        const target = document.getElementById(labelledBy.split(/\s+/)[0] ?? "");
+        if (target) return target;
+      }
+      const id = el.getAttribute("id");
+      if (id) {
+        const forLabel = document.querySelector(`label[for="${CSS.escape(id)}"]`);
+        if (forLabel) return forLabel;
+      }
+      return el.parentElement;
+    };
+
+    type Target = { label: string; box: DOMRect; inline: boolean; substituted: boolean };
+    const targets: Target[] = [];
+
     for (const el of document.querySelectorAll(selector)) {
       const style = getComputedStyle(el);
       if (style.display === "none" || style.visibility === "hidden") continue;
-      const box = el.getBoundingClientRect();
-      // A zero box is an off-screen or unrendered control, not a small one;
-      // 2.5.8 also exempts a target inline in a sentence of text.
-      if (box.width === 0 && box.height === 0) continue;
-      if (style.display === "inline") continue;
-      if (box.width < min || box.height < min) {
-        small.push(
-          `${el.tagName.toLowerCase()} "${el.textContent?.trim().slice(0, 30) ?? ""}" ` +
-            `${Math.round(box.width)}x${Math.round(box.height)}`,
-        );
+
+      let measured: Element = el;
+      let substituted = false;
+      if (isHidden(el)) {
+        const substitute = labellingBox(el);
+        // No labelling box at all: measure the control itself rather than drop it.
+        if (substitute) {
+          measured = substitute;
+          substituted = true;
+        }
       }
+
+      const box = measured.getBoundingClientRect();
+      // A zero box is an off-screen or unrendered control, not a small one.
+      if (box.width === 0 && box.height === 0) continue;
+      targets.push({
+        label:
+          `${el.tagName.toLowerCase()} "${el.textContent?.trim().slice(0, 30) ?? ""}" ` +
+          `${Math.round(box.width)}x${Math.round(box.height)}` +
+          (substituted ? " (measured via its label)" : ""),
+        box,
+        // 2.5.8 exempts a target inline in a sentence of text.
+        inline: getComputedStyle(measured).display === "inline",
+        substituted,
+      });
     }
-    return small;
+
+    const centre = (b: DOMRect) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
+    const undersized = (t: Target) => t.box.width < min || t.box.height < min;
+
+    /** 2.5.8 spacing: the target's own circle must clear every neighbour. */
+    const wellSpaced = (t: Target): boolean => {
+      const c = centre(t.box);
+      const r = min / 2;
+      for (const other of targets) {
+        if (other === t) continue;
+        const b = other.box;
+        const dx = Math.max(b.x - c.x, 0, c.x - (b.x + b.width));
+        const dy = Math.max(b.y - c.y, 0, c.y - (b.y + b.height));
+        if (Math.hypot(dx, dy) < r) return false;
+        if (undersized(other)) {
+          const o = centre(b);
+          if (Math.hypot(o.x - c.x, o.y - c.y) < min) return false;
+        }
+      }
+      return true;
+    };
+
+    return targets.filter((t) => undersized(t) && !t.inline && !wellSpaced(t)).map((t) => t.label);
   }, MIN_TARGET);
 }
 
