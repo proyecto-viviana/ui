@@ -112,6 +112,10 @@ const CODE_LOG: TerminalLogLine[] = CODE_LINES.map((line, index) => ({
 
 /* ── the tutor ─────────────────────────────────────────────────────────── */
 
+/* A terminal log does not wrap: `TerminalLog` paints its lines `white-space:
+   pre`, so a reply longer than the pane turns the log into a horizontal scroll
+   region no keyboard can reach. The tutor's answer is broken at terminal width
+   and hung under its speaker, the way a real transcript reads. */
 const TUTOR_LOG: TerminalLogLine[] = [
   {
     spans: [{ text: "$ ", channel: "prompt" }, { text: 'ask tutor "why does variance drop?"' }],
@@ -119,13 +123,11 @@ const TUTOR_LOG: TerminalLogLine[] = [
   {
     spans: [
       { text: "tutor  ", channel: "signal" },
-      {
-        text:
-          "Each sample is an unbiased guess. Averaging N of them shrinks the spread " +
-          "by √N — so the noise, not the answer, is what you are buying down.",
-      },
+      { text: "Each sample is an unbiased guess. Averaging" },
     ],
   },
+  { text: "       N of them shrinks the spread by √N — so the" },
+  { text: "       noise, not the answer, is what you buy down." },
   { text: "reading  variance.md · 2 refs", channel: "muted" },
   { text: "ready", channel: "muted" },
 ];

@@ -317,8 +317,12 @@
 }
 
 /* Each quadrant fills its cell and clips its own overflow, so a long listing
-   scrolls inside the card rather than stretching the row. */
+   scrolls inside the card rather than stretching the row. A standalone Card is
+   sized by its `size` prop (320px at L); without the width the pane keeps that
+   fixed box, the listing inside it overflows sideways, and the log turns into a
+   scroll container no keyboard can reach. */
 [data-examples] .ex-lesson-pane {
+  width: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
