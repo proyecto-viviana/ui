@@ -147,3 +147,61 @@
     overflow-x: auto;
   }
 }
+
+/* ── ex: lesson ────────────────────────────────────────────────────────── */
+
+/* The workbench canvas. SceneBackdrop is `position: absolute; inset: 0`, so it
+   needs a positioned parent to fill and a content plane above it — otherwise
+   the skyline paints over the four panes. */
+[data-examples] .ex-lesson {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+[data-examples] .ex-lesson-grid {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  min-height: 100%;
+  align-content: start;
+}
+
+/* The command strip runs the full width above the quadrants. */
+[data-examples] .ex-lesson-strip {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* Each quadrant fills its cell and clips its own overflow, so a long listing
+   scrolls inside the card rather than stretching the row. */
+[data-examples] .ex-lesson-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-examples] .ex-lesson-code,
+[data-examples] .ex-lesson-tutor {
+  overflow: auto;
+  max-height: 100%;
+}
+
+/* The transport's scrub track takes the space the timecodes and the buttons
+   leave. */
+[data-examples] .ex-lesson-track {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Pushes the footer's asks flush right. */
+[data-examples] .ex-lesson-spacer {
+  flex: 1 1 auto;
+}
+
+[data-examples] .ex-lesson-checkpoint {
+  min-width: 0;
+}
+
