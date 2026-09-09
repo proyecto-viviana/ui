@@ -20,6 +20,7 @@ import {
   defaultColors,
   hexToOklch,
 } from "@/utils/color";
+import { useTheme } from "@/utils/theme";
 
 // The three surfaces the library has no component for: the OS colour picker and the
 // two halves of the generated-ramp readout. All static, so they need no stylesheet.
@@ -143,12 +144,14 @@ export function ThemeCreator(props: ThemeCreatorProps) {
     props.onThemeChange?.(cssVars);
   });
 
-  const [appearance, setAppearance] = createSignal<"dark" | "light">("dark");
-
-  // Sync appearance with the register's one scheme attribute
-  createEffect(() => {
-    document.documentElement.setAttribute("data-color-scheme", appearance());
-  });
+  /* The scheme attribute has one owner, `useTheme`. This control used to keep a
+     second signal and stamp `data-color-scheme` itself, which pinned every page
+     carrying the creator to the creator's own default and fought the site
+     toggle. Read and drive the real theme instead. */
+  const { theme, toggleTheme } = useTheme();
+  const setAppearance = (next: "dark" | "light"): void => {
+    if (next !== theme()) toggleTheme();
+  };
 
   const shades = ["100", "200", "300", "400", "500", "600", "700", "800"];
 
@@ -163,7 +166,7 @@ export function ThemeCreator(props: ThemeCreatorProps) {
           <Text styles={typeRoles.label}>Appearance</Text>
           <SegmentedControl
             aria-label="Appearance"
-            selectedKey={appearance()}
+            selectedKey={theme()}
             onSelectionChange={(id) => setAppearance(id as "dark" | "light")}
           >
             <SegmentedControlItem id="dark">Dark</SegmentedControlItem>
