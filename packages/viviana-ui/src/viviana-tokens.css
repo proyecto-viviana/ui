@@ -354,6 +354,10 @@
   --status-signal: var(--yellow-text);
   --status-metric: var(--cyan-500);
   --status-fault: var(--red-500);
+  /* The fault channel's wash, the sibling of `--accent-cta-soft` / `--accent-detail-soft`.
+     A wrong answer, a failed row, a rejected drop: the ground is the channel at low alpha
+     so it composites over whatever surface the row sits on and never becomes a fill. */
+  --status-fault-soft: rgba(255, 107, 94, 0.14);
 
   /* Event tints */
   --event-default-bg: rgba(14, 16, 20, 0.72);
@@ -679,7 +683,13 @@
   --text-secondary: var(--slate-700);
   --text-tertiary: var(--slate-500);
   --text-lede: var(--slate-700);
-  --text-link: var(--blue-500);
+  /* Daylight link ink is the 600, not the 500. The 500 (#0f6adb) clears AA on a
+     bare daylight surface but only reads 3.8:1 once it sits on its OWN accent
+     wash — the prop-table `<code>` chip and the docs inline code, which paint
+     `--accent-primary-soft` behind link-coloured type. The 600 holds 4.6:1
+     there and 6.3:1 on white. Night keeps the 500: on the near-black floor the
+     600 is the one that goes under. */
+  --text-link: var(--blue-600);
   --text-on-accent: var(--white);
 
   /* Channel inks. In daylight fuchsia text is the 600 and yellow text is a deep
@@ -716,6 +726,9 @@
   --accent-cta-soft: rgba(217, 18, 143, 0.12);
   --accent-cta-ring: rgba(217, 18, 143, 0.5);
   --accent-detail-soft: rgba(245, 200, 0, 0.18);
+  /* Daylight's fault red is a darker, more saturated stop than night's, so the same
+     alpha reads heavier here; 0.10 lands the wash at the same weight on the page. */
+  --status-fault-soft: rgba(217, 45, 32, 0.1);
 
   /* Event tints */
   --event-default-bg: rgba(255, 255, 255, 0.58);

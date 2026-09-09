@@ -175,9 +175,7 @@ function Page() {
                     answer.verdict === "wrong" ? "var(--status-fault)" : "transparent"
                   }`,
                   background:
-                    answer.verdict === "wrong"
-                      ? "color-mix(in srgb, var(--status-fault) 12%, transparent)"
-                      : "transparent",
+                    answer.verdict === "wrong" ? "var(--status-fault-soft)" : "transparent",
                 }}
               >
                 <Checkbox

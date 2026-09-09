@@ -195,9 +195,11 @@ function PropRow(props: { prop: ApiProp }) {
       <td style={{ padding: "8px 12px", "white-space": "nowrap" }}>
         <code
           style={{
-            background: "color-mix(in srgb, var(--accent-primary) 12%, transparent)",
-            // Ink reads `--text-link`, not `--accent-primary`: the tint behind it is the
-            // accent at 12%, and the accent on its own 12% tint is 2.50:1.
+            background: "var(--accent-primary-soft)",
+            // Ground is `--accent-primary-soft`, the register's own accent wash, not a
+            // hand-mixed 12% of the accent: the mix flattened to #cfdff3 in daylight and
+            // dropped link ink to 3.8:1. Ink reads `--text-link`, never `--accent-primary`
+            // (the accent on its own wash is 2.50:1).
             color: "var(--text-link)",
             padding: "2px 6px",
             "border-radius": "var(--radius-sm)",

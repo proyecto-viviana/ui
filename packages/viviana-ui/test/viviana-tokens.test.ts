@@ -92,6 +92,10 @@ const AA_PAIRS: Array<[string, string, string[]]> = [
   ["--text-secondary", "--surface-panel", ["--surface-app"]],
   ["--text-tertiary", "--surface-card", ["--surface-app"]],
   ["--text-link", "--surface-app", []],
+  /* Link ink on the accent wash. Docs paint prop names as link-coloured type on
+   * `--accent-primary-soft`; that pair, not the bare surface, is what put 144 of 160
+   * routes red at 3.8:1 in daylight. */
+  ["--text-link", "--accent-primary-soft", []],
   ["--fuchsia-text", "--surface-app", []],
   ["--fuchsia-ink", "--fuchsia-500", []],
   ["--yellow-text", "--surface-app", []],

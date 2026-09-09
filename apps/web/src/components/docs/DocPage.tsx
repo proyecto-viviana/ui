@@ -186,7 +186,7 @@ export function PropsTable(props: PropsTableProps) {
                   <td style={{ padding: "8px 12px" }}>
                     <code
                       style={{
-                        background: "color-mix(in srgb, var(--accent-primary) 12%, transparent)",
+                        background: "var(--accent-primary-soft)",
                         color: "var(--text-link)",
                         padding: "2px 6px",
                         "border-radius": "var(--radius-sm)",
