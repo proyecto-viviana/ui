@@ -14,6 +14,7 @@ import {
   ProgressBar,
   ProgressCircle,
   Meter,
+  PixelMeter,
   Skeleton,
   NotificationBadge,
   Button,
@@ -224,6 +225,19 @@ function Page() {
             maxValue={5}
             valueLabel="1/5"
           />
+        </Row>
+      </Demo>
+
+      <Demo label="PixelMeter · the three pixel forms — streak row, ring, activity map">
+        {/* One fill rule in all three: lit cells, a dithered leading edge at the
+            boundary, hairline for the rest. `grid` takes four levels so the
+            trailing week fades instead of stopping flat. */}
+        <Row>
+          <PixelMeter label="Streak" value={9} maxValue={14} channel="signal" />
+          <PixelMeter shape="ring" label="12/16" value={12} channel="metric" />
+        </Row>
+        <Row>
+          <PixelMeter shape="grid" label="Activity" value={120} levels={4} />
         </Row>
       </Demo>
 

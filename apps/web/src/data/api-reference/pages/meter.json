@@ -187,6 +187,146 @@
           "origin": "viviana-ui"
         }
       ]
+    },
+    {
+      "name": "PixelMeterProps",
+      "component": "PixelMeter",
+      "source": "packages/viviana-ui/src/meter/PixelMeter.tsx",
+      "props": [
+        {
+          "name": "shape",
+          "type": "PixelMeterShape",
+          "values": [
+            "'grid'",
+            "'row'",
+            "'ring'"
+          ],
+          "required": false,
+          "default": "'row'",
+          "description": "Which pixel form to draw.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The current value (controlled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "required": false,
+          "default": "14 for `row`, 16 for `ring`, 182 for `grid`",
+          "description": "The largest value allowed. In `row` it also sets the block count (the streak length), clamped to 64. `ring` is always 16 blocks and `grid` always 26 × 7.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "levels",
+          "type": "PixelMeterLevels",
+          "values": [
+            "2",
+            "3",
+            "4"
+          ],
+          "required": false,
+          "default": "2 for `row` and `ring`, 4 for `grid`",
+          "description": "The number of ink strengths, rest included.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "channel",
+          "type": "PixelMeterChannel",
+          "values": [
+            "'metric'",
+            "'info'",
+            "'signal'",
+            "'fault'"
+          ],
+          "required": false,
+          "default": "'info'",
+          "description": "The status channel the lit cells take their ink from.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The meter's visible label, and its accessible name. `ring` centres it.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
     }
   ],
   "divergence": {

@@ -99,6 +99,7 @@ export const PANELS: readonly PanelDef[] = [
       "ProgressBar",
       "ProgressCircle",
       "Meter",
+      "PixelMeter",
       "Skeleton",
       "SkeletonCollection",
       "NotificationBadge",
@@ -270,6 +271,7 @@ export const PANELS: readonly PanelDef[] = [
       "Image",
       "ImageCoordinator",
       "IllustratedMessage",
+      "TerminalLog",
     ],
   },
   {

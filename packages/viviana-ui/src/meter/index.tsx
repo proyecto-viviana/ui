@@ -489,3 +489,11 @@ export function Meter(props: MeterProps): JSX.Element {
     </HeadlessMeter>
   );
 }
+
+export { PixelMeter } from "./PixelMeter";
+export type {
+  PixelMeterProps,
+  PixelMeterShape,
+  PixelMeterChannel,
+  PixelMeterLevels,
+} from "./PixelMeter";

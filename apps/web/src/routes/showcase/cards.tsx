@@ -25,6 +25,7 @@ import {
   Meter,
   ProductCard,
   StatusLight,
+  TerminalLog,
   Text,
   UserCard,
   BellIcon,
@@ -50,6 +51,19 @@ const consoleBar: JSX.CSSProperties = {
   gap: "8px",
   padding: "9px 14px",
 };
+
+/* A real transcript: a command echoed on the prompt channel, its results on the
+   metric channel, one warning on signal and one failure on fault. */
+const BUILD_LOG = [
+  { time: "09:41", channel: "prompt" as const, spans: [{ text: "> vp run build" }] },
+  {
+    time: "09:41",
+    spans: [{ text: "viviana-ui " }, { text: "336 files, 3.52 MB", channel: "metric" as const }],
+  },
+  { time: "09:42", channel: "signal" as const, text: "tsconfig jsx overridden by transform" },
+  { time: "09:42", channel: "fault" as const, text: "hydrate: 1 mismatched key" },
+  { time: "09:43", channel: "muted" as const, text: "done in 3.9s" },
+];
 
 function Page() {
   const def = panelBySlug("cards")!;
@@ -124,6 +138,29 @@ function Page() {
                 Start
               </Button>
             </Footer>
+          </Card>
+        </Row>
+      </Demo>
+
+      <Demo label="TerminalLog · a build transcript inside a console card — per-span channels, boot stagger, live caret">
+        {/* The log is the card's content, not its preview: the console strip names
+            the shell, the transcript reports what it did. */}
+        <Row>
+          <Card id="console-build" mesh="signal" meshSeed={13} size="L">
+            <CardPreview background="inset">
+              <div style={consoleBar}>
+                <StatusLight size="S" variant="informative">
+                  ~/viviana/ui
+                </StatusLight>
+                <Badge variant="informative" fillStyle="subtle" size="S">
+                  BUILD
+                </Badge>
+              </div>
+              <Divider />
+            </CardPreview>
+            <Content>
+              <TerminalLog aria-label="Build transcript" bootIn showCaret lines={BUILD_LOG} />
+            </Content>
           </Card>
         </Row>
       </Demo>

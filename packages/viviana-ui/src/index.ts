@@ -504,8 +504,14 @@ export type {
 } from "./list";
 
 // Meter
-export { Meter, MeterContext } from "./meter";
-export type { MeterProps } from "./meter";
+export { Meter, MeterContext, PixelMeter } from "./meter";
+export type {
+  MeterProps,
+  PixelMeterProps,
+  PixelMeterShape,
+  PixelMeterChannel,
+  PixelMeterLevels,
+} from "./meter";
 
 // NumberField
 export { NumberField, NumberFieldContext } from "./numberfield";
@@ -788,8 +794,14 @@ export type {
   TreeSelectionStyle,
 } from "./tree";
 
-export { Well } from "./well";
-export type { WellProps } from "./well";
+export { Well, TerminalLog } from "./well";
+export type {
+  WellProps,
+  TerminalLogProps,
+  TerminalLogLine,
+  TerminalLogSpan,
+  TerminalLogChannel,
+} from "./well";
 
 // Support exports — hooks, helpers, and collection data.
 // Mirrors React S2's re-exports of the underlying React Aria / React Stately

@@ -91,3 +91,11 @@ export function Well(props: WellProps): JSX.Element {
     </div>
   );
 }
+
+export { TerminalLog } from "./TerminalLog";
+export type {
+  TerminalLogProps,
+  TerminalLogLine,
+  TerminalLogSpan,
+  TerminalLogChannel,
+} from "./TerminalLog";

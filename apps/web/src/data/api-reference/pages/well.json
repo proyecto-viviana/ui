@@ -41,6 +41,86 @@
           "origin": "viviana-ui"
         }
       ]
+    },
+    {
+      "name": "TerminalLogProps",
+      "component": "TerminalLog",
+      "source": "packages/viviana-ui/src/well/TerminalLog.tsx",
+      "props": [
+        {
+          "name": "lines",
+          "type": "readonly TerminalLogLine[]",
+          "required": true,
+          "description": "The lines, oldest first.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showCaret",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Draw a blinking block caret after the last line.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "bootIn",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Boot the lines in one after another on mount.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
     }
   ],
   "divergence": {}
