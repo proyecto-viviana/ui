@@ -27,6 +27,7 @@ import {
 } from "solid-js";
 import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
 import { css } from "../style/style-macro" with { type: "macro" };
+import { skSweep } from "../style/motion" with { type: "macro" };
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { color } from "../style/spectrum-theme" with { type: "macro" };
@@ -58,14 +59,38 @@ export function useIsSkeleton(): Accessor<boolean> {
   return createIsSkeleton();
 }
 
+/* The register's loading state is a "dither shimmer", not a grey gradient sweep:
+ * a diagonal light band crossing the block, seen only through an 8px Bayer mask,
+ * so it reads as pixels lighting up in the same grammar as the theme wipe. Port
+ * of the handoff's `.sk` (glasselated.css). The sheen colour is a token because
+ * it has to invert per scheme; the sweep is a CSS animation on the pseudo-element
+ * (a pseudo cannot be reached by the Web Animations calls this module exposes),
+ * gated by the reduced-motion media condition rather than a runtime check so a
+ * server render and its hydration agree. */
 export const loadingStyle = css(
   `
-  background-image: linear-gradient(to right, ${color("gray-100")} 33%, light-dark(${color(
-    "gray-25",
-  )}, ${color("gray-300")}), ${color("gray-100")} 66%);
-  background-size: 300%;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-inset);
   * {
     visibility: hidden;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 34%, var(--sk-sheen) 50%, transparent 66%);
+    background-size: 240% 100%;
+    animation: ${skSweep()} 1.5s linear infinite;
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='8'%3E%3Cg%20fill='%23fff'%3E%3Crect%20width='4'%20height='4'/%3E%3Crect%20x='4'%20y='4'%20width='4'%20height='4'%20fill-opacity='0.85'/%3E%3Crect%20x='4'%20width='4'%20height='4'%20fill-opacity='0.35'/%3E%3Crect%20y='4'%20width='4'%20height='4'%20fill-opacity='0.55'/%3E%3C/g%3E%3C/svg%3E");
+    mask-size: 8px 8px;
+    mask-repeat: repeat;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+    }
   }
 `,
   "L",
@@ -106,6 +131,10 @@ function createPrefersReducedMotion(): Accessor<boolean> {
   return matches;
 }
 
+/* Kept for the components that already hold this ref (Image, Icon) and for any
+ * consumer animating its own gradient. The skeleton's own shimmer moved into
+ * `loadingStyle`'s pseudo-element when the register re-valued it, and a pseudo
+ * cannot be driven from here. */
 export function useLoadingAnimation(
   isAnimating: MaybeAccessor<boolean>,
 ): (element: Element | null) => void {

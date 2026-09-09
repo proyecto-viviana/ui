@@ -209,6 +209,8 @@
   --surface-float: rgba(18, 22, 29, 0.9);
   --surface-raised: rgb(32, 38, 48);
   --surface-inset: rgba(0, 0, 0, 0.7);
+  /* The skeleton shimmer's light band, seen through the Bayer mask. */
+  --sk-sheen: rgba(120, 200, 255, 0.85);
   --surface-hover: rgba(44, 54, 70, 0.55);
   /* Selection, not elevation: the active tab / nav row / current line. `active`
      is the opaque-ish selected fill, `active-soft` the wash under a current row. */
@@ -618,6 +620,7 @@
   --surface-float: rgba(255, 255, 255, 0.88);
   --surface-raised: #ffffff;
   --surface-inset: rgba(238, 243, 249, 0.55);
+  --sk-sheen: rgba(36, 120, 200, 0.55);
   --surface-hover: rgba(255, 255, 255, 0.85);
   --surface-active: #e2effd;
   --surface-active-soft: rgba(24, 119, 232, 0.1);

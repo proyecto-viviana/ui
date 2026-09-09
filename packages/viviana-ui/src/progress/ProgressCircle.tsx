@@ -18,7 +18,7 @@ import { type JSX, For, createContext, createMemo, splitProps, useContext } from
 import { mergeProps, createProgressBar } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
-import { tglRingBlink } from "../style/motion" with { type: "macro" };
+import { glSpin, tglRingBlink } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getAllowedOverrides,
@@ -77,12 +77,12 @@ type ProgressCircleStyleState = {
   size: ProgressCircleSize;
   staticColor?: ProgressCircleStaticColor;
   isStaticColor: boolean;
+  isIndeterminate: boolean;
 };
 
 type RingBlockStyleState = ProgressCircleStyleState & {
   isLit: boolean;
   isLead: boolean;
-  isIndeterminate: boolean;
 };
 
 /* The register's ring is not an arc — it is 16 discrete pixel blocks on a circle
@@ -128,6 +128,11 @@ const RING_GEOMETRY: Record<ProgressCircleSize, RingGeometry> = {
 /* The register's ring chase, shared through style/motion.ts so the blink cannot drift
  * away from the caret and pulse it was tuned against. */
 const ringBlink = tglRingBlink();
+/* Indeterminate work has no leading edge to chase, so the register spins the whole
+ * ring instead: the handoff's pixel spinner, eight discrete steps per 0.9s turn, so
+ * the blocks jump between positions rather than sliding. Unconditional — a frozen
+ * fully-lit ring would read as 100% done. */
+const ringSpin = glSpin();
 
 const wrapperStyles = style<ProgressCircleStyleState>(
   {
@@ -141,6 +146,18 @@ const wrapperStyles = style<ProgressCircleStyleState>(
       },
     },
     aspectRatio: "square",
+    animation: {
+      isIndeterminate: ringSpin,
+    },
+    animationDuration: {
+      isIndeterminate: 900,
+    },
+    animationTimingFunction: {
+      isIndeterminate: "[steps(8)]",
+    },
+    animationIterationCount: {
+      isIndeterminate: "infinite",
+    },
   },
   getAllowedOverrides({ height: true }),
 );
@@ -187,12 +204,14 @@ const blockStyles = style<RingBlockStyleState>({
     },
   },
   boxShadow: "edge-glass",
+  /* The blink is the determinate ring's chase; while the whole ring spins there is
+   * nothing to chase and the two motions would beat against each other. */
   animation: {
     isLit: {
       default: ringBlink,
       "@media (prefers-reduced-motion: reduce)": "none",
     },
-    isIndeterminate: ringBlink,
+    isIndeterminate: "none",
   },
   animationDuration: {
     isLit: 2600,
@@ -275,6 +294,7 @@ export function ProgressCircle(props: ProgressCircleProps): JSX.Element {
     size: size(),
     staticColor: local.staticColor,
     isStaticColor: isStaticColor(),
+    isIndeterminate: isIndeterminate(),
   });
   const progressAria = createProgressBar({
     get id() {
@@ -356,7 +376,6 @@ export function ProgressCircle(props: ProgressCircleProps): JSX.Element {
                 ...state(),
                 isLit: isLit(),
                 isLead: isLead(),
-                isIndeterminate: isIndeterminate(),
               })}
               style={{
                 left: `${position.x}px`,
