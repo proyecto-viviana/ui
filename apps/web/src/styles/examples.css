@@ -551,3 +551,154 @@
 [data-examples] .ex-theater-spacer {
   flex: 1 1 auto;
 }
+
+/* ── ex: profile ───────────────────────────────────────────────────────── */
+
+/* The city sits behind the whole screen, so the screen body is the backdrop's
+   positioning parent. */
+[data-examples] .ex-profile {
+  position: relative;
+}
+
+/* Who / what they have done / what they are carrying. */
+[data-examples] .ex-profile-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 220px;
+  gap: 48px;
+  align-items: start;
+  padding: 40px 48px;
+  min-width: 0;
+  position: relative;
+}
+
+[data-examples] .ex-profile-who,
+[data-examples] .ex-profile-work,
+[data-examples] .ex-profile-carry,
+[data-examples] .ex-profile-body {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  justify-items: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-work,
+[data-examples] .ex-profile-carry,
+[data-examples] .ex-profile-body {
+  gap: 12px;
+  justify-items: stretch;
+}
+
+/* The portrait is a 176px square in the handoff. */
+[data-examples] .ex-profile-portrait {
+  width: 176px;
+  height: 176px;
+  overflow: hidden;
+}
+
+[data-examples] .ex-profile-portrait > * {
+  width: 100%;
+  height: 100%;
+}
+
+[data-examples] .ex-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* Four numbers across the top of the middle column. */
+[data-examples] .ex-profile-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+[data-examples] .ex-profile-stat {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-card {
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* The month ticks under the activity map, spread across its 26 weeks. */
+[data-examples] .ex-profile-months {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* thumb · title and meta · bracket readout. */
+[data-examples] .ex-profile-journey {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-thumb {
+  width: 56px;
+  height: 40px;
+  overflow: hidden;
+}
+
+[data-examples] .ex-profile-thumb > * {
+  width: 100%;
+  height: 100%;
+}
+
+[data-examples] .ex-profile-journey-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-journey-bar {
+  display: grid;
+  justify-items: end;
+}
+
+/* Four tiles across, two rows of them. */
+[data-examples] .ex-profile-badges {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+[data-examples] .ex-profile-badge {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+[data-examples] .ex-profile-flame {
+  width: 32px;
+  height: 32px;
+}
+
+[data-examples] .ex-profile-flame > * {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 1179px) {
+  [data-examples] .ex-profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
+  }
+}
