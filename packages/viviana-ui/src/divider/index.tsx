@@ -104,10 +104,16 @@ const dividerStyles = style<{
     margin: 0,
     flexGrow: 0,
     flexShrink: 0,
+    /* The register draws ONE rule weight, and it is a hairline: every divider in the
+     * handoff is `1px solid var(--border-default)` (TerminalGlassLab.tsx §01). The
+     * default rung was Spectrum's 2px, which beside a 1px field edge and a 1px button
+     * rim reads as a heavier class of object than a divider is. Only the default (M)
+     * moves; S already drew the hairline and now coincides with it, and L keeps the
+     * 4px emphasis rule the ladder exists for. */
     height: {
       orientation: {
         horizontal: {
-          default: "[2px]",
+          default: "[1px]",
           size: {
             S: "[1px]",
             L: "[4px]",
@@ -118,7 +124,7 @@ const dividerStyles = style<{
     width: {
       orientation: {
         vertical: {
-          default: "[2px]",
+          default: "[1px]",
           size: {
             S: "[1px]",
             L: "[4px]",

@@ -37,12 +37,20 @@ export type ButtonVariant =
   /** Success — the green/`positive` channel (green fill, white ink). */
   | "success"
   /**
-   * Viviana's create CTA — the pale-yellow, dark-ink button the handoff uses for the one
-   * action that makes something new. Not a Spectrum variant: Spectrum's fills are all
-   * saturated-with-white-ink, and this deliberately inverts that so "create" reads as
-   * warmer and lighter than "accent" rather than louder than it.
+   * Local addition — no S2 counterpart. Viviana's create CTA: the fuchsia fill the
+   * Terminal Glass register reserves for the one action that makes something new.
+   * Spectrum's fills are all drawn from its own accent/semantic ramps; this is the
+   * register's single ASK colour, so it is louder than `accent` on purpose and is
+   * never used for a second action on the same surface.
    */
-  | "create";
+  | "create"
+  /**
+   * Local addition — no S2 counterpart. The terminal-well button (RUN): the register's
+   * console affordance — well fill, well border, blue ink, tracked out — for actions
+   * that execute rather than navigate or submit. Spectrum has no console channel, so
+   * there is nothing upstream to mirror.
+   */
+  | "terminal";
 export type ButtonFillStyle = "fill" | "outline";
 export type ButtonSize = "S" | "M" | "L" | "XL";
 export type StaticColor = "white" | "black" | "auto";

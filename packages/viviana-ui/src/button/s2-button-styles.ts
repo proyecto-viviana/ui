@@ -52,11 +52,60 @@ export const s2Button = style<S2ButtonStyleProps>(
      * arrives with `control()` above, which reads it off the handoff's own button
      * (TerminalGlassLab.tsx:230 `btnBase` over design-handoff-v2.css:283
      * `--type-button`). It used to be spelled out here, which is exactly why Button
-     * was the only control that converted. Size and padding still come from
-     * `control()`'s S/M/L/XL ramp rather than the mock's single fixed 7px/14px.
+     * was the only control that converted.
      *
      * No blur: the handoff's buttons are opaque. Glass is a surface treatment. */
     userSelect: "none",
+    /* ...and the SIZE of that face, which `control()` cannot own. `controlFont()`
+     * is the whole library's S/M/L/XL band and resolves M to the `ui` rung (14px);
+     * the register's button is `--type-button`, mono 400 **13px** (viviana-tokens.css
+     * :456, re-valued from the handoff's own `--type-button`). Only the M rung is
+     * re-valued, because M is the only rung the handoff draws — the other three keep
+     * the shared ui ramp rather than acquiring three invented px values. Set as
+     * `fontSize` so it overrides only the size the `font:` shorthand established. */
+    fontSize: {
+      default: "[13px]",
+      size: {
+        XS: "ui-xs",
+        S: "ui-sm",
+        L: "ui-lg",
+        XL: "ui-xl",
+      },
+    },
+    /* Same argument for the horizontal padding. `control()` derives it from the height
+     * (`edge-to-text` = height * 3/8, so 12px at M), and the handoff draws its button
+     * at a flat `7px 14px` (TerminalGlassLab.tsx:231 `btnBase`). The M rung takes the
+     * drawn 14px; the rest stay on the derived ramp.
+     *
+     * The vertical half of that pair is NOT restated: `control({wrap: true})` centers
+     * the label in the 32px M control box, which puts ~6.5px above and below a 13px
+     * line — the drawn 7px, arrived at from the height ramp instead of pinned against
+     * it. Pinning paddingY here would fight `minHeight` and change nothing visible.
+     *
+     * The icon-only branch has to be restated because this key REPLACES `control()`'s
+     * whole `paddingX` map, and an icon-only button collapses its padding to 0. The
+     * selector is spelled out for the same reason s2-action-button-styles.ts:57 spells
+     * out its own copy: `iconOnly` is private to style-utils. */
+    paddingX: {
+      default: {
+        default: "[14px]",
+        size: {
+          XS: "edge-to-text",
+          S: "edge-to-text",
+          L: "edge-to-text",
+          XL: "edge-to-text",
+        },
+      },
+      ":has([slot=icon], [data-slot=icon]):not(:has([data-rsp-slot=text]))": 0,
+    },
+    /* The RUN button is the one the register tracks out — `letter-spacing: .06em` on
+     * the terminal-well button (TerminalGlassLab.tsx:365). Every other variant sits at
+     * the mono default. */
+    letterSpacing: {
+      variant: {
+        terminal: "[0.06em]",
+      },
+    },
     width: "fit",
     textDecoration: "none",
     transition: {
@@ -88,6 +137,10 @@ export const s2Button = style<S2ButtonStyleProps>(
          * a light surface. `variant` is applied after `fillStyle`, so this is 1px in
          * both fill and outline, which is what the handoff shows. */
         create: 1,
+        /* Same argument for the terminal well: the handoff draws RUN as
+         * `1px solid var(--well-border)` over the well fill
+         * (TerminalGlassLab.tsx:365), an edge the fill alone cannot hold. */
+        terminal: 1,
       },
     },
     borderColor: {
@@ -109,6 +162,7 @@ export const s2Button = style<S2ButtonStyleProps>(
          * on purpose; that is the over-imagery case and keeps its overlay ramp. */
         secondary: "border-subtle",
         create: "create-border",
+        terminal: "well-border",
       },
       /* Every FILLED variant needs its border colour spelled out HERE, under
        * `fillStyle.fill.variant`. The earlier note claimed variants with no entry
@@ -141,6 +195,17 @@ export const s2Button = style<S2ButtonStyleProps>(
             primary: baseColor("gray-800"),
             secondary: "border-subtle",
             create: "create-border",
+            /* RUN's edge is the well's own rim, and it is the ONE border in this
+             * component with a hover step: the handoff lifts the terminal button's
+             * edge toward the prompt blue on hover while the matte fill stays put
+             * (TerminalGlassLab.tsx:365-368). Stepping the border rather than the
+             * fill is what keeps a console button from looking like a CTA. */
+            terminal: {
+              default: "well-border",
+              isHovered: "blue-1100",
+              isPressed: "blue-1100",
+              isFocusVisible: "blue-1100",
+            },
             accent: {
               default: "interactive-fill",
               isHovered: lightDark("accent-1000", "accent-600"),
@@ -251,6 +316,11 @@ export const s2Button = style<S2ButtonStyleProps>(
               isPressed: "create-bg-deep",
               isFocusVisible: "create-bg-deep",
             },
+            /* The terminal button is a piece of the well it sits in, not a fill on top
+             * of it: `background: var(--surface-well)` (TerminalGlassLab.tsx:365). Flat
+             * across every state — the hover signal lives on the border above, so a RUN
+             * button never brightens the way an accent or create button does. */
+            terminal: "well",
           },
           isDisabled: "disabled",
         },
@@ -310,6 +380,13 @@ export const s2Button = style<S2ButtonStyleProps>(
              * staying white: near-black #1a0512 on the night fill is 6.66:1, white on the
              * daylight fill 4.74:1, so both schemes clear AA. */
             create: "create-ink",
+            /* Blue ink on the matte well — the register's console voice. The handoff inks
+             * it in `--terminal-prompt` (= `--blue-400`), which is only ~2.4:1 on the LIGHT
+             * well (#3d9be8 on #e9eff6) and fails AA outright. blue-1100 is the same ramp's
+             * end stop and is IDENTICAL to `--terminal-prompt` in the dark scheme (#99d8ff),
+             * so the night rendering is the handoff's exactly and only the daylight column
+             * darkens to #094aa2 (~9:1) to become readable. */
+            terminal: "blue-1100",
           },
           isDisabled: "disabled",
         },
@@ -330,6 +407,8 @@ export const s2Button = style<S2ButtonStyleProps>(
              * against a dark page. Outline drops the fill, so the dark scheme takes the
              * fill colour as its ink instead. */
             create: lightDark("create-ink", "create-bg"),
+            /* Outline drops the well fill but keeps the console voice. */
+            terminal: "blue-1100",
           },
           isDisabled: "disabled",
         },

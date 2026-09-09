@@ -23,6 +23,7 @@ import {
 } from "../style" with { type: "macro" };
 import {
   control,
+  controlSize,
   getAllowedOverrides,
   staticColor,
 } from "../s2-internal/style-utils" with { type: "macro" };
@@ -111,6 +112,13 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
      * control weight (`--type-button` is 400) and separates chrome from action with
      * fill and rim instead. Left at `control()`'s normal, so an ActionButton beside
      * a Button no longer looks like a different typeface. */
+    /* A circle needs a square box: `width: fit` around a zero-padding icon-only button
+     * is barely wider than the glyph, which would render the `pill` radius above as a
+     * lozenge. Matching the control's own height ramp makes it square at every rung
+     * without pinning a px value the ramp would then contradict. */
+    minWidth: {
+      [iconOnly]: controlSize(),
+    },
     width: {
       default: "fit",
       isInGroup: {
@@ -236,6 +244,15 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
     },
     borderTopStartRadius: {
       default: controlStyle.borderRadius,
+      /* The icon rail is round. The register draws a standalone icon-only chrome button
+       * as a circle (TerminalGlassLab.tsx §01 icon rail, 40x40 `border-radius: 999px`),
+       * and only that shape — a labelled ActionButton keeps the 5px control corner.
+       * `pill` is `height/2`, so paired with the square `minWidth` below it resolves to
+       * a true circle at every rung of the size ramp; the rail's 40x40 is `size="L"`.
+       *
+       * Declared BEFORE `density` on purpose: a compact GROUP flattens its inner corners
+       * so the buttons read as one strip, and that has to keep winning over the circle. */
+      [iconOnly]: "pill",
       density: {
         compact: {
           default: "none",
@@ -245,6 +262,15 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
     },
     borderTopEndRadius: {
       default: controlStyle.borderRadius,
+      /* The icon rail is round. The register draws a standalone icon-only chrome button
+       * as a circle (TerminalGlassLab.tsx §01 icon rail, 40x40 `border-radius: 999px`),
+       * and only that shape — a labelled ActionButton keeps the 5px control corner.
+       * `pill` is `height/2`, so paired with the square `minWidth` below it resolves to
+       * a true circle at every rung of the size ramp; the rail's 40x40 is `size="L"`.
+       *
+       * Declared BEFORE `density` on purpose: a compact GROUP flattens its inner corners
+       * so the buttons read as one strip, and that has to keep winning over the circle. */
+      [iconOnly]: "pill",
       density: {
         compact: {
           default: "none",
@@ -261,6 +287,15 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
     },
     borderBottomStartRadius: {
       default: controlStyle.borderRadius,
+      /* The icon rail is round. The register draws a standalone icon-only chrome button
+       * as a circle (TerminalGlassLab.tsx §01 icon rail, 40x40 `border-radius: 999px`),
+       * and only that shape — a labelled ActionButton keeps the 5px control corner.
+       * `pill` is `height/2`, so paired with the square `minWidth` below it resolves to
+       * a true circle at every rung of the size ramp; the rail's 40x40 is `size="L"`.
+       *
+       * Declared BEFORE `density` on purpose: a compact GROUP flattens its inner corners
+       * so the buttons read as one strip, and that has to keep winning over the circle. */
+      [iconOnly]: "pill",
       density: {
         compact: {
           default: "none",
@@ -277,6 +312,15 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
     },
     borderBottomEndRadius: {
       default: controlStyle.borderRadius,
+      /* The icon rail is round. The register draws a standalone icon-only chrome button
+       * as a circle (TerminalGlassLab.tsx §01 icon rail, 40x40 `border-radius: 999px`),
+       * and only that shape — a labelled ActionButton keeps the 5px control corner.
+       * `pill` is `height/2`, so paired with the square `minWidth` below it resolves to
+       * a true circle at every rung of the size ramp; the rail's 40x40 is `size="L"`.
+       *
+       * Declared BEFORE `density` on purpose: a compact GROUP flattens its inner corners
+       * so the buttons read as one strip, and that has to keep winning over the circle. */
+      [iconOnly]: "pill",
       density: {
         compact: {
           default: "none",

@@ -26,7 +26,8 @@
             "'negative'",
             "'warning'",
             "'success'",
-            "'create'"
+            "'create'",
+            "'terminal'"
           ],
           "required": false,
           "description": "The visual style of the Button.",
@@ -390,7 +391,8 @@
         "here": [
           "'warning'",
           "'success'",
-          "'create'"
+          "'create'",
+          "'terminal'"
         ],
         "there": [
           "'premium'",

@@ -72,39 +72,59 @@ const notificationBadge = style(
       isDisabled: "none",
     },
     font: "ui",
+    /* The register sets a notification count in the PIXEL face, not the UI face: the
+     * count on the icon-rail bell is `--font-display` 10px/700 (TerminalGlassLab.tsx
+     * §01). It is the one numeral in the chrome that is meant to read as a stamp
+     * rather than as text, which is exactly the role `fontFamily: "display"` carries
+     * in this package. Declared after `font: "ui"` so it overrides only the family
+     * and weight that shorthand established. */
+    fontFamily: "display",
+    fontWeight: "bold",
     color: {
-      default: "white",
+      /* Fuchsia is the register's ASK colour, and a notification count is an ask —
+       * DECISIONS lists NotificationBadge as the one non-`create` surface that keeps
+       * it (it counts as *notification*, not a second CTA). Ink is the create pair's
+       * own ink so the contrast holds in both schemes without a per-scheme value here. */
+      default: "create-ink",
       isStaticColor: "auto",
       forcedColors: "ButtonText",
     },
     fontSize: {
       size: {
-        S: "ui-xs",
+        /* 10px flat at S, the rung the handoff draws. The other three keep the shared
+         * ui ramp rather than acquiring three invented px values. */
+        S: "[10px]",
         M: "ui-xs",
         L: "ui-sm",
         XL: "ui",
       },
     },
-    borderStyle: {
-      forcedColors: "solid",
-    },
-    borderWidth: {
-      forcedColors: "[1px]",
-    },
+    /* The badge rim is not a forced-colors-only affordance any more: the register
+     * draws a 1px `--accent-create-border` around the fuchsia stamp so it separates
+     * from whatever icon it overlaps. `boxSizing: border-box` keeps that rim inside
+     * the 17px box below instead of growing it to 19px. */
+    boxSizing: "border-box",
+    borderStyle: "solid",
+    borderWidth: "[1px]",
     borderColor: {
+      default: "create-border",
+      isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonBorder",
     },
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: {
-      default: "accent",
+      default: "create-bg",
       isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonFace",
     },
     height: {
       size: {
+        /* 17px, the handoff's own badge box (§01 icon rail). 12px was Spectrum's S
+         * rung and could not hold a 10px pixel numeral with a 1px rim. Only the drawn
+         * rung moves; the indicator-only dot stays 8px. */
         S: {
-          default: 12,
+          default: "[17px]",
           isIndicatorOnly: 8,
         },
         M: {
@@ -124,6 +144,18 @@ const notificationBadge = style(
     aspectRatio: {
       isIndicatorOnly: "square",
       isSingleDigit: "square",
+    },
+    /* A single-digit badge is square by `aspectRatio` below, but a 10px numeral in a
+     * 17px box is narrower than it is tall at the double-digit rung too — the register
+     * draws `min-width: 17px` so "1" and "12" sit in the same footprint. Only the drawn
+     * S rung takes it; the rest stay on `aspectRatio` alone. */
+    minWidth: {
+      size: {
+        S: {
+          default: "[17px]",
+          isIndicatorOnly: 0,
+        },
+      },
     },
     width: "max",
     paddingX: {

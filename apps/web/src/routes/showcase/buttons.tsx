@@ -12,6 +12,7 @@ import {
   LinkButton,
   ToggleButton,
   ToggleButtonGroup,
+  NotificationBadge,
   BellIcon,
   SearchIcon,
 } from "@proyecto-viviana/ui";
@@ -31,6 +32,7 @@ const VARIANTS = [
   "warning",
   "success",
   "create",
+  "terminal",
 ] as const;
 
 function ButtonsPanel() {
@@ -39,7 +41,7 @@ function ButtonsPanel() {
 
   return (
     <Panel def={def}>
-      <Demo label="Button · fill variants — negative / warning / success are the status trio; create is yellow, never orange">
+      <Demo label="Button · fill variants — negative / warning / success are the status trio; create is the ask fuchsia, and only create is">
         <Row>
           <For each={VARIANTS}>
             {(variant) => (
@@ -50,6 +52,27 @@ function ButtonsPanel() {
               </Button>
             )}
           </For>
+        </Row>
+      </Demo>
+
+      <Demo label="Button · terminal (RUN) — the console affordance: matte well, well rim, blue ink, tracked out">
+        <Row>
+          <Button variant="terminal">[ F5 ] RUN</Button>
+          <Button variant="terminal" size="S">
+            [ F5 ] RUN
+          </Button>
+          <Button variant="terminal" isDisabled>
+            [ F5 ] RUN
+          </Button>
+        </Row>
+      </Demo>
+
+      <Demo label="Button · outlined CTA — variant=create + fillStyle=outline; the ask without the fill">
+        <Row>
+          <Button variant="create" fillStyle="outline">
+            + Create
+          </Button>
+          <Button variant="create">+ Create</Button>
         </Row>
       </Demo>
 
@@ -109,6 +132,22 @@ function ButtonsPanel() {
           </ActionButton>
           <ActionButton aria-label="Search" isQuiet>
             <SearchIcon />
+          </ActionButton>
+        </Row>
+      </Demo>
+
+      <Demo label="ActionButton · icon rail — size L icon-only is a 40x40 circle, with the count badge">
+        <Row>
+          <ActionButton size="L" aria-label="Notifications">
+            <BellIcon />
+            <NotificationBadge value={3} />
+          </ActionButton>
+          <ActionButton size="L" aria-label="Search" isQuiet>
+            <SearchIcon />
+          </ActionButton>
+          <ActionButton size="L" aria-label="Notifications, 128 unread">
+            <BellIcon />
+            <NotificationBadge value={128} />
           </ActionButton>
         </Row>
       </Demo>
