@@ -12,7 +12,10 @@ export interface MeshStripOptions {
 }
 
 /* Returns a `url("data:image/svg+xml,…")` string.
-   ambient → quiet mixed gray/blue/orange weave; signal → sharper single-hue amber weave. */
+   ambient → quiet mixed slate/blue/fuchsia weave; signal → sharper single-hue yellow weave.
+   Terminal Glass re-values both: the warm channel is now yellow (the register's transient
+   detail) and the ambient mix trades its orange thread for the CTA fuchsia, so the weave
+   is woven out of the same four channels as everything painted on top of it. */
 export function meshStrip(opts: MeshStripOptions = {}): string {
   const dark = !!opts.dark;
   const signal = opts.variant === "signal";
@@ -22,13 +25,13 @@ export function meshStrip(opts: MeshStripOptions = {}): string {
   let baseOp: number;
   let mix: readonly [string, string] | null;
   if (signal) {
-    col = dark ? "#F9B45C" : "#C96A00";
+    col = dark ? "#FFE03A" : "#C9A000";
     baseOp = dark ? 0.075 : 0.09;
     mix = null;
   } else {
     col = dark ? "#8CA3BD" : "#44536A";
     baseOp = dark ? 0.045 : 0.09;
-    mix = [dark ? "#6FA8DC" : "#2E6FB8", dark ? "#E8A34F" : "#B86A14"];
+    mix = [dark ? "#36A8FF" : "#2E6FB8", dark ? "#D95FB0" : "#B80F7A"];
   }
 
   let sd = seed >>> 0;
