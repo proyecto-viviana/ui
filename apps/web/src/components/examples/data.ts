@@ -365,6 +365,31 @@ export const TILES: readonly Tile[] = [
   },
 ];
 
+/* The hero journey the index opens on. The tag, the lede and the button label
+   are the handoff's own strings (Terminal Glass Lab, study 4d). */
+export interface HeroJourney {
+  readonly tag: string;
+  readonly title: string;
+  readonly lede: string;
+  readonly cta: string;
+  readonly thumb: string;
+  readonly done: number;
+  readonly total: number;
+}
+
+export const EXPLORE_HERO: HeroJourney = {
+  tag: "IN PROGRESS · 4 / 9",
+  title: "Rendering",
+  lede: "From the rendering equation to real-time GI. Monte Carlo, importance sampling, denoising — nine lessons, one path tracer.",
+  cta: "Continue · lesson 04",
+  thumb: "/examples/thumb-1.png",
+  done: 4,
+  total: 9,
+};
+
+/** How the index is ordered, read out at the end of the filter row. */
+export const EXPLORE_SORT = "sort: in progress first";
+
 /* ── profile screen ────────────────────────────────────────────────────── */
 
 export interface Stat {

@@ -346,3 +346,53 @@
   min-width: 0;
 }
 
+/* ── ex: explore ───────────────────────────────────────────────────────── */
+
+/* A standalone Card is sized by its `size` prop (320px at L); a panel card
+   fills the grid cell it was placed in instead. Shared with explore-empty. */
+[data-examples] .ex-panel {
+  width: 100%;
+}
+
+/* The filter row: chips left, the sort readout pushed to the right. */
+[data-examples] .ex-explore-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* The board. One column while stacked; the study's 1.3fr + two equal columns
+   with the hero held open down both rows once the canvas is wide enough. */
+[data-examples] .ex-explore-board {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+}
+
+/* The progress bar in the hero footer has no intrinsic width in a flex row. */
+[data-examples] .ex-explore-meter {
+  width: 200px;
+}
+
+/* The hero holds both board rows open, so its media is squarer than the 3:2 a
+   card preview takes by default — the study's hero is a tall plate, not a
+   letterbox. Box metrics only; the frame, the scrim and the stamp are the
+   library's. */
+[data-examples] .ex-explore-media {
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 1180px) {
+  [data-examples] .ex-explore-board {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  [data-examples] .ex-explore-hero {
+    grid-row: 1 / 3;
+    height: 100%;
+  }
+}
