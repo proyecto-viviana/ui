@@ -958,3 +958,118 @@
     width: auto;
   }
 }
+
+/* ── ex: live ──────────────────────────────────────────────────────────── */
+
+/* Same two planes as the theater — the framed stream underneath, the room's
+   controls above it — with the poll on the left and the chat on the right. */
+[data-examples] .ex-live {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+[data-examples] .ex-live-stage {
+  position: absolute;
+  inset: 0;
+}
+
+[data-examples] .ex-live-frame,
+[data-examples] .ex-live-image {
+  width: 100%;
+  height: 100%;
+}
+
+[data-examples] .ex-live-plane {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: 300px minmax(0, 1fr) 340px;
+  gap: 12px;
+  height: 100%;
+  min-height: 100%;
+  padding: 12px;
+}
+
+[data-examples] .ex-live-topbar {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+[data-examples] .ex-live-readout {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  justify-self: start;
+  max-width: 280px;
+}
+
+[data-examples] .ex-live-poll {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  align-self: start;
+}
+
+[data-examples] .ex-live-poll-body {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+[data-examples] .ex-live-meter {
+  width: 100%;
+}
+
+[data-examples] .ex-live-chat {
+  grid-column: 3;
+  grid-row: 2;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-examples] .ex-live-chat-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+[data-examples] .ex-live-log {
+  overflow: auto;
+  min-height: 0;
+  max-height: 100%;
+}
+
+/* The log's lines never wrap (a terminal's do not), so the plate is sized to
+   its longest line and the region around it does the scrolling — otherwise the
+   log scrolls inside itself, which no keyboard can reach. */
+[data-examples] .ex-live-log > * {
+  width: max-content;
+  min-width: 100%;
+}
+
+[data-examples] .ex-live-say {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-examples] .ex-live-chrome {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+[data-examples] .ex-live-track {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-examples] .ex-live-spacer {
+  flex: 1 1 auto;
+}
