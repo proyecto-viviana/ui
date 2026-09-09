@@ -379,19 +379,32 @@ export const controlBorderRadius = (size: "default" | "sm" = "default") =>
  * not `well`, so no chip currently needs it. If a later change re-fills Tag with the
  * well surface, the handoff says the scan should follow it.
  *
+ * `dither()` is the general form — the register reuses the same conic checker at other
+ * tiles and inks (the fine 3px grain on a card, an accent-coloured dither on a HUD
+ * frame), and those call sites must not each re-type the gradient. `wellScan()` is the
+ * zero-argument well call, kept because it is the one that names a design decision
+ * rather than a value.
+ *
  * The color is the existing `--well-scan` token, already declared per scheme
  * (viviana-tokens.css:265 dark, :559 light) and read by nothing until now, so this
  * costs no new custom property. Suppressed under forced colors, where the surface
  * is forced and a dither over it is just noise.
  */
-export const wellScan = () =>
-  ({
+export const dither = <Tile extends string, Color extends string>(
+  options: { tile?: Tile; color?: Color } = {},
+) => {
+  const tile = (options.tile ?? "var(--dither-tile)") as Tile;
+  const color = (options.color ?? "var(--well-scan)") as Color;
+  return {
     backgroundImage: {
-      default: "[repeating-conic-gradient(var(--well-scan) 0% 25%, transparent 0% 50%)]",
+      default: `[repeating-conic-gradient(${color} 0% 25%, transparent 0% 50%)]`,
       forcedColors: "none",
     },
-    backgroundSize: "[4px 4px]",
-  }) as const;
+    backgroundSize: `[${tile} ${tile}]`,
+  } as const;
+};
+
+export const wellScan = () => dither();
 
 interface ControlOptions {
   shape?: "default" | "pill";
@@ -640,6 +653,12 @@ export function control(options: ControlOptions): ControlResult {
  * |---|---|---|---|---|---|
  * | `panel` | 14px | `--surface-panel` | 18px | yes | 1px subtle |
  * | `card` | 12px | `--surface-card` | 14px | yes | 1px subtle |
+ * | `float` | 8px | `--surface-float` | 24px | cast | 1px subtle |
+ *
+ * `float` is tier 2 — menus, toasts, popovers, polls. It takes the field corner rather
+ * than a container corner because it is content-sized, and it is the only surface in
+ * the register that casts a shadow: it stacks over `panel`/`card`, so the inset rim
+ * alone leaves nothing between the two edges.
  *
  * `backdrop-filter` is the load-bearing part. The surface tokens are already
  * translucent (`rgba(23,25,30,0.78)` and friends), so without the blur these
@@ -654,16 +673,53 @@ export function control(options: ControlOptions): ControlResult {
  * matte and "never glass" (design-handoff-v2.css:56); and controls, whose rim
  * comes from `control()` without any blur.
  */
-export const glassSurface = (surface: "panel" | "card" = "panel") =>
+export const glassSurface = (surface: "panel" | "card" | "float" = "panel") =>
   ({
-    borderRadius: surface,
-    backgroundColor: surface === "panel" ? "layer-1" : "layer-2",
-    backdropFilter: surface === "panel" ? "var(--blur-panel)" : "var(--blur-card)",
-    boxShadow: "edge-glass-surface",
+    borderRadius: surface === "float" ? "default" : surface,
+    backgroundColor: surface === "panel" ? "layer-1" : surface === "card" ? "layer-2" : "float",
+    backdropFilter:
+      surface === "panel"
+        ? "var(--blur-panel)"
+        : surface === "card"
+          ? "var(--blur-card)"
+          : "var(--blur-clear)",
+    /* A float is the one surface that also casts: it lands over another glass surface,
+     * where a rim on its own leaves the two edges indistinguishable. */
+    boxShadow: surface === "float" ? "float" : "edge-glass-surface",
     borderWidth: 1,
     borderStyle: "solid",
     borderColor: "border-subtle",
   }) as const;
+
+/**
+ * Viviana UI v2 (Terminal Glass): the dithered scroll-edge fade (`.gl-edge-fade`,
+ * glasselated.css:94-100), ported verbatim.
+ *
+ * A smooth gradient mask is the obvious way to fade a scroll edge and it is wrong for this
+ * register — a continuous alpha ramp reads as non-pixel next to everything else on the
+ * screen. The handoff composites the linear ramp with a 4px Bayer checker so the fade
+ * happens in visible steps.
+ *
+ * Two mask layers, added together: the ramp (sized to the box, not repeated) and the
+ * checker (4px, repeated). `--gl-fade` sets the fade depth and defaults to 24px, so a call
+ * site tunes depth by setting one custom property rather than by taking a parameter here.
+ *
+ * `side` picks the axis: `block` fades the top and bottom edges (log wells, nav rails, the
+ * reference TOC — the handoff's own call sites), `inline` the start and end edges for a
+ * horizontally scrolling strip.
+ */
+export const edgeFade = (side: "block" | "inline" = "block") => {
+  const angle = side === "block" ? "180deg" : "90deg";
+  const ramp = `linear-gradient(${angle}, transparent 0, #000 var(--gl-fade, 24px), #000 calc(100% - var(--gl-fade, 24px)), transparent 100%)`;
+  const checker =
+    "url(\"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='4'%20height='4'%3E%3Cg%20fill='%23000'%3E%3Crect%20width='2'%20height='2'/%3E%3Crect%20x='2'%20y='2'%20width='2'%20height='2'/%3E%3C/g%3E%3C/svg%3E\")";
+  return {
+    maskImage: `[${ramp}, ${checker}]`,
+    maskSize: "[100% 100%, 4px 4px]",
+    maskRepeat: "[no-repeat, repeat]",
+    maskComposite: "[add]",
+  } as const;
+};
 
 const allowedOverrides = [
   "margin",

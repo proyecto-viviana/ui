@@ -1044,6 +1044,10 @@ export const style = createTheme({
       "layer-2": "var(--surface-card)",
       pasteboard: "var(--surface-inset)",
       elevated: "var(--surface-card)",
+      /* Tier-2 float: menus, toasts, popovers, polls. Denser than a card because it
+       * lands OVER one — a card-weight translucency stacked on a card reads as a
+       * smudge, and the content on top stops being legible. */
+      float: "var(--surface-float)",
       /* The matte half of the register. The handoff is emphatic that terminal wells
        * are "never glass" (design-handoff-v2.css:56, and the Well component repeats
        * it at TerminalGlassLab.tsx:262) — they are opaque, unblurred, and rimless.
@@ -1388,6 +1392,11 @@ export const style = createTheme({
       // container instead of catching its edge. Anything with a `--blur-*` behind it
       // wants this one; anything with its own solid fill wants `edge-glass`.
       "edge-glass-surface": edgeGlassSurfaceShadow,
+      /* The one cast shadow Terminal Glass keeps. A tier-2 float sits over a surface
+       * of the same family, so the rim alone cannot separate them — `--shadow-float`
+       * is a lift plus a hairline, and the hairline is what draws the boundary between
+       * a near-black overlay and a near-black page. */
+      float: "var(--shadow-float, 0 18px 48px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.1))",
     },
     filter: {
       // layer order is reversed for filter property. filters are applied in the order they are specified.

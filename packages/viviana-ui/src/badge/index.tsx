@@ -24,7 +24,7 @@ import {
 import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { lightDark, style } from "../style" with { type: "macro" };
-import { keyframes } from "../style/style-macro" with { type: "macro" };
+import { tglPulse } from "../style/motion" with { type: "macro" };
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -124,15 +124,8 @@ export const BadgeContext = createContext<SpectrumContextValue<BadgeProps>>(null
  * preference applies identically on both sides. (Not css() either: its class
  * wrapper is lost around a nested @media, leaving a selectorless dead block —
  * hence the style()-native media condition key down in badgeStyles.) */
-const livePulse = keyframes(`
-  0%, 100% {
-    opacity: 0.55;
-  }
-
-  50% {
-    opacity: 1;
-  }
-`);
+/* The register's 2s breath, shared with every other on-air surface (style/motion.ts). */
+const livePulse = tglPulse();
 
 /* `live` and `metric` are the two register channels the ramps don't carry
  * (glasselated-ramps.ts covers gray/blue/red/orange/yellow/green): the LIVE

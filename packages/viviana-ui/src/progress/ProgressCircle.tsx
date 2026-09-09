@@ -18,7 +18,7 @@ import { type JSX, For, createContext, createMemo, splitProps, useContext } from
 import { mergeProps, createProgressBar } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
-import { keyframes } from "../style/style-macro" with { type: "macro" };
+import { tglRingBlink } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   getAllowedOverrides,
@@ -125,19 +125,9 @@ const RING_GEOMETRY: Record<ProgressCircleSize, RingGeometry> = {
  * it unconditionally: there the chase IS the "something is happening" signal, and
  * a frozen full ring would read as 100%. Gate is the CSS media condition, not a
  * runtime matchMedia check — Solid hydration trusts the server DOM (see Badge). */
-const ringBlink = keyframes(`
-  0% {
-    opacity: 0.15;
-  }
-
-  12% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 1;
-  }
-`);
+/* The register's ring chase, shared through style/motion.ts so the blink cannot drift
+ * away from the caret and pulse it was tuned against. */
+const ringBlink = tglRingBlink();
 
 const wrapperStyles = style<ProgressCircleStyleState>(
   {
