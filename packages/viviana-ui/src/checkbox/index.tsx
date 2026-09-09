@@ -42,7 +42,6 @@ import { Text } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
-  controlBorderRadius,
   controlFont,
   controlSize,
   field,
@@ -380,7 +379,19 @@ const checkboxHelpText = style<
 
 const checkboxBox = style<CheckboxStyleState>({
   ...focusRing(),
-  ...controlBorderRadius("sm"),
+  /* Terminal Glass draws the choice box as a PIXEL square, not a rounded control:
+   * the checkpoint quiz marks each answer with a 14x14 box at `border: 2px solid`
+   * and no radius at all ("Terminal Glass App.dc.html":242). Size S is where that
+   * geometry lands, because `controlSize("sm")` already resolves S to 14px — the
+   * handoff's own measurement — so the register only has to flatten the corner and
+   * double the edge there. M/L/XL keep the Spectrum 5px corner and 1px edge: they
+   * are the form-density sizes, not the one the register draws. */
+  borderRadius: {
+    default: "control",
+    size: {
+      S: "none",
+    },
+  },
   size: controlSize("sm"),
   flexShrink: 0,
   display: "flex",
@@ -392,7 +403,14 @@ const checkboxBox = style<CheckboxStyleState>({
   // itself — control() unconditionally emits display/paddingX/minWidth/font,
   // all of which would break a square choice box — so it carries the literal.
   // The identical hand-rolled block in menu/s2-menu-styles.ts must move with it.
-  borderWidth: 1,
+  // Size S is the exception, and it is the register's own: the quiz box is drawn at
+  // 2px so a 14px square still reads as a hard-edged mark rather than a hairline.
+  borderWidth: {
+    default: 1,
+    size: {
+      S: 2,
+    },
+  },
   boxSizing: "border-box",
   borderStyle: "solid",
   transition: "default",
@@ -451,8 +469,16 @@ const checkboxIcon = style({
   pointerEvents: "none",
   "--iconPrimary": {
     type: "fill",
+    /* The mark inside a filled box is the DEEP well, not paper. The handoff punches
+     * the correct answer's dot in `--well2` over the `--status-info` fill
+     * ("Terminal Glass App.dc.html":520, `dot: right ? 'var(--well2)'`), which is
+     * `--surface-well-deep` here. `gray-25` was the Spectrum answer — pure #ffffff in
+     * light — and it made the checkmark read as a hole in the fill rather than as
+     * something stamped into it. In dark the two values are within a hair of each
+     * other, so this only moves the light scheme, where it stays well clear of the
+     * 3:1 graphical floor against the accent fill. */
     value: {
-      default: "gray-25",
+      default: "[var(--surface-well-deep)]",
       forcedColors: "HighlightText",
     },
   },

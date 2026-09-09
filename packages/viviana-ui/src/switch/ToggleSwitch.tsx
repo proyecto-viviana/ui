@@ -145,17 +145,59 @@ const wrapper = style<SwitchStyleState & { isInForm?: boolean }>({
 // must stay last to win over the selected fills.
 const track = style<SwitchStyleState>({
   ...focusRing(),
-  borderRadius: "full",
+  /* Size S is the register's PIXEL toggle: a 34x18 rectangle with square corners
+   * and a 12x12 square knob inset 2px, sliding 2px<->18px
+   * ("Terminal Glass App.dc.html":250,521). Every other size keeps Spectrum's
+   * font-relative pill untouched, so the register geometry is an S-only branch on
+   * four coupled declarations: width, height, radius and the inset padding that
+   * positions the knob.
+   *
+   * The track is measured in ABSOLUTE px at S rather than `fontRelative`, because
+   * the handoff's toggle is a fixed chrome element that must line up with the
+   * neighbouring 14px checkbox and 12px radio regardless of the row's type size —
+   * a font-relative track drifts out of that column the moment a caller sets a
+   * larger font. */
+  borderRadius: {
+    default: "full",
+    size: {
+      S: "none",
+    },
+  },
   "--trackWidth": {
     type: "width",
-    value: fontRelative(26),
+    value: {
+      default: fontRelative(26),
+      size: {
+        S: 34,
+      },
+    },
   },
   "--trackHeight": {
     type: "height",
-    value: controlSize("sm"),
+    // `controlSize("sm")` spelled flat: its S entry (14) is the one being
+    // replaced, and the macro cannot spread-and-override inside a value map.
+    value: {
+      default: 16,
+      size: {
+        S: 18,
+        L: 18,
+        XL: 20,
+      },
+    },
   },
   width: "--trackWidth",
   height: "--trackHeight",
+  // The knob is a flow child, so its 2px inset is the track's padding: with the
+  // 1px border that puts the 12px square 3px inside the outer edge and leaves it
+  // exactly 16px of travel (34 - 2*1 - 2*2 - 12), which is the handoff's 2px->18px
+  // measured from the border box. Sizes other than S keep the transform-only
+  // placement they have always used.
+  padding: {
+    default: 0,
+    size: {
+      S: 2,
+    },
+  },
   boxSizing: "border-box",
   borderWidth: 1,
   borderStyle: "solid",
@@ -196,9 +238,22 @@ const track = style<SwitchStyleState>({
 });
 
 const handle = style<SwitchStyleState>({
-  height: "full",
+  // `full` is 100% of the track's CONTENT box, which the S padding above has
+  // already reduced to 12px — but it is pinned explicitly at S so the knob's size
+  // survives someone changing that padding, and so the contract is assertable.
+  height: {
+    default: "full",
+    size: {
+      S: 12,
+    },
+  },
   aspectRatio: "square",
-  borderRadius: "full",
+  borderRadius: {
+    default: "full",
+    size: {
+      S: "none",
+    },
+  },
   backgroundColor: {
     default: baseColor("neutral"),
     isDisabled: {
@@ -208,6 +263,19 @@ const handle = style<SwitchStyleState>({
     isSelected: "gray-25",
   },
   transition: "default",
+  /* The register's knob SNAPS: three discrete frames over 0.12s, never a glide
+   * (`motionTiming.toggleKnob`, style/motion.ts:185 — the constant is a runtime
+   * export the macro cannot read, so the value is spelled here and cited there).
+   * Reduced motion collapses the duration to 0 rather than dropping the
+   * transition, because the knob's END position is the state readout: it must
+   * arrive, just without the travel. Gated on the CSS media condition, never a
+   * runtime matchMedia — an SSR'd inline transition is never removed on hydration
+   * (style/motion.ts header). */
+  transitionDuration: {
+    default: 120,
+    "@media (prefers-reduced-motion: reduce)": 0,
+  },
+  transitionTimingFunction: "[steps(3)]",
 });
 
 // Individual help text. Byte-faithful to upstream Field.tsx `helpTextStyles`,
@@ -268,7 +336,24 @@ function normalizeSwitchSize(size: SwitchSize | undefined): S2SwitchSize {
 // 8px smaller than the track; when selected it grows to 6px smaller. CSS cannot
 // divide by a unit, so the scale is emulated with a 3d perspective transform
 // (scale = perspective / (perspective - translateZ), translateZ hard-coded -4px).
-function switchHandleTransform(isSelected: boolean, direction: Direction): JSX.CSSProperties {
+function switchHandleTransform(
+  isSelected: boolean,
+  direction: Direction,
+  size: S2SwitchSize,
+): JSX.CSSProperties {
+  /* The pixel toggle has NO grow-on-select: the knob is one fixed 12px square that
+   * slides, so S skips the perspective trick entirely. Leaving it in place would
+   * shrink the 12px square to ~10.7px at rest and snap it back on selection —
+   * exactly the soft, non-pixel motion the register is written against. Travel is
+   * the same border-box arithmetic as the track's padding: 34 - 12 - 6 = 16px. */
+  if (size === "S") {
+    const placement =
+      direction === "ltr"
+        ? "translateX(calc(var(--trackWidth) - 100% - 6px))"
+        : "translateX(calc(100% - var(--trackWidth) + 6px))";
+    return { transform: isSelected ? placement : "none" };
+  }
+
   const placement =
     direction === "ltr"
       ? "translateX(calc(var(--trackWidth) - 100% - 4px)) perspective(calc(2 * (var(--trackHeight) - 6px))) translateZ(-4px)"
@@ -287,9 +372,10 @@ function switchHandlePressStyle(
   element: HTMLDivElement | undefined,
   renderProps: ToggleSwitchRenderProps,
   direction: Direction,
+  size: S2SwitchSize,
 ): JSX.CSSProperties {
   const pressStyle = {
-    ...switchHandleTransform(renderProps.isSelected, direction),
+    ...switchHandleTransform(renderProps.isSelected, direction, size),
   } as JSX.CSSProperties;
   const styleRecord = pressStyle as Record<string, string | number | undefined>;
   const willChange = styleRecord["will-change"] ?? "";
@@ -426,7 +512,12 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
                     <div
                       ref={handleElement}
                       class={handle({ ...renderProps, size: size(), isEmphasized: isEmphasized() })}
-                      style={switchHandlePressStyle(handleElement, renderProps, direction())}
+                      style={switchHandlePressStyle(
+                        handleElement,
+                        renderProps,
+                        direction(),
+                        size(),
+                      )}
                     />
                   </div>
                 </CenterBaseline>

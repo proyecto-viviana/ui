@@ -35,9 +35,29 @@ const SELECT_BOX_ITEMS: SelectBoxItem[] = [
   { id: "pro", label: "Pro", description: "For growing teams" },
 ];
 
+/* The checkpoint quiz's answer rows. The register marks a WRONG answer on the row,
+   not on the box: a red wash plus a red edge behind an otherwise ordinary checkbox
+   ("Terminal Glass App.dc.html":520). That wash is composition, not component state —
+   the Checkbox has no "this answer was wrong" prop and should not grow one — so it is
+   built here out of the fault token via color-mix rather than as a raw rgba. */
+const QUIZ_ANSWERS = [
+  { id: "a", label: "It compiles the styles at build time", verdict: "right" },
+  { id: "b", label: "It ships a runtime CSS-in-JS engine", verdict: "wrong" },
+  { id: "c", label: "It reads tokens from the theme", verdict: "neutral" },
+] as const;
+
+/* A poll's tallies. The bar fills in six visible steps, never a glide
+   (`motionTiming.pollBar` = 0.3s steps(6), style/motion.ts). */
+const POLL_OPTIONS = [
+  { id: "yes", label: "Ship it", share: 62 },
+  { id: "no", label: "Hold", share: 23 },
+  { id: "maybe", label: "Abstain", share: 15 },
+] as const;
+
 function Page() {
   const def = panelBySlug("selection")!;
   const [layout, setLayout] = createSignal("list");
+  const [poll, setPoll] = createSignal("yes");
 
   return (
     <Panel def={def}>
@@ -138,6 +158,90 @@ function Page() {
             </SelectBox>
           )}
         </SelectBoxGroup>
+      </Demo>
+
+      <Demo label="Checkpoint quiz — the 14×14 pixel checkbox in its row">
+        <div style={{ display: "grid", gap: "8px", width: "100%", "max-width": "440px" }}>
+          <For each={QUIZ_ANSWERS}>
+            {(answer) => (
+              <div
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "12px",
+                  padding: "8px 12px",
+                  "border-radius": "6px",
+                  border: `1px solid ${
+                    answer.verdict === "wrong" ? "var(--status-fault)" : "transparent"
+                  }`,
+                  background:
+                    answer.verdict === "wrong"
+                      ? "color-mix(in srgb, var(--status-fault) 12%, transparent)"
+                      : "transparent",
+                }}
+              >
+                <Checkbox
+                  size="S"
+                  defaultSelected={answer.verdict !== "neutral"}
+                  aria-label={answer.label}
+                />
+                <span style={{ font: "var(--type-body)", color: "var(--text-primary)" }}>
+                  {answer.label}
+                </span>
+              </div>
+            )}
+          </For>
+        </div>
+      </Demo>
+
+      <Demo label="Poll — the 12×12 pixel radio, bar filling in steps(6)">
+        <div style={{ display: "grid", gap: "10px", width: "100%", "max-width": "440px" }}>
+          <RadioGroup size="S" aria-label="Ship the release?" value={poll()} onChange={setPoll}>
+            <For each={POLL_OPTIONS}>
+              {(option) => (
+                <div style={{ display: "grid", gap: "4px" }}>
+                  <Radio value={option.id}>{option.label}</Radio>
+                  <div
+                    style={{
+                      height: "5px",
+                      background: "var(--surface-well)",
+                      border: "1px solid var(--well-border)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: poll() === option.id ? `${option.share}%` : "0%",
+                        background: "var(--status-metric)",
+                        transition: "width 0.3s steps(6)",
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </For>
+          </RadioGroup>
+        </div>
+      </Demo>
+
+      <Demo label="Switch · size S — the 34×18 pixel toggle, knob snapping in steps(3)">
+        <Row>
+          <Switch size="S">Telemetry</Switch>
+          <Switch size="S" defaultSelected>
+            Autosave
+          </Switch>
+          <Switch size="S" isDisabled>
+            Locked
+          </Switch>
+        </Row>
+      </Demo>
+
+      <Demo label="SegmentedControl — the selected segment is bracketed">
+        <SegmentedControl aria-label="Range" defaultSelectedKey="week">
+          <SegmentedControlItem id="day">day</SegmentedControlItem>
+          <SegmentedControlItem id="week">week</SegmentedControlItem>
+          <SegmentedControlItem id="month">month</SegmentedControlItem>
+        </SegmentedControl>
       </Demo>
 
       <Demo label="SegmentedControl — fully controlled">

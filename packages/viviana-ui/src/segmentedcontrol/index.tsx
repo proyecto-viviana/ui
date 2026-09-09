@@ -37,7 +37,8 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import { baseColor, fontRelative, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { control } from "../s2-internal/style-utils" with { type: "macro" };
+import { css } from "../style/style-macro" with { type: "macro" };
+import { control, controlFontStep } from "../s2-internal/style-utils" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
@@ -117,7 +118,14 @@ const InternalSegmentedControlContext = createContext<InternalSegmentedControlCo
 
 const segmentedControl = style({
   display: "flex",
-  gap: 4,
+  /* 16px, not 4. With the plate gone the gap IS the separation between segments —
+     there is no longer a button edge to end one and start the next — and the handoff
+     sets the bare row at `gap: 16px; padding: 0 4px`
+     ("Terminal Glass Lab.dc.html":158). At 4px the labels read as one run-on string.
+     The 4px inline padding is kept so the outermost segment's focus ring has somewhere
+     to land instead of being clipped by the group's own box. */
+  gap: 16,
+  paddingX: 4,
   /* No track. The register's segmented control is bare mono labels in a flex row —
      `day / [week] / month` — with no background, border or radius of their own
      (TerminalGlassLab.tsx:443-459, SEGMENTS at :21-25). What was here instead was two
@@ -134,6 +142,25 @@ const segmentedControlItem = style<ToggleButtonRenderProps & { isJustified?: boo
   position: "relative",
   borderStyle: "none",
   backgroundColor: "transparent",
+  /* Bare labels, not buttons: `padding: 6px 0` with no horizontal inset at all
+     ("Terminal Glass Lab.dc.html":159). `control()` above spreads the button band's
+     `edge-to-text` inline padding, which only made sense while there was a plate to
+     hold the label off its own edge; with the plate gone it just doubles the gap
+     above unevenly. Declared after the spread so it wins. */
+  paddingX: 0,
+  // Absolute, not a spacing rung: the register's 6px is a fixed chrome measure, and
+  // the padding scale has no 6 (it steps 4 -> 8, spectrum-theme.ts:483-502). 4px
+  // crowds the label, 8px opens the row past the drawn height.
+  paddingY: "[6px]",
+  /* The segment is a STAMP, not a button: 11.5/700 in mono
+     ("Terminal Glass Lab.dc.html":159). `control()` gives the mono family for free but
+     leaves the glass register at the button's size and `normal` weight — the same two
+     values the chip and badge registers already step down and bolden, so this reuses
+     their exact rungs (`controlFontStep(2)` lands size M near 11px) rather than
+     inventing a third band. `fontSize`, not `font`, so only the size moves and the
+     shorthand's family/line-height survive. */
+  fontSize: controlFontStep(2),
+  fontWeight: "bold",
   /* With the plate gone, ink is the ONLY selection signal — which is how the register
      does it: the selected segment is accent ink and its siblings are secondary ink
      (TerminalGlassLab.tsx:21-25). The decorative `--accent-primary` is only 2.98:1 on
@@ -210,6 +237,27 @@ const selectionIndicator = style({
   },
   pointerEvents: "none",
 });
+
+/* The selected segment is drawn BRACKETED — `day  [week]  month` — with the brackets
+   in the same accent ink as the label ("Terminal Glass Lab.dc.html":597, which builds
+   the visible string as `[${label}]`).
+   They are generated content rather than a `label`-mangling render prop for two
+   reasons: the accessible name must stay "week", not "[week]", so a screen reader
+   never announces punctuation that is purely a selection cue; and the brackets have to
+   survive arbitrary children (an icon + <Text>), which string surgery on the label
+   could not. `css()` and not `style()` because the macro has no pseudo-element
+   condition — the same escape hatch `centerBaselineBefore` uses.
+   Applied to the CONTENT wrapper, so the brackets hug the label and its icon rather
+   than the segment's padded box. */
+const selectedBrackets = css(`
+  &::before {
+    content: "[";
+  }
+
+  &::after {
+    content: "]";
+  }
+`) as StyleString;
 
 const itemContent = style({
   position: "relative",
@@ -403,7 +451,7 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
       const content = () => resolvedChildren();
 
       return (
-        <span class={itemContent}>
+        <span class={renderProps.isSelected ? `${itemContent} ${selectedBrackets}` : itemContent}>
           {typeof content() === "string" ? (
             <span class={itemText} data-rsp-slot="text">
               {content()}

@@ -42,7 +42,6 @@ import type { StyleString } from "../style";
 import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import {
   controlFont,
-  controlSize,
   field,
   fieldLabel,
   getAllowedOverrides,
@@ -280,21 +279,57 @@ const wrapper = style<RadioStyleState & { isInForm?: boolean }>(
 
 const circle = style<RadioStyleState>({
   ...focusRing(),
-  size: controlSize("sm"),
+  /* Size S is the register's PIXEL radio, not a small Spectrum one. The poll rows
+   * draw the choice as a 12x12 square at `border: 2px solid` with no radius
+   * ("Terminal Glass App.dc.html":335), so S diverges from `controlSize("sm")` in
+   * three coupled ways — 14->12, `full`->`none`, 1px->2px — and every other size
+   * keeps the Spectrum circle untouched. Spelled flat rather than spread from
+   * `controlSize("sm")` because the S entry is the one being overridden. */
+  size: {
+    default: 16,
+    size: {
+      S: 12,
+      L: 18,
+      XL: 20,
+    },
+  },
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   transition: "default",
-  borderRadius: "full",
+  borderRadius: {
+    default: "full",
+    size: {
+      S: "none",
+    },
+  },
   borderStyle: "solid",
   boxSizing: "border-box",
   borderWidth: {
     default: 1,
     isSelected: "calc((self(height) - (4 / 16) * 1rem) / 2)",
+    // `size` LAST so it wins the last-match-wins ordering for S+selected. The
+    // swelling border above is how M/L/XL punch their 4px centre dot; at S the
+    // handoff has no dot at all — the square floods edge to edge — so S must hold
+    // its 2px edge in BOTH states and let `backgroundColor` do the filling.
+    size: {
+      S: 2,
+    },
   },
   forcedColorAdjust: "none",
-  backgroundColor: "well",
+  backgroundColor: {
+    default: "well",
+    isSelected: {
+      default: "well",
+      // Only the pixel radio fills. The circle sizes keep `well` showing through
+      // as their dot's ground; overriding the fill for all sizes would erase the
+      // dot by painting it the same colour as the swollen border around it.
+      size: {
+        S: baseColor("accent-900"),
+      },
+    },
+  },
   borderColor: {
     default: baseColor("gray-800"),
     forcedColors: "ButtonBorder",
@@ -310,6 +345,12 @@ const circle = style<RadioStyleState>({
       // backgroundColor map it fills through there.
       default: baseColor("gray-800"),
       isEmphasized: baseColor("accent-900"),
+      // The pixel radio's edge is its fill: a `gray-800` ring around an
+      // `accent-900` square reads as a mis-selected control, so S takes the accent
+      // in the non-emphasized case too.
+      size: {
+        S: baseColor("accent-900"),
+      },
       forcedColors: "Highlight",
     },
     isInvalid: {

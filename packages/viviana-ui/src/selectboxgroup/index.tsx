@@ -41,6 +41,7 @@ import { mergeStyles } from "../style/runtime";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import { pressScale } from "../pressScale";
+import { glassSurface } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -135,6 +136,20 @@ const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
 
 const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }>({
   ...focusRing(),
+  /* A SelectBox is a CARD in the register's surface ladder, and now says so in one
+   * word instead of five hand-copied declarations. It was already most of the way
+   * there — `layer-2`, a 1px `border-subtle` edge, a rim — but it had assembled that
+   * by hand, and the three places it disagreed with the ladder were exactly the three
+   * a hand-assembled surface gets wrong:
+   *   - radius `panel` (14px), the PANEL rung. A card is 12px; a tile that curves more
+   *     than the panel holding it inverts the nesting the ladder encodes.
+   *   - `edge-glass`, the CONTROL rim (0.9/0.35). Cards are translucent, and on dark
+   *     that opaque-control rim outlines the tile like a button; `edge-glass-surface`
+   *     (0.45/0.09) is the surface rung.
+   *   - no backdrop blur at all, so the one thing that makes a glass surface glass was
+   *     missing and the tile read as a flat swatch over the page.
+   * State (hover/selected/disabled) stays declared below and wins over the spread. */
+  ...glassSurface("card"),
   display: "grid",
   gridAutoRows: "1fr",
   position: "relative",
@@ -217,9 +232,6 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
       vertical: "center",
     },
   },
-  borderRadius: "panel",
-  borderStyle: "solid",
-  borderWidth: 1,
   /* Viviana UI v2 (Glasselated): hover and selection moved from the shadow to the edge.
    * They used to be spelled in the boxShadow map below as emphasized/elevated/elevated —
    * three distinct cast shadows. Now that the theme repoints both of those tokens to the
@@ -249,7 +261,9 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
     isDisabled: "disabled",
   },
   boxShadow: {
-    default: "edge-glass",
+    // Restated as a map only to carry the disabled branch; the resting value must
+    // stay the surface rim the spread above established, not the control one.
+    default: "edge-glass-surface",
     isDisabled: "none",
   },
   cursor: {
@@ -266,26 +280,35 @@ const selectBoxSelectionIndicator = style({
   pointerEvents: "none",
 });
 
+/* The tile's selection mark is the same PIXEL box the Checkbox draws at size S —
+ * 14x14, 2px edge, square (checkbox/index.tsx, "Terminal Glass App.dc.html":242) —
+ * because it IS a checkbox to the reader, and two different checkbox shapes on one
+ * screen is the drift this register exists to stop.
+ *
+ * It also stops spelling its own colours as raw `light-dark(rgb(...))` literals. Those
+ * two values (#ffffff/#111111 fill, #292929/#dbdbdb edge) answer to no token in either
+ * scheme, so a theme flip moved every other surface on the tile and left this box
+ * behind. `well`/`well-border` are the register's field pair and follow the theme. */
 const selectBoxCheckboxBox = style<ListBoxOptionRenderProps>({
   ...focusRing(),
-  size: 16,
+  size: 14,
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  borderWidth: 1,
+  borderWidth: 2,
   boxSizing: "border-box",
   borderStyle: "solid",
-  borderRadius: "sm",
+  borderRadius: "none",
   transition: "default",
   forcedColorAdjust: "none",
   backgroundColor: {
-    default: "[light-dark(rgb(255, 255, 255), rgb(17, 17, 17))]",
-    isSelected: "neutral",
+    default: "well",
+    isSelected: baseColor("accent-900"),
     isDisabled: "disabled",
   },
   borderColor: {
-    default: "[light-dark(rgb(41, 41, 41), rgb(219, 219, 219))]",
+    default: "well-border",
     isDisabled: "disabled",
     isSelected: "transparent",
   },
@@ -657,7 +680,11 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
                 size="S"
                 class={selectBoxCheckboxIcon}
                 style={{
-                  "--iconPrimary": "var(--s2-container-bg, white)",
+                  // Same mark ink as the Checkbox: the deep well, stamped into the
+                  // accent fill (checkbox/index.tsx). `--s2-container-bg` was the
+                  // TILE's fill, which is now what the mark sits on top of, not
+                  // what it should be drawn in.
+                  "--iconPrimary": "var(--surface-well-deep)",
                   width: "10px",
                   height: "10px",
                 }}
