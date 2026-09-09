@@ -10,7 +10,7 @@
  * is nowhere to go — so it is the library's shipped selected affordance, a
  * `ToggleButton` held selected, which is also what gives it the register's
  * active surface without any app CSS. */
-import { For, type JSX } from "solid-js";
+import { For, Show, type JSX } from "solid-js";
 import { Link } from "@tanstack/solid-router";
 import {
   ActionButton,
@@ -58,6 +58,13 @@ export interface AppShellProps {
    * and the command-bar ask falls back to the outline fill.
    */
   readonly askFilled: boolean;
+  /**
+   * Whether the command bar carries the `+ Create` ask at all. Settings is the
+   * one app screen the handoff draws without it — an rc file is edited and
+   * saved, never used to make something — so it opts out here rather than
+   * hiding a rendered control with app CSS. @default true
+   */
+  readonly hasAsk?: boolean;
 }
 
 export function AppShell(props: AppShellProps & { readonly children: JSX.Element }): JSX.Element {
@@ -77,9 +84,11 @@ export function AppShell(props: AppShellProps & { readonly children: JSX.Element
             ● 1 live
           </Link>
           {props.right}
-          <Button variant="create" fillStyle={props.askFilled ? "fill" : "outline"} size="S">
-            + Create
-          </Button>
+          <Show when={props.hasAsk ?? true}>
+            <Button variant="create" fillStyle={props.askFilled ? "fill" : "outline"} size="S">
+              + Create
+            </Button>
+          </Show>
           <ActionButton isQuiet aria-label="Toggle color scheme" onPress={toggleTheme}>
             <ContrastIcon />
           </ActionButton>
