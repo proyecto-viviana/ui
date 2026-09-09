@@ -34,7 +34,10 @@ const wellStyles = style({
   borderWidth: 1,
   borderStyle: "solid",
   borderColor: "well-border",
-  borderRadius: "lg",
+  /* 8px, the register's `--radius-md`, which the handoff spends on wells, chips and
+   * thumbs. `lg` used to be 10px and read as the well corner; it is now the 12px card
+   * corner, a step too round for a terminal plate. */
+  borderRadius: "default",
   padding: 16,
 });
 

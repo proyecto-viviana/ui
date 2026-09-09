@@ -642,7 +642,11 @@ const radius = {
   none: getToken("corner-radius-none"), // 0px
   sm: pxToRem(getToken("corner-radius-small-default")), // 4px
   default: pxToRem(getToken("corner-radius-medium-default")), // 8px
-  lg: pxToRem(getToken("corner-radius-large-default")), // 10px
+  /* Terminal Glass re-cuts the ladder to 4 / 5 / 8 / 12 / 999 (tokens/surfaces.css),
+   * where 12 is the card / panel / rail corner. S2's own large token is 10px, so `lg`
+   * stops tracking it and takes the register's value — the two ladders genuinely
+   * disagree, and this package draws the register, not Spectrum. */
+  lg: "12px",
   xl: pxToRem(getToken("corner-radius-extra-large-default")), // 16px
   full: "9999px",
   pill: "calc(self(height, self(minHeight, 9999px)) / 2)",

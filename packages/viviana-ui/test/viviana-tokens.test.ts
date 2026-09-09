@@ -148,3 +148,45 @@ describe("viviana tokens", () => {
     }
   });
 });
+
+/* The register publishes its corner ladder twice: the style() macro bakes it into the
+ * components' atomic CSS, and `--radius-*` exposes it to host CSS in apps/web. They are
+ * edited in different files, so the failure mode is drift — a library card drawn at 12px
+ * sitting inside an app rail drawn at 16px, with nothing red anywhere. */
+const themeSource = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), "../src/style/spectrum-theme.ts"),
+  "utf8",
+);
+
+function macroRadius(key: string): string {
+  const object = themeSource.match(/\nconst radius = \{([\s\S]*?)\n\} as const;/);
+  if (!object) throw new Error("radius map missing from spectrum-theme.ts");
+  const match = object[1].match(new RegExp(`\\n\\s*${key}:\\s*"([^"]+)"`));
+  if (!match) throw new Error(`radius.${key} is not a literal — the ladders cannot be compared`);
+  return match[1];
+}
+
+describe("corner ladder", () => {
+  it("keeps the macro radii and the --radius-* vars on the same ladder", () => {
+    /* Terminal Glass: 4 tags/badges · 5 buttons · 8 wells+chips+tier-2 menus ·
+     * 12 cards+panels+rail · 999 pill. */
+    for (const [key, cssVar] of [
+      ["control", "--radius-sm"],
+      ["lg", "--radius-lg"],
+      ["card", "--radius-lg"],
+    ] as const) {
+      expect(macroRadius(key), `radius.${key} vs ${cssVar}`).toBe(resolve("dark", cssVar));
+    }
+  });
+
+  it("keeps the well on the 8px field corner, not the 12px card corner", () => {
+    /* `lg` used to be 10px and the Well spent it; the re-cut moved `lg` to the card
+     * corner, so a Well left on `lg` silently rounds two steps past the register. */
+    const wellSource = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../src/well/index.tsx"),
+      "utf8",
+    );
+    expect(wellSource).toMatch(/borderRadius: "default"/);
+    expect(resolve("dark", "--radius-md")).toBe("8px");
+  });
+});
