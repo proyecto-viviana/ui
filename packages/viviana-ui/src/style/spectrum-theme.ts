@@ -922,9 +922,12 @@ export const lineHeight = {
  * is the default scheme), so a consumer that never loads the token file still gets the
  * catch-light rim rather than a dim one. */
 const edgeGlassShadow =
-  "var(--edge-glass, inset 0 1px 0 rgb(255 255 255 / 0.9), inset 0 0 0 1px rgb(255 255 255 / 0.35))";
+  "var(--edge-glass, inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 0 0 1px rgb(255 255 255 / 0.06))";
+/* Terminal Glass quietened the night rim to 0.26/0.06, so a control rim no longer
+ * over-draws a translucent container and the two fallbacks converge. The token stays a
+ * separate name: a surface must be able to diverge again per scheme. */
 const edgeGlassSurfaceShadow =
-  "var(--edge-glass-surface, inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.09))";
+  "var(--edge-glass-surface, inset 0 1px 0 rgb(255 255 255 / 0.26), inset 0 0 0 1px rgb(255 255 255 / 0.06))";
 
 export const style = createTheme({
   properties: {
