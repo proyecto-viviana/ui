@@ -140,6 +140,13 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "shortcut",
+          "type": "string",
+          "required": false,
+          "description": "A keyboard shortcut hint drawn as a key chip at the end of the field, e.g. `\"⌘K\"`. Local addition — no S2 counterpart. The register parks the shortcut that focuses the field INSIDE the well (TerminalGlassLab.tsx:157), where a sibling element cannot reach; S2 has no slot for it. Deliberately NOT routed through `suffix`. A suffix is part of the field's accessible name — its id is appended to the input's `aria-labelledby`, which is right for a unit (\"kg\") and wrong for a shortcut: a screen-reader user would hear \"Search lessons ⌘K\" as the field's name. The chip is `aria-hidden` decoration; the shortcut itself is announced only if the app describes it (`aria-describedby`).",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "slot",
           "type": "string",
           "required": false,
@@ -573,6 +580,10 @@
       },
       {
         "prop": "suffix",
+        "kind": "only-here"
+      },
+      {
+        "prop": "shortcut",
         "kind": "only-here"
       }
     ]

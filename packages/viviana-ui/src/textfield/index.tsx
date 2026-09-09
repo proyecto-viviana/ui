@@ -162,7 +162,10 @@ const fieldGroupStyles = style<TextFieldStyleProps>({
       forcedColors: "Mark",
     },
     isFocusWithin: {
-      default: "gray-900",
+      /* Viviana UI v2 (Glasselated): cyan/blue is the register's STRUCTURE colour, so a
+       * focused well rims in `--border-focus` instead of S2's near-black `gray-900`.
+       * Recolour only — the ring, its width and every other state stay as they were. */
+      default: "[var(--border-focus)]",
       isInvalid: "negative-1000",
       forcedColors: "Highlight",
     },
@@ -205,7 +208,8 @@ const textFieldInput = style({
   color: {
     default: "inherit",
     "::placeholder": {
-      default: "gray-600",
+      /* Register dim ink: placeholder copy is the well's quietest text. */
+      default: "[var(--terminal-dim)]",
       forcedColors: "GrayText",
     },
   },

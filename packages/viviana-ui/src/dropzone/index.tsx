@@ -24,7 +24,7 @@ import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import type { StylesPropWithHeight, UnsafeClassName } from "../s2-internal/style-utils";
-import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
+import { getAllowedOverrides, wellScan } from "../s2-internal/style-utils" with { type: "macro" };
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -76,6 +76,21 @@ export interface DropZoneProps extends Omit<
 
 export const DropZoneContext = createContext<SpectrumContextValue<DropZoneProps>>(null);
 
+/* Viviana UI v2 (Glasselated): the handoff ships no drop zone, so this row takes the
+ * nearest specified sibling — the matte WELL (TerminalGlassLab.tsx:280). A drop zone is
+ * a well that happens to be waiting for a file, so it gets the well fill, the well rim
+ * and the well's scan dither, and keeps S2's dashed rim as the "empty, drop here" tell.
+ * The scan is restated through `wellScan()` here rather than through
+ * `control({ register: "matte" })` because this is a SURFACE, not a control: it has no
+ * control height, font or padding ramp to inherit.
+ *
+ * Drop-active is the register's STRUCTURE cyan (`--status-metric`) — the drop target is
+ * a boundary the drag has entered, not a reward (yellow) or a fault (red) — drawn as a
+ * solid ring over a faint cyan wash so the rim reads as a hard edge and the fill only
+ * hints. The wash mixes INTO `--surface-well` rather than into `transparent`: mixing
+ * toward transparent drops the well ground for as long as the drag is over the zone, so
+ * the surface would blink out at exactly the moment it is being pointed at.
+ * Focus stays on `--border-focus` with the existing focus handling untouched. */
 const dropzone = style<DropZoneRenderProps>(
   {
     display: "flex",
@@ -89,13 +104,15 @@ const dropzone = style<DropZoneRenderProps>(
       isDropTarget: "solid",
     },
     backgroundColor: {
-      isDropTarget: "blue-200",
+      default: "well",
+      isDropTarget: "[color-mix(in srgb, var(--status-metric) 12%, var(--surface-well))]",
     },
+    ...wellScan(),
     borderWidth: 1,
     borderColor: {
-      default: "gray-300",
-      isDropTarget: "blue-800",
-      isFocusVisible: "blue-800",
+      default: "well-border",
+      isDropTarget: "[var(--status-metric)]",
+      isFocusVisible: "[var(--border-focus)]",
     },
     borderRadius: "card",
     padding: 24,

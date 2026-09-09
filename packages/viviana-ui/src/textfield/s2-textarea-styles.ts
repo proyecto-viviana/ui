@@ -33,7 +33,8 @@ export const textAreaInputStyles = style({
   color: {
     default: "inherit",
     "::placeholder": {
-      default: "gray-600",
+      /* Register dim ink: placeholder copy is the well's quietest text. */
+      default: "[var(--terminal-dim)]",
       forcedColors: "GrayText",
     },
   },

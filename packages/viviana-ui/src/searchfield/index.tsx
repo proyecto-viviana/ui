@@ -50,7 +50,7 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { FieldSuffix } from "../field/suffix";
-import SearchIcon from "../icon/s2wf-icons/SearchIcon";
+import { Keyboard } from "../text/Keyboard";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
@@ -111,6 +111,20 @@ export interface SearchFieldProps extends Omit<
   prefix?: JSX.Element;
   /** An icon or text rendered after the input, e.g. a key hint. */
   suffix?: JSX.Element;
+  /**
+   * A keyboard shortcut hint drawn as a key chip at the end of the field, e.g. `"⌘K"`.
+   *
+   * Local addition — no S2 counterpart. The register parks the shortcut that focuses
+   * the field INSIDE the well (TerminalGlassLab.tsx:157), where a sibling element cannot
+   * reach; S2 has no slot for it.
+   *
+   * Deliberately NOT routed through `suffix`. A suffix is part of the field's accessible
+   * name — its id is appended to the input's `aria-labelledby`, which is right for a
+   * unit ("kg") and wrong for a shortcut: a screen-reader user would hear
+   * "Search lessons ⌘K" as the field's name. The chip is `aria-hidden` decoration; the
+   * shortcut itself is announced only if the app describes it (`aria-describedby`).
+   */
+  shortcut?: string;
   /** Slot name when used in a Spectrum context. */
   slot?: string | null;
   /** Ref for the search field root element. */
@@ -204,7 +218,10 @@ const searchFieldGroup = style<SearchFieldStyleProps>({
       forcedColors: "Mark",
     },
     isFocusWithin: {
-      default: "gray-900",
+      /* Viviana UI v2 (Glasselated): cyan/blue is the register's STRUCTURE colour, so a
+       * focused well rims in `--border-focus` instead of S2's near-black `gray-900`.
+       * Recolour only — the ring, its width and every other state stay as they were. */
+      default: "[var(--border-focus)]",
       isInvalid: "negative-1000",
       forcedColors: "Highlight",
     },
@@ -241,18 +258,25 @@ const searchFieldGroupEndPadding = style({
   paddingEnd: 0,
 });
 
-const searchIconWrapper = style({
+/* Viviana UI v2 (Glasselated): the register's search well opens with a `/` slash-command
+ * prompt in `--terminal-prompt`, not with a magnifier (TerminalGlassLab.tsx:157). The
+ * glyph is the register's whole search affordance — the same `/` that focuses the field —
+ * so it is the BUILT-IN adornment here rather than something every call site re-passes
+ * through `prefix`. Apps that want the Spectrum magnifier back still pass it as `prefix`;
+ * either way the adornment is decorative and stays out of the accessible name. */
+const searchPromptWrapper = style({
   flexShrink: 0,
   marginEnd: "text-to-visual",
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
+  color: "[var(--terminal-prompt)]",
 });
 
-const searchIcon = style<SearchFieldStyleProps>({
-  size: "1lh",
-  marginStart: "--iconMargin",
+/* The shortcut chip is pushed to the end of the well by `margin-inline-start: auto`,
+ * exactly as the register draws it (TerminalGlassLab.tsx:157 `margin-left: auto`), so it
+ * stays flush against the clear button however wide the input grows. */
+const shortcutChip = style({
+  display: "flex",
+  marginStart: "auto",
+  flexShrink: 0,
 });
 
 const searchFieldInput = style({
@@ -261,7 +285,8 @@ const searchFieldInput = style({
   color: {
     default: "inherit",
     "::placeholder": {
-      default: "gray-600",
+      /* Register dim ink: placeholder copy is the well's quietest text. */
+      default: "[var(--terminal-dim)]",
       forcedColors: "GrayText",
     },
   },
@@ -392,6 +417,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     "contextualHelp",
     "prefix",
     "suffix",
+    "shortcut",
     "slot",
     "ref",
   ]);
@@ -553,8 +579,8 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             <Show
               when={local.prefix}
               fallback={
-                <CenterBaseline slot="icon" styles={searchIconWrapper}>
-                  <SearchIcon styles={searchIcon} />
+                <CenterBaseline slot="icon" styles={searchPromptWrapper}>
+                  <span aria-hidden="true">/</span>
                 </CenterBaseline>
               }
             >
@@ -570,6 +596,14 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             </Show>
             <Show when={local.suffix}>
               <FieldSuffix id={suffixId}>{local.suffix}</FieldSuffix>
+            </Show>
+            <Show when={local.shortcut}>
+              {/* Decoration, not name: see `shortcut` on SearchFieldProps. It carries no
+                  id and is never joined into `adornmentIds`, so the searchbox keeps the
+                  name its label gave it. */}
+              <span aria-hidden="true" class={shortcutChip}>
+                <Keyboard>{local.shortcut}</Keyboard>
+              </span>
             </Show>
             <Show when={!renderProps.isReadOnly}>
               <HeadlessSearchFieldClearButton class={clearButtonClass}>

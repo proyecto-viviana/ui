@@ -23,8 +23,40 @@ import {
   mergeContextUnsafeStyle,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { style } from "../style" with { type: "macro" };
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
-import { typeRoles } from "./type-roles";
+
+/* Viviana UI v2 (Glasselated): a standalone `<kbd>` is drawn as a KEY CHIP, not as
+ * a run of terminal text.
+ *
+ * The register shows key hints in two places — the `⌘K` parked at the end of the
+ * search well and the `↵` in the tutor prompt (TerminalGlassLab.tsx:157, :165) — both
+ * mono, both one step under the terminal band at 10px, both in `--terminal-dim`. What
+ * the flat markup cannot say is that these are KEYS: the prototype draws them as bare
+ * spans inside a well, where the well's own border already frames them. Standing alone
+ * (a shortcut list, a menu row's hint, a docs paragraph) the same text reads as prose,
+ * which is exactly the failure this chip fixes — a hair border on the register's
+ * `--border-subtle` and the 4px `radius-xs` the handoff reserves for tags and badges
+ * (tokens/surfaces.css:12) give the glyph a key silhouette without a fill, so it stays
+ * legible on a well, a card, and a page ground alike.
+ *
+ * Transparent on purpose: a filled chip inside a matte well would read as a second,
+ * nested well. The border is the whole affordance. */
+const keyboardChip = style({
+  font: "code-xs",
+  fontSize: "[10px]",
+  lineHeight: "[1.4]",
+  color: "[var(--terminal-dim)]",
+  backgroundColor: "transparent",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "border-subtle",
+  borderRadius: "sm",
+  paddingX: 4,
+  paddingY: 2,
+  display: "inline-block",
+  whiteSpace: "nowrap",
+});
 
 export interface KeyboardProps extends BaseContentProps<HTMLElement> {}
 
@@ -45,13 +77,13 @@ export function Keyboard(props: KeyboardProps): JSX.Element {
   const className = () =>
     [
       mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      /* Standalone default: the register's terminal role (mono, wells & prompts).
+      /* Standalone default: the register's key chip (see `keyboardChip`).
        * Skipped whenever a slotted context claims this <kbd> — MenuItem and other
        * hosts style their key hints through KeyboardContext, usually relying on
        * inheritance the baked role would break. See text/index.tsx for the full
        * rationale. */
       mergeContextStyles(
-        contextProps == null ? typeRoles.terminal : undefined,
+        contextProps == null ? keyboardChip : undefined,
         mergeContextStyles(contextProps?.styles, props.styles),
       ),
     ]

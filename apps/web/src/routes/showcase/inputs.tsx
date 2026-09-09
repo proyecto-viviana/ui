@@ -31,15 +31,17 @@ function InputsPanel() {
     <Panel def={def}>
       <Demo label="Register prompts — SearchField with a slash prefix and ⌘K hint inside the well, bare segments, tutor prompt on the AI-lane surface">
         {/* The register's panel-02 row: two prompt wells flanking a segment
-            strip. The glyph inks are per-well choices (`/` cyan, `$` info),
-            so they ride on the prefix JSX, not the surface. */}
+            strip. SearchField now draws the `/` slash-command prompt and its
+            shortcut chip itself, so the specimen passes only the shortcut; the
+            tutor well is a TextField, whose `$` glyph is still a per-call
+            prefix because that prompt is the app's, not the register's. */}
         <div style={{ display: "flex", "align-items": "center", gap: "12px", "flex-wrap": "wrap" }}>
           <div style={{ "min-width": "240px" }}>
             <SearchField
               aria-label="Search lessons"
               placeholder="search lessons"
-              prefix={<span style={{ color: "var(--well-cy)" }}>/</span>}
-              suffix={<Keyboard>⌘K</Keyboard>}
+              size="L"
+              shortcut="⌘K"
             />
           </div>
           <SegmentedControl aria-label="Range" defaultSelectedKey="week">
@@ -51,6 +53,7 @@ function InputsPanel() {
             <TextField
               aria-label="Ask tutor"
               surface="tutor"
+              size="L"
               prefix={<span style={{ color: "var(--status-info)" }}>$</span>}
               suffix={<Keyboard>↵</Keyboard>}
               defaultValue={'ask tutor "why does variance drop?"'}
