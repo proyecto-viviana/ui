@@ -60,6 +60,54 @@ Its primary sources are:
 Git history contains the completed 2026-07-22 port log. Do not copy that log
 back into the live reference.
 
+## Terminal Glass (v2) — 2026-09-09
+
+The register was re-cut to the frozen `design/glasselated-v2` handoff and the
+whole of `@proyecto-viviana/ui` was restyled onto it. `solid-spectrum` and
+`apps/comparison` were not touched. The package takes a major bump
+(`.changeset/terminal-glass-register.md`).
+
+- Foundation: colour ramps blue, cyan, fuchsia, yellow, red, green, gray (amber
+  and orange deleted); `viviana-tokens.css` re-cut to four channels and one rim
+  (`--edge-glass`); corner ladder 4/5/8/12/999; `display-xl/lg/md` type roles;
+  a single `[data-color-scheme]` attribute, with `[data-theme]` retired outside
+  Kumo. Helpers `glassSurface`, `dither`, `pixelBlocks`, `hudBracket`,
+  `edgeFade` live in `src/s2-internal/style-utils.ts`; the stepped keyframes
+  live in `src/style/motion.ts` behind `createPrefersReducedMotion`.
+- Components: every family restyled — buttons (`variant="terminal"`), badges,
+  meters and progress, selection controls, fields, collections, cards, wells,
+  and the float tier for popovers, menus, dialogs, tooltips and toasts.
+- Four new components: `PixelMeter`, `TerminalLog`, `HudFrame`,
+  `SceneBackdrop`, each with a showcase panel under `apps/web/src/routes/showcase`.
+- `/examples` is the proof surface: ten screens (landing, home, explore,
+  explore-empty, lesson, theater, live, profile, settings, playground) composed
+  only from the library, held by `guard:examples-purity` (library-only imports,
+  no `style=`, `ex-*` classes, layout-only `examples.css`) and by
+  `apps/web/e2e/examples.spec.ts` (axe per slug and theme, one fuchsia fill per
+  screen, target size).
+
+### Library gaps the examples found
+
+Open follow-ups against the package, in the examples' words:
+
+1. `PixelMeter shape="grid"` fills from one value, so a per-cell heat map is not
+   expressible (profile reads a day count instead).
+2. `SceneBackdrop` has no per-scheme `src`, so profile keeps one image in both
+   schemes.
+3. `TerminalLog` has no wrap mode; long lines become horizontal scroll regions.
+4. No ELSH type role, and no 18px lede role.
+5. `ToggleButton` has no yellow/notice variant.
+6. Landing's theme toggle needed a shared `ThemeToggle` component so the routes
+   themselves stay off `@/utils/theme`. Done; the exception is pinned to that
+   one file.
+
+### Minted outside the veto pass
+
+Five additions were made while building and were not on the approved list, so
+they are owner-review debt: `CardPreview.tag`, `Meter variant="metric"`,
+`AppShell hasAsk`, the `--scan-travel` variable read by `scanDown`, and
+`HudFrame channel="live"` painting red rather than fuchsia.
+
 ## Open work
 
 - Ticket #44 owns styled Tree and GridList production hydration.
