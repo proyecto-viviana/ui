@@ -856,109 +856,6 @@
   }
 }
 
-/* ── ex: settings ──────────────────────────────────────────────────────── */
-
-/* The file on the left, what it paints on the right. */
-[data-examples] .ex-settings {
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  align-items: start;
-}
-
-[data-examples] .ex-settings-card {
-  min-width: 0;
-}
-
-[data-examples] .ex-settings-body,
-[data-examples] .ex-settings-side {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  min-width: 0;
-}
-
-[data-examples] .ex-settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-/* The editor: one row per rc line, the number in a fixed right-aligned gutter,
-   the key in a fixed column, the control where its value would be, and the
-   note pushed to the far edge. */
-[data-examples] .ex-rc {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-
-[data-examples] .ex-rc-line {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 24px;
-  min-width: 0;
-}
-
-[data-examples] .ex-rc-num {
-  display: flex;
-  justify-content: flex-end;
-  width: 18px;
-  flex: 0 0 18px;
-}
-
-[data-examples] .ex-rc-key {
-  min-width: 200px;
-}
-
-[data-examples] .ex-rc-field {
-  width: 200px;
-}
-
-[data-examples] .ex-rc-blank {
-  height: 8px;
-}
-
-[data-examples] .ex-rc-note {
-  margin-left: auto;
-  padding-left: 12px;
-}
-
-/* The preview's three asks: primary, secondary, and an outlined create. */
-[data-examples] .ex-settings-trio {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Five shape swatches across. */
-[data-examples] .ex-settings-swatches {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 6px;
-}
-
-[data-examples] .ex-settings-swatch {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  min-width: 0;
-}
-
-@media (max-width: 1179px) {
-  [data-examples] .ex-settings {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  [data-examples] .ex-rc-key {
-    min-width: 0;
-  }
-
-  [data-examples] .ex-rc-field {
-    width: auto;
-  }
-}
-
 /* ── ex: live ──────────────────────────────────────────────────────────── */
 
 /* Same two planes as the theater — the framed stream underneath, the room's
@@ -1072,4 +969,107 @@
 
 [data-examples] .ex-live-spacer {
   flex: 1 1 auto;
+}
+
+/* ── ex: settings ──────────────────────────────────────────────────────── */
+
+/* The file on the left, what it paints on the right. */
+[data-examples] .ex-settings {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+[data-examples] .ex-settings-card {
+  min-width: 0;
+}
+
+[data-examples] .ex-settings-body,
+[data-examples] .ex-settings-side {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+}
+
+[data-examples] .ex-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* The editor: one row per rc line, the number in a fixed right-aligned gutter,
+   the key in a fixed column, the control where its value would be, and the
+   note pushed to the far edge. */
+[data-examples] .ex-rc {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+[data-examples] .ex-rc-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 24px;
+  min-width: 0;
+}
+
+[data-examples] .ex-rc-num {
+  display: flex;
+  justify-content: flex-end;
+  width: 18px;
+  flex: 0 0 18px;
+}
+
+[data-examples] .ex-rc-key {
+  min-width: 200px;
+}
+
+[data-examples] .ex-rc-field {
+  width: 200px;
+}
+
+[data-examples] .ex-rc-blank {
+  height: 8px;
+}
+
+[data-examples] .ex-rc-note {
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+/* The preview's three asks: primary, secondary, and an outlined create. */
+[data-examples] .ex-settings-trio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Five shape swatches across. */
+[data-examples] .ex-settings-swatches {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+[data-examples] .ex-settings-swatch {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+@media (max-width: 1179px) {
+  [data-examples] .ex-settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-examples] .ex-rc-key {
+    min-width: 0;
+  }
+
+  [data-examples] .ex-rc-field {
+    width: auto;
+  }
 }
