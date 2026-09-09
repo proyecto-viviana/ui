@@ -38,18 +38,22 @@ const ALLOWED_IMPORTS = [
   /^\.{1,2}\//,
 ];
 
-/* Two narrow exceptions, and only for the shell files.
+/* Two narrow exceptions, each pinned to the one file that owns it.
  *
  * `UNSAFE_PortalProvider` lives in `@proyecto-viviana/solidaria` and is how a
  * themed island keeps its portal overlays inside its own scope; `useTheme` in
  * `@/utils/theme` is the site's single owner of `data-color-scheme`, and the
  * alternative is a second theme mechanism, which is worse than an exception.
- * Neither is paint, and neither is reachable from a screen route. */
-const SHELL_FILES = new Set([
-  "apps/web/src/components/examples/ExamplesShell.tsx",
-  "apps/web/src/components/examples/AppShell.tsx",
+ * Neither is paint, and neither is reachable from a screen route: the theme
+ * import is confined to `ThemeToggle`, the one control both the app chrome and
+ * the landing nav render. */
+const IMPORT_EXCEPTIONS = new Map<string, RegExp[]>([
+  [
+    "apps/web/src/components/examples/ExamplesShell.tsx",
+    [/^@proyecto-viviana\/solidaria$/, /^@\/utils\/theme$/],
+  ],
+  ["apps/web/src/components/examples/ThemeToggle.tsx", [/^@\/utils\/theme$/]],
 ]);
-const SHELL_IMPORTS = [/^@proyecto-viviana\/solidaria$/, /^@\/utils\/theme$/];
 
 /* Box metrics. Anything that paints — colour, border, font, shadow, filter,
    background, transition, animation — is absent on purpose. */
@@ -111,7 +115,7 @@ async function listSourceFiles(dir: string): Promise<string[]> {
 
 function isAllowedImport(specifier: string, file: string): boolean {
   if (ALLOWED_IMPORTS.some((pattern) => pattern.test(specifier))) return true;
-  return SHELL_FILES.has(file) && SHELL_IMPORTS.some((pattern) => pattern.test(specifier));
+  return (IMPORT_EXCEPTIONS.get(file) ?? []).some((pattern) => pattern.test(specifier));
 }
 
 for (const dir of SOURCE_DIRS) {

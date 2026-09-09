@@ -32,6 +32,7 @@ import {
   type TerminalLogLine,
 } from "@proyecto-viviana/ui";
 import { LAND_CARDS, LAND_LOG } from "@/components/examples/data";
+import { ThemeToggle } from "@/components/examples/ThemeToggle";
 import { exampleSeo } from "@/components/examples/registry";
 
 export const Route = createFileRoute("/examples/landing")({
@@ -82,6 +83,7 @@ function LandingScreen() {
               <Button variant="secondary" fillStyle="outline" size="S">
                 log in
               </Button>
+              <ThemeToggle />
             </Flex>
 
             {/* ── the hero and the live log ───────────────────────────── */}

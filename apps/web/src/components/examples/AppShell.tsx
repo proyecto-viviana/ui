@@ -13,7 +13,6 @@
 import { For, Show, type JSX } from "solid-js";
 import { Link } from "@tanstack/solid-router";
 import {
-  ActionButton,
   Avatar,
   Button,
   Card,
@@ -21,7 +20,6 @@ import {
   Grid,
   LinkButton,
   Text,
-  ContrastIcon,
   PixelHomeIcon,
   PixelMapIcon,
   PixelPlayIcon,
@@ -31,7 +29,7 @@ import {
   Well,
   typeRoles,
 } from "@proyecto-viviana/ui";
-import { useTheme } from "@/utils/theme";
+import { ThemeToggle } from "@/components/examples/ThemeToggle";
 
 /** The rail, in the handoff's order: home, explore, lesson, live, profile. */
 const RAIL = [
@@ -68,8 +66,6 @@ export interface AppShellProps {
 }
 
 export function AppShell(props: AppShellProps & { readonly children: JSX.Element }): JSX.Element {
-  const { toggleTheme } = useTheme();
-
   return (
     <Grid class="ex-shell" rows="40px minmax(0,1fr)" columns="52px minmax(0,1fr)" gap="12px">
       <Well class="ex-cmdbar" tone="deep" size="S">
@@ -89,9 +85,7 @@ export function AppShell(props: AppShellProps & { readonly children: JSX.Element
               + Create
             </Button>
           </Show>
-          <ActionButton isQuiet aria-label="Toggle color scheme" onPress={toggleTheme}>
-            <ContrastIcon />
-          </ActionButton>
+          <ThemeToggle />
         </Flex>
       </Well>
 
