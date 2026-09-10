@@ -21,7 +21,8 @@ true of this repository.
 1. [`.claude/current/README.md`](./.claude/current/README.md) — live-docs index.
 2. [`.claude/tickets/`](./.claude/tickets/) — the board.
 
-Reference: [what a ported component must pass](./.claude/current/certification.md) and the [per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
+See: [what a ported component must pass](./.claude/current/certification.md) and
+[the per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
 
 ## Commands
 
@@ -38,8 +39,7 @@ Reference: [what a ported component must pass](./.claude/current/certification.m
 - A component is "ported" only with regression coverage across API, ARIA,
   keyboard/focus, forms, timing, styling, and i18n. An export, a green axe
   run, or a stable screenshot is a floor, not proof.
-- Publish only the six packages in
-  [`.claude/current/release-policy.md`](./.claude/current/release-policy.md).
+- Publish only [the six packages](./.claude/current/release-policy.md).
   `packages/viviana-ui` publishes as `@proyecto-viviana/ui`.
 - Mirror upstream (Adobe Stately/Aria/Spectrum S2, Cloudflare Kumo); never
   invent a size, name, or behavior an upstream answer already gives.
