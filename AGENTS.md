@@ -13,8 +13,8 @@ true of this repository.
   `@proyecto-viviana/kumo`). The upper three theme and compose only — never
   fork ARIA or state logic.
 - S2 styling lives only in `solid-spectrum`, generated from tokens by the
-  style macro ([ADR 0001](./docs/adr/0001-s2-styling-source-of-truth.md));
-  `apps/comparison` verifies parity, it never patches styling.
+  style macro ([ADR 0001](./docs/adr/0001-s2-styling-source-of-truth.md)).
+  `apps/comparison` verifies parity; it never patches styling.
 
 ## Start
 
@@ -36,12 +36,15 @@ true of this repository.
 ## Local rules
 
 - A component is "ported" only with regression coverage across API, ARIA,
-  keyboard/focus, forms, timing, styling, and i18n — an export, a green
-  axe run, or a stable screenshot is a floor, not proof.
-- Publish only the six packages named in
-  [`.claude/current/release-policy.md`](./.claude/current/release-policy.md);
+  keyboard/focus, forms, timing, styling, and i18n. An export, a green axe
+  run, or a stable screenshot is a floor, not proof.
+- Publish only the six packages in
+  [`.claude/current/release-policy.md`](./.claude/current/release-policy.md).
   `packages/viviana-ui` publishes as `@proyecto-viviana/ui`.
 - Mirror upstream (Adobe Stately/Aria/Spectrum S2, Cloudflare Kumo); never
   invent a size, name, or behavior an upstream answer already gives.
 - Names with public reach are owner-steered before they exist; never mint
   one silently. Never add a dependency without explicit approval.
+- Parity research uses the MCP servers in `.claude/current/tooling.md`.
+- `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
+  untracked; they are local tool state.
