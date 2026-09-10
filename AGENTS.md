@@ -1,17 +1,16 @@
 # ui
 
 Proyecto Viviana's published Solid design-system family: an evidence-backed
-port of Adobe's React Stately/Aria/Spectrum S2, plus a Cloudflare Kumo port.
+port of Adobe's React Stately/Aria/Spectrum S2, plus Kumo and Geist skins.
 
 Ecosystem rules: [`../AGENTS.md`](../AGENTS.md). This file adds only what is
 true of this repository.
 
 ## Scope
 
-- Six public packages share one chain: `solid-stately` → `solidaria` →
-  `solidaria-components` → (`solid-spectrum`, `@proyecto-viviana/ui`,
-  `@proyecto-viviana/kumo`). The upper three theme and compose only — never
-  fork ARIA or state logic.
+- Headless chain `solid-stately` → `solidaria` → `solidaria-components`,
+  then styled siblings `solid-spectrum`, `@proyecto-viviana/ui`, kumo,
+  and geist. Styled packages theme and compose only.
 - S2 styling lives only in `solid-spectrum`, generated from tokens by the
   style macro ([ADR 0001](./docs/adr/0001-s2-styling-source-of-truth.md)).
   `apps/comparison` verifies the same behavior; it never patches styling.
@@ -39,10 +38,12 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - A component is "ported" only with regression coverage across API, ARIA,
   keyboard/focus, forms, timing, styling, and i18n. An export, a green axe
   run, or a stable screenshot is a floor, not proof.
-- Publish only [the six packages](./.claude/current/release-policy.md).
+- Publish only
+  [the packages in release-policy.md](./.claude/current/release-policy.md).
   `packages/viviana-ui` publishes as `@proyecto-viviana/ui`.
-- Mirror upstream (Adobe Stately/Aria/Spectrum S2, Cloudflare Kumo); never
-  invent a size, name, or behavior an upstream answer already gives.
+- Mirror upstream (Adobe Stately/Aria/Spectrum S2, Cloudflare Kumo). Geist
+  follows public docs, not `@vercel/geistcn`. Never invent a size, name, or
+  behavior an upstream answer already gives.
 - Names with public reach are owner-steered before they exist; never mint
   one silently. Never add a dependency without explicit approval.
 - Behavior research uses the MCP servers in `.claude/current/tooling.md`.

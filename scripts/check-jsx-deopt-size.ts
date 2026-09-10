@@ -31,6 +31,7 @@ const PACKAGES = [
   "packages/solid-spectrum",
   "packages/viviana-ui",
   "packages/kumo",
+  "packages/geist",
 ];
 
 // Known-large `.jsx` that still exceed the limit, tracked as a follow-up rather

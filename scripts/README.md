@@ -34,6 +34,7 @@ chain:
 - `@proyecto-viviana/solidaria`
 - `@proyecto-viviana/solidaria-components`
 - `@proyecto-viviana/kumo`
+- `@proyecto-viviana/geist`
 - `@proyecto-viviana/solid-spectrum`
 - `@proyecto-viviana/ui`
 

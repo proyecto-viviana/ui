@@ -39,6 +39,7 @@ const WORKSPACE: Record<string, string> = {
   "@proyecto-viviana/solidaria": "packages/solidaria",
   "@proyecto-viviana/solidaria-components": "packages/solidaria-components",
   "@proyecto-viviana/kumo": "packages/kumo",
+  "@proyecto-viviana/geist": "packages/geist",
   "@proyecto-viviana/solid-spectrum": "packages/solid-spectrum",
   "@proyecto-viviana/ui": "packages/viviana-ui",
 };

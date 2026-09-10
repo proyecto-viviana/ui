@@ -9,6 +9,7 @@ const SOURCE_ROOTS = [
   "packages/solidaria/src",
   "packages/solidaria-components/src",
   "packages/kumo/src",
+  "packages/geist/src",
   "packages/solid-spectrum/src",
   "packages/viviana-ui/src",
 ];

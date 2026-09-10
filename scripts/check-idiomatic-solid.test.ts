@@ -116,6 +116,7 @@ describe("isStyledMergePropsGuardPath", () => {
     expect(isStyledMergePropsGuardPath("packages/solid-spectrum/src/button/Button.tsx")).toBe(true);
     expect(isStyledMergePropsGuardPath("packages/viviana-ui/src/button/Button.tsx")).toBe(true);
     expect(isStyledMergePropsGuardPath("packages/kumo/src/components/button.tsx")).toBe(false);
+    expect(isStyledMergePropsGuardPath("packages/geist/src/components/button.tsx")).toBe(false);
     expect(isStyledMergePropsGuardPath("packages/solidaria/src/utils/mergeProps.ts")).toBe(false);
   });
 });

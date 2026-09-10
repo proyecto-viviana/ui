@@ -420,7 +420,8 @@ function canon(basename: string): string {
 const isOurTest = (f: string) =>
   f.endsWith(".test.tsx") &&
   !/\.(ssr|hydrate)\.test\.tsx$/.test(f) &&
-  !f.includes(`${path.sep}packages${path.sep}kumo${path.sep}`);
+  !f.includes(`${path.sep}packages${path.sep}kumo${path.sep}`) &&
+  !f.includes(`${path.sep}packages${path.sep}geist${path.sep}`);
 const isUpstreamTest = (f: string) =>
   /\.(test\.jsx?|test\.tsx|test-util\.tsx)$/.test(f) && !/\.ssr\./.test(f);
 

@@ -5,7 +5,12 @@ import path from "node:path";
 import ts from "typescript";
 
 const root = process.cwd();
-const styledPackages = ["packages/solid-spectrum", "packages/viviana-ui", "packages/kumo"] as const;
+const styledPackages = [
+  "packages/solid-spectrum",
+  "packages/viviana-ui",
+  "packages/kumo",
+  "packages/geist",
+] as const;
 const lowerPackages = [
   "@proyecto-viviana/solid-stately",
   "@proyecto-viviana/solidaria",

@@ -240,6 +240,16 @@ importers:
         specifier: ^4.124.0
         version: 4.124.0
 
+  packages/geist:
+    dependencies:
+      '@proyecto-viviana/solidaria-components':
+        specifier: workspace:*
+        version: link:../solidaria-components
+    devDependencies:
+      solid-js:
+        specifier: ^1.9.15
+        version: 1.9.15
+
   packages/kumo:
     dependencies:
       '@proyecto-viviana/solidaria-components':

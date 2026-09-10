@@ -205,6 +205,14 @@ button.link:hover {
   background: #76828d;
 }
 
+.state-parked {
+  background: #c49a3c;
+}
+
+.state-dropped {
+  background: #5a6570;
+}
+
 .stat.state-bg-merged .stat-num {
   color: #3fa66a;
 }
@@ -216,6 +224,12 @@ button.link:hover {
 }
 .stat.state-bg-next .stat-num {
   color: #a86fd6;
+}
+.stat.state-bg-parked .stat-num {
+  color: #c49a3c;
+}
+.stat.state-bg-dropped .stat-num {
+  color: #5a6570;
 }
 /* tables */
 .data-table {

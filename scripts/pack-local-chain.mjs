@@ -16,6 +16,7 @@ const packages = [
   { name: "@proyecto-viviana/solidaria", dir: "packages/solidaria" },
   { name: "@proyecto-viviana/solidaria-components", dir: "packages/solidaria-components" },
   { name: "@proyecto-viviana/kumo", dir: "packages/kumo" },
+  { name: "@proyecto-viviana/geist", dir: "packages/geist" },
   { name: "@proyecto-viviana/solid-spectrum", dir: "packages/solid-spectrum" },
   { name: "@proyecto-viviana/ui", dir: "packages/viviana-ui" },
 ];
@@ -140,6 +141,9 @@ printJson("Pokeforos dependency", {
 });
 printJson("Kumo dependency", {
   "@proyecto-viviana/kumo": fileSpec(tarballs["@proyecto-viviana/kumo"]),
+});
+printJson("Geist dependency", {
+  "@proyecto-viviana/geist": fileSpec(tarballs["@proyecto-viviana/geist"]),
 });
 printJson("Comparison dependencies", {
   "@proyecto-viviana/solid-stately": fileSpec(tarballs["@proyecto-viviana/solid-stately"]),

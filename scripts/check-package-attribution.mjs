@@ -31,6 +31,10 @@ const kumoPackage = {
   dir: "packages/kumo",
   name: "@proyecto-viviana/kumo",
 };
+const geistPackage = {
+  dir: "packages/geist",
+  name: "@proyecto-viviana/geist",
+};
 const problems = [];
 
 function read(relativePath) {
@@ -136,6 +140,20 @@ if (kumoManifest !== null) {
 }
 requireExactCopy(kumoPackage.dir, "LICENSE", rootMit);
 read(path.join(kumoPackage.dir, "LICENSE-CLOUDFLARE"));
+
+const geistManifest = readManifest(geistPackage.dir);
+if (geistManifest !== null) {
+  if (geistManifest.name !== geistPackage.name) {
+    problems.push(
+      `${geistPackage.dir}/package.json: expected name ${geistPackage.name}, found ${geistManifest.name ?? "none"}`,
+    );
+  }
+  if (geistManifest.license !== "MIT") {
+    problems.push(`${geistPackage.dir}/package.json: expected license MIT`);
+  }
+  requireManifestFiles(geistManifest, geistPackage.dir, ["LICENSE"]);
+}
+requireExactCopy(geistPackage.dir, "LICENSE", rootMit);
 
 const sourceInventory = adobePackages.map((entry) => {
   const files = sourceFiles(path.join(root, entry.dir, "src"));

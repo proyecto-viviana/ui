@@ -11,6 +11,7 @@ const PUBLIC_PACKAGES = [
   "packages/solidaria/src",
   "packages/solidaria-components/src",
   "packages/kumo/src",
+  "packages/geist/src",
   "packages/solid-spectrum/src",
   "packages/viviana-ui/src",
 ];
@@ -34,7 +35,7 @@ const current = PUBLIC_PACKAGES.flatMap((directory) => walk(path.join(ROOT, dire
 if (WRITE_BASELINE) {
   const baseline = {
     description:
-      "Frozen @ts-nocheck inventory for the six public package source trees. Removing entries is allowed; adding or moving a directive fails.",
+      "Frozen @ts-nocheck inventory for the public package source trees. Removing entries is allowed; adding or moving a directive fails.",
     maxCount: current.length,
     paths: current,
   };

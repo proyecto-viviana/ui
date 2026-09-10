@@ -11,7 +11,7 @@ harness role change.
 
 ## The shared foundation and styled layers
 
-Viviana UI has a shared Solid foundation. Three standalone styled packages use
+Viviana UI has a shared Solid foundation. Four standalone styled packages use
 that foundation.
 
 The lower three packages are the unofficial React Aria port stack. Each package
@@ -28,7 +28,8 @@ adds one concern and depends only on lower packages.
 @proyecto-viviana/solidaria-components
   ├─ @proyecto-viviana/solid-spectrum   Spectrum 2 styled components
   ├─ @proyecto-viviana/ui               Viviana design system
-  └─ @proyecto-viviana/kumo             experimental Kumo styled components
+  ├─ @proyecto-viviana/kumo             experimental Kumo styled components
+  └─ @proyecto-viviana/geist           experimental Geist styled components
 ```
 
 Upstream mapping:
@@ -41,9 +42,11 @@ Upstream mapping:
 | `@react-spectrum/s2`    | `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       |
 | Viviana design system   | `viviana-ui`           | `@proyecto-viviana/ui`                   |
 | Cloudflare Kumo         | `kumo`                 | `@proyecto-viviana/kumo`                 |
+| Vercel Geist (docs)     | `geist`                | `@proyecto-viviana/geist`                |
 
-All six public packages are releasable. The Kumo package is still experimental.
-Workspace Kumo stays `0.0.0` until the first real publish (`release-policy.md`).
+All seven public packages are releasable. The Kumo and Geist packages are
+still experimental. Workspace Kumo and Geist stay `0.0.0` until the first
+real publish (`release-policy.md`).
 `solidaria-test-utils` and `solid-spectrum-test-utils` are private.
 
 ## Where behavior goes
@@ -51,7 +54,7 @@ Workspace Kumo stays `0.0.0` until the first real publish (`release-policy.md`).
 **Put behavior in the lowest applicable layer** (Rule #4). State belongs in
 `solid-stately`. ARIA, keyboard, and focus belong in `solidaria`. Composition,
 slots, render props, and data attributes belong in `solidaria-components`.
-The three styled packages must not reimplement low-level behavior. They can
+The four styled packages must not reimplement low-level behavior. They can
 wrap or compose headless components and apply design-system APIs and styles.
 
 ## Where styling goes
@@ -66,6 +69,9 @@ focus rings, or visual states.
 
 Kumo styling lives in `packages/kumo`. Copy Kumo values from the pinned
 Cloudflare source. Do not use S2 styles for Kumo.
+
+Geist styling lives in `packages/geist`. Copy rest values from the public
+Geist docs. Do not use S2 styles for Geist. Do not copy `@vercel/geistcn`.
 
 `solid-spectrum` and `viviana-ui` both pin `@adobe/spectrum-tokens` to the S2
 oracle version. Viviana theming lives in `viviana-tokens.css`, not in a
@@ -86,7 +92,7 @@ Track each styled export as one of:
 - `tracked-gap` — a known missing parity component or comparison route.
 
 The Kumo package uses the same evidence rule. Its first Button slice is an
-experiment, not a parity component.
+experiment, not a parity component. The Geist package uses that rule too.
 
 React Aria Components does not expose every Spectrum component 1:1. Spectrum
 adds productized wrappers above RAC, and the styled layers may do the same. A
@@ -113,14 +119,15 @@ catalogue page. Ticket #177 records the current exceptions.
 
 ## Build order
 
-Packages build the shared foundation first. The three styled packages then
+Packages build the shared foundation first. The four styled packages then
 build as siblings:
 
 ```
 solid-stately → solidaria → solidaria-components
                                      ├─ solid-spectrum
                                      ├─ viviana-ui
-                                     └─ kumo
+                                     ├─ kumo
+                                     └─ geist
 ```
 
 Source manifests use `workspace:*`. The release process writes registry versions.

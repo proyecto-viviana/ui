@@ -14,6 +14,7 @@ const DEFAULT_PUBLIC_PACKAGE_DIRS = [
   "packages/solidaria",
   "packages/solidaria-components",
   "packages/kumo",
+  "packages/geist",
   "packages/solid-spectrum",
   "packages/viviana-ui",
 ];

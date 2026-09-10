@@ -16,7 +16,7 @@ specifications.
 ## Outcome
 
 Show one honest Kumo Button experiment on the Viviana UI site. The page explains
-the shared Solid foundation and presents its three standalone styled libraries.
+the shared Solid foundation and presents its styled libraries.
 
 The page must show the maturity difference. The Button does not prove Kumo
 parity. Workspace `@proyecto-viviana/kumo` is `0.0.0`, incomplete, and expected
@@ -27,8 +27,9 @@ only. That is not a product publish. See `release-policy.md`.
 
 - The package name is `@proyecto-viviana/kumo`.
 - `solidaria-components` is the reusable headless layer.
-- `solid-spectrum`, `@proyecto-viviana/ui`, and
-  `@proyecto-viviana/kumo` are standalone styled siblings above that layer.
+- `solid-spectrum`, `@proyecto-viviana/ui`, `@proyecto-viviana/kumo`,
+  and `@proyecto-viviana/geist` are standalone styled siblings above that
+  layer.
 - The styled Button uses Kumo API names such as `onClick` and `className`.
   Consumers use `solidaria-components` directly for headless APIs such as
   `onPress`, render props, slots, and data attributes.

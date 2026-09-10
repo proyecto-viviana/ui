@@ -1,7 +1,15 @@
 import { For, Show } from "solid-js";
 import { type DocsPayload, type GitPayload, reviewQueue } from "./api";
 
-const STATE_ORDER = ["in-progress", "next", "open", "merged", "verified"] as const;
+const STATE_ORDER = [
+  "in-progress",
+  "next",
+  "open",
+  "parked",
+  "merged",
+  "verified",
+  "dropped",
+] as const;
 
 export function HomePanel(props: {
   data: DocsPayload;

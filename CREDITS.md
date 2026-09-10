@@ -64,6 +64,15 @@ source.
 - License notice: [`packages/kumo/LICENSE-CLOUDFLARE`](packages/kumo/LICENSE-CLOUDFLARE).
 - Current status: experiment with incomplete parity evidence.
 
+## Inspired by — Vercel Geist (public docs)
+
+`@proyecto-viviana/geist` is a Geist-shaped Button experiment. The public
+API names and rest paint follow https://vercel.com/geist/button. The
+package does not copy `@vercel/geistcn`, which is not on public npm.
+
+- Docs: <https://vercel.com/geist>.
+- Current status: experiment with incomplete evidence. Not a port.
+
 ## Inspired by — peer libraries
 
 Influence at the idea/pattern level, not derived code. No license obligation;

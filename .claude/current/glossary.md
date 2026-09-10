@@ -14,7 +14,7 @@ owner-steered (Rule #3). Do not create one silently.
 ## Layers & packages
 
 - **Viviana UI** — Proyecto Viviana's open-source UI experiment for Solid. It
-  includes a shared headless foundation and three standalone styled libraries.
+  includes a shared headless foundation and four standalone styled libraries.
 - **solid-stately** — `@proyecto-viviana/solid-stately`. State layer (signals,
   controlled/uncontrolled, collections, selection). Mirrors `@react-stately`.
 - **solidaria** — `@proyecto-viviana/solidaria`. Accessibility-hook layer (ARIA,
@@ -30,6 +30,9 @@ owner-steered (Rule #3). Do not create one silently.
 - **kumo** — package directory for `@proyecto-viviana/kumo`. An experimental
   Kumo-shaped styled library for Solid. It uses `solidaria-components` for
   behavior and Cloudflare Kumo as its API and visual source.
+- **geist** — package directory for `@proyecto-viviana/geist`. An experimental
+  Geist-shaped styled library for Solid. It uses `solidaria-components` for
+  behavior and the public Vercel Geist docs as its API and visual source.
 
 ## Port Acceptance
 

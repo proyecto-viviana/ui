@@ -146,7 +146,7 @@ during an audit. Do not block work on an optional local MCP integration.
 
 ## Package builds and browser preview
 
-All six public packages now use Vite Plus packaging from `vite.config.ts`.
+All seven public packages now use Vite Plus packaging from `vite.config.ts`.
 Declarations remain a separate `tsc -p tsconfig.build.json` step. A successful
 process exit is insufficient: `vp run build` finishes with
 `guard:package-artifacts`, which checks every declared manifest target.

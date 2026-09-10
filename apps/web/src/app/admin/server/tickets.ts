@@ -1,6 +1,14 @@
 import { replaceFrontmatter, splitFrontmatter } from "./frontmatter";
 
-export const TICKET_STATUSES = ["open", "next", "in-progress", "merged", "verified"] as const;
+export const TICKET_STATUSES = [
+  "open",
+  "next",
+  "in-progress",
+  "merged",
+  "verified",
+  "parked",
+  "dropped",
+] as const;
 export type TicketStatus = (typeof TICKET_STATUSES)[number];
 
 export const TICKET_TYPES = ["task", "initiative", "milestone"] as const;

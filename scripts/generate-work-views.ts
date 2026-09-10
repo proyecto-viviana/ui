@@ -114,7 +114,7 @@ function renderStatus(data: DocsPayload, revision: string): string {
         ),
       ],
     ],
-    ["left", "right", "right", "right", "right", "right"],
+    ["left", "right", "right", "right", "right", "right", "right", "right"],
   );
 
   return `---

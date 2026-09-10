@@ -10,6 +10,7 @@ export const LIVE_CURRENT_DOCS = [
   ".claude/current/certification.md",
   ".claude/current/glasselated-port.md",
   ".claude/current/glossary.md",
+  ".claude/current/geist-experiment.md",
   ".claude/current/kumo-experiment.md",
   ".claude/current/release-policy.md",
   ".claude/current/roadmap.md",

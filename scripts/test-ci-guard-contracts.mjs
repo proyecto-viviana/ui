@@ -197,6 +197,7 @@ try {
     "packages/solidaria/src",
     "packages/solidaria-components/src",
     "packages/kumo/src",
+    "packages/geist/src",
     "packages/solid-spectrum/src",
     "packages/viviana-ui/src",
   ]) {
@@ -224,6 +225,7 @@ try {
     "packages/solidaria/src",
     "packages/solidaria-components/src",
     "packages/kumo/src",
+    "packages/geist/src",
     "packages/solid-spectrum/src/style",
     "packages/viviana-ui/src/style",
   ]) {
@@ -548,6 +550,14 @@ try {
   });
   writeFileSync(path.join(kumoFixture, "LICENSE"), fixtureMit);
   writeFileSync(path.join(kumoFixture, "LICENSE-CLOUDFLARE"), "Cloudflare MIT fixture\n");
+
+  const geistFixture = path.join(attributionFixture, "packages", "geist");
+  json(path.join(geistFixture, "package.json"), {
+    name: "@proyecto-viviana/geist",
+    license: "MIT",
+    files: ["src", "LICENSE"],
+  });
+  writeFileSync(path.join(geistFixture, "LICENSE"), fixtureMit);
 
   writeFileSync(
     path.join(attributionFixture, "packages", "solidaria", "NOTICE"),

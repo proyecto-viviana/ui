@@ -66,6 +66,7 @@ const SRC_ROOTS = [
   "packages/solidaria/src",
   "packages/solidaria-components/src",
   "packages/kumo/src",
+  "packages/geist/src",
   "packages/solid-spectrum/src",
   "packages/solid-stately/src",
   "packages/viviana-ui/src",

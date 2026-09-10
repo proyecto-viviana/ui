@@ -1,7 +1,15 @@
 import { For, Show, createSignal } from "solid-js";
 import { type DocsPayload, type TicketStatus, postTicketBlocked, postTicketStatus } from "./api";
 
-const TICKET_STATUSES: TicketStatus[] = ["open", "next", "in-progress", "merged", "verified"];
+const TICKET_STATUSES: TicketStatus[] = [
+  "open",
+  "next",
+  "in-progress",
+  "merged",
+  "verified",
+  "parked",
+  "dropped",
+];
 
 export function RoadmapPanel(props: {
   data: DocsPayload;

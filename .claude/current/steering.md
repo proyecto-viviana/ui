@@ -18,9 +18,9 @@ Match upstream observable behavior before adding local behavior. Put state,
 ARIA, keyboard, focus, and composition in the lowest owning layer. Generate S2
 styles only in `solid-spectrum`. Use the comparison app only to prove parity.
 
-`@proyecto-viviana/ui`, `solid-spectrum`, and Kumo are styled siblings above the
-same headless stack. Kumo remains a bounded experiment. Do not expand or publish
-it without a separate owner decision.
+`@proyecto-viviana/ui`, `solid-spectrum`, Kumo, and Geist are styled siblings
+above the same headless stack. Kumo and Geist remain bounded experiments. Do
+not expand or publish them without a separate owner decision.
 
 ## Work order
 
@@ -56,6 +56,9 @@ owner vetoes them.
 - **archive/custom — #145 / #62.** (owner) Deleted. Current work is the Solid
   Spectrum API. Do not add new viviana-native components until the owner
   reopens that surface.
+- **Geist package name — #526.** (owner) The fourth styled sibling is
+  `@proyecto-viviana/geist`. The first slice is a Button experiment, not a
+  Geist port. `@vercel/geistcn` is not a public oracle.
 
 The TableView and TabSwitch public boundaries change only through #490 and
 #491, each with a Changeset and the regression evidence its ticket names.

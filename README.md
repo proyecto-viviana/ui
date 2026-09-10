@@ -1,7 +1,7 @@
 # Viviana UI
 
 Viviana UI is Proyecto Viviana's open-source UI experiment for Solid. It includes
-a shared headless foundation and three styled component libraries.
+a shared headless foundation and four styled component libraries.
 
 The foundation is an unofficial port project for Adobe's React Stately, React
 Aria, and React Aria Components. `solid-spectrum` also experiments with React
@@ -12,6 +12,7 @@ Spectrum S2 parity. The project is not affiliated with Adobe or Cloudflare.
 | `viviana-ui`           | `@proyecto-viviana/ui`                   | Viviana design-system package and client-facing entry point.      |
 | `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Styled Solid experiment based on React Spectrum S2.               |
 | `kumo`                 | `@proyecto-viviana/kumo`                 | Experimental Kumo-shaped styled components for Solid.             |
+| `geist`                | `@proyecto-viviana/geist`                | Experimental Geist-shaped styled components for Solid.            |
 | `solidaria-components` | `@proyecto-viviana/solidaria-components` | Headless Solid experiment based on React Aria Components.         |
 | `solidaria`            | `@proyecto-viviana/solidaria`            | Experimental Solid ARIA, keyboard, focus, press, and hover hooks. |
 | `solid-stately`        | `@proyecto-viviana/solid-stately`        | Experimental Solid state primitives based on React Stately.       |
@@ -53,7 +54,8 @@ The lower packages are available directly for lower-level Solid ports and
 experiments, but most apps should start with `@proyecto-viviana/ui`.
 
 The Kumo package is a separate styled library. Its first Button slice is not a
-complete Kumo port.
+complete Kumo port. The Geist package is the same kind of experiment: a Button
+slice shaped by public Geist docs, not a port of `@vercel/geistcn`.
 
 ## Development
 
@@ -85,3 +87,5 @@ docs/adr/                architecture decision records (ADR 0001 = S2 styling bo
   inspired-by — add to it in the change that introduces new such material.
 - Kumo-derived material keeps the Cloudflare MIT notice in
   [`packages/kumo/LICENSE-CLOUDFLARE`](packages/kumo/LICENSE-CLOUDFLARE).
+- Geist visual rest values follow the public docs at
+  https://vercel.com/geist. The package does not copy `@vercel/geistcn`.

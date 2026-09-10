@@ -25,6 +25,7 @@ Update when: the release matrix, the Changesets flow, or the CI gates change.
 | `packages/solidaria`                 | releasable        | npm      | public  |
 | `packages/solidaria-components`      | releasable        | npm      | public  |
 | `packages/kumo`                      | releasable        | npm      | public  |
+| `packages/geist`                     | releasable        | npm      | public  |
 | `packages/solid-spectrum`            | releasable        | npm      | public  |
 | `packages/viviana-ui`                | releasable        | npm      | public  |
 | `packages/solidaria-test-utils`      | private/test-only | none     | private |
@@ -42,20 +43,23 @@ must republish the owning lower package. Unrelated Spectrum changes do not
 belong in that closure. The Changesets check, release-prerequisite guard, pack-chain
 script, and out-of-workspace consume smoke enforce this contract.
 
-`@proyecto-viviana/kumo` entered the matrix as an experiment on 2026-08-13. It
-depends on `solidaria-components` and its lower dependencies. It is not in the
+`@proyecto-viviana/kumo` entered the matrix as an experiment on 2026-08-13.
+`@proyecto-viviana/geist` entered on 2026-09-10. Both depend on
+`solidaria-components` and its lower dependencies. They are not in the
 `@proyecto-viviana/ui` dependency closure.
 
-Workspace Kumo stays at `0.0.0`. The guard permits that unpublished workspace
-version. Changesets ignore it until the workspace version is a real release, so
-`changeset version` cannot bump it off `0.0.0` as a side effect of the Adobe
-stack train. `guard:release-prerequisites` fails if pending changesets name a
-`0.0.0` package that is not ignored — that path would publish a fake first
-release. A nonzero release-candidate version fails CI and publish unless
-`scripts/release-prerequisites.json` records both npm package registration and
-trusted-publisher registration. Those registrations exist for the deprecated
-`0.0.0-bootstrap.0` name reservation. They do not make workspace `0.0.0` a
-product release.
+Workspace Kumo stays at `0.0.0`. Workspace Geist stays at `0.0.0` the same
+way. The guard permits those unpublished workspace versions. Changesets
+ignore them until the workspace version is a real release, so
+`changeset version` cannot bump them off `0.0.0` as a side effect of the
+Adobe stack train. `guard:release-prerequisites` fails if pending
+changesets name a `0.0.0` package that is not ignored — that path would
+publish a fake first release. A nonzero release-candidate version fails CI
+and publish unless `scripts/release-prerequisites.json` records both npm
+package registration and trusted-publisher registration. Those
+registrations exist for Kumo's deprecated `0.0.0-bootstrap.0` name
+reservation. They do not make workspace `0.0.0` a product release. Geist
+has no npm registration yet.
 
 ## Flow
 

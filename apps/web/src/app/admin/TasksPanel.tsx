@@ -1,8 +1,24 @@
 import { For, Show, createSignal } from "solid-js";
 import { type DocsPayload, type TicketStatus, postTicketBlocked, postTicketStatus } from "./api";
 
-const TICKET_STATUSES: TicketStatus[] = ["open", "next", "in-progress", "merged", "verified"];
-const GROUP_ORDER: TicketStatus[] = ["in-progress", "next", "open", "merged", "verified"];
+const TICKET_STATUSES: TicketStatus[] = [
+  "open",
+  "next",
+  "in-progress",
+  "merged",
+  "verified",
+  "parked",
+  "dropped",
+];
+const GROUP_ORDER: TicketStatus[] = [
+  "in-progress",
+  "next",
+  "open",
+  "parked",
+  "merged",
+  "verified",
+  "dropped",
+];
 
 export function TasksPanel(props: {
   data: DocsPayload;
