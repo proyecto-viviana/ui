@@ -14,14 +14,14 @@ true of this repository.
   fork ARIA or state logic.
 - S2 styling lives only in `solid-spectrum`, generated from tokens by the
   style macro ([ADR 0001](./docs/adr/0001-s2-styling-source-of-truth.md)).
-  `apps/comparison` verifies parity; it never patches styling.
+  `apps/comparison` verifies the same behavior; it never patches styling.
 
 ## Start
 
 1. [`.claude/current/README.md`](./.claude/current/README.md) — live-docs index.
 2. [`.claude/tickets/`](./.claude/tickets/) — the board.
 
-Reference: the [evidence bar for a ported component](./.claude/current/certification.md) and the [per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
+Reference: [what a ported component must pass](./.claude/current/certification.md) and the [per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
 
 ## Commands
 
@@ -45,6 +45,6 @@ Reference: the [evidence bar for a ported component](./.claude/current/certifica
   invent a size, name, or behavior an upstream answer already gives.
 - Names with public reach are owner-steered before they exist; never mint
   one silently. Never add a dependency without explicit approval.
-- Parity research uses the MCP servers in `.claude/current/tooling.md`.
+- Behavior research uses the MCP servers in `.claude/current/tooling.md`.
 - `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
   untracked; they are local tool state.

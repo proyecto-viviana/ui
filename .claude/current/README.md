@@ -19,7 +19,7 @@ completed operational records.
 3. Open [the ticket board](../tickets/) for full task records and history.
 4. Read [steering.md](steering.md) for owner direction.
 5. Read [architecture.md](architecture.md) before you change package boundaries.
-6. Read [certification.md](certification.md) before you claim parity.
+6. Read [certification.md](certification.md) before you claim the same behavior.
 7. Read [tooling.md](tooling.md) before you run repository commands.
 
 `status.md` and `roadmap.md` are generated. Do not edit them. Run
