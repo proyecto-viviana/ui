@@ -4,9 +4,10 @@ type: task
 title: "Move the remaining packages off tsup"
 created: 2026-08-20
 parent: 27
-status: open
+status: merged
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task pkg-build-remaining" }
+  - { state: merged, at: 2026-09-09, note: "merged 2026-09-09: done-when met, no package build depends on tsup; declaration work stays in #47" }
 ---
 
 Complete the native Vite Plus build migration for every remaining public

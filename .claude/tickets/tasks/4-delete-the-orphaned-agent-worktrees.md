@@ -3,9 +3,10 @@ id: 4
 type: task
 title: "Delete the orphaned agent worktrees"
 created: 2026-08-01
-status: open
+status: parked
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
+  - { state: parked, at: 2026-09-09, note: "parked 2026-09-09: idle since the August import, not on the live map" }
 ---
 
 Orphaned agent worktrees are left in this repo. They inflate every hub-wide duplication and size
