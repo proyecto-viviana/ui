@@ -19,9 +19,9 @@ true of this repository.
 ## Start
 
 1. [`.claude/current/README.md`](./.claude/current/README.md) — live-docs index.
-2. [`.claude/current/certification.md`](./.claude/current/certification.md)
-   — the evidence bar for calling a component "ported".
-3. [`apps/comparison/COMPONENT_PLAYBOOK.md`](./apps/comparison/COMPONENT_PLAYBOOK.md) — the per-component runner.
+2. [`.claude/tickets/`](./.claude/tickets/) — the board.
+
+Reference: the [evidence bar for a ported component](./.claude/current/certification.md) and the [per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
 
 ## Commands
 
