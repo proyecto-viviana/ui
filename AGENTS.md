@@ -38,8 +38,7 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - A component is "ported" only with regression coverage across API, ARIA,
   keyboard/focus, forms, timing, styling, and i18n. An export, a green axe
   run, or a stable screenshot is a floor, not proof.
-- Publish only
-  [the packages in release-policy.md](./.claude/current/release-policy.md).
+- Publish only [these packages](./.claude/current/release-policy.md);
   `packages/viviana-ui` publishes as `@proyecto-viviana/ui`.
 - Mirror upstream (Adobe Stately/Aria/Spectrum S2, Cloudflare Kumo). Geist
   follows public docs, not `@vercel/geistcn`. Never invent a size, name, or
