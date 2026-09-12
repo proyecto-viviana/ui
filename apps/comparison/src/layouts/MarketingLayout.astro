@@ -1,7 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
-import DocsFooterFallback from "@comparison/components/DocsFooterFallback.astro";
-import DocsTopBarFallback from "@comparison/components/DocsTopBarFallback.astro";
+import DocsFooterMount from "@comparison/components/DocsFooterMount.astro";
+import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import { comparisonSiteDescription } from "@comparison/data/site-meta";
 import "@comparison/styles/global.css";
 
@@ -75,9 +75,7 @@ const s2PrimaryFontPreloadUrl =
 
     <a class="s2-skip-link" href="#main-content">Skip to content</a>
 
-    <DocsTopBarFallback
-      isMobileNavigationEnabled={false}
-      isSearchEnabled={false}
+    <DocsTopBarMount
       reactSpectrumUrl={reactSpectrumUrl}
     />
 
@@ -85,7 +83,7 @@ const s2PrimaryFontPreloadUrl =
       <slot />
     </main>
 
-    <DocsFooterFallback />
+    <DocsFooterMount />
 
     <script>
       import "@comparison/scripts/docs-theme";

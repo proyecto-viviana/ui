@@ -4,7 +4,7 @@ type: task
 title: "Make the comparison app production-ready"
 created: 2026-09-02
 parent: 26
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-03,
       note: "landed headers, 404, robots, skip link, trailingSlash always, Docs→/coverage/, noindex on internal routes, demo href sanitizer, Cache-Control; filed #261 CSS hoist, #262 lazy demos, #263 CSP",
+    }
+  - {
+      state: verified,
+      at: 2026-09-12,
+      note: "replaced dummy hero tiles with live dual-engine React Spectrum S2 vs Solid Spectrum fixture, mounted DocsTopBarMount and DocsFooterMount, and added parity scorecard; passes build and comparison-site tests",
     }
 ---
 

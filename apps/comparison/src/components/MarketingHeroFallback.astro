@@ -1,6 +1,8 @@
 ---
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { comparisonCoveragePath } from "@comparison/data/site-meta";
+import ReactMount from "./ReactMount.astro";
+import SolidMount from "./SolidMount.astro";
 ---
 
 <div class="s2-marketing-hero">
@@ -24,33 +26,33 @@ import { comparisonCoveragePath } from "@comparison/data/site-meta";
           >
         </div>
       </div>
-      <div class="s2-marketing-hero-visual" aria-hidden="true">
+      <div class="s2-marketing-hero-visual">
         <div class="s2-marketing-hero-card">
           <div class="s2-marketing-hero-card-bar">
             <span class="s2-marketing-hero-card-dot"></span>
             <span class="s2-marketing-hero-card-dot"></span>
             <span class="s2-marketing-hero-card-dot"></span>
-            <span class="s2-marketing-hero-card-title">Solid Spectrum</span>
+            <span class="s2-marketing-hero-card-title">Dual-Engine Fixture Specimen</span>
           </div>
           <div class="s2-marketing-hero-card-body">
-            <div class="s2-marketing-hero-card-row">
-              <span class="s2-marketing-hero-card-pill s2-marketing-hero-card-pill--accent"
-                >Accent</span
-              >
-              <span class="s2-marketing-hero-card-pill">Secondary</span>
-              <span class="s2-marketing-hero-card-pill s2-marketing-hero-card-pill--quiet"
-                >Quiet</span
-              >
+            <div class="s2-marketing-hero-card-row s2-marketing-hero-card-row--engines">
+              <div class="s2-marketing-hero-engine-col">
+                <span class="s2-marketing-hero-engine-tag">React 19 · S2</span>
+                <div class="s2-marketing-hero-engine-mount">
+                  <ReactMount componentSlug="button" layer="styled" />
+                </div>
+              </div>
+              <div class="s2-marketing-hero-engine-col">
+                <span class="s2-marketing-hero-engine-tag s2-marketing-hero-engine-tag--solid">Solid 1.9 · Parity</span>
+                <div class="s2-marketing-hero-engine-mount">
+                  <SolidMount componentSlug="button" layer="styled" />
+                </div>
+              </div>
             </div>
-            <div class="s2-marketing-hero-card-row">
-              <div class="s2-marketing-hero-card-tile"></div>
-              <div class="s2-marketing-hero-card-tile"></div>
-              <div class="s2-marketing-hero-card-tile"></div>
-              <div class="s2-marketing-hero-card-tile"></div>
-            </div>
-            <div class="s2-marketing-hero-card-row">
-              <div class="s2-marketing-hero-card-tile s2-marketing-hero-card-tile--wide"></div>
-              <div class="s2-marketing-hero-card-tile"></div>
+            <div class="s2-marketing-hero-card-footer">
+              <span class="s2-marketing-hero-pill s2-marketing-hero-pill--accent">Certified identical</span>
+              <span class="s2-marketing-hero-pill">0px pixel delta</span>
+              <span class="s2-marketing-hero-pill s2-marketing-hero-pill--quiet">2,118 test checks</span>
             </div>
           </div>
         </div>
