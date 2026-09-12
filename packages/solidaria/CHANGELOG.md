@@ -1,5 +1,157 @@
 # @proyecto-viviana/solidaria
 
+## 0.5.0
+
+### Minor Changes
+
+- 72cf23f: Hold PreviewTrigger open across the hover safe-area, honor keyboard delay, and move Tab/Escape the way RAC does.
+
+### Patch Changes
+
+- 30d22af: Keep ActionGroup item native `disabled` live when `disabledKeys` change after mount. `createActionGroupItem` passes an Accessor into `createButton` instead of a one-shot boolean.
+- db6ac74: Keep ActionGroup host `role` and `aria-orientation` live when `selectionMode` or `orientation` change after mount. Nested toolbar detection writes a signal the getters read instead of one-shot `setAttribute`.
+- 38b18a3: Match React Aria's alert-dialog description contract by generating `aria-describedby` content props and wiring the React Aria Components description slot to them.
+- 15746be: Gate the 1-by-1 virtual pointer check on Android so a synthetic mouse press is not classified as virtual.
+- 8e40905: Provider `ar-AE` now formats Aria date and combo strings and isolates numeric date segments like S2.
+- ad4f303: Keep keyboard modality on Safari window refocus, restore FocusScope when the first-in-scope target is null, listen for preventFocus inside shadow roots, commit RangeCalendar drags via getEventTarget, and write prevent-scroll styles with kebab-case setProperty plus a Reflect focus restore.
+- 3670691: Keyboard pickup drags every selected collection key. ActionBar enter holds the full translate for a paint, and announces only with scrollRef. Tree/List/CardView ActionBars follow live renderActionBar. Card href, isDisabled, size, and CardView grid packing match S2.
+- facd76e: Record exact upstream source paths for additional Solidaria ports. Preserve
+  supported Adobe headers and keep verified composite and headerless sources
+  explicit.
+- 41bc489: Align TabPanel sequential focus with React Aria. `createTabPanel` now returns
+  `tabIndex: undefined` when a selected panel contains a tabbable descendant,
+  widening the public prop type from `number` to `number | undefined`; panels
+  without a tabbable descendant retain `tabIndex: 0`.
+- 668845d: Render collection drop indicators as RAC does: before each item, after only the last in level. Treat after(item) and before(next) as the same gap, and focus that indicator after keyboard pickup so DragManager does not leave focus on the collection.
+- b15a04b: ListView nested ActionMenu pointer press, TableView rowheader after selection, and Virtualizer off-screen focused options match RAC.
+- ff895cc: GridList intra-row arrows, labelledby, and TableView live density, column min/max, Ctrl+A, and disabled skip match RAC.
+- ff895cc: ComboBox Enter commits a custom value and closes the menu even with no focused key, matching RAC useComboBox.
+- 74d4282: ComboBox calls createFormValidation so isInvalid fails native constraint validation, matching RAC useComboBox via useTextField.
+- ff895cc: ComboBox uses native `required` under default validationBehavior, matching RAC useTextField. `aria` mode still sets aria-required.
+- 1d988fd: Route Select and ComboBox field wiring through createField so description and error ids exist only when those slots render, and stop the styled layers from minting a parallel describedby path. HelpText now renders the RAC Text / FieldError slots the way S2 does.
+- b038814: Compile ICU messages once in the headless string formatter. Catalog JSON stays verbatim; the dnd and S2 catalogs no longer compile locally.
+- 87da0f7: NumberField announces focused value changes and omits aria-required under native validation. TextField, SearchField, Checkbox, DateField, and ColorField set native custom validity. Field ContextualHelp stays mounted and named. Checkbox ignores Enter and resizes the checkmark live. Switch live disabled paints data-disabled. ColorField PageUp/wheel match RAC and hex is uppercase.
+- b90bece: DatePicker calendar popover matches S2 multi-month width, min/max paging, locale field segments, and Next/Previous focus plus grid names.
+- 9129471: Match S2 RangeCalendar start/end `isFocusVisible` fills and apply the selected overlay-open fill after first paint, so DatePicker/DateRangePicker D2 open-enter records the same 150 ms 700→600 cell transition as React.
+- 81237ca: Stop nested DatePicker trigger presses from focusing a field segment, and restore `data-pressed` on the DateRangePicker calendar button. `createPress` now stopPropagates an already-pressed pointerdown the way RAC `usePress` does; S2 `calendarButton` takes live `isPressed` from render props like `inputButton`.
+- b90bece: DateRangePicker popover matches S2 FieldGroup anchoring, cell-gap width, keyboard range-start focus, min/max cell names, localized Dismiss, and a single-row time layout.
+- f9b31aa: Add the exact upstream Adobe license header and source path to each reviewed
+  Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
+  port. Remove three unused Solidaria state copies; the public exports already
+  use the implementations from Solid Stately.
+
+  Record exact S2 and flags source paths, and replace their local Adobe blocks
+  with the exact headers from the pinned upstream files.
+
+  Preserve exact source headers in runtime bundles and declaration-only outputs
+  for all five Adobe-derived packages. Emit declaration maps so type-only source
+  files stay connected to their published output.
+
+  Replace four ambiguous source notes with exact primary paths, and apply their
+  upstream Adobe headers.
+
+  Classify the remaining styled-package source markers as four exact source
+  adaptations and two guarded Toast composites.
+
+  Record Grid State as a reviewed headerless exact mapping after checking its
+  upstream form at the local port date and the pinned revision.
+
+  Preserve each distinct upstream Adobe block and every exact source path in the
+  27 reviewed composite ports.
+
+  Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+  modules. Record exact generator inputs and reject stale, missing, or unexpected
+  generated output before release builds.
+
+- 08d94a4: Focus the first invalid control when a form is associated after mount.
+- 67a6659: Re-sample global interaction modality on every `createFocusRing` focus change, matching React Aria `useFocusRing`, so a FocusScope contain-restore after pointer hover does not keep a stale keyboard focus ring.
+- 67a6659: Port React Aria `focusSafely`: when the interaction modality is virtual, wait until CSS transitions end before moving focus. Contain-restore after a programmatic focus then lands after a following pointer hover, so `createFocusRing` re-samples pointer modality instead of keeping a keyboard ring.
+- 6a933af: Restore controlled fields when a form associates after mount via the form attribute.
+- b7257bc: TextField with a description hydrates over SSR markup without a hydration-key mismatch.
+- bd85197: Clear committed validation when a form associates after mount via the form attribute.
+- e97bb6f: GridList typeahead uses createTypeSelect, and multiple selection defaults to toggle like RAC.
+- ff895cc: Keep the native HiddenSelect value bound to the current selected key, matching RAC's controlled `<select value>`. Form submission no longer posts the key from mount.
+- 1ea67d3: Position overlays with visualViewport pageTop/pageLeft and re-position on window scroll so iOS 26 WebKit pans stay aligned.
+- 5224b7f: Re-read popover dismiss, Icon, and hidden-select after mount so later values are not frozen at setup.
+- 622175f: Add upstream-compatible shortcut matching to `createKeyboard`.
+- 0e2b70f: Stop enabled Link href clicks from preventDefaulting when there is no client router. Press and headless Link attach click on the host so stopPropagation beats document interceptors, matching RAC.
+- 9ec33c6: Drive RTL keyboard mapping from useLocale and format RAC chrome (DropZone, SelectValue, ColumnResizer, ColorSwatchPicker) from the provider locale.
+- ff895cc: Menu Popover contains Tab like RAC, createMenu wraps by default, and live direction/align updates overlay placement.
+- a2cf9f0: Match the pinned React Aria and React Spectrum menu-trigger behavior.
+
+  Menu triggers now preserve first-item and last-item focus strategies. They also
+  match press timing, localized long-press instructions, disabled input,
+  context-menu activation and positioning, and the S2 long-press affordance.
+
+- 5b0f4f6: Wire Meter labels through the shared headless Label context. Styled Meters now
+  use the headless Meter and preserve explicit accessible-name precedence.
+- 3670691: HelpText follows live isInvalid from field context. NumberField PageUp/PageDown step once, the focused input wheels, and steppers repeat while held.
+- 9156bc6: NumberField calls createFormValidation and native min/max/step validity so isInvalid and out-of-range values block submit, matching RAC useNumberField.
+- 67a6659: Focus overlay menus the way React Aria does: `createMenuTrigger` forwards `autoFocus`, `createMenu` focuses the menu after paint, and FocusScope re-collects children so contain/auto-focus still work when the overlay DOM lands after the first paint. Contain restore after `blur()` to body waits a frame, matching RAC `onBlur`, instead of pulling focus back on body `focusin`.
+- ff895cc: Overlay mouse-open focuses the Picker dialog; the selected option keeps roving tabindex without taking DOM focus.
+- b90bece: Restore trigger focus after an instant Popover unmount even when activeElement is a detached dialog node, matching RAC FocusScope intent.
+- eefb351: PreviewTrigger long-press is touch-only like RAC useLongPress. Overlay portals reset FocusableContext so preview actions do not inherit trigger ARIA. Dismiss restore does not reopen the preview.
+- 8e40905: Port RAC 1.21 keyboard, calendar, ColorField, autoFocus selection, and Table drop-target fixes.
+- e97bb6f: Port RAC 1.21 MenuLoadMoreItem and ComboBox/Select Dialog host support.
+- 7b1e706: `createRadio` no longer reads `document` during server rendering. Its `aria-describedby` probe for the group's description and error-message slot ids (`document.getElementById`) is client-only; on the server the slot ids are emitted as is, as `useSlotId` yields them before its layout effect, and the client probe drops the ids whose elements do not exist after hydration. A `RadioGroup` rendered through `renderToString` threw "ReferenceError: document is not defined" and the route's error boundary rendered instead of the group.
+- 49b825e: Radio inputs call createFormValidation so an isInvalid group fails native constraint validation, matching RAC useRadio.
+- 51c9a10: Restore controlled TextField and Toggle values on native form reset.
+- a149d53: Type the runAfterPaint timer so Node and DOM Timeout views both compile.
+- 61f82d7: SearchField returns validationErrors and validationDetails from createTextField, matching RAC useSearchField.
+- 38b18a3: Match upstream Select multiple-selection behavior by routing option selection
+  through the lower-layer selection manager. Multiple Select options now toggle,
+  including deselecting the final selected option, while single Select continues
+  to replace the current value.
+- 8e40905: Select calls createFormValidation at hook top level so isInvalid fails native constraint validation, matching RAC HiddenSelect.
+- ab9a432: Route ListBox navigation through the shared selectable-collection shortcut
+  engine. Repeated keys, composition, modifiers, and focus after a reorder now
+  match the pinned upstream behavior.
+- 38b18a3: Port React Aria's opt-in Shadow DOM flag and composed-tree overlay isolation, including nested shadow roots, live mutations, and top-layer preservation.
+- 146d06a: Ship each package's local MIT license and its applicable upstream license or
+  notice in the published archive. Correct the project attribution list to
+  include the Spectrum-derived part of `@proyecto-viviana/ui`, and guard all six
+  package manifests and license files before release.
+- 9ec33c6: Ship the remaining react-aria intl catalogs and format search, table, and tag chrome from I18nProvider.
+- 91c7991: Match RAC Select All state transitions. The shared grid state now recognizes an
+  explicit full selection and can deselect a row from the `"all"` selection. The
+  native checkbox also reapplies `indeterminate` after `checked` writes so
+  Chromium keeps `[checked=mixed]`.
+- 842cfdc: Match RAC tab keyboard navigation: Arrow/Home/End move DOM focus in the keydown handler, and a focused tab marks the tab list focused.
+- 8ab06db: TagGroup matches RAC selection, remove-focus, Tab, Escape, Ctrl+A, onAction, and keyboard focus rings. TreeView typeahead, collapse focus, intra-row arrows, Shift+Arrow extend, Tab out, and no sibling expand on *. Collection last-in-level drop indicators skip content nodes. ListView no longer treats a Show accessor as always-true.
+- 5b0f4f6: TextField paints native validation after a blocked required submit from displayValidation, matching RAC useTextField.
+- 18257e5: Match RAC ToastContent: the toast message is `role="alert"` (aria-atomic, hidden until mounted). S2 and Viviana render the headless ToastContent instead of a raw div.
+- 7db95c5: Restore FocusScope targets without scrolling and after active transitions. Keep DatePicker and DateRangePicker popovers mounted through their exit state so Escape key and focus events match React Aria.
+- 52ab0c5: Make Virtualizer context-only as RAC does: the collection element is the scroller, CollectionRoot owns the scroll view and a single content div, and the extra `[data-virtualizer]` wrapper is gone.
+- e7a5326: Size the virtualizer viewport before first paint (`createRenderEffect`, RAC `useScrollView` layout effect) and register the keyboard drop indicator on the ref callback so Enter pickup focuses the insertion point instead of the listbox.
+- 43d2aa2: Hydrate virtualized collections and element-children options over SSR markup without a mismatch: the scroll view defers its first viewport measurement until Solid has finished claiming the server window, and ListBox, ComboBox, and Select options read their children once instead of probing them for a primitive label first.
+- 38b18a3: Move package build configuration into Vite+'s supported `vite.config.ts` `pack`
+  block so builds emit every declared public entry instead of silently falling
+  back to a single default `index.mjs` bundle.
+- Updated dependencies 8e40905:
+- Updated dependencies 3670691:
+- Updated dependencies f5ae7b1:
+- Updated dependencies 668845d:
+- Updated dependencies 87da0f7:
+- Updated dependencies b90bece:
+- Updated dependencies b90bece:
+- Updated dependencies f9b31aa:
+- Updated dependencies 6a0af4d:
+- Updated dependencies 38b18a3:
+- Updated dependencies a2cf9f0:
+- Updated dependencies 9156bc6:
+- Updated dependencies 67a6659:
+- Updated dependencies 8e40905:
+- Updated dependencies 38b18a3:
+- Updated dependencies 38b18a3:
+- Updated dependencies 8e40905:
+- Updated dependencies 38b18a3:
+- Updated dependencies 146d06a:
+- Updated dependencies 91c7991:
+- Updated dependencies d91b34a:
+- Updated dependencies 8ab06db:
+- Updated dependencies 38b18a3:
+  - @proyecto-viviana/solid-stately@0.5.2
+
 ## 0.4.3
 
 ### Patch Changes

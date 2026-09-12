@@ -1,5 +1,81 @@
 # @proyecto-viviana/solid-stately
 
+## 0.5.2
+
+### Patch Changes
+
+- 8e40905: Provider `ar-AE` now formats Aria date and combo strings and isolates numeric date segments like S2.
+- 3670691: Keyboard pickup drags every selected collection key. ActionBar enter holds the full translate for a paint, and announces only with scrollRef. Tree/List/CardView ActionBars follow live renderActionBar. Card href, isDisabled, size, and CardView grid packing match S2.
+- f5ae7b1: Record exact upstream source paths for additional Stately ports. Preserve
+  supported Adobe headers and keep verified composite and headerless sources
+  explicit.
+- 668845d: Render collection drop indicators as RAC does: before each item, after only the last in level. Treat after(item) and before(next) as the same gap, and focus that indicator after keyboard pickup so DragManager does not leave focus on the collection.
+- 87da0f7: NumberField announces focused value changes and omits aria-required under native validation. TextField, SearchField, Checkbox, DateField, and ColorField set native custom validity. Field ContextualHelp stays mounted and named. Checkbox ignores Enter and resizes the checkmark live. Switch live disabled paints data-disabled. ColorField PageUp/wheel match RAC and hex is uppercase.
+- b90bece: DatePicker calendar popover matches S2 multi-month width, min/max paging, locale field segments, and Next/Previous focus plus grid names.
+- b90bece: DateRangePicker popover matches S2 FieldGroup anchoring, cell-gap width, keyboard range-start focus, min/max cell names, localized Dismiss, and a single-row time layout.
+- f9b31aa: Add the exact upstream Adobe license header and source path to each reviewed
+  Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
+  port. Remove three unused Solidaria state copies; the public exports already
+  use the implementations from Solid Stately.
+
+  Record exact S2 and flags source paths, and replace their local Adobe blocks
+  with the exact headers from the pinned upstream files.
+
+  Preserve exact source headers in runtime bundles and declaration-only outputs
+  for all five Adobe-derived packages. Emit declaration maps so type-only source
+  files stay connected to their published output.
+
+  Replace four ambiguous source notes with exact primary paths, and apply their
+  upstream Adobe headers.
+
+  Classify the remaining styled-package source markers as four exact source
+  adaptations and two guarded Toast composites.
+
+  Record Grid State as a reviewed headerless exact mapping after checking its
+  upstream form at the local port date and the pinned revision.
+
+  Preserve each distinct upstream Adobe block and every exact source path in the
+  27 reviewed composite ports.
+
+  Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+  modules. Record exact generator inputs and reject stale, missing, or unexpected
+  generated output before release builds.
+
+- 6a0af4d: Export `./package.json` from the package maps so exhaustive resolvers can read the manifest.
+- 38b18a3: Prevent grid focus recovery from looping indefinitely when the focused row is
+  deleted and all remaining candidate rows are disabled.
+- a2cf9f0: Match the pinned React Aria and React Spectrum menu-trigger behavior.
+
+  Menu triggers now preserve first-item and last-item focus strategies. They also
+  match press timing, localized long-press instructions, disabled input,
+  context-menu activation and positioning, and the S2 long-press affordance.
+
+- 9156bc6: NumberField calls createFormValidation and native min/max/step validity so isInvalid and out-of-range values block submit, matching RAC useNumberField.
+- 67a6659: Focus overlay menus the way React Aria does: `createMenuTrigger` forwards `autoFocus`, `createMenu` focuses the menu after paint, and FocusScope re-collects children so contain/auto-focus still work when the overlay DOM lands after the first paint. Contain restore after `blur()` to body waits a frame, matching RAC `onBlur`, instead of pulling focus back on body `focusin`.
+- 8e40905: Port RAC 1.21 keyboard, calendar, ColorField, autoFocus selection, and Table drop-target fixes.
+- 38b18a3: Remove generated declaration artifacts from the source tree so package builds
+  and editors resolve the current TypeScript implementation as the only source of
+  truth.
+- 38b18a3: Match upstream Select multiple-selection behavior by routing option selection
+  through the lower-layer selection manager. Multiple Select options now toggle,
+  including deselecting the final selected option, while single Select continues
+  to replace the current value.
+- 8e40905: Select calls createFormValidation at hook top level so isInvalid fails native constraint validation, matching RAC HiddenSelect.
+- 38b18a3: Port React Aria's opt-in Shadow DOM flag and composed-tree overlay isolation, including nested shadow roots, live mutations, and top-layer preservation.
+- 146d06a: Ship each package's local MIT license and its applicable upstream license or
+  notice in the published archive. Correct the project attribution list to
+  include the Spectrum-derived part of `@proyecto-viviana/ui`, and guard all six
+  package manifests and license files before release.
+- 91c7991: Match RAC Select All state transitions. The shared grid state now recognizes an
+  explicit full selection and can deselect a row from the `"all"` selection. The
+  native checkbox also reapplies `indeterminate` after `checked` writes so
+  Chromium keeps `[checked=mixed]`.
+- d91b34a: Copy a tab list's selected key onto focusedKey after paint so mouse-click tabindex still reads -1.
+- 8ab06db: TagGroup matches RAC selection, remove-focus, Tab, Escape, Ctrl+A, onAction, and keyboard focus rings. TreeView typeahead, collapse focus, intra-row arrows, Shift+Arrow extend, Tab out, and no sibling expand on *. Collection last-in-level drop indicators skip content nodes. ListView no longer treats a Show accessor as always-true.
+- 38b18a3: Move package build configuration into Vite+'s supported `vite.config.ts` `pack`
+  block so builds emit every declared public entry instead of silently falling
+  back to a single default `index.mjs` bundle.
+
 ## 0.5.1
 
 ### Patch Changes

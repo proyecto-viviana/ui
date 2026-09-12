@@ -30,6 +30,11 @@ history:
       at: 2026-09-08,
       note: "HEAD 9129471d: 139 files in .changeset minus README.md and config.json (138 unpublished .md plus changelog.cjs). The 2026-09-05 count of 112 was on 030c200b. Still unpublished; do not ship.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-12,
+      note: "versioned 152 pending changesets via changeset version with @proyecto-viviana/ui held at 0.7.0 (pre-1.0); guard:package-artifacts (1053 targets) and guard:release-prerequisites PASS cleanly",
+    }
 ---
 
 Publish the pending changesets for the six public packages from PR #33

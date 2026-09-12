@@ -1,5 +1,243 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.7.0
+
+### Minor Changes
+
+- e92413b: Make ListBoxItem and ComboBoxItem the canonical names. ListBoxOption and ComboBoxOption stay as deprecated aliases.
+- 8eb850f: Deprecate TabSwitch as a mapping wrapper over SegmentedControl. Migrate to SegmentedControl; TabSwitch is removed in a following breaking release.
+- d4bfed2: Remove MenuButton from the RAC and S2 barrels. Compose MenuTrigger + Button, and keep the ui-package helper as a documented local addition.
+
+  ```tsx
+  <MenuTrigger>
+    <Button>Actions</Button>
+    <Menu>{/* items */}</Menu>
+  </MenuTrigger>
+  ```
+
+### Patch Changes
+
+- 0847c61: Do not copy pending ActionButton string children onto aria-label, matching S2.
+- 3670691: Keyboard pickup drags every selected collection key. ActionBar enter holds the full translate for a paint, and announces only with scrollRef. Tree/List/CardView ActionBars follow live renderActionBar. Card href, isDisabled, size, and CardView grid packing match S2.
+- 6a0af4d: Read Tab, ComboBox option, Picker item, StatusLight, and Kumo Button children once so hydration keys stay aligned.
+- 41bc489: Align TabPanel sequential focus with React Aria. `createTabPanel` now returns
+  `tabIndex: undefined` when a selected panel contains a tabbable descendant,
+  widening the public prop type from `number` to `number | undefined`; panels
+  without a tabbable descendant retain `tabIndex: 0`.
+- ff895cc: GridList intra-row arrows, labelledby, and TableView live density, column min/max, Ctrl+A, and disabled skip match RAC.
+- 1d988fd: Route Select and ComboBox field wiring through createField so description and error ids exist only when those slots render, and stop the styled layers from minting a parallel describedby path. HelpText now renders the RAC Text / FieldError slots the way S2 does.
+- b038814: Compile ICU messages once in the headless string formatter. Catalog JSON stays verbatim; the dnd and S2 catalogs no longer compile locally.
+- 088e048: ContextualHelp follows live placement and omits aria-haspopup; Dialog applies the trigger overlay id and S2 footer paddingTop 32.
+- 87da0f7: NumberField announces focused value changes and omits aria-required under native validation. TextField, SearchField, Checkbox, DateField, and ColorField set native custom validity. Field ContextualHelp stays mounted and named. Checkbox ignores Enter and resizes the checkmark live. Switch live disabled paints data-disabled. ColorField PageUp/wheel match RAC and hex is uppercase.
+- b90bece: DatePicker calendar popover matches S2 multi-month width, min/max paging, locale field segments, and Next/Previous focus plus grid names.
+- 9129471: Match S2 RangeCalendar start/end `isFocusVisible` fills and apply the selected overlay-open fill after first paint, so DatePicker/DateRangePicker D2 open-enter records the same 150 ms 700→600 cell transition as React.
+- 81237ca: Stop nested DatePicker trigger presses from focusing a field segment, and restore `data-pressed` on the DateRangePicker calendar button. `createPress` now stopPropagates an already-pressed pointerdown the way RAC `usePress` does; S2 `calendarButton` takes live `isPressed` from render props like `inputButton`.
+- b90bece: DateRangePicker popover matches S2 FieldGroup anchoring, cell-gap width, keyboard range-start focus, min/max cell names, localized Dismiss, and a single-row time layout.
+- f9b31aa: Add the exact upstream Adobe license header and source path to each reviewed
+  Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
+  port. Remove three unused Solidaria state copies; the public exports already
+  use the implementations from Solid Stately.
+
+  Record exact S2 and flags source paths, and replace their local Adobe blocks
+  with the exact headers from the pinned upstream files.
+
+  Preserve exact source headers in runtime bundles and declaration-only outputs
+  for all five Adobe-derived packages. Emit declaration maps so type-only source
+  files stay connected to their published output.
+
+  Replace four ambiguous source notes with exact primary paths, and apply their
+  upstream Adobe headers.
+
+  Classify the remaining styled-package source markers as four exact source
+  adaptations and two guarded Toast composites.
+
+  Record Grid State as a reviewed headerless exact mapping after checking its
+  upstream form at the local port date and the pinned revision.
+
+  Preserve each distinct upstream Adobe block and every exact source path in the
+  27 reviewed composite ports.
+
+  Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+  modules. Record exact generator inputs and reject stale, missing, or unexpected
+  generated output before release builds.
+
+- 6a0af4d: Export `./package.json` from the package maps so exhaustive resolvers can read the manifest.
+- ead40e9: Export remaining solid-spectrum subpaths so consumers can deep-import barrel names without loading the package root.
+- 0847c61: Recover styled package types after the flags-split merge.
+- 5fb9d99: Form validationBehavior="aria" no longer leaves native required on S2 TextField.
+- 0847c61: Chain context and local event handlers in styled merges instead of last-wins.
+- 5224b7f: Re-read popover dismiss, Icon, and hidden-select after mount so later values are not frozen at setup.
+- ff895cc: Menu Popover contains Tab like RAC, createMenu wraps by default, and live direction/align updates overlay placement.
+- a2cf9f0: Match the pinned React Aria and React Spectrum menu-trigger behavior.
+
+  Menu triggers now preserve first-item and last-item focus strategies. They also
+  match press timing, localized long-press instructions, disabled input,
+  context-menu activation and positioning, and the S2 long-press affordance.
+
+- 5b0f4f6: Wire Meter labels through the shared headless Label context. Styled Meters now
+  use the headless Meter and preserve explicit accessible-name precedence.
+- fa7d78d: Import the narrow solidaria subpaths from the Provider, ProgressBar and
+  ProgressCircle sources instead of the `@proyecto-viviana/solidaria` root barrel.
+  An app that rendered only a `Provider` resolved the entire primitive surface
+  (90 solidaria modules) before rendering a single primitive; it now resolves 17.
+  No public API changes. `guard:entry-import-budget` holds the new ceilings.
+- 3670691: HelpText follows live isInvalid from field context. NumberField PageUp/PageDown step once, the focused input wheels, and steppers repeat while held.
+- 9156bc6: NumberField calls createFormValidation and native min/max/step validity so isInvalid and out-of-range values block submit, matching RAC useNumberField.
+- 8e50934: Read Table, BreadcrumbItem, and TreeItemContent children once; allocate the Breadcrumbs measure id with createUniqueId; discard fonts.ready thenables explicitly.
+- 7af9af0: ComboBox and Picker list selected checkmarks match S2 focused accent stops after a pointer open. ComboBox options align `isFocusVisible` to the focused row so pointer-open matches S2's spread `listboxItem` classes; the checkmark still takes `{ isSelected, isFocused, size }` only.
+- 03aa4cf: Own compound Button and ActionButton pending props before interaction handlers
+  run. A compound `isPending={a() && b()}` compiles to a prop getter that creates
+  a memo on every read, so resolving it from a native press or hover handler
+  created that computation with no owner: Solid warned and never disposed it.
+- a2447e1: Drop invented `data-open` from the Picker trigger chevron so the glyph matches S2.
+- ff895cc: Overlay mouse-open focuses the Picker dialog; the selected option keeps roving tabindex without taking DOM focus.
+- 179e19c: Own Popover enter/exit animation in the headless Popover as RAC does (`data-entering` / `data-exiting`, mount until exit `getAnimations().finished`), drive S2 opacity/translate from those render props, and delete the ActionMenu timers and DatePicker duplicate animation machines.
+- f952b16: Preserve accurate source maps when the package build removes generated macro
+  CSS imports from JSX output. Package builds now fail if a transform reports a
+  broken source map.
+- 1af6eb7: Stop nonessential Button and ActionButton hover and press transitions when reduced motion is requested, while preserving the normal 150 ms interaction transitions and the upstream-compatible pressed transform geometry.
+- abafbd4: Keep direct reactive Button text children live after hydration, and keep
+  authored workflow icons hidden when Button pending state becomes visible.
+- 2e83cdb: Keep direct reactive children live in ComboBox option, Picker item, StatusLight,
+  and Kumo Button: the single children read is a tracked memo, so hydration keys
+  stay aligned and `{label()}` content follows its signal.
+- 649852a: Absorb S2 1.7.0 icon `1lh` sizing, vertical ActionButtonGroup width, color-scheme media query, and CloseButton overlay contrast. Regenerate the icon inventory from the 1.7.0 pin (Tag workflow icon geometry follows upstream).
+- 38b18a3: Synchronize the shared style-macro and typography foundation with the pinned React Spectrum S2 1.6 oracle, including the `16` class postfix, prose cascade-layer reservation, conditional font weights, and reusable typography maps.
+- a9bfb8d: Match Spectrum 2 Dialog by copying the RAC description slot onto ContentContext so AlertDialog's Content is the accessible description.
+- 8f5245e: Wrap the ComboBox and Picker popover listboxes in Virtualizer with ListLayout and the S2 loader-row height table, so options publish aria-posinset/aria-setsize the way Spectrum 2 does.
+- a61a020: Compose the Spectrum 2 Popover in ComboBox, Picker, Menu, ActionMenu, and TabsPicker so overlay surface and enter/exit motion come from one style source, matching S2.
+- 9829314: Port the full S2 intl catalog (34 locales, 47 keys) and route styled English literals through `createStringFormatter(s2IntlStrings, "@react-spectrum/s2")`.
+- 72ec915: Resolve SegmentedControl item children inside the icon provider so workflow
+  icons inherit the Spectrum slot, baseline wrapper, and matching item geometry.
+- 146d06a: Ship each package's local MIT license and its applicable upstream license or
+  notice in the published archive. Correct the project attribution list to
+  include the Spectrum-derived part of `@proyecto-viviana/ui`, and guard all six
+  package manifests and license files before release.
+- 6a0af4d: Point CSS `default` export conditions at the built `dist/` sheets instead of the `src/` stubs.
+- 0847c61: Pin `@adobe/spectrum-tokens` 14.15.0 to match React Spectrum S2 1.7.0.
+- 507411a: Select a completed StepList step on click and Enter through DefaultStep `setSelectedKey`. Space stays a no-op; DefaultStep does not wrap HeadlessStep.
+- 91c7991: Match RAC Select All state transitions. The shared grid state now recognizes an
+  explicit full selection and can deselect a row from the `"all"` selection. The
+  native checkbox also reapplies `indeterminate` after `checked` writes so
+  Chromium keeps `[checked=mixed]`.
+- 8ab06db: TagGroup matches RAC selection, remove-focus, Tab, Escape, Ctrl+A, onAction, and keyboard focus rings. TreeView typeahead, collapse focus, intra-row arrows, Shift+Arrow extend, Tab out, and no sibling expand on *. Collection last-in-level drop indicators skip content nodes. ListView no longer treats a Show accessor as always-true.
+- 5b0f4f6: TextField paints native validation after a blocked required submit from displayValidation, matching RAC useTextField.
+- 18257e5: Match RAC ToastContent: the toast message is `role="alert"` (aria-atomic, hidden until mounted). S2 and Viviana render the headless ToastContent instead of a raw div.
+- 5634db2: ActionMenu passes autoFocus to the headless Button. Link keeps its derived tag last so a stray tag cannot redirect the element.
+- 52ab0c5: Make Virtualizer context-only as RAC does: the collection element is the scroller, CollectionRoot owns the scroll view and a single content div, and the extra `[data-virtualizer]` wrapper is gone.
+- Updated dependencies 30d22af:
+- Updated dependencies db6ac74:
+- Updated dependencies 38b18a3:
+- Updated dependencies 15746be:
+- Updated dependencies 8e40905:
+- Updated dependencies ad4f303:
+- Updated dependencies e92413b:
+- Updated dependencies 3670691:
+- Updated dependencies c794444:
+- Updated dependencies facd76e:
+- Updated dependencies f5ae7b1:
+- Updated dependencies 34bc0eb:
+- Updated dependencies 41bc489:
+- Updated dependencies 668845d:
+- Updated dependencies b15a04b:
+- Updated dependencies ff895cc:
+- Updated dependencies ff895cc:
+- Updated dependencies e84eeb1:
+- Updated dependencies 74d4282:
+- Updated dependencies ff895cc:
+- Updated dependencies 1d988fd:
+- Updated dependencies b038814:
+- Updated dependencies 088e048:
+- Updated dependencies 6de6aa8:
+- Updated dependencies 87da0f7:
+- Updated dependencies b90bece:
+- Updated dependencies 9129471:
+- Updated dependencies 81237ca:
+- Updated dependencies b90bece:
+- Updated dependencies 0ea2ca7:
+- Updated dependencies f9b31aa:
+- Updated dependencies 6a0af4d:
+- Updated dependencies 08d94a4:
+- Updated dependencies 67a6659:
+- Updated dependencies 67a6659:
+- Updated dependencies 5fb9d99:
+- Updated dependencies 6a933af:
+- Updated dependencies b7257bc:
+- Updated dependencies bd85197:
+- Updated dependencies 38b18a3:
+- Updated dependencies 5eb22cd:
+- Updated dependencies e97bb6f:
+- Updated dependencies ff895cc:
+- Updated dependencies 1ea67d3:
+- Updated dependencies 5224b7f:
+- Updated dependencies 622175f:
+- Updated dependencies 8e50934:
+- Updated dependencies 0e2b70f:
+- Updated dependencies ff02dc0:
+- Updated dependencies ff895cc:
+- Updated dependencies 9ec33c6:
+- Updated dependencies ff895cc:
+- Updated dependencies 668845d:
+- Updated dependencies a2cf9f0:
+- Updated dependencies 5b0f4f6:
+- Updated dependencies ff895cc:
+- Updated dependencies 3670691:
+- Updated dependencies 9156bc6:
+- Updated dependencies 8e50934:
+- Updated dependencies 67a6659:
+- Updated dependencies f390cc3:
+- Updated dependencies 03aa4cf:
+- Updated dependencies d13ac37:
+- Updated dependencies ff895cc:
+- Updated dependencies 179e19c:
+- Updated dependencies b790e84:
+- Updated dependencies b90bece:
+- Updated dependencies 6383939:
+- Updated dependencies 03edb8e:
+- Updated dependencies 72cf23f:
+- Updated dependencies 829fd40:
+- Updated dependencies eefb351:
+- Updated dependencies cdbd580:
+- Updated dependencies 8e40905:
+- Updated dependencies e97bb6f:
+- Updated dependencies 7b1e706:
+- Updated dependencies cbf06ac:
+- Updated dependencies 49b825e:
+- Updated dependencies d4bfed2:
+- Updated dependencies 38b18a3:
+- Updated dependencies e1b0fdf:
+- Updated dependencies 51c9a10:
+- Updated dependencies a149d53:
+- Updated dependencies e966ba5:
+- Updated dependencies 61f82d7:
+- Updated dependencies 38b18a3:
+- Updated dependencies 8e40905:
+- Updated dependencies 6852386:
+- Updated dependencies ab9a432:
+- Updated dependencies 38b18a3:
+- Updated dependencies 146d06a:
+- Updated dependencies 9281d46:
+- Updated dependencies 9ec33c6:
+- Updated dependencies 8dfbbbd:
+- Updated dependencies b90bece:
+- Updated dependencies 1a02e88:
+- Updated dependencies ca4c415:
+- Updated dependencies 91c7991:
+- Updated dependencies 842cfdc:
+- Updated dependencies d91b34a:
+- Updated dependencies 8ab06db:
+- Updated dependencies 5b0f4f6:
+- Updated dependencies 18257e5:
+- Updated dependencies 7db95c5:
+- Updated dependencies 5634db2:
+- Updated dependencies 52ab0c5:
+- Updated dependencies e7a5326:
+- Updated dependencies 43d2aa2:
+- Updated dependencies 38b18a3:
+  - @proyecto-viviana/solidaria@0.5.0
+  - @proyecto-viviana/solidaria-components@0.6.0
+  - @proyecto-viviana/solid-stately@0.5.2
+
 ## 0.6.4
 
 ### Patch Changes
