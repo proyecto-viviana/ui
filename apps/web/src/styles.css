@@ -41,6 +41,8 @@
 
   body {
     margin: 0;
+    font-family: var(--font-body, var(--font-ui, system-ui, sans-serif));
+    color: var(--text-primary);
     /* The register's app canvas, so there's no white flash behind the fixed
        SiteBackdrop and page roots can sit transparent over it. */
     background: var(--surface-app);
@@ -252,15 +254,7 @@
      to redeclare them as Jost/Sen/JetBrains and, being later in the cascade,
      shadowed the library's. Nothing to declare here. */
 
-  /* Radius — Brutalist: zero */
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+  /* Radius scale is inherited from @proyecto-viviana/ui's viviana-tokens.css */
 }
 
 :root {

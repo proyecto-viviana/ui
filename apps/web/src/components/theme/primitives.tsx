@@ -223,6 +223,12 @@ export function SiteFooter() {
           Home
         </Link>
         <Link
+          to="/showcase"
+          style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
+        >
+          Showcase
+        </Link>
+        <Link
           to="/theme"
           style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
         >

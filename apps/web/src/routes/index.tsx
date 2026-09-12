@@ -7,6 +7,7 @@ import {
   typeRoles,
 } from "@proyecto-viviana/ui";
 import { Badge as SpectrumBadge, Button as SpectrumButton } from "@proyecto-viviana/solid-spectrum";
+import { Provider as SpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { Button as GeistButton } from "@proyecto-viviana/geist";
 import "@proyecto-viviana/geist/styles.css";
 import { Button as KumoButton } from "@proyecto-viviana/kumo";
@@ -229,20 +230,22 @@ function SpecimenDeck() {
             </Show>
 
             <Show when={activeRegister() === "spectrum"}>
-              <div class="pv-specimen-deck__panel">
-                <div class="pv-specimen-deck__row">
-                  <SpectrumButton variant="accent" onPress={() => setCount((c) => c + 1)}>
-                    Increment ({count()})
-                  </SpectrumButton>
-                  <SpectrumButton variant="primary" onPress={() => setCount(0)}>
-                    Reset
-                  </SpectrumButton>
-                  <SpectrumBadge variant="informative">Count: {count()}</SpectrumBadge>
+              <SpectrumProvider colorScheme={effectiveMode() as "light" | "dark"}>
+                <div class="pv-specimen-deck__panel">
+                  <div class="pv-specimen-deck__row">
+                    <SpectrumButton variant="accent" onPress={() => setCount((c) => c + 1)}>
+                      Increment ({count()})
+                    </SpectrumButton>
+                    <SpectrumButton variant="primary" onPress={() => setCount(0)}>
+                      Reset
+                    </SpectrumButton>
+                    <SpectrumBadge variant="informative">Count: {count()}</SpectrumBadge>
+                  </div>
+                  <div class="pv-specimen-deck__status">
+                    Adobe React Spectrum S2 translation · 2,118 certified parity checks
+                  </div>
                 </div>
-                <div class="pv-specimen-deck__status">
-                  Adobe React Spectrum S2 translation · 2,118 certified parity checks
-                </div>
-              </div>
+              </SpectrumProvider>
             </Show>
 
             <Show when={activeRegister() === "geist"}>
