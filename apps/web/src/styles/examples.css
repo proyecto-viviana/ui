@@ -30,7 +30,8 @@
 [data-examples] .ex-shell {
   box-sizing: border-box;
   min-height: 100vh;
-  min-width: 1180px;
+  max-width: 1180px;
+  margin: 0 auto;
   padding: 12px 14px;
 }
 
@@ -94,6 +95,8 @@
 [data-examples] .ex-page {
   box-sizing: border-box;
   min-height: 100vh;
+  max-width: 1180px;
+  margin: 0 auto;
   padding: 24px 48px;
 }
 
@@ -129,16 +132,14 @@
    fixed-aspect canvas with chrome pinned to its edges, and reflowing it would
    be showing a different design rather than the same one smaller — so they keep
    the 1180px canvas and scroll horizontally inside the frame. */
-@media (max-width: 1179px) {
-  [data-examples] .ex-shell {
-    min-width: 0;
-  }
-
+@media (max-width: 900px) {
   [data-examples] .ex-stack {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
   }
+}
 
+@media (max-width: 1179px) {
   [data-examples] .ex-canvas {
     min-width: 1180px;
   }
@@ -276,7 +277,7 @@
   padding-top: 2px;
 }
 
-@media (max-width: 1179px) {
+@media (max-width: 900px) {
   [data-examples] .ex-home,
   [data-examples] .ex-home-left,
   [data-examples] .ex-home-continue-body {
@@ -699,7 +700,7 @@
   height: 100%;
 }
 
-@media (max-width: 1179px) {
+@media (max-width: 900px) {
   [data-examples] .ex-profile-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
@@ -782,7 +783,7 @@
   gap: 10px;
 }
 
-@media (max-width: 1179px) {
+@media (max-width: 900px) {
   [data-examples] .ex-pg {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -846,7 +847,7 @@
   min-width: 0;
 }
 
-@media (max-width: 1179px) {
+@media (max-width: 900px) {
   [data-examples] .ex-land-hero {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1060,7 +1061,7 @@
   min-width: 0;
 }
 
-@media (max-width: 1179px) {
+@media (max-width: 900px) {
   [data-examples] .ex-settings {
     grid-template-columns: minmax(0, 1fr);
   }
