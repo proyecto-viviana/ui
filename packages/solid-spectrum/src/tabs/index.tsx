@@ -1108,10 +1108,12 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
 
     return isSelected();
   };
-  const renderedChildren = () =>
-    typeof local.children === "function"
-      ? (local.children as (renderProps: TabPanelRenderProps) => JSX.Element)(activeRenderProps())
-      : local.children;
+  const renderedChildren = () => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function"
+      ? (rawChildren as (renderProps: TabPanelRenderProps) => JSX.Element)(activeRenderProps())
+      : rawChildren;
+  };
   const menuLabelledBy = () =>
     [context.menuButtonId, context.menuValueId].filter(Boolean).join(" ") || undefined;
   const hasTabPanelSemantics = () => context.showTabs() && !isInert();

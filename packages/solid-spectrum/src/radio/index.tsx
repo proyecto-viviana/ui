@@ -47,7 +47,7 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
-import { Text } from "../text";
+import { Text, TextContext } from "../text";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
@@ -497,35 +497,37 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
           </RadioContext.Provider>
         </FormContext.Provider>
       </div>
-      {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
-          RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
-          the single-source id minted by the headless createRadioGroup (also
-          threaded onto the group node and every child radio's aria-describedby). */}
-      <Show when={local.description && !renderProps.isInvalid}>
-        <Text
-          slot="description"
-          id={radioGroupData.get(renderProps.state)?.descriptionId}
-          styles={radioGroupHelpText({ ...renderProps, size: size() })}
-        >
-          {local.description}
-        </Text>
-      </Show>
-      {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
-          is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
-          (RAC FieldError carries no alert role; the group's `aria-describedby`
-          points here for the association). */}
-      <Show when={local.errorMessage && renderProps.isInvalid}>
-        <Text
-          slot="errorMessage"
-          id={radioGroupData.get(renderProps.state)?.errorMessageId}
-          styles={radioGroupHelpText({ ...renderProps, size: size() })}
-        >
-          <CenterBaseline>
-            <AlertTriangleIcon aria-hidden="true" />
-          </CenterBaseline>
-          <span>{local.errorMessage}</span>
-        </Text>
-      </Show>
+      <TextContext.Provider value={null}>
+        {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
+            RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
+            the single-source id minted by the headless createRadioGroup (also
+            threaded onto the group node and every child radio's aria-describedby). */}
+        <Show when={local.description && !renderProps.isInvalid}>
+          <Text
+            slot="description"
+            id={radioGroupData.get(renderProps.state)?.descriptionId}
+            styles={radioGroupHelpText({ ...renderProps, size: size() })}
+          >
+            {local.description}
+          </Text>
+        </Show>
+        {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
+            is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
+            (RAC FieldError carries no alert role; the group's `aria-describedby`
+            points here for the association). */}
+        <Show when={local.errorMessage && renderProps.isInvalid}>
+          <Text
+            slot="errorMessage"
+            id={radioGroupData.get(renderProps.state)?.errorMessageId}
+            styles={radioGroupHelpText({ ...renderProps, size: size() })}
+          >
+            <CenterBaseline>
+              <AlertTriangleIcon aria-hidden="true" />
+            </CenterBaseline>
+            <span>{local.errorMessage}</span>
+          </Text>
+        </Show>
+      </TextContext.Provider>
     </>
   );
 

@@ -38,7 +38,7 @@ import {
 // (renderHelpText={false}) but read the id back from here so all three — group
 // node, item inputs, and our <Text> — resolve to the same element.
 import { mergeProps, checkboxGroupData } from "@proyecto-viviana/solidaria";
-import { Text } from "../text";
+import { Text, TextContext } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
@@ -613,7 +613,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     isInCheckboxGroup ? false : fieldRenderProps.isInvalid;
 
   const renderHelpText = (fieldRenderProps: CheckboxFieldRenderProps): JSX.Element => (
-    <>
+    <TextContext.Provider value={null}>
       <Show when={local.description && !invalidFor(fieldRenderProps)}>
         <Text
           slot="description"
@@ -642,7 +642,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
           <span>{local.errorMessage}</span>
         </Text>
       </Show>
-    </>
+    </TextContext.Provider>
   );
 
   return (
@@ -862,33 +862,35 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
           </CheckboxContext.Provider>
         </FormContext.Provider>
       </div>
-      {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
-          RAC `<Text slot="description">` (a `<span>`), not a `<div>`. */}
-      <Show when={local.description && !renderProps.isInvalid}>
-        <Text
-          slot="description"
-          id={checkboxGroupData.get(renderProps.state)?.descriptionId}
-          styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
-        >
-          {local.description}
-        </Text>
-      </Show>
-      {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
-          is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
-          (RAC FieldError carries no alert role; the group's `aria-describedby`
-          points here for the association). */}
-      <Show when={local.errorMessage && renderProps.isInvalid}>
-        <Text
-          slot="errorMessage"
-          id={checkboxGroupData.get(renderProps.state)?.errorMessageId}
-          styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
-        >
-          <CenterBaseline>
-            <AlertTriangleIcon aria-hidden="true" />
-          </CenterBaseline>
-          <span>{local.errorMessage}</span>
-        </Text>
-      </Show>
+      <TextContext.Provider value={null}>
+        {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
+            RAC `<Text slot="description">` (a `<span>`), not a `<div>`. */}
+        <Show when={local.description && !renderProps.isInvalid}>
+          <Text
+            slot="description"
+            id={checkboxGroupData.get(renderProps.state)?.descriptionId}
+            styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
+          >
+            {local.description}
+          </Text>
+        </Show>
+        {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
+            is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
+            (RAC FieldError carries no alert role; the group's `aria-describedby`
+            points here for the association). */}
+        <Show when={local.errorMessage && renderProps.isInvalid}>
+          <Text
+            slot="errorMessage"
+            id={checkboxGroupData.get(renderProps.state)?.errorMessageId}
+            styles={checkboxGroupHelpText({ ...renderProps, size: size() })}
+          >
+            <CenterBaseline>
+              <AlertTriangleIcon aria-hidden="true" />
+            </CenterBaseline>
+            <span>{local.errorMessage}</span>
+          </Text>
+        </Show>
+      </TextContext.Provider>
     </>
   );
 

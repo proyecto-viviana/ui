@@ -265,6 +265,8 @@ export function createTabListState<T = unknown>(
     if (p.selectedKey !== undefined) return;
 
     const coll = collection();
+    if (coll.size === 0) return;
+
     const current = selectedKeyInternal();
     const currentExists = current !== null && coll.getItem(current) !== null;
     const currentEnabled = current !== null && !isKeyDisabled(current);

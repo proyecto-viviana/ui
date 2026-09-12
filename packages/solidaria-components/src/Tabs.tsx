@@ -31,6 +31,7 @@ import {
   For,
   Show,
   onCleanup,
+  sharedConfig,
 } from "solid-js";
 import {
   createTabList,
@@ -389,65 +390,23 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
 
   const context = useContext(TabsContext);
 
-  return (
-    <Show when={context} fallback={<div class="solidaria-TabList" role="tablist" />}>
-      {(ctx) => (
-        <TabListInner
-          context={ctx()}
-          local={local}
-          items={collectionProps.items}
-          ariaProps={ariaProps}
-          children={props.children}
-        />
-      )}
-    </Show>
-  );
-}
+  if (!context) {
+    return <div class="solidaria-TabList" role="tablist" />;
+  }
 
-/** Inner TabList component that has access to context */
-function TabListInner<T>(props: {
-  context: TabsContextValue<unknown>;
-  local: {
-    class?: ClassNameOrFunction<TabListRenderProps>;
-    style?: StyleOrFunction<TabListRenderProps>;
-    slot?: string;
-  };
-  ariaProps: Omit<TabListProps<T>, "children" | "class" | "style" | "slot" | "items">;
-  items?: T[];
-  children?: JSX.Element | ((item: T) => JSX.Element);
-}): JSX.Element {
-  const state = props.context.state as TabListState<T>;
-  const items = props.context.items as Accessor<T[]>;
-  const renderItem = createMemo(() => {
-    if (typeof props.children !== "function") {
-      return undefined;
-    }
-
-    const child = props.children as (...args: unknown[]) => JSX.Element;
-    if (child.length === 0 && props.items === undefined) {
-      return undefined;
-    }
-
-    return props.children as (item: T) => JSX.Element;
-  });
-  const renderedChildren = createMemo(() => {
-    if (renderItem() || typeof props.children !== "function") {
-      return props.children as JSX.Element;
-    }
-
-    return (props.children as () => JSX.Element)();
-  });
+  const state = context.state as TabListState<T>;
+  const items = context.items as Accessor<T[]>;
 
   createEffect(() => {
-    props.context.setTabListItems(props.items as unknown[] | undefined);
+    context.setTabListItems(collectionProps.items as unknown[] | undefined);
   });
 
   onCleanup(() => {
-    props.context.setTabListItems(undefined);
+    context.setTabListItems(undefined);
   });
 
   // Create tab list aria props
-  const { tabListProps } = createTabList<T>(props.ariaProps as AriaTabListProps, state);
+  const { tabListProps } = createTabList<T>(ariaProps as AriaTabListProps, state);
 
   const renderValues = createMemo<TabListRenderProps>(() => ({
     orientation: state.orientation(),
@@ -456,8 +415,8 @@ function TabListInner<T>(props: {
 
   const renderProps = useRenderProps(
     {
-      class: props.local.class,
-      style: props.local.style,
+      class: local.class,
+      style: local.style,
       defaultClassName: "solidaria-TabList",
     },
     renderValues,
@@ -475,6 +434,24 @@ function TabListInner<T>(props: {
     tabListProps.onFocusOut(e);
   };
 
+  const renderChildren = () => {
+    const children = props.children;
+    const isItemRenderer =
+      typeof children === "function" && (children as (...args: unknown[]) => unknown).length > 0;
+
+    if (isItemRenderer) {
+      return (
+        <SharedElementTransition>
+          <For each={(collectionProps.items ?? items()) as T[]}>
+            {(item) => (children as (item: T) => JSX.Element)(item)}
+          </For>
+        </SharedElementTransition>
+      );
+    }
+
+    return children as JSX.Element;
+  };
+
   return (
     <div
       role={tabListProps.role}
@@ -490,13 +467,7 @@ function TabListInner<T>(props: {
       data-orientation={state.orientation()}
       data-disabled={state.isDisabled() || undefined}
     >
-      {renderItem() ? (
-        <SharedElementTransition>
-          <For each={(props.items ?? items()) as T[]}>{(item) => renderItem()?.(item)}</For>
-        </SharedElementTransition>
-      ) : (
-        renderedChildren()
-      )}
+      {renderChildren()}
     </div>
   );
 }
@@ -510,67 +481,43 @@ export function Tab(props: TabProps): JSX.Element {
   const context = useContext(TabsStateContext);
   const tabsContext = useContext(TabsContext);
 
-  return (
-    <Show when={context} fallback={<div class="solidaria-Tab" role="tab" />}>
-      {(state) => (
-        <TabInner
-          state={state()}
-          tabsContext={tabsContext}
-          local={local}
-          ariaProps={ariaProps}
-          children={props.children}
-        />
-      )}
-    </Show>
-  );
-}
+  if (!context) {
+    return <div class="solidaria-Tab" role="tab" />;
+  }
 
-/** Inner Tab component that has access to context */
-function TabInner(props: {
-  state: TabListState<unknown>;
-  tabsContext: TabsContextValue<unknown> | null;
-  local: {
-    class?: ClassNameOrFunction<TabRenderProps>;
-    style?: StyleOrFunction<TabRenderProps>;
-    slot?: string;
-    id: Key;
-  };
-  ariaProps: Omit<TabProps, "children" | "class" | "style" | "slot" | "id">;
-  children?: RenderChildren<TabRenderProps>;
-}): JSX.Element {
   const [tabRef, setTabRef] = createSignal<HTMLDivElement | null>(null);
   const textValue = () => {
-    if (props.ariaProps["aria-label"]) return props.ariaProps["aria-label"];
+    if (ariaProps["aria-label"]) return ariaProps["aria-label"];
     return typeof props.children === "string" ? props.children : undefined;
   };
 
   createEffect(() => {
-    props.tabsContext?.registerTab({
-      id: props.local.id,
+    tabsContext?.registerTab({
+      id: local.id,
       textValue: textValue(),
-      isDisabled: props.ariaProps.isDisabled,
+      isDisabled: ariaProps.isDisabled,
     });
   });
 
   onCleanup(() => {
-    props.tabsContext?.unregisterTab(props.local.id);
+    tabsContext?.unregisterTab(local.id);
   });
 
   // Create tab aria props
   const tabAria = createTab<unknown>(
     {
-      key: props.local.id,
+      key: local.id,
       get isDisabled() {
-        return props.ariaProps.isDisabled;
+        return ariaProps.isDisabled;
       },
       get "aria-label"() {
-        return props.ariaProps["aria-label"];
+        return ariaProps["aria-label"];
       },
       get "aria-labelledby"() {
-        return props.ariaProps["aria-labelledby"];
+        return ariaProps["aria-labelledby"];
       },
     },
-    props.state,
+    context,
     tabRef,
   );
 
@@ -594,8 +541,8 @@ function TabInner(props: {
       get children() {
         return props.children;
       },
-      class: props.local.class,
-      style: props.local.style,
+      class: local.class,
+      style: local.style,
       defaultClassName: "solidaria-Tab",
     },
     renderValues,
@@ -606,37 +553,37 @@ function TabInner(props: {
   }));
 
   return (
-    <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      <div
-        ref={setTabRef}
-        id={tabAria.tabProps.id}
-        role={tabAria.tabProps.role}
-        aria-selected={tabAria.isSelected()}
-        aria-disabled={tabAria.isDisabled() || undefined}
-        aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
-        aria-label={tabAria.tabProps["aria-label"]}
-        aria-labelledby={tabAria.tabProps["aria-labelledby"]}
-        tabIndex={tabAria.tabProps.tabIndex}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        onKeyDown={tabAria.tabProps.onKeyDown}
-        onMouseDown={tabAria.tabProps.onMouseDown}
-        onPointerDown={tabAria.tabProps.onPointerDown}
-        onClick={tabAria.tabProps.onClick}
-        onFocus={tabAria.tabProps.onFocus}
-        onFocusIn={tabAria.tabProps.onFocusIn}
-        onBlur={tabAria.tabProps.onBlur}
-        {...hoverProps}
-        data-selected={tabAria.isSelected() || undefined}
-        data-focused={tabAria.isFocused() || undefined}
-        data-focus-visible={tabAria.isFocusVisible() || undefined}
-        data-pressed={tabAria.isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
-        data-disabled={tabAria.isDisabled() || undefined}
-      >
+    <div
+      ref={setTabRef}
+      id={tabAria.tabProps.id}
+      role={tabAria.tabProps.role}
+      aria-selected={tabAria.isSelected()}
+      aria-disabled={tabAria.isDisabled() || undefined}
+      aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
+      aria-label={tabAria.tabProps["aria-label"]}
+      aria-labelledby={tabAria.tabProps["aria-labelledby"]}
+      tabIndex={tabAria.tabProps.tabIndex}
+      class={renderProps.class()}
+      style={renderProps.style()}
+      onKeyDown={tabAria.tabProps.onKeyDown}
+      onMouseDown={tabAria.tabProps.onMouseDown}
+      onPointerDown={tabAria.tabProps.onPointerDown}
+      onClick={tabAria.tabProps.onClick}
+      onFocus={tabAria.tabProps.onFocus}
+      onFocusIn={tabAria.tabProps.onFocusIn}
+      onBlur={tabAria.tabProps.onBlur}
+      {...hoverProps}
+      data-selected={tabAria.isSelected() || undefined}
+      data-focused={tabAria.isFocused() || undefined}
+      data-focus-visible={tabAria.isFocusVisible() || undefined}
+      data-pressed={tabAria.isPressed() || undefined}
+      data-hovered={isHovered() || undefined}
+      data-disabled={tabAria.isDisabled() || undefined}
+    >
+      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
         {renderProps.renderChildrenStable()}
-      </div>
-    </SelectionIndicatorContext.Provider>
+      </SelectionIndicatorContext.Provider>
+    </div>
   );
 }
 

@@ -1199,11 +1199,14 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
       >
         {local.children}
       </HeadlessTabList>
-      <Show when={local.trailing}>
-        <div class={tabListTrailing} data-rsp-slot="trailing">
-          {local.trailing}
-        </div>
-      </Show>
+      {(() => {
+        const trailing = local.trailing;
+        return trailing ? (
+          <div class={tabListTrailing} data-rsp-slot="trailing">
+            {trailing}
+          </div>
+        ) : null;
+      })()}
       <TabsMenu items={pickerItems()} disabledKeys={disabledKeys()} />
     </div>
   );

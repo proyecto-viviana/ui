@@ -36,7 +36,7 @@ import {
   type SwitchButtonRenderProps,
   type ToggleSwitchRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { Text } from "../text";
+import { Text, TextContext } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
@@ -362,7 +362,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       .join(" ");
 
   const renderHelpText = (fieldRenderProps: SwitchFieldRenderProps): JSX.Element => (
-    <>
+    <TextContext.Provider value={null}>
       <Show when={local.description && !fieldRenderProps.isInvalid}>
         <Text
           slot="description"
@@ -386,7 +386,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
           <span>{local.errorMessage}</span>
         </Text>
       </Show>
-    </>
+    </TextContext.Provider>
   );
 
   return (
