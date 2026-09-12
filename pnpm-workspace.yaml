@@ -14,7 +14,9 @@ overrides:
   brace-expansion: "^5.0.9"
   yaml: "^2.9.0"
   undici: "^7.29.0"
-  js-yaml: "^4.3.1"
+  js-yaml: "^4.3.2"
+  sharp: "^0.35.4"
+  svgo: "^4.1.0"
   read-yaml-file: "2.1.0"
   esbuild: "^0.28.2"
   "@babel/core": "^7.29.6"
@@ -63,15 +65,17 @@ minimumReleaseAgeExclude:
   - react-stately@3.50.0
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
-  vitest: 4.1.10
+  vitest: 4.1.11
   vite-plus: 0.2.9
 peerDependencyRules:
   allowAny:
     - vite
     - vitest
+    - "@vitest/browser-preview"
   allowedVersions:
     vite: "*"
     vitest: "*"
+    "@vitest/browser-preview": "*"
 
 # CI 33825688122: guard:dependency-security timed out on npm advisories/bulk (error 23).
 fetchRetries: 4

@@ -50,16 +50,16 @@ Land `@proyecto-viviana/geist` as a styled sibling of Kumo.
 Working directory: `ui`. Source revision before the uncommitted land:
 `4f1784cf79a9b968b93410f78709385be463b1a3`.
 
-| Kind | Command | Result |
-| --- | --- | --- |
-| local | `vp run build:geist` | passed |
-| local | `vp test run packages/geist/test/Button.test.tsx` | 20 passed |
-| local | `vp test run --config vitest.ssr.config.ts packages/geist/test/Button.ssr.test.tsx` | 1 passed |
-| local | `vp test run --config vitest.hydrate.config.ts packages/geist/test/Button.hydrate.test.tsx` | 1 passed |
-| local | `vp run typecheck` | passed |
-| local | `vp run test:ci-guard-contracts` | passed |
-| local | `vp run ci:changesets` | passed; Geist stays ignored at `0.0.0` |
-| integration | `vp run ui:smoke` | passed; packed `@proyecto-viviana/geist@0.0.0` rendered `data-geist-component="Button"` |
+| Kind        | Command                                                                                     | Result                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| local       | `vp run build:geist`                                                                        | passed                                                                                  |
+| local       | `vp test run packages/geist/test/Button.test.tsx`                                           | 20 passed                                                                               |
+| local       | `vp test run --config vitest.ssr.config.ts packages/geist/test/Button.ssr.test.tsx`         | 1 passed                                                                                |
+| local       | `vp test run --config vitest.hydrate.config.ts packages/geist/test/Button.hydrate.test.tsx` | 1 passed                                                                                |
+| local       | `vp run typecheck`                                                                          | passed                                                                                  |
+| local       | `vp run test:ci-guard-contracts`                                                            | passed                                                                                  |
+| local       | `vp run ci:changesets`                                                                      | passed; Geist stays ignored at `0.0.0`                                                  |
+| integration | `vp run ui:smoke`                                                                           | passed; packed `@proyecto-viviana/geist@0.0.0` rendered `data-geist-component="Button"` |
 
 `merged` is this commit. `verified` waits on the same commands against it.
 

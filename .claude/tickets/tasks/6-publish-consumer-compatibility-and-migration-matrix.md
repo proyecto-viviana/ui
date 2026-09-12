@@ -7,7 +7,11 @@ parent: 32
 status: parked
 history:
   - { state: open, at: 2026-08-02, note: "opened from the local ecosystem ticketing pass" }
-  - { state: parked, at: 2026-09-09, note: "parked 2026-09-09: idle since the August import, not on the live map" }
+  - {
+      state: parked,
+      at: 2026-09-09,
+      note: "parked 2026-09-09: idle since the August import, not on the live map",
+    }
 ---
 
 Local consumers use materially different `@proyecto-viviana/ui` versions and

@@ -4,7 +4,7 @@ type: task
 title: "Remediate critical and high dependency advisories"
 created: 2026-08-20
 parent: 32
-status: in-progress
+status: verified
 history:
   - {
       state: next,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-09,
       note: "round 3: Release Readiness on 9d78d920 red at guard:dependency-security — 1 critical / 3 high / 4 moderate; bump plan recorded, awaiting owner approval",
+    }
+  - {
+      state: verified,
+      at: 2026-09-12,
+      note: "bumped astro to ^7.2.8, overrides.js-yaml to ^4.3.2, overrides.sharp to ^0.35.4, overrides.svgo to ^4.1.0, catalog.vitest to 4.1.11; guard:dependency-security passes with 0 high/critical/prod vulnerabilities",
     }
 ---
 

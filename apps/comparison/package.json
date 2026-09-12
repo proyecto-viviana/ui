@@ -63,7 +63,7 @@
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",
     "@react-spectrum/s2": "1.7.0",
-    "astro": "^7.2.3",
+    "astro": "^7.2.8",
     "react": "^19.2.8",
     "react-aria": "3.52.0",
     "react-aria-components": "1.21.0",
