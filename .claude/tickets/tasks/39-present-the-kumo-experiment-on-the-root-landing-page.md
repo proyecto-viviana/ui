@@ -4,9 +4,14 @@ type: task
 title: "Present all three styled libraries and the Kumo experiment on the root landing page"
 created: 2026-08-20
 parent: 29
-status: in-progress
+status: verified
 history:
   - { state: in-progress, at: 2026-08-20, note: "migrated from legacy task kumo-landing-story" }
+  - {
+      state: verified,
+      at: 2026-09-12,
+      note: "rebuilt root landing page with 2-tier architecture, interactive multi-register specimen deck, and unstyled BEM CSS implementation; playwright e2e tests pass",
+    }
 ---
 
 Present `solid-spectrum`, `@proyecto-viviana/ui`, and Kumo with accurate product boundaries.

@@ -11,6 +11,7 @@
     "deploy": "node ../../scripts/check-deploy-target.mjs && vp build && vp exec wrangler deploy"
   },
   "dependencies": {
+    "@proyecto-viviana/geist": "workspace:*",
     "@proyecto-viviana/kumo": "workspace:*",
     "@proyecto-viviana/solid-spectrum": "workspace:*",
     "@proyecto-viviana/solid-stately": "workspace:*",

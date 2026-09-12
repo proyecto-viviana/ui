@@ -1,22 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/solid-router";
+import { createFileRoute } from "@tanstack/solid-router";
 import {
-  Badge,
+  Badge as VivianaBadge,
   Button as VivianaButton,
-  Flex,
   TextField,
   ToggleSwitch,
   typeRoles,
 } from "@proyecto-viviana/ui";
+import { Badge as SpectrumBadge, Button as SpectrumButton } from "@proyecto-viviana/solid-spectrum";
+import { Button as GeistButton } from "@proyecto-viviana/geist";
+import "@proyecto-viviana/geist/styles.css";
 import { Button as KumoButton } from "@proyecto-viviana/kumo";
 import "@proyecto-viviana/kumo/styles.css";
-import { createSignal, type JSX } from "solid-js";
+import { createSignal, Show, type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import {
-  ACCENT_INK,
   CtaButton,
   FeatureBlock,
-  FONT_BODY,
-  FONT_DISPLAY,
   PillTag,
   SectionLabel,
   SiteFooter,
@@ -31,7 +30,7 @@ export const Route = createFileRoute("/")({
     seo({
       title: "Proyecto Viviana",
       description:
-        "An open Solid UI experiment: one shared headless foundation, two published styled libraries, and an early Cloudflare Kumo Button study.",
+        "An open Solid UI stack: one shared headless foundation, two published styled libraries, and experimental Geist and Kumo Button studies.",
       path: "/",
     }),
   component: LandingPage,
@@ -92,7 +91,7 @@ function ArchitectureMap() {
         <p>
           State, accessibility, keyboard behavior, and composition live in the lower packages. Each
           styled sibling owns its public API, theme, and release. You can use one without installing
-          the other two.
+          the other three.
         </p>
       </div>
       <div class="pv-architecture__map" aria-label="Proyecto Viviana package layers">
@@ -105,6 +104,9 @@ function ArchitectureMap() {
           <li>@proyecto-viviana/ui</li>
           <li>@proyecto-viviana/solid-spectrum</li>
           <li data-experimental="true">
+            @proyecto-viviana/geist <span>experiment</span>
+          </li>
+          <li data-experimental="true">
             @proyecto-viviana/kumo <span>experiment</span>
           </li>
         </ul>
@@ -113,61 +115,177 @@ function ArchitectureMap() {
   );
 }
 
-function KumoExperiment() {
-  const [activationCount, setActivationCount] = createSignal(0);
+type RegisterKey = "viviana" | "spectrum" | "geist" | "kumo";
+
+function SpecimenDeck() {
   const { theme } = useTheme();
+  const [activeRegister, setActiveRegister] = createSignal<RegisterKey>("viviana");
+  const [overrideMode, setOverrideMode] = createSignal<"auto" | "light" | "dark">("auto");
+  const [count, setCount] = createSignal(0);
+  const [textValue, setTextValue] = createSignal("");
+
+  const effectiveMode = () => (overrideMode() === "auto" ? theme() : overrideMode());
+
+  const registerTitles: Record<RegisterKey, string> = {
+    viviana: "@proyecto-viviana/ui · Glasselated design register (published)",
+    spectrum: "@proyecto-viviana/solid-spectrum · Spectrum 2 register (2,118 certified checks)",
+    geist: "@proyecto-viviana/geist · Vercel Geist study (unpublished)",
+    kumo: "@proyecto-viviana/kumo · Cloudflare Kumo button study (unpublished)",
+  };
 
   return (
-    <section class="pv-kumo-lab" aria-labelledby="kumo-lab-title">
-      <div class="pv-kumo-lab__copy">
-        <span class="pv-kumo-lab__eyebrow">Early study · @cloudflare/kumo@2.11.0</span>
-        <h2 id="kumo-lab-title">A Kumo-shaped Button, running on the shared Solid foundation.</h2>
+    <section class="pv-specimen-section" aria-labelledby="specimen-deck-title">
+      <div class="pv-section-heading pv-section-heading--compact">
+        <SectionLabel>Interactive specimen</SectionLabel>
+        <h2 id="specimen-deck-title">One reactive state. Four visual registers.</h2>
         <p>
-          This is one experimental component, not a complete Kumo port. Its API and styling are
-          still rough. Browser behavior evidence and visual-state evidence are incomplete.
+          Switch between design systems in real time. Shared reactive Solid signals (counter and
+          input) persist uninterrupted across register boundaries.
         </p>
-        <ul>
-          <li>One Button only</li>
-          <li>Not published to npm</li>
-          <li>Not ported or certified</li>
-        </ul>
-        <div class="pv-kumo-lab__links">
-          <a href={repoPackageUrl("kumo")} target="_blank" rel="noopener noreferrer">
-            Source
-          </a>
-          <a
-            href={repoUrl("blob/main/packages/kumo/README.md#evidence-and-limits")}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Limits
-          </a>
-          <a
-            href={repoUrl("tree/main/apps/comparison/src/pages/experiments/kumo-button")}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Pair harness
-          </a>
-        </div>
       </div>
-      <div
-        class="pv-kumo-lab__specimen"
-        data-theme="kumo"
-        data-mode={theme()}
-        aria-label="Interactive Kumo Button specimen"
-      >
-        <span class="pv-kumo-lab__specimen-label">Live Solid component</span>
-        <KumoButton
-          variant="primary"
-          size="lg"
-          onClick={() => setActivationCount((count) => count + 1)}
-        >
-          Deploy experiment
-        </KumoButton>
-        <output aria-live="polite" data-kumo-landing-output>
-          Activated {activationCount()} times
-        </output>
+
+      <div class="pv-frame">
+        <div class="pv-frame__bar">
+          <div class="pv-frame__dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <span class="pv-frame__title">{registerTitles[activeRegister()]}</span>
+
+          <div class="pv-frame__seg" role="group" aria-label="Register switcher">
+            <button
+              type="button"
+              data-active={activeRegister() === "viviana" ? "true" : "false"}
+              onClick={() => setActiveRegister("viviana")}
+            >
+              Viviana UI
+            </button>
+            <button
+              type="button"
+              data-active={activeRegister() === "spectrum" ? "true" : "false"}
+              onClick={() => setActiveRegister("spectrum")}
+            >
+              Spectrum S2
+            </button>
+            <button
+              type="button"
+              data-active={activeRegister() === "geist" ? "true" : "false"}
+              onClick={() => setActiveRegister("geist")}
+            >
+              Geist
+            </button>
+            <button
+              type="button"
+              data-active={activeRegister() === "kumo" ? "true" : "false"}
+              onClick={() => setActiveRegister("kumo")}
+            >
+              Kumo
+            </button>
+          </div>
+
+          <div class="pv-frame__seg" role="group" aria-label="Mode switcher">
+            <button
+              type="button"
+              data-active={effectiveMode() === "light" ? "true" : "false"}
+              onClick={() => setOverrideMode("light")}
+            >
+              Light
+            </button>
+            <button
+              type="button"
+              data-active={effectiveMode() === "dark" ? "true" : "false"}
+              onClick={() => setOverrideMode("dark")}
+            >
+              Dark
+            </button>
+          </div>
+        </div>
+
+        <div class="pv-frame__canvas" data-mode={effectiveMode()} data-theme={activeRegister()}>
+          <div class="pv-specimen-deck">
+            <Show when={activeRegister() === "viviana"}>
+              <div class="pv-specimen-deck__panel">
+                <div class="pv-specimen-deck__row">
+                  <VivianaButton variant="primary" onClick={() => setCount((c) => c + 1)}>
+                    Increment ({count()})
+                  </VivianaButton>
+                  <VivianaButton variant="accent" onClick={() => setCount(0)}>
+                    Reset
+                  </VivianaButton>
+                  <VivianaBadge count={count()} variant="success" />
+                  <VivianaBadge count={count() * 2} variant="accent" />
+                </div>
+                <div class="pv-specimen-deck__controls">
+                  <TextField
+                    label="Reactive input"
+                    placeholder="Type signal value..."
+                    value={textValue()}
+                    onChange={setTextValue}
+                  />
+                  <ToggleSwitch defaultSelected>Haptic feedback</ToggleSwitch>
+                </div>
+              </div>
+            </Show>
+
+            <Show when={activeRegister() === "spectrum"}>
+              <div class="pv-specimen-deck__panel">
+                <div class="pv-specimen-deck__row">
+                  <SpectrumButton variant="accent" onPress={() => setCount((c) => c + 1)}>
+                    Increment ({count()})
+                  </SpectrumButton>
+                  <SpectrumButton variant="primary" onPress={() => setCount(0)}>
+                    Reset
+                  </SpectrumButton>
+                  <SpectrumBadge variant="informative">Count: {count()}</SpectrumBadge>
+                </div>
+                <div class="pv-specimen-deck__status">
+                  Adobe React Spectrum S2 translation · 2,118 certified parity checks
+                </div>
+              </div>
+            </Show>
+
+            <Show when={activeRegister() === "geist"}>
+              <div class="pv-specimen-deck__panel" data-theme="geist" data-mode={effectiveMode()}>
+                <div class="pv-specimen-deck__row">
+                  <GeistButton
+                    variant="default"
+                    size="medium"
+                    onClick={() => setCount((c) => c + 1)}
+                  >
+                    Deploy to production ({count()})
+                  </GeistButton>
+                  <GeistButton variant="secondary" size="medium" onClick={() => setCount(0)}>
+                    Reset
+                  </GeistButton>
+                </div>
+                <div class="pv-specimen-deck__status">
+                  Vercel Geist study · Single component · Monospace micro-typography
+                </div>
+              </div>
+            </Show>
+
+            <Show when={activeRegister() === "kumo"}>
+              <div class="pv-specimen-deck__panel" data-theme="kumo" data-mode={effectiveMode()}>
+                <div class="pv-specimen-deck__row">
+                  <KumoButton variant="primary" size="lg" onClick={() => setCount((c) => c + 1)}>
+                    Deploy experiment ({count()})
+                  </KumoButton>
+                  <KumoButton variant="secondary" size="lg" onClick={() => setCount(0)}>
+                    Reset
+                  </KumoButton>
+                </div>
+                <output
+                  aria-live="polite"
+                  data-kumo-landing-output
+                  class="pv-specimen-deck__status"
+                >
+                  Activated {count()} times
+                </output>
+              </div>
+            </Show>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -181,14 +299,14 @@ function LandingPage(): JSX.Element {
 
       <main id="main-content" class="pv-wrap pv-wrap--narrow pv-landing-main">
         <section class="pv-hero pv-landing-hero">
-          <PillTag>One Solid foundation · Three styled libraries</PillTag>
+          <PillTag>One Solid foundation · Multi-register design system</PillTag>
           <h1>
             A Solid UI stack, <span>out in the open</span>.
           </h1>
           <p>
-            Proyecto Viviana is an ongoing experiment in translating established UI systems to
-            Solid. Some surfaces are useful today. Every parity claim still has to earn evidence.
-            Expect unfinished APIs and rough edges.
+            Proyecto Viviana is an ongoing architecture in translating established UI systems to
+            Solid. Production surfaces run on npm today. Every parity claim earns runnable evidence.
+            Expect clear boundaries between certified libraries and early studies.
           </p>
           <div class="pv-landing-hero__actions">
             <CtaButton href="#libraries" tone="primary">
@@ -206,11 +324,11 @@ function LandingPage(): JSX.Element {
 
         <section id="libraries" class="pv-library-section" aria-labelledby="libraries-title">
           <div class="pv-section-heading">
-            <SectionLabel>Styled siblings</SectionLabel>
-            <h2 id="libraries-title">Three distinct public APIs. Unequal maturity.</h2>
+            <SectionLabel>Published Flagships</SectionLabel>
+            <h2 id="libraries-title">Two production-grade styled libraries on npm.</h2>
             <p>
-              The libraries share lower-level behavior, but they do not pretend to have the same
-              scope or evidence. The labels below are deliberately specific.
+              Certified component libraries built for real application development. Independent
+              releases, dedicated documentation, and exhaustive test suites.
             </p>
           </div>
           <div class="pv-registers">
@@ -224,24 +342,16 @@ function LandingPage(): JSX.Element {
             <RegisterCard
               name="@proyecto-viviana/solid-spectrum"
               status="Published · Spectrum 2 register"
-              blurb="A component-by-component Solid translation of Adobe React Spectrum S2. Evidence is tracked per component; the whole package is not certified as one unit."
+              blurb="A component-by-component Solid translation of Adobe React Spectrum S2. Parity is certified per component across 2,118 test checks."
               install="@proyecto-viviana/solid-spectrum"
               links={[{ href: "/solid-spectrum/docs", label: "Read docs →" }]}
-            />
-            <RegisterCard
-              name="@proyecto-viviana/kumo"
-              status="Unpublished · one Button"
-              blurb="An early Cloudflare Kumo-shaped styled sibling. It currently tests one Button API on the shared headless layer. Treat it as a study, not a port."
-              experimental
-              links={[
-                { href: "#kumo-experiment", label: "Try the specimen ↓" },
-                { href: repoPackageUrl("kumo"), label: "View source ↗", external: true },
-              ]}
             />
           </div>
         </section>
 
         <ArchitectureMap />
+
+        <SpecimenDeck />
 
         <section class="pv-features pv-landing-features">
           <FeatureBlock title="Shared behavior">
@@ -258,28 +368,95 @@ function LandingPage(): JSX.Element {
           </FeatureBlock>
         </section>
 
-        <section class="pv-card pv-viviana-sample" aria-labelledby="viviana-sample-title">
-          <div class="pv-section-heading pv-section-heading--compact">
-            <SectionLabel>Published Viviana UI sample</SectionLabel>
-            <h2 id="viviana-sample-title">The house register, live.</h2>
+        <section
+          id="experiments"
+          class="pv-experiments-section"
+          aria-labelledby="experiments-title"
+        >
+          <div class="pv-section-heading">
+            <SectionLabel>Experiments & Studies</SectionLabel>
+            <h2 id="experiments-title">Early exploratory studies on the shared foundation.</h2>
+            <p>
+              Explorations testing whether foreign design system APIs map cleanly onto our headless
+              architecture. Single-component prototypes, not full ports or npm releases.
+            </p>
           </div>
-          <Flex wrap alignItems="center" gap={6}>
-            <Flex wrap alignItems="center" gap={3}>
-              <VivianaButton variant="primary">Primary</VivianaButton>
-              <VivianaButton variant="accent">Accent</VivianaButton>
-              <Badge count={3} variant="success" />
-              <Badge count={7} variant="accent" />
-            </Flex>
-            <Flex direction="column" gap={3} style={{ width: "100%", "max-width": "20rem" }}>
-              <TextField label="Email" placeholder="you@example.com" />
-              <ToggleSwitch defaultSelected>Notifications</ToggleSwitch>
-            </Flex>
-          </Flex>
-        </section>
 
-        <div id="kumo-experiment">
-          <KumoExperiment />
-        </div>
+          <div class="pv-experiments">
+            <article class="pv-experiment-card">
+              <span class="pv-experiment-card__eyebrow">
+                Early study · Vercel Geist translation
+              </span>
+              <div class="pv-experiment-card__heading">
+                <h3>@proyecto-viviana/geist</h3>
+                <span class="pv-register-card__status">Unpublished · 1-Button study</span>
+              </div>
+              <p>
+                Tests Vercel Geist design system tokens, button variants, and monospace
+                micro-typography on Solid. Treat it as a design study, not a port.
+              </p>
+              <ul class="pv-experiment-card__meta">
+                <li>One Button only</li>
+                <li>Not published to npm</li>
+                <li>Study in progress</li>
+              </ul>
+              <div class="pv-experiment-card__footer">
+                <span class="pv-register-card__unpublished">Not published to npm</span>
+                <div class="pv-experiment-card__links">
+                  <a href={repoPackageUrl("geist")} target="_blank" rel="noopener noreferrer">
+                    Source ↗
+                  </a>
+                  <a
+                    href={repoUrl("blob/main/packages/geist/README.md")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Button spec ↗
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="pv-experiment-card">
+              <span class="pv-experiment-card__eyebrow">Early study · @cloudflare/kumo@2.11.0</span>
+              <div class="pv-experiment-card__heading">
+                <h3>@proyecto-viviana/kumo</h3>
+                <span class="pv-register-card__status">Unpublished · 1-Button study</span>
+              </div>
+              <p>
+                This is one experimental component, not a complete Kumo port. Tests Cloudflare Kumo
+                design tokens and Button variants on the shared Solid foundation.
+              </p>
+              <ul class="pv-experiment-card__meta">
+                <li>One Button only</li>
+                <li>Not published to npm</li>
+                <li>Not ported or certified</li>
+              </ul>
+              <div class="pv-experiment-card__footer">
+                <span class="pv-register-card__unpublished">Not published to npm</span>
+                <div class="pv-experiment-card__links">
+                  <a href={repoPackageUrl("kumo")} target="_blank" rel="noopener noreferrer">
+                    Source ↗
+                  </a>
+                  <a
+                    href={repoUrl("blob/main/packages/kumo/README.md#evidence-and-limits")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Limits ↗
+                  </a>
+                  <a
+                    href={repoUrl("tree/main/apps/comparison/src/pages/experiments/kumo-button")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Pair harness ↗
+                  </a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
 
         <section class="pv-landing-closing">
           <span class="pv-landing-closing__mark" aria-hidden="true">

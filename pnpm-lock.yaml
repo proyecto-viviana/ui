@@ -180,6 +180,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@proyecto-viviana/geist':
+        specifier: workspace:*
+        version: link:../../packages/geist
       '@proyecto-viviana/kumo':
         specifier: workspace:*
         version: link:../../packages/kumo

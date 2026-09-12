@@ -183,6 +183,438 @@
   color: var(--text-primary);
 }
 
+.pv-landing-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+  padding-bottom: 5rem;
+}
+
+.pv-section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.pv-section-heading h2 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+.pv-section-heading p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 48rem;
+}
+.pv-section-heading--compact {
+  margin-bottom: 1rem;
+}
+.pv-section-heading--compact h2 {
+  font-size: 1.25rem;
+}
+
+/* Tier 1: Published Flagship Libraries */
+.pv-registers {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 680px) {
+  .pv-registers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.pv-register-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  min-height: 240px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  box-shadow: var(--edge-glass-surface), var(--shadow-panel);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.pv-register-card:hover {
+  border-color: var(--border-hover, var(--pv-accent-border));
+  box-shadow:
+    var(--edge-glass-surface),
+    0 8px 30px rgba(0, 0, 0, 0.12);
+}
+.pv-register-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.pv-register-card__heading h3 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.pv-register-card__status {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--pv-radius-pill, 9999px);
+  background: var(--surface-raised, rgba(255, 255, 255, 0.06));
+  color: var(--pv-accent-solid, #3b82f6);
+  border: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+.pv-register-card p {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+.pv-register-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-default);
+}
+@media (min-width: 480px) {
+  .pv-register-card__footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+.pv-register-card__links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pv-register-card__unpublished {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-muted, var(--text-secondary));
+  font-style: italic;
+}
+
+/* Architecture visual map */
+.pv-architecture {
+  display: grid;
+  gap: 2rem;
+  padding: 2.25rem 2rem;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  box-shadow: var(--edge-glass-surface), var(--shadow-panel);
+}
+@media (min-width: 840px) {
+  .pv-architecture {
+    grid-template-columns: minmax(280px, 1fr) 1.2fr;
+    align-items: center;
+  }
+}
+.pv-architecture__copy h2 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.pv-architecture__copy p {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin: 0;
+}
+.pv-architecture__map {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--surface-raised, rgba(0, 0, 0, 0.2));
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+.pv-architecture__foundation,
+.pv-architecture__branches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.pv-architecture__foundation {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--border-default);
+}
+.pv-architecture__foundation li {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 8px 10px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-align: center;
+  font-weight: 600;
+}
+.pv-architecture__branches {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.pv-architecture__branches li {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 8px 10px;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-align: center;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pv-architecture__branches li[data-experimental="true"] {
+  border-style: dashed;
+  color: var(--text-secondary);
+}
+.pv-architecture__branches li span {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: var(--pv-radius-pill, 9999px);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  color: var(--text-muted, var(--text-secondary));
+}
+
+/* Interactive Specimen Deck */
+.pv-specimen-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.pv-frame__canvas {
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  position: relative;
+  background-image: radial-gradient(var(--border-default) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: center;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.pv-frame__canvas[data-mode="light"] {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+.pv-frame__canvas[data-mode="dark"] {
+  background-color: #090a0f;
+  color: #f8fafc;
+}
+.pv-specimen-deck {
+  width: 100%;
+  max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.pv-specimen-deck__panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+.pv-specimen-deck__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.pv-specimen-deck__controls {
+  width: 100%;
+  max-width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.pv-specimen-deck__status {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tier 2: Experiments & Single-Component Studies */
+.pv-experiments {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  margin-top: 0.5rem;
+}
+@media (min-width: 680px) {
+  .pv-experiments {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.pv-experiment-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.pv-experiment-card:hover {
+  border-color: var(--text-secondary);
+  box-shadow:
+    var(--edge-glass-surface),
+    0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.pv-experiment-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+.pv-experiment-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.pv-experiment-card__heading h3 {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pv-experiment-card p {
+  margin: 0 0 1rem 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+.pv-experiment-card__meta {
+  list-style: none;
+  margin: 0 0 1.25rem 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pv-experiment-card__meta li {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+.pv-experiment-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-default);
+}
+.pv-experiment-card__links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.pv-experiment-card__links a {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+.pv-experiment-card__links a:hover {
+  color: var(--text-primary);
+}
+
+.pv-landing-closing {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 2.25rem 2rem;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+}
+.pv-landing-closing__mark {
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--pv-accent-solid, #3b82f6);
+}
+.pv-landing-closing h2 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+.pv-landing-closing p {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* Hero vertical rhythm */
 .pv-hero {
   padding-block: 3.25rem 3.5rem;

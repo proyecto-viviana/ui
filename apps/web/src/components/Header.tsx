@@ -165,6 +165,9 @@ export function Header() {
           <NavLink href="/" isActive={isActive("/")}>
             Home
           </NavLink>
+          <NavLink href="/showcase" isActive={isActive("/showcase")}>
+            Showcase
+          </NavLink>
           {/* The two styled registers, as peers. viviana-ui docs live at
               /viviana-ui/docs; solid-spectrum owns /solid-spectrum
               (docs, playground, ecosystem all hang off it). */}

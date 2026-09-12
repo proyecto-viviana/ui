@@ -4,9 +4,14 @@ type: task
 title: "Present the Geist experiment on the root landing page"
 created: 2026-09-10
 parent: 526
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-10 }
+  - {
+      state: verified,
+      at: 2026-09-12,
+      note: "added @proyecto-viviana/geist to web app, integrated into Architecture map, 4-register specimen deck, and Tier 2 experiments section; passes build and checks",
+    }
 ---
 
 Show the Geist Button experiment on the Viviana UI landing next to the
