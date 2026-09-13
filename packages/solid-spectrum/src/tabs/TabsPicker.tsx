@@ -75,6 +75,7 @@ interface TabsPickerStyleState {
   isDisabled?: boolean;
   isOpen?: boolean;
   isFocusVisible?: boolean;
+  isQuiet?: boolean;
 }
 
 const tabsPickerRoot = style({
@@ -103,7 +104,9 @@ const tabsPickerButton = style<TabsPickerStyleState>({
     default: baseColor("neutral"),
     isDisabled: "disabled",
   },
-  maxWidth: "max",
+  maxWidth: {
+    isQuiet: "max",
+  },
   disableTapHighlight: true,
   height: {
     default: 48,
@@ -335,6 +338,7 @@ export function TabsPicker(props: TabsPickerProps): JSX.Element {
               class={(triggerProps) =>
                 tabsPickerButton({
                   ...triggerProps,
+                  isQuiet: true,
                   density: props.density,
                   isOpen: triggerProps.isOpen,
                 })

@@ -465,4 +465,25 @@ describe("Tabs (solid-spectrum S2)", () => {
       }
     }
   });
+
+  it("sizes the TabsPicker trigger to the selected value instead of default fieldInput width", () => {
+    render(() => (
+      <TabsPicker
+        id="tabs-picker-size"
+        valueId="tabs-value-size"
+        aria-label="Overflow tabs"
+        density="regular"
+        labelBehavior="show"
+        items={[
+          { id: "tab1", textValue: "Overview", label: "Overview" },
+          { id: "tab2", textValue: "Parity", label: "Parity" },
+        ]}
+        selectedKey="tab1"
+      />
+    ));
+    const trigger = screen.getByRole("button", { name: /Overview|Overflow tabs/ });
+    expect(trigger).toBeInTheDocument();
+    const style = window.getComputedStyle(trigger);
+    expect(style.contain).not.toBe("inline-size");
+  });
 });

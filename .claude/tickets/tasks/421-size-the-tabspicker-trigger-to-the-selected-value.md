@@ -4,12 +4,17 @@ type: task
 title: "Size the TabsPicker trigger to the selected value"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tabs functional pass: force the comparison Tabs row to 176px so horizontal Tabs collapse to TabsPicker. React trigger hugs Overview 70×48 (inner SPAN 54 + chevron 10) and Parity 48×48; Solid is always 208×48 and overflows the 176px container. Open listbox 176×112 opacity 1 and option names match. tabsPickerButton spreads fieldInput() (--defaultWidth 208, contain inline-size) and sets maxWidth: max always; S2 inputButton maxWidth is only { isQuiet: 'max' }. Numbered 421 after Calendar #416–#418 and Disclosure #419",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "align tabsPickerButton maxWidth to { isQuiet: 'max' } and pass isQuiet: true from HeadlessSelectTrigger",
     }
 ---
 
