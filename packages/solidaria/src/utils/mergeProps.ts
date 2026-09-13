@@ -110,6 +110,27 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
       const existingValue = result[key];
 
       if (
+        key === "onClick" &&
+        typeof result["on:click"] === "function" &&
+        typeof value === "function"
+      ) {
+        setResultValue(
+          "on:click",
+          chainHandlers(result["on:click"] as Function, value as Function),
+        );
+        continue;
+      }
+      if (
+        key === "on:click" &&
+        typeof result["onClick"] === "function" &&
+        typeof value === "function"
+      ) {
+        setResultValue("on:click", chainHandlers(result["onClick"] as Function, value as Function));
+        delete result["onClick"];
+        continue;
+      }
+
+      if (
         typeof existingValue === "function" &&
         typeof value === "function" &&
         isEventHandlerKey(key)

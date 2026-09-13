@@ -262,6 +262,23 @@ export function createMenuItem<T>(
   const selectableItemProps = () => {
     const props = selectableItem.itemProps as Record<string, unknown>;
     const onClick = props.onClick;
+    const onHostClick = props["on:click"];
+
+    const interceptSyntheticClick = (event: MouseEvent, fallbackHandler?: unknown) => {
+      // The menu layer's upstream-compatible target.click() should activate
+      // the menu item, not feed back into selectable-item virtual selection.
+      if (isDispatchingMenuSyntheticClick && isVirtualClick(event)) {
+        if (pendingSyntheticClickSelectionEvent != null) {
+          state.selectionManager.emitDuplicateSelectionEvent(pendingSyntheticClickSelectionEvent);
+          pendingSyntheticClickSelectionEvent = null;
+        }
+        return;
+      }
+
+      if (typeof fallbackHandler === "function") {
+        (fallbackHandler as (event: MouseEvent) => void)(event);
+      }
+    };
 
     return {
       ...props,
@@ -269,22 +286,12 @@ export function createMenuItem<T>(
       onMouseUp: withMenuPressUpSelectionSnapshot<MouseEvent>(props.onMouseUp),
       onClick:
         typeof onClick === "function"
-          ? (event: MouseEvent) => {
-              // The menu layer's upstream-compatible target.click() should activate
-              // the menu item, not feed back into selectable-item virtual selection.
-              if (isDispatchingMenuSyntheticClick && isVirtualClick(event)) {
-                if (pendingSyntheticClickSelectionEvent != null) {
-                  state.selectionManager.emitDuplicateSelectionEvent(
-                    pendingSyntheticClickSelectionEvent,
-                  );
-                  pendingSyntheticClickSelectionEvent = null;
-                }
-                return;
-              }
-
-              (onClick as (event: MouseEvent) => void)(event);
-            }
+          ? (event: MouseEvent) => interceptSyntheticClick(event, onClick)
           : onClick,
+      "on:click":
+        typeof onHostClick === "function"
+          ? (event: MouseEvent) => interceptSyntheticClick(event, onHostClick)
+          : onHostClick,
     };
   };
 

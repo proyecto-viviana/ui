@@ -253,6 +253,17 @@ export function createSelectableItem<T>(
   const isSelected = () => manager.selectionMode() !== "none" && manager.isSelected(key());
   const isFocused = () => manager.isFocused() && manager.focusedKey() === key();
 
+  const isNestedInteractiveTarget = (target: unknown): boolean => {
+    const root = ref?.();
+    if (!root || !(target instanceof Element) || target === root || !root.contains(target)) {
+      return false;
+    }
+    const interactive = target.closest(
+      'button, input, select, textarea, a[href], [data-solidaria-pressable], [role="button"], [role="checkbox"], [role="menuitem"]',
+    );
+    return interactive != null && interactive !== root && root.contains(interactive);
+  };
+
   // The aria-layer selection decision, with the link branch (deferred from
   // selectItem) layered in. Mirrors useSelectableItem.onSelect.
   const onSelect = (e: PressEvent) => {
@@ -350,6 +361,9 @@ export function createSelectableItem<T>(
       return shouldUseVirtualFocus();
     },
     onPressStart(e) {
+      if (isNestedInteractiveTarget(e.target)) {
+        return;
+      }
       modality = e.pointerType;
       longPressEnabledOnPressStart = longPressEnabled();
 
@@ -379,6 +393,9 @@ export function createSelectableItem<T>(
       }
     },
     onPressUp(e) {
+      if (isNestedInteractiveTarget(e.target)) {
+        return;
+      }
       // Only relevant for press-up selection with a different press origin and
       // no primary action: select on the mouse up itself.
       if (
@@ -392,6 +409,9 @@ export function createSelectableItem<T>(
       }
     },
     onPress(e) {
+      if (isNestedInteractiveTarget(e.target)) {
+        return;
+      }
       if (shouldSelectOnPressUp()) {
         if (!allowsDifferentPressOrigin()) {
           if (hasPrimaryAction() || (hasSecondaryAction() && e.pointerType !== "mouse")) {
@@ -470,6 +490,9 @@ export function createSelectableItem<T>(
   // Prevent native link clicks so we control exactly when they open (matching
   // selection behavior).
   const onClick = (e: MouseEvent) => {
+    if (isNestedInteractiveTarget(e.target)) {
+      return;
+    }
     if (linkBehavior() !== "none" && isLink()) {
       if (!(openLink as { isOpening?: boolean }).isOpening) {
         e.preventDefault();

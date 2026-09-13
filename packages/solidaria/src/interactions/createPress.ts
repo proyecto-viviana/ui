@@ -824,6 +824,28 @@ export function createPress(props: CreatePressProps = {}): PressResult {
         return;
       }
 
+      const isCollectionItem =
+        e.currentTarget instanceof Element &&
+        (e.currentTarget.hasAttribute("data-collection") ||
+          e.currentTarget.matches('[role="row"], [role="gridcell"], [role="treeitem"]') ||
+          e.currentTarget.closest("[data-collection]") != null);
+
+      const closestInteractive =
+        isCollectionItem && e.target instanceof Element
+          ? e.target.closest(
+              'button, input, select, textarea, a[href], [data-solidaria-pressable], [role="button"], [role="checkbox"], [role="menuitem"]',
+            )
+          : null;
+
+      const isInteractiveChild =
+        closestInteractive != null &&
+        closestInteractive !== e.currentTarget &&
+        e.currentTarget.contains(closestInteractive);
+
+      if (isInteractiveChild) {
+        return;
+      }
+
       // If triggered from a screen reader or by using element.click(),
       // trigger as if it were a keyboard/virtual click.
       let shouldStopPropagation = true;

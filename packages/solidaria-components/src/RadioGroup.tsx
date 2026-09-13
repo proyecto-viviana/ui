@@ -775,6 +775,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       slot: local.slot,
       onClick: handleLabelClick,
       onClickCapture: handleLabelClickCapture,
+      "oncapture:click": handleLabelClickCapture,
       "data-selected": radioAria.isSelected() || undefined,
       "data-pressed": radioAria.isPressed() || undefined,
       "data-hovered": isHovered() || undefined,
@@ -788,6 +789,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     }) as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
   const labelCaptureProps = {
     onClickCapture: handleLabelClickCapture,
+    "oncapture:click": handleLabelClickCapture,
   } as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
 
   // One-time `if` (not a JSX ternary). A `{local.render ? … : <label>}` memo

@@ -257,7 +257,6 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     const row = options.ref();
     const target = getEventTarget<Element>(event);
     if (row && target && target !== row && isNestedFocusableChild(row, target)) {
-      event.stopPropagation();
       return;
     }
     baseOnClick?.(event);

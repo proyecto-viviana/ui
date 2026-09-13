@@ -11,6 +11,11 @@ history:
       at: 2026-09-09,
       note: "filed from the Terminal Glass port gate sweep on 117a2886",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-12,
+      note: "cleared all 35 regression failures across solidaria and solidaria-components: unified onClick/on:click chaining in mergeProps, scoped isInteractiveChild to collection items in createPress, guarded nested interactive targets in createSelectableItem, intercepted host-native synthetic clicks in createMenuItem, added oncapture:click in RadioGroup labelCaptureProps; solidaria-components is 76/76 passed (2370/2376 passed, 6 skipped); solidaria is 90/90 passed (1717/1717 passed); Link D4 is 4/4 passed",
+    }
 ---
 
 `vp run test:run` is red, and has been for a day before the Terminal Glass port started.
