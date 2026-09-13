@@ -486,4 +486,39 @@ describe("Tabs (solid-spectrum S2)", () => {
     const style = window.getComputedStyle(trigger);
     expect(style.contain).not.toBe("inline-size");
   });
+
+  it("keeps labelledby targets in the document for static tabs with labelBehavior hide", () => {
+    render(() => (
+      <Tabs aria-label="Project tabs" labelBehavior="hide" orientation="vertical" density="compact">
+        <TabList aria-label="Sections">
+          <Tab id="overview">
+            <span aria-hidden="true">icon</span>
+            <Text>Overview</Text>
+          </Tab>
+          <Tab id="parity">
+            <span aria-hidden="true">icon</span>
+            <Text>Parity</Text>
+          </Tab>
+        </TabList>
+        <TabPanel id="overview">Overview content</TabPanel>
+        <TabPanel id="parity">Parity content</TabPanel>
+      </Tabs>
+    ));
+
+    const parityTab = screen.getByRole("tab", { name: "Parity" });
+    expect(parityTab).toBeInTheDocument();
+    const labelledBy = parityTab.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    const labelEl = document.getElementById(labelledBy!);
+    expect(labelEl).not.toBeNull();
+    expect(labelEl?.textContent).toBe("Parity");
+
+    const overviewTab = screen.getByRole("tab", { name: "Overview" });
+    expect(overviewTab).toBeInTheDocument();
+    const overviewLabelledBy = overviewTab.getAttribute("aria-labelledby");
+    expect(overviewLabelledBy).toBeTruthy();
+    const overviewLabelEl = document.getElementById(overviewLabelledBy!);
+    expect(overviewLabelEl).not.toBeNull();
+    expect(overviewLabelEl?.textContent).toBe("Overview");
+  });
 });

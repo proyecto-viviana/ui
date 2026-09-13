@@ -890,7 +890,11 @@ function TabsMenu(props: { items: TabsPickerItem[]; disabledKeys: Set<Key> }): J
  */
 export function Tab(props: TabProps): JSX.Element {
   const context = useContext(InternalTabsContext);
-  const contentId = createUniqueId();
+  const fallbackId = createUniqueId();
+  const contentId =
+    props.id !== undefined && props.id !== null
+      ? `${context.menuId || fallbackId}-content-${props.id}`
+      : fallbackId;
   const [local, headlessProps] = splitProps(props, [
     "children",
     "styles",

@@ -32,7 +32,7 @@ type TabItem = (typeof tabItems)[number];
 
 function solidTabChildren(item: TabItem, props: TabsDemoProps) {
   if (props.withIcons || props.labelBehavior === "hide") {
-    return [h(SolidNewIcon, { "aria-hidden": "true" }), h(SolidSpectrumText, {}, item.label)];
+    return [hc(SolidNewIcon, { "aria-hidden": "true" }), hc(SolidSpectrumText, {}, [item.label])];
   }
 
   return [item.label];

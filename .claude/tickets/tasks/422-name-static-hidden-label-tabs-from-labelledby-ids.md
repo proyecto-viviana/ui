@@ -4,12 +4,17 @@ type: task
 title: "Name static hidden-label tabs from labelledby ids"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tabs functional pass: URL composition=static&labelBehavior=hide (the visual-spec combo with vertical compact withIcons shouldForceMount disabledKey=testing selectedKey=parity) leaves Solid tabs unnamed in AX (`- tab`, `- tab [selected]`, `- tab [disabled]`) because aria-labelledby cl-213/214/215 are missing from the document. React resolves the same ids to display:none SPAN text Overview/Parity/Testing. Dynamic hide (no static) names match on both. Numbered 422 after Calendar #416–#418 and Disclosure #419",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "derive Tab contentId from context.menuId and props.id matching S2 and wrap icon and Text components with hc in solidTabChildren",
     }
 ---
 
