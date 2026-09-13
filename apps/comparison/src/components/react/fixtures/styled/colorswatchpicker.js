@@ -46,7 +46,7 @@ function ReactColorSwatchPickerDemo() {
 
   const renderKey = [
     demoProps.valueSource,
-    demoProps.valueSource === "value" ? demoProps.value : demoProps.defaultValue,
+    demoProps.valueSource === "defaultValue" ? demoProps.defaultValue : "controlled",
     demoProps.density,
     demoProps.size,
     demoProps.rounding,

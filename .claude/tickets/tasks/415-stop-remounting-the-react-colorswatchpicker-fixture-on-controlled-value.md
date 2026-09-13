@@ -4,12 +4,17 @@ type: task
 title: "Stop remounting the React ColorSwatchPicker fixture on controlled value"
 created: 2026-09-03
 parent: 26
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorswatchpicker functional pass: ?valueSource=value&value=#e11d48 click Orange selects Orange on both, but React drops DOM focus to BODY (listbox tabIndex 0, new react-aria id) while Solid keeps Orange focused (tabIndex 0, data-focused). Uncontrolled click Orange keeps focus on both. React renderKey includes demoProps.value when valueSource=value, so onChange remounts the picker. Numbered 415 to stay past ProgressCircle #410",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "key controlled valueSource with 'controlled' in React ColorSwatchPicker fixture to prevent remount on selection",
     }
 ---
 
