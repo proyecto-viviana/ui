@@ -192,19 +192,11 @@ export function createSlider(
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (state.orientation === "vertical") {
-          state.increment();
-        } else {
-          state.decrement();
-        }
+        state.increment();
         break;
       case "ArrowDown":
         e.preventDefault();
-        if (state.orientation === "vertical") {
-          state.decrement();
-        } else {
-          state.increment();
-        }
+        state.decrement();
         break;
       case "PageUp":
         e.preventDefault();

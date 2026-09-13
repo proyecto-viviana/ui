@@ -207,7 +207,24 @@ describe("createSlider", () => {
       thumb.focus();
 
       fireEvent.keyDown(thumb, { key: "ArrowUp" });
-      // ArrowUp decrements for horizontal
+      expect(onChange).toHaveBeenCalledWith(51);
+    });
+
+    it("should decrement on ArrowDown for horizontal slider", () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestSlider
+          aria-label="Volume"
+          defaultValue={50}
+          orientation="horizontal"
+          onChange={onChange}
+        />
+      ));
+
+      const thumb = screen.getByTestId("slider-thumb");
+      thumb.focus();
+
+      fireEvent.keyDown(thumb, { key: "ArrowDown" });
       expect(onChange).toHaveBeenCalledWith(49);
     });
 

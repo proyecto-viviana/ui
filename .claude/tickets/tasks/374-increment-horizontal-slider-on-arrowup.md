@@ -4,12 +4,17 @@ type: task
 title: "Increment a horizontal Slider on ArrowUp"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 slider functional pass: isolated focus then ArrowUp×2 from 40 → React 42, Solid 38; ArrowDown×2 → React 38, Solid 42. ArrowLeft/Right, PageUp/PageDown, Home/End already match. createSlider onThumbKeyDown decrements on ArrowUp when orientation is horizontal; native range and WAI-ARIA increment. The package test encodes the inversion",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "createSlider increments on ArrowUp and decrements on ArrowDown across horizontal and vertical orientations; tests updated and passing",
     }
 ---
 
