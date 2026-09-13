@@ -336,4 +336,35 @@ describe("Calendar (solid-spectrum)", () => {
     expect(activeMarch1).toHaveAttribute("tabindex", "0");
     expect(outsideMarch1?.hasAttribute("tabindex")).toBe(false);
   });
+
+  it("keeps visibleMonths reactive after mount and enables in-range cells on the expanded month", async () => {
+    const [visibleMonths, setVisibleMonths] = createSignal(1);
+    render(() => (
+      <Calendar
+        aria-label="Event date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        visibleMonths={visibleMonths()}
+      />
+    ));
+    await waitForCalendar();
+
+    expect(screen.getAllByRole("grid")).toHaveLength(1);
+    expect(
+      screen.getByRole("application", { name: "Event date, February 2025" }),
+    ).toBeInTheDocument();
+
+    setVisibleMonths(2);
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    expect(
+      screen.getByRole("application", { name: "Event date, February to March 2025" }),
+    ).toBeInTheDocument();
+
+    const march1Buttons = screen.getAllByRole("button", { name: /March 1, 2025/i });
+    expect(march1Buttons.length).toBe(2);
+    const activeMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
+    expect(activeMarch1).toBeDefined();
+  });
 });

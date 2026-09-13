@@ -240,7 +240,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const calendar = createMemo(() =>
     (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
   );
-  const visibleMonths = Math.max(1, Number(access(props.visibleMonths) ?? 1));
+  const visibleMonths = createMemo(() => Math.max(1, Number(access(props.visibleMonths) ?? 1)));
   const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
     props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
 
@@ -262,8 +262,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     if (anchor && props.isDateUnavailable && !props.allowsNonContiguousRanges) {
       const predicate = (date: CalendarDate): boolean => props.isDateUnavailable!(date, anchor);
       return {
-        start: nextUnavailableDate(anchor, predicate, visibleMonths, -1),
-        end: nextUnavailableDate(anchor, predicate, visibleMonths, 1),
+        start: nextUnavailableDate(anchor, predicate, visibleMonths(), -1),
+        end: nextUnavailableDate(anchor, predicate, visibleMonths(), 1),
       };
     }
     return null;
@@ -305,7 +305,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const visibleRangeEndFromStart = (start: CalendarDate): CalendarDate => {
     let end = endOfMonth(start);
 
-    for (let i = 1; i < visibleMonths; i++) {
+    for (let i = 1; i < visibleMonths(); i++) {
       end = endOfMonth(end.add({ months: 1 }));
     }
 
@@ -315,7 +315,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   const rawAlignStart = (date: CalendarDate): CalendarDate => startOfMonth(date);
 
   const rawAlignEnd = (date: CalendarDate): CalendarDate =>
-    startOfMonth(date).subtract({ months: Math.max(visibleMonths - 1, 0) });
+    startOfMonth(date).subtract({ months: Math.max(visibleMonths() - 1, 0) });
 
   const constrainVisibleRangeStart = (date: CalendarDate, aligned: CalendarDate): CalendarDate => {
     const minValue = access(props.minValue);
@@ -346,8 +346,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     constrainVisibleRangeStart(date, rawAlignEnd(date));
 
   const alignCenter = (date: CalendarDate): CalendarDate => {
-    let offset = Math.floor(visibleMonths / 2);
-    if (offset > 0 && visibleMonths % 2 === 0) {
+    let offset = Math.floor(visibleMonths() / 2);
+    if (offset > 0 && visibleMonths() % 2 === 0) {
       offset--;
     }
 
@@ -715,7 +715,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // the window, so a single-month page whose focus stays in view would never
   // advance the grid.
   const focusPreviousPage = () => {
-    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
+    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths();
     const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
@@ -723,7 +723,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   const focusNextPage = () => {
-    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
+    const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths();
     const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
@@ -1011,7 +1011,9 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     getWeeksInMonth: getWeeksInMonthFn,
     weekDays,
     title,
-    visibleMonths,
+    get visibleMonths() {
+      return visibleMonths();
+    },
     isDragging,
     setDragging,
     formatValue,

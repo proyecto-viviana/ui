@@ -4,7 +4,7 @@ type: task
 title: "Keep calendar visibleMonths reactive after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar live visibleMonths=2: both grow a March grid (height 278, 77 cells); React application+heading0 Trip dates, February to March 2025; Solid stays Trip dates, February 2025. createRangeCalendarState also snapshots visibleMonths at init (access once). URL remount already names February to March on both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "converted visibleMonths to createMemo and reactive getters in createCalendarState and createRangeCalendarState, typed AriaCalendarProps.visibleMonths as MaybeAccessor; verified live visibleMonths expansion in Calendar.test.tsx and RangeCalendar.test.tsx",
     }
 ---
 

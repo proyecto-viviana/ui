@@ -90,7 +90,7 @@ export interface CalendarStateProps<
   /** Callback that is called for each date in the calendar to determine if it is unavailable. */
   isDateUnavailable?: (date: DateValue) => boolean;
   /** The number of months to display at once. */
-  visibleMonths?: number;
+  visibleMonths?: MaybeAccessor<number | undefined>;
   /** Controls whether paging advances by one month or by the visible month range. */
   pageBehavior?: CalendarPageBehavior;
   /** Determines how the visible months align around the initial focused date. */
@@ -217,7 +217,7 @@ export function createCalendarState<
   const calendar = createMemo(() =>
     (props.createCalendar ?? intlCreateCalendar)(resolvedOptions().calendar as CalendarIdentifier),
   );
-  const visibleMonths = props.visibleMonths ?? 1;
+  const visibleMonths = createMemo(() => Math.max(1, Number(access(props.visibleMonths) ?? 1)));
   const firstDayOfWeekName = (): CalendarDayOfWeek | undefined =>
     props.firstDayOfWeek == null ? undefined : dayOfWeekNames[props.firstDayOfWeek];
 
@@ -231,11 +231,11 @@ export function createCalendarState<
       case "start":
         return 0;
       case "end":
-        return Math.max(visibleMonths - 1, 0);
+        return Math.max(visibleMonths() - 1, 0);
       case "center":
       default: {
-        let halfDuration = Math.floor(visibleMonths / 2);
-        if (halfDuration > 0 && visibleMonths % 2 === 0) {
+        let halfDuration = Math.floor(visibleMonths() / 2);
+        if (halfDuration > 0 && visibleMonths() % 2 === 0) {
           halfDuration--;
         }
         return halfDuration;
@@ -251,7 +251,7 @@ export function createCalendarState<
   const visibleRangeEnd = (start: CalendarDate): CalendarDate => {
     let end = endOfMonth(start);
 
-    for (let i = 1; i < visibleMonths; i++) {
+    for (let i = 1; i < visibleMonths(); i++) {
       end = endOfMonth(end.add({ months: 1 }));
     }
 
@@ -343,7 +343,7 @@ export function createCalendarState<
     const range = visibleRange();
 
     if (nextFocusedDate.compare(range.start) < 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths - 1 })));
+      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths() - 1 })));
     } else if (nextFocusedDate.compare(range.end) > 0) {
       setVisibleRangeStart(startOfMonth(nextFocusedDate));
     }
@@ -578,7 +578,7 @@ export function createCalendarState<
   // Navigation methods
   const focusPreviousPage = () => {
     setIsPaginating(true);
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
     const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
@@ -588,7 +588,7 @@ export function createCalendarState<
 
   const focusNextPage = () => {
     setIsPaginating(true);
-    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths;
+    const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
     const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
     setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
@@ -740,7 +740,9 @@ export function createCalendarState<
     getWeeksInMonth: getWeeksInMonthFn,
     weekDays,
     title,
-    visibleMonths,
+    get visibleMonths() {
+      return visibleMonths();
+    },
     isPaginating,
   };
 }

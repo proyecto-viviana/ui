@@ -49,7 +49,7 @@ export interface AriaCalendarProps {
   /** ID of the rendered error message element. */
   errorMessageId?: string;
   /** Minimum number of visible months. */
-  visibleMonths?: number;
+  visibleMonths?: MaybeAccessor<number | undefined>;
 }
 
 export interface CalendarAria {

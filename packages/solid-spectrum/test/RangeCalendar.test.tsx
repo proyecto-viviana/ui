@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { RangeCalendar, RangeCalendarContext } from "../src";
 import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
@@ -330,5 +331,36 @@ describe("RangeCalendar (solid-spectrum)", () => {
 
     expect(activeMarch1).toHaveAttribute("tabindex", "0");
     expect(outsideMarch1?.hasAttribute("tabindex")).toBe(false);
+  });
+
+  it("keeps visibleMonths reactive after mount and expands the visible range title", async () => {
+    const [visibleMonths, setVisibleMonths] = createSignal(1);
+    render(() => (
+      <RangeCalendar
+        aria-label="Trip dates"
+        defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        visibleMonths={visibleMonths()}
+      />
+    ));
+    await waitForRangeCalendar();
+
+    expect(screen.getAllByRole("grid")).toHaveLength(1);
+    expect(
+      screen.getByRole("application", { name: "Trip dates, February 2025" }),
+    ).toBeInTheDocument();
+
+    setVisibleMonths(2);
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    expect(
+      screen.getByRole("application", { name: "Trip dates, February to March 2025" }),
+    ).toBeInTheDocument();
+
+    const march1Buttons = screen.getAllByRole("button", { name: /March 1, 2025/i });
+    expect(march1Buttons.length).toBe(2);
+    const activeMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
+    expect(activeMarch1).toBeDefined();
   });
 });

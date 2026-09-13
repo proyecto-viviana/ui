@@ -1287,5 +1287,34 @@ describe("createRangeCalendarState", () => {
         dispose();
       });
     });
+
+    it("updates visibleRange and cell disabled states reactively when visibleMonths changes", async () => {
+      let dispose!: () => void;
+      const [visibleMonths, setVisibleMonths] = createSignal(1);
+      const state = createRoot((disposeRoot) => {
+        dispose = disposeRoot;
+        return createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 15),
+          get visibleMonths() {
+            return visibleMonths();
+          },
+        });
+      });
+
+      expect(state.visibleMonths).toBe(1);
+      expect(state.visibleRange().start).toEqual(new CalendarDate(2025, 2, 1));
+      expect(state.visibleRange().end).toEqual(new CalendarDate(2025, 2, 28));
+      expect(state.isCellDisabled(new CalendarDate(2025, 3, 15))).toBe(true);
+
+      setVisibleMonths(2);
+      await flushEffects();
+
+      expect(state.visibleMonths).toBe(2);
+      expect(state.visibleRange().start).toEqual(new CalendarDate(2025, 2, 1));
+      expect(state.visibleRange().end).toEqual(new CalendarDate(2025, 3, 31));
+      expect(state.isCellDisabled(new CalendarDate(2025, 3, 15))).toBe(false);
+
+      dispose();
+    });
   });
 });
