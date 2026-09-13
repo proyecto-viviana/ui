@@ -802,6 +802,143 @@ describe("Color Components", () => {
           expect(changedColor.getChannelValue("red")).toBe(99);
         });
       });
+
+      it("should focus hidden x input on area pointer down and allow immediate ArrowRight adjustment", async () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorArea
+            defaultValue={parseColor("#9B80FF")}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+            onChange={onChange}
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        expect(inputs).toHaveLength(2);
+
+        Object.defineProperty(area, "getBoundingClientRect", {
+          configurable: true,
+          value: () => createMockRect(0, 0, 100),
+        });
+
+        // Click at 10%/10%
+        fireEvent.pointerDown(area, { clientX: 10, clientY: 10, pointerId: 1 });
+        fireEvent.pointerUp(area, { clientX: 10, clientY: 10, pointerId: 1 });
+
+        await waitFor(() => {
+          expect(document.activeElement).toBe(inputs[0]);
+          expect(thumb.getAttribute("data-focused")).toBe("true");
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(26);
+          expect(changedColor.getChannelValue("green")).toBe(230);
+        });
+
+        // Subsequent ArrowRight increments the focused x channel
+        fireEvent.keyDown(inputs[0], { key: "ArrowRight" });
+
+        await waitFor(() => {
+          const changedColor = onChange.mock.lastCall?.[0];
+          expect(changedColor.getChannelValue("red")).toBe(27);
+          expect(changedColor.getChannelValue("green")).toBe(230);
+        });
+      });
+
+      it("should move DOM focus to y input on vertical keys and exit control on Tab", async () => {
+        const user = setupUser();
+        render(() => (
+          <div>
+            <TestColorArea
+              defaultValue={parseColor("#9B80FF")}
+              colorSpace="rgb"
+              aria-label="Color picker"
+              xChannel="red"
+              yChannel="green"
+            />
+            <button data-testid="after-control">After</button>
+          </div>
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        const afterBtn = screen.getByTestId("after-control");
+
+        // Focus x input initially
+        inputs[0].focus();
+        expect(document.activeElement).toBe(inputs[0]);
+
+        // Press ArrowUp: moves focus to y input and increments green channel
+        fireEvent.keyDown(inputs[0], { key: "ArrowUp" });
+
+        await waitFor(() => {
+          expect(document.activeElement).toBe(inputs[1]);
+          expect(inputs[0].getAttribute("tabindex")).toBe("-1");
+          expect(inputs[1].getAttribute("tabindex")).toBeNull();
+        });
+
+        // Tab should exit the control to afterBtn instead of cycling inside ColorArea
+        await user.tab();
+        expect(document.activeElement).toBe(afterBtn);
+      });
+
+      it("should not jump value on off-center thumb pointerdown and delta drag from thumb position", async () => {
+        const onChange = vi.fn();
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorArea
+            defaultValue={parseColor("#9B80FF")}
+            colorSpace="rgb"
+            aria-label="Color picker"
+            xChannel="red"
+            yChannel="green"
+            onChange={onChange}
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const area = screen.getByRole("group", { name: "Color picker, Color picker" });
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+
+        Object.defineProperty(area, "getBoundingClientRect", {
+          configurable: true,
+          value: () => createMockRect(0, 0, 100),
+        });
+
+        // Thumb center is at x=155/255*100 ≈ 60.78, y=(1 - 128/255)*100 ≈ 49.80
+        // Press off-center inside the 16px thumb at x=64, y=52
+        fireEvent.pointerDown(thumb, { clientX: 64, clientY: 52, pointerId: 1 });
+
+        // On pointerdown, value must not jump (stays 155, 128) and x input must be focused
+        expect(onChange).not.toHaveBeenCalled();
+        expect(document.activeElement).toBe(inputs[0]);
+        expect(thumb.getAttribute("data-focused")).toBe("true");
+
+        // Move +10px on x axis to x=74, y=52
+        fireEvent.pointerMove(thumb, { clientX: 74, clientY: 52, pointerId: 1 });
+
+        await waitFor(() => {
+          expect(onChange).toHaveBeenCalled();
+          const changedColor = onChange.mock.lastCall?.[0];
+          // Delta +10% of 255: 155/255 + 0.10 = 0.70784 -> round(0.70784 * 255) = 180
+          expect(changedColor.getChannelValue("red")).toBe(180);
+          expect(changedColor.getChannelValue("green")).toBe(128);
+        });
+
+        fireEvent.pointerUp(thumb, { clientX: 74, clientY: 52, pointerId: 1 });
+
+        await waitFor(() => {
+          expect(onChangeEnd).toHaveBeenCalled();
+          const settledColor = onChangeEnd.mock.lastCall?.[0];
+          expect(settledColor.getChannelValue("red")).toBe(180);
+          expect(settledColor.getChannelValue("green")).toBe(128);
+          expect(document.activeElement).toBe(inputs[0]);
+        });
+      });
     });
   });
 

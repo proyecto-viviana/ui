@@ -107,6 +107,10 @@ export interface AriaColorAreaOptions {
   form?: string;
   /** Whether the area is disabled. */
   isDisabled?: boolean;
+  /** A ref to the input that represents the x axis of the color area. */
+  inputXRef?: Accessor<HTMLInputElement | null | undefined>;
+  /** A ref to the input that represents the y axis of the color area. */
+  inputYRef?: Accessor<HTMLInputElement | null | undefined>;
 }
 
 export interface ColorAreaAria {

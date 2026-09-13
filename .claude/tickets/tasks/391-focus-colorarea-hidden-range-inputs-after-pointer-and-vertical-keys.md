@@ -4,12 +4,17 @@ type: task
 title: "Focus ColorArea's hidden range inputs after pointer and vertical keys"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorarea functional pass: pointer click/drag does not focus the x input so ArrowRight is a no-op; ArrowUp/PageUp set y tabIndex 0 but leave DOM focus on x (now tabIndex -1), so Tab hits y instead of exiting. Thumb off-center press jumps 155→153 because there is no onThumbDown. Off-thumb drag values and loupe 50×66 match. Not #74 (native inputs already back the AX value).",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "wired focusInput via focusWithoutScrolling on pointer down/up and vertical keys, isolated thumb pointerdown to delta from initial thumb position without jumping, and ensured single tab-stop exit.",
     }
 ---
 

@@ -20,11 +20,12 @@
  * Ported from packages/react-aria/src/color/useColorArea.ts.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createMemo, createSignal, onCleanup, type Accessor } from "solid-js";
 import type { Color, ColorAreaState, ColorChannel } from "@proyecto-viviana/solid-stately";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
+import { focusWithoutScrolling } from "../utils/focus";
 import { createColorStringFormatter } from "./intl";
 import type { AriaColorAreaOptions, ColorAreaAria } from "./types";
 
@@ -35,6 +36,8 @@ export function createColorArea(
   props: Accessor<AriaColorAreaOptions>,
   state: Accessor<ColorAreaState>,
   areaRef: Accessor<HTMLDivElement | null>,
+  inputXRef?: Accessor<HTMLInputElement | null | undefined>,
+  inputYRef?: Accessor<HTMLInputElement | null | undefined>,
 ): ColorAreaAria {
   const getProps = () => props();
   const getState = () => state();
@@ -92,6 +95,55 @@ export function createColorArea(
     );
   };
 
+  const getXInput = () => {
+    const fromRef = inputXRef?.() ?? getProps().inputXRef?.();
+    if (fromRef) return fromRef;
+    const resolvedId = getProps().id ? `${getProps().id}-x` : xInputId;
+    const byId =
+      typeof document !== "undefined"
+        ? (document.getElementById(resolvedId) as HTMLInputElement | null)
+        : null;
+    if (byId) return byId;
+    const area = areaRef();
+    if (!area) return null;
+    return (
+      area.querySelector<HTMLInputElement>('input[type="range"][aria-orientation="horizontal"]') ??
+      area.querySelectorAll<HTMLInputElement>('input[type="range"]')[0] ??
+      null
+    );
+  };
+
+  const getYInput = () => {
+    const fromRef = inputYRef?.() ?? getProps().inputYRef?.();
+    if (fromRef) return fromRef;
+    const resolvedId = getProps().id ? `${getProps().id}-y` : yInputId;
+    const byId =
+      typeof document !== "undefined"
+        ? (document.getElementById(resolvedId) as HTMLInputElement | null)
+        : null;
+    if (byId) return byId;
+    const area = areaRef();
+    if (!area) return null;
+    return (
+      area.querySelector<HTMLInputElement>('input[type="range"][aria-orientation="vertical"]') ??
+      area.querySelectorAll<HTMLInputElement>('input[type="range"]')[1] ??
+      null
+    );
+  };
+
+  const focusInput = (axis: "x" | "y" = "x") => {
+    const el = axis === "y" ? getYInput() : getXInput();
+    if (el) {
+      focusWithoutScrolling(el);
+      queueMicrotask(() => {
+        const current = axis === "y" ? getYInput() : getXInput();
+        if (current) {
+          focusWithoutScrolling(current);
+        }
+      });
+    }
+  };
+
   const updateFromInput = (e: Event, axis: "x" | "y") => {
     const target = e.target as HTMLInputElement;
     const nextValue = parseFloat(target.value);
@@ -104,52 +156,169 @@ export function createColorArea(
     }
   };
 
-  // Calculate position from pointer event
-  const getPositionFromEvent = (e: MouseEvent | PointerEvent) => {
+  let startPointerPos = { x: 0, y: 0 };
+  let startThumbPos = { x: 0, y: 0 };
+  let lastMovePos: { x: number; y: number } | null = null;
+  let cleanupDragListeners: (() => void) | undefined;
+
+  const installDragListeners = () => {
+    if (typeof window === "undefined") return;
+    cleanupDragListeners?.();
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!getState().isDragging) return;
+      handleMove(e.clientX, e.clientY);
+    };
+
+    const onPointerEnd = (e: PointerEvent) => {
+      endDragging(e.currentTarget, e.pointerId);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerEnd);
+    window.addEventListener("pointercancel", onPointerEnd);
+
+    cleanupDragListeners = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerEnd);
+      window.removeEventListener("pointercancel", onPointerEnd);
+    };
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (lastMovePos && lastMovePos.x === clientX && lastMovePos.y === clientY) return;
+    lastMovePos = { x: clientX, y: clientY };
+
     const area = areaRef();
-    if (!area) return null;
+    if (!area) return;
 
     const rect = area.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return null;
+    if (rect.width === 0 || rect.height === 0) return;
 
-    const physicalX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const x = isRTL() ? 1 - physicalX : physicalX;
-    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    const deltaX = clientX - startPointerPos.x;
+    const deltaY = clientY - startPointerPos.y;
 
-    return { x, y };
+    const normalizedDeltaX = (isRTL() ? -deltaX : deltaX) / rect.width;
+    const normalizedDeltaY = deltaY / rect.height;
+
+    const newX = Math.max(0, Math.min(1, startThumbPos.x + normalizedDeltaX));
+    const newY = Math.max(0, Math.min(1, startThumbPos.y + normalizedDeltaY));
+
+    getState().setColorFromPoint(newX, newY);
   };
 
-  // Handle pointer down
-  const onPointerDown = (e: PointerEvent) => {
-    if (getProps().isDisabled || getState().isDisabled) return;
+  const endDragging = (target?: EventTarget | null, pointerId?: number) => {
+    cleanupDragListeners?.();
+    cleanupDragListeners = undefined;
+    lastMovePos = null;
 
-    const pos = getPositionFromEvent(e);
-    if (!pos) return;
-
-    getState().setColorFromPoint(pos.x, pos.y);
-    getState().setDragging(true);
-
-    // Capture pointer for dragging
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-  };
-
-  // Handle pointer move
-  const onPointerMove = (e: PointerEvent) => {
-    if (!getState().isDragging) return;
-
-    const pos = getPositionFromEvent(e);
-    if (!pos) return;
-
-    getState().setColorFromPoint(pos.x, pos.y);
-  };
-
-  // Handle pointer up
-  const onPointerUp = (e: PointerEvent) => {
     if (getState().isDragging) {
       getState().setDragging(false);
-      (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      if (pointerId !== undefined && target && (target as HTMLElement).releasePointerCapture) {
+        try {
+          (target as HTMLElement).releasePointerCapture(pointerId);
+        } catch {}
+      }
+      focusInput(focusedInput() ?? "x");
     }
   };
+
+  const startDragging = (
+    clientX: number,
+    clientY: number,
+    fromThumb: boolean,
+    target?: HTMLElement | null,
+    pointerId?: number,
+  ) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    if (getState().isDragging) return;
+
+    setValueChangedViaKeyboard(false);
+    setValueChangedViaInputChangeEvent(false);
+
+    const s = getState();
+    if (fromThumb) {
+      startThumbPos = s.getThumbPosition();
+    } else {
+      const area = areaRef();
+      if (!area) return;
+      const rect = area.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const physicalX = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const x = isRTL() ? 1 - physicalX : physicalX;
+      const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+
+      s.setColorFromPoint(x, y);
+      startThumbPos = { x, y };
+    }
+
+    startPointerPos = { x: clientX, y: clientY };
+    lastMovePos = { x: clientX, y: clientY };
+    focusInput(focusedInput() ?? "x");
+    s.setDragging(true);
+
+    if (pointerId !== undefined && target?.setPointerCapture) {
+      try {
+        target.setPointerCapture(pointerId);
+      } catch {}
+    }
+
+    installDragListeners();
+  };
+
+  const onThumbPointerDown = (e: PointerEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    if (e.pointerType === "mouse" && (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)) return;
+
+    e.stopPropagation();
+    e.preventDefault();
+
+    startDragging(e.clientX, e.clientY, true, e.currentTarget as HTMLElement, e.pointerId);
+  };
+
+  const onThumbMouseDown = (e: MouseEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey) return;
+
+    e.stopPropagation();
+    e.preventDefault();
+
+    startDragging(e.clientX, e.clientY, true);
+  };
+
+  const onAreaPointerDown = (e: PointerEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    if (e.pointerType === "mouse" && (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)) return;
+
+    e.preventDefault();
+
+    startDragging(e.clientX, e.clientY, false, e.currentTarget as HTMLElement, e.pointerId);
+  };
+
+  const onAreaMouseDown = (e: MouseEvent) => {
+    if (getProps().isDisabled || getState().isDisabled) return;
+    if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey) return;
+
+    e.preventDefault();
+
+    startDragging(e.clientX, e.clientY, false);
+  };
+
+  const onPointerMove = (e: PointerEvent) => {
+    if (!getState().isDragging) return;
+    handleMove(e.clientX, e.clientY);
+  };
+
+  const onPointerUp = (e: PointerEvent) => {
+    if (getState().isDragging) {
+      endDragging(e.currentTarget, e.pointerId);
+    }
+  };
+
+  onCleanup(() => {
+    cleanupDragListeners?.();
+  });
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (getProps().isDisabled || getState().isDisabled) return;
@@ -169,6 +338,7 @@ export function createColorArea(
         } else {
           s.incrementX(xStep);
         }
+        focusedAxis = "x";
         break;
       case "ArrowLeft":
         if (isRTL()) {
@@ -176,6 +346,7 @@ export function createColorArea(
         } else {
           s.decrementX(xStep);
         }
+        focusedAxis = "x";
         break;
       case "ArrowUp":
         s.incrementY(yStep);
@@ -199,6 +370,7 @@ export function createColorArea(
         } else {
           s.decrementX(s.xChannelPageStep);
         }
+        focusedAxis = "x";
         break;
       case "End":
         if (isRTL()) {
@@ -206,6 +378,7 @@ export function createColorArea(
         } else {
           s.incrementX(s.xChannelPageStep);
         }
+        focusedAxis = "x";
         break;
       default:
         handled = false;
@@ -216,6 +389,7 @@ export function createColorArea(
       setValueChangedViaKeyboard(true);
       s.setDragging(true);
       s.setDragging(false);
+      focusInput(focusedAxis);
       e.preventDefault();
       e.stopPropagation();
     }
@@ -240,9 +414,10 @@ export function createColorArea(
       role: "group" as const,
       "aria-label": colorAreaLabel(),
       "aria-labelledby": p["aria-labelledby"],
-      onPointerDown,
+      onPointerDown: onAreaPointerDown,
       onPointerMove,
       onPointerUp,
+      onMouseDown: onAreaMouseDown,
       style: {
         position: "relative" as const,
         "touch-action": "none",
@@ -366,6 +541,10 @@ export function createColorArea(
         "touch-action": "none",
         "forced-color-adjust": "none" as const,
       },
+      onPointerDown: onThumbPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onMouseDown: onThumbMouseDown,
       onKeyDown,
       onFocusOut,
       "data-dragging": s.isDragging || undefined,
@@ -381,7 +560,7 @@ export function createColorArea(
 
     return {
       type: "range",
-      id: p.id ?? xInputId,
+      id: p.id ? `${p.id}-x` : xInputId,
       "aria-label": colorInputLabel(),
       "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.xChannel),
@@ -426,7 +605,7 @@ export function createColorArea(
 
     return {
       type: "range",
-      id: p.id ?? yInputId,
+      id: p.id ? `${p.id}-y` : yInputId,
       "aria-label": colorInputLabel(),
       "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.yChannel),
