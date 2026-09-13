@@ -3,7 +3,7 @@ id: 443
 type: initiative
 title: "Ship the 2026-09 release train"
 created: 2026-09-03
-status: open
+status: in-progress
 history:
   - {
       state: open,
