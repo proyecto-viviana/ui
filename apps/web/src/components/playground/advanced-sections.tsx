@@ -1944,9 +1944,9 @@ interface BreadcrumbData {
 }
 
 const breadcrumbItems: BreadcrumbData[] = [
-  { id: "home", label: "Home", href: "/" },
-  { id: "products", label: "Products", href: "/products" },
-  { id: "category", label: "Electronics", href: "/products/electronics" },
+  { id: "home", label: "Home" },
+  { id: "products", label: "Products" },
+  { id: "category", label: "Electronics" },
   { id: "item", label: "Smartphones", isCurrent: true },
 ];
 

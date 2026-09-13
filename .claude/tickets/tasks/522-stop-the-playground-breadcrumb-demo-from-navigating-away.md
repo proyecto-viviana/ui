@@ -4,12 +4,17 @@ type: task
 title: "Stop the playground breadcrumb demo from navigating away"
 created: 2026-09-09
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-09,
       note: "filed from the Terminal Glass port gate sweep on 117a2886",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "dropped dead hrefs from breadcrumb demo data in advanced-sections.tsx; 74/74 a11y:smoke passed",
     }
 ---
 
