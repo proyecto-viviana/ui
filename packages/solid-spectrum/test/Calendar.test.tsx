@@ -304,4 +304,36 @@ describe("Calendar (solid-spectrum)", () => {
       screen.getByRole("button", { name: /February 20, 2025, Last available date/ }),
     ).toBeInTheDocument();
   });
+
+  it("disables outside-month cells and retains a single tabbable cell across multi-month grids", async () => {
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 28)}
+        visibleMonths={2}
+      />
+    ));
+    await waitForCalendar();
+
+    const march1Buttons = screen.getAllByRole("button", { name: /March 1, 2025/i });
+    expect(march1Buttons.length).toBe(2);
+
+    const outsideMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") === "true");
+    const activeMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
+    expect(outsideMarch1).toBeDefined();
+    expect(activeMarch1).toBeDefined();
+    const feb28Buttons = screen.getAllByRole("button", { name: /February 28, 2025/i });
+    expect(feb28Buttons.length).toBe(2);
+    const outsideFeb28 = feb28Buttons.find((b) => b.getAttribute("aria-disabled") === "true");
+    const activeFeb28 = feb28Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
+    expect(outsideFeb28).toBeDefined();
+    expect(activeFeb28).toBeDefined();
+    expect(outsideFeb28?.hasAttribute("tabindex")).toBe(false);
+
+    activeFeb28!.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(activeMarch1).toHaveAttribute("tabindex", "0");
+    expect(outsideMarch1?.hasAttribute("tabindex")).toBe(false);
+  });
 });

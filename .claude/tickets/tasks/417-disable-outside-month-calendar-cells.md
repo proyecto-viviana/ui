@@ -4,7 +4,7 @@ type: task
 title: "Disable outside-month calendar cells the way RAC does"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar URL ?visibleMonths=2: both paint February+March, app name February to March 2025; disabledDays 18 vs 11 (React extra 23–28 are March-grid copies of in-range Feb days). createRangeCalendarCell isDisabled also omits isOutsideMonth. Not a second ticket",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "folded isOutsideMonth into isDisabled in createCalendarCell and createRangeCalendarCell, matching RAC useCalendarCell; verified single roving tabIndex on multi-month view and added unit tests in Calendar.test.tsx and RangeCalendar.test.tsx",
     }
 ---
 

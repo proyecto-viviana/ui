@@ -109,7 +109,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     );
   });
   const isDisabled = createMemo(() => {
-    return getProps().isDisabled || state.isCellDisabled(date());
+    return getProps().isDisabled || state.isCellDisabled(date()) || !!getProps().isOutsideMonth;
   });
   const isUnavailable = createMemo(() => state.isCellUnavailable(date()));
   const isSelectable = createMemo(() => !isDisabled() && !isUnavailable());

@@ -103,7 +103,7 @@ export function createCalendarCell<T extends CalendarState>(
   const isSelected = createMemo(() => state.isSelected(date()));
   const isInvalid = createMemo(() => state.isValueInvalid() && isSelected());
   const isDisabled = createMemo(() => {
-    return getProps().isDisabled || state.isCellDisabled(date());
+    return getProps().isDisabled || state.isCellDisabled(date()) || !!getProps().isOutsideMonth;
   });
   const isUnavailable = createMemo(() => state.isCellUnavailable(date()));
   const isOutsideMonth = createMemo(
