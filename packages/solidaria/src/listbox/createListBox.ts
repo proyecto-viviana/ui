@@ -140,7 +140,8 @@ export function createListBox<T>(
   ref: () => HTMLElement | null = () => null,
 ): ListBoxAria {
   const getProps = () => access(props);
-  const id = createId(getProps().id);
+  const fallbackId = createId();
+  const id = () => getProps().id ?? fallbackId;
 
   // Development-time warning for missing accessibility labels
   if (isDevEnv()) {
@@ -165,7 +166,7 @@ export function createListBox<T>(
     }
 
     listBoxData.set(state, {
-      id,
+      id: id(),
       onAction: p.onAction,
       shouldSelectOnPressUp: p.shouldSelectOnPressUp,
       shouldFocusOnHover: p.shouldFocusOnHover,
@@ -197,9 +198,9 @@ export function createListBox<T>(
   });
 
   // Label handling
-  const { labelProps, fieldProps } = createLabel({
+  const labelAria = createLabel({
     get id() {
-      return id;
+      return id();
     },
     get label() {
       return getProps().label;
@@ -258,7 +259,7 @@ export function createListBox<T>(
 
   return {
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return labelAria.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get listBoxProps() {
       const p = getProps();
@@ -266,7 +267,7 @@ export function createListBox<T>(
       return mergeProps(
         domProps(),
         focusWithinProps as Record<string, unknown>,
-        fieldProps as Record<string, unknown>,
+        labelAria.fieldProps as Record<string, unknown>,
         p.isDisabled ? {} : (selectableList.listProps as Record<string, unknown>),
         {
           role: "listbox",

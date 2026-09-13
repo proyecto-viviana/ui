@@ -4,12 +4,17 @@ type: task
 title: "Keep ColorSwatchPicker aria-label and id reactive after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: 'filed from the #260 colorswatchpicker functional pass: live {ariaLabel:""} updates Solid fixture JSON but the listbox stays named Accent color (S2 injects Color swatches); live {id:"contract-colorswatchpicker"} leaves Solid on solidaria-cl-169 (S2 forwards the id). URL ?ariaLabel= and ?id= remount and match. createListBox createId snapshots id at setup; ColorSwatchPicker cleanListBoxProps() destructures listBoxProps into a plain object during render, so later fieldProps aria-label never reach the div. Numbered 413 to stay past ProgressCircle #410',
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "remediated in solidaria createLabel.ts and createListBox.ts (reactive fallbackId/id accessor and dynamic labelAria props access) and solidaria-components Color.tsx (empty string aria-label fallback to default translation). Added unit test in ColorSwatchPicker.test.tsx. Verified 9/9 unit tests and 28/28 comparison certified tests pass.",
     }
 ---
 

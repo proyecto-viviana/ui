@@ -152,4 +152,24 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
     expect(screen.getAllByRole("option")).toHaveLength(2);
     expect(screen.getAllByRole("img")).toHaveLength(2);
   });
+
+  it("updates aria-label and id reactively after mount", () => {
+    const [label, setLabel] = createSignal("Initial label");
+    const [id, setId] = createSignal<string | undefined>(undefined);
+
+    render(() => (
+      <ColorSwatchPicker aria-label={label()} id={id()}>
+        <ColorSwatch color="#ff0000" />
+      </ColorSwatchPicker>
+    ));
+
+    const listbox = screen.getByRole("listbox", { name: "Initial label" });
+    expect(listbox.id).toMatch(/^solidaria-/);
+
+    setId("contract-colorswatchpicker");
+    expect(listbox).toHaveAttribute("id", "contract-colorswatchpicker");
+
+    setLabel("");
+    expect(screen.getByRole("listbox", { name: "Color swatches" })).toBeInTheDocument();
+  });
 });

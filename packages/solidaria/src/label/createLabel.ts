@@ -72,7 +72,8 @@ export interface LabelAria {
 export function createLabel(props: MaybeAccessor<LabelAriaProps>): LabelAria {
   const getProps = () => access(props);
 
-  const id = createId(getProps().id);
+  const fallbackId = createId();
+  const id = () => getProps().id ?? fallbackId;
   const labelId = createId();
 
   const getLabelProps = (): LabelAria["labelProps"] => {
@@ -84,7 +85,7 @@ export function createLabel(props: MaybeAccessor<LabelAriaProps>): LabelAria {
 
     return {
       id: labelId,
-      ...(labelElementType === "label" ? { htmlFor: id } : {}),
+      ...(labelElementType === "label" ? { htmlFor: id() } : {}),
     };
   };
 
@@ -102,7 +103,7 @@ export function createLabel(props: MaybeAccessor<LabelAriaProps>): LabelAria {
     }
 
     return createLabels({
-      id,
+      id: id(),
       "aria-label": ariaLabel,
       "aria-labelledby": labelledBy,
     });

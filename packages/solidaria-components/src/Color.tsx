@@ -2217,7 +2217,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     () => ({
       id: local.id,
       "aria-label":
-        local["aria-label"] ??
+        (local["aria-label"] || undefined) ??
         (!local["aria-labelledby"] ? stringFormatter().format("colorSwatchPicker") : undefined),
       "aria-labelledby": local["aria-labelledby"],
       "aria-describedby": local["aria-describedby"],
