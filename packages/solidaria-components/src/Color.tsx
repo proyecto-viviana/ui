@@ -2213,6 +2213,8 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     },
   });
 
+  const [pickerRef, setPickerRef] = createSignal<HTMLDivElement | null>(null);
+
   const listBoxAria = createListBox(
     () => ({
       id: local.id,
@@ -2224,6 +2226,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       "aria-details": local["aria-details"],
     }),
     state,
+    () => pickerRef(),
   );
 
   const resolveDirection = (): "ltr" | "rtl" => locale().direction;
@@ -2484,6 +2487,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
         {...mergeProps(domProps(), cleanListBoxProps(), cleanFocusProps(), {
           onKeyDown: onColorSwatchPickerKeyDown,
         })}
+        ref={setPickerRef}
         class={renderProps.class()}
         style={renderProps.style()}
         slot={local.slot ?? undefined}

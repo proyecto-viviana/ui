@@ -1603,6 +1603,29 @@ describe("Color Components", () => {
       expect(getSelectedIndex()).toBe(1);
       expect(onChange).toHaveBeenCalledTimes(1);
     });
+
+    it("should navigate to boundary swatches with PageDown and PageUp without changing selection", () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid" />
+      ));
+
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
+
+      fireEvent.keyDown(listbox, { key: "PageDown" });
+      expect(focusedIndex()).toBe(2);
+      expect(selectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(listbox, { key: "PageUp" });
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 
   // ============================================

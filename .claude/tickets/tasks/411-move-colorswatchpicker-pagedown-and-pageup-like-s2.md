@@ -4,12 +4,17 @@ type: task
 title: "Move ColorSwatchPicker PageDown and PageUp like S2"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorswatchpicker functional pass: after Tab onto Rose, S2 PageDown focuses Pink (last) without changing selection; Solid PageDown is a no-op. From End/Pink, S2 PageUp returns to Rose; Solid stays on Pink. Home/End/arrows already match. createColorSwatchPicker never passes a listbox ref into createListBox, so ListKeyboardDelegate getKeyPageBelow/Above returns null (or skips the non-scrollable getLastKey/getFirstKey shortcut). Numbered 411 to stay past ProgressCircle #410",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "threaded container ref signal into createListBox in ColorSwatchPicker and attached it to the listbox div. ListKeyboardDelegate now has collection ref to resolve item rects and move roving focus to boundary enabled swatches on PageDown/PageUp without committing selection.",
     }
 ---
 

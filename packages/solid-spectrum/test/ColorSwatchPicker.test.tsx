@@ -172,4 +172,50 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
     setLabel("");
     expect(screen.getByRole("listbox", { name: "Color swatches" })).toBeInTheDocument();
   });
+
+  it("moves roving focus with PageDown and PageUp without changing selection", () => {
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" defaultValue="#ff0000">
+        <ColorSwatch color="#ff0000" />
+        <ColorSwatch color="#00ff00" />
+        <ColorSwatch color="#0000ff" />
+      </ColorSwatchPicker>
+    ));
+
+    const listbox = screen.getByRole("listbox", { name: "Palette" });
+    const options = screen.getAllByRole("option");
+
+    listbox.focus();
+    expect(options[0]).toHaveAttribute("tabindex", "0");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(listbox, { key: "PageDown" });
+    expect(options[2]).toHaveAttribute("tabindex", "0");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+    expect(options[2]).toHaveAttribute("aria-selected", "false");
+
+    fireEvent.keyDown(listbox, { key: "PageUp" });
+    expect(options[0]).toHaveAttribute("tabindex", "0");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("skips disabled swatches on PageDown", () => {
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" defaultValue="#ff0000">
+        <ColorSwatchPickerItem color="#ff0000" />
+        <ColorSwatchPickerItem color="#00ff00" />
+        <ColorSwatchPickerItem color="#0000ff" isDisabled />
+      </ColorSwatchPicker>
+    ));
+
+    const listbox = screen.getByRole("listbox", { name: "Palette" });
+    const options = screen.getAllByRole("option");
+
+    listbox.focus();
+    expect(options[0]).toHaveAttribute("tabindex", "0");
+
+    fireEvent.keyDown(listbox, { key: "PageDown" });
+    expect(options[1]).toHaveAttribute("tabindex", "0");
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+  });
 });
