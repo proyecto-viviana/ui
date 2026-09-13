@@ -4,12 +4,17 @@ type: task
 title: "Extend a RangeCalendar drag across hovered cells"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 rangecalendar functional pass: pointerdown on Feb 8 then drag to Feb 12 commits 8–12 on React and leaves Solid at 3–7 with only day 8 selected; two-click 8 then 14 already matches",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "merged cellAria.buttonProps with hoverProps in RangeCalendarCell, released pointer capture on pointerdown, and committed range drag on pointerup",
     }
 ---
 

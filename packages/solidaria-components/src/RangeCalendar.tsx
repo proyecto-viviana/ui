@@ -36,6 +36,7 @@ import {
   createCalendarGrid,
   createRangeCalendarCell,
   createHover,
+  mergeProps,
   type AriaRangeCalendarProps,
   type AriaCalendarGridProps,
 } from "@proyecto-viviana/solidaria";
@@ -671,8 +672,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     <td {...cellAria.cellProps} class={cellRenderProps.class()} style={cellRenderProps.style()}>
       <div
         ref={setCellRef}
-        {...cellAria.buttonProps}
-        {...hoverProps}
+        {...mergeProps(cellAria.buttonProps, hoverProps)}
         class={renderProps.class()}
         style={renderProps.style()}
         data-selected={dataAttr(cellAria.isSelected)}

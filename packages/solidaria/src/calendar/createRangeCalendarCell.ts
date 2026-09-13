@@ -179,6 +179,14 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // hover/focus updates re-render cells before click fires.
   const handlePointerDown = (e: PointerEvent) => {
     cellReceivedPointer = true;
+    const target = (e.currentTarget || e.target) as HTMLElement | null;
+    if (target && "releasePointerCapture" in target) {
+      if ("hasPointerCapture" in target ? target.hasPointerCapture(e.pointerId) : true) {
+        try {
+          target.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+    }
     if (isSelectable()) {
       setIsPressed(true);
       state.setFocusedDate(date());
@@ -213,13 +221,35 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e?: PointerEvent) => {
+    setIsPressed(false);
+    if (
+      isSelectable() &&
+      (!e || e.button === 0) &&
+      state.isDragging() &&
+      state.anchorDate() &&
+      !isSameDay(date(), state.anchorDate()!)
+    ) {
+      state.selectDate(date());
+      state.setFocusedDate(date());
+      state.setFocused(true);
+      const element = ref?.();
+      if (element) {
+        focusSafely(element);
+      }
+    }
+  };
+
+  const handlePointerLeave = () => {
     setIsPressed(false);
   };
 
   // Handle hover during range selection
-  const handlePointerEnter = () => {
-    if (state.isDragging() && isSelectable()) {
+  const handlePointerEnter = (e?: PointerEvent) => {
+    if (
+      isSelectable() &&
+      (state.isDragging() || (state.anchorDate() && e?.pointerType !== "touch"))
+    ) {
       state.setFocusedDate(date());
     }
   };
@@ -316,7 +346,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
         onClick: handleClick,
         onPointerDown: handlePointerDown,
         onPointerUp: handlePointerUp,
-        onPointerLeave: handlePointerUp,
+        onPointerLeave: handlePointerLeave,
         onPointerEnter: handlePointerEnter,
         onFocus: () => {
           if (!state.isCellFocused(d)) {

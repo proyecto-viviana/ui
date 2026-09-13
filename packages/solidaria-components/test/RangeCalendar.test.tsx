@@ -487,6 +487,49 @@ describe("RangeCalendar", () => {
       });
     });
 
+    it("should extend in-progress range during pointer drag and commit on pointerup", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            onChange,
+            defaultFocusedValue: new CalendarDate(2025, 2, 8),
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const start = screen.getByRole("button", { name: /February 8, 2025/i });
+      const mid = screen.getByRole("button", { name: /February 10, 2025/i });
+      const end = screen.getByRole("button", { name: /February 12, 2025/i });
+
+      // Start drag on Feb 8
+      fireEvent.pointerDown(start, { pointerId: 1, button: 0 });
+
+      // Hover over Feb 10
+      fireEvent.pointerLeave(start);
+      fireEvent.pointerEnter(mid);
+      expect(mid).toHaveAttribute("data-selected");
+
+      // Hover over Feb 12
+      fireEvent.pointerLeave(mid);
+      fireEvent.pointerEnter(end);
+      expect(end).toHaveAttribute("data-selected");
+
+      // Release drag on Feb 12
+      fireEvent.pointerUp(end, { pointerId: 1, button: 0 });
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledTimes(1);
+      });
+      expect(onChange.mock.calls[0][0]).toMatchObject({
+        start: expect.objectContaining({ day: 8 }),
+        end: expect.objectContaining({ day: 12 }),
+      });
+      expect(end).toHaveAttribute("data-selection-end");
+      expect(start).toHaveAttribute("data-selection-start");
+    });
+
     it("should mark selection start and end", async () => {
       render(() => (
         <TestRangeCalendar
