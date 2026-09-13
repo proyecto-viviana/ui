@@ -4,12 +4,17 @@ type: task
 title: "Keep HSL/HSB hue valuetext at the upstream fraction digits"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: 'filed from the #260 colorarea functional pass: ?colorSpace=hsl and hsb aria-valuetext Hue: 252.76° (S2) vs 253° (Solid). Chromium AX snapshot still slider "100" / "50" both. RGB valuetext matches. Color.ts HSL/HSB getChannelFormatOptions sets maximumFractionDigits: 0; upstream omits it.',
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "remediated in solid-stately Color.ts: removed maximumFractionDigits: 0 from hue channel format options in HSLColorImpl and HSBColorImpl to preserve upstream Intl.NumberFormat fraction digits (e.g. 252.76° for #9B80FF while retaining integer format for integer hues). Added unit tests in color.test.ts. Verified 77/77 solid-stately color unit tests and 18/18 comparison colorarea certified tests pass with 0 failures.",
     }
 ---
 

@@ -1045,4 +1045,23 @@ describe("createColorFieldState", () => {
       dispose();
     });
   });
+
+  describe("formatChannelValue", () => {
+    it("preserves fraction digits for HSL and HSB hue matching upstream", () => {
+      const color = parseColor("#9B80FF");
+      const hsl = color.toFormat("hsl");
+      const hsb = color.toFormat("hsb");
+
+      expect(hsl.formatChannelValue("hue", "en-US")).toBe("252.76°");
+      expect(hsb.formatChannelValue("hue", "en-US")).toBe("252.76°");
+    });
+
+    it("formats integer hues without fractional digits", () => {
+      const hsl = parseColor("hsl(210, 50%, 50%)");
+      const hsb = parseColor("hsb(210, 50%, 50%)");
+
+      expect(hsl.formatChannelValue("hue", "en-US")).toBe("210°");
+      expect(hsb.formatChannelValue("hue", "en-US")).toBe("210°");
+    });
+  });
 });
