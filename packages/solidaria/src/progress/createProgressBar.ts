@@ -82,7 +82,7 @@ export function createProgressBar(
   const getProps = () => access(props);
 
   // Create label handling
-  const { labelProps, fieldProps } = createLabel({
+  const labelAria = createLabel({
     get id() {
       return getProps().id;
     },
@@ -127,7 +127,7 @@ export function createProgressBar(
 
     const domProps = filterDOMProps(p as Record<string, unknown>, { labelable: true });
 
-    return mergeProps(domProps, fieldProps as Record<string, unknown>, {
+    return mergeProps(domProps, labelAria.fieldProps as Record<string, unknown>, {
       "aria-valuenow": isIndeterminate ? undefined : clampedValue,
       "aria-valuemin": minValue,
       "aria-valuemax": maxValue,
@@ -141,7 +141,7 @@ export function createProgressBar(
       return getProgressBarProps();
     },
     get labelProps() {
-      return labelProps as Record<string, unknown>;
+      return labelAria.labelProps as Record<string, unknown>;
     },
   };
 }

@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ProgressCircle } from "../src/progress/ProgressCircle";
@@ -61,5 +62,15 @@ describe("ProgressCircle (solid-spectrum)", () => {
     expect(progressbar).toHaveClass("unsafe-class");
     expect(progressbar).toHaveAttribute("slot", "progress");
     expect(progressbar).toHaveStyle({ margin: "2px" });
+  });
+
+  it("updates aria-label reactively after mount", () => {
+    const [label, setLabel] = createSignal("Loading…");
+    render(() => <ProgressCircle value={50} aria-label={label()} />);
+
+    expect(screen.getByRole("progressbar", { name: "Loading…" })).toBeInTheDocument();
+
+    setLabel("Uploading files");
+    expect(screen.getByRole("progressbar", { name: "Uploading files" })).toBeInTheDocument();
   });
 });

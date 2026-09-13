@@ -61,17 +61,17 @@ export interface MeterAria {
  */
 export function createMeter(props: AriaMeterProps = {}): MeterAria {
   // Reuse progress bar implementation
-  const { progressBarProps, labelProps } = createProgressBar(props);
+  const progressBarAria = createProgressBar(props);
 
   return {
     get meterProps() {
       return {
-        ...progressBarProps,
+        ...progressBarAria.progressBarProps,
         role: "meter progressbar",
       };
     },
     get labelProps() {
-      return labelProps;
+      return progressBarAria.labelProps;
     },
   };
 }
