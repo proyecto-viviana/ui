@@ -18,6 +18,7 @@
     "guard:demo-control-split": "tsx scripts/demo-control-split.ts",
     "guard:chrome-css-coalesce": "node scripts/chrome-css-coalesce.mjs",
     "guard:client-router": "node scripts/client-router.mjs",
+    "guard:chrome-published-condition": "node scripts/chrome-published-condition.mjs",
     "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
     "test:buttons": "vp run build && playwright test e2e/button-family-contract.spec.ts --reporter=line",
     "test:catalogue": "vp run build && playwright test e2e/catalogue-controls.spec.ts --reporter=line",

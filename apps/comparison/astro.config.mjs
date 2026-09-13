@@ -16,6 +16,7 @@ import {
   isComparisonChromeMacroModule,
   orderedUniqueIds,
 } from "./scripts/chrome-css-coalesce.mjs";
+import { comparisonChromePublishedConditionPlugin } from "./scripts/chrome-published-condition.mjs";
 
 const oneLineWarningFilters = [
   "`transformWithEsbuild` is deprecated",
@@ -133,6 +134,7 @@ const localSolidPackages = [
   "@proyecto-viviana/solidaria",
   "@proyecto-viviana/solidaria-components",
   "@proyecto-viviana/kumo",
+  "@proyecto-viviana/geist",
   "@proyecto-viviana/solid-spectrum",
 ];
 const reactNoExternalPackages = ["@mui/material", "@mui/base", "@babel/runtime", "use-immer"];
@@ -504,6 +506,8 @@ export default defineConfig({
         "../../packages/solidaria-components/dist/**/*.jsx",
         "../../packages/kumo/src/**/*",
         "../../packages/kumo/dist/**/*.jsx",
+        "../../packages/geist/src/**/*",
+        "../../packages/geist/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/solid-spectrum/dist/**/*.jsx",
         "../../packages/viviana-ui/src/**/*",
@@ -519,6 +523,8 @@ export default defineConfig({
         "../../packages/solidaria-components/dist/**/*.jsx",
         "../../packages/kumo/src/**/*",
         "../../packages/kumo/dist/**/*.jsx",
+        "../../packages/geist/src/**/*",
+        "../../packages/geist/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/solid-spectrum/dist/**/*.jsx",
         "../../packages/viviana-ui/src/**/*",
@@ -527,7 +533,7 @@ export default defineConfig({
     }),
   ],
   vite: {
-    plugins: [comparisonS2Macros()],
+    plugins: [comparisonChromePublishedConditionPlugin({ repoRoot }), comparisonS2Macros()],
     build: {
       assetsInlineLimit: 0,
       rollupOptions: {
@@ -590,6 +596,18 @@ export default defineConfig({
         {
           find: /^@proyecto-viviana\/kumo\/styles\.css$/,
           replacement: path.resolve(repoRoot, "packages/kumo/dist/styles.css"),
+        },
+        {
+          find: /^@proyecto-viviana\/geist$/,
+          replacement: path.resolve(repoRoot, "packages/geist/dist/index.jsx"),
+        },
+        {
+          find: /^@proyecto-viviana\/geist\/components\/button$/,
+          replacement: path.resolve(repoRoot, "packages/geist/dist/components/button.jsx"),
+        },
+        {
+          find: /^@proyecto-viviana\/geist\/styles\.css$/,
+          replacement: path.resolve(repoRoot, "packages/geist/dist/styles.css"),
         },
       ],
     },
