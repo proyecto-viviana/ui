@@ -91,7 +91,8 @@ export function Meter(props: MeterProps): JSX.Element {
   const value = () => ariaProps.value ?? 0;
   const minValue = () => ariaProps.minValue ?? 0;
   const maxValue = () => ariaProps.maxValue ?? 100;
-  const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
+  const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel());
 
   const meterAria = createMeter({
     get value() {
@@ -110,7 +111,7 @@ export function Meter(props: MeterProps): JSX.Element {
       return ariaProps.formatOptions;
     },
     get label() {
-      return hasLabel();
+      return hasExplicitLabel() ? undefined : hasLabel();
     },
     get "aria-label"() {
       return ariaProps["aria-label"];
@@ -155,7 +156,7 @@ export function Meter(props: MeterProps): JSX.Element {
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
   const labelContextValue: LabelProps = {
     get id() {
-      return meterAria.labelProps.id as string | undefined;
+      return hasExplicitLabel() ? undefined : (meterAria.labelProps.id as string | undefined);
     },
     ref: labelRef,
     elementType: "span",
