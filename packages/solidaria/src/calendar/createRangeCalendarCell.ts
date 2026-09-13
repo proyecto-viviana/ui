@@ -88,6 +88,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   const { focusProps, isFocusVisible: isRingFocusVisible } = createFocusRing();
   const timeZone = getLocalTimeZone();
   let cellReceivedPointer = false;
+  let ignoreNextClick = false;
   const startedUnfocused = !state.isFocused();
 
   // Get the date from props
@@ -180,16 +181,32 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     cellReceivedPointer = true;
     if (isSelectable()) {
       setIsPressed(true);
+      state.setFocusedDate(date());
+      state.setFocused(true);
       state.selectDate(date());
-      e.preventDefault();
+      ignoreNextClick = true;
+      const element = ref?.();
+      if (element) {
+        focusSafely(element);
+      }
     }
   };
 
   // Handle click for keyboard activation (Enter/Space).
   const handleClick = () => {
+    if (ignoreNextClick) {
+      ignoreNextClick = false;
+      return;
+    }
     if (!isSelectable()) return;
     const hadAnchor = state.anchorDate() != null;
+    state.setFocusedDate(date());
+    state.setFocused(true);
     state.selectDate(date());
+    const element = ref?.();
+    if (element) {
+      focusSafely(element);
+    }
     // RAC `useCalendarCell.ts:300-306`: keyboard range-start auto-advances.
     if (!hadAnchor) {
       state.focusNearestAvailableDate(date());

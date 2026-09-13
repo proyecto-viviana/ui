@@ -4,7 +4,7 @@ type: task
 title: "Keep calendar cell focus after a pointer select"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar: click 8 then 14 commits 2025-02-08/2025-02-14 on both; React focus stays on Friday 14 (described Click to start selecting date range), Solid focus BODY so ArrowRight is a no-op (React starts 14–15). Same BODY split on same-day 20, readonly click 8, drag-down, and unavailable-noncontiguous 8–14. createRangeCalendarCell handlePointerDown also preventDefault without focusSafely",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "sync focus onto cell on pointerdown and click in createCalendarCell and createRangeCalendarCell without preventDefault drop",
     }
 ---
 

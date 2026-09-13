@@ -420,6 +420,45 @@ describe("RangeCalendar", () => {
       expect(selectedCells.length).toBeGreaterThan(0);
     });
 
+    it("should keep focus on cell after pointer select and allow arrow navigation", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2025, 2, 8),
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day8 = screen.getByRole("button", { name: /February 8, 2025/i });
+      await user.click(day8);
+
+      expect(document.activeElement).toBe(day8);
+
+      await user.keyboard("{ArrowRight}");
+      const day9 = screen.getByRole("button", { name: /February 9, 2025/i });
+      await waitFor(() => {
+        expect(day9).toHaveFocus();
+      });
+    });
+
+    it("should keep focus on cell after pointer click in read-only mode", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2025, 2, 8),
+            isReadOnly: true,
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day8 = screen.getByRole("button", { name: /February 8, 2025/i });
+      await user.click(day8);
+
+      expect(document.activeElement).toBe(day8);
+    });
+
     it("should fire onChange once after completing a range selection", async () => {
       const onChange = vi.fn();
       render(() => (

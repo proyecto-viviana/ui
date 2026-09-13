@@ -175,10 +175,14 @@ export function createCalendarCell<T extends CalendarState>(
       setIsPressed(true);
       // Select the date on pointer down for immediate response
       // This matches React Aria's behavior of using onPressStart
+      state.setFocusedDate(date());
+      state.setFocused(true);
       state.selectDate(date());
       ignoreNextClick = true;
-      // Prevent default to avoid double-triggering with onClick
-      e.preventDefault();
+      const element = ref?.();
+      if (element) {
+        focusSafely(element);
+      }
     }
   };
 
@@ -192,7 +196,13 @@ export function createCalendarCell<T extends CalendarState>(
     // Only select on click if not already selected via pointerdown
     // This handles keyboard activation (Enter/Space)
     if (!isDisabled() && !isUnavailable()) {
+      state.setFocusedDate(date());
+      state.setFocused(true);
       state.selectDate(date());
+      const element = ref?.();
+      if (element) {
+        focusSafely(element);
+      }
     }
   };
 

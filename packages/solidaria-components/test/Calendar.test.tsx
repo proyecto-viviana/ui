@@ -330,6 +330,45 @@ describe("Calendar", () => {
       expect(onChange.mock.calls[0][0]).toHaveProperty("day", 15);
     });
 
+    it("should keep focus on cell after pointer selection and allow arrow navigation", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            defaultValue: new CalendarDate(2025, 2, 12),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day12 = screen.getByText("12");
+      await user.click(day12);
+
+      expect(document.activeElement).toBe(day12);
+
+      await user.keyboard("{ArrowRight}");
+      const day13 = screen.getByText("13");
+      await waitFor(() => {
+        expect(day13).toHaveFocus();
+      });
+    });
+
+    it("should keep focus on cell after pointer click in read-only mode", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            value: new CalendarDate(2025, 2, 12),
+            isReadOnly: true,
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day12 = screen.getByText("12");
+      await user.click(day12);
+
+      expect(document.activeElement).toBe(day12);
+    });
+
     it("should support controlled value", async () => {
       render(() => <TestCalendar calendarProps={{ value: new CalendarDate(2024, 6, 20) }} />);
       await waitForCalendarHydration();
