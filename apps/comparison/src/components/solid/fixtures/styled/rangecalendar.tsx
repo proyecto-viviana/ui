@@ -1,5 +1,6 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { RangeCalendar as SolidSpectrumRangeCalendar } from "@proyecto-viviana/solid-spectrum/RangeCalendar";
@@ -66,6 +67,9 @@ function SolidSpectrumRangeCalendarDemo() {
   });
 
   const serializedProps = createMemo(() => serializeRangeCalendarDemoProps(demoProps()));
+  const renderKey = createMemo(() =>
+    [Boolean(demoProps().focusedValue), demoProps().calendarSystem].join("|"),
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -104,69 +108,78 @@ function SolidSpectrumRangeCalendarDemo() {
           },
         },
         [
-          hc(SolidSpectrumRangeCalendar, {
-            class: "comparison-rangecalendar-root",
-            "aria-label": "Trip dates",
-            get value() {
-              return value() ?? undefined;
+          createComponent(Show, {
+            get when() {
+              return renderKey();
             },
-            onChange: (nextValue: ReturnType<typeof value>) => {
-              setValue(() => nextValue);
-            },
-            get minValue() {
-              return demoProps().constrainRange ? rangeCalendarMinValue : undefined;
-            },
-            get maxValue() {
-              return demoProps().constrainRange ? rangeCalendarMaxValue : undefined;
-            },
-            get isDateUnavailable() {
-              return demoProps().unavailableDates ? isRangeCalendarDateUnavailable : undefined;
-            },
-            get allowsNonContiguousRanges() {
-              return demoProps().allowsNonContiguousRanges;
-            },
-            get isDisabled() {
-              return demoProps().isDisabled;
-            },
-            get isReadOnly() {
-              return demoProps().isReadOnly;
-            },
-            get isInvalid() {
-              return demoProps().isInvalid;
-            },
-            get errorMessage() {
-              return demoProps().errorMessage;
-            },
-            get firstDayOfWeek() {
-              return demoProps().firstDayOfWeek || undefined;
-            },
-            get visibleMonths() {
-              return rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
-            },
-            get pageBehavior() {
-              return demoProps().pageBehavior || undefined;
-            },
-            get selectionAlignment() {
-              return demoProps().selectionAlignment || undefined;
-            },
-            get createCalendar() {
-              return calendarCreateCalendarForDemo(demoProps().calendarSystem);
-            },
-            get UNSAFE_style() {
-              const visibleMonths = rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
-              const resolvedVisibleMonths = visibleMonths ?? 1;
-              return {
-                "--cell-responsive-size": "32px",
-                width: `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`,
-                maxWidth: "100%",
-              };
-            },
-            get focusedValue() {
-              return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
-            },
-            onFocusChange: (nextFocusedValue: ReturnType<typeof focusedValue>) => {
-              setFocusedValue(() => nextFocusedValue);
-            },
+            keyed: true,
+            children: () =>
+              hc(SolidSpectrumRangeCalendar, {
+                class: "comparison-rangecalendar-root",
+                "aria-label": "Trip dates",
+                get value() {
+                  return value() ?? undefined;
+                },
+                onChange: (nextValue: ReturnType<typeof value>) => {
+                  setValue(() => nextValue);
+                },
+                get minValue() {
+                  return demoProps().constrainRange ? rangeCalendarMinValue : undefined;
+                },
+                get maxValue() {
+                  return demoProps().constrainRange ? rangeCalendarMaxValue : undefined;
+                },
+                get isDateUnavailable() {
+                  return demoProps().unavailableDates ? isRangeCalendarDateUnavailable : undefined;
+                },
+                get allowsNonContiguousRanges() {
+                  return demoProps().allowsNonContiguousRanges;
+                },
+                get isDisabled() {
+                  return demoProps().isDisabled;
+                },
+                get isReadOnly() {
+                  return demoProps().isReadOnly;
+                },
+                get isInvalid() {
+                  return demoProps().isInvalid;
+                },
+                get errorMessage() {
+                  return demoProps().errorMessage;
+                },
+                get firstDayOfWeek() {
+                  return demoProps().firstDayOfWeek || undefined;
+                },
+                get visibleMonths() {
+                  return rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
+                },
+                get pageBehavior() {
+                  return demoProps().pageBehavior || undefined;
+                },
+                get selectionAlignment() {
+                  return demoProps().selectionAlignment || undefined;
+                },
+                get createCalendar() {
+                  return calendarCreateCalendarForDemo(demoProps().calendarSystem);
+                },
+                get UNSAFE_style() {
+                  const visibleMonths = rangeCalendarVisibleMonthsFromString(
+                    demoProps().visibleMonths,
+                  );
+                  const resolvedVisibleMonths = visibleMonths ?? 1;
+                  return {
+                    "--cell-responsive-size": "32px",
+                    width: `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`,
+                    maxWidth: "100%",
+                  };
+                },
+                get focusedValue() {
+                  return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
+                },
+                onFocusChange: (nextFocusedValue: ReturnType<typeof focusedValue>) => {
+                  setFocusedValue(() => nextFocusedValue);
+                },
+              }),
           }),
         ],
       ),

@@ -4,12 +4,17 @@ type: task
 title: "Remount the Solid RangeCalendar fixture when live focusedValue clears"
 created: 2026-09-03
 parent: 26
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 rangecalendar functional pass: live focusedValue April 1 pages both to April; the next live locale/calendarSystem/error/reset that omits focusedValue returns React to February and leaves Solid on April 1. URL remounts match. Same harness shape as ColorWheel #395 / ColorSwatchPicker #414",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "key Solid RangeCalendar fixture with renderKey Show to remount when focusedValue clears",
     }
 ---
 
