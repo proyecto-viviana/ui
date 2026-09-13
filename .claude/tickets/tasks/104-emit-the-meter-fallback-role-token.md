@@ -4,9 +4,14 @@ type: task
 title: "Emit the Meter fallback role token"
 created: 2026-08-20
 parent: 24
-status: open
+status: merged
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the completed recertification program" }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "createMeter emits meter progressbar, React fixture role rewrite removed, certified D6/axe evidence verified",
+    }
 ---
 
 Match upstream Meter semantics in the port and in the comparison fixture.

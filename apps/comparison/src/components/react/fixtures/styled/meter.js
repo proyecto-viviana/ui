@@ -27,15 +27,6 @@ function ReactMeterDemo() {
     return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   }, []);
 
-  // React S2 currently emits "meter progressbar"; axe validates the concrete role.
-  // Normalize only the comparison reference role, leaving visual output unchanged.
-  useEffect(() => {
-    const meterElement = meterRef.current?.UNSAFE_getDOMNode?.();
-    if (meterElement?.getAttribute("role") === "meter progressbar") {
-      meterElement.setAttribute("role", "meter");
-    }
-  }, [demoProps]);
-
   return renderReactSpectrumReference(
     jsx("div", {
       ...staticColorBackdropProps(demoProps.staticColor, "comparison-meter-row"),

@@ -47,20 +47,12 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     no press handling; `role="meter"` is a live value, not an interactive widget.
  *   - D8 target-size: not an interactive target — no hit box to floor-check.
  *
- * KNOWN, TRACKED DIVERGENCE — role token. Upstream `useMeter` deliberately emits
- * the ARIA fallback token list `role="meter progressbar"` (documented in-source:
- * Chrome/Firefox historically fall back from `meter`, so the `progressbar` token
- * is a safety net). The port emits the single token `role="meter"`, and the
- * comparison's React fixture patches its native `"meter progressbar"` down to
- * `"meter"` so the two panels match. That normalization *masks* a genuine
- * self-inflicted divergence; both token lists resolve to the same `meter` role in
- * the accessibility tree, so D6 is green either way, but the port should emit the
- * faithful `"meter progressbar"` and the fixture patch should be removed. That fix
- * is filed as ticket #104 —
- * it is deferred here only because it also touches solidaria's `createMeter` (a
- * dist rebuild) and must be re-validated against the web a11y/axe gate, which is
- * out of this unit's harness. Everything else below is honest byte-identical
- * parity.
+ * ROLE TOKEN PARITY — Upstream `useMeter` emits the ARIA fallback token list
+ * `role="meter progressbar"` (so Chrome/Firefox historically fall back from
+ * `meter` to `progressbar`). The port faithfully emits `role="meter progressbar"`
+ * through `createMeter`, and the comparison React fixture uses its native S2
+ * output without normalization (ticket #104). Both resolve to `meter` in the
+ * accessibility tree.
  */
 const meterScenario: DriverScenario = {
   slug: "meter",

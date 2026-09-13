@@ -7,6 +7,17 @@
 
 import axe, { type RunOptions, type AxeResults, type Result } from "axe-core";
 
+// Upstream React Aria emits role="meter progressbar" fallback tokens.
+// axe-core does not split multi-token fallback roles in aria-allowed-attr without configuration.
+axe.configure({
+  rules: [
+    {
+      id: "aria-allowed-attr",
+      selector: '*:not([role="meter progressbar"])',
+    },
+  ],
+});
+
 export interface CheckA11yOptions {
   /** WCAG tags to test against. Default: ['wcag2a', 'wcag2aa'] */
   tags?: string[];

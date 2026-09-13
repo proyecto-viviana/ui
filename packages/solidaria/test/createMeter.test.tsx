@@ -52,7 +52,7 @@ describe("createMeter", () => {
     render(() => <TestMeter value={25} />);
     const meter = screen.getByTestId("meter");
     expect(meter).toBeInTheDocument();
-    expect(meter).toHaveAttribute("role", "meter");
+    expect(meter).toHaveAttribute("role", "meter progressbar");
   });
 
   it("should have aria-valuenow", () => {

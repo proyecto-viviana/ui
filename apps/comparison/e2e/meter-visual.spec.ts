@@ -136,7 +136,7 @@ test.describe("comparison Meter visual parity", () => {
     await expectRadioValues(page, "variant", meterVariantOptions, "informative");
     await expectRadioValues(page, "size", meterSizeOptions, "M");
     await expectRadioValues(page, "staticColor", meterStaticColorOptions, "");
-    await expect(page.locator('input[name="staticColor"] + span')).toHaveText([
+    await expect(page.locator('label:has(input[name="staticColor"])')).toHaveText([
       "default",
       "white",
       "black",

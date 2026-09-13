@@ -202,7 +202,7 @@ describe("Meter", () => {
 
       const meter = screen.getByRole("meter");
       expect(meter).toBeInTheDocument();
-      expect(meter).toHaveAttribute("role", "meter");
+      expect(meter).toHaveAttribute("role", "meter progressbar");
     });
 
     it("should have aria-label when provided", () => {

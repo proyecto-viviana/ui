@@ -57,7 +57,7 @@ describe("status channels", () => {
     const { container, unmount } = render(() => (
       <Meter aria-label="Signal" value={40} variant={variant as "notice"} />
     ));
-    const fill = container.querySelector("[role=meter] > div > div")!;
+    const fill = container.querySelector('[role~="meter"] > div > div')!;
     expect(declarationsOf(fill)).toContain(`var(${token})`);
     unmount();
   });
@@ -66,7 +66,7 @@ describe("status channels", () => {
     /* There is no `--status-positive`: success is the semantic trio's green. A "fix" that
        adds one would fork the trio the Button and Toast already share. */
     const { container } = render(() => <Meter aria-label="Done" value={40} variant="positive" />);
-    const fill = container.querySelector("[role=meter] > div > div")!;
+    const fill = container.querySelector('[role~="meter"] > div > div')!;
     expect(declarationsOf(fill)).not.toContain("--status-");
   });
 });

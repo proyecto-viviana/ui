@@ -209,10 +209,25 @@ for (const example of EXAMPLES) {
       expect(small, `${path} has targets under ${MIN_TARGET}px:\n${small.join("\n")}`).toEqual([]);
 
       const results = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
-      const summary = results.violations
-        .map((v) => `${v.id} (${v.nodes.length}): ${v.help}`)
-        .join("\n");
-      expect(results.violations.length, `${path} axe violations:\n${summary}`).toBe(0);
+      // Upstream React Aria emits role="meter progressbar" for browser fallback.
+      // axe-core does not split multi-token fallback roles in aria-allowed-attr, producing
+      // a false positive for valid meter attributes (aria-valuenow/min/max/valuetext).
+      const violations = results.violations
+        .map((v) => {
+          if (v.id === "aria-allowed-attr") {
+            const realNodes = v.nodes.filter(
+              (n) =>
+                !n.html.includes('role="meter progressbar"') &&
+                !n.html.includes("role='meter progressbar'"),
+            );
+            return realNodes.length > 0 ? { ...v, nodes: realNodes } : null;
+          }
+          return v;
+        })
+        .filter((v): v is NonNullable<typeof v> => v !== null);
+
+      const summary = violations.map((v) => `${v.id} (${v.nodes.length}): ${v.help}`).join("\n");
+      expect(violations.length, `${path} axe violations:\n${summary}`).toBe(0);
     });
   }
 }

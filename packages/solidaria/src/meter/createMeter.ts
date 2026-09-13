@@ -67,7 +67,7 @@ export function createMeter(props: AriaMeterProps = {}): MeterAria {
     get meterProps() {
       return {
         ...progressBarProps,
-        role: "meter",
+        role: "meter progressbar",
       };
     },
     get labelProps() {
