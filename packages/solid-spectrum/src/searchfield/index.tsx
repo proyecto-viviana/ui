@@ -333,22 +333,8 @@ function clearIconStyle(size: S2SearchFieldSize): JSX.CSSProperties {
 
 export function SearchField(props: SearchFieldProps): JSX.Element {
   const isInForm = useIsInForm();
-  const providerProps = useProviderProps(useFormProps(props));
-  const [flags] = splitProps(providerProps, [
-    "isQuiet",
-    "isEmphasized",
-    "isDisabled",
-    "isRequired",
-    "isReadOnly",
-    "validationState",
-  ]);
   const contextProps = getSlottedContextProps(useContext(SearchFieldContext), props.slot);
-  const defaultProps: Partial<SearchFieldProps> = {
-    labelPosition: "top",
-    labelAlign: "start",
-    necessityIndicator: "icon",
-  };
-  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
+  const mergedProps = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

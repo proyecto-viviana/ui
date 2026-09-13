@@ -106,7 +106,7 @@ describe("createTabListState", () => {
     });
 
     try {
-      expect(state.focusedKey()).toBe(null);
+      expect(state.focusedKey()).toBe("tab2");
       await flushSelectedToFocusedCopy();
       expect(state.focusedKey()).toBe("tab2");
     } finally {

@@ -710,23 +710,8 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const isInForm = useIsInForm();
   const formContext = useContext(FormContext);
-  const providerProps = useProviderProps(useFormProps(props));
-  const [flags] = splitProps(providerProps, [
-    "isQuiet",
-    "isEmphasized",
-    "isDisabled",
-    "isRequired",
-    "isReadOnly",
-    "validationState",
-  ]);
   const contextProps = getSlottedContextProps(useContext(CheckboxGroupContext), props.slot);
-  const defaultProps: Partial<CheckboxGroupProps> = {
-    orientation: "vertical",
-    labelPosition: "top",
-    labelAlign: "start",
-    necessityIndicator: "icon",
-  };
-  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
+  const mergedProps = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",

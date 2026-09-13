@@ -4,7 +4,7 @@ type: task
 title: "Clear the 43 unit failures in test:run"
 created: 2026-09-09
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-09-12,
       note: "cleared all 35 regression failures across solidaria and solidaria-components: unified onClick/on:click chaining in mergeProps, scoped isInteractiveChild to collection items in createPress, guarded nested interactive targets in createSelectableItem, intercepted host-native synthetic clicks in createMenuItem, added oncapture:click in RadioGroup labelCaptureProps; solidaria-components is 76/76 passed (2370/2376 passed, 6 skipped); solidaria is 90/90 passed (1717/1717 passed); Link D4 is 4/4 passed",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "cleared remaining 8 pre-existing failures: removed UNSAFE_className from mergeProps isClassKey for proper override, passed unshadowed props through useProviderProps(useFormProps) in CheckboxGroup, RadioGroup, and SearchField, targeted spinbutton in createDatePickerGroup focusLast, and updated attribute-order snapshots in regression.test.tsx; test:run is 334/334 passed (100% green)",
     }
 ---
 

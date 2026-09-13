@@ -104,15 +104,17 @@ export function createDatePickerGroup(
   };
 
   // Focus the last non-placeholder segment on press within the field.
-  const focusLast = () => {
+  const focusLast = (clickedTarget?: HTMLElement | null) => {
     const root = ref();
     if (!root) {
       return;
     }
     // Try to find the segment prior to the element that was clicked on.
-    let target = (
-      typeof window !== "undefined" ? (window.event as Event | undefined)?.target : null
-    ) as HTMLElement | null;
+    let target =
+      clickedTarget ??
+      ((typeof window !== "undefined"
+        ? (window.event as Event | undefined)?.target
+        : null) as HTMLElement | null);
     const walker = getFocusableTreeWalker(root, { tabbable: true });
     if (target) {
       walker.currentNode = target;
@@ -128,10 +130,13 @@ export function createDatePickerGroup(
         }
       } while (last);
     }
-    // Now go backwards until we find an element that is not a placeholder.
-    while (target?.hasAttribute("data-placeholder")) {
+    // Now go backwards until we find a segment that is not a placeholder.
+    while (
+      target &&
+      (target.hasAttribute("data-placeholder") || target.getAttribute("role") !== "spinbutton")
+    ) {
       const prev = walker.previousNode() as HTMLElement | null;
-      if (prev && prev.hasAttribute("data-placeholder")) {
+      if (prev) {
         target = prev;
       } else {
         break;
@@ -145,12 +150,12 @@ export function createDatePickerGroup(
     allowTextSelectionOnPress: true,
     onPressStart(e) {
       if (e.pointerType === "mouse") {
-        focusLast();
+        focusLast(e.target as HTMLElement | null);
       }
     },
     onPress(e) {
       if (e.pointerType === "touch" || e.pointerType === "pen") {
-        focusLast();
+        focusLast(e.target as HTMLElement | null);
       }
     },
   });

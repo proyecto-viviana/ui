@@ -360,23 +360,8 @@ function requiredIconStyle(size: S2RadioGroupSize): JSX.CSSProperties {
 export function RadioGroup(props: RadioGroupProps): JSX.Element {
   const isInForm = useIsInForm();
   const formContext = useContext(FormContext);
-  const providerProps = useProviderProps(useFormProps(props));
-  const [flags] = splitProps(providerProps, [
-    "isQuiet",
-    "isEmphasized",
-    "isDisabled",
-    "isRequired",
-    "isReadOnly",
-    "validationState",
-  ]);
   const contextProps = getSlottedContextProps(useContext(RadioGroupContext), props.slot);
-  const defaultProps: Partial<RadioGroupProps> = {
-    orientation: "vertical",
-    labelPosition: "top",
-    labelAlign: "start",
-    necessityIndicator: "icon",
-  };
-  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
+  const mergedProps = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",

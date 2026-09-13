@@ -24,7 +24,7 @@ function isEventHandlerKey(key: string): boolean {
 }
 
 function isClassKey(key: string): boolean {
-  return key === "class" || key === "className" || key === "UNSAFE_className";
+  return key === "class" || key === "className";
 }
 
 /**
