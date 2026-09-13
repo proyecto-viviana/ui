@@ -994,6 +994,32 @@ describe("Color Components", () => {
         expect(input.value).toBe("2");
         expect(onChangeEnd).toHaveBeenCalledTimes(2);
       });
+
+      it("should send ColorWheel End to hue 0 like S2 without firing onChangeEnd", () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(15, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+        expect(input.value).toBe("15");
+
+        fireEvent.keyDown(input, { key: "End" });
+
+        expect(input.value).toBe("0");
+        expect(input).toHaveAttribute("aria-valuetext", "0°, red");
+        expect(onChangeEnd).not.toHaveBeenCalled();
+
+        // Home also keeps hue at 0 and does not fire onChangeEnd
+        fireEvent.keyDown(input, { key: "Home" });
+        expect(input.value).toBe("0");
+        expect(input).toHaveAttribute("aria-valuetext", "0°, red");
+        expect(onChangeEnd).not.toHaveBeenCalled();
+      });
     });
   });
 

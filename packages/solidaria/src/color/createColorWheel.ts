@@ -218,15 +218,17 @@ export function createColorWheel(
         s.setHue(0);
         break;
       case "End":
-        s.setHue(359);
+        s.setHue(0);
         break;
       default:
         handled = false;
     }
 
     if (handled) {
-      s.setDragging(true);
-      s.setDragging(false);
+      if (e.key !== "Home" && e.key !== "End") {
+        s.setDragging(true);
+        s.setDragging(false);
+      }
       e.preventDefault();
       e.stopPropagation();
     }

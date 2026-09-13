@@ -4,12 +4,17 @@ type: task
 title: "Send ColorWheel End to hue 0 like S2"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorwheel functional pass: from hue 15, S2 End → 0 and onChangeEnd stays 15; Solid locator.press End → 359 and onChangeEnd 359. Home 0 both. Native max is 360; Solid createColorWheel setHue(359). Masked for a typing user by #393 (focus drops after PageUp) unless the input is focused again. Not #394 (ColorSlider End should stay 360 on a linear track)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "send ColorWheel End to hue 0 in createColorWheel; omit setDragging toggle on Home and End so onChangeEnd does not fire, matching S2",
     }
 ---
 
