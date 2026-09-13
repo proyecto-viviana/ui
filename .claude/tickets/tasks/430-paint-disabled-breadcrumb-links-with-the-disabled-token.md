@@ -4,12 +4,17 @@ type: task
 title: "Paint disabled breadcrumb links with the disabled token"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 breadcrumbs functional pass: URL ?isDisabled=true and live isDisabled both AX-disable Home (aria-disabled, data-disabled, tabIndex -1, Tab skip, force-click no-op), but the [role=link] color stays rgb(80,80,80) on Solid against S2 disabled rgb(198,198,198). S2 linkStyles isDisabled: 'disabled'; Solid breadcrumbStyles isDisabled: baseColor('neutral-subdued') same as default",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "remediated in solid-spectrum and viviana-ui s2-breadcrumbs-styles.ts: changed breadcrumbStyles color.isDisabled to 'disabled' token matching upstream S2 linkStyles color.isDisabled. Verified 39/39 breadcrumb unit tests and certified suite pass cleanly.",
     }
 ---
 

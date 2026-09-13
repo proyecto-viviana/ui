@@ -85,7 +85,7 @@ export const breadcrumbStyles = style<{
   font: controlFont(),
   color: {
     default: baseColor("neutral-subdued"),
-    isDisabled: baseColor("neutral-subdued"),
+    isDisabled: "disabled",
     isCurrent: baseColor("neutral"),
     forcedColors: {
       default: "LinkText",
