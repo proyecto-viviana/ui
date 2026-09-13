@@ -234,14 +234,24 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       }
     };
 
+    let blurPending = false;
+    const onFocus = () => {
+      blurPending = false;
+    };
+
     const onBlur = (e: Event) => {
       const focusEvent = e as FocusEvent;
-      if (
-        (!focusEvent.relatedTarget || !nodeContains(element, focusEvent.relatedTarget as Node)) &&
-        state.anchorDate()
-      ) {
-        commitBehaviorMapping[commitBehavior]();
+      if (focusEvent.relatedTarget && nodeContains(element, focusEvent.relatedTarget as Node)) {
+        return;
       }
+
+      blurPending = true;
+      queueMicrotask(() => {
+        if (!blurPending || !element) return;
+        if (!isFocusWithin(element) && state.anchorDate()) {
+          commitBehaviorMapping[commitBehavior]();
+        }
+      });
     };
 
     const onTouchMove = (e: Event) => {
@@ -252,12 +262,15 @@ export function createRangeCalendar<T extends RangeCalendarState>(
 
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointerup", endDragging);
+    element.addEventListener("focus", onFocus, true);
     element.addEventListener("blur", onBlur, true);
     element.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
 
     onCleanup(() => {
+      blurPending = false;
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", endDragging);
+      element.removeEventListener("focus", onFocus, true);
       element.removeEventListener("blur", onBlur, true);
       element.removeEventListener("touchmove", onTouchMove, true);
     });

@@ -530,6 +530,56 @@ describe("RangeCalendar", () => {
       expect(start).toHaveAttribute("data-selection-start");
     });
 
+    it("should keep in-progress range during keyboard arrow navigation", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            onChange,
+            defaultFocusedValue: new CalendarDate(2025, 2, 4),
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day4 = screen.getByRole("button", { name: /February 4, 2025/i });
+      day4.focus();
+
+      // Enter to start anchor on Feb 4 (auto-advances focus to Feb 5)
+      await user.keyboard("{Enter}");
+      const day5 = screen.getByRole("button", { name: /February 5, 2025/i });
+      await waitFor(() => {
+        expect(day5).toHaveFocus();
+      });
+
+      // ArrowRight to Feb 6
+      await user.keyboard("{ArrowRight}");
+      const day6 = screen.getByRole("button", { name: /February 6, 2025/i });
+      await waitFor(() => {
+        expect(day6).toHaveFocus();
+      });
+      // Moving between cells should not commit a single-day range
+      expect(onChange).not.toHaveBeenCalled();
+
+      // ArrowRight to Feb 7
+      await user.keyboard("{ArrowRight}");
+      const day7 = screen.getByRole("button", { name: /February 7, 2025/i });
+      await waitFor(() => {
+        expect(day7).toHaveFocus();
+      });
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Enter on Feb 7 to complete range
+      await user.keyboard("{Enter}");
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledTimes(1);
+      });
+      expect(onChange.mock.calls[0][0]).toMatchObject({
+        start: expect.objectContaining({ day: 4 }),
+        end: expect.objectContaining({ day: 7 }),
+      });
+    });
+
     it("should mark selection start and end", async () => {
       render(() => (
         <TestRangeCalendar

@@ -4,12 +4,17 @@ type: task
 title: "Keep an in-progress RangeCalendar range when keyboard-moving between cells"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 rangecalendar functional pass: Tab to Feb 4, Enter, ArrowRight commits Solid to 2025-02-04/2025-02-04 and drops the anchor so a later Enter starts a new range; React keeps the in-progress highlight and commits 4–7. DateRangePicker overlay (#282) still completes 4–6 on the second Enter",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "deferred blur commit and cancelled blur frame on descendant focus in createRangeCalendar to prevent premature single-day commits during keyboard arrow navigation",
     }
 ---
 
