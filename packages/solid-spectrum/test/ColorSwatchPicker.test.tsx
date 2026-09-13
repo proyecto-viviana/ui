@@ -218,4 +218,33 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
     expect(options[1]).toHaveAttribute("tabindex", "0");
     expect(options[0]).toHaveAttribute("aria-selected", "true");
   });
+
+  it("updates child swatch styling reactively when size or rounding change after mount", () => {
+    const [size, setSize] = createSignal<ColorSwatchPickerSize>("M");
+    const [rounding, setRounding] = createSignal<ColorSwatchPickerRounding>("none");
+
+    render(() => (
+      <ColorSwatchPicker aria-label="Palette" size={size()} rounding={rounding()}>
+        <ColorSwatch color="#ff0000" />
+      </ColorSwatchPicker>
+    ));
+
+    const swatch = screen.getByRole("img");
+    const option = screen.getByRole("option");
+
+    const initialSwatchClass = swatch.className;
+    const initialOptionClass = option.className;
+
+    setSize("XS");
+    const xsSwatchClass = swatch.className;
+    expect(xsSwatchClass).not.toBe(initialSwatchClass);
+
+    setSize("L");
+    expect(swatch.className).not.toBe(initialSwatchClass);
+    expect(swatch.className).not.toBe(xsSwatchClass);
+
+    setRounding("full");
+    expect(option.className).not.toBe(initialOptionClass);
+    expect(swatch.className).not.toBe(initialSwatchClass);
+  });
 });

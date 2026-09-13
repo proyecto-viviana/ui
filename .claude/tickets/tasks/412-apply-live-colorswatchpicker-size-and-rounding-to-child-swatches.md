@@ -4,12 +4,17 @@ type: task
 title: "Apply live ColorSwatchPicker size and rounding to child swatches"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorswatchpicker functional pass: live comparison:controls-change {size:'XS'|'L'} / {rounding:'full'} updates Solid data-comparison-control-props but swatches stay 32×32 / radius 0px; React remounts via renderKey and paints 16/40 / 9999px. URL ?size=XS and ?size=L&rounding=full remount and match. Live density already updates gap 4→6 on both (listbox class callback). InternalColorSwatchContext stores size()/rounding() as static fields; ColorSwatch reads pickerContext?.size from that snapshot. Numbered 412 to stay past ProgressCircle #410",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "converted size and rounding on InternalColorSwatchContext.Provider to reactive getters so descendant ColorSwatch and ColorSwatchPickerItem elements recompute size and rounding styles dynamically when props change after mount.",
     }
 ---
 
