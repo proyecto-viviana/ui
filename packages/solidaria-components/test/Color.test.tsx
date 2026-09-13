@@ -406,6 +406,30 @@ describe("Color Components", () => {
         expect(onChangeEnd.mock.calls[1][0].getChannelValue("hue")).toBe(52);
       });
 
+      it("should keep hue at 360 and thumb at end of track on End key", () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorSlider
+            channel="hue"
+            defaultValue={parseColor("hsl(50, 100%, 50%)")}
+            aria-label="Hue"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+        const output = document.querySelector("output");
+
+        fireEvent.keyDown(input, { key: "End" });
+
+        expect(input.value).toBe("360");
+        expect(thumb.style.left).toBe("100%");
+        expect(output?.textContent).toBe("360°");
+        expect(onChangeEnd).toHaveBeenCalledTimes(1);
+        expect(onChangeEnd.mock.calls[0][0].getChannelValue("hue")).toBe(360);
+      });
+
       it("should expose hue and color names in aria-valuetext", () => {
         render(() => (
           <TestColorSlider

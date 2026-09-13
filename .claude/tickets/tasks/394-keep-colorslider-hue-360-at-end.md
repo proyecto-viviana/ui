@@ -4,12 +4,17 @@ type: task
 title: "Keep ColorSlider hue 360 at End"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorslider functional pass: isolated End on a focused hue slider at 50 → React 360° thumb left 192px / onChangeEnd hsla(360); Solid 0° thumb left 0px. RGB End 128→255 thumb 192px matches, so this is hue modulo, not the #393 remount. HSLColorImpl/HSBColorImpl store clamp(hue % 360, 0, 360) so 360 becomes 0.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "export normalizeHue preserving 360; use normalizeHue in HSLColorImpl and HSBColorImpl constructors; preserve hue directly in HSL <-> HSB toFormat conversions; support decimal and signed hues in parseColor regexes; verify End key preserves 360° and thumb at 100%",
     }
 ---
 

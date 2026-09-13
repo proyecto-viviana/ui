@@ -14,6 +14,7 @@ export type {
 export {
   parseColor,
   normalizeColor,
+  normalizeHue,
   createRGBColor,
   createHSLColor,
   createHSBColor,

@@ -15,6 +15,7 @@ import type { Color } from "../src/color";
 import {
   parseColor,
   normalizeColor,
+  normalizeHue,
   createRGBColor,
   createHSLColor,
   createHSBColor,
@@ -75,10 +76,37 @@ describe("Color", () => {
       expect(color.getChannelValue("brightness")).toBe(100);
     });
 
+    it("should parse hsl() colors with hue 360", () => {
+      const color = parseColor("hsl(360, 100%, 50%)");
+      expect(color.getChannelValue("hue")).toBe(360);
+      expect(color.getChannelValue("saturation")).toBe(100);
+      expect(color.getChannelValue("lightness")).toBe(50);
+      expect(color.toString("hsl")).toBe("hsl(360, 100%, 50%)");
+    });
+
+    it("should parse hsb() colors with hue 360", () => {
+      const color = parseColor("hsb(360, 100%, 100%)");
+      expect(color.getChannelValue("hue")).toBe(360);
+      expect(color.getChannelValue("saturation")).toBe(100);
+      expect(color.getChannelValue("brightness")).toBe(100);
+      expect(color.toString("hsb")).toBe("hsb(360, 100%, 100%)");
+    });
+
     it("should throw for invalid color strings", () => {
       expect(() => parseColor("invalid")).toThrow();
       expect(() => parseColor("")).toThrow();
       expect(() => parseColor("#zzzzzz")).toThrow();
+    });
+  });
+
+  describe("normalizeHue", () => {
+    it("should normalize hue angles into [0, 360) while preserving 360", () => {
+      expect(normalizeHue(0)).toBe(0);
+      expect(normalizeHue(360)).toBe(360);
+      expect(normalizeHue(720)).toBe(0);
+      expect(normalizeHue(-10)).toBe(350);
+      expect(normalizeHue(370)).toBe(10);
+      expect(normalizeHue(180.5)).toBe(180.5);
     });
   });
 
@@ -134,6 +162,31 @@ describe("Color", () => {
       expect(hsl.getChannelValue("hue")).toBe(0);
       expect(hsl.getChannelValue("saturation")).toBe(100);
       expect(hsl.getChannelValue("lightness")).toBe(50);
+    });
+
+    it("should preserve hue 360 across HSL and HSB format conversions", () => {
+      const hsl = parseColor("hsl(360, 100%, 50%)");
+      const hsb = hsl.toFormat("hsb");
+      expect(hsb.getChannelValue("hue")).toBe(360);
+      expect(hsb.getChannelValue("saturation")).toBe(100);
+      expect(hsb.getChannelValue("brightness")).toBe(100);
+
+      const roundtripHsl = hsb.toFormat("hsl");
+      expect(roundtripHsl.getChannelValue("hue")).toBe(360);
+      expect(roundtripHsl.getChannelValue("saturation")).toBe(100);
+      expect(roundtripHsl.getChannelValue("lightness")).toBe(50);
+    });
+
+    it("should retain hue 360 with withChannelValue", () => {
+      const hsl = parseColor("hsl(50, 100%, 50%)");
+      const at360 = hsl.withChannelValue("hue", 360);
+      expect(at360.getChannelValue("hue")).toBe(360);
+      expect(at360.toString("hsl")).toBe("hsl(360, 100%, 50%)");
+
+      const hsb = parseColor("hsb(50, 100%, 100%)");
+      const hsbAt360 = hsb.withChannelValue("hue", 360);
+      expect(hsbAt360.getChannelValue("hue")).toBe(360);
+      expect(hsbAt360.toString("hsb")).toBe("hsb(360, 100%, 100%)");
     });
 
     it("should output string formats", () => {
@@ -309,6 +362,28 @@ describe("createColorSliderState", () => {
       state.setThumbValue(300);
       expect(changedColor).toBeTruthy();
       expect(changedColor!.getChannelValue("red")).toBe(255);
+      dispose();
+    });
+  });
+
+  it("should keep hue at 360 and thumb percent at 1 when set to maxValue", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorSliderState(() => ({
+        channel: "hue",
+        defaultValue: "hsl(50, 100%, 50%)",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      state.setThumbValue(state.maxValue);
+      expect(state.getThumbValue()).toBe(360);
+      expect(state.getThumbPercent()).toBe(1);
+      expect(state.getThumbValueLabel()).toBe("360°");
+      expect(changedColor).toBeTruthy();
+      expect(changedColor!.getChannelValue("hue")).toBe(360);
+      expect(changedColor!.toString("hsl")).toBe("hsl(360, 100%, 50%)");
       dispose();
     });
   });

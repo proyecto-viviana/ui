@@ -88,6 +88,17 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 /**
+ * Normalizes a hue value to [0, 360).
+ * Preserves 360 so linear hue sliders can reach the end of their track.
+ */
+export function normalizeHue(hue: number): number {
+  if (hue === 360) {
+    return hue;
+  }
+  return ((hue % 360) + 360) % 360;
+}
+
+/**
  * Round to fixed decimal places.
  */
 function toFixed(value: number, decimals: number): number {
@@ -577,7 +588,7 @@ class HSLColorImpl implements Color {
   constructor(hue: number, saturation: number, lightness: number, alpha: number = 1) {
     // Store raw like upstream HSLColor's constructor — precision comes from the
     // conversion (toFixed(_, 2)); rounding to integers here diverged from S2.
-    this.hue = clamp(hue % 360, 0, 360);
+    this.hue = clamp(normalizeHue(hue), 0, 360);
     this.saturation = clamp(saturation, 0, 100);
     this.lightness = clamp(lightness, 0, 100);
     this.alpha = clamp(toFixed(alpha, 2), 0, 1);
@@ -597,9 +608,16 @@ class HSLColorImpl implements Color {
       }
       case "hsb":
       case "hsba": {
-        const { r, g, b } = hslToRgb(this.hue, this.saturation, this.lightness);
-        const hsb = rgbToHsb(r, g, b);
-        return new HSBColorImpl(hsb.h, hsb.s, hsb.b, this.alpha);
+        const saturation = this.saturation / 100;
+        const lightness = this.lightness / 100;
+        const brightness = lightness + saturation * Math.min(lightness, 1 - lightness);
+        const hsbSaturation = brightness === 0 ? 0 : 2 * (1 - lightness / brightness);
+        return new HSBColorImpl(
+          toFixed(this.hue, 2),
+          toFixed(hsbSaturation * 100, 2),
+          toFixed(brightness * 100, 2),
+          this.alpha,
+        );
       }
       default:
         throw new Error(`Unsupported format: ${format}`);
@@ -752,7 +770,7 @@ class HSBColorImpl implements Color {
 
   constructor(hue: number, saturation: number, brightness: number, alpha: number = 1) {
     // Store raw like upstream HSBColor's constructor (see HSLColorImpl).
-    this.hue = clamp(hue % 360, 0, 360);
+    this.hue = clamp(normalizeHue(hue), 0, 360);
     this.saturation = clamp(saturation, 0, 100);
     this.brightness = clamp(brightness, 0, 100);
     this.alpha = clamp(toFixed(alpha, 2), 0, 1);
@@ -772,9 +790,19 @@ class HSBColorImpl implements Color {
       }
       case "hsl":
       case "hsla": {
-        const { r, g, b } = hsbToRgb(this.hue, this.saturation, this.brightness);
-        const hsl = rgbToHsl(r, g, b);
-        return new HSLColorImpl(hsl.h, hsl.s, hsl.l, this.alpha);
+        const saturation = this.saturation / 100;
+        const brightness = this.brightness / 100;
+        const lightness = brightness * (1 - saturation / 2);
+        const hslSaturation =
+          lightness === 0 || lightness === 1
+            ? 0
+            : (brightness - lightness) / Math.min(lightness, 1 - lightness);
+        return new HSLColorImpl(
+          toFixed(this.hue, 2),
+          toFixed(hslSaturation * 100, 2),
+          toFixed(lightness * 100, 2),
+          this.alpha,
+        );
       }
       default:
         throw new Error(`Unsupported format: ${format}`);
@@ -970,24 +998,24 @@ export function parseColor(value: string): Color {
 
   // HSL/HSLA format
   const hslMatch = trimmed.match(
-    /^hsla?\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*([\d.]+))?\s*\)$/,
+    /^hsla?\(\s*([-+]?\d+(?:\.\d+)?)\s*,\s*([-+]?\d+(?:\.\d+)?)%\s*,\s*([-+]?\d+(?:\.\d+)?)%\s*(?:,\s*([-+]?\d+(?:\.\d+)?))?\s*\)$/,
   );
   if (hslMatch) {
-    const h = parseInt(hslMatch[1], 10);
-    const s = parseInt(hslMatch[2], 10);
-    const l = parseInt(hslMatch[3], 10);
+    const h = parseFloat(hslMatch[1]);
+    const s = parseFloat(hslMatch[2]);
+    const l = parseFloat(hslMatch[3]);
     const a = hslMatch[4] !== undefined ? parseFloat(hslMatch[4]) : 1;
     return new HSLColorImpl(h, s, l, a);
   }
 
   // HSB/HSBA format
   const hsbMatch = trimmed.match(
-    /^hsba?\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*([\d.]+))?\s*\)$/,
+    /^hsba?\(\s*([-+]?\d+(?:\.\d+)?)\s*,\s*([-+]?\d+(?:\.\d+)?)%\s*,\s*([-+]?\d+(?:\.\d+)?)%\s*(?:,\s*([-+]?\d+(?:\.\d+)?))?\s*\)$/,
   );
   if (hsbMatch) {
-    const h = parseInt(hsbMatch[1], 10);
-    const s = parseInt(hsbMatch[2], 10);
-    const b = parseInt(hsbMatch[3], 10);
+    const h = parseFloat(hsbMatch[1]);
+    const s = parseFloat(hsbMatch[2]);
+    const b = parseFloat(hsbMatch[3]);
     const a = hsbMatch[4] !== undefined ? parseFloat(hsbMatch[4]) : 1;
     return new HSBColorImpl(h, s, b, a);
   }
