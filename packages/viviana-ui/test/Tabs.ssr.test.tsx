@@ -17,6 +17,6 @@ describe("Tabs SSR", () => {
 
     const outDir = resolve(import.meta.dirname, "../../../output");
     mkdirSync(outDir, { recursive: true });
-    writeFileSync(resolve(outDir, "tabs-ssr.html"), html, "utf8");
+    writeFileSync(resolve(outDir, "tabs-specimen-ssr.html"), html, "utf8");
   });
 });

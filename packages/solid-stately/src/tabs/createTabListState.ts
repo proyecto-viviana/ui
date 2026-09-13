@@ -247,11 +247,20 @@ export function createTabListState<T = unknown>(
     lastSelectedKey = sel;
   };
   createEffect(() => {
-    selectedKey();
-    focusedKey();
-    isFocused();
-    if (selectedToFocusedFrame != null) return;
-    selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
+    const sel = selectedKey();
+    const foc = focusedKey();
+    const focused = isFocused();
+
+    if (sel !== null && foc === null) {
+      setFocusedKey(sel);
+      lastSelectedKey = sel;
+      return;
+    }
+
+    if (!focused && sel !== lastSelectedKey) {
+      if (selectedToFocusedFrame != null) return;
+      selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
+    }
   });
   onCleanup(() => {
     if (selectedToFocusedFrame == null) return;

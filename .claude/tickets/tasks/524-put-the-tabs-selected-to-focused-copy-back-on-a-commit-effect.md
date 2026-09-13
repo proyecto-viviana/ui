@@ -4,12 +4,17 @@ type: task
 title: "Put the Tabs selected-to-focused copy back on a commit effect"
 created: 2026-09-09
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-09,
       note: "filed from the Terminal Glass port gate sweep on 117a2886",
+    }
+  - {
+      state: merged,
+      at: 2026-09-12,
+      note: "seed focusedKey synchronously on mount/hydration when null, defer selection changes via rAF; separate Tabs.ssr.test output to tabs-specimen-ssr.html; test:hydrate 22/22 passed (41/41)",
     }
 ---
 

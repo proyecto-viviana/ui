@@ -237,8 +237,8 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
 
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
-  const omitClickChannel = (props: Record<string, unknown>): Record<string, unknown> => {
-    const { onClick: _onClick, "on:click": _nativeClick, ref: _ref, ...rest } = props;
+  const omitClickChannel = (raw: Record<string, unknown>): Record<string, unknown> => {
+    const { onClick: _onClick, "on:click": _nativeClick, ref: _ref, ...rest } = raw;
     return rest;
   };
   const cleanLinkProps = () => omitClickChannel(linkAria.linkProps as Record<string, unknown>);

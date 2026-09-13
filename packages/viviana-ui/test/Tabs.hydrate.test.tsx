@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { TabsFixture } from "./fixtures/tabs";
 
-const ssrHtml = readFileSync(resolve(import.meta.dirname, "../../../output/tabs-ssr.html"), "utf8");
+const ssrHtml = readFileSync(
+  resolve(import.meta.dirname, "../../../output/tabs-specimen-ssr.html"),
+  "utf8",
+);
 
 describe("Tabs hydration over SSR markup", () => {
   afterEach(() => {
