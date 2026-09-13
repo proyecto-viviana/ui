@@ -1,0 +1,191 @@
+:root {
+  color-scheme: light;
+  --gx-bg: #fafafa;
+  --gx-panel: #ffffff;
+  --gx-ink: #000000;
+  --gx-muted: #666666;
+  --gx-line: #eaeaea;
+  --gx-accent: #0070f3;
+  --gx-mono: "SFMono-Regular", "Roboto Mono", Consolas, monospace;
+  --gx-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.geist-experiment-page {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--gx-bg);
+  color: var(--gx-ink);
+  font-family: var(--gx-sans);
+}
+
+.geist-experiment-shell {
+  width: min(1440px, calc(100% - 32px));
+  margin-inline: auto;
+  padding-block: 36px 48px;
+}
+
+.geist-experiment-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--gx-line);
+}
+
+.geist-experiment-eyebrow,
+.geist-experiment-status,
+.geist-panel-label,
+.geist-controls label {
+  font-family: var(--gx-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.geist-experiment-eyebrow {
+  margin: 0 0 12px;
+  color: var(--gx-muted);
+}
+
+.geist-experiment-header h1 {
+  max-width: 22ch;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+}
+
+.geist-experiment-intro {
+  max-width: 66ch;
+  margin: 18px 0 0;
+  color: var(--gx-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.geist-experiment-status {
+  align-self: start;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--gx-accent) 60%, var(--gx-line));
+  background: color-mix(in srgb, var(--gx-accent) 10%, var(--gx-panel));
+  color: var(--gx-accent);
+}
+
+.geist-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr)) repeat(4, auto);
+  gap: 12px;
+  align-items: end;
+  margin-block: 20px;
+  padding: 16px;
+  border: 1px solid var(--gx-line);
+  background: var(--gx-panel);
+}
+
+.geist-controls label {
+  display: grid;
+  gap: 7px;
+  color: var(--gx-muted);
+}
+
+.geist-controls label:has(input[type="checkbox"]) {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-height: 38px;
+  padding-inline: 6px;
+}
+
+.geist-controls select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--gx-line);
+  border-radius: 4px;
+  background: white;
+  color: var(--gx-ink);
+  font: 14px var(--gx-sans);
+}
+
+.geist-controls input {
+  accent-color: var(--gx-ink);
+}
+
+.geist-single-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid var(--gx-line);
+  background: var(--gx-panel);
+}
+
+.geist-panel {
+  min-width: 0;
+}
+
+.geist-panel-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--gx-line);
+  color: var(--gx-muted);
+}
+
+.geist-panel-label strong {
+  color: var(--gx-ink);
+  font-weight: 600;
+}
+
+.geist-fixture-frame {
+  display: block;
+  width: 100%;
+  height: 820px;
+  border: 0;
+  background: white;
+}
+
+.geist-experiment-note {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin: 18px 0 0;
+  color: var(--gx-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.geist-experiment-note a {
+  color: var(--gx-ink);
+}
+
+@media (max-width: 900px) {
+  .geist-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .geist-experiment-shell {
+    width: min(100% - 20px, 1440px);
+    padding-top: 24px;
+  }
+
+  .geist-experiment-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .geist-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .geist-experiment-note {
+    display: grid;
+  }
+}

@@ -1,0 +1,170 @@
+---
+import {
+  GEIST_BUTTON_FIXTURE_DEFAULTS,
+  GEIST_BUTTON_SHAPES,
+  GEIST_BUTTON_SIZES,
+  GEIST_BUTTON_VARIANTS,
+  GEIST_COLOR_MODES,
+  GEIST_FIXTURE_READY_MESSAGE,
+  GEIST_FIXTURE_STATE_MESSAGE,
+} from "@comparison/data/geist-button-fixture";
+import "@comparison/styles/geist-experiment.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Experimental Geist Button · Proyecto Viviana</title>
+  </head>
+  <body class="geist-experiment-page">
+    <main class="geist-experiment-shell">
+      <header class="geist-experiment-header">
+        <div>
+          <p class="geist-experiment-eyebrow">@proyecto-viviana/geist · Solid experiment</p>
+          <h1>Geist Button fixture.</h1>
+          <p class="geist-experiment-intro">
+            Tests Vercel Geist design system tokens, button variants, sizes, shapes, svgOnly,
+            prefix, loading, disabled, and dark mode on Solid. This is harness infrastructure
+            for the experimental styled sibling package.
+          </p>
+        </div>
+        <span class="geist-experiment-status">Experimental · Solid candidate</span>
+      </header>
+
+      <form
+        class="geist-controls"
+        data-geist-controls
+        data-state-message={GEIST_FIXTURE_STATE_MESSAGE}
+        data-ready-message={GEIST_FIXTURE_READY_MESSAGE}
+      >
+        <label>
+          Variant
+          <select name="variant">
+            {GEIST_BUTTON_VARIANTS.map((variant) => (
+              <option value={variant} selected={variant === GEIST_BUTTON_FIXTURE_DEFAULTS.variant}>
+                {variant}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Size
+          <select name="size">
+            {GEIST_BUTTON_SIZES.map((size) => (
+              <option value={size} selected={size === GEIST_BUTTON_FIXTURE_DEFAULTS.size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Shape
+          <select name="shape">
+            {GEIST_BUTTON_SHAPES.map((shape) => (
+              <option value={shape} selected={shape === GEIST_BUTTON_FIXTURE_DEFAULTS.shape}>
+                {shape}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Mode
+          <select name="mode">
+            {GEIST_COLOR_MODES.map((mode) => (
+              <option value={mode} selected={mode === GEIST_BUTTON_FIXTURE_DEFAULTS.mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <input
+            name="prefix"
+            type="checkbox"
+            checked={GEIST_BUTTON_FIXTURE_DEFAULTS.prefix}
+          />
+          Prefix
+        </label>
+        <label>
+          <input
+            name="svgOnly"
+            type="checkbox"
+            checked={GEIST_BUTTON_FIXTURE_DEFAULTS.svgOnly}
+          />
+          svgOnly
+        </label>
+        <label>
+          <input name="loading" type="checkbox" />
+          Loading
+        </label>
+        <label>
+          <input name="disabled" type="checkbox" />
+          Disabled
+        </label>
+      </form>
+
+      <section class="geist-single-grid" aria-label="Solid Geist Button fixture">
+        <div class="geist-panel" data-framework-panel="solid">
+          <div class="geist-panel-label">
+            <strong>Solid candidate</strong>
+            <span>@proyecto-viviana/geist</span>
+          </div>
+          <iframe
+            class="geist-fixture-frame"
+            data-geist-frame="solid"
+            title="Solid Geist Button fixture"
+            src="/experiments/geist-button/solid/"
+          ></iframe>
+        </div>
+      </section>
+
+      <p class="geist-experiment-note">
+        <span>Component paint comes from @proyecto-viviana/geist. This page only owns harness layout.</span>
+        <a href="https://github.com/proyecto-viviana/ui/tree/main/packages/geist">
+          Inspect the Geist package source
+        </a>
+      </p>
+    </main>
+
+    <script>
+      const form = document.querySelector<HTMLFormElement>("[data-geist-controls]");
+      const frames = Array.from(
+        document.querySelectorAll<HTMLIFrameElement>("[data-geist-frame]"),
+      );
+
+      if (form) {
+        const stateMessage = form.dataset.stateMessage;
+        const readyMessage = form.dataset.readyMessage;
+
+        const getState = () => {
+          const values = new FormData(form);
+          return {
+            variant: String(values.get("variant")),
+            size: String(values.get("size")),
+            shape: String(values.get("shape")),
+            mode: String(values.get("mode")),
+            prefix: values.has("prefix"),
+            svgOnly: values.has("svgOnly"),
+            loading: values.has("loading"),
+            disabled: values.has("disabled"),
+          };
+        };
+
+        const sendState = () => {
+          if (!stateMessage) return;
+          const message = { type: stateMessage, state: getState() };
+          for (const frame of frames) frame.contentWindow?.postMessage(message, location.origin);
+        };
+
+        form.addEventListener("input", sendState);
+        form.addEventListener("change", sendState);
+        for (const frame of frames) frame.addEventListener("load", sendState);
+        window.addEventListener("message", (event) => {
+          if (event.origin === location.origin && event.data?.type === readyMessage) sendState();
+        });
+      }
+    </script>
+  </body>
+</html>

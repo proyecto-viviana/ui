@@ -33,6 +33,7 @@ const toc = [
   { href: "#pending", label: "Pending", depth: 2 },
   { href: "#api", label: "API", depth: 2 },
   { href: "#button-anatomy", label: "Button", depth: 3 },
+  { href: "#geist-button", label: "Geist Button", depth: 2 },
 ];
 
 const eventsCode = `"use client";
@@ -118,6 +119,19 @@ const anatomyCode = `<Button>
   <Code code={anatomyCode} lang="tsx" theme="github-dark" />
   <h3 id="button-anatomy" class={h3Class}>Button</h3>
   <PropTable component="button" />
+
+  <h2 id="geist-button" class={h2Class}>Geist Button</h2>
+  <p class={pClass}>
+    An experimental Solid translation of Vercel Geist Button (<a href="/experiments/geist-button/">open full fixture harness ↗</a>).
+    Geist components package their own styling without altering the core design-system tokens.
+  </p>
+  <div style="border: 1px solid var(--s2-gray-300, #d0d0d0); border-radius: 8px; overflow: hidden; margin-block: 16px;">
+    <iframe
+      src="/experiments/geist-button/solid/"
+      title="Solid Geist Button fixture"
+      style="width: 100%; height: 640px; border: 0;"
+    ></iframe>
+  </div>
 
   <PortingNote component={slug} />
 

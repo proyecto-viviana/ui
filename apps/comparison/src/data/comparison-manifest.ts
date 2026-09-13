@@ -319,13 +319,14 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     }),
     componentStatus: "tracked-gap",
     summary:
-      "Baseline parity probe across styled, component, and headless layers with inherited provider props.",
+      "Baseline parity probe across styled, component, and headless layers with inherited provider props. Includes experimental Geist Button fixture.",
     parity: "partial",
     priority: "live",
     gapSummary: [
       "Styled, component, and headless button demos are all live.",
       "Styled Button is not accepted as matched until the strict S2 pair-diff test is pixel-perfect.",
       "Next work is exhaustive variant/state screenshot coverage after default styling parity is fixed.",
+      "Experimental Solid Geist Button fixture mounted at /experiments/geist-button/.",
     ],
     layers: {
       styled: layerTrack(

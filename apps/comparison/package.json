@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "vp run build:workspace-deps && astro build",
-    "build:workspace-deps": "vp run --filter @proyecto-viviana/solid-stately build && vp run --filter @proyecto-viviana/solidaria build && vp run --filter @proyecto-viviana/solidaria-components build && vp run --filter @proyecto-viviana/kumo build && vp run --filter @proyecto-viviana/solid-spectrum build",
+    "build:workspace-deps": "vp run --filter @proyecto-viviana/solid-stately build && vp run --filter @proyecto-viviana/solidaria build && vp run --filter @proyecto-viviana/solidaria-components build && vp run --filter @proyecto-viviana/kumo build && vp run --filter @proyecto-viviana/geist build && vp run --filter @proyecto-viviana/solid-spectrum build",
     "report:gaps": "tsx scripts/report-catalogue-gaps.ts",
     "report:exports": "tsx scripts/report-s2-export-gaps.ts",
     "sync:vendor": "tsx scripts/sync-vendor-s2-docs.ts",
@@ -58,6 +58,7 @@
     "@cloudflare/kumo": "2.11.0",
     "@internationalized/date": "3.12.4",
     "@phosphor-icons/react": "2.1.10",
+    "@proyecto-viviana/geist": "workspace:*",
     "@proyecto-viviana/kumo": "workspace:*",
     "@proyecto-viviana/solid-spectrum": "workspace:*",
     "@proyecto-viviana/solid-stately": "workspace:*",

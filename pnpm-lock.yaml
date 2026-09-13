@@ -113,6 +113,9 @@ importers:
       '@phosphor-icons/react':
         specifier: 2.1.10
         version: 2.1.10(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@proyecto-viviana/geist':
+        specifier: workspace:*
+        version: link:../../packages/geist
       '@proyecto-viviana/kumo':
         specifier: workspace:*
         version: link:../../packages/kumo

@@ -1,0 +1,83 @@
+:root {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+body.geist-fixture-page {
+  min-width: 280px;
+  min-height: 100vh;
+  margin: 0;
+  background: #ffffff;
+}
+
+.geist-fixture-root {
+  display: grid;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--ds-background-100, #ffffff);
+  color: var(--ds-gray-1000, #171717);
+}
+
+.geist-fixture-group {
+  min-width: 0;
+}
+
+.geist-fixture-group h2 {
+  margin: 0 0 12px;
+  color: var(--ds-gray-900, #666);
+  font:
+    600 11px/1.2 "SFMono-Regular",
+    "Roboto Mono",
+    Consolas,
+    monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.geist-fixture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.geist-fixture-row output,
+.geist-fixture-form + output,
+[data-fixture-output] {
+  color: var(--ds-gray-900, #666);
+  font-size: 12px;
+}
+
+.geist-fixture-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.geist-fixture-mode-swatch {
+  display: flex;
+  flex: 1 1 220px;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  min-height: 76px;
+  padding: 16px;
+  border: 1px solid var(--ds-gray-400, rgb(0 0 0 / 10%));
+  border-radius: 6px;
+  background: var(--ds-background-100, #fff);
+  color: var(--ds-gray-1000, #171717);
+}
+
+.geist-fixture-mode-swatch > span {
+  flex-basis: 100%;
+  color: var(--ds-gray-900, #666);
+  font:
+    600 10px/1 "SFMono-Regular",
+    "Roboto Mono",
+    Consolas,
+    monospace;
+  text-transform: uppercase;
+}

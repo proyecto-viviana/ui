@@ -1,0 +1,43 @@
+---
+import GeistButtonFixture from "@comparison/components/solid/GeistButtonFixture";
+import {
+  GEIST_FIXTURE_READY_MESSAGE,
+  GEIST_FIXTURE_STATE_EVENT,
+  GEIST_FIXTURE_STATE_MESSAGE,
+} from "@comparison/data/geist-button-fixture";
+import "@proyecto-viviana/geist/styles.css";
+import "@comparison/styles/geist-fixture-frame.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Solid Geist Button fixture</title>
+  </head>
+  <body
+    class="geist-fixture-page"
+    data-state-message={GEIST_FIXTURE_STATE_MESSAGE}
+    data-ready-message={GEIST_FIXTURE_READY_MESSAGE}
+    data-state-event={GEIST_FIXTURE_STATE_EVENT}
+  >
+    <GeistButtonFixture client:load />
+    <script>
+      const { stateMessage, readyMessage, stateEvent } = document.body.dataset;
+      window.addEventListener("message", (event) => {
+        if (
+          event.origin !== location.origin ||
+          event.source !== window.parent ||
+          event.data?.type !== stateMessage ||
+          !stateEvent
+        ) {
+          return;
+        }
+
+        window.dispatchEvent(new CustomEvent(stateEvent, { detail: event.data.state }));
+      });
+      window.parent.postMessage({ type: readyMessage }, location.origin);
+    </script>
+  </body>
+</html>
