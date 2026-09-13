@@ -1,5 +1,6 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
 import { ColorSwatch as SolidSpectrumColorSwatch } from "@proyecto-viviana/solid-spectrum/ColorSwatch";
 import { ColorSwatchPicker as SolidSpectrumColorSwatchPicker } from "@proyecto-viviana/solid-spectrum/ColorSwatchPicker";
@@ -64,6 +65,21 @@ function SolidSpectrumColorSwatchPickerDemo() {
   });
 
   const serializedProps = createMemo(() => serializeColorSwatchPickerDemoProps(demoProps()));
+  const renderKey = createMemo(() =>
+    [
+      demoProps().valueSource,
+      demoProps().valueSource === "defaultValue" ? demoProps().defaultValue : "controlled",
+      demoProps().density,
+      demoProps().size,
+      demoProps().rounding,
+      demoProps().ariaLabel,
+      demoProps().ariaLabelledBy,
+      demoProps().ariaDescribedBy,
+      demoProps().ariaDetails,
+      demoProps().id,
+      demoProps().slot,
+    ].join("|"),
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -98,59 +114,66 @@ function SolidSpectrumColorSwatchPickerDemo() {
           // non-bubbling), so it diverges from React's synchronous delegate. They sit
           // outside the `role="listbox"` roving scope.
           h("button", {}, "Before"),
-          hc(
-            SolidSpectrumColorSwatchPicker,
-            {
-              get value() {
-                return demoProps().valueSource === "value" ? demoProps().value : undefined;
-              },
-              get defaultValue() {
-                return demoProps().valueSource === "defaultValue"
-                  ? demoProps().defaultValue
-                  : undefined;
-              },
-              get density() {
-                return demoProps().density;
-              },
-              get size() {
-                return demoProps().size;
-              },
-              get rounding() {
-                return demoProps().rounding;
-              },
-              get "aria-label"() {
-                return demoProps().ariaLabel || undefined;
-              },
-              get "aria-labelledby"() {
-                return demoProps().ariaLabelledBy || undefined;
-              },
-              get "aria-describedby"() {
-                return demoProps().ariaDescribedBy || undefined;
-              },
-              get "aria-details"() {
-                return demoProps().ariaDetails || undefined;
-              },
-              get id() {
-                return demoProps().id || undefined;
-              },
-              get slot() {
-                return demoProps().slot || undefined;
-              },
-              onChange: (nextValue: ReturnType<typeof parseSolidSpectrumColor>) => {
-                const nextString = solidColorSwatchPickerToCssString(nextValue);
-                setValue(nextString);
-                setDemoProps((current: ColorSwatchPickerDemoProps) =>
-                  current.valueSource === "value" ? { ...current, value: nextString } : current,
-                );
-              },
+          createComponent(Show, {
+            get when() {
+              return renderKey();
             },
-            colorSwatchPickerPalette.map((item) =>
-              hc(SolidSpectrumColorSwatch, {
-                color: item.color,
-                colorName: item.colorName,
-              }),
-            ),
-          ),
+            keyed: true,
+            children: () =>
+              hc(
+                SolidSpectrumColorSwatchPicker,
+                {
+                  get value() {
+                    return demoProps().valueSource === "value" ? demoProps().value : undefined;
+                  },
+                  get defaultValue() {
+                    return demoProps().valueSource === "defaultValue"
+                      ? demoProps().defaultValue
+                      : undefined;
+                  },
+                  get density() {
+                    return demoProps().density;
+                  },
+                  get size() {
+                    return demoProps().size;
+                  },
+                  get rounding() {
+                    return demoProps().rounding;
+                  },
+                  get "aria-label"() {
+                    return demoProps().ariaLabel || undefined;
+                  },
+                  get "aria-labelledby"() {
+                    return demoProps().ariaLabelledBy || undefined;
+                  },
+                  get "aria-describedby"() {
+                    return demoProps().ariaDescribedBy || undefined;
+                  },
+                  get "aria-details"() {
+                    return demoProps().ariaDetails || undefined;
+                  },
+                  get id() {
+                    return demoProps().id || undefined;
+                  },
+                  get slot() {
+                    return demoProps().slot || undefined;
+                  },
+                  onChange: (nextValue: ReturnType<typeof parseSolidSpectrumColor>) => {
+                    const nextString = solidColorSwatchPickerToCssString(nextValue);
+                    setValue(nextString);
+                    setDemoProps((current: ColorSwatchPickerDemoProps) =>
+                      current.valueSource === "value" ? { ...current, value: nextString } : current,
+                    );
+                  },
+                },
+                colorSwatchPickerPalette.map((item) =>
+                  hc(SolidSpectrumColorSwatch, {
+                    color: item.color,
+                    colorName: item.colorName,
+                  }),
+                ),
+              ),
+          }),
           h("button", {}, "After"),
         ],
       ),

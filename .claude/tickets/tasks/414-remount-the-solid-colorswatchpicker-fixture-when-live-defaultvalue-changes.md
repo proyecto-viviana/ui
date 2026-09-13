@@ -4,12 +4,17 @@ type: task
 title: "Remount the Solid ColorSwatchPicker fixture when live defaultValue changes"
 created: 2026-09-03
 parent: 26
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorswatchpicker functional pass: live defaultValue #3b82f6 leaves Solid selected on Rose while the fixture marker goes to #3b82f6; React remounts via renderKey and selects Blue. URL ?defaultValue=#3b82f6 remounts both. Live controlled valueSource=value already matches (Pink). Same harness shape as ColorWheel #395. Numbered 414 to stay past ProgressCircle #410",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "key Solid ColorSwatchPicker fixture with renderKey Show to remount on defaultValue changes",
     }
 ---
 
