@@ -24,6 +24,7 @@ import {
   useContext,
 } from "solid-js";
 import { mergeProps, createProgressBar, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeStyles } from "../style/runtime";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };
@@ -480,10 +481,19 @@ function getDataAttributes(source: object): JSX.HTMLAttributes<HTMLDivElement> {
   return attributes as JSX.HTMLAttributes<HTMLDivElement>;
 }
 
-function indeterminateAnimation(direction: "ltr" | "rtl" | string): string {
-  const keyframe = direction === "rtl" ? progressBarIndeterminateRtl : progressBarIndeterminateLtr;
-  return `${keyframe} 1000ms cubic-bezier(.37, 0, .63, 1) infinite`;
-}
+const indeterminateAnimation = style<{ direction?: "ltr" | "rtl" | string }>({
+  animation: {
+    direction: {
+      ltr: progressBarIndeterminateLtr,
+      rtl: progressBarIndeterminateRtl,
+    },
+  },
+  animationDuration: 1000,
+  animationIterationCount: "infinite",
+  animationTimingFunction: "in-out",
+  willChange: "transform",
+  position: "relative",
+});
 
 export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(ProgressBarContext), props.slot);
@@ -645,12 +655,14 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
           ) : (
             <>
               <div
-                class={fillStyles(state())}
+                class={mergeStyles(
+                  fillStyles(state()),
+                  isIndeterminate()
+                    ? indeterminateAnimation({ direction: locale().direction })
+                    : null,
+                )}
                 style={{
                   width: isIndeterminate() ? undefined : `${percentage()}%`,
-                  animation: isIndeterminate()
-                    ? indeterminateAnimation(locale().direction)
-                    : undefined,
                 }}
               />
               {!isIndeterminate() && pendingWidth() != null && (

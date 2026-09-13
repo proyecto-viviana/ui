@@ -4,12 +4,17 @@ type: task
 title: "Ease the indeterminate ProgressBar fill with S2 in-out"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 progressbar functional pass: isIndeterminate fill is 1s infinite both, but computed animation-timing-function is S2 cubic-bezier(0.45, 0, 0.4, 1) (style-macro in-out) vs Solid cubic-bezier(0.37, 0, 0.63, 1) (hand-authored shorthand). Same S2 indeterminateAnimation also sets will-change:transform and position:relative; Solid fill stays will-change auto / position static. AX, fill origin left, duration, and keyframe translateX/scaleX match. D2 is not registered (hashed animation-name). Certified source-read claimed .37,0,.63,1 identity; computed S2 is the in-out token. Not a settle-to-same timing gap — the sweep is infinite.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "remediated in solid-spectrum and viviana-ui: replaced hand-authored cubic-bezier(.37, 0, .63, 1) CSS shorthand with style-macro indeterminateAnimation object (animationTimingFunction: 'in-out', animationDuration: 1000, animationIterationCount: 'infinite', willChange: 'transform', position: 'relative') merged via mergeStyles. Verified 11/11 ProgressBar unit tests pass and 47/47 comparison certified tests pass with 0 failures.",
     }
 ---
 
