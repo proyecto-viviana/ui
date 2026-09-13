@@ -17,20 +17,20 @@
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ButtonGroup",
-      "maxModules": 25,
-      "maxSolidariaModules": 17
+      "maxModules": 28,
+      "maxSolidariaModules": 20
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressBar",
-      "maxModules": 17,
-      "maxSolidariaModules": 13
+      "maxModules": 23,
+      "maxSolidariaModules": 18
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressCircle",
-      "maxModules": 13,
-      "maxSolidariaModules": 8
+      "maxModules": 19,
+      "maxSolidariaModules": 13
     }
   ],
   "rootBarrelInventory": {

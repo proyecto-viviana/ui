@@ -21,7 +21,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { createProgressBar } from "@proyecto-viviana/solidaria/progress";
 import { useLocale } from "@proyecto-viviana/solidaria/i18n";
 import type { StyleString } from "../style";

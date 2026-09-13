@@ -16,7 +16,7 @@ import {
   untrack,
   useContext,
 } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { css } from "../style/style-macro" with { type: "macro" };

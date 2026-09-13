@@ -22,7 +22,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   SelectionIndicator,
   SharedElementTransition,

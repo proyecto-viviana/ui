@@ -15,7 +15,7 @@
 // Port of packages/@react-spectrum/s2/src/Divider.tsx.
 
 import { type JSX, createContext, splitProps, useContext } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Separator as HeadlessSeparator,
   type SeparatorProps as HeadlessSeparatorProps,

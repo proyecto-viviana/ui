@@ -15,7 +15,7 @@
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
 import { children as resolveChildren, splitProps, useContext, type JSX } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DialogTriggerContext,
   Link as HeadlessLink,

@@ -17,7 +17,7 @@
 // Port of packages/@react-spectrum/s2/src/Card.tsx.
 
 import { type Accessor, type JSX, Show, createContext, splitProps, useContext } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridListItem as HeadlessGridListItem,
   GridListSelectionCheckbox,

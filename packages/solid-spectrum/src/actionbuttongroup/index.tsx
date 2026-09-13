@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
 import { type JSX, splitProps } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 import {

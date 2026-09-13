@@ -23,7 +23,7 @@ import {
   type StepProps as HeadlessStepProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createId, type Key } from "@proyecto-viviana/solid-stately";
-import { visuallyHiddenStyles } from "@proyecto-viviana/solidaria";
+import { visuallyHiddenStyles } from "@proyecto-viviana/solidaria/visually-hidden";
 import { useProviderProps } from "../provider";
 import { style, focusRing, lightDark } from "../style" with { type: "macro" };
 

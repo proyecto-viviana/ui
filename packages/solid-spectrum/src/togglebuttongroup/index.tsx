@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
 import { type JSX, splitProps } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,
   type ToggleButtonGroupProps as HeadlessToggleButtonGroupProps,
