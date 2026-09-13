@@ -4,12 +4,17 @@ type: task
 title: "Remount the Solid ColorWheel fixture when live defaultValue changes"
 created: 2026-09-03
 parent: 26
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorwheel functional pass: live defaultValue hsl(200) leaves Solid at hue 0 while the fixture marker goes to 200; React remounts via renderKey and shows 200. URL ?defaultValue=hsl(180) remounts both. Live controlled valueSource=value already matches",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "key Solid ColorWheel fixture with renderKey Show to remount on defaultValue changes",
     }
 ---
 

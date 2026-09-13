@@ -1,19 +1,20 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
 import { ColorWheel as SolidSpectrumColorWheel } from "@proyecto-viviana/solid-spectrum/ColorWheel";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
-import { parseColor as parseSolidSpectrumColor } from "@proyecto-viviana/solid-spectrum/ColorArea";
+import { parseColor as parseSolidColorWheelColor } from "@proyecto-viviana/solid-spectrum/ColorArea";
 import { buttonDemoLocaleFromWindow } from "@comparison/data/button-demo";
 import {
   colorWheelDemoDefaults,
   colorWheelDemoPropsFromWindow,
   colorWheelDemoSizeNumber,
+  comparisonControlsEvent,
   initialColorWheelDemoValue,
   normalizeColorWheelDemoProps,
   serializeColorWheelDemoProps,
   type ColorWheelDemoProps,
-  comparisonControlsEvent,
 } from "@comparison/data/colorwheel-demo";
 import {
   comparisonThemeChangeEvent,
@@ -22,16 +23,24 @@ import {
 } from "@comparison/data/theme";
 import { providerShellStyle } from "../styled-shared.tsx";
 
-function parseSolidColorWheelValue(value: string, fallback = colorWheelDemoDefaults.value) {
-  try {
-    return parseSolidSpectrumColor(value || fallback);
-  } catch {
-    return parseSolidSpectrumColor(fallback);
-  }
+function solidColorWheelToCssString(
+  color: ReturnType<typeof parseSolidColorWheelColor> | null | undefined,
+) {
+  return (color?.toString("css") ?? "").replace(
+    /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*(?:1|1\.0+)\)$/i,
+    "rgb($1, $2, $3)",
+  );
 }
 
-function solidColorWheelToCssString(color: ReturnType<typeof parseSolidColorWheelValue>) {
-  return color.toString("css");
+function parseSolidColorWheelValue(
+  value: string | undefined,
+  fallback = colorWheelDemoDefaults.defaultValue,
+) {
+  try {
+    return parseSolidColorWheelColor(value || fallback);
+  } catch {
+    return parseSolidColorWheelColor(fallback);
+  }
 }
 
 function SolidSpectrumColorWheelDemo() {
@@ -74,6 +83,21 @@ function SolidSpectrumColorWheelDemo() {
   });
 
   const serializedProps = createMemo(() => serializeColorWheelDemoProps(demoProps()));
+  const renderKey = createMemo(() =>
+    [
+      demoProps().valueSource,
+      demoProps().valueSource === "defaultValue" ? demoProps().defaultValue : "controlled",
+      demoProps().size,
+      demoProps().ariaLabel,
+      demoProps().ariaLabelledBy,
+      demoProps().ariaDescribedBy,
+      demoProps().ariaDetails,
+      demoProps().id,
+      demoProps().slot,
+      demoProps().name,
+      demoProps().isDisabled,
+    ].join("|"),
+  );
 
   return hc(
     SolidSpectrumProvider,
@@ -104,59 +128,66 @@ function SolidSpectrumColorWheelDemo() {
           },
         },
         [
-          hc(SolidSpectrumColorWheel, {
-            get "aria-label"() {
-              return demoProps().ariaLabel || undefined;
+          createComponent(Show, {
+            get when() {
+              return renderKey();
             },
-            get "aria-labelledby"() {
-              return demoProps().ariaLabelledBy || undefined;
-            },
-            get "aria-describedby"() {
-              return demoProps().ariaDescribedBy || undefined;
-            },
-            get "aria-details"() {
-              return demoProps().ariaDetails || undefined;
-            },
-            get value() {
-              return demoProps().valueSource === "value" ? value() : undefined;
-            },
-            get defaultValue() {
-              return demoProps().valueSource === "defaultValue"
-                ? parseSolidColorWheelValue(
-                    demoProps().defaultValue,
-                    colorWheelDemoDefaults.defaultValue,
-                  )
-                : undefined;
-            },
-            get size() {
-              return colorWheelDemoSizeNumber(demoProps());
-            },
-            get name() {
-              return demoProps().name || undefined;
-            },
-            get form() {
-              return demoProps().form || undefined;
-            },
-            get id() {
-              return demoProps().id || undefined;
-            },
-            get slot() {
-              return demoProps().slot || undefined;
-            },
-            get isDisabled() {
-              return demoProps().isDisabled;
-            },
-            onChange: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
-              setValue(nextValue);
-              setDemoProps((current: ColorWheelDemoProps) =>
-                current.valueSource === "value"
-                  ? { ...current, value: solidColorWheelToCssString(nextValue) }
-                  : current,
-              );
-            },
-            onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
-              setFinalValue(nextValue);
-            },
+            keyed: true,
+            children: () =>
+              hc(SolidSpectrumColorWheel, {
+                get "aria-label"() {
+                  return demoProps().ariaLabel || undefined;
+                },
+                get "aria-labelledby"() {
+                  return demoProps().ariaLabelledBy || undefined;
+                },
+                get "aria-describedby"() {
+                  return demoProps().ariaDescribedBy || undefined;
+                },
+                get "aria-details"() {
+                  return demoProps().ariaDetails || undefined;
+                },
+                get value() {
+                  return demoProps().valueSource === "value" ? value() : undefined;
+                },
+                get defaultValue() {
+                  return demoProps().valueSource === "defaultValue"
+                    ? parseSolidColorWheelValue(
+                        demoProps().defaultValue,
+                        colorWheelDemoDefaults.defaultValue,
+                      )
+                    : undefined;
+                },
+                get size() {
+                  return colorWheelDemoSizeNumber(demoProps());
+                },
+                get name() {
+                  return demoProps().name || undefined;
+                },
+                get form() {
+                  return demoProps().form || undefined;
+                },
+                get id() {
+                  return demoProps().id || undefined;
+                },
+                get slot() {
+                  return demoProps().slot || undefined;
+                },
+                get isDisabled() {
+                  return demoProps().isDisabled;
+                },
+                onChange: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
+                  setValue(nextValue);
+                  setDemoProps((current: ColorWheelDemoProps) =>
+                    current.valueSource === "value"
+                      ? { ...current, value: solidColorWheelToCssString(nextValue) }
+                      : current,
+                  );
+                },
+                onChangeEnd: (nextValue: ReturnType<typeof parseSolidColorWheelValue>) => {
+                  setFinalValue(nextValue);
+                },
+              }),
           }),
         ],
       ),
