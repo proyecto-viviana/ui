@@ -322,6 +322,8 @@ export function createColorWheel(
       onChange: (e: Event) => {
         const target = e.target as HTMLInputElement;
         s.setHue(parseFloat(target.value));
+        s.setDragging(true);
+        s.setDragging(false);
       },
       style: {
         position: "absolute" as const,

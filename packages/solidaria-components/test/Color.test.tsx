@@ -369,6 +369,43 @@ describe("Color Components", () => {
         expect(onChangeEnd).toHaveBeenCalledTimes(1);
       });
 
+      it("should keep range input mounted across keyboard value changes and fire onChangeEnd", () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorSlider
+            channel="hue"
+            defaultValue={parseColor("hsl(50, 100%, 50%)")}
+            aria-label="Hue"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+        input.focus();
+        expect(document.activeElement).toBe(input);
+        (input as unknown as Record<string, unknown>).__fpMarker = true;
+
+        // First ArrowRight: 50 -> 51
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+        const inputAfterFirstKey = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+        expect(inputAfterFirstKey).toBe(input);
+        expect((inputAfterFirstKey as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+        expect(document.activeElement).toBe(input);
+        expect(input.value).toBe("51");
+        expect(onChangeEnd).toHaveBeenCalledTimes(1);
+        expect(onChangeEnd.mock.calls[0][0].getChannelValue("hue")).toBe(51);
+
+        // Second ArrowRight: 51 -> 52
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+        const inputAfterSecondKey = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+        expect(inputAfterSecondKey).toBe(input);
+        expect((inputAfterSecondKey as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+        expect(document.activeElement).toBe(input);
+        expect(input.value).toBe("52");
+        expect(onChangeEnd).toHaveBeenCalledTimes(2);
+        expect(onChangeEnd.mock.calls[1][0].getChannelValue("hue")).toBe(52);
+      });
+
       it("should expose hue and color names in aria-valuetext", () => {
         render(() => (
           <TestColorSlider
@@ -894,6 +931,44 @@ describe("Color Components", () => {
           const changedColor = onChangeEnd.mock.lastCall?.[0];
           expect(changedColor.getChannelValue("hue")).toBe(15);
         });
+      });
+
+      it("should keep range input mounted across keyboard value changes", () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+        input.focus();
+        expect(document.activeElement).toBe(input);
+        (input as unknown as Record<string, unknown>).__fpMarker = true;
+
+        // First ArrowRight: 0 -> 1
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+        const inputAfterFirstKey = screen.getByRole("slider", {
+          name: "Hue wheel",
+        }) as HTMLInputElement;
+        expect(inputAfterFirstKey).toBe(input);
+        expect((inputAfterFirstKey as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+        expect(document.activeElement).toBe(input);
+        expect(input.value).toBe("1");
+        expect(onChangeEnd).toHaveBeenCalledTimes(1);
+
+        // Second ArrowRight: 1 -> 2
+        fireEvent.keyDown(input, { key: "ArrowRight" });
+        const inputAfterSecondKey = screen.getByRole("slider", {
+          name: "Hue wheel",
+        }) as HTMLInputElement;
+        expect(inputAfterSecondKey).toBe(input);
+        expect((inputAfterSecondKey as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+        expect(document.activeElement).toBe(input);
+        expect(input.value).toBe("2");
+        expect(onChangeEnd).toHaveBeenCalledTimes(2);
       });
     });
   });

@@ -1,9 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
-import { ColorSwatch } from "../src/color";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { ColorSlider, ColorSwatch, ColorWheel } from "../src/color";
+import { parseColor } from "@proyecto-viviana/solid-stately";
 
 describe("ColorSwatch (solid-spectrum)", () => {
   it("renders a non-interactive swatch with composed accessible name", () => {
@@ -38,5 +39,78 @@ describe("ColorSwatch (solid-spectrum)", () => {
     const style = swatch.getAttribute("style") ?? "";
     expect(style).toContain("linear-gradient");
     expect(style).not.toContain("repeating-conic-gradient");
+  });
+});
+
+describe("ColorSlider (solid-spectrum)", () => {
+  it("keeps the range input mounted and focused across keyboard arrow updates", () => {
+    const onChangeEnd = vi.fn();
+    render(() => (
+      <ColorSlider
+        channel="hue"
+        defaultValue={parseColor("hsl(50, 100%, 50%)")}
+        label="Hue"
+        onChangeEnd={onChangeEnd}
+      />
+    ));
+
+    const input = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    (input as unknown as Record<string, unknown>).__fpMarker = true;
+
+    // First ArrowRight
+    fireEvent.keyDown(input, { key: "ArrowRight" });
+    const inputAfterFirst = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+    expect(inputAfterFirst).toBe(input);
+    expect((inputAfterFirst as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe("51");
+    expect(onChangeEnd).toHaveBeenCalledTimes(1);
+
+    // Second ArrowRight
+    fireEvent.keyDown(input, { key: "ArrowRight" });
+    const inputAfterSecond = screen.getByRole("slider", { name: "Hue" }) as HTMLInputElement;
+    expect(inputAfterSecond).toBe(input);
+    expect((inputAfterSecond as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe("52");
+    expect(onChangeEnd).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("ColorWheel (solid-spectrum)", () => {
+  it("keeps the range input mounted and focused across keyboard arrow updates", () => {
+    const onChangeEnd = vi.fn();
+    render(() => (
+      <ColorWheel
+        defaultValue={parseColor("hsl(0, 100%, 50%)")}
+        aria-label="Hue wheel"
+        onChangeEnd={onChangeEnd}
+      />
+    ));
+
+    const input = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    (input as unknown as Record<string, unknown>).__fpMarker = true;
+
+    // First ArrowRight
+    fireEvent.keyDown(input, { key: "ArrowRight" });
+    const inputAfterFirst = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+    expect(inputAfterFirst).toBe(input);
+    expect((inputAfterFirst as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe("1");
+    expect(onChangeEnd).toHaveBeenCalledTimes(1);
+
+    // Second ArrowRight
+    fireEvent.keyDown(input, { key: "ArrowRight" });
+    const inputAfterSecond = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+    expect(inputAfterSecond).toBe(input);
+    expect((inputAfterSecond as unknown as Record<string, unknown>).__fpMarker).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe("2");
+    expect(onChangeEnd).toHaveBeenCalledTimes(2);
   });
 });

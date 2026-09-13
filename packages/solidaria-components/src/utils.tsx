@@ -181,7 +181,7 @@ export function useRenderProps<T extends object>(
     },
     renderChildrenStable: () => {
       const children = props.children;
-      if (typeof children !== "function" || children.length === 0) {
+      if (typeof children !== "function") {
         return children as JSX.Element;
       }
       // Invoke the render function exactly once, over a getter view of the

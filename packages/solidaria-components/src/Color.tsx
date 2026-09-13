@@ -407,7 +407,7 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
         data-orientation={state.orientation}
         slot={local.slot || undefined}
       >
-        {renderProps.renderChildren()}
+        {renderProps.renderChildrenStable()}
       </div>
     </ColorSliderContext.Provider>
   );
@@ -530,7 +530,7 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
       data-dragging={state.isDragging || undefined}
       data-orientation={state.orientation}
     >
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </div>
   );
 }
@@ -622,7 +622,7 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
       data-hovered={isHovered() || undefined}
     >
       <input ref={context.setInputRef} {...mergedInputProps()} />
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </div>
   );
 }
@@ -1268,7 +1268,7 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
         data-disabled={state.isDisabled || undefined}
         data-dragging={state.isDragging || undefined}
       >
-        {renderProps.renderChildren()}
+        {renderProps.renderChildrenStable()}
       </div>
     </ColorWheelContext.Provider>
   );
@@ -1329,7 +1329,7 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
       data-disabled={state.isDisabled || undefined}
       data-dragging={state.isDragging || undefined}
     >
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </div>
   );
 }
@@ -1421,7 +1421,7 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
       data-hovered={isHovered() || undefined}
     >
       <input {...mergedInputProps()} />
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </div>
   );
 }

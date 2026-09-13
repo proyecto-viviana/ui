@@ -263,6 +263,8 @@ export function createColorSlider(
     }
 
     if (handled) {
+      s.setDragging(true);
+      s.setDragging(false);
       e.preventDefault();
       e.stopPropagation();
     }
@@ -399,6 +401,8 @@ export function createColorSlider(
       onChange: (e: Event) => {
         const target = e.target as HTMLInputElement;
         s.setThumbValue(parseFloat(target.value));
+        s.setDragging(true);
+        s.setDragging(false);
       },
       onFocus: () => {
         // Focus handling

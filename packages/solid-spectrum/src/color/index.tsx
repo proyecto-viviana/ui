@@ -318,7 +318,9 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
               style={{ "grid-area": "output" }}
             />
           </Show>
-          <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+          <ColorSliderTrack>
+            <ColorSliderThumb />
+          </ColorSliderTrack>
         </>
       )}
     </HeadlessColorSlider>

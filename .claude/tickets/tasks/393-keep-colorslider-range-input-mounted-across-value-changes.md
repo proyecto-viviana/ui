@@ -4,7 +4,7 @@ type: task
 title: "Keep ColorSlider's range input mounted across value changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "colorwheel functional pass, same remount: ArrowRight 0→1 disconnects the hue input (sameNode false), focus BODY, thumb 32→16, later keys no-op. Playwright ring click 270° leaves data-dragging true, loupe 50×66 stuck, onChangeEnd at 0. mouse.down/wait/up and a full thumb drag commit. ColorWheel already focusInput on pointer; the node is replaced. End mapping is #396, not this.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-13,
+      note: "use renderChildrenStable in ColorSlider, ColorSliderTrack, ColorSliderThumb, ColorWheel, ColorWheelTrack, and ColorWheelThumb; evaluate 0-arg render functions stably in renderChildrenStable; cycle dragging on keyboard and change in createColorSlider and createColorWheel to trigger onChangeEnd; pass static ColorSliderThumb child in solid-spectrum",
     }
 ---
 
