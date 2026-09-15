@@ -79,7 +79,7 @@ import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
-import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem, VirtualizerItem } from "./Virtualizer";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   getNormalizedDropTargetKey,
@@ -964,15 +964,17 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                       <div role="group" aria-label={entry.section["aria-label"]}>
                                         <For each={entry.items}>
                                           {(indexedItem) => (
-                                            <ListBoxItemWithDropIndicators
-                                              item={indexedItem.item}
-                                              itemIndex={indexedItem.index}
-                                              isLastInLevel={() =>
-                                                isLastDropItem(indexedItem.index)
-                                              }
-                                              renderItem={local.children}
-                                              renderDropIndicator={renderItemDropIndicator}
-                                            />
+                                            <VirtualizerItem>
+                                              <ListBoxItemWithDropIndicators
+                                                item={indexedItem.item}
+                                                itemIndex={indexedItem.index}
+                                                isLastInLevel={() =>
+                                                  isLastDropItem(indexedItem.index)
+                                                }
+                                                renderItem={local.children}
+                                                renderDropIndicator={renderItemDropIndicator}
+                                              />
+                                            </VirtualizerItem>
                                           )}
                                         </For>
                                       </div>
@@ -980,13 +982,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                   </Section>
                                 </div>
                               ) : (
-                                <ListBoxItemWithDropIndicators
-                                  item={entry.item.item}
-                                  itemIndex={entry.item.index}
-                                  isLastInLevel={() => isLastDropItem(entry.item.index)}
-                                  renderItem={local.children}
-                                  renderDropIndicator={renderItemDropIndicator}
-                                />
+                                <VirtualizerItem>
+                                  <ListBoxItemWithDropIndicators
+                                    item={entry.item.item}
+                                    itemIndex={entry.item.index}
+                                    isLastInLevel={() => isLastDropItem(entry.item.index)}
+                                    renderItem={local.children}
+                                    renderDropIndicator={renderItemDropIndicator}
+                                  />
+                                </VirtualizerItem>
                               )
                             }
                           </For>
@@ -994,15 +998,17 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <>
                             <For each={visibleItems()}>
                               {(item, index) => (
-                                <ListBoxItemWithDropIndicators
-                                  item={item as T}
-                                  itemIndex={() => (virtualRange()?.start ?? 0) + index()}
-                                  isLastInLevel={() =>
-                                    isLastDropItem((virtualRange()?.start ?? 0) + index())
-                                  }
-                                  renderItem={local.children}
-                                  renderDropIndicator={renderItemDropIndicator}
-                                />
+                                <VirtualizerItem>
+                                  <ListBoxItemWithDropIndicators
+                                    item={item as T}
+                                    itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                                    isLastInLevel={() =>
+                                      isLastDropItem((virtualRange()?.start ?? 0) + index())
+                                    }
+                                    renderItem={local.children}
+                                    renderDropIndicator={renderItemDropIndicator}
+                                  />
+                                </VirtualizerItem>
                               )}
                             </For>
                             <For each={persistedOutsideIndexes()}>

@@ -65,6 +65,10 @@ describe("Virtualizer", () => {
     const options = content.querySelectorAll('[role="option"]');
     expect(options.length).toBeGreaterThan(0);
     expect(listbox.querySelector(':scope > [role="option"]')).toBeNull();
+    const option = options[0] as HTMLElement;
+    const itemWrapper = option.parentElement;
+    expect(itemWrapper?.getAttribute("role")).toBe("presentation");
+    expect(itemWrapper).not.toBe(content);
 
     vi.spyOn(listbox, "clientHeight", "get").mockReturnValue(60);
     vi.spyOn(listbox, "scrollHeight", "get").mockReturnValue(50 * 20);

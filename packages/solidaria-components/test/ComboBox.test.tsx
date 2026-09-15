@@ -24,6 +24,7 @@ import {
   ComboBoxTagGroup,
   ComboBoxTag,
 } from "../src/ComboBox";
+import { Virtualizer } from "../src/Virtualizer";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Text } from "../src/Text";
 import { Dialog } from "../src/Dialog";
@@ -112,6 +113,34 @@ describe("ComboBox", () => {
 
       const listbox = screen.queryByRole("listbox");
       expect(listbox).not.toBeInTheDocument();
+    });
+
+    it("wraps virtualized options in CollectionRoot and VirtualizerItem", () => {
+      render(() => (
+        <ComboBox
+          aria-label="Virtualized ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          isOpen
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <Virtualizer layout={{}} layoutOptions={{ itemSize: 20 }}>
+            <ComboBoxListBox>
+              {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+            </ComboBoxListBox>
+          </Virtualizer>
+        </ComboBox>
+      ));
+
+      const listbox = screen.getByRole("listbox");
+      expect(listbox.querySelector(':scope > [role="option"]')).toBeNull();
+      const content = listbox.firstElementChild as HTMLElement;
+      expect(content.getAttribute("role")).toBe("presentation");
+      const option = screen.getByRole("option", { name: "Apple" });
+      expect(option.parentElement?.getAttribute("role")).toBe("presentation");
+      expect(option.parentElement).not.toBe(content);
     });
 
     it("should render with custom class", () => {

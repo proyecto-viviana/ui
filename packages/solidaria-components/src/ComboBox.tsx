@@ -72,7 +72,8 @@ import {
 } from "./utils";
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
-import { useCollectionRenderer } from "./Collection";
+import { useCollectionRenderer, useCollectionRoot } from "./Collection";
+import { VirtualizerItem } from "./Virtualizer";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
@@ -1087,7 +1088,12 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   // Create listbox aria props using ComboBoxState's ListState-compatible interface.
   // A parent Virtualizer publishes `isVirtualized` through the collection renderer
   // (RAC ListBox.tsx + Virtualizer); forward it so options emit posinset/setsize.
+  // RAC ComboBox list is a ListBox under Virtualizer, so CollectionRoot wraps
+  // items in VirtualizerItem. This listbox is ComboBox-owned; still consume
+  // that renderer so the popover list is not a bare in-flow option stack.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
+  const CollectionRoot = useCollectionRoot<unknown>();
+  const isVirtualized = () => parentCollectionRenderer?.isVirtualized === true;
   const { listBoxProps } = createListBox(
     () => ({
       ...(context.listBoxProps() as AriaListBoxProps),
@@ -1193,21 +1199,27 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
         data-layout="stack"
         data-orientation="vertical"
       >
-        <Show
-          when={local.children}
-          fallback={
+        <CollectionRoot collection={items()} scrollRef={() => listBoxEl()}>
+          <Show
+            when={local.children}
+            fallback={
+              <For each={items()}>
+                {(node) => {
+                  const item = <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>;
+                  return isVirtualized() ? <VirtualizerItem>{item}</VirtualizerItem> : item;
+                }}
+              </For>
+            }
+          >
             <For each={items()}>
-              {(node) => <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>}
+              {(node) => {
+                const value = getNodeValue(node);
+                const child = value != null ? (local.children as Function)!(value) : null;
+                return isVirtualized() ? <VirtualizerItem>{child}</VirtualizerItem> : child;
+              }}
             </For>
-          }
-        >
-          <For each={items()}>
-            {(node) => {
-              const value = getNodeValue(node);
-              return value != null ? (local.children as Function)!(value) : null;
-            }}
-          </For>
-        </Show>
+          </Show>
+        </CollectionRoot>
       </div>
     </Show>
   );

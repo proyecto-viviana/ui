@@ -37,8 +37,10 @@
 import {
   type JSX,
   createContext,
+  createEffect,
   createMemo,
   createSignal,
+  onCleanup,
   splitProps,
   useContext,
 } from "solid-js";
@@ -888,6 +890,62 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
 
 function CollectionBranch<T>(props: CollectionBranchProps<T>): JSX.Element {
   return DefaultCollectionRenderer.CollectionBranch(props);
+}
+
+/**
+ * RAC VirtualizerItem (`react-aria/src/virtualizer/VirtualizerItem.tsx` +
+ * `layoutInfoToStyle`) wraps every visible view in `role="presentation"` with
+ * `contain: size layout style`, `z-index: 0`, and a definite width/height.
+ * Solid ListLayout still windows with in-flow padding spacers (absolute
+ * `layoutInfo` + `estimatedRowHeight`/`padding` is the rest of #252), so this
+ * wrapper stays in-flow and sizes from the item's used box. jsdom reports 0
+ * for unstyled offsetHeight; skip containment then so collection tests keep
+ * seeing the children.
+ */
+export function VirtualizerItem(props: { children: JSX.Element }): JSX.Element {
+  const [box, setBox] = createSignal<{ width: number; height: number } | null>(null);
+  const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+
+  createEffect(() => {
+    const node = el();
+    if (!node) return;
+    const read = () => {
+      const child = node.firstElementChild as HTMLElement | null;
+      const height = child?.offsetHeight ?? 0;
+      const width = node.clientWidth;
+      if (height <= 0 || width <= 0) return;
+      setBox((current) => {
+        if (current?.width === width && current.height === height) return current;
+        return { width, height };
+      });
+    };
+    read();
+    // Do not subscribe ResizeObserver: Virtualizer tests stub a single
+    // observer for createScrollView. Two rAFs cover the first layout after
+    // the collection mounts (ComboBox D13 settle is 220ms).
+    const frame = requestAnimationFrame(() => {
+      read();
+      requestAnimationFrame(read);
+    });
+    onCleanup(() => cancelAnimationFrame(frame));
+  });
+
+  return (
+    <div
+      role="presentation"
+      ref={setEl}
+      style={{
+        position: "relative",
+        "z-index": 0,
+        overflow: "visible",
+        contain: box() ? "size layout style" : undefined,
+        width: "100%",
+        height: box() ? `${box()!.height}px` : undefined,
+      }}
+    >
+      {props.children}
+    </div>
+  );
 }
 
 /**
