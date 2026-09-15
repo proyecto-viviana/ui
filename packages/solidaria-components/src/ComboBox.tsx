@@ -346,6 +346,8 @@ interface ComboBoxContextValue<T> {
   setTriggerRef: (el: HTMLElement | null) => void;
   listBoxRef: () => HTMLElement | null;
   setListBoxRef: (el: HTMLElement | null) => void;
+  popoverRef: () => HTMLElement | null;
+  setPopoverRef: (el: HTMLElement | null) => void;
   registerOptionAction: (key: Key, action: (() => void) | undefined) => void;
   runOptionAction: (key: Key) => void;
   slots?: Record<string, Partial<ComboBoxProps<T>>>;
@@ -416,6 +418,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   let buttonRef: HTMLElement | null = null;
   let triggerRef: HTMLElement | null = null;
   let listBoxRef: HTMLElement | null = null;
+  const [popoverRef, setPopoverRef] = createSignal<HTMLElement | null>(null);
   const optionActions = new Map<Key, () => void>();
   const runOptionAction = (key: Key) => {
     optionActions.get(key)?.();
@@ -531,6 +534,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     () => inputRef,
     () => buttonRef,
     () => listBoxRef,
+    () => popoverRef(),
   );
 
   const getInputProps = () => {
@@ -663,6 +667,8 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           setListBoxRef: (el) => {
             listBoxRef = el;
           },
+          popoverRef,
+          setPopoverRef,
           registerOptionAction: (key, action) => {
             if (action) {
               optionActions.set(key, action);
@@ -1011,7 +1017,15 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     throw new Error("ComboBoxListBox must be used within a ComboBox");
   }
   const context = rawContext as ComboBoxContextValue<T>;
-  const { state: comboBoxState, listState, isOpen, inputRef, buttonRef, setListBoxRef } = context;
+  const {
+    state: comboBoxState,
+    listState,
+    isOpen,
+    inputRef,
+    buttonRef,
+    setListBoxRef,
+    setPopoverRef,
+  } = context;
   const state = comboBoxState;
 
   let listBoxRef: HTMLElement | undefined;
@@ -1109,14 +1123,33 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     );
   };
 
+  const [listBoxEl, setListBoxEl] = createSignal<HTMLElement | null>(null);
+
+  // Resolve the overlay root after the listbox is inserted. A ref callback can
+  // fire before parentNode exists, so closest("[data-placement]") would miss
+  // the Popover (RAC ComboBox PopoverContext.ref) and hide-outside would keep
+  // only the listbox — aria-hiding the dismiss sibling.
+  createEffect(() => {
+    const el = listBoxEl();
+    if (!el) {
+      setPopoverRef(null);
+      return;
+    }
+    const overlay = el.closest("[data-placement]");
+    setPopoverRef(overlay instanceof HTMLElement ? overlay : el);
+  });
+
   const setListBoxElement = (el: HTMLElement) => {
     listBoxRef = el;
     setListBoxRef(el);
+    setListBoxEl(el);
+    onCleanup(() => {
+      listBoxRef = undefined;
+      setListBoxRef(null);
+      setListBoxEl(null);
+      setPopoverRef(null);
+    });
   };
-
-  onCleanup(() => {
-    setListBoxRef(null);
-  });
 
   return (
     <Show when={isOpen()}>

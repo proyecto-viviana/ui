@@ -21,7 +21,7 @@
 
 import { createEffect, createSignal, onCleanup, type JSX } from "solid-js";
 import { useLocale } from "../i18n";
-import { addEvent, getPropagationTargets } from "../utils/dom";
+import { addEvent, getActiveElement, getPropagationTargets, isFocusWithin } from "../utils/dom";
 import {
   calculatePosition,
   getRect,
@@ -134,11 +134,42 @@ export interface PositionAria {
 
 const visualViewport = typeof document !== "undefined" ? window.visualViewport : null;
 
+interface ScrollAnchor {
+  type: "top" | "bottom";
+  offset: number;
+}
+
 function translateRTL(position: string, direction: string): string {
   if (direction === "rtl") {
     return position.replace("start", "right").replace("end", "left");
   }
   return position.replace("start", "left").replace("end", "right");
+}
+
+function overlayPositionStyle(current: PositionResult | null): JSX.CSSProperties {
+  if (!current) {
+    return {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      "z-index": 100000,
+      "max-height": "100vh",
+    };
+  }
+
+  const style: JSX.CSSProperties = {
+    position: "absolute",
+    "z-index": 100000,
+    "max-height": current.maxHeight != null ? `${current.maxHeight}px` : "100vh",
+  };
+  const pos = current.position as Record<string, number | undefined>;
+  for (const key of Object.keys(pos)) {
+    const value = pos[key];
+    if (value != null) {
+      (style as Record<string, string>)[key] = `${value}px`;
+    }
+  }
+  return style;
 }
 
 /**
@@ -194,6 +225,23 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
     const scrollNode = scrollRef();
     const arrowNode = arrowRef();
 
+    // Determine a scroll anchor based on the focused element so a height
+    // change after repositioning keeps the focused row in the same place
+    // (RAC useOverlayPosition.ts:251-269).
+    let anchor: ScrollAnchor | null = null;
+    if (scrollNode && isFocusWithin(scrollNode)) {
+      const anchorRect = getActiveElement()?.getBoundingClientRect();
+      const scrollRect = scrollNode.getBoundingClientRect();
+      anchor = {
+        type: "top",
+        offset: (anchorRect?.top ?? 0) - scrollRect.top,
+      };
+      if (anchor.offset > scrollRect.height / 2) {
+        anchor.type = "bottom";
+        anchor.offset = (anchorRect?.bottom ?? 0) - scrollRect.bottom;
+      }
+    }
+
     // Reset overlay's previous max height
     const overlay = overlayNode as HTMLElement;
     if (!maxHeight() && overlayNode) {
@@ -234,12 +282,23 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
     });
     overlay.style.maxHeight = result.maxHeight != null ? result.maxHeight + "px" : "";
 
+    const activeElement = getActiveElement();
+    if (anchor && activeElement && scrollNode) {
+      const restoredRect = activeElement.getBoundingClientRect();
+      const scrollRect = scrollNode.getBoundingClientRect();
+      const newOffset = restoredRect[anchor.type] - scrollRect[anchor.type];
+      (scrollNode as HTMLElement).scrollTop += newOffset - anchor.offset;
+    }
+
     setPosition(result);
   };
 
-  // Update position when dependencies change
+  // RAC useLayoutEffect(updatePosition, deps). Solid createEffect runs after
+  // this owner’s DOM (and refs) exist — createRenderEffect fires before refs
+  // and never re-runs for non-signal overlayRef. overlayProps.style must still
+  // spread the measured top/left; the previous `{ top: undefined }` after
+  // setPosition wiped the mutated coordinates and a later measure flipped to top.
   createEffect(() => {
-    // Track all dependencies
     shouldUpdatePosition();
     placement();
     overlayRef();
@@ -252,6 +311,7 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
     offset();
     crossOffset();
     isOpen();
+    direction();
     maxHeight();
     arrowBoundaryOffset();
     arrowSize();
@@ -361,14 +421,7 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   return {
     overlayProps: {
       get style(): JSX.CSSProperties {
-        const current = position();
-        return {
-          position: current ? "absolute" : "fixed",
-          top: !current ? 0 : undefined,
-          left: !current ? 0 : undefined,
-          "z-index": 100000,
-          "max-height": current?.maxHeight ?? "100vh",
-        } as JSX.CSSProperties;
+        return overlayPositionStyle(position());
       },
     },
     placement: () => position()?.placement ?? null,

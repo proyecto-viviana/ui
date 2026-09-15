@@ -89,12 +89,14 @@ function SolidSpectrumPickerDemo() {
       style: providerShellStyle,
     },
     [
-      h("form", {
-        hidden: true,
-        get id() {
-          return demoProps().form || "picker-external-form";
-        },
-      }),
+      demoProps().form
+        ? h("form", {
+            hidden: true,
+            get id() {
+              return demoProps().form;
+            },
+          })
+        : null,
       hc(
         "div",
         {

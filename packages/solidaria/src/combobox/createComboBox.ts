@@ -157,6 +157,7 @@ export function createComboBox<T>(
   inputRef: () => HTMLInputElement | null,
   buttonRef?: () => HTMLElement | null,
   listBoxRef?: () => HTMLElement | null,
+  popoverRef?: () => Element | null,
 ): ComboBoxAria<T> {
   const getProps = () => access(props);
   const id = createId(getProps().id);
@@ -378,20 +379,19 @@ export function createComboBox<T>(
   });
 
   // Hide other page content from screen readers when the listbox is open.
-  // This requires both the input and listbox refs to be available.
-  // Note: This feature is important for screen reader accessibility but
-  // only works when a popoverRef/listBoxRef is provided.
+  // RAC useComboBox.ts:469-474 hides outside input + popover. Dismiss is a
+  // popover sibling of the listbox, so a listbox-only set would hide it.
   createEffect(() => {
     if (isServer) return;
 
     const isOpen = state.isOpen();
     const inputEl = inputRef();
-    const listBoxEl = listBoxRef?.();
+    const popoverEl = popoverRef?.() ?? listBoxRef?.();
 
-    // Only apply ariaHideOutside if we have both elements available
-    // This ensures the listbox won't be accidentally hidden
-    if (isOpen && inputEl && listBoxEl) {
-      const cleanup = ariaHideOutside([inputEl, listBoxEl]);
+    if (isOpen && inputEl && popoverEl) {
+      const cleanup = ariaHideOutside(
+        [inputEl, popoverEl].filter((element): element is Element => element != null),
+      );
       onCleanup(cleanup);
     }
   });

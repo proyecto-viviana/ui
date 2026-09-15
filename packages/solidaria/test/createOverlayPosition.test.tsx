@@ -97,3 +97,168 @@ describe("createOverlayPosition window scroll", () => {
     expect(measureCalls).toBeGreaterThan(afterResize);
   });
 });
+
+/**
+ * RAC `useOverlayPosition.test.tsx` layout contract. jsdom rects are zero unless
+ * we read inline style, matching the RAC test's getBoundingClientRect stub.
+ */
+describe("createOverlayPosition measured placement", () => {
+  const originalGetBoundingClientRect = window.HTMLElement.prototype.getBoundingClientRect;
+
+  beforeEach(() => {
+    class NoopResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", NoopResizeObserver);
+
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: {
+        offsetTop: 0,
+        offsetLeft: 0,
+        pageTop: 0,
+        pageLeft: 0,
+        width: 500,
+        height: 768,
+        scale: 1,
+        addEventListener() {},
+        removeEventListener() {},
+      },
+    });
+    document.body.style.margin = "0";
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      value: 768,
+    });
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+      configurable: true,
+      value: 500,
+    });
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(
+      function (this: HTMLElement) {
+        return parseInt(this.style.width, 10) || 0;
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(
+      function (this: HTMLElement) {
+        return parseInt(this.style.height, 10) || 0;
+      },
+    );
+    window.HTMLElement.prototype.getBoundingClientRect = function () {
+      const rect = originalGetBoundingClientRect.apply(this);
+      if (this.tagName === "BODY") {
+        return {
+          ...rect,
+          height: this.clientHeight,
+          width: this.clientWidth,
+        };
+      }
+      const left = parseInt(this.style.left, 10) || 0;
+      const top = parseInt(this.style.top, 10) || 0;
+      const width = parseInt(this.style.width, 10) || 0;
+      const height = parseInt(this.style.height, 10) || 0;
+      return {
+        ...rect,
+        left,
+        top,
+        right: left + width,
+        bottom: top + height,
+        width,
+        height,
+        x: left,
+        y: top,
+        toJSON() {
+          return {};
+        },
+      };
+    };
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    window.HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+    document.body.style.margin = "";
+  });
+
+  it("keeps preferred bottom placement and reports measured top/left on overlayProps.style", () => {
+    function Example() {
+      let target: HTMLDivElement | undefined;
+      let overlay: HTMLDivElement | undefined;
+      const { overlayProps, placement } = createOverlayPosition({
+        targetRef: () => target ?? null,
+        overlayRef: () => overlay ?? null,
+        isOpen: true,
+        arrowSize: 8,
+      });
+      return (
+        <>
+          <div
+            ref={target}
+            data-testid="trigger"
+            style={{ left: "10px", top: "250px", width: "100px", height: "100px" }}
+          >
+            Trigger
+          </div>
+          <div
+            ref={overlay}
+            data-testid="overlay"
+            data-placement={placement() ?? undefined}
+            style={{ width: "300px", height: "200px", ...overlayProps.style }}
+          >
+            overlay
+          </div>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(() => <Example />);
+    const overlay = getByTestId("overlay");
+
+    expect(overlay.getAttribute("data-placement")).toBe("bottom");
+    expect(overlay.style.position).toBe("absolute");
+    expect(overlay.style.left).toBe("12px");
+    expect(overlay.style.top).toBe("350px");
+    expect(overlay.style.maxHeight).toBe("406px");
+  });
+
+  it("does not flip preferred bottom when more space remains below the trigger", () => {
+    function Example() {
+      let target: HTMLDivElement | undefined;
+      let overlay: HTMLDivElement | undefined;
+      const { overlayProps, placement } = createOverlayPosition({
+        targetRef: () => target ?? null,
+        overlayRef: () => overlay ?? null,
+        isOpen: true,
+        placement: "bottom",
+        shouldFlip: true,
+        arrowSize: 8,
+      });
+      return (
+        <>
+          <div
+            ref={target}
+            data-testid="trigger"
+            style={{ left: "10px", top: "80px", width: "100px", height: "40px" }}
+          >
+            Trigger
+          </div>
+          <div
+            ref={overlay}
+            data-testid="overlay"
+            data-placement={placement() ?? undefined}
+            style={{ width: "300px", height: "200px", ...overlayProps.style }}
+          >
+            overlay
+          </div>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(() => <Example />);
+    expect(getByTestId("overlay").getAttribute("data-placement")).toBe("bottom");
+  });
+});

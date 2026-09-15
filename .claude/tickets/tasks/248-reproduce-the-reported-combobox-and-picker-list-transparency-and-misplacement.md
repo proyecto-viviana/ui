@@ -21,6 +21,11 @@ history:
       at: 2026-09-08,
       note: "#508 D13 step-0 split binds M5–M7 here; M8 (ComboBox formValue hidden-input order) moves to #512. Pointing is not a bind of #243.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "M5–M7 source landed (createOverlayPosition overlayProps.style + ComboBox hide-outside input+popover + fixture form gate). Focused unit tests green. playwright: not run (Chromium missing). D13 step 0 not claimed green. Not verified.",
+    }
 ---
 
 ## Cause
@@ -317,3 +322,69 @@ driver to ignore these.
 The wave-3 row that claimed both `<template>` vs `<form>` **and** extra hidden
 `<input>` is split: M7 stays; extra ComboBox formValue input **order** is #512.
 Pointing at this ticket is not a bind of #243. Does not own M1–M4, M9, M10.
+
+## M5–M7 source (2026-09-15)
+
+Did not commit. Pin `scripts/upstream-pin.json` remains `f56660b` / RAC 1.21.0 /
+S2 1.7.0. Changeset: `.changeset/combobox-picker-overlay-m5-m7.md` (patch
+`solidaria` + `solidaria-components`). Status stays in-progress. Do not mark
+verified.
+
+### M5 — overlay `data-placement` measured flip
+
+RAC `useOverlayPosition.ts` spreads `...position?.position` into
+`overlayProps.style` and updates from `useLayoutEffect`. Solid
+`createOverlayPosition` mutated `overlay.style` then `setPosition`, after which
+the reactive style `{ top: undefined, left: undefined }` wiped the coordinates
+and a later measure flipped preferred `bottom` to `top`.
+
+Fix (owning layer `packages/solidaria/src/popover/createOverlayPosition.ts`):
+`overlayProps.style` now emits the measured `top`/`left`/`bottom`/`right` plus
+`max-height`. Scroll-anchor restore matches RAC `useOverlayPosition.ts:251-269`.
+Position updates stay on `createEffect` so refs exist (Solid
+`createRenderEffect` runs before refs and does not re-run for a `let` overlay
+ref). Popover already seeds preferred axis while `isEntering` (#251); this is
+the post-enter measured path.
+
+Tests: `keeps preferred bottom placement and reports measured top/left on
+overlayProps.style`; `does not flip preferred bottom when more space remains
+below the trigger` (RAC pos-1: viewport 500×768, trigger `{left:10,top:250}`,
+overlay 300×200 → `left:12px; top:350px; max-height:406px; placement:bottom`).
+
+### M6 — Dismiss `aria-hidden`
+
+RAC `useComboBox.ts:469-474` hides outside **input + popover**. Dismiss is a
+popover sibling of the listbox. Solid hid outside `[inputEl, listBoxEl]`.
+
+Fix: optional 6th arg `popoverRef` on `createComboBox`;
+`ariaHideOutside([inputEl, popoverEl].filter(Boolean))` with
+`popoverEl = popoverRef?.() ?? listBoxRef?.()`.
+`solidaria-components` ComboBox keeps a `popoverRef` signal and, after the
+listbox is inserted, sets it to `el.closest("[data-placement]")` (RAC
+`PopoverContext.ref`). Select does not call `ariaHideOutside` (matches RAC
+`useSelect`); no Select source change.
+
+Tests: `does not aria-hide the popover dismiss sibling of the listbox`
+(`createComboBox.test.tsx`); `does not aria-hide a popover dismiss sibling of
+the listbox` (`ComboBox.test.tsx`).
+
+### M7 — fixture `<form>` vs React `<template>`
+
+Certified default `form: ""`. Solid ComboBox/Picker fixtures always rendered a
+hidden `<form>`; React only when `demoProps.form` is set. Both Solid fixtures
+now match. Did not invent CollectionBuilder `<template>` DOM. Did not patch
+`apps/comparison/e2e/drivers/journeys.ts`.
+
+Tests: `apps/comparison/src/data/combobox-picker-fixture-form.test.ts`.
+
+### Proof
+
+- `vp test run packages/solidaria/test/createOverlayPosition.test.tsx packages/solidaria/test/createComboBox.test.tsx packages/solidaria-components/test/ComboBox.test.tsx apps/comparison/src/data/combobox-picker-fixture-form.test.ts` — 4 files, 143 passed.
+- `vp check --fix` on owned files — pass; `git diff --check` — clean.
+- `vp run guard:layer-boundary` — not run (no styled twins).
+- `playwright: not run` — Chromium executable missing at
+  `/tmp/vw277-waVZJG/cache/ms-playwright/chromium_headless_shell-1234`; did not
+  `playwright install`. D13 step 0 is **not** green.
+
+Remaining step-0 field-dom owners unchanged: M1–M4 #209, M8 #512, M9/wrapper
+#254 / #513, Virtualizer #252.

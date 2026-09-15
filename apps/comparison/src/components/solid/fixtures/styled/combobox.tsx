@@ -87,12 +87,14 @@ function SolidSpectrumComboBoxDemo() {
       style: providerShellStyle,
     },
     [
-      h("form", {
-        hidden: true,
-        get id() {
-          return demoProps().form || "combobox-external-form";
-        },
-      }),
+      demoProps().form
+        ? h("form", {
+            hidden: true,
+            get id() {
+              return demoProps().form;
+            },
+          })
+        : null,
       hc(
         "div",
         {

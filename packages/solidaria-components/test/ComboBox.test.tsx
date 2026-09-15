@@ -450,6 +450,44 @@ describe("ComboBox", () => {
         expect(outside.closest('[aria-hidden="true"]')).not.toBeNull();
       });
     });
+
+    it("does not aria-hide a popover dismiss sibling of the listbox", async () => {
+      render(() => (
+        <div>
+          <p data-testid="outside-content">Outside</p>
+          <ComboBox
+            aria-label="Test ComboBox"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            defaultOpen
+          >
+            <ComboBoxInput />
+            <ComboBoxButton>▼</ComboBoxButton>
+            <div data-placement="bottom">
+              <ComboBoxListBox>
+                {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+              </ComboBoxListBox>
+              <button type="button" data-testid="dismiss" aria-label="Dismiss">
+                Dismiss
+              </button>
+            </div>
+          </ComboBox>
+        </div>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("outside-content").closest('[aria-hidden="true"]'),
+        ).not.toBeNull();
+        expect(screen.getByTestId("dismiss")).not.toHaveAttribute("aria-hidden");
+        expect(screen.getByTestId("dismiss").closest('[aria-hidden="true"]')).toBeNull();
+      });
+    });
   });
 
   // ============================================

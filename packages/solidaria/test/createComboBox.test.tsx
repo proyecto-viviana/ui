@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createRoot, createSignal, onMount } from "solid-js";
 import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
 import { I18nProvider } from "../src/i18n";
@@ -1257,6 +1257,54 @@ describe("createComboBox", () => {
         button.remove();
         dispose();
       });
+    });
+  });
+
+  describe("ariaHideOutside input + popover", () => {
+    afterEach(() => {
+      cleanup();
+    });
+
+    it("does not aria-hide the popover dismiss sibling of the listbox", async () => {
+      function Example() {
+        let inputEl: HTMLInputElement | undefined;
+        let listBoxEl: HTMLElement | undefined;
+        let popoverEl: HTMLElement | undefined;
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+        createComboBox(
+          { label: "Fruit" },
+          state,
+          () => inputEl ?? null,
+          undefined,
+          () => listBoxEl ?? null,
+          () => popoverEl ?? null,
+        );
+        onMount(() => state.open());
+        return (
+          <div>
+            <p data-testid="outside">Outside</p>
+            <input ref={(el) => (inputEl = el)} />
+            <div data-placement="bottom" ref={(el) => (popoverEl = el)}>
+              <ul role="listbox" ref={(el) => (listBoxEl = el)} />
+              <button type="button" data-testid="dismiss" aria-label="Dismiss">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      render(() => <Example />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("outside").closest('[aria-hidden="true"]')).not.toBeNull();
+      });
+      expect(screen.getByTestId("dismiss")).not.toHaveAttribute("aria-hidden");
+      expect(screen.getByTestId("dismiss").closest('[aria-hidden="true"]')).toBeNull();
     });
   });
 });
