@@ -41,6 +41,11 @@ history:
       at: 2026-09-15,
       note: "S2 ui-icon token width/height now generated from pinned ui-icons/*.tsx; createUIIcon no longer invents flex-shrink 0 or focusable=false on bare icons; ComboBox Menu.checkmark no longer duplicates the size map. keyboard-only leftover is still the 7px checkmark AA. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBox/Picker listbox style map matches S2 listbox (no invented margin/padding/list-style). Item size observation moved to #114. keyboard-only leftover is still the 7px checkmark AA. Not verified.",
+    }
 ---
 
 ## Cause
