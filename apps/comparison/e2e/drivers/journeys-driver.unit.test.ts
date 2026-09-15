@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "vitest";
-import { overlayMotionPhase } from "./journeys-observe";
+import { flattenContractTree, overlayMotionPhase, type DomNodeSnapshot } from "./journeys-observe";
 import { serializeStep, type SerializedStep, type Step } from "./journeys-steps";
 import { generateJourneySteps, overlayJourneyAlphabet } from "./journeys-fuzz";
 import { registerJourneyDriver, type Journey } from "./journeys";
@@ -78,7 +78,39 @@ const newSteps: Step[] = [
   { type: "selectOption", name: "Pro", label: "selectOption Pro" },
 ];
 
+function node(tag: string, extras: Partial<DomNodeSnapshot> = {}): DomNodeSnapshot {
+  return {
+    tag,
+    role: extras.role ?? null,
+    name: extras.name ?? null,
+    aria: extras.aria ?? {},
+    data: extras.data ?? {},
+    children: extras.children ?? [],
+    ...(extras.disabled ? { disabled: true } : {}),
+    ...(extras.tabindex != null ? { tabindex: extras.tabindex } : {}),
+  };
+}
+
 describe("D13 journey driver extensions", () => {
+  it("hoists RAC CollectionBuilder Hidden <template>, including hide-outside aria-hidden", () => {
+    const hidden = node("template", { aria: { "aria-hidden": "true" } });
+    const input = node("input", {
+      role: "combobox",
+      name: "Plan",
+      aria: { "aria-expanded": "true" },
+    });
+    const group = node("div", { role: "group", children: [hidden, input] });
+    assert.deepEqual(flattenContractTree(group), [
+      node("div", { role: "group", children: [input] }),
+    ]);
+    assert.deepEqual(flattenContractTree(hidden), []);
+    const withKid = node("template", {
+      aria: { "aria-hidden": "true" },
+      children: [input],
+    });
+    assert.deepEqual(flattenContractTree(withKid), [input]);
+  });
+
   it("drops a new step's payload from serializeStep so fuzz minimization cannot reconstruct it", () => {
     for (const step of newSteps) {
       const once = serializeStep(step);

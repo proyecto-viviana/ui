@@ -36,6 +36,11 @@ history:
       at: 2026-09-15,
       note: "M5 D13 data-placement top vs bottom was stacked-preview geometry, not createOverlayPosition. ComboBox uses data-preview-layout=stacked; Solid field starts at y≈1550 in a 720 viewport. clickLocator scrollIntoView nearest then pins it to the viewport bottom (groupTop 695) and both RAC and Solid flip; React stays in view at groupTop 456 and stays bottom. forEachScenarioPanel now centers the driven canvas first (both stacks groupTop 397, data-placement bottom, overlay 106px). Do not invent RAC Hidden <template>. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "D13 flatten now hoists RAC CollectionBuilder Hidden <template> (Hidden.tsx:79), including hide-outside aria-hidden. ComboBox D2 open-enter 2/2 still green; D13 field `dom` no longer fails. Remaining ComboBox D13: step 0 field `ax` live '3 options available.' (React assertive role=log; Solid empty); keyboard-only step 1 field `input` selectionStart 3 vs 0. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause

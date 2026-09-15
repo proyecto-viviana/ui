@@ -27,6 +27,81 @@ export interface DomNodeSnapshot {
   children: DomNodeSnapshot[];
 }
 
+const CONTRACT_FORM_TAGS = new Set(["button", "select", "textarea", "option"]);
+
+/**
+ * RAC contract nodes compared by D13 field/overlay DOM. Presentational
+ * wrappers are hoisted so the tree is role / aria-* / allowlisted data-* /
+ * form controls. Tag differences on those contract nodes still fail.
+ *
+ * RAC CollectionBuilder Hidden (`Hidden.tsx:79`) renders a `<template>`
+ * portal; children live in `HTMLTemplateElement.content`, not
+ * `element.children`. After `ariaHideOutside` that empty node also carries
+ * `aria-hidden`. Solid collections are sync and never emit the wrapper —
+ * do not invent a Solid `<template>`.
+ */
+export function isContractDomNode(node: DomNodeSnapshot): boolean {
+  if (node.tag === "template") {
+    return false;
+  }
+  const presentationOnly =
+    node.role === "presentation" &&
+    !node.tabindex &&
+    !node.disabled &&
+    Object.keys(node.aria).length === 0 &&
+    Object.keys(node.data).length === 0;
+  if (presentationOnly) {
+    return false;
+  }
+  return Boolean(
+    node.role ||
+    node.tabindex ||
+    node.disabled ||
+    Object.keys(node.aria).length > 0 ||
+    Object.keys(node.data).length > 0 ||
+    CONTRACT_FORM_TAGS.has(node.tag),
+  );
+}
+
+export function flattenContractTree(node: DomNodeSnapshot): DomNodeSnapshot[] {
+  const kids = node.children.flatMap(flattenContractTree);
+  if (isContractDomNode(node)) {
+    return [{ ...node, children: kids }];
+  }
+  return kids;
+}
+
+export function projectPanelTree(tree: DomNodeSnapshot | null): DomNodeSnapshot | null {
+  if (!tree) {
+    return null;
+  }
+  return {
+    tag: "panel",
+    role: null,
+    name: null,
+    aria: {},
+    data: {},
+    children: flattenContractTree(tree),
+  };
+}
+
+export function projectOverlayTree(tree: DomNodeSnapshot | null): DomNodeSnapshot | null {
+  if (!tree) {
+    return null;
+  }
+  const flat = flattenContractTree(tree);
+  return flat.length === 1
+    ? flat[0]!
+    : {
+        tag: "overlay",
+        role: null,
+        name: null,
+        aria: {},
+        data: {},
+        children: flat,
+      };
+}
+
 export interface OverlayGeometry {
   /** Overlay top-left minus trigger top-left, CSS px, rounded. */
   dx: number;
@@ -167,7 +242,8 @@ const IDREF_ARIA = [
 const LEAF_TAGS = new Set(["svg", "img", "input", "textarea", "hr", "br", "path", "use"]);
 
 interface InPageObservation {
-  dom: StepObservation["dom"];
+  panelTree: DomNodeSnapshot | null;
+  overlayTree: DomNodeSnapshot | null;
   form: Record<string, string>;
   input: InputObservation | null;
   focusVisible: boolean;
@@ -297,7 +373,6 @@ export async function collectStepObservation(
           .join(" ");
       };
 
-      const formTags = new Set(["button", "select", "textarea", "option"]);
       const widgetNameRoles = new Set([
         "combobox",
         "listbox",
@@ -359,37 +434,6 @@ export async function collectStepObservation(
           }
         }
         return entry;
-      };
-
-      const isSignificant = (node: NodeSnap): boolean => {
-        const presentationOnly =
-          node.role === "presentation" &&
-          !node.tabindex &&
-          !node.disabled &&
-          Object.keys(node.aria).length === 0 &&
-          Object.keys(node.data).length === 0;
-        if (presentationOnly) {
-          return false;
-        }
-        return Boolean(
-          node.role ||
-          node.tabindex ||
-          node.disabled ||
-          Object.keys(node.aria).length > 0 ||
-          Object.keys(node.data).length > 0 ||
-          formTags.has(node.tag),
-        );
-      };
-      // Hoist presentational wrappers (React portal <template>, extra layout
-      // divs, the comparison fixture <form>) so the tree is the RAC contract:
-      // role / aria-* / allowlisted data-* / form controls. Tag differences on
-      // those contract nodes still fail.
-      const flatten = (node: NodeSnap): NodeSnap[] => {
-        const kids = node.children.flatMap(flatten);
-        if (isSignificant(node)) {
-          return [{ ...node, children: kids }];
-        }
-        return kids;
       };
 
       const listboxes = Array.from(document.querySelectorAll('[role="listbox"]')).filter(
@@ -548,34 +592,8 @@ export async function collectStepObservation(
       }
 
       return {
-        dom: {
-          panel: canvas
-            ? {
-                tag: "panel",
-                role: null,
-                name: null,
-                aria: {},
-                data: {},
-                children: flatten(snapshotTree(canvas)),
-              }
-            : null,
-          overlay: overlayRoots[0]
-            ? (() => {
-                const tree = snapshotTree(overlayRoots[0]);
-                const flat = flatten(tree);
-                return flat.length === 1
-                  ? flat[0]!
-                  : {
-                      tag: "overlay",
-                      role: null,
-                      name: null,
-                      aria: {},
-                      data: {},
-                      children: flat,
-                    };
-              })()
-            : null,
-        },
+        panelTree: canvas ? snapshotTree(canvas) : null,
+        overlayTree: overlayRoots[0] ? snapshotTree(overlayRoots[0]) : null,
         form: formValues,
         input,
         focusVisible,
@@ -634,7 +652,10 @@ export async function collectStepObservation(
     observation: {
       step: { index, label },
       error,
-      dom: inPage.dom,
+      dom: {
+        panel: projectPanelTree(inPage.panelTree),
+        overlay: projectOverlayTree(inPage.overlayTree),
+      },
       form: inPage.form,
       input: inPage.input,
       focus: {
