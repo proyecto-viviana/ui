@@ -2,7 +2,12 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { layoutBox, scrollLocatorIntoView } from "./comparison-page";
+import {
+  layoutBox,
+  scrollLocatorIntoView,
+  waitForPaintSettle,
+  type LayoutBox,
+} from "./comparison-page";
 import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
 
 /**
@@ -13,6 +18,11 @@ import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/
  * instead of taking the 180s D3 test timeout.
  */
 export const screenshotTimeoutMs = 2_000;
+
+/** After freezing CSS animations, race two rAFs so isolated overlay layers
+ * land on the compositor surface. WSL Chromium can stall rAF; the budget
+ * fails closed into the capture rather than deadlocking. */
+const postAnimationPaintBudgetMs = 100;
 
 const paintLatchEnv = "VIVIANA_COMPARISON_COMPOSITOR_PAINT";
 const compositorPaintFailure =
@@ -188,9 +198,14 @@ async function assertPngPainted(page: Page, png: Buffer, label: string) {
 /**
  * Screenshot without Playwright's stable-frame wait. `locator.screenshot`
  * scrolls-into-view then waits for two compositor frames; that is the D3
- * 15s "element to be stable" deadlock. CDP `Page.captureScreenshot` reads
- * the backing store after a DOM scroll. A blank or timed-out capture fails
- * the pixel gate; it is never turned into a skip.
+ * 15s "element to be stable" deadlock.
+ *
+ * CDP `Page.captureScreenshot` with a `clip` drops some isolated overlay
+ * layers (Solid Portal + `isolation: isolate`): the clip shows whatever is
+ * behind the list while a full-surface shot of the same viewport shows the
+ * list. Capture the compositor surface the user sees, then crop to the
+ * layout box. A blank or timed-out capture fails the pixel gate; it is
+ * never turned into a skip.
  */
 export async function captureLocatorPng(
   target: Locator,
@@ -223,36 +238,30 @@ export async function captureLocatorPng(
       `;
       document.documentElement.append(style);
     });
+    await waitForPaintSettle(page, postAnimationPaintBudgetMs);
   }
 
   const session = await page.context().newCDPSession(page);
   try {
     const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
-    const clip = {
-      x: box.x,
-      y: box.y,
-      width: box.width,
-      height: box.height,
-      scale: dpr,
-    };
     const result = await withTimeout(
       session.send("Page.captureScreenshot", {
         format: "png",
         fromSurface: true,
-        captureBeyondViewport: true,
-        clip,
+        captureBeyondViewport: false,
       }),
       screenshotTimeoutMs,
       compositorPaintFailure,
     );
     const png = Buffer.from(result.data, "base64");
+    const cropped = await cropPngToLayoutBox(page, png, box, dpr);
     try {
-      await assertPngPainted(page, png, "D3 pixel capture");
+      await assertPngPainted(page, cropped, "D3 pixel capture");
     } catch (error) {
       rememberPaintUnavailable(compositorPaintFailure);
       throw error;
     }
-    return png;
+    return cropped;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes("Compositor never produced") || message.includes("uniform fill")) {
@@ -262,6 +271,41 @@ export async function captureLocatorPng(
   } finally {
     await withTimeout(session.detach(), 250, "CDP session detach timed out").catch(() => {});
   }
+}
+
+async function cropPngToLayoutBox(
+  page: Page,
+  png: Buffer,
+  box: LayoutBox,
+  dpr: number,
+): Promise<Buffer> {
+  const dataUrl = await page.evaluate(
+    async ({ base64, box, dpr }) => {
+      const response = await fetch(`data:image/png;base64,${base64}`);
+      const bitmap = await createImageBitmap(await response.blob());
+      const sx = Math.round(box.x * dpr);
+      const sy = Math.round(box.y * dpr);
+      const sw = Math.max(1, Math.round(box.width * dpr));
+      const sh = Math.max(1, Math.round(box.height * dpr));
+      if (sx < 0 || sy < 0 || sx + sw > bitmap.width || sy + sh > bitmap.height) {
+        throw new Error(
+          `pixel crop ${sx},${sy} ${sw}x${sh} does not fit screenshot ${bitmap.width}x${bitmap.height}`,
+        );
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = sw;
+      canvas.height = sh;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("Could not create canvas context to crop screenshot");
+      }
+      context.drawImage(bitmap, sx, sy, sw, sh, 0, 0, sw, sh);
+      return canvas.toDataURL("image/png");
+    },
+    { base64: png.toString("base64"), box, dpr },
+  );
+  const comma = dataUrl.indexOf(",");
+  return Buffer.from(dataUrl.slice(comma + 1), "base64");
 }
 
 export async function normalizedElementScreenshot(target: Locator) {
