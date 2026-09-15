@@ -1,4 +1,15 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
+
+// Gitignored repo `.env.local` — machine switches such as
+// COMPARISON_CHROMIUM_ARGS. Not loaded in CI; existing env wins.
+if (!process.env.CI) {
+  const localEnv = fileURLToPath(new URL("../../.env.local", import.meta.url));
+  if (existsSync(localEnv)) {
+    process.loadEnvFile(localEnv);
+  }
+}
 
 if (process.env.NO_COLOR != null) {
   // Playwright forces color in worker and web-server child processes. Dropping
@@ -49,7 +60,8 @@ export default defineConfig({
     // `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` on WSL2 where
     // Chrome for Testing 151 (Playwright 1.62 build 1234) never issues a
     // compositor frame through SwiftShader — rAF and CSS transitions never
-    // fire — while 149 does. Unset in CI so rendering there is unchanged.
+    // fire — while 149 does. Set that in gitignored `.env.local`; this config
+    // loads it when not CI. Unset in CI so rendering there is unchanged.
     launchOptions: {
       args: (process.env.COMPARISON_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
     },

@@ -1,4 +1,13 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
+
+if (!process.env.CI) {
+  const localEnv = fileURLToPath(new URL("../../.env.local", import.meta.url));
+  if (existsSync(localEnv)) {
+    process.loadEnvFile(localEnv);
+  }
+}
 
 export default defineConfig({
   testDir: "./e2e",
