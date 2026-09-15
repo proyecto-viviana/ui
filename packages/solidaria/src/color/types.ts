@@ -39,7 +39,7 @@
  * - packages/react-aria/src/color/useColorWheel.ts
  */
 
-import type { JSX } from "solid-js";
+import type { Accessor, JSX } from "solid-js";
 import type { ColorChannel, Color, ColorSpace } from "@proyecto-viviana/solid-stately";
 
 export interface AriaColorSliderOptions {
