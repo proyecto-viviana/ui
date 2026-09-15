@@ -43,6 +43,7 @@ import {
   createInteractOutside,
   createScrollIntoViewOnFocus,
   createFocusRing,
+  createPress,
   mergeProps,
   isFocusVisible as isGlobalFocusVisible,
   type AriaComboBoxProps,
@@ -559,12 +560,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     } as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return ariaProps.isDisabled;
-    },
-  });
-
   const renderValues = createMemo<ComboBoxRenderProps>(() => ({
     isOpen: comboBoxAria.isOpen(),
     isFocused: comboBoxAria.isFocused(),
@@ -590,11 +585,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
     return filtered;
   });
-
-  const cleanHoverProps = () => {
-    const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
 
   const ComboBoxChildren = () =>
     typeof local.children === "function"
@@ -684,7 +674,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       <ComboBoxStateContext.Provider value={state}>
         <div
           {...domProps()}
-          {...cleanHoverProps()}
           ref={(el) => {
             assignRef(local.ref, el);
             assignRef(local.rootRef, el);
@@ -693,12 +682,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           style={renderProps.style()}
           data-open={comboBoxAria.isOpen() || undefined}
           data-focused={comboBoxAria.isFocused() || undefined}
-          data-focus-visible={comboBoxAria.isFocusVisible() || undefined}
           data-disabled={ariaProps.isDisabled || undefined}
           data-required={ariaProps.isRequired || undefined}
           data-invalid={comboBoxAria.isInvalid || undefined}
           data-readonly={ariaProps.isReadOnly || undefined}
-          data-hovered={isHovered() || undefined}
           slot={local.slot}
         >
           <Provider
@@ -852,7 +839,12 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
   );
 
   const cleanInputProps = () => {
-    const { ref: _ref1, value: _value, ...rest } = context.inputProps() as Record<string, unknown>;
+    const {
+      ref: _ref1,
+      value: _value,
+      "data-open": _dataOpen,
+      ...rest
+    } = context.inputProps() as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
@@ -869,7 +861,6 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
       value={state.inputValue()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-open={isOpen() || undefined}
       data-focused={isFocused() || undefined}
       data-focus-visible={isFocusVisible() || undefined}
       data-hovered={isHovered() || undefined}
@@ -947,7 +938,7 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
   if (!context) {
     throw new Error("ComboBoxButton must be used within a ComboBox");
   }
-  const { isOpen, isFocused, state, setButtonRef } = context;
+  const { isOpen, state, setButtonRef } = context;
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -955,11 +946,21 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
     },
   });
 
+  // RAC Button (ComboBox chevron) uses its own hover/focus/press, not ComboBox
+  // isOpen / input isFocused. S2 `isPressed={false}` waits on #254.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isPressed, pressProps } = createPress({
+    get isDisabled() {
+      return state.isDisabled || state.isReadOnly;
+    },
+    preventFocusOnPress: true,
+  });
+
   const renderValues = createMemo<ComboBoxButtonRenderProps>(() => ({
     isOpen: isOpen(),
     isFocused: isFocused(),
     isHovered: isHovered(),
-    isPressed: isOpen(),
+    isPressed: isPressed(),
     isDisabled: state.isDisabled,
   }));
 
@@ -976,28 +977,47 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
   );
 
   const cleanButtonProps = () => {
-    const { ref: _ref1, ...rest } = context.buttonProps() as Record<string, unknown>;
+    const {
+      ref: _ref1,
+      "data-open": _dataOpen,
+      ...rest
+    } = context.buttonProps() as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
     const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const cleanFocusProps = () => {
+    const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanPressProps = () => {
+    const { ref: _ref4, ...rest } = pressProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const mergedButtonProps = () =>
+    mergeProps(
+      domProps as Record<string, unknown>,
+      cleanButtonProps(),
+      cleanHoverProps(),
+      cleanFocusProps(),
+      cleanPressProps(),
+    ) as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
   return (
     <button
-      {...domProps}
+      {...mergedButtonProps()}
       ref={(el) => {
         setButtonRef(el);
         assignRef(local.ref, el);
       }}
-      {...cleanButtonProps()}
-      {...cleanHoverProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-open={isOpen() || undefined}
-      data-pressed={isOpen() || undefined}
+      data-pressed={isPressed() || undefined}
       data-focused={isFocused() || undefined}
+      data-focus-visible={isFocusVisible() || undefined}
       data-hovered={isHovered() || undefined}
       data-disabled={state.isDisabled || undefined}
     >

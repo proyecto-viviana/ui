@@ -4,13 +4,18 @@ type: task
 title: "Fill RAC render-prop fields on Select ListBox GridList Tree and items"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: open,
       at: 2026-09-08,
       note: "#508 D13 step-0 split binds M1–M4 here; wrapper/context stays #254; not M5–M8, M10, or Picker root",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "#508 M1–M4 ComboBox field data-* matched RAC Input/Button/root in solidaria-components. Original render-prop Done-when unmet. playwright: not run. Did not claim D13 step 0. Did not start #254/#248/#512/#514/#270.",
     }
 ---
 

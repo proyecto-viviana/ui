@@ -30,6 +30,8 @@ import { Dialog } from "../src/Dialog";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
+  firePointerDown,
+  firePointerUp,
   assertAriaIdIntegrity,
   checkAriaIdIntegrity,
 } from "@proyecto-viviana/solidaria-test-utils";
@@ -964,7 +966,7 @@ describe("ComboBox", () => {
       });
     });
 
-    it("should expose open state as button pressed render prop", () => {
+    it("does not treat open as the button pressed render prop", () => {
       render(() => (
         <ComboBox
           aria-label="Test ComboBox"
@@ -984,14 +986,24 @@ describe("ComboBox", () => {
       ));
 
       const button = screen.getByRole("button", { hidden: true });
+      expect(button).toHaveClass("not-pressed");
+      firePointerDown(button);
       expect(button).toHaveClass("pressed");
+      firePointerUp(button);
+      fireEvent.click(button, { detail: 1 });
+      expect(button).toHaveClass("not-pressed");
     });
 
-    it("should apply isPressed state to button when expanded", () => {
+    it("emits data-pressed from the button's own press, not open state", () => {
       render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
 
       const button = screen.getByRole("button", { hidden: true });
+      expect(button).not.toHaveAttribute("data-pressed");
+      firePointerDown(button);
       expect(button).toHaveAttribute("data-pressed");
+      firePointerUp(button);
+      fireEvent.click(button, { detail: 1 });
+      expect(button).not.toHaveAttribute("data-pressed");
     });
   });
 
@@ -1029,6 +1041,70 @@ describe("ComboBox", () => {
       const combobox = screen.getByTestId("combobox-root");
       expect(combobox).toHaveClass("solidaria-ComboBox");
       expect(screen.getByRole("combobox")).not.toHaveAttribute("data-testid");
+    });
+
+    // #508 M1–M4 / D13 step-0 field data-*. RAC Input has no data-open; RAC
+    // ComboBox button uses its own hover/focus/press (no data-open); RAC root
+    // is data-focused + data-open only.
+    it("does not emit data-open on the input when open", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const root = document.querySelector(".solidaria-ComboBox");
+      expect(screen.getByRole("combobox")).not.toHaveAttribute("data-open");
+      expect(root).toHaveAttribute("data-open");
+    });
+
+    it("does not copy open or input focus onto the button after a pointer open", async () => {
+      render(() => <TestComboBox />);
+
+      const button = screen.getByRole("button", { name: "Show suggestions" });
+      await user.click(button);
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      expect(button).not.toHaveAttribute("data-open");
+      expect(button).not.toHaveAttribute("data-pressed");
+      expect(button).not.toHaveAttribute("data-focused");
+      expect(screen.getByRole("combobox")).toHaveAttribute("data-focused");
+    });
+
+    it("does not copy input focus onto the closed button after Tab", async () => {
+      render(() => <TestComboBox />);
+
+      await user.tab();
+
+      const input = screen.getByRole("combobox");
+      const button = screen.getByRole("button", { name: "Show suggestions" });
+      expect(input).toHaveFocus();
+      expect(button).not.toHaveAttribute("data-focused");
+      expect(button).not.toHaveAttribute("data-open");
+      expect(button).not.toHaveAttribute("data-pressed");
+    });
+
+    it("does not emit data-hovered on the ComboBox root", async () => {
+      render(() => <TestComboBox />);
+
+      const root = document.querySelector(".solidaria-ComboBox");
+      expect(root).toBeTruthy();
+      await user.hover(root!);
+      expect(root).not.toHaveAttribute("data-hovered");
+    });
+
+    it("does not emit data-focus-visible on the ComboBox root", async () => {
+      render(() => <TestComboBox />);
+
+      await user.tab();
+
+      const root = document.querySelector(".solidaria-ComboBox");
+      expect(root).toHaveAttribute("data-focused");
+      expect(root).not.toHaveAttribute("data-focus-visible");
+      expect(screen.getByRole("combobox")).toHaveAttribute("data-focus-visible");
     });
   });
 
