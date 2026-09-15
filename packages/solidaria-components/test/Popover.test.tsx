@@ -299,9 +299,11 @@ describe("Popover", () => {
       expect(popover.parentElement?.querySelector(":scope > [data-focus-scope-start]")).toBeNull();
       expect(popover.parentElement?.querySelector(":scope > [data-focus-scope-end]")).toBeNull();
       expect(popover.parentElement?.style.display).toBe("contents");
+      const groupParent = popover.parentElement?.parentElement;
+      expect(groupParent?.querySelector(":scope > [data-focus-scope-start]")).not.toBeNull();
       expect(
-        popover.parentElement?.parentElement?.querySelector(":scope > [data-focus-scope-start]"),
-      ).not.toBeNull();
+        groupParent === document.body || getComputedStyle(groupParent!).display === "contents",
+      ).toBe(true);
     });
 
     it("should support controlled isOpen", () => {
