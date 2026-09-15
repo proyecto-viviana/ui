@@ -16,6 +16,11 @@ history:
       at: 2026-09-02,
       note: "D13 driver, four seed journeys, fuzz+ddmin, certification row, and journeys-nightly.yml landed; seed journeys fail on real ComboBox/Picker overlay DOM/ARIA divergences (feed #248)",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Re-ran seeds on 3565b899 with Chromium 151 (COMPARISON_CHROMIUM_ARGS). D2 ComboBox/Picker open-enter 4/4. D13 seeds 0/4, still first fail on field dom. ComboBox: placement top vs bottom + RAC template. Picker: #254 button data-focused/data-open. Driver itself not the miss.",
+    }
 ---
 
 ## Work

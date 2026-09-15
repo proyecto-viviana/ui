@@ -26,6 +26,11 @@ history:
       at: 2026-09-15,
       note: "D2: registerMotionDriver open-enter (overlay scope, freezer-safe click + Escape) on ComboBox/Picker/Menu/ActionMenu certified specs, mirroring DatePicker. Dropped stale hand-rolled D2 comments. Playwright listed 8 titles; Chromium headless shell missing so D2 not executed. D13 still #244/#245/#246/#248. Proof + d2-result.json under overnight-overlay-251.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Executed ComboBox+Picker D2 open-enter (normal + reduced) on Chromium 151: 4/4 passed in 50s. Menu/ActionMenu D2 not in this run. D13 still red. Not verified.",
+    }
 ---
 
 ## Cause

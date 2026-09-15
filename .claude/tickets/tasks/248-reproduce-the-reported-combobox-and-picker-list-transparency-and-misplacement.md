@@ -26,6 +26,11 @@ history:
       at: 2026-09-15,
       note: "M5–M7 source landed (createOverlayPosition overlayProps.style + ComboBox hide-outside input+popover + fixture form gate). Focused unit tests green. playwright: not run (Chromium missing). D13 step 0 not claimed green. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Host Chromium 151 + .env.local COMPARISON_CHROMIUM_ARGS. ComboBox+Picker D2 open-enter 4/4 passed. D13 0/4. ComboBox click/keyboard still Solid data-placement top vs React bottom, plus RAC Hidden <template>. Picker remaining is trigger data-focused/data-open (#254) and option aria-labelledby / data-focus-visible. Not verified.",
+    }
 ---
 
 ## Cause
