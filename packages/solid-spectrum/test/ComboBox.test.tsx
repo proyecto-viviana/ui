@@ -169,6 +169,85 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(group).not.toHaveAttribute("data-focused");
   });
 
+  it("opens the menu on pointer focus when menuTrigger is focus", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox menuTrigger="focus" />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(input);
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(document.activeElement).toBe(input);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getAllByRole("option")).toHaveLength(items.length);
+  });
+
+  it("opens the menu on Tab focus when menuTrigger is focus", async () => {
+    const user = setupUser();
+    render(() => (
+      <>
+        <button type="button">before</button>
+        <FruitComboBox menuTrigger="focus" />
+      </>
+    ));
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    screen.getByRole("button", { name: "before" }).focus();
+    expect(input).toHaveAttribute("aria-expanded", "false");
+
+    await user.tab();
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(document.activeElement).toBe(input);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getAllByRole("option")).toHaveLength(items.length);
+  });
+
+  it("opens on focus with controlled selectedKey and inputValue when menuTrigger is focus", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox menuTrigger="focus" selectedKey="1" inputValue="Apple" />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(input);
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(document.activeElement).toBe(input);
+    expect(screen.getAllByRole("option")).toHaveLength(items.length);
+  });
+
+  it("closes the menu when Tab leaves the input with menuTrigger focus", async () => {
+    const user = setupUser();
+    render(() => (
+      <>
+        <FruitComboBox menuTrigger="focus" />
+        <button type="button">after</button>
+      </>
+    ));
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.click(input);
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-expanded", "true");
+    });
+
+    await user.tab();
+
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-expanded", "false");
+    });
+    expect(screen.getByRole("button", { name: "after" })).toHaveFocus();
+  });
+
   it("does not synthesize aria-label on the input when a visible label is present", () => {
     render(() => <FruitComboBox />);
 

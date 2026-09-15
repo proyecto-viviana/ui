@@ -658,6 +658,26 @@ function ComboBoxListBoxPopover(props: {
     comboBoxContext?.buttonRef?.() ??
     null;
 
+  // RAC useOverlay has no document focusin closer. Solid createOverlay does,
+  // and ComboBox is non-modal with DOM focus remaining on the input. Treat the
+  // trigger as inside the overlay so menuTrigger=focus is not dismissed on the
+  // same focus that opened it.
+  const shouldCloseOnInteractOutside = (element: Element) => {
+    const trigger = triggerRef();
+    if (trigger === element || trigger?.contains(element)) {
+      return false;
+    }
+    const input = comboBoxContext?.inputRef?.();
+    if (input === element || input?.contains(element)) {
+      return false;
+    }
+    const button = comboBoxContext?.buttonRef?.();
+    if (button === element || button?.contains(element)) {
+      return false;
+    }
+    return true;
+  };
+
   return (
     <Popover
       hideArrow
@@ -671,6 +691,7 @@ function ComboBoxListBoxPopover(props: {
         }
       }}
       isNonModal
+      shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
       placement={`${props.direction()} ${props.align()}`}
       offset={comboBoxMenuOffset(props.size())}
       shouldFlip={props.shouldFlip()}

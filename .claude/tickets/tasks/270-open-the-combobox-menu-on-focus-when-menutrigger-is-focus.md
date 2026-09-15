@@ -4,7 +4,7 @@ type: task
 title: "Open the ComboBox menu on focus when menuTrigger is focus"
 created: 2026-09-03
 parent: 24
-status: open
+status: in-progress
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "createComboBoxState.setFocused already opens on menuTrigger=focus; headless ComboBox.test.tsx covers click-to-open. Comparison route still needs a preview walk before close.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "S2 ComboBoxListBoxPopover keeps the overlay open on input focus when menuTrigger=focus. Solid createOverlay's extra document focusin closer dismissed the list while the input stayed focused; RAC useOverlay has no such listener. Named-path workaround: shouldCloseOnInteractOutside returns false for the trigger/input/button. Package tests cover pointer, Tab, and controlled selectedKey+inputValue. playwright: not run (Chromium missing). Comparison route not claimed green.",
     }
 ---
 
