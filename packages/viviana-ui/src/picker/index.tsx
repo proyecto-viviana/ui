@@ -392,7 +392,8 @@ const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>(
   outlineStyle: "none",
   margin: 0,
   listStyleType: "none",
-  padding: 8,
+  // S2 `listbox` has no padding; ListLayout `padding: 8` owns the inset.
+  padding: 0,
 });
 
 // S2 Picker.tsx:475-484 — width additions on the composed Popover `styles` prop.
@@ -427,10 +428,10 @@ const pickerOption = style<PickerOptionStyleProps>({
   // :1020-1030 list rows: display/gap/padding/border-radius/cursor/--nav-fg only).
   // `baseColor("gray-100").isFocusVisible` baked an opaque ramp stop the register
   // never draws, so state moves to ink below. Keyboard focus additionally keeps the
-  // outline from focusRing() above; `pickerListBox`'s `padding: 8` leaves room for
-  // its 2px width at 2px offset, so the ring is not clipped by that scroller's
-  // `overflowX: hidden`. No forced-colors branch is needed: this option sets no
-  // `forcedColorAdjust`, so high-contrast mode still paints its own highlight.
+  // outline from focusRing() above; ListLayout `padding: 8` insets the rows so
+  // the ring is not clipped by the listbox scroller's `overflowX: hidden`. No
+  // forced-colors branch is needed: this option sets no `forcedColorAdjust`, so
+  // high-contrast mode still paints its own highlight.
   backgroundColor: "transparent",
   color: {
     default: baseColor("neutral"),

@@ -215,14 +215,6 @@ const listScenario: DriverScenario = {
   // React oracle (`visibility` is not in the default allowlist).
   styleProps: {
     add: ["grid-template-columns", "grid-template-areas", "visibility"],
-    // VIRTUALIZER-DECOMPOSITION divergence (documented, paint-identical, shared
-    // with Picker): upstream S2 wraps the ListBox in a `<Virtualizer
-    // layoutOptions={{ padding: 8 }}>` (ComboBox.tsx:807), so the 8px list inset
-    // lives in the virtualizer LAYOUT and the listbox ELEMENT computes
-    // `padding: 0`; our non-virtualized port expresses the same inset as CSS
-    // `padding: 8` on the listbox element. The net option insets are identical, so
-    // the `padding` channel (0 ↔ 8) is dropped here.
-    remove: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
   },
   // D7: the option label copy on the `layer-2` listbox surface, both themes.
   contrast: {

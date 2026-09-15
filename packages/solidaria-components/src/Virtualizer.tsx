@@ -35,6 +35,7 @@
  */
 
 import {
+  type Accessor,
   type JSX,
   createContext,
   createEffect,
@@ -50,7 +51,7 @@ import type {
   DropTarget,
   ItemDropTarget,
 } from "@proyecto-viviana/solid-stately";
-import { createScrollView } from "@proyecto-viviana/solidaria";
+import { createScrollView, useLocale } from "@proyecto-viviana/solidaria";
 import {
   CollectionRendererContext,
   DefaultCollectionRenderer,
@@ -64,6 +65,7 @@ import {
   TableLayout,
   WaterfallLayout,
   calculateLinearVisibleRange,
+  resolveListRowSize,
   type DefaultVirtualizerLayoutOptions,
   type GridLayoutOptions,
   type LayoutInfo,
@@ -85,6 +87,12 @@ export interface LayoutOptionsDelegate<O> {
 export interface VirtualizerLayout<O = unknown> extends LayoutOptionsDelegate<O> {
   getVisibleRange?(context: VirtualizerRangeContext, options?: O): VirtualizerVisibleRange;
   getLayoutInfo?(index: number, context: VirtualizerLayoutInfoContext, options?: O): LayoutInfo;
+  getContentSize?(
+    itemCount: number,
+    context: VirtualizerLayoutInfoContext,
+    options?: O,
+  ): Size;
+  updateItemSize?(index: number, mainSize: number): boolean;
   getDropTargetFromPoint?(
     point: Point,
     itemCount: number,
@@ -115,6 +123,8 @@ export interface VirtualizerContextValue<O = unknown> {
   orientation: Orientation;
   getVisibleRange: (itemCount: number) => VirtualizerVisibleRange;
   getLayoutInfo: (index: number) => LayoutInfo;
+  getContentSize: (itemCount: number) => Size;
+  updateItemSize: (index: number, mainSize: number) => boolean;
   getDropTargetFromPoint: (point: Point, itemCount: number) => VirtualizerDropTarget | null;
   setDropTargetResolver: (resolver: VirtualizerDropTargetResolver | undefined) => void;
   setDropTargetItemCountResolver: (resolver: (() => number) | undefined) => void;
@@ -174,6 +184,12 @@ export interface VirtualizerProps<O> extends Omit<
   layout: VirtualizerLayoutClass<O> | VirtualizerLayout<O>;
   /** Layout options consumed by the layout implementation. */
   layoutOptions?: O;
+  /**
+   * Whether to observe each item's size with a ResizeObserver and re-measure
+   * when it changes. RAC `VirtualizerProps.shouldObserveItemSize`. Estimated
+   * rows still measure once even when this is false.
+   */
+  shouldObserveItemSize?: boolean;
   /** Optional renderer for collection drop indicators in virtualized flows. */
   renderDropIndicator?: (
     index: number,
@@ -213,7 +229,8 @@ function isSameLayoutInfo(a: LayoutInfo, b: LayoutInfo): boolean {
     a.rect.x === b.rect.x &&
     a.rect.y === b.rect.y &&
     a.rect.width === b.rect.width &&
-    a.rect.height === b.rect.height
+    a.rect.height === b.rect.height &&
+    a.estimatedSize === b.estimatedSize
   );
 }
 
@@ -226,6 +243,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     "children",
     "layout",
     "layoutOptions",
+    "shouldObserveItemSize",
     "renderDropIndicator",
     "getDropOperation",
     "allowsWindowScrolling",
@@ -262,6 +280,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const fallbackLayout = new ListLayout();
   const visibleRangeCache = new Map<number, VirtualizerVisibleRange>();
   const layoutInfoCache = new Map<number, LayoutInfo>();
+  const [layoutEpoch, setLayoutEpoch] = createSignal(0);
 
   const layout = createMemo<VirtualizerLayout<O>>(() => {
     if (typeof local.layout === "function") {
@@ -294,7 +313,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     }
     return { viewportWidth: measuredViewportWidth() } as O;
   });
-  const itemSize = createMemo(() => getObjectValue(virtualOptions(), "itemSize") ?? 40);
+  const itemSize = createMemo(() => resolveListRowSize(virtualOptions()));
   const overscan = createMemo(() => getObjectValue(virtualOptions(), "overscan") ?? 2);
   const orientation = createMemo<Orientation>(
     () => getObjectValue(virtualOptions(), "orientation") ?? "vertical",
@@ -355,6 +374,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     return nextRange;
   };
   const getLayoutInfo = (index: number): LayoutInfo => {
+    layoutEpoch();
     const ctx: VirtualizerLayoutInfoContext = {
       viewportWidth: measuredViewportWidth(),
       viewportHeight: measuredViewportSize(),
@@ -389,6 +409,35 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     }
     layoutInfoCache.set(index, nextInfo);
     return nextInfo;
+  };
+  const getContentSize = (itemCount: number): Size => {
+    layoutEpoch();
+    const ctx: VirtualizerLayoutInfoContext = {
+      viewportWidth: measuredViewportWidth(),
+      viewportHeight: measuredViewportSize(),
+    };
+    const fromLayout = resolvedLayout().getContentSize?.(
+      itemCount,
+      ctx,
+      layoutOptionsWithViewport(),
+    );
+    if (fromLayout) return fromLayout;
+    const range = getVisibleRange(itemCount);
+    const visible = Math.max(0, range.end - range.start);
+    const main = range.offsetTop + visible * itemSize() + range.offsetBottom;
+    if (orientation() === "horizontal") {
+      return { width: main, height: Math.max(0, measuredViewportSize()) };
+    }
+    return { width: Math.max(0, measuredViewportWidth()), height: main };
+  };
+  const updateItemSize = (index: number, mainSize: number): boolean => {
+    const changed = resolvedLayout().updateItemSize?.(index, mainSize) ?? false;
+    if (changed) {
+      layoutInfoCache.clear();
+      visibleRangeCache.clear();
+      setLayoutEpoch((epoch) => epoch + 1);
+    }
+    return changed;
   };
   const getDropTargetFromPoint = (
     point: Point,
@@ -757,6 +806,8 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     orientation: orientation(),
     getVisibleRange,
     getLayoutInfo,
+    getContentSize,
+    updateItemSize,
     getDropTargetFromPoint,
     setDropTargetResolver: assignDropTargetResolver,
     setDropTargetItemCountResolver: assignDropTargetItemCountResolver,
@@ -799,6 +850,7 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
           value={{
             layout: resolvedLayout() as VirtualizerLayout<unknown>,
             layoutOptions: resolvedLayoutOptions(),
+            shouldObserveItemSize: local.shouldObserveItemSize,
             allowsWindowScrolling: allowsWindowScrolling(),
           }}
         >
@@ -862,14 +914,23 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
   const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => {
     const base = scrollView.contentProps();
     const nextRange = range();
+    const count = itemCount();
+    const size = virtualizer && count > 0 ? virtualizer.getContentSize(count) : null;
     const horizontal = virtualizer?.orientation === "horizontal";
     const padStart = nextRange?.offsetTop ?? 0;
     const padEnd = nextRange?.offsetBottom ?? 0;
+    // RAC `useScrollView` sizes the content div from `contentSize`. Windowing
+    // spacers stay so in-flow collections (GridList) still skip scrolled-off
+    // rows; `box-sizing: border-box` keeps that padding inside contentSize so
+    // absolute VirtualizerItem coordinates and the scroll extent agree.
     return {
       ...base,
       style: {
         ...(base.style as JSX.CSSProperties | undefined),
         position: "relative",
+        "box-sizing": "border-box",
+        ...(size && size.width > 0 ? { width: `${size.width}px` } : null),
+        ...(size && size.height > 0 ? { height: `${size.height}px` } : null),
         ...(horizontal
           ? { "padding-left": `${padStart}px`, "padding-right": `${padEnd}px` }
           : { "padding-top": `${padStart}px`, "padding-bottom": `${padEnd}px` }),
@@ -893,23 +954,79 @@ function CollectionBranch<T>(props: CollectionBranchProps<T>): JSX.Element {
 }
 
 /**
+ * RAC `layoutInfoToStyle` (`react-aria/src/virtualizer/VirtualizerItem.tsx`).
+ * ListLayout sets `allowOverflow`, so overflow stays visible.
+ */
+export function layoutInfoToStyle(
+  layoutInfo: LayoutInfo,
+  dir: "ltr" | "rtl",
+): JSX.CSSProperties {
+  const xProperty = dir === "rtl" ? "right" : "left";
+  return {
+    position: "absolute",
+    overflow: "visible",
+    contain: "size layout style",
+    "z-index": 0,
+    top: `${layoutInfo.rect.y}px`,
+    [xProperty]: `${layoutInfo.rect.x}px`,
+    width: `${layoutInfo.rect.width}px`,
+    height: `${layoutInfo.rect.height}px`,
+  };
+}
+
+/**
  * RAC VirtualizerItem (`react-aria/src/virtualizer/VirtualizerItem.tsx` +
  * `layoutInfoToStyle`) wraps every visible view in `role="presentation"` with
- * `contain: size layout style`, `z-index: 0`, and a definite width/height.
- * Solid ListLayout still windows with in-flow padding spacers (absolute
- * `layoutInfo` + `estimatedRowHeight`/`padding` is the rest of #252), so this
- * wrapper stays in-flow and sizes from the item's used box. jsdom reports 0
- * for unstyled offsetHeight; skip containment then so collection tests keep
- * seeing the children.
+ * `contain: size layout style` and a definite width/height from layoutInfo.
+ * Pass `index` so the item is absolutely positioned; without it the wrapper
+ * stays in-flow (GridList still windows with CollectionRoot padding spacers).
+ * jsdom reports 0 for unstyled offsetHeight; skip containment then so
+ * collection tests keep seeing the children.
  */
-export function VirtualizerItem(props: { children: JSX.Element }): JSX.Element {
+export function VirtualizerItem(props: {
+  children: JSX.Element;
+  index?: number | Accessor<number>;
+}): JSX.Element {
+  const virtualizer = useVirtualizerContext();
+  const options = useContext(VirtualizerOptionsContext);
+  const locale = useLocale();
   const [box, setBox] = createSignal<{ width: number; height: number } | null>(null);
   const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+  const resolvedIndex = (): number | null => {
+    const value = props.index;
+    if (value == null) return null;
+    return typeof value === "function" ? value() : value;
+  };
+  const layout = (): LayoutInfo | null => {
+    const index = resolvedIndex();
+    if (index == null || !virtualizer) return null;
+    return virtualizer.getLayoutInfo(index);
+  };
 
   createEffect(() => {
     const node = el();
     if (!node) return;
+    const info = layout();
+    const index = resolvedIndex();
     const read = () => {
+      if (info != null && index != null && virtualizer) {
+        if (!info.estimatedSize && !options?.shouldObserveItemSize) return;
+        const prevHeight = node.style.height;
+        const prevWidth = node.style.width;
+        const prevContain = node.style.contain;
+        node.style.contain = "";
+        node.style.height = "";
+        node.style.width = "";
+        const width = node.scrollWidth;
+        const height = node.scrollHeight;
+        node.style.height = prevHeight;
+        node.style.width = prevWidth;
+        node.style.contain = prevContain;
+        if (height <= 0 || width <= 0) return;
+        const main = virtualizer.orientation === "horizontal" ? width : height;
+        virtualizer.updateItemSize(index, main);
+        return;
+      }
       const child = node.firstElementChild as HTMLElement | null;
       const height = child?.offsetHeight ?? 0;
       const width = node.clientWidth;
@@ -930,19 +1047,21 @@ export function VirtualizerItem(props: { children: JSX.Element }): JSX.Element {
     onCleanup(() => cancelAnimationFrame(frame));
   });
 
+  const style = (): JSX.CSSProperties => {
+    const info = layout();
+    if (info) return layoutInfoToStyle(info, locale().direction);
+    return {
+      position: "relative",
+      "z-index": 0,
+      overflow: "visible",
+      contain: box() ? "size layout style" : undefined,
+      width: "100%",
+      height: box() ? `${box()!.height}px` : undefined,
+    };
+  };
+
   return (
-    <div
-      role="presentation"
-      ref={setEl}
-      style={{
-        position: "relative",
-        "z-index": 0,
-        overflow: "visible",
-        contain: box() ? "size layout style" : undefined,
-        width: "100%",
-        height: box() ? `${box()!.height}px` : undefined,
-      }}
-    >
+    <div role="presentation" ref={setEl} style={style()}>
       {props.children}
     </div>
   );

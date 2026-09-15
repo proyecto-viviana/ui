@@ -349,7 +349,10 @@ const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSi
   fontSize: controlFont(),
   outlineStyle: "none",
   margin: 0,
-  padding: 8,
+  // S2 `listbox` has no padding; ListLayout `padding: 8` owns the inset
+  // (`ComboBox.tsx:799-800`). CSS padding here double-counts once items are
+  // absolutely positioned from layoutInfo.
+  padding: 0,
   listStyleType: "none",
 });
 
@@ -419,12 +422,11 @@ const comboBoxOption = style<ComboBoxOptionStyleProps>({
   // `control({register: "row"})` above deliberately contributes no backgroundColor
   // (only the `matte` register paints one), so nothing else reintroduces it.
   //
-  // Keyboard focus is still drawn by `focusRing()` above, and it is not at risk of
-  // being clipped here: the ring sits 4px outside the row's border box
-  // (outlineOffset 2 + outlineWidth 2, style/index.ts), while `comboBoxListBox` gives
-  // the scroll container `padding: 8` — so the ring stays inside the padding box that
-  // `overflow` clips to. No forced-colors branch is needed either: this option sets no
-  // `forcedColorAdjust`, so high-contrast mode still paints its own highlight.
+  // Keyboard focus is still drawn by `focusRing()` above. S2 listbox padding is
+  // 0; ListLayout `padding: 8` insets the absolutely positioned rows the same
+  // way RAC does, so the ring sits in that layout gutter. No forced-colors
+  // branch is needed either: this option sets no `forcedColorAdjust`, so
+  // high-contrast mode still paints its own highlight.
   backgroundColor: "transparent",
   color: {
     // Highlight is full-strength `accent` rather than a dimmed tint: an option has no

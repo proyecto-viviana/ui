@@ -65,6 +65,8 @@ export interface LayoutInfo {
   key: string | number;
   index: number;
   rect: Rect;
+  /** True while this rect still uses `estimatedRowHeight` / `estimatedRowSize`. */
+  estimatedSize?: boolean;
 }
 
 export interface VirtualizerVisibleRange {
@@ -93,6 +95,31 @@ export interface DefaultVirtualizerLayoutOptions {
    * @default 'vertical'
    */
   orientation?: Orientation;
+  /**
+   * Fixed row size along the primary axis. Alias of RAC `rowSize` / `rowHeight`.
+   * Takes precedence over `estimatedRowHeight`.
+   */
+  rowSize?: number;
+  /** @deprecated Use `rowSize`. */
+  rowHeight?: number;
+  /**
+   * Estimated row size when heights are variable. RAC `estimatedRowSize` /
+   * `estimatedRowHeight` — ComboBox/Picker pass `estimatedRowHeight: 32`.
+   */
+  estimatedRowSize?: number;
+  /** @deprecated Use `estimatedRowSize`. */
+  estimatedRowHeight?: number;
+  /**
+   * Padding around the list along both axes. RAC `ListLayoutOptions.padding`.
+   * ComboBox/Picker pass `padding: 8`; the listbox element itself is `padding: 0`.
+   */
+  padding?: number;
+  /** Gap between items along the primary axis. */
+  gap?: number;
+  estimatedHeadingSize?: number;
+  estimatedHeadingHeight?: number;
+  loaderSize?: number;
+  loaderHeight?: number;
 }
 
 export interface GridLayoutOptions extends DefaultVirtualizerLayoutOptions {
@@ -142,9 +169,35 @@ function clampRange(
   return {
     start: safeStart,
     end: safeEnd,
+    // Layout padding lives in layoutInfo / contentSize, not in these spacers.
+    // RAC CollectionRoot has no CSS padding; items are absolutely inset.
     offsetTop: safeStart * itemSize,
     offsetBottom: Math.max(0, (itemCount - safeEnd) * itemSize),
   };
+}
+
+/**
+ * Resolve the primary-axis row size. Fixed `rowSize` / `rowHeight` / `itemSize`
+ * win over `estimatedRowHeight`. Default 40 matches the existing Solid fallback
+ * (RAC ListLayout defaults to 48 only when neither fixed nor estimated is set).
+ */
+export function resolveListRowSizeInfo(options?: DefaultVirtualizerLayoutOptions): {
+  size: number;
+  estimated: boolean;
+} {
+  const fixed = options?.rowSize ?? options?.rowHeight ?? options?.itemSize;
+  if (fixed != null && Number.isFinite(fixed)) {
+    return { size: Math.max(1, fixed), estimated: false };
+  }
+  const estimated = options?.estimatedRowSize ?? options?.estimatedRowHeight;
+  if (estimated != null && Number.isFinite(estimated)) {
+    return { size: Math.max(1, estimated), estimated: true };
+  }
+  return { size: 40, estimated: false };
+}
+
+export function resolveListRowSize(options?: DefaultVirtualizerLayoutOptions): number {
+  return resolveListRowSizeInfo(options).size;
 }
 
 export function calculateLinearVisibleRange(
@@ -153,17 +206,22 @@ export function calculateLinearVisibleRange(
   viewportSize: number,
   itemSize: number,
   overscan: number,
+  padding = 0,
 ): VirtualizerVisibleRange {
   if (itemCount <= 0) return { start: 0, end: 0, offsetTop: 0, offsetBottom: 0 };
   const safeItemSize = Math.max(1, itemSize);
   const safeViewport = Math.max(1, viewportSize);
   const safeOverscan = Math.max(0, overscan);
-  const start = Math.floor(scrollOffset / safeItemSize) - safeOverscan;
+  const safePadding = Math.max(0, padding);
+  const start = Math.floor((scrollOffset - safePadding) / safeItemSize) - safeOverscan;
   const visibleCount = Math.ceil(safeViewport / safeItemSize) + safeOverscan * 2;
   return clampRange(itemCount, start, start + visibleCount, safeItemSize);
 }
 
 export class ListLayout {
+  /** Measured primary-axis size per index, filled by VirtualizerItem. */
+  private measuredMain = new Map<number, number>();
+
   getVisibleRange(
     ctx: VirtualizerRangeContext,
     options?: DefaultVirtualizerLayoutOptions,
@@ -172,9 +230,41 @@ export class ListLayout {
       ctx.itemCount,
       ctx.scrollOffset,
       ctx.viewportSize,
-      options?.itemSize ?? 40,
+      resolveListRowSize(options),
       options?.overscan ?? ctx.overscan,
+      Math.max(0, options?.padding ?? 0),
     );
+  }
+
+  updateItemSize(index: number, mainSize: number): boolean {
+    if (!(mainSize > 0)) return false;
+    if (this.measuredMain.get(index) === mainSize) return false;
+    this.measuredMain.set(index, mainSize);
+    return true;
+  }
+
+  getContentSize(
+    itemCount: number,
+    context: VirtualizerLayoutInfoContext,
+    options?: DefaultVirtualizerLayoutOptions,
+  ): Size {
+    const { size: rowSize } = resolveListRowSizeInfo(options);
+    const padding = Math.max(0, options?.padding ?? 0);
+    const gap = Math.max(0, options?.gap ?? 0);
+    const horizontal = (options?.orientation ?? "vertical") === "horizontal";
+    let main = 0;
+    if (itemCount > 0) {
+      main = padding;
+      for (let i = 0; i < itemCount; i++) {
+        main += this.measuredMain.get(i) ?? rowSize;
+        if (i < itemCount - 1) main += gap;
+      }
+      main += padding;
+    }
+    if (horizontal) {
+      return { width: main, height: Math.max(0, context.viewportHeight ?? 0) };
+    }
+    return { width: Math.max(0, context.viewportWidth), height: main };
   }
 
   getLayoutInfo(
@@ -182,29 +272,35 @@ export class ListLayout {
     context: VirtualizerLayoutInfoContext,
     options?: DefaultVirtualizerLayoutOptions,
   ): LayoutInfo {
-    const itemSize = Math.max(1, options?.itemSize ?? 40);
+    const { size: rowSize, estimated } = resolveListRowSizeInfo(options);
+    const padding = Math.max(0, options?.padding ?? 0);
+    const gap = Math.max(0, options?.gap ?? 0);
+    const measured = this.measuredMain.get(index);
+    const main = measured ?? rowSize;
+    const estimatedSize = measured == null && estimated;
+    const origin = this.offsetForIndex(index, rowSize, padding, gap);
     if ((options?.orientation ?? "vertical") === "horizontal") {
-      // Items stack along the x axis; the cross axis (height) fills the viewport.
       return {
         key: String(index),
         index,
+        estimatedSize,
         rect: {
-          x: index * itemSize,
-          y: 0,
-          width: itemSize,
-          height: Math.max(0, context.viewportHeight ?? 0),
+          x: origin,
+          y: padding,
+          width: main,
+          height: Math.max(0, (context.viewportHeight ?? 0) - padding * 2),
         },
       };
     }
-    // Items stack along the y axis; the cross axis (width) fills the viewport.
     return {
       key: String(index),
       index,
+      estimatedSize,
       rect: {
-        x: 0,
-        y: index * itemSize,
-        width: Math.max(0, context.viewportWidth),
-        height: itemSize,
+        x: padding,
+        y: origin,
+        width: Math.max(0, context.viewportWidth - padding * 2),
+        height: main,
       },
     };
   }
@@ -215,23 +311,42 @@ export class ListLayout {
     options?: DefaultVirtualizerLayoutOptions,
   ): VirtualizerDropTarget | null {
     if (itemCount <= 0) return { type: "root", index: -1, position: "on" };
-    const itemSize = Math.max(1, options?.itemSize ?? 40);
-    // Measure the drop point along the primary (scroll) axis.
-    const offset = (options?.orientation ?? "vertical") === "horizontal" ? point.x : point.y;
+    const itemSize = resolveListRowSize(options);
+    const padding = Math.max(0, options?.padding ?? 0);
+    const gap = Math.max(0, options?.gap ?? 0);
+    const stride = itemSize + gap;
+    const offset =
+      ((options?.orientation ?? "vertical") === "horizontal" ? point.x : point.y) - padding;
     if (offset < 0) {
       return { type: "item", index: 0, position: "before" };
     }
-    const totalSize = itemCount * itemSize;
+    const totalSize = itemCount * stride - (itemCount > 0 ? gap : 0);
     if (offset >= totalSize) {
       return { type: "item", index: itemCount - 1, position: "after" };
     }
-    const rawIndex = Math.floor(offset / itemSize);
+    const rawIndex = Math.floor(offset / stride);
     const index = Math.max(0, Math.min(rawIndex, itemCount - 1));
-    const offsetWithinItem = Math.max(0, offset - index * itemSize);
+    const offsetWithinItem = Math.max(0, offset - index * stride);
     const threshold = itemSize / 3;
     const position: VirtualizerDropTarget["position"] =
       offsetWithinItem < threshold ? "before" : offsetWithinItem > threshold * 2 ? "after" : "on";
     return { type: "item", index, position };
+  }
+
+  private offsetForIndex(
+    index: number,
+    rowSize: number,
+    padding: number,
+    gap: number,
+  ): number {
+    if (this.measuredMain.size === 0) {
+      return padding + index * (rowSize + gap);
+    }
+    let offset = padding;
+    for (let i = 0; i < index; i++) {
+      offset += (this.measuredMain.get(i) ?? rowSize) + gap;
+    }
+    return offset;
   }
 }
 
@@ -275,6 +390,23 @@ export class GridLayout {
     const offsetBottom = Math.max(0, (totalRows - clampedStartRow - renderedRows) * rowHeight);
 
     return { start, end, offsetTop, offsetBottom };
+  }
+
+  getContentSize(
+    itemCount: number,
+    context: VirtualizerLayoutInfoContext,
+    options?: GridLayoutOptions,
+  ): Size {
+    const rowHeight = Math.max(
+      1,
+      options?.rowHeight ?? options?.itemSize ?? options?.minItemSize ?? 40,
+    );
+    const columns = resolveGridColumnCount(context.viewportWidth, options);
+    const totalRows = itemCount <= 0 ? 0 : Math.ceil(itemCount / columns);
+    return {
+      width: Math.max(0, context.viewportWidth),
+      height: totalRows * rowHeight,
+    };
   }
 
   getLayoutInfo(

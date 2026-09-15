@@ -1204,18 +1204,26 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
             when={local.children}
             fallback={
               <For each={items()}>
-                {(node) => {
+                {(node, index) => {
                   const item = <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>;
-                  return isVirtualized() ? <VirtualizerItem>{item}</VirtualizerItem> : item;
+                  return isVirtualized() ? (
+                    <VirtualizerItem index={index()}>{item}</VirtualizerItem>
+                  ) : (
+                    item
+                  );
                 }}
               </For>
             }
           >
             <For each={items()}>
-              {(node) => {
+              {(node, index) => {
                 const value = getNodeValue(node);
                 const child = value != null ? (local.children as Function)!(value) : null;
-                return isVirtualized() ? <VirtualizerItem>{child}</VirtualizerItem> : child;
+                return isVirtualized() ? (
+                  <VirtualizerItem index={index()}>{child}</VirtualizerItem>
+                ) : (
+                  child
+                );
               }}
             </For>
           </Show>

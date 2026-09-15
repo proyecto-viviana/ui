@@ -204,14 +204,6 @@ const listScenario: DriverScenario = {
   // (`visibility` is not in the default allowlist).
   styleProps: {
     add: ["grid-template-columns", "grid-template-areas", "visibility"],
-    // VIRTUALIZER-DECOMPOSITION divergence (documented, paint-identical): upstream
-    // S2 wraps the ListBox in a `<Virtualizer layout={ListLayout} layoutOptions={{
-    // padding: 8 }}>`, so the 8px list inset lives in the virtualizer LAYOUT and
-    // the listbox ELEMENT computes `padding: 0`. Our port is non-virtualized and
-    // expresses the same inset as CSS `padding: 8` on the listbox element. The net
-    // option insets are identical (asserted by picker-visual.spec.ts), so the
-    // `padding` channel (0 ↔ 8) is dropped here. Precedent: menu's outline-color.
-    remove: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
   },
   // D7: the option label copy on the `layer-2` listbox surface, both themes.
   contrast: {

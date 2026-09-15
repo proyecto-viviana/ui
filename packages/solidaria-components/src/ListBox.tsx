@@ -964,7 +964,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                       <div role="group" aria-label={entry.section["aria-label"]}>
                                         <For each={entry.items}>
                                           {(indexedItem) => (
-                                            <VirtualizerItem>
+                                            <VirtualizerItem index={indexedItem.index}>
                                               <ListBoxItemWithDropIndicators
                                                 item={indexedItem.item}
                                                 itemIndex={indexedItem.index}
@@ -982,7 +982,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                   </Section>
                                 </div>
                               ) : (
-                                <VirtualizerItem>
+                                <VirtualizerItem index={entry.item.index}>
                                   <ListBoxItemWithDropIndicators
                                     item={entry.item.item}
                                     itemIndex={entry.item.index}
@@ -998,7 +998,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <>
                             <For each={visibleItems()}>
                               {(item, index) => (
-                                <VirtualizerItem>
+                                <VirtualizerItem index={() => (virtualRange()?.start ?? 0) + index()}>
                                   <ListBoxItemWithDropIndicators
                                     item={item as T}
                                     itemIndex={() => (virtualRange()?.start ?? 0) + index()}

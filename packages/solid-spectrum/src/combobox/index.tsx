@@ -339,7 +339,10 @@ const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSi
   fontSize: controlFont(),
   outlineStyle: "none",
   margin: 0,
-  padding: 8,
+  // S2 `listbox` has no padding; ListLayout `padding: 8` owns the inset
+  // (`ComboBox.tsx:799-800`). CSS padding here double-counts once items are
+  // absolutely positioned from layoutInfo.
+  padding: 0,
   listStyleType: "none",
 });
 

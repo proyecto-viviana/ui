@@ -26,6 +26,16 @@ history:
       at: 2026-09-15,
       note: "ComboBoxListBox now consumes CollectionRoot and wraps options in VirtualizerItem (contain: size layout style, 41062bd0). Items stay in-flow: ListLayout still ignores estimatedRowHeight/padding (falls back to itemSize 40). ComboBox D13 keyboard-only leftover is 7px checkmark AA. Absolute layoutInfo + observe item size still remaining. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ListLayout honors estimatedRowHeight/padding, stores measured row sizes, getContentSize includes the 8px inset. VirtualizerItem with index is position:absolute from layoutInfo (RAC layoutInfoToStyle); CollectionRoot sizes the content div from contentSize with border-box so windowing spacers stay inside that extent. ComboBox/Picker listbox CSS padding is 0 matching S2. D3 padding-channel waiver removed. Playwright D2+D13 not yet re-run.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "CollectionRoot windowing spacers no longer include layout padding (RAC content padding 0; items absolutely inset). ComboBox D13 open-arrow green in isolation. keyboard-only still 7/25440 checkmark AA at identical 12.5px geometry; Solid SVG flex-shrink 0 vs React 1 (createUIIcon uiIconBaseStyles + comboBoxCheckmark, S2 Menu.checkmark has neither). D2 open-enter GPU-flakes Page crashed. Not verified.",
+    }
 ---
 
 ## Cause

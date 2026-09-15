@@ -208,6 +208,8 @@ describe("Virtualizer", () => {
     expect(screen.queryByText("Item 20")).not.toBeInTheDocument();
     const content = listbox.firstElementChild as HTMLElement;
     expect(content.style.paddingTop).toBe("2160px");
+    expect(content.style.boxSizing).toBe("border-box");
+    expect(content.style.height).toBe("2400px");
 
     if (clientHeight) {
       Object.defineProperty(HTMLElement.prototype, "clientHeight", clientHeight);
@@ -2567,6 +2569,50 @@ describe("Virtualizer", () => {
       expect(info.rect).toEqual({ x: 0, y: 100, width: 100, height: 50 });
     });
 
+    it("ListLayout.getVisibleRange keeps layout padding out of windowing spacers", () => {
+      const layout = new ListLayout();
+      expect(
+        layout.getVisibleRange(
+          { itemCount: 3, scrollOffset: 0, viewportSize: 200, overscan: 0 },
+          { estimatedRowHeight: 32, padding: 8 },
+        ),
+      ).toEqual({ start: 0, end: 3, offsetTop: 0, offsetBottom: 0 });
+    });
+
+    it("ListLayout honors estimatedRowHeight and padding (RAC ListLayout / S2 ComboBox)", () => {
+      const layout = new ListLayout();
+      const info = layout.getLayoutInfo(
+        1,
+        { viewportWidth: 240, viewportHeight: 200 },
+        { estimatedRowHeight: 32, padding: 8 },
+      );
+      expect(info.rect).toEqual({ x: 8, y: 40, width: 224, height: 32 });
+      expect(info.estimatedSize).toBe(true);
+      expect(
+        layout.getContentSize(
+          3,
+          { viewportWidth: 240, viewportHeight: 200 },
+          { estimatedRowHeight: 32, padding: 8 },
+        ),
+      ).toEqual({ width: 240, height: 112 });
+    });
+
+    it("ListLayout.updateItemSize repositions later rows from the measured size", () => {
+      const layout = new ListLayout();
+      expect(layout.updateItemSize(0, 30)).toBe(true);
+      expect(layout.updateItemSize(0, 30)).toBe(false);
+      const info = layout.getLayoutInfo(
+        1,
+        { viewportWidth: 240 },
+        { estimatedRowHeight: 32, padding: 8 },
+      );
+      expect(info.rect.y).toBe(38);
+      expect(info.estimatedSize).toBe(true);
+      expect(
+        layout.getContentSize(3, { viewportWidth: 240 }, { estimatedRowHeight: 32, padding: 8 }),
+      ).toEqual({ width: 240, height: 110 });
+    });
+
     it("ListLayout.getDropTargetFromPoint measures the x axis when horizontal", () => {
       const layout = new ListLayout();
       // x=130 with itemSize 60 -> index 2, 10px into the item (< 20px threshold) -> before.
@@ -2683,5 +2729,30 @@ describe("Virtualizer", () => {
       expect(content.style.paddingRight).not.toBe("0px");
       expect(content.style.paddingTop).toBe("");
     });
+  });
+
+  it("positions ListBox VirtualizerItem from layoutInfo", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const items = Array.from({ length: 8 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    render(() => (
+      <Virtualizer layout={ListLayout} layoutOptions={{ itemSize: 40, padding: 8 }}>
+        <ListBox aria-label="Absolute items" items={items} getKey={(item) => item.id}>
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+    const option = screen.getByRole("option", { name: "Item 1" });
+    const wrapper = option.parentElement as HTMLElement;
+    expect(wrapper.getAttribute("role")).toBe("presentation");
+    expect(wrapper.style.position).toBe("absolute");
+    expect(wrapper.style.top).toBe("48px");
+    expect(wrapper.style.left).toBe("8px");
   });
 });

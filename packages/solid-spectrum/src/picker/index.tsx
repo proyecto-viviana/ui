@@ -369,7 +369,8 @@ const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>(
   outlineStyle: "none",
   margin: 0,
   listStyleType: "none",
-  padding: 8,
+  // S2 `listbox` has no padding; ListLayout `padding: 8` owns the inset.
+  padding: 0,
 });
 
 // S2 Picker.tsx:475-484 — width additions on the composed Popover `styles` prop.
