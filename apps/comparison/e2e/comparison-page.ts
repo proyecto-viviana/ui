@@ -85,10 +85,13 @@ export async function waitForPaintSettle(page: Page, paintBudgetMs = defaultPain
  * WSL Chromium 151 never issues those frames through SwiftShader, so the
  * action deadlocks. DOM `scrollIntoView` does not need a frame.
  */
-export async function scrollLocatorIntoView(target: Locator) {
-  await target.evaluate((element) => {
-    element.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+export async function scrollLocatorIntoView(
+  target: Locator,
+  block: ScrollLogicalPosition = "nearest",
+) {
+  await target.evaluate((element, align) => {
+    element.scrollIntoView({ block: align, inline: "nearest" });
+  }, block);
 }
 
 /**

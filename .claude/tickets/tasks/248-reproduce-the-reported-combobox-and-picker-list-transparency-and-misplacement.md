@@ -31,6 +31,11 @@ history:
       at: 2026-09-15,
       note: "Host Chromium 151 + .env.local COMPARISON_CHROMIUM_ARGS. ComboBox+Picker D2 open-enter 4/4 passed. D13 0/4. ComboBox click/keyboard still Solid data-placement top vs React bottom, plus RAC Hidden <template>. Picker remaining is trigger data-focused/data-open (#254) and option aria-labelledby / data-focus-visible. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "M5 D13 data-placement top vs bottom was stacked-preview geometry, not createOverlayPosition. ComboBox uses data-preview-layout=stacked; Solid field starts at y≈1550 in a 720 viewport. clickLocator scrollIntoView nearest then pins it to the viewport bottom (groupTop 695) and both RAC and Solid flip; React stays in view at groupTop 456 and stays bottom. forEachScenarioPanel now centers the driven canvas first (both stacks groupTop 397, data-placement bottom, overlay 106px). Do not invent RAC Hidden <template>. Not verified.",
+    }
 ---
 
 ## Cause

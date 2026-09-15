@@ -4,6 +4,7 @@ import {
   frameworkCanvas,
   hoverLocator,
   pressLocator,
+  scrollLocatorIntoView,
   styledSection,
   waitForComparisonRouteReady,
   type RouteReadyOptions,
@@ -116,6 +117,12 @@ export async function forEachScenarioPanel(
 
     const section = await styledSection(page);
     const canvas = await frameworkCanvas(section, frameworkLabels[framework]);
+    // Stacked preview slugs (ComboBox, DatePicker, …) put Solid below the
+    // fold. A later `scrollIntoView({block:"nearest"})` then pins that
+    // trigger to the viewport bottom, so RAC/Solid both flip to `top` while
+    // the already-visible React panel stays `bottom`. Center the canvas
+    // first so both stacks measure the same available space.
+    await scrollLocatorIntoView(canvas, "center");
     const ctx: PanelContext = { page, canvas, framework };
 
     await scenario.beforePanel?.(ctx);
