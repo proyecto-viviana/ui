@@ -16,6 +16,16 @@ history:
       at: 2026-09-02,
       note: "ported RAC enter/exit onto headless Popover; deleted ActionMenu timers and DatePicker duplicate machines; changeset popover-enter-exit-animation.md; not committed",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "closeout at 735d4bd5: source Done-when already on HEAD (179e19c7 + wave-3 seeds). ActionMenu has no setTimeout/rAF; createEnter/Exit only on Popover+Modal (+ primitive). Focused unit tests 8 files/204 passed. D13 and certified D2 registration on ComboBox/Picker/Menu/ActionMenu remain other tickets. Proof: .agents/vivianastack/overnight-overlay-251/proof.md. No product edit.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "D2: registerMotionDriver open-enter (overlay scope, freezer-safe click + Escape) on ComboBox/Picker/Menu/ActionMenu certified specs, mirroring DatePicker. Dropped stale hand-rolled D2 comments. Playwright listed 8 titles; Chromium headless shell missing so D2 not executed. D13 still #244/#245/#246/#248. Proof + d2-result.json under overnight-overlay-251.",
+    }
 ---
 
 ## Cause

@@ -2,6 +2,7 @@ import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -42,12 +43,16 @@ import { expect } from "@playwright/test";
  * open list — same roving-tabindex contract certified on Menu, CP9.37), D6 (AX:
  * the `role="menu"` subtree + each item's accessible name AND description —
  * shared with Menu, landed in CP9.39), D7 (contrast: item copy on `layer-2`).
+ *   MOTION (`actionMenuMotionScenario`) — D2, the popover enter transition (S2
+ *   `Popover` opacity/translate via RAC `useEnterAnimation` / Solid
+ *   `createEnterAnimation`), captured from the `overlay` scope so the trigger's
+ *   own press transition never leaks in. No `beforePanel`: the freezer is
+ *   already running when the trigger opens the menu.
+ *
  * The LIST scenario carries CP9.32's tracked/deferred artifacts UNCHANGED:
  *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style channel
  *     (both stacks now `<div role="menu">`; `outline-style:none` on both, zero paint).
  *     A `color`-inheritance delta, NOT retired by the ul→div refactor (see CP9.37).
- *   - D2 (motion): the hand-rolled `ActionMenuPopover` enter/exit fade is the same
- *     surface concern as Menu's `menuPopover`, tracked with the overlay realignment.
  *   - D4/D8 (open-on-press, type-ahead, `onAction`, hit-area) are
  *     `MenuTrigger`/collection/interaction behaviors, not paint — trigger unit.
  */
@@ -187,3 +192,36 @@ registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
 registerFocusTrailDriver(listScenario);
 registerAxTreeDriver(listScenario);
+
+/**
+ * D2 — the popover enter motion. No `beforePanel`; the trigger opens the menu
+ * while the freezer is already running, so the transient enter transition (S2
+ * `Popover` opacity/translate via `useEnterAnimation`) is caught and paused on
+ * its first frame, captured from the `overlay` scope only.
+ */
+const actionMenuMotionScenario: DriverScenario = {
+  slug: "actionmenu",
+  title: "ActionMenu motion",
+  target: triggerButton,
+  pixelTarget: menuList,
+  cases: [{ id: "open", params: { size: "M" } }],
+  motion: {
+    triggers: [
+      {
+        id: "open-enter",
+        scopes: ["overlay"],
+        run: async ({ target, page }) => {
+          await clickLocator(target);
+          await expect(page.getByRole("menu", { name: menuName })).toHaveCount(1);
+        },
+        cleanup: async ({ page }) => {
+          await page.keyboard.press("Escape");
+          await expect(page.getByRole("menu", { name: menuName })).toHaveCount(0);
+        },
+        settleMs: 260,
+      },
+    ],
+  },
+};
+
+registerMotionDriver(actionMenuMotionScenario);

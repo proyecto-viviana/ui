@@ -9,6 +9,7 @@ import {
   seedOpenReopenScrollJourney,
 } from "../drivers/journeys";
 import { overlayJourneyAlphabet, registerJourneyFuzz } from "../drivers/journeys-fuzz";
+import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import { registerRtlDriver } from "../drivers/rtl";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
@@ -64,9 +65,14 @@ import { expect } from "@playwright/test";
  * S2 `Provider` (picker-demo.ts `pickerDemoLocaleFromWindow`), matching the
  * button/accordion locale wiring, so the D10 driver's `locale: "ar-AE"` case
  * merge flips both stacks to `dir="rtl"`.
+ *
+ *   MOTION (`pickerMotionScenario`) — D2, the popover enter transition (S2
+ *   `Popover` opacity/translate via RAC `useEnterAnimation` / Solid
+ *   `createEnterAnimation`), captured from the `overlay` scope so the trigger's
+ *   own press transition never leaks in. No `beforePanel`: the freezer is
+ *   already running when the trigger opens the list.
+ *
  * NOT registered here:
- *   - D2 (motion): the popover enter/exit fade is the hand-rolled Picker popover
- *     surface concern shared with Menu's overlay-realignment follow-up.
  *   - D4 (events): open-on-press, type-ahead, `onSelectionChange`, focus
  *     restoration are `Select`/collection interaction behaviors, covered by
  *     picker-visual.spec.ts, not the surfaces' paint.
@@ -263,6 +269,39 @@ registerContrastDriver(listScenario);
 registerTargetSizeDriver(listScenario);
 registerForcedColorsDriver(listScenario);
 registerRtlDriver(listScenario, { cases: ["size-m"] });
+
+/**
+ * D2 — the popover enter motion. No `beforePanel`; the trigger opens the list
+ * while the freezer is already running, so the transient enter transition (S2
+ * `Popover` opacity/translate via `useEnterAnimation`) is caught and paused on
+ * its first frame, captured from the `overlay` scope only.
+ */
+const pickerMotionScenario: DriverScenario = {
+  slug: "picker",
+  title: "Picker motion",
+  target: triggerButton,
+  pixelTarget: listbox,
+  cases: [{ id: "open", params: { size: "M" } }],
+  motion: {
+    triggers: [
+      {
+        id: "open-enter",
+        scopes: ["overlay"],
+        run: async ({ target, page }) => {
+          await clickLocator(target);
+          await expect(page.getByRole("listbox")).toHaveCount(1);
+        },
+        cleanup: async ({ page }) => {
+          await page.keyboard.press("Escape");
+          await expect(page.getByRole("listbox")).toHaveCount(0);
+        },
+        settleMs: 260,
+      },
+    ],
+  },
+};
+
+registerMotionDriver(pickerMotionScenario);
 
 /**
  * D13 journeys drive the CLOSED trigger (no beforePanel). Overlay geometry is

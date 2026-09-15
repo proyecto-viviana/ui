@@ -2,6 +2,7 @@ import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
+import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -71,11 +72,15 @@ import { expect } from "@playwright/test";
  * of dangling), threads those id-carrying props through `MenuItemRenderProps`, and
  * the S2 `MenuItem` merges them into its `TextContext` (description slot) +
  * `KeyboardContext` so the rendered `Text`/`Keyboard` elements carry the ids the
- * item's `aria-describedby` references. NOT registered
- * here:
- *   - D2 (motion): the popover enter/exit fade is a `menuPopover`-surface concern
- *     (the port does not internally drive `isEntering`), tracked with the shared
- *     headless-overlay realignment follow-up.
+ * item's `aria-describedby` references.
+ *
+ *   MOTION (`menuMotionScenario`) — D2, the popover enter transition (S2
+ *   `Popover` opacity/translate via RAC `useEnterAnimation` / Solid
+ *   `createEnterAnimation`), captured from the `overlay` scope so the trigger's
+ *   own press transition never leaks in. No `beforePanel`: the freezer is
+ *   already running when the trigger opens the menu.
+ *
+ * NOT registered here:
  *   - D4/D5 (events/focus): open-on-press, arrow-key roving, type-ahead, close,
  *     `onAction`/`onSelectionChange`, and focus restoration are
  *     `MenuTrigger`/collection behaviors, not the list's paint; they belong to a
@@ -86,6 +91,10 @@ import { expect } from "@playwright/test";
 
 const triggerLabel = "Layer actions";
 const menuName = "Layer actions";
+
+/** The closed MenuTrigger `ActionButton` in THIS panel. */
+const triggerButton: TargetResolver = ({ canvas }) =>
+  canvas.getByRole("button", { name: triggerLabel }).first();
 
 /** The `ul[role="menu"]` list — the D1/D3/AX/contrast root. */
 const menuList: TargetResolver = ({ page }) => page.getByRole("menu", { name: menuName });
@@ -216,3 +225,36 @@ registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
 registerFocusTrailDriver(listScenario);
 registerAxTreeDriver(listScenario);
+
+/**
+ * D2 — the popover enter motion. No `beforePanel`; the trigger opens the menu
+ * while the freezer is already running, so the transient enter transition (S2
+ * `Popover` opacity/translate via `useEnterAnimation`) is caught and paused on
+ * its first frame, captured from the `overlay` scope only.
+ */
+const menuMotionScenario: DriverScenario = {
+  slug: "menu",
+  title: "Menu motion",
+  target: triggerButton,
+  pixelTarget: menuList,
+  cases: [{ id: "open", params: { size: "M", selectionMode: "none" } }],
+  motion: {
+    triggers: [
+      {
+        id: "open-enter",
+        scopes: ["overlay"],
+        run: async ({ target, page }) => {
+          await clickLocator(target);
+          await expect(page.getByRole("menu", { name: menuName })).toHaveCount(1);
+        },
+        cleanup: async ({ page }) => {
+          await page.keyboard.press("Escape");
+          await expect(page.getByRole("menu", { name: menuName })).toHaveCount(0);
+        },
+        settleMs: 260,
+      },
+    ],
+  },
+};
+
+registerMotionDriver(menuMotionScenario);
