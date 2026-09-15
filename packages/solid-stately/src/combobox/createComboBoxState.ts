@@ -20,7 +20,14 @@
  * either type to filter options or select from a list.
  */
 
-import { createSignal, createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import {
+  batch,
+  createSignal,
+  createMemo,
+  createEffect,
+  untrack,
+  type Accessor,
+} from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
@@ -245,10 +252,16 @@ export function createComboBoxState<T = unknown>(
   };
 
   const setSelectedKey = (key: Key | null) => {
-    if (!isSelectionControlled()) {
-      setInternalSelectedKey(key);
-    }
-    getProps().onSelectionChange?.(key);
+    // RAC's parent `setState` is batched with the rest of the click/keydown.
+    // Solid signal writes flush immediately outside a `batch`, so a fully
+    // controlled `onSelectionChange` that updates selectedKey then inputValue
+    // would close on the key change and auto-open on the later input change.
+    batch(() => {
+      if (!isSelectionControlled()) {
+        setInternalSelectedKey(key);
+      }
+      getProps().onSelectionChange?.(key);
+    });
   };
 
   // ---- Overlay State ----
@@ -478,6 +491,8 @@ export function createComboBoxState<T = unknown>(
     if (isSelectionControlled() && isInputControlled()) {
       getProps().onSelectionChange?.(selectedKey());
       const item = selectedItem();
+      // RAC useComboBoxState.ts:543-545 — stop the auto-open-on-input effect
+      // from reopening after this close.
       setLastValue(item?.textValue ?? "");
       closeMenu();
     } else {
@@ -513,14 +528,17 @@ export function createComboBoxState<T = unknown>(
     }
 
     if (overlayState.isOpen() && focusedKey != null) {
-      // If focused key is already selected, just commit
-      if (selectedKey() === focusedKey) {
-        commitSelection();
-      } else {
-        // Select the focused item
-        setSelectedKey(focusedKey);
-        closeMenu();
-      }
+      // RAC useComboBoxState.ts:564-572 — already-selected key goes through
+      // commitSelection. A new key is `selectionManager.select()` without
+      // close; the open/close effect then closes while the menu is still
+      // open, so auto-open (input !== last && !isOpen) is skipped.
+      batch(() => {
+        if (selectedKey() === focusedKey) {
+          commitSelection();
+        } else {
+          listState.selectionManager.select(focusedKey);
+        }
+      });
     } else {
       commitValue();
     }
@@ -553,41 +571,60 @@ export function createComboBoxState<T = unknown>(
   };
 
   // ---- Effects for Auto Open/Close ----
+  // RAC useComboBoxState.ts:408-496 is one effect: auto-open, auto-close,
+  // close-on-selection, then lastValue. Close-on-selection must not run as a
+  // later effect — after a fully-controlled commit the parent updates
+  // inputValue, a trailing close leaves !isOpen && input !== last, and
+  // auto-open reopens (D13 Enter re-announces "N options available.").
+  // lastDisplayValue starts as the current key so an initial selectedKey is
+  // not treated as a selection change (RAC lastValueRef = useRef(displayValue)).
+  let lastDisplayValue: Key | null | undefined = untrack(selectedKey);
+
   createEffect(() => {
     const input = inputValue();
     const filtered = filteredCollection();
     const isOpen = overlayState.isOpen();
     const last = lastValue();
     const focused = isFocused();
+    const key = isMultiple() ? null : selectedKey();
 
-    // Auto-open when typing
-    if (
-      focused &&
-      (filtered.size > 0 || allowsEmptyCollection()) &&
-      !isOpen &&
-      input !== last &&
-      menuTrigger() !== "manual"
-    ) {
-      open(null, "input");
-    }
-
-    // Auto-close when empty (unless showing all)
-    if (!showAllItems() && !allowsEmptyCollection() && isOpen && filtered.size === 0) {
-      closeMenu();
-    }
-
-    // Clear focused key when input changes
-    if (input !== last) {
-      listState.setFocusedKey(null);
-      setShowAllItems(false);
-
-      // Clear selection when input is cleared (if not fully controlled)
-      if (input === "" && (!isInputControlled() || !isSelectionControlled())) {
-        setSelectedKey(null);
+    batch(() => {
+      // Auto-open when typing
+      if (
+        focused &&
+        (filtered.size > 0 || allowsEmptyCollection()) &&
+        !isOpen &&
+        input !== last &&
+        menuTrigger() !== "manual"
+      ) {
+        open(null, "input");
       }
 
-      setLastValue(input);
-    }
+      // Auto-close when empty (unless showing all)
+      if (!showAllItems() && !allowsEmptyCollection() && isOpen && filtered.size === 0) {
+        closeMenu();
+      }
+
+      // Close when an item is selected (RAC displayValue !== lastValueRef).
+      if (key != null && key !== lastDisplayValue) {
+        closeMenu();
+      }
+
+      // Clear focused key when input changes
+      if (input !== last) {
+        listState.setFocusedKey(null);
+        setShowAllItems(false);
+
+        // Clear selection when input is cleared (if not fully controlled)
+        if (input === "" && (!isInputControlled() || !isSelectionControlled())) {
+          setSelectedKey(null);
+        }
+
+        setLastValue(input);
+      }
+
+      lastDisplayValue = key;
+    });
   });
 
   // Keep the input text in sync with the selected item (single mode only).
@@ -620,16 +657,6 @@ export function createComboBoxState<T = unknown>(
       }
     }
   });
-
-  // Close when selection changes (only in single mode)
-  createEffect((prevKey: Key | null | undefined) => {
-    if (isMultiple()) return undefined;
-    const key = selectedKey();
-    if (key != null && key !== prevKey) {
-      closeMenu();
-    }
-    return key;
-  }, undefined);
 
   // ---- Selection Methods for ListState compatibility ----
   // These methods allow createOption to work with ComboBoxState

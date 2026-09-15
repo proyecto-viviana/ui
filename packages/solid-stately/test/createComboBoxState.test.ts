@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { createRoot, createSignal } from "solid-js";
 import { createComboBoxState, defaultContainsFilter } from "../src/combobox";
 
 interface TestItem {
@@ -105,6 +105,23 @@ describe("createComboBoxState", () => {
           allowsEmptyCollection: true,
         });
 
+        expect(state.isOpen()).toBe(true);
+        dispose();
+      });
+    });
+
+    it("keeps defaultOpen after effects flush when a selectedKey is already set", async () => {
+      await createRoot(async (dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2",
+          defaultOpen: true,
+          allowsEmptyCollection: true,
+        });
+
+        await Promise.resolve();
         expect(state.isOpen()).toBe(true);
         dispose();
       });
@@ -441,6 +458,59 @@ describe("createComboBoxState", () => {
         state.commit();
 
         expect(onSelectionChange).toHaveBeenCalledWith("3");
+        dispose();
+      });
+    });
+
+    it("does not reopen when committing a new selection on a fully controlled combobox", async () => {
+      await createRoot(async (dispose) => {
+        const onOpenChange = vi.fn();
+        const onSelectionChange = vi.fn();
+        const [selectedKey, setSelectedKey] = createSignal<string | null>("1");
+        const [inputValue, setInputValue] = createSignal("Apple");
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          get selectedKey() {
+            return selectedKey();
+          },
+          get inputValue() {
+            return inputValue();
+          },
+          onSelectionChange: (key) => {
+            onSelectionChange(key);
+            if (key == null) {
+              return;
+            }
+            const next = String(key);
+            setSelectedKey(next);
+            const item = items.find((entry) => entry.id === next);
+            if (item) {
+              setInputValue(item.name);
+            }
+          },
+          onInputChange: (value) => {
+            setInputValue(value);
+          },
+          onOpenChange,
+        });
+
+        state.setFocused(true);
+        state.open(null, "manual");
+        expect(state.isOpen()).toBe(true);
+        onOpenChange.mockClear();
+
+        state.setFocusedKey("3");
+        state.commit();
+        await Promise.resolve();
+
+        expect(onSelectionChange).toHaveBeenCalledWith("3");
+        expect(state.selectedKey()).toBe("3");
+        expect(state.inputValue()).toBe("Cherry");
+        expect(state.isOpen()).toBe(false);
+        expect(onOpenChange.mock.calls.map((call) => call[0])).toEqual([false]);
         dispose();
       });
     });
