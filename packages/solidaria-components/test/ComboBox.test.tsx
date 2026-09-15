@@ -809,7 +809,21 @@ describe("ComboBox", () => {
 
   describe("filtering", () => {
     it("should filter options based on input", async () => {
-      render(() => <TestComboBox comboBoxProps={{ menuTrigger: "input" }} />);
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          defaultItems={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          menuTrigger="input"
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
 
       const input = screen.getByRole("combobox");
       await user.type(input, "Ap");
@@ -819,10 +833,24 @@ describe("ComboBox", () => {
         expect(listbox).toBeInTheDocument();
       });
 
-      // Filtering is async, verify that the filter reduces options
       await waitFor(() => {
-        // At minimum, Apple should be visible since it matches "Ap"
         expect(screen.getByText("Apple")).toBeInTheDocument();
+        expect(screen.queryByText("Banana")).not.toBeInTheDocument();
+      });
+    });
+
+    it("does not filter when items are controlled", async () => {
+      render(() => <TestComboBox comboBoxProps={{ menuTrigger: "input" }} />);
+
+      const input = screen.getByRole("combobox");
+      await user.type(input, "Ap");
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByRole("option")).toHaveLength(5);
       });
     });
 

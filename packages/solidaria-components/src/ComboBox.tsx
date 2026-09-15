@@ -46,6 +46,7 @@ import {
   createPress,
   mergeProps,
   isFocusVisible as isGlobalFocusVisible,
+  createFilter,
   type AriaComboBoxProps,
   type AriaListBoxProps,
   type AriaOptionProps,
@@ -426,6 +427,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     optionActions.get(key)?.();
   };
 
+  // RAC ComboBox.tsx:204-207 — `useFilter({sensitivity: 'base'}).contains`
+  // is the default when the caller omits `defaultFilter`.
+  const intlFilter = createFilter({ sensitivity: "base" });
+
   const state = createComboBoxState<T>({
     get items() {
       return stateProps.items;
@@ -485,7 +490,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       return stateProps.onOpenChange;
     },
     get defaultFilter() {
-      return stateProps.defaultFilter;
+      return stateProps.defaultFilter ?? intlFilter().contains;
     },
     get allowsCustomValue() {
       return stateProps.allowsCustomValue;

@@ -291,7 +291,7 @@ describe("createComboBoxState", () => {
     it("should filter collection based on input value", () => {
       createRoot((dispose) => {
         const state = createComboBoxState({
-          items,
+          defaultItems: items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
           defaultFilter: defaultContainsFilter,
@@ -322,7 +322,7 @@ describe("createComboBoxState", () => {
           textValue.toLowerCase().startsWith(inputValue.toLowerCase());
 
         const state = createComboBoxState({
-          items,
+          defaultItems: items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
           defaultFilter: startsWithFilter,
@@ -330,6 +330,21 @@ describe("createComboBoxState", () => {
 
         state.setInputValue("b");
         expect(state.collection().size).toBe(1); // Only Banana
+        dispose();
+      });
+    });
+
+    it("does not filter when items are controlled", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultFilter: defaultContainsFilter,
+        });
+
+        state.setInputValue("xyz");
+        expect(state.collection().size).toBe(5);
         dispose();
       });
     });
@@ -372,7 +387,7 @@ describe("createComboBoxState", () => {
     it("should not open when collection is empty and allowsEmptyCollection is false", () => {
       createRoot((dispose) => {
         const state = createComboBoxState({
-          items,
+          defaultItems: items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
           defaultFilter: defaultContainsFilter,

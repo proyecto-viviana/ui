@@ -342,16 +342,12 @@ export function createComboBoxState<T = unknown>(
 
   const filteredCollection = createMemo<Collection<T>>(() => {
     const collection = originalCollection();
-    const input = inputValue();
     const filter = getProps().defaultFilter;
-
-    // If no filter function provided, return original collection
-    if (!filter) {
+    // RAC useComboBoxState.ts:297-302 — no default filter if items are controlled.
+    if (getProps().items != null || !filter) {
       return collection;
     }
-
-    // Filter the collection based on input value
-    return filterCollection(collection, input, filter);
+    return filterCollection(collection, inputValue(), filter);
   });
 
   // The displayed collection depends on showAllItems flag
@@ -432,15 +428,20 @@ export function createComboBoxState<T = unknown>(
   const open = (strategy: FocusStrategy | null = null, trigger?: MenuTriggerAction) => {
     const displayAll = trigger === "manual" || (trigger === "focus" && menuTrigger() === "focus");
 
-    // Check if we should open
+    // RAC useComboBoxState.ts:331-340 — controlled `items` may open empty;
+    // showAllItems only when items are undefined (collection filtering).
     const filtered = filteredCollection();
     const original = originalCollection();
+    const items = getProps().items;
     const canOpen =
-      allowsEmptyCollection() || filtered.size > 0 || (displayAll && original.size > 0);
+      allowsEmptyCollection() ||
+      filtered.size > 0 ||
+      (displayAll && original.size > 0) ||
+      items != null;
 
     if (!canOpen) return;
 
-    if (displayAll && !overlayState.isOpen()) {
+    if (displayAll && !overlayState.isOpen() && items === undefined) {
       setShowAllItems(true);
     }
 
@@ -455,17 +456,20 @@ export function createComboBoxState<T = unknown>(
   const toggle = (strategy: FocusStrategy | null = null, trigger?: MenuTriggerAction) => {
     const displayAll = trigger === "manual" || (trigger === "focus" && menuTrigger() === "focus");
 
-    // Check if we can open (if closed)
     const filtered = filteredCollection();
     const original = originalCollection();
+    const items = getProps().items;
     const canOpen =
-      allowsEmptyCollection() || filtered.size > 0 || (displayAll && original.size > 0);
+      allowsEmptyCollection() ||
+      filtered.size > 0 ||
+      (displayAll && original.size > 0) ||
+      items != null;
 
     if (!canOpen && !overlayState.isOpen()) return;
 
     const willOpen = !overlayState.isOpen();
 
-    if (displayAll && willOpen) {
+    if (displayAll && willOpen && items === undefined) {
       setShowAllItems(true);
     }
 
