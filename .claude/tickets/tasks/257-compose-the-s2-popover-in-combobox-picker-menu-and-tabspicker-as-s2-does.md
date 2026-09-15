@@ -26,6 +26,11 @@ history:
       at: 2026-09-03,
       note: "#437 merged: menu-focus.spec.ts:20 green. This ticket remains the S2 Popover compose record.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "closeout at 044787b1 vs pin f56660b: compose still holds; forks gone (test locals menuPopover/submenuPopover only); unit surface tests 120/120. D13 CB-OV-05/PK-OV-04 not run (Playwright Chromium missing; #244/#248). D5/D6 registrations unchanged (--list only; D2 open-enter added on 044787b1). Proof: .agents/vivianastack/overnight-overlay-257/proof.md. Do not mark verified.",
+    }
 ---
 
 ## Cause
