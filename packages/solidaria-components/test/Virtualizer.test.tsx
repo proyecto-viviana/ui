@@ -441,10 +441,10 @@ describe("Virtualizer", () => {
   });
 
   it("updates layout sizing when the virtualizer container is resized", async () => {
-    let resizeCallback: ResizeObserverCallback | undefined;
+    const resizeCallbacks: ResizeObserverCallback[] = [];
     class TestResizeObserver {
       constructor(callback: ResizeObserverCallback) {
-        resizeCallback = callback;
+        resizeCallbacks.push(callback);
       }
       observe = vi.fn();
       disconnect = vi.fn();
@@ -489,7 +489,9 @@ describe("Virtualizer", () => {
 
     width = 260;
     height = 100;
-    resizeCallback?.([], {} as ResizeObserver);
+    for (const callback of resizeCallbacks) {
+      callback([], {} as ResizeObserver);
+    }
 
     await waitFor(() => {
       expect(screen.getByTestId("resized-layout").textContent).toContain('"width":260');
@@ -2595,6 +2597,156 @@ describe("Virtualizer", () => {
           { estimatedRowHeight: 32, padding: 8 },
         ),
       ).toEqual({ width: 240, height: 112 });
+    });
+
+    it("observes visible item size when shouldObserveItemSize is set", async () => {
+      const resizeCallbacks: ResizeObserverCallback[] = [];
+      class TestResizeObserver {
+        constructor(callback: ResizeObserverCallback) {
+          resizeCallbacks.push(callback);
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+      }
+      vi.stubGlobal("ResizeObserver", TestResizeObserver);
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+        cb(0);
+        return 1;
+      });
+      vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(48);
+      vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(200);
+
+      function HeightProbe(): JSX.Element {
+        const ctx = createMemo(() => useVirtualizerContext());
+        return (
+          <output data-testid="observed-item-height">
+            {String(ctx()?.getLayoutInfo(0).rect.height ?? "")}
+          </output>
+        );
+      }
+
+      render(() => (
+        <Virtualizer
+          layout={ListLayout}
+          layoutOptions={{ estimatedRowHeight: 32, padding: 8 }}
+          shouldObserveItemSize
+        >
+          <ListBox
+            aria-label="Observed size list"
+            items={[{ id: "a", label: "A" }]}
+            getKey={(item) => item.id}
+            style={{ height: "80px", overflow: "auto" }}
+          >
+            {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+          </ListBox>
+          <HeightProbe />
+        </Virtualizer>
+      ));
+
+      for (const callback of resizeCallbacks) {
+        callback([], {} as ResizeObserver);
+      }
+
+      await waitFor(() => {
+        expect(screen.getByTestId("observed-item-height").textContent).toBe("48");
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("does not report size 0 for a hidden virtualizer item", async () => {
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+        cb(0);
+        return 1;
+      });
+      vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(0);
+      vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(0);
+
+      function HeightProbe(): JSX.Element {
+        const ctx = createMemo(() => useVirtualizerContext());
+        return (
+          <output data-testid="hidden-item-height">
+            {String(ctx()?.getLayoutInfo(0).rect.height ?? "")}
+          </output>
+        );
+      }
+
+      const { container } = render(() => (
+        <div style={{ display: "none" }}>
+          <Virtualizer layout={ListLayout} layoutOptions={{ estimatedRowHeight: 32, padding: 8 }}>
+            <ListBox
+              aria-label="Hidden size list"
+              items={[{ id: "a", label: "A" }]}
+              getKey={(item) => item.id}
+            >
+              {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+            </ListBox>
+            <HeightProbe />
+          </Virtualizer>
+        </div>
+      ));
+
+      expect(container.firstElementChild).toHaveStyle({ display: "none" });
+      expect(screen.getByTestId("hidden-item-height").textContent).toBe("32");
+    });
+
+    it("does not remeasure on ResizeObserver when shouldObserveItemSize is unset", async () => {
+      const resizeCallbacks: ResizeObserverCallback[] = [];
+      class TestResizeObserver {
+        constructor(callback: ResizeObserverCallback) {
+          resizeCallbacks.push(callback);
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+      }
+      vi.stubGlobal("ResizeObserver", TestResizeObserver);
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+        cb(0);
+        return 1;
+      });
+      vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+      let scrollHeight = 32;
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockImplementation(() => scrollHeight);
+      vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(200);
+
+      function HeightProbe(): JSX.Element {
+        const ctx = createMemo(() => useVirtualizerContext());
+        return (
+          <output data-testid="unobserved-item-height">
+            {String(ctx()?.getLayoutInfo(0).rect.height ?? "")}
+          </output>
+        );
+      }
+
+      render(() => (
+        <Virtualizer layout={ListLayout} layoutOptions={{ estimatedRowHeight: 32, padding: 8 }}>
+          <ListBox
+            aria-label="Unobserved size list"
+            items={[{ id: "a", label: "A" }]}
+            getKey={(item) => item.id}
+            style={{ height: "80px", overflow: "auto" }}
+          >
+            {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+          </ListBox>
+          <HeightProbe />
+        </Virtualizer>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("unobserved-item-height").textContent).toBe("32");
+      });
+
+      scrollHeight = 64;
+      for (const callback of resizeCallbacks) {
+        callback([], {} as ResizeObserver);
+      }
+
+      expect(screen.getByTestId("unobserved-item-height").textContent).toBe("32");
+      vi.unstubAllGlobals();
     });
 
     it("ListLayout.updateItemSize repositions later rows from the measured size", () => {

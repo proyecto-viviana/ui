@@ -4,9 +4,14 @@ type: task
 title: "Observe only visible Virtualizer item sizes"
 created: 2026-08-20
 parent: 31
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-72" }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "VirtualizerItem now matches RAC useVirtualizerItem: estimated rows still measure once; shouldObserveItemSize observes the wrapper's direct children via ResizeObserver; isElementVisible skips a hidden collection so size 0 cannot stick. Unit tests cover observe / hidden / observation-off. Not verified.",
+    }
 ---
 
 Port `shouldObserveItemSize` and the hidden-element measurement guard.

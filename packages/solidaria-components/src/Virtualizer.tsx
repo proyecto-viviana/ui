@@ -52,6 +52,7 @@ import type {
   ItemDropTarget,
 } from "@proyecto-viviana/solid-stately";
 import { createScrollView, useLocale } from "@proyecto-viviana/solidaria";
+import { isElementVisible } from "@proyecto-viviana/solidaria/utils";
 import {
   CollectionRendererContext,
   DefaultCollectionRenderer,
@@ -1008,25 +1009,53 @@ export function VirtualizerItem(props: {
     if (!node) return;
     const info = layout();
     const index = resolvedIndex();
-    const read = () => {
-      if (info != null && index != null && virtualizer) {
-        if (!info.estimatedSize && !options?.shouldObserveItemSize) return;
-        const prevHeight = node.style.height;
-        const prevWidth = node.style.width;
-        const prevContain = node.style.contain;
-        node.style.contain = "";
-        node.style.height = "";
-        node.style.width = "";
-        const width = node.scrollWidth;
-        const height = node.scrollHeight;
-        node.style.height = prevHeight;
-        node.style.width = prevWidth;
-        node.style.contain = prevContain;
-        if (height <= 0 || width <= 0) return;
-        const main = virtualizer.orientation === "horizontal" ? width : height;
-        virtualizer.updateItemSize(index, main);
-        return;
+
+    const measureIndexed = () => {
+      if (info == null || index == null || !virtualizer) return;
+      // RAC useVirtualizerItem.ts:37-42 — a hidden collection reports 0 and
+      // then never recovers when shown. Skip the write.
+      if (!isElementVisible(node)) return;
+      if (!info.estimatedSize && !options?.shouldObserveItemSize) return;
+      const prevHeight = node.style.height;
+      const prevWidth = node.style.width;
+      const prevContain = node.style.contain;
+      node.style.contain = "";
+      node.style.height = "";
+      node.style.width = "";
+      const width = node.scrollWidth;
+      const height = node.scrollHeight;
+      node.style.height = prevHeight;
+      node.style.width = prevWidth;
+      node.style.contain = prevContain;
+      if (height <= 0 || width <= 0) return;
+      const main = virtualizer.orientation === "horizontal" ? width : height;
+      virtualizer.updateItemSize(index, main);
+    };
+
+    if (info != null && index != null && virtualizer) {
+      // RAC layout effect: estimated rows measure once even when observation
+      // is off. Two rAFs cover jsdom's first 0-height layout.
+      if (info.estimatedSize) {
+        measureIndexed();
+        const frame = requestAnimationFrame(() => {
+          measureIndexed();
+          requestAnimationFrame(measureIndexed);
+        });
+        onCleanup(() => cancelAnimationFrame(frame));
       }
+      // RAC ResizeObserver on the wrapper's direct children, not the wrapper
+      // (`useVirtualizerItem.ts:63-87`). The wrapper height is layout-fixed.
+      if (options?.shouldObserveItemSize && typeof ResizeObserver !== "undefined") {
+        const resizeObserver = new ResizeObserver(() => measureIndexed());
+        for (const child of node.children) {
+          resizeObserver.observe(child);
+        }
+        onCleanup(() => resizeObserver.disconnect());
+      }
+      return;
+    }
+
+    const readBox = () => {
       const child = node.firstElementChild as HTMLElement | null;
       const height = child?.offsetHeight ?? 0;
       const width = node.clientWidth;
@@ -1036,13 +1065,10 @@ export function VirtualizerItem(props: {
         return { width, height };
       });
     };
-    read();
-    // Do not subscribe ResizeObserver: Virtualizer tests stub a single
-    // observer for createScrollView. Two rAFs cover the first layout after
-    // the collection mounts (ComboBox D13 settle is 220ms).
+    readBox();
     const frame = requestAnimationFrame(() => {
-      read();
-      requestAnimationFrame(read);
+      readBox();
+      requestAnimationFrame(readBox);
     });
     onCleanup(() => cancelAnimationFrame(frame));
   });
