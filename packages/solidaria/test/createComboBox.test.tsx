@@ -690,10 +690,10 @@ describe("createComboBox", () => {
       delete (globalThis as Record<string, unknown>).IS_SOLIDARIA_TEST;
     });
 
-    it("should not announce on non-Apple devices", () => {
+    it("should not announce option focus on non-Apple devices", async () => {
       isAppleDeviceSpy.mockReturnValue(false);
 
-      createRoot((dispose) => {
+      const dispose = createRoot((d) => {
         let inputRef: HTMLInputElement | null = null;
 
         const state = createComboBoxState({
@@ -703,15 +703,44 @@ describe("createComboBox", () => {
         });
 
         createComboBox({ label: "Fruit" }, state, () => inputRef);
-
-        // Open the combobox and set focused key
         state.open();
-        state.setFocusedKey("1");
-
-        // announcements should not happen on non-Apple (checked synchronously)
-        expect(announceSpy).not.toHaveBeenCalled();
-        dispose();
+        return d;
       });
+
+      await Promise.resolve();
+      const messages = announceSpy.mock.calls.map((call) => String(call[0]));
+      expect(messages.some((text) => text.includes("options available"))).toBe(true);
+      expect(messages.some((text) => text.includes("Apple") && !text.includes("available"))).toBe(
+        false,
+      );
+      dispose();
+    });
+
+    it("announces option count assertively when the menu opens", async () => {
+      isAppleDeviceSpy.mockReturnValue(false);
+
+      const dispose = createRoot((d) => {
+        let inputRef: HTMLInputElement | null = null;
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+
+        createComboBox({ label: "Fruit" }, state, () => inputRef);
+        state.open();
+        return d;
+      });
+
+      await Promise.resolve();
+      const countCall = announceSpy.mock.calls.find((call) =>
+        String(call[0]).includes("options available"),
+      );
+      expect(countCall).toBeTruthy();
+      expect(countCall![0]).toBe("5 options available.");
+      expect(countCall![1]).toBeUndefined();
+      dispose();
     });
   });
 

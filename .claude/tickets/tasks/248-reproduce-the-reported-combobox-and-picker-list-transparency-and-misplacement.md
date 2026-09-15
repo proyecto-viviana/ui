@@ -41,6 +41,11 @@ history:
       at: 2026-09-15,
       note: "D13 flatten now hoists RAC CollectionBuilder Hidden <template> (Hidden.tsx:79), including hide-outside aria-hidden. ComboBox D2 open-enter 2/2 still green; D13 field `dom` no longer fails. Remaining ComboBox D13: step 0 field `ax` live '3 options available.' (React assertive role=log; Solid empty); keyboard-only step 1 field `input` selectionStart 3 vs 0. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBox announces option count assertively on open (RAC useComboBox.ts:430-449) while keeping eager applyOpenFocus so option aria-labelledby stays on first paint. D2 open-enter 2/2 green. D13 field ax and field dom now match. Remaining ComboBox D13: step 0 field document ariaHiddenSiblingCount 0 vs 2; keyboard-only step 1 selectionStart 3 vs 0. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause

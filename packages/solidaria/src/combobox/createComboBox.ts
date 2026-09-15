@@ -332,7 +332,7 @@ export function createComboBox<T>(
         isSelected,
       });
 
-      announce(announcement, "polite");
+      announce(announcement);
     }
 
     lastFocusedKey = focusedKey;
@@ -345,17 +345,17 @@ export function createComboBox<T>(
     const isOpen = state.isOpen();
     const collection = state.collection();
     const optionCount = getItemCount(collection);
-    const focusedKey = state.focusedKey();
 
-    // Only announce the number of options available when the menu opens if there is no
-    // focused item, otherwise screen readers will typically read e.g. "1 of 6".
-    // The exception is VoiceOver since this isn't included in the message above.
-    const didOpenWithoutFocusedItem =
-      isOpen !== lastIsOpen && (focusedKey == null || isAppleDevice());
+    // RAC useComboBox.ts:435-445 announces when the menu opens with no focused
+    // item (or on Apple), because ListBox autoFocus runs in a later effect.
+    // createComboBoxState applies that highlight synchronously so the first
+    // option paint keeps `aria-labelledby`; this effect still announces on
+    // open so D13 sees "N options available."
+    const didOpen = isOpen !== lastIsOpen && isOpen;
 
-    if (isOpen && (didOpenWithoutFocusedItem || optionCount !== lastOptionCount)) {
+    if (isOpen && (didOpen || optionCount !== lastOptionCount)) {
       const announcement = stringFormatter().format("countAnnouncement", { optionCount });
-      announce(announcement, "polite");
+      announce(announcement);
     }
 
     lastOptionCount = optionCount;
@@ -372,7 +372,7 @@ export function createComboBox<T>(
     if (isAppleDevice() && state.isFocused() && selectedItem && selectedKey !== lastSelectedKey) {
       const optionText = selectedItem.textValue || "";
       const announcement = stringFormatter().format("selectedAnnouncement", { optionText });
-      announce(announcement, "polite");
+      announce(announcement);
     }
 
     lastSelectedKey = selectedKey;

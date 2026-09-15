@@ -372,6 +372,39 @@ describe("createComboBoxState", () => {
       });
     });
 
+    it("focuses the selected key on open", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2",
+        });
+
+        state.open();
+        expect(state.isOpen()).toBe(true);
+        expect(state.focusedKey()).toBe("2");
+        dispose();
+      });
+    });
+
+    it("clears focusedKey on close", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+
+        state.open();
+        state.setFocusedKey("3");
+        expect(state.focusedKey()).toBe("3");
+        state.close();
+        expect(state.focusedKey()).toBe(null);
+        dispose();
+      });
+    });
+
     it("should call onOpenChange callback", () => {
       createRoot((dispose) => {
         const onOpenChange = vi.fn();

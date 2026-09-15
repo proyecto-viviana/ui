@@ -22,7 +22,7 @@
 
 import { createSignal, createMemo, createEffect, untrack, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
-import { createListState } from "../collections/createListState";
+import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection, FocusStrategy } from "../collections/types";
 import type { SelectionManager } from "../selection/SelectionManager";
@@ -252,6 +252,9 @@ export function createComboBoxState<T = unknown>(
   };
 
   // ---- Overlay State ----
+  // Assigned after createListState; onOpenChange only fires after both exist
+  // except a defaultOpen init, which we skip via the optional call.
+  let listState!: ListState<T>;
   const overlayState = createOverlayTriggerState({
     get isOpen() {
       return getProps().isOpen;
@@ -261,11 +264,16 @@ export function createComboBoxState<T = unknown>(
     },
     onOpenChange(isOpen: boolean) {
       getProps().onOpenChange?.(isOpen, isOpen ? menuOpenTrigger : undefined);
+      // RAC useComboBoxState.ts:314-317
+      listState?.setFocused(isOpen);
+      if (!isOpen) {
+        listState?.setFocusedKey(null);
+      }
     },
   });
 
   // ---- List State (unfiltered collection) ----
-  const listState = createListState<T>({
+  listState = createListState<T>({
     get items() {
       // Use items or defaultItems
       return getProps().items ?? getProps().defaultItems ?? [];
@@ -388,13 +396,12 @@ export function createComboBoxState<T = unknown>(
 
   // ---- Open/Toggle Logic ----
   // Auto-focus the menu on open the way upstream's listbox does via its
-  // `autoFocus: state.focusStrategy || true` prop (useComboBox.ts:490 → useSelectableCollection):
-  // the first selectable selected key, else the first/last key for an explicit
-  // strategy, else nothing. The port drives this from the state (createListBox
-  // reimplements nav inline and does not honor a listbox `autoFocus` prop), so
-  // BOTH open() and toggle() must apply it — a button/mouse open routes through
-  // toggle(), and omitting it there left the menu opened with no active option
-  // (no aria-activedescendant / no highlighted row) unlike upstream.
+  // `autoFocus: state.focusStrategy || true` prop (useComboBox.ts:535 →
+  // useSelectableCollection). createListBox does not honor a listbox
+  // `autoFocus` prop, so BOTH open() and toggle() apply it here. RAC applies
+  // this in a later effect; doing it synchronously keeps the first option
+  // paint (slot `aria-labelledby`) stable. createComboBox still announces
+  // option count on open.
   const applyOpenFocus = (strategy: FocusStrategy | null) => {
     const key = selectedKey();
     const nextFocusedKey =
