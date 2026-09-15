@@ -21,6 +21,11 @@ history:
       at: 2026-09-02,
       note: "wrappers + LOADER_ROW_HEIGHTS landed in both styled packages; ComboBox/Picker unit tests green; D13 seeds timed out in comparison:page fonts.ready (#250 lane)",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBoxListBox now consumes CollectionRoot and wraps options in VirtualizerItem (contain: size layout style, 41062bd0). Items stay in-flow: ListLayout still ignores estimatedRowHeight/padding (falls back to itemSize 40). ComboBox D13 keyboard-only leftover is 7px checkmark AA. Absolute layoutInfo + observe item size still remaining. Not verified.",
+    }
 ---
 
 ## Cause

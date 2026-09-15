@@ -51,6 +51,11 @@ history:
       at: 2026-09-15,
       note: "Popover FocusScope now wraps portal children as RAC Overlay.tsx:76-81, so start/end sentinels are siblings of the display:contents group, not of [data-placement]. ComboBox hide-outside was aria-hiding those sentinels (D13 document 0 vs 2). D2 open-enter 2/2 still green. Remaining ComboBox D13: step 0 field pixel ~74% overlay screenshot mismatch; keyboard-only step 1 selectionStart 3 vs 0. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "CDP overlay clip crop landed (99735db4). ComboBoxListBox now uses CollectionRoot + VirtualizerItem (41062bd0); contain:size is on the option parent and SVG origin matches React (12.5px at y=477.5). D2 open-enter 2/2 and open-arrow D13 still green. keyboard-only still fails exact-pair at step 4 on 7/25440 checkmark AA (same bounds). Remaining is ListLayout padding/estimatedRowHeight + absolute layoutInfo (#252), not a journey waiver. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause
