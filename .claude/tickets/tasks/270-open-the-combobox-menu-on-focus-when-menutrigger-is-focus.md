@@ -21,6 +21,11 @@ history:
       at: 2026-09-15,
       note: "S2 ComboBoxListBoxPopover keeps the overlay open on input focus when menuTrigger=focus. Solid createOverlay's extra document focusin closer dismissed the list while the input stayed focused; RAC useOverlay has no such listener. Named-path workaround: shouldCloseOnInteractOutside returns false for the trigger/input/button. Package tests cover pointer, Tab, and controlled selectedKey+inputValue. playwright: not run (Chromium missing). Comparison route not claimed green.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Comparison walk on :4322 /components/combobox/?menuTrigger=focus: Tab and pointer click both open React and Solid with aria-expanded=true, input focused, 3 options. Package tests already cover pointer, Tab, and controlled selectedKey+inputValue. Not verified.",
+    }
 ---
 
 S2 ComboBox `menuTrigger="focus"` must open the list on input focus (Tab or

@@ -61,6 +61,11 @@ history:
       at: 2026-09-15,
       note: "ListLayout estimatedRowHeight/padding landed (76f0e267). S2 ui-icon token size maps now generated onto every ui-icon; ComboBox checkmark no longer carries a duplicate size map. ComboBox D13 open-arrow green in isolation after Checkmark CSS. keyboard-only still 7/25440 checkmark AA at identical 12.5px geometry. Do not waive. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "After generated S2 ui-icon size maps (d72df86d), ComboBox D13 open-arrow still green; keyboard-only still 7/25440 at overlay-relative checkmark bounds 18-28 x 47-52. SVG geometry 12.5px at y=447.5 matches; extra Solid ancestor is Portal display:contents. Do not waive. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause
