@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Checkmark.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize50.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize50.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize75.mjs
@@ -17,6 +18,30 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+      XS: 10,
+      S: 10,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+      XS: 10,
+      S: 10,
+    },
+  },
+});
 
 export type CheckmarkProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "XS" | "S" | "M" | "L" | "XL" | "XXL";
@@ -145,21 +170,22 @@ const Checkmark_XXL = createUIIcon(Checkmark_XXLSvg);
 
 export default function Checkmark(props: CheckmarkProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Checkmark_XS {...rest} class={className} />;
+      return <Checkmark_XS {...rest} class={mergedClass} />;
     case "S":
-      return <Checkmark_S {...rest} class={className} />;
+      return <Checkmark_S {...rest} class={mergedClass} />;
     case "M":
-      return <Checkmark_M {...rest} class={className} />;
+      return <Checkmark_M {...rest} class={mergedClass} />;
     case "L":
-      return <Checkmark_L {...rest} class={className} />;
+      return <Checkmark_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Checkmark_XL {...rest} class={className} />;
+      return <Checkmark_XL {...rest} class={mergedClass} />;
     case "XXL":
-      return <Checkmark_XXL {...rest} class={className} />;
+      return <Checkmark_XXL {...rest} class={mergedClass} />;
     default:
-      return <Checkmark_M {...rest} class={className} />;
+      return <Checkmark_M {...rest} class={mergedClass} />;
   }
 }
 

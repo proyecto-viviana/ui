@@ -92,6 +92,11 @@ try {
     "the icon generator must own both styled-package output trees",
   );
   assert(
+    generatedIconSource.includes("readS2UiIconSizeStyle") &&
+      generatedIconSource.includes("styles({ size })"),
+    "the icon generator must copy S2 ui-icon token width/height maps onto each generated asset",
+  );
+  assert(
     generatedIconSource.includes('const checkOnly = args.includes("--check");') &&
       generatedIconSource.includes("if (checkOnly && (changed.length || extra.length))"),
     "the generated-icon guard must detect changed and unexpected output files",

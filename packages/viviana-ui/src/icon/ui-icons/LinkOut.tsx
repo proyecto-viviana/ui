@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/LinkOut.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize100.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize100.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize200.mjs
@@ -13,6 +14,26 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+    },
+  },
+});
 
 export type LinkOutProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M" | "L" | "XL" | "XXL";
@@ -101,17 +122,18 @@ const LinkOut_XXL = createUIIcon(LinkOut_XXLSvg);
 
 export default function LinkOut(props: LinkOutProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <LinkOut_M {...rest} class={className} />;
+      return <LinkOut_M {...rest} class={mergedClass} />;
     case "L":
-      return <LinkOut_L {...rest} class={className} />;
+      return <LinkOut_L {...rest} class={mergedClass} />;
     case "XL":
-      return <LinkOut_XL {...rest} class={className} />;
+      return <LinkOut_XL {...rest} class={mergedClass} />;
     case "XXL":
-      return <LinkOut_XXL {...rest} class={className} />;
+      return <LinkOut_XXL {...rest} class={mergedClass} />;
     default:
-      return <LinkOut_M {...rest} class={className} />;
+      return <LinkOut_M {...rest} class={mergedClass} />;
   }
 }
 

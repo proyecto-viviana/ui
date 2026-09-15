@@ -99,17 +99,10 @@ const iconBaseStyles = style(
   iconAllowedOverrides,
 );
 
-// UI icons (chevrons, checkmarks, crosses, …) render at their per-size asset
-// dimensions — upstream's ui-icon width/height maps equal the SVG intrinsic
-// sizes exactly, so the width/height attributes on the generated variants are
-// the faithful size source. Only workflow icons get the 20px base above
-// (upstream Icon.tsx).
-const uiIconBaseStyles = style(
-  {
-    flexShrink: 0,
-  },
-  iconAllowedOverrides,
-);
+// UI icons (chevrons, checkmarks, crosses, …) are raw SVGs upstream
+// (`@react-spectrum/s2/ui-icons/*` never pass through Icon.tsx). Size maps
+// live on each generated ui-icon (Checkmark.tsx `styles({size})`), not here.
+// Do not invent flexShrink: S2 Checkmark computes flex-shrink: 1.
 
 const illustrationBaseStyles = style(
   {
@@ -139,7 +132,7 @@ export function createUIIcon(
   // upstream stays clean. Mirror that exactly — `bare` mode drops the forced
   // `role="img"` and the auto `aria-hidden`; only pass what a call site asks for.
   // (parity rule #1/#2)
-  return createIconForBase(Component, context, uiIconBaseStyles, true);
+  return createIconForBase(Component, context, iconBaseStyles, true);
 }
 
 function createIconForBase(
@@ -172,7 +165,12 @@ function createIconForBase(
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
     const inertRef = useInertAttribute(isSkeleton);
     const skeletonStyles = useSkeletonIcon(() =>
-      mergeStyles(baseStyles(null, local.styles), contextStyles()),
+      mergeStyles(
+        // Bare ui-icons skip Icon.tsx wrapper styles (S2 spreads className onto
+        // the asset). Workflow icons keep `iconBaseStyles` (`size: 20`).
+        bare ? local.styles : baseStyles(null, local.styles),
+        contextStyles(),
+      ),
     );
     const skeletonRef = (element: SVGSVGElement) => {
       skeletonAnimationRef(element);
@@ -196,7 +194,7 @@ function createIconForBase(
       <Component
         {...rest}
         ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
-        focusable={false}
+        {...(bare ? {} : { focusable: false as const })}
         role={bare ? undefined : "img"}
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}

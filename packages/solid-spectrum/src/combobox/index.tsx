@@ -479,25 +479,6 @@ const comboBoxCheckmark = style<{
   color: baseColor("accent"),
   marginEnd: "text-to-control",
   aspectRatio: "square",
-  flexShrink: 0,
-  // S2 Checkmark.tsx size map (token 10, not `10px`). Inline px was 2.5px
-  // short of the token at size S and shifted option text.
-  width: {
-    size: {
-      S: 10,
-      M: 10,
-      L: 12,
-      XL: 14,
-    },
-  },
-  height: {
-    size: {
-      S: 10,
-      M: 10,
-      L: 12,
-      XL: 14,
-    },
-  },
   "--iconPrimary": {
     type: "fill",
     value: {

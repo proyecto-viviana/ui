@@ -2,10 +2,25 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Gripper.tsx
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_GripperSize100.svg
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 24,
+    },
+  },
+  height: {
+    size: {
+      M: 4,
+    },
+  },
+});
 
 export type GripperProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M";
@@ -37,11 +52,12 @@ const Gripper_M = createUIIcon(Gripper_MSvg);
 
 export default function Gripper(props: GripperProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <Gripper_M {...rest} class={className} />;
+      return <Gripper_M {...rest} class={mergedClass} />;
     default:
-      return <Gripper_M {...rest} class={className} />;
+      return <Gripper_M {...rest} class={mergedClass} />;
   }
 }
 

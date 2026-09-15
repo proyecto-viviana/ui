@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Chevron.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize50.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize50.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize75.mjs
@@ -17,6 +18,30 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+      XS: 6,
+      S: 10,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      XXL: 16,
+      XS: 6,
+      S: 10,
+    },
+  },
+});
 
 export type ChevronProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "XS" | "S" | "M" | "L" | "XL" | "XXL";
@@ -145,21 +170,22 @@ const Chevron_XXL = createUIIcon(Chevron_XXLSvg);
 
 export default function Chevron(props: ChevronProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Chevron_XS {...rest} class={className} />;
+      return <Chevron_XS {...rest} class={mergedClass} />;
     case "S":
-      return <Chevron_S {...rest} class={className} />;
+      return <Chevron_S {...rest} class={mergedClass} />;
     case "M":
-      return <Chevron_M {...rest} class={className} />;
+      return <Chevron_M {...rest} class={mergedClass} />;
     case "L":
-      return <Chevron_L {...rest} class={className} />;
+      return <Chevron_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Chevron_XL {...rest} class={className} />;
+      return <Chevron_XL {...rest} class={mergedClass} />;
     case "XXL":
-      return <Chevron_XXL {...rest} class={className} />;
+      return <Chevron_XXL {...rest} class={mergedClass} />;
     default:
-      return <Chevron_M {...rest} class={className} />;
+      return <Chevron_M {...rest} class={mergedClass} />;
   }
 }
 

@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Add.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize50.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize50.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize75.mjs
@@ -15,6 +16,28 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 12,
+      XS: 8,
+      S: 8,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 12,
+      XS: 8,
+      S: 8,
+    },
+  },
+});
 
 export type AddProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "XS" | "S" | "M" | "L" | "XL";
@@ -123,19 +146,20 @@ const Add_XL = createUIIcon(Add_XLSvg);
 
 export default function Add(props: AddProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Add_XS {...rest} class={className} />;
+      return <Add_XS {...rest} class={mergedClass} />;
     case "S":
-      return <Add_S {...rest} class={className} />;
+      return <Add_S {...rest} class={mergedClass} />;
     case "M":
-      return <Add_M {...rest} class={className} />;
+      return <Add_M {...rest} class={mergedClass} />;
     case "L":
-      return <Add_L {...rest} class={className} />;
+      return <Add_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Add_XL {...rest} class={className} />;
+      return <Add_XL {...rest} class={mergedClass} />;
     default:
-      return <Add_M {...rest} class={className} />;
+      return <Add_M {...rest} class={mergedClass} />;
   }
 }
 

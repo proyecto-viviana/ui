@@ -455,6 +455,23 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(selected).toHaveTextContent("Banana");
     expect(selected).not.toHaveAttribute("data-focus-visible");
   });
+
+  it("renders the selected option checkmark as a bare S2 ui-icon", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox defaultSelectedKey="2" />);
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+
+    const selected = screen.getByRole("option", { selected: true });
+    const svg = selected.querySelector("svg");
+    expect(svg).toBeTruthy();
+    expect(svg).not.toHaveAttribute("focusable", "false");
+    expect(svg).not.toHaveAttribute("role");
+    expect((svg?.getAttribute("class") ?? "").length).toBeGreaterThan(0);
+  });
 });
 
 describe("SearchAutocomplete (solid-spectrum)", () => {

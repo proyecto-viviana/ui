@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/DragHandle.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize75.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize75.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize100.mjs
@@ -13,6 +14,26 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      S: 10,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 14,
+      S: 10,
+    },
+  },
+});
 
 export type DragHandleProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "S" | "M" | "L" | "XL";
@@ -109,17 +130,18 @@ const DragHandle_XL = createUIIcon(DragHandle_XLSvg);
 
 export default function DragHandle(props: DragHandleProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "S":
-      return <DragHandle_S {...rest} class={className} />;
+      return <DragHandle_S {...rest} class={mergedClass} />;
     case "M":
-      return <DragHandle_M {...rest} class={className} />;
+      return <DragHandle_M {...rest} class={mergedClass} />;
     case "L":
-      return <DragHandle_L {...rest} class={className} />;
+      return <DragHandle_L {...rest} class={mergedClass} />;
     case "XL":
-      return <DragHandle_XL {...rest} class={className} />;
+      return <DragHandle_XL {...rest} class={mergedClass} />;
     default:
-      return <DragHandle_M {...rest} class={className} />;
+      return <DragHandle_M {...rest} class={mergedClass} />;
   }
 }
 

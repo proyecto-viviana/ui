@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Cross.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize75.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize75.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize100.mjs
@@ -19,6 +20,32 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 8,
+      L: 10,
+      XL: 12,
+      XXL: 12,
+      XXXL: 14,
+      XXXXL: 16,
+      S: 8,
+    },
+  },
+  height: {
+    size: {
+      M: 8,
+      L: 10,
+      XL: 12,
+      XXL: 12,
+      XXXL: 14,
+      XXXXL: 16,
+      S: 8,
+    },
+  },
+});
 
 export type CrossProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "S" | "M" | "L" | "XL" | "XXL" | "XXXL" | "XXXXL";
@@ -167,23 +194,24 @@ const Cross_XXXXL = createUIIcon(Cross_XXXXLSvg);
 
 export default function Cross(props: CrossProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "S":
-      return <Cross_S {...rest} class={className} />;
+      return <Cross_S {...rest} class={mergedClass} />;
     case "M":
-      return <Cross_M {...rest} class={className} />;
+      return <Cross_M {...rest} class={mergedClass} />;
     case "L":
-      return <Cross_L {...rest} class={className} />;
+      return <Cross_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Cross_XL {...rest} class={className} />;
+      return <Cross_XL {...rest} class={mergedClass} />;
     case "XXL":
-      return <Cross_XXL {...rest} class={className} />;
+      return <Cross_XXL {...rest} class={mergedClass} />;
     case "XXXL":
-      return <Cross_XXXL {...rest} class={className} />;
+      return <Cross_XXXL {...rest} class={mergedClass} />;
     case "XXXXL":
-      return <Cross_XXXXL {...rest} class={className} />;
+      return <Cross_XXXXL {...rest} class={mergedClass} />;
     default:
-      return <Cross_M {...rest} class={className} />;
+      return <Cross_M {...rest} class={mergedClass} />;
   }
 }
 

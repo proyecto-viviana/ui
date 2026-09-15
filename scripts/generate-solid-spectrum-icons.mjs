@@ -293,6 +293,37 @@ function provenanceLines(inputs) {
   return inputs.map((input) => `// Generator input: ${input}`).join("\n");
 }
 
+function s2UiIconWrapperPath(name) {
+  return path.join(repoRoot, "react-spectrum/packages/@react-spectrum/s2/ui-icons", `${name}.tsx`);
+}
+
+async function readS2UiIconSizeStyle(name) {
+  const wrapperPath = s2UiIconWrapperPath(name);
+  const source = await fs.readFile(wrapperPath, "utf8");
+  const marker = "let styles = style(";
+  const start = source.indexOf(marker);
+  if (start < 0) {
+    throw new Error(
+      `S2 ui-icon ${name} has no style() size map at ${slash(path.relative(repoRoot, wrapperPath))}`,
+    );
+  }
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === "{") depth++;
+    else if (source[i] === "}") {
+      depth--;
+      if (depth === 0) {
+        return {
+          styleObject: source.slice(open, i + 1),
+          input: slash(path.relative(repoRoot, wrapperPath)),
+        };
+      }
+    }
+  }
+  throw new Error(`Unclosed style() in S2 ui-icon ${name}`);
+}
+
 function buildVariantComponent(name, sizeKey, tree) {
   return `
 function ${name}_${sizeKey}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
@@ -319,6 +350,7 @@ async function generateUiIcon(spec, s2Package) {
   const baseName = spec.name;
   const propsType = `${baseName}Props`;
   const sizeUnion = spec.variants.map((entry) => `"${entry.size}"`).join(" | ");
+  const sizeStyle = await readS2UiIconSizeStyle(baseName);
 
   const svgVariants = [];
   for (const { size, file } of spec.variants) {
@@ -332,7 +364,7 @@ async function generateUiIcon(spec, s2Package) {
   const cases = svgVariants
     .map(
       (variant) => `    case "${variant.size}":
-      return <${baseName}_${variant.size} {...rest} class={className} />;`,
+      return <${baseName}_${variant.size} {...rest} class={mergedClass} />;`,
     )
     .join("\n");
 
@@ -340,10 +372,16 @@ async function generateUiIcon(spec, s2Package) {
     ? "M"
     : spec.variants[0].size;
 
-  return `${generatedNotice}${provenanceLines(svgVariants.flatMap(({ inputs }) => inputs))}
+  return `${generatedNotice}${provenanceLines([
+    sizeStyle.input,
+    ...svgVariants.flatMap(({ inputs }) => inputs),
+  ])}
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style(${sizeStyle.styleObject});
 
 export type ${propsType} = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: ${sizeUnion};
@@ -360,10 +398,11 @@ ${svgVariants
 
 export default function ${baseName}(props: ${propsType}): JSX.Element {
   const { size = "${defaultSize}", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = \`\${className ?? ""}\${styles({ size })}\`;
   switch (size) {
 ${cases}
     default:
-      return <${baseName}_${defaultSize} {...rest} class={className} />;
+      return <${baseName}_${defaultSize} {...rest} class={mergedClass} />;
   }
 }
 

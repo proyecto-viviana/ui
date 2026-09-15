@@ -56,6 +56,11 @@ history:
       at: 2026-09-15,
       note: "CDP overlay clip crop landed (99735db4). ComboBoxListBox now uses CollectionRoot + VirtualizerItem (41062bd0); contain:size is on the option parent and SVG origin matches React (12.5px at y=477.5). D2 open-enter 2/2 and open-arrow D13 still green. keyboard-only still fails exact-pair at step 4 on 7/25440 checkmark AA (same bounds). Remaining is ListLayout padding/estimatedRowHeight + absolute layoutInfo (#252), not a journey waiver. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ListLayout estimatedRowHeight/padding landed (76f0e267). S2 ui-icon token size maps now generated onto every ui-icon; ComboBox checkmark no longer carries a duplicate size map. ComboBox D13 open-arrow green in isolation after Checkmark CSS. keyboard-only still 7/25440 checkmark AA at identical 12.5px geometry. Do not waive. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause

@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Asterisk.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize100.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize100.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize200.mjs
@@ -11,6 +12,24 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 8,
+      L: 10,
+      XL: 10,
+    },
+  },
+  height: {
+    size: {
+      M: 8,
+      L: 10,
+      XL: 10,
+    },
+  },
+});
 
 export type AsteriskProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M" | "L" | "XL";
@@ -79,15 +98,16 @@ const Asterisk_XL = createUIIcon(Asterisk_XLSvg);
 
 export default function Asterisk(props: AsteriskProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <Asterisk_M {...rest} class={className} />;
+      return <Asterisk_M {...rest} class={mergedClass} />;
     case "L":
-      return <Asterisk_L {...rest} class={className} />;
+      return <Asterisk_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Asterisk_XL {...rest} class={className} />;
+      return <Asterisk_XL {...rest} class={mergedClass} />;
     default:
-      return <Asterisk_M {...rest} class={className} />;
+      return <Asterisk_M {...rest} class={mergedClass} />;
   }
 }
 

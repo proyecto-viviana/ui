@@ -36,6 +36,11 @@ history:
       at: 2026-09-15,
       note: "CollectionRoot windowing spacers no longer include layout padding (RAC content padding 0; items absolutely inset). ComboBox D13 open-arrow green in isolation. keyboard-only still 7/25440 checkmark AA at identical 12.5px geometry; Solid SVG flex-shrink 0 vs React 1 (createUIIcon uiIconBaseStyles + comboBoxCheckmark, S2 Menu.checkmark has neither). D2 open-enter GPU-flakes Page crashed. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "S2 ui-icon token width/height now generated from pinned ui-icons/*.tsx; createUIIcon no longer invents flex-shrink 0 or focusable=false on bare icons; ComboBox Menu.checkmark no longer duplicates the size map. keyboard-only leftover is still the 7px checkmark AA. Not verified.",
+    }
 ---
 
 ## Cause

@@ -14,6 +14,7 @@ import {
 } from "../src/icon";
 import { GitHubIcon } from "../src/icon/icons/GitHubIcon";
 import CrossIcon from "../src/icon/ui-icons/Cross";
+import Checkmark from "../src/icon/ui-icons/Checkmark";
 import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
 
 const TestCreatedIcon = createIcon((props) => (
@@ -130,6 +131,21 @@ describe("Icon (solid-spectrum)", () => {
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute("width", "10");
     expect(svg).toHaveAttribute("height", "10");
+  });
+
+  it("applies S2 Checkmark token size styles on a bare svg", () => {
+    const s = render(() => <Checkmark size="S" />).container.querySelector("svg");
+    const m = render(() => <Checkmark size="M" />).container.querySelector("svg");
+    const l = render(() => <Checkmark size="L" />).container.querySelector("svg");
+    expect(s).toBeInTheDocument();
+    expect(s).not.toHaveAttribute("focusable", "false");
+    expect(s).not.toHaveAttribute("role");
+    const sClass = s?.getAttribute("class") ?? "";
+    const mClass = m?.getAttribute("class") ?? "";
+    const lClass = l?.getAttribute("class") ?? "";
+    expect(sClass.length).toBeGreaterThan(0);
+    expect(sClass).toBe(mClass);
+    expect(lClass).not.toBe(sClass);
   });
 
   it("renders a workflow icon directly", () => {

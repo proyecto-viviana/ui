@@ -2,11 +2,28 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Arrow.tsx
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize100.svg
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize400.svg
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      XXL: 16,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      XXL: 16,
+    },
+  },
+});
 
 export type ArrowProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "M" | "XXL";
@@ -55,13 +72,14 @@ const Arrow_XXL = createUIIcon(Arrow_XXLSvg);
 
 export default function Arrow(props: ArrowProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <Arrow_M {...rest} class={className} />;
+      return <Arrow_M {...rest} class={mergedClass} />;
     case "XXL":
-      return <Arrow_XXL {...rest} class={className} />;
+      return <Arrow_XXL {...rest} class={mergedClass} />;
     default:
-      return <Arrow_M {...rest} class={className} />;
+      return <Arrow_M {...rest} class={mergedClass} />;
   }
 }
 

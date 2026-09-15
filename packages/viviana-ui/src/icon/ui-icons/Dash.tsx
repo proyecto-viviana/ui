@@ -2,6 +2,7 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Dash.tsx
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize50.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize50.cjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize75.mjs
@@ -15,6 +16,28 @@
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
+import { style } from "../../style" with { type: "macro" };
+
+const styles = style({
+  width: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 12,
+      XS: 8,
+      S: 8,
+    },
+  },
+  height: {
+    size: {
+      M: 10,
+      L: 12,
+      XL: 12,
+      XS: 8,
+      S: 8,
+    },
+  },
+});
 
 export type DashProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: "XS" | "S" | "M" | "L" | "XL";
@@ -120,19 +143,20 @@ const Dash_XL = createUIIcon(Dash_XLSvg);
 
 export default function Dash(props: DashProps): JSX.Element {
   const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
+  const mergedClass = `${className ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Dash_XS {...rest} class={className} />;
+      return <Dash_XS {...rest} class={mergedClass} />;
     case "S":
-      return <Dash_S {...rest} class={className} />;
+      return <Dash_S {...rest} class={mergedClass} />;
     case "M":
-      return <Dash_M {...rest} class={className} />;
+      return <Dash_M {...rest} class={mergedClass} />;
     case "L":
-      return <Dash_L {...rest} class={className} />;
+      return <Dash_L {...rest} class={mergedClass} />;
     case "XL":
-      return <Dash_XL {...rest} class={className} />;
+      return <Dash_XL {...rest} class={mergedClass} />;
     default:
-      return <Dash_M {...rest} class={className} />;
+      return <Dash_M {...rest} class={mergedClass} />;
   }
 }
 
