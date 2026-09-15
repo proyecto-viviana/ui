@@ -786,45 +786,40 @@ export function Popover(props: PopoverProps): JSX.Element {
         value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
       >
         <OverlayContext.Provider value={{ setContain: setOverlayContain }}>
-          <FocusScope
-            contain={(shouldContainFocus() || overlayContain()) && !isExiting()}
-            restoreFocus
+          <div
+            {...domProps()}
+            {...cleanPopoverProps()}
+            {...(triggerContext?.overlayProps ?? {})}
+            ref={(el) => {
+              setPopoverRef(el);
+              triggerContext?.setOverlayRef?.(el);
+              stampOverlayLocale(el);
+            }}
+            id={overlayId()}
+            role={shouldBeDialog() ? "dialog" : undefined}
+            tabIndex={shouldBeDialog() ? -1 : undefined}
+            aria-labelledby={overlayLabelledBy()}
+            class={renderProps.class()}
+            style={mergedStyle()}
+            lang={callerLang() ?? locale().locale}
+            dir={callerDir() ?? locale().direction}
+            data-trigger={resolvedTrigger()}
+            data-placement={renderValues().placement}
+            data-entering={dataAttr(isEntering())}
+            data-exiting={dataAttr(isExiting())}
           >
-            <div
-              {...domProps()}
-              {...cleanPopoverProps()}
-              {...(triggerContext?.overlayProps ?? {})}
-              ref={(el) => {
-                setPopoverRef(el);
-                triggerContext?.setOverlayRef?.(el);
-                stampOverlayLocale(el);
-              }}
-              id={overlayId()}
-              role={shouldBeDialog() ? "dialog" : undefined}
-              tabIndex={shouldBeDialog() ? -1 : undefined}
-              aria-labelledby={overlayLabelledBy()}
-              class={renderProps.class()}
-              style={mergedStyle()}
-              lang={callerLang() ?? locale().locale}
-              dir={callerDir() ?? locale().direction}
-              data-trigger={resolvedTrigger()}
-              data-placement={renderValues().placement}
-              data-entering={dataAttr(isEntering())}
-              data-exiting={dataAttr(isExiting())}
-            >
-              <Show when={!isNonModal()}>
-                <PopoverDismissButton onDismiss={close} />
-              </Show>
-              {/* A render-prop child runs once over a getter view of the render
-                  values. RAC re-invokes it on every placement / isEntering /
-                  isExiting change and React reconciles onto the same DOM; Solid
-                  would recreate the subtree, discarding a Menu's tree state and
-                  DOM focus when the enter animation settles (Tabs has the same
-                  contract for press flips). */}
-              {renderProps.renderChildrenStable()}
+            <Show when={!isNonModal()}>
               <PopoverDismissButton onDismiss={close} />
-            </div>
-          </FocusScope>
+            </Show>
+            {/* A render-prop child runs once over a getter view of the render
+                values. RAC re-invokes it on every placement / isEntering /
+                isExiting change and React reconciles onto the same DOM; Solid
+                would recreate the subtree, discarding a Menu's tree state and
+                DOM focus when the enter animation settles (Tabs has the same
+                contract for press flips). */}
+            {renderProps.renderChildrenStable()}
+            <PopoverDismissButton onDismiss={close} />
+          </div>
         </OverlayContext.Provider>
       </PopoverContext.Provider>
     );
@@ -856,19 +851,28 @@ export function Popover(props: PopoverProps): JSX.Element {
       <Show when={isHydrated() && (isOpen() || isExiting())}>
         <Portal mount={portalContainer()}>
           <FocusableContext.Provider value={null}>
-            <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
-            <Show
-              when={isSubPopover()}
-              fallback={
-                <div ref={setGroupRef} style={{ display: "contents" }}>
-                  <PopoverGroupContext.Provider value={() => groupRef()}>
-                    <PopoverInner />
-                  </PopoverGroupContext.Provider>
-                </div>
-              }
+            {/* RAC Overlay.tsx:76-81 wraps portal children in FocusScope so the
+                start/end sentinels sit beside the display:contents group, not
+                as siblings of [data-placement]. ComboBox hide-outside would
+                otherwise aria-hide those sentinels. */}
+            <FocusScope
+              contain={(shouldContainFocus() || overlayContain()) && !isExiting()}
+              restoreFocus
             >
-              <PopoverInner />
-            </Show>
+              <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
+              <Show
+                when={isSubPopover()}
+                fallback={
+                  <div ref={setGroupRef} style={{ display: "contents" }}>
+                    <PopoverGroupContext.Provider value={() => groupRef()}>
+                      <PopoverInner />
+                    </PopoverGroupContext.Provider>
+                  </div>
+                }
+              >
+                <PopoverInner />
+              </Show>
+            </FocusScope>
           </FocusableContext.Provider>
         </Portal>
       </Show>

@@ -46,6 +46,11 @@ history:
       at: 2026-09-15,
       note: "ComboBox announces option count assertively on open (RAC useComboBox.ts:430-449) while keeping eager applyOpenFocus so option aria-labelledby stays on first paint. D2 open-enter 2/2 green. D13 field ax and field dom now match. Remaining ComboBox D13: step 0 field document ariaHiddenSiblingCount 0 vs 2; keyboard-only step 1 selectionStart 3 vs 0. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Popover FocusScope now wraps portal children as RAC Overlay.tsx:76-81, so start/end sentinels are siblings of the display:contents group, not of [data-placement]. ComboBox hide-outside was aria-hiding those sentinels (D13 document 0 vs 2). D2 open-enter 2/2 still green. Remaining ComboBox D13: step 0 field pixel ~74% overlay screenshot mismatch; keyboard-only step 1 selectionStart 3 vs 0. Picker still #254. Not verified.",
+    }
 ---
 
 ## Cause

@@ -278,6 +278,32 @@ describe("Popover", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
+    it("keeps FocusScope sentinels outside the placement node", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover isNonModal>Content</Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      const popover = await waitFor(() => {
+        const el = document.querySelector("[data-placement]");
+        expect(el).toBeInstanceOf(HTMLElement);
+        return el as HTMLElement;
+      });
+
+      expect(popover.parentElement?.querySelector(":scope > [data-focus-scope-start]")).toBeNull();
+      expect(popover.parentElement?.querySelector(":scope > [data-focus-scope-end]")).toBeNull();
+      expect(popover.parentElement?.style.display).toBe("contents");
+      expect(
+        popover.parentElement?.parentElement?.querySelector(":scope > [data-focus-scope-start]"),
+      ).not.toBeNull();
+    });
+
     it("should support controlled isOpen", () => {
       const [isOpen, setIsOpen] = createSignal(false);
 
