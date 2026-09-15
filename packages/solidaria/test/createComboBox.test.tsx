@@ -742,6 +742,105 @@ describe("createComboBox", () => {
       expect(countCall![1]).toBeUndefined();
       dispose();
     });
+
+    it("does not re-announce option count when committing a new selection", async () => {
+      isAppleDeviceSpy.mockReturnValue(false);
+      const [selectedKey, setSelectedKey] = createSignal<string | null>("2");
+      const [inputValue, setInputValue] = createSignal("Banana");
+      let state: ReturnType<typeof createComboBoxState<(typeof items)[number]>>;
+
+      const onOpenChange = vi.fn();
+      const dispose = createRoot((d) => {
+        let inputRef: HTMLInputElement | null = null;
+        state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          get selectedKey() {
+            return selectedKey();
+          },
+          get inputValue() {
+            return inputValue();
+          },
+          onSelectionChange: (key) => {
+            if (key == null) {
+              return;
+            }
+            setSelectedKey(String(key));
+            const item = items.find((entry) => entry.id === String(key));
+            if (item) {
+              setInputValue(item.name);
+            }
+          },
+          onInputChange: setInputValue,
+          onOpenChange,
+        });
+        createComboBox({ label: "Fruit" }, state, () => inputRef);
+        return d;
+      });
+
+      await Promise.resolve();
+      state!.setFocused(true);
+      state!.open(null, "manual");
+      await Promise.resolve();
+      expect(state!.isOpen()).toBe(true);
+      const openCalls = announceSpy.mock.calls.filter((call) =>
+        String(call[0]).includes("options available"),
+      );
+      expect(openCalls).toHaveLength(1);
+      announceSpy.mockClear();
+      onOpenChange.mockClear();
+
+      state!.setFocusedKey("3");
+      state!.commit();
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const afterCommit = announceSpy.mock.calls.filter((call) =>
+        String(call[0]).includes("options available"),
+      );
+      expect(onOpenChange.mock.calls.map((call) => call[0])).toEqual([false]);
+      expect(afterCommit).toEqual([]);
+      expect(state!.isOpen()).toBe(false);
+      dispose();
+    });
+
+    it("does not re-announce option count when reopening with a focused selection", async () => {
+      isAppleDeviceSpy.mockReturnValue(false);
+      let state: ReturnType<typeof createComboBoxState<(typeof items)[number]>>;
+
+      const dispose = createRoot((d) => {
+        let inputRef: HTMLInputElement | null = null;
+        state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2",
+        });
+        createComboBox({ label: "Fruit" }, state, () => inputRef);
+        return d;
+      });
+
+      await Promise.resolve();
+      state!.open(null, "manual");
+      await Promise.resolve();
+      const openCalls = announceSpy.mock.calls.filter((call) =>
+        String(call[0]).includes("options available"),
+      );
+      expect(openCalls).toHaveLength(1);
+      announceSpy.mockClear();
+
+      state!.close();
+      await Promise.resolve();
+      state!.open(null, "manual");
+      await Promise.resolve();
+
+      const reopenCalls = announceSpy.mock.calls.filter((call) =>
+        String(call[0]).includes("options available"),
+      );
+      expect(reopenCalls).toEqual([]);
+      dispose();
+    });
   });
 
   describe("blur handling (P1.1)", () => {
@@ -1248,6 +1347,33 @@ describe("createComboBox", () => {
         expect(state.selectedKey()).toBe("1");
 
         openLinkSpy.mockRestore();
+        dispose();
+      });
+    });
+
+    it("does not preventDefault Escape when a selection is present", () => {
+      createRoot((dispose) => {
+        let inputRef: HTMLInputElement | null = null;
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2",
+        });
+        const comboBox = createComboBox({ label: "Fruit" }, state, () => inputRef);
+        state.open(null, "manual");
+
+        const onKeyDown = comboBox.inputProps.onKeyDown as (e: KeyboardEvent) => void;
+        const escapeEvent = {
+          key: "Escape",
+          preventDefault: vi.fn(),
+          stopPropagation: vi.fn(),
+        } as unknown as KeyboardEvent;
+
+        onKeyDown(escapeEvent);
+
+        expect(escapeEvent.preventDefault).not.toHaveBeenCalled();
+        expect(state.isOpen()).toBe(false);
         dispose();
       });
     });

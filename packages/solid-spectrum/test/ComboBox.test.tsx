@@ -169,6 +169,46 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(group).not.toHaveAttribute("data-focused");
   });
 
+  it("does not mark the field group focus-visible after pointer open then keyboard select", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox defaultSelectedKey="1" />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    const group = input.closest('[role="presentation"]');
+    expect(group).toBeTruthy();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+    expect(group).not.toHaveAttribute("data-focus-visible");
+
+    await user.keyboard("{ArrowDown}");
+    await user.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    });
+    expect(group).not.toHaveAttribute("data-focus-visible");
+  });
+
+  it("marks the field group focus-visible after keyboard focus", async () => {
+    const user = setupUser();
+    render(() => (
+      <>
+        <button type="button">before</button>
+        <FruitComboBox />
+      </>
+    ));
+
+    screen.getByRole("button", { name: "before" }).focus();
+    await user.tab();
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(document.activeElement).toBe(input);
+    const group = input.closest('[role="presentation"]');
+    expect(group).toHaveAttribute("data-focus-visible", "true");
+  });
+
   it("opens the menu on pointer focus when menuTrigger is focus", async () => {
     const user = setupUser();
     render(() => <FruitComboBox menuTrigger="focus" />);
@@ -372,6 +412,48 @@ describe("ComboBox (solid-spectrum)", () => {
     setLabel("Apricot");
     expect(option).toHaveTextContent("Apricot");
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apricot");
+  });
+
+  it("keeps option aria-labelledby resolved after keyboard End", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    input.focus();
+    await user.keyboard("{ArrowDown}");
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+
+    const assertLabelledByResolves = () => {
+      const options = screen.getAllByRole("option");
+      expect(options.length).toBe(items.length);
+      for (const option of options) {
+        const labelledBy = option.getAttribute("aria-labelledby");
+        expect(labelledBy).toBeTruthy();
+        const target = document.getElementById(labelledBy!);
+        expect(target).not.toBeNull();
+        expect(target).toHaveAttribute("slot", "label");
+      }
+    };
+
+    assertLabelledByResolves();
+    await user.keyboard("{End}");
+    assertLabelledByResolves();
+  });
+
+  it("does not treat a pointer-opened selected option as focus-visible", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox defaultSelectedKey="2" />);
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+
+    const selected = screen.getByRole("option", { selected: true });
+    expect(selected).toHaveTextContent("Banana");
+    expect(selected).not.toHaveAttribute("data-focus-visible");
   });
 });
 

@@ -18,7 +18,7 @@
  * Based on @react-aria/combobox useComboBox.
  */
 
-import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
+import { type JSX, type Accessor, createEffect, onCleanup, untrack } from "solid-js";
 import { isServer } from "solid-js/web";
 import {
   createFormValidationState,
@@ -36,7 +36,8 @@ import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isAppleDevice } from "../utils/platform";
-import { nodeContains, openLink } from "../utils/dom";
+import { getActiveElement, getOwnerDocument, nodeContains, openLink } from "../utils/dom";
+import { dispatchVirtualFocus } from "../focus/virtualFocus";
 import { ariaHideOutside } from "../overlays/ariaHideOutside";
 import { announce } from "../live-announcer";
 import { createStringFormatter } from "../i18n";
@@ -105,6 +106,8 @@ export interface AriaComboBoxProps {
   autoComplete?: "list" | "none" | "inline" | "both";
   /** Whether focus should wrap from the last item to the first. */
   shouldFocusWrap?: boolean;
+  /** Whether values that do not match an option are allowed. */
+  allowsCustomValue?: boolean;
 }
 
 export interface ComboBoxAria<T> {
@@ -346,19 +349,25 @@ export function createComboBox<T>(
     const collection = state.collection();
     const optionCount = getItemCount(collection);
 
-    // RAC useComboBox.ts:435-445 announces when the menu opens with no focused
-    // item (or on Apple), because ListBox autoFocus runs in a later effect.
-    // createComboBoxState applies that highlight synchronously so the first
-    // option paint keeps `aria-labelledby`; this effect still announces on
-    // open so D13 sees "N options available."
-    const didOpen = isOpen !== lastIsOpen && isOpen;
+    // RAC useComboBox.ts:435-445. ListBox autoFocus runs in a later React
+    // effect, so the first open often has focusedKey == null and announces.
+    // createComboBoxState applies that highlight synchronously (aria-labelledby
+    // on first paint). Compensate by leaving lastOptionCount at 0 while closed
+    // so the first open still announces via 0→N; do not announce on later
+    // didOpen when a focused key is already applied (button reopen with a
+    // selected item — RAC's child autoFocus wins before the announce effect).
+    const focusedKey = state.focusedKey();
+    const didOpenWithoutFocusedItem =
+      isOpen !== lastIsOpen && isOpen && (focusedKey == null || isAppleDevice());
 
-    if (isOpen && (didOpen || optionCount !== lastOptionCount)) {
+    if (isOpen && (didOpenWithoutFocusedItem || optionCount !== lastOptionCount)) {
       const announcement = stringFormatter().format("countAnnouncement", { optionCount });
       announce(announcement);
     }
 
-    lastOptionCount = optionCount;
+    if (isOpen) {
+      lastOptionCount = optionCount;
+    }
     lastIsOpen = isOpen;
   });
 
@@ -376,6 +385,36 @@ export function createComboBox<T>(
     }
 
     lastSelectedKey = selectedKey;
+  });
+
+  // RAC useComboBox.ts:477-486 — re-show the input focus ring when there is
+  // no virtually focused item. RAC's `useUpdateEffect([focusedItem])` only
+  // runs when that value changes, so a closed→open tick that stays
+  // `undefined` (Solid applies focusedKey before isOpen) must not dispatch.
+  let skipVirtualFocusRestore = true;
+  let hadVirtualFocusedItem = false;
+  createEffect(() => {
+    const focusedKey = state.focusedKey();
+    const isOpen = state.isOpen();
+    const hasVirtualFocusedItem =
+      focusedKey != null && isOpen && state.collection().getItem(focusedKey) != null;
+
+    if (skipVirtualFocusRestore) {
+      skipVirtualFocusRestore = false;
+      hadVirtualFocusedItem = hasVirtualFocusedItem;
+      return;
+    }
+
+    const lostVirtualFocusedItem = hadVirtualFocusedItem && !hasVirtualFocusedItem;
+    hadVirtualFocusedItem = hasVirtualFocusedItem;
+    if (!lostVirtualFocusedItem) return;
+
+    const input = untrack(() => inputRef());
+    if (isServer || !input) return;
+
+    if (getActiveElement(getOwnerDocument(input)) === input) {
+      dispatchVirtualFocus(input, null);
+    }
   });
 
   // Hide other page content from screen readers when the listbox is open.
@@ -491,83 +530,78 @@ export function createComboBox<T>(
         break;
       }
 
-      case "Escape":
-        if (state.isOpen()) {
-          e.preventDefault();
+      case "Escape": {
+        // RAC useComboBox.ts:236-243 — always revert; do not preventDefault.
+        // `shouldPreventDefault` is omitted so useKeyboard leaves the default
+        // enabled. Continue native propagation unless selection is empty, the
+        // input is non-empty, and custom values are disallowed.
+        const shouldContinuePropagation =
+          !state.selectionManager.isEmpty ||
+          state.inputValue() === "" ||
+          Boolean(p.allowsCustomValue);
+        state.revert();
+        if (!shouldContinuePropagation) {
           e.stopPropagation();
-          state.revert();
         }
         break;
+      }
 
       case "ArrowDown":
-        e.preventDefault();
         if (!state.isOpen()) {
+          // RAC useComboBox.ts:249-251 — `shouldPreventDefault: false` so the
+          // UA can collapse a Tab-selected value to the caret-at-end.
           state.open("first", "manual");
         } else {
-          // Move to next item
-          if (focusedKey == null) {
-            const firstKey = collection.getFirstKey();
-            if (firstKey != null) {
-              state.setFocusedKey(firstKey);
-            }
-          } else {
-            let nextKey = collection.getKeyAfter(focusedKey);
-            // Skip disabled keys
+          // RAC useSelectableCollection arrowDown: preventDefault only when
+          // there is a next key (undefined return). At the last item it
+          // `return false` so the input caret default stays enabled.
+          let nextKey =
+            focusedKey == null ? collection.getFirstKey() : collection.getKeyAfter(focusedKey);
+          while (nextKey != null && state.isKeyDisabled(nextKey)) {
+            nextKey = collection.getKeyAfter(nextKey);
+          }
+          if (nextKey == null && shouldWrap) {
+            nextKey = collection.getFirstKey();
             while (nextKey != null && state.isKeyDisabled(nextKey)) {
               nextKey = collection.getKeyAfter(nextKey);
             }
-            if (nextKey != null) {
-              state.setFocusedKey(nextKey);
-            } else if (shouldWrap) {
-              // Wrap to first
-              let firstKey = collection.getFirstKey();
-              while (firstKey != null && state.isKeyDisabled(firstKey)) {
-                firstKey = collection.getKeyAfter(firstKey);
-              }
-              if (firstKey != null) {
-                state.setFocusedKey(firstKey);
-              }
-            }
+          }
+          if (nextKey != null) {
+            e.preventDefault();
+            state.setFocusedKey(nextKey);
           }
         }
         break;
 
       case "ArrowUp":
-        e.preventDefault();
         if (!state.isOpen()) {
+          // RAC useComboBox.ts:253-255 — `shouldPreventDefault: false`.
           state.open("last", "manual");
         } else {
-          // Move to previous item
-          if (focusedKey == null) {
-            const lastKey = collection.getLastKey();
-            if (lastKey != null) {
-              state.setFocusedKey(lastKey);
-            }
-          } else {
-            let prevKey = collection.getKeyBefore(focusedKey);
-            // Skip disabled keys
+          let prevKey =
+            focusedKey == null ? collection.getLastKey() : collection.getKeyBefore(focusedKey);
+          while (prevKey != null && state.isKeyDisabled(prevKey)) {
+            prevKey = collection.getKeyBefore(prevKey);
+          }
+          if (prevKey == null && shouldWrap) {
+            prevKey = collection.getLastKey();
             while (prevKey != null && state.isKeyDisabled(prevKey)) {
               prevKey = collection.getKeyBefore(prevKey);
             }
-            if (prevKey != null) {
-              state.setFocusedKey(prevKey);
-            } else if (shouldWrap) {
-              // Wrap to last
-              let lastKey = collection.getLastKey();
-              while (lastKey != null && state.isKeyDisabled(lastKey)) {
-                lastKey = collection.getKeyBefore(lastKey);
-              }
-              if (lastKey != null) {
-                state.setFocusedKey(lastKey);
-              }
-            }
+          }
+          if (prevKey != null) {
+            e.preventDefault();
+            state.setFocusedKey(prevKey);
           }
         }
         break;
 
       case "Home":
+        // RAC leaves Home/End default enabled on the input (useComboBox
+        // does not handle them; useSelectableCollection home/end return
+        // false when selectOnFocus is false, as ComboBox is). The caret
+        // still moves; focusedKey still tracks the first/last option.
         if (state.isOpen()) {
-          e.preventDefault();
           let firstKey = collection.getFirstKey();
           while (firstKey != null && state.isKeyDisabled(firstKey)) {
             firstKey = collection.getKeyAfter(firstKey);
@@ -580,7 +614,6 @@ export function createComboBox<T>(
 
       case "End":
         if (state.isOpen()) {
-          e.preventDefault();
           let lastKey = collection.getLastKey();
           while (lastKey != null && state.isKeyDisabled(lastKey)) {
             lastKey = collection.getKeyBefore(lastKey);

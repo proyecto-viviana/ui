@@ -19,6 +19,7 @@
 import {
   type JSX,
   createContext,
+  createEffect,
   createMemo,
   createSignal,
   createUniqueId,
@@ -27,7 +28,12 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { mergeProps, createHover } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps,
+  createHover,
+  createFocusVisibleListener,
+  isFocusVisible as isGlobalFocusVisible,
+} from "@proyecto-viviana/solidaria";
 import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
@@ -39,6 +45,7 @@ import {
   ComboBoxTag as HeadlessComboBoxTag,
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
+  Text as HeadlessText,
   ListLayout,
   Virtualizer,
   defaultContainsFilter,
@@ -484,6 +491,23 @@ const comboBoxCheckmark = style<ComboBoxOptionStyleProps>({
   marginEnd: "text-to-control",
   aspectRatio: "square",
   flexShrink: 0,
+  // S2 Checkmark.tsx size map (token 10, not `10px`).
+  width: {
+    size: {
+      S: 10,
+      M: 10,
+      L: 12,
+      XL: 14,
+    },
+  },
+  height: {
+    size: {
+      S: 10,
+      M: 10,
+      L: 12,
+      XL: 14,
+    },
+  },
   "--iconPrimary": {
     type: "fill",
     value: {
@@ -555,14 +579,6 @@ function requiredIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
   };
 }
 
-function comboBoxCheckmarkIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
-  const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
-  return {
-    width: `${pixelSize}px`,
-    height: `${pixelSize}px`,
-  };
-}
-
 function comboBoxChevronIconStyle(size: S2ComboBoxSize): JSX.CSSProperties {
   const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
   return {
@@ -601,11 +617,25 @@ function ComboBoxFieldGroup(props: {
 }) {
   const context = useContext(HeadlessComboBoxContext) as {
     isFocused?: () => boolean;
-    isFocusVisible?: () => boolean;
     setTriggerRef?: (el: HTMLElement | null) => void;
   } | null;
   const isFocused = () => context?.isFocused?.() ?? props.renderProps.isFocused;
-  const isFocusVisible = () => context?.isFocusVisible?.() ?? props.renderProps.isFocusVisible;
+
+  // S2 FieldGroup is a RAC `<Group>` with `useFocusRing({ within: true })`, not
+  // the ComboBox input's `useFocusRing({ isTextInput: true })`. Copying the
+  // input ring lit the group after pointer-open + ArrowDown + Enter: RAC
+  // `dispatchVirtualFocus` re-samples global keyboard modality on the already-
+  // focused input, and the group inherited that. `createFocusRing({ within:
+  // true })` cannot be used here — Solid `onFocus` does not bubble to a
+  // container (DateField FieldGroup uses the same workaround). Track the
+  // group's own keyboard-modality flag; `isKeyboardFocusEvent` auto-detects
+  // the text input so ArrowDown/type/Enter do not flip it.
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
+  createEffect(() => {
+    const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
+    onCleanup(cleanup);
+  });
+  const isFocusVisible = () => isFocused() && isFocusVisibleModality();
 
   // Upstream FieldGroup renders a RAC `<Group>`, whose own `useHover` drives the
   // `isHovered` render prop that `fieldGroupStyles` reads to brighten the text to
@@ -1110,12 +1140,14 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             // and would strip the checkmark's `visibility` toggle, leaving it
             // visible on every option. Mirrors upstream S2 ComboBox `className`.
             class={checkClass(renderProps)}
-            style={comboBoxCheckmarkIconStyle(size)}
           />
           {isTextOnlyChildren(content()) ? (
-            <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
+            // S2 ComboBoxItem wraps string children in `<Text slot="label">` so
+            // RAC TextContext supplies the option's labelledby id as a prop.
+            // A raw span lost that id when the render-prop tree remounted on End.
+            <HeadlessText slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
               {content()}
-            </span>
+            </HeadlessText>
           ) : (
             content()
           )}

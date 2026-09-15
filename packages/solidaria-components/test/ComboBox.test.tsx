@@ -315,12 +315,110 @@ describe("ComboBox", () => {
 
       const input = screen.getByRole("combobox");
       input.focus();
-      await user.keyboard("{ArrowDown}");
+      let arrowDownPrevented = false;
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "ArrowDown") {
+          arrowDownPrevented = event.defaultPrevented;
+        }
+      };
+      document.addEventListener("keydown", onKeyDown);
+      try {
+        await user.keyboard("{ArrowDown}");
+
+        await waitFor(() => {
+          const listbox = screen.getByRole("listbox");
+          expect(listbox).toBeInTheDocument();
+        });
+        // RAC useComboBox.ts:249-251 leaves ArrowDown default enabled while closed.
+        expect(arrowDownPrevented).toBe(false);
+      } finally {
+        document.removeEventListener("keydown", onKeyDown);
+      }
+    });
+
+    it("does not preventDefault End while the list is open", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
 
       await waitFor(() => {
-        const listbox = screen.getByRole("listbox");
-        expect(listbox).toBeInTheDocument();
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
       });
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      let endPrevented = false;
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "End") {
+          endPrevented = event.defaultPrevented;
+        }
+      };
+      document.addEventListener("keydown", onKeyDown);
+      try {
+        await user.keyboard("{End}");
+        expect(endPrevented).toBe(false);
+        const lastOption = screen.getByText("Elderberry").closest('[role="option"]');
+        expect(lastOption).toHaveAttribute("data-focused");
+      } finally {
+        document.removeEventListener("keydown", onKeyDown);
+      }
+    });
+
+    it("does not preventDefault ArrowDown on the last option", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      await user.keyboard("{End}");
+      expect(screen.getByText("Elderberry").closest('[role="option"]')).toHaveAttribute(
+        "data-focused",
+      );
+
+      let arrowDownPrevented = false;
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "ArrowDown") {
+          arrowDownPrevented = event.defaultPrevented;
+        }
+      };
+      document.addEventListener("keydown", onKeyDown);
+      try {
+        await user.keyboard("{ArrowDown}");
+        expect(arrowDownPrevented).toBe(false);
+        expect(screen.getByText("Elderberry").closest('[role="option"]')).toHaveAttribute(
+          "data-focused",
+        );
+      } finally {
+        document.removeEventListener("keydown", onKeyDown);
+      }
+    });
+
+    it("dispatches virtual focusin on the input when the focused option disappears", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getByText("Apple").closest('[role="option"]')).toHaveAttribute("data-focused");
+
+      let focusinCount = 0;
+      const onFocusIn = () => {
+        focusinCount += 1;
+      };
+      input.addEventListener("focusin", onFocusIn);
+      try {
+        // RAC useComboBox.ts:477-486 dispatches a synthetic focusin on the
+        // input when filtering clears the virtually focused option.
+        await user.keyboard("z");
+        expect(focusinCount).toBeGreaterThan(0);
+      } finally {
+        input.removeEventListener("focusin", onFocusIn);
+      }
     });
 
     it("opens on ArrowDown when menuTrigger is manual and does not open on type", async () => {
@@ -1546,6 +1644,53 @@ describe("ComboBox", () => {
         const option = screen.getAllByRole("option")[0];
         expect(option).toHaveAttribute("data-selection-mode", "single");
       });
+    });
+
+    it("keeps option aria-labelledby resolved after End remounts a slot=label span", async () => {
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => (
+              <ComboBoxOption id={item.id} textValue={item.name}>
+                {(renderProps) => (
+                  <span slot="label">
+                    {item.name}
+                    {renderProps.isFocused ? "" : ""}
+                  </span>
+                )}
+              </ComboBoxOption>
+            )}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      await user.keyboard("{ArrowDown}");
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const assertLabelledByResolves = () => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          const labelledBy = option.getAttribute("aria-labelledby");
+          expect(labelledBy).toBeTruthy();
+          expect(document.getElementById(labelledBy!)).not.toBeNull();
+        }
+      };
+
+      assertLabelledByResolves();
+      await user.keyboard("{End}");
+      assertLabelledByResolves();
     });
   });
 

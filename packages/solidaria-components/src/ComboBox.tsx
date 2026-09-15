@@ -530,6 +530,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       get name() {
         return effectiveFormValue() === "text" ? stateProps.name : undefined;
       },
+      get allowsCustomValue() {
+        return stateProps.allowsCustomValue;
+      },
     }),
     state,
     () => inputRef,
@@ -1341,19 +1344,29 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
     },
   };
 
+  // Styled hosts emit `<span slot="label">` rather than `<Text>`. Stamp the
+  // slot id onto that node so `createSlotId` can resolve `aria-labelledby`.
+  // Render-prop children recreate the span when `isFocused` flips (End/Home);
+  // observe childList so the replacement node keeps the same id.
   createRenderEffect(() => {
     const el = ref();
     const labelId = optionAria.labelProps.id;
     const descriptionId = optionAria.descriptionProps.id;
     if (!el) return;
-    if (labelId) {
-      const label = el.querySelector("[slot='label']");
-      if (label && !label.id) label.id = labelId;
-    }
-    if (descriptionId) {
-      const description = el.querySelector("[slot='description']");
-      if (description && !description.id) description.id = descriptionId;
-    }
+    const stamp = () => {
+      if (labelId) {
+        const label = el.querySelector("[slot='label']");
+        if (label && label.id !== labelId) label.id = labelId;
+      }
+      if (descriptionId) {
+        const description = el.querySelector("[slot='description']");
+        if (description && description.id !== descriptionId) description.id = descriptionId;
+      }
+    };
+    stamp();
+    const observer = new MutationObserver(stamp);
+    observer.observe(el, { childList: true, subtree: true });
+    onCleanup(() => observer.disconnect());
   });
 
   const selectionMode = () => listState.selectionMode();
