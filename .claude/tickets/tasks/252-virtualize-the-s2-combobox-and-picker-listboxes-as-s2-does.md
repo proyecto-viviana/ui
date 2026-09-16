@@ -56,6 +56,11 @@ history:
       at: 2026-09-15,
       note: "ComboBoxItem/PickerItem slot contexts (60d218a4) do not change Virtualizer wrap order or the 7px leftover. Remaining: scroll/relayout evidence (#114) and Chromium D-reorder remount (#256; wrap already Popover > div > Provider > Virtualizer > ListBox). Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-16,
+      note: "After createUIIcon IconContext skip (44aa6fb1) ComboBox D13 2/2 vs :4323 including keyboard-only. Wrap order already Popover > div > Provider > Virtualizer > ListBox. Remaining: scroll/relayout evidence (#114) and Chromium D-reorder option remount (#256). Do not mark verified.",
+    }
 ---
 
 ## Cause

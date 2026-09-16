@@ -81,6 +81,11 @@ history:
       at: 2026-09-15,
       note: "ComboBox loadingState (e1b554bf) and ComboBoxItem/PickerItem slot contexts (60d218a4) do not change the D13 fixture string wrap or the keyboard-only 7/25440 checkmark AA. Menu/ActionMenu D2 labelledby (fb6509ad) 4/4 vs :4323 is not this leftover. Do not waive. Do not invent Portal forks / shape-rendering / translateZ(0) / CollectionBuilder <template>. Picker D13 remaining is still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-16,
+      note: "createUIIcon skips IconContext (44aa6fb1): S2 ui-icons never pass through Icon.tsx, so ComboBox Checkmark is a raw svg in gridArea checkmark instead of centerBaseline/menuItemIcon. ComboBox D13 2/2 vs :4323 after comparison rebuild (open-arrow-enter-reopen-scroll-escape + keyboard-only, 20.2s, EXIT:0). Keyboard-only 7px checkmark AA not observed this run. Log /tmp/grok-overlay-night/combobox-d13.log. Single local Chromium 151 run; do not mark verified. Picker D13 remaining is still #254.",
+    }
 ---
 
 ## Cause
