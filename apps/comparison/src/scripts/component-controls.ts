@@ -174,3 +174,60 @@ document.addEventListener("change", (event) => {
 });
 
 initializeComparisonControls();
+
+declare global {
+  interface Window {
+    __comparisonSetControl?: (
+      stack: "react" | "solid",
+      name: string,
+      value: unknown,
+    ) => Promise<void>;
+  }
+}
+
+window.__comparisonSetControl = async function __comparisonSetControl(
+  stack: "react" | "solid",
+  name: string,
+  value: unknown,
+): Promise<void> {
+  const root = document.querySelector(
+    `[data-framework="${stack}"] [data-comparison-control-root="combobox"]`,
+  ) as HTMLElement | null;
+  if (!root) {
+    throw new Error(`__comparisonSetControl: missing root for stack ${stack}`);
+  }
+  let props: Record<string, unknown> = {};
+  try {
+    props = JSON.parse(root.getAttribute("data-comparison-control-props") || "{}");
+  } catch {}
+  props[name] = value;
+  const detail = { component: "combobox", stack, props };
+  window.dispatchEvent(new CustomEvent("comparison:controls-change", { detail }));
+  await new Promise<void>((resolve, reject) => {
+    const start = Date.now();
+    const check = () => {
+      const currentRoot = document.querySelector(
+        `[data-framework="${stack}"] [data-comparison-control-root="combobox"]`,
+      ) as HTMLElement | null;
+      if (!currentRoot) {
+        reject(new Error(`__comparisonSetControl: root disappeared for stack ${stack}`));
+        return;
+      }
+      try {
+        const current = JSON.parse(
+          currentRoot.getAttribute("data-comparison-control-props") || "{}",
+        );
+        if (String(current[name]) === String(value)) {
+          resolve();
+          return;
+        }
+      } catch {}
+      if (Date.now() - start > 2000) {
+        reject(new Error(`__comparisonSetControl timeout for ${name}`));
+        return;
+      }
+      setTimeout(check, 16);
+    };
+    check();
+  });
+};

@@ -2,6 +2,13 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vite-plus/test";
+import {
+  comboBoxDemoDefaults,
+  comboBoxDemoPropsFromSearch,
+  comboBoxItemsForPreset,
+  normalizeComboBoxDemoProps,
+  serializeComboBoxDemoProps,
+} from "./combobox-demo";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const solidFixtures = join(here, "../components/solid/fixtures/styled");
@@ -33,5 +40,34 @@ describe("ComboBox and Picker comparison fixtures form wrap (M7)", () => {
     expect(picker).toContain(
       'demoProps.form ? jsx("form", { id: demoProps.form, hidden: true }) : null',
     );
+  });
+});
+
+describe("ComboBox D13 fixture protocol (#245-A)", () => {
+  it("normalizes selectedKey=none to no key and round-trips new fields", () => {
+    const normalized = normalizeComboBoxDemoProps({
+      selectedKey: "none",
+      eventLog: true,
+      itemsSource: "defaultItems",
+    });
+    expect(normalized.selectedKey).toBe("none");
+    expect(normalized.eventLog).toBe(true);
+    expect(normalized.itemsSource).toBe("defaultItems");
+    const serialized = serializeComboBoxDemoProps(normalized);
+    expect(serialized).toContain('"selectedKey":"none"');
+    expect(serialized).toContain('"eventLog":true');
+  });
+
+  it("omitting URL params keeps selectedKey=pro and itemsSource=items", () => {
+    const fromEmpty = comboBoxDemoPropsFromSearch("");
+    expect(comboBoxDemoDefaults.selectedKey).toBe("pro");
+    expect(comboBoxDemoDefaults.itemsSource).toBe("items");
+    expect(fromEmpty.selectedKey).toBe("pro");
+    expect(fromEmpty.itemsSource).toBe("items");
+  });
+
+  it("comboBoxItemsForPreset returns expected shapes", () => {
+    expect(comboBoxItemsForPreset("empty")).toEqual([]);
+    expect(comboBoxItemsForPreset("many").length).toBe(50);
   });
 });

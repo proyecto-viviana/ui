@@ -4,6 +4,7 @@ export { comparisonControlsEvent };
 
 export const comboBoxSizeOptions = ["S", "M", "L", "XL"] as const;
 export const comboBoxKeyOptions = ["starter", "pro", "enterprise"] as const;
+export const comboBoxSelectedKeyOptions = ["none", ...comboBoxKeyOptions] as const;
 export const comboBoxSelectionSourceOptions = ["selectedKey", "defaultSelectedKey"] as const;
 export const comboBoxInputSourceOptions = ["inputValue", "defaultInputValue"] as const;
 export const comboBoxLabelPositionOptions = ["top", "side"] as const;
@@ -14,6 +15,23 @@ export const comboBoxDirectionOptions = ["bottom", "top"] as const;
 export const comboBoxAlignOptions = ["start", "end"] as const;
 export const comboBoxFormValueOptions = ["key", "text"] as const;
 export const comboBoxValidationBehaviorOptions = ["native", "aria"] as const;
+export const comboBoxItemsSourceOptions = ["items", "defaultItems"] as const;
+export const comboBoxItemsPresetOptions = [
+  "three",
+  "sections",
+  "many",
+  "empty",
+  "link",
+  "textValue",
+] as const;
+export const comboBoxLayoutOptions = ["default", "nearBottom", "inScroller", "inDialog"] as const;
+export const comboBoxLoadingStateOptions = [
+  "idle",
+  "loading",
+  "filtering",
+  "loadingMore",
+  "error",
+] as const;
 
 // ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // ComboBox fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
@@ -24,6 +42,7 @@ export type ComboBoxDemoLocale = (typeof comboBoxDemoLocaleOptions)[number];
 
 export type ComboBoxDemoSize = (typeof comboBoxSizeOptions)[number];
 export type ComboBoxDemoKey = (typeof comboBoxKeyOptions)[number];
+export type ComboBoxDemoSelectedKey = (typeof comboBoxSelectedKeyOptions)[number];
 export type ComboBoxDemoSelectionSource = (typeof comboBoxSelectionSourceOptions)[number];
 export type ComboBoxDemoInputSource = (typeof comboBoxInputSourceOptions)[number];
 export type ComboBoxDemoLabelPosition = (typeof comboBoxLabelPositionOptions)[number];
@@ -34,10 +53,14 @@ export type ComboBoxDemoDirection = (typeof comboBoxDirectionOptions)[number];
 export type ComboBoxDemoAlign = (typeof comboBoxAlignOptions)[number];
 export type ComboBoxDemoFormValue = (typeof comboBoxFormValueOptions)[number];
 export type ComboBoxDemoValidationBehavior = (typeof comboBoxValidationBehaviorOptions)[number];
+export type ComboBoxDemoItemsSource = (typeof comboBoxItemsSourceOptions)[number];
+export type ComboBoxDemoItemsPreset = (typeof comboBoxItemsPresetOptions)[number];
+export type ComboBoxDemoLayout = (typeof comboBoxLayoutOptions)[number];
+export type ComboBoxDemoLoadingState = (typeof comboBoxLoadingStateOptions)[number];
 
 export interface ComboBoxDemoProps {
   label: string;
-  selectedKey: ComboBoxDemoKey;
+  selectedKey: ComboBoxDemoSelectedKey;
   selectionSource: ComboBoxDemoSelectionSource;
   inputValue: string;
   inputSource: ComboBoxDemoInputSource;
@@ -64,6 +87,17 @@ export interface ComboBoxDemoProps {
   shouldFlip: boolean;
   disableEnterprise: boolean;
   withContextualHelp: boolean;
+  itemsSource: ComboBoxDemoItemsSource;
+  itemsPreset: ComboBoxDemoItemsPreset;
+  layout: ComboBoxDemoLayout;
+  sentinels: boolean;
+  withForm: boolean;
+  loadingState: ComboBoxDemoLoadingState;
+  autoFocus: boolean;
+  shouldFocusWrap: boolean;
+  shouldCloseOnBlur: boolean;
+  prefix: string;
+  eventLog: boolean;
 }
 
 export const comboBoxItems = [
@@ -71,6 +105,24 @@ export const comboBoxItems = [
   { id: "pro", label: "Pro" },
   { id: "enterprise", label: "Enterprise" },
 ] as const;
+
+export const comboBoxManyItems = Array.from({ length: 50 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return { id: `item-${n}`, label: `Item ${n}` };
+});
+
+export const comboBoxTextValueItems = [{ id: "dog", label: "Dog", textValue: "Puppy" }] as const;
+
+export const comboBoxLinkItems = [{ id: "docs", label: "Plan docs", href: "#plan-docs" }] as const;
+
+export function comboBoxItemsForPreset(preset: ComboBoxDemoItemsPreset) {
+  if (preset === "empty") return [];
+  if (preset === "many") return comboBoxManyItems;
+  if (preset === "link") return comboBoxLinkItems;
+  if (preset === "textValue") return comboBoxTextValueItems;
+  // three, sections: base three (sections handled in fixture render)
+  return comboBoxItems;
+}
 
 export const comboBoxDemoDefaults: ComboBoxDemoProps = {
   label: "Plan",
@@ -101,6 +153,17 @@ export const comboBoxDemoDefaults: ComboBoxDemoProps = {
   shouldFlip: true,
   disableEnterprise: false,
   withContextualHelp: false,
+  itemsSource: "items",
+  itemsPreset: "three",
+  layout: "default",
+  sentinels: false,
+  withForm: false,
+  loadingState: "idle",
+  autoFocus: false,
+  shouldFocusWrap: false,
+  shouldCloseOnBlur: true,
+  prefix: "",
+  eventLog: false,
 };
 
 function isOneOf<T extends readonly string[]>(
@@ -125,11 +188,21 @@ function optionParam<T extends readonly string[]>(
 }
 
 export function comboBoxLabelForKey(key: string | null | undefined) {
-  return comboBoxItems.find((item) => item.id === key)?.label ?? comboBoxDemoDefaults.inputValue;
+  if (key === "none" || key == null) {
+    return "";
+  }
+  const known = [
+    ...comboBoxItems,
+    ...comboBoxManyItems,
+    ...comboBoxTextValueItems,
+    ...comboBoxLinkItems,
+    { id: "support", label: "Support" },
+  ];
+  return known.find((item) => item.id === key)?.label ?? comboBoxDemoDefaults.inputValue;
 }
 
 export function normalizeComboBoxDemoProps(props: Partial<ComboBoxDemoProps>): ComboBoxDemoProps {
-  const selectedKey = isOneOf(props.selectedKey, comboBoxKeyOptions)
+  const selectedKey = isOneOf(props.selectedKey, comboBoxSelectedKeyOptions)
     ? props.selectedKey
     : comboBoxDemoDefaults.selectedKey;
 
@@ -188,6 +261,25 @@ export function normalizeComboBoxDemoProps(props: Partial<ComboBoxDemoProps>): C
     shouldFlip: props.shouldFlip !== false,
     disableEnterprise: props.disableEnterprise === true,
     withContextualHelp: props.withContextualHelp === true,
+    itemsSource: isOneOf(props.itemsSource, comboBoxItemsSourceOptions)
+      ? props.itemsSource
+      : comboBoxDemoDefaults.itemsSource,
+    itemsPreset: isOneOf(props.itemsPreset, comboBoxItemsPresetOptions)
+      ? props.itemsPreset
+      : comboBoxDemoDefaults.itemsPreset,
+    layout: isOneOf(props.layout, comboBoxLayoutOptions)
+      ? props.layout
+      : comboBoxDemoDefaults.layout,
+    sentinels: props.sentinels === true,
+    withForm: props.withForm === true,
+    loadingState: isOneOf(props.loadingState, comboBoxLoadingStateOptions)
+      ? props.loadingState
+      : comboBoxDemoDefaults.loadingState,
+    autoFocus: props.autoFocus === true,
+    shouldFocusWrap: props.shouldFocusWrap === true,
+    shouldCloseOnBlur: props.shouldCloseOnBlur !== false,
+    prefix: typeof props.prefix === "string" ? props.prefix : comboBoxDemoDefaults.prefix,
+    eventLog: props.eventLog === true,
   };
 }
 
@@ -195,7 +287,7 @@ export function comboBoxDemoPropsFromSearch(search: string): ComboBoxDemoProps {
   const params = new URLSearchParams(search);
   const selectedKey = params.get("selectedKey");
   const size = params.get("size");
-  const normalizedSelectedKey = isOneOf(selectedKey, comboBoxKeyOptions)
+  const normalizedSelectedKey = isOneOf(selectedKey, comboBoxSelectedKeyOptions)
     ? selectedKey
     : comboBoxDemoDefaults.selectedKey;
 
@@ -275,6 +367,34 @@ export function comboBoxDemoPropsFromSearch(search: string): ComboBoxDemoProps {
       : comboBoxDemoDefaults.shouldFlip,
     disableEnterprise: booleanParam(params.get("disableEnterprise")),
     withContextualHelp: booleanParam(params.get("withContextualHelp")),
+    itemsSource: optionParam(
+      params,
+      "itemsSource",
+      comboBoxItemsSourceOptions,
+      comboBoxDemoDefaults.itemsSource,
+    ),
+    itemsPreset: optionParam(
+      params,
+      "itemsPreset",
+      comboBoxItemsPresetOptions,
+      comboBoxDemoDefaults.itemsPreset,
+    ),
+    layout: optionParam(params, "layout", comboBoxLayoutOptions, comboBoxDemoDefaults.layout),
+    sentinels: booleanParam(params.get("sentinels")),
+    withForm: booleanParam(params.get("withForm")),
+    loadingState: optionParam(
+      params,
+      "loadingState",
+      comboBoxLoadingStateOptions,
+      comboBoxDemoDefaults.loadingState,
+    ),
+    autoFocus: booleanParam(params.get("autoFocus")),
+    shouldFocusWrap: booleanParam(params.get("shouldFocusWrap")),
+    shouldCloseOnBlur: params.has("shouldCloseOnBlur")
+      ? booleanParam(params.get("shouldCloseOnBlur"))
+      : comboBoxDemoDefaults.shouldCloseOnBlur,
+    prefix: params.get("prefix") ?? comboBoxDemoDefaults.prefix,
+    eventLog: booleanParam(params.get("eventLog")),
   });
 }
 
@@ -332,5 +452,16 @@ export function serializeComboBoxDemoProps(props: ComboBoxDemoProps) {
     shouldFlip: props.shouldFlip,
     disableEnterprise: props.disableEnterprise,
     withContextualHelp: props.withContextualHelp,
+    itemsSource: props.itemsSource,
+    itemsPreset: props.itemsPreset,
+    layout: props.layout,
+    sentinels: props.sentinels,
+    withForm: props.withForm,
+    loadingState: props.loadingState,
+    autoFocus: props.autoFocus,
+    shouldFocusWrap: props.shouldFocusWrap,
+    shouldCloseOnBlur: props.shouldCloseOnBlur,
+    prefix: props.prefix,
+    eventLog: props.eventLog,
   });
 }

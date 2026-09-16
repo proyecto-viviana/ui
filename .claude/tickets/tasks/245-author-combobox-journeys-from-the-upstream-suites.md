@@ -11,6 +11,11 @@ history:
       at: 2026-09-02,
       note: "opened for the D13 interaction-journeys certification (owner decision 2026-09-02)",
     }
+  - {
+      state: open,
+      at: "2026-09-16",
+      note: "#245-A data/hook: window.__comparisonSetControl; inventory fields on ComboBoxDemoProps (selectedKey=none, itemsSource/itemsPreset, layout, sentinels, withForm, loadingState, autoFocus, shouldFocusWrap, shouldCloseOnBlur, prefix, eventLog). Certified defaults unchanged (selectedKey=pro, itemsSource=items). Extra chrome controls are isHidden — visible extras reflowed overlay dy 29 vs 30. Fixtures still HEAD (no live sentinels/layout/defaultItems tree). D13 2 passed on :4323. Journeys unauthored.",
+    }
 ---
 
 ## Work
