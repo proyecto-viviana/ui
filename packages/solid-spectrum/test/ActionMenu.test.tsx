@@ -92,6 +92,19 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(screen.getByRole("button", { name: "Más acciones" })).toBeInTheDocument();
   });
 
+  it("labels the popover dialog from the trigger via aria-labelledby", async () => {
+    const user = setupUser();
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    await user.click(trigger);
+
+    const menu = await screen.findByRole("menu");
+    const dialog = menu.closest('[role="dialog"]');
+    expect(dialog).toHaveAttribute("aria-labelledby", trigger.id);
+    expect(dialog).toHaveAccessibleName("More actions");
+  });
+
   it("opens with fallback data-driven menu items and fires action keys", async () => {
     const user = setupUser();
     const onAction = vi.fn();

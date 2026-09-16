@@ -1890,6 +1890,31 @@ describe("MenuTrigger", () => {
 
       assertAriaIdIntegrity(document.body);
     });
+
+    it("labels the popover dialog from the trigger via aria-labelledby", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <Button aria-label="Layer actions">Layer actions</Button>
+          <Popover>
+            <Menu<TestItem> aria-label="Layer actions" items={testItems} getKey={(item) => item.id}>
+              {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+            </Menu>
+          </Popover>
+        </MenuTrigger>
+      ));
+
+      const dialog = await waitFor(() => {
+        const node = document.querySelector('[role="dialog"][data-trigger="MenuTrigger"]');
+        expect(node).not.toBeNull();
+        return node as HTMLElement;
+      });
+      const labelledBy = dialog.getAttribute("aria-labelledby");
+      expect(labelledBy).toBeTruthy();
+      const trigger = document.getElementById(labelledBy!);
+      expect(trigger).not.toBeNull();
+      expect(trigger).toHaveAttribute("aria-label", "Layer actions");
+      expect(dialog).toHaveAccessibleName("Layer actions");
+    });
   });
 
   // ============================================

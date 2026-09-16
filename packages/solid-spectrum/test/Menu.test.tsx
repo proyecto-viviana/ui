@@ -134,6 +134,9 @@ describe("Menu (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", menu.id);
       expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
       expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+      const dialog = menu.closest('[role="dialog"]');
+      expect(dialog).toHaveAttribute("aria-labelledby", trigger.id);
+      expect(dialog).toHaveAccessibleName("Layer actions");
     });
 
     it("places from live direction and align after mount, matching RAC", async () => {

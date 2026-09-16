@@ -435,6 +435,14 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
                 },
               }) as unknown as Record<string, unknown>;
             },
+            // RAC MenuTrigger PopoverContext (`Menu.tsx:161`) names the overlay
+            // dialog from the trigger. Without this, name-from-contents concatenates
+            // every menuitem (Menu/ActionMenu D2 `target.name`).
+            get overlayProps() {
+              return {
+                "aria-labelledby": menuTrigger.menuProps["aria-labelledby"],
+              };
+            },
           }}
         >
           {props.children}
@@ -546,6 +554,11 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     },
     triggerId,
     trigger: "SubmenuTrigger",
+    // RAC SubmenuTrigger PopoverContext (`Menu.tsx:255`) names the nested
+    // overlay from the trigger item.
+    overlayProps: {
+      "aria-labelledby": triggerId,
+    },
   }));
 
   const itemContext = createMemo<MenuItemContextValue>(() => ({

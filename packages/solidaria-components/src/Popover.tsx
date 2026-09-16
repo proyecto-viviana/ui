@@ -376,7 +376,10 @@ export function Popover(props: PopoverProps): JSX.Element {
   const selectContext = useContext(SelectContext);
   const overlayLabelledBy = () =>
     props["aria-labelledby"] ??
-    (selectContext?.menuProps as { "aria-labelledby"?: string } | undefined)?.["aria-labelledby"];
+    (selectContext?.menuProps as { "aria-labelledby"?: string } | undefined)?.["aria-labelledby"] ??
+    (triggerContext?.overlayProps as { "aria-labelledby"?: string } | undefined)?.[
+      "aria-labelledby"
+    ];
   const resolvedTrigger = () =>
     local.trigger ??
     triggerContext?.trigger ??

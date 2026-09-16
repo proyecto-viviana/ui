@@ -399,6 +399,13 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
     get triggerProps() {
       return triggerContext?.triggerProps as Record<string, unknown> | undefined;
     },
+    // Preserve RAC MenuTrigger PopoverContext labelledby when this overlay
+    // context re-provides PopoverTriggerContext (it would otherwise drop it).
+    get overlayProps() {
+      return {
+        "aria-labelledby": triggerContext?.menuProps["aria-labelledby"],
+      };
+    },
   };
 
   return (
