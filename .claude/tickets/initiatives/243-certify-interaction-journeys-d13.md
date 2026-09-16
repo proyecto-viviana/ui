@@ -15,6 +15,11 @@ history:
       at: "2026-09-16",
       note: "Morning checkpoint. ComboBox D13 seeds 2/2 on :4323. #245 is next (Solid fixture protocol, then CB-OC journeys). Overlay remainder #248/#244/#251/#257/#270/#252/#114/#256/#229 stays in-progress and owner-gated — do not mark verified. Skip #254. Do not start #246/#249.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-stop checkpoint. #245 in-progress: Solid protocol on the HEAD ComboBox tree, CB-OC-02 registered and green, CB-OC-01/03–08 authored and red (unregistered). Overlay remainder stays owner-gated. Do not start #246/#249/#254.",
+    }
 ---
 
 ## Why
@@ -69,13 +74,12 @@ tester protocols. The per-component inventory lives in
   fuzz; #248 the owner-reported overlay defect; #249 rest of the overlay
   family.
 
-## Current (2026-09-16 morning)
+## Current
 
-Successor pick is **#245** (`next`). Driver (#244) exists; ComboBox D13 seed
-journeys are green on `:4323`; named inventory journeys are unauthored.
-Overlay remainder tickets stay in-progress with local Chromium evidence —
-owner-gated, not verified. #246 / #249 wait on ComboBox OC. #254 is an
-owner decision — do not start.
+**#245** is `in-progress`. D13 seeds 2/2 and CB-OC-02 are green on `:4323`.
+CB-OC-01/03–08 are authored and red (not registered). Overlay remainder
+#248/#244/#251/#257/#270/#252/#114/#256/#229 stays owner-gated. #246 / #249
+wait on ComboBox OC. #254 is an owner decision — do not start.
 
 ## Done when
 

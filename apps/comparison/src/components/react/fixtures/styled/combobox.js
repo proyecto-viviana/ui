@@ -147,8 +147,10 @@ function ReactComboBoxDemo() {
             onFocus: () => pushEvent("onFocus", []),
             onBlur: () => pushEvent("onBlur", []),
             onFocusChange: (isFocused) => pushEvent("onFocusChange", [isFocused]),
-            onLoadMore: () => pushEvent("onLoadMore", []),
             onAction: (key) => pushEvent("onAction", [key]),
+            ...(demoProps.loadingState !== "idle"
+              ? { onLoadMore: () => pushEvent("onLoadMore", []) }
+              : {}),
           }
         : {}),
       onSelectionChange: (nextKey) => {

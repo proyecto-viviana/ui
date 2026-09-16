@@ -9,6 +9,7 @@ import {
   seedOpenReopenScrollJourney,
 } from "../drivers/journeys";
 import { overlayJourneyAlphabet, registerJourneyFuzz } from "../drivers/journeys-fuzz";
+import { comboBoxOpenCloseJourneys } from "../journeys/combobox";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
 import { registerRtlDriver } from "../drivers/rtl";
@@ -313,6 +314,10 @@ registerMotionDriver(comboBoxMotionScenario);
 registerJourneyDriver(fieldScenario, [
   seedOpenReopenScrollJourney(chevronButton),
   seedKeyboardOnlyJourney("St"),
+  ...comboBoxOpenCloseJourneys({
+    trigger: chevronButton,
+    input: comboBoxInput,
+  }).filter((journey) => journey.id === "CB-OC-02"),
 ]);
 registerJourneyFuzz(
   fieldScenario,

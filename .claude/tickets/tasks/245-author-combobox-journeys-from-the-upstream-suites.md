@@ -4,7 +4,7 @@ type: task
 title: "Author ComboBox journeys from the upstream suites"
 created: 2026-09-02
 parent: 243
-status: next
+status: in-progress
 history:
   - {
       state: open,
@@ -25,6 +25,16 @@ history:
       state: next,
       at: "2026-09-16",
       note: "Owner-back morning stop. Successor pick. Overlay remainder stays owner-gated — do not mark verified, do not start #246/#249/#254. Next slice is Solid live fixture protocol (sentinels/layout/withForm/defaultItems) without wrapping ComboBox, then CB-OC-01..03. Gate every commit on ComboBox D13 2/2 vs :4323.",
+    }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Solid live fixture protocol + CB-OC-01..08. Inventory vs tree: no relabel preset, no load-more count, mouseDown is coordinates only. Overlay remainder stays owner-gated.",
+    }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Solid protocol on the HEAD ComboBox tree (direct child). D13 seeds 2/2 and CB-OC-02 green on :4323. CB-OC-01/03–08 authored and red (event order, defaultItems filter, readonly/disabled ARIA). Not registered. Overlay remainder owner-gated. Do not mark verified.",
     }
 ---
 
@@ -100,22 +110,27 @@ value)` reads `data-comparison-control-props` on
 inside the driven panel. Missing pieces throw with the missing name — a
 journey never passes by omission.
 
-## Checkpoint (2026-09-16 morning)
+## Checkpoint
 
-Owner asked to stop. Tree is clean on `main` at `7ce135bf` (ahead of
-origin/main; do not push unless asked). ComboBox D13 seeds
-(`open-arrow-enter-reopen-scroll-escape` + `keyboard-only`) are **2 passed**
-on comparison preview `http://127.0.0.1:4323/` (Chromium 151,
-`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` only). Overlay
-remainder is **not** this ticket and stays owner-gated.
+Owner-stop. #245 stays `in-progress` — not verified. Overlay remainder stays
+owner-gated.
 
-Landed commits:
+Landed this slice (uncommitted until this checkpoint commit):
 
-| sha | what |
-| --- | --- |
-| `95f3db0f` | D13-safe journey control data + hidden chrome (`combobox-demo.ts`, `__comparisonSetControl`, extra chrome `isHidden`, certified defaults unchanged). Unit tests 6/6. |
-| `9dcbd431` | React journey fixture. Default path still a bare ComboBox. Optional keys, layout, form, sentinels only when flags are on. Remounts via `renderKey`. |
-| `7ce135bf` | Solid event log without wrapping the field. HEAD ComboBox tree (direct child, static `items: comboBoxItems`) plus `eventLog` / `pushEvent` / stack filter / `data-comparison-events`. |
+- Solid fixture stays a **direct** ComboBox child. Sentinel `Show` siblings.
+  `items` / `defaultItems` getters, `itemsPreset`, `selectedKey=none`, extra
+  event callbacks, optional keys. No `withForm` / `layout` wrap (would wrap
+  the field).
+- React `onLoadMore` only when `loadingState !== idle` (virtualizer spam).
+- `e2e/journeys/combobox.ts` authors CB-OC-01..08. Certified spec registers
+  **CB-OC-02 only**.
+- D13 seeds 2/2 and CB-OC-02 passed on `:4323`. Fixture-form unit 6/6.
+- CB-OC-01/03–08 red; waivers in `comboBoxJourneyWaivers()`. Logs:
+  `/tmp/grok-overlay-night/combobox-d13-oc-slice.log`,
+  `/tmp/grok-overlay-night/combobox-oc-48.log`.
+
+Earlier commits: `95f3db0f` data/hook; `9dcbd431` React fixture; `7ce135bf`
+Solid event log; `d8dfc65a` ticket checkpoint.
 
 Certified defaults must not drift: `comboBoxDemoDefaults.selectedKey = "pro"`,
 `itemsSource = "items"`. Inventory default for **authoring** (via
@@ -124,21 +139,20 @@ Certified defaults must not drift: `comboBoxDemoDefaults.selectedKey = "pro"`,
 chrome radios stay the three `comboBoxKeyOptions` — do not add a visible
 `none` radio.
 
+`status.md` is a generated view and still lists this ticket as Next until
+`vp run docs:generate`. The ticket file is the authority (`in-progress`).
+
 ## Next agent
 
-1. **Solid live fixture protocol** in
-   `apps/comparison/src/components/solid/fixtures/styled/combobox.tsx`.
-   Mirror React
-   (`apps/comparison/src/components/react/fixtures/styled/combobox.js`):
-   `items` vs `defaultItems` (omit the unused key), `itemsPreset`, `layout`,
-   `sentinels`, `withForm` (+ submit count / FormData), optional ComboBox keys
-   only when flags are on. Keep extra chrome `isHidden: true`.
-2. Rebuild comparison (`vp exec --filter @proyecto-viviana/comparison -- astro build`)
-   and re-run ComboBox D13 vs `:4323`. **Do not commit unless 2 passed.**
-3. Then register CB-OC-01..03 from `playbook/journeys/combobox.md` in
-   `combobox.certified.spec.ts`. Then CB-OC-04..08, then the rest.
-4. Do not start #246 Picker journeys until ComboBox OC open/close is green
-   or every red step is ticketed with source evidence.
+1. Two ComboBox thunks + `Show` for `items` vs `defaultItems` without wrapping
+   the certified default field (Show remount broke D13 2/2). Then register
+   CB-OC-03.
+2. Ticket Solid event-order and readonly/disabled ARIA under #136 from the
+   `/tmp/grok-overlay-night/combobox-d13-oc-slice.log` and
+   `combobox-oc-48.log` reds. Then register CB-OC-01/04/05/08 and CB-OC-06/07.
+3. Add Solid `withForm` / `layout` without wrapping the default ComboBox.
+4. Do not start #246 until ComboBox OC open/close is green or every red step
+   is ticketed. Overlay remainder stays owner-gated.
 
 `vp test run apps/comparison/src/data/combobox-picker-fixture-form.test.ts`
 is the fixture-form unit gate (6 passed at checkpoint: M7 plus protocol

@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import {
   ComboBox as SolidSpectrumComboBox,
@@ -11,7 +11,7 @@ import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spect
 import {
   comboBoxDemoLocaleFromWindow,
   comboBoxDemoPropsFromWindow,
-  comboBoxItems,
+  comboBoxItemsForPreset,
   comboBoxLabelForKey,
   normalizeComboBoxDemoProps,
   serializeComboBoxDemoProps,
@@ -25,6 +25,20 @@ import {
 } from "@comparison/data/theme";
 import { providerShellStyle } from "../styled-shared.tsx";
 
+type ComboBoxFixtureItem = {
+  id: string;
+  label: string;
+  href?: string;
+  textValue?: string;
+};
+
+function sentinelButton(kind: "before" | "after") {
+  return h("button", {
+    type: "button",
+    "data-comparison-sentinel": kind,
+  }, [kind]);
+}
+
 function SolidSpectrumComboBoxDemo() {
   const locale = comboBoxDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = createSignal<ComboBoxDemoProps>(comboBoxDemoPropsFromWindow());
@@ -37,8 +51,15 @@ function SolidSpectrumComboBoxDemo() {
     const parsed = Number.parseInt(demoProps().menuWidth, 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
   });
+  const listItems = createMemo(
+    () => comboBoxItemsForPreset(demoProps().itemsPreset) as ComboBoxFixtureItem[],
+  );
   const disabledKeys = createMemo(() =>
-    demoProps().disableEnterprise ? ["enterprise"] : undefined,
+    demoProps().itemsPreset === "many"
+      ? ["item-25"]
+      : demoProps().disableEnterprise
+        ? ["enterprise"]
+        : undefined,
   );
   const contextualHelp = createMemo(() =>
     demoProps().withContextualHelp
@@ -127,22 +148,36 @@ function SolidSpectrumComboBoxDemo() {
           },
         },
         [
+          hc(Show, {
+            get when() {
+              return demoProps().sentinels;
+            },
+          }, [sentinelButton("before")]),
           hc(
             SolidSpectrumComboBox,
             {
-              items: comboBoxItems,
-              getKey: (item: (typeof comboBoxItems)[number]) => item.id,
-              getTextValue: (item: (typeof comboBoxItems)[number]) => item.label,
+              get items() {
+                return demoProps().itemsSource === "defaultItems" ? undefined : listItems();
+              },
+              get defaultItems() {
+                return demoProps().itemsSource === "defaultItems" ? listItems() : undefined;
+              },
+              getKey: (item: ComboBoxFixtureItem) => item.id,
+              getTextValue: (item: ComboBoxFixtureItem) => item.textValue ?? item.label,
               get label() {
                 return demoProps().label;
               },
               get selectedKey() {
-                return demoProps().selectionSource === "selectedKey" ? selectedKey() : undefined;
+                if (demoProps().selectionSource !== "selectedKey") {
+                  return undefined;
+                }
+                return selectedKey() === "none" ? null : selectedKey();
               },
               get defaultSelectedKey() {
-                return demoProps().selectionSource === "defaultSelectedKey"
-                  ? demoProps().selectedKey
-                  : undefined;
+                if (demoProps().selectionSource !== "defaultSelectedKey") {
+                  return undefined;
+                }
+                return demoProps().selectedKey === "none" ? null : demoProps().selectedKey;
               },
               get inputValue() {
                 return demoProps().inputSource === "inputValue" ? inputValue() : undefined;
@@ -221,6 +256,26 @@ function SolidSpectrumComboBoxDemo() {
               get isInvalid() {
                 return demoProps().isInvalid;
               },
+              get loadingState() {
+                return demoProps().loadingState !== "idle" ? demoProps().loadingState : undefined;
+              },
+              get autoFocus() {
+                return demoProps().autoFocus ? true : undefined;
+              },
+              get shouldFocusWrap() {
+                return demoProps().shouldFocusWrap ? true : undefined;
+              },
+              get shouldCloseOnBlur() {
+                return demoProps().shouldCloseOnBlur === false ? false : undefined;
+              },
+              get prefix() {
+                return demoProps().prefix || undefined;
+              },
+              onOpenChange: (...args: unknown[]) => pushEvent("onOpenChange", args),
+              onFocus: () => pushEvent("onFocus", []),
+              onBlur: () => pushEvent("onBlur", []),
+              onFocusChange: (isFocused: boolean) => pushEvent("onFocusChange", [isFocused]),
+              onAction: (key: unknown) => pushEvent("onAction", [key]),
               onSelectionChange: (nextKey: unknown) => {
                 pushEvent("onSelectionChange", [nextKey]);
                 if (nextKey == null) {
@@ -248,19 +303,33 @@ function SolidSpectrumComboBoxDemo() {
                 );
               },
             },
-            renderProp((item: (typeof comboBoxItems)[number]) =>
+            renderProp((item: ComboBoxFixtureItem) =>
               hc(
                 SolidSpectrumComboBoxItem,
                 {
                   id: item.id,
                   get isDisabled() {
-                    return item.id === "enterprise" && demoProps().disableEnterprise;
+                    return (
+                      (demoProps().itemsPreset === "many" && item.id === "item-25") ||
+                      (item.id === "enterprise" && demoProps().disableEnterprise)
+                    );
+                  },
+                  get href() {
+                    return item.href;
+                  },
+                  get textValue() {
+                    return item.textValue;
                   },
                 },
                 [item.label],
               ),
             ),
           ),
+          hc(Show, {
+            get when() {
+              return demoProps().sentinels;
+            },
+          }, [sentinelButton("after")]),
         ],
       ),
     ],
