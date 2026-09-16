@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createSignal } from "solid-js";
@@ -83,6 +83,46 @@ describe("Picker (solid-spectrum)", () => {
     expect(heading).toHaveTextContent("Docs");
     expect(heading?.className).toContain("-macro-static");
     expect(heading?.className).not.toContain("text-2xl");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
+  });
+
+  it("provides S2 PickerItem default, label, and description TextContext", async () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      >
+        {(item) => (
+          <PickerItem id={item.href} textValue={item.label}>
+            {item.href === "#page-title" ? (
+              <>
+                <Text>{item.label}</Text>
+                <Text slot="description">On this page</Text>
+              </>
+            ) : (
+              <Text slot="label">{item.label}</Text>
+            )}
+          </PickerItem>
+        )}
+      </Picker>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Accordion" })).toBeInTheDocument();
+    });
+
+    const accordionOption = screen.getByRole("option", { name: "Accordion" });
+    const apiOption = screen.getByRole("option", { name: "API" });
+    const defaultLabel = within(accordionOption).getByText("Accordion");
+    const namedLabel = within(apiOption).getByText("API");
+    const description = within(accordionOption).getByText("On this page");
+    expect(defaultLabel.className).toContain("-macro-");
+    expect(namedLabel).toHaveAttribute("slot", "label");
+    expect(namedLabel.className).toContain("-macro-");
     expect(description).toHaveAttribute("slot", "description");
     expect(description.className).toContain("-macro-dynamic");
   });

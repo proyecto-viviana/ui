@@ -34,6 +34,7 @@ import {
   SelectValue as HeadlessSelectValue,
   SelectListBox as HeadlessSelectListBox,
   SelectOption as HeadlessSelectOption,
+  TextContext as HeadlessTextContext,
   ListBoxSection as HeadlessListBoxSection,
   ListLayout,
   Virtualizer,
@@ -67,7 +68,9 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
-import { CenterBaseline } from "../icon/center-baseline";
+import { CenterBaseline, centerBaseline } from "../icon/center-baseline";
+import { IconContext } from "../icon/spectrum-icon";
+import { AvatarContext } from "../avatar";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { mergeProps as mergeAriaProps, createStringFormatter } from "@proyecto-viviana/solidaria";
@@ -84,7 +87,13 @@ import { getSlottedContextProps, type SpectrumContextValue } from "../button/spe
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { HeaderContext, HeadingContext, TextContext } from "../text";
-import { menuItemDescription, menuSectionHeading } from "../menu/s2-menu-styles";
+import {
+  menuItemDescription,
+  menuItemIcon,
+  menuItemIconCenterWrapper,
+  menuItemLabel,
+  menuSectionHeading,
+} from "../menu/s2-menu-styles";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -491,6 +500,18 @@ const pickerOptionLabel = style<{ size?: S2PickerSize }>({
   marginTop: "--labelPadding",
   truncate: true,
 });
+
+// S2 Picker.tsx:289-292 / 542-547 — AvatarContext on PickerItem and SelectValue.
+const pickerAvatar = style({
+  gridArea: "icon",
+  marginEnd: "text-to-visual",
+});
+const pickerAvatarSize = {
+  S: 16,
+  M: 20,
+  L: 22,
+  XL: 26,
+} as const;
 
 const pickerCheckmark = style<PickerOptionStyleProps>({
   gridArea: "checkmark",
@@ -983,16 +1004,58 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                       }) + (local.renderValue ? "" : " " + pickerValueContents)
                     }
                   >
-                    {(valueProps) =>
-                      pickerValueContent(
-                        valueProps,
-                        local.renderValue,
-                        listBoxChildren,
-                        stringFormatter().format("picker.selectedCount", {
-                          count: valueProps.selectedItems.length,
-                        }),
-                      )
-                    }
+                    {(valueProps) => (
+                      <IconContext.Provider
+                        value={{
+                          slot: "icon",
+                          render: centerBaseline({
+                            slot: "icon",
+                            styles: menuItemIconCenterWrapper,
+                          }),
+                          styles: menuItemIcon,
+                        }}
+                      >
+                        <AvatarContext.Provider
+                          value={{
+                            slots: {
+                              default: {
+                                size: pickerAvatarSize[size()],
+                                styles: pickerAvatar,
+                              },
+                              avatar: {
+                                size: pickerAvatarSize[size()],
+                                styles: pickerAvatar,
+                              },
+                            },
+                          }}
+                        >
+                          <TextContext.Provider
+                            value={{
+                              slots: {
+                                description: {},
+                                default: {
+                                  styles: pickerValueText,
+                                  "data-slot": "label",
+                                },
+                                label: {
+                                  styles: pickerValueText,
+                                  "data-slot": "label",
+                                },
+                              },
+                            }}
+                          >
+                            {pickerValueContent(
+                              valueProps,
+                              local.renderValue,
+                              listBoxChildren,
+                              stringFormatter().format("picker.selectedCount", {
+                                count: valueProps.selectedItems.length,
+                              }),
+                            )}
+                          </TextContext.Provider>
+                        </AvatarContext.Provider>
+                      </IconContext.Provider>
+                    )}
                   </HeadlessSelectValue>
                   <Show when={isInvalid() && !triggerProps.isDisabled}>
                     <CenterBaseline>
@@ -1078,9 +1141,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                     >
                       <HeadlessSelectListBox
                         isInPopover
-                        class={(listBoxProps) =>
-                          pickerListBox({ ...listBoxProps, size: size() })
-                        }
+                        class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
                         onLoadMore={local.onLoadMore}
                         isLoading={isLoadingMore()}
                         loadMoreClass={pickerLoadingWrapper}
@@ -1118,10 +1179,6 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   const size = useContext(PickerSizeContext);
   const insideValue = useContext(InsidePickerValueContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
-  // One tracked read of the children getter. Reading it per use creates the
-  // child DOM once per read and desynchronizes hydration keys; an untracked
-  // setup-time read freezes a direct signal child such as `{label()}`.
-  const content = createMemo(() => local.children);
 
   // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
   // are the selected item's *content* (`item.props.children`), not a rendered
@@ -1130,6 +1187,9 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   // A bare text child is wrapped in the label slot (block/flex-grow/truncate),
   // matching upstream's `<Text slot="label">` (Picker.tsx:854 → TextContext).
   if (insideValue) {
+    // PickerItem is already under SelectValue's TextContext here, so a memo
+    // at this owner is the correct nearest provider for trigger `<Text>`.
+    const content = createMemo(() => local.children);
     return (
       <>
         {isTextOnlyChildren(content()) ? (
@@ -1157,6 +1217,84 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
+  // Consume children in a nested component so the tracked read runs under the
+  // item Icon/Avatar/Text providers. A memo on PickerItem itself would create
+  // `<Text>` / `<Text slot="label">` against the overlay description-only
+  // TextContext (A slot prop is required / Invalid slot "label").
+  // Copy headless label/description ids into Spectrum TextContext (MenuItem
+  // does the same) so unslotted S2 `<Text>` is the option accessible name.
+  const PickerItemChrome = (contentProps: { renderProps: SelectOptionRenderProps }) => {
+    const headlessText = useContext(HeadlessTextContext) as {
+      slots?: Record<string, { id?: string } | undefined>;
+    } | null;
+    const labelId = headlessText?.slots?.label?.id ?? headlessText?.slots?.default?.id;
+    const descriptionId = headlessText?.slots?.description?.id;
+    return (
+      <TextContext.Provider
+        value={{
+          slots: {
+            default: {
+              styles: () => menuItemLabel({ size }),
+              "data-rsp-slot": "text",
+              id: labelId,
+            },
+            label: {
+              styles: () => menuItemLabel({ size }),
+              "data-rsp-slot": "text",
+              id: labelId,
+            },
+            description: {
+              styles: () =>
+                menuItemDescription({
+                  size,
+                  isFocused: contentProps.renderProps.isFocused,
+                  isDisabled: contentProps.renderProps.isDisabled,
+                }),
+              "data-rsp-slot": "text",
+              id: descriptionId,
+            },
+          },
+        }}
+      >
+        <PickerItemContents renderProps={contentProps.renderProps} />
+      </TextContext.Provider>
+    );
+  };
+  const PickerItemContents = (contentProps: { renderProps: SelectOptionRenderProps }) => {
+    // One tracked read of the children getter. Reading it per use creates the
+    // child DOM once per read and desynchronizes hydration keys; an untracked
+    // setup-time read freezes a direct signal child such as `{label()}`.
+    const content = createMemo(() => local.children);
+    return (
+      <>
+        <CheckmarkIcon
+          size={size === "S" ? "XS" : size}
+          // Mirror upstream S2 `Picker` (Picker.tsx): the checkmark style is
+          // applied via `className`, NOT the icon `styles` override. The icon
+          // `styles` path filters overrides through `iconAllowedOverrides`,
+          // which (faithfully) omits `visibility` — routing the checkmark
+          // through it silently strips the `visibility: { default: hidden,
+          // isSelected: visible }` atom, leaving the checkmark visible on
+          // every option. Upstream's hand-written ui-icon Checkmark applies
+          // the caller's `className` raw; our `class` prop is the raw path.
+          class={pickerCheckmark({ ...contentProps.renderProps, size })}
+          style={pickerCheckmarkIconStyle(size)}
+          // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
+          // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the
+          // selected row exposes the checkmark as an `img` node in the AX tree
+          // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
+          // are pruned from the tree automatically — matching the React oracle.
+        />
+        {isTextOnlyChildren(content()) ? (
+          <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
+            {content()}
+          </span>
+        ) : (
+          content()
+        )}
+      </>
+    );
+  };
 
   return (
     <HeadlessSelectOption
@@ -1168,33 +1306,27 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
       style={pressScale(() => optionEl(), local.UNSAFE_style)}
     >
       {(renderProps) => (
-        <>
-          <CheckmarkIcon
-            size={size === "S" ? "XS" : size}
-            // Mirror upstream S2 `Picker` (Picker.tsx): the checkmark style is
-            // applied via `className`, NOT the icon `styles` override. The icon
-            // `styles` path filters overrides through `iconAllowedOverrides`,
-            // which (faithfully) omits `visibility` — routing the checkmark
-            // through it silently strips the `visibility: { default: hidden,
-            // isSelected: visible }` atom, leaving the checkmark visible on
-            // every option. Upstream's hand-written ui-icon Checkmark applies
-            // the caller's `className` raw; our `class` prop is the raw path.
-            class={pickerCheckmark({ ...renderProps, size })}
-            style={pickerCheckmarkIconStyle(size)}
-            // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
-            // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the
-            // selected row exposes the checkmark as an `img` node in the AX tree
-            // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
-            // are pruned from the tree automatically — matching the React oracle.
-          />
-          {isTextOnlyChildren(content()) ? (
-            <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
-              {content()}
-            </span>
-          ) : (
-            content()
-          )}
-        </>
+        <IconContext.Provider
+          value={{
+            slot: "icon",
+            render: centerBaseline({
+              slot: "icon",
+              styles: menuItemIconCenterWrapper,
+            }),
+            styles: menuItemIcon,
+          }}
+        >
+          <AvatarContext.Provider
+            value={{
+              slots: {
+                default: { size: pickerAvatarSize[size], styles: pickerAvatar },
+                avatar: { size: pickerAvatarSize[size], styles: pickerAvatar },
+              },
+            }}
+          >
+            <PickerItemChrome renderProps={renderProps} />
+          </AvatarContext.Provider>
+        </IconContext.Provider>
       )}
     </HeadlessSelectOption>
   );

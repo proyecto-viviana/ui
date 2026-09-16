@@ -152,9 +152,7 @@ describe("ComboBox (solid-spectrum)", () => {
   });
 
   it("renders load-more progress when loadingState is loadingMore", async () => {
-    render(() => (
-      <FruitComboBox loadingState="loadingMore" onLoadMore={vi.fn()} defaultOpen />
-    ));
+    render(() => <FruitComboBox loadingState="loadingMore" onLoadMore={vi.fn()} defaultOpen />);
 
     await waitFor(() => {
       expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
@@ -209,6 +207,36 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(heading).toHaveTextContent("Fruits");
     expect(heading?.className).toContain("-macro-static");
     expect(heading?.className).not.toContain("text-2xl");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
+  });
+
+  it("provides S2 ComboBoxItem label and description TextContext", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        items={items}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+        defaultOpen
+      >
+        {(item) => (
+          <ComboBoxOption id={item.id} textValue={item.name}>
+            <Text slot="label">{item.name}</Text>
+            <Text slot="description">{item.id === "1" ? "Seasonal" : "Year-round"}</Text>
+          </ComboBoxOption>
+        )}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Apple" })).toBeInTheDocument();
+    });
+
+    const label = screen.getByText("Apple");
+    const description = screen.getByText("Seasonal");
+    expect(label).toHaveAttribute("slot", "label");
+    expect(label.className).toContain("-macro-");
     expect(description).toHaveAttribute("slot", "description");
     expect(description.className).toContain("-macro-dynamic");
   });

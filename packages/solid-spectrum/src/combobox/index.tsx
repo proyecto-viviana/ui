@@ -46,6 +46,7 @@ import {
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
   Text as HeadlessText,
+  TextContext as HeadlessTextContext,
   ListLayout,
   Virtualizer,
   defaultContainsFilter,
@@ -63,7 +64,12 @@ import {
   type ComboBoxTagGroupProps as HeadlessComboBoxTagGroupProps,
   type ComboBoxTagProps as HeadlessComboBoxTagProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { FilterFn, Key, LoadingState, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
+import type {
+  FilterFn,
+  Key,
+  LoadingState,
+  MenuTriggerAction,
+} from "@proyecto-viviana/solid-stately";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
@@ -79,7 +85,9 @@ import {
   fieldLabel,
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
-import { CenterBaseline } from "../icon/center-baseline";
+import { CenterBaseline, centerBaseline } from "../icon/center-baseline";
+import { IconContext } from "../icon/spectrum-icon";
+import { AvatarContext } from "../avatar";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
@@ -105,7 +113,13 @@ import {
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import { HeaderContext, HeadingContext, TextContext } from "../text";
-import { menuItemDescription, menuSectionHeading } from "../menu/s2-menu-styles";
+import {
+  menuItemDescription,
+  menuItemIcon,
+  menuItemIconCenterWrapper,
+  menuItemLabel,
+  menuSectionHeading,
+} from "../menu/s2-menu-styles";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -494,6 +508,12 @@ const comboBoxOptionLabel = style<{ size?: S2ComboBoxSize }>({
   fontWeight: "medium",
   marginTop: "--labelPadding",
   truncate: true,
+});
+
+// S2 ComboBox.tsx:354-357 — AvatarContext styles on ComboBoxItem.
+const comboBoxAvatar = style({
+  gridArea: "icon",
+  marginEnd: "text-to-visual",
 });
 
 const comboBoxCheckmark = style<{
@@ -1079,9 +1099,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   isRequired: undefined,
                 }}
               >
-                <HeaderContext.Provider
-                  value={{ styles: () => listboxHeader({ size: size() }) }}
-                >
+                <HeaderContext.Provider value={{ styles: () => listboxHeader({ size: size() }) }}>
                   <HeadingContext.Provider
                     value={{
                       role: "presentation",
@@ -1228,10 +1246,6 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
-  // One tracked read of the children getter. Reading it per use creates the
-  // child DOM once per read and desynchronizes hydration keys; an untracked
-  // setup-time read freezes a direct signal child such as `{label()}`.
-  const content = createMemo(() => local.children);
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
@@ -1248,6 +1262,72 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       ...renderProps,
       size,
     });
+  // Consume children in a nested component so the tracked read runs under the
+  // item Icon/Avatar/Text providers. A memo on ComboBoxOption itself would
+  // create `<Text slot="label">` against the overlay description-only
+  // TextContext (Invalid slot "label"). MenuItemContents is the same pattern.
+  // Copy headless label/description ids into Spectrum TextContext (MenuItem
+  // does the same) so S2 `<Text>` gets `aria-labelledby` without RAC Text.
+  const ComboBoxOptionChrome = (contentProps: { renderProps: ComboBoxOptionRenderProps }) => {
+    const headlessText = useContext(HeadlessTextContext) as {
+      slots?: Record<string, { id?: string } | undefined>;
+    } | null;
+    const labelId = headlessText?.slots?.label?.id ?? headlessText?.slots?.default?.id;
+    const descriptionId = headlessText?.slots?.description?.id;
+    return (
+      <TextContext.Provider
+        value={{
+          slots: {
+            label: {
+              styles: () => menuItemLabel({ size }),
+              "data-rsp-slot": "text",
+              id: labelId,
+            },
+            description: {
+              styles: () =>
+                menuItemDescription({
+                  size,
+                  isFocused: contentProps.renderProps.isFocused,
+                  isDisabled: contentProps.renderProps.isDisabled,
+                }),
+              "data-rsp-slot": "text",
+              id: descriptionId,
+            },
+          },
+        }}
+      >
+        <ComboBoxOptionContents renderProps={contentProps.renderProps} />
+      </TextContext.Provider>
+    );
+  };
+  const ComboBoxOptionContents = (contentProps: { renderProps: ComboBoxOptionRenderProps }) => {
+    // One tracked read of the children getter. Reading it per use creates the
+    // child DOM once per read and desynchronizes hydration keys; an untracked
+    // setup-time read freezes a direct signal child such as `{label()}`.
+    const content = createMemo(() => local.children);
+    return (
+      <>
+        <CheckmarkIcon
+          size={size === "S" ? "XS" : size}
+          // Apply via `class` (raw), not `styles`: the icon `styles` path
+          // filters through `iconAllowedOverrides`, which omits `visibility`
+          // and would strip the checkmark's `visibility` toggle, leaving it
+          // visible on every option. Mirrors upstream S2 ComboBox `className`.
+          class={checkClass(contentProps.renderProps)}
+        />
+        {isTextOnlyChildren(content()) ? (
+          // S2 ComboBoxItem wraps string children in `<Text slot="label">` so
+          // RAC TextContext supplies the option's labelledby id as a prop.
+          // A raw span lost that id when the render-prop tree remounted on End.
+          <HeadlessText slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
+            {content()}
+          </HeadlessText>
+        ) : (
+          content()
+        )}
+      </>
+    );
+  };
 
   return (
     <HeadlessComboBoxOption
@@ -1262,26 +1342,27 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       style={pressScale(() => optionEl(), local.UNSAFE_style)}
     >
       {(renderProps: ComboBoxOptionRenderProps) => (
-        <>
-          <CheckmarkIcon
-            size={size === "S" ? "XS" : size}
-            // Apply via `class` (raw), not `styles`: the icon `styles` path
-            // filters through `iconAllowedOverrides`, which omits `visibility`
-            // and would strip the checkmark's `visibility` toggle, leaving it
-            // visible on every option. Mirrors upstream S2 ComboBox `className`.
-            class={checkClass(renderProps)}
-          />
-          {isTextOnlyChildren(content()) ? (
-            // S2 ComboBoxItem wraps string children in `<Text slot="label">` so
-            // RAC TextContext supplies the option's labelledby id as a prop.
-            // A raw span lost that id when the render-prop tree remounted on End.
-            <HeadlessText slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
-              {content()}
-            </HeadlessText>
-          ) : (
-            content()
-          )}
-        </>
+        <IconContext.Provider
+          value={{
+            slot: "icon",
+            render: centerBaseline({
+              slot: "icon",
+              styles: menuItemIconCenterWrapper,
+            }),
+            styles: menuItemIcon,
+          }}
+        >
+          <AvatarContext.Provider
+            value={{
+              slots: {
+                default: { size: "1lh", styles: comboBoxAvatar },
+                avatar: { size: "1lh", styles: comboBoxAvatar },
+              },
+            }}
+          >
+            <ComboBoxOptionChrome renderProps={renderProps} />
+          </AvatarContext.Provider>
+        </IconContext.Provider>
       )}
     </HeadlessComboBoxOption>
   );

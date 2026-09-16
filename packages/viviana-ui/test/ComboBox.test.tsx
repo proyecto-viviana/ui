@@ -131,4 +131,34 @@ describe("ComboBox", () => {
     expect(description).toHaveAttribute("slot", "description");
     expect(description.className).toContain("-macro-dynamic");
   });
+
+  it("provides S2 ComboBoxItem label and description TextContext", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        defaultOpen
+        items={[apple]}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+      >
+        {(item) => (
+          <ComboBoxOption id={item.id} textValue={item.name}>
+            <Text slot="label">{item.name}</Text>
+            <Text slot="description">Seasonal</Text>
+          </ComboBoxOption>
+        )}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Apple" })).toBeInTheDocument();
+    });
+
+    const label = screen.getByText("Apple");
+    const description = screen.getByText("Seasonal");
+    expect(label).toHaveAttribute("slot", "label");
+    expect(label.className).toContain("-macro-");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
+  });
 });

@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, expect, it } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
+import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Picker, PickerItem } from "../src/picker";
 import { Header, Heading, Text } from "../src";
@@ -76,6 +76,36 @@ describe("Picker", () => {
     expect(heading).toHaveAttribute("role", "presentation");
     expect(heading).toHaveTextContent("Docs");
     expect(heading?.className).toContain("-macro-static");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
+  });
+
+  it("provides S2 PickerItem default, label, and description TextContext", async () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={[accordion]}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      >
+        {(item) => (
+          <PickerItem id={item.href} textValue={item.label}>
+            <Text>{item.label}</Text>
+            <Text slot="description">On this page</Text>
+          </PickerItem>
+        )}
+      </Picker>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Accordion" })).toBeInTheDocument();
+    });
+
+    const accordionOption = screen.getByRole("option", { name: "Accordion" });
+    const label = within(accordionOption).getByText("Accordion");
+    const description = within(accordionOption).getByText("On this page");
+    expect(label.className).toContain("-macro-");
     expect(description).toHaveAttribute("slot", "description");
     expect(description.className).toContain("-macro-dynamic");
   });
