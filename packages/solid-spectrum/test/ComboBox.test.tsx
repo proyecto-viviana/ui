@@ -590,6 +590,9 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(svg).toBeTruthy();
     expect(svg).not.toHaveAttribute("focusable", "false");
     expect(svg).not.toHaveAttribute("role");
+    expect(svg).not.toHaveAttribute("data-slot");
+    expect(svg?.parentElement).toBe(selected);
+    expect(svg?.parentElement).not.toHaveAttribute("slot", "icon");
     expect((svg?.getAttribute("class") ?? "").length).toBeGreaterThan(0);
   });
 });

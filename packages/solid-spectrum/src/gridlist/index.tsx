@@ -1365,12 +1365,10 @@ export function GridListSelectionCheckbox(props: {
         {renderProps().isSelected ? (
           // S2's checkbox checkmark is a RAW ui-icon svg that never reads
           // IconContext, so it paints the `smallerSize['M'] === 'S'` variant at
-          // its intrinsic 10×10 (Checkbox.tsx). The port's `Checkmark` DOES
-          // consume IconContext (createIconForBase), so rendered inside the row
-          // it would inherit the LEADING-icon slot's `size: 20` (listViewSlotIcon,
-          // via mergeStyles' later-wins context) and paint 2× too large. Reset
-          // the context here to restore S2's immunity: the `S` glyph falls back
-          // to its intrinsic 10×10, tinted only by listViewCheckboxIcon.
+          // its intrinsic 10×10 (Checkbox.tsx). `createUIIcon` now skips
+          // IconContext the same way; keep an empty provider so a future
+          // row-level IconContext (listViewSlotIcon `size: 20`) cannot restyle
+          // the checkbox glyph if that skip is ever reverted.
           <IconContext.Provider value={{}}>
             <Checkmark size="S" class={listViewCheckboxIcon} aria-hidden="true" />
           </IconContext.Provider>

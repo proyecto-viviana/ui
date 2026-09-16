@@ -131,6 +131,9 @@ export function createUIIcon(
   // axe's `svg-img-alt` rule only flags an *explicit* `svg[role="img"]`, so
   // upstream stays clean. Mirror that exactly — `bare` mode drops the forced
   // `role="img"` and the auto `aria-hidden`; only pass what a call site asks for.
+  // Bare mode also skips IconContext `render`/`styles`/`slot`: S2 Checkmark sits
+  // inside ComboBoxItem's IconContext Provider and still paints as a raw svg in
+  // `gridArea: checkmark`. Workflow `createIcon` keeps consuming IconContext.
   // (parity rule #1/#2)
   return createIconForBase(Component, context, iconBaseStyles, true);
 }
@@ -158,9 +161,20 @@ function createIconForBase(
         return undefined;
       }
 
+      // S2 ui-icons never pass through Icon.tsx, so they never inherit
+      // IconContext.slot. Explicit `slot` on the call site still wins.
+      if (bare) {
+        return local.slot ?? undefined;
+      }
+
       return local.slot ?? ctx.slot ?? undefined;
     };
-    const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
+    const contextStyles = () => {
+      if (bare) {
+        return undefined;
+      }
+      return typeof ctx.styles === "function" ? ctx.styles() : ctx.styles;
+    };
     const isSkeleton = createIsSkeleton();
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
     const inertRef = useInertAttribute(isSkeleton);
@@ -204,7 +218,8 @@ function createIconForBase(
       />
     );
 
-    return ctx.render ? ctx.render(svg) : svg;
+    // S2 ui-icons never call IconContext.render (centerBaseline / gridArea: icon).
+    return !bare && ctx.render ? ctx.render(svg) : svg;
   };
 }
 

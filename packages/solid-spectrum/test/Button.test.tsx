@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Button, ButtonContext } from "../src/button";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import CrossIcon from "../src/icon/ui-icons/Cross";
+import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
 import { pressScale } from "../src/pressScale";
 
 // setupUser is consolidated in solid-spectrum-test-utils.
@@ -373,12 +373,13 @@ describe("Button", () => {
   it("renders icon children with the icon slot", () => {
     render(() => (
       <Button aria-label="Dismiss">
-        <CrossIcon />
+        <BellIcon />
       </Button>
     ));
 
     const button = screen.getByRole("button", { name: "Dismiss" });
-    expect(button.querySelector('[data-slot="icon"]')).toBeDefined();
+    // S2 Button IconContext wraps workflow icons in centerBaseline({slot: 'icon'}).
+    expect(button.querySelector('[slot="icon"]')).not.toBeNull();
   });
 
   it("does not respond when disabled", async () => {

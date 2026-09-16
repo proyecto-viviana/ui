@@ -203,6 +203,42 @@ describe("Icon (solid-spectrum)", () => {
     expect(container.querySelector("svg")).toHaveAttribute("data-slot", "icon");
   });
 
+  it("createIcon still wraps with IconContext.render", () => {
+    const { container } = render(() => (
+      <IconContext.Provider
+        value={{
+          slot: "icon",
+          render: (icon) => <div data-testid="workflow-icon-wrap">{icon}</div>,
+        }}
+      >
+        <TestCreatedIcon />
+      </IconContext.Provider>
+    ));
+
+    const wrap = container.querySelector('[data-testid="workflow-icon-wrap"]');
+    expect(wrap).toBeInTheDocument();
+    expect(wrap?.querySelector("svg")).toHaveAttribute("data-slot", "icon");
+  });
+
+  it("createUIIcon does not consume IconContext render, slot, or styles", () => {
+    const { container } = render(() => (
+      <IconContext.Provider
+        value={{
+          slot: "icon",
+          render: (icon) => <div data-testid="ui-icon-wrap">{icon}</div>,
+        }}
+      >
+        <Checkmark />
+      </IconContext.Provider>
+    ));
+
+    expect(container.querySelector('[data-testid="ui-icon-wrap"]')).not.toBeInTheDocument();
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    expect(svg).not.toHaveAttribute("data-slot");
+    expect(svg?.parentElement?.getAttribute("data-testid")).not.toBe("ui-icon-wrap");
+  });
+
   it("createIllustration mirrors React Spectrum SVG size and accessibility attributes", () => {
     const { container } = render(() => (
       <>

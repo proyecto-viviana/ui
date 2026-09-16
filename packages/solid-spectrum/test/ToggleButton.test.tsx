@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ToggleButton } from "../src";
-import CrossIcon from "../src/icon/ui-icons/Cross";
+import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 describe("ToggleButton (solid-spectrum)", () => {
@@ -36,7 +36,7 @@ describe("ToggleButton (solid-spectrum)", () => {
         isDisabled
         isSelected
       >
-        <CrossIcon />
+        <BellIcon />
       </ToggleButton>
     ));
 
