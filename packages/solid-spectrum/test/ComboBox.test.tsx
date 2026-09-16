@@ -121,6 +121,15 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(screen.getByRole("combobox", { name: "Fruit" })).toBeInTheDocument();
   });
 
+  it("renders no-results empty state inside the listbox when items are empty", async () => {
+    render(() => <FruitComboBox items={[]} defaultOpen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
+    });
+    expect(screen.getByRole("option")).toHaveTextContent("No results");
+  });
+
   it("links description text via aria-describedby", async () => {
     render(() => <FruitComboBox description="Pick one item" />);
 

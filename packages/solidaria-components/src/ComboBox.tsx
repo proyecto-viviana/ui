@@ -285,6 +285,8 @@ export interface ComboBoxListBoxProps<T> extends SlotProps {
   class?: ClassNameOrFunction<ComboBoxListBoxRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ComboBoxListBoxRenderProps>;
+  /** A function to render when the listbox is empty. RAC ListBox `renderEmptyState`. */
+  renderEmptyState?: () => JSX.Element;
 }
 
 export type ComboBoxItemRenderProps = ComboBoxOptionRenderProps;
@@ -1039,7 +1041,13 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
  * The listbox popup for a combobox.
  */
 export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "children",
+    "renderEmptyState",
+  ]);
 
   const rawContext = useContext(ComboBoxContext);
   if (!rawContext) {
@@ -1233,6 +1241,11 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
             </For>
           </Show>
         </CollectionRoot>
+        {state.collection().size === 0 && local.renderEmptyState ? (
+          <div role="option" style={{ display: "contents" }} data-empty-state>
+            {local.renderEmptyState()}
+          </div>
+        ) : null}
       </div>
     </Show>
   );

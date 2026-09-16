@@ -966,19 +966,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                 >
                   <HeadlessComboBoxListBox
                     class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                    renderEmptyState={() => (
+                      <span class={comboBoxEmptyStateText({ size: size() })}>
+                        {stringFormatter().format("combobox.noResults")}
+                      </span>
+                    )}
                   >
                     {listBoxChildren}
                   </HeadlessComboBoxListBox>
-                  <Show
-                    when={(() => {
-                      const items = headlessProps.items ?? props.defaultItems;
-                      return Array.isArray(items) && items.length === 0;
-                    })()}
-                  >
-                    <span class={comboBoxEmptyStateText({ size: size() })}>
-                      {stringFormatter().format("combobox.noResults")}
-                    </span>
-                  </Show>
                 </Virtualizer>
               </FormContext.Provider>
             </ComboBoxListBoxPopover>

@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, expect, it } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { ComboBox, ComboBoxOption } from "../src/combobox";
 
@@ -33,5 +33,24 @@ describe("ComboBox", () => {
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apple");
     setLabel("Apricot");
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apricot");
+  });
+
+  it("renders no-results empty state inside the listbox when items are empty", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        defaultOpen
+        items={[]}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+      >
+        {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
+    });
+    expect(screen.getByRole("option")).toHaveTextContent("No results");
   });
 });

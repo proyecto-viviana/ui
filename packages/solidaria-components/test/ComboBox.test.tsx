@@ -839,6 +839,29 @@ describe("ComboBox", () => {
       });
     });
 
+    it("renders renderEmptyState inside the listbox when the collection is empty", async () => {
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={[] as typeof items}
+          getKey={(item) => item.id}
+          allowsEmptyCollection
+          defaultOpen
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox renderEmptyState={() => "No results"}>
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
+      });
+      expect(screen.getByRole("option")).toHaveTextContent("No results");
+    });
+
     it("does not filter when items are controlled", async () => {
       render(() => <TestComboBox comboBoxProps={{ menuTrigger: "input" }} />);
 
