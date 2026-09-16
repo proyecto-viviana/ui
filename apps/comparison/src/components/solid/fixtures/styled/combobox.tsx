@@ -48,14 +48,25 @@ function SolidSpectrumComboBoxDemo() {
         ])
       : undefined,
   );
+  const [events, setEvents] = createSignal<{ name: string; args: unknown[] }[]>([]);
+  const pushEvent = (name: string, args: unknown[]) => {
+    if (!demoProps().eventLog) {
+      return;
+    }
+    setEvents((prev) => [...prev, { name, args }]);
+  };
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "combobox") {
+        if (event.detail.stack && event.detail.stack !== "solid") {
+          return;
+        }
         const nextProps = normalizeComboBoxDemoProps(event.detail.props ?? {});
         setDemoProps(nextProps);
         setSelectedKey(nextProps.selectedKey);
         setInputValue(nextProps.inputValue);
+        setEvents([]);
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -110,6 +121,9 @@ function SolidSpectrumComboBoxDemo() {
           },
           get "data-comparison-input-value"() {
             return inputValue();
+          },
+          get "data-comparison-events"() {
+            return demoProps().eventLog ? JSON.stringify(events()) : undefined;
           },
         },
         [
@@ -208,6 +222,7 @@ function SolidSpectrumComboBoxDemo() {
                 return demoProps().isInvalid;
               },
               onSelectionChange: (nextKey: unknown) => {
+                pushEvent("onSelectionChange", [nextKey]);
                 if (nextKey == null) {
                   return;
                 }
@@ -224,6 +239,7 @@ function SolidSpectrumComboBoxDemo() {
                 }));
               },
               onInputChange: (nextValue: string) => {
+                pushEvent("onInputChange", [nextValue]);
                 setInputValue(nextValue);
                 setDemoProps((current: ComboBoxDemoProps) =>
                   current.inputSource === "inputValue"
