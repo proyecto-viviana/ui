@@ -9,6 +9,7 @@ import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { Picker, PickerItem } from "../src/picker";
 import { Button } from "../src/button";
+import { Header, Heading, Text } from "../src";
 import { Popover, PopoverTrigger } from "../src/popover";
 import { style } from "../src/style";
 
@@ -42,6 +43,48 @@ describe("Picker (solid-spectrum)", () => {
     await user.click(screen.getByRole("option", { name: "API" }));
 
     expect(onSelectionChange).toHaveBeenCalledWith("#api");
+  });
+
+  it("provides S2 listbox header, heading, and description slot contexts", async () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      >
+        {(item) => (
+          <PickerItem id={item.href} textValue={item.label}>
+            {item.label}
+            {item.href === "#page-title" ? (
+              <>
+                <Header data-testid="docs-header">
+                  <Heading level={3}>Docs</Heading>
+                </Header>
+                <Text slot="description">On this page</Text>
+              </>
+            ) : null}
+          </PickerItem>
+        )}
+      </Picker>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("docs-header")).toBeInTheDocument();
+    });
+
+    const header = screen.getByTestId("docs-header");
+    const heading = header.querySelector("h3");
+    const description = screen.getByText("On this page");
+
+    expect(header.className).toContain("-macro-dynamic");
+    expect(heading).toHaveAttribute("role", "presentation");
+    expect(heading).toHaveTextContent("Docs");
+    expect(heading?.className).toContain("-macro-static");
+    expect(heading?.className).not.toContain("text-2xl");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
   });
 
   it("mirrors the selected option's full content (icon + label) in the trigger", () => {

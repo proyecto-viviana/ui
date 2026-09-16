@@ -5,7 +5,16 @@ import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
-import { ComboBox, ComboBoxContext, ComboBoxOption, Form, type ComboBoxProps } from "../src";
+import {
+  ComboBox,
+  ComboBoxContext,
+  ComboBoxOption,
+  Form,
+  Header,
+  Heading,
+  Text,
+  type ComboBoxProps,
+} from "../src";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { SearchAutocomplete } from "../src/autocomplete";
 import { Button } from "../src/button";
@@ -128,6 +137,48 @@ describe("ComboBox (solid-spectrum)", () => {
       expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
     });
     expect(screen.getByRole("option")).toHaveTextContent("No results");
+  });
+
+  it("provides S2 listbox header, heading, and description slot contexts", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        items={items}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+        defaultOpen
+      >
+        {(item) => (
+          <ComboBoxOption id={item.id} textValue={item.name}>
+            {item.name}
+            {item.id === "1" ? (
+              <>
+                <Header data-testid="fruits-header">
+                  <Heading level={3}>Fruits</Heading>
+                </Header>
+                <Text slot="description">Seasonal</Text>
+              </>
+            ) : null}
+          </ComboBoxOption>
+        )}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("fruits-header")).toBeInTheDocument();
+    });
+
+    const header = screen.getByTestId("fruits-header");
+    const heading = header.querySelector("h3");
+    const description = screen.getByText("Seasonal");
+
+    expect(header.className).toContain("-macro-dynamic");
+    expect(heading).toHaveAttribute("role", "presentation");
+    expect(heading).toHaveTextContent("Fruits");
+    expect(heading?.className).toContain("-macro-static");
+    expect(heading?.className).not.toContain("text-2xl");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.className).toContain("-macro-dynamic");
   });
 
   it("links description text via aria-describedby", async () => {

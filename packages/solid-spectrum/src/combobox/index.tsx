@@ -68,6 +68,7 @@ import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import {
+  centerPadding,
   control,
   controlBorderRadius,
   controlFont,
@@ -102,6 +103,8 @@ import {
 } from "../button/spectrum-context";
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
+import { HeaderContext, HeadingContext, TextContext } from "../text";
+import { menuItemDescription, menuSectionHeading } from "../menu/s2-menu-styles";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -350,6 +353,23 @@ const comboBoxListBoxFrame = style({
   display: "flex",
   width: "full",
   height: "full",
+});
+
+// S2 ComboBox.tsx:315-328 — Header slot styles for listbox sections. Picker
+// imports the same export (`s2/Picker.tsx:71`).
+export const listboxHeader = style<{ size?: S2ComboBoxSize }>({
+  color: "neutral",
+  boxSizing: "border-box",
+  minHeight: controlSize(),
+  paddingY: centerPadding(),
+  marginX: {
+    size: {
+      S: `[${edgeToText(24)}]`,
+      M: `[${edgeToText(32)}]`,
+      L: `[${edgeToText(40)}]`,
+      XL: `[${edgeToText(48)}]`,
+    },
+  },
 });
 
 const comboBoxEmptyStateText = style<{ size?: S2ComboBoxSize }>({
@@ -955,26 +975,54 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   isRequired: undefined,
                 }}
               >
-                <Virtualizer
-                  layout={ListLayout}
-                  layoutOptions={{
-                    estimatedRowHeight: 32,
-                    padding: 8,
-                    estimatedHeadingHeight: 50,
-                    loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
-                  }}
+                <HeaderContext.Provider
+                  value={{ styles: () => listboxHeader({ size: size() }) }}
                 >
-                  <HeadlessComboBoxListBox
-                    class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
-                    renderEmptyState={() => (
-                      <span class={comboBoxEmptyStateText({ size: size() })}>
-                        {stringFormatter().format("combobox.noResults")}
-                      </span>
-                    )}
+                  <HeadingContext.Provider
+                    value={{
+                      role: "presentation",
+                      styles: menuSectionHeading,
+                    }}
                   >
-                    {listBoxChildren}
-                  </HeadlessComboBoxListBox>
-                </Virtualizer>
+                    <TextContext.Provider
+                      value={{
+                        slots: {
+                          description: {
+                            styles: () =>
+                              menuItemDescription({
+                                size: size(),
+                                isFocused: false,
+                                isDisabled: false,
+                              }),
+                          },
+                        },
+                      }}
+                    >
+                      <Virtualizer
+                        layout={ListLayout}
+                        layoutOptions={{
+                          estimatedRowHeight: 32,
+                          padding: 8,
+                          estimatedHeadingHeight: 50,
+                          loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                        }}
+                      >
+                        <HeadlessComboBoxListBox
+                          class={(listBoxProps) =>
+                            comboBoxListBox({ ...listBoxProps, size: size() })
+                          }
+                          renderEmptyState={() => (
+                            <span class={comboBoxEmptyStateText({ size: size() })}>
+                              {stringFormatter().format("combobox.noResults")}
+                            </span>
+                          )}
+                        >
+                          {listBoxChildren}
+                        </HeadlessComboBoxListBox>
+                      </Virtualizer>
+                    </TextContext.Provider>
+                  </HeadingContext.Provider>
+                </HeaderContext.Provider>
               </FormContext.Provider>
             </ComboBoxListBoxPopover>
           </>

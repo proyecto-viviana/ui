@@ -81,9 +81,11 @@ import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
-import { LOADER_ROW_HEIGHTS } from "../combobox";
+import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
+import { HeaderContext, HeadingContext, TextContext } from "../text";
+import { menuItemDescription, menuSectionHeading } from "../menu/s2-menu-styles";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -1009,33 +1011,59 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <Virtualizer
-                layout={ListLayout}
-                layoutOptions={{
-                  estimatedRowHeight: 32,
-                  estimatedHeadingHeight: 50,
-                  padding: 8,
-                  loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
-                }}
-              >
-                <HeadlessSelectListBox
-                  isInPopover
-                  class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
-                  onLoadMore={local.onLoadMore}
-                  isLoading={isLoadingMore()}
-                  loadMoreClass={pickerLoadingWrapper}
-                  renderLoadMore={() =>
-                    isLoadingMore() ? (
-                      <PickerProgressCircle
-                        size={size()}
-                        aria-label={stringFormatter().format("table.loadingMore")}
-                      />
-                    ) : undefined
-                  }
+              <HeaderContext.Provider value={{ styles: () => listboxHeader({ size: size() }) }}>
+                <HeadingContext.Provider
+                  value={{
+                    role: "presentation",
+                    styles: menuSectionHeading,
+                  }}
                 >
-                  {listBoxChildren}
-                </HeadlessSelectListBox>
-              </Virtualizer>
+                  <TextContext.Provider
+                    value={{
+                      slots: {
+                        description: {
+                          styles: () =>
+                            menuItemDescription({
+                              size: size(),
+                              isFocused: false,
+                              isDisabled: false,
+                            }),
+                        },
+                      },
+                    }}
+                  >
+                    <Virtualizer
+                      layout={ListLayout}
+                      layoutOptions={{
+                        estimatedRowHeight: 32,
+                        estimatedHeadingHeight: 50,
+                        padding: 8,
+                        loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                      }}
+                    >
+                      <HeadlessSelectListBox
+                        isInPopover
+                        class={(listBoxProps) =>
+                          pickerListBox({ ...listBoxProps, size: size() })
+                        }
+                        onLoadMore={local.onLoadMore}
+                        isLoading={isLoadingMore()}
+                        loadMoreClass={pickerLoadingWrapper}
+                        renderLoadMore={() =>
+                          isLoadingMore() ? (
+                            <PickerProgressCircle
+                              size={size()}
+                              aria-label={stringFormatter().format("table.loadingMore")}
+                            />
+                          ) : undefined
+                        }
+                      >
+                        {listBoxChildren}
+                      </HeadlessSelectListBox>
+                    </Virtualizer>
+                  </TextContext.Provider>
+                </HeadingContext.Provider>
+              </HeaderContext.Provider>
             </PickerListBoxPopover>
           </>
         )}
