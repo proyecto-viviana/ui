@@ -46,6 +46,11 @@ history:
       at: 2026-09-15,
       note: "ComboBox/Picker listbox style map matches S2 listbox (no invented margin/padding/list-style). Item size observation moved to #114. keyboard-only leftover is still the 7px checkmark AA. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "After items skip-filter (6e4840a7) ComboBox D13 open-arrow is green; keyboard-only leftover is still 7/25440 checkmark AA (Portal display:contents compositor; path/class tokens match). renderEmptyState and listboxHeader compose do not change virtualizer remainder. Item size observation stays on #114. Do not waive. Not verified.",
+    }
 ---
 
 ## Cause

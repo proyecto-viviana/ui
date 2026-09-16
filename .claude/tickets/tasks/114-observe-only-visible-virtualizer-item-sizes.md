@@ -12,6 +12,11 @@ history:
       at: 2026-09-15,
       note: "VirtualizerItem now matches RAC useVirtualizerItem: estimated rows still measure once; shouldObserveItemSize observes the wrapper's direct children via ResizeObserver; isElementVisible skips a hidden collection so size 0 cannot stick. Unit tests cover observe / hidden / observation-off. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Observation landed in 3f4f11bf. Virtualizer.test.tsx 78 passed (observe / hidden / observation-off). ComboBox/Picker do not pass shouldObserveItemSize (RAC ComboBox/Picker also omit it). Scroll/relayout comparison evidence still required before verified. Not verified.",
+    }
 ---
 
 Port `shouldObserveItemSize` and the hidden-element measurement guard.

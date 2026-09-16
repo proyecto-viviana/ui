@@ -66,6 +66,16 @@ history:
       at: 2026-09-15,
       note: "After generated S2 ui-icon size maps (d72df86d), ComboBox D13 open-arrow still green; keyboard-only still 7/25440 at overlay-relative checkmark bounds 18-28 x 47-52. SVG geometry 12.5px at y=447.5 matches; extra Solid ancestor is Portal display:contents. Do not waive. Picker still #254. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "RAC items skip-filter (6e4840a7): controlled `items` skip collection filter; ComboBox injects locale contains as defaultFilter only when items are uncontrolled. Open-arrow D13 green. keyboard-only step 4 (type St) still 7/25440 at overlay-relative checkmark 18-28 x 47-52; overlay stays 3 rows on StPro matching RAC. SVG path d and class token set equal (order differs); extra Solid ancestor is Portal display:contents compositor AA. Do not invent Portal forks / shape-rendering / translateZ(0). Do not waive. Picker still #254. Not verified.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBox renderEmptyState inside the listbox (6d823376): RAC ListBox-shaped empty option + S2/viviana-ui combobox.noResults. Overlay Header/Heading/description Text providers + exported listboxHeader (686911d6) match S2 ComboBox.tsx:774-795 / Picker.tsx:490-510. D13 fixture has no sections so this does not move the 7px leftover. ComboBox loadingState / table.loading empty-text still missing (Picker already has loadingState). Do not patch journeys. Do not invent <template>. Not verified.",
+    }
 ---
 
 ## Cause

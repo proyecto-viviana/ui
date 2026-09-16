@@ -31,6 +31,11 @@ history:
       at: 2026-09-15,
       note: "closeout at 044787b1 vs pin f56660b: compose still holds; forks gone (test locals menuPopover/submenuPopover only); unit surface tests 120/120. D13 CB-OV-05/PK-OV-04 not run (Playwright Chromium missing; #244/#248). D5/D6 registrations unchanged (--list only; D2 open-enter added on 044787b1). Proof: .agents/vivianastack/overnight-overlay-257/proof.md. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Remaining S2 overlay compose: ComboBox/Picker Header/Heading/description Text providers + exported listboxHeader (686911d6); ComboBox renderEmptyState inside the listbox (6d823376). Tests: ComboBox 27, Picker 20, viviana-ui ComboBox 3 / Picker 3. Still missing ComboBox loadingState / table.loading empty-text / loadingMore spinner (Picker already has loadingState). D13 CB leftover is #248 7px Portal AA, not this wrap. Do not mark verified.",
+    }
 ---
 
 ## Cause
