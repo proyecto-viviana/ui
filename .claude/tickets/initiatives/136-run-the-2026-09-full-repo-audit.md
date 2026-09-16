@@ -101,6 +101,11 @@ history:
       at: 2026-09-08,
       note: "#502 merged: DatePicker/DateRangePicker overlay-open selected fill 700→600 (four D2 titles green). No expectedMotion. Did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Overlay remainder children #251/#257/#252/#256 stay in-progress and owner-gated — do not mark verified. Successor pick is #245 ComboBox journeys, not remainder closeout. Skip #254.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

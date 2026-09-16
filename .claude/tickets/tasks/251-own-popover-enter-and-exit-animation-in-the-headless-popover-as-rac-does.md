@@ -36,6 +36,11 @@ history:
       at: 2026-09-15,
       note: "Menu/ActionMenu overlay dialogs now take aria-labelledby from the trigger (fb6509ad): RAC MenuTrigger puts menuProps aria-labelledby on PopoverContext; Solid overlayLabelledBy was wiping the spread, and MenuTriggerOverlayContext dropped it. Headless+twins+ActionMenu. D2 vs :4323 4/4 (ActionMenu open-enter, ActionMenu reduced, Menu open-enter, Menu reduced). Do not invent a journeys patch. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Enter/exit and Menu/ActionMenu D2 labelledby already recorded. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause

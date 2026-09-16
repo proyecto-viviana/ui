@@ -3,12 +3,17 @@ id: 243
 type: initiative
 title: "Certify interaction journeys (D13)"
 created: 2026-09-02
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-02,
       note: "opened for the D13 interaction-journeys certification (owner decision 2026-09-02)",
+    }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Morning checkpoint. ComboBox D13 seeds 2/2 on :4323. #245 is next (Solid fixture protocol, then CB-OC journeys). Overlay remainder #248/#244/#251/#257/#270/#252/#114/#256/#229 stays in-progress and owner-gated — do not mark verified. Skip #254. Do not start #246/#249.",
     }
 ---
 
@@ -63,6 +68,14 @@ tester protocols. The per-component inventory lives in
 - #244 driver; #245 ComboBox journeys; #246 Picker journeys; #247 nightly
   fuzz; #248 the owner-reported overlay defect; #249 rest of the overlay
   family.
+
+## Current (2026-09-16 morning)
+
+Successor pick is **#245** (`next`). Driver (#244) exists; ComboBox D13 seed
+journeys are green on `:4323`; named inventory journeys are unauthored.
+Overlay remainder tickets stay in-progress with local Chromium evidence —
+owner-gated, not verified. #246 / #249 wait on ComboBox OC. #254 is an
+owner decision — do not start.
 
 ## Done when
 

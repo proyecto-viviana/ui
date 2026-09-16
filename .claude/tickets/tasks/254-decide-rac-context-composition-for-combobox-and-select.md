@@ -16,6 +16,11 @@ history:
       at: 2026-09-08,
       note: "#508 points M9 to child #513 (root data-* can land without this decision) and leaves M2/M3 compound leftover here. Not started.",
     }
+  - {
+      state: open,
+      at: "2026-09-16",
+      note: "Owner-gated: skip. Still an owner decision. Do not start. Picker D13 remaining (trigger data-focused/data-open) waits on this call.",
+    }
 ---
 
 ## Finding (evidence, no decision taken)

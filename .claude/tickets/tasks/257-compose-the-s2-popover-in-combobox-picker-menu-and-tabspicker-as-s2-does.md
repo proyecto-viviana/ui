@@ -41,6 +41,11 @@ history:
       at: 2026-09-15,
       note: "ComboBox loadingState / table.loading empty-text / loadingMore spinner (e1b554bf). ComboBoxItem/PickerItem Icon/Avatar/Text slot contexts (60d218a4) including Picker SelectValue; item children consumed under those providers; headless label/description ids copied so unslotted Picker Text is the option name. Tests: ComboBox 31, Picker 21, viviana-ui ComboBox 6 / Picker 4. String wrap still HeadlessText/pickerOptionLabel; D13 7px leftover unchanged. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. S2 Popover compose, listboxHeader, empty state, loadingState, and item slot contexts already landed. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause

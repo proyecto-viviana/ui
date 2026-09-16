@@ -22,6 +22,11 @@ history:
       at: 2026-09-16,
       note: "Virtualizer D-scroll 2/2 vs :4323 (visible window + windowed AX; focus retention across recycling; 9.6s, EXIT:0). Log /tmp/grok-overlay-night/virtualizer-dscroll.log. ComboBox/Picker still omit shouldObserveItemSize (RAC also omits). Single local Chromium 151 run; do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Observation landed; D-scroll 2/2 recorded locally. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 Port `shouldObserveItemSize` and the hidden-element measurement guard.

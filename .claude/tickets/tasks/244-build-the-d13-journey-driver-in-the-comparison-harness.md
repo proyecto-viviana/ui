@@ -21,6 +21,11 @@ history:
       at: 2026-09-15,
       note: "Re-ran seeds on 3565b899 with Chromium 151 (COMPARISON_CHROMIUM_ARGS). D2 ComboBox/Picker open-enter 4/4. D13 seeds 0/4, still first fail on field dom. ComboBox: placement top vs bottom + RAC template. Picker: #254 button data-focused/data-open. Driver itself not the miss.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Driver verbs and fixture-protocol steps already landed. ComboBox D13 seeds 2/2 on :4323 after later product slices. Do not mark verified. Do not patch journeys.ts allow-list. Successor work is #245 journey authoring, not driver rewrite.",
+    }
 ---
 
 ## Work

@@ -26,6 +26,11 @@ history:
       at: 2026-09-15,
       note: "Comparison walk on :4322 /components/combobox/?menuTrigger=focus: Tab and pointer click both open React and Solid with aria-expanded=true, input focused, 3 options. Package tests already cover pointer, Tab, and controlled selectedKey+inputValue. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. menuTrigger=focus walked locally, not verified. Do not land combobox-menu-trigger.spec.ts. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 S2 ComboBox `menuTrigger="focus"` must open the list on input focus (Tab or

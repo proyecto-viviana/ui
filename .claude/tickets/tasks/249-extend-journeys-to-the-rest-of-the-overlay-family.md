@@ -11,6 +11,11 @@ history:
       at: 2026-09-02,
       note: "opened for the D13 interaction-journeys certification (owner decision 2026-09-02)",
     }
+  - {
+      state: open,
+      at: "2026-09-16",
+      note: "Do not start until #245 and #246. Overlay remainder is owner-gated.",
+    }
 ---
 
 ## Work

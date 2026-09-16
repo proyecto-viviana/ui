@@ -36,6 +36,11 @@ history:
       at: 2026-09-16,
       note: "dnd-listbox D-reorder 2/2 vs :4323 (reorder-down + cancel, 9.9s, EXIT:0). Log /tmp/grok-overlay-night/dnd-reorder.log. ComboBox D13 2/2 same preview after 44aa6fb1. Option-remount leftover not observed this Chromium run. rg data-virtualizer in packages/apps is only negative tests + CHANGELOG. Do not mark verified. Skip #254.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. D-reorder 2/2 recorded locally. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause

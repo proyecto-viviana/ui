@@ -61,6 +61,11 @@ history:
       at: 2026-09-16,
       note: "After createUIIcon IconContext skip (44aa6fb1) ComboBox D13 2/2 vs :4323 including keyboard-only. Wrap order already Popover > div > Provider > Virtualizer > ListBox. Remaining: scroll/relayout evidence (#114) and Chromium D-reorder option remount (#256). Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Wrap order already correct. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause

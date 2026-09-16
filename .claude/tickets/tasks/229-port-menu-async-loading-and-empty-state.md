@@ -22,6 +22,11 @@ history:
       at: 2026-09-15,
       note: "RAC MenuLoadMoreItem is already exported. S2 Menu omits renderEmptyState from public props and has no loadingState/onLoadMore; do not invent S2 Menu loading compose. ComboBox loadingState (e1b554bf) is the S2 ComboBox path, not this ticket. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Do not invent S2 Menu loading compose. Do not mark verified. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause

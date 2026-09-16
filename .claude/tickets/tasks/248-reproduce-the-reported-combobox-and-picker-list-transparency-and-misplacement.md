@@ -86,6 +86,11 @@ history:
       at: 2026-09-16,
       note: "createUIIcon skips IconContext (44aa6fb1): S2 ui-icons never pass through Icon.tsx, so ComboBox Checkmark is a raw svg in gridArea checkmark instead of centerBaseline/menuItemIcon. ComboBox D13 2/2 vs :4323 after comparison rebuild (open-arrow-enter-reopen-scroll-escape + keyboard-only, 20.2s, EXIT:0). Keyboard-only 7px checkmark AA not observed this run. Log /tmp/grok-overlay-night/combobox-d13.log. Single local Chromium 151 run; do not mark verified. Picker D13 remaining is still #254.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-16",
+      note: "Owner-gated morning stop. Product slices and local Chromium evidence already recorded. Do not mark verified. Do not invent Portal forks / shape-rendering / translateZ(0) / CollectionBuilder template. Picker leftover is #254. Successor work is #245, not remainder closeout.",
+    }
 ---
 
 ## Cause
