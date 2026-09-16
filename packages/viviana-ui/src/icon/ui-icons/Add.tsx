@@ -14,7 +14,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize300.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize300.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -44,7 +44,7 @@ export type AddProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function Add_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +52,7 @@ function Add_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -63,7 +63,7 @@ function Add_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Add_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +71,7 @@ function Add_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -82,7 +82,7 @@ function Add_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Add_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@ function Add_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -101,7 +101,7 @@ function Add_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Add_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +109,7 @@ function Add_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -120,7 +120,7 @@ function Add_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Add_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -128,7 +128,7 @@ function Add_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -145,21 +145,22 @@ const Add_L = createUIIcon(Add_LSvg);
 const Add_XL = createUIIcon(Add_XLSvg);
 
 export default function Add(props: AddProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Add_XS {...rest} class={mergedClass} />;
+      return <Add_XS {...rest} class={mergedClass()} />;
     case "S":
-      return <Add_S {...rest} class={mergedClass} />;
+      return <Add_S {...rest} class={mergedClass()} />;
     case "M":
-      return <Add_M {...rest} class={mergedClass} />;
+      return <Add_M {...rest} class={mergedClass()} />;
     case "L":
-      return <Add_L {...rest} class={mergedClass} />;
+      return <Add_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <Add_XL {...rest} class={mergedClass} />;
+      return <Add_XL {...rest} class={mergedClass()} />;
     default:
-      return <Add_M {...rest} class={mergedClass} />;
+      return <Add_M {...rest} class={mergedClass()} />;
   }
 }
 

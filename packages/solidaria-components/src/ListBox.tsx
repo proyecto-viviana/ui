@@ -1273,7 +1273,14 @@ export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
         slot={local.slot}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
+          <OptionContent
+            render={
+              typeof props.children === "function" && props.children.length > 0
+                ? renderProps.renderChildrenStable
+                : renderProps.renderChildren
+            }
+            labelProps={optionAria.labelProps}
+          />
         </Provider>
       </div>
     </SelectionIndicatorContext.Provider>

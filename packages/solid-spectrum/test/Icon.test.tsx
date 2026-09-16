@@ -148,6 +148,16 @@ describe("Icon (solid-spectrum)", () => {
     expect(lClass).not.toBe(sClass);
   });
 
+  it("updates a ui-icon class after mount", () => {
+    const [cls, setCls] = createSignal("first");
+    const { container } = render(() => <Checkmark class={cls()} />);
+    const svg = container.querySelector("svg");
+    expect(svg?.getAttribute("class") ?? "").toContain("first");
+    setCls("second");
+    expect(svg?.getAttribute("class") ?? "").toContain("second");
+    expect(svg?.getAttribute("class") ?? "").not.toContain("first");
+  });
+
   it("renders a workflow icon directly", () => {
     const { container } = render(() => <BellIcon />);
     const svg = container.querySelector("svg");

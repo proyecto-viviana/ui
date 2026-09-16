@@ -213,7 +213,7 @@ function renderTree(tree, level = 3, isRoot = true) {
     .filter(({ name }) => !isRoot || !ignoredWorkflowRootAttributes.has(name))
     .map(({ name, value }) => `${name}="${escapeAttribute(value)}"`);
   if (isRoot) {
-    attributes.push("{...rest}", "class={className}");
+    attributes.push("{...rest}", "class={local.class}");
   }
 
   const compactOpen = `<${tree.tag}${attributes.length ? ` ${attributes.join(" ")}` : ""}`;
@@ -327,7 +327,7 @@ async function readS2UiIconSizeStyle(name) {
 function buildVariantComponent(name, sizeKey, tree) {
   return `
 function ${name}_${sizeKey}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
 ${renderTree(tree)}
   );
@@ -338,7 +338,7 @@ ${renderTree(tree)}
 function buildWorkflowIconComponent(name, tree) {
   return `
 function ${name}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class"]);
   return (
 ${renderTree(tree)}
   );
@@ -364,7 +364,7 @@ async function generateUiIcon(spec, s2Package) {
   const cases = svgVariants
     .map(
       (variant) => `    case "${variant.size}":
-      return <${baseName}_${variant.size} {...rest} class={mergedClass} />;`,
+      return <${baseName}_${variant.size} {...rest} class={mergedClass()} />;`,
     )
     .join("\n");
 
@@ -377,7 +377,7 @@ async function generateUiIcon(spec, s2Package) {
     ...svgVariants.flatMap(({ inputs }) => inputs),
   ])}
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -397,12 +397,13 @@ ${svgVariants
   .join("\n")}
 
 export default function ${baseName}(props: ${propsType}): JSX.Element {
-  const { size = "${defaultSize}", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = \`\${className ?? ""}\${styles({ size })}\`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "${defaultSize}";
+  const mergedClass = () => \`\${local.class ?? ""}\${styles({ size })}\`;
   switch (size) {
 ${cases}
     default:
-      return <${baseName}_${defaultSize} {...rest} class={mergedClass} />;
+      return <${baseName}_${defaultSize} {...rest} class={mergedClass()} />;
   }
 }
 
@@ -420,7 +421,7 @@ async function generateWorkflowIcon(inventoryFile, s2Package) {
     iconName,
     content: `${generatedNotice}${provenanceLines(inputs)}
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createIcon } from "../spectrum-icon";
 
 ${buildWorkflowIconComponent(iconName, tree)}

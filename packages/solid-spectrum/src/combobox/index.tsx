@@ -1305,6 +1305,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     // child DOM once per read and desynchronizes hydration keys; an untracked
     // setup-time read freezes a direct signal child such as `{label()}`.
     const content = createMemo(() => local.children);
+    const checkClassName = createMemo(() => checkClass(contentProps.renderProps));
     return (
       <>
         <CheckmarkIcon
@@ -1313,7 +1314,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
           // filters through `iconAllowedOverrides`, which omits `visibility`
           // and would strip the checkmark's `visibility` toggle, leaving it
           // visible on every option. Mirrors upstream S2 ComboBox `className`.
-          class={checkClass(contentProps.renderProps)}
+          class={checkClassName()}
         />
         {isTextOnlyChildren(content()) ? (
           // S2 ComboBoxItem wraps string children in `<Text slot="label">` so

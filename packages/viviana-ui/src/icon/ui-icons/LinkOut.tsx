@@ -12,7 +12,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize400.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize400.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -40,7 +40,7 @@ export type LinkOutProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function LinkOut_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ function LinkOut_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -59,7 +59,7 @@ function LinkOut_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function LinkOut_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +67,7 @@ function LinkOut_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -78,7 +78,7 @@ function LinkOut_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function LinkOut_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +86,7 @@ function LinkOut_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       height="14"
       viewBox="0 0 14 14"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -97,7 +97,7 @@ function LinkOut_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
 }
 
 function LinkOut_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -105,7 +105,7 @@ function LinkOut_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       height="16"
       viewBox="0 0 16 16"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -121,19 +121,20 @@ const LinkOut_XL = createUIIcon(LinkOut_XLSvg);
 const LinkOut_XXL = createUIIcon(LinkOut_XXLSvg);
 
 export default function LinkOut(props: LinkOutProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <LinkOut_M {...rest} class={mergedClass} />;
+      return <LinkOut_M {...rest} class={mergedClass()} />;
     case "L":
-      return <LinkOut_L {...rest} class={mergedClass} />;
+      return <LinkOut_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <LinkOut_XL {...rest} class={mergedClass} />;
+      return <LinkOut_XL {...rest} class={mergedClass()} />;
     case "XXL":
-      return <LinkOut_XXL {...rest} class={mergedClass} />;
+      return <LinkOut_XXL {...rest} class={mergedClass()} />;
     default:
-      return <LinkOut_M {...rest} class={mergedClass} />;
+      return <LinkOut_M {...rest} class={mergedClass()} />;
   }
 }
 

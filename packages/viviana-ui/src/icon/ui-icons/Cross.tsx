@@ -18,7 +18,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize600.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize600.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -52,7 +52,7 @@ export type CrossProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function Cross_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ function Cross_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -71,7 +71,7 @@ function Cross_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Cross_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ function Cross_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -90,7 +90,7 @@ function Cross_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Cross_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -98,7 +98,7 @@ function Cross_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -109,7 +109,7 @@ function Cross_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Cross_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +117,7 @@ function Cross_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -128,7 +128,7 @@ function Cross_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Cross_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -136,7 +136,7 @@ function Cross_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -147,7 +147,7 @@ function Cross_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Cross_XXXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -155,7 +155,7 @@ function Cross_XXXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       height="14"
       viewBox="0 0 14 14"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -166,7 +166,7 @@ function Cross_XXXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
 }
 
 function Cross_XXXXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -174,7 +174,7 @@ function Cross_XXXXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       height="16"
       viewBox="0 0 16 16"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -193,25 +193,26 @@ const Cross_XXXL = createUIIcon(Cross_XXXLSvg);
 const Cross_XXXXL = createUIIcon(Cross_XXXXLSvg);
 
 export default function Cross(props: CrossProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "S":
-      return <Cross_S {...rest} class={mergedClass} />;
+      return <Cross_S {...rest} class={mergedClass()} />;
     case "M":
-      return <Cross_M {...rest} class={mergedClass} />;
+      return <Cross_M {...rest} class={mergedClass()} />;
     case "L":
-      return <Cross_L {...rest} class={mergedClass} />;
+      return <Cross_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <Cross_XL {...rest} class={mergedClass} />;
+      return <Cross_XL {...rest} class={mergedClass()} />;
     case "XXL":
-      return <Cross_XXL {...rest} class={mergedClass} />;
+      return <Cross_XXL {...rest} class={mergedClass()} />;
     case "XXXL":
-      return <Cross_XXXL {...rest} class={mergedClass} />;
+      return <Cross_XXXL {...rest} class={mergedClass()} />;
     case "XXXXL":
-      return <Cross_XXXXL {...rest} class={mergedClass} />;
+      return <Cross_XXXXL {...rest} class={mergedClass()} />;
     default:
-      return <Cross_M {...rest} class={mergedClass} />;
+      return <Cross_M {...rest} class={mergedClass()} />;
   }
 }
 

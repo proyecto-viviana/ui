@@ -1465,7 +1465,14 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         data-selection-mode={state.selectionMode()}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
+          <OptionContent
+            render={
+              typeof props.children === "function" && props.children.length > 0
+                ? renderProps.renderChildrenStable
+                : renderProps.renderChildren
+            }
+            labelProps={optionAria.labelProps}
+          />
         </Provider>
       </div>
     </SelectionIndicatorContext.Provider>

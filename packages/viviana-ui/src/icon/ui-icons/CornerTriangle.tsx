@@ -12,7 +12,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize300.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize300.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -40,7 +40,7 @@ export type CornerTriangleProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function CornerTriangle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ function CornerTriangle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       height="5"
       viewBox="0 0 5 5"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -59,7 +59,7 @@ function CornerTriangle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
 }
 
 function CornerTriangle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +67,7 @@ function CornerTriangle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       height="5"
       viewBox="0 0 5 5"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -78,7 +78,7 @@ function CornerTriangle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
 }
 
 function CornerTriangle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +86,7 @@ function CornerTriangle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       height="6"
       viewBox="0 0 6 6"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -97,7 +97,7 @@ function CornerTriangle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
 }
 
 function CornerTriangle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -105,7 +105,7 @@ function CornerTriangle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       height="7"
       viewBox="0 0 7 7"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -121,19 +121,20 @@ const CornerTriangle_L = createUIIcon(CornerTriangle_LSvg);
 const CornerTriangle_XL = createUIIcon(CornerTriangle_XLSvg);
 
 export default function CornerTriangle(props: CornerTriangleProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "S":
-      return <CornerTriangle_S {...rest} class={mergedClass} />;
+      return <CornerTriangle_S {...rest} class={mergedClass()} />;
     case "M":
-      return <CornerTriangle_M {...rest} class={mergedClass} />;
+      return <CornerTriangle_M {...rest} class={mergedClass()} />;
     case "L":
-      return <CornerTriangle_L {...rest} class={mergedClass} />;
+      return <CornerTriangle_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <CornerTriangle_XL {...rest} class={mergedClass} />;
+      return <CornerTriangle_XL {...rest} class={mergedClass()} />;
     default:
-      return <CornerTriangle_M {...rest} class={mergedClass} />;
+      return <CornerTriangle_M {...rest} class={mergedClass()} />;
   }
 }
 

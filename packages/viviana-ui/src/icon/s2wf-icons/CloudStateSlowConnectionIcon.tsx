@@ -5,11 +5,11 @@
 // Generator input: @react-spectrum/s2@1.7.0/icons/CloudStateSlowConnection.mjs
 // Generator input: @react-spectrum/s2@1.7.0/icons/CloudStateSlowConnection.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createIcon } from "../spectrum-icon";
 
 function CloudStateSlowConnectionIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,7 @@ function CloudStateSlowConnectionIconSvg(props: JSX.SvgSVGAttributes<SVGSVGEleme
       height="20"
       viewBox="0 0 20 20"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"

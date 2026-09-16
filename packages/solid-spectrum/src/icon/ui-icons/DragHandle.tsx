@@ -12,7 +12,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize300.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize300.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -40,7 +40,7 @@ export type DragHandleProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function DragHandle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ function DragHandle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <circle cx="3.2" cy="8.6" r="0.9" fill="var(--iconPrimary, #222)" />
       <circle cx="3.2" cy="5" r="0.9" fill="var(--iconPrimary, #222)" />
@@ -61,7 +61,7 @@ function DragHandle_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
 }
 
 function DragHandle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -69,7 +69,7 @@ function DragHandle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <circle cx="3" cy="9" r="1" fill="var(--iconPrimary, #222)" />
       <circle cx="3" cy="5" r="1" fill="var(--iconPrimary, #222)" />
@@ -82,7 +82,7 @@ function DragHandle_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
 }
 
 function DragHandle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@ function DragHandle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <circle cx="3.8" cy="10.4" r="1.1" fill="var(--iconPrimary, #222)" />
       <circle cx="3.8" cy="6" r="1.1" fill="var(--iconPrimary, #222)" />
@@ -103,7 +103,7 @@ function DragHandle_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
 }
 
 function DragHandle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +111,7 @@ function DragHandle_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       height="14"
       viewBox="0 0 14 14"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <circle cx="4.6" cy="11.8" r="1.2" fill="var(--iconPrimary, #222)" />
       <circle cx="4.6" cy="7" r="1.2" fill="var(--iconPrimary, #222)" />
@@ -129,19 +129,20 @@ const DragHandle_L = createUIIcon(DragHandle_LSvg);
 const DragHandle_XL = createUIIcon(DragHandle_XLSvg);
 
 export default function DragHandle(props: DragHandleProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "S":
-      return <DragHandle_S {...rest} class={mergedClass} />;
+      return <DragHandle_S {...rest} class={mergedClass()} />;
     case "M":
-      return <DragHandle_M {...rest} class={mergedClass} />;
+      return <DragHandle_M {...rest} class={mergedClass()} />;
     case "L":
-      return <DragHandle_L {...rest} class={mergedClass} />;
+      return <DragHandle_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <DragHandle_XL {...rest} class={mergedClass} />;
+      return <DragHandle_XL {...rest} class={mergedClass()} />;
     default:
-      return <DragHandle_M {...rest} class={mergedClass} />;
+      return <DragHandle_M {...rest} class={mergedClass()} />;
   }
 }
 

@@ -5,11 +5,11 @@
 // Generator input: @react-spectrum/s2@1.7.0/icons/GradientRadial.mjs
 // Generator input: @react-spectrum/s2@1.7.0/icons/GradientRadial.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createIcon } from "../spectrum-icon";
 
 function GradientRadialIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,7 @@ function GradientRadialIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.
       height="20"
       viewBox="0 0 20 20"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <defs>
         <radialGradient

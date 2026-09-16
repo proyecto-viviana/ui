@@ -5,7 +5,7 @@
 // Generator input: react-spectrum/packages/@react-spectrum/s2/ui-icons/Gripper.tsx
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_GripperSize100.svg
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -27,7 +27,7 @@ export type GripperProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function Gripper_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       id="b"
@@ -37,7 +37,7 @@ function Gripper_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="4"
       viewBox="0 0 24 4"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         d="M22,4H2c-1.10449,0-2-.89551-2-2S.89551,0,2,0h20c1.10449,0,2,.89551,2,2s-.89551,2-2,2Z"
@@ -51,13 +51,14 @@ function Gripper_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 const Gripper_M = createUIIcon(Gripper_MSvg);
 
 export default function Gripper(props: GripperProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "M":
-      return <Gripper_M {...rest} class={mergedClass} />;
+      return <Gripper_M {...rest} class={mergedClass()} />;
     default:
-      return <Gripper_M {...rest} class={mergedClass} />;
+      return <Gripper_M {...rest} class={mergedClass()} />;
   }
 }
 

@@ -5,11 +5,11 @@
 // Generator input: @react-spectrum/s2@1.7.0/icons/DeviceDesktopMobile.mjs
 // Generator input: @react-spectrum/s2@1.7.0/icons/DeviceDesktopMobile.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createIcon } from "../spectrum-icon";
 
 function DeviceDesktopMobileIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,7 @@ function DeviceDesktopMobileIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>):
       height="20"
       viewBox="0 0 20 20"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <g fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))">
         <path d="M16.47 18h-4.94c-.843 0-1.53-.765-1.53-1.704V7.704C10 6.764 10.687 6 11.53 6h4.94c.843 0 1.53.765 1.53 1.704v8.592c0 .94-.687 1.704-1.53 1.704m-.043-10.51-4.897.01c.024.003-.03.078-.03.204v8.592c0 .126.054.201.073.214l4.897-.01c-.024-.003.03-.078.03-.204V7.704c0-.126-.054-.201-.073-.214" />

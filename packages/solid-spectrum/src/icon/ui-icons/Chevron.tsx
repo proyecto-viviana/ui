@@ -16,7 +16,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize400.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize400.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -48,7 +48,7 @@ export type ChevronProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function Chevron_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -56,7 +56,7 @@ function Chevron_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       height="6"
       viewBox="0 0 6 6"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -67,7 +67,7 @@ function Chevron_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
 }
 
 function Chevron_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +75,7 @@ function Chevron_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -86,7 +86,7 @@ function Chevron_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Chevron_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +94,7 @@ function Chevron_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -105,7 +105,7 @@ function Chevron_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Chevron_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +113,7 @@ function Chevron_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -124,7 +124,7 @@ function Chevron_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Chevron_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -132,7 +132,7 @@ function Chevron_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       height="14"
       viewBox="0 0 14 14"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -143,7 +143,7 @@ function Chevron_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
 }
 
 function Chevron_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +151,7 @@ function Chevron_XXLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       height="16"
       viewBox="0 0 16 16"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -169,23 +169,24 @@ const Chevron_XL = createUIIcon(Chevron_XLSvg);
 const Chevron_XXL = createUIIcon(Chevron_XXLSvg);
 
 export default function Chevron(props: ChevronProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Chevron_XS {...rest} class={mergedClass} />;
+      return <Chevron_XS {...rest} class={mergedClass()} />;
     case "S":
-      return <Chevron_S {...rest} class={mergedClass} />;
+      return <Chevron_S {...rest} class={mergedClass()} />;
     case "M":
-      return <Chevron_M {...rest} class={mergedClass} />;
+      return <Chevron_M {...rest} class={mergedClass()} />;
     case "L":
-      return <Chevron_L {...rest} class={mergedClass} />;
+      return <Chevron_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <Chevron_XL {...rest} class={mergedClass} />;
+      return <Chevron_XL {...rest} class={mergedClass()} />;
     case "XXL":
-      return <Chevron_XXL {...rest} class={mergedClass} />;
+      return <Chevron_XXL {...rest} class={mergedClass()} />;
     default:
-      return <Chevron_M {...rest} class={mergedClass} />;
+      return <Chevron_M {...rest} class={mergedClass()} />;
   }
 }
 

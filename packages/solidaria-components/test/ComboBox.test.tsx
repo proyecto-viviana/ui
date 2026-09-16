@@ -13,7 +13,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import {
   ComboBox,
   ComboBoxInput,
@@ -1799,6 +1799,48 @@ describe("ComboBox", () => {
       assertLabelledByResolves();
       await user.keyboard("{End}");
       assertLabelledByResolves();
+    });
+
+    it("does not remount option render-prop children when focus moves", async () => {
+      let mounts = 0;
+      const Probe = (props: { name: string }) => {
+        onMount(() => {
+          mounts += 1;
+        });
+        return <span slot="label">{props.name}</span>;
+      };
+
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => (
+              <ComboBoxOption id={item.id} textValue={item.name}>
+                {(renderProps) => (
+                  <Probe name={`${item.name}${renderProps.isFocused ? "" : ""}`} />
+                )}
+              </ComboBoxOption>
+            )}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+      const afterOpen = mounts;
+      expect(afterOpen).toBeGreaterThan(0);
+
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{End}");
+      expect(mounts).toBe(afterOpen);
     });
   });
 

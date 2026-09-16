@@ -14,7 +14,7 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.cjs
 
-import { type JSX } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
 
@@ -44,7 +44,7 @@ export type DashProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 function Dash_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +52,7 @@ function Dash_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -63,7 +63,7 @@ function Dash_XSSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Dash_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +71,7 @@ function Dash_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="8"
       viewBox="0 0 8 8"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -82,7 +82,7 @@ function Dash_SSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Dash_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@ function Dash_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="10"
       viewBox="0 0 10 10"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path fill="var(--iconPrimary, #222)" d="M8.5 6h-7a1 1 0 1 1 0-2h7a1 1 0 1 1 0 2" />
     </svg>
@@ -98,7 +98,7 @@ function Dash_MSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Dash_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +106,7 @@ function Dash_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -117,7 +117,7 @@ function Dash_LSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
 }
 
 function Dash_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, width: _width, height: _height, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "width", "height"]);
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -125,7 +125,7 @@ function Dash_XLSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       height="12"
       viewBox="0 0 12 12"
       {...rest}
-      class={className}
+      class={local.class}
     >
       <path
         fill="var(--iconPrimary, #222)"
@@ -142,21 +142,22 @@ const Dash_L = createUIIcon(Dash_LSvg);
 const Dash_XL = createUIIcon(Dash_XLSvg);
 
 export default function Dash(props: DashProps): JSX.Element {
-  const { size = "M", class: className, width: _width, height: _height, ...rest } = props;
-  const mergedClass = `${className ?? ""}${styles({ size })}`;
+  const [local, rest] = splitProps(props, ["size", "class", "width", "height"]);
+  const size = local.size ?? "M";
+  const mergedClass = () => `${local.class ?? ""}${styles({ size })}`;
   switch (size) {
     case "XS":
-      return <Dash_XS {...rest} class={mergedClass} />;
+      return <Dash_XS {...rest} class={mergedClass()} />;
     case "S":
-      return <Dash_S {...rest} class={mergedClass} />;
+      return <Dash_S {...rest} class={mergedClass()} />;
     case "M":
-      return <Dash_M {...rest} class={mergedClass} />;
+      return <Dash_M {...rest} class={mergedClass()} />;
     case "L":
-      return <Dash_L {...rest} class={mergedClass} />;
+      return <Dash_L {...rest} class={mergedClass()} />;
     case "XL":
-      return <Dash_XL {...rest} class={mergedClass} />;
+      return <Dash_XL {...rest} class={mergedClass()} />;
     default:
-      return <Dash_M {...rest} class={mergedClass} />;
+      return <Dash_M {...rest} class={mergedClass()} />;
   }
 }
 

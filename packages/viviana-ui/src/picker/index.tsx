@@ -1265,6 +1265,9 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     // child DOM once per read and desynchronizes hydration keys; an untracked
     // setup-time read freezes a direct signal child such as `{label()}`.
     const content = createMemo(() => local.children);
+    const checkClassName = createMemo(() =>
+      pickerCheckmark({ ...contentProps.renderProps, size }),
+    );
     return (
       <>
         <CheckmarkIcon
@@ -1277,7 +1280,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
           // isSelected: visible }` atom, leaving the checkmark visible on
           // every option. Upstream's hand-written ui-icon Checkmark applies
           // the caller's `className` raw; our `class` prop is the raw path.
-          class={pickerCheckmark({ ...contentProps.renderProps, size })}
+          class={checkClassName()}
           style={pickerCheckmarkIconStyle(size)}
           // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
           // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the
