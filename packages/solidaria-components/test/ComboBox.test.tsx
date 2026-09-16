@@ -862,6 +862,34 @@ describe("ComboBox", () => {
       expect(screen.getByRole("option")).toHaveTextContent("No results");
     });
 
+    it("renders a load-more sentinel and loading option when isLoading", async () => {
+      const onLoadMore = vi.fn();
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>▼</ComboBoxButton>
+          <ComboBoxListBox
+            onLoadMore={onLoadMore}
+            isLoading
+            renderLoadMore={() => "Loading more"}
+          >
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+      });
+      expect(screen.getByRole("option", { name: "Loading more" })).toHaveAttribute("data-loading");
+    });
+
     it("does not filter when items are controlled", async () => {
       render(() => <TestComboBox comboBoxProps={{ menuTrigger: "input" }} />);
 

@@ -269,6 +269,7 @@ export type {
   ComboBoxProps,
   ComboBoxSectionProps,
   ComboBoxSize,
+  ComboBoxLoadingState,
   MenuTriggerAction,
 } from "./combobox";
 

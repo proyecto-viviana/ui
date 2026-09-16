@@ -55,6 +55,46 @@ describe("ComboBox", () => {
     expect(screen.getByRole("option")).toHaveTextContent("No results");
   });
 
+  it("renders table.loading empty text when loadingState is loading", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        defaultOpen
+        items={[]}
+        loadingState="loading"
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+      >
+        {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
+    });
+    expect(screen.getByRole("option")).toHaveTextContent("Loading…");
+  });
+
+  it("renders load-more progress when loadingState is loadingMore", async () => {
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        defaultOpen
+        items={[apple]}
+        loadingState="loadingMore"
+        onLoadMore={() => undefined}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+      >
+        {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+      </ComboBox>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
+    });
+  });
+
   it("provides S2 listbox header, heading, and description slot contexts", async () => {
     render(() => (
       <ComboBox<Fruit>

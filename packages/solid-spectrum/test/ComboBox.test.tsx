@@ -123,7 +123,10 @@ function overlayFrom(role: "listbox" | "menu" | "dialog"): HTMLElement {
 }
 
 describe("ComboBox (solid-spectrum)", () => {
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
   it("associates visible label with combobox input", () => {
     render(() => <FruitComboBox />);
 
@@ -137,6 +140,35 @@ describe("ComboBox (solid-spectrum)", () => {
       expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
     });
     expect(screen.getByRole("option")).toHaveTextContent("No results");
+  });
+
+  it("renders table.loading empty text when loadingState is loading", async () => {
+    render(() => <FruitComboBox items={[]} loadingState="loading" defaultOpen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
+    });
+    expect(screen.getByRole("option")).toHaveTextContent("Loading…");
+  });
+
+  it("renders load-more progress when loadingState is loadingMore", async () => {
+    render(() => (
+      <FruitComboBox loadingState="loadingMore" onLoadMore={vi.fn()} defaultOpen />
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
+    });
+  });
+
+  it("shows the field spinner after 500ms when loadingState is loading", async () => {
+    vi.useFakeTimers();
+    render(() => <FruitComboBox loadingState="loading" />);
+
+    expect(screen.queryByRole("progressbar", { name: "Loading…" })).not.toBeInTheDocument();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(screen.getByRole("progressbar", { name: "Loading…" })).toBeInTheDocument();
+    vi.useRealTimers();
   });
 
   it("provides S2 listbox header, heading, and description slot contexts", async () => {

@@ -63,7 +63,8 @@ import {
   type ComboBoxTagGroupProps as HeadlessComboBoxTagGroupProps,
   type ComboBoxTagProps as HeadlessComboBoxTagProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { FilterFn, Key, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
+import type { FilterFn, Key, LoadingState, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
+import { ProgressCircle } from "../progress/ProgressCircle";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
@@ -110,6 +111,7 @@ type S2ComboBoxSize = "S" | "M" | "L" | "XL";
 export type ComboBoxLabelPosition = "top" | "side";
 export type ComboBoxLabelAlign = "start" | "end";
 export type ComboBoxNecessityIndicator = "icon" | "label";
+export type ComboBoxLoadingState = LoadingState;
 
 export interface ComboBoxProps<T> extends Omit<
   HeadlessComboBoxProps<T>,
@@ -134,6 +136,10 @@ export interface ComboBoxProps<T> extends Omit<
   align?: "start" | "end";
   menuWidth?: number;
   shouldFlip?: boolean;
+  /** The current loading state of the ComboBox. Determines whether or not the progress circle should be shown. */
+  loadingState?: LoadingState;
+  /** Handler that is called when more items should be loaded. */
+  onLoadMore?: () => void | Promise<void>;
   children?: JSX.Element | ((item: T) => JSX.Element);
   slot?: string | null;
   ref?: RefLike<HTMLDivElement>;
@@ -379,6 +385,22 @@ export const listboxHeader = style<{ size?: S2ComboBoxSize }>({
       L: `[${edgeToText(40)}]`,
       XL: `[${edgeToText(48)}]`,
     },
+  },
+});
+
+const comboBoxLoadingWrapper = style({
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginY: 8,
+});
+
+const comboBoxProgressCircle = style<{ isInput?: boolean }>({
+  size: "1lh",
+  marginStart: {
+    isInput: "text-to-visual",
   },
 });
 
@@ -677,6 +699,79 @@ function ComboBoxFieldGroup(props: {
   );
 }
 
+function ComboBoxFieldSpinner(props: {
+  loadingState: () => LoadingState | undefined;
+  menuTrigger: () => MenuTriggerAction | undefined;
+  label: string;
+}) {
+  const comboBoxContext = useContext(HeadlessComboBoxContext) as {
+    state?: { inputValue?: () => string };
+    isOpen?: () => boolean;
+  } | null;
+  const [showLoading, setShowLoading] = createSignal(false);
+  const spinnerId = createUniqueId();
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastInputValue: string | undefined;
+
+  const isLoadingOrFiltering = () =>
+    props.loadingState() === "loading" || props.loadingState() === "filtering";
+
+  createEffect(() => {
+    const loading = isLoadingOrFiltering();
+    const inputValue = comboBoxContext?.state?.inputValue?.();
+    const currentlyShowing = showLoading();
+
+    if (loading && !currentlyShowing) {
+      if (timeout === null) {
+        timeout = setTimeout(() => {
+          setShowLoading(true);
+        }, 500);
+      }
+      if (inputValue !== lastInputValue) {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        timeout = setTimeout(() => {
+          setShowLoading(true);
+        }, 500);
+      }
+    } else if (!loading) {
+      setShowLoading(false);
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+    }
+
+    lastInputValue = inputValue;
+  });
+
+  onCleanup(() => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  });
+
+  const showFieldSpinner = () =>
+    showLoading() &&
+    (comboBoxContext?.isOpen?.() === true ||
+      props.menuTrigger() === "manual" ||
+      props.loadingState() === "loading");
+
+  return (
+    <Show when={showFieldSpinner()}>
+      <ProgressCircle
+        id={spinnerId}
+        isIndeterminate
+        size="S"
+        styles={comboBoxProgressCircle({ isInput: true })}
+        aria-label={props.label}
+      />
+    </Show>
+  );
+}
+
 function ComboBoxListBoxPopover(props: {
   size: () => S2ComboBoxSize;
   direction: () => "bottom" | "top";
@@ -828,6 +923,8 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     "align",
     "menuWidth",
     "shouldFlip",
+    "loadingState",
+    "onLoadMore",
     "defaultItems",
     "children",
     "slot",
@@ -952,6 +1049,13 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   <AlertTriangleIcon styles={fieldErrorIcon} />
                 </CenterBaseline>
               </Show>
+              <ComboBoxFieldSpinner
+                loadingState={() => local.loadingState}
+                menuTrigger={() =>
+                  (headlessProps as { menuTrigger?: MenuTriggerAction }).menuTrigger
+                }
+                label={stringFormatter().format("table.loading")}
+              />
               <HeadlessComboBoxButton
                 ref={setChevronEl}
                 class={buttonClass}
@@ -1026,9 +1130,26 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                           class={(listBoxProps) =>
                             comboBoxListBox({ ...listBoxProps, size: size() })
                           }
+                          onLoadMore={local.onLoadMore}
+                          isLoading={local.loadingState === "loadingMore"}
+                          loadMoreClass={comboBoxLoadingWrapper}
+                          renderLoadMore={() =>
+                            local.loadingState === "loadingMore" ? (
+                              <ProgressCircle
+                                isIndeterminate
+                                size="S"
+                                styles={comboBoxProgressCircle({})}
+                                aria-label={stringFormatter().format("table.loadingMore")}
+                              />
+                            ) : undefined
+                          }
                           renderEmptyState={() => (
                             <span class={comboBoxEmptyStateText({ size: size() })}>
-                              {stringFormatter().format("combobox.noResults")}
+                              {stringFormatter().format(
+                                local.loadingState === "loading"
+                                  ? "table.loading"
+                                  : "combobox.noResults",
+                              )}
                             </span>
                           )}
                         >

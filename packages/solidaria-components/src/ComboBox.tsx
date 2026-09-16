@@ -74,6 +74,7 @@ import {
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { useCollectionRenderer, useCollectionRoot } from "./Collection";
+import { ListBoxLoadMoreItem } from "./ListBox";
 import { VirtualizerItem } from "./Virtualizer";
 import {
   SelectionIndicatorContext,
@@ -287,6 +288,14 @@ export interface ComboBoxListBoxProps<T> extends SlotProps {
   style?: StyleOrFunction<ComboBoxListBoxRenderProps>;
   /** A function to render when the listbox is empty. RAC ListBox `renderEmptyState`. */
   renderEmptyState?: () => JSX.Element;
+  /** Called when the load more sentinel becomes visible. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Whether additional items are currently loading. */
+  isLoading?: boolean;
+  /** Content to display in the load more sentinel row. */
+  renderLoadMore?: () => JSX.Element | undefined;
+  /** CSS class for the load more sentinel row. */
+  loadMoreClass?: ClassNameOrFunction<{ isLoading: boolean }>;
 }
 
 export type ComboBoxItemRenderProps = ComboBoxOptionRenderProps;
@@ -1047,6 +1056,10 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     "slot",
     "children",
     "renderEmptyState",
+    "onLoadMore",
+    "isLoading",
+    "renderLoadMore",
+    "loadMoreClass",
   ]);
 
   const rawContext = useContext(ComboBoxContext);
@@ -1246,6 +1259,15 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
             {local.renderEmptyState()}
           </div>
         ) : null}
+        <Show when={local.onLoadMore}>
+          <ListBoxLoadMoreItem
+            onLoadMore={local.onLoadMore!}
+            isLoading={local.isLoading}
+            class={local.loadMoreClass}
+          >
+            {local.renderLoadMore?.()}
+          </ListBoxLoadMoreItem>
+        </Show>
       </div>
     </Show>
   );
