@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "#438 merged: certified dnd-listbox D-reorder green. Virtualizer context-only split remains this ticket's remaining work.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-16,
+      note: "dnd-listbox D-reorder 2/2 vs :4323 (reorder-down + cancel, 9.9s, EXIT:0). Log /tmp/grok-overlay-night/dnd-reorder.log. ComboBox D13 2/2 same preview after 44aa6fb1. Option-remount leftover not observed this Chromium run. rg data-virtualizer in packages/apps is only negative tests + CHANGELOG. Do not mark verified. Skip #254.",
+    }
 ---
 
 ## Cause

@@ -17,6 +17,11 @@ history:
       at: 2026-09-15,
       note: "Observation landed in 3f4f11bf. Virtualizer.test.tsx 78 passed (observe / hidden / observation-off). ComboBox/Picker do not pass shouldObserveItemSize (RAC ComboBox/Picker also omit it). Scroll/relayout comparison evidence still required before verified. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-16,
+      note: "Virtualizer D-scroll 2/2 vs :4323 (visible window + windowed AX; focus retention across recycling; 9.6s, EXIT:0). Log /tmp/grok-overlay-night/virtualizer-dscroll.log. ComboBox/Picker still omit shouldObserveItemSize (RAC also omits). Single local Chromium 151 run; do not mark verified.",
+    }
 ---
 
 Port `shouldObserveItemSize` and the hidden-element measurement guard.
