@@ -76,6 +76,11 @@ history:
       at: 2026-09-15,
       note: "ComboBox renderEmptyState inside the listbox (6d823376): RAC ListBox-shaped empty option + S2/viviana-ui combobox.noResults. Overlay Header/Heading/description Text providers + exported listboxHeader (686911d6) match S2 ComboBox.tsx:774-795 / Picker.tsx:490-510. D13 fixture has no sections so this does not move the 7px leftover. ComboBox loadingState / table.loading empty-text still missing (Picker already has loadingState). Do not patch journeys. Do not invent <template>. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBox loadingState (e1b554bf) and ComboBoxItem/PickerItem slot contexts (60d218a4) do not change the D13 fixture string wrap or the keyboard-only 7/25440 checkmark AA. Menu/ActionMenu D2 labelledby (fb6509ad) 4/4 vs :4323 is not this leftover. Do not waive. Do not invent Portal forks / shape-rendering / translateZ(0) / CollectionBuilder <template>. Picker D13 remaining is still #254. Not verified.",
+    }
 ---
 
 ## Cause

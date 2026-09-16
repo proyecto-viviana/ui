@@ -36,6 +36,11 @@ history:
       at: 2026-09-15,
       note: "Remaining S2 overlay compose: ComboBox/Picker Header/Heading/description Text providers + exported listboxHeader (686911d6); ComboBox renderEmptyState inside the listbox (6d823376). Tests: ComboBox 27, Picker 20, viviana-ui ComboBox 3 / Picker 3. Still missing ComboBox loadingState / table.loading empty-text / loadingMore spinner (Picker already has loadingState). D13 CB leftover is #248 7px Portal AA, not this wrap. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBox loadingState / table.loading empty-text / loadingMore spinner (e1b554bf). ComboBoxItem/PickerItem Icon/Avatar/Text slot contexts (60d218a4) including Picker SelectValue; item children consumed under those providers; headless label/description ids copied so unslotted Picker Text is the option name. Tests: ComboBox 31, Picker 21, viviana-ui ComboBox 6 / Picker 4. String wrap still HeadlessText/pickerOptionLabel; D13 7px leftover unchanged. Do not mark verified.",
+    }
 ---
 
 ## Cause

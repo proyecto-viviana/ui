@@ -17,6 +17,11 @@ history:
       at: 2026-09-02,
       note: "MenuLoadMoreItem exported; async-loading tests red-then-green; pending export-gap row removed",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "RAC MenuLoadMoreItem is already exported. S2 Menu omits renderEmptyState from public props and has no loadingState/onLoadMore; do not invent S2 Menu loading compose. ComboBox loadingState (e1b554bf) is the S2 ComboBox path, not this ticket. Not verified.",
+    }
 ---
 
 ## Cause

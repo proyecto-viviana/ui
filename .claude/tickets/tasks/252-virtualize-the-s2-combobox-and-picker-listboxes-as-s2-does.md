@@ -51,6 +51,11 @@ history:
       at: 2026-09-15,
       note: "After items skip-filter (6e4840a7) ComboBox D13 open-arrow is green; keyboard-only leftover is still 7/25440 checkmark AA (Portal display:contents compositor; path/class tokens match). renderEmptyState and listboxHeader compose do not change virtualizer remainder. Item size observation stays on #114. Do not waive. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "ComboBoxItem/PickerItem slot contexts (60d218a4) do not change Virtualizer wrap order or the 7px leftover. Remaining: scroll/relayout evidence (#114) and Chromium D-reorder remount (#256; wrap already Popover > div > Provider > Virtualizer > ListBox). Do not mark verified.",
+    }
 ---
 
 ## Cause

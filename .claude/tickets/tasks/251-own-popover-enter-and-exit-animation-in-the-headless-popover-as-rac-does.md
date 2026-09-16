@@ -31,6 +31,11 @@ history:
       at: 2026-09-15,
       note: "Executed ComboBox+Picker D2 open-enter (normal + reduced) on Chromium 151: 4/4 passed in 50s. Menu/ActionMenu D2 not in this run. D13 still red. Not verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-15,
+      note: "Menu/ActionMenu overlay dialogs now take aria-labelledby from the trigger (fb6509ad): RAC MenuTrigger puts menuProps aria-labelledby on PopoverContext; Solid overlayLabelledBy was wiping the spread, and MenuTriggerOverlayContext dropped it. Headless+twins+ActionMenu. D2 vs :4323 4/4 (ActionMenu open-enter, ActionMenu reduced, Menu open-enter, Menu reduced). Do not invent a journeys patch. Not verified.",
+    }
 ---
 
 ## Cause
