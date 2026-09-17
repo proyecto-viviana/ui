@@ -998,7 +998,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <>
                             <For each={visibleItems()}>
                               {(item, index) => (
-                                <VirtualizerItem index={() => (virtualRange()?.start ?? 0) + index()}>
+                                <VirtualizerItem
+                                  index={() => (virtualRange()?.start ?? 0) + index()}
+                                >
                                   <ListBoxItemWithDropIndicators
                                     item={item as T}
                                     itemIndex={() => (virtualRange()?.start ?? 0) + index()}

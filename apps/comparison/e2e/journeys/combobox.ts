@@ -59,10 +59,7 @@ function authoringSetup(
   };
 }
 
-export function comboBoxOpenCloseJourneys({
-  trigger,
-  input,
-}: ComboBoxJourneyTargets): Journey[] {
+export function comboBoxOpenCloseJourneys({ trigger, input }: ComboBoxJourneyTargets): Journey[] {
   const before = targets.before();
   const after = targets.after();
 

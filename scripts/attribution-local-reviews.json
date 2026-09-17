@@ -272,7 +272,7 @@
   {
     "localPath": "packages/solid-spectrum/src/icon/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "6f13d87fb2176761f310eb44b709020146d2a9c2af152fcd00451fedd745b80c"
+    "contentSha256": "084929e657325314840917d0c0fd2ac50a68e53cfa7b2725a4262234eecb9a2c"
   },
   {
     "localPath": "packages/solid-spectrum/src/IllustratedMessage.ts",
@@ -292,7 +292,7 @@
   {
     "localPath": "packages/solid-spectrum/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "8e3d422694e950712559de1fdbb8a9071e6094ca2e4d136cd9986d1a0ec3cd53"
+    "contentSha256": "aec40418a34df63dad7bdb42cfd4f3e3a70ee89c0c5d2247992aa50562989d91"
   },
   {
     "localPath": "packages/solid-spectrum/src/InlineAlert.ts",
@@ -482,7 +482,7 @@
   {
     "localPath": "packages/solid-spectrum/src/switch/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "2c9bd16b48657eee23a719d20a0490ff4b7d5b1880915568484c289978344f33"
+    "contentSha256": "c177a2ca14833dd19158d03321db15b8c246c64ad4199cfc540fd858764a9f15"
   },
   {
     "localPath": "packages/solid-spectrum/src/TableView.ts",
@@ -592,7 +592,7 @@
   {
     "localPath": "packages/solid-stately/src/color/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "736e539c39f437ec05337263b48a37d6ad821ff8031f8277a8e75ade0471603f"
+    "contentSha256": "43ed3047bd576a78bdf7851d3605fd582dd4744fc5037c5bc78940762a70d8ab"
   },
   {
     "localPath": "packages/solid-stately/src/combobox/index.ts",
@@ -1227,7 +1227,7 @@
   {
     "localPath": "packages/viviana-ui/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "1b34552e9a8e07ae5dd51af867ff49302d7acfda12b66ec9da33bc2fcaa5faa1"
+    "contentSha256": "2c6078ec7580c1832728c55242dbc05c9d9291ae2e786284f5f3309303dfd292"
   },
   {
     "localPath": "packages/viviana-ui/src/landmark/index.tsx",
@@ -1242,22 +1242,22 @@
   {
     "localPath": "packages/viviana-ui/src/style/glasselated-ramps.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "f42c6972418dbe614f84f39a7f7df3976215568fb168e1069682ba27dba403ad"
+    "contentSha256": "1c53e8206862ca557fa08935a472306873674d73f6efe9ba917fce808458cb52"
   },
   {
     "localPath": "packages/viviana-ui/src/style/meshStrip.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "42c36dc8540b9d22f9b442e9d60130c03b5ad5cf1ac860f6240b8e78f5632a36"
+    "contentSha256": "44aa11644943f43e04727a7e0e7dcbbe717f6f4d8b4c22eab52a57c42bd17694"
   },
   {
     "localPath": "packages/viviana-ui/src/switch/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "0896bbccd98f22ce8352db85587b744ace3f237a1bd8f989b76aabf4476c1bd3"
+    "contentSha256": "c177a2ca14833dd19158d03321db15b8c246c64ad4199cfc540fd858764a9f15"
   },
   {
     "localPath": "packages/viviana-ui/src/text/type-roles.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "11c5b1d88f2e60875cf2056eeec19c394f468ef509b63fbb45a83aac96725c57"
+    "contentSha256": "00cb3ae0c65ee0bae42b05d656761dd2d33026283a1b4ee332296343e7c2b1ca"
   },
   {
     "localPath": "packages/viviana-ui/src/vite.ts",
@@ -1267,6 +1267,6 @@
   {
     "localPath": "packages/viviana-ui/src/well/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "49eba0d102502771005695203ef50780b93025d655ec1542b35509d375914ff2"
+    "contentSha256": "e646c92476edeb5df1d403a3170df598e5e54bdff4cd65e621d85bd7bdc394e8"
   }
 ]

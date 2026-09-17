@@ -88,11 +88,7 @@ export interface LayoutOptionsDelegate<O> {
 export interface VirtualizerLayout<O = unknown> extends LayoutOptionsDelegate<O> {
   getVisibleRange?(context: VirtualizerRangeContext, options?: O): VirtualizerVisibleRange;
   getLayoutInfo?(index: number, context: VirtualizerLayoutInfoContext, options?: O): LayoutInfo;
-  getContentSize?(
-    itemCount: number,
-    context: VirtualizerLayoutInfoContext,
-    options?: O,
-  ): Size;
+  getContentSize?(itemCount: number, context: VirtualizerLayoutInfoContext, options?: O): Size;
   updateItemSize?(index: number, mainSize: number): boolean;
   getDropTargetFromPoint?(
     point: Point,
@@ -958,10 +954,7 @@ function CollectionBranch<T>(props: CollectionBranchProps<T>): JSX.Element {
  * RAC `layoutInfoToStyle` (`react-aria/src/virtualizer/VirtualizerItem.tsx`).
  * ListLayout sets `allowOverflow`, so overflow stays visible.
  */
-export function layoutInfoToStyle(
-  layoutInfo: LayoutInfo,
-  dir: "ltr" | "rtl",
-): JSX.CSSProperties {
+export function layoutInfoToStyle(layoutInfo: LayoutInfo, dir: "ltr" | "rtl"): JSX.CSSProperties {
   const xProperty = dir === "rtl" ? "right" : "left";
   return {
     position: "absolute",

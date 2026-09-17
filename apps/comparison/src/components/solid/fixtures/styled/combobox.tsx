@@ -33,10 +33,14 @@ type ComboBoxFixtureItem = {
 };
 
 function sentinelButton(kind: "before" | "after") {
-  return h("button", {
-    type: "button",
-    "data-comparison-sentinel": kind,
-  }, [kind]);
+  return h(
+    "button",
+    {
+      type: "button",
+      "data-comparison-sentinel": kind,
+    },
+    [kind],
+  );
 }
 
 function SolidSpectrumComboBoxDemo() {
@@ -148,11 +152,15 @@ function SolidSpectrumComboBoxDemo() {
           },
         },
         [
-          hc(Show, {
-            get when() {
-              return demoProps().sentinels;
+          hc(
+            Show,
+            {
+              get when() {
+                return demoProps().sentinels;
+              },
             },
-          }, [sentinelButton("before")]),
+            [sentinelButton("before")],
+          ),
           hc(
             SolidSpectrumComboBox,
             {
@@ -325,11 +333,15 @@ function SolidSpectrumComboBoxDemo() {
               ),
             ),
           ),
-          hc(Show, {
-            get when() {
-              return demoProps().sentinels;
+          hc(
+            Show,
+            {
+              get when() {
+                return demoProps().sentinels;
+              },
             },
-          }, [sentinelButton("after")]),
+            [sentinelButton("after")],
+          ),
         ],
       ),
     ],

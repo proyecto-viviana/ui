@@ -1265,9 +1265,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     // child DOM once per read and desynchronizes hydration keys; an untracked
     // setup-time read freezes a direct signal child such as `{label()}`.
     const content = createMemo(() => local.children);
-    const checkClassName = createMemo(() =>
-      pickerCheckmark({ ...contentProps.renderProps, size }),
-    );
+    const checkClassName = createMemo(() => pickerCheckmark({ ...contentProps.renderProps, size }));
     return (
       <>
         <CheckmarkIcon

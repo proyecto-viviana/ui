@@ -874,11 +874,7 @@ describe("ComboBox", () => {
         >
           <ComboBoxInput />
           <ComboBoxButton>▼</ComboBoxButton>
-          <ComboBoxListBox
-            onLoadMore={onLoadMore}
-            isLoading
-            renderLoadMore={() => "Loading more"}
-          >
+          <ComboBoxListBox onLoadMore={onLoadMore} isLoading renderLoadMore={() => "Loading more"}>
             {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
           </ComboBoxListBox>
         </ComboBox>
@@ -1823,9 +1819,7 @@ describe("ComboBox", () => {
           <ComboBoxListBox>
             {(item) => (
               <ComboBoxOption id={item.id} textValue={item.name}>
-                {(renderProps) => (
-                  <Probe name={`${item.name}${renderProps.isFocused ? "" : ""}`} />
-                )}
+                {(renderProps) => <Probe name={`${item.name}${renderProps.isFocused ? "" : ""}`} />}
               </ComboBoxOption>
             )}
           </ComboBoxListBox>

@@ -20,14 +20,7 @@
  * either type to filter options or select from a list.
  */
 
-import {
-  batch,
-  createSignal,
-  createMemo,
-  createEffect,
-  untrack,
-  type Accessor,
-} from "solid-js";
+import { batch, createSignal, createMemo, createEffect, untrack, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";

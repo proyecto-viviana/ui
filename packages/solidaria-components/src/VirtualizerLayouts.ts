@@ -333,12 +333,7 @@ export class ListLayout {
     return { type: "item", index, position };
   }
 
-  private offsetForIndex(
-    index: number,
-    rowSize: number,
-    padding: number,
-    gap: number,
-  ): number {
+  private offsetForIndex(index: number, rowSize: number, padding: number, gap: number): number {
     if (this.measuredMain.size === 0) {
       return padding + index * (rowSize + gap);
     }
