@@ -37,22 +37,25 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-interface RegisterLink {
+interface LibraryLink {
   href: string;
   label: string;
   external?: boolean;
 }
 
-function RegisterCard(props: {
+function LibraryCard(props: {
   name: string;
   status: string;
   blurb: string;
   install?: string;
-  links: RegisterLink[];
+  links: LibraryLink[];
   experimental?: boolean;
 }) {
   return (
-    <article class="pv-card pv-register-card" data-experimental={props.experimental || undefined}>
+    <article
+      class="pv-card pv-library-card pv-register-card"
+      data-experimental={props.experimental || undefined}
+    >
       <div class="pv-register-card__heading">
         <h3>{props.name}</h3>
         <span class="pv-register-card__status">{props.status}</span>
@@ -116,20 +119,20 @@ function ArchitectureMap() {
   );
 }
 
-type RegisterKey = "viviana" | "spectrum" | "geist" | "kumo";
+type ThemeKey = "viviana" | "spectrum" | "geist" | "kumo";
 
 function SpecimenDeck() {
   const { theme } = useTheme();
-  const [activeRegister, setActiveRegister] = createSignal<RegisterKey>("viviana");
+  const [activeTheme, setActiveTheme] = createSignal<ThemeKey>("viviana");
   const [overrideMode, setOverrideMode] = createSignal<"auto" | "light" | "dark">("auto");
   const [count, setCount] = createSignal(0);
   const [textValue, setTextValue] = createSignal("");
 
   const effectiveMode = () => (overrideMode() === "auto" ? theme() : overrideMode());
 
-  const registerTitles: Record<RegisterKey, string> = {
-    viviana: "@proyecto-viviana/ui · Glasselated design register (published)",
-    spectrum: "@proyecto-viviana/solid-spectrum · Spectrum 2 register (2,118 certified checks)",
+  const themeTitles: Record<ThemeKey, string> = {
+    viviana: "@proyecto-viviana/ui · Glasselated design system (published)",
+    spectrum: "@proyecto-viviana/solid-spectrum · Spectrum S2 (certified)",
     geist: "@proyecto-viviana/geist · Vercel Geist study (unpublished)",
     kumo: "@proyecto-viviana/kumo · Cloudflare Kumo button study (unpublished)",
   };
@@ -138,10 +141,10 @@ function SpecimenDeck() {
     <section class="pv-specimen-section" aria-labelledby="specimen-deck-title">
       <div class="pv-section-heading pv-section-heading--compact">
         <SectionLabel>Interactive specimen</SectionLabel>
-        <h2 id="specimen-deck-title">One reactive state. Four visual registers.</h2>
+        <h2 id="specimen-deck-title">One reactive state. Four visual skins.</h2>
         <p>
           Switch between design systems in real time. Shared reactive Solid signals (counter and
-          input) persist uninterrupted across register boundaries.
+          input) persist uninterrupted across library boundaries.
         </p>
       </div>
 
@@ -152,34 +155,34 @@ function SpecimenDeck() {
             <span />
             <span />
           </div>
-          <span class="pv-frame__title">{registerTitles[activeRegister()]}</span>
+          <span class="pv-frame__title">{themeTitles[activeTheme()]}</span>
 
-          <div class="pv-frame__seg" role="group" aria-label="Register switcher">
+          <div class="pv-frame__seg" role="group" aria-label="Theme switcher">
             <button
               type="button"
-              data-active={activeRegister() === "viviana" ? "true" : "false"}
-              onClick={() => setActiveRegister("viviana")}
+              data-active={activeTheme() === "viviana" ? "true" : "false"}
+              onClick={() => setActiveTheme("viviana")}
             >
               Viviana UI
             </button>
             <button
               type="button"
-              data-active={activeRegister() === "spectrum" ? "true" : "false"}
-              onClick={() => setActiveRegister("spectrum")}
+              data-active={activeTheme() === "spectrum" ? "true" : "false"}
+              onClick={() => setActiveTheme("spectrum")}
             >
               Spectrum S2
             </button>
             <button
               type="button"
-              data-active={activeRegister() === "geist" ? "true" : "false"}
-              onClick={() => setActiveRegister("geist")}
+              data-active={activeTheme() === "geist" ? "true" : "false"}
+              onClick={() => setActiveTheme("geist")}
             >
               Geist
             </button>
             <button
               type="button"
-              data-active={activeRegister() === "kumo" ? "true" : "false"}
-              onClick={() => setActiveRegister("kumo")}
+              data-active={activeTheme() === "kumo" ? "true" : "false"}
+              onClick={() => setActiveTheme("kumo")}
             >
               Kumo
             </button>
@@ -203,9 +206,9 @@ function SpecimenDeck() {
           </div>
         </div>
 
-        <div class="pv-frame__canvas" data-mode={effectiveMode()} data-theme={activeRegister()}>
+        <div class="pv-frame__canvas" data-mode={effectiveMode()} data-theme={activeTheme()}>
           <div class="pv-specimen-deck">
-            <Show when={activeRegister() === "viviana"}>
+            <Show when={activeTheme() === "viviana"}>
               <div class="pv-specimen-deck__panel">
                 <div class="pv-specimen-deck__row">
                   <VivianaButton variant="primary" onClick={() => setCount((c) => c + 1)}>
@@ -229,7 +232,7 @@ function SpecimenDeck() {
               </div>
             </Show>
 
-            <Show when={activeRegister() === "spectrum"}>
+            <Show when={activeTheme() === "spectrum"}>
               <SpectrumProvider colorScheme={effectiveMode() as "light" | "dark"}>
                 <div class="pv-specimen-deck__panel">
                   <div class="pv-specimen-deck__row">
@@ -242,13 +245,13 @@ function SpecimenDeck() {
                     <SpectrumBadge variant="informative">Count: {count()}</SpectrumBadge>
                   </div>
                   <div class="pv-specimen-deck__status">
-                    Adobe React Spectrum S2 translation · 2,118 certified parity checks
+                    Adobe React Spectrum S2 translation · Certified same behavior
                   </div>
                 </div>
               </SpectrumProvider>
             </Show>
 
-            <Show when={activeRegister() === "geist"}>
+            <Show when={activeTheme() === "geist"}>
               <div class="pv-specimen-deck__panel" data-theme="geist" data-mode={effectiveMode()}>
                 <div class="pv-specimen-deck__row">
                   <GeistButton
@@ -268,7 +271,7 @@ function SpecimenDeck() {
               </div>
             </Show>
 
-            <Show when={activeRegister() === "kumo"}>
+            <Show when={activeTheme() === "kumo"}>
               <div class="pv-specimen-deck__panel" data-theme="kumo" data-mode={effectiveMode()}>
                 <div class="pv-specimen-deck__row">
                   <KumoButton variant="primary" size="lg" onClick={() => setCount((c) => c + 1)}>
@@ -302,14 +305,14 @@ function LandingPage(): JSX.Element {
 
       <main id="main-content" class="pv-wrap pv-wrap--narrow pv-landing-main">
         <section class="pv-hero pv-landing-hero">
-          <PillTag>One Solid foundation · Multi-register design system</PillTag>
+          <PillTag>One Solid foundation · Four design systems</PillTag>
           <h1>
             A Solid UI stack, <span>out in the open</span>.
           </h1>
           <p>
-            Proyecto Viviana is an ongoing architecture in translating established UI systems to
-            Solid. Production surfaces run on npm today. Every parity claim earns runnable evidence.
-            Expect clear boundaries between certified libraries and early studies.
+            Proyecto Viviana ports established design systems to Solid. Published packages run in
+            production on npm today. Every claim of same behavior carries runnable evidence. We keep
+            clear boundaries between certified libraries and early studies.
           </p>
           <div class="pv-landing-hero__actions">
             <CtaButton href="#libraries" tone="primary">
@@ -320,32 +323,32 @@ function LandingPage(): JSX.Element {
               external
               tone="secondary"
             >
-              Read the evidence bar ↗
+              Read certification rules ↗
             </CtaButton>
           </div>
         </section>
 
         <section id="libraries" class="pv-library-section" aria-labelledby="libraries-title">
           <div class="pv-section-heading">
-            <SectionLabel>Published Flagships</SectionLabel>
-            <h2 id="libraries-title">Two production-grade styled libraries on npm.</h2>
+            <SectionLabel>Published Libraries</SectionLabel>
+            <h2 id="libraries-title">Two independent styled libraries on npm.</h2>
             <p>
-              Certified component libraries built for real application development. Independent
-              releases, dedicated documentation, and exhaustive test suites.
+              Component libraries with independent releases, dedicated documentation, and regression
+              suites.
             </p>
           </div>
-          <div class="pv-registers">
-            <RegisterCard
+          <div class="pv-libraries pv-registers">
+            <LibraryCard
               name="@proyecto-viviana/ui"
-              status="Published · Viviana register"
+              status="Published · Glasselated theme"
               blurb="Proyecto Viviana’s expressive component library. It has its own visual language, public API, showcase, and package release."
               install="@proyecto-viviana/ui"
               links={[{ href: "/viviana-ui/docs", label: "Read docs →" }]}
             />
-            <RegisterCard
+            <LibraryCard
               name="@proyecto-viviana/solid-spectrum"
-              status="Published · Spectrum 2 register"
-              blurb="A component-by-component Solid translation of Adobe React Spectrum S2. Parity is certified per component across 2,118 test checks."
+              status="Published · Spectrum S2"
+              blurb="A component-by-component Solid port of Adobe React Spectrum S2. Same behavior is certified per component with automated regression suites."
               install="@proyecto-viviana/solid-spectrum"
               links={[{ href: "/solid-spectrum/docs", label: "Read docs →" }]}
             />
@@ -361,8 +364,8 @@ function LandingPage(): JSX.Element {
             State belongs in solid-stately. ARIA, keyboard, and focus behavior belong in solidaria.
             Component composition belongs in solidaria-components.
           </FeatureBlock>
-          <FeatureBlock title="Evidence before labels">
-            A rendered export or a green axe run is only a floor. A component earns a parity label
+          <FeatureBlock title="Evidence before claims">
+            A rendered export or a green axe run is only a floor. A component earns certified status
             when its observable upstream branches have regression evidence.
           </FeatureBlock>
           <FeatureBlock title="Independent paint">
