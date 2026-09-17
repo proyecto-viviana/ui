@@ -487,6 +487,9 @@ const solidSpectrumSubpathAliases = Object.entries(solidSpectrumPackage.exports)
 
 export default defineConfig({
   trailingSlash: "always",
+  devToolbar: {
+    enabled: false,
+  },
   prefetch: {
     prefetchAll: false,
     defaultStrategy: "hover",

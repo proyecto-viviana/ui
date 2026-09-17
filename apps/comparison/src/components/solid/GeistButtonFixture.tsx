@@ -50,7 +50,7 @@ function FixtureButton(props: FixtureButtonProps) {
         <Button
           data-fixture-state={props.id}
           disabled={props.disabled}
-          prefix={props.prefix ? ((<PlusIcon />) as any) : undefined}
+          prefix={props.prefix ? () => <PlusIcon /> : undefined}
           loading={props.loading}
           onClick={props.onClick}
           shape={props.shape}
