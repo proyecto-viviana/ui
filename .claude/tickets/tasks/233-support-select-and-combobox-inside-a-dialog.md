@@ -4,7 +4,7 @@ type: task
 title: "Support Select and ComboBox inside a Dialog"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
@@ -16,6 +16,11 @@ history:
       state: in-progress,
       at: 2026-09-02,
       note: "nodeContains blur + Select errorMessage TextContext; Dialog tests red-then-green; S2 Avatar out of lane",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "Select and ComboBox in Dialog blur handling is in the tree",
     }
 ---
 

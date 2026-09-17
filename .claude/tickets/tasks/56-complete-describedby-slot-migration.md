@@ -16,6 +16,11 @@ history:
       at: 2026-09-01,
       note: "owner 2026-09-01: keep in-progress; done-when is #57 and #58 complete, and those children are still open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-17,
+      note: "sweep #541: left in-progress; owner 2026-09-01 kept it until #57 and #58 complete",
+    }
 ---
 
 Complete the shared `aria-describedby` slot path across field and toggle

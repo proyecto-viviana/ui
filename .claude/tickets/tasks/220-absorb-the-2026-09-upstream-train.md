@@ -12,6 +12,11 @@ history:
       at: 2026-09-02,
       note: "pin moved to f56660b (1.21.0 / 1.7.0); inventory ticketed 228–242; certified 1962/2124 with 158 visual failures all class (b) on #240",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-17,
+      note: "sweep #541: left in-progress; pin moved, Done when still names certified green under #216",
+    }
 ---
 
 ## Cause

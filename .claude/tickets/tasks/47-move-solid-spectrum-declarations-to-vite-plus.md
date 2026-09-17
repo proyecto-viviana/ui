@@ -4,9 +4,14 @@ type: task
 title: "Move solid-spectrum declarations to Vite Plus packaging"
 created: 2026-08-20
 parent: 27
-status: in-progress
+status: parked
 history:
   - { state: in-progress, at: 2026-08-20, note: "migrated from legacy task pkg-build-spectrum-dts" }
+  - {
+      state: parked,
+      at: 2026-09-17,
+      note: "still wanted: public packs still emit dts via tsc -p tsconfig.build.json",
+    }
 ---
 
 Use the native Vite Plus package build to emit and validate `solid-spectrum`

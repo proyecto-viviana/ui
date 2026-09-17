@@ -4,13 +4,18 @@ type: task
 title: "Hide DialogTrigger when nested inside Tabs"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "DialogTrigger useIsHidden early return; Text hideable is out-of-lane (Text.tsx). Nested Tabs test cannot go red without RAC Hidden collection pass",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "DialogTrigger useIsHidden guard is in the tree; Hidden pass is out of scope",
     }
 ---
 

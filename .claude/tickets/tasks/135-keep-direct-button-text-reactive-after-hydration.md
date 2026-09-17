@@ -4,7 +4,7 @@ type: task
 title: "Keep direct Button text reactive after hydration"
 created: 2026-08-31
 parent: 24
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-01,
       note: "moved pending authored-icon visibility to the reactive baseline wrapper in both styled Button copies",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "Button one-read children landed; remaining evidence is #187",
     }
 ---
 

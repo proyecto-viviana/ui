@@ -4,13 +4,18 @@ type: task
 title: "Put consumed-prop pair assertions on the contract gate"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: parked
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "contract job relabeled as a floor; certified suite is the blocking bar; pending orchestrator verification",
+    }
+  - {
+      state: parked,
+      at: 2026-09-17,
+      note: "still wanted: consumed-prop assertions were not added to the contract floor",
     }
 ---
 

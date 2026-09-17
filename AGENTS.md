@@ -27,11 +27,11 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 
 | do      | run              |
 | ------- | ---------------- |
-| install | `pnpm install`   |
-| check   | `pnpm run check` |
-| test    | `pnpm run test`  |
-| build   | `pnpm run build` |
-| lint    | `pnpm run lint`  |
+| install | `vp install`     |
+| check   | `vp run check`   |
+| test    | `vp run test`    |
+| build   | `vp run build`   |
+| lint    | `vp lint`        |
 
 ## Local rules
 

@@ -4,13 +4,18 @@ type: task
 title: "Guard FocusScope restore against a null first-in-scope target"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "ported null first-in-scope skip and parent-scope restore walk; tests red-then-green",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "FocusScope null first-in-scope restore is in the tree",
     }
 ---
 

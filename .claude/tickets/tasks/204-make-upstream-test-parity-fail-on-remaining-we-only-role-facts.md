@@ -4,13 +4,18 @@ type: task
 title: "Make upstream-test-parity fail on remaining WE-ONLY role facts"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: parked
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "baseline ratchet is now one-way; new unmatched facts fail; --write-baseline growth requires --allow-growth <ticket>",
+    }
+  - {
+      state: parked,
+      at: 2026-09-17,
+      note: "still wanted: baselined WE-ONLY role facts are not yet triaged",
     }
 ---
 

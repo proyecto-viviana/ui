@@ -4,13 +4,18 @@ type: task
 title: "Port RAC intlMessages into solidaria-components and format SelectValue with the provider locale"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "RAC intl catalog (34 locales) + createListFormatter landed; DropZone/SelectValue/ColumnResizer/ColorSwatchPicker format from I18nProvider; pending orchestrator verification",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "RAC intl catalog and I18nProvider formatting landed in solidaria-components",
     }
 ---
 

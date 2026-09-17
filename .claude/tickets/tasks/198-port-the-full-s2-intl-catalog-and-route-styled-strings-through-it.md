@@ -4,13 +4,18 @@ type: task
 title: "Port the full S2 intl catalog and route styled strings through it"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "34×47 S2 catalog + formatter call sites in solid-spectrum/viviana-ui; ICU compiled at catalog load; pending orchestrator verification",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "34-locale S2 catalog and ar-AE string tests are in both styled packages",
     }
 ---
 

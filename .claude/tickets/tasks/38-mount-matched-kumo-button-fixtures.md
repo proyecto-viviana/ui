@@ -4,12 +4,17 @@ type: task
 title: "Mount matched React and Solid Kumo Button fixtures in the comparison app"
 created: 2026-08-20
 parent: 29
-status: in-progress
+status: merged
 history:
   - {
       state: in-progress,
       at: 2026-08-20,
       note: "migrated from legacy task kumo-button-pair-fixture",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "Kumo pair fixtures, shared controls, and e2e/kumo-button.spec.ts are in the tree",
     }
 ---
 

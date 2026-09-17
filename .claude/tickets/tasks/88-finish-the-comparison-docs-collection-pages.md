@@ -4,12 +4,17 @@ type: task
 title: "Finish the comparison docs collection pages"
 created: 2026-08-20
 parent: 26
-status: in-progress
+status: parked
 history:
   - {
       state: in-progress,
       at: 2026-08-20,
       note: "migrated from legacy task comparison-docs-collections",
+    }
+  - {
+      state: parked,
+      at: 2026-09-17,
+      note: "still wanted: comparison collection docs pages are not the live work",
     }
 ---
 

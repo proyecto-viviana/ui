@@ -4,13 +4,18 @@ type: task
 title: "Make comparison test pair run certified D3 not the six-slug thresholded floor"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: parked
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "pair job relabeled as a floor; certified D3 is the sharded certified job; pending orchestrator verification",
+    }
+  - {
+      state: parked,
+      at: 2026-09-17,
+      note: "still wanted: pair remains a thresholded floor; certified D3 is the bar",
     }
 ---
 

@@ -4,13 +4,18 @@ type: task
 title: "Keep interaction modality on window refocus"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "ported window-target re-arm; Safari tests red-then-green. RAC barrel re-export is out of lane (solidaria-components/src/index.ts).",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "window-target re-arm of hasBlurredWindowRecently is in the tree",
     }
 ---
 

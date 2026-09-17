@@ -4,13 +4,23 @@ type: task
 title: "Reset sharedConfig in a shared hydrate helper and add the Kumo Button hydrate reader"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "shared hydrateOverSsr helper, migration, Kumo reader, and negative proof landed; pending orchestrator verification",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "hydrateOverSsr owns _$HY; Kumo Button hydrate reader is in the suite",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "no hydrate test installs _$HY by hand; hydrateOverSsr.hydrate.test.tsx is the negative proof",
     }
 ---
 

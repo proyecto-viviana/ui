@@ -4,13 +4,18 @@ type: task
 title: "Stop advertising barrel-name checks as RAC parity"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "guards now print export present/missing; sibling re-exports are scored; ticketed pending list unblocks the pin-first train",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "guards print export present/missing; TokenFieldValue remains #118",
     }
 ---
 

@@ -4,13 +4,23 @@ type: task
 title: "Run package SSR and hydrate suites as a blocking gate"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "scripts, Certification Gates step, and #134 it.fails envelope landed; pending orchestrator verification",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "hydrate is a blocking Certification Gates step; a failing case fails the job",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "certification-gates.yml runs test:hydrate with no continue-on-error",
     }
 ---
 

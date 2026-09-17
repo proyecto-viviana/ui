@@ -12,6 +12,11 @@ history:
       at: 2026-09-02,
       note: "copied S2 1.7.0 1lh icon/avatar/progress source, style-macro lh/rlh + POSTFIX 17, color-scheme media query, CloseButton overlay contrast, vertical ActionButtonGroup width, Calendar/RangeCalendar nav 1lh; gates below",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-17,
+      note: "sweep #541: left in-progress; 1lh source is in the tree, Done when still names pair/certified green",
+    }
 ---
 
 ## Cause

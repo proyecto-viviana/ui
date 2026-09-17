@@ -4,7 +4,7 @@ type: task
 title: "Position overlays with visualViewport pageTop on iOS 26"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
@@ -21,6 +21,11 @@ history:
       state: in-progress,
       at: 2026-09-02,
       note: "fence corrected to popover/**; porting pageTop/pageLeft math and window-scroll listener",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "visualViewport.pageTop overlay math is in calculatePosition.ts",
     }
 ---
 

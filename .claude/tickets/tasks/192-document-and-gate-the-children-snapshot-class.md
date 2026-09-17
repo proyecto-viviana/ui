@@ -4,13 +4,18 @@ type: task
 title: "Document and gate the children snapshot class"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "named the children() snapshot class in patterns.md, corrected the createToggleState freeze claim, and ratcheted snapshot-rendered children() sites in guard:idiomatic-solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "patterns.md and the children-snapshot ratchet landed; #168 sites stay on the baseline",
     }
 ---
 

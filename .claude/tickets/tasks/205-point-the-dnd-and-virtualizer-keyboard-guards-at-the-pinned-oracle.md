@@ -4,13 +4,23 @@ type: task
 title: "Point the DnD and virtualizer keyboard guards at the pinned oracle"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "guards now diff the local keyboard walk against pinned useDroppableCollection + DropTargetKeyboardNavigation",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "keyboard guards diff the pinned oracle walk, not local identifiers",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "keyboard-parity-oracle.ts feeds both DnD and virtualizer guards",
     }
 ---
 

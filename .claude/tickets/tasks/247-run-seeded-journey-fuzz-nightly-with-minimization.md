@@ -4,7 +4,7 @@ type: task
 title: "Run seeded journey fuzz nightly with minimization"
 created: 2026-09-02
 parent: 243
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,16 @@ history:
       state: in-progress,
       at: 2026-09-02,
       note: "journeys-nightly.yml: schedule + dispatch, ComboBox/Picker matrix, date seed, artifacts, summary; local seed=7 dry run minimized to one click",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "journeys-nightly.yml parses; ComboBox/Picker fuzz matrix is on the schedule",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "workflow yaml.safe_load succeeds; cron 17 6 * * * with no pull_request trigger",
     }
 ---
 

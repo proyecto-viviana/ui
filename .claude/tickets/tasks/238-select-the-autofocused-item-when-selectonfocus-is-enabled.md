@@ -4,13 +4,18 @@ type: task
 title: "Select the autofocused item when selectOnFocus is enabled"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "autoFocus branch only: replaceSelection when selectOnFocus and selectedKeys empty; GridList does not use createSelectableCollection",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "selectOnFocus autofocus selection is in createSelectableCollection",
     }
 ---
 

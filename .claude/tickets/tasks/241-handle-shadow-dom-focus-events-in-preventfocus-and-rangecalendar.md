@@ -4,13 +4,18 @@ type: task
 title: "Handle shadow-DOM focus events in preventFocus and RangeCalendar"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "ported preventFocus shadow-root listeners and RangeCalendar getEventTarget; tests red-then-green",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "shadow-DOM preventFocus listeners are in the tree",
     }
 ---
 

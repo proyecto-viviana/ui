@@ -4,13 +4,18 @@ type: task
 title: "Allow Calendar selection outside the visible range when isDateUnavailable is set"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "ported useCalendarState.normalizeValue lowerBound; range calendar at the pin still walks from visibleRange.start — no Solid change",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "calendar lowerBound walk is in createCalendarState; range already matched the pin",
     }
 ---
 

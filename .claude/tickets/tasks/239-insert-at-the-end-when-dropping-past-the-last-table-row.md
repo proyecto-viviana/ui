@@ -4,13 +4,18 @@ type: task
 title: "Insert at the end when dropping past the last Table row"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "TreeDropTargetDelegate item-only ancestor guard; Table wraps ListDropTargetDelegate with createTreeDropTargetDelegate; drop-past-last-row test red-then-green",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "drop-past-last-row insert is in the tree",
     }
 ---
 

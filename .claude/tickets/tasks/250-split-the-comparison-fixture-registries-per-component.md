@@ -4,7 +4,7 @@ type: task
 title: "Split the comparison fixture registries per component"
 created: 2026-09-02
 parent: 136
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-02,
       note: "per-slug registries landed; build chunks and DOM identity measured; pair/contract/certified blocked in this session by a frozen Chromium document timeline (rAF never fires)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "per-slug fixture registries and the split guard are in the tree",
     }
 ---
 

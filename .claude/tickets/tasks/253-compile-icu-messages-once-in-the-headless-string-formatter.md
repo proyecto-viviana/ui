@@ -4,7 +4,7 @@ type: task
 title: "Compile ICU messages once in the headless string formatter"
 created: 2026-09-02
 parent: 136
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,16 @@ history:
       state: in-progress,
       at: 2026-09-02,
       note: "one compileIcu in createStringFormatter; dnd and S2 catalog compilers deleted; tests red-then-green",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "compileIcu lives in the headless formatter; catalog compilers are gone",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "packages source compileIcu only in solidaria/src/i18n; dnd and S2 compilers deleted",
     }
 ---
 

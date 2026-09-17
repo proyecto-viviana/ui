@@ -4,13 +4,23 @@ type: task
 title: "Drive RTL keyboard mapping from useLocale including submenu arrows"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "four mappers plus collection droppable direction now read useLocale().direction; I18nProvider he-IL keyboard tests; pending orchestrator verification",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "mappers read useLocale().direction; src has no document.dir writes",
+    }
+  - {
+      state: verified,
+      at: 2026-09-17,
+      note: "solidaria and solidaria-components source no longer read document.dir for direction",
     }
 ---
 

@@ -4,13 +4,18 @@ type: task
 title: "Commit ColorField on Enter"
 created: 2026-09-02
 parent: 34
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
       state: in-progress,
       at: 2026-09-02,
       note: "ported useKeyboard Enter → commit then commitValidation, shouldPreventDefault false; ColorField tests red-then-green",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "ColorField Enter commit is in the tree",
     }
 ---
 
