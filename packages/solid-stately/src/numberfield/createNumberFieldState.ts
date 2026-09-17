@@ -18,6 +18,7 @@
  */
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
+import { NumberFormatter, NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils";
 import {
   createFormValidationState,
@@ -161,46 +162,36 @@ export function createNumberFieldState(
 ): NumberFieldState {
   const getProps = () => access(props);
 
+  // Internal signals
+  const [inputValue, setInputValueInternal] = createSignal<string>("");
+  const [numberValue, setNumberValue] = createSignal<number>(NaN);
+
   // Get locale and formatter
   const locale = () => getProps().locale ?? "en-US";
   const formatOptions = () => getProps().formatOptions ?? {};
 
-  // Create number formatter
-  const formatter = createMemo(() => {
-    return new Intl.NumberFormat(locale(), formatOptions());
+  const numberParser = createMemo(() => {
+    return new NumberParser(locale(), formatOptions());
   });
 
-  // Create number parser (simplified - real implementation would be more robust)
+  const numberingSystem = createMemo(() => {
+    return numberParser().getNumberingSystem(inputValue());
+  });
+
+  const formatter = createMemo(() => {
+    return new NumberFormatter(locale(), {
+      ...formatOptions(),
+      numberingSystem: numberingSystem(),
+    });
+  });
+
   const parseNumber = (value: string): number => {
-    if (!value || value === "" || value === "-") return NaN;
-
-    // Handle locale-specific decimal separators
-    const opts = formatOptions();
-    const testNumber = formatter().format(1.1);
-    const decimalSeparator = testNumber.charAt(1);
-
-    // Normalize the input
-    let normalized = value;
-    if (decimalSeparator !== ".") {
-      normalized = normalized.replace(decimalSeparator, ".");
-    }
-
-    // Remove grouping separators and currency symbols
-    normalized = normalized.replace(/[^\d.-]/g, "");
-
-    const parsed = parseFloat(normalized);
-    if (isNaN(parsed)) return parsed;
-
-    if (opts.style === "percent") {
-      return parsed / 100;
-    }
-
-    return parsed;
+    return numberParser().parse(value);
   };
 
   // Format a number to string
   const formatNumber = (value: number): string => {
-    if (isNaN(value)) return "";
+    if (isNaN(value) || value === null) return "";
     return formatter().format(value);
   };
 
@@ -211,14 +202,10 @@ export function createNumberFieldState(
   const step = createMemo(() => {
     const p = getProps();
     if (hasCustomStep()) return p.step as number;
-    // Default step for percent is 0.01
-    if (p.formatOptions?.style === "percent") return 0.01;
+    const resolved = formatter().resolvedOptions();
+    if (resolved.style === "percent") return 0.01;
     return 1;
   });
-
-  // Internal signals
-  const [inputValue, setInputValueInternal] = createSignal<string>("");
-  const [numberValue, setNumberValue] = createSignal<number>(NaN);
 
   const applyConstraints = (value: number): number => {
     const p = getProps();
@@ -322,18 +309,7 @@ export function createNumberFieldState(
 
   // Validate partial input
   const validate = (value: string): boolean => {
-    if (value === "" || value === "-") return true;
-
-    // Allow partial decimal input like "1."
-    const opts = formatOptions();
-    const testNumber = formatter().format(1.1);
-    const decimalSeparator = testNumber.charAt(1);
-
-    // Check if it's a valid partial number
-    const pattern = new RegExp(
-      `^-?\\d*${decimalSeparator === "." ? "\\." : decimalSeparator}?\\d*$`,
-    );
-    return pattern.test(value);
+    return numberParser().isValidPartialNumber(value, getProps().minValue, getProps().maxValue);
   };
 
   // Set input value with validation
@@ -368,6 +344,7 @@ export function createNumberFieldState(
 
     const previous = actualNumberValue();
     parsed = constrainForCommit(parsed);
+    parsed = numberParser().parse(formatNumber(parsed));
 
     setNumberValue(parsed);
     setInputValueInternal(formatNumber(parsed));

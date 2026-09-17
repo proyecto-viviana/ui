@@ -316,6 +316,9 @@ importers:
       '@internationalized/date':
         specifier: ^3.12.3
         version: 3.12.3
+      '@internationalized/number':
+        specifier: ^3.6.7
+        version: 3.6.8
     devDependencies:
       solid-js:
         specifier: ^1.9.15
