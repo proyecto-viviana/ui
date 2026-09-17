@@ -26,7 +26,7 @@ function ButtonPage() {
     >
       <Example
         title="Fill"
-        description="The register paints fill by default. Primary and accent are the variants the landing already hydrates."
+        description="Buttons render with fill by default. Primary and accent are the primary action variants."
         code={`<Button variant="primary">Primary</Button>
 <Button variant="accent">Accent</Button>`}
       >

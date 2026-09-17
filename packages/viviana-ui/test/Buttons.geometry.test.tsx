@@ -53,7 +53,7 @@ function buttonEl(container: HTMLElement): HTMLElement {
  * geometry is variant-independent by construction; if a variant ever grows its own
  * padding branch, one of these fails. */
 describe("Button geometry (Terminal Glass)", () => {
-  it("draws every variant at the register's mono 13px on a 5px corner with 14px flanks", () => {
+  it("draws every variant at the theme's mono 13px on a 5px corner with 14px flanks", () => {
     for (const variant of ["primary", "create", "terminal"] as const) {
       const view = render(() => <Button variant={variant}>Run</Button>);
       const css = declarationsFor(buttonEl(view.container));
@@ -61,7 +61,7 @@ describe("Button geometry (Terminal Glass)", () => {
       expect(css, variant).toMatch(/padding-inline-start:14px/);
       expect(css, variant).toMatch(/padding-inline-end:14px/);
       expect(css, variant).toMatch(/border-start-start-radius:5px/);
-      /* The register's rim is on EVERY fillStyle, filled included. */
+      /* The theme's rim is on EVERY fillStyle, filled included. */
       expect(css, variant).toMatch(/box-shadow:/);
       /* Mono, not the UI face: `control()` owns the family and must not be overridden
        * by the font-size re-value above. */
@@ -82,7 +82,7 @@ describe("Button geometry (Terminal Glass)", () => {
   });
 });
 
-/* RUN is the register's console affordance: matte well, well rim, blue ink, tracked
+/* RUN is the theme's console affordance: matte well, well rim, blue ink, tracked
  * out. The failure mode is it collapsing onto `create` (the CTA fuchsia) or onto
  * `primary` — three different jobs that must not share paint. */
 describe("Button variant=terminal", () => {
@@ -122,7 +122,7 @@ describe("Button variant=terminal", () => {
   });
 });
 
-/* The outlined CTA is the register's second create affordance, and the trap is that
+/* The outlined CTA is the theme's second create affordance, and the trap is that
  * `fillStyle` OWNS the colour result once it matches: an outline create with no leaf of
  * its own resolves to nothing and renders as a black-rimmed ghost. */
 describe("Button variant=create fillStyle=outline", () => {
@@ -198,9 +198,9 @@ describe("NotificationBadge stamp", () => {
   });
 });
 
-/* One rule weight in this register, and it is a hairline. */
+/* One rule weight in this theme, and it is a hairline. */
 describe("Divider hairline", () => {
-  it("draws the default rule 1px in the register's edge token", () => {
+  it("draws the default rule 1px in the theme's edge token", () => {
     const view = render(() => <Divider />);
     const el = view.container.querySelector<HTMLElement>("hr,[role=separator]");
     if (!el) throw new Error("no divider rendered");
