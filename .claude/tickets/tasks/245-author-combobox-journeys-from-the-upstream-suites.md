@@ -46,6 +46,11 @@ history:
       at: "2026-09-17",
       note: "Slice A landed. defaultItems stays off items; filterCollection reindexes like RAC ListCollection; setInputValue is batched so onInputChange precedes onOpenChange. Unit 70/70. D13 seeds 2/2 on :4323 against pre-95d30443 CSS. Current CSS (95d30443 canvas overflow:hidden) 58/25440 overlay pixels — not this slice. CB-OC-03 type/filter green; Escape extra onSelectionChange(null). Overlay remainder owner-gated. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-17",
+      note: "ComboBox island min-height 280px so the portaled list stays over the island fill. 95d30443 frame CSS unchanged. D13 seeds 2/2 and CB-OC-02 green on :4323. CB-OC-03 still Escape extra onSelectionChange(null). Overlay remainder owner-gated. Do not mark verified.",
+    }
 ---
 
 <!-- doc-shape: over cap because the proof is real command output -->
@@ -128,14 +133,12 @@ journey never passes by omission.
 
 Landed this slice:
 
-- Spectrum ComboBox and the viviana-ui twin no longer remap `defaultItems`
-  onto `items` (copies; not extracted).
-- `filterCollection` copies nodes into a `ListCollection` and reassigns
-  `index` (RAC `ListCollection.ts:51-53`).
-- `setInputValue` is batched so `onInputChange` runs before the auto-open
-  `onOpenChange`.
-- Certified spec registers CB-OC-02 and CB-OC-03. Waiver for CB-OC-03
-  dropped. Certified defaults unchanged.
+- ComboBox example island `--s2-example-preview-min-height: 280px` so the
+  portaled list's box stays over that island fill on both stacked panels.
+- `95d30443` frame CSS stays (`overflow: hidden`, 1px border, 12px radius,
+  global island 200px, `align-items: center`).
+- D13 seeds 2/2 and CB-OC-02 green on that CSS. CB-OC-03 pixels pass;
+  Escape still fires extra `onSelectionChange(null)`.
 
 Earlier commits: `95f3db0f` data/hook; `9dcbd431` React fixture; `7ce135bf`
 Solid event log; `d8dfc65a` ticket checkpoint.
@@ -153,45 +156,41 @@ chrome radios stay the three `comboBoxKeyOptions` — do not add a visible
 ## Proof
 
 cwd `/home/emoporemilio/projects/viviana-hub/ui`. Preview
-`COMPARISON_BASE_URL=http://127.0.0.1:4323`. Playwright browsers from
-`PLAYWRIGHT_BROWSERS_PATH=/home/emoporemilio/.cache/ms-playwright`
-(`XDG_CACHE_HOME` in this session hid that cache).
+`COMPARISON_BASE_URL=http://127.0.0.1:4323` (astro dev, current
+`global.css`). Playwright browsers from
+`PLAYWRIGHT_BROWSERS_PATH=/home/emoporemilio/.cache/ms-playwright`.
 
-Unit:
+Cause (measured, size M, canvas centered as D13 does): overlay boxes match
+(208×112 at y=434). Island 200px, overlay overflows it by 34px. React
+overflow vs frame −203 (bottom corners over the Solid header). Solid
+overflow vs frame +33 (bottom corners past the frame, over `.s2-example`).
+Overlay `border-radius: 10px`, portaled to `body` (not clipped). Crop
+mismatch 56/23296, max channel delta 5, bounds
+`{"left":0,"top":103,"right":207,"bottom":111}` — two bottom corners only.
 
-```
-pnpm exec vp test run \
-  packages/solid-stately/test/createComboBoxState.test.ts \
-  packages/solid-spectrum/test/ComboBox.test.tsx
-```
+After ComboBox island 280px: size S overflowIsland −34 / overflowFrame
+Solid −35; overlay crop 0/16896. Size M overflowIsland −6 / overflowFrame
+Solid −7.
 
-```
-✓ packages/solid-stately/test/createComboBoxState.test.ts (38 tests) 20ms
-✓ packages/solid-spectrum/test/ComboBox.test.tsx (32 tests) 834ms
-Test Files  2 passed (2)
-     Tests  70 passed (70)
-Duration  11.44s
-```
-
-Includes `filters defaultItems when items is undefined` and
-`fires onInputChange before onOpenChange when typing opens the menu`.
-
-E2E `--grep "D13 journey"` on current CSS (`95d30443` canvas): 4 failed
-(45.19s). Seeds, keyboard-only, and CB-OC-02 hit overlay pixel
-`58/25440` bounds `{"left":0,"top":96,"right":239,"bottom":105}`.
-CB-OC-03 type/filter/posinset green; Escape extra
-`onSelectionChange(null)` vs React.
-
-E2E after restoring `95d30443^` `global.css` (diagnostic, not committed):
+E2E `--grep "D13 journey"` on current CSS:
 
 ```
-D13 journey — open-arrow-enter-reopen-scroll-escape
-D13 journey — keyboard-only
-  2 passed (23.4s)
-EXIT:0
+Running 4 tests using 1 worker
+
+[1/4] D13 journey — open-arrow-enter-reopen-scroll-escape
+[2/4] D13 journey — keyboard-only
+[3/4] D13 journey — CB-OC-02
+[4/4] D13 journey — CB-OC-03
+  1) D13 journey — CB-OC-03
+    Error: CB-OC-03 step 5 (Escape) field events
+    extra Solid onSelectionChange(null) before onOpenChange
+  1 failed
+  3 passed (44.4s)
+EXIT:1
 ```
 
-Current `global.css` restored after that run.
+Seeds, keyboard-only, and CB-OC-02 pass including the pixel step. CB-OC-03
+fails on Escape events after the pixel steps; not this slice.
 
 ## Next agent
 
@@ -201,9 +200,10 @@ Current `global.css` restored after that run.
 2. Add Solid `withForm` / `layout` without wrapping the default ComboBox.
 3. Do not start #246 until ComboBox OC open/close is green or every red
    step is ticketed. Overlay remainder stays owner-gated.
-4. D13 seeds are 2/2 against pre-`95d30443` CSS and 0/2 on current CSS
-   (`overflow: hidden` preview; 58/25440 overlay pixels at y=96–105).
-   That canvas restyle is not this slice. Do not waive the 1px.
+4. D13 seeds 2/2 and CB-OC-02 are green on current `global.css` (ComboBox
+   island 280px; `95d30443` frame CSS kept). Do not revert that CSS. Picker
+   and other stacked overlay slugs still sit on the 200px island and will
+   hit the same corner-chrome pixel miss when their D13 runs.
 
 `vp test run apps/comparison/src/data/combobox-picker-fixture-form.test.ts`
 is the fixture-form unit gate (6 passed at checkpoint: M7 plus protocol
