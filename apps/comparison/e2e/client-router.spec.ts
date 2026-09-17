@@ -131,6 +131,20 @@ test.describe("comparison ClientRouter", () => {
 
     expect(clickChromeCss).toEqual([]);
 
+    const solidButton = page.locator(".js-solid-mount button").first();
+    await expect(solidButton).toBeVisible();
+    const buttonStyles = await solidButton.evaluate((el) => {
+      const cs = window.getComputedStyle(el);
+      return {
+        paddingLeft: cs.paddingLeft,
+        paddingRight: cs.paddingRight,
+        borderRadius: cs.borderRadius,
+      };
+    });
+    expect(buttonStyles.paddingLeft).toBe("16px");
+    expect(buttonStyles.paddingRight).toBe("16px");
+    expect(buttonStyles.borderRadius).toBe("16px");
+
     const modulePreloadCount = await page.locator('link[rel="modulepreload"]').count();
     test
       .info()

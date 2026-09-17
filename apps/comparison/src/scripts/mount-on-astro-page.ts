@@ -1,3 +1,5 @@
+import "./client-router-dev-styles";
+
 /**
  * Manual Solid mounts are ES modules. ClientRouter swaps the document without
  * re-executing them, so every page mount must run again on `astro:after-swap`.
