@@ -317,7 +317,7 @@ registerJourneyDriver(fieldScenario, [
   ...comboBoxOpenCloseJourneys({
     trigger: chevronButton,
     input: comboBoxInput,
-  }).filter((journey) => journey.id === "CB-OC-02"),
+  }).filter((journey) => journey.id === "CB-OC-02" || journey.id === "CB-OC-03"),
 ]);
 registerJourneyFuzz(
   fieldScenario,

@@ -195,11 +195,6 @@ export function comboBoxJourneyWaivers(): readonly {
         "Solid event order on option commit differs: onInputChange before onOpenChange(false), extra onFocus. Log /tmp/grok-overlay-night/combobox-d13-oc-slice.log. Not registered; certified suite stays green.",
     },
     {
-      id: "CB-OC-03",
-      reason:
-        "Solid still shows 3 options after type S (React filters to 2). defaultItems getter with items=undefined does not filter. Two ComboBox+Show remounts broke D13 2/2. Log same file.",
-    },
-    {
       id: "CB-OC-04",
       reason:
         "Solid onOpenChange(true, focus) precedes onFocus. React is onFocus then onOpenChange. Log /tmp/grok-overlay-night/combobox-oc-48.log.",

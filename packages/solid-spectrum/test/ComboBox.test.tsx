@@ -133,6 +133,30 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(screen.getByRole("combobox", { name: "Fruit" })).toBeInTheDocument();
   });
 
+  it("filters defaultItems when items is undefined", async () => {
+    const user = setupUser();
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        items={undefined}
+        defaultItems={items}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+        menuTrigger="input"
+      >
+        {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+      </ComboBox>
+    ));
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    await user.type(input, "Ap");
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Apple" })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("option", { name: "Banana" })).not.toBeInTheDocument();
+  });
+
   it("renders no-results empty state inside the listbox when items are empty", async () => {
     render(() => <FruitComboBox items={[]} defaultOpen />);
 

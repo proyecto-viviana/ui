@@ -945,7 +945,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     "shouldFlip",
     "loadingState",
     "onLoadMore",
-    "defaultItems",
     "children",
     "slot",
     "ref",
@@ -1011,10 +1010,13 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
 
   return (
     <ComboBoxSizeContext.Provider value={size()}>
+      {/* RAC S2 ComboBox.tsx:401-404 — `{...comboBoxProps}` onto AriaComboBox
+          keeps `items` and `defaultItems` distinct. RAC ComboBox.tsx:208-209
+          passes `items: props.items` into useComboBoxState; coalescing
+          defaultItems onto items here skips defaultFilter
+          (useComboBoxState.ts:297-302). */}
       <HeadlessComboBox
         {...headlessProps}
-        items={headlessProps.items ?? props.defaultItems}
-        defaultItems={props.defaultItems}
         allowsEmptyCollection
         label={local.label}
         isInvalid={local.isInvalid}

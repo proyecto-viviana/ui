@@ -24,6 +24,7 @@ import { batch, createSignal, createMemo, createEffect, untrack, type Accessor }
 import { access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
+import { ListCollection } from "../collections/ListCollection";
 import type { Key, CollectionNode, Collection, FocusStrategy } from "../collections/types";
 import type { SelectionManager } from "../selection/SelectionManager";
 
@@ -231,10 +232,17 @@ export function createComboBoxState<T = unknown>(
   };
 
   const setInputValue = (value: string) => {
-    if (!isInputControlled()) {
-      setInternalInputValue(value);
-    }
-    getProps().onInputChange?.(value);
+    // RAC useControlledState runs onInputChange in the same event as the
+    // store write; React then flushes the auto-open effect. Solid signals
+    // flush effects immediately, so an unbatched write opens the menu
+    // (onOpenChange) before onInputChange. Batch so CB-OC-03 matches RAC:
+    // onInputChange then onOpenChange(true, "input").
+    batch(() => {
+      if (!isInputControlled()) {
+        setInternalInputValue(value);
+      }
+      getProps().onInputChange?.(value);
+    });
   };
 
   // Track last committed input value
@@ -735,6 +743,9 @@ export function createComboBoxState<T = unknown>(
 
 /**
  * Filter a collection based on input value.
+ * RAC `useComboBoxState.ts:644-672` copies nodes into a new `ListCollection`,
+ * which reassigns `index` (ListCollection.ts:51-53). Keeping the original
+ * `index` makes virtualized `aria-posinset` report the unfiltered position.
  */
 function filterCollection<T>(
   collection: Collection<T>,
@@ -746,19 +757,18 @@ function filterCollection<T>(
   }
 
   const filteredItems: CollectionNode<T>[] = [];
+  let index = 0;
 
   for (const item of collection) {
     if (item.type === "section") {
-      // Filter section children
       const filteredChildren: CollectionNode<T>[] = [];
       if (item.childNodes) {
         for (const child of item.childNodes) {
           if (child.type === "item" && filter(child.textValue, inputValue)) {
-            filteredChildren.push(child);
+            filteredChildren.push({ ...child, index: index++ });
           }
         }
       }
-      // Only include section if it has matching children
       if (filteredChildren.length > 0) {
         filteredItems.push({
           ...item,
@@ -767,109 +777,12 @@ function filterCollection<T>(
       }
     } else if (item.type === "item") {
       if (filter(item.textValue, inputValue)) {
-        filteredItems.push(item);
+        filteredItems.push({ ...item, index: index++ });
       }
+    } else {
+      filteredItems.push({ ...item });
     }
   }
 
-  // Create a new collection from filtered items
-  return createFilteredCollection(filteredItems, collection);
-}
-
-/**
- * Create a filtered collection wrapper.
- */
-function createFilteredCollection<T>(
-  items: CollectionNode<T>[],
-  original: Collection<T>,
-): Collection<T> {
-  const itemMap = new Map<Key, CollectionNode<T>>();
-
-  for (const item of items) {
-    itemMap.set(item.key, item);
-    if (item.childNodes) {
-      for (const child of item.childNodes) {
-        itemMap.set(child.key, child);
-      }
-    }
-  }
-
-  return {
-    get size() {
-      let count = 0;
-      for (const item of items) {
-        if (item.type === "item") {
-          count++;
-        } else if (item.childNodes) {
-          count += Array.from(item.childNodes).filter((c) => c.type === "item").length;
-        }
-      }
-      return count;
-    },
-    getItem(key: Key) {
-      return itemMap.get(key) ?? null;
-    },
-    getKeys() {
-      return itemMap.keys();
-    },
-    getFirstKey() {
-      for (const item of items) {
-        if (item.type === "item") return item.key;
-        if (item.childNodes) {
-          for (const child of item.childNodes) {
-            if (child.type === "item") return child.key;
-          }
-        }
-      }
-      return null;
-    },
-    getLastKey() {
-      for (let i = items.length - 1; i >= 0; i--) {
-        const item = items[i];
-        if (item.type === "item") return item.key;
-        if (item.childNodes) {
-          const children = Array.from(item.childNodes);
-          for (let j = children.length - 1; j >= 0; j--) {
-            if (children[j].type === "item") return children[j].key;
-          }
-        }
-      }
-      return null;
-    },
-    getKeyBefore(key: Key) {
-      return original.getKeyBefore(key);
-    },
-    getKeyAfter(key: Key) {
-      return original.getKeyAfter(key);
-    },
-    at(index: number) {
-      // Flatten items for indexing
-      let currentIndex = 0;
-      for (const item of items) {
-        if (item.type === "item") {
-          if (currentIndex === index) return item;
-          currentIndex++;
-        } else if (item.childNodes) {
-          for (const child of item.childNodes) {
-            if (child.type === "item") {
-              if (currentIndex === index) return child;
-              currentIndex++;
-            }
-          }
-        }
-      }
-      return null;
-    },
-    getChildren(key: Key) {
-      const item = itemMap.get(key);
-      return item?.childNodes ?? [];
-    },
-    getTextValue(key: Key) {
-      const item = itemMap.get(key);
-      return item?.textValue ?? "";
-    },
-    [Symbol.iterator]() {
-      return items[Symbol.iterator]();
-    },
-  };
+  return new ListCollection(filteredItems);
 }

@@ -36,7 +36,19 @@ history:
       at: "2026-09-16",
       note: "Solid protocol on the HEAD ComboBox tree (direct child). D13 seeds 2/2 and CB-OC-02 green on :4323. CB-OC-01/03–08 authored and red (event order, defaultItems filter, readonly/disabled ARIA). Not registered. Overlay remainder owner-gated. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: "2026-09-17",
+      note: "Slice A: Spectrum ComboBox was coalescing defaultItems onto items (skips defaultFilter, FIL006 / useComboBoxState.ts:297-302). Headless ComboBox already supplies RAC ComboBox.tsx:204-207. Stopped the remap in solid-spectrum and the viviana-ui twin (copies; not extracted). Registered CB-OC-03; waiver dropped. Do not wrap ComboBox; certified defaults unchanged. Overlay remainder owner-gated — do not mark verified, do not start #246/#249/#254.",
+    }
+  - {
+      state: in-progress,
+      at: "2026-09-17",
+      note: "Slice A landed. defaultItems stays off items; filterCollection reindexes like RAC ListCollection; setInputValue is batched so onInputChange precedes onOpenChange. Unit 70/70. D13 seeds 2/2 on :4323 against pre-95d30443 CSS. Current CSS (95d30443 canvas overflow:hidden) 58/25440 overlay pixels — not this slice. CB-OC-03 type/filter green; Escape extra onSelectionChange(null). Overlay remainder owner-gated. Do not mark verified.",
+    }
 ---
+
+<!-- doc-shape: over cap because the proof is real command output -->
 
 ## Work
 
@@ -112,22 +124,18 @@ journey never passes by omission.
 
 ## Checkpoint
 
-Owner-stop. #245 stays `in-progress` — not verified. Overlay remainder stays
-owner-gated.
+#245 stays `in-progress` — not verified. Overlay remainder stays owner-gated.
 
-Landed this slice (uncommitted until this checkpoint commit):
+Landed this slice:
 
-- Solid fixture stays a **direct** ComboBox child. Sentinel `Show` siblings.
-  `items` / `defaultItems` getters, `itemsPreset`, `selectedKey=none`, extra
-  event callbacks, optional keys. No `withForm` / `layout` wrap (would wrap
-  the field).
-- React `onLoadMore` only when `loadingState !== idle` (virtualizer spam).
-- `e2e/journeys/combobox.ts` authors CB-OC-01..08. Certified spec registers
-  **CB-OC-02 only**.
-- D13 seeds 2/2 and CB-OC-02 passed on `:4323`. Fixture-form unit 6/6.
-- CB-OC-01/03–08 red; waivers in `comboBoxJourneyWaivers()`. Logs:
-  `/tmp/grok-overlay-night/combobox-d13-oc-slice.log`,
-  `/tmp/grok-overlay-night/combobox-oc-48.log`.
+- Spectrum ComboBox and the viviana-ui twin no longer remap `defaultItems`
+  onto `items` (copies; not extracted).
+- `filterCollection` copies nodes into a `ListCollection` and reassigns
+  `index` (RAC `ListCollection.ts:51-53`).
+- `setInputValue` is batched so `onInputChange` runs before the auto-open
+  `onOpenChange`.
+- Certified spec registers CB-OC-02 and CB-OC-03. Waiver for CB-OC-03
+  dropped. Certified defaults unchanged.
 
 Earlier commits: `95f3db0f` data/hook; `9dcbd431` React fixture; `7ce135bf`
 Solid event log; `d8dfc65a` ticket checkpoint.
@@ -142,17 +150,60 @@ chrome radios stay the three `comboBoxKeyOptions` — do not add a visible
 `status.md` is a generated view and still lists this ticket as Next until
 `vp run docs:generate`. The ticket file is the authority (`in-progress`).
 
+## Proof
+
+cwd `/home/emoporemilio/projects/viviana-hub/ui`. Preview
+`COMPARISON_BASE_URL=http://127.0.0.1:4323`. Playwright browsers from
+`PLAYWRIGHT_BROWSERS_PATH=/home/emoporemilio/.cache/ms-playwright`
+(`XDG_CACHE_HOME` in this session hid that cache).
+
+Unit:
+
+```
+pnpm exec vp test run \
+  packages/solid-stately/test/createComboBoxState.test.ts \
+  packages/solid-spectrum/test/ComboBox.test.tsx
+```
+
+```
+✓ packages/solid-stately/test/createComboBoxState.test.ts (38 tests) 20ms
+✓ packages/solid-spectrum/test/ComboBox.test.tsx (32 tests) 834ms
+Test Files  2 passed (2)
+     Tests  70 passed (70)
+Duration  11.44s
+```
+
+Includes `filters defaultItems when items is undefined` and
+`fires onInputChange before onOpenChange when typing opens the menu`.
+
+E2E `--grep "D13 journey"` on current CSS (`95d30443` canvas): 4 failed
+(45.19s). Seeds, keyboard-only, and CB-OC-02 hit overlay pixel
+`58/25440` bounds `{"left":0,"top":96,"right":239,"bottom":105}`.
+CB-OC-03 type/filter/posinset green; Escape extra
+`onSelectionChange(null)` vs React.
+
+E2E after restoring `95d30443^` `global.css` (diagnostic, not committed):
+
+```
+D13 journey — open-arrow-enter-reopen-scroll-escape
+D13 journey — keyboard-only
+  2 passed (23.4s)
+EXIT:0
+```
+
+Current `global.css` restored after that run.
+
 ## Next agent
 
-1. Two ComboBox thunks + `Show` for `items` vs `defaultItems` without wrapping
-   the certified default field (Show remount broke D13 2/2). Then register
-   CB-OC-03.
-2. Ticket Solid event-order and readonly/disabled ARIA under #136 from the
-   `/tmp/grok-overlay-night/combobox-d13-oc-slice.log` and
-   `combobox-oc-48.log` reds. Then register CB-OC-01/04/05/08 and CB-OC-06/07.
-3. Add Solid `withForm` / `layout` without wrapping the default ComboBox.
-4. Do not start #246 until ComboBox OC open/close is green or every red step
-   is ticketed. Overlay remainder stays owner-gated.
+1. Ticket Solid Escape extra `onSelectionChange(null)` on CB-OC-03 under
+   #136. Type/filter on that journey is green. Then CB-OC-01/04/05/08
+   event-order and CB-OC-06/07 readonly/disabled ARIA.
+2. Add Solid `withForm` / `layout` without wrapping the default ComboBox.
+3. Do not start #246 until ComboBox OC open/close is green or every red
+   step is ticketed. Overlay remainder stays owner-gated.
+4. D13 seeds are 2/2 against pre-`95d30443` CSS and 0/2 on current CSS
+   (`overflow: hidden` preview; 58/25440 overlay pixels at y=96–105).
+   That canvas restyle is not this slice. Do not waive the 1px.
 
 `vp test run apps/comparison/src/data/combobox-picker-fixture-form.test.ts`
 is the fixture-form unit gate (6 passed at checkpoint: M7 plus protocol
@@ -170,10 +221,9 @@ just to pass fixture greps.
   **siblings**, matching React's `[before, field, after]` array.
 - Spreading a getter object copies values and drops reactivity. Do not
   `{...shared, get items()}`.
-- `defaultItems` key present with `undefined` is not an omitted key. Solid
-  ComboBox (`packages/solid-spectrum/src/combobox/index.tsx`) does
-  `items={headlessProps.items ?? props.defaultItems}`. Two ComboBox thunks +
-  `Show`, or pass only the live key.
+- `defaultItems` key present with `undefined` is not an omitted key.
+  Spectrum ComboBox no longer remaps `defaultItems` onto `items` (this
+  slice). Headless still filters only when `items == null`.
 - ComboBox.Section already exists in solid-spectrum. Do not claim it is
   missing. Do not wire sections until an `itemsPreset=sections` journey needs
   it.

@@ -211,6 +211,31 @@ describe("createComboBoxState", () => {
       });
     });
 
+    it("fires onInputChange before onOpenChange when typing opens the menu", () => {
+      const order: string[] = [];
+      const [state, dispose] = createRoot((d) => {
+        const s = createComboBoxState({
+          defaultItems: items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultFilter: defaultContainsFilter,
+          onInputChange: () => {
+            order.push("onInputChange");
+          },
+          onOpenChange: () => {
+            order.push("onOpenChange");
+          },
+        });
+        return [s, d] as const;
+      });
+
+      state.setFocused(true);
+      state.setInputValue("A");
+      expect(order).toEqual(["onInputChange", "onOpenChange"]);
+      expect(state.isOpen()).toBe(true);
+      dispose();
+    });
+
     it("should work with controlled inputValue", () => {
       createRoot((dispose) => {
         const state = createComboBoxState({
@@ -303,6 +328,12 @@ describe("createComboBoxState", () => {
         // Filter to 'a' matches Apple, Banana, Date (Elderberry has no 'a')
         state.setInputValue("a");
         expect(state.collection().size).toBe(3);
+        // RAC ListCollection reassigns index on the filtered set so virtualized
+        // aria-posinset is 1..n of the visible options, not the original list.
+        const filtered = [...state.collection()];
+        expect(filtered.map((node) => node.textValue)).toEqual(["Apple", "Banana", "Date"]);
+        expect(filtered.map((node) => node.index)).toEqual([0, 1, 2]);
+        expect(state.collection().getKeyAfter("2")).toBe("4");
 
         // Filter to 'app' matches only Apple
         state.setInputValue("app");
