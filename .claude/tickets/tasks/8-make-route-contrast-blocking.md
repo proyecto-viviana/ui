@@ -3,7 +3,7 @@ id: 8
 type: task
 title: "Make route-wide color contrast blocking"
 created: 2026-08-08
-status: done
+status: merged
 history:
   - { state: open, at: 2026-08-08, note: "opened from the project and CI review" }
   - {
@@ -16,6 +16,7 @@ history:
       at: 2026-08-08,
       note: "expanded playground audit classified and promoted after 10/10 playground, 80/80 comparison, and 44/44 smoke",
     }
+  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 
 The blocking accessibility command scanned one playground and disabled axe

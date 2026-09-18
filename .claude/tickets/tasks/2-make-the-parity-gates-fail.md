@@ -3,7 +3,7 @@ id: 2
 type: task
 title: "Make the parity gates fail"
 created: 2026-08-01
-status: done
+status: merged
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
   - {
@@ -16,6 +16,7 @@ history:
       at: 2026-08-08,
       note: "closed remaining report-only and missing-oracle paths with baselines plus fail-closed preflight",
     }
+  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 
 The parity gates that compare the two design-system packages **log their findings and exit 0**.

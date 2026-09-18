@@ -4,7 +4,7 @@ type: task
 title: "Decide the TableView native-table boundary"
 created: 2026-08-20
 parent: 24
-status: done
+status: merged
 history:
   - {
       state: open,
@@ -16,6 +16,7 @@ history:
       at: 2026-09-07,
       note: "decided by Rule #2 under the owner's 2026-09-07 delegation: S2 TableView has no non-virtualized branch, so the native <table> converges on div[role=grid] through the Virtualizer; decision in steering.md, work in #490",
     }
+  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 
 The Solid TableView uses a native `<table>` with spacer-row virtualization.

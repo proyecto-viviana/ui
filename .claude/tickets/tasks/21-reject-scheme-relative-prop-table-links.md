@@ -4,7 +4,7 @@ type: task
 title: "Reject scheme-relative prop-table links"
 created: 2026-08-20
 parent: 26
-status: done
+status: merged
 history:
   - {
       state: open,
@@ -16,6 +16,7 @@ history:
       at: 2026-08-20,
       note: "defined the local-path boundary, rejected host-changing paths and control forms, and passed 12 DOM-backed regressions",
     }
+  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 
 The new prop-table renderer says that it permits web, root-relative, and

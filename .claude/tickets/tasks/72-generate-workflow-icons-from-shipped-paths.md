@@ -4,7 +4,7 @@ type: task
 title: "Generate workflow icons from shipped paths"
 created: 2026-08-20
 parent: 33
-status: done
+status: merged
 history:
   - {
       state: open,
@@ -16,6 +16,7 @@ history:
       at: 2026-08-21,
       note: "generated workflow and UI icons from pinned shipped inputs, guarded both output trees, and passed focused parity evidence",
     }
+  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 
 Generate `s2wf` workflow icons from the paths in the shipped S2 modules, not
