@@ -7,6 +7,7 @@ export const LIVE_CURRENT_DOCS = [
   ".claude/current/README.md",
   ".claude/current/admin-dashboard.md",
   ".claude/current/architecture.md",
+  ".claude/current/certification-debt.md",
   ".claude/current/certification.md",
   ".claude/current/glasselated-port.md",
   ".claude/current/glossary.md",

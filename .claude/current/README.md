@@ -30,6 +30,7 @@ completed operational records.
 | Document                                           | Purpose                                      |
 | -------------------------------------------------- | -------------------------------------------- |
 | [architecture.md](architecture.md)                 | Package layers and ownership boundaries.     |
+| [certification-debt.md](certification-debt.md)     | Named certified failures, grouped by cause.  |
 | [certification.md](certification.md)               | Evidence required to accept a port.          |
 | [glossary.md](glossary.md)                         | Owner-steered project terms.                 |
 | [tooling.md](tooling.md)                           | Commands, checks, and local setup.           |

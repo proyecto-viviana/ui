@@ -123,16 +123,48 @@ async function runAxe(page: Page, selector: string) {
         rules: Object.fromEntries(disabledRules.map((id) => [id, { enabled: false }])),
       });
 
-      return results.violations.map((violation) => ({
-        id: violation.id,
-        help: violation.help,
-        impact: violation.impact,
-        nodes: violation.nodes.map((node) => ({
-          target: node.target,
-          html: node.html,
-          failureSummary: node.failureSummary,
-        })),
-      }));
+      // Upstream `useMeter` emits `role="meter progressbar"`. axe-core 4.13
+      // `aria-allowed-attr` does not split that token list. Same filter as
+      // playground-axe and examples.spec.ts; Adobe Meter stories configure it.
+      // Comparison-axe truncates `node.html` before the role token, so look
+      // the node up in the live DOM instead of matching the snippet.
+      const isMeterFallbackRole = (node: { html?: string; target?: unknown[] }) => {
+        const html = node.html ?? "";
+        if (
+          html.includes('role="meter progressbar"') ||
+          html.includes("role='meter progressbar'")
+        ) {
+          return true;
+        }
+        const raw = node.target?.[0];
+        const selector = Array.isArray(raw) ? raw[0] : raw;
+        if (typeof selector !== "string" || selector.length === 0) return false;
+        try {
+          return document.querySelector(selector)?.getAttribute("role") === "meter progressbar";
+        } catch {
+          return false;
+        }
+      };
+
+      return results.violations
+        .map((violation) => {
+          const nodes = violation.nodes.filter((node) => {
+            if (violation.id !== "aria-allowed-attr") return true;
+            return !isMeterFallbackRole(node);
+          });
+          if (nodes.length === 0) return null;
+          return {
+            id: violation.id,
+            help: violation.help,
+            impact: violation.impact,
+            nodes: nodes.map((node) => ({
+              target: node.target,
+              html: node.html,
+              failureSummary: node.failureSummary,
+            })),
+          };
+        })
+        .filter((violation): violation is NonNullable<typeof violation> => violation !== null);
     },
     {
       contextSelector: selector,

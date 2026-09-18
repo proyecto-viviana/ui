@@ -43,6 +43,32 @@ async function showAllSections(page: Page) {
     .toBeGreaterThan(30);
 }
 
+function isMeterFallbackRole(html: string | undefined) {
+  return Boolean(
+    html &&
+      (html.includes('role="meter progressbar"') || html.includes("role='meter progressbar'")),
+  );
+}
+
+function dropMeterFallbackFalsePositives(
+  violations: Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"],
+) {
+  // Upstream `useMeter` emits `role="meter progressbar"` so Chrome/Firefox can
+  // fall back from `meter` to `progressbar`. axe-core 4.13 `aria-allowed-attr`
+  // does not split that token list, so it rejects `aria-valuenow`/`min`/`max`/
+  // `valuetext` on a valid meter. Adobe's Meter stories and this repo's unit
+  // axe (`axe.configure` selector) already drop those nodes. Playwright's
+  // AxeBuilder has no configure hook, so filter the same way `examples.spec.ts`
+  // does. Do not change the role — that would diverge from the pinned oracle.
+  return violations
+    .map((violation) => {
+      if (violation.id !== "aria-allowed-attr") return violation;
+      const nodes = violation.nodes.filter((node) => !isMeterFallbackRole(node.html));
+      return nodes.length > 0 ? { ...violation, nodes } : null;
+    })
+    .filter((violation): violation is NonNullable<typeof violation> => violation !== null);
+}
+
 async function runAxeScan(
   page: Page,
   tags: string[],
@@ -55,7 +81,8 @@ async function runAxeScan(
   for (const selector of options.excludedSelectors ?? []) {
     builder = builder.exclude(selector);
   }
-  return builder.analyze();
+  const results = await builder.analyze();
+  return { ...results, violations: dropMeterFallbackFalsePositives(results.violations) };
 }
 
 function logViolations(
