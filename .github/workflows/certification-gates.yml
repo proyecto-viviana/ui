@@ -37,7 +37,7 @@ concurrency:
 
 jobs:
   certification-gates:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     # Certified comparison no longer runs in this serial job (see the sharded
     # `certified` jobs below). Keep the remaining blocking evidence, including
     # the full axe audit, inside one hour.
@@ -407,7 +407,7 @@ jobs:
   # certified shard. Do not rebuild inside those jobs.
   comparison-build:
     name: comparison evidence build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -456,7 +456,7 @@ jobs:
   comparison-floors-pair:
     name: "comparison floors: pair budgets"
     needs: comparison-build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -519,7 +519,7 @@ jobs:
   comparison-floors-contract:
     name: "comparison floors: contracts"
     needs: comparison-build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -582,13 +582,13 @@ jobs:
   # Shard estimate (2026-09-02): the full certified suite is 72 specs / ~2124
   # tests / ~28 min at 8 workers locally. Shard 1/8 with --workers=2 ran in
   # 9.8 minutes on this host (201 passed / 64 failed / 1 skipped — failures
-  # are the ticketed React 1.7.0 pin until #240). 4 vCPU (ubuntu-latest and
-  # blacksmith-4vcpu) caps workers at 2 beside the preview server. n=8 keeps
+  # are the ticketed React 1.7.0 pin until #240). 4 vCPU (ubuntu-latest)
+  # caps workers at 2 beside the preview server. n=8 keeps
   # each shard at or under 10 minutes.
   certified:
     name: certified (${{ matrix.shard }}/8)
     needs: comparison-build
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
@@ -646,7 +646,7 @@ jobs:
     name: certified report
     needs: [comparison-build, certified]
     if: ${{ always() && needs.comparison-build.result == 'success' }}
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       CERTIFIED_SHARD_TOTAL: "8"

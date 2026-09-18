@@ -103,15 +103,15 @@ After that evidence barrier, the workflow runs in two Changesets stages. If
 unpublished changesets exist, it creates or updates the version PR. When that
 PR merges, it publishes the changed npm packages.
 
-Certification Gates, Site Gate, Release Readiness, and Changesets Check may
-run on Blacksmith. That is an accepted speed trade (ticket #140). Provenance
-publish stays on a GitHub-hosted runner.
+Every workflow runs on GitHub-hosted runners. Owner 2026-09-17: the
+third-party runner is removed on cost, reversing the #140 trade. Provenance
+publish already required a GitHub-hosted runner and is unchanged.
 
 The workflow publishes via **npm trusted publishing (OIDC)** — `id-token: write`,
 npm `>=11.5.1`, **no `NPM_TOKEN` secret** — and the release job runs on a
 **github-hosted runner** (`ubuntu-latest`), which is mandatory: OIDC auto-enables
-sigstore provenance, and npm rejects provenance from self-hosted/third-party
-(e.g. Blacksmith) runners with `E422`. Two prerequisites, both one-time and both
+sigstore provenance, and npm rejects provenance from self-hosted or
+third-party runners with `E422`. Two prerequisites, both one-time and both
 now satisfied (2026-07-06): a GitHub Actions trusted publisher registered on each
 of the original five packages on npmjs.com (org `proyecto-viviana`, repo `ui`, workflow
 `release.yml`), and the github-hosted runner. Run 28836083269 published all five

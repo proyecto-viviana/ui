@@ -23,9 +23,8 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     # npm provenance (auto-enabled by OIDC trusted publishing) requires a
-    # GitHub-hosted runner; Blacksmith runners are seen as "self-hosted" and
-    # fail sigstore verification with E422. Release runs rarely, so the
-    # Blacksmith speed loss here is immaterial.
+    # GitHub-hosted runner: a third-party runner is seen as "self-hosted" and
+    # fails sigstore verification with E422.
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
