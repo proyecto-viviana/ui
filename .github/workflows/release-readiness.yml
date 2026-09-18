@@ -31,6 +31,12 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+      # guard:generated-icons reads the Adobe tree, which is gitignored. Without
+      # this step it throws ENOENT as the second of thirteen checks and the
+      # eleven behind it never run. Same shallow acquire as Certification Gates.
+      - name: materialize pinned upstream oracle
+        run: node scripts/check-upstream-oracle.mjs --acquire
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
