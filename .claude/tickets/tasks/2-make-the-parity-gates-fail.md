@@ -6,16 +6,8 @@ created: 2026-08-01
 status: merged
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
-  - {
-      state: done,
-      at: 2026-08-07,
-      note: "baselined layer-boundary + strict parity; both blocking in certification-gates",
-    }
-  - {
-      state: done,
-      at: 2026-08-08,
-      note: "closed remaining report-only and missing-oracle paths with baselines plus fail-closed preflight",
-    }
+  - { state: done, at: 2026-08-07, note: "baselined layer-boundary + strict parity; both blocking in certification-gates" }
+  - { state: done, at: 2026-08-08, note: "closed remaining report-only and missing-oracle paths with baselines plus fail-closed preflight" }
   - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
 ---
 

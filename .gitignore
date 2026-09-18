@@ -11,6 +11,7 @@ dist/
 coverage/
 e2e-screenshots/
 test-results/
+apps/comparison/test-results-early/
 playwright-report/
 blob-report/
 
