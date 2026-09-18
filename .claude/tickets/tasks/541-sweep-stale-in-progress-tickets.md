@@ -20,11 +20,7 @@ history:
       at: 2026-09-17,
       note: "26 advanced, 5 parked, 0 dropped, 3 left for the owner",
     }
-  - {
-      state: verified,
-      at: 2026-09-17,
-      note: "in-progress 61 → 30; 15-30 day bucket 34 → 0",
-    }
+  - { state: verified, at: 2026-09-17, note: "in-progress 61 → 30; 15-30 day bucket 34 → 0" }
 ---
 
 <!-- doc-shape: over cap because the proof is real command output -->

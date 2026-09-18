@@ -12,11 +12,7 @@ history:
       at: 2026-09-02,
       note: "ported useKeyboard Enter → commit then commitValidation, shouldPreventDefault false; ColorField tests red-then-green",
     }
-  - {
-      state: merged,
-      at: 2026-09-17,
-      note: "ColorField Enter commit is in the tree",
-    }
+  - { state: merged, at: 2026-09-17, note: "ColorField Enter commit is in the tree" }
 ---
 
 ## Cause

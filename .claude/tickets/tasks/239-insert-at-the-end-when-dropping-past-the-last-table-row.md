@@ -12,11 +12,7 @@ history:
       at: 2026-09-02,
       note: "TreeDropTargetDelegate item-only ancestor guard; Table wraps ListDropTargetDelegate with createTreeDropTargetDelegate; drop-past-last-row test red-then-green",
     }
-  - {
-      state: merged,
-      at: 2026-09-17,
-      note: "drop-past-last-row insert is in the tree",
-    }
+  - { state: merged, at: 2026-09-17, note: "drop-past-last-row insert is in the tree" }
 ---
 
 ## Cause

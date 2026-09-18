@@ -12,11 +12,7 @@ history:
       at: 2026-09-02,
       note: "ported kebab-case setStyle and Reflect focus override; tests red-then-green",
     }
-  - {
-      state: merged,
-      at: 2026-09-17,
-      note: "prevent-scroll kebab-case setStyle is in the tree",
-    }
+  - { state: merged, at: 2026-09-17, note: "prevent-scroll kebab-case setStyle is in the tree" }
 ---
 
 ## Cause

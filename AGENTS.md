@@ -25,13 +25,13 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 
 ## Commands
 
-| do      | run              |
-| ------- | ---------------- |
-| install | `vp install`     |
-| check   | `vp run check`   |
-| test    | `vp run test`    |
-| build   | `vp run build`   |
-| lint    | `vp lint`        |
+| do      | run            |
+| ------- | -------------- |
+| install | `vp install`   |
+| check   | `vp run check` |
+| test    | `vp run test`  |
+| build   | `vp run build` |
+| lint    | `vp lint`      |
 
 ## Local rules
 

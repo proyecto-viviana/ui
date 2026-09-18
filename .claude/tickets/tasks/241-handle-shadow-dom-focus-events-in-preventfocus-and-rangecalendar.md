@@ -12,11 +12,7 @@ history:
       at: 2026-09-02,
       note: "ported preventFocus shadow-root listeners and RangeCalendar getEventTarget; tests red-then-green",
     }
-  - {
-      state: merged,
-      at: 2026-09-17,
-      note: "shadow-DOM preventFocus listeners are in the tree",
-    }
+  - { state: merged, at: 2026-09-17, note: "shadow-DOM preventFocus listeners are in the tree" }
 ---
 
 ## Cause
