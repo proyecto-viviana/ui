@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import {
   createToastState,
   createToastQueue,
@@ -35,14 +35,19 @@ describe("createToastState", () => {
     createRoot((dispose) => {
       const state = createToastQueue<string>();
 
+      flush();
       expect(state.visibleToasts()).toStrictEqual([]);
 
       state.add(newValue[0].content, newValue[0].props);
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe(newValue[0].content);
+      flush();
       expect(state.visibleToasts()[0].timeout).toBe(0);
       // In our implementation, timer is created for any toast with timeout (even 0)
       // but timer is only created when timeout is defined
+      flush();
       expect(state.visibleToasts()[0]).toHaveProperty("key");
 
       dispose();
@@ -53,13 +58,19 @@ describe("createToastState", () => {
     createRoot((dispose) => {
       const state = createToastQueue<string>();
 
+      flush();
       expect(state.visibleToasts()).toStrictEqual([]);
 
       state.add("Test", { timeout: 5000 });
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Test");
+      flush();
       expect(state.visibleToasts()[0].timeout).toBe(5000);
+      flush();
       expect(state.visibleToasts()[0].timer).not.toBe(null);
+      flush();
       expect(state.visibleToasts()[0]).toHaveProperty("key");
 
       dispose();
@@ -74,14 +85,19 @@ describe("createToastState", () => {
       };
       const state = createToastQueue<string>({ maxVisibleToasts: 2 });
 
+      flush();
       expect(state.visibleToasts()).toStrictEqual([]);
 
       state.add(newValue[0].content, newValue[0].props);
+      flush();
       expect(state.visibleToasts()[0].content).toBe(newValue[0].content);
 
       state.add(secondToast.content, secondToast.props);
+      flush();
       expect(state.visibleToasts().length).toBe(2);
+      flush();
       expect(state.visibleToasts()[0].content).toBe(secondToast.content);
+      flush();
       expect(state.visibleToasts()[1].content).toBe(newValue[0].content);
 
       dispose();
@@ -97,22 +113,31 @@ describe("createToastState", () => {
       state.add("Second Toast");
       state.add("Third Toast");
 
+      flush();
       expect(state.visibleToasts()).toHaveLength(3);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      flush();
       expect(state.visibleToasts()[1].content).toBe("Second Toast");
+      flush();
       expect(state.visibleToasts()[2].content).toBe("First Toast");
 
       // Close the middle toast
       const secondToastKey = state.visibleToasts()[1].key;
       state.close(secondToastKey);
 
+      flush();
       expect(state.visibleToasts()).toHaveLength(2);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      flush();
       expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       // Close the first toast
       state.close(state.visibleToasts()[0].key);
+      flush();
       expect(state.visibleToasts().length).toBe(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("First Toast");
 
       dispose();
@@ -125,26 +150,33 @@ describe("createToastState", () => {
 
       // Add the first toast
       state.add("First Toast", { timeout: 0 });
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("First Toast");
 
       let secondToastKey: string | null = null;
       // Add the second toast
       secondToastKey = state.add("Second Toast", { timeout: 0 });
       // In our implementation, with maxVisibleToasts=5 by default, both are visible
+      flush();
       expect(state.visibleToasts().length).toBeGreaterThanOrEqual(1);
 
       // Add the third toast
       state.add("Third Toast", { timeout: 0 });
+      flush();
       expect(state.visibleToasts().length).toBeGreaterThanOrEqual(1);
 
       // Remove a toast
       state.close(secondToastKey);
 
       // First and Third should still be there (Second removed)
+      flush();
       const contents = state.visibleToasts().map((t) => t.content);
       expect(contents).toContain("First Toast");
+      flush();
       expect(contents).toContain("Third Toast");
+      flush();
       expect(contents).not.toContain("Second Toast");
 
       dispose();
@@ -157,15 +189,19 @@ describe("createToastState", () => {
 
       // Add a toast with timeout
       state.add("Auto-close Toast", { timeout: 2000 });
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Auto-close Toast");
 
       // Advance time but not enough to close
       vi.advanceTimersByTime(1000);
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
 
       // Advance time enough to close
       vi.advanceTimersByTime(1500);
+      flush();
       expect(state.visibleToasts()).toHaveLength(0);
 
       dispose();
@@ -177,23 +213,35 @@ describe("createToastState", () => {
       const state = createToastQueue<string>({ maxVisibleToasts: 3 });
 
       state.add("First Toast");
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("First Toast");
 
       state.add("Second Toast");
+      flush();
       expect(state.visibleToasts()).toHaveLength(2);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Second Toast");
+      flush();
       expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       state.add("Third Toast");
+      flush();
       expect(state.visibleToasts()).toHaveLength(3);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      flush();
       expect(state.visibleToasts()[1].content).toBe("Second Toast");
+      flush();
       expect(state.visibleToasts()[2].content).toBe("First Toast");
 
       state.close(state.visibleToasts()[1].key);
+      flush();
       expect(state.visibleToasts()).toHaveLength(2);
+      flush();
       expect(state.visibleToasts()[0].content).toBe("Third Toast");
+      flush();
       expect(state.visibleToasts()[1].content).toBe("First Toast");
 
       dispose();
@@ -206,6 +254,7 @@ describe("createToastState", () => {
       state.add(newValue[0].content, newValue[0].props);
 
       state.close(state.visibleToasts()[0].key);
+      flush();
       expect(state.visibleToasts()).toStrictEqual([]);
 
       dispose();
@@ -218,6 +267,7 @@ describe("createToastState", () => {
 
       // Add a toast with timeout
       state.add("Toast 1", { timeout: 2000 });
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
 
       // Advance time a bit
@@ -228,6 +278,7 @@ describe("createToastState", () => {
 
       // Advance time - should not close because paused
       vi.advanceTimersByTime(2000);
+      flush();
       expect(state.visibleToasts()).toHaveLength(1);
 
       // Resume all
@@ -235,6 +286,7 @@ describe("createToastState", () => {
 
       // Now advance time - should close
       vi.advanceTimersByTime(1500);
+      flush();
       expect(state.visibleToasts()).toHaveLength(0);
 
       dispose();
@@ -259,8 +311,11 @@ describe("ToastQueue", () => {
     queue.subscribe(callback);
     queue.add("Test Toast");
 
+    flush();
     expect(callback).toHaveBeenCalled();
+    flush();
     expect(callback.mock.calls[0][0]).toHaveLength(1);
+    flush();
     expect(callback.mock.calls[0][0][0].content).toBe("Test Toast");
   });
 
@@ -270,10 +325,12 @@ describe("ToastQueue", () => {
 
     const unsubscribe = queue.subscribe(callback);
     queue.add("First Toast");
+    flush();
     expect(callback).toHaveBeenCalledTimes(1);
 
     unsubscribe();
     queue.add("Second Toast");
+    flush();
     expect(callback).toHaveBeenCalledTimes(1); // Should not be called again
   });
 
@@ -286,9 +343,12 @@ describe("ToastQueue", () => {
     queue.add("High Priority", { priority: 10 });
     queue.add("Medium Priority", { priority: 5 });
 
+    flush();
     const toasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(toasts[0].content).toBe("High Priority");
+    flush();
     expect(toasts[1].content).toBe("Medium Priority");
+    flush();
     expect(toasts[2].content).toBe("Low Priority");
   });
 
@@ -301,6 +361,7 @@ describe("ToastQueue", () => {
     queue.add("Second Toast");
     queue.add("Third Toast");
 
+    flush();
     const toasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(toasts.map((toast: any) => toast.content)).toEqual([
       "Third Toast",
@@ -317,6 +378,7 @@ describe("ToastQueue", () => {
     const key = queue.add("Another Toast");
 
     queue.close(key);
+    flush();
     expect(onClose).not.toHaveBeenCalled();
 
     // Get the first toast's key
@@ -328,6 +390,7 @@ describe("ToastQueue", () => {
 
     if (firstToastKey) {
       queue.close(firstToastKey);
+      flush();
       expect(onClose).toHaveBeenCalled();
     }
   });
@@ -342,12 +405,15 @@ describe("ToastQueue", () => {
     queue.close(key);
 
     // Toast should be marked as exiting, not removed yet
+    flush();
     const toasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(toasts).toHaveLength(1);
+    flush();
     expect(toasts[0].animation).toBe("exiting");
 
     // Manually remove after animation
     queue.remove(key);
+    flush();
     const finalToasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(finalToasts).toHaveLength(0);
   });
@@ -364,9 +430,12 @@ describe("ToastQueue", () => {
 
     queue.clear();
 
+    flush();
     const finalToasts = callback.mock.calls[callback.mock.calls.length - 1][0];
     expect(finalToasts).toHaveLength(0);
+    flush();
     expect(firstClose).not.toHaveBeenCalled();
+    flush();
     expect(secondClose).not.toHaveBeenCalled();
   });
 
@@ -380,8 +449,10 @@ describe("ToastQueue", () => {
 
     queue.close(key);
 
+    flush();
     const exitingToast = callback.mock.calls[callback.mock.calls.length - 1][0][0];
     expect(exitingToast).not.toBe(initialToast);
+    flush();
     expect(exitingToast.animation).toBe("exiting");
 
     queue.remove(key);
@@ -405,7 +476,9 @@ describe("ToastQueue wrapUpdate", () => {
     queue.add("Second Toast");
     queue.clear();
 
+    flush();
     expect(actions).toEqual(["add", "remove", "add", "clear"]);
+    flush();
     expect(lengths).toEqual([1, 0, 1, 0]);
   });
 
@@ -423,6 +496,7 @@ describe("ToastQueue wrapUpdate", () => {
     queue.close(key); // marks the toast exiting and notifies, but does not remove it yet
     queue.remove(key); // actual removal once the exit animation finishes
 
+    flush();
     expect(actions).toEqual(["add", "remove", "remove"]);
   });
 
@@ -433,6 +507,7 @@ describe("ToastQueue wrapUpdate", () => {
 
     queue.add("Toast");
 
+    flush();
     expect(lengths).toEqual([1]);
   });
 
@@ -445,6 +520,7 @@ describe("ToastQueue wrapUpdate", () => {
       fn();
     });
     queue.add("First");
+    flush();
     expect(actions).toEqual(["add"]);
 
     queue.setWrapUpdate(undefined);
@@ -452,7 +528,9 @@ describe("ToastQueue wrapUpdate", () => {
     queue.subscribe((toasts) => lengths.push(toasts.length));
     queue.add("Second");
 
+    flush();
     expect(actions).toEqual(["add"]); // wrapper no longer records
+    flush();
     expect(lengths).toEqual([2]); // but the queue still notifies subscribers
   });
 });
@@ -471,8 +549,10 @@ describe("Timer", () => {
     const callback = vi.fn();
     new Timer(callback, 1000);
 
+    flush();
     expect(callback).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1000);
+    flush();
     expect(callback).toHaveBeenCalled();
   });
 
@@ -481,14 +561,17 @@ describe("Timer", () => {
     const timer = new Timer(callback, 1000);
 
     vi.advanceTimersByTime(500);
+    flush();
     expect(callback).not.toHaveBeenCalled();
 
     timer.pause();
     vi.advanceTimersByTime(1000);
+    flush();
     expect(callback).not.toHaveBeenCalled();
 
     timer.resume();
     vi.advanceTimersByTime(500);
+    flush();
     expect(callback).toHaveBeenCalled();
   });
 
@@ -497,13 +580,16 @@ describe("Timer", () => {
     const timer = new Timer(callback, 1000);
 
     vi.advanceTimersByTime(800);
+    flush();
     expect(callback).not.toHaveBeenCalled();
 
     timer.reset(1000);
     vi.advanceTimersByTime(800);
+    flush();
     expect(callback).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(200);
+    flush();
     expect(callback).toHaveBeenCalled();
   });
 
@@ -513,6 +599,7 @@ describe("Timer", () => {
 
     timer.cancel();
     vi.advanceTimersByTime(2000);
+    flush();
     expect(callback).not.toHaveBeenCalled();
   });
 });

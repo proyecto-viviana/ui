@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import {
   createTreeGridState,
   createTableCollection,
@@ -57,10 +57,14 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(),
     });
 
+    flush();
     expect(collection.size).toBe(2);
+    flush();
     expect(keysOf(collection)).toEqual(["projects", "documents"]);
     // Collapsed descendants are absent from the key map (selection parity with upstream).
+    flush();
     expect(collection.getItem("project-1")).toBeNull();
+    flush();
     expect(collection.getItem("file-1")).toBeNull();
   });
 
@@ -71,7 +75,9 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(),
     });
 
+    flush();
     expect(collection.treeColumn).toBe("name");
+    flush();
     expect(collection.userColumnCount).toBe(2);
   });
 
@@ -83,6 +89,7 @@ describe("TableCollection (tree-grid mode)", () => {
       treeColumn: "type",
     });
 
+    flush();
     expect(collection.treeColumn).toBe("type");
   });
 
@@ -94,16 +101,21 @@ describe("TableCollection (tree-grid mode)", () => {
     });
 
     // body keeps top-level rows even though child rows are collapsed
+    flush();
     expect(collection.body.childNodes.map((n) => n.key)).toEqual(["projects", "documents"]);
 
     const projects = collection.body.childNodes[0];
     // [name cell, type cell, project-1 row, project-2 row]
+    flush();
     expect(projects.childNodes.map((n) => n.type)).toEqual(["rowheader", "cell", "item", "item"]);
+    flush();
     expect(projects.childNodes.filter((n) => n.type === "item").map((n) => n.key)).toEqual([
       "project-1",
       "project-2",
     ]);
+    flush();
     expect(projects.firstChildKey).toBe("projects-name");
+    flush();
     expect(projects.lastChildKey).toBe("project-2");
   });
 
@@ -114,17 +126,25 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(["projects"]),
     });
 
+    flush();
     const projects = collection.getItem("projects")!;
     expect(projects.isExpandable).toBe(true);
+    flush();
     expect(projects.isExpanded).toBe(true);
+    flush();
     expect(projects.level).toBe(0);
 
+    flush();
     const project1 = collection.getItem("project-1")!;
     expect(project1.isExpandable).toBe(true);
+    flush();
     expect(project1.isExpanded).toBe(false);
+    flush();
     expect(project1.level).toBe(1);
+    flush();
     expect(project1.parentKey).toBe("projects");
 
+    flush();
     const project2 = collection.getItem("project-2")!;
     expect(project2.isExpandable).toBe(false);
   });
@@ -136,9 +156,12 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(["projects"]),
     });
 
+    flush();
     expect(keysOf(collection)).toEqual(["projects", "project-1", "project-2", "documents"]);
+    flush();
     expect(collection.size).toBe(4);
     // project-1 is collapsed, so its files are still hidden
+    flush();
     expect(collection.getItem("file-1")).toBeNull();
   });
 
@@ -149,6 +172,7 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(["projects", "project-1"]),
     });
 
+    flush();
     expect(keysOf(collection)).toEqual([
       "projects",
       "project-1",
@@ -157,9 +181,12 @@ describe("TableCollection (tree-grid mode)", () => {
       "project-2",
       "documents",
     ]);
+    flush();
     const file1 = collection.getItem("file-1")!;
     expect(file1.level).toBe(2);
+    flush();
     expect(file1.parentKey).toBe("project-1");
+    flush();
     expect(file1.isExpandable).toBe(false);
   });
 
@@ -170,6 +197,7 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: "all",
     });
 
+    flush();
     expect(keysOf(collection)).toEqual([
       "projects",
       "project-1",
@@ -179,6 +207,7 @@ describe("TableCollection (tree-grid mode)", () => {
       "documents",
       "doc-1",
     ]);
+    flush();
     expect(collection.size).toBe(7);
   });
 
@@ -189,11 +218,17 @@ describe("TableCollection (tree-grid mode)", () => {
       expandedKeys: new Set<Key>(["projects"]),
     });
 
+    flush();
     expect(collection.getFirstKey()).toBe("projects");
+    flush();
     expect(collection.getLastKey()).toBe("documents");
+    flush();
     expect(collection.getKeyAfter("projects")).toBe("project-1");
+    flush();
     expect(collection.getKeyAfter("project-2")).toBe("documents");
+    flush();
     expect(collection.getKeyBefore("documents")).toBe("project-2");
+    flush();
     expect(collection.at(1)?.key).toBe("project-1");
   });
 
@@ -203,10 +238,14 @@ describe("TableCollection (tree-grid mode)", () => {
       rows: treeRows,
     });
 
+    flush();
     expect(collection.treeColumn).toBeNull();
+    flush();
     expect(collection.size).toBe(2);
     // childRows ignored entirely in flat mode
+    flush();
     expect(collection.getItem("project-1")).toBeNull();
+    flush();
     expect(collection.body.childNodes[0].childNodes.every((n) => n.type !== "item")).toBe(true);
   });
 });
@@ -221,11 +260,17 @@ describe("createTreeGridState", () => {
     createRoot((dispose) => {
       const state = createTreeGridState<Item>(() => baseOptions());
 
+      flush();
       expect(state.expandedKeys).toEqual(new Set());
+      flush();
       expect(state.collection.size).toBe(2);
+      flush();
       expect(state.treeColumn).toBe("name");
+      flush();
       expect(state.userColumnCount).toBe(2);
+      flush();
       expect(state.keyMap.has("projects")).toBe(true);
+      flush();
       expect(state.keyMap.has("project-1")).toBe(false);
 
       dispose();
@@ -239,7 +284,9 @@ describe("createTreeGridState", () => {
         UNSTABLE_defaultExpandedKeys: ["projects"],
       }));
 
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["projects"]));
+      flush();
       expect(state.collection.size).toBe(4);
 
       dispose();
@@ -255,18 +302,26 @@ describe("createTreeGridState", () => {
       }));
 
       state.toggleKey("projects");
+      flush();
       expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(["projects"]));
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["projects"]));
+      flush();
       expect(state.collection.size).toBe(4);
+      flush();
       expect(state.collection.getItem("project-1")).not.toBeNull();
 
       state.toggleKey("project-1");
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["projects", "project-1"]));
+      flush();
       expect(state.collection.size).toBe(6);
 
       state.toggleKey("projects");
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["project-1"]));
       // projects collapsed, so its (still-expanded) descendants are hidden again
+      flush();
       expect(state.collection.size).toBe(2);
 
       dispose();
@@ -282,14 +337,19 @@ describe("createTreeGridState", () => {
         UNSTABLE_onExpandedChange: onExpandedChange,
       }));
 
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["projects"]));
+      flush();
       expect(state.collection.size).toBe(4);
 
       state.toggleKey("projects");
       // Controlled: parent is expected to update the prop; the change is reported but the
       // collection stays in sync with the (unchanged) controlled value.
+      flush();
       expect(onExpandedChange).toHaveBeenLastCalledWith(new Set([]));
+      flush();
       expect(state.expandedKeys).toEqual(new Set(["projects"]));
+      flush();
       expect(state.collection.size).toBe(4);
 
       dispose();
@@ -305,11 +365,13 @@ describe("createTreeGridState", () => {
         UNSTABLE_onExpandedChange: onExpandedChange,
       }));
 
+      flush();
       expect(state.collection.size).toBe(7);
 
       state.toggleKey("projects");
       // All expandable rows are {projects, project-1, documents}; collapsing projects leaves
       // the rest expanded.
+      flush();
       expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(["project-1", "documents"]));
 
       dispose();

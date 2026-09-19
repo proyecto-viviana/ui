@@ -34,7 +34,9 @@
  * invoke and freeze them, breaking reactivity.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
+import { access, createInternalSignal, type MaybeAccessor } from "../utils";
+
 import {
   Time,
   type CalendarDate,
@@ -48,7 +50,6 @@ import {
   toCalendarDateTime,
   GregorianCalendar,
 } from "@internationalized/date";
-import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
 import type { ValidationBehavior, ValidationFunction } from "../form";
 import {
@@ -152,7 +153,7 @@ export function createTimeFieldState<T extends TimeValue = Time>(
   const placeholderValue: TimeValue = props.placeholderValue ?? new Time();
 
   // Controlled/uncontrolled Time value (mirrors useControlledState).
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
   const value = (): T | null => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();

@@ -17,8 +17,8 @@
  * Based on @react-stately/overlays useOverlayTriggerState.
  */
 
-import { createSignal, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { type Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface OverlayTriggerProps {
   /** Whether the overlay is open by default (uncontrolled). */
@@ -55,8 +55,8 @@ export function createOverlayTriggerState(
 ): OverlayTriggerState {
   const propsAccessor = () => access(props);
 
-  const [internalOpen, setInternalOpen] = createSignal(propsAccessor().defaultOpen ?? false);
-  const [point, setPoint] = createSignal<{ x: number; y: number } | null>(null);
+  const [internalOpen, setInternalOpen] = createInternalSignal(propsAccessor().defaultOpen ?? false);
+  const [point, setPoint] = createInternalSignal<{ x: number; y: number } | null>(null);
 
   const isOpen: Accessor<boolean> = () => {
     const p = propsAccessor();
@@ -73,7 +73,11 @@ export function createOverlayTriggerState(
 
   const open = () => setOpen(true);
   const close = () => setOpen(false);
-  const toggle = () => setOpen(!isOpen());
+  const toggle = () => {
+    const p = propsAccessor();
+    const open = p.isOpen !== undefined ? p.isOpen : readNow(internalOpen);
+    setOpen(!open);
+  };
 
   return {
     isOpen,

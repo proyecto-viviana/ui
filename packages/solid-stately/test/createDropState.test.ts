@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createDropState } from "../src/dnd/createDropState";
 
 describe("createDropState", () => {
@@ -7,6 +7,7 @@ describe("createDropState", () => {
     createRoot((dispose) => {
       const state = createDropState(() => ({}));
 
+      flush();
       expect(state.isDropTarget).toBe(false);
       dispose();
     });
@@ -17,6 +18,7 @@ describe("createDropState", () => {
       const state = createDropState(() => ({}));
 
       state.enterTarget(100, 100);
+      flush();
       expect(state.isDropTarget).toBe(true);
       dispose();
     });
@@ -30,6 +32,7 @@ describe("createDropState", () => {
       }));
 
       state.enterTarget(100, 200);
+      flush();
       expect(onDropEnter).toHaveBeenCalledWith({
         type: "dropenter",
         x: 100,
@@ -48,6 +51,7 @@ describe("createDropState", () => {
 
       state.enterTarget(100, 100);
       state.moveInTarget(150, 150);
+      flush();
       expect(onDropMove).toHaveBeenCalledWith({
         type: "dropmove",
         x: 150,
@@ -65,6 +69,7 @@ describe("createDropState", () => {
       }));
 
       state.moveInTarget(150, 150);
+      flush();
       expect(onDropMove).not.toHaveBeenCalled();
       dispose();
     });
@@ -79,6 +84,7 @@ describe("createDropState", () => {
 
       state.enterTarget(100, 100);
       state.activateTarget(100, 100);
+      flush();
       expect(onDropActivate).toHaveBeenCalledWith({
         type: "dropactivate",
         x: 100,
@@ -96,10 +102,13 @@ describe("createDropState", () => {
       }));
 
       state.enterTarget(100, 100);
+      flush();
       expect(state.isDropTarget).toBe(true);
 
       state.exitTarget(200, 200);
+      flush();
       expect(state.isDropTarget).toBe(false);
+      flush();
       expect(onDropExit).toHaveBeenCalledWith({
         type: "dropexit",
         x: 200,
@@ -126,7 +135,9 @@ describe("createDropState", () => {
       state.enterTarget(100, 100);
       state.drop(200, 200, items, "move");
 
+      flush();
       expect(state.isDropTarget).toBe(false);
+      flush();
       expect(onDrop).toHaveBeenCalledWith({
         type: "drop",
         x: 200,
@@ -147,7 +158,9 @@ describe("createDropState", () => {
       }));
 
       state.enterTarget(100, 100);
+      flush();
       expect(state.isDropTarget).toBe(false);
+      flush();
       expect(onDropEnter).not.toHaveBeenCalled();
       dispose();
     });
@@ -159,6 +172,7 @@ describe("createDropState", () => {
         isDisabled: true,
       }));
 
+      flush();
       expect(state.isDisabled).toBe(true);
       dispose();
     });
@@ -171,6 +185,7 @@ describe("createDropState", () => {
       }));
 
       const types = { has: () => true };
+      flush();
       expect(state.getDropOperation(types, ["move", "copy"])).toBe("copy");
       dispose();
     });
@@ -181,6 +196,7 @@ describe("createDropState", () => {
       const state = createDropState(() => ({}));
 
       const types = { has: () => true };
+      flush();
       expect(state.getDropOperation(types, ["link", "copy"])).toBe("link");
       dispose();
     });

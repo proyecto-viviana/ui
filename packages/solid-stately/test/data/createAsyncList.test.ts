@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createEffect } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createAsyncList } from "../../src/data/createAsyncList";
 
 interface Item {
@@ -35,10 +35,14 @@ describe("createAsyncList", () => {
         }),
       });
 
+      flush();
       expect(list.isLoading).toBe(true);
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(2);
+      flush();
       expect(list.items[0].name).toBe("One");
+      flush();
       expect(list.isLoading).toBe(false);
       dispose();
     });
@@ -54,7 +58,9 @@ describe("createAsyncList", () => {
 
       // Wait for error state
       await new Promise((resolve) => setTimeout(resolve, 50));
+      flush();
       expect(list.loadingState).toBe("error");
+      flush();
       expect(list.error?.message).toBe("Load failed");
       dispose();
     });
@@ -71,11 +77,14 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(loadCount).toBe(1);
+      flush();
       expect(list.items).toHaveLength(1);
 
       list.reload();
       await waitForIdle(list);
+      flush();
       expect(loadCount).toBe(2);
       dispose();
     });
@@ -100,12 +109,16 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(page).toBe(1);
 
       list.loadMore();
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(2);
+      flush();
       expect(list.items[1].name).toBe("Page2");
       dispose();
     });
@@ -127,10 +140,12 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.items[0].name).toBe("Banana");
 
       list.sort({ column: "name", direction: "ascending" });
       await waitForIdle(list);
+      flush();
       expect(list.items[0].name).toBe("Apple");
       dispose();
     });
@@ -146,6 +161,7 @@ describe("createAsyncList", () => {
 
       await waitForIdle(list);
       list.setSelectedKeys(new Set([1]));
+      flush();
       expect((list.selectedKeys as Set<number>).has(1)).toBe(true);
       dispose();
     });
@@ -163,7 +179,9 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.getItem(2)?.name).toBe("Two");
+      flush();
       expect(list.getItem(99)).toBeUndefined();
       dispose();
     });
@@ -179,6 +197,7 @@ describe("createAsyncList", () => {
 
       await waitForIdle(list);
       list.append({ id: 2, name: "Two" });
+      flush();
       expect(list.items).toHaveLength(2);
       dispose();
     });
@@ -197,7 +216,9 @@ describe("createAsyncList", () => {
 
       await waitForIdle(list);
       list.remove(1);
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(list.items[0].name).toBe("Two");
       dispose();
     });
@@ -222,10 +243,12 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(2);
 
       list.setFilterText("apple");
       await waitForIdle(list);
+      flush();
       expect(lastFilterText).toBe("apple");
       dispose();
     });
@@ -242,7 +265,9 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.sortDescriptor?.column).toBe("name");
+      flush();
       expect(list.sortDescriptor?.direction).toBe("ascending");
       dispose();
     });
@@ -259,6 +284,7 @@ describe("createAsyncList", () => {
       // loadMore during initial load should be ignored
       list.loadMore();
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(1);
       dispose();
     });
@@ -273,7 +299,9 @@ describe("createAsyncList", () => {
       });
 
       await waitForIdle(list);
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(list.items[0].name).toBe("Sync");
       dispose();
     });

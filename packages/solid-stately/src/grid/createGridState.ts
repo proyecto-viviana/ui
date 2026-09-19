@@ -3,9 +3,10 @@
  * Based on packages/react-stately/src/grid/useGridState.ts.
  */
 
-import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { GridState, GridStateOptions, GridCollection, GridNode } from "./types";
 import type { Key, FocusStrategy, SelectionBehavior, Selection } from "../collections/types";
+import { createInternalSignal } from "../utils";
 
 /**
  * Creates state management for a grid component.
@@ -21,51 +22,50 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     return keys ? new Set(keys) : new Set<Key>();
   });
 
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusedKey, setFocusedKeyInternal] = createSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createSignal<FocusStrategy | null>(null);
-  const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createSignal(false);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
+  const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createInternalSignal(false);
 
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<"all" | Set<Key>>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<"all" | Set<Key>>(
     getInitialSelection(getOptions().defaultSelectedKeys),
   );
-  const [anchorKey, setAnchorKey] = createSignal<Key | null>(null);
+  const [anchorKey, setAnchorKey] = createInternalSignal<Key | null>(null);
 
-  const selectedKeys = createMemo(() => {
+  const selectedKeys = (): "all" | Set<Key> => {
     const opts = getOptions();
     if (opts.selectedKeys !== undefined) {
       return normalizeSelection(opts.selectedKeys);
     }
     return internalSelectedKeys();
-  });
+  };
 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
   const selectionBehaviorProp = (): SelectionBehavior => getOptions().selectionBehavior ?? "toggle";
   const [selectionBehaviorState, setSelectionBehaviorState] =
-    createSignal<SelectionBehavior>(selectionBehaviorProp());
+    createInternalSignal<SelectionBehavior>(selectionBehaviorProp());
   const selectionBehavior = createMemo(() => selectionBehaviorState());
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
 
   const focusMode = createMemo(() => getOptions().focusMode ?? "row");
 
-  createEffect(
-    on(selectionBehaviorProp, (behavior) => {
-      setSelectionBehaviorState(behavior);
-    }),
-  );
-
-  createEffect(() => {
-    const keys = selectedKeys();
-    if (
-      selectionBehaviorProp() === "replace" &&
-      selectionBehaviorState() === "toggle" &&
-      keys !== "all" &&
-      keys.size === 0
-    ) {
-      setSelectionBehaviorState("replace");
-    }
+  createEffect(selectionBehaviorProp, (behavior) => {
+    setSelectionBehaviorState(behavior);
   });
+
+  createEffect(
+    () => ({
+      prop: selectionBehaviorProp(),
+      state: selectionBehaviorState(),
+      keys: selectedKeys(),
+    }),
+    ({ prop, state, keys }) => {
+      if (prop === "replace" && state === "toggle" && keys !== "all" && keys.size === 0) {
+        setSelectionBehaviorState("replace");
+      }
+    },
+  );
 
   const setFocusedKey = (key: Key | null, strategy: FocusStrategy = "first") => {
     const opts = getOptions();
@@ -88,15 +88,18 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     setChildFocusStrategy(strategy);
   };
 
-  // Reset focused key if the item is deleted from the collection
-  let cachedCollection: C | null = null;
+  // Reset focused key if the item is deleted from the collection.
+  // Seed the cache at factory time so the first effect run (Solid 2 flushes
+  // effects, they do not run synchronously) can still see a deletion.
+  let cachedCollection: C | null = getOptions().collection;
 
   createEffect(
-    on(
-      () => getOptions().collection,
-      (collection) => {
-        const currentFocusedKey = focusedKey();
-
+    () => ({
+      collection: getOptions().collection,
+      currentFocusedKey: focusedKey(),
+      disabled: disabledKeys(),
+    }),
+    ({ collection, currentFocusedKey, disabled }) => {
         if (
           currentFocusedKey != null &&
           cachedCollection &&
@@ -132,7 +135,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
           // two disabled rows when the focused row was deleted.
           for (let i = Math.max(0, index); i < rows.length; i++) {
             const row = rows[i];
-            if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
+            if (!disabled.has(row.key) && row.type !== "headerrow") {
               newRow = row;
               break;
             }
@@ -141,7 +144,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
           if (newRow === null) {
             for (let i = index - 1; i >= 0; i--) {
               const row = rows[i];
-              if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
+              if (!disabled.has(row.key) && row.type !== "headerrow") {
                 newRow = row;
                 break;
               }
@@ -161,8 +164,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
         }
 
         cachedCollection = collection;
-      },
-    ),
+    },
   );
 
   // Selection methods

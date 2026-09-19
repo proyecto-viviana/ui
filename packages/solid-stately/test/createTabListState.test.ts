@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { createRoot, createSignal } from "solid-js";
+import { flush, createRoot } from "solid-js";
+import { createSignal } from "./owned-signal";
+
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createTabListState } from "../src/tabs";
 
@@ -26,6 +28,7 @@ describe("createTabListState", () => {
         getKey: (item) => item.key,
       });
 
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       dispose();
     });
@@ -39,6 +42,7 @@ describe("createTabListState", () => {
         defaultSelectedKey: "tab3",
       });
 
+      flush();
       expect(state.selectedKey()).toBe("tab3");
       dispose();
     });
@@ -53,6 +57,7 @@ describe("createTabListState", () => {
         disabledKeys: ["tab2"],
       });
 
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       dispose();
     });
@@ -69,8 +74,10 @@ describe("createTabListState", () => {
         },
       });
 
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       setSelectedKey("tab2");
+      flush();
       expect(state.selectedKey()).toBe("tab2");
       dispose();
     });
@@ -88,8 +95,11 @@ describe("createTabListState", () => {
 
       state.setFocusedKey("tab2");
 
+      flush();
       expect(state.focusedKey()).toBe("tab2");
+      flush();
       expect(state.selectedKey()).toBe("tab1");
+      flush();
       expect(onSelectionChange).not.toHaveBeenCalled();
       dispose();
     });
@@ -106,8 +116,10 @@ describe("createTabListState", () => {
     });
 
     try {
+      flush();
       expect(state.focusedKey()).toBe("tab2");
       await flushSelectedToFocusedCopy();
+      flush();
       expect(state.focusedKey()).toBe("tab2");
     } finally {
       dispose();
@@ -125,12 +137,15 @@ describe("createTabListState", () => {
 
     try {
       await flushSelectedToFocusedCopy();
+      flush();
       expect(state.focusedKey()).toBe("tab1");
 
       state.setSelectedKey("tab3");
 
+      flush();
       expect(state.focusedKey()).toBe("tab1");
       await flushSelectedToFocusedCopy();
+      flush();
       expect(state.focusedKey()).toBe("tab3");
     } finally {
       dispose();
@@ -153,8 +168,10 @@ describe("createTabListState", () => {
       state.setFocusedKey("tab2");
       state.setSelectedKey("tab3");
 
+      flush();
       expect(state.focusedKey()).toBe("tab2");
       await flushSelectedToFocusedCopy();
+      flush();
       expect(state.focusedKey()).toBe("tab2");
     } finally {
       dispose();
@@ -173,7 +190,9 @@ describe("createTabListState", () => {
 
       state.setFocusedKey("tab1");
 
+      flush();
       expect(state.selectedKey()).toBe("tab1");
+      flush();
       expect(onSelectionChange).not.toHaveBeenCalled();
       dispose();
     });
@@ -190,8 +209,10 @@ describe("createTabListState", () => {
         defaultSelectedKey: "tab2",
       });
 
+      flush();
       expect(state.selectedKey()).toBe("tab2");
       setItems(baseItems.filter((item) => item.key !== "tab2"));
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       dispose();
     });
@@ -207,8 +228,10 @@ describe("createTabListState", () => {
         getKey: (item) => item.key,
       });
 
+      flush();
       expect(state.selectedKey()).toBe(null);
       setItems(baseItems);
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       dispose();
     });
@@ -224,6 +247,7 @@ describe("createTabListState", () => {
       });
 
       state.setFocusedKey("tab2");
+      flush();
       expect(state.selectedKey()).toBe("tab1");
       dispose();
     });

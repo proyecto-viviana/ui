@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
-import viteSolid from "vite-plugin-solid";
+import viteSolid from "@solidjs/vite-plugin";
 import macros from "unplugin-parcel-macros";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -183,6 +183,6 @@ export default defineConfig({
     // Must stay ahead of tanstackStart so the SSR env is set up before routing.
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart(),
-    viteSolid({ ssr: true }),
+    ...viteSolid({ ssr: true }),
   ],
 });

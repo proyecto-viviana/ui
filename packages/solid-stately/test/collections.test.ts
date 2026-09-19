@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import {
   ListCollection,
   createListCollection,
@@ -32,6 +32,7 @@ describe("ListCollection", () => {
       getTextValue: (item) => item.label,
     });
 
+    flush();
     expect(collection.size).toBe(3);
   });
 
@@ -41,8 +42,10 @@ describe("ListCollection", () => {
       getTextValue: (item) => item.label,
     });
 
+    flush();
     const item = collection.getItem("b");
     expect(item).not.toBeNull();
+    flush();
     expect(item?.value).toEqual({ key: "b", label: "Banana" });
   });
 
@@ -51,7 +54,9 @@ describe("ListCollection", () => {
       getKey: (item) => item.key,
     });
 
+    flush();
     expect(collection.getFirstKey()).toBe("a");
+    flush();
     expect(collection.getLastKey()).toBe("c");
   });
 
@@ -60,12 +65,18 @@ describe("ListCollection", () => {
       getKey: (item) => item.key,
     });
 
+    flush();
     expect(collection.getKeyAfter("a")).toBe("b");
+    flush();
     expect(collection.getKeyAfter("b")).toBe("c");
+    flush();
     expect(collection.getKeyAfter("c")).toBeNull();
 
+    flush();
     expect(collection.getKeyBefore("c")).toBe("b");
+    flush();
     expect(collection.getKeyBefore("b")).toBe("a");
+    flush();
     expect(collection.getKeyBefore("a")).toBeNull();
   });
 
@@ -79,6 +90,7 @@ describe("ListCollection", () => {
       keys.push(item.key as string);
     }
 
+    flush();
     expect(keys).toEqual(["a", "b", "c"]);
   });
 
@@ -88,7 +100,9 @@ describe("ListCollection", () => {
       getTextValue: (item) => item.label,
     });
 
+    flush();
     expect(collection.getTextValue("a")).toBe("Apple");
+    flush();
     expect(collection.getTextValue("b")).toBe("Banana");
   });
 
@@ -96,7 +110,9 @@ describe("ListCollection", () => {
     const simpleItems = ["Apple", "Banana", "Cherry"];
     const collection = createListCollection(simpleItems);
 
+    flush();
     expect(collection.getFirstKey()).toBe(0);
+    flush();
     expect(collection.getLastKey()).toBe(2);
   });
 });
@@ -115,6 +131,7 @@ describe("getItemCount", () => {
       { getKey: (item) => item.key },
     );
 
+    flush();
     expect(getItemCount(collection)).toBe(3);
   });
 
@@ -122,13 +139,16 @@ describe("getItemCount", () => {
     const collection = createListCollection(["one", "two"]);
 
     // Second call returns the cached value (same immutable collection).
+    flush();
     expect(getItemCount(collection)).toBe(2);
+    flush();
     expect(getItemCount(collection)).toBe(2);
   });
 
   it("returns zero for an empty collection", () => {
     const collection = createListCollection<string>([]);
 
+    flush();
     expect(getItemCount(collection)).toBe(0);
   });
 });
@@ -143,6 +163,7 @@ describe("createSelectionState", () => {
         selectionMode: "single",
       });
 
+      flush();
       expect(state.selectedKeys().size).toBe(0);
       dispose();
     });
@@ -155,6 +176,7 @@ describe("createSelectionState", () => {
         defaultSelectedKeys: ["a"],
       });
 
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
       dispose();
     });
@@ -167,9 +189,11 @@ describe("createSelectionState", () => {
       });
 
       state.toggleSelection("a");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
 
       state.toggleSelection("a");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(false);
       dispose();
     });
@@ -182,10 +206,13 @@ describe("createSelectionState", () => {
       });
 
       state.replaceSelection("a");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
 
       state.replaceSelection("b");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(false);
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
       dispose();
     });
@@ -200,8 +227,11 @@ describe("createSelectionState", () => {
       state.toggleSelection("a");
       state.toggleSelection("b");
 
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
+      flush();
       expect(state.selectedKeys().size).toBe(2);
       dispose();
     });
@@ -217,6 +247,7 @@ describe("createSelectionState", () => {
       state.toggleSelection("b");
       state.clearSelection();
 
+      flush();
       expect(state.selectedKeys().size).toBe(0);
       dispose();
     });
@@ -232,6 +263,7 @@ describe("createSelectionState", () => {
 
       state.toggleSelection("a");
       // Should not deselect when disallowEmptySelection is true
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
       dispose();
     });
@@ -246,6 +278,7 @@ describe("createSelectionState", () => {
       });
 
       state.toggleSelection("a");
+      flush();
       expect(onSelectionChange).toHaveBeenCalled();
       dispose();
     });
@@ -263,7 +296,9 @@ describe("createSelectionState", () => {
       // toggles it off when empty selection is allowed, matching upstream
       // useSelectableItem's onSelect.
       state.select("a");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(false);
+      flush();
       expect(state.selectedKeys().size).toBe(0);
       dispose();
     });
@@ -279,6 +314,7 @@ describe("createSelectionState", () => {
       });
 
       state.select("a");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
       dispose();
     });
@@ -293,7 +329,9 @@ describe("createSelectionState", () => {
       });
 
       state.select("b");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(false);
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
       dispose();
     });
@@ -309,7 +347,9 @@ describe("createSelectionState", () => {
 
       // Plain select under replace behavior swaps the whole selection.
       state.select("b");
+      flush();
       expect(state.selectedKeys().has("a")).toBe(false);
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
 
       // touch / virtual have no modifier keys, so select() toggles (adds without
@@ -318,7 +358,9 @@ describe("createSelectionState", () => {
       // shift ⇒ extend) lives in the aria-layer onSelect (solidaria selectItem),
       // not here.
       state.select("c", { pointerType: "touch" });
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
+      flush();
       expect(state.selectedKeys().has("c")).toBe(true);
       dispose();
     });
@@ -333,8 +375,10 @@ describe("selection module compatibility aliases", () => {
         defaultSelectedKeys: ["a"],
       });
 
+      flush();
       expect(state.selectedKeys().has("a")).toBe(true);
       state.toggleSelection("b");
+      flush();
       expect(state.selectedKeys().has("b")).toBe(true);
       dispose();
     });
@@ -359,6 +403,7 @@ describe("createListState", () => {
         selectionMode: "single",
       });
 
+      flush();
       expect(state.collection().size).toBe(3);
       dispose();
     });
@@ -372,9 +417,11 @@ describe("createListState", () => {
         selectionMode: "single",
       });
 
+      flush();
       expect(state.focusedKey()).toBeNull();
 
       state.setFocusedKey("b");
+      flush();
       expect(state.focusedKey()).toBe("b");
       dispose();
     });
@@ -389,7 +436,9 @@ describe("createListState", () => {
         defaultSelectedKeys: ["a"],
       });
 
+      flush();
       expect(state.isSelected("a")).toBe(true);
+      flush();
       expect(state.isSelected("b")).toBe(false);
       dispose();
     });
@@ -404,7 +453,9 @@ describe("createListState", () => {
         disabledKeys: ["b"],
       });
 
+      flush();
       expect(state.isDisabled("a")).toBe(false);
+      flush();
       expect(state.isDisabled("b")).toBe(true);
       dispose();
     });
@@ -419,6 +470,7 @@ describe("createListState", () => {
       });
 
       state.select("a");
+      flush();
       expect(state.isSelected("a")).toBe(true);
       dispose();
     });
@@ -437,8 +489,10 @@ describe("createListState selectionManager", () => {
 
   it("exposes a collection-aware selection manager", () => {
     createRoot((dispose) => {
+      flush();
       const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
       expect(state.selectionManager).toBeDefined();
+      flush();
       expect(state.selectionManager.collection.size).toBe(3);
       dispose();
     });
@@ -449,6 +503,7 @@ describe("createListState selectionManager", () => {
       const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
       state.select("a"); // toggle adds 'a' and sets the anchor
       state.extendSelection("c");
+      flush();
       expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "b", "c"]);
       dispose();
     });
@@ -459,8 +514,11 @@ describe("createListState selectionManager", () => {
       const state = createListState({ items, getKey: (i) => i.key, selectionMode: "multiple" });
       state.selectAll();
       // The flattened surface keeps the raw value; the manager materializes it.
+      flush();
       expect(state.selectedKeys()).toBe("all");
+      flush();
       expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "b", "c"]);
+      flush();
       expect(state.isSelectAll()).toBe(true);
       dispose();
     });
@@ -474,7 +532,9 @@ describe("createListState selectionManager", () => {
         selectionMode: "multiple",
         defaultSelectedKeys: ["a", "b", "c"],
       });
+      flush();
       expect(state.selectedKeys()).not.toBe("all");
+      flush();
       expect(state.isSelectAll()).toBe(true);
       dispose();
     });
@@ -488,7 +548,9 @@ describe("createListState selectionManager", () => {
         selectionMode: "multiple",
         defaultSelectedKeys: ["c", "a"],
       });
+      flush();
       expect(state.selectionManager.firstSelectedKey).toBe("a");
+      flush();
       expect(state.selectionManager.lastSelectedKey).toBe("c");
       dispose();
     });
@@ -504,6 +566,7 @@ describe("createListState selectionManager", () => {
       });
       state.select("a");
       state.extendSelection("c"); // a..c, but 'b' is disabled
+      flush();
       expect([...state.selectionManager.selectedKeys].sort()).toEqual(["a", "c"]);
       dispose();
     });
@@ -527,6 +590,7 @@ describe("createMenuState", () => {
         getKey: (item) => item.key,
       });
 
+      flush();
       expect(state.collection().size).toBe(3);
       dispose();
     });
@@ -540,9 +604,12 @@ describe("createMenuState", () => {
         defaultSelectedKeys: ["copy"],
       });
 
+      flush();
       expect(state.selectionMode()).toBe("none");
       state.select("paste");
+      flush();
       expect(state.isSelected("copy")).toBe(false);
+      flush();
       expect(state.isSelected("paste")).toBe(false);
       dispose();
     });
@@ -561,12 +628,17 @@ describe("createMenuState", () => {
 
       state.select("paste");
 
+      flush();
       expect(state.selectionMode()).toBe("multiple");
+      flush();
       expect(state.isSelected("copy")).toBe(true);
+      flush();
       expect(state.isSelected("paste")).toBe(true);
       // Faithful to upstream: onSelectionChange receives a `Selection` (a Set
       // subclass carrying anchorKey/currentKey), so compare contents not class.
+      flush();
       expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      flush();
       expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["copy", "paste"]));
       dispose();
     });
@@ -582,6 +654,7 @@ describe("createMenuState", () => {
       });
 
       state.close();
+      flush();
       expect(onClose).toHaveBeenCalled();
       dispose();
     });
@@ -594,6 +667,7 @@ describe("createMenuState", () => {
 describe("createMenuTriggerState", () => {
   it("starts closed by default", () => {
     createRoot((dispose) => {
+      flush();
       const state = createMenuTriggerState();
       expect(state.isOpen()).toBe(false);
       dispose();
@@ -605,9 +679,11 @@ describe("createMenuTriggerState", () => {
       const state = createMenuTriggerState();
 
       state.open();
+      flush();
       expect(state.isOpen()).toBe(true);
 
       state.close();
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });
@@ -618,9 +694,11 @@ describe("createMenuTriggerState", () => {
       const state = createMenuTriggerState();
 
       state.toggle();
+      flush();
       expect(state.isOpen()).toBe(true);
 
       state.toggle();
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });
@@ -632,9 +710,11 @@ describe("createMenuTriggerState", () => {
       const state = createMenuTriggerState({ onOpenChange });
 
       state.open();
+      flush();
       expect(onOpenChange).toHaveBeenCalledWith(true);
 
       state.close();
+      flush();
       expect(onOpenChange).toHaveBeenCalledWith(false);
       dispose();
     });
@@ -642,16 +722,21 @@ describe("createMenuTriggerState", () => {
 
   it("stores the focus strategy passed to open and toggle", () => {
     createRoot((dispose) => {
+      flush();
       const state = createMenuTriggerState();
       expect(state.focusStrategy()).toBe(null);
 
       state.open("first");
+      flush();
       expect(state.isOpen()).toBe(true);
+      flush();
       expect(state.focusStrategy()).toBe("first");
 
       state.close();
       state.toggle("last");
+      flush();
       expect(state.isOpen()).toBe(true);
+      flush();
       expect(state.focusStrategy()).toBe("last");
       dispose();
     });
@@ -661,11 +746,14 @@ describe("createMenuTriggerState", () => {
 describe("menu module compatibility aliases", () => {
   it("useMenuTriggerState maps to menu trigger state behavior", () => {
     createRoot((dispose) => {
+      flush();
       const state = useMenuTriggerState();
       expect(state.isOpen()).toBe(false);
       state.open();
+      flush();
       expect(state.isOpen()).toBe(true);
       state.close();
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });

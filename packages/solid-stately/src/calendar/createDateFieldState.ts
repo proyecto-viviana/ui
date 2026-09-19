@@ -27,11 +27,13 @@
  *
  * The upstream "derived state during render" resync (which re-mints the display
  * value when the committed value / calendar / hour cycle changes) is ported to a
- * Solid `createComputed` so it runs synchronously before render effects — mirroring
- * React's render-phase setState rather than a post-render `createEffect`.
+ * split `createEffect`. Compute tracks the committed value; apply writes the
+ * display override. Solid 2 has no `createComputed`.
  */
 
-import { createSignal, createMemo, createComputed, untrack, type Accessor } from "solid-js";
+import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import { access, createInternalSignal, type MaybeAccessor } from "../utils";
+
 import {
   type Calendar,
   type CalendarDateTime,
@@ -48,7 +50,6 @@ import {
   isEqualCalendar,
   createCalendar as intlCreateCalendar,
 } from "@internationalized/date";
-import { access, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
 import { IncompleteDate } from "./IncompleteDate";
 import { formatDateFieldError, getPlaceholder, type DateFieldErrorKey } from "./intl";
@@ -267,19 +268,15 @@ export function createDateFieldState<T extends DateValue = DateValue>(
       timeZone: v && "timeZone" in v ? (v as { timeZone: string }).timeZone : undefined,
     };
   });
-  const [lastDefaults, setLastDefaults] = createSignal<{
-    granularity: Granularity;
-    timeZone: string | undefined;
-  }>(initialDefaults);
-  createComputed(() => {
+  const lastDefaults = createMemo<typeof initialDefaults>((prev = initialDefaults) => {
     const v = v0();
-    if (!v) return;
+    if (!v) return prev;
     const defaultGranularity = ("minute" in v ? "minute" : "day") as Granularity;
     const defaultTimeZone = "timeZone" in v ? (v as { timeZone: string }).timeZone : undefined;
-    const last = untrack(lastDefaults);
-    if (last.granularity !== defaultGranularity || last.timeZone !== defaultTimeZone) {
-      setLastDefaults({ granularity: defaultGranularity, timeZone: defaultTimeZone });
+    if (prev.granularity !== defaultGranularity || prev.timeZone !== defaultTimeZone) {
+      return { granularity: defaultGranularity, timeZone: defaultTimeZone };
     }
+    return prev;
   });
   const granularity = (): FieldGranularity => {
     if (props.granularity) return props.granularity;
@@ -311,7 +308,7 @@ export function createDateFieldState<T extends DateValue = DateValue>(
   const hourCycle = (): HourCycle => calendarAndHourCycle()[1];
 
   // Controlled vs uncontrolled committed value.
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
   const rawValue = createMemo<T | null>(() => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();
@@ -329,27 +326,26 @@ export function createDateFieldState<T extends DateValue = DateValue>(
   const initialValue = untrack(calendarValue);
 
   // The display override: holds the (possibly invalid/incomplete) value being edited.
-  const [displayValue, setDisplayValue] = createSignal<IncompleteDate>(
+  const [displayValue, setDisplayValue] = createInternalSignal<IncompleteDate>(
     untrack(() => new IncompleteDate(calendar(), hourCycle(), untrack(calendarValue))),
   );
 
-  // Render-phase resync: whenever the committed value, calendar, or hour cycle changes
-  // from the outside, re-mint the display override. Ported to createComputed so it runs
-  // synchronously (like React's render-phase setState), never leaving a stale frame.
+  // Resync the display override when the committed value, calendar, or hour
+  // cycle changes from the outside. Compute tracks those sources; apply writes.
   let lastValue = untrack(calendarValue);
   let lastCalendar = untrack(calendar);
   let lastHourCycle = untrack(hourCycle);
-  createComputed(() => {
-    const cv = calendarValue();
-    const cal = calendar();
-    const hc = hourCycle();
-    if (cv !== lastValue || hc !== lastHourCycle || !isEqualCalendar(cal, lastCalendar)) {
-      lastValue = cv;
-      lastCalendar = cal;
-      lastHourCycle = hc;
-      setDisplayValue(new IncompleteDate(cal, hc, cv));
-    }
-  });
+  createEffect(
+    () => ({ cv: calendarValue(), cal: calendar(), hc: hourCycle() }),
+    ({ cv, cal, hc }) => {
+      if (cv !== lastValue || hc !== lastHourCycle || !isEqualCalendar(cal, lastCalendar)) {
+        lastValue = cv;
+        lastCalendar = cal;
+        lastHourCycle = hc;
+        setDisplayValue(new IncompleteDate(cal, hc, cv));
+      }
+    },
+  );
 
   const showEra = (): boolean => calendar().identifier === "gregory" && displayValue().era === "BC";
   const maxGranularity = (): "year" | "month" | "day" | "hour" | "minute" =>

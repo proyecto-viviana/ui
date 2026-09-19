@@ -24,7 +24,7 @@
     "dev": "vp pack --watch"
   },
   "peerDependencies": {
-    "@solidjs/testing-library": "^0.8.10",
+    "@solidjs/testing-library": ">=1.0.0-beta.3",
     "@testing-library/user-event": "^14.6.1"
   }
 }

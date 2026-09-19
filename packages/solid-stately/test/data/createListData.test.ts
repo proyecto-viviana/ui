@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createListData } from "../../src/data/createListData";
 
 interface Item {
@@ -20,8 +20,10 @@ function createTestList(items?: Item[]) {
 describe("createListData", () => {
   it("initializes with items", () => {
     createRoot((dispose) => {
+      flush();
       const list = createTestList();
       expect(list.items).toHaveLength(3);
+      flush();
       expect(list.items[0].name).toBe("One");
       dispose();
     });
@@ -29,6 +31,7 @@ describe("createListData", () => {
 
   it("initializes with empty list by default", () => {
     createRoot((dispose) => {
+      flush();
       const list = createListData<Item>({});
       expect(list.items).toHaveLength(0);
       dispose();
@@ -37,8 +40,10 @@ describe("createListData", () => {
 
   it("getItem returns item by key", () => {
     createRoot((dispose) => {
+      flush();
       const list = createTestList();
       expect(list.getItem(2)?.name).toBe("Two");
+      flush();
       expect(list.getItem(99)).toBeUndefined();
       dispose();
     });
@@ -48,7 +53,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.append({ id: 4, name: "Four" });
+      flush();
       expect(list.items).toHaveLength(4);
+      flush();
       expect(list.items[3].name).toBe("Four");
       dispose();
     });
@@ -58,7 +65,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.prepend({ id: 0, name: "Zero" });
+      flush();
       expect(list.items).toHaveLength(4);
+      flush();
       expect(list.items[0].name).toBe("Zero");
       dispose();
     });
@@ -68,7 +77,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.insert(1, { id: 10, name: "Inserted" });
+      flush();
       expect(list.items).toHaveLength(4);
+      flush();
       expect(list.items[1].name).toBe("Inserted");
       dispose();
     });
@@ -78,8 +89,11 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.insertBefore(2, { id: 10, name: "BeforeTwo" });
+      flush();
       expect(list.items).toHaveLength(4);
+      flush();
       expect(list.items[1].name).toBe("BeforeTwo");
+      flush();
       expect(list.items[2].name).toBe("Two");
       dispose();
     });
@@ -89,7 +103,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.insertAfter(2, { id: 10, name: "AfterTwo" });
+      flush();
       expect(list.items).toHaveLength(4);
+      flush();
       expect(list.items[2].name).toBe("AfterTwo");
       dispose();
     });
@@ -102,7 +118,9 @@ describe("createListData", () => {
         getKey: (item) => item.id,
       });
       list.insertAfter(999, { id: 1, name: "First" });
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(list.items[0].name).toBe("First");
       dispose();
     });
@@ -112,6 +130,7 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.insertAfter(999, { id: 10, name: "Ghost" });
+      flush();
       expect(list.items).toHaveLength(3);
       dispose();
     });
@@ -121,7 +140,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.remove(2);
+      flush();
       expect(list.items).toHaveLength(2);
+      flush();
       expect(list.items.find((i) => i.id === 2)).toBeUndefined();
       dispose();
     });
@@ -138,7 +159,9 @@ describe("createListData", () => {
         initialSelectedKeys: [1, 3],
       });
       list.removeSelectedItems();
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(list.items[0].name).toBe("Two");
       dispose();
     });
@@ -152,7 +175,9 @@ describe("createListData", () => {
       // After splice remove from 0: [Two, Three]
       // After splice insert at 2: [Two, Three, One]
       list.move(1, 2);
+      flush();
       expect(list.items[0].name).toBe("Two");
+      flush();
       expect(list.items[2].name).toBe("One");
       dispose();
     });
@@ -162,6 +187,7 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.update(2, { id: 2, name: "Updated" });
+      flush();
       expect(list.getItem(2)?.name).toBe("Updated");
       dispose();
     });
@@ -171,6 +197,7 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.update(2, (prev) => ({ ...prev, name: prev.name + "!" }));
+      flush();
       expect(list.getItem(2)?.name).toBe("Two!");
       dispose();
     });
@@ -180,6 +207,7 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.setSelectedKeys(new Set([1, 2]));
+      flush();
       expect(list.selectedKeys).toEqual(new Set([1, 2]));
       dispose();
     });
@@ -192,7 +220,9 @@ describe("createListData", () => {
         initialSelectedKeys: [1],
       });
       list.addKeysToSelection(new Set([2]));
+      flush();
       expect((list.selectedKeys as Set<number>).has(1)).toBe(true);
+      flush();
       expect((list.selectedKeys as Set<number>).has(2)).toBe(true);
       dispose();
     });
@@ -205,7 +235,9 @@ describe("createListData", () => {
         initialSelectedKeys: [1, 2],
       });
       list.removeKeysFromSelection(new Set([1]));
+      flush();
       expect((list.selectedKeys as Set<number>).has(1)).toBe(false);
+      flush();
       expect((list.selectedKeys as Set<number>).has(2)).toBe(true);
       dispose();
     });
@@ -221,11 +253,15 @@ describe("createListData", () => {
         ],
         filter: (item, text) => item.name.toLowerCase().includes(text.toLowerCase()),
       });
+      flush();
       expect(list.items).toHaveLength(3);
       list.setFilterText("a");
+      flush();
       expect(list.items).toHaveLength(3); // Apple, Banana, Avocado all contain 'a'
       list.setFilterText("av");
+      flush();
       expect(list.items).toHaveLength(1);
+      flush();
       expect(list.items[0].name).toBe("Avocado");
       dispose();
     });
@@ -235,7 +271,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.moveBefore(1, [3]);
+      flush();
       expect(list.items[0].name).toBe("Three");
+      flush();
       expect(list.items[1].name).toBe("One");
       dispose();
     });
@@ -245,7 +283,9 @@ describe("createListData", () => {
     createRoot((dispose) => {
       const list = createTestList();
       list.moveAfter(1, [3]);
+      flush();
       expect(list.items[1].name).toBe("Three");
+      flush();
       expect(list.items[0].name).toBe("One");
       dispose();
     });

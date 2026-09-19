@@ -4,7 +4,9 @@
  * Ported from @react-stately/numberfield useNumberFieldState.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createNumberFieldState } from "../src/numberfield/createNumberFieldState";
 
 describe("createNumberFieldState", () => {
@@ -13,7 +15,9 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.numberValue()).toBeNaN();
+        flush();
         expect(state.inputValue()).toBe("");
 
         dispose();
@@ -26,7 +30,9 @@ describe("createNumberFieldState", () => {
           defaultValue: 50,
         });
 
+        flush();
         expect(state.numberValue()).toBe(50);
+        flush();
         expect(state.inputValue()).toBe("50");
 
         dispose();
@@ -39,7 +45,9 @@ describe("createNumberFieldState", () => {
           value: 75,
         });
 
+        flush();
         expect(state.numberValue()).toBe(75);
+        flush();
         expect(state.inputValue()).toBe("75");
 
         dispose();
@@ -55,7 +63,9 @@ describe("createNumberFieldState", () => {
           step: 2,
         });
 
+        flush();
         expect(state.numberValue()).toBe(10);
+        flush();
         expect(state.inputValue()).toBe("10");
 
         dispose();
@@ -74,7 +84,9 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(51);
+        flush();
         expect(onChange).toHaveBeenCalledWith(51);
 
         dispose();
@@ -91,7 +103,9 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(49);
+        flush();
         expect(onChange).toHaveBeenCalledWith(49);
 
         dispose();
@@ -107,6 +121,7 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(55);
 
         dispose();
@@ -122,6 +137,7 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(45);
 
         dispose();
@@ -136,12 +152,15 @@ describe("createNumberFieldState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(99);
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(100);
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(100);
 
         dispose();
@@ -156,12 +175,15 @@ describe("createNumberFieldState", () => {
         });
 
         state.decrement();
+        flush();
         expect(state.numberValue()).toBe(1);
 
         state.decrement();
+        flush();
         expect(state.numberValue()).toBe(0);
 
         state.decrement();
+        flush();
         expect(state.numberValue()).toBe(0);
 
         dispose();
@@ -176,6 +198,7 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(10);
 
         dispose();
@@ -190,6 +213,7 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(100);
 
         dispose();
@@ -202,6 +226,7 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(0);
 
         dispose();
@@ -214,6 +239,7 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(0);
 
         dispose();
@@ -229,6 +255,7 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -244,6 +271,7 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -259,6 +287,7 @@ describe("createNumberFieldState", () => {
 
         state.increment();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -274,6 +303,7 @@ describe("createNumberFieldState", () => {
 
         state.decrement();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -293,7 +323,9 @@ describe("createNumberFieldState", () => {
 
         state.incrementToMax();
 
+        flush();
         expect(state.numberValue()).toBe(100);
+        flush();
         expect(onChange).toHaveBeenCalledWith(100);
 
         dispose();
@@ -311,7 +343,9 @@ describe("createNumberFieldState", () => {
 
         state.decrementToMin();
 
+        flush();
         expect(state.numberValue()).toBe(0);
+        flush();
         expect(onChange).toHaveBeenCalledWith(0);
 
         dispose();
@@ -326,6 +360,7 @@ describe("createNumberFieldState", () => {
 
         state.incrementToMax();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -340,6 +375,7 @@ describe("createNumberFieldState", () => {
 
         state.decrementToMin();
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         dispose();
@@ -355,6 +391,7 @@ describe("createNumberFieldState", () => {
           maxValue: 100,
         });
 
+        flush();
         expect(state.canIncrement()).toBe(true);
 
         dispose();
@@ -368,6 +405,7 @@ describe("createNumberFieldState", () => {
           maxValue: 100,
         });
 
+        flush();
         expect(state.canIncrement()).toBe(false);
 
         dispose();
@@ -381,6 +419,7 @@ describe("createNumberFieldState", () => {
           minValue: 0,
         });
 
+        flush();
         expect(state.canDecrement()).toBe(true);
 
         dispose();
@@ -394,6 +433,7 @@ describe("createNumberFieldState", () => {
           minValue: 0,
         });
 
+        flush();
         expect(state.canDecrement()).toBe(false);
 
         dispose();
@@ -407,7 +447,9 @@ describe("createNumberFieldState", () => {
           isDisabled: true,
         });
 
+        flush();
         expect(state.canIncrement()).toBe(false);
+        flush();
         expect(state.canDecrement()).toBe(false);
 
         dispose();
@@ -421,7 +463,9 @@ describe("createNumberFieldState", () => {
           isReadOnly: true,
         });
 
+        flush();
         expect(state.canIncrement()).toBe(false);
+        flush();
         expect(state.canDecrement()).toBe(false);
 
         dispose();
@@ -432,7 +476,9 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.canIncrement()).toBe(true);
+        flush();
         expect(state.canDecrement()).toBe(true);
 
         dispose();
@@ -446,6 +492,7 @@ describe("createNumberFieldState", () => {
         const state = createNumberFieldState({});
 
         state.setInputValue("42");
+        flush();
         expect(state.inputValue()).toBe("42");
 
         dispose();
@@ -460,7 +507,9 @@ describe("createNumberFieldState", () => {
         state.setInputValue("42");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBe(42);
+        flush();
         expect(onChange).toHaveBeenCalledWith(42);
 
         dispose();
@@ -477,6 +526,7 @@ describe("createNumberFieldState", () => {
         state.setInputValue("150");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBe(100);
 
         dispose();
@@ -492,6 +542,7 @@ describe("createNumberFieldState", () => {
         state.setInputValue("42");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBe(40);
 
         dispose();
@@ -507,7 +558,9 @@ describe("createNumberFieldState", () => {
         state.setInputValue("");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBeNaN();
+        flush();
         expect(state.inputValue()).toBe("");
 
         dispose();
@@ -521,7 +574,9 @@ describe("createNumberFieldState", () => {
         state.setInputValue("42.5");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBe(42.5);
+        flush();
         expect(state.inputValue()).toBe("42.5");
 
         dispose();
@@ -539,8 +594,11 @@ describe("createNumberFieldState", () => {
         state.setInputValue("");
         state.commit();
 
+        flush();
         expect(onChange).toHaveBeenCalledWith(NaN);
+        flush();
         expect(state.inputValue()).toBe("12");
+        flush();
         expect(state.numberValue()).toBe(12);
 
         dispose();
@@ -556,7 +614,9 @@ describe("createNumberFieldState", () => {
         state.setInputValue("abc");
         state.commit();
 
+        flush();
         expect(state.numberValue()).toBe(50);
+        flush();
         expect(state.inputValue()).toBe("50");
 
         dispose();
@@ -569,6 +629,7 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.validate("")).toBe(true);
 
         dispose();
@@ -579,6 +640,7 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.validate("-")).toBe(true);
 
         dispose();
@@ -589,6 +651,7 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.validate("1.")).toBe(true);
 
         dispose();
@@ -599,8 +662,11 @@ describe("createNumberFieldState", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({});
 
+        flush();
         expect(state.validate("42")).toBe(true);
+        flush();
         expect(state.validate("3.14")).toBe(true);
+        flush();
         expect(state.validate("-5")).toBe(true);
 
         dispose();
@@ -615,6 +681,7 @@ describe("createNumberFieldState", () => {
           isDisabled: true,
         });
 
+        flush();
         expect(state.isDisabled()).toBe(true);
 
         dispose();
@@ -627,6 +694,7 @@ describe("createNumberFieldState", () => {
           isReadOnly: true,
         });
 
+        flush();
         expect(state.isReadOnly()).toBe(true);
 
         dispose();
@@ -641,6 +709,7 @@ describe("createNumberFieldState", () => {
           minValue: 10,
         });
 
+        flush();
         expect(state.minValue()).toBe(10);
 
         dispose();
@@ -653,6 +722,7 @@ describe("createNumberFieldState", () => {
           maxValue: 100,
         });
 
+        flush();
         expect(state.maxValue()).toBe(100);
 
         dispose();
@@ -669,13 +739,16 @@ describe("createNumberFieldState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(0.1);
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(0.2);
 
         state.increment();
         // Should be 0.3, not 0.30000000000000004
+        flush();
         expect(state.numberValue()).toBeCloseTo(0.3, 10);
 
         dispose();
@@ -692,6 +765,7 @@ describe("createNumberFieldState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.numberValue()).toBe(0.51);
 
         dispose();
@@ -711,6 +785,7 @@ describe("createNumberFieldState", () => {
         state.increment();
 
         // onChange should be called
+        flush();
         expect(onChange).toHaveBeenCalledWith(51);
 
         dispose();
@@ -726,10 +801,13 @@ describe("createNumberFieldState", () => {
           },
         });
 
+        flush();
         expect(state.numberValue()).toBe(50);
 
         setValue(75);
+        flush();
         expect(state.numberValue()).toBe(75);
+        flush();
         expect(state.inputValue()).toBe("75");
 
         dispose();
@@ -746,6 +824,7 @@ describe("createNumberFieldState", () => {
           maxValue: 10,
         });
 
+        flush();
         expect(state.numberValue()).toBe(10);
 
         dispose();
@@ -761,6 +840,7 @@ describe("createNumberFieldState", () => {
           commitBehavior: "validate",
         });
 
+        flush();
         expect(state.numberValue()).toBe(15);
 
         dispose();

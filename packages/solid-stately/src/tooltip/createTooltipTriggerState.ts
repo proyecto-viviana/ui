@@ -20,9 +20,10 @@
  * Ensures only one tooltip is open at a time and controls the delay for showing a tooltip.
  */
 
-import { createSignal, onCleanup, type Accessor } from "solid-js";
+import { onCleanup, type Accessor } from "solid-js";
 import { createOverlayTriggerState, type OverlayTriggerProps } from "../overlays";
 import { isServer } from "../ssr";
+import { createInternalSignal } from "../utils";
 
 // Default delays (in ms)
 const TOOLTIP_DELAY = 1500;
@@ -91,10 +92,12 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
 
   const overlayState = createOverlayTriggerState(props);
   const id = `tooltip-${++tooltipId}`;
-  const [shouldSkipAnimation, setShouldSkipAnimation] = createSignal(false);
+  const [shouldSkipAnimation, setShouldSkipAnimation] = createInternalSignal(false);
 
   let closeTimeout: ReturnType<typeof setTimeout> | null = null;
-  const [closeCallback, setCloseCallback] = createSignal<() => void>(() => overlayState.close());
+  // Solid 2 treats a function initializer as a writable memo, so keep the
+  // close target as a plain binding rather than a function-valued signal.
+  let closeFn = overlayState.close;
 
   const ensureTooltipEntry = () => {
     tooltips[id] = hideTooltip;
@@ -137,11 +140,11 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
         clearTimeout(closeTimeout);
         closeTimeout = null;
       }
-      closeCallback()();
+      closeFn();
     } else if (!closeTimeout) {
       closeTimeout = setTimeout(() => {
         closeTimeout = null;
-        closeCallback()();
+        closeFn();
       }, closeDelay());
     }
 
@@ -180,8 +183,7 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
     }
   };
 
-  // Update close callback when overlayState.close changes
-  setCloseCallback(() => overlayState.close);
+  closeFn = overlayState.close;
 
   // Cleanup on unmount
   onCleanup(() => {

@@ -23,8 +23,8 @@
  * this state.
  */
 
-import { createSignal, createMemo, createComputed, untrack, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createMemo, createEffect, type Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import type { SelectionStateProps } from "../collections/createSelectionState";
 import type {
   DisabledBehavior,
@@ -117,16 +117,16 @@ export function createMultipleSelectionState(
 
   // Focus is a plain signal in Solid; upstream needs a ref + state pair only
   // because React requires both a synchronous read and a re-render trigger.
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusedKey, setFocusedKeySignal] = createSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createSignal<FocusStrategy | null>(null);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
+  const [focusedKey, setFocusedKeySignal] = createInternalSignal<Key | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
 
   const defaultSelectedKeys = convertSelection(
     getProps().defaultSelectedKeys,
     new SelectionClass(),
   );
   const [uncontrolledSelectedKeys, setUncontrolledSelectedKeys] =
-    createSignal<Selection>(defaultSelectedKeys);
+    createInternalSignal<Selection>(defaultSelectedKeys);
 
   const selectedKeys = createMemo<Selection>(() => {
     const p = getProps();
@@ -142,27 +142,28 @@ export function createMultipleSelectionState(
   const selectionBehaviorProp = (): SelectionBehavior => getProps().selectionBehavior ?? "toggle";
 
   const [selectionBehavior, setSelectionBehaviorState] =
-    createSignal<SelectionBehavior>(selectionBehaviorProp());
+    createInternalSignal<SelectionBehavior>(selectionBehaviorProp());
 
   // If the selectionBehavior prop is 'replace' but the current state is 'toggle'
   // (e.g. due to a long press to enter selection mode on touch) and the
   // selection becomes empty, reset the behavior back to 'replace'.
-  createComputed(() => {
-    const keys = selectedKeys();
-    if (
-      selectionBehaviorProp() === "replace" &&
-      untrack(selectionBehavior) === "toggle" &&
-      typeof keys === "object" &&
-      keys.size === 0
-    ) {
-      setSelectionBehaviorState("replace");
-    }
-  });
+  createEffect(
+    () => ({ keys: selectedKeys(), prop: selectionBehaviorProp() }),
+    ({ keys, prop }) => {
+      if (
+        prop === "replace" &&
+        selectionBehavior() === "toggle" &&
+        typeof keys === "object" &&
+        keys.size === 0
+      ) {
+        setSelectionBehaviorState("replace");
+      }
+    },
+  );
 
   // If the selectionBehavior prop changes, sync it into state.
   let lastSelectionBehavior = selectionBehaviorProp();
-  createComputed(() => {
-    const prop = selectionBehaviorProp();
+  createEffect(selectionBehaviorProp, (prop) => {
     if (prop !== lastSelectionBehavior) {
       setSelectionBehaviorState(prop);
       lastSelectionBehavior = prop;
@@ -181,9 +182,12 @@ export function createMultipleSelectionState(
     getProps().onSelectionChange?.(keys);
   };
 
+  const liveSelectedKeys = (): Selection =>
+    getProps().selectedKeys !== undefined ? selectedKeys() : readNow(uncontrolledSelectedKeys);
+
   const setSelectedKeys = (keys: Selection) => {
     const p = getProps();
-    const current = selectedKeys();
+    const current = liveSelectedKeys();
     const shouldUpdate =
       p.allowDuplicateSelectionEvents ||
       keys === "all" ||
@@ -239,7 +243,7 @@ export function createMultipleSelectionState(
       setChildFocusStrategy(strategy);
     },
     get selectedKeys() {
-      return selectedKeys();
+      return liveSelectedKeys();
     },
     get lastSelectionEvent() {
       return lastSelectionEvent;

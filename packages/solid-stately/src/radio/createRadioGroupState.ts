@@ -21,8 +21,8 @@
  * This is a 1:1 port of @react-stately/radio's useRadioGroupState.
  */
 
-import { createMemo, createSignal, Accessor, untrack } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { createMemo, Accessor, untrack } from "solid-js";
+import { createInternalSignal, type MaybeAccessor, access } from "../utils";
 import { createId } from "../ssr";
 import {
   createFormValidationState,
@@ -137,15 +137,15 @@ export function createRadioGroupState(props: MaybeAccessor<RadioGroupProps> = {}
 
   // Create internal signal for uncontrolled mode
   // Initialize with defaultValue only (not value, which is for controlled mode)
-  const [internalValue, setInternalValue] = createSignal<string | null>(
+  const [internalValue, setInternalValue] = createInternalSignal<string | null>(
     initialProps.defaultValue ?? null,
   );
-  const [lastFocusedValue, setLastFocusedValueInternal] = createSignal<string | null>(null);
+  const [lastFocusedValue, setLastFocusedValueInternal] = createInternalSignal<string | null>(null);
 
   // SolidJS-specific: Version counter for triggering DOM sync across all radios
   // This handles the case where native radio behavior causes DOM state to desync
   // from our reactive state (e.g., clicking a radio unchecks siblings in the DOM)
-  const [syncVersion, setSyncVersion] = createSignal(0);
+  const [syncVersion, setSyncVersion] = createInternalSignal(0);
 
   const controlledValue = createMemo<string | null | undefined>(() => {
     const value = getProps().value;

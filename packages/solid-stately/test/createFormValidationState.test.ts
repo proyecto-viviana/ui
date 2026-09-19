@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import {
   createFormValidationState,
   DEFAULT_VALIDATION_RESULT,
@@ -21,9 +23,13 @@ describe("createFormValidationState", () => {
           value: "test",
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual([]);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -37,7 +43,9 @@ describe("createFormValidationState", () => {
           isInvalid: true,
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
 
         dispose();
@@ -51,7 +59,9 @@ describe("createFormValidationState", () => {
           validationState: "invalid",
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
 
         dispose();
@@ -70,7 +80,9 @@ describe("createFormValidationState", () => {
           },
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual(["Value is required"]);
 
         dispose();
@@ -87,7 +99,9 @@ describe("createFormValidationState", () => {
           },
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(false);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -106,7 +120,9 @@ describe("createFormValidationState", () => {
           },
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual([
           "Too short",
           "Must contain number",
@@ -124,7 +140,9 @@ describe("createFormValidationState", () => {
         });
 
         // true is truthy but not an error message
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(false);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -139,7 +157,9 @@ describe("createFormValidationState", () => {
           validate,
         });
 
+        flush();
         expect(validate).not.toHaveBeenCalled();
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(false);
 
         dispose();
@@ -165,8 +185,11 @@ describe("createFormValidationState", () => {
           builtinValidation,
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
+        flush();
         expect(state.realtimeValidation().validationErrors).toEqual(["This field is required"]);
+        flush();
         expect(state.realtimeValidation().validationDetails.valueMissing).toBe(true);
 
         dispose();
@@ -184,6 +207,7 @@ describe("createFormValidationState", () => {
           },
         });
 
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(false);
 
         dispose();
@@ -200,7 +224,9 @@ describe("createFormValidationState", () => {
           validate: (v) => (v ? null : "Required"),
         });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual(["Required"]);
 
         dispose();
@@ -220,8 +246,10 @@ describe("createFormValidationState", () => {
         });
 
         // Realtime shows the error
+        flush();
         expect(state.realtimeValidation().isInvalid).toBe(true);
         // Display doesn't show it yet
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
 
         dispose();
@@ -237,6 +265,7 @@ describe("createFormValidationState", () => {
           validationBehavior: "aria",
         });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
 
         state.updateValidation({
@@ -245,7 +274,9 @@ describe("createFormValidationState", () => {
           validationDetails: VALID_VALIDITY_STATE,
         });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual(["Custom error"]);
 
         dispose();
@@ -266,6 +297,7 @@ describe("createFormValidationState", () => {
         });
 
         // Not displayed until commit
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
 
         dispose();
@@ -282,6 +314,7 @@ describe("createFormValidationState", () => {
           validate: (v) => (v ? null : "Required"),
         });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
 
         state.commitValidation();
@@ -289,7 +322,9 @@ describe("createFormValidationState", () => {
         // Allow effect to run
         await Promise.resolve();
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual(["Required"]);
 
         dispose();
@@ -315,7 +350,9 @@ describe("createFormValidationState", () => {
         state.resetValidation();
 
         // After reset, should show valid
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -331,6 +368,7 @@ describe("createFormValidationState", () => {
         state.resetValidation();
 
         // Reset should have been called without error
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
 
         dispose();
@@ -355,11 +393,17 @@ describe("mergeValidation", () => {
 
     const merged = mergeValidation(result1, result2);
 
+    flush();
     expect(merged.isInvalid).toBe(true);
+    flush();
     expect(merged.validationErrors).toContain("Error 1");
+    flush();
     expect(merged.validationErrors).toContain("Error 2");
+    flush();
     expect(merged.validationDetails.valueMissing).toBe(true);
+    flush();
     expect(merged.validationDetails.patternMismatch).toBe(true);
+    flush();
     expect(merged.validationDetails.valid).toBe(false);
   });
 
@@ -378,35 +422,52 @@ describe("mergeValidation", () => {
 
     const merged = mergeValidation(result1, result2);
 
+    flush();
     expect(merged.validationErrors).toEqual(["Same error"]);
   });
 
   it("should return valid when all results are valid", () => {
     const merged = mergeValidation(DEFAULT_VALIDATION_RESULT, DEFAULT_VALIDATION_RESULT);
 
+    flush();
     expect(merged.isInvalid).toBe(false);
+    flush();
     expect(merged.validationDetails.valid).toBe(true);
   });
 });
 
 describe("constants", () => {
   it("VALID_VALIDITY_STATE should have all false except valid", () => {
+    flush();
     expect(VALID_VALIDITY_STATE.valid).toBe(true);
+    flush();
     expect(VALID_VALIDITY_STATE.badInput).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.customError).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.patternMismatch).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.rangeOverflow).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.rangeUnderflow).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.stepMismatch).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.tooLong).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.tooShort).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.typeMismatch).toBe(false);
+    flush();
     expect(VALID_VALIDITY_STATE.valueMissing).toBe(false);
   });
 
   it("DEFAULT_VALIDATION_RESULT should be valid", () => {
+    flush();
     expect(DEFAULT_VALIDATION_RESULT.isInvalid).toBe(false);
+    flush();
     expect(DEFAULT_VALIDATION_RESULT.validationErrors).toEqual([]);
+    flush();
     expect(DEFAULT_VALIDATION_RESULT.validationDetails.valid).toBe(true);
   });
 });

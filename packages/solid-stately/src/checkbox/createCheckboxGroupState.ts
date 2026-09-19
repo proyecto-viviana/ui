@@ -21,8 +21,8 @@
  * This is a 1:1 port of @react-stately/checkbox's useCheckboxGroupState.
  */
 
-import { createMemo, createSignal, Accessor } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { createMemo, Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import {
   createFormValidationState,
   type FormValidationState,
@@ -115,7 +115,7 @@ export function createCheckboxGroupState(
   const initialProps = getProps();
   const initialValue = initialProps.value ?? initialProps.defaultValue ?? [];
 
-  const [internalValue, setInternalValue] = createSignal<readonly string[]>(initialValue);
+  const [internalValue, setInternalValue] = createInternalSignal<readonly string[]>(initialValue);
 
   const controlledValue = createMemo<readonly string[] | undefined>(() => getProps().value);
 
@@ -125,6 +125,9 @@ export function createCheckboxGroupState(
     const controlled = controlledValue();
     return controlled !== undefined ? controlled : internalValue();
   };
+
+  const liveValue = (): readonly string[] =>
+    isControlled() ? value() : readNow(internalValue);
 
   const isRequired: Accessor<boolean> = () => {
     const p = getProps();
@@ -175,9 +178,9 @@ export function createCheckboxGroupState(
       return;
     }
 
-    const current = value();
-    if (!current.includes(addVal)) {
-      setValue([...current, addVal]);
+    const snapshot = liveValue();
+    if (!snapshot.includes(addVal)) {
+      setValue([...snapshot, addVal]);
     }
   }
 
@@ -187,9 +190,9 @@ export function createCheckboxGroupState(
       return;
     }
 
-    const current = value();
-    if (current.includes(removeVal)) {
-      setValue(current.filter((v) => v !== removeVal));
+    const snapshot = liveValue();
+    if (snapshot.includes(removeVal)) {
+      setValue(snapshot.filter((v) => v !== removeVal));
     }
   }
 
@@ -199,11 +202,11 @@ export function createCheckboxGroupState(
       return;
     }
 
-    const current = value();
-    if (current.includes(toggleVal)) {
-      setValue(current.filter((v) => v !== toggleVal));
+    const snapshot = liveValue();
+    if (snapshot.includes(toggleVal)) {
+      setValue(snapshot.filter((v) => v !== toggleVal));
     } else {
-      setValue([...current, toggleVal]);
+      setValue([...snapshot, toggleVal]);
     }
   }
 

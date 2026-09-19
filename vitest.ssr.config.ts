@@ -1,17 +1,17 @@
 import { defineConfig } from "vite-plus";
-import solidPlugin from "vite-plugin-solid";
+import solidPlugin from "@solidjs/vite-plugin";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // SSR-compiled test project: `solid({ ssr: true })` forces `generate: "ssr"` +
-// `hydratable: true`, and drops the "browser" resolve condition so `solid-js/web`
+// `hydratable: true`, and drops the "browser" resolve condition so `@solidjs/web`
 // resolves to its SERVER build (`isServer === true`, `renderToString` works).
 // This is the missing half of the dual-compilation needed to reproduce/guard
 // SSR hydration: the existing vitest.config.ts is the DOM-compiled half.
 export default defineConfig({
-  plugins: [solidPlugin({ ssr: true })],
+  plugins: [...solidPlugin({ ssr: true })],
   optimizeDeps: {
     // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
     // discovery before Vitest applies its file include. That crosses ignored

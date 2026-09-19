@@ -6,7 +6,9 @@
  * so these tests follow the same patterns as useCheckboxGroupState tests.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createRadioGroupState, type RadioGroupProps } from "../src/radio/createRadioGroupState";
 
 describe("createRadioGroupState", () => {
@@ -15,12 +17,19 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState();
 
+        flush();
         expect(state.selectedValue()).toBe(null);
+        flush();
         expect(state.isDisabled).toBe(false);
+        flush();
         expect(state.isReadOnly).toBe(false);
+        flush();
         expect(state.isRequired).toBe(false);
+        flush();
         expect(typeof state.setSelectedValue).toBe("function");
+        flush();
         expect(typeof state.setLastFocusedValue).toBe("function");
+        flush();
         expect(state.name).toBeTruthy();
 
         dispose();
@@ -31,6 +40,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isDisabled: true });
 
+        flush();
         expect(state.isDisabled).toBe(true);
 
         dispose();
@@ -41,6 +51,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isReadOnly: true });
 
+        flush();
         expect(state.isReadOnly).toBe(true);
 
         dispose();
@@ -51,6 +62,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isRequired: true });
 
+        flush();
         expect(state.isRequired).toBe(true);
 
         dispose();
@@ -63,6 +75,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ value: "option1" });
 
+        flush();
         expect(state.selectedValue()).toBe("option1");
 
         dispose();
@@ -73,7 +86,9 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ defaultValue: "option1" });
 
+        flush();
         expect(state.selectedValue()).toBe("option1");
+        flush();
         expect(state.defaultSelectedValue).toBe("option1");
 
         dispose();
@@ -84,6 +99,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ value: null });
 
+        flush();
         expect(state.selectedValue()).toBe(null);
 
         dispose();
@@ -97,12 +113,15 @@ describe("createRadioGroupState", () => {
         const state = createRadioGroupState();
 
         state.setSelectedValue("option-a");
+        flush();
         expect(state.selectedValue()).toBe("option-a");
 
         state.setSelectedValue("option-b");
+        flush();
         expect(state.selectedValue()).toBe("option-b");
 
         state.setSelectedValue(null);
+        flush();
         expect(state.selectedValue()).toBe(null);
 
         dispose();
@@ -115,12 +134,15 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState();
 
+        flush();
         expect(state.lastFocusedValue()).toBe(null);
 
         state.setLastFocusedValue("focused-option");
+        flush();
         expect(state.lastFocusedValue()).toBe("focused-option");
 
         state.setLastFocusedValue(null);
+        flush();
         expect(state.lastFocusedValue()).toBe(null);
 
         dispose();
@@ -138,12 +160,15 @@ describe("createRadioGroupState", () => {
           },
         });
 
+        flush();
         expect(state.selectedValue()).toBe("foo");
 
         setValue("bar");
+        flush();
         expect(state.selectedValue()).toBe("bar");
 
         setValue(null);
+        flush();
         expect(state.selectedValue()).toBe(null);
 
         dispose();
@@ -158,12 +183,15 @@ describe("createRadioGroupState", () => {
           onChange,
         });
 
+        flush();
         expect(state.selectedValue()).toBe("controlled-value");
 
         state.setSelectedValue("new-value");
         // Value should NOT change in controlled mode
+        flush();
         expect(state.selectedValue()).toBe("controlled-value");
         // But onChange should still be called
+        flush();
         expect(onChange).toHaveBeenCalledWith("new-value");
 
         dispose();
@@ -176,9 +204,11 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ defaultValue: "initial" });
 
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         state.setSelectedValue("changed");
+        flush();
         expect(state.selectedValue()).toBe("changed");
 
         dispose();
@@ -191,11 +221,15 @@ describe("createRadioGroupState", () => {
         const state = createRadioGroupState({ defaultValue: "initial", onChange: onChangeSpy });
 
         state.setSelectedValue("new-value");
+        flush();
         expect(onChangeSpy).toHaveBeenCalledWith("new-value");
+        flush();
         expect(onChangeSpy).toHaveBeenCalledTimes(1);
 
         state.setSelectedValue("another-value");
+        flush();
         expect(onChangeSpy).toHaveBeenCalledWith("another-value");
+        flush();
         expect(onChangeSpy).toHaveBeenCalledTimes(2);
 
         dispose();
@@ -212,6 +246,7 @@ describe("createRadioGroupState", () => {
 
         state.setSelectedValue(null);
         // onChange is NOT called for null values per the implementation
+        flush();
         expect(onChange).not.toHaveBeenCalled();
 
         dispose();
@@ -224,9 +259,11 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isReadOnly: true, defaultValue: "initial" });
 
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         state.setSelectedValue("new-value");
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         dispose();
@@ -239,9 +276,11 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isDisabled: true, defaultValue: "initial" });
 
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         state.setSelectedValue("new-value");
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         dispose();
@@ -254,6 +293,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isInvalid: true });
 
+        flush();
         expect(state.isInvalid).toBe(true);
 
         dispose();
@@ -264,6 +304,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isInvalid: false });
 
+        flush();
         expect(state.isInvalid).toBe(false);
 
         dispose();
@@ -274,9 +315,13 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({});
 
+        flush();
         expect(state.isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().validationDetails.valid).toBe(true);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -287,9 +332,13 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ isInvalid: true });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().validationDetails.customError).toBe(true);
+        flush();
         expect(state.displayValidation().validationDetails.valid).toBe(false);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -302,6 +351,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({ name: "my-radio-group" });
 
+        flush();
         expect(state.name).toBe("my-radio-group");
 
         dispose();
@@ -313,8 +363,11 @@ describe("createRadioGroupState", () => {
         const state1 = createRadioGroupState();
         const state2 = createRadioGroupState();
 
+        flush();
         expect(state1.name).toBeTruthy();
+        flush();
         expect(state2.name).toBeTruthy();
+        flush();
         expect(state1.name).not.toBe(state2.name);
 
         dispose();
@@ -327,6 +380,7 @@ describe("createRadioGroupState", () => {
       createRoot((dispose) => {
         const state = createRadioGroupState({});
 
+        flush();
         expect(state.defaultSelectedValue).toBe(null);
 
         dispose();
@@ -339,9 +393,11 @@ describe("createRadioGroupState", () => {
           defaultValue: "initial",
         });
 
+        flush();
         expect(state.defaultSelectedValue).toBe("initial");
 
         state.setSelectedValue("changed");
+        flush();
         expect(state.defaultSelectedValue).toBe("initial");
 
         dispose();
@@ -355,12 +411,15 @@ describe("createRadioGroupState", () => {
         const [props, setProps] = createSignal<RadioGroupProps>({});
         const state = createRadioGroupState(props);
 
+        flush();
         expect(state.selectedValue()).toBe(null);
 
         setProps({ value: "selected" });
+        flush();
         expect(state.selectedValue()).toBe("selected");
 
         setProps({ isDisabled: true });
+        flush();
         expect(state.isDisabled).toBe(true);
 
         dispose();
@@ -376,12 +435,15 @@ describe("createRadioGroupState", () => {
           },
         });
 
+        flush();
         expect(state.selectedValue()).toBe("initial");
 
         setValue("new-value");
+        flush();
         expect(state.selectedValue()).toBe("new-value");
 
         setValue(null);
+        flush();
         expect(state.selectedValue()).toBe(null);
 
         dispose();
@@ -402,6 +464,7 @@ describe("createRadioGroupState", () => {
         });
 
         // Native behavior does not show validation until commit.
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
       });
 
@@ -409,7 +472,9 @@ describe("createRadioGroupState", () => {
       state.setSelectedValue("dogs");
       await Promise.resolve();
 
+      flush();
       expect(state.displayValidation().isInvalid).toBe(true);
+      flush();
       expect(state.displayValidation().validationErrors).toEqual(["Selection is invalid"]);
 
       dispose();

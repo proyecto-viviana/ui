@@ -25,10 +25,10 @@
  */
 
 import { createUniqueId } from "solid-js";
-import { isServer as _isServer } from "solid-js/web";
+import { isServer as _isServer } from "@solidjs/web";
 
 /**
- * Re-export isServer from solid-js/web for convenience.
+ * Re-export isServer from @solidjs/web for convenience.
  */
 export const isServer = _isServer;
 

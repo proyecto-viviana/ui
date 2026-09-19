@@ -20,8 +20,8 @@
  * - packages/react-stately/src/selection/SelectionManager.ts
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createMemo, type Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import type {
   Collection,
   DisabledBehavior,
@@ -120,15 +120,15 @@ export function createSelectionState(
   const getProps = () => access(props);
 
   // Selection behavior state
-  const [internalBehavior, setInternalBehavior] = createSignal<SelectionBehavior>("toggle");
+  const [internalBehavior, setInternalBehavior] = createInternalSignal<SelectionBehavior>("toggle");
 
   // Internal selection state
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<Selection>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Selection>(
     getInitialSelection(getProps().defaultSelectedKeys),
   );
 
   // Track anchor for range selection
-  const [anchorKey, setAnchorKey] = createSignal<Key | null>(null);
+  const [anchorKey, setAnchorKey] = createInternalSignal<Key | null>(null);
 
   // Computed values
   const selectionMode: Accessor<SelectionMode> = () => getProps().selectionMode ?? "none";
@@ -141,13 +141,13 @@ export function createSelectionState(
     return getProps().disallowEmptySelection ?? false;
   };
 
-  const selectedKeys: Accessor<Selection> = createMemo(() => {
+  const selectedKeys: Accessor<Selection> = () => {
     const p = getProps();
     if (p.selectedKeys !== undefined) {
       return normalizeSelection(p.selectedKeys);
     }
     return internalSelectedKeys();
-  });
+  };
 
   const disabledKeys: Accessor<Set<Key>> = createMemo(() => {
     const keys = getProps().disabledKeys;
@@ -168,8 +168,11 @@ export function createSelectionState(
   };
 
   // Methods
+  const liveSelectedKeys = (): Selection =>
+    getProps().selectedKeys !== undefined ? selectedKeys() : readNow(internalSelectedKeys);
+
   const isSelected = (key: Key): boolean => {
-    const keys = selectedKeys();
+    const keys = liveSelectedKeys();
     if (keys === "all") return true;
     return keys.has(key);
   };
@@ -188,7 +191,7 @@ export function createSelectionState(
     }
 
     // Uncontrolled mode
-    const current = internalSelectedKeys();
+    const current = readNow(internalSelectedKeys);
     const isDifferent =
       current === "all" ||
       newSelection === "all" ||
@@ -205,7 +208,7 @@ export function createSelectionState(
     if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
 
-    const current = selectedKeys();
+    const current = liveSelectedKeys();
 
     if (selectionMode() === "single") {
       if (isSelected(key) && !disallowEmptySelection()) {

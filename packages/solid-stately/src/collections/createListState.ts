@@ -21,7 +21,7 @@
  * - packages/react-stately/src/list/useSingleSelectListState.ts
  */
 
-import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import { createMemo, createEffect, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "./ListCollection";
 import type { SelectionState, SelectionPressEvent } from "./createSelectionState";
@@ -259,9 +259,8 @@ export function createFilteredListState<T = unknown>(
   // forward (then backward) through the previous collection to the nearest
   // surviving, enabled item. Mirrors @react-stately's useFocusedKeyReset.
   let cachedCollection: Collection<T> | null = null;
-  createEffect(() => {
-    const coll = collection();
-    const focusedKey = untrack(() => state.focusedKey());
+  createEffect(collection, (coll) => {
+    const focusedKey = state.focusedKey();
     if (focusedKey != null && !coll.getItem(focusedKey) && cachedCollection) {
       let key = cachedCollection.getKeyAfter(focusedKey);
       let nextFocusedKey: Key | null = null;
@@ -284,7 +283,7 @@ export function createFilteredListState<T = unknown>(
           key = cachedCollection.getKeyBefore(key);
         }
       }
-      untrack(() => state.setFocusedKey(nextFocusedKey));
+      state.setFocusedKey(nextFocusedKey);
     }
     cachedCollection = coll;
   });

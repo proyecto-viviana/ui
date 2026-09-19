@@ -1,3 +1,4 @@
+import { createInternalSignal } from "../utils";
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -20,8 +21,6 @@
  *
  * Ported from packages/react-stately/src/data/useTreeData.ts.
  */
-
-import { createSignal } from "solid-js";
 
 export type Key = string | number;
 export type Selection = "all" | Set<Key>;
@@ -110,8 +109,8 @@ export function createTreeData<T>(options: TreeOptions<T>): TreeData<T> {
   // Build initial tree
   const initialTree = buildTree(initialItems, new Map(), null, getKey, getChildren);
 
-  const [treeState, setTreeState] = createSignal<TreeDataState<T>>(initialTree);
-  const [selectedKeys, setSelectedKeys] = createSignal<Selection>(
+  const [treeState, setTreeState] = createInternalSignal<TreeDataState<T>>(initialTree);
+  const [selectedKeys, setSelectedKeys] = createInternalSignal<Selection>(
     initialSelectedKeys === "all" ? "all" : new Set(initialSelectedKeys || []),
   );
 

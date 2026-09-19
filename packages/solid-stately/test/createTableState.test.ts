@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import {
   createTableState,
   TableCollection,
@@ -40,9 +40,13 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.columns.length).toBe(3);
+      flush();
       expect(collection.size).toBe(3);
+      flush();
       expect(collection.rowCount).toBe(4); // 1 header + 3 data rows
+      flush();
       expect(collection.columnCount).toBe(3);
     });
 
@@ -53,8 +57,11 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.headerRows.length).toBe(1);
+      flush();
       expect(collection.headerRows[0].type).toBe("headerrow");
+      flush();
       expect(collection.headerRows[0].childNodes.length).toBe(3);
     });
 
@@ -65,10 +72,15 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.body).toBeDefined();
+      flush();
       expect(collection.body.childNodes.length).toBe(3);
+      flush();
       expect(collection.body.childNodes[0].key).toBe(1);
+      flush();
       expect(collection.body.childNodes[1].key).toBe(2);
+      flush();
       expect(collection.body.childNodes[2].key).toBe(3);
     });
 
@@ -79,10 +91,14 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       const firstRow = collection.body.childNodes[0];
       expect(firstRow.childNodes.length).toBe(3);
+      flush();
       expect(firstRow.childNodes[0].type).toBe("rowheader"); // name column is row header
+      flush();
       expect(firstRow.childNodes[1].type).toBe("cell");
+      flush();
       expect(firstRow.childNodes[2].type).toBe("cell");
     });
 
@@ -93,6 +109,7 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.rowHeaderColumnKeys.has("name")).toBe(true);
     });
 
@@ -108,8 +125,11 @@ describe("TableCollection", () => {
       });
 
       const firstRow = collection.body.childNodes[0];
+      flush();
       expect(collection.rowHeaderColumnKeys.has("name")).toBe(true);
+      flush();
       expect(firstRow.childNodes[0].type).toBe("cell");
+      flush();
       expect(firstRow.childNodes[1].type).toBe("rowheader");
     });
 
@@ -129,9 +149,13 @@ describe("TableCollection", () => {
         getTextValue,
       });
 
+      flush();
       expect(collection.columns[0].key).toBe("name");
+      flush();
       expect(collection.getItem("1-name")?.type).toBe("rowheader");
+      flush();
       expect(collection.getItem("1-name")?.textValue).toBe("Alice");
+      flush();
       expect(getTextValue.mock.calls[0][1]).toMatchObject({ id: "name", key: "name" });
     });
   });
@@ -144,9 +168,12 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       const row = collection.getItem(1);
       expect(row).not.toBeNull();
+      flush();
       expect(row?.key).toBe(1);
+      flush();
       expect(row?.type).toBe("item");
     });
 
@@ -157,8 +184,10 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       const cell = collection.getItem("1-name");
       expect(cell).not.toBeNull();
+      flush();
       expect(cell?.type).toBe("rowheader");
     });
 
@@ -169,6 +198,7 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getItem(999)).toBeNull();
     });
   });
@@ -181,8 +211,10 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       const cell = collection.getCell(1, "email");
       expect(cell).not.toBeNull();
+      flush();
       expect(cell?.textValue).toBe("alice@example.com");
     });
 
@@ -193,6 +225,7 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getCell(999, "email")).toBeNull();
     });
   });
@@ -205,6 +238,7 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getFirstKey()).toBe(1);
     });
 
@@ -215,6 +249,7 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getLastKey()).toBe(3);
     });
 
@@ -225,7 +260,9 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getKeyBefore(2)).toBe(1);
+      flush();
       expect(collection.getKeyBefore(1)).toBeNull();
     });
 
@@ -236,7 +273,9 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.getKeyAfter(1)).toBe(2);
+      flush();
       expect(collection.getKeyAfter(3)).toBeNull();
     });
 
@@ -247,8 +286,11 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       expect(collection.at(0)?.key).toBe(1);
+      flush();
       expect(collection.at(2)?.key).toBe(3);
+      flush();
       expect(collection.at(10)).toBeNull();
     });
   });
@@ -262,7 +304,9 @@ describe("TableCollection", () => {
         showSelectionCheckboxes: true,
       });
 
+      flush();
       expect(collection.columns.length).toBe(4); // selection + 3 columns
+      flush();
       expect(collection.columns[0].key).toBe("__selection__");
     });
   });
@@ -275,10 +319,14 @@ describe("TableCollection", () => {
         getKey: (item) => item.id,
       });
 
+      flush();
       const rows = [...collection];
       expect(rows.length).toBe(3);
+      flush();
       expect(rows[0].key).toBe(1);
+      flush();
       expect(rows[1].key).toBe(2);
+      flush();
       expect(rows[2].key).toBe(3);
     });
   });
@@ -298,9 +346,13 @@ describe("createTableState", () => {
           collection,
         }));
 
+        flush();
         expect(state.collection).toBe(collection);
+        flush();
         expect(state.selectionMode).toBe("none");
+        flush();
         expect(state.showSelectionCheckboxes).toBe(false);
+        flush();
         expect(state.sortDescriptor).toBeNull();
 
         dispose();
@@ -322,14 +374,19 @@ describe("createTableState", () => {
           selectionMode: "single",
         }));
 
+        flush();
         expect(state.selectionMode).toBe("single");
+        flush();
         expect(state.isSelected(1)).toBe(false);
 
         state.toggleSelection(1);
+        flush();
         expect(state.isSelected(1)).toBe(true);
 
         state.toggleSelection(2);
+        flush();
         expect(state.isSelected(1)).toBe(false);
+        flush();
         expect(state.isSelected(2)).toBe(true);
 
         dispose();
@@ -352,8 +409,11 @@ describe("createTableState", () => {
         state.toggleSelection(1);
         state.toggleSelection(2);
 
+        flush();
         expect(state.isSelected(1)).toBe(true);
+        flush();
         expect(state.isSelected(2)).toBe(true);
+        flush();
         expect(state.isSelected(3)).toBe(false);
 
         dispose();
@@ -374,6 +434,7 @@ describe("createTableState", () => {
         }));
 
         state.selectAll();
+        flush();
         expect(state.selectedKeys).toBe("all");
 
         dispose();
@@ -398,6 +459,7 @@ describe("createTableState", () => {
 
         state.toggleSelection(1);
 
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith(new Set([1]));
 
         dispose();
@@ -418,6 +480,7 @@ describe("createTableState", () => {
           collection,
         }));
 
+        flush();
         expect(state.sortDescriptor).toBeNull();
 
         dispose();
@@ -437,6 +500,7 @@ describe("createTableState", () => {
           sortDescriptor: { column: "name", direction: "ascending" },
         }));
 
+        flush();
         expect(state.sortDescriptor).toEqual({
           column: "name",
           direction: "ascending",
@@ -463,6 +527,7 @@ describe("createTableState", () => {
 
         state.sort("name");
 
+        flush();
         expect(onSortChange).toHaveBeenCalledWith({
           column: "name",
           direction: "ascending",
@@ -490,6 +555,7 @@ describe("createTableState", () => {
 
         state.sort("name");
 
+        flush();
         expect(onSortChange).toHaveBeenCalledWith({
           column: "name",
           direction: "descending",
@@ -516,6 +582,7 @@ describe("createTableState", () => {
 
         state.sort("name", "descending");
 
+        flush();
         expect(onSortChange).toHaveBeenCalledWith({
           column: "name",
           direction: "descending",
@@ -541,12 +608,16 @@ describe("createTableState", () => {
           disabledKeys: [2],
         }));
 
+        flush();
         expect(state.isDisabled(1)).toBe(false);
+        flush();
         expect(state.isDisabled(2)).toBe(true);
+        flush();
         expect(state.isDisabled(3)).toBe(false);
 
         // Cannot select disabled key
         state.toggleSelection(2);
+        flush();
         expect(state.isSelected(2)).toBe(false);
 
         dispose();
@@ -569,6 +640,7 @@ describe("createTableState", () => {
           showSelectionCheckboxes: true,
         }));
 
+        flush();
         expect(state.showSelectionCheckboxes).toBe(true);
 
         dispose();
@@ -589,12 +661,15 @@ describe("createTableState", () => {
           collection,
         }));
 
+        flush();
         expect(state.focusedKey).toBeNull();
 
         state.setFocusedKey(1);
+        flush();
         expect(state.focusedKey).toBe(1);
 
         state.setFocusedKey(2);
+        flush();
         expect(state.focusedKey).toBe(2);
 
         dispose();
@@ -613,9 +688,11 @@ describe("createTableState", () => {
           collection,
         }));
 
+        flush();
         expect(state.isFocused).toBe(false);
 
         state.setFocused(true);
+        flush();
         expect(state.isFocused).toBe(true);
 
         dispose();

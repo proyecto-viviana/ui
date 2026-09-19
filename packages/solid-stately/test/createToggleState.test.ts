@@ -5,7 +5,9 @@
  * Tests follow the same patterns as @react-stately tests.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createToggleState } from "../src/toggle/createToggleState";
 
 describe("createToggleState", () => {
@@ -14,7 +16,9 @@ describe("createToggleState", () => {
       createRoot((dispose) => {
         const state = createToggleState();
 
+        flush();
         expect(state.isSelected()).toBe(false);
+        flush();
         expect(state.defaultSelected).toBe(false);
 
         dispose();
@@ -27,7 +31,9 @@ describe("createToggleState", () => {
           defaultSelected: true,
         });
 
+        flush();
         expect(state.isSelected()).toBe(true);
+        flush();
         expect(state.defaultSelected).toBe(true);
 
         dispose();
@@ -40,8 +46,10 @@ describe("createToggleState", () => {
           isSelected: true,
         });
 
+        flush();
         expect(state.isSelected()).toBe(true);
         // defaultSelected reflects the initial value in controlled mode
+        flush();
         expect(state.defaultSelected).toBe(true);
 
         dispose();
@@ -54,7 +62,9 @@ describe("createToggleState", () => {
           isSelected: false,
         });
 
+        flush();
         expect(state.isSelected()).toBe(false);
+        flush();
         expect(state.defaultSelected).toBe(false);
 
         dispose();
@@ -68,9 +78,11 @@ describe("createToggleState", () => {
         const state = createToggleState();
 
         state.setSelected(true);
+        flush();
         expect(state.isSelected()).toBe(true);
 
         state.setSelected(false);
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -82,16 +94,20 @@ describe("createToggleState", () => {
         const state = createToggleState();
 
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(true);
 
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(false);
 
         state.setSelected(true);
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(false);
 
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(true);
 
         dispose();
@@ -107,12 +123,15 @@ describe("createToggleState", () => {
           isReadOnly: true,
         });
 
+        flush();
         expect(state.isSelected()).toBe(false);
 
         state.setSelected(true);
+        flush();
         expect(state.isSelected()).toBe(false);
 
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -130,15 +149,21 @@ describe("createToggleState", () => {
         });
 
         state.setSelected(true);
+        flush();
         expect(onChange).toHaveBeenCalledWith(true);
+        flush();
         expect(onChange).toHaveBeenCalledTimes(1);
 
         state.setSelected(false);
+        flush();
         expect(onChange).toHaveBeenCalledWith(false);
+        flush();
         expect(onChange).toHaveBeenCalledTimes(2);
 
         state.toggle();
+        flush();
         expect(onChange).toHaveBeenCalledWith(true);
+        flush();
         expect(onChange).toHaveBeenCalledTimes(3);
 
         dispose();
@@ -153,15 +178,19 @@ describe("createToggleState", () => {
           onChange,
         });
 
+        flush();
         expect(state.isSelected()).toBe(false);
 
         state.setSelected(true);
         // Value should NOT change in controlled mode
+        flush();
         expect(state.isSelected()).toBe(false);
         // But onChange should still be called
+        flush();
         expect(onChange).toHaveBeenCalledWith(true);
 
         state.toggle();
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -177,12 +206,15 @@ describe("createToggleState", () => {
           },
         });
 
+        flush();
         expect(state.isSelected()).toBe(false);
 
         setIsSelected(true);
+        flush();
         expect(state.isSelected()).toBe(true);
 
         setIsSelected(false);
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -193,9 +225,11 @@ describe("createToggleState", () => {
       createRoot((dispose) => {
         const state = createToggleState({ defaultSelected: true });
 
+        flush();
         expect(state.isSelected()).toBe(true);
 
         state.setSelected(false);
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -208,9 +242,11 @@ describe("createToggleState", () => {
       createRoot((dispose) => {
         const state = createToggleState({ defaultSelected: true });
 
+        flush();
         expect(state.defaultSelected).toBe(true);
 
         state.setSelected(false);
+        flush();
         expect(state.defaultSelected).toBe(true);
 
         dispose();
@@ -221,6 +257,7 @@ describe("createToggleState", () => {
       createRoot((dispose) => {
         const state = createToggleState({});
 
+        flush();
         expect(state.defaultSelected).toBe(false);
 
         dispose();
@@ -238,12 +275,15 @@ describe("createToggleState", () => {
           },
         });
 
+        flush();
         expect(state.isSelected()).toBe(false);
 
         setIsSelected(true);
+        flush();
         expect(state.isSelected()).toBe(true);
 
         setIsSelected(false);
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();
@@ -257,12 +297,15 @@ describe("createToggleState", () => {
         );
         const state = createToggleState(props);
 
+        flush();
         expect(state.isSelected()).toBe(false);
 
         setProps({ isSelected: true });
+        flush();
         expect(state.isSelected()).toBe(true);
 
         setProps({ isSelected: false });
+        flush();
         expect(state.isSelected()).toBe(false);
 
         dispose();

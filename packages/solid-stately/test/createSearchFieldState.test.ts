@@ -4,7 +4,9 @@
  * Ported from @react-stately/searchfield useSearchFieldState.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createSearchFieldState } from "../src/searchfield/createSearchFieldState";
 
 describe("createSearchFieldState", () => {
@@ -13,6 +15,7 @@ describe("createSearchFieldState", () => {
       createRoot((dispose) => {
         const state = createSearchFieldState({});
 
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -25,6 +28,7 @@ describe("createSearchFieldState", () => {
           defaultValue: "search query",
         });
 
+        flush();
         expect(state.value()).toBe("search query");
 
         dispose();
@@ -37,6 +41,7 @@ describe("createSearchFieldState", () => {
           value: "controlled value",
         });
 
+        flush();
         expect(state.value()).toBe("controlled value");
 
         dispose();
@@ -51,6 +56,7 @@ describe("createSearchFieldState", () => {
 
         state.setValue("new value");
 
+        flush();
         expect(state.value()).toBe("new value");
 
         dispose();
@@ -64,7 +70,9 @@ describe("createSearchFieldState", () => {
 
         state.setValue("new value");
 
+        flush();
         expect(onChange).toHaveBeenCalledWith("new value");
+        flush();
         expect(onChange).toHaveBeenCalledTimes(1);
 
         dispose();
@@ -81,6 +89,7 @@ describe("createSearchFieldState", () => {
 
         state.setValue("new value");
 
+        flush();
         expect(onChange).toHaveBeenCalledWith("new value");
 
         dispose();
@@ -98,8 +107,10 @@ describe("createSearchFieldState", () => {
         state.setValue("new value");
 
         // Value should NOT change in controlled mode
+        flush();
         expect(state.value()).toBe("controlled");
         // But onChange should be called
+        flush();
         expect(onChange).toHaveBeenCalledWith("new value");
 
         dispose();
@@ -117,12 +128,15 @@ describe("createSearchFieldState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toBe("initial");
 
         setValue("updated");
+        flush();
         expect(state.value()).toBe("updated");
 
         setValue("");
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -135,12 +149,15 @@ describe("createSearchFieldState", () => {
           defaultValue: "initial",
         });
 
+        flush();
         expect(state.value()).toBe("initial");
 
         state.setValue("updated");
+        flush();
         expect(state.value()).toBe("updated");
 
         state.setValue("");
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -157,11 +174,14 @@ describe("createSearchFieldState", () => {
           onChange,
         });
 
+        flush();
         expect(state.value()).toBe("search query");
 
         state.setValue("");
 
+        flush();
         expect(state.value()).toBe("");
+        flush();
         expect(onChange).toHaveBeenCalledWith("");
 
         dispose();
@@ -176,17 +196,24 @@ describe("createSearchFieldState", () => {
         const state = createSearchFieldState({ onChange });
 
         state.setValue("first");
+        flush();
         expect(state.value()).toBe("first");
+        flush();
         expect(onChange).toHaveBeenCalledWith("first");
 
         state.setValue("second");
+        flush();
         expect(state.value()).toBe("second");
+        flush();
         expect(onChange).toHaveBeenCalledWith("second");
 
         state.setValue("third");
+        flush();
         expect(state.value()).toBe("third");
+        flush();
         expect(onChange).toHaveBeenCalledWith("third");
 
+        flush();
         expect(onChange).toHaveBeenCalledTimes(3);
 
         dispose();
@@ -200,12 +227,15 @@ describe("createSearchFieldState", () => {
         const state = createSearchFieldState({});
 
         state.setValue("hello & world");
+        flush();
         expect(state.value()).toBe("hello & world");
 
         state.setValue('<script>alert("xss")</script>');
+        flush();
         expect(state.value()).toBe('<script>alert("xss")</script>');
 
         state.setValue("emoji: ");
+        flush();
         expect(state.value()).toBe("emoji: ");
 
         dispose();
@@ -217,12 +247,15 @@ describe("createSearchFieldState", () => {
         const state = createSearchFieldState({});
 
         state.setValue("   leading whitespace");
+        flush();
         expect(state.value()).toBe("   leading whitespace");
 
         state.setValue("trailing whitespace   ");
+        flush();
         expect(state.value()).toBe("trailing whitespace   ");
 
         state.setValue("   ");
+        flush();
         expect(state.value()).toBe("   ");
 
         dispose();
@@ -237,18 +270,22 @@ describe("createSearchFieldState", () => {
 
         // Japanese
         state.setValue("こんにちは");
+        flush();
         expect(state.value()).toBe("こんにちは");
 
         // Chinese
         state.setValue("你好世界");
+        flush();
         expect(state.value()).toBe("你好世界");
 
         // Arabic
         state.setValue("مرحبا بالعالم");
+        flush();
         expect(state.value()).toBe("مرحبا بالعالم");
 
         // Hebrew
         state.setValue("שלום עולם");
+        flush();
         expect(state.value()).toBe("שלום עולם");
 
         dispose();
@@ -263,6 +300,7 @@ describe("createSearchFieldState", () => {
           defaultValue: "",
         });
 
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -276,12 +314,15 @@ describe("createSearchFieldState", () => {
         const [props, setProps] = createSignal<{ value?: string; defaultValue?: string }>({});
         const state = createSearchFieldState(props);
 
+        flush();
         expect(state.value()).toBe("");
 
         setProps({ value: "controlled" });
+        flush();
         expect(state.value()).toBe("controlled");
 
         setProps({ value: "updated" });
+        flush();
         expect(state.value()).toBe("updated");
 
         dispose();

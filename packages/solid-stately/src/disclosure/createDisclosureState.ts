@@ -18,8 +18,8 @@
  * Based on @react-stately/disclosure useDisclosureState and useDisclosureGroupState
  */
 
-import { createSignal, createEffect, createMemo, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createEffect, createMemo, type Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface DisclosureStateProps {
   /** Whether the disclosure is expanded (controlled). */
@@ -52,7 +52,7 @@ export function createDisclosureState(
 ): DisclosureState {
   const propsAccessor = () => access(props);
 
-  const [internalExpanded, setInternalExpanded] = createSignal(
+  const [internalExpanded, setInternalExpanded] = createInternalSignal(
     propsAccessor().defaultExpanded ?? false,
   );
 
@@ -121,7 +121,7 @@ export function createDisclosureGroupState(
 ): DisclosureGroupState {
   const propsAccessor = () => access(props);
 
-  const [internalKeys, setInternalKeys] = createSignal<Set<Key>>(
+  const [internalKeys, setInternalKeys] = createInternalSignal<Set<Key>>(
     new Set(propsAccessor().defaultExpandedKeys ?? []),
   );
 
@@ -139,26 +139,32 @@ export function createDisclosureGroupState(
   };
 
   // Ensure only one item is expanded if allowsMultipleExpanded is false.
-  createEffect(() => {
-    const p = propsAccessor();
-    const allowsMultiple = p.allowsMultipleExpanded ?? false;
-    const keys = expandedKeys();
-
-    if (!allowsMultiple && keys.size > 1) {
-      // Use queueMicrotask to defer the update and avoid infinite effect loop
-      const firstKey = keys.values().next().value;
-      if (firstKey != null) {
-        queueMicrotask(() => {
-          setExpandedKeys(new Set([firstKey]));
-        });
+  createEffect(
+    () => {
+      const p = propsAccessor();
+      return {
+        allowsMultiple: p.allowsMultipleExpanded ?? false,
+        keys: expandedKeys(),
+      };
+    },
+    ({ allowsMultiple, keys }) => {
+      if (!allowsMultiple && keys.size > 1) {
+        // Defer the update to avoid an infinite effect loop
+        const firstKey = keys.values().next().value;
+        if (firstKey != null) {
+          queueMicrotask(() => {
+            setExpandedKeys(new Set([firstKey]));
+          });
+        }
       }
-    }
-  });
+    },
+  );
 
   const toggleKey = (key: Key) => {
     const p = propsAccessor();
     const allowsMultiple = p.allowsMultipleExpanded ?? false;
-    const currentKeys = expandedKeys();
+    const currentKeys =
+      p.expandedKeys !== undefined ? expandedKeys() : readNow(internalKeys);
 
     let newKeys: Set<Key>;
     if (allowsMultiple) {

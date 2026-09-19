@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createTreeData } from "../../src/data/createTreeData";
 
 interface TreeItem {
@@ -33,9 +33,12 @@ function createTestTree() {
 describe("createTreeData", () => {
   it("initializes with tree items", () => {
     createRoot((dispose) => {
+      flush();
       const tree = createTestTree();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("A");
+      flush();
       expect(tree.items[0].children).toHaveLength(2);
       dispose();
     });
@@ -44,9 +47,12 @@ describe("createTreeData", () => {
   it("getItem returns a node by key", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
+      flush();
       const node = tree.getItem(11);
       expect(node).toBeDefined();
+      flush();
       expect(node!.value.name).toBe("A1");
+      flush();
       expect(node!.parentKey).toBe(1);
       dispose();
     });
@@ -54,6 +60,7 @@ describe("createTreeData", () => {
 
   it("getItem returns undefined for missing key", () => {
     createRoot((dispose) => {
+      flush();
       const tree = createTestTree();
       expect(tree.getItem(999)).toBeUndefined();
       dispose();
@@ -64,7 +71,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.append(null, { id: 4, name: "D", children: [] });
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[3].value.name).toBe("D");
       dispose();
     });
@@ -74,8 +83,10 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.append(1, { id: 13, name: "A3", children: [] });
+      flush();
       const parent = tree.getItem(1);
       expect(parent!.children).toHaveLength(3);
+      flush();
       expect(parent!.children![2].value.name).toBe("A3");
       dispose();
     });
@@ -85,7 +96,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.prepend(null, { id: 0, name: "Z", children: [] });
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[0].value.name).toBe("Z");
       dispose();
     });
@@ -95,7 +108,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.insert(null, 1, { id: 10, name: "Inserted", children: [] });
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[1].value.name).toBe("Inserted");
       dispose();
     });
@@ -105,8 +120,11 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.insertBefore(2, { id: 10, name: "BeforeB", children: [] });
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[1].value.name).toBe("BeforeB");
+      flush();
       expect(tree.items[2].value.name).toBe("B");
       dispose();
     });
@@ -116,7 +134,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.insertAfter(1, { id: 10, name: "AfterA", children: [] });
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[1].value.name).toBe("AfterA");
       dispose();
     });
@@ -126,7 +146,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.remove(3);
+      flush();
       expect(tree.items).toHaveLength(2);
+      flush();
       expect(tree.getItem(3)).toBeUndefined();
       dispose();
     });
@@ -136,8 +158,10 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.remove(11);
+      flush();
       const parent = tree.getItem(1);
       expect(parent!.children).toHaveLength(1);
+      flush();
       expect(parent!.children![0].value.name).toBe("A2");
       dispose();
     });
@@ -155,8 +179,11 @@ describe("createTreeData", () => {
         getChildren: (item) => item.children ?? [],
       });
       tree.removeSelectedItems();
+      flush();
       expect(tree.items).toHaveLength(1);
+      flush();
       expect(tree.items[0].value.name).toBe("B");
+      flush();
       expect(tree.selectedKeys).toEqual(new Set());
       dispose();
     });
@@ -166,6 +193,7 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.setSelectedKeys(new Set([1, 2]));
+      flush();
       expect(tree.selectedKeys).toEqual(new Set([1, 2]));
       dispose();
     });
@@ -175,6 +203,7 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.update(11, { id: 11, name: "A1-Updated", children: [] });
+      flush();
       const node = tree.getItem(11);
       expect(node!.value.name).toBe("A1-Updated");
       dispose();
@@ -186,11 +215,15 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move A1 (id: 11) from parent A (id: 1) to parent B (id: 2)
       tree.move(11, 2, 0);
+      flush();
       const parentA = tree.getItem(1);
-      const parentB = tree.getItem(2);
+            const parentB = tree.getItem(2);
       expect(parentA!.children).toHaveLength(1);
+      flush();
       expect(parentA!.children![0].value.name).toBe("A2");
+      flush();
       expect(parentB!.children).toHaveLength(2);
+      flush();
       expect(parentB!.children![0].value.name).toBe("A1");
       dispose();
     });
@@ -200,8 +233,11 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.move(11, null, 0);
+      flush();
       expect(tree.items).toHaveLength(4);
+      flush();
       expect(tree.items[0].value.name).toBe("A1");
+      flush();
       const parentA = tree.getItem(1);
       expect(parentA!.children).toHaveLength(1);
       dispose();
@@ -213,6 +249,7 @@ describe("createTreeData", () => {
       const tree = createTreeData<TreeItem>({
         getChildren: (item) => item.children ?? [],
       });
+      flush();
       expect(tree.items).toHaveLength(0);
       dispose();
     });
@@ -242,8 +279,10 @@ describe("createTreeData", () => {
         ],
         getChildren: (item) => item.children ?? [],
       });
+      flush();
       const deepNode = tree.getItem(3);
       expect(deepNode!.value.name).toBe("L2");
+      flush();
       expect(deepNode!.parentKey).toBe(2);
       dispose();
     });
@@ -255,8 +294,11 @@ describe("createTreeData", () => {
       // Try to move A (id: 1) into its own child A1 (id: 11)
       tree.move(1, 11, 0);
       // Should be a no-op
+      flush();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("A");
+      flush();
       const a1 = tree.getItem(11);
       expect(a1!.parentKey).toBe(1);
       dispose();
@@ -268,9 +310,13 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move C (id: 3) before A (id: 1)
       tree.moveBefore(1, [3]);
+      flush();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("C");
+      flush();
       expect(tree.items[1].value.name).toBe("A");
+      flush();
       expect(tree.items[2].value.name).toBe("B");
       dispose();
     });
@@ -281,9 +327,13 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move C (id: 3) after A (id: 1)
       tree.moveAfter(1, [3]);
+      flush();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("A");
+      flush();
       expect(tree.items[1].value.name).toBe("C");
+      flush();
       expect(tree.items[2].value.name).toBe("B");
       dispose();
     });
@@ -294,10 +344,14 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move C (id: 3) before B1 (id: 21, child of B)
       tree.moveBefore(21, [3]);
+      flush();
       expect(tree.items).toHaveLength(2);
+      flush();
       const parentB = tree.getItem(2);
       expect(parentB!.children).toHaveLength(2);
+      flush();
       expect(parentB!.children![0].value.name).toBe("C");
+      flush();
       expect(parentB!.children![1].value.name).toBe("B1");
       dispose();
     });
@@ -308,9 +362,12 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move A1 (id: 11) after A2 (id: 12) — both children of A
       tree.moveAfter(12, [11]);
+      flush();
       const parentA = tree.getItem(1);
       expect(parentA!.children).toHaveLength(2);
+      flush();
       expect(parentA!.children![0].value.name).toBe("A2");
+      flush();
       expect(parentA!.children![1].value.name).toBe("A1");
       dispose();
     });
@@ -321,9 +378,13 @@ describe("createTreeData", () => {
       const tree = createTestTree();
       // Move A (id: 1) and C (id: 3) after B (id: 2)
       tree.moveAfter(2, [1, 3]);
+      flush();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("B");
+      flush();
       expect(tree.items[1].value.name).toBe("A");
+      flush();
       expect(tree.items[2].value.name).toBe("C");
       dispose();
     });
@@ -333,6 +394,7 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       // Try to move A (id: 1) before A1 (id: 11, its own child)
+      flush();
       expect(() => tree.moveBefore(11, [1])).toThrow(
         "Cannot move an item to be a child of itself.",
       );
@@ -343,8 +405,11 @@ describe("createTreeData", () => {
   it("moveAfter rejects cyclical move into its own subtree", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
+      flush();
       expect(() => tree.moveAfter(11, [1])).toThrow("Cannot move an item to be a child of itself.");
+      flush();
       expect(tree.items.map((item) => item.value.name)).toEqual(["A", "B", "C"]);
+      flush();
       expect(tree.getItem(11)!.parentKey).toBe(1);
       dispose();
     });
@@ -354,7 +419,9 @@ describe("createTreeData", () => {
     createRoot((dispose) => {
       const tree = createTestTree();
       tree.moveBefore(999, [1]);
+      flush();
       expect(tree.items).toHaveLength(3);
+      flush();
       expect(tree.items[0].value.name).toBe("A");
       dispose();
     });

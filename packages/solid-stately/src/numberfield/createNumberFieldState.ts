@@ -17,9 +17,9 @@
  * Based on @react-stately/numberfield useNumberFieldState.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import { NumberFormatter, NumberParser } from "@internationalized/number";
-import { access, type MaybeAccessor } from "../utils";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import {
   createFormValidationState,
   type FormValidationState,
@@ -163,8 +163,8 @@ export function createNumberFieldState(
   const getProps = () => access(props);
 
   // Internal signals
-  const [inputValue, setInputValueInternal] = createSignal<string>("");
-  const [numberValue, setNumberValue] = createSignal<number>(NaN);
+  const [inputValue, setInputValueInternal] = createInternalSignal<string>("");
+  const [numberValue, setNumberValue] = createInternalSignal<number>(NaN);
 
   // Get locale and formatter
   const locale = () => getProps().locale ?? "en-US";
@@ -282,7 +282,7 @@ export function createNumberFieldState(
   const parsedInputValue = () => {
     ensureInitialized();
     syncControlledValue();
-    return parseNumber(inputValue());
+    return parseNumber(readNow(inputValue));
   };
 
   const validation = createFormValidationState({
@@ -323,12 +323,14 @@ export function createNumberFieldState(
   const commit = () => {
     ensureInitialized();
     const p = getProps();
-    const input = inputValue();
+    const input = readNow(inputValue);
 
     if (input === "" || input === "-") {
       // Clear value
       setNumberValue(NaN);
-      setInputValueInternal(p.value === undefined ? "" : formatNumber(actualNumberValue()));
+      setInputValueInternal(
+        p.value === undefined ? "" : formatNumber(readNow(actualNumberValue)),
+      );
       p.onChange?.(NaN);
       validation.commitValidation();
       return;
@@ -338,11 +340,11 @@ export function createNumberFieldState(
 
     if (isNaN(parsed)) {
       // Invalid input - revert to current value
-      setInputValueInternal(formatNumber(actualNumberValue()));
+      setInputValueInternal(formatNumber(readNow(actualNumberValue)));
       return;
     }
 
-    const previous = actualNumberValue();
+    const previous = readNow(actualNumberValue);
     parsed = constrainForCommit(parsed);
     parsed = numberParser().parse(formatNumber(parsed));
 

@@ -17,7 +17,9 @@
  * Based on @react-stately/toast useToastState
  */
 
-import { createSignal, onCleanup, type Accessor } from "solid-js";
+import { onCleanup, type Accessor } from "solid-js";
+import { createInternalSignal, readNow } from "../utils";
+
 
 export interface ToastOptions {
   /** A timeout to automatically close the toast, in milliseconds. */
@@ -340,7 +342,7 @@ export class ToastQueue<T> {
  * Use this hook to subscribe to toast changes in your component.
  */
 export function createToastState<T>(props: ToastStateProps<T>): ToastState<T> {
-  const [visibleToasts, setVisibleToasts] = createSignal<QueuedToast<T>[]>([]);
+  const [visibleToasts, setVisibleToasts] = createInternalSignal<QueuedToast<T>[]>([]);
 
   // Subscribe to queue changes
   const unsubscribe = props.queue.subscribe((toasts) => {
@@ -352,7 +354,7 @@ export function createToastState<T>(props: ToastStateProps<T>): ToastState<T> {
   });
 
   return {
-    visibleToasts,
+    visibleToasts: () => readNow(visibleToasts),
     add: (content, options) => props.queue.add(content, options),
     close: (key) => props.queue.close(key),
     remove: (key) => props.queue.remove(key),

@@ -17,8 +17,8 @@
  * Based on @react-stately/select useSelectState.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createMemo, type Accessor } from "solid-js";
+import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection } from "../collections/types";
@@ -152,10 +152,10 @@ export function createSelectState<T = unknown>(
   // Track selected key
   const isControlledSingle = () => getProps().selectedKey !== undefined;
   const isControlledMultiple = () => getProps().selectedKeys !== undefined;
-  const [internalSelectedKey, setInternalSelectedKey] = createSignal<Key | null>(
+  const [internalSelectedKey, setInternalSelectedKey] = createInternalSignal<Key | null>(
     getProps().defaultSelectedKey ?? null,
   );
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<Selection>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Selection>(
     getProps().defaultSelectedKeys === "all"
       ? "all"
       : new Set(getProps().defaultSelectedKeys ?? []),
@@ -303,7 +303,7 @@ export function createSelectState<T = unknown>(
   // focus-within state on the selection manager — upstream useSelectState keeps
   // these apart with a dedicated useState. Sharing the manager's signal makes
   // trigger focus re-arm the item roving-focus effect and steal focus back.
-  const [isFocused, setFocused] = createSignal(false);
+  const [isFocused, setFocused] = createInternalSignal(false);
 
   // Get the selected item from the collection (memoized)
   const selectedItem: Accessor<CollectionNode<T> | null> = createMemo(() => {

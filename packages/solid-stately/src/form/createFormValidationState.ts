@@ -21,14 +21,8 @@
  * Port of react-stately's useFormValidationState.
  */
 
-import {
-  type Accessor,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  useContext,
-} from "solid-js";
+import { type Accessor, createContext, createEffect, createMemo, useContext } from "solid-js";
+import { createInternalSignal } from "../utils";
 
 /** Standard HTML ValidityState interface. */
 export interface ValidityState {
@@ -211,15 +205,17 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
       : null,
   );
 
-  // Client-side validation
-  const clientError = createMemo<ValidationResult | null>(() => {
+  // Client-side validation. Compute live so commitValidation sees a value
+  // that was written in this same turn (Solid 2 memos stay committed until flush).
+  const computeClientError = (): ValidationResult | null => {
     const validate = props.validate;
     if (!validate || props.value == null) {
       return null;
     }
     const validateErrors = runValidate(validate, props.value);
     return getValidationResult(validateErrors);
-  });
+  };
+  const clientError = createMemo<ValidationResult | null>(computeClientError);
 
   // Built-in validation (skip if valid)
   const builtinValidation = createMemo<ValidationResult | undefined>(() => {
@@ -243,39 +239,45 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
   });
 
   // Track server errors clearing
-  const [lastServerErrors, setLastServerErrors] = createSignal(serverErrors);
-  const [isServerErrorCleared, setServerErrorCleared] = createSignal(false);
+  const [lastServerErrors, setLastServerErrors] = createInternalSignal(serverErrors);
+  const [isServerErrorCleared, setServerErrorCleared] = createInternalSignal(false);
 
-  createEffect(() => {
-    if (serverErrors !== lastServerErrors()) {
-      setLastServerErrors(serverErrors);
-      setServerErrorCleared(false);
-    }
-  });
+  createEffect(
+    () => ({ errors: serverErrors, last: lastServerErrors() }),
+    ({ errors, last }) => {
+      if (errors !== last) {
+        setLastServerErrors(errors);
+        setServerErrorCleared(false);
+      }
+    },
+  );
 
   const serverError = createMemo<ValidationResult | null>(() =>
     getValidationResult(isServerErrorCleared() ? [] : serverErrorMessages()),
   );
 
   // Track validation state
-  const [currentValidity, setCurrentValidity] = createSignal(DEFAULT_VALIDATION_RESULT);
-  const [commitQueued, setCommitQueued] = createSignal(false);
+  const [currentValidity, setCurrentValidity] = createInternalSignal(DEFAULT_VALIDATION_RESULT);
+  const [commitQueued, setCommitQueued] = createInternalSignal(false);
 
   let nextValidation = DEFAULT_VALIDATION_RESULT;
   let lastError = DEFAULT_VALIDATION_RESULT;
 
   // Commit validation effect
-  createEffect(() => {
-    if (!commitQueued()) {
-      return;
-    }
-    setCommitQueued(false);
-    const error = clientError() || builtinValidation() || nextValidation;
-    if (!isEqualValidation(error, lastError)) {
-      lastError = error;
-      setCurrentValidity(error);
-    }
-  });
+  createEffect(
+    () => ({
+      queued: commitQueued(),
+      error: clientError() || builtinValidation() || nextValidation,
+    }),
+    ({ queued, error }) => {
+      if (!queued) return;
+      setCommitQueued(false);
+      if (!isEqualValidation(error, lastError)) {
+        lastError = error;
+        setCurrentValidity(error);
+      }
+    },
+  );
 
   // Realtime validation (for native input state)
   const realtimeValidation = createMemo<ValidationResult>(
@@ -328,7 +330,7 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
     commitValidation() {
       // Commit validation state so the user sees it on blur/change/submit.
       if (validationBehavior() === "native") {
-        const error = clientError() || builtinValidation() || nextValidation;
+        const error = computeClientError() || builtinValidation() || nextValidation;
         if (!isEqualValidation(error, lastError)) {
           lastError = error;
           setCurrentValidity(error);

@@ -21,9 +21,8 @@
  * This is a port of @react-stately/toggle's useToggleGroupState.
  */
 
-import { createSignal } from "solid-js";
 import type { Key } from "../collections";
-import { type MaybeAccessor, access } from "../utils";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface ToggleGroupProps {
   /**
@@ -71,7 +70,7 @@ export function createToggleGroupState(
   const getProps = () => access(props);
 
   const initialProps = getProps();
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<Set<Key>>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Set<Key>>(
     toKeySet(initialProps.defaultSelectedKeys),
   );
 
@@ -91,7 +90,9 @@ export function createToggleGroupState(
     const props = getProps();
     const mode = props.selectionMode ?? "single";
     const disallowEmptySelection = props.disallowEmptySelection ?? false;
-    const currentKeys = selectedKeys();
+    const currentKeys = isControlled()
+      ? toKeySet(props.selectedKeys)
+      : readNow(internalSelectedKeys);
 
     let nextKeys: Set<Key>;
     if (mode === "multiple") {
@@ -122,7 +123,9 @@ export function createToggleGroupState(
       return getProps().isDisabled ?? false;
     },
     get selectedKeys() {
-      return new Set(selectedKeys());
+      return new Set(
+        isControlled() ? selectedKeys() : readNow(internalSelectedKeys),
+      );
     },
     toggleKey,
     setSelected,

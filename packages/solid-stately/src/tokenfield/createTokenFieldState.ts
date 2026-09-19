@@ -19,8 +19,8 @@
  * @react-stately/tokenfield useTokenFieldState.
  */
 
-import { createSignal, type Accessor } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { type Accessor } from "solid-js";
+import { createInternalSignal, type MaybeAccessor, access } from "../utils";
 import { TokenFieldValue } from "./TokenFieldValue";
 
 export interface TokenFieldStateOptions<T extends TokenFieldValue = TokenFieldValue> {
@@ -57,8 +57,8 @@ export function createTokenFieldState<T extends TokenFieldValue = TokenFieldValu
     initialProps.defaultValue ??
     new TokenFieldValue([])) as T;
 
-  const [internalValue, setInternalValue] = createSignal(initialValue);
-  const [isComposing, setComposing] = createSignal(false);
+  const [internalValue, setInternalValue] = createInternalSignal(initialValue);
+  const [isComposing, setComposing] = createInternalSignal(false);
 
   const isControlled = () => getProps().value !== undefined;
 

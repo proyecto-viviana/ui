@@ -19,7 +19,7 @@
  * Based on @react-stately/datepicker useDatePickerState
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import {
   type DateValue,
   type CalendarDateTime,
@@ -30,7 +30,7 @@ import {
   toZoned,
   getLocalTimeZone,
 } from "@internationalized/date";
-import { access, type MaybeAccessor } from "../utils";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import type { ValidationState } from "./createCalendarState";
 import type { TimeValue } from "./createTimeFieldState";
 
@@ -90,18 +90,19 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const timeZone = getLocalTimeZone();
 
   // Internal signals for value and overlay state
-  const [internalValue, setInternalValue] = createSignal<T | null>(props.defaultValue ?? null);
-  const [internalOpen, setInternalOpen] = createSignal(props.defaultOpen ?? false);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
+  const [internalOpen, setInternalOpen] = createInternalSignal(props.defaultOpen ?? false);
 
   // Transient selections for date and time
-  const [selectedDate, setSelectedDate] = createSignal<DateValue | null>(null);
-  const [selectedTime, setSelectedTime] = createSignal<TimeValue | null>(null);
+  const [selectedDate, setSelectedDate] = createInternalSignal<DateValue | null>(null);
+  const [selectedTime, setSelectedTime] = createInternalSignal<TimeValue | null>(null);
 
-  // Controlled vs uncontrolled value
-  const value = createMemo<T | null>(() => {
+  // Controlled vs uncontrolled value. Function (not memo) so same-turn
+  // methods and tests see the live internal write.
+  const value: Accessor<T | null> = () => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();
-  });
+  };
 
   // Granularity: auto-detect from value type if not provided
   const granularity = createMemo<Granularity>(() => {
@@ -123,7 +124,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
-  const isOpen: Accessor<boolean> = () => access(props.isOpen) ?? internalOpen();
+  const isOpen: Accessor<boolean> = () => access(props.isOpen) ?? readNow(internalOpen);
 
   // Date and time portions of the current value
   const dateValue = createMemo<DateValue | null>(() => {
@@ -201,7 +202,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const setDateValue = (date: DateValue) => {
     if (isDisabled() || isReadOnly()) return;
 
-    const currentTime = selectedTime();
+    const currentTime = readNow(selectedTime);
     const currentValue = value();
     const shouldClose =
       typeof props.shouldCloseOnSelect === "function"
@@ -236,7 +237,7 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const setTimeValue = (time: TimeValue) => {
     if (isDisabled() || isReadOnly()) return;
 
-    const currentDate = selectedDate();
+    const currentDate = readNow(selectedDate);
     const currentValue = value();
 
     if (currentDate) {
@@ -266,8 +267,8 @@ export function createDatePickerState<T extends DateValue = DateValue>(
       // When closing, only commit if both date and time are available (when time is required).
       // Don't auto-commit partial selections with placeholder time to avoid phantom values.
       const currentValue = value();
-      const currentDate = selectedDate();
-      const currentTime = selectedTime();
+      const currentDate = readNow(selectedDate);
+      const currentTime = readNow(selectedTime);
 
       if (!currentValue && currentDate && hasTime() && currentTime) {
         // Both date and time explicitly selected — safe to commit

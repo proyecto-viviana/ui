@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createDragState } from "../src/dnd/createDragState";
 
 describe("createDragState", () => {
@@ -9,6 +9,7 @@ describe("createDragState", () => {
         getItems: () => [{ "text/plain": "test" }],
       }));
 
+      flush();
       expect(state.isDragging).toBe(false);
       dispose();
     });
@@ -21,6 +22,7 @@ describe("createDragState", () => {
       }));
 
       state.startDrag(100, 100);
+      flush();
       expect(state.isDragging).toBe(true);
       dispose();
     });
@@ -35,6 +37,7 @@ describe("createDragState", () => {
       }));
 
       state.startDrag(100, 200);
+      flush();
       expect(onDragStart).toHaveBeenCalledWith({
         type: "dragstart",
         x: 100,
@@ -54,6 +57,7 @@ describe("createDragState", () => {
 
       state.startDrag(100, 100);
       state.moveDrag(150, 150);
+      flush();
       expect(onDragMove).toHaveBeenCalledWith({
         type: "dragmove",
         x: 150,
@@ -72,6 +76,7 @@ describe("createDragState", () => {
       }));
 
       state.moveDrag(150, 150);
+      flush();
       expect(onDragMove).not.toHaveBeenCalled();
       dispose();
     });
@@ -86,10 +91,13 @@ describe("createDragState", () => {
       }));
 
       state.startDrag(100, 100);
+      flush();
       expect(state.isDragging).toBe(true);
 
       state.endDrag(200, 200, "move");
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(onDragEnd).toHaveBeenCalledWith({
         type: "dragend",
         x: 200,
@@ -110,7 +118,9 @@ describe("createDragState", () => {
 
       state.startDrag(100, 100);
       state.cancelDrag();
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(onDragEnd).toHaveBeenCalledWith({
         type: "dragend",
         x: 0,
@@ -131,7 +141,9 @@ describe("createDragState", () => {
       }));
 
       state.startDrag(100, 100);
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(onDragStart).not.toHaveBeenCalled();
       dispose();
     });
@@ -144,6 +156,7 @@ describe("createDragState", () => {
         getItems: () => items,
       }));
 
+      flush();
       expect(state.getItems()).toEqual(items);
       dispose();
     });
@@ -156,6 +169,7 @@ describe("createDragState", () => {
         getAllowedDropOperations: () => ["copy", "link"],
       }));
 
+      flush();
       expect(state.getAllowedDropOperations()).toEqual(["copy", "link"]);
       dispose();
     });
@@ -167,6 +181,7 @@ describe("createDragState", () => {
         getItems: () => [{ "text/plain": "test" }],
       }));
 
+      flush();
       expect(state.getAllowedDropOperations()).toEqual(["move", "copy", "link"]);
       dispose();
     });
@@ -179,6 +194,7 @@ describe("createDragState", () => {
         isDisabled: true,
       }));
 
+      flush();
       expect(state.isDisabled).toBe(true);
       dispose();
     });
@@ -191,6 +207,7 @@ describe("createDragState", () => {
         hasDragButton: true,
       }));
 
+      flush();
       expect(state.hasDragButton).toBe(true);
       dispose();
     });

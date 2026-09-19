@@ -21,8 +21,8 @@
  * as used by @react-aria/textfield.
  */
 
-import { createSignal, Accessor } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { Accessor } from "solid-js";
+import { createInternalSignal, type MaybeAccessor, access } from "../utils";
 
 export interface TextFieldStateOptions {
   /** The current value (controlled). */
@@ -52,7 +52,7 @@ export function createTextFieldState(
   const initialProps = getProps();
   const initialValue = initialProps.value ?? initialProps.defaultValue ?? "";
 
-  const [internalValue, setInternalValue] = createSignal(initialValue);
+  const [internalValue, setInternalValue] = createInternalSignal(initialValue);
 
   const isControlled = () => getProps().value !== undefined;
 

@@ -1,5 +1,5 @@
 import { defineConfig } from "vite-plus";
-import solidPlugin from "vite-plugin-solid";
+import solidPlugin from "@solidjs/vite-plugin";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,7 +16,7 @@ export default defineConfig({
   // the workerd/browser prod build), and it desyncs createUniqueId's hydration
   // slot vs the server. Keeping it would make this harness test a dev artifact,
   // not the real prod SSR→hydrate path.
-  plugins: [solidPlugin({ ssr: true, hot: false })],
+  plugins: [...solidPlugin({ ssr: true, refresh: { disabled: true } })],
   optimizeDeps: {
     // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
     // discovery before Vitest applies its file include. That crosses ignored
@@ -32,14 +32,14 @@ export default defineConfig({
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
     include: ["packages/**/test/**/*.hydrate.test.{ts,tsx}"],
-    // solid-js core and solid-js/web MUST be one module instance: web's
+    // solid-js core and @solidjs/web MUST be one module instance: web's
     // hydrate() sets sharedConfig.context, and core's createUniqueId reads it.
     // If vitest loads them as two instances, createUniqueId sees a null context
     // forever → drifts every hydration key after it. Inlining both through the
     // single transform pipeline guarantees one shared sharedConfig.
     server: {
       deps: {
-        inline: ["solid-js", "solid-js/web", "solid-js/store"],
+        inline: ["solid-js", "@solidjs/web"],
       },
     },
   },
@@ -47,7 +47,7 @@ export default defineConfig({
     conditions: ["development", "browser"],
     // Single solid-js instance so the trace patches the same sharedConfig the
     // web build calls (otherwise the helper grabs a second copy).
-    dedupe: ["solid-js", "solid-js/web", "solid-js/store"],
+    dedupe: ["solid-js", "@solidjs/web"],
     alias: {
       "@proyecto-viviana/solid-stately/private/flags/flags": resolve(
         __dirname,

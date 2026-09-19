@@ -19,7 +19,7 @@
  * Based on @react-stately/calendar useCalendarState
  */
 
-import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
+import { createMemo, createEffect, type Accessor } from "solid-js";
 import {
   type Calendar as InternationalizedCalendar,
   type CalendarDate,
@@ -41,7 +41,7 @@ import {
   toCalendarDate as intlToCalendarDate,
   minDate,
 } from "@internationalized/date";
-import { access, type MaybeAccessor } from "../utils";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export type ValidationState = "valid" | "invalid";
 export type CalendarPageBehavior = "single" | "visible";
@@ -299,18 +299,18 @@ export function createCalendarState<
 
   // State signals
   const initialFocusedDate = constrainDate(getInitialFocusedDate());
-  const [internalValue, setInternalValue] = createSignal<T | T[] | null>(
+  const [internalValue, setInternalValue] = createInternalSignal<T | T[] | null>(
     (props.defaultValue as T | T[] | null) ?? null,
   );
-  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
-  const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
+  const [focusedDate, setFocusedDateInternal] = createInternalSignal<CalendarDate>(initialFocusedDate);
+  const [visibleRangeStart, setVisibleRangeStart] = createInternalSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );
   // Init from autoFocus, mirroring @react-stately useCalendarState
   // (`useState(props.autoFocus || false)`). Without autoFocus the calendar
   // mounts unfocused and never steals DOM focus.
-  const [isFocused, setFocused] = createSignal(props.autoFocus ?? false);
-  const [isPaginating, setIsPaginating] = createSignal(false);
+  const [isFocused, setFocused] = createInternalSignal(props.autoFocus ?? false);
+  const [isPaginating, setIsPaginating] = createInternalSignal(false);
 
   // Controlled vs uncontrolled value
   const sourceValue = createMemo<T | T[] | null>(() => {
@@ -331,75 +331,96 @@ export function createCalendarState<
   const validationState = createMemo(() => access(props.validationState));
   const isValueInvalid = createMemo(() => validationState() === "invalid");
 
-  // Visible range based on the paged range start.
-  const visibleRange = createMemo(() => {
+  // Visible range based on the paged range start. Function (not memo) so
+  // onFocusChange snapshots see the live page after a same-turn write.
+  const visibleRange = () => {
     const start = visibleRangeStart();
     const end = visibleRangeEnd(start);
 
     return { start, end };
-  });
+  };
 
-  const syncVisibleRangeForFocusedDate = (nextFocusedDate: CalendarDate) => {
-    const range = visibleRange();
-
+  const syncVisibleRangeForFocusedDate = (
+    nextFocusedDate: CalendarDate,
+    range: { start: CalendarDate; end: CalendarDate },
+    months: number,
+  ) => {
     if (nextFocusedDate.compare(range.start) < 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: visibleMonths() - 1 })));
+      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: months - 1 })));
     } else if (nextFocusedDate.compare(range.end) > 0) {
       setVisibleRangeStart(startOfMonth(nextFocusedDate));
     }
   };
 
-  createEffect(() => {
-    const controlledFocused = access(props.focusedValue);
-    if (!controlledFocused) {
-      return;
-    }
+  createEffect(
+    () => {
+      const controlledFocused = access(props.focusedValue);
+      if (!controlledFocused) return null;
+      return {
+        nextFocusedDate: constrainDate(toDisplayCalendarDate(controlledFocused)),
+        currentFocusedDate: focusedDate(),
+        range: visibleRange(),
+        months: visibleMonths(),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      const { nextFocusedDate, currentFocusedDate, range, months } = data;
+      if (
+        nextFocusedDate.compare(currentFocusedDate) !== 0 ||
+        !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+      ) {
+        setFocusedDateInternal(nextFocusedDate);
+      }
+      syncVisibleRangeForFocusedDate(nextFocusedDate, range, months);
+    },
+  );
 
-    const nextFocusedDate = constrainDate(toDisplayCalendarDate(controlledFocused));
+  createEffect(
+    () => {
+      const controlledFocused = access(props.focusedValue);
+      if (controlledFocused) return null;
+      const currentFocusedDate = focusedDate();
+      const nextFocusedDate = constrainDate(currentFocusedDate);
+      if (
+        nextFocusedDate.compare(currentFocusedDate) === 0 &&
+        isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+      ) {
+        return null;
+      }
+      return {
+        currentFocusedDate,
+        nextFocusedDate,
+        range: visibleRange(),
+        months: visibleMonths(),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      syncVisibleRangeForFocusedDate(data.nextFocusedDate, data.range, data.months);
+      setFocusedDateInternal(data.nextFocusedDate);
+      props.onFocusChange?.(data.nextFocusedDate);
+    },
+  );
 
-    const currentFocusedDate = focusedDate();
-    if (
-      nextFocusedDate.compare(currentFocusedDate) !== 0 ||
-      !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
-    ) {
-      setFocusedDateInternal(nextFocusedDate);
-    }
-
-    syncVisibleRangeForFocusedDate(nextFocusedDate);
-  });
-
-  createEffect(() => {
-    const controlledFocused = access(props.focusedValue);
-    if (controlledFocused) {
-      return;
-    }
-
-    const currentFocusedDate = focusedDate();
-    const nextFocusedDate = constrainDate(currentFocusedDate);
-
-    if (
-      nextFocusedDate.compare(currentFocusedDate) === 0 &&
-      isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
-    ) {
-      return;
-    }
-
-    syncVisibleRangeForFocusedDate(nextFocusedDate);
-    setFocusedDateInternal(nextFocusedDate);
-    props.onFocusChange?.(nextFocusedDate);
-  });
-
-  createEffect(() => {
-    const currentFocusedDate = focusedDate();
-    const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
-
-    if (isEqualCalendar(currentFocusedDate.calendar, nextFocusedDate.calendar)) {
-      return;
-    }
-
-    setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
-  });
+  createEffect(
+    () => {
+      const currentFocusedDate = focusedDate();
+      const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
+      if (isEqualCalendar(currentFocusedDate.calendar, nextFocusedDate.calendar)) {
+        return null;
+      }
+      return {
+        nextFocusedDate,
+        alignedStart: alignVisibleRangeStart(nextFocusedDate),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      setFocusedDateInternal(data.nextFocusedDate);
+      setVisibleRangeStart(data.alignedStart);
+    },
+  );
 
   // Format week days for headers
   const weekDays = createMemo(() => {
@@ -486,7 +507,7 @@ export function createCalendarState<
       return;
     }
 
-    syncVisibleRangeForFocusedDate(constrained);
+    syncVisibleRangeForFocusedDate(constrained, visibleRange(), visibleMonths());
     setFocusedDateInternal(constrained);
     props.onFocusChange?.(constrained);
   };
@@ -648,7 +669,8 @@ export function createCalendarState<
     if (isReadOnly() || isDisabled()) return;
 
     if (selectionMode() === "multiple") {
-      const current = value();
+      const current =
+        access(props.value) !== undefined ? value() : readNow(internalValue);
       const base: CalendarDate[] = Array.isArray(current)
         ? current.map((v) => toDisplayCalendarDate(v))
         : current != null

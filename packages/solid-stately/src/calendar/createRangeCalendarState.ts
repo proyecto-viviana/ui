@@ -24,7 +24,7 @@
  * - packages/react-stately/src/calendar/utils.ts
  */
 
-import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
+import { createMemo, createEffect, type Accessor } from "solid-js";
 import {
   type Calendar as InternationalizedCalendar,
   type CalendarDate,
@@ -47,7 +47,7 @@ import {
   toCalendar as intlToCalendar,
   toCalendarDate as intlToCalendarDate,
 } from "@internationalized/date";
-import { access, type MaybeAccessor } from "../utils";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import type { CalendarDayOfWeek, ValidationState } from "./createCalendarState";
 import { getFormatOptions } from "./createDateFieldState";
 
@@ -250,7 +250,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // The anchor date is the first selected date during a range drag. Declared up
   // here (ahead of constrainDate) because the available-range derivation below
   // depends on it, and constrainDate consults that range.
-  const [anchorDate, setAnchorDate] = createSignal<CalendarDate | null>(null);
+  const [anchorDate, setAnchorDate] = createInternalSignal<CalendarDate | null>(null);
 
   // Mirrors @react-stately/calendar useRangeCalendarState getAvailableRange: once
   // a range selection is anchored and unavailable dates exist, contiguous ranges
@@ -397,16 +397,16 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   // State signals
-  const [internalValue, setInternalValue] = createSignal<RangeValue<T> | null>(
+  const [internalValue, setInternalValue] = createInternalSignal<RangeValue<T> | null>(
     props.defaultValue ?? null,
   );
   const initialFocusedDate = constrainDate(getInitialFocusedDate());
-  const [focusedDate, setFocusedDateInternal] = createSignal<CalendarDate>(initialFocusedDate);
-  const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
+  const [focusedDate, setFocusedDateInternal] = createInternalSignal<CalendarDate>(initialFocusedDate);
+  const [visibleRangeStart, setVisibleRangeStart] = createInternalSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );
-  const [isFocused, setFocused] = createSignal(false);
-  const [isDragging, setDragging] = createSignal(false);
+  const [isFocused, setFocused] = createInternalSignal(false);
+  const [isDragging, setDragging] = createInternalSignal(false);
 
   // Controlled vs uncontrolled value
   const sourceValue = createMemo<RangeValue<T> | null>(() => {
@@ -485,9 +485,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // on out-of-range keeps a same-month focus from re-firing visibleRangeStart
   // with a fresh equal-valued object, which would otherwise recompute the grid
   // and recreate every cell on focus.
-  const syncVisibleRangeForFocusedDate = (nextFocusedDate: CalendarDate) => {
-    const range = visibleRange();
-
+  const syncVisibleRangeForFocusedDate = (
+    nextFocusedDate: CalendarDate,
+    range: { start: CalendarDate; end: CalendarDate },
+  ) => {
     if (nextFocusedDate.compare(range.start) < 0) {
       setVisibleRangeStart(alignEnd(nextFocusedDate));
     } else if (nextFocusedDate.compare(range.end) > 0) {
@@ -495,56 +496,73 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     }
   };
 
-  createEffect(() => {
-    const controlledFocused = access(props.focusedValue);
-    if (!controlledFocused) {
-      return;
-    }
+  createEffect(
+    () => {
+      const controlledFocused = access(props.focusedValue);
+      if (!controlledFocused) return null;
+      const nextFocusedDate = constrainDate(toDisplayCalendarDate(controlledFocused));
+      return {
+        nextFocusedDate,
+        currentFocusedDate: focusedDate(),
+        alignedStart: alignVisibleRangeStart(nextFocusedDate),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      const { nextFocusedDate, currentFocusedDate, alignedStart } = data;
+      if (
+        nextFocusedDate.compare(currentFocusedDate) !== 0 ||
+        !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+      ) {
+        setFocusedDateInternal(nextFocusedDate);
+        setVisibleRangeStart(alignedStart);
+      }
+    },
+  );
 
-    const nextFocusedDate = constrainDate(toDisplayCalendarDate(controlledFocused));
-    const currentFocusedDate = focusedDate();
+  createEffect(
+    () => {
+      const controlledFocused = access(props.focusedValue);
+      if (controlledFocused) return null;
+      const currentFocusedDate = focusedDate();
+      const nextFocusedDate = constrainDate(currentFocusedDate);
+      if (
+        nextFocusedDate.compare(currentFocusedDate) === 0 &&
+        isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
+      ) {
+        return null;
+      }
+      return {
+        nextFocusedDate,
+        alignedStart: alignVisibleRangeStart(nextFocusedDate),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      setFocusedDateInternal(data.nextFocusedDate);
+      setVisibleRangeStart(data.alignedStart);
+      props.onFocusChange?.(data.nextFocusedDate);
+    },
+  );
 
-    if (
-      nextFocusedDate.compare(currentFocusedDate) !== 0 ||
-      !isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
-    ) {
-      setFocusedDateInternal(nextFocusedDate);
-      setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
-    }
-  });
-
-  createEffect(() => {
-    const controlledFocused = access(props.focusedValue);
-    if (controlledFocused) {
-      return;
-    }
-
-    const currentFocusedDate = focusedDate();
-    const nextFocusedDate = constrainDate(currentFocusedDate);
-
-    if (
-      nextFocusedDate.compare(currentFocusedDate) === 0 &&
-      isEqualCalendar(nextFocusedDate.calendar, currentFocusedDate.calendar)
-    ) {
-      return;
-    }
-
-    setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
-    props.onFocusChange?.(nextFocusedDate);
-  });
-
-  createEffect(() => {
-    const currentFocusedDate = focusedDate();
-    const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
-
-    if (isEqualCalendar(currentFocusedDate.calendar, nextFocusedDate.calendar)) {
-      return;
-    }
-
-    setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(alignVisibleRangeStart(nextFocusedDate));
-  });
+  createEffect(
+    () => {
+      const currentFocusedDate = focusedDate();
+      const nextFocusedDate = toDisplayCalendarDate(currentFocusedDate);
+      if (isEqualCalendar(currentFocusedDate.calendar, nextFocusedDate.calendar)) {
+        return null;
+      }
+      return {
+        nextFocusedDate,
+        alignedStart: alignVisibleRangeStart(nextFocusedDate),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      setFocusedDateInternal(data.nextFocusedDate);
+      setVisibleRangeStart(data.alignedStart);
+    },
+  );
 
   // Format week days for headers
   const weekDays = createMemo(() => {
@@ -605,7 +623,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       return;
     }
 
-    syncVisibleRangeForFocusedDate(constrained);
+    syncVisibleRangeForFocusedDate(constrained, visibleRange());
     setFocusedDateInternal(constrained);
     props.onFocusChange?.(constrained);
   };
@@ -809,7 +827,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     );
     if (!selectableDate) return;
 
-    const anchor = anchorDate();
+    const anchor = readNow(anchorDate);
 
     if (!anchor) {
       // First click - set anchor

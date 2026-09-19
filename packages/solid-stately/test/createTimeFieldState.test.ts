@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { Time } from "@internationalized/date";
 import { createTimeFieldState } from "../src/calendar/createTimeFieldState";
 
@@ -10,7 +10,9 @@ describe("createTimeFieldState", () => {
         validationState: "invalid",
       });
 
+      flush();
       expect(state.value()).toBeNull();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -30,7 +32,9 @@ describe("createTimeFieldState", () => {
         validationBehavior: "aria",
       });
 
+      flush();
       expect(tooEarly.isInvalid()).toBe(true);
+      flush();
       expect(tooLate.isInvalid()).toBe(true);
 
       dispose();
@@ -45,6 +49,7 @@ describe("createTimeFieldState", () => {
         maxValue: new Time(18, 0),
       });
 
+      flush();
       expect(state.isInvalid()).toBe(false);
 
       dispose();
@@ -62,7 +67,9 @@ describe("createTimeFieldState", () => {
         state.segments().map((segment) => [segment.type, segment.text]),
       );
 
+      flush();
       expect(segmentText.hour).toBe("9");
+      flush();
       expect(segmentText.minute).toBe("30");
 
       dispose();
@@ -81,7 +88,9 @@ describe("createTimeFieldState", () => {
         state.segments().map((segment) => [segment.type, segment.text]),
       );
 
+      flush();
       expect(segmentText.hour).toBe("09");
+      flush();
       expect(segmentText.minute).toBe("30");
 
       dispose();
@@ -95,10 +104,13 @@ describe("createTimeFieldState", () => {
         minValue: new Time(8, 0),
       });
 
+      flush();
       expect(state.isInvalid()).toBe(false);
+      flush();
       expect(state.realtimeValidation().isInvalid).toBe(true);
 
       state.commitValidation();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -113,10 +125,12 @@ describe("createTimeFieldState", () => {
         validationBehavior: "aria",
       });
 
+      flush();
       expect(state.isInvalid()).toBe(true);
       // Faithful: TimeFieldState wraps DateFieldState (anchoring the Time on a
       // CalendarDateTime), so range validation emits the standard RAC
       // range-underflow message, formatted as a time since maxGranularity is "hour".
+      flush();
       expect(state.displayValidation().validationErrors).toContain(
         "Value must be 8:00 AM or later.",
       );
@@ -132,10 +146,13 @@ describe("createTimeFieldState", () => {
         validate: () => "Unavailable time",
       });
 
+      flush();
       expect(state.isInvalid()).toBe(false);
+      flush();
       expect(state.realtimeValidation().isInvalid).toBe(true);
 
       state.commitValidation();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -150,7 +167,9 @@ describe("createTimeFieldState", () => {
         validate: () => "Unavailable time",
       });
 
+      flush();
       expect(state.isInvalid()).toBe(true);
+      flush();
       expect(state.displayValidation().validationErrors).toContain("Unavailable time");
 
       dispose();

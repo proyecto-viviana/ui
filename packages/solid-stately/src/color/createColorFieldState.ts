@@ -18,9 +18,10 @@
  * Based on @react-stately/color useColorFieldState and useColorChannelFieldState.
  */
 
-import { createEffect, createMemo, createSignal, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { Color, ColorChannel, ColorChannelRange, ColorFormat, ColorSpace } from "./types";
 import { createRGBColor, normalizeColor, parseColor } from "./Color";
+import { createInternalSignal, readNow } from "../utils";
 
 const HEX_COLOR_MAX = 0xffffff;
 const PARTIAL_HEX_PATTERN = /^#?[0-9a-f]{0,6}$/i;
@@ -211,8 +212,8 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   const initialOptions = getOptions();
   const initialValue = getDefaultValue(initialOptions);
 
-  const [internalValue, setInternalValue] = createSignal<Color | null>(initialValue);
-  const [inputValue, setInputValueInternal] = createSignal(
+  const [internalValue, setInternalValue] = createInternalSignal<Color | null>(initialValue);
+  const [inputValue, setInputValueInternal] = createInternalSignal(
     formatColorValue(
       initialValue,
       initialOptions.channel,
@@ -221,7 +222,7 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
       initialOptions.locale ?? "en-US",
     ),
   );
-  const [invalidInput, setInvalidInput] = createSignal(false);
+  const [invalidInput, setInvalidInput] = createInternalSignal(false);
 
   const channel = createMemo(() => getOptions().channel);
   const colorSpace = createMemo(() => getOptions().colorSpace);
@@ -244,10 +245,13 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   const formatCurrentValue = (color: Color | null = value()) =>
     formatColorValue(color, channel(), colorSpace(), getOptions().colorFormat, locale());
 
-  createEffect(() => {
-    setInputValueInternal(formatCurrentValue());
-    setInvalidInput(false);
-  });
+  createEffect(
+    () => formatCurrentValue(),
+    (formatted) => {
+      setInputValueInternal(formatted);
+      setInvalidInput(false);
+    },
+  );
 
   const updateValue = (newColor: Color | null) => {
     const opts = getOptions();
@@ -271,7 +275,7 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   };
 
   const commit = () => {
-    const text = inputValue().trim();
+    const text = readNow(inputValue).trim();
     const opts = getOptions();
     const chan = channel();
 
@@ -371,7 +375,7 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   };
 
   const validate = (candidate?: string) => {
-    const text = (candidate ?? inputValue()).trim();
+    const text = (candidate ?? readNow(inputValue)).trim();
     const chan = channel();
 
     if (!text) {

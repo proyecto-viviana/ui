@@ -17,8 +17,8 @@
  * Based on @react-stately/slider useSliderState.
  */
 
-import { type Accessor, createSignal, createMemo } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { type Accessor, createMemo } from "solid-js";
+import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 
 export type SliderOrientation = "horizontal" | "vertical";
 
@@ -133,7 +133,7 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
   const isControlled = () => getProps().value !== undefined;
 
   // Internal signal for uncontrolled mode
-  const [internalValue, setInternalValue] = createSignal(
+  const [internalValue, setInternalValue] = createInternalSignal(
     snapToStep(
       initialProps.defaultValue ?? initialMinValue,
       initialMinValue,
@@ -143,8 +143,8 @@ export function createSliderState(props: MaybeAccessor<SliderStateProps>): Slide
   );
 
   // Dragging and focus state
-  const [isDragging, setIsDragging] = createSignal(false);
-  const [isFocused, setIsFocused] = createSignal(false);
+  const [isDragging, setIsDragging] = createInternalSignal(false);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
 
   // Current value accessor
   const value = createMemo(() => {

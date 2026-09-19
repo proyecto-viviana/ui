@@ -5,7 +5,9 @@
  * Tests follow the same patterns as @react-stately tests.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import {
   createCheckboxGroupState,
   type CheckboxGroupProps,
@@ -17,13 +19,21 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState();
 
+        flush();
         expect(state.value()).toEqual([]);
+        flush();
         expect(state.isDisabled).toBe(false);
+        flush();
         expect(state.isReadOnly).toBe(false);
+        flush();
         expect(typeof state.setValue).toBe("function");
+        flush();
         expect(typeof state.addValue).toBe("function");
+        flush();
         expect(typeof state.removeValue).toBe("function");
+        flush();
         expect(typeof state.toggleValue).toBe("function");
+        flush();
         expect(typeof state.isSelected).toBe("function");
 
         dispose();
@@ -34,6 +44,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isDisabled: true });
 
+        flush();
         expect(state.isDisabled).toBe(true);
 
         dispose();
@@ -44,6 +55,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isReadOnly: true });
 
+        flush();
         expect(state.isReadOnly).toBe(true);
 
         dispose();
@@ -56,6 +68,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ value: ["foo", "bar"] });
 
+        flush();
         expect(state.value()).toEqual(["foo", "bar"]);
 
         dispose();
@@ -66,6 +79,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ defaultValue: ["foo", "bar"] });
 
+        flush();
         expect(state.value()).toEqual(["foo", "bar"]);
 
         dispose();
@@ -78,7 +92,9 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ value: ["foo", "bar"] });
 
+        flush();
         expect(state.isSelected("foo")).toBe(true);
+        flush();
         expect(state.isSelected("baz")).toBe(false);
 
         dispose();
@@ -96,9 +112,11 @@ describe("createCheckboxGroupState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toEqual(["foo"]);
 
         setValue(["foo", "bar"]);
+        flush();
         expect(state.value()).toEqual(["foo", "bar"]);
 
         dispose();
@@ -111,9 +129,11 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ defaultValue: ["foo"] });
 
+        flush();
         expect(state.value()).toEqual(["foo"]);
 
         state.setValue(["foo", "bar"]);
+        flush();
         expect(state.value()).toEqual(["foo", "bar"]);
 
         dispose();
@@ -126,6 +146,7 @@ describe("createCheckboxGroupState", () => {
         const state = createCheckboxGroupState({ defaultValue: ["foo"], onChange: onChangeSpy });
 
         state.setValue(["foo", "bar"]);
+        flush();
         expect(onChangeSpy).toHaveBeenCalledWith(["foo", "bar"]);
 
         dispose();
@@ -139,6 +160,7 @@ describe("createCheckboxGroupState", () => {
         const state = createCheckboxGroupState({ defaultValue: ["foo"] });
 
         state.addValue("baz");
+        flush();
         expect(state.value()).toEqual(["foo", "baz"]);
 
         dispose();
@@ -153,6 +175,7 @@ describe("createCheckboxGroupState", () => {
         state.addValue("baz");
         state.addValue("baz");
         state.addValue("baz");
+        flush();
         expect(state.value()).toEqual(["foo", "baz"]);
 
         dispose();
@@ -166,6 +189,7 @@ describe("createCheckboxGroupState", () => {
         const state = createCheckboxGroupState({ defaultValue: ["foo", "qwe"] });
 
         state.removeValue("foo");
+        flush();
         expect(state.value()).toEqual(["qwe"]);
 
         dispose();
@@ -179,9 +203,11 @@ describe("createCheckboxGroupState", () => {
         const state = createCheckboxGroupState({ defaultValue: ["foo", "qwe"] });
 
         state.toggleValue("foo");
+        flush();
         expect(state.value()).toEqual(["qwe"]);
 
         state.toggleValue("foo");
+        flush();
         expect(state.value()).toEqual(["qwe", "foo"]);
 
         dispose();
@@ -196,6 +222,7 @@ describe("createCheckboxGroupState", () => {
         state.toggleValue("qwe");
         // Note: In SolidJS, synchronous state updates batch differently than React
         // After first toggle: ['foo'], after second toggle: ['foo', 'qwe']
+        flush();
         expect(state.value()).toEqual(["foo", "qwe"]);
 
         dispose();
@@ -208,18 +235,23 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isReadOnly: true, defaultValue: ["test"] });
 
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.addValue("foo");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.removeValue("test");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.toggleValue("foo");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.setValue(["foo"]);
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         dispose();
@@ -232,18 +264,23 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isDisabled: true, defaultValue: ["test"] });
 
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.addValue("foo");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.removeValue("test");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.toggleValue("foo");
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         state.setValue(["foo"]);
+        flush();
         expect(state.value()).toEqual(["test"]);
 
         dispose();
@@ -256,6 +293,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isInvalid: true });
 
+        flush();
         expect(state.isInvalid).toBe(true);
 
         dispose();
@@ -266,6 +304,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isInvalid: false });
 
+        flush();
         expect(state.isInvalid).toBe(false);
 
         dispose();
@@ -276,9 +315,13 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({});
 
+        flush();
         expect(state.isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
+        flush();
         expect(state.displayValidation().validationDetails.valid).toBe(true);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -289,9 +332,13 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isInvalid: true });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(true);
+        flush();
         expect(state.displayValidation().validationDetails.customError).toBe(true);
+        flush();
         expect(state.displayValidation().validationDetails.valid).toBe(false);
+        flush();
         expect(state.displayValidation().validationErrors).toEqual([]);
 
         dispose();
@@ -304,12 +351,15 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({ isRequired: true });
 
+        flush();
         expect(state.isRequired()).toBe(true);
 
         state.setValue(["x"]);
+        flush();
         expect(state.isRequired()).toBe(false);
 
         state.setValue([]);
+        flush();
         expect(state.isRequired()).toBe(true);
 
         dispose();
@@ -323,9 +373,11 @@ describe("createCheckboxGroupState", () => {
           defaultValue: ["a"],
         });
 
+        flush();
         expect(state.isRequired()).toBe(false);
 
         state.setValue([]);
+        flush();
         expect(state.isRequired()).toBe(true);
 
         dispose();
@@ -338,6 +390,7 @@ describe("createCheckboxGroupState", () => {
       createRoot((dispose) => {
         const state = createCheckboxGroupState({});
 
+        flush();
         expect(state.defaultValue).toEqual([]);
 
         dispose();
@@ -350,9 +403,11 @@ describe("createCheckboxGroupState", () => {
           defaultValue: ["x", "y"],
         });
 
+        flush();
         expect(state.defaultValue).toEqual(["x", "y"]);
 
         state.setValue(["a", "b", "c"]);
+        flush();
         expect(state.defaultValue).toEqual(["x", "y"]);
 
         dispose();
@@ -366,12 +421,15 @@ describe("createCheckboxGroupState", () => {
         const [props, setProps] = createSignal<CheckboxGroupProps>({});
         const state = createCheckboxGroupState(props);
 
+        flush();
         expect(state.value()).toEqual([]);
 
         setProps({ value: ["a", "b"] });
+        flush();
         expect(state.value()).toEqual(["a", "b"]);
 
         setProps({ isDisabled: true });
+        flush();
         expect(state.isDisabled).toBe(true);
 
         dispose();
@@ -387,12 +445,15 @@ describe("createCheckboxGroupState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toEqual(["a"]);
 
         setValue(["a", "b", "c"]);
+        flush();
         expect(state.value()).toEqual(["a", "b", "c"]);
 
         setValue([]);
+        flush();
         expect(state.value()).toEqual([]);
 
         dispose();
@@ -412,20 +473,25 @@ describe("createCheckboxGroupState", () => {
           validate: (value) => (value.length === 0 ? "Select at least one option" : null),
         });
 
+        flush();
         expect(state.displayValidation().isInvalid).toBe(false);
       });
 
       state.commitValidation();
       await Promise.resolve();
+      flush();
       expect(state.displayValidation().isInvalid).toBe(true);
+      flush();
       expect(state.displayValidation().validationErrors).toEqual(["Select at least one option"]);
 
       state.setValue(["dogs"]);
       state.commitValidation();
       await Promise.resolve();
+      flush();
       expect(state.displayValidation().isInvalid).toBe(false);
 
       state.resetValidation();
+      flush();
       expect(state.displayValidation().isInvalid).toBe(false);
 
       dispose();

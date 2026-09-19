@@ -18,8 +18,8 @@
  * Based on @react-stately/autocomplete useAutocompleteState.
  */
 
-import { createSignal, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { type Accessor } from "solid-js";
+import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 
 export interface AutocompleteState {
   /** The current value of the autocomplete input. */
@@ -67,11 +67,11 @@ export function createAutocompleteState(
   const getProps = () => access(props);
 
   // Track focused node ID for aria-activedescendant
-  const [focusedNodeId, setFocusedNodeId] = createSignal<string | null>(null);
+  const [focusedNodeId, setFocusedNodeId] = createInternalSignal<string | null>(null);
 
   // Handle controlled vs uncontrolled input value
   const isControlled = () => getProps().inputValue !== undefined;
-  const [uncontrolledValue, setUncontrolledValue] = createSignal(
+  const [uncontrolledValue, setUncontrolledValue] = createInternalSignal(
     getProps().defaultInputValue ?? "",
   );
 

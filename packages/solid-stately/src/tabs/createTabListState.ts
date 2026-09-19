@@ -17,15 +17,8 @@
  * Ported from packages/react-stately/src/tabs/useTabListState.ts.
  */
 
-import {
-  createComputed,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  type Accessor,
-} from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createEffect, createMemo, onCleanup, type Accessor } from "solid-js";
+import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "../collections/ListCollection";
 import type {
   Collection,
@@ -184,7 +177,7 @@ export function createTabListState<T = unknown>(
     return findFirstNonDisabledKey();
   };
 
-  const [selectedKeyInternal, setSelectedKeyInternal] = createSignal<Key | null>(
+  const [selectedKeyInternal, setSelectedKeyInternal] = createInternalSignal<Key | null>(
     getInitialSelectedKey(),
   );
 
@@ -221,9 +214,9 @@ export function createTabListState<T = unknown>(
 
   const orientation: Accessor<TabOrientation> = () => getProps().orientation ?? "horizontal";
 
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusedKey, setFocusedKeyInternal] = createSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createSignal<FocusStrategy | null>(null);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
+  const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
 
   const setFocusedKey = (key: Key | null, childStrategy?: FocusStrategy) => {
     setFocusedKeyInternal(key);
@@ -233,9 +226,9 @@ export function createTabListState<T = unknown>(
   // If the tab list doesn't have focus and the selected key changes, or if there
   // isn't a focused key yet, move the focused key to the selected key so the
   // roving tabIndex stays on the selected tab. Predicate matches useTabListState.
-  // RAC writes in useEffect (after paint). createComputed / a bare createEffect
-  // would copy inside setSelectedKey, so D4 capture of pointerup/click would
-  // already see tabindex 0. Subscribe here; write on the next animation frame.
+  // RAC writes in useEffect (after paint). A tracking-phase write would copy
+  // inside setSelectedKey, so D4 capture of pointerup/click would already see
+  // tabindex 0. Subscribe in compute; write on the next animation frame in apply.
   let lastSelectedKey: Key | null = selectedKey();
   let selectedToFocusedFrame: number | null = null;
   const copySelectedToFocusedKey = () => {
@@ -246,22 +239,21 @@ export function createTabListState<T = unknown>(
     }
     lastSelectedKey = sel;
   };
-  createEffect(() => {
-    const sel = selectedKey();
-    const foc = focusedKey();
-    const focused = isFocused();
+  createEffect(
+    () => ({ sel: selectedKey(), foc: focusedKey(), focused: isFocused() }),
+    ({ sel, foc, focused }) => {
+      if (sel !== null && foc === null) {
+        setFocusedKey(sel);
+        lastSelectedKey = sel;
+        return;
+      }
 
-    if (sel !== null && foc === null) {
-      setFocusedKey(sel);
-      lastSelectedKey = sel;
-      return;
-    }
-
-    if (!focused && sel !== lastSelectedKey) {
-      if (selectedToFocusedFrame != null) return;
-      selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
-    }
-  });
+      if (!focused && sel !== lastSelectedKey) {
+        if (selectedToFocusedFrame != null) return;
+        selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
+      }
+    },
+  );
   onCleanup(() => {
     if (selectedToFocusedFrame == null) return;
     cancelAnimationFrame(selectedToFocusedFrame);
@@ -269,35 +261,34 @@ export function createTabListState<T = unknown>(
   });
 
   // Keep uncontrolled selection valid as items/disabled keys change.
-  createComputed(() => {
-    const p = getProps();
-    if (p.selectedKey !== undefined) return;
+  createEffect(
+    () => {
+      const p = getProps();
+      if (p.selectedKey !== undefined) return undefined;
 
-    const coll = collection();
-    if (coll.size === 0) return;
+      const coll = collection();
+      if (coll.size === 0) return undefined;
 
-    const current = selectedKeyInternal();
-    const currentExists = current !== null && coll.getItem(current) !== null;
-    const currentEnabled = current !== null && !isKeyDisabled(current);
+      const current = selectedKeyInternal();
+      const currentExists = current !== null && coll.getItem(current) !== null;
+      const currentEnabled = current !== null && !isKeyDisabled(current);
+      if (currentExists && currentEnabled) return undefined;
 
-    if (currentExists && currentEnabled) return;
-
-    if (
-      p.defaultSelectedKey !== undefined &&
-      coll.getItem(p.defaultSelectedKey) !== null &&
-      !isKeyDisabled(p.defaultSelectedKey)
-    ) {
-      if (p.defaultSelectedKey !== current) {
-        setSelectedKeyInternal(p.defaultSelectedKey);
+      if (
+        p.defaultSelectedKey !== undefined &&
+        coll.getItem(p.defaultSelectedKey) !== null &&
+        !isKeyDisabled(p.defaultSelectedKey)
+      ) {
+        return p.defaultSelectedKey !== current ? p.defaultSelectedKey : undefined;
       }
-      return;
-    }
 
-    const nextKey = findFirstNonDisabledKey();
-    if (nextKey !== current) {
-      setSelectedKeyInternal(nextKey);
-    }
-  });
+      const nextKey = findFirstNonDisabledKey();
+      return nextKey !== current ? nextKey : undefined;
+    },
+    (nextKey) => {
+      if (nextKey !== undefined) setSelectedKeyInternal(nextKey);
+    },
+  );
 
   return {
     collection,

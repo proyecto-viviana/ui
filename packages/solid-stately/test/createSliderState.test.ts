@@ -4,7 +4,9 @@
  * Ported from @react-stately/slider useSliderState.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createSliderState } from "../src/slider/createSliderState";
 
 describe("createSliderState", () => {
@@ -13,6 +15,7 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.value()).toBe(0);
 
         dispose();
@@ -25,6 +28,7 @@ describe("createSliderState", () => {
           defaultValue: 50,
         });
 
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -37,6 +41,7 @@ describe("createSliderState", () => {
           value: 75,
         });
 
+        flush();
         expect(state.value()).toBe(75);
 
         dispose();
@@ -50,7 +55,9 @@ describe("createSliderState", () => {
           maxValue: 90,
         });
 
+        flush();
         expect(state.minValue).toBe(10);
+        flush();
         expect(state.maxValue).toBe(90);
 
         dispose();
@@ -61,7 +68,9 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.minValue).toBe(0);
+        flush();
         expect(state.maxValue).toBe(100);
 
         dispose();
@@ -72,6 +81,7 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.step).toBe(1);
 
         dispose();
@@ -84,6 +94,7 @@ describe("createSliderState", () => {
           step: 5,
         });
 
+        flush();
         expect(state.step).toBe(5);
 
         dispose();
@@ -97,6 +108,7 @@ describe("createSliderState", () => {
         const state = createSliderState({});
 
         state.setValue(42);
+        flush();
         expect(state.value()).toBe(42);
 
         dispose();
@@ -109,6 +121,7 @@ describe("createSliderState", () => {
         const state = createSliderState({ onChange });
 
         state.setValue(42);
+        flush();
         expect(onChange).toHaveBeenCalledWith(42);
 
         dispose();
@@ -123,6 +136,7 @@ describe("createSliderState", () => {
         });
 
         state.setValue(-5);
+        flush();
         expect(state.value()).toBe(10);
 
         dispose();
@@ -137,6 +151,7 @@ describe("createSliderState", () => {
         });
 
         state.setValue(75);
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -150,9 +165,11 @@ describe("createSliderState", () => {
         });
 
         state.setValue(23);
+        flush();
         expect(state.value()).toBe(20);
 
         state.setValue(27);
+        flush();
         expect(state.value()).toBe(30);
 
         dispose();
@@ -167,6 +184,7 @@ describe("createSliderState", () => {
         });
 
         state.setValue(75);
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -181,6 +199,7 @@ describe("createSliderState", () => {
           defaultValue: 50,
         });
 
+        flush();
         expect(state.getValuePercent()).toBe(0.5);
 
         dispose();
@@ -193,6 +212,7 @@ describe("createSliderState", () => {
           defaultValue: 0,
         });
 
+        flush();
         expect(state.getValuePercent()).toBe(0);
 
         dispose();
@@ -205,6 +225,7 @@ describe("createSliderState", () => {
           defaultValue: 100,
         });
 
+        flush();
         expect(state.getValuePercent()).toBe(1);
 
         dispose();
@@ -219,6 +240,7 @@ describe("createSliderState", () => {
           defaultValue: 100,
         });
 
+        flush();
         expect(state.getValuePercent()).toBe(0.5);
 
         dispose();
@@ -230,6 +252,7 @@ describe("createSliderState", () => {
         const state = createSliderState({});
 
         state.setValuePercent(0.5);
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -241,9 +264,11 @@ describe("createSliderState", () => {
         const state = createSliderState({});
 
         state.setValuePercent(-0.5);
+        flush();
         expect(state.value()).toBe(0);
 
         state.setValuePercent(1.5);
+        flush();
         expect(state.value()).toBe(100);
 
         dispose();
@@ -260,6 +285,7 @@ describe("createSliderState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.value()).toBe(55);
 
         dispose();
@@ -274,6 +300,7 @@ describe("createSliderState", () => {
         });
 
         state.decrement();
+        flush();
         expect(state.value()).toBe(45);
 
         dispose();
@@ -288,6 +315,7 @@ describe("createSliderState", () => {
         });
 
         state.increment(2);
+        flush();
         expect(state.value()).toBe(60);
 
         dispose();
@@ -302,6 +330,7 @@ describe("createSliderState", () => {
         });
 
         state.decrement(2);
+        flush();
         expect(state.value()).toBe(40);
 
         dispose();
@@ -316,6 +345,7 @@ describe("createSliderState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.value()).toBe(100);
 
         dispose();
@@ -330,6 +360,7 @@ describe("createSliderState", () => {
         });
 
         state.decrement();
+        flush();
         expect(state.value()).toBe(0);
 
         dispose();
@@ -344,6 +375,7 @@ describe("createSliderState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -358,6 +390,7 @@ describe("createSliderState", () => {
         });
 
         state.decrement();
+        flush();
         expect(state.value()).toBe(50);
 
         dispose();
@@ -370,12 +403,15 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.isDragging()).toBe(false);
 
         state.setDragging(true);
+        flush();
         expect(state.isDragging()).toBe(true);
 
         state.setDragging(false);
+        flush();
         expect(state.isDragging()).toBe(false);
 
         dispose();
@@ -391,9 +427,11 @@ describe("createSliderState", () => {
         });
 
         state.setDragging(true);
+        flush();
         expect(onChangeEnd).not.toHaveBeenCalled();
 
         state.setDragging(false);
+        flush();
         expect(onChangeEnd).toHaveBeenCalledWith(50);
 
         dispose();
@@ -406,12 +444,15 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.isFocused()).toBe(false);
 
         state.setFocused(true);
+        flush();
         expect(state.isFocused()).toBe(true);
 
         state.setFocused(false);
+        flush();
         expect(state.isFocused()).toBe(false);
 
         dispose();
@@ -424,6 +465,7 @@ describe("createSliderState", () => {
       createRoot((dispose) => {
         const state = createSliderState({});
 
+        flush();
         expect(state.orientation).toBe("horizontal");
 
         dispose();
@@ -436,6 +478,7 @@ describe("createSliderState", () => {
           orientation: "vertical",
         });
 
+        flush();
         expect(state.orientation).toBe("vertical");
 
         dispose();
@@ -451,6 +494,7 @@ describe("createSliderState", () => {
           locale: "en-US",
         });
 
+        flush();
         expect(state.getFormattedValue()).toBe("50");
 
         dispose();
@@ -468,6 +512,7 @@ describe("createSliderState", () => {
           formatOptions: { style: "percent" },
         });
 
+        flush();
         expect(state.getFormattedValue()).toBe("50%");
 
         dispose();
@@ -482,6 +527,7 @@ describe("createSliderState", () => {
           formatOptions: { style: "currency", currency: "USD" },
         });
 
+        flush();
         expect(state.getFormattedValue()).toBe("$100.00");
 
         dispose();
@@ -497,6 +543,7 @@ describe("createSliderState", () => {
         });
 
         // 10% of 100 = 10, snapped to step of 1
+        flush();
         expect(state.pageStep).toBe(10);
 
         dispose();
@@ -510,6 +557,7 @@ describe("createSliderState", () => {
         });
 
         // 10% of 100 = 10, snapped to step of 7 = 7
+        flush();
         expect(state.pageStep).toBe(7);
 
         dispose();
@@ -529,8 +577,10 @@ describe("createSliderState", () => {
         state.setValue(75);
 
         // Value should NOT change in controlled mode
+        flush();
         expect(state.value()).toBe(50);
         // But onChange should be called
+        flush();
         expect(onChange).toHaveBeenCalledWith(75);
 
         dispose();
@@ -546,9 +596,11 @@ describe("createSliderState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toBe(50);
 
         setValue(75);
+        flush();
         expect(state.value()).toBe(75);
 
         dispose();
@@ -567,13 +619,16 @@ describe("createSliderState", () => {
         });
 
         state.increment();
+        flush();
         expect(state.value()).toBe(0.1);
 
         state.increment();
+        flush();
         expect(state.value()).toBe(0.2);
 
         state.increment();
         // Should be 0.3, not 0.30000000000000004
+        flush();
         expect(state.value()).toBeCloseTo(0.3, 10);
 
         dispose();
@@ -589,9 +644,11 @@ describe("createSliderState", () => {
         });
 
         state.setValue(0.23);
+        flush();
         expect(state.value()).toBe(0.2);
 
         state.setValue(0.27);
+        flush();
         expect(state.value()).toBe(0.3);
 
         dispose();

@@ -17,9 +17,10 @@
  * Based on @react-stately/color useColorAreaState.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { Color, ColorChannel, ColorAxes, ColorSpace } from "./types";
 import { normalizeColor } from "./Color";
+import { createInternalSignal } from "../utils";
 
 export interface ColorAreaStateOptions {
   /** The current color value (controlled). */
@@ -101,8 +102,8 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
   };
 
   // Internal value state
-  const [internalValue, setInternalValue] = createSignal<Color | null>(null);
-  const [isDragging, setIsDragging] = createSignal(false);
+  const [internalValue, setInternalValue] = createInternalSignal<Color | null>(null);
+  const [isDragging, setIsDragging] = createInternalSignal(false);
 
   // Initialize internal value
   const initValue = () => {

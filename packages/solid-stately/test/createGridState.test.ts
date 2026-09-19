@@ -4,7 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createGridState, type GridCollection, type GridNode, type Key } from "../src";
 
 // Helper to create a mock grid collection
@@ -144,6 +146,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.collection).toBe(collection);
         dispose();
       });
@@ -154,6 +157,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.disabledKeys.size).toBe(0);
         dispose();
       });
@@ -170,9 +174,13 @@ describe("createGridState", () => {
           disabledKeys: ["row1"],
         }));
 
+        flush();
         expect(state.disabledKeys.has("row1")).toBe(true);
+        flush();
         expect(state.disabledKeys.has("row2")).toBe(false);
+        flush();
         expect(state.isDisabled("row1")).toBe(true);
+        flush();
         expect(state.isDisabled("row2")).toBe(false);
         dispose();
       });
@@ -183,6 +191,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.isKeyboardNavigationDisabled).toBe(false);
         dispose();
       });
@@ -194,9 +203,11 @@ describe("createGridState", () => {
         const state = createGridState(() => ({ collection }));
 
         state.setKeyboardNavigationDisabled(true);
+        flush();
         expect(state.isKeyboardNavigationDisabled).toBe(true);
 
         state.setKeyboardNavigationDisabled(false);
+        flush();
         expect(state.isKeyboardNavigationDisabled).toBe(false);
         dispose();
       });
@@ -213,6 +224,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.focusedKey).toBe(null);
         dispose();
       });
@@ -223,6 +235,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.isFocused).toBe(false);
         dispose();
       });
@@ -237,9 +250,11 @@ describe("createGridState", () => {
         const state = createGridState(() => ({ collection }));
 
         state.setFocusedKey("row1");
+        flush();
         expect(state.focusedKey).toBe("row1");
 
         state.setFocusedKey("row2");
+        flush();
         expect(state.focusedKey).toBe("row2");
         dispose();
       });
@@ -251,9 +266,11 @@ describe("createGridState", () => {
         const state = createGridState(() => ({ collection }));
 
         state.setFocused(true);
+        flush();
         expect(state.isFocused).toBe(true);
 
         state.setFocused(false);
+        flush();
         expect(state.isFocused).toBe(false);
         dispose();
       });
@@ -265,9 +282,11 @@ describe("createGridState", () => {
         const state = createGridState(() => ({ collection }));
 
         state.setFocusedKey("row1", "first");
+        flush();
         expect(state.childFocusStrategy).toBe("first");
 
         state.setFocusedKey("row1", "last");
+        flush();
         expect(state.childFocusStrategy).toBe("last");
         dispose();
       });
@@ -284,6 +303,7 @@ describe("createGridState", () => {
         }));
 
         state.setFocusedKey("row1", "first");
+        flush();
         expect(state.focusedKey).toBe("cell1a");
         dispose();
       });
@@ -300,6 +320,7 @@ describe("createGridState", () => {
         }));
 
         state.setFocusedKey("row1", "last");
+        flush();
         expect(state.focusedKey).toBe("cell1b");
         dispose();
       });
@@ -333,6 +354,7 @@ describe("createGridState", () => {
       state.setFocusedKey("row1");
       setCollection(remainingCollection);
 
+      flush();
       expect(state.focusedKey).toBe(null);
       dispose();
     });
@@ -348,6 +370,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.selectionMode).toBe("none");
         dispose();
       });
@@ -361,7 +384,9 @@ describe("createGridState", () => {
           selectionMode: "multiple",
         }));
 
+        flush();
         expect(state.selectedKeys).toEqual(new Set());
+        flush();
         expect(state.isSelected("row1")).toBe(false);
         dispose();
       });
@@ -379,7 +404,9 @@ describe("createGridState", () => {
           defaultSelectedKeys: ["row1"],
         }));
 
+        flush();
         expect(state.isSelected("row1")).toBe(true);
+        flush();
         expect(state.isSelected("row2")).toBe(false);
         dispose();
       });
@@ -397,7 +424,9 @@ describe("createGridState", () => {
           selectedKeys: ["row2"],
         }));
 
+        flush();
         expect(state.isSelected("row1")).toBe(false);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -412,9 +441,11 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(true);
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
         dispose();
       });
@@ -433,7 +464,9 @@ describe("createGridState", () => {
         }));
 
         state.replaceSelection("row2");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -451,8 +484,11 @@ describe("createGridState", () => {
         }));
 
         state.selectAll();
+        flush();
         expect(state.selectedKeys).toBe("all");
+        flush();
         expect(state.isSelected("row1")).toBe(true);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -476,10 +512,14 @@ describe("createGridState", () => {
           onSelectionChange: (keys) => setSelectedKeys(keys),
         }));
 
+        flush();
         expect(state.isSelectAll).toBe(true);
         state.toggleSelectAll();
+        flush();
         expect(state.selectedKeys).toEqual(new Set());
+        flush();
         expect(state.isEmpty).toBe(true);
+        flush();
         expect(state.isSelectAll).toBe(false);
         dispose();
       });
@@ -499,8 +539,11 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row2");
+        flush();
         expect(state.selectedKeys).toEqual(new Set(["row1", "row3"]));
+        flush();
         expect(state.isSelectAll).toBe(false);
+        flush();
         expect(state.isSelected("row2")).toBe(false);
         dispose();
       });
@@ -516,6 +559,7 @@ describe("createGridState", () => {
         }));
 
         state.clearSelection();
+        flush();
         expect(state.isSelected("row1")).toBe(false);
         dispose();
       });
@@ -530,9 +574,11 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelectAll();
+        flush();
         expect(state.selectedKeys).toBe("all");
 
         state.toggleSelectAll();
+        flush();
         expect(state.selectedKeys).toEqual(new Set());
         dispose();
       });
@@ -547,6 +593,7 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
         dispose();
       });
@@ -564,10 +611,13 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(true);
 
         state.toggleSelection("row2");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -583,6 +633,7 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
         dispose();
       });
@@ -599,6 +650,7 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith(new Set(["row1"]));
         dispose();
       });
@@ -615,6 +667,7 @@ describe("createGridState", () => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
         const state = createGridState(() => ({ collection }));
 
+        flush();
         expect(state.disabledBehavior).toBe("all");
         dispose();
       });
@@ -628,6 +681,7 @@ describe("createGridState", () => {
           disabledBehavior: "selection",
         }));
 
+        flush();
         expect(state.disabledBehavior).toBe("selection");
         dispose();
       });
@@ -649,13 +703,16 @@ describe("createGridState", () => {
         // Disabled keys are never selectable, mirroring
         // SelectionManager.canSelectItem, which ignores disabledBehavior.
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
 
         state.replaceSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
 
         // A non-disabled key is still selectable.
         state.toggleSelection("row2");
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -685,8 +742,11 @@ describe("createGridState", () => {
         // Extend to row3
         state.extendSelection("row3");
 
+        flush();
         expect(state.isSelected("row1")).toBe(true);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
+        flush();
         expect(state.isSelected("row3")).toBe(true);
         dispose();
       });
@@ -704,7 +764,9 @@ describe("createGridState", () => {
         }));
 
         state.extendSelection("row2");
+        flush();
         expect(state.isSelected("row1")).toBe(false);
+        flush();
         expect(state.isSelected("row2")).toBe(true);
         dispose();
       });
@@ -727,6 +789,7 @@ describe("createGridState", () => {
         }));
 
         state.toggleSelection("row1");
+        flush();
         expect(state.isSelected("row1")).toBe(true);
         dispose();
       });
@@ -743,6 +806,7 @@ describe("createGridState", () => {
         }));
 
         state.clearSelection();
+        flush();
         expect(state.isSelected("row1")).toBe(true);
         dispose();
       });

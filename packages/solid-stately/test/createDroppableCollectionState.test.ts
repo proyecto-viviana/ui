@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { ListCollection } from "../src/collections/ListCollection";
 import { createDroppableCollectionState } from "../src/dnd/createDroppableCollectionState";
 import type { CollectionNode } from "../src/collections/types";
@@ -30,15 +30,19 @@ describe("createDroppableCollectionState", () => {
 
       state.setTarget({ type: "item", key: "read", dropPosition: "after" });
 
+      flush();
       expect(state.isDropTargetFor({ type: "item", key: "read", dropPosition: "after" })).toBe(
         true,
       );
+      flush();
       expect(state.isDropTargetFor({ type: "item", key: "write", dropPosition: "before" })).toBe(
         true,
       );
+      flush();
       expect(state.isDropTargetFor({ type: "item", key: "read", dropPosition: "before" })).toBe(
         false,
       );
+      flush();
       expect(state.isDropTargetFor({ type: "item", key: "write", dropPosition: "on" })).toBe(false);
 
       dispose();

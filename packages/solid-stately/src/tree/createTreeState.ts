@@ -19,9 +19,10 @@
  * Manages expansion state, selection, and focus for hierarchical tree data.
  */
 
-import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { TreeState, TreeStateOptions, TreeCollection } from "./types";
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
+import { createInternalSignal } from "../utils";
 
 /**
  * Creates state management for a tree component.
@@ -39,7 +40,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   });
 
   // Expansion state (uncontrolled)
-  const [internalExpandedKeys, setInternalExpandedKeys] = createSignal<Set<Key>>(
+  const [internalExpandedKeys, setInternalExpandedKeys] = createInternalSignal<Set<Key>>(
     getInitialExpandedKeys(getOptions().defaultExpandedKeys),
   );
 
@@ -59,47 +60,50 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   });
 
   // Focus state
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusedKey, setFocusedKeyInternal] = createSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createSignal<FocusStrategy | null>(null);
-  const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createSignal(false);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
+  const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createInternalSignal(false);
 
   // Selection state
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<"all" | Set<Key>>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<"all" | Set<Key>>(
     getInitialSelection(getOptions().defaultSelectedKeys),
   );
-  const [anchorKey, setAnchorKey] = createSignal<Key | null>(null);
+  const [anchorKey, setAnchorKey] = createInternalSignal<Key | null>(null);
 
   // Computed selection
-  const selectedKeys = createMemo(() => {
+  const selectedKeys = (): "all" | Set<Key> => {
     const opts = getOptions();
     if (opts.selectedKeys !== undefined) {
       return normalizeSelection(opts.selectedKeys);
     }
     return internalSelectedKeys();
-  });
+  };
 
   const selectionMode = createMemo(() => getOptions().selectionMode ?? "none");
   const selectionBehaviorProp = (): SelectionBehavior => getOptions().selectionBehavior ?? "toggle";
   const [selectionBehaviorState, setSelectionBehaviorState] =
-    createSignal<SelectionBehavior>(selectionBehaviorProp());
+    createInternalSignal<SelectionBehavior>(selectionBehaviorProp());
   const selectionBehavior = createMemo(() => selectionBehaviorState());
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
 
-  createEffect(on(selectionBehaviorProp, (behavior) => setSelectionBehaviorState(behavior)));
-
-  createEffect(() => {
-    const keys = selectedKeys();
-    if (
-      selectionBehaviorProp() === "replace" &&
-      selectionBehaviorState() === "toggle" &&
-      keys !== "all" &&
-      keys.size === 0
-    ) {
-      setSelectionBehaviorState("replace");
-    }
+  createEffect(selectionBehaviorProp, (behavior) => {
+    setSelectionBehaviorState(behavior);
   });
+
+  createEffect(
+    () => ({
+      prop: selectionBehaviorProp(),
+      state: selectionBehaviorState(),
+      keys: selectedKeys(),
+    }),
+    ({ prop, state, keys }) => {
+      if (prop === "replace" && state === "toggle" && keys !== "all" && keys.size === 0) {
+        setSelectionBehaviorState("replace");
+      }
+    },
+  );
 
   // Set focused key
   const setFocusedKey = (key: Key | null, strategy: FocusStrategy = "first") => {
@@ -107,12 +111,18 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     setChildFocusStrategy(strategy);
   };
 
-  // Reset focused key if the item is removed from visible collection
-  let cachedCollection: C | null = null;
+  // Reset focused key if the item is removed from visible collection.
+  // Seed the cache at factory time so the first flushed effect run can
+  // still see a collapse/removal.
+  let cachedCollection: C | null = collection();
 
   createEffect(
-    on(collection, (coll) => {
-      const currentFocusedKey = focusedKey();
+    () => ({
+      coll: collection(),
+      currentFocusedKey: focusedKey(),
+      disabled: disabledKeys(),
+    }),
+    ({ coll, currentFocusedKey, disabled }) => {
 
       if (currentFocusedKey != null && cachedCollection) {
         // Check if the focused item is still visible
@@ -138,7 +148,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
             if (cachedNode?.rowIndex !== undefined) {
               const newIndex = Math.min(cachedNode.rowIndex, rows.length - 1);
               const newNode = rows[newIndex];
-              if (newNode && !disabledKeys().has(newNode.key)) {
+              if (newNode && !disabled.has(newNode.key)) {
                 setFocusedKeyInternal(newNode.key);
                 cachedCollection = coll;
                 return;
@@ -146,7 +156,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
             }
             // Fall back to first non-disabled item
             for (const row of rows) {
-              if (!disabledKeys().has(row.key)) {
+              if (!disabled.has(row.key)) {
                 setFocusedKeyInternal(row.key);
                 break;
               }
@@ -158,8 +168,7 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
       }
 
       cachedCollection = coll;
-    }),
-  );
+  });
 
   // Selection methods
   const isSelected = (key: Key): boolean => {

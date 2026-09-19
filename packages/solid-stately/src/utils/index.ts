@@ -1,1 +1,8 @@
-export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./reactivity";
+export {
+  access,
+  createInternalSignal,
+  isAccessor,
+  readNow,
+  type MaybeAccessor,
+  type MaybeAccessorValue,
+} from "./reactivity";

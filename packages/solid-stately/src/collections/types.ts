@@ -36,7 +36,7 @@
  * - packages/react-aria/src/collections/BaseCollection.ts
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 /** A unique identifier for an item in a collection. */
 export type Key = string | number;

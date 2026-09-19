@@ -20,8 +20,8 @@
  * either type to filter options or select from a list.
  */
 
-import { batch, createSignal, createMemo, createEffect, untrack, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import { ListCollection } from "../collections/ListCollection";
@@ -182,17 +182,17 @@ export function createComboBoxState<T = unknown>(
   const isMultiple = () => getProps().selectionMode === "multiple";
 
   // Track focus strategy for list navigation
-  const [focusStrategy, setFocusStrategy] = createSignal<FocusStrategy | null>(null);
+  const [focusStrategy, setFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
 
   // Track whether we're showing all items (vs filtered)
-  const [showAllItems, setShowAllItems] = createSignal(false);
+  const [showAllItems, setShowAllItems] = createInternalSignal(false);
 
   // Track the menu open trigger
   let menuOpenTrigger: MenuTriggerAction = "focus";
 
   // ---- Multi-select State ----
   const isMultiSelectionControlled = () => getProps().selectedKeys !== undefined;
-  const [internalSelectedKeys, setInternalSelectedKeys] = createSignal<Set<Key>>(
+  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Set<Key>>(
     new Set(getProps().defaultSelectedKeys ?? []),
   );
 
@@ -212,7 +212,7 @@ export function createComboBoxState<T = unknown>(
   // ---- Selection State (single mode) ----
   // Note: Selection state is initialized first because input value may depend on it
   const isSelectionControlled = () => getProps().selectedKey !== undefined;
-  const [internalSelectedKey, setInternalSelectedKey] = createSignal<Key | null>(
+  const [internalSelectedKey, setInternalSelectedKey] = createInternalSignal<Key | null>(
     getProps().defaultSelectedKey ?? null,
   );
 
@@ -221,7 +221,7 @@ export function createComboBoxState<T = unknown>(
   const isInputControlled = () => getProps().inputValue !== undefined;
 
   // We'll set the proper initial value after collection is created
-  const [internalInputValue, setInternalInputValue] = createSignal(
+  const [internalInputValue, setInternalInputValue] = createInternalSignal(
     getProps().defaultInputValue ?? "",
   );
   // Track if we've initialized input from selection
@@ -232,37 +232,30 @@ export function createComboBoxState<T = unknown>(
   };
 
   const setInputValue = (value: string) => {
-    // RAC useControlledState runs onInputChange in the same event as the
-    // store write; React then flushes the auto-open effect. Solid signals
-    // flush effects immediately, so an unbatched write opens the menu
-    // (onOpenChange) before onInputChange. Batch so CB-OC-03 matches RAC:
-    // onInputChange then onOpenChange(true, "input").
-    batch(() => {
-      if (!isInputControlled()) {
-        setInternalInputValue(value);
-      }
-      getProps().onInputChange?.(value);
-    });
+    // Solid 2 batches writes onto a microtask, so onInputChange and the
+    // auto-open effect settle in one flush (CB-OC-03: onInputChange then
+    // onOpenChange(true, "input")).
+    if (!isInputControlled()) {
+      setInternalInputValue(value);
+    }
+    getProps().onInputChange?.(value);
   };
 
   // Track last committed input value
-  const [lastValue, setLastValue] = createSignal(inputValue());
+  const [lastValue, setLastValue] = createInternalSignal(inputValue());
 
   const selectedKey: Accessor<Key | null> = () => {
     return isSelectionControlled() ? (getProps().selectedKey ?? null) : internalSelectedKey();
   };
 
   const setSelectedKey = (key: Key | null) => {
-    // RAC's parent `setState` is batched with the rest of the click/keydown.
-    // Solid signal writes flush immediately outside a `batch`, so a fully
-    // controlled `onSelectionChange` that updates selectedKey then inputValue
-    // would close on the key change and auto-open on the later input change.
-    batch(() => {
-      if (!isSelectionControlled()) {
-        setInternalSelectedKey(key);
-      }
-      getProps().onSelectionChange?.(key);
-    });
+    // Solid 2 batches writes onto a microtask, so a fully controlled
+    // onSelectionChange that updates selectedKey then inputValue settles in
+    // one flush instead of closing then auto-opening.
+    if (!isSelectionControlled()) {
+      setInternalSelectedKey(key);
+    }
+    getProps().onSelectionChange?.(key);
   };
 
   // ---- Overlay State ----
@@ -537,13 +530,11 @@ export function createComboBoxState<T = unknown>(
       // commitSelection. A new key is `selectionManager.select()` without
       // close; the open/close effect then closes while the menu is still
       // open, so auto-open (input !== last && !isOpen) is skipped.
-      batch(() => {
-        if (selectedKey() === focusedKey) {
-          commitSelection();
-        } else {
-          listState.selectionManager.select(focusedKey);
-        }
-      });
+      if (selectedKey() === focusedKey) {
+        commitSelection();
+      } else {
+        listState.selectionManager.select(focusedKey);
+      }
     } else {
       commitValue();
     }
@@ -558,7 +549,7 @@ export function createComboBoxState<T = unknown>(
   };
 
   // ---- Focus Handling ----
-  const [isFocused, setIsFocused] = createSignal(false);
+  const [isFocused, setIsFocused] = createInternalSignal(false);
   let valueOnFocus = "";
 
   const setFocused = (focused: boolean) => {
@@ -585,28 +576,46 @@ export function createComboBoxState<T = unknown>(
   // not treated as a selection change (RAC lastValueRef = useRef(displayValue)).
   let lastDisplayValue: Key | null | undefined = untrack(selectedKey);
 
-  createEffect(() => {
-    const input = inputValue();
-    const filtered = filteredCollection();
-    const isOpen = overlayState.isOpen();
-    const last = lastValue();
-    const focused = isFocused();
-    const key = isMultiple() ? null : selectedKey();
-
-    batch(() => {
+  createEffect(
+    () => ({
+      input: inputValue(),
+      filtered: filteredCollection(),
+      isOpen: overlayState.isOpen(),
+      last: lastValue(),
+      focused: isFocused(),
+      key: isMultiple() ? null : selectedKey(),
+      allowsEmpty: allowsEmptyCollection(),
+      trigger: menuTrigger(),
+      showingAll: showAllItems(),
+      inputControlled: isInputControlled(),
+      selectionControlled: isSelectionControlled(),
+    }),
+    ({
+      input,
+      filtered,
+      isOpen,
+      last,
+      focused,
+      key,
+      allowsEmpty,
+      trigger,
+      showingAll,
+      inputControlled,
+      selectionControlled,
+    }) => {
       // Auto-open when typing
       if (
         focused &&
-        (filtered.size > 0 || allowsEmptyCollection()) &&
+        (filtered.size > 0 || allowsEmpty) &&
         !isOpen &&
         input !== last &&
-        menuTrigger() !== "manual"
+        trigger !== "manual"
       ) {
         open(null, "input");
       }
 
       // Auto-close when empty (unless showing all)
-      if (!showAllItems() && !allowsEmptyCollection() && isOpen && filtered.size === 0) {
+      if (!showingAll && !allowsEmpty && isOpen && filtered.size === 0) {
         closeMenu();
       }
 
@@ -621,7 +630,7 @@ export function createComboBoxState<T = unknown>(
         setShowAllItems(false);
 
         // Clear selection when input is cleared (if not fully controlled)
-        if (input === "" && (!isInputControlled() || !isSelectionControlled())) {
+        if (input === "" && (!inputControlled || !selectionControlled)) {
           setSelectedKey(null);
         }
 
@@ -629,8 +638,8 @@ export function createComboBoxState<T = unknown>(
       }
 
       lastDisplayValue = key;
-    });
-  });
+    },
+  );
 
   // Keep the input text in sync with the selected item (single mode only).
   //
@@ -648,20 +657,30 @@ export function createComboBoxState<T = unknown>(
   // dependency. `originalCollection()` stays tracked (the unfiltered collection
   // only changes when `items` change, never on filtering) so a preset selection
   // still gets its text once async items arrive.
-  createEffect(() => {
-    if (isMultiple()) return;
-    const key = selectedKey();
-    const item = key != null ? originalCollection().getItem(key) : null;
-    const textValue = item?.textValue ?? "";
-
-    // Only update if selection changed and not fully controlled
-    if (!isInputControlled() || !isSelectionControlled()) {
-      if (key != null && textValue !== untrack(inputValue)) {
-        setInputValue(textValue);
-        setLastValue(textValue);
+  createEffect(
+    () => {
+      if (isMultiple()) return null;
+      const key = selectedKey();
+      const item = key != null ? originalCollection().getItem(key) : null;
+      return {
+        key,
+        textValue: item?.textValue ?? "",
+        inputControlled: isInputControlled(),
+        selectionControlled: isSelectionControlled(),
+      };
+    },
+    (data) => {
+      if (!data) return;
+      const { key, textValue, inputControlled, selectionControlled } = data;
+      // Only update if selection changed and not fully controlled
+      if (!inputControlled || !selectionControlled) {
+        if (key != null && textValue !== untrack(inputValue)) {
+          setInputValue(textValue);
+          setLastValue(textValue);
+        }
       }
-    }
-  });
+    },
+  );
 
   // ---- Selection Methods for ListState compatibility ----
   // These methods allow createOption to work with ComboBoxState

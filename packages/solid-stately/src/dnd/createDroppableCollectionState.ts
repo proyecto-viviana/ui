@@ -20,7 +20,7 @@
  * Ported from packages/react-stately/src/dnd/useDroppableCollectionState.ts.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type {
   DropItem,
   DropTarget,
@@ -38,6 +38,7 @@ import type {
   ItemDropTarget,
 } from "./types";
 import type { Key } from "../collections/types";
+import { createInternalSignal } from "../utils";
 
 /**
  * The slice of a host collection drop-target state needs: neighbor walk and
@@ -164,8 +165,8 @@ export function createDroppableCollectionState(
 ): DroppableCollectionState {
   const getProps = createMemo(() => props());
 
-  const [isDropTarget, setIsDropTarget] = createSignal(false);
-  const [target, setTarget] = createSignal<DropTarget | null>(null);
+  const [isDropTarget, setIsDropTarget] = createInternalSignal(false);
+  const [target, setTarget] = createInternalSignal<DropTarget | null>(null);
 
   const isAccepted = (types: DragTypes): boolean => {
     const p = getProps();

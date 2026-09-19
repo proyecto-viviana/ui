@@ -17,9 +17,10 @@
  * Based on @react-stately/color useColorSliderState.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { Color, ColorChannel, ColorSpace } from "./types";
 import { normalizeColor } from "./Color";
+import { createInternalSignal, readNow } from "../utils";
 
 export type ColorSliderOrientation = "horizontal" | "vertical";
 
@@ -103,8 +104,8 @@ export function createColorSliderState(
   };
 
   // Internal value state
-  const [internalValue, setInternalValue] = createSignal<Color | null>(null);
-  const [isDragging, setIsDragging] = createSignal(false);
+  const [internalValue, setInternalValue] = createInternalSignal<Color | null>(null);
+  const [isDragging, setIsDragging] = createInternalSignal(false);
 
   // Initialize internal value
   const initValue = () => {
@@ -217,7 +218,7 @@ export function createColorSliderState(
 
   // Set dragging
   const setDraggingState = (dragging: boolean) => {
-    const wasDragging = isDragging();
+    const wasDragging = readNow(isDragging);
     setIsDragging(dragging);
 
     // Call onChangeEnd when dragging ends

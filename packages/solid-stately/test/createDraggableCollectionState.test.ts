@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createDraggableCollectionState } from "../src/dnd/createDraggableCollectionState";
 
 describe("createDraggableCollectionState", () => {
@@ -9,7 +9,9 @@ describe("createDraggableCollectionState", () => {
         getItems: () => [{ "text/plain": "test" }],
       }));
 
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(state.draggingKeys.size).toBe(0);
       dispose();
     });
@@ -24,7 +26,9 @@ describe("createDraggableCollectionState", () => {
       const keys = new Set(["item-1", "item-2"]);
       state.startDrag(keys, 100, 100);
 
+      flush();
       expect(state.isDragging).toBe(true);
+      flush();
       expect(state.draggingKeys).toEqual(keys);
       dispose();
     });
@@ -40,6 +44,7 @@ describe("createDraggableCollectionState", () => {
 
       const keys = new Set(["item-1"]);
       state.startDrag(keys, 100, 200);
+      flush();
       expect(onDragStart).toHaveBeenCalledWith({
         type: "dragstart",
         x: 100,
@@ -61,6 +66,7 @@ describe("createDraggableCollectionState", () => {
       const keys = new Set(["item-1"]);
       state.startDrag(keys, 100, 100);
       state.moveDrag(150, 150);
+      flush();
       expect(onDragMove).toHaveBeenCalledWith({
         type: "dragmove",
         x: 150,
@@ -83,8 +89,11 @@ describe("createDraggableCollectionState", () => {
       state.startDrag(keys, 100, 100);
       state.endDrag(200, 200, "move", true);
 
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(state.draggingKeys.size).toBe(0);
+      flush();
       expect(onDragEnd).toHaveBeenCalledWith({
         type: "dragend",
         x: 200,
@@ -109,7 +118,9 @@ describe("createDraggableCollectionState", () => {
       state.startDrag(keys, 100, 100);
       state.cancelDrag();
 
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(onDragEnd).toHaveBeenCalledWith({
         type: "dragend",
         x: 0,
@@ -132,8 +143,11 @@ describe("createDraggableCollectionState", () => {
       }));
 
       state.startDrag(new Set(["item-1"]), 100, 100);
+      flush();
       expect(state.isDragging).toBe(false);
+      flush();
       expect(state.draggingKeys.size).toBe(0);
+      flush();
       expect(onDragStart).not.toHaveBeenCalled();
       dispose();
     });
@@ -149,7 +163,9 @@ describe("createDraggableCollectionState", () => {
       const keys = new Set(["item-1", "item-2"]);
       const result = state.getItems(keys);
 
+      flush();
       expect(getItems).toHaveBeenCalledWith(keys);
+      flush();
       expect(result).toEqual([{ "text/plain": "item data" }]);
       dispose();
     });
@@ -162,6 +178,7 @@ describe("createDraggableCollectionState", () => {
         getAllowedDropOperations: () => ["copy"],
       }));
 
+      flush();
       expect(state.getAllowedDropOperations()).toEqual(["copy"]);
       dispose();
     });
@@ -173,6 +190,7 @@ describe("createDraggableCollectionState", () => {
         getItems: () => [],
       }));
 
+      flush();
       expect(state.getAllowedDropOperations()).toEqual(["move", "copy", "link"]);
       dispose();
     });
@@ -186,6 +204,7 @@ describe("createDraggableCollectionState", () => {
         preview,
       }));
 
+      flush();
       expect(state.preview).toBe(preview);
       dispose();
     });
@@ -210,7 +229,9 @@ describe("createDraggableCollectionState", () => {
         isSelected: (key) => selected.has(String(key)),
       }));
 
+      flush();
       expect([...state.getKeysForDrag("other")].sort()).toEqual(["other", "parent"]);
+      flush();
       expect([...state.getKeysForDrag("solo")]).toEqual(["solo"]);
       dispose();
     });

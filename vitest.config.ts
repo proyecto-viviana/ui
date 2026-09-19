@@ -1,12 +1,12 @@
 import { defineConfig } from "vite-plus";
-import solidPlugin from "vite-plugin-solid";
+import solidPlugin from "@solidjs/vite-plugin";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [solidPlugin()],
+  plugins: [...solidPlugin()],
   optimizeDeps: {
     // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
     // discovery before Vitest applies its file include. That crosses ignored

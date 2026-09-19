@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createTreeState, TreeCollection, createTreeCollection } from "../src/tree";
 import type {
   TreeItemData,
@@ -63,9 +63,12 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.collection.size).toBe(3);
+        flush();
         expect(state.collection.rows.length).toBe(3);
 
+        flush();
         const keys = [...state.collection.getKeys()];
         expect(keys).toEqual(["1", "2", "3"]);
 
@@ -78,8 +81,10 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ defaultExpandedKeys: ["1"] }), items);
 
+        flush();
         expect(state.collection.size).toBe(6); // 3 roots + 3 children of '1'
 
+        flush();
         const keys = [...state.collection.getKeys()];
         expect(keys).toEqual(["1", "1.1", "1.2", "1.3", "2", "3"]);
 
@@ -92,8 +97,10 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ defaultExpandedKeys: ["1", "1.2"] }), items);
 
+        flush();
         expect(state.collection.size).toBe(8); // 3 + 3 + 2
 
+        flush();
         const keys = [...state.collection.getKeys()];
         expect(keys).toEqual(["1", "1.1", "1.2", "1.2.1", "1.2.2", "1.3", "2", "3"]);
 
@@ -107,9 +114,13 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const state = createState(() => ({ defaultExpandedKeys: ["1"] }), items);
 
+      flush();
       expect(state.collection.getKeyAfter("1")).toBe("1.1");
+      flush();
       expect(state.collection.getKeyAfter("1.3")).toBe("2");
+      flush();
       expect(state.collection.getKeyBefore("2")).toBe("1.3");
+      flush();
       expect(state.collection.getKeyBefore("1.1")).toBe("1");
 
       dispose();
@@ -122,8 +133,11 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.expandedKeys.size).toBe(0);
+        flush();
         expect(state.isExpanded("1")).toBe(false);
+        flush();
         expect(state.isExpanded("2")).toBe(false);
 
         dispose();
@@ -135,9 +149,13 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ defaultExpandedKeys: ["1", "2"] }), items);
 
+        flush();
         expect(state.expandedKeys.size).toBe(2);
+        flush();
         expect(state.isExpanded("1")).toBe(true);
+        flush();
         expect(state.isExpanded("2")).toBe(true);
+        flush();
         expect(state.isExpanded("3")).toBe(false);
 
         dispose();
@@ -149,17 +167,23 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
+        flush();
         expect(state.collection.size).toBe(3);
 
         state.toggleKey("1");
 
+        flush();
         expect(state.isExpanded("1")).toBe(true);
+        flush();
         expect(state.collection.size).toBe(6);
 
         state.toggleKey("1");
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
+        flush();
         expect(state.collection.size).toBe(3);
 
         dispose();
@@ -171,13 +195,16 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
 
         state.expandKey("1");
+        flush();
         expect(state.isExpanded("1")).toBe(true);
 
         // Calling expand again should be a no-op
         state.expandKey("1");
+        flush();
         expect(state.isExpanded("1")).toBe(true);
 
         dispose();
@@ -189,13 +216,16 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ defaultExpandedKeys: ["1"] }), items);
 
+        flush();
         expect(state.isExpanded("1")).toBe(true);
 
         state.collapseKey("1");
+        flush();
         expect(state.isExpanded("1")).toBe(false);
 
         // Calling collapse again should be a no-op
         state.collapseKey("1");
+        flush();
         expect(state.isExpanded("1")).toBe(false);
 
         dispose();
@@ -208,8 +238,10 @@ describe("createTreeState", () => {
         const state = createState(() => ({ defaultExpandedKeys: ["1"] }), items);
 
         // '1.1' is a leaf node (no children)
+        flush();
         expect(state.isExpanded("1.1")).toBe(false);
         state.toggleKey("1.1");
+        flush();
         expect(state.isExpanded("1.1")).toBe(false);
 
         dispose();
@@ -224,7 +256,9 @@ describe("createTreeState", () => {
 
         state.toggleKey("1");
 
+        flush();
         expect(onExpandedChange).toHaveBeenCalledTimes(1);
+        flush();
         expect(onExpandedChange).toHaveBeenCalledWith(new Set(["1"]));
 
         dispose();
@@ -243,13 +277,16 @@ describe("createTreeState", () => {
           items,
         );
 
+        flush();
         expect(state.isExpanded("1")).toBe(true);
+        flush();
         expect(state.collection.size).toBe(6);
 
         // In controlled mode, toggleKey should call onExpandedChange
         // but not actually change the state (since it's controlled)
         state.toggleKey("1");
 
+        flush();
         expect(onExpandedChange).toHaveBeenCalledWith(new Set());
         // State doesn't change until parent updates expandedKeys
 
@@ -262,12 +299,16 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ defaultExpandedKeys: ["1"] }), items);
 
+        flush();
         expect(state.isExpanded("1")).toBe(true);
+        flush();
         expect(state.isExpanded("2")).toBe(false);
 
         state.setExpandedKeys(new Set(["2"]));
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
+        flush();
         expect(state.isExpanded("2")).toBe(true);
 
         dispose();
@@ -281,7 +322,9 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.selectionMode).toBe("none");
+        flush();
         expect(state.selectedKeys).toEqual(new Set());
 
         dispose();
@@ -293,15 +336,20 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ selectionMode: "single" }), items);
 
+        flush();
         expect(state.isSelected("1")).toBe(false);
 
         state.toggleSelection("1");
+        flush();
         expect(state.isSelected("1")).toBe(true);
+        flush();
         expect(state.isSelected("2")).toBe(false);
 
         // Selecting another item deselects the first
         state.toggleSelection("2");
+        flush();
         expect(state.isSelected("1")).toBe(false);
+        flush();
         expect(state.isSelected("2")).toBe(true);
 
         dispose();
@@ -316,8 +364,11 @@ describe("createTreeState", () => {
         state.toggleSelection("1");
         state.toggleSelection("2");
 
+        flush();
         expect(state.isSelected("1")).toBe(true);
+        flush();
         expect(state.isSelected("2")).toBe(true);
+        flush();
         expect(state.isSelected("3")).toBe(false);
 
         dispose();
@@ -335,8 +386,11 @@ describe("createTreeState", () => {
           items,
         );
 
+        flush();
         expect(state.isSelected("1")).toBe(true);
+        flush();
         expect(state.isSelected("2")).toBe(true);
+        flush();
         expect(state.isSelected("3")).toBe(false);
 
         dispose();
@@ -357,6 +411,7 @@ describe("createTreeState", () => {
 
         state.toggleSelection("1");
 
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith(new Set(["1"]));
 
         dispose();
@@ -370,9 +425,13 @@ describe("createTreeState", () => {
 
         state.selectAll();
 
+        flush();
         expect(state.selectedKeys).toBe("all");
+        flush();
         expect(state.isSelected("1")).toBe(true);
+        flush();
         expect(state.isSelected("2")).toBe(true);
+        flush();
         expect(state.isSelected("3")).toBe(true);
 
         dispose();
@@ -390,10 +449,12 @@ describe("createTreeState", () => {
           items,
         );
 
+        flush();
         expect(state.selectedKeys).toEqual(new Set(["1", "2"]));
 
         state.clearSelection();
 
+        flush();
         expect(state.selectedKeys).toEqual(new Set());
 
         dispose();
@@ -407,8 +468,11 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({ disabledKeys: ["1", "2"] }), items);
 
+        flush();
         expect(state.isDisabled("1")).toBe(true);
+        flush();
         expect(state.isDisabled("2")).toBe(true);
+        flush();
         expect(state.isDisabled("3")).toBe(false);
 
         dispose();
@@ -426,10 +490,12 @@ describe("createTreeState", () => {
           items,
         );
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
 
         state.toggleKey("1");
 
+        flush();
         expect(state.isExpanded("1")).toBe(false);
 
         dispose();
@@ -450,6 +516,7 @@ describe("createTreeState", () => {
 
         state.toggleSelection("1");
 
+        flush();
         expect(state.isSelected("1")).toBe(false);
 
         dispose();
@@ -471,13 +538,16 @@ describe("createTreeState", () => {
         // canSelectItem blocks disabled keys regardless of disabledBehavior, so a
         // 'selection'-disabled key still cannot be toggled, replaced, or extended.
         state.toggleSelection("1");
+        flush();
         expect(state.isSelected("1")).toBe(false);
 
         state.replaceSelection("1");
+        flush();
         expect(state.isSelected("1")).toBe(false);
 
         // A non-disabled key is still selectable under 'selection'.
         state.toggleSelection("2");
+        flush();
         expect(state.isSelected("2")).toBe(true);
 
         dispose();
@@ -487,7 +557,9 @@ describe("createTreeState", () => {
     it("should expose the resolved disabledBehavior (default 'all')", () => {
       createRoot((dispose) => {
         const items = createTestItems();
+        flush();
         expect(createState(() => ({}), items).disabledBehavior).toBe("all");
+        flush();
         expect(createState(() => ({ disabledBehavior: "selection" }), items).disabledBehavior).toBe(
           "selection",
         );
@@ -503,15 +575,19 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.focusedKey).toBe(null);
 
         state.setFocusedKey("1");
+        flush();
         expect(state.focusedKey).toBe("1");
 
         state.setFocusedKey("2");
+        flush();
         expect(state.focusedKey).toBe("2");
 
         state.setFocusedKey(null);
+        flush();
         expect(state.focusedKey).toBe(null);
 
         dispose();
@@ -523,12 +599,15 @@ describe("createTreeState", () => {
         const items = createTestItems();
         const state = createState(() => ({}), items);
 
+        flush();
         expect(state.isFocused).toBe(false);
 
         state.setFocused(true);
+        flush();
         expect(state.isFocused).toBe(true);
 
         state.setFocused(false);
+        flush();
         expect(state.isFocused).toBe(false);
 
         dispose();
@@ -541,9 +620,13 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1", "1.2"]));
 
+      flush();
       expect(collection.getItem("1")?.level).toBe(0);
+      flush();
       expect(collection.getItem("1.1")?.level).toBe(1);
+      flush();
       expect(collection.getItem("1.2")?.level).toBe(1);
+      flush();
       expect(collection.getItem("1.2.1")?.level).toBe(2);
     });
 
@@ -551,8 +634,11 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1", "1.2"]));
 
+      flush();
       expect(collection.getParentKey("1")).toBe(null);
+      flush();
       expect(collection.getParentKey("1.1")).toBe("1");
+      flush();
       expect(collection.getParentKey("1.2.1")).toBe("1.2");
     });
 
@@ -561,10 +647,15 @@ describe("createTreeState", () => {
       const collection = new TreeCollection(items, new Set(["1"]));
 
       // With '1' expanded: ['1', '1.1', '1.2', '1.3', '2', '3']
+      flush();
       expect(collection.getKeyBefore("1")).toBe(null);
+      flush();
       expect(collection.getKeyAfter("1")).toBe("1.1");
+      flush();
       expect(collection.getKeyBefore("1.2")).toBe("1.1");
+      flush();
       expect(collection.getKeyAfter("1.3")).toBe("2");
+      flush();
       expect(collection.getKeyAfter("3")).toBe(null);
     });
 
@@ -572,7 +663,9 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1"]));
 
+      flush();
       expect(collection.getFirstKey()).toBe("1");
+      flush();
       expect(collection.getLastKey()).toBe("3");
     });
 
@@ -580,6 +673,7 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1"]));
 
+      flush();
       const children = [...collection.getChildren("1")];
       expect(children.map((c) => c.key)).toEqual(["1.1", "1.2", "1.3"]);
     });
@@ -588,6 +682,7 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set());
 
+      flush();
       const allKeys = [...collection].map((n) => n.key);
       expect(allKeys).toEqual(["1", "2", "3"]);
     });
@@ -596,9 +691,13 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1"]));
 
+      flush();
       expect(collection.at(0)?.key).toBe("1");
+      flush();
       expect(collection.at(1)?.key).toBe("1.1");
+      flush();
       expect(collection.at(5)?.key).toBe("3");
+      flush();
       expect(collection.at(6)).toBe(null);
     });
 
@@ -606,16 +705,22 @@ describe("createTreeState", () => {
       const items = createTestItems();
       const collection = new TreeCollection(items, new Set(["1"]));
 
+      flush();
       const item1 = collection.getItem("1");
       expect(item1?.isExpandable).toBe(true);
+      flush();
       expect(item1?.isExpanded).toBe(true);
 
+      flush();
       const item11 = collection.getItem("1.1");
       expect(item11?.isExpandable).toBeFalsy(); // undefined or false for leaf nodes
+      flush();
       expect(item11?.isExpanded).toBeFalsy();
 
+      flush();
       const item2 = collection.getItem("2");
       expect(item2?.isExpandable).toBe(true);
+      flush();
       expect(item2?.isExpanded).toBe(false);
     });
   });

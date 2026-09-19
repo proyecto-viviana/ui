@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createComboBoxState, defaultContainsFilter } from "../src/combobox";
 
 interface TestItem {
@@ -26,10 +28,15 @@ describe("createComboBoxState", () => {
           getTextValue: (item) => item.name,
         });
 
+        flush();
         expect(state.isOpen()).toBe(false);
+        flush();
         expect(state.selectedKey()).toBe(null);
+        flush();
         expect(state.inputValue()).toBe("");
+        flush();
         expect(state.isFocused()).toBe(false);
+        flush();
         expect(state.collection().size).toBe(5);
         dispose();
       });
@@ -44,7 +51,9 @@ describe("createComboBoxState", () => {
           defaultSelectedKey: "2",
         });
 
+        flush();
         expect(state.selectedKey()).toBe("2");
+        flush();
         expect(state.selectedItem()?.textValue).toBe("Banana");
         dispose();
       });
@@ -59,6 +68,7 @@ describe("createComboBoxState", () => {
           defaultInputValue: "App",
         });
 
+        flush();
         expect(state.inputValue()).toBe("App");
         dispose();
       });
@@ -74,8 +84,11 @@ describe("createComboBoxState", () => {
           defaultSelectedKey: "2",
         });
 
+        flush();
         expect(state.selectedItem()?.textValue).toBe("Banana");
+        flush();
         expect(state.inputValue()).toBe("Banana");
+        flush();
         expect(state.inputValue()).not.toContain("[object Object]");
         dispose();
       });
@@ -89,7 +102,9 @@ describe("createComboBoxState", () => {
         });
 
         // No recognizable text field → fall back to the key, not "[object Object]".
+        flush();
         expect(state.selectedItem()?.textValue).toBe("beta");
+        flush();
         expect(state.inputValue()).toBe("beta");
         dispose();
       });
@@ -105,6 +120,7 @@ describe("createComboBoxState", () => {
           allowsEmptyCollection: true,
         });
 
+        flush();
         expect(state.isOpen()).toBe(true);
         dispose();
       });
@@ -122,6 +138,7 @@ describe("createComboBoxState", () => {
         });
 
         await Promise.resolve();
+        flush();
         expect(state.isOpen()).toBe(true);
         dispose();
       });
@@ -138,7 +155,9 @@ describe("createComboBoxState", () => {
         });
 
         state.setSelectedKey("3");
+        flush();
         expect(state.selectedKey()).toBe("3");
+        flush();
         expect(state.selectedItem()?.textValue).toBe("Cherry");
         dispose();
       });
@@ -155,6 +174,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setSelectedKey("4");
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith("4");
         dispose();
       });
@@ -169,11 +189,13 @@ describe("createComboBoxState", () => {
           selectedKey: "1",
         });
 
+        flush();
         expect(state.selectedKey()).toBe("1");
 
         // Calling setSelectedKey won't change the value in controlled mode
         // It just triggers the callback
         state.setSelectedKey("2");
+        flush();
         expect(state.selectedKey()).toBe("1"); // Still controlled value
         dispose();
       });
@@ -190,6 +212,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setInputValue("test");
+        flush();
         expect(state.inputValue()).toBe("test");
         dispose();
       });
@@ -206,6 +229,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setInputValue("hello");
+        flush();
         expect(onInputChange).toHaveBeenCalledWith("hello");
         dispose();
       });
@@ -231,7 +255,9 @@ describe("createComboBoxState", () => {
 
       state.setFocused(true);
       state.setInputValue("A");
+      flush();
       expect(order).toEqual(["onInputChange", "onOpenChange"]);
+      flush();
       expect(state.isOpen()).toBe(true);
       dispose();
     });
@@ -245,9 +271,11 @@ describe("createComboBoxState", () => {
           inputValue: "controlled",
         });
 
+        flush();
         expect(state.inputValue()).toBe("controlled");
 
         state.setInputValue("new value");
+        flush();
         expect(state.inputValue()).toBe("controlled"); // Still controlled value
         dispose();
       });
@@ -275,16 +303,21 @@ describe("createComboBoxState", () => {
         return [s, d] as const;
       });
 
+      flush();
       expect(state.inputValue()).toBe("Banana");
+      flush();
       expect(state.selectedKey()).toBe("2");
 
       // Delete a character — must NOT snap back to "Banana".
       state.setInputValue("Banan");
+      flush();
       expect(state.inputValue()).toBe("Banan");
+      flush();
       expect(state.selectedKey()).toBe("2"); // selection is retained while editing
 
       // Type a fresh query — still sticks.
       state.setInputValue("Cher");
+      flush();
       expect(state.inputValue()).toBe("Cher");
 
       dispose();
@@ -303,10 +336,13 @@ describe("createComboBoxState", () => {
         return [s, d] as const;
       });
 
+      flush();
       expect(state.inputValue()).toBe("Banana");
 
       state.setSelectedKey("3");
+      flush();
       expect(state.selectedKey()).toBe("3");
+      flush();
       expect(state.inputValue()).toBe("Cherry");
       dispose();
     });
@@ -323,24 +359,31 @@ describe("createComboBoxState", () => {
         });
 
         // Initial: all items
+        flush();
         expect(state.collection().size).toBe(5);
 
         // Filter to 'a' matches Apple, Banana, Date (Elderberry has no 'a')
         state.setInputValue("a");
+        flush();
         expect(state.collection().size).toBe(3);
         // RAC ListCollection reassigns index on the filtered set so virtualized
         // aria-posinset is 1..n of the visible options, not the original list.
+        flush();
         const filtered = [...state.collection()];
         expect(filtered.map((node) => node.textValue)).toEqual(["Apple", "Banana", "Date"]);
+        flush();
         expect(filtered.map((node) => node.index)).toEqual([0, 1, 2]);
+        flush();
         expect(state.collection().getKeyAfter("2")).toBe("4");
 
         // Filter to 'app' matches only Apple
         state.setInputValue("app");
+        flush();
         expect(state.collection().size).toBe(1);
 
         // Clear filter
         state.setInputValue("");
+        flush();
         expect(state.collection().size).toBe(5);
         dispose();
       });
@@ -360,6 +403,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setInputValue("b");
+        flush();
         expect(state.collection().size).toBe(1); // Only Banana
         dispose();
       });
@@ -375,6 +419,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setInputValue("xyz");
+        flush();
         expect(state.collection().size).toBe(5);
         dispose();
       });
@@ -390,10 +435,13 @@ describe("createComboBoxState", () => {
           getTextValue: (item) => item.name,
         });
 
+        flush();
         expect(state.isOpen()).toBe(false);
         state.open();
+        flush();
         expect(state.isOpen()).toBe(true);
         state.close();
+        flush();
         expect(state.isOpen()).toBe(false);
         dispose();
       });
@@ -408,8 +456,10 @@ describe("createComboBoxState", () => {
         });
 
         state.toggle();
+        flush();
         expect(state.isOpen()).toBe(true);
         state.toggle();
+        flush();
         expect(state.isOpen()).toBe(false);
         dispose();
       });
@@ -427,9 +477,11 @@ describe("createComboBoxState", () => {
 
         // Filter to something that matches nothing
         state.setInputValue("xyz");
+        flush();
         expect(state.collection().size).toBe(0);
 
         state.open();
+        flush();
         expect(state.isOpen()).toBe(false);
         dispose();
       });
@@ -445,7 +497,9 @@ describe("createComboBoxState", () => {
         });
 
         state.open();
+        flush();
         expect(state.isOpen()).toBe(true);
+        flush();
         expect(state.focusedKey()).toBe("2");
         dispose();
       });
@@ -461,8 +515,10 @@ describe("createComboBoxState", () => {
 
         state.open();
         state.setFocusedKey("3");
+        flush();
         expect(state.focusedKey()).toBe("3");
         state.close();
+        flush();
         expect(state.focusedKey()).toBe(null);
         dispose();
       });
@@ -479,9 +535,11 @@ describe("createComboBoxState", () => {
         });
 
         state.open(null, "manual");
+        flush();
         expect(onOpenChange).toHaveBeenCalledWith(true, "manual");
 
         state.close();
+        flush();
         expect(onOpenChange).toHaveBeenCalledWith(false, undefined);
         dispose();
       });
@@ -503,6 +561,7 @@ describe("createComboBoxState", () => {
         state.setFocusedKey("3");
         state.commit();
 
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith("3");
         dispose();
       });
@@ -545,6 +604,7 @@ describe("createComboBoxState", () => {
 
         state.setFocused(true);
         state.open(null, "manual");
+        flush();
         expect(state.isOpen()).toBe(true);
         onOpenChange.mockClear();
 
@@ -552,10 +612,15 @@ describe("createComboBoxState", () => {
         state.commit();
         await Promise.resolve();
 
+        flush();
         expect(onSelectionChange).toHaveBeenCalledWith("3");
+        flush();
         expect(state.selectedKey()).toBe("3");
+        flush();
         expect(state.inputValue()).toBe("Cherry");
+        flush();
         expect(state.isOpen()).toBe(false);
+        flush();
         expect(onOpenChange.mock.calls.map((call) => call[0])).toEqual([false]);
         dispose();
       });
@@ -571,14 +636,17 @@ describe("createComboBoxState", () => {
         });
 
         // Input should be set to selected item's text
+        flush();
         expect(state.inputValue()).toBe("Banana");
 
         // Change input
         state.setInputValue("test");
+        flush();
         expect(state.inputValue()).toBe("test");
 
         // Revert should restore to Banana
         state.revert();
+        flush();
         expect(state.inputValue()).toBe("Banana");
         dispose();
       });
@@ -594,10 +662,13 @@ describe("createComboBoxState", () => {
           getTextValue: (item) => item.name,
         });
 
+        flush();
         expect(state.isFocused()).toBe(false);
         state.setFocused(true);
+        flush();
         expect(state.isFocused()).toBe(true);
         state.setFocused(false);
+        flush();
         expect(state.isFocused()).toBe(false);
         dispose();
       });
@@ -613,6 +684,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setFocused(true);
+        flush();
         expect(state.isOpen()).toBe(true);
         dispose();
       });
@@ -628,6 +700,7 @@ describe("createComboBoxState", () => {
         });
 
         state.setFocused(true);
+        flush();
         expect(state.isOpen()).toBe(false);
         dispose();
       });
@@ -644,6 +717,7 @@ describe("createComboBoxState", () => {
           isDisabled: true,
         });
 
+        flush();
         expect(state.isDisabled).toBe(true);
         dispose();
       });
@@ -658,6 +732,7 @@ describe("createComboBoxState", () => {
           isReadOnly: true,
         });
 
+        flush();
         expect(state.isReadOnly).toBe(true);
         dispose();
       });
@@ -672,9 +747,13 @@ describe("createComboBoxState", () => {
           disabledKeys: ["2", "4"],
         });
 
+        flush();
         expect(state.isKeyDisabled("1")).toBe(false);
+        flush();
         expect(state.isKeyDisabled("2")).toBe(true);
+        flush();
         expect(state.isKeyDisabled("3")).toBe(false);
+        flush();
         expect(state.isKeyDisabled("4")).toBe(true);
         dispose();
       });
@@ -695,7 +774,9 @@ describe("createComboBoxState", () => {
         state.commit();
 
         // With allowsCustomValue, the custom input is kept and selection is cleared
+        flush();
         expect(state.inputValue()).toBe("Custom Value");
+        flush();
         expect(state.selectedKey()).toBe(null);
         dispose();
       });
@@ -705,19 +786,27 @@ describe("createComboBoxState", () => {
 
 describe("defaultContainsFilter", () => {
   it("should be case-insensitive", () => {
+    flush();
     expect(defaultContainsFilter("Apple", "app")).toBe(true);
+    flush();
     expect(defaultContainsFilter("Apple", "APP")).toBe(true);
+    flush();
     expect(defaultContainsFilter("apple", "APP")).toBe(true);
   });
 
   it("should match substring anywhere", () => {
+    flush();
     expect(defaultContainsFilter("Apple", "ppl")).toBe(true);
+    flush();
     expect(defaultContainsFilter("Apple", "le")).toBe(true);
+    flush();
     expect(defaultContainsFilter("Apple", "A")).toBe(true);
   });
 
   it("should not match non-matching strings", () => {
+    flush();
     expect(defaultContainsFilter("Apple", "xyz")).toBe(false);
+    flush();
     expect(defaultContainsFilter("Apple", "ban")).toBe(false);
   });
 });

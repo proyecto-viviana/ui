@@ -14,7 +14,7 @@ export default defineConfig({
     sourcemap: true,
     clean: false,
     dts: false,
-    deps: { neverBundle: ["solid-js", "solid-js/web", "solid-js/store"] },
+    deps: { neverBundle: ["solid-js", "@solidjs/web"] },
     outputOptions: { entryFileNames: "[name].js", banner: packageAttributionBanner },
   },
 });

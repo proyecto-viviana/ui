@@ -21,7 +21,9 @@
  * width distribution and clamping.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
+import { createInternalSignal } from "../utils";
+
 import type { Key } from "../collections/types";
 
 /** Column size: a number (px) or a string ('100px', '50%', '1fr'). */
@@ -168,8 +170,8 @@ export function createTableColumnResizeState(
   );
 
   // User-overridden widths (set during/after resize)
-  const [overrides, setOverrides] = createSignal<Map<Key, number>>(new Map());
-  const [resizingColumn, setResizingColumn] = createSignal<Key | null>(null);
+  const [overrides, setOverrides] = createInternalSignal<Map<Key, number>>(new Map());
+  const [resizingColumn, setResizingColumn] = createInternalSignal<Key | null>(null);
 
   // Computed widths: initial merged with overrides
   const columnWidths = createMemo(() => {

@@ -57,9 +57,11 @@
     "@proyecto-viviana/solidaria-components": "workspace:*"
   },
   "devDependencies": {
-    "solid-js": "^1.9.15"
+    "@solidjs/web": "2.0.0-rc.9",
+    "solid-js": "2.0.0-rc.9"
   },
   "peerDependencies": {
-    "solid-js": "^1.9.0"
+    "@solidjs/web": ">=2.0.0-rc.9 <3",
+    "solid-js": ">=2.0.0-rc.9 <3"
   }
 }

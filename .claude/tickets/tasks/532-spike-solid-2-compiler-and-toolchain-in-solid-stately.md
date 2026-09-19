@@ -4,12 +4,22 @@ type: task
 title: "Spike Solid 2 compiler and toolchain in solid-stately"
 created: 2026-09-13
 parent: 531
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-13,
       note: "opened under #531 to test Solid 2.0 compiler, tsdown/esbuild, and vitest against pure state package",
+    }
+  - {
+      state: open,
+      at: 2026-09-18,
+      note: "workspace pin freeze to solid-js@2.0.0-rc.9 / @solidjs/web@2.0.0-rc.9 / @solidjs/vite-plugin@3.0.0-next.44; split createEffect and drop createComputed/batch/on in solid-stately",
+    }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "Workspace freeze on rc.9 + vite-plugin next.44. solid-stately rewritten for split createEffect, ownedWrite, live internal signals (getObserver + mirror; latest() does not see unflushed writes). 924/924 unit tests pass. vp pack + tsc build. Remaining comboBox STRICT_READ_UNTRACKED is one apply-callback snapshot.",
     }
 ---
 

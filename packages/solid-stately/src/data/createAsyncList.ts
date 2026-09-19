@@ -25,7 +25,8 @@
  * - packages/react-stately/src/data/useListData.ts
  */
 
-import { createSignal, untrack } from "solid-js";
+import { untrack } from "solid-js";
+import { createInternalSignal } from "../utils";
 
 export type Key = string | number;
 export type Selection = "all" | Set<Key>;
@@ -168,7 +169,7 @@ export function createAsyncList<T, C = string>(options: AsyncListOptions<T, C>):
     initialFilterText = "",
   } = options;
 
-  const [state, setState] = createSignal<InternalState<T, C>>({
+  const [state, setState] = createInternalSignal<InternalState<T, C>>({
     loadingState: "idle",
     items: [],
     selectedKeys: initialSelectedKeys === "all" ? "all" : new Set(initialSelectedKeys || []),

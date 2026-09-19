@@ -20,8 +20,8 @@
  * This is a 1:1 port of @react-stately/toggle's useToggleState.
  */
 
-import { createSignal, Accessor } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { Accessor } from "solid-js";
+import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface ToggleStateOptions {
   /** Whether the element should be selected (controlled). */
@@ -54,7 +54,7 @@ export function createToggleState(props: MaybeAccessor<ToggleStateOptions> = {})
   const initialProps = getProps();
   const initialSelected = initialProps.isSelected ?? initialProps.defaultSelected ?? false;
 
-  const [internalSelected, setInternalSelected] = createSignal(initialSelected);
+  const [internalSelected, setInternalSelected] = createInternalSignal(initialSelected);
 
   const isControlled = () => getProps().isSelected !== undefined;
 
@@ -82,7 +82,8 @@ export function createToggleState(props: MaybeAccessor<ToggleStateOptions> = {})
       return;
     }
 
-    setSelected(!isSelected());
+    const selected = isControlled() ? (p.isSelected ?? false) : readNow(internalSelected);
+    setSelected(!selected);
   }
 
   return {

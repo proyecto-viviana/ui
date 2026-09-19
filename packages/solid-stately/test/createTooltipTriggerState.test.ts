@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { flush, createRoot } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "../src/tooltip";
 
 describe("createTooltipTriggerState", () => {
@@ -15,6 +15,7 @@ describe("createTooltipTriggerState", () => {
 
   it("should initialize as closed by default", () => {
     createRoot((dispose) => {
+      flush();
       const state = createTooltipTriggerState();
       expect(state.isOpen()).toBe(false);
       dispose();
@@ -25,6 +26,7 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState();
       state.open(true);
+      flush();
       expect(state.isOpen()).toBe(true);
       dispose();
     });
@@ -34,8 +36,10 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState();
       state.open(true);
+      flush();
       expect(state.isOpen()).toBe(true);
       state.close(true);
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });
@@ -43,6 +47,7 @@ describe("createTooltipTriggerState", () => {
 
   it("should respect controlled isOpen prop", () => {
     createRoot((dispose) => {
+      flush();
       const state = createTooltipTriggerState({ isOpen: true });
       expect(state.isOpen()).toBe(true);
       dispose();
@@ -54,6 +59,7 @@ describe("createTooltipTriggerState", () => {
       const onOpenChange = vi.fn();
       const state = createTooltipTriggerState({ onOpenChange });
       state.open(true);
+      flush();
       expect(onOpenChange).toHaveBeenCalledWith(true);
       dispose();
     });
@@ -65,6 +71,7 @@ describe("createTooltipTriggerState", () => {
       const state = createTooltipTriggerState({ onOpenChange });
       state.open(true);
       state.close(true);
+      flush();
       expect(onOpenChange).toHaveBeenCalledWith(false);
       dispose();
     });
@@ -74,12 +81,15 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState({ delay: 500 });
       state.open(); // Not immediate
+      flush();
       expect(state.isOpen()).toBe(false);
 
       vi.advanceTimersByTime(400);
+      flush();
       expect(state.isOpen()).toBe(false);
 
       vi.advanceTimersByTime(100);
+      flush();
       expect(state.isOpen()).toBe(true);
       dispose();
     });
@@ -89,15 +99,19 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState({ closeDelay: 300 });
       state.open(true);
+      flush();
       expect(state.isOpen()).toBe(true);
 
       state.close(); // Not immediate
+      flush();
       expect(state.isOpen()).toBe(true);
 
       vi.advanceTimersByTime(200);
+      flush();
       expect(state.isOpen()).toBe(true);
 
       vi.advanceTimersByTime(100);
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });
@@ -107,12 +121,15 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState();
       state.open();
+      flush();
       expect(state.isOpen()).toBe(false);
 
       vi.advanceTimersByTime(1400);
+      flush();
       expect(state.isOpen()).toBe(false);
 
       vi.advanceTimersByTime(100);
+      flush();
       expect(state.isOpen()).toBe(true);
       dispose();
     });
@@ -124,10 +141,13 @@ describe("createTooltipTriggerState", () => {
       const state2 = createTooltipTriggerState();
 
       state1.open(true);
+      flush();
       expect(state1.isOpen()).toBe(true);
 
       state2.open(true);
+      flush();
       expect(state1.isOpen()).toBe(false);
+      flush();
       expect(state2.isOpen()).toBe(true);
       dispose();
     });
@@ -141,6 +161,7 @@ describe("createTooltipTriggerState", () => {
       // Open first tooltip with delay
       state1.open();
       vi.advanceTimersByTime(1000);
+      flush();
       expect(state1.isOpen()).toBe(true);
 
       // Close first tooltip
@@ -148,6 +169,7 @@ describe("createTooltipTriggerState", () => {
 
       // Second tooltip should open immediately (warmed up)
       state2.open();
+      flush();
       expect(state2.isOpen()).toBe(true);
       dispose();
     });
@@ -157,16 +179,19 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState({ closeDelay: 500 });
       state.open(true);
+      flush();
       expect(state.isOpen()).toBe(true);
 
       // Start closing
       state.close();
       vi.advanceTimersByTime(200);
+      flush();
       expect(state.isOpen()).toBe(true);
 
       // Open again before close completes
       state.open(true);
       vi.advanceTimersByTime(300);
+      flush();
       expect(state.isOpen()).toBe(true); // Should still be open
       dispose();
     });
@@ -174,6 +199,7 @@ describe("createTooltipTriggerState", () => {
 
   it("should respect defaultOpen prop", () => {
     createRoot((dispose) => {
+      flush();
       const state = createTooltipTriggerState({ defaultOpen: true });
       expect(state.isOpen()).toBe(true);
       dispose();
@@ -184,9 +210,11 @@ describe("createTooltipTriggerState", () => {
     createRoot((dispose) => {
       const state = createTooltipTriggerState({ closeDelay: 0 });
       state.open(true);
+      flush();
       expect(state.isOpen()).toBe(true);
 
       state.close(); // Even without immediate
+      flush();
       expect(state.isOpen()).toBe(false);
       dispose();
     });

@@ -57,12 +57,25 @@ minimumReleaseAgeExclude:
   - "magic-string@1.2.1"
   - "miniflare@5.20260815.0-alpha"
   - "wrangler@4.124.0"
+  - "solid-js@2.0.0-rc.9"
+  - "@solidjs/web@2.0.0-rc.9"
+  - "@solidjs/vite-plugin@3.0.0-next.44"
+  - "@solidjs/testing-library@1.0.0-beta.3"
+  - "@solidjs/compiler@2.0.0-rc.9"
+  - "@solidjs/babel-plugin@2.0.0-rc.9"
   - "@internationalized/date@3.12.4"
   - "@internationalized/number@3.6.8"
   - "@react-spectrum/s2@1.7.0"
   - react-aria-components@1.21.0
   - react-aria@3.52.0
   - react-stately@3.50.0
+  - '@solidjs/compiler-darwin-arm64@2.0.0-rc.9'
+  - '@solidjs/compiler-darwin-x64@2.0.0-rc.9'
+  - '@solidjs/compiler-linux-arm64-gnu@2.0.0-rc.9'
+  - '@solidjs/compiler-linux-x64-gnu@2.0.0-rc.9'
+  - '@solidjs/compiler-wasm32-wasi@2.0.0-rc.9'
+  - '@solidjs/compiler-win32-x64-msvc@2.0.0-rc.9'
+  - '@solidjs/signals@2.0.0-rc.9'
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vitest: 4.1.11
@@ -76,6 +89,8 @@ peerDependencyRules:
     vite: "*"
     vitest: "*"
     "@vitest/browser-preview": "*"
+    solid-js: "*"
+    "@solidjs/web": "*"
 
 # CI 33825688122: guard:dependency-security timed out on npm advisories/bulk (error 23).
 fetchRetries: 4

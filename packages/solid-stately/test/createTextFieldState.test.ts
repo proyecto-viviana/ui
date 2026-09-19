@@ -7,7 +7,9 @@
  * simple controlled/uncontrolled value wrapper.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createTextFieldState } from "../src/textfield/createTextFieldState";
 
 describe("createTextFieldState", () => {
@@ -16,6 +18,7 @@ describe("createTextFieldState", () => {
       createRoot((dispose) => {
         const state = createTextFieldState();
 
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -28,6 +31,7 @@ describe("createTextFieldState", () => {
           defaultValue: "initial text",
         });
 
+        flush();
         expect(state.value()).toBe("initial text");
 
         dispose();
@@ -40,6 +44,7 @@ describe("createTextFieldState", () => {
           value: "controlled text",
         });
 
+        flush();
         expect(state.value()).toBe("controlled text");
 
         dispose();
@@ -52,6 +57,7 @@ describe("createTextFieldState", () => {
           value: "",
         });
 
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -65,12 +71,15 @@ describe("createTextFieldState", () => {
         const state = createTextFieldState();
 
         state.setValue("hello");
+        flush();
         expect(state.value()).toBe("hello");
 
         state.setValue("world");
+        flush();
         expect(state.value()).toBe("world");
 
         state.setValue("");
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -82,6 +91,7 @@ describe("createTextFieldState", () => {
         const state = createTextFieldState();
 
         state.setValue("line1\nline2\nline3");
+        flush();
         expect(state.value()).toBe("line1\nline2\nline3");
 
         dispose();
@@ -93,9 +103,11 @@ describe("createTextFieldState", () => {
         const state = createTextFieldState();
 
         state.setValue("test@example.com");
+        flush();
         expect(state.value()).toBe("test@example.com");
 
         state.setValue("123!@#$%^&*()");
+        flush();
         expect(state.value()).toBe("123!@#$%^&*()");
 
         dispose();
@@ -113,12 +125,17 @@ describe("createTextFieldState", () => {
         });
 
         state.setValue("changed");
+        flush();
         expect(onChange).toHaveBeenCalledWith("changed");
+        flush();
         expect(onChange).toHaveBeenCalledTimes(1);
+        flush();
         expect(state.value()).toBe("changed");
 
         state.setValue("another change");
+        flush();
         expect(onChange).toHaveBeenCalledWith("another change");
+        flush();
         expect(onChange).toHaveBeenCalledTimes(2);
 
         dispose();
@@ -133,12 +150,15 @@ describe("createTextFieldState", () => {
           onChange,
         });
 
+        flush();
         expect(state.value()).toBe("controlled");
 
         state.setValue("changed");
         // Value should NOT change in controlled mode
+        flush();
         expect(state.value()).toBe("controlled");
         // But onChange should still be called
+        flush();
         expect(onChange).toHaveBeenCalledWith("changed");
 
         dispose();
@@ -154,12 +174,15 @@ describe("createTextFieldState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toBe("foo");
 
         setValue("bar");
+        flush();
         expect(state.value()).toBe("bar");
 
         setValue("");
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -170,9 +193,11 @@ describe("createTextFieldState", () => {
       createRoot((dispose) => {
         const state = createTextFieldState({ defaultValue: "foo" });
 
+        flush();
         expect(state.value()).toBe("foo");
 
         state.setValue("bar");
+        flush();
         expect(state.value()).toBe("bar");
 
         dispose();
@@ -190,12 +215,15 @@ describe("createTextFieldState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toBe("initial");
 
         setValue("changed");
+        flush();
         expect(state.value()).toBe("changed");
 
         setValue("");
+        flush();
         expect(state.value()).toBe("");
 
         dispose();
@@ -209,11 +237,13 @@ describe("createTextFieldState", () => {
         });
         const state = createTextFieldState(props);
 
+        flush();
         expect(state.value()).toBe("initial");
 
         // Note: In uncontrolled mode, changing props doesn't change internal state
         // This is consistent with React behavior
         setProps({ value: "controlled" });
+        flush();
         expect(state.value()).toBe("controlled");
 
         dispose();

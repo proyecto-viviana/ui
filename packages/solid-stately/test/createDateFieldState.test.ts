@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { CalendarDate } from "@internationalized/date";
 import { createDateFieldState } from "../src/calendar/createDateFieldState";
 
@@ -10,7 +12,9 @@ describe("createDateFieldState", () => {
         validationState: "invalid",
       });
 
+      flush();
       expect(state.value()).toBeNull();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -31,10 +35,14 @@ describe("createDateFieldState", () => {
       // Blurring must not snap an out-of-range value to the minimum (upstream parity).
       state.confirmPlaceholder();
 
+      flush();
       const value = state.value();
       expect(value).toBeTruthy();
+      flush();
       expect(value?.compare(new CalendarDate(2024, 6, 5))).toBe(0);
+      flush();
       expect(value?.compare(minValue)).toBeLessThan(0);
+      flush();
       expect(state.realtimeValidation().validationDetails.rangeUnderflow).toBe(true);
 
       dispose();
@@ -54,10 +62,14 @@ describe("createDateFieldState", () => {
       state.setSegment("day", 25);
       state.confirmPlaceholder();
 
+      flush();
       const value = state.value();
       expect(value).toBeTruthy();
+      flush();
       expect(value?.compare(new CalendarDate(2024, 6, 25))).toBe(0);
+      flush();
       expect(value?.compare(maxValue)).toBeGreaterThan(0);
+      flush();
       expect(state.realtimeValidation().validationDetails.rangeOverflow).toBe(true);
 
       dispose();
@@ -73,11 +85,15 @@ describe("createDateFieldState", () => {
       });
 
       state.setSegment("day", 1);
+      flush();
       expect(state.value()?.day).toBe(1);
 
       state.confirmPlaceholder();
+      flush();
       expect(state.value()?.compare(new CalendarDate(2024, 6, 1))).toBe(0);
+      flush();
       expect(state.value()?.compare(minValue)).toBeLessThan(0);
+      flush();
       expect(state.realtimeValidation().validationDetails.rangeUnderflow).toBe(true);
 
       dispose();
@@ -96,21 +112,29 @@ describe("createDateFieldState", () => {
       // holds the typed value (no onChange) until the field is blurred.
       state.setSegment("month", 2);
 
+      flush();
       expect(state.value()?.month).toBe(1);
+      flush();
       expect(state.value()?.day).toBe(31);
+      flush();
       expect(onChange).not.toHaveBeenCalled();
 
       const segmentText = Object.fromEntries(
         state.segments().map((segment) => [segment.type, segment.text]),
       );
+      flush();
       expect(segmentText.month).toBe("2");
+      flush();
       expect(segmentText.day).toBe("31");
 
       // Blur constrains February 31st to the last valid day of the month and commits.
       state.confirmPlaceholder();
 
+      flush();
       expect(state.value()?.compare(new CalendarDate(2023, 2, 28))).toBe(0);
+      flush();
       expect(onChange).toHaveBeenCalledTimes(1);
+      flush();
       expect(onChange.mock.calls[0][0]?.compare(new CalendarDate(2023, 2, 28))).toBe(0);
 
       dispose();
@@ -127,7 +151,9 @@ describe("createDateFieldState", () => {
 
       state.setSegment("day", 20);
 
+      flush();
       expect(state.value()?.compare(new CalendarDate(2024, 6, 20))).toBe(0);
+      flush();
       expect(onChange).toHaveBeenCalledTimes(1);
 
       dispose();
@@ -146,6 +172,7 @@ describe("createDateFieldState", () => {
       });
 
       state.confirmPlaceholder();
+      flush();
       expect(state.value()?.compare(initialValue)).toBe(0);
 
       dispose();
@@ -162,8 +189,11 @@ describe("createDateFieldState", () => {
         state.segments().map((segment) => [segment.type, segment.text]),
       );
 
+      flush();
       expect(segmentText.month).toBe("2");
+      flush();
       expect(segmentText.day).toBe("3");
+      flush();
       expect(segmentText.year).toBe("2025");
 
       dispose();
@@ -181,8 +211,11 @@ describe("createDateFieldState", () => {
         state.segments().map((segment) => [segment.type, segment.text]),
       );
 
+      flush();
       expect(segmentText.month).toBe("02");
+      flush();
       expect(segmentText.day).toBe("03");
+      flush();
       expect(segmentText.year).toBe("2025");
 
       dispose();
@@ -196,10 +229,13 @@ describe("createDateFieldState", () => {
         isDateUnavailable: (date) => date.day === 10,
       });
 
+      flush();
       expect(state.isInvalid()).toBe(false);
+      flush();
       expect(state.realtimeValidation().isInvalid).toBe(true);
 
       state.commitValidation();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -214,7 +250,9 @@ describe("createDateFieldState", () => {
         isDateUnavailable: (date) => date.day === 10,
       });
 
+      flush();
       expect(state.isInvalid()).toBe(true);
+      flush();
       expect(state.displayValidation().validationErrors).toContain("Selected date unavailable.");
 
       dispose();
@@ -228,10 +266,13 @@ describe("createDateFieldState", () => {
         validate: () => "Unavailable date",
       });
 
+      flush();
       expect(state.isInvalid()).toBe(false);
+      flush();
       expect(state.realtimeValidation().isInvalid).toBe(true);
 
       state.commitValidation();
+      flush();
       expect(state.isInvalid()).toBe(true);
 
       dispose();
@@ -246,7 +287,9 @@ describe("createDateFieldState", () => {
         validate: () => "Unavailable date",
       });
 
+      flush();
       expect(state.isInvalid()).toBe(true);
+      flush();
       expect(state.displayValidation().validationErrors).toContain("Unavailable date");
 
       dispose();
@@ -265,7 +308,9 @@ describe("createDateFieldState", () => {
         .filter((segment) => segment.isEditable)
         .map((segment) => segment.type);
 
+      flush();
       expect(state.locale).toBe("ar-AE");
+      flush();
       expect(editable).toEqual(["day", "month", "year"]);
 
       dispose();
@@ -286,10 +331,13 @@ describe("createDateFieldState", () => {
           .filter((segment) => segment.isEditable)
           .map((segment) => segment.type);
 
+      flush();
       expect(editable()).toEqual(["month", "day", "year"]);
 
       setLocale("ar-AE");
+      flush();
       expect(state.locale).toBe("ar-AE");
+      flush();
       expect(editable()).toEqual(["day", "month", "year"]);
 
       dispose();

@@ -17,9 +17,10 @@
  * Based on @react-stately/color useColorWheelState.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
 import type { Color } from "./types";
 import { createHSLColor, normalizeColor } from "./Color";
+import { createInternalSignal, readNow } from "../utils";
 
 export interface ColorWheelStateOptions {
   /** The current color value (controlled). */
@@ -85,8 +86,8 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
   };
 
   const initialValue = normalizeWheelValue(getOptions().defaultValue ?? defaultColor);
-  const [internalValue, setInternalValue] = createSignal<Color>(initialValue);
-  const [isDragging, setIsDragging] = createSignal(false);
+  const [internalValue, setInternalValue] = createInternalSignal<Color>(initialValue);
+  const [isDragging, setIsDragging] = createInternalSignal(false);
   let valueRef = initialValue;
 
   // Controlled vs uncontrolled value
@@ -210,7 +211,7 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
 
   // Set dragging state
   const setDraggingState = (dragging: boolean) => {
-    const wasDragging = isDragging();
+    const wasDragging = readNow(isDragging);
     setIsDragging(dragging);
 
     // Call onChangeEnd when dragging ends

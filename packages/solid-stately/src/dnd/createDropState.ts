@@ -20,7 +20,8 @@
  * Ported from packages/react-aria/src/dnd/useDrop.ts.
  */
 
-import { createSignal, createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "solid-js";
+import { createInternalSignal, readNow } from "../utils";
 import type {
   DropItem,
   DropEnterEvent,
@@ -99,7 +100,7 @@ export interface DropState {
 export function createDropState(props: Accessor<DropStateOptions>): DropState {
   const getProps = createMemo(() => props());
 
-  const [isDropTarget, setIsDropTarget] = createSignal(false);
+  const [isDropTarget, setIsDropTarget] = createInternalSignal(false);
 
   const enterTarget = (x: number, y: number) => {
     const p = getProps();
@@ -118,7 +119,7 @@ export function createDropState(props: Accessor<DropStateOptions>): DropState {
 
   const moveInTarget = (x: number, y: number) => {
     const p = getProps();
-    if (!isDropTarget() || p.isDisabled) return;
+    if (!readNow(isDropTarget) || p.isDisabled) return;
 
     if (typeof p.onDropMove === "function") {
       p.onDropMove({

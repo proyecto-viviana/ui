@@ -19,7 +19,9 @@
  * Ported from packages/react-stately/src/steplist/useStepListState.ts.
  */
 
-import { createEffect, createMemo, createSignal, type Accessor } from "solid-js";
+import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createInternalSignal } from "../utils";
+
 import type { Key } from "../collections/types";
 
 export interface StepListStateProps {
@@ -80,7 +82,7 @@ export function createStepListState(props: StepListStateProps): StepListState {
   const isReadOnly: Accessor<boolean> = () => props.isReadOnly ?? false;
 
   // Last completed step signal (uncontrolled)
-  const [lastCompletedStepInternal, setLastCompletedStepInternal] = createSignal<Key | null>(
+  const [lastCompletedStepInternal, setLastCompletedStepInternal] = createInternalSignal<Key | null>(
     props.defaultLastCompletedStep ?? null,
   );
 
@@ -160,7 +162,7 @@ export function createStepListState(props: StepListStateProps): StepListState {
   };
 
   // Selected key signal (uncontrolled)
-  const [selectedKeyInternal, setSelectedKeyInternal] = createSignal<Key | null>(
+  const [selectedKeyInternal, setSelectedKeyInternal] = createInternalSignal<Key | null>(
     props.defaultSelectedKey ?? findDefaultSelectedKey(),
   );
 
@@ -203,18 +205,21 @@ export function createStepListState(props: StepListStateProps): StepListState {
   // lastCompleted index), advancing `lastCompletedStep` to `selectedIdx - 1`
   // marks every intermediate step complete. This runs regardless of
   // `isDisabled` / `isReadOnly`, exactly as upstream (the effect is ungated).
-  createEffect(() => {
-    const selKey = selectedKey();
-    if (selKey === null) return;
-    const selIdx = indexMap().get(selKey);
-    if (selIdx === undefined || selIdx <= 0) return;
-    const completed = lastCompletedStep();
-    const lcs = completed !== null ? (indexMap().get(completed) ?? -1) : -1;
-    if (selIdx > lcs + 1) {
-      const prevKey = items()[selIdx - 1]?.key;
-      if (prevKey !== undefined) setLastCompletedStep(prevKey);
-    }
-  });
+  createEffect(
+    () => {
+      const selKey = selectedKey();
+      if (selKey === null) return null;
+      const selIdx = indexMap().get(selKey);
+      if (selIdx === undefined || selIdx <= 0) return null;
+      const completed = lastCompletedStep();
+      const lcs = completed !== null ? (indexMap().get(completed) ?? -1) : -1;
+      if (selIdx <= lcs + 1) return null;
+      return items()[selIdx - 1]?.key;
+    },
+    (prevKey) => {
+      if (prevKey !== undefined && prevKey !== null) setLastCompletedStep(prevKey);
+    },
+  );
 
   return {
     selectedKey,

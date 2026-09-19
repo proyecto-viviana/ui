@@ -5,7 +5,9 @@
  * Tests follow the same patterns as @react-stately tests.
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createSignal } from "./owned-signal";
+
+import { flush, createRoot } from "solid-js";
 import { createCalendarState } from "../src/calendar/createCalendarState";
 import {
   CalendarDate,
@@ -23,6 +25,7 @@ describe("createCalendarState", () => {
       createRoot((dispose) => {
         const state = createCalendarState();
 
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -36,6 +39,7 @@ describe("createCalendarState", () => {
           defaultValue: defaultDate,
         });
 
+        flush();
         expect(state.value()).toEqual(defaultDate);
 
         dispose();
@@ -49,6 +53,7 @@ describe("createCalendarState", () => {
           value: controlledDate,
         });
 
+        flush();
         expect(state.value()).toEqual(controlledDate);
 
         dispose();
@@ -61,6 +66,7 @@ describe("createCalendarState", () => {
           value: null,
         });
 
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -74,8 +80,11 @@ describe("createCalendarState", () => {
         const state = createCalendarState();
         const todayDate = today(timeZone);
 
+        flush();
         expect(state.focusedDate().year).toBe(todayDate.year);
+        flush();
         expect(state.focusedDate().month).toBe(todayDate.month);
+        flush();
         expect(state.focusedDate().day).toBe(todayDate.day);
 
         dispose();
@@ -89,6 +98,7 @@ describe("createCalendarState", () => {
           defaultFocusedValue: focusDate,
         });
 
+        flush();
         expect(state.focusedDate()).toEqual(focusDate);
 
         dispose();
@@ -102,6 +112,7 @@ describe("createCalendarState", () => {
           focusedValue: focusDate,
         });
 
+        flush();
         expect(state.focusedDate()).toEqual(focusDate);
 
         dispose();
@@ -115,6 +126,7 @@ describe("createCalendarState", () => {
           defaultValue: date,
         });
 
+        flush();
         expect(state.focusedDate()).toEqual(date);
 
         dispose();
@@ -131,7 +143,9 @@ describe("createCalendarState", () => {
           onFocusChange,
         });
 
+        flush();
         expect(state.focusedDate()).toEqual(minValue);
+        flush();
         expect(onFocusChange).not.toHaveBeenCalled();
 
         dispose();
@@ -146,6 +160,7 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.setValue(date);
+        flush();
         expect(state.value()).toEqual(date);
 
         dispose();
@@ -159,7 +174,9 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.setValue(date);
+        flush();
         expect(onChange).toHaveBeenCalledWith(date);
+        flush();
         expect(onChange).toHaveBeenCalledTimes(1);
 
         dispose();
@@ -172,7 +189,9 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.selectDate(date);
+        flush();
         expect(state.value()).toEqual(date);
+        flush();
         expect(state.focusedDate()).toEqual(date);
 
         dispose();
@@ -187,6 +206,7 @@ describe("createCalendarState", () => {
         });
 
         state.selectFocusedDate();
+        flush();
         expect(state.value()).toEqual(focusDate);
 
         dispose();
@@ -197,6 +217,7 @@ describe("createCalendarState", () => {
   describe("multiple selection", () => {
     it("defaults to single selection mode", () => {
       createRoot((dispose) => {
+        flush();
         const state = createCalendarState();
         expect(state.selectionMode()).toBe("single");
         dispose();
@@ -208,6 +229,7 @@ describe("createCalendarState", () => {
         const state = createCalendarState<CalendarDate, "multiple">({
           selectionMode: "multiple",
         });
+        flush();
         expect(state.selectionMode()).toBe("multiple");
         dispose();
       });
@@ -222,9 +244,11 @@ describe("createCalendarState", () => {
         const d2 = new CalendarDate(2024, 6, 12);
 
         state.selectDate(d1);
+        flush();
         expect(state.value()).toEqual([d1]);
 
         state.selectDate(d2);
+        flush();
         expect(state.value()).toEqual([d1, d2]);
 
         dispose();
@@ -243,8 +267,11 @@ describe("createCalendarState", () => {
         state.selectDate(d2);
         state.selectDate(d1);
 
+        flush();
         expect(state.value()).toEqual([d2]);
+        flush();
         expect(state.isSelected(d1)).toBe(false);
+        flush();
         expect(state.isSelected(d2)).toBe(true);
 
         dispose();
@@ -260,8 +287,11 @@ describe("createCalendarState", () => {
           defaultValue: [d1, d2],
         });
 
+        flush();
         expect(state.isSelected(d1)).toBe(true);
+        flush();
         expect(state.isSelected(d2)).toBe(true);
+        flush();
         expect(state.isSelected(new CalendarDate(2024, 6, 11))).toBe(false);
 
         dispose();
@@ -277,7 +307,9 @@ describe("createCalendarState", () => {
           defaultValue: [d1, d2],
         });
 
+        flush();
         expect(state.value()).toEqual([d1, d2]);
+        flush();
         expect(state.focusedDate()).toEqual(d1);
 
         dispose();
@@ -295,12 +327,15 @@ describe("createCalendarState", () => {
         const d2 = new CalendarDate(2024, 6, 12);
 
         state.selectDate(d1);
+        flush();
         expect(onChange).toHaveBeenLastCalledWith([d1]);
 
         state.selectDate(d2);
+        flush();
         expect(onChange).toHaveBeenLastCalledWith([d1, d2]);
 
         state.selectDate(d1);
+        flush();
         expect(onChange).toHaveBeenLastCalledWith([d2]);
 
         dispose();
@@ -316,6 +351,7 @@ describe("createCalendarState", () => {
         });
 
         state.setValue(null);
+        flush();
         expect(state.value()).toEqual([]);
 
         dispose();
@@ -334,9 +370,11 @@ describe("createCalendarState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toEqual([d1]);
 
         setValue([d1, d2]);
+        flush();
         expect(state.value()).toEqual([d1, d2]);
 
         dispose();
@@ -352,9 +390,11 @@ describe("createCalendarState", () => {
         });
 
         state.selectFocusedDate();
+        flush();
         expect(state.value()).toEqual([focusDate]);
 
         state.selectFocusedDate();
+        flush();
         expect(state.value()).toEqual([]);
 
         dispose();
@@ -371,6 +411,7 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.setValue(date);
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -385,6 +426,7 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.setValue(date);
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -400,6 +442,7 @@ describe("createCalendarState", () => {
         });
 
         state.selectFocusedDate();
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -414,6 +457,7 @@ describe("createCalendarState", () => {
         const date = new CalendarDate(2024, 6, 15);
 
         state.selectDate(date);
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -430,7 +474,9 @@ describe("createCalendarState", () => {
         });
 
         state.focusPreviousPage();
+        flush();
         expect(state.focusedDate().month).toBe(5);
+        flush();
         expect(state.focusedDate().year).toBe(2024);
 
         dispose();
@@ -445,7 +491,9 @@ describe("createCalendarState", () => {
         });
 
         state.focusNextPage();
+        flush();
         expect(state.focusedDate().month).toBe(7);
+        flush();
         expect(state.focusedDate().year).toBe(2024);
 
         dispose();
@@ -460,7 +508,9 @@ describe("createCalendarState", () => {
         });
 
         state.focusPreviousSection();
+        flush();
         expect(state.focusedDate().year).toBe(2023);
+        flush();
         expect(state.focusedDate().month).toBe(6);
 
         dispose();
@@ -475,7 +525,9 @@ describe("createCalendarState", () => {
         });
 
         state.focusNextSection();
+        flush();
         expect(state.focusedDate().year).toBe(2025);
+        flush();
         expect(state.focusedDate().month).toBe(6);
 
         dispose();
@@ -490,6 +542,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusPreviousDay();
+        flush();
         expect(state.focusedDate().day).toBe(14);
 
         dispose();
@@ -504,6 +557,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusNextDay();
+        flush();
         expect(state.focusedDate().day).toBe(16);
 
         dispose();
@@ -518,6 +572,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusPreviousWeek();
+        flush();
         expect(state.focusedDate().day).toBe(8);
 
         dispose();
@@ -532,6 +587,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusNextWeek();
+        flush();
         expect(state.focusedDate().day).toBe(22);
 
         dispose();
@@ -546,6 +602,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusPageStart();
+        flush();
         expect(state.focusedDate().day).toBe(1);
 
         dispose();
@@ -560,6 +617,7 @@ describe("createCalendarState", () => {
         });
 
         state.focusPageEnd();
+        flush();
         expect(state.focusedDate().day).toBe(30); // June has 30 days
 
         dispose();
@@ -577,6 +635,7 @@ describe("createCalendarState", () => {
         });
 
         state.setFocusedDate(new CalendarDate(2024, 6, 5));
+        flush();
         expect(state.focusedDate()).toEqual(minDate);
 
         dispose();
@@ -592,6 +651,7 @@ describe("createCalendarState", () => {
         });
 
         state.setFocusedDate(new CalendarDate(2024, 6, 25));
+        flush();
         expect(state.focusedDate()).toEqual(maxDate);
 
         dispose();
@@ -611,7 +671,9 @@ describe("createCalendarState", () => {
           minValue: minDate,
         });
 
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(true);
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 15))).toBe(false);
 
         dispose();
@@ -626,7 +688,9 @@ describe("createCalendarState", () => {
           maxValue: maxDate,
         });
 
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 25))).toBe(true);
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 15))).toBe(false);
 
         dispose();
@@ -642,7 +706,9 @@ describe("createCalendarState", () => {
           defaultValue: date,
         });
 
+        flush();
         expect(state.isSelected(date)).toBe(true);
+        flush();
         expect(state.isSelected(new CalendarDate(2024, 6, 16))).toBe(false);
 
         dispose();
@@ -662,7 +728,9 @@ describe("createCalendarState", () => {
         // focused, so raise the flag before asserting.
         state.setFocused(true);
 
+        flush();
         expect(state.isCellFocused(focusDate)).toBe(true);
+        flush();
         expect(state.isCellFocused(new CalendarDate(2024, 6, 16))).toBe(false);
 
         dispose();
@@ -676,7 +744,9 @@ describe("createCalendarState", () => {
           isDateUnavailable: (date) => date.day === 15,
         });
 
+        flush();
         expect(state.isCellUnavailable(unavailableDate)).toBe(true);
+        flush();
         expect(state.isCellUnavailable(new CalendarDate(2024, 6, 16))).toBe(false);
 
         dispose();
@@ -690,7 +760,9 @@ describe("createCalendarState", () => {
           isDateDisabled: (date) => date.day === 15,
         });
 
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 15))).toBe(true);
+        flush();
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 16))).toBe(false);
 
         dispose();
@@ -705,8 +777,11 @@ describe("createCalendarState", () => {
           isDateUnavailable: (date) => date.day === 16,
         });
 
+        flush();
         expect(state.isInvalid(new CalendarDate(2024, 6, 15))).toBe(true);
+        flush();
         expect(state.isInvalid(new CalendarDate(2024, 6, 16))).toBe(true);
+        flush();
         expect(state.isInvalid(new CalendarDate(2024, 6, 17))).toBe(false);
 
         dispose();
@@ -722,10 +797,14 @@ describe("createCalendarState", () => {
           defaultFocusedValue: focusDate,
         });
 
+        flush();
         const range = state.visibleRange();
         expect(range.start.day).toBe(1);
+        flush();
         expect(range.start.month).toBe(6);
+        flush();
         expect(range.end.day).toBe(30);
+        flush();
         expect(range.end.month).toBe(6);
 
         dispose();
@@ -743,8 +822,10 @@ describe("createCalendarState", () => {
           visibleMonths: 3,
         });
 
+        flush();
         const range = state.visibleRange();
         expect(range.start).toEqual(new CalendarDate(2024, 5, 1));
+        flush();
         expect(range.end).toEqual(new CalendarDate(2024, 7, 31));
 
         dispose();
@@ -760,8 +841,10 @@ describe("createCalendarState", () => {
           selectionAlignment: "start",
         });
 
+        flush();
         const range = state.visibleRange();
         expect(range.start).toEqual(new CalendarDate(2024, 6, 1));
+        flush();
         expect(range.end).toEqual(new CalendarDate(2024, 8, 31));
 
         dispose();
@@ -774,12 +857,15 @@ describe("createCalendarState", () => {
       createRoot((dispose) => {
         const state = createCalendarState();
 
+        flush();
         expect(state.isFocused()).toBe(false);
 
         state.setFocused(true);
+        flush();
         expect(state.isFocused()).toBe(true);
 
         state.setFocused(false);
+        flush();
         expect(state.isFocused()).toBe(false);
 
         dispose();
@@ -799,6 +885,7 @@ describe("createCalendarState", () => {
         const newDate = new CalendarDate(2024, 6, 20);
         state.setFocusedDate(newDate);
 
+        flush();
         expect(onFocusChange).toHaveBeenCalledWith(newDate);
 
         dispose();
@@ -816,6 +903,7 @@ describe("createCalendarState", () => {
 
         state.setFocusedDate(state.focusedDate());
 
+        flush();
         expect(onFocusChange).not.toHaveBeenCalled();
 
         dispose();
@@ -845,9 +933,13 @@ describe("createCalendarState", () => {
 
         state.focusNextPage();
 
+        flush();
         expect(snapshots).toHaveLength(1);
+        flush();
         expect(snapshots[0].date).toEqual(new CalendarDate(2024, 8, 15));
+        flush();
         expect(snapshots[0].focusedDate).toEqual(new CalendarDate(2024, 8, 15));
+        flush();
         expect(snapshots[0].visibleRangeStart).toEqual(new CalendarDate(2024, 8, 1));
 
         dispose();
@@ -876,9 +968,13 @@ describe("createCalendarState", () => {
       setMinValue(new CalendarDate(2024, 6, 20));
       await flushEffects();
 
+      flush();
       expect(state.focusedDate()).toEqual(new CalendarDate(2024, 6, 20));
+      flush();
       expect(snapshots).toHaveLength(1);
+      flush();
       expect(snapshots[0].date).toEqual(new CalendarDate(2024, 6, 20));
+      flush();
       expect(snapshots[0].focusedDate).toEqual(new CalendarDate(2024, 6, 20));
 
       dispose();
@@ -899,8 +995,10 @@ describe("createCalendarState", () => {
         state.setValue(newDate);
 
         // Value should NOT change in controlled mode
+        flush();
         expect(state.value()).toEqual(controlledDate);
         // But onChange should still be called
+        flush();
         expect(onChange).toHaveBeenCalledWith(newDate);
 
         dispose();
@@ -917,7 +1015,9 @@ describe("createCalendarState", () => {
 
         state.setValue(null);
 
+        flush();
         expect(state.value()).toBe(null);
+        flush();
         expect(onChange).toHaveBeenCalledWith(null);
 
         dispose();
@@ -933,13 +1033,16 @@ describe("createCalendarState", () => {
           },
         });
 
+        flush();
         expect(state.value()).toBe(null);
 
         const date = new CalendarDate(2024, 6, 15);
         setValue(date);
+        flush();
         expect(state.value()).toEqual(date);
 
         setValue(null);
+        flush();
         expect(state.value()).toBe(null);
 
         dispose();
@@ -963,13 +1066,17 @@ describe("createCalendarState", () => {
         });
       });
 
+      flush();
       expect(state.focusedDate()).toEqual(new CalendarDate(2024, 2, 15));
 
       setFocusedValue(new CalendarDate(2024, 5, 15));
       await flushEffects();
 
+      flush();
       expect(state.focusedDate()).toEqual(new CalendarDate(2024, 5, 15));
+      flush();
       expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 5, 1));
+      flush();
       expect(onFocusChange).not.toHaveBeenCalled();
 
       dispose();
@@ -981,6 +1088,7 @@ describe("createCalendarState", () => {
       createRoot((dispose) => {
         const state = createCalendarState();
 
+        flush();
         expect(state.weekDays().length).toBe(7);
 
         dispose();
@@ -996,8 +1104,10 @@ describe("createCalendarState", () => {
           locale: "en-US",
         });
 
+        flush();
         const title = state.title();
         expect(title).toContain("June");
+        flush();
         expect(title).toContain("2024");
 
         dispose();
@@ -1013,20 +1123,32 @@ describe("createCalendarState", () => {
           onChange,
         });
 
+        flush();
         expect(state.focusedDate().calendar.identifier).toBe("indian");
+        flush();
         expect(state.focusedDate().era).toBe("saka");
+        flush();
         expect(state.focusedDate().year).toBe(1946);
+        flush();
         expect(state.focusedDate().month).toBe(11);
+        flush();
         expect(state.focusedDate().day).toBe(14);
+        flush();
         expect(state.value()?.calendar.identifier).toBe("indian");
+        flush();
         expect(state.title()).toContain("1946");
+        flush();
         expect(state.title()).not.toContain("2025");
 
         state.selectDate(state.focusedDate().add({ days: 1 }));
 
+        flush();
         expect(onChange).toHaveBeenCalledTimes(1);
+        flush();
         expect(onChange.mock.calls[0][0].calendar.identifier).toBe("gregory");
+        flush();
         expect(String(onChange.mock.calls[0][0])).toBe("2025-02-04");
+        flush();
         expect(state.value()?.calendar.identifier).toBe("indian");
 
         dispose();
@@ -1042,7 +1164,9 @@ describe("createCalendarState", () => {
           createCalendar,
         });
 
+        flush();
         expect(createCalendar).toHaveBeenCalledWith("indian");
+        flush();
         expect(state.focusedDate().calendar.identifier).toBe("indian");
 
         dispose();
@@ -1057,6 +1181,7 @@ describe("createCalendarState", () => {
           defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
+        flush();
         const week = state.getDatesInWeek(0);
         expect(week.length).toBe(7);
 
@@ -1072,8 +1197,10 @@ describe("createCalendarState", () => {
           defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
+        flush();
         const weeks = state.getWeeksInMonth();
         expect(weeks).toBeGreaterThanOrEqual(4);
+        flush();
         expect(weeks).toBeLessThanOrEqual(6);
 
         dispose();
@@ -1093,9 +1220,11 @@ describe("createCalendarState", () => {
 
         state.focusNextPage();
         state.selectDate(focusedDate);
+        flush();
         expect(state.value()?.toString()).toBe(focusedDate.toString());
 
         state.selectDate(focusedDate.subtract({ months: 1 }));
+        flush();
         expect(state.value()?.toString()).toBe(focusedDate.subtract({ months: 1 }).toString());
 
         dispose();
@@ -1111,9 +1240,11 @@ describe("createCalendarState", () => {
 
         state.focusPreviousPage();
         state.selectDate(focusedDate);
+        flush();
         expect(state.value()?.toString()).toBe(focusedDate.toString());
 
         state.selectDate(focusedDate.add({ months: 1 }));
+        flush();
         expect(state.value()?.toString()).toBe(focusedDate.add({ months: 1 }).toString());
 
         dispose();
@@ -1130,7 +1261,9 @@ describe("createCalendarState", () => {
           maxValue: new CalendarDate(2025, 2, 20),
         });
 
+        flush();
         expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+        flush();
         expect(state.isNextVisibleRangeInvalid()).toBe(true);
 
         dispose();
@@ -1150,17 +1283,25 @@ describe("createCalendarState", () => {
         });
       });
 
+      flush();
       expect(state.visibleMonths).toBe(1);
+      flush();
       expect(state.visibleRange().start).toEqual(new CalendarDate(2025, 2, 1));
+      flush();
       expect(state.visibleRange().end).toEqual(new CalendarDate(2025, 2, 28));
+      flush();
       expect(state.isCellDisabled(new CalendarDate(2025, 3, 15))).toBe(true);
 
       setVisibleMonths(2);
       await flushEffects();
 
+      flush();
       expect(state.visibleMonths).toBe(2);
+      flush();
       expect(state.visibleRange().start).toEqual(new CalendarDate(2025, 2, 1));
+      flush();
       expect(state.visibleRange().end).toEqual(new CalendarDate(2025, 3, 31));
+      flush();
       expect(state.isCellDisabled(new CalendarDate(2025, 3, 15))).toBe(false);
 
       dispose();

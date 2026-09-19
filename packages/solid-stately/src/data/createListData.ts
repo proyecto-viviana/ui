@@ -21,7 +21,9 @@
  * Ported from packages/react-stately/src/data/useListData.ts.
  */
 
-import { createSignal, createMemo } from "solid-js";
+import { createMemo } from "solid-js";
+import { createInternalSignal } from "../utils";
+
 
 export type Key = string | number;
 export type Selection = "all" | Set<Key>;
@@ -104,7 +106,7 @@ export function createListData<T>(options: ListOptions<T>): ListData<T> {
     initialFilterText = "",
   } = options;
 
-  const [state, setState] = createSignal<ListState<T>>({
+  const [state, setState] = createInternalSignal<ListState<T>>({
     items: initialItems,
     selectedKeys: initialSelectedKeys === "all" ? "all" : new Set(initialSelectedKeys || []),
     filterText: initialFilterText,
