@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { vi, afterEach } from "vite-plus/test";
 import { flush } from "solid-js";
+import { cleanupHydrationRoots } from "./packages/solidaria/test-utils/hydrate";
 
 const DIAGNOSTIC_NOISE = [
   "[STRICT_READ_UNTRACKED]",
@@ -309,7 +310,11 @@ window.scrollTo = vi.fn();
 // ============================================
 
 afterEach(() => {
-  vi.clearAllMocks();
-  FakeResizeObserver.clearInstances();
-  FakeIntersectionObserver.clearInstances();
+  try {
+    cleanupHydrationRoots();
+  } finally {
+    vi.clearAllMocks();
+    FakeResizeObserver.clearInstances();
+    FakeIntersectionObserver.clearInstances();
+  }
 });

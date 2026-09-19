@@ -39,12 +39,12 @@ describe("Calendar hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the grid without a mismatch", () => {
+  it("hydrates the grid without a mismatch", async () => {
     const html = readFileSync(
       resolve(import.meta.dirname, "../../../output/calendar-ssr.html"),
       "utf8",
     );
-    const container = hydrateOverSsr(html, () => <CalendarFixture />);
+    const container = await hydrateOverSsr(html, () => <CalendarFixture />);
     expect(container.querySelector('[role="grid"]')).not.toBeNull();
     expect(container.querySelectorAll('[role="gridcell"]').length).toBeGreaterThan(0);
   });

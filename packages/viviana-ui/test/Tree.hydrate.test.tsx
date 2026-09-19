@@ -31,16 +31,16 @@ describe("Tree hydrates over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("bare Tree keeps its rows after hydration", () => {
-    const container = hydrateOverSsr(readSsr("tree-ssr.html"), () => <TreeFixture />);
+  it("bare Tree keeps its rows after hydration", async () => {
+    const container = await hydrateOverSsr(readSsr("tree-ssr.html"), () => <TreeFixture />);
     // THE regression assertion: the theft left the live DOM with only
     // hydration markers here while both checks above still passed.
     expect(container.querySelectorAll('[role="row"]').length).toBe(4);
     expect(container.textContent).toContain("Projects");
   });
 
-  it("labeled (framed) Tree keeps its rows after hydration", () => {
-    const container = hydrateOverSsr(readSsr("tree-labeled-ssr.html"), () => (
+  it("labeled (framed) Tree keeps its rows after hydration", async () => {
+    const container = await hydrateOverSsr(readSsr("tree-labeled-ssr.html"), () => (
       <TreeLabeledFixture />
     ));
     expect(container.querySelectorAll('[role="row"]').length).toBe(4);

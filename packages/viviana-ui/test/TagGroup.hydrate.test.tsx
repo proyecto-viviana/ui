@@ -22,13 +22,15 @@ describe("TagGroup hydrates over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("plain string tag content hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("tag-group-ssr.html"), () => <TagGroupFixture />);
+  it("plain string tag content hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("tag-group-ssr.html"), () => (
+      <TagGroupFixture />
+    ));
     expect(container.querySelectorAll('[role="row"]').length).toBe(3);
   });
 
-  it("prebuilt <Tag> render-prop content hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("tag-group-prebuilt-ssr.html"), () => (
+  it("prebuilt <Tag> render-prop content hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("tag-group-prebuilt-ssr.html"), () => (
       <TagGroupPrebuiltTagFixture />
     ));
     expect(container.querySelectorAll('[role="row"]').length).toBe(3);

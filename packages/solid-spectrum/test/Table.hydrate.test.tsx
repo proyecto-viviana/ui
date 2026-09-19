@@ -31,13 +31,18 @@ describe("TableView hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the select-all column and the data columns without a mismatch", () => {
-    const serverSelectAll = document.createElement("div");
-    serverSelectAll.innerHTML = ssrHtml;
-    const serverInput = serverSelectAll.querySelector('input[aria-label="Select All"]');
-    expect(serverInput).not.toBeNull();
+  it("hydrates the select-all column and the data columns without a mismatch", async () => {
+    let serverCells: Element[] = [];
 
-    const container = hydrateOverSsr(ssrHtml, () => <SelectableTableFixture />);
+    const container = await hydrateOverSsr(ssrHtml, () => <SelectableTableFixture />, {
+      beforeHydrate(container) {
+        serverCells = [
+          ...container.querySelectorAll(
+            '[role="columnheader"], [role="rowheader"], [role="gridcell"]',
+          ),
+        ];
+      },
+    });
 
     const headers = container.querySelectorAll('[role="columnheader"]');
     expect(headers).toHaveLength(TABLE_COLUMNS.length + 1);
@@ -45,14 +50,12 @@ describe("TableView hydration over SSR markup", () => {
     expect(headers[1]).toHaveTextContent("Name");
     expect(headers[2]).toHaveTextContent("Role");
 
-    // Claimed, not re-created: only server-rendered nodes carry `data-hk`. A
-    // column or cell without it was built fresh on the client after the
-    // hydration walk lost the server's node.
+    // Claimed, not re-created: representative server nodes retain identity.
     const cells = container.querySelectorAll(
       '[role="columnheader"], [role="rowheader"], [role="gridcell"]',
     );
     expect(cells).toHaveLength((TABLE_COLUMNS.length + 1) * (PEOPLE.length + 1));
-    for (const cell of cells) expect(cell).toHaveAttribute("data-hk");
+    for (const [index, cell] of [...cells].entries()) expect(cell).toBe(serverCells[index]);
     expect(container.querySelectorAll('input[aria-label="Select"]')).toHaveLength(PEOPLE.length);
   });
 });

@@ -19,8 +19,8 @@ describe("viviana-ui Form hydrates over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("Form+TextField (isRequired + description)", () => {
-    const container = hydrateOverSsr(readSsr("viviana-ui-form-textfield-ssr.html"), () => (
+  it("Form+TextField (isRequired + description)", async () => {
+    const container = await hydrateOverSsr(readSsr("viviana-ui-form-textfield-ssr.html"), () => (
       <FormTextFieldFixture />
     ));
     expect(container.textContent).toContain("Nombre");

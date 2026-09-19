@@ -10,7 +10,7 @@
  *    without recreating the Button subtree.
  * Both shapes must hydrate with no throw and no console.error (no mismatch).
  */
-import { createMemo, createSignal } from "solid-js";
+import { createMemo, createSignal, flush } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
@@ -44,14 +44,15 @@ function readSsr(name: string): string {
   return readFileSync(resolve(import.meta.dirname, `../../../output/${name}`), "utf8");
 }
 
-function hydrateAndFlip(
+async function hydrateAndFlip(
   ssrFile: string,
   Fixture: (props: { count: () => number }) => JSX.Element,
-): { before?: string; after?: string } {
+): Promise<{ before?: string; after?: string }> {
   const [count, setCount] = createSignal(0);
-  const container = hydrateOverSsr(readSsr(ssrFile), () => <Fixture count={count} />);
+  const container = await hydrateOverSsr(readSsr(ssrFile), () => <Fixture count={count} />);
   const before = container.querySelector("button")?.textContent?.trim();
   setCount(1);
+  flush();
   const after = container.querySelector("button")?.textContent?.trim();
   return { before, after };
 }
@@ -61,14 +62,14 @@ describe("Button hydration reactivity", () => {
     document.body.innerHTML = "";
   });
 
-  it("recreation pattern re-binds after hydration (comparison fixture shape)", () => {
-    const r = hydrateAndFlip("button-recreate-ssr.html", RecreationFixture);
+  it("recreation pattern re-binds after hydration (comparison fixture shape)", async () => {
+    const r = await hydrateAndFlip("button-recreate-ssr.html", RecreationFixture);
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
   });
 
-  it("re-binds fine-grained direct text children after hydration", () => {
-    const r = hydrateAndFlip("button-finegrained-ssr.html", FineGrainedFixture);
+  it("re-binds fine-grained direct text children after hydration", async () => {
+    const r = await hydrateAndFlip("button-finegrained-ssr.html", FineGrainedFixture);
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
   });

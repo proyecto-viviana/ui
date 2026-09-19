@@ -14,6 +14,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { flush } from "solid-js";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import {
   ElementChildrenListBoxFixture,
@@ -45,14 +46,22 @@ describe("Virtualizer hydration over server markup", () => {
     const serverOptionCount = ssrHtml.match(/role="option"/g)?.length ?? 0;
     expect(serverOptionCount).toBeGreaterThan(0);
 
-    const container = hydrateOverSsr(ssrHtml, () => <VirtualizedListBoxFixture />);
+    let serverListbox: Element | null = null;
+    let serverOptions: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <VirtualizedListBoxFixture />, {
+      beforeHydrate(container) {
+        serverListbox = container.querySelector('[role="listbox"]');
+        serverOptions = [...container.querySelectorAll('[role="option"]')];
+      },
+    });
 
     // Post-hydration effects (the measured-size emit) have run by the time
     // `hydrate` returns; flush the reactive re-render they queue.
-    await Promise.resolve();
+    flush();
 
     const listbox = container.querySelector<HTMLElement>('[role="listbox"]');
     expect(listbox).not.toBeNull();
+    expect(listbox).toBe(serverListbox);
     const options = container.querySelectorAll('[role="option"]');
     // The client viewport fits more rows than the server's zero-height window,
     // so the range must have widened after hydration — proof the measurement
@@ -61,6 +70,7 @@ describe("Virtualizer hydration over server markup", () => {
     expect(options.length).toBeGreaterThanOrEqual(minimumVisibleRows);
     expect(options.length).toBeGreaterThan(serverOptionCount);
     expect(options.length).toBeLessThan(VIRTUALIZED_ITEM_COUNT);
+    for (const [index, option] of serverOptions.entries()) expect(options[index]).toBe(option);
     expect(options[0]).toHaveTextContent("Item 0");
   });
 });
@@ -70,23 +80,26 @@ describe("ListBox option hydration over server markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates element option children without a mismatch and keeps the server nodes", () => {
+  it("hydrates element option children without a mismatch and keeps the server nodes", async () => {
     const ssrHtml = readSsr("listbox-element-children-ssr.html");
-    const serverTiles = Array.from(
-      new DOMParser().parseFromString(ssrHtml, "text/html").querySelectorAll(".tile"),
-    );
-    expect(serverTiles.length).toBe(4);
+    let firstServerOption: Element | undefined;
+    let firstServerTile: Element | null = null;
 
-    const container = hydrateOverSsr(ssrHtml, () => <ElementChildrenListBoxFixture />);
+    const container = await hydrateOverSsr(ssrHtml, () => <ElementChildrenListBoxFixture />, {
+      beforeHydrate(container) {
+        firstServerOption = container.querySelectorAll('[role="option"]')[0];
+        firstServerTile = container.querySelector(".tile");
+      },
+    });
 
     const options = container.querySelectorAll<HTMLElement>('[role="option"]');
     expect(options.length).toBe(4);
     const tiles = container.querySelectorAll<HTMLElement>(".tile");
     expect(tiles.length).toBe(4);
-    // Hydration adopted the server tile (same data-hk) rather than discarding
-    // it for a client-created one — a second children read would have either
-    // thrown or left an orphaned server node behind.
-    expect(tiles[0]!.getAttribute("data-hk")).toBe(serverTiles[0]!.getAttribute("data-hk"));
+    // Hydration adopted the exact server nodes rather than discarding them for
+    // client-created ones.
+    expect(options[0]).toBe(firstServerOption);
+    expect(tiles[0]).toBe(firstServerTile);
     expect(tiles[0]!.parentElement).toBe(options[0]);
     expect(options[0]).toHaveTextContent("Item 0");
     expect(options[0]!.querySelector(".tile-meta")).toHaveTextContent("Grid item");

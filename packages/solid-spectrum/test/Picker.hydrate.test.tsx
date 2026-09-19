@@ -39,8 +39,8 @@ describe("Picker hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the server markup without a mismatch", () => {
-    hydrateOverSsr(ssrHtml, () => (
+  it("hydrates the server markup without a mismatch", async () => {
+    await hydrateOverSsr(ssrHtml, () => (
       <Picker<SectionItem>
         aria-label="Table of contents"
         items={sections}

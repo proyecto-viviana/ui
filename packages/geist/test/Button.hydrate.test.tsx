@@ -23,7 +23,7 @@ describe("Geist Button hydrates over SSR markup", () => {
   });
 
   it("hydrates with no mismatch and responds to press", async () => {
-    const container = hydrateOverSsr(ssrHtml, () => (
+    const container = await hydrateOverSsr(ssrHtml, () => (
       <div data-theme="geist">
         <Button variant="default">Upload</Button>
       </div>

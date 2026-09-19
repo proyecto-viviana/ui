@@ -34,8 +34,8 @@ describe("PreviewTrigger hydration over server markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the closed trigger without a mismatch or a popover", () => {
-    const container = hydrateOverSsr(ssrHtml, () => <PreviewTriggerFixture />);
+  it("hydrates the closed trigger without a mismatch or a popover", async () => {
+    const container = await hydrateOverSsr(ssrHtml, () => <PreviewTriggerFixture />);
     const link = container.querySelector("a");
     expect(link).not.toBeNull();
     expect(link?.textContent).toBe("Example");

@@ -34,12 +34,13 @@ describe("Meter hydration over server markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates without a mismatch and keeps the label relationship", () => {
-    const container = hydrateOverSsr(ssrHtml, () => <MeterFixture />);
-    const meter = container.querySelector<HTMLElement>('[role="meter"]');
+  it("hydrates without a mismatch and keeps the label relationship", async () => {
+    const container = await hydrateOverSsr(ssrHtml, () => <MeterFixture />);
+    const meter = container.querySelector<HTMLElement>('[role~="meter"]');
     const label = container.querySelector<HTMLElement>("span[id]");
     expect(meter).not.toBeNull();
     expect(label).not.toBeNull();
+    expect(meter?.getAttribute("role")).toBe("meter progressbar");
     expect(meter?.getAttribute("aria-labelledby")).toBe(label?.id);
   });
 });

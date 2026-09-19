@@ -106,6 +106,16 @@ history:
       at: "2026-09-16",
       note: "Overlay remainder children #251/#257/#252/#256 stay in-progress and owner-gated — do not mark verified. Successor pick is #245 ComboBox journeys, not remainder closeout. Skip #254.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination only: owner prioritized bounded #542 Solid 2 test-harness repair; #251/#257/#252/#256 remain owner-gated, successor remains #245, and #254 remains skipped with no held-task authorization inferred",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination only: #542 review follow-up is confined to authorized harness/tests and records fresh 48/48 SSR, 38/55 hydration, and a narrower product-source extension request; #251/#257/#252/#256 remain owner-gated, successor #245 and skip #254 are unchanged",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

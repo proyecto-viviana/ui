@@ -33,7 +33,7 @@ describe("TextField hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the server markup without a mismatch", () => {
-    hydrateOverSsr(ssrHtml, () => <TextFieldFixture />);
+  it("hydrates the server markup without a mismatch", async () => {
+    await hydrateOverSsr(ssrHtml, () => <TextFieldFixture />);
   });
 });

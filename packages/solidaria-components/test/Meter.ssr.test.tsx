@@ -34,7 +34,7 @@ describe("Meter SSR", () => {
     const labelledBy = html.match(/aria-labelledby="([^"]+)"/)?.[1];
 
     expect(labelledBy).toBeTruthy();
-    expect(html).toContain('role="meter"');
+    expect(html).toContain('role="meter progressbar"');
     expect(html).toContain(`id="${labelledBy}"`);
     expect(html).toContain("Storage space");
 

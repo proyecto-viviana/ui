@@ -43,12 +43,12 @@ describe("DatePicker hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates field segments without a mismatch", () => {
+  it("hydrates field segments without a mismatch", async () => {
     const html = readFileSync(
       resolve(import.meta.dirname, "../../../output/datepicker-ssr.html"),
       "utf8",
     );
-    const container = hydrateOverSsr(html, () => <DatePickerFixture />);
+    const container = await hydrateOverSsr(html, () => <DatePickerFixture />);
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     const hidden = container.querySelector('input[name="event"][hidden]');
     expect(hidden).not.toBeNull();

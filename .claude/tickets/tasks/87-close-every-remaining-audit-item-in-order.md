@@ -37,6 +37,11 @@ history:
       at: 2026-09-07,
       note: "census audited against HEAD: keep every still-open #40–#131 id; drop #89/#9 from resume-here (done at 380f5c10; work on #490/#491); standing owner decision is #1; do not copy #136/Walk children",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner authorized foundation-first sequencing for the bounded #542 Solid 2 test-harness repair; the ordered census remains authority and is neither waived nor silently reordered",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later

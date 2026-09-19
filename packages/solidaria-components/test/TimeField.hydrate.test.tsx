@@ -25,12 +25,12 @@ describe("TimeField hydration over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates segments without a mismatch", () => {
+  it("hydrates segments without a mismatch", async () => {
     const html = readFileSync(
       resolve(import.meta.dirname, "../../../output/timefield-ssr.html"),
       "utf8",
     );
-    const container = hydrateOverSsr(html, () => <TimeFieldFixture />);
+    const container = await hydrateOverSsr(html, () => <TimeFieldFixture />);
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
   });
 });

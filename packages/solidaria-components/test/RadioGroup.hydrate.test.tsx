@@ -26,13 +26,19 @@ describe("RadioGroup hydration over SSR markup", () => {
   });
 
   it("hydrates both groups, keeps the real description id and drops dangling ones", async () => {
-    const container = hydrateOverSsr(ssrHtml, () => <RadioGroupFixture />);
+    let serverRadios: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <RadioGroupFixture />, {
+      beforeHydrate(container) {
+        serverRadios = [...container.querySelectorAll('input[type="radio"]')];
+      },
+    });
     // The slot-id probe runs in an effect after the hydration walk.
     await Promise.resolve();
 
+    expect(container.querySelectorAll('[role="radiogroup"]')).toHaveLength(2);
     const radios = container.querySelectorAll('input[type="radio"]');
     expect(radios).toHaveLength(PLANS.length + 2);
-    for (const radio of radios) expect(radio).toHaveAttribute("data-hk");
+    for (const [index, radio] of [...radios].entries()) expect(radio).toBe(serverRadios[index]);
 
     const described = container.querySelector('[data-testid="described"]')!;
     const description = [...described.querySelectorAll("[id]")].find(

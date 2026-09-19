@@ -5,18 +5,23 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Hydration test project. `solid({ ssr: true })` under a *client* transform
-// (vitest's jsdom env, isSsr=false) compiles to `generate: "dom",
-// hydratable: true` — DOM templates with the hydration-walk wrappers, so
-// `hydrate()` over SSR markup actually runs the hydration path (the plain
-// `generate:"dom", hydratable:false` of vitest.config.ts cannot). This is the
+// Hydration test project. The Solid Vite plugin deliberately defaults tests to
+// `hydratable: false`, even when `ssr: true`. Override only that compiler flag
+// so vitest's jsdom client transform still selects `generate: "dom"`, but emits
+// the hydration-walk wrappers needed by `hydrate()` over SSR markup. This is the
 // client half of the dual-compilation that reproduces SSR hydration mismatches.
 export default defineConfig({
   // hot:false strips the solid-refresh HMR wrapper — it is dev-only (absent in
   // the workerd/browser prod build), and it desyncs createUniqueId's hydration
   // slot vs the server. Keeping it would make this harness test a dev artifact,
   // not the real prod SSR→hydrate path.
-  plugins: [...solidPlugin({ ssr: true, refresh: { disabled: true } })],
+  plugins: [
+    ...solidPlugin({
+      ssr: true,
+      solid: { hydratable: true },
+      refresh: { disabled: true },
+    }),
+  ],
   optimizeDeps: {
     // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
     // discovery before Vitest applies its file include. That crosses ignored

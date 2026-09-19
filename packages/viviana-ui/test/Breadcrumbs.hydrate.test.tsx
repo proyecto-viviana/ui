@@ -22,8 +22,8 @@ describe("Breadcrumbs hydrates over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("hydrates the overflowing item list with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("breadcrumbs-overflow-ssr.html"), () => (
+  it("hydrates the overflowing item list with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("breadcrumbs-overflow-ssr.html"), () => (
       <BreadcrumbsOverflowFixture />
     ));
     // Collapsed shape survives hydration: root item, overflow menu trigger, fallback tail.

@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { waitFor } from "@solidjs/testing-library";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { flush } from "solid-js";
 import {
   TabsFixture,
   TabsPlainFixture,
@@ -33,24 +34,25 @@ describe("collection components hydrate over SSR markup", () => {
     document.body.innerHTML = "";
   });
 
-  it("Tabs hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("tabs-ssr.html"), () => <TabsFixture />);
+  it("Tabs hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("tabs-ssr.html"), () => <TabsFixture />);
     // The selected tab keeps its indicator through hydration.
     expect(container.querySelectorAll('[data-rsp-slot="selection-indicator"]').length).toBe(1);
   });
 
-  it("Tabs with a raw span hydrates with no mismatch", () => {
-    hydrateOverSsr(readSsr("tabs-plain-ssr.html"), () => <TabsPlainFixture />);
+  it("Tabs with a raw span hydrates with no mismatch", async () => {
+    await hydrateOverSsr(readSsr("tabs-plain-ssr.html"), () => <TabsPlainFixture />);
   });
 
-  it("Tabs with a trivial local component child hydrates with no mismatch", () => {
-    hydrateOverSsr(readSsr("tabs-comp-ssr.html"), () => <TabsCompFixture />);
+  it("Tabs with a trivial local component child hydrates with no mismatch", async () => {
+    await hydrateOverSsr(readSsr("tabs-comp-ssr.html"), () => <TabsCompFixture />);
   });
 
   it("Tabs settles focus order after hydrating a panel with a tabbable child", async () => {
-    const container = hydrateOverSsr(readSsr("tabs-focusable-panel-ssr.html"), () => (
+    const container = await hydrateOverSsr(readSsr("tabs-focusable-panel-ssr.html"), () => (
       <TabsFocusablePanelFixture />
     ));
+    flush();
 
     const panel = container.querySelector<HTMLElement>('[role="tabpanel"]');
     const before = container.querySelector<HTMLButtonElement>("button");
@@ -82,32 +84,38 @@ describe("collection components hydrate over SSR markup", () => {
     // became active: it holds a tabbable control, so it must leave sequential focus
     // order rather than keep the tabindex="0" it was force-mounted with.
     await user.click(tabs[1]);
+    flush();
     await waitFor(() => {
       expect(reviewPanel).not.toHaveAttribute("data-inert");
       expect(reviewPanel).not.toHaveAttribute("tabindex");
     });
   });
 
-  it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("tabs-badge-ssr.html"), () => <TabsBadgeFixture />);
+  it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("tabs-badge-ssr.html"), () => (
+      <TabsBadgeFixture />
+    ));
     // The badge element survives hydration rather than being dropped for an empty <span>.
     expect(container.textContent).toContain("4");
   });
 
-  it("Tabs with an element-first (icon) child hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("tabs-icon-ssr.html"), () => <TabsIconFixture />);
+  it("Tabs with an element-first (icon) child hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("tabs-icon-ssr.html"), () => (
+      <TabsIconFixture />
+    ));
     expect(container.textContent).toContain("Home");
   });
 
-  it("ListView hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("listview-ssr.html"), () => <ListViewFixture />);
+  it("ListView hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("listview-ssr.html"), () => <ListViewFixture />);
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
   });
 
   it("ListView rows respond to interaction after hydration (focus + selection)", async () => {
-    const container = hydrateOverSsr(readSsr("listview-interactive-ssr.html"), () => (
+    const container = await hydrateOverSsr(readSsr("listview-interactive-ssr.html"), () => (
       <ListViewInteractiveFixture />
     ));
+    flush();
 
     const rowA = container.querySelector<HTMLElement>('[role="row"][data-key="row-a"]');
     expect(rowA).not.toBeNull();
@@ -115,6 +123,7 @@ describe("collection components hydrate over SSR markup", () => {
 
     const user = setupUser();
     await user.click(rowA!);
+    flush();
 
     // A real click on a hydrated row must both move DOM focus onto it and
     // toggle selection — proof the row's press/selection handlers are wired
@@ -123,11 +132,12 @@ describe("collection components hydrate over SSR markup", () => {
     expect(rowA).toHaveAttribute("aria-selected", "true");
 
     await user.click(rowA!);
+    flush();
     expect(rowA).toHaveAttribute("aria-selected", "false");
   });
 
   it("ListView with static <ListViewItem> children hydrates and rows respond to interaction", async () => {
-    const container = hydrateOverSsr(readSsr("listview-static-interactive-ssr.html"), () => (
+    const container = await hydrateOverSsr(readSsr("listview-static-interactive-ssr.html"), () => (
       <ListViewStaticInteractiveFixture />
     ));
 
@@ -146,8 +156,8 @@ describe("collection components hydrate over SSR markup", () => {
     expect(rowA).toHaveAttribute("aria-selected", "true");
   });
 
-  it("ListView with label + description + actions slots hydrates with no mismatch", () => {
-    const container = hydrateOverSsr(readSsr("listview-slotted-ssr.html"), () => (
+  it("ListView with label + description + actions slots hydrates with no mismatch", async () => {
+    const container = await hydrateOverSsr(readSsr("listview-slotted-ssr.html"), () => (
       <ListViewSlottedFixture />
     ));
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
