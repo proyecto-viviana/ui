@@ -19,14 +19,9 @@
  * Port of react-aria-components/src/NumberField.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createMemo,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createNumberField,
   createButton,
@@ -51,9 +46,13 @@ import {
   filterDOMProps,
   Provider,
   useSlot,
+  dataAttr,
+  attrTrue,
+  attrString,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface NumberFieldRenderProps {
   /** Whether the number field is disabled. */
@@ -262,9 +261,11 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     },
   });
 
-  let inputRef: HTMLInputElement | undefined;
+  const [inputEl, setInputEl] = createSignal<HTMLInputElement | undefined>(undefined, {
+    ownedWrite: true,
+  });
   const setInputRef = (el: HTMLInputElement) => {
-    inputRef = el;
+    setInputEl(el);
   };
 
   const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
@@ -354,7 +355,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       },
     },
     state,
-    () => inputRef ?? null,
+    () => inputEl() ?? null,
   );
 
   const renderValues = createMemo<NumberFieldRenderProps>(() => ({
@@ -454,13 +455,13 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       const labelProps = numberFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
         htmlFor?: string;
       };
-      return labelProps.htmlFor ?? labelProps.for;
+      return attrString(labelProps.htmlFor ?? labelProps.for);
     },
     get for() {
       const labelProps = numberFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
         htmlFor?: string;
       };
-      return labelProps.htmlFor ?? labelProps.for;
+      return attrString(labelProps.htmlFor ?? labelProps.for);
     },
   };
   // Provide the description / errorMessage props as `TextContext` slots (mirrors
@@ -501,27 +502,27 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   };
 
   return (
-    <FieldErrorContext.Provider value={fieldErrorContext}>
-      <LabelContext.Provider value={labelContextValue}>
-        <NumberFieldStateContext.Provider value={state}>
-          <NumberFieldContext.Provider value={contextValue}>
+    <FieldErrorContext value={fieldErrorContext}>
+      <LabelContext value={labelContextValue}>
+        <NumberFieldStateContext value={state}>
+          <NumberFieldContext value={contextValue}>
             <div
               {...domProps()}
               class={renderProps.class()}
               style={renderProps.style()}
-              data-disabled={ariaProps.isDisabled || undefined}
-              data-invalid={numberFieldAria.isInvalid || undefined}
-              data-required={ariaProps.isRequired || undefined}
-              data-readonly={ariaProps.isReadOnly || undefined}
+              data-disabled={dataAttr(ariaProps.isDisabled)}
+              data-invalid={dataAttr(numberFieldAria.isInvalid)}
+              data-required={dataAttr(ariaProps.isRequired)}
+              data-readonly={dataAttr(ariaProps.isReadOnly)}
             >
               <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
                 {fieldChildren()}
               </Provider>
             </div>
-          </NumberFieldContext.Provider>
-        </NumberFieldStateContext.Provider>
-      </LabelContext.Provider>
-    </FieldErrorContext.Provider>
+          </NumberFieldContext>
+        </NumberFieldStateContext>
+      </LabelContext>
+    </FieldErrorContext>
   );
 }
 
@@ -655,11 +656,11 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
       onInput={handleInput}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={context.isDisabled || undefined}
-      data-invalid={context.isInvalid || undefined}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(context.isDisabled)}
+      data-invalid={dataAttr(context.isInvalid)}
     />
   );
 }
@@ -681,7 +682,7 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
       onClick: _onClick,
       disabled: _disabled,
       type: _type,
-      tabIndex: _tabIndex,
+      tabindex: _tabIndex,
       ...rest
     } = context.incrementButtonProps as Record<string, unknown>;
     return rest;
@@ -733,12 +734,12 @@ export function NumberFieldIncrementButton(props: NumberFieldIncrementButtonProp
       {...domProps}
       {...cleanButtonProps()}
       {...cleanHoverProps()}
-      aria-disabled={isDisabled() || undefined}
+      aria-disabled={attrTrue(isDisabled())}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-pressed={buttonAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={isDisabled() || undefined}
+      data-pressed={dataAttr(buttonAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(isDisabled())}
     >
       {renderProps.renderChildren()}
     </div>
@@ -762,7 +763,7 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
       onClick: _onClick,
       disabled: _disabled,
       type: _type,
-      tabIndex: _tabIndex,
+      tabindex: _tabIndex,
       ...rest
     } = context.decrementButtonProps as Record<string, unknown>;
     return rest;
@@ -814,12 +815,12 @@ export function NumberFieldDecrementButton(props: NumberFieldDecrementButtonProp
       {...domProps}
       {...cleanButtonProps()}
       {...cleanHoverProps()}
-      aria-disabled={isDisabled() || undefined}
+      aria-disabled={attrTrue(isDisabled())}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-pressed={buttonAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={isDisabled() || undefined}
+      data-pressed={dataAttr(buttonAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(isDisabled())}
     >
       {renderProps.renderChildren()}
     </div>

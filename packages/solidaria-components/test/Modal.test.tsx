@@ -12,6 +12,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
+import { flush } from "solid-js";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -343,6 +344,7 @@ describe("Modal", () => {
           </Modal>
         </ModalOverlay>
       ));
+      flush();
 
       const overlay = document.querySelector(".solidaria-ModalOverlay");
       expect(overlay).not.toHaveAttribute("data-entering");

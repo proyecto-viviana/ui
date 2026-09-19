@@ -1,7 +1,6 @@
 /* Panel 05 — Status & Progress. Live signals: pulse dots, alerts, toasts,
    dithered progress. Follows the buttons.tsx exemplar's structure and voice. */
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
 import {
   StatusLight,
   InlineAlert,

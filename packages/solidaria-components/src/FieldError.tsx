@@ -19,7 +19,8 @@
  * Based on packages/react-aria-components/src/FieldError.tsx.
  */
 
-import { type JSX, Show, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { Show, createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { DEFAULT_VALIDATION_RESULT, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import {
   type ClassNameOrFunction,
@@ -30,6 +31,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { Text } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type FieldErrorRenderProps = ValidationResult;
 

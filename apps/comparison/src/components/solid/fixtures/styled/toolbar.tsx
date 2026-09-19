@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Toolbar as SolidSpectrumToolbar } from "@proyecto-viviana/solid-spectrum/Toolbar";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -28,7 +28,7 @@ import { providerShellStyle } from "../styled-shared.tsx";
 function SolidSpectrumToolbarFixture() {
   const [demoProps, setDemoProps] = createSignal<ToolbarDemoProps>(toolbarDemoPropsFromWindow());
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toolbar") {
         setDemoProps(normalizeToolbarDemoProps(event.detail.props ?? {}));
@@ -86,7 +86,7 @@ function SolidSpectrumToolbarDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);

@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
-import { Suspense, ErrorBoundary, type JSX } from "solid-js";
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-router";
-import { HydrationScript } from "solid-js/web";
+import { Suspense, Errored } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-router"; import { HydrationScript } from "@solidjs/web";
 import { Provider } from "@proyecto-viviana/ui";
 import { useTheme } from "@/utils/theme";
 import { seo, SITE_NAME, SITE_DESCRIPTION } from "@/seo";
@@ -110,9 +111,15 @@ function RootDocument(props: { children: JSX.Element }) {
       <body
         style={{ "-webkit-font-smoothing": "antialiased", "-moz-osx-font-smoothing": "grayscale" }}
       >
-        <ErrorBoundary fallback={(err, reset) => <ErrorFallback error={err} reset={reset} />}>
+        <Errored
+          fallback={(err: Accessor<unknown>, reset) => {
+            const value = err();
+            const error = value instanceof Error ? value : new Error(String(value));
+            return <ErrorFallback error={error} reset={reset} />;
+          }}
+        >
           <Suspense>{props.children}</Suspense>
-        </ErrorBoundary>
+        </Errored>
         <Scripts />
       </body>
     </html>

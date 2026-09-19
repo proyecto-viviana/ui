@@ -17,8 +17,9 @@
  * Based on @react-aria/table/useTableSelectionCheckbox.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableSelectionCheckboxProps, TableSelectionCheckboxAria } from "./types";

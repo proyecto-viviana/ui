@@ -17,8 +17,10 @@
  * Based on @react-aria/interactions useInteractOutside.
  */
 
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect } from "solid-js";
 import { getOwnerDocument } from "../utils";
+import { followRef } from "../utils/refs";
+import { access, type MaybeAccessor } from "../utils/reactivity";
 
 export interface InteractOutsideProps {
   /** Reference to the element to detect interactions outside of. */
@@ -28,7 +30,7 @@ export interface InteractOutsideProps {
   /** Handler called when an interaction outside the element starts. */
   onInteractOutsideStart?: (e: PointerEvent) => void;
   /** Whether the interact outside events should be disabled. */
-  isDisabled?: boolean;
+  isDisabled?: MaybeAccessor<boolean>;
 }
 
 /**
@@ -38,56 +40,67 @@ export interface InteractOutsideProps {
 export function createInteractOutside(props: InteractOutsideProps): void {
   let isPointerDown = false;
   let ignoreEmulatedMouseEvents = false;
+  const overlayEl = followRef(props.ref);
 
-  createEffect(() => {
-    const { ref, onInteractOutside, onInteractOutsideStart, isDisabled } = props;
+  createEffect(
+    () => {
+      const disabled = access(props.isDisabled);
+      // Track the followed ref so we re-bind after a let-ref resolves. Do not
+      // skip document listeners while it is still null — event-time `ref()`
+      // (and followRef after commit) is what `isValidEvent` needs.
+      const element = overlayEl() ?? null;
+      return { disabled, element };
+    },
+    ({ disabled, element }) => {
+      const { onInteractOutside, onInteractOutsideStart } = props;
 
-    if (isDisabled) {
-      return;
-    }
-
-    const element = ref();
-    const documentObject = getOwnerDocument(element);
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (onInteractOutside && isValidEvent(e, ref)) {
-        if (onInteractOutsideStart) {
-          onInteractOutsideStart(e);
-        }
-        isPointerDown = true;
+      if (disabled) {
+        return;
       }
-    };
 
-    const triggerInteractOutside = (e: PointerEvent) => {
-      if (onInteractOutside) {
-        onInteractOutside(e);
-      }
-    };
+      const documentObject = getOwnerDocument(element);
+      const currentRef = () => overlayEl() ?? props.ref() ?? null;
 
-    // Use pointer events if available. Otherwise, fall back to mouse and touch events.
-    if (typeof PointerEvent !== "undefined") {
-      const onClick = (e: PointerEvent) => {
-        if (isPointerDown && isValidEvent(e, ref)) {
-          triggerInteractOutside(e);
+      const onPointerDown = (e: PointerEvent) => {
+        if (onInteractOutside && isValidEvent(e, currentRef)) {
+          if (onInteractOutsideStart) {
+            onInteractOutsideStart(e);
+          }
+          isPointerDown = true;
         }
-        isPointerDown = false;
       };
 
-      // Use click instead of pointerup to avoid Android Chrome issue
-      // https://issues.chromium.org/issues/40732224
-      documentObject.addEventListener("pointerdown", onPointerDown as EventListener, true);
-      documentObject.addEventListener("click", onClick as EventListener, true);
+      const triggerInteractOutside = (e: PointerEvent) => {
+        if (onInteractOutside) {
+          onInteractOutside(e);
+        }
+      };
 
-      onCleanup(() => {
-        documentObject.removeEventListener("pointerdown", onPointerDown as EventListener, true);
-        documentObject.removeEventListener("click", onClick as EventListener, true);
-      });
-    } else {
+      // Use pointer events if available. Otherwise, fall back to mouse and touch events.
+      if (typeof PointerEvent !== "undefined") {
+        const onClick = (e: PointerEvent) => {
+          if (isPointerDown && isValidEvent(e, currentRef)) {
+            triggerInteractOutside(e);
+          }
+          isPointerDown = false;
+        };
+
+        // Use click instead of pointerup to avoid Android Chrome issue
+        // https://issues.chromium.org/issues/40732224
+        documentObject.addEventListener("pointerdown", onPointerDown as EventListener, true);
+        documentObject.addEventListener("click", onClick as EventListener, true);
+
+        return () => {
+          documentObject.removeEventListener("pointerdown", onPointerDown as EventListener, true);
+          documentObject.removeEventListener("click", onClick as EventListener, true);
+        };
+      }
+
       // Fallback for environments without PointerEvent (mainly tests)
       const onMouseUp = (e: MouseEvent) => {
         if (ignoreEmulatedMouseEvents) {
           ignoreEmulatedMouseEvents = false;
-        } else if (isPointerDown && isValidEvent(e as unknown as PointerEvent, ref)) {
+        } else if (isPointerDown && isValidEvent(e as unknown as PointerEvent, currentRef)) {
           triggerInteractOutside(e as unknown as PointerEvent);
         }
         isPointerDown = false;
@@ -95,14 +108,14 @@ export function createInteractOutside(props: InteractOutsideProps): void {
 
       const onTouchEnd = (e: TouchEvent) => {
         ignoreEmulatedMouseEvents = true;
-        if (isPointerDown && isValidEvent(e as unknown as PointerEvent, ref)) {
+        if (isPointerDown && isValidEvent(e as unknown as PointerEvent, currentRef)) {
           triggerInteractOutside(e as unknown as PointerEvent);
         }
         isPointerDown = false;
       };
 
       const onMouseDown = (e: MouseEvent) => {
-        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, ref)) {
+        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, currentRef)) {
           if (onInteractOutsideStart) {
             onInteractOutsideStart(e as unknown as PointerEvent);
           }
@@ -111,7 +124,7 @@ export function createInteractOutside(props: InteractOutsideProps): void {
       };
 
       const onTouchStart = (e: TouchEvent) => {
-        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, ref)) {
+        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, currentRef)) {
           if (onInteractOutsideStart) {
             onInteractOutsideStart(e as unknown as PointerEvent);
           }
@@ -124,14 +137,14 @@ export function createInteractOutside(props: InteractOutsideProps): void {
       documentObject.addEventListener("touchstart", onTouchStart as EventListener, true);
       documentObject.addEventListener("touchend", onTouchEnd as EventListener, true);
 
-      onCleanup(() => {
+      return () => {
         documentObject.removeEventListener("mousedown", onMouseDown as EventListener, true);
         documentObject.removeEventListener("mouseup", onMouseUp as EventListener, true);
         documentObject.removeEventListener("touchstart", onTouchStart as EventListener, true);
         documentObject.removeEventListener("touchend", onTouchEnd as EventListener, true);
-      });
-    }
-  });
+      };
+    },
+  );
 }
 
 function isValidEvent(

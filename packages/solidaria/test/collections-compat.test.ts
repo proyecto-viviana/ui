@@ -1,5 +1,9 @@
-import { describe, it, expect } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { createRoot, createSignal as createSolidSignal, flush } from "solid-js";
+import type { SignalOptions } from "solid-js";
+
+function createSignal<T>(value: T, options?: SignalOptions<T>) {
+  return createSolidSignal(value, { ...options, ownedWrite: true });
+}
 import {
   CollectionBuilder,
   Collection,
@@ -104,6 +108,7 @@ describe("collections compatibility helpers", () => {
       expect(first[0]?.version).toBe(0);
 
       setVersion(1);
+      flush();
       const second = cached() as Array<{ rendered: string; version: number }>;
       expect(second[0]?.version).toBe(1);
       expect(second[0]).not.toBe(first[0]);

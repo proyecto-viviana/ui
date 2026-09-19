@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Content.tsx
 
 // Port of packages/@react-spectrum/s2/src/Content.tsx.
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { RefLike } from "../button/spectrum-context";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import type { StyleString } from "../style";

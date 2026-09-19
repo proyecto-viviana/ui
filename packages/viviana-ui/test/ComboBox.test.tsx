@@ -1,7 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, expect, it } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { ComboBox, ComboBoxOption } from "../src/combobox";
 import { Header, Heading, Text } from "../src";
 
@@ -33,6 +31,7 @@ describe("ComboBox", () => {
     const option = screen.getByRole("option");
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apple");
     setLabel("Apricot");
+    flush();
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apricot");
   });
 

@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
@@ -33,7 +33,7 @@ function SolidSpectrumDialogDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "dialog") {
         const nextProps = normalizeDialogDemoProps(event.detail.props ?? {});

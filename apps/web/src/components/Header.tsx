@@ -1,7 +1,4 @@
-import { Link, useLocation } from "@tanstack/solid-router";
-import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
-import { createVisuallyHidden } from "@proyecto-viviana/solidaria";
-import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
+import { Link, useLocation } from "@tanstack/solid-router"; import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon"; import { createVisuallyHidden } from "@proyecto-viviana/solidaria"; import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
 import { REPO_URL } from "@/lib/site";
 import { useTheme } from "@/utils/theme";
 import "@/components/theme/studio.css";
@@ -10,7 +7,7 @@ function useScrollDirection() {
   const [isVisible, setIsVisible] = createSignal(true);
   const [lastScrollY, setLastScrollY] = createSignal(0);
 
-  onMount(() => {
+  onSettled(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
       if (currentY < lastScrollY() || currentY < 50) {

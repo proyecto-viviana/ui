@@ -19,18 +19,9 @@
  * Port of react-aria-components/src/Checkbox.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  type Accessor,
-  createContext,
-  useContext,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  Show,
-} from "solid-js";
+import { createContext, useContext, createMemo, createSignal, createUniqueId, Show } from "solid-js";
+import type { Context, Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createCheckbox,
   createCheckboxGroup,
@@ -57,10 +48,13 @@ import {
   Provider,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  isAriaTrue,
 } from "./utils";
 import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { TextContext } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -292,7 +286,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   };
 
   return (
-    <CheckboxGroupStateContext.Provider value={state}>
+    <CheckboxGroupStateContext value={state}>
       <div
         {...domProps()}
         {...cleanGroupProps()}
@@ -300,10 +294,10 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         aria-describedby={groupDescribedBy()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-disabled={state.isDisabled || undefined}
-        data-readonly={state.isReadOnly || undefined}
-        data-required={ariaProps.isRequired || undefined}
-        data-invalid={groupAria.isInvalid || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
+        data-readonly={dataAttr(state.isReadOnly)}
+        data-required={dataAttr(ariaProps.isRequired)}
+        data-invalid={dataAttr(groupAria.isInvalid)}
       >
         <GroupChildren />
         {/* A styled layer can own the visible HelpText (renderHelpText={false});
@@ -320,7 +314,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
           </div>
         </Show>
       </div>
-    </CheckboxGroupStateContext.Provider>
+    </CheckboxGroupStateContext>
   );
 }
 
@@ -346,7 +340,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const formContext = useContext(FormContext);
   const contextProps = useContext(CheckboxContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<CheckboxProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -440,15 +434,20 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     inputProps = () => checkboxAria.inputProps;
   }
   isDisabled = () => inputProps().disabled === true;
-  isReadOnly = () => inputProps()["aria-readonly"] === true;
-  isInvalid = () => inputProps()["aria-invalid"] === true;
+  isReadOnly = () => isAriaTrue(inputProps()["aria-readonly"]);
+  isInvalid = () => isAriaTrue(inputProps()["aria-invalid"]);
   const describedBy = () => {
     const ids = [
+      (inputProps() as { "aria-describedby"?: string })["aria-describedby"],
       ariaProps["aria-describedby"],
       local.description ? descriptionId : undefined,
       isInvalid() && local.errorMessage ? errorMessageId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .split(" ")
+      .filter(Boolean);
+    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
   };
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
@@ -646,16 +645,16 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
-      data-selected={isSelected() || undefined}
-      data-indeterminate={local.isIndeterminate || undefined}
-      data-pressed={isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-readonly={isReadOnly() || undefined}
-      data-invalid={isInvalid() || undefined}
-      data-required={ariaProps.isRequired || undefined}
+      data-selected={dataAttr(isSelected())}
+      data-indeterminate={dataAttr(local.isIndeterminate)}
+      data-pressed={dataAttr(isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(isDisabled())}
+      data-readonly={dataAttr(isReadOnly())}
+      data-invalid={dataAttr(isInvalid())}
+      data-required={dataAttr(ariaProps.isRequired)}
     >
       {labelChildren()}
     </label>
@@ -766,7 +765,7 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const formContext = useContext(FormContext);
   const contextProps = useContext(CheckboxFieldContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<CheckboxFieldProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -857,8 +856,8 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     getErrorMessageProps = () => checkboxAria.errorMessageProps;
   }
   const isDisabled = () => inputProps().disabled === true;
-  const isReadOnly = () => inputProps()["aria-readonly"] === true;
-  const isInvalid = () => inputProps()["aria-invalid"] === true;
+  const isReadOnly = () => isAriaTrue(inputProps()["aria-readonly"]);
+  const isInvalid = () => isAriaTrue(inputProps()["aria-invalid"]);
   const isIndeterminate = () => local.isIndeterminate ?? false;
   const isRequired = () => ariaProps.isRequired ?? false;
 
@@ -980,24 +979,24 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
-      data-selected={isSelected() || undefined}
-      data-indeterminate={isIndeterminate() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-readonly={isReadOnly() || undefined}
-      data-invalid={isInvalid() || undefined}
-      data-required={isRequired() || undefined}
+      data-selected={dataAttr(isSelected())}
+      data-indeterminate={dataAttr(isIndeterminate())}
+      data-disabled={dataAttr(isDisabled())}
+      data-readonly={dataAttr(isReadOnly())}
+      data-invalid={dataAttr(isInvalid())}
+      data-required={dataAttr(isRequired())}
     >
-      <InternalCheckboxContext.Provider value={internalContext}>
+      <InternalCheckboxContext value={internalContext}>
         <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
           <Show when={fieldErrorContext} fallback={<FieldChildren />} keyed>
             {(ctx) => (
-              <FieldErrorContext.Provider value={ctx}>
+              <FieldErrorContext value={ctx}>
                 <FieldChildren />
-              </FieldErrorContext.Provider>
+              </FieldErrorContext>
             )}
           </Show>
         </Provider>
-      </InternalCheckboxContext.Provider>
+      </InternalCheckboxContext>
     </div>
   );
 
@@ -1148,16 +1147,16 @@ function CheckboxButtonImpl(props: {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={props.buttonProps.slot}
-      data-selected={ctx.isSelected() || undefined}
-      data-indeterminate={ctx.isIndeterminate() || undefined}
-      data-pressed={ctx.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={ctx.isDisabled() || undefined}
-      data-readonly={ctx.isReadOnly() || undefined}
-      data-invalid={ctx.isInvalid() || undefined}
-      data-required={ctx.isRequired() || undefined}
+      data-selected={dataAttr(ctx.isSelected())}
+      data-indeterminate={dataAttr(ctx.isIndeterminate())}
+      data-pressed={dataAttr(ctx.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(ctx.isDisabled())}
+      data-readonly={dataAttr(ctx.isReadOnly())}
+      data-invalid={dataAttr(ctx.isInvalid())}
+      data-required={dataAttr(ctx.isRequired())}
     >
       <VisuallyHidden>
         <input

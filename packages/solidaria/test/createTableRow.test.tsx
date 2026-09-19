@@ -6,8 +6,7 @@
  * `useTableRow` for the `UNSTABLE_` tree-grid feature.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, type Accessor } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createRoot, flush, type Accessor } from "solid-js";
 import {
   createTreeGridState,
   createTableState,
@@ -99,7 +98,7 @@ describe("createTableRow (tree grid)", () => {
       const state = createTreeGridState<Item>(() => ({ columns: treeColumns, rows: treeRows }));
       const row = rowFor(state, "projects");
 
-      expect(row.rowProps["aria-expanded"]).toBe(false);
+      expect(row.rowProps["aria-expanded"]).toBe("false");
       expect(row.rowProps["aria-level"]).toBe(1);
       expect(row.rowProps["aria-posinset"]).toBe(1);
       expect(row.rowProps["aria-setsize"]).toBe(2); // projects, documents
@@ -120,7 +119,7 @@ describe("createTableRow (tree grid)", () => {
       const projects = rowFor(state, "projects");
       const documents = rowFor(state, "documents");
 
-      expect(projects.rowProps["aria-expanded"]).toBe(true);
+      expect(projects.rowProps["aria-expanded"]).toBe("true");
       expect(documents.rowProps["aria-posinset"]).toBe(2);
       expect(documents.rowProps["aria-setsize"]).toBe(2);
 
@@ -210,13 +209,14 @@ describe("createTableRow (tree grid)", () => {
         expect(row.expandButtonProps["aria-label"]).toBe("Expand");
 
         row.expandButtonProps.onPress?.({ type: "press" } as unknown as never);
+        flush();
 
         expect(onExpandedChange).toHaveBeenLastCalledWith(new Set(["projects"]));
         expect(state.expandedKeys).toEqual(new Set(["projects"]));
         expect(state.focusedKey).toBe("projects");
         // Re-reading reflects the new expanded state.
         expect(row.expandButtonProps["aria-label"]).toBe("Collapse");
-        expect(row.rowProps["aria-expanded"]).toBe(true);
+        expect(row.rowProps["aria-expanded"]).toBe("true");
 
         dispose();
       });
@@ -256,6 +256,7 @@ describe("createTableRow (tree grid)", () => {
 
         state.setFocusedKey("projects");
         press(row.rowProps.onKeyDown as (e: KeyboardEvent) => void, "ArrowRight");
+        flush();
 
         expect(state.expandedKeys).toEqual(new Set(["projects"]));
 
@@ -274,6 +275,7 @@ describe("createTableRow (tree grid)", () => {
 
         state.setFocusedKey("projects");
         press(row.rowProps.onKeyDown as (e: KeyboardEvent) => void, "ArrowLeft");
+        flush();
 
         expect(state.expandedKeys).toEqual(new Set());
 

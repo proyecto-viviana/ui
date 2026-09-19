@@ -1,5 +1,6 @@
-/** @jsxImportSource solid-js */
-import { createSignal, onMount, type JSX } from "solid-js";
+/** @jsxImportSource @solidjs/web */
+import { createSignal, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { TextArea } from "@proyecto-viviana/solid-spectrum/TextArea";
 import { TextField } from "@proyecto-viviana/solid-spectrum/TextField";
@@ -56,7 +57,7 @@ export default function SolidTextEntryCallbackIsland() {
   const controlledArea = createCallbackState();
   const uncontrolledArea = createCallbackState();
 
-  onMount(() => setHydrated(true));
+  onSettled(() => setHydrated(true));
 
   return (
     <SolidSpectrumProvider colorScheme="light" background="base">

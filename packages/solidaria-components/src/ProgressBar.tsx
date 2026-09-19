@@ -19,8 +19,10 @@
  * Port of react-aria-components/src/ProgressBar.tsx
  */
 
-import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
-import { createProgressBar, type AriaProgressBarProps } from "@proyecto-viviana/solidaria";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { createProgressBar, mergeProps, type AriaProgressBarProps } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -80,7 +82,9 @@ function getSafeRange(min: number, max: number): number {
  */
 export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const contextProps = useContext(ProgressBarContext);
-  const mergedProps = contextProps ? mergeProps(contextProps, props) : props;
+  const mergedProps: ProgressBarProps = contextProps
+    ? mergeProps<ProgressBarProps>(contextProps, props)
+    : props;
   const [local, ariaProps] = splitProps(mergedProps, ["children", "class", "style", "slot"]);
 
   const value = () => ariaProps.value ?? 0;

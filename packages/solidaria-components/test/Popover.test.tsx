@@ -1,13 +1,7 @@
 /**
  * Tests for Popover component
  */
-import { describe, it, expect, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
-import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
-import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
-import { Button } from "../src/Button";
-import { DialogTrigger } from "../src/Dialog";
-import { createSignal, onMount } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, screen, cleanup, waitFor } from "@solidjs/testing-library"; import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria"; import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover"; import { Button } from "../src/Button"; import { DialogTrigger } from "../src/Dialog"; import { createSignal, flush, onMount, onSettled } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 function mockGetAnimations(impl: () => Animation[]): () => void {
@@ -184,7 +178,9 @@ describe("Popover", () => {
 
       function FocusedInput() {
         let input!: HTMLInputElement;
-        onMount(() => window.setTimeout(() => input.focus(), 0));
+        onSettled(() => {
+          window.setTimeout(() => input.focus(), 0);
+        });
         return <input ref={input} aria-label="Focused field" />;
       }
 
@@ -327,10 +323,12 @@ describe("Popover", () => {
 
       // Toggle from outside
       screen.getByTestId("external-toggle").click();
+      flush();
       expect(screen.getByTestId("popover-content")).toBeInTheDocument();
 
       // Toggle again to close
       screen.getByTestId("external-toggle").click();
+      flush();
       expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument();
     });
 

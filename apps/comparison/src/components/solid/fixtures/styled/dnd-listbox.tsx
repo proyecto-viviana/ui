@@ -1,6 +1,6 @@
-import h from "solid-js/h";
-import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -40,7 +40,7 @@ function SolidSpectrumDndListBoxDemo() {
   );
   const list = createSolidListData<DndListBoxDemoItem>({ initialItems: dndListBoxDemoItems });
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "dnd-listbox") {
         setDemoProps(normalizeDndListBoxDemoProps(event.detail.props ?? {}));
@@ -102,7 +102,7 @@ function SolidSpectrumDndListBoxDemo() {
         // component's own `data-focused`/`data-orientation` attributes use) keeps the
         // published order in lockstep with `list.items` after each keyboard drop.
         ref: (el: HTMLElement) => {
-          createEffect(() => {
+          createTrackedEffect(() => {
             el.setAttribute("data-comparison-order", serializeDndListBoxOrder(list.items));
           });
         },

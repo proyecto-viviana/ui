@@ -1,4 +1,5 @@
-import { For, createSignal, type JSX } from "solid-js";
+import { For, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button,
   Badge,
@@ -78,7 +79,7 @@ export interface ThemePreviewGalleryProps {
 function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) {
   return (
     <section
-      classList={{ "pv-gallery__wide": props.wide }}
+      class={{ "pv-gallery__wide": props.wide }}
       style={{
         padding: "16px",
         background: "var(--color-surface)",

@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeStyles } from "../style/runtime";
 import type { StyleString } from "../style";
 
@@ -6,22 +6,24 @@ const DEFAULT_SLOT = "default";
 
 export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
 
-export type SpectrumContextValue<T extends { slot?: string | null } = Record<string, never>> =
+type SlotName = string | null | JSX.RemoveAttribute;
+
+export type SpectrumContextValue<T extends { slot?: SlotName } = Record<string, never>> =
   | (Partial<T> & {
       slots?: Record<string, Partial<T> | null | undefined>;
     })
   | null;
 
-export function getSlottedContextProps<T extends { slot?: string | null }>(
+export function getSlottedContextProps<T extends { slot?: SlotName }>(
   context: SpectrumContextValue<T>,
-  slot?: string | null,
+  slot?: SlotName,
 ): Partial<T> | null {
   if (!context || slot === null) {
     return null;
   }
 
   if ("slots" in context && context.slots) {
-    const slotName = slot ?? DEFAULT_SLOT;
+    const slotName = typeof slot === "string" && slot.length > 0 ? slot : DEFAULT_SLOT;
     const slotProps = context.slots[slotName];
 
     if (!slotProps) {

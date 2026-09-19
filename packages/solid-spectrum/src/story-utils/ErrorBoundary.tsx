@@ -1,4 +1,6 @@
-import { type JSX, ErrorBoundary as SolidErrorBoundary } from "solid-js";
+import { Errored } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
 
 export interface StoryErrorBoundaryProps {
@@ -6,6 +8,10 @@ export interface StoryErrorBoundaryProps {
   children?: JSX.Element;
   /** Custom fallback component. */
   fallback?: (err: Error, reset: () => void) => JSX.Element;
+}
+
+function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
 }
 
 // Story/dev error boundary. The invented `red-*` utility palette is replaced with
@@ -51,22 +57,23 @@ const errorRetry = style({
  */
 export function StoryErrorBoundary(props: StoryErrorBoundaryProps): JSX.Element {
   return (
-    <SolidErrorBoundary
-      fallback={(err: Error, reset: () => void) =>
-        props.fallback ? (
-          props.fallback(err, reset)
+    <Errored
+      fallback={(err: Accessor<unknown>, reset: () => void) => {
+        const error = toError(err());
+        return props.fallback ? (
+          props.fallback(error, reset)
         ) : (
           <div class={errorContainer}>
             <h3 class={errorHeading}>Error</h3>
-            <pre class={errorMessage}>{err.message}</pre>
+            <pre class={errorMessage}>{error.message}</pre>
             <button class={errorRetry} onClick={reset}>
               Retry
             </button>
           </div>
-        )
-      }
+        );
+      }}
     >
       {props.children}
-    </SolidErrorBoundary>
+    </Errored>
   );
 }

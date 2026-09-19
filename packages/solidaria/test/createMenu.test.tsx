@@ -2,8 +2,7 @@
  * Tests for createMenu, createMenuItem, and createMenuTrigger hooks
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot, flush } from "solid-js";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createMenuState,
@@ -55,7 +54,7 @@ describe("createMenu", () => {
 
       const { menuProps } = createMenu({ isDisabled: true, "aria-label": "Actions" }, state);
 
-      expect(menuProps["aria-disabled"]).toBe(true);
+      expect(menuProps["aria-disabled"]).toBe("true");
       dispose();
     });
   });
@@ -402,7 +401,7 @@ describe("createMenuItem", () => {
 
       const { menuItemProps, isDisabled } = createMenuItem({ key: "copy" }, state);
 
-      expect(menuItemProps["aria-disabled"]).toBe(true);
+      expect(menuItemProps["aria-disabled"]).toBe("true");
       expect(isDisabled()).toBe(true);
       dispose();
     });
@@ -470,7 +469,7 @@ describe("createMenuItem", () => {
       createMenu({ isDisabled: true, "aria-label": "Actions" }, state);
       const { menuItemProps, isDisabled } = createMenuItem({ key: "copy" }, state);
 
-      expect(menuItemProps["aria-disabled"]).toBe(true);
+      expect(menuItemProps["aria-disabled"]).toBe("true");
       expect(isDisabled()).toBe(true);
       dispose();
     });
@@ -494,13 +493,13 @@ describe("createMenuItem", () => {
       const paste = createMenuItem({ key: "paste" }, state);
 
       expect(copy.menuItemProps.role).toBe("menuitemradio");
-      expect(copy.menuItemProps["aria-checked"]).toBe(true);
-      expect(copy.menuItemProps["data-selected"]).toBe(true);
+      expect(copy.menuItemProps["aria-checked"]).toBe("true");
+      expect(copy.menuItemProps["data-selected"]).toBe("true");
       expect(copy.isSelected()).toBe(true);
       expect(copy.selectionMode()).toBe("single");
 
       expect(paste.menuItemProps.role).toBe("menuitemradio");
-      expect(paste.menuItemProps["aria-checked"]).toBe(false);
+      expect(paste.menuItemProps["aria-checked"]).toBe("false");
       expect(paste.menuItemProps["data-selected"]).toBeUndefined();
       expect(paste.isSelected()).toBe(false);
       dispose();
@@ -525,12 +524,12 @@ describe("createMenuItem", () => {
       const paste = createMenuItem({ key: "paste" }, state);
 
       expect(copy.menuItemProps.role).toBe("menuitemcheckbox");
-      expect(copy.menuItemProps["aria-checked"]).toBe(true);
+      expect(copy.menuItemProps["aria-checked"]).toBe("true");
       expect(copy.isSelected()).toBe(true);
       expect(copy.selectionMode()).toBe("multiple");
 
       expect(paste.menuItemProps.role).toBe("menuitemcheckbox");
-      expect(paste.menuItemProps["aria-checked"]).toBe(false);
+      expect(paste.menuItemProps["aria-checked"]).toBe("false");
       expect(paste.isSelected()).toBe(false);
       dispose();
     });
@@ -1271,6 +1270,7 @@ describe("createMenuTrigger", () => {
     expect(menuProps.autoFocus).toBe(true);
 
     state.open();
+    flush();
     expect(button).toHaveAttribute("aria-expanded", "true");
     expect(button).toHaveAttribute("aria-controls", menuProps.id);
   });

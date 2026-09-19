@@ -246,7 +246,7 @@ describe("Link (solid-spectrum)", () => {
 
   it("applies LinkContext styles and lets local unsafe props override class props", () => {
     render(() => (
-      <LinkContext.Provider
+      <LinkContext
         value={{
           variant: "secondary",
           isStandalone: true,
@@ -257,7 +257,7 @@ describe("Link (solid-spectrum)", () => {
         <Link UNSAFE_className="local-link" UNSAFE_style={{ margin: "4px" }}>
           Context
         </Link>
-      </LinkContext.Provider>
+      </LinkContext>
     ));
 
     const link = screen.getByRole("link");

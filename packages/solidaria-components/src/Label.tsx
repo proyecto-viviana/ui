@@ -12,9 +12,11 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Label.tsx
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import { type ContextValue, type RefLike, type SlotProps, useContextProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface LabelProps
   extends Omit<JSX.LabelHTMLAttributes<HTMLLabelElement>, "ref">, SlotProps {
@@ -50,7 +52,7 @@ export function Label(props: LabelProps): JSX.Element {
   const htmlFor = createMemo(() => {
     const slotted =
       ctx && typeof ctx === "object" && "slots" in ctx && ctx.slots
-        ? ctx.slots[(props.slot ?? "default") as string]
+        ? ctx.slots[typeof props.slot === "string" ? props.slot : "default"]
         : ctx;
     const fromContext = slotted as LabelProps | undefined;
     return (
@@ -65,7 +67,7 @@ export function Label(props: LabelProps): JSX.Element {
     <ElementTag
       {...domProps}
       ref={ref}
-      htmlFor={htmlFor()}
+      for={htmlFor()}
       class={local.class ?? "solidaria-Label"}
       tag={local.elementType ?? "label"}
     >

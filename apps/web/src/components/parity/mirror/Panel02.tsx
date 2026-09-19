@@ -10,7 +10,7 @@
    own tutor well surface. What is left between the pair is register the fields already
    own (the matte well fill, its radius and scan-grid) set against the spec's hand-drawn
    decorations (the blinking caret), which is exactly what this side-by-side measures. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Keyboard,
   Provider,

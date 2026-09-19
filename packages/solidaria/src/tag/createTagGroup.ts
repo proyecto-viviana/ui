@@ -22,7 +22,7 @@
  * Based on @react-aria/tag useTagGroup
  */
 
-import { createEffect, onCleanup } from "solid-js";
+import { onCleanup, createTrackedEffect } from "solid-js";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -129,16 +129,10 @@ export function createTagGroup<T>(
 
   // Share data with child tags before they create their aria state.
   tagGroupData.set(state, sharedData);
-
-  // Clean up the shared state when the tag group owner is disposed.
-  createEffect(() => {
-    tagGroupData.set(state, sharedData);
-
-    onCleanup(() => {
-      if (tagGroupData.get(state) === sharedData) {
-        tagGroupData.delete(state);
-      }
-    });
+  onCleanup(() => {
+    if (tagGroupData.get(state) === sharedData) {
+      tagGroupData.delete(state);
+    }
   });
 
   // Build aria-describedby
@@ -219,7 +213,7 @@ export function createTagGroup<T>(
   // useSelectableCollection. Only manage focus while it already lives inside the
   // container — i.e. the user is navigating via the trampoline — so a background
   // focusedKey change never yanks focus from elsewhere on the page.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const key = state.focusedKey();
     const el = getRef();
     if (!el || key == null) return;

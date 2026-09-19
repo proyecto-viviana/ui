@@ -6,10 +6,7 @@
  * is handled at the aria layer, not stately. Our createTextFieldState is a
  * simple controlled/uncontrolled value wrapper.
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createSignal } from "./owned-signal";
-
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
 import { createTextFieldState } from "../src/textfield/createTextFieldState";
 
 describe("createTextFieldState", () => {

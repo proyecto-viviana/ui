@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionGroup as SolidSpectrumActionGroup } from "@proyecto-viviana/solid-spectrum/ActionGroup";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -25,7 +25,7 @@ function SolidSpectrumActionGroupFixture() {
     actionGroupDemoPropsFromWindow(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actiongroup") {
         setDemoProps(normalizeActionGroupDemoProps(event.detail.props ?? {}));
@@ -75,7 +75,7 @@ function SolidSpectrumActionGroupDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);

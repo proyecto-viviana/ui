@@ -18,7 +18,7 @@
  * Based on @react-stately/autocomplete useAutocompleteState.
  */
 
-import { type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 
 export interface AutocompleteState {

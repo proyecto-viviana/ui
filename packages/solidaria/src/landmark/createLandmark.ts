@@ -24,8 +24,9 @@
  * Ported from packages/react-aria/src/landmark/useLandmark.ts.
  */
 
-import type { JSX, Accessor } from "solid-js";
-import { createEffect, onCleanup } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { filterDOMProps } from "../utils";
 
@@ -320,7 +321,9 @@ export function createLandmark<T extends HTMLElement = HTMLElement>(
   ref: Accessor<T | undefined>,
 ): LandmarkAria<T> {
   // Register with the landmark manager
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = ref();
     if (!element) return;
 
@@ -335,10 +338,12 @@ export function createLandmark<T extends HTMLElement = HTMLElement>(
     const manager = getLandmarkManager();
     manager.register(entry);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       manager.unregister(element);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const getLandmarkProps = (): JSX.HTMLAttributes<T> => {
     const p = access(props);

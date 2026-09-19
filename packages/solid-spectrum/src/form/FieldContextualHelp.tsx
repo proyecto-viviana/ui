@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Field.tsx FieldLabel (contextualHelp).
 
-import { type JSX, createEffect, createSignal, createUniqueId, Show } from "solid-js";
+import { createEffect, createSignal, createUniqueId, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
 import { ContextualHelpContext, type ContextualHelpSize } from "../contextualhelp";
@@ -55,7 +56,7 @@ export function FieldContextualHelp(props: FieldContextualHelpProps): JSX.Elemen
   const helpId = createUniqueId();
   const [host, setHost] = createSignal<HTMLSpanElement | undefined>();
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const element = host();
     if (!element) {
       return;
@@ -82,7 +83,7 @@ export function FieldContextualHelp(props: FieldContextualHelpProps): JSX.Elemen
       <span data-slot="contextualHelp" class={noWrap} ref={(element) => setHost(element)}>
         &nbsp;
         <CenterBaseline styles={helpBaseline}>
-          <ContextualHelpContext.Provider
+          <ContextualHelpContext
             value={{
               id: helpId,
               get "aria-labelledby"() {
@@ -95,7 +96,7 @@ export function FieldContextualHelp(props: FieldContextualHelpProps): JSX.Elemen
             }}
           >
             {props.children}
-          </ContextualHelpContext.Provider>
+          </ContextualHelpContext>
         </CenterBaseline>
       </span>
     </Show>

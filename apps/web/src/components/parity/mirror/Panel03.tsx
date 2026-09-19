@@ -9,7 +9,7 @@
    the badges now do too: the register's own `live` (orange-red, pulsing) and `metric`
    (sky-blue) channels landed in Badge, and `subtle`/`outline` carry same-channel ink.
    The residuals that remain are documented at their sites. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Badge, Divider, PixelFlameIcon, Provider, TagGroup, Text } from "@proyecto-viviana/ui";
 import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";

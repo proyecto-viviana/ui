@@ -20,7 +20,7 @@
  * Port of @react-aria/tooltip useTooltip.
  */
 
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type TooltipTriggerState } from "@proyecto-viviana/solid-stately";
 import { createHover } from "../interactions/createHover";
 import { filterDOMProps, mergeProps } from "../utils";

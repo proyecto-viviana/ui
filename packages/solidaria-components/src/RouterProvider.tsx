@@ -21,7 +21,8 @@
  * Based on packages/react-aria/src/utils/openLink.tsx.
  */
 
-import { type JSX, createContext, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 export interface RouterClickModifiers {
   metaKey?: boolean;
@@ -227,7 +228,7 @@ export function RouterProvider(props: RouterProviderProps): JSX.Element {
     useHref: props.useHref ?? ((href: string) => href),
   };
 
-  return <RouterContext.Provider value={ctx}>{props.children}</RouterContext.Provider>;
+  return <RouterContext value={ctx}>{props.children}</RouterContext>;
 }
 
 /**

@@ -18,7 +18,10 @@
  * Based on @react-aria/menu useMenu.
  */
 
-import { createEffect, onCleanup, type JSX, type Accessor } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { createTypeSelect } from "../selection/createTypeSelect";
@@ -171,13 +174,17 @@ export function createMenu<T>(
   updateSharedData();
 
   // Share data with child menu items
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     updateSharedData();
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       menuData.delete(state);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Handle focus within
   const { focusWithinProps } = createFocusWithin({
@@ -224,7 +231,7 @@ export function createMenu<T>(
 
   let autoFocusDone = false;
   let cancelAutoFocus: (() => void) | undefined;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const autoFocus = getProps().autoFocus ?? false;
     if (autoFocusDone || autoFocus === false) {
       return;
@@ -276,7 +283,7 @@ export function createMenu<T>(
       }
     });
   });
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     cancelAutoFocus?.();
   });
 

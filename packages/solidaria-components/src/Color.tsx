@@ -62,19 +62,9 @@
  * This Solid module combines the upstream component files and grid keyboard behavior.
  */
 
-import {
-  type Context,
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  splitProps,
-  untrack,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, flush, onCleanup, untrack, useContext, Show, createTrackedEffect } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createColorSlider,
   createColorArea,
@@ -120,10 +110,13 @@ import {
   useRenderProps,
   filterDOMProps,
   Provider,
+  dataAttr,
+  attrString,
 } from "./utils";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { TextContext } from "./Text";
 import { racIntlStrings } from "./intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 interface ColorPickerChannelContextValue {
   value?: Color | string;
@@ -373,7 +366,7 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
   );
 
   return (
-    <ColorSliderContext.Provider
+    <ColorSliderContext
       value={{
         state,
         get trackProps() {
@@ -402,14 +395,14 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
         {...domProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-disabled={state.isDisabled || undefined}
-        data-dragging={state.isDragging || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
+        data-dragging={dataAttr(state.isDragging)}
         data-orientation={state.orientation}
         slot={local.slot || undefined}
       >
         {renderProps.renderChildrenStable()}
       </div>
-    </ColorSliderContext.Provider>
+    </ColorSliderContext>
   );
 }
 
@@ -526,8 +519,8 @@ export function ColorSliderTrack(props: ColorSliderTrackProps): JSX.Element {
       {...cleanTrackProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isDragging)}
       data-orientation={state.orientation}
     >
       {renderProps.renderChildrenStable()}
@@ -601,6 +594,16 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
     ) as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
+  let sliderInput: HTMLInputElement | undefined;
+  createEffect(
+    () => state.getThumbValue(),
+    (value) => {
+      if (sliderInput && sliderInput.value !== String(value)) {
+        sliderInput.value = String(value);
+      }
+    },
+  );
+
   const mergedStyle = () => {
     const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
@@ -615,13 +618,20 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
       ref={local.ref}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isDragging)}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
     >
-      <input ref={context.setInputRef} {...mergedInputProps()} />
+      <input
+        ref={(el) => {
+          sliderInput = el;
+          context.setInputRef(el);
+          if (el) el.value = String(state.getThumbValue());
+        }}
+        {...mergedInputProps()}
+      />
       {renderProps.renderChildrenStable()}
     </div>
   );
@@ -846,7 +856,7 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
   };
 
   return (
-    <ColorAreaContext.Provider
+    <ColorAreaContext
       value={{
         state,
         get colorAreaProps() {
@@ -875,12 +885,12 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
         class={renderProps.class()}
         style={mergedStyle()}
         slot={local.slot ?? undefined}
-        data-disabled={state.isDisabled || undefined}
-        data-dragging={state.isDragging || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
+        data-dragging={dataAttr(state.isDragging)}
       >
         {colorAreaChildren()}
       </div>
-    </ColorAreaContext.Provider>
+    </ColorAreaContext>
   );
 }
 
@@ -934,7 +944,7 @@ export function ColorAreaGradient(props: ColorAreaGradientProps): JSX.Element {
       {...cleanGradientProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
     >
       {renderProps.renderChildren()}
     </div>
@@ -1028,11 +1038,11 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
     queueMicrotask(update);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     syncInputValue(xInputRef, state.getXValue());
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     syncInputValue(yInputRef, state.getYValue());
   });
 
@@ -1044,11 +1054,11 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isDragging)}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
     >
       <input
         {...mergedXInputProps()}
@@ -1241,7 +1251,7 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
   );
 
   return (
-    <ColorWheelContext.Provider
+    <ColorWheelContext
       value={{
         state,
         get trackProps() {
@@ -1265,12 +1275,12 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
         class={renderProps.class()}
         style={renderProps.style()}
         slot={local.slot || undefined}
-        data-disabled={state.isDisabled || undefined}
-        data-dragging={state.isDragging || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
+        data-dragging={dataAttr(state.isDragging)}
       >
         {renderProps.renderChildrenStable()}
       </div>
-    </ColorWheelContext.Provider>
+    </ColorWheelContext>
   );
 }
 
@@ -1326,8 +1336,8 @@ export function ColorWheelTrack(props: ColorWheelTrackProps): JSX.Element {
       {...cleanTrackProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isDragging)}
     >
       {renderProps.renderChildrenStable()}
     </div>
@@ -1414,11 +1424,11 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
-      data-dragging={state.isDragging || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-dragging={dataAttr(state.isDragging)}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
     >
       <input {...mergedInputProps()} />
       {renderProps.renderChildrenStable()}
@@ -1538,7 +1548,9 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       "placeholder",
     ],
   );
-  const [hasRegisteredLabelElement, setHasRegisteredLabelElement] = createSignal(false);
+  const [hasRegisteredLabelElement, setHasRegisteredLabelElement] = createSignal(false, {
+    ownedWrite: true,
+  });
 
   // Create color field state
   const state = createColorFieldState(() => ({
@@ -1705,7 +1717,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   };
 
   return (
-    <ColorFieldContext.Provider
+    <ColorFieldContext
       value={{
         state,
         get inputProps() {
@@ -1730,10 +1742,10 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
           class={renderProps.class()}
           style={renderProps.style()}
           slot={local.slot ?? undefined}
-          data-disabled={state.isDisabled || undefined}
-          data-readonly={state.isReadOnly || undefined}
-          data-invalid={state.isInvalid || undefined}
-          data-required={state.isRequired || undefined}
+          data-disabled={dataAttr(state.isDisabled)}
+          data-readonly={dataAttr(state.isReadOnly)}
+          data-invalid={dataAttr(state.isInvalid)}
+          data-required={dataAttr(state.isRequired)}
           data-channel={state.channel ?? "hex"}
         >
           <Show when={local.label}>
@@ -1760,7 +1772,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
           />
         </Show>
       </>
-    </ColorFieldContext.Provider>
+    </ColorFieldContext>
   );
 }
 
@@ -1838,12 +1850,12 @@ export function ColorFieldInput(props: ColorFieldInputProps): JSX.Element {
       class={renderProps.class()}
       style={renderProps.style()}
       value={inputValue()}
-      data-disabled={state.isDisabled || undefined}
-      data-readonly={state.isReadOnly || undefined}
-      data-invalid={state.isInvalid || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
+      data-readonly={dataAttr(state.isReadOnly)}
+      data-invalid={dataAttr(state.isInvalid)}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
     />
   );
 }
@@ -1896,7 +1908,7 @@ export function ColorSwatch(props: ColorSwatchProps): JSX.Element {
 
   const swatchAria = createColorSwatch(() => ({
     id: (rest as Record<string, unknown>).id as string | undefined,
-    slot: local.slot,
+    slot: attrString(local.slot),
     color: resolvedColor(),
     colorName: local.colorName,
     "aria-label": ariaProps["aria-label"],
@@ -2093,13 +2105,13 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
   );
 
   return (
-    <ColorPickerStateContextInternal.Provider
+    <ColorPickerStateContextInternal
       value={{
         color: () => color(),
         setColor,
       }}
     >
-      <ColorPickerContextInternal.Provider
+      <ColorPickerContextInternal
         value={{
           get value() {
             return color();
@@ -2110,8 +2122,8 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
         <div class={renderProps.class()} style={renderProps.style()}>
           {renderProps.renderChildren()}
         </div>
-      </ColorPickerContextInternal.Provider>
-    </ColorPickerStateContextInternal.Provider>
+      </ColorPickerContextInternal>
+    </ColorPickerStateContextInternal>
   );
 }
 
@@ -2135,8 +2147,11 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     "slot",
   ]);
 
-  const [itemMap, setItemMap] = createSignal<Map<string, ColorSwatchPickerItemData>>(new Map());
-  const [itemOrder, setItemOrder] = createSignal<string[]>([]);
+  const [itemMap, setItemMap] = createSignal<Map<string, ColorSwatchPickerItemData>>(
+    new Map(),
+    { ownedWrite: true },
+  );
+  const [itemOrder, setItemOrder] = createSignal<string[]>([], { ownedWrite: true });
   const [internalColor, setInternalColor] = createSignal<Color>(
     normalizeColor(local.defaultValue ?? pickerContext?.value ?? "#ff0000"),
   );
@@ -2476,7 +2491,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   };
 
   return (
-    <ColorSwatchPickerContextInternal.Provider
+    <ColorSwatchPickerContextInternal
       value={{
         state,
         registerItem,
@@ -2486,18 +2501,32 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       <div
         {...mergeProps(domProps(), cleanListBoxProps(), cleanFocusProps(), {
           onKeyDown: onColorSwatchPickerKeyDown,
+          onFocus: (e: FocusEvent) => {
+            if (e.target !== e.currentTarget) return;
+            if (state.focusedKey() == null) {
+              const key =
+                state.selectionManager.firstSelectedKey ?? state.collection().getFirstKey();
+              if (key != null) state.setFocusedKey(key);
+            }
+            state.setFocused(true);
+            try {
+              flush();
+            } catch {
+              /* event handler; ignore forbidden-scope flush */
+            }
+          },
         })}
         ref={setPickerRef}
         class={renderProps.class()}
         style={renderProps.style()}
         slot={local.slot ?? undefined}
-        data-focused={state.isFocused() || undefined}
-        data-focus-visible={isFocusVisible() || undefined}
+        data-focused={dataAttr(state.isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
         data-layout={local.layout ?? "grid"}
       >
         {local.children}
       </div>
-    </ColorSwatchPickerContextInternal.Provider>
+    </ColorSwatchPickerContextInternal>
   );
 }
 
@@ -2520,16 +2549,18 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
     return color().getColorName(locale);
   });
 
-  createEffect(() => {
-    const itemKey = key();
-    context.registerItem({
-      key: itemKey,
+  createEffect(
+    () => ({
+      key: key(),
       color: color(),
       textValue: textValue(),
       isDisabled: ariaProps.isDisabled,
-    });
-    onCleanup(() => context.unregisterItem(itemKey));
-  });
+    }),
+    (item) => {
+      context.registerItem(item);
+      return () => context.unregisterItem(item.key);
+    },
+  );
 
   const [optionRef, setOptionRef] = createSignal<HTMLElement | null>(null);
 
@@ -2583,9 +2614,9 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
       class={renderProps.class()}
       style={renderProps.style()}
     >
-      <ColorSwatchContextInternal.Provider value={{ color: color() }}>
+      <ColorSwatchContextInternal value={{ color: color() }}>
         {renderProps.children ? renderProps.renderChildren() : <ColorSwatch />}
-      </ColorSwatchContextInternal.Provider>
+      </ColorSwatchContextInternal>
     </div>
   );
 }

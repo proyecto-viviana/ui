@@ -40,7 +40,7 @@ describe("Text content primitives (solid-spectrum)", () => {
     let localRef: HTMLSpanElement | undefined;
 
     render(() => (
-      <TextContext.Provider
+      <TextContext
         value={{
           UNSAFE_className: "context-text",
           UNSAFE_style: { color: "red", margin: "1px" },
@@ -55,7 +55,7 @@ describe("Text content primitives (solid-spectrum)", () => {
         >
           Context
         </Text>
-      </TextContext.Provider>
+      </TextContext>
     ));
 
     const text = screen.getByTestId("context-text") as HTMLSpanElement;
@@ -115,17 +115,17 @@ describe("Text content primitives (solid-spectrum)", () => {
 
   it("supports context slots for content primitives", () => {
     render(() => (
-      <HeadingContext.Provider
+      <HeadingContext
         value={{
           slots: {
             title: { level: 2, UNSAFE_className: "slot-heading" },
           },
         }}
       >
-        <HeaderContext.Provider value={{ UNSAFE_className: "slot-header" }}>
-          <ContentContext.Provider value={{ UNSAFE_className: "slot-content" }}>
-            <FooterContext.Provider value={{ UNSAFE_className: "slot-footer" }}>
-              <KeyboardContext.Provider value={{ UNSAFE_className: "slot-keyboard" }}>
+        <HeaderContext value={{ UNSAFE_className: "slot-header" }}>
+          <ContentContext value={{ UNSAFE_className: "slot-content" }}>
+            <FooterContext value={{ UNSAFE_className: "slot-footer" }}>
+              <KeyboardContext value={{ UNSAFE_className: "slot-keyboard" }}>
                 <Heading slot="title" data-testid="slot-heading">
                   Slot title
                 </Heading>
@@ -133,11 +133,11 @@ describe("Text content primitives (solid-spectrum)", () => {
                 <Content data-testid="slot-content">Content</Content>
                 <Footer data-testid="slot-footer">Footer</Footer>
                 <Keyboard data-testid="slot-keyboard">K</Keyboard>
-              </KeyboardContext.Provider>
-            </FooterContext.Provider>
-          </ContentContext.Provider>
-        </HeaderContext.Provider>
-      </HeadingContext.Provider>
+              </KeyboardContext>
+            </FooterContext>
+          </ContentContext>
+        </HeaderContext>
+      </HeadingContext>
     ));
 
     expect(screen.getByTestId("slot-heading").tagName).toBe("H2");

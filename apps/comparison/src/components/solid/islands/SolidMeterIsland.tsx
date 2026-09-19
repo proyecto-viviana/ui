@@ -1,4 +1,4 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 /**
  * Server-rendered Meter surface for the D12 hydration oracle.
  *
@@ -6,14 +6,14 @@
  * that real component chain intact so D12 can compare the server relationship
  * with the hydrated relationship.
  */
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { Meter as SolidSpectrumMeter } from "@proyecto-viviana/solid-spectrum/Meter";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 
 export default function SolidMeterIsland() {
   const [hydrated, setHydrated] = createSignal(false);
 
-  onMount(() => {
+  onSettled(() => {
     setHydrated(true);
   });
 

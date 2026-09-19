@@ -10,7 +10,8 @@
  * its own content, which is exactly the handoff's shimmer square. The app only
  * says how many blocks fit across.
  */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Badge,
   Card,

@@ -5,7 +5,9 @@
    `data-color-scheme` theme (via `useTheme`) instead of an island-local scheme
    attribute, and wrapping children in the library `Provider` so locale and
    color-scheme contexts reach every component. */
-import { createEffect, createSignal, onMount, type Accessor, type JSX } from "solid-js";
+import { createEffect, createSignal, onSettled, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
 import { Provider } from "@proyecto-viviana/ui";
 import { createMeshField } from "@/lib/glasselated";
@@ -21,9 +23,9 @@ export function GlasselatedShell(props: { readonly children: JSX.Element }): JSX
   let root: HTMLDivElement | undefined;
   const align = createMeshField(() => root);
 
-  onMount(() => setShellRoot(root));
+  onSettled(() => setShellRoot(root));
   // Re-anchor the weave whenever the theme (hence each card's mesh image) changes.
-  createEffect(() => {
+  createTrackedEffect(() => {
     theme();
     requestAnimationFrame(align);
   });

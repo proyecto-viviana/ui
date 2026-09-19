@@ -1,4 +1,4 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
 import { LinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";

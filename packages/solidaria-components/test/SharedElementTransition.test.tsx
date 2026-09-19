@@ -2,9 +2,7 @@
  * Tests for solidaria-components SharedElementTransition
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { createSignal, type JSX } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush, type JSX } from "solid-js";
 import {
   SharedElement,
   SharedElementTransition,
@@ -113,6 +111,7 @@ describe("SharedElementTransition", () => {
     ));
 
     fireEvent.click(screen.getByRole("button", { name: "Show" }));
+    flush();
     // A fresh enter (no previous snapshot) defers "entering" to a microtask, as
     // upstream does (`queueMicrotask(() => flushSync(() => setState('entering')))`):
     // the incoming div mounts "visible" first, then flips to "entering".
@@ -159,6 +158,7 @@ describe("SharedElementTransition", () => {
     // isVisible flip and never mounted B before the read effect, so B could only
     // enter fresh (data-entering). This is the observable two-phase signal.
     setWhich("b");
+    flush();
     await Promise.resolve();
 
     const b = screen.getByText("B");

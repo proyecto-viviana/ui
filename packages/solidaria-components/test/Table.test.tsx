@@ -2,9 +2,7 @@
  * Tests for Table component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
-import { createSignal, For } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library"; import { createSignal, flush, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
@@ -1330,6 +1328,7 @@ describe("Table", () => {
       expect(screen.queryByText("No results")).toBeNull();
 
       setIsLoading(false);
+      flush();
       expect(document.querySelector(".solidaria-Table-body")).toHaveAttribute("data-empty");
       expect(screen.queryByRole("progressbar")).toBeNull();
       expect(screen.getByText("No results")).toBeInTheDocument();
@@ -1446,6 +1445,7 @@ describe("Table", () => {
 
         await Promise.resolve();
         setIsLoading(false);
+        flush();
         observer.triggerIntersection([{ isIntersecting: true } as IntersectionObserverEntry]);
         expect(onLoadMore).toHaveBeenCalledTimes(2);
       } finally {
@@ -1524,6 +1524,7 @@ describe("Table", () => {
 
         expect(onLoadMore).not.toHaveBeenCalled();
         setIsLoading(false);
+        flush();
         await Promise.resolve();
         observer.triggerIntersection([{ isIntersecting: true } as IntersectionObserverEntry]);
         expect(onLoadMore).toHaveBeenCalledTimes(1);
@@ -1585,6 +1586,7 @@ describe("Table", () => {
         expect(observer.observe).toHaveBeenCalledTimes(1);
         expect(observer.disconnect).not.toHaveBeenCalled();
         setScrollOffset(2);
+        flush();
         expect(observer.disconnect).toHaveBeenCalledTimes(1);
         expect(observer.observe).toHaveBeenCalledTimes(2);
       } finally {
@@ -1717,6 +1719,7 @@ describe("Table", () => {
 
       setItems(testData);
       setIsLoading(false);
+      flush();
       const rows = document.querySelectorAll(".solidaria-Table-row");
       expect(rows).toHaveLength(3);
       expect(rows[0]).toHaveAttribute("aria-rowindex", "2");
@@ -1724,6 +1727,7 @@ describe("Table", () => {
       expect(rows[2]).toHaveAttribute("aria-rowindex", "4");
 
       setIsLoading(true);
+      flush();
       const loader = document.querySelector(".solidaria-Table-loadMore");
       expect(loader).not.toHaveAttribute("aria-rowindex");
       for (const [index, row] of Array.from(
@@ -1992,7 +1996,7 @@ describe("Table", () => {
       ));
 
       const table = document.querySelector(".solidaria-Table");
-      expect(table?.getAttribute("data-empty")).toBeTruthy();
+      expect(table?.getAttribute("data-empty")).toBe("true");
     });
   });
 

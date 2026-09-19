@@ -17,8 +17,10 @@
  * Based on @react-aria/tree/useTreeItem.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import { bindCapture } from "../utils/capture";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type {
   Collection,
@@ -52,17 +54,9 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     return treeData ? `${treeData.treeId}-row-${String(props().node.key)}` : fallbackRowId;
   });
 
-  const isSelected = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isSelected(p.node.key);
-  });
+  const isSelected = () => state().isSelected(props().node.key);
 
-  const isExpanded = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isExpanded(p.node.key);
-  });
+  const isExpanded = () => state().isExpanded(props().node.key);
 
   const isExpandable = createMemo(() => {
     const p = props();
@@ -173,7 +167,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     };
   });
 
-  const rowProps = createMemo(() => {
+  const rowProps = () => {
     const p = props();
     const node = p.node;
     const { posinset, setsize } = siblingInfo();
@@ -184,9 +178,13 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     const baseProps: Record<string, unknown> = {
       role: "row",
       "aria-label": textValue || undefined,
-      "aria-selected": selectableState.canSelectItem?.(node.key) ? isSelected() : undefined,
-      "aria-disabled": selectableItem.isDisabled() || undefined,
-      "aria-expanded": isExpandable() ? isExpanded() : undefined,
+      "aria-selected": selectableState.canSelectItem?.(node.key)
+        ? isSelected()
+          ? "true"
+          : "false"
+        : undefined,
+      "aria-disabled": selectableItem.isDisabled() ? "true" : undefined,
+      "aria-expanded": isExpandable() ? (isExpanded() ? "true" : "false") : undefined,
       "aria-level": node.level + 1, // 1-based for ARIA
       "aria-posinset": posinset,
       "aria-setsize": setsize,
@@ -247,6 +245,15 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
         return false;
       },
     });
+  };
+
+  bindCapture(ref, {
+    keydown: (event) => {
+      const handler = (
+        rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void }
+      ).onKeyDownCapture;
+      handler?.(event as KeyboardEvent);
+    },
   });
 
   const gridCellProps = createMemo(() => {
@@ -274,7 +281,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     e.stopPropagation();
   };
 
-  const expandButtonProps = createMemo(() => {
+  const expandButtonProps = () => {
     const baseProps: Record<string, unknown> = {
       type: "button",
       id: expandButtonId,
@@ -287,11 +294,11 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       onMouseDown: stopPointerPropagation,
       onMouseUp: stopPointerPropagation,
       tabIndex: -1, // Not in tab order, use arrow keys
-      "aria-hidden": !isExpandable() ? true : undefined,
+      "aria-hidden": !isExpandable() ? "true" : undefined,
     };
 
     return baseProps as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
-  });
+  };
 
   return {
     get rowProps() {

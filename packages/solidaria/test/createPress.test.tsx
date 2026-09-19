@@ -5,11 +5,10 @@
  * This matches React Aria's test patterns for compatibility.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createPress, type PressEvent } from "../src/interactions/createPress";
-import { Dynamic } from "solid-js/web";
-import { createSignal, type JSX, type Component } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createPress, type PressEvent } from "../src/interactions/createPress"; import { Dynamic } from "@solidjs/web";
+import { createSignal } from "solid-js";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { setupUser, createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser and pointer helpers are consolidated in solidaria-test-utils.
@@ -75,7 +74,7 @@ const Example: Component<ExampleProps> = (props) => {
       tabIndex={0}
       draggable={draggable}
       data-testid="test-element"
-      data-pressed={isPressed() || undefined}
+      data-pressed={isPressed() ? "true" : undefined}
     >
       {elementType !== "input" ? children || "test" : undefined}
     </Dynamic>
@@ -2021,7 +2020,7 @@ describe("createPress", () => {
           onPress={addEvent}
           onPressUp={addEvent}
         >
-          <div data-testid="inner" on:click={(e: MouseEvent) => e.stopPropagation()} />
+          <div data-testid="inner" onClick={(e: MouseEvent) => e.stopPropagation()} />
         </Example>
       ));
 

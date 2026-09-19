@@ -14,15 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ActionButton.tsx.
 
-import {
-  children as resolveChildren,
-  createEffect,
-  createSignal,
-  type JSX,
-  onCleanup,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, createEffect, createSignal, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
   type ButtonProps as HeadlessButtonProps,
@@ -71,6 +64,7 @@ import {
 } from "./spectrum-context";
 import { getSingleTextChild } from "./text-child";
 import CornerTriangle from "../icon/ui-icons/CornerTriangle";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type { ActionButtonSize } from "./group-context";
 
@@ -196,6 +190,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "isJustified",
   ] as const);
 
+  const isDisabled = () =>
+    runtimeProps.isDisabled ??
+    groupContext?.isDisabled ??
+    (contextProps as { isDisabled?: boolean } | null | undefined)?.isDisabled ??
+    flags.isDisabled;
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const menuTriggerContext = useContext(MenuTriggerContext);
@@ -273,19 +272,14 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
 
   const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties =>
     pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
-  const menuTriggerButtonProps = (): Partial<HeadlessButtonProps> => {
-    if (!menuTriggerContext) {
-      return {};
-    }
-
-    const { onKeyDown: _onKeyDown, ...triggerProps } = menuTriggerContext.triggerProps;
-    return mergeProps<Partial<HeadlessButtonProps>>(
-      triggerProps as Partial<HeadlessButtonProps>,
-      {
-        onPressStart: menuTriggerContext.onPressStart,
-      } as Partial<HeadlessButtonProps>,
-    );
-  };
+  const menuTriggerButtonProps: Partial<HeadlessButtonProps> = !menuTriggerContext
+    ? {}
+    : mergeProps<Partial<HeadlessButtonProps>>(
+        splitProps(menuTriggerContext.triggerProps as Record<string, unknown>, ["onKeyDown"])[1] as Partial<HeadlessButtonProps>,
+        {
+          onPressStart: menuTriggerContext.onPressStart,
+        } as Partial<HeadlessButtonProps>,
+      );
   const syncMenuTriggerAttribute = (element: HTMLButtonElement, name: string, value: unknown) => {
     if (value == null) {
       element.removeAttribute(name);
@@ -295,33 +289,48 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     element.setAttribute(name, String(value));
   };
 
-  createEffect(() => {
-    const element = resolvedButtonElement();
-    if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
-      return;
-    }
-
-    const triggerProps = menuTriggerContext.triggerProps as Record<string, unknown>;
-    syncMenuTriggerAttribute(element, "aria-haspopup", triggerProps["aria-haspopup"]);
-    syncMenuTriggerAttribute(element, "aria-expanded", triggerProps["aria-expanded"]);
-    syncMenuTriggerAttribute(element, "aria-controls", triggerProps["aria-controls"]);
-    syncMenuTriggerAttribute(element, "aria-disabled", triggerProps["aria-disabled"]);
-  });
-  createEffect(() => {
-    const element = resolvedButtonElement();
-    if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      (menuTriggerContext.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void }).onKeyDown?.(
-        event,
-      );
-    };
-
-    element.addEventListener("keydown", onKeyDown);
-    onCleanup(() => element.removeEventListener("keydown", onKeyDown));
-  });
+  createEffect(
+    () => {
+      const element = resolvedButtonElement();
+      if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
+        return null;
+      }
+      const triggerProps = menuTriggerContext.triggerProps as Record<string, unknown>;
+      return {
+        element,
+        haspopup: triggerProps["aria-haspopup"],
+        expanded: triggerProps["aria-expanded"],
+        controls: triggerProps["aria-controls"],
+        disabled: triggerProps["aria-disabled"],
+      };
+    },
+    (snapshot) => {
+      if (!snapshot) return;
+      syncMenuTriggerAttribute(snapshot.element, "aria-haspopup", snapshot.haspopup);
+      syncMenuTriggerAttribute(snapshot.element, "aria-expanded", snapshot.expanded);
+      syncMenuTriggerAttribute(snapshot.element, "aria-controls", snapshot.controls);
+      syncMenuTriggerAttribute(snapshot.element, "aria-disabled", snapshot.disabled);
+    },
+  );
+  createEffect(
+    () => {
+      const element = resolvedButtonElement();
+      if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
+        return null;
+      }
+      return element;
+    },
+    (element) => {
+      if (!element) return;
+      const onKeyDown = (event: KeyboardEvent) => {
+        (menuTriggerContext?.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void } | undefined)?.onKeyDown?.(
+          event,
+        );
+      };
+      element.addEventListener("keydown", onKeyDown);
+      return () => element.removeEventListener("keydown", onKeyDown);
+    },
+  );
   function ActionButtonContent() {
     const iconContextValue = {
       slot: "icon",
@@ -395,25 +404,29 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       const content = () => resolvedChildren();
       const textChild = () => getSingleTextChild(content());
 
-      return textChild() !== undefined ? (
-        <span
-          class={s2ActionButtonText({ isProgressVisible: isProgressVisible() })}
-          data-rsp-slot="text"
-        >
-          {textChild()}
-        </span>
-      ) : (
-        content()
+      return (
+        <>
+          {textChild() !== undefined ? (
+            <span
+              class={s2ActionButtonText({ isProgressVisible: isProgressVisible() })}
+              data-rsp-slot="text"
+            >
+              {textChild()}
+            </span>
+          ) : (
+            content()
+          )}
+        </>
       );
     }
 
     return (
-      <SkeletonContext.Provider value={null}>
-        <TextContext.Provider value={textContextValue}>
-          <IconContext.Provider value={iconContextValue}>
-            <AvatarContext.Provider value={avatarContextValue}>
-              <ImageContext.Provider value={imageContextValue}>
-                <NotificationBadgeContext.Provider value={notificationBadgeContextValue}>
+      <SkeletonContext value={null}>
+        <TextContext value={textContextValue}>
+          <IconContext value={iconContextValue}>
+            <AvatarContext value={avatarContextValue}>
+              <ImageContext value={imageContextValue}>
+                <NotificationBadgeContext value={notificationBadgeContextValue}>
                   <ResolvedContent />
                   {local.isPending ? (
                     <div
@@ -459,19 +472,20 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
                       })({ direction: locale().direction, size: size() })}
                     />
                   ) : null}
-                </NotificationBadgeContext.Provider>
-              </ImageContext.Provider>
-            </AvatarContext.Provider>
-          </IconContext.Provider>
-        </TextContext.Provider>
-      </SkeletonContext.Provider>
+                </NotificationBadgeContext>
+              </ImageContext>
+            </AvatarContext>
+          </IconContext>
+        </TextContext>
+      </SkeletonContext>
     );
   }
 
   return (
     <HeadlessButton
       {...headlessProps}
-      {...menuTriggerButtonProps()}
+      {...menuTriggerButtonProps}
+      isDisabled={isDisabled()}
       isPending={local.isPending}
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {

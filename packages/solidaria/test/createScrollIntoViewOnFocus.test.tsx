@@ -7,9 +7,7 @@
  * viewport; pointer-driven changes and background (inactive) collections are not.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { render, screen, cleanup } from "@solidjs/testing-library";
-import { createSignal, type Accessor } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { render, screen, cleanup } from "@solidjs/testing-library"; import { createSignal, type Accessor } from "solid-js";
 import { createScrollIntoViewOnFocus } from "../src/selection/createScrollIntoViewOnFocus";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
 

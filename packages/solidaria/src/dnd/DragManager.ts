@@ -28,7 +28,8 @@
  * (upstream `RefObject.current`) become Solid element accessors (`() => el`).
  */
 
-import { createSignal, type Accessor } from "solid-js";
+import { createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
 
 import { announce } from "../live-announcer/announce";
 import { ariaHideOutside } from "../overlays/ariaHideOutside";

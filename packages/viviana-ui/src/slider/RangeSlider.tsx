@@ -16,18 +16,10 @@
 
 // Port of packages/@react-spectrum/s2/src/RangeSlider.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, createUniqueId, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { ariaTrueFalse } from "@proyecto-viviana/solidaria/utils";
 import { s2IntlStrings } from "../intl";
 import type { StyleString } from "../style";
 import { focusRing, style } from "../style" with { type: "macro" };
@@ -41,6 +33,7 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -580,7 +573,7 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
   const [internalRange, setInternalRange] = createSignal(
     normalizeRange(local.defaultValue ?? { start: minValue(), end: maxValue() }),
   );
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (local.value === undefined) {
       setInternalRange(
         normalizeRange(local.defaultValue ?? { start: minValue(), end: maxValue() }),
@@ -885,7 +878,7 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
         class={thumbContainer(thumbStyleState(thumbName))}
         style={thumbWrapperStyle(percent(), thumbName, element())}
         role="slider"
-        tabIndex={isDisabled() ? undefined : 0}
+        tabindex={isDisabled() ? undefined : 0}
         aria-label={
           isStart
             ? stringFormatter().format("slider.minimum")
@@ -895,7 +888,7 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
         aria-valuemax={isStart ? endValue() : maxValue()}
         aria-valuenow={value()}
         aria-valuetext={formatter().format(value())}
-        aria-disabled={isDisabled() || undefined}
+        aria-disabled={isDisabled() ? ariaTrueFalse(true) : undefined}
         onPointerDown={(event) => onThumbPointerDown(thumbName, event)}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

@@ -13,6 +13,15 @@ package-build migration change.
 (`pnpm@11.22.0`) underneath, but scripts and docs use `vp`. Use raw `pnpm` only
 when debugging pnpm-specific behavior.
 
+Solid 2 diagnostics: `@solidjs/diagnostics@2.0.0-rc.9` is a catalog and
+`apps/web` devDependency. `vp run dev` auto-enables `/__solid/diagnostics`
+(GET status; POST `begin`/`end`/`whyDidRun`/`costs`). The surface is never
+active in vitest (`mode === "test"`). Skills live in
+`node_modules/@solidjs/diagnostics/skills/agent-loops/SKILL.md` and
+`node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md`. Enable
+attribution with `import { enable } from "solid-js/attribution"` when chasing
+cost/hold findings. Do not set `diagnostics: true` in test configs.
+
 ## Daily commands
 
 ```bash

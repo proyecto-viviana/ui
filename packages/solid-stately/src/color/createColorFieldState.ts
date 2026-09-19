@@ -18,7 +18,8 @@
  * Based on @react-stately/color useColorFieldState and useColorChannelFieldState.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { Color, ColorChannel, ColorChannelRange, ColorFormat, ColorSpace } from "./types";
 import { createRGBColor, normalizeColor, parseColor } from "./Color";
 import { createInternalSignal, readNow } from "../utils";

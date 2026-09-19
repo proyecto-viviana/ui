@@ -22,16 +22,8 @@
  * with support for keyboard navigation, selection, and removal.
  */
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext, For, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createTagGroup,
   createTag,
@@ -57,6 +49,7 @@ import {
   mergeRefs,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
@@ -73,7 +66,10 @@ export interface TagGroupProps
   extends
     Omit<AriaTagGroupProps, "id">,
     SlotProps,
-    Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children"> {
+    Omit<
+      JSX.HTMLAttributes<HTMLDivElement>,
+      "class" | "style" | "children" | "aria-label" | "aria-labelledby" | "aria-describedby"
+    > {
   /** The children of the component. */
   children?: JSX.Element;
   /** The CSS className for the element. */
@@ -284,7 +280,11 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
   // ListBox, and useTagGroup passing `direction` to the ListKeyboardDelegate).
   const locale = useLocale();
 
-  // Create tag group accessibility props
+  // Callback-valued props must not go through createMemo — a memo that
+  // stores a function is easy to unwrap/call, and the live getter
+  // `onRemove={handler()}` must re-read on each access.
+  const onRemove = () => local.onRemove;
+
   const tagGroupAria = createTagGroup(
     {
       get "aria-label"() {
@@ -300,7 +300,7 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
         return local.isDisabled;
       },
       get onRemove() {
-        return local.onRemove;
+        return onRemove();
       },
       get direction() {
         return locale().direction;
@@ -329,7 +329,7 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
   const contextValue: TagGroupContextValue = {
     state,
     get onRemove() {
-      return local.onRemove;
+      return onRemove();
     },
     get isDisabled() {
       return local.isDisabled;
@@ -337,8 +337,8 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
   };
 
   return (
-    <TagGroupContext.Provider value={contextValue}>
-      <TagListStateContext.Provider value={state}>
+    <TagGroupContext value={contextValue}>
+      <TagListStateContext value={state}>
         <div
           ref={setGridRef}
           {...domProps}
@@ -369,8 +369,8 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
             </Show>
           </SharedElementTransition>
         </div>
-      </TagListStateContext.Provider>
-    </TagGroupContext.Provider>
+      </TagListStateContext>
+    </TagGroupContext>
   );
 }
 
@@ -427,13 +427,16 @@ export function Tag(props: TagProps): JSX.Element {
     };
   });
 
+  const allowsRemoving = createMemo(
+    () => Boolean(tagAria.allowsRemoving) || Boolean(groupContext?.onRemove),
+  );
   const renderValues = createMemo<TagRenderProps>(() => ({
     isSelected: tagAria.isSelected,
     isDisabled: tagAria.isDisabled,
     isFocused: tagAria.isFocused,
     isFocusVisible: tagAria.isFocusVisible,
     isPressed: tagAria.isPressed,
-    allowsRemoving: tagAria.allowsRemoving,
+    allowsRemoving: allowsRemoving(),
     selectionMode: state?.selectionMode() ?? "none",
     removeButtonProps: normalizedRemoveButtonProps(),
   }));
@@ -457,14 +460,14 @@ export function Tag(props: TagProps): JSX.Element {
   const domProps = createMemo(() => filterDOMProps(rest, { global: true }));
 
   return (
-    <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      <TagContext.Provider
+    <SelectionIndicatorContext value={selectionIndicatorContext()}>
+      <TagContext
         value={{
           get removeButtonProps() {
             return normalizedRemoveButtonProps();
           },
           get allowsRemoving() {
-            return tagAria.allowsRemoving;
+            return allowsRemoving();
           },
         }}
       >
@@ -479,14 +482,14 @@ export function Tag(props: TagProps): JSX.Element {
           data-focused={dataAttr(tagAria.isFocused)}
           data-focus-visible={dataAttr(tagAria.isFocusVisible)}
           data-pressed={dataAttr(tagAria.isPressed)}
-          data-allows-removing={dataAttr(tagAria.allowsRemoving)}
+          data-allows-removing={dataAttr(allowsRemoving())}
         >
           <div {...tagAria.gridCellProps} style={{ display: "contents" }}>
-            {renderProps.renderChildren()}
+            {renderProps.renderChildrenStable()}
           </div>
         </div>
-      </TagContext.Provider>
-    </SelectionIndicatorContext.Provider>
+      </TagContext>
+    </SelectionIndicatorContext>
   );
 }
 
@@ -517,7 +520,7 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
   const ariaLabel: string = typeof rawAriaLabel === "string" ? rawAriaLabel : "Remove";
   const ariaLabelledBy: string | undefined =
     typeof rawAriaLabelledBy === "string" ? rawAriaLabelledBy : undefined;
-  const tabIndex: number | undefined = typeof rawTabIndex === "number" ? rawTabIndex : undefined;
+  const tabindex: number | undefined = typeof rawTabIndex === "number" ? rawTabIndex : undefined;
 
   const handleClick: JSX.EventHandler<HTMLButtonElement, MouseEvent> = (event) => {
     event.stopPropagation();
@@ -538,7 +541,7 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
       id={buttonId}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
-      tabIndex={tabIndex}
+      tabindex={tabindex}
       disabled={getIsDisabled()}
       data-allows-removing={dataAttr(tagContext?.allowsRemoving ?? false)}
       onPointerDown={stopRowPress}

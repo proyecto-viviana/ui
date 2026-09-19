@@ -20,7 +20,8 @@
  * This is a 1:1 port of @react-aria/textfield's useTextField hook.
  */
 
-import { type JSX, createSignal } from "solid-js";
+import { createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFormValidationState, type ValidityState } from "@proyecto-viviana/solid-stately";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
 import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
@@ -116,7 +117,7 @@ export function createTextField<
 >(props: MaybeAccessor<AriaTextFieldProps>, ref?: (el: T) => void): TextFieldAria<T> {
   const getProps = () => access(props);
   let lastInputValue: string | undefined;
-  const [inputEl, setInputEl] = createSignal<T | undefined>();
+  const [inputEl, setInputEl] = createSignal<T | undefined>(undefined, { ownedWrite: true });
 
   const setInputRef = (el: T | undefined) => {
     setInputEl(() => el);

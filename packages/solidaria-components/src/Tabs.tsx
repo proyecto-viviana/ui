@@ -19,20 +19,9 @@
  * Port of react-aria-components/src/Tabs.tsx
  */
 
-import {
-  type Accessor,
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Show,
-  onCleanup,
-  sharedConfig,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, useContext, For, Show, onCleanup, sharedConfig, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createTabList,
   createTab,
@@ -57,6 +46,9 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  ariaTrueFalse,
+  attrTrue,
 } from "./utils";
 import {
   SelectionIndicator,
@@ -64,6 +56,7 @@ import {
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
 import { SharedElementTransition } from "./SharedElementTransition";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export {
   SelectionIndicator,
@@ -264,8 +257,12 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     ],
   );
 
-  const [tabListItems, setTabListItems] = createSignal<T[] | undefined>(undefined);
-  const [registeredTabs, setRegisteredTabs] = createSignal<RegisteredTab[]>([]);
+  const [tabListItems, setTabListItems] = createSignal<T[] | undefined>(undefined, {
+    ownedWrite: true,
+  });
+  const [registeredTabs, setRegisteredTabs] = createSignal<RegisteredTab[]>([], {
+    ownedWrite: true,
+  });
   const effectiveItems = createMemo<T[]>(() => {
     if (stateProps.items) return stateProps.items;
     if (tabListItems()) return tabListItems() ?? [];
@@ -361,20 +358,20 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
   };
 
   return (
-    <TabsContext.Provider value={contextValue as TabsContextValue<unknown>}>
-      <TabsStateContext.Provider value={state}>
+    <TabsContext value={contextValue as TabsContextValue<unknown>}>
+      <TabsStateContext value={state}>
         <div
           {...domProps()}
           ref={(element) => assignRef(local.ref, element)}
           class={renderProps.class()}
           style={renderProps.style()}
           data-orientation={state.orientation()}
-          data-disabled={state.isDisabled() || undefined}
+          data-disabled={dataAttr(state.isDisabled())}
         >
           {props.children as JSX.Element}
         </div>
-      </TabsStateContext.Provider>
-    </TabsContext.Provider>
+      </TabsStateContext>
+    </TabsContext>
   );
 }
 
@@ -397,9 +394,12 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
   const state = context.state as TabListState<T>;
   const items = context.items as Accessor<T[]>;
 
-  createEffect(() => {
-    context.setTabListItems(collectionProps.items as unknown[] | undefined);
-  });
+  createEffect(
+    () => collectionProps.items as unknown[] | undefined,
+    (items) => {
+      context.setTabListItems(items);
+    },
+  );
 
   onCleanup(() => {
     context.setTabListItems(undefined);
@@ -465,7 +465,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
       onFocusIn={handleFocus}
       onFocusOut={handleBlur}
       data-orientation={state.orientation()}
-      data-disabled={state.isDisabled() || undefined}
+      data-disabled={dataAttr(state.isDisabled())}
     >
       {renderChildren()}
     </div>
@@ -491,13 +491,16 @@ export function Tab(props: TabProps): JSX.Element {
     return typeof props.children === "string" ? props.children : undefined;
   };
 
-  createEffect(() => {
-    tabsContext?.registerTab({
+  createEffect(
+    () => ({
       id: local.id,
       textValue: textValue(),
       isDisabled: ariaProps.isDisabled,
-    });
-  });
+    }),
+    (tab) => {
+      tabsContext?.registerTab(tab);
+    },
+  );
 
   onCleanup(() => {
     tabsContext?.unregisterTab(local.id);
@@ -557,12 +560,12 @@ export function Tab(props: TabProps): JSX.Element {
       ref={setTabRef}
       id={tabAria.tabProps.id}
       role={tabAria.tabProps.role}
-      aria-selected={tabAria.isSelected()}
-      aria-disabled={tabAria.isDisabled() || undefined}
+      aria-selected={ariaTrueFalse(tabAria.isSelected())}
+      aria-disabled={attrTrue(tabAria.isDisabled())}
       aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
       aria-label={tabAria.tabProps["aria-label"]}
       aria-labelledby={tabAria.tabProps["aria-labelledby"]}
-      tabIndex={tabAria.tabProps.tabIndex}
+      tabindex={tabAria.tabProps.tabIndex}
       class={renderProps.class()}
       style={renderProps.style()}
       onKeyDown={tabAria.tabProps.onKeyDown}
@@ -573,16 +576,16 @@ export function Tab(props: TabProps): JSX.Element {
       onFocusIn={tabAria.tabProps.onFocusIn}
       onBlur={tabAria.tabProps.onBlur}
       {...hoverProps}
-      data-selected={tabAria.isSelected() || undefined}
-      data-focused={tabAria.isFocused() || undefined}
-      data-focus-visible={tabAria.isFocusVisible() || undefined}
-      data-pressed={tabAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={tabAria.isDisabled() || undefined}
+      data-selected={dataAttr(tabAria.isSelected())}
+      data-focused={dataAttr(tabAria.isFocused())}
+      data-focus-visible={dataAttr(tabAria.isFocusVisible())}
+      data-pressed={dataAttr(tabAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(tabAria.isDisabled())}
     >
-      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext()}>
         {renderProps.renderChildrenStable()}
-      </SelectionIndicatorContext.Provider>
+      </SelectionIndicatorContext>
     </div>
   );
 }
@@ -600,7 +603,7 @@ export function TabPanels(props: TabPanelsProps): JSX.Element {
   let previousSelectedKey: Key | null | undefined = undefined;
   const [panelSize, setPanelSize] = createSignal<{ width?: string; height?: string }>({});
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const selectedKey = state?.selectedKey() ?? null;
     if (!ref) {
       previousSelectedKey = selectedKey;
@@ -712,18 +715,18 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
         aria-labelledby={tabPanelProps["aria-labelledby"]}
         aria-label={tabPanelProps["aria-label"]}
         aria-describedby={tabPanelProps["aria-describedby"]}
-        tabIndex={tabPanelProps.tabIndex}
+        tabindex={tabPanelProps.tabIndex}
         class={renderProps.class()}
         style={renderProps.style()}
         onFocus={focusProps.onFocus}
         onBlur={focusProps.onBlur}
-        data-selected={isSelected() || undefined}
-        data-focused={isFocused() || undefined}
-        data-focus-visible={isFocusVisible() || undefined}
+        data-selected={dataAttr(isSelected())}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
         inert={isInert() ? true : undefined}
-        data-inert={isInert() || undefined}
-        data-entering={isEntering() || undefined}
-        data-exiting={isExiting() || undefined}
+        data-inert={dataAttr(isInert())}
+        data-entering={dataAttr(isEntering())}
+        data-exiting={dataAttr(isExiting())}
         hidden={
           ariaProps.id !== undefined && !isSelected() && !local.shouldForceMount ? true : undefined
         }

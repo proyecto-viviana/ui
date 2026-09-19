@@ -18,15 +18,9 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx (`useScrollView`)
  */
 
-import {
-  createEffect,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-  sharedConfig,
-  type Accessor,
-  type JSX,
-} from "solid-js";
+import { createEffect, createRenderEffect, createSignal, flush, sharedConfig } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   addEvent,
   getEventTarget,
@@ -72,7 +66,7 @@ export interface ScrollViewAria {
  * collection via the consumer (S2 `overflow: auto`).
  */
 export function createScrollView(options: CreateScrollViewOptions): ScrollViewAria {
-  const [isScrolling, setIsScrolling] = createSignal(false);
+  const [isScrolling, setIsScrolling] = createSignal(false, { ownedWrite: true });
   const locale = useLocale();
   const allowsWindowScrolling = () => options.allowsWindowScrolling?.() ?? true;
 
@@ -97,105 +91,116 @@ export function createScrollView(options: CreateScrollViewOptions): ScrollViewAr
     options.onViewportOffsetChange?.(next);
   };
 
-  createRenderEffect(() => {
-    const element = options.getScrollElement();
-    if (!element) return;
-    // RAC `useScrollView` `ScrollView.tsx:305-315` initializes viewport size
-    // in a layout effect so the first visible-rect emit has a real size.
-    //
-    // React runs that layout effect after the hydrated commit; Solid runs
-    // render effects while the hydration walk is still live (`sharedConfig.context`
-    // set, `done` unset — dom-expressions' `isHydrating()`). The server measured
-    // a zero viewport and emitted only the overscan window, so a real size here
-    // widens the visible range mid-walk and the rows mounted for it look for
-    // server nodes that were never rendered: Solid throws "Hydration Mismatch"
-    // and abandons the whole tree. During the walk, leave the first emit to the
-    // effect below — Solid clears the hydrate context before running user
-    // effects (`runUserEffects`), so that emit re-renders instead of hydrating.
-    if (sharedConfig.context && !sharedConfig.done) return;
-    updateSize(element);
-    updateWindowViewport();
-    updateViewportOffset(element);
-  });
-
-  createEffect(() => {
-    const element = options.getScrollElement();
-    if (!element) return;
-
-    updateSize(element);
-    updateWindowViewport();
-    updateViewportOffset(element);
-
-    const handleResize = () => {
-      const current = options.getScrollElement();
-      if (!current) return;
-      updateSize(current);
+  createRenderEffect(
+    () => options.getScrollElement(),
+    (element) => {
+      if (!element) return;
+      // RAC `useScrollView` `ScrollView.tsx:305-315` initializes viewport size
+      // in a layout effect so the first visible-rect emit has a real size.
+      //
+      // React runs that layout effect after the hydrated commit; Solid runs
+      // render effects while the hydration walk is still live (`sharedConfig.context`
+      // set, `done` unset — dom-expressions' `isHydrating()`). The server measured
+      // a zero viewport and emitted only the overscan window, so a real size here
+      // widens the visible range mid-walk and the rows mounted for it look for
+      // server nodes that were never rendered: Solid throws "Hydration Mismatch"
+      // and abandons the whole tree. During the walk, leave the first emit to the
+      // effect below — Solid clears the hydrate context before running user
+      // effects (`runUserEffects`), so that emit re-renders instead of hydrating.
+      if (sharedConfig.context && !sharedConfig.done) return;
+      updateSize(element);
       updateWindowViewport();
-      updateViewportOffset(current);
-    };
-    window.addEventListener("resize", handleResize);
+      updateViewportOffset(element);
+    },
+  );
 
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => handleResize()) : null;
-    resizeObserver?.observe(element);
+  createEffect(
+    () => options.getScrollElement() ?? null,
+    (element) => {
+      if (!element) return;
 
-    // RAC `useScrollView` `ScrollView.tsx:221-229`: capturing scroll on
-    // getPropagationTargets so ancestor/page scroll updates viewportOffset.
-    const handleDocumentScroll = (e: Event) => {
-      const current = options.getScrollElement();
-      if (!current) return;
-      const target = getEventTarget(e) as Node | null;
-      if (target != null && !nodeContains(target, current) && target !== current) {
-        return;
-      }
-      const isContainer = target === current;
-      if (!isContainer && !allowsWindowScrolling()) return;
+      updateSize(element);
+      updateWindowViewport();
+      updateViewportOffset(element);
 
-      if (!isScrolling()) {
-        setIsScrolling(true);
-        options.onScrollStart?.();
-      }
-      if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
-      // RAC `ScrollView.tsx:188-205`: 300ms after the last scroll.
-      scrollEndTimeout = setTimeout(() => {
-        scrollEndTimeout = undefined;
-        setIsScrolling(false);
-        options.onScrollEnd?.();
-      }, 300);
+      const handleResize = () => {
+        const current = options.getScrollElement();
+        if (!current) return;
+        updateSize(current);
+        updateWindowViewport();
+        updateViewportOffset(current);
+      };
+      window.addEventListener("resize", handleResize);
 
-      if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
-      scrollFrame = requestAnimationFrame(() => {
-        scrollFrame = undefined;
-        const live = options.getScrollElement();
-        if (!live) return;
-        if (isContainer) {
-          const direction = locale().direction;
-          const nextY = Math.max(0, live.scrollTop);
-          const nextX = Math.max(0, getScrollLeft(live, direction));
-          options.onScrollPositionChange?.({ x: nextX, y: nextY });
-        } else {
-          updateViewportOffset(live);
+      const resizeObserver =
+        typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => handleResize()) : null;
+      resizeObserver?.observe(element);
+
+      // RAC `useScrollView` `ScrollView.tsx:221-229`: capturing scroll on
+      // getPropagationTargets so ancestor/page scroll updates viewportOffset.
+      const handleDocumentScroll = (e: Event) => {
+        const current = options.getScrollElement();
+        if (!current) return;
+        const target = getEventTarget(e) as Node | null;
+        if (target != null && !nodeContains(target, current) && target !== current) {
+          return;
         }
-        updateSize(live);
-      });
-    };
+        const isContainer = target === current;
+        if (!isContainer && !allowsWindowScrolling()) return;
 
-    const ownerDocument = getOwnerDocument(element);
-    const cleanupScroll = addEvent(
-      getPropagationTargets(element, ownerDocument),
-      "scroll",
-      handleDocumentScroll,
-      true,
-    );
+        if (!isScrolling()) {
+          setIsScrolling(true);
+          options.onScrollStart?.();
+        }
+        if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
+        // RAC `ScrollView.tsx:188-205`: 300ms after the last scroll.
+        scrollEndTimeout = setTimeout(() => {
+          scrollEndTimeout = undefined;
+          setIsScrolling(false);
+          options.onScrollEnd?.();
+          // Timer callbacks can flush. Content `pointer-events` is a render of
+          // `isScrolling()`; without this, fake-timer tests still see "none".
+          try {
+            flush();
+          } catch {
+            // Ignore: flush is forbidden inside createEffect apply.
+          }
+        }, 300);
 
-    onCleanup(() => {
-      window.removeEventListener("resize", handleResize);
-      resizeObserver?.disconnect();
-      cleanupScroll();
-      if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
-      if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
-    });
-  });
+        if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
+        scrollFrame = requestAnimationFrame(() => {
+          scrollFrame = undefined;
+          const live = options.getScrollElement();
+          if (!live) return;
+          if (isContainer) {
+            const direction = locale().direction;
+            const nextY = Math.max(0, live.scrollTop);
+            const nextX = Math.max(0, getScrollLeft(live, direction));
+            options.onScrollPositionChange?.({ x: nextX, y: nextY });
+          } else {
+            updateViewportOffset(live);
+          }
+          updateSize(live);
+        });
+      };
+
+      const ownerDocument = getOwnerDocument(element);
+      const cleanupScroll = addEvent(
+        getPropagationTargets(element, ownerDocument),
+        "scroll",
+        handleDocumentScroll,
+        true,
+      );
+
+      return () => {
+        window.removeEventListener("resize", handleResize);
+        resizeObserver?.disconnect();
+        cleanupScroll();
+        if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
+        if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
+      };
+    },
+  );
 
   const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => ({
     // RAC `useScrollView` `contentProps` `ScrollView.tsx:400-403`.

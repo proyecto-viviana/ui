@@ -17,7 +17,8 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import { createEffect, createMemo, onCleanup, type JSX } from "solid-js";
+import { createEffect, createMemo, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { announce } from "../live-announcer";
 import { createField, type AriaLabelingProps } from "../label";
 import {
@@ -85,12 +86,16 @@ function bindNativeEvent(
   type: string,
   handler: (e: Event) => void,
 ): void {
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = getEl();
     if (!el) return;
     el.addEventListener(type, handler);
-    onCleanup(() => el.removeEventListener(type, handler));
-  });
+    _s2Cleanups.push(() => el.removeEventListener(type, handler));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }
 
 /**
@@ -167,7 +172,7 @@ export function createTokenField<T extends TokenFieldValue = TokenFieldValue>(
 
   // If a prop update occurs during composition that doesn't match the expected value,
   // end composition and re-render the controlled value.
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (state.isComposing() && value() !== nextValue) {
       stopComposition();
     }
@@ -175,7 +180,7 @@ export function createTokenField<T extends TokenFieldValue = TokenFieldValue>(
   });
 
   let caretPosition: Position | null = null;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const el = getRef();
     const caret = value().caretPosition;
     if (el && caret && !state.isComposing() && value().caretPosition !== caretPosition) {
@@ -790,12 +795,16 @@ function bindSelectionChange(getEl: () => Element | null, handler: () => void) {
 function createMutationTracker(getEl: () => Element | null) {
   let stopMutations: (() => void) | null = null;
 
-  createEffect(() => {
-    onCleanup(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
+    _s2Cleanups.push(() => {
       stopMutations?.();
       stopMutations = null;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     start() {

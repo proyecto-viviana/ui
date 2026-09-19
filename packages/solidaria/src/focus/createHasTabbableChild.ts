@@ -12,7 +12,8 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/focus/useHasTabbableChild.ts
 
-import { createEffect, createSignal, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { getFocusableTreeWalker } from "../utils/dom";
 
 interface HasTabbableChildOptions {
@@ -31,7 +32,9 @@ export function createHasTabbableChild(
 ): Accessor<boolean> {
   const [hasTabbableChild, setHasTabbableChild] = createSignal(false);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = ref();
     if (!element || options?.isDisabled?.()) {
       setHasTabbableChild(false);
@@ -62,11 +65,13 @@ export function createHasTabbableChild(
       attributes: true,
       attributeFilter: ["tabindex", "disabled", "inert", "data-inert"],
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       isCurrent = false;
       observer?.disconnect();
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return () => (options?.isDisabled?.() ? false : hasTabbableChild());
 }

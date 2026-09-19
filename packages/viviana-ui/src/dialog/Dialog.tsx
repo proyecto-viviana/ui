@@ -26,7 +26,8 @@
 // Port of packages/@react-spectrum/s2/src/CustomDialog.tsx.
 // Port of packages/@react-spectrum/s2/src/Modal.tsx.
 
-import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
+import { Show, createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
   ButtonContext as HeadlessButtonContext,
@@ -69,6 +70,7 @@ import {
 } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, setColorScheme, style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type DialogSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "fullscreen";
 export type CustomDialogSize = "S" | "M" | "L" | "fullscreen" | "fullscreenTakeover";
@@ -664,19 +666,19 @@ interface SlotProvidersProps {
 
 function SlotProviders(props: SlotProvidersProps): JSX.Element {
   return (
-    <ImageContext.Provider value={props.image ?? null}>
-      <HeadingContext.Provider value={props.heading ?? null}>
-        <HeaderContext.Provider value={props.header ?? null}>
-          <ContentContext.Provider value={props.content ?? null}>
-            <FooterContext.Provider value={props.footer ?? null}>
-              <ButtonGroupContext.Provider value={props.buttonGroup ?? null}>
+    <ImageContext value={props.image ?? null}>
+      <HeadingContext value={props.heading ?? null}>
+        <HeaderContext value={props.header ?? null}>
+          <ContentContext value={props.content ?? null}>
+            <FooterContext value={props.footer ?? null}>
+              <ButtonGroupContext value={props.buttonGroup ?? null}>
                 {props.children}
-              </ButtonGroupContext.Provider>
-            </FooterContext.Provider>
-          </ContentContext.Provider>
-        </HeaderContext.Provider>
-      </HeadingContext.Provider>
-    </ImageContext.Provider>
+              </ButtonGroupContext>
+            </FooterContext>
+          </ContentContext>
+        </HeaderContext>
+      </HeadingContext>
+    </ImageContext>
   );
 }
 
@@ -892,8 +894,8 @@ export function Dialog(props: DialogProps): JSX.Element {
             renderDialogChildren(local.children, { close: handleDismiss });
 
           return (
-            <DialogContext.Provider value={{ close: handleDismiss }}>
-              <HeadlessButtonContext.Provider
+            <DialogContext value={{ close: handleDismiss }}>
+              <HeadlessButtonContext
                 value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
               >
                 <Show
@@ -930,8 +932,8 @@ export function Dialog(props: DialogProps): JSX.Element {
                     </DialogFooterSlots>
                   </div>
                 </Show>
-              </HeadlessButtonContext.Provider>
-            </DialogContext.Provider>
+              </HeadlessButtonContext>
+            </DialogContext>
           );
         }}
       />
@@ -980,9 +982,9 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
       defaultOpen={props.defaultOpen}
       onOpenChange={props.onOpenChange}
     >
-      <DialogTriggerOptionsContext.Provider value={options()}>
+      <DialogTriggerOptionsContext value={options()}>
         <DialogTriggerChildren {...props} />
-      </DialogTriggerOptionsContext.Provider>
+      </DialogTriggerOptionsContext>
     </HeadlessDialogTrigger>
   );
 }
@@ -990,9 +992,9 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
 export function DialogContainer(props: DialogContainerProps): JSX.Element {
   return (
     <Show when={props.children}>
-      <DialogContainerContext.Provider value={{ dismiss: props.onDismiss }}>
+      <DialogContainerContext value={{ dismiss: props.onDismiss }}>
         {props.children}
-      </DialogContainerContext.Provider>
+      </DialogContainerContext>
     </Show>
   );
 }
@@ -1094,8 +1096,8 @@ export function FullscreenDialog(props: FullscreenDialogProps): JSX.Element {
             renderDialogChildren(local.children, { close: handleDismiss });
 
           return (
-            <DialogContext.Provider value={{ close: handleDismiss }}>
-              <HeadlessButtonContext.Provider
+            <DialogContext value={{ close: handleDismiss }}>
+              <HeadlessButtonContext
                 value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
               >
                 <div class={fullscreenDialogHeader}>
@@ -1105,8 +1107,8 @@ export function FullscreenDialog(props: FullscreenDialogProps): JSX.Element {
                 <div class={fullscreenDialogContent}>
                   <DialogContentSlots>{renderedChildren()}</DialogContentSlots>
                 </div>
-              </HeadlessButtonContext.Provider>
-            </DialogContext.Provider>
+              </HeadlessButtonContext>
+            </DialogContext>
           );
         }}
       />
@@ -1164,13 +1166,13 @@ export function CustomDialog(props: CustomDialogProps): JSX.Element {
             renderDialogChildren(local.children, { close: handleDismiss });
 
           return (
-            <DialogContext.Provider value={{ close: handleDismiss }}>
-              <HeadlessButtonContext.Provider
+            <DialogContext value={{ close: handleDismiss }}>
+              <HeadlessButtonContext
                 value={{ slots: { default: {}, close: { onPress: () => handleDismiss() } } }}
               >
                 <DialogTitleSlots>{renderedChildren()}</DialogTitleSlots>
-              </HeadlessButtonContext.Provider>
-            </DialogContext.Provider>
+              </HeadlessButtonContext>
+            </DialogContext>
           );
         }}
       />

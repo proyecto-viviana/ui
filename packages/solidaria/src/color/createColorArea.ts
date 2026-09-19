@@ -20,7 +20,9 @@
  * Ported from packages/react-aria/src/color/useColorArea.ts.
  */
 
-import { createMemo, createSignal, onCleanup, type Accessor } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { Color, ColorAreaState, ColorChannel } from "@proyecto-viviana/solid-stately";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
@@ -316,7 +318,7 @@ export function createColorArea(
     }
   };
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     cleanupDragListeners?.();
   });
 

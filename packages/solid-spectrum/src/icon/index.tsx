@@ -1,5 +1,6 @@
-import type { Component, JSX } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Dynamic } from "@solidjs/web";
 import { Icon as HeadlessIcon, type IconRenderProps } from "@proyecto-viviana/solidaria-components";
 import type { PressEvent } from "@proyecto-viviana/solidaria";
 export { IconContext, IllustrationContext, createIcon, createIllustration } from "./spectrum-icon";

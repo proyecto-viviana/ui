@@ -17,7 +17,7 @@
  * Based on @react-aria/interactions useContextMenu.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createLongPress } from "./createLongPress";
 import { isIOS, isMac, mergeProps } from "../utils";
 

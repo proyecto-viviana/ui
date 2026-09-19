@@ -14,19 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Tabs.tsx.
 
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  For,
-  onCleanup,
-  Show,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, createUniqueId, For, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
   createFocusRing,
@@ -49,6 +38,7 @@ import {
   type TabRenderProps,
   type TabsProps as HeadlessTabsProps,
   type TabsRenderProps,
+  dataAttr,
 } from "@proyecto-viviana/solidaria-components";
 import type {
   CollectionNode,
@@ -74,6 +64,7 @@ import {
 import { TextContext } from "../text";
 import { NotificationBadgeContext } from "../notificationbadge";
 import { TabsPicker, type TabsPickerItem } from "./TabsPicker";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TabsDensity = "compact" | "regular";
 export type TabsLabelBehavior = "show" | "hide";
@@ -847,7 +838,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
   const labelBehavior = () => local.labelBehavior ?? "show";
   const variant = () => local.variant ?? "line";
   const orientation = () => headlessProps.orientation ?? "horizontal";
-  const [showTabs, setShowTabsSignal] = createSignal(true);
+  const [showTabs, setShowTabsSignal] = createSignal(true, { ownedWrite: true });
   const menuId = createUniqueId();
   const menuButtonId = `${menuId}-button`;
   const menuValueId = `${menuId}-value`;
@@ -910,14 +901,17 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
       .join(" ");
 
   requireTabsLabel(labelProps);
-  createEffect(() => {
-    if (orientation() === "vertical" || variant() === "pill" || variant() === "terminal") {
-      setShowTabsSignal(true);
-    }
-  });
+  createEffect(
+    () => orientation() === "vertical" || variant() === "pill" || variant() === "terminal",
+    (forceShow) => {
+      if (forceShow) {
+        setShowTabsSignal(true);
+      }
+    },
+  );
 
   return (
-    <InternalTabsContext.Provider value={internalContext}>
+    <InternalTabsContext value={internalContext}>
       <HeadlessTabs
         {...headlessProps}
         ref={(element) => assignRef(element)}
@@ -933,7 +927,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
         <style>{tabsOverflowGateStyles(menuId)}</style>
         {local.children}
       </HeadlessTabs>
-    </InternalTabsContext.Provider>
+    </InternalTabsContext>
   );
 }
 
@@ -1105,31 +1099,33 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
     window.requestAnimationFrame(updateOverflow);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     context.orientation;
     context.density;
     context.labelBehavior;
     queueOverflowUpdate();
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     context.showTabs();
     queueOverflowUpdate();
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const items = collectionItems();
     if (items.length > 0) {
       setCachedItems(items);
     }
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     measuringItems();
     queueOverflowUpdate();
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const wrapper = wrapperRef();
     queueOverflowUpdate();
     if (!wrapper || typeof ResizeObserver === "undefined") {
@@ -1146,11 +1142,13 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
       observer.observe(list);
     }
     window.addEventListener("resize", queueOverflowUpdate);
-    onCleanup(() => observer.disconnect());
-    onCleanup(() => window.removeEventListener("resize", queueOverflowUpdate));
-  });
+    _s2Cleanups.push(() => observer.disconnect());
+    _s2Cleanups.push(() => window.removeEventListener("resize", queueOverflowUpdate));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const fonts = typeof document === "undefined" ? undefined : document.fonts;
     void fonts?.ready.then(queueOverflowUpdate);
   });
@@ -1368,13 +1366,13 @@ export function Tab(props: TabProps): JSX.Element {
             {">"}
           </span>
         </Show>
-        <IconContext.Provider value={iconContextValue}>
-          <TextContext.Provider value={textContextValue}>
-            <NotificationBadgeContext.Provider value={badgeContextValue}>
+        <IconContext value={iconContextValue}>
+          <TextContext value={textContextValue}>
+            <NotificationBadgeContext value={badgeContextValue}>
               <ResolvedTabContent />
-            </NotificationBadgeContext.Provider>
-          </TextContext.Provider>
-        </IconContext.Provider>
+            </NotificationBadgeContext>
+          </TextContext>
+        </IconContext>
       </>
     );
   }
@@ -1536,18 +1534,18 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
         }
         aria-label={hasTabPanelSemantics() ? tabPanelProps["aria-label"] : undefined}
         aria-describedby={hasTabPanelSemantics() ? tabPanelProps["aria-describedby"] : undefined}
-        tabIndex={context.showTabs() && isInert() ? undefined : tabPanelProps.tabIndex}
+        tabindex={context.showTabs() && isInert() ? undefined : tabPanelProps.tabIndex}
         slot={local.slot ?? undefined}
         class={className(activeRenderProps())}
         style={local.UNSAFE_style}
         onFocus={focusProps.onFocus}
         onBlur={focusProps.onBlur}
-        data-focused={isFocused() || undefined}
-        data-focus-visible={isFocusVisible() || undefined}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
         inert={context.showTabs() && isInert() ? true : undefined}
-        data-inert={context.showTabs() && isInert() ? true : undefined}
-        data-entering={context.showTabs() && isEntering() ? true : undefined}
-        data-exiting={context.showTabs() && isExiting() ? true : undefined}
+        data-inert={dataAttr(context.showTabs() && isInert())}
+        data-entering={dataAttr(context.showTabs() && isEntering())}
+        data-exiting={dataAttr(context.showTabs() && isExiting())}
         hidden={
           context.showTabs() &&
           ariaProps.id !== undefined &&

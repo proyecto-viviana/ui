@@ -21,7 +21,7 @@
  * - packages/react-aria/src/dnd/useDrop.ts
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   DragItem,
   DragStartEvent,

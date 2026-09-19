@@ -232,7 +232,7 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
     const ref = vi.fn();
 
     render(() => (
-      <SelectBoxGroupContext.Provider
+      <SelectBoxGroupContext
         value={{
           "aria-label": "Context plans",
           orientation: "horizontal",
@@ -254,7 +254,7 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
             </SelectBox>
           )}
         </SelectBoxGroup>
-      </SelectBoxGroupContext.Provider>
+      </SelectBoxGroupContext>
     ));
 
     const listbox = screen.getByRole("listbox", { name: "Context plans" });

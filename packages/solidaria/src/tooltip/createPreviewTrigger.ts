@@ -17,7 +17,9 @@
  * A preview trigger displays a popover on hover, focus, or long press.
  */
 
-import { createEffect, onCleanup, type JSX } from "solid-js";
+import { focusWithoutScrolling, getActiveElement, getFocusableTreeWalker, getOwnerDocument, mergeProps, nodeContains, onOwnedCleanup } from "../utils";
+import { createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   type TooltipTriggerProps,
   type TooltipTriggerState,
@@ -30,14 +32,6 @@ import {
   getInteractionModality,
 } from "../interactions/createInteractionModality";
 import { createId } from "../ssr";
-import {
-  focusWithoutScrolling,
-  getActiveElement,
-  getFocusableTreeWalker,
-  getOwnerDocument,
-  mergeProps,
-  nodeContains,
-} from "../utils";
 import { createStringFormatter } from "../i18n";
 import { createSafeArea } from "./createSafeArea";
 import { previewTriggerIntlStrings } from "./intl";
@@ -84,7 +78,7 @@ export function createPreviewTrigger(
   const stopFocusVisible = createFocusVisibleListener((visible) => {
     isFocusVisible = visible;
   });
-  onCleanup(stopFocusVisible);
+  onOwnedCleanup(stopFocusVisible);
 
   const keepOpen = () => state.open(true);
 
@@ -118,14 +112,16 @@ export function createPreviewTrigger(
     dismiss();
   };
 
-  createEffect(() => {
-    const popover = props.popoverRef();
-    if (!state.isOpen() || !popover || !shouldFocusOnOpen) {
-      return;
-    }
-    shouldFocusOnOpen = false;
-    focusWithoutScrolling(popover as HTMLElement);
-  });
+  createEffect(
+    () => ({ open: state.isOpen(), popover: props.popoverRef() }),
+    ({ open, popover }) => {
+      if (!open || !popover || !shouldFocusOnOpen) {
+        return;
+      }
+      shouldFocusOnOpen = false;
+      focusWithoutScrolling(popover as HTMLElement);
+    },
+  );
 
   const onHoverStart = () => {
     if (getInteractionModality() === "pointer") {
@@ -160,7 +156,9 @@ export function createPreviewTrigger(
     }
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const trigger = props.triggerRef();
     if (!trigger) return;
     const onRestore = (event: Event) => {
@@ -169,8 +167,10 @@ export function createPreviewTrigger(
       trigger.focus();
     };
     trigger.addEventListener("react-aria-focus-scope-restore", onRestore);
-    onCleanup(() => trigger.removeEventListener("react-aria-focus-scope-restore", onRestore));
-  });
+    _s2Cleanups.push(() => trigger.removeEventListener("react-aria-focus-scope-restore", onRestore));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const onTriggerKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Tab" && !e.shiftKey && state.isOpen() && props.popoverRef()) {
@@ -223,6 +223,11 @@ export function createPreviewTrigger(
     onLongPress() {
       shouldFocusOnOpen = true;
       state.open(true);
+      const popover = props.popoverRef();
+      if (popover) {
+        shouldFocusOnOpen = false;
+        focusWithoutScrolling(popover as HTMLElement);
+      }
     },
   });
 
@@ -262,7 +267,7 @@ export function createPreviewTrigger(
       ...triggerProps,
       "aria-haspopup": "dialog",
       get "aria-expanded"() {
-        return state.isOpen();
+        return state.isOpen() ? "true" : "false";
       },
       get "aria-controls"() {
         return state.isOpen() ? popoverId : undefined;

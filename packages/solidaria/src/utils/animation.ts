@@ -41,14 +41,8 @@
  *   the `CSSTransition` reference is only touched on the client.
  */
 
-import {
-  createComputed,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  type Accessor,
-} from "solid-js";
+import { createEffect, createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
 
 /** A reactive accessor for the animated element (null until mounted). */
 export type ElementAccessor = () => Element | null | undefined;
@@ -75,62 +69,70 @@ function createAnimation(
   onEnd: () => void,
   deferNoAnimation = false,
 ): void {
-  createEffect(() => {
-    if (!isActive()) return;
-    const element = ref();
-    if (!element) return;
+  // Split createEffect so `onEnd` (signal writes) runs in apply. A tracked
+  // effect is an owned scope and rejects those writes even with ownedWrite.
+  // Compute returns the element identity so apply does not re-run (and cancel
+  // an in-flight `finished` waiter) unless the node or active gate changes.
+  createEffect(
+    () => {
+      if (!isActive()) return null;
+      return ref() ?? null;
+    },
+    (element) => {
+      if (!element) return;
 
-    if (!("getAnimations" in element)) {
-      // JSDOM and other environments without the Web Animations API.
-      onEnd();
-      return;
-    }
-
-    // `settle` mirrors React's post-commit `useLayoutEffect` timing (see the
-    // `deferNoAnimation` note above): a Solid effect runs synchronously inside
-    // the triggering input handler, and even the Web-Animations `finished`
-    // promise resolves in a microtask that drains *before* the gesture's later
-    // events (e.g. an Escape's `keyup`). Deferring the settle to the next frame
-    // pushes the overlay teardown past the rest of the current event dispatch,
-    // reproducing React's ordering (teardown after `keyup`, not between
-    // `keydown` and `keyup`). A real, non-trivial exit transition already
-    // finishes long after the gesture, so the extra frame is imperceptible; it
-    // only matters for the instant/near-zero-duration exits that would
-    // otherwise tear the focused overlay out mid-gesture. Unit environments
-    // (no `requestAnimationFrame`, or the no-defer callers) settle synchronously.
-    //
-    // A single owner-bound `onCleanup` tracks both the pending frame and a
-    // `canceled` flag — the flag guards the promise path, whose `.then` runs
-    // outside the reactive owner where `onCleanup` could not register.
-    let canceled = false;
-    let frame: number | undefined;
-    const settle = () => {
-      if (canceled) return;
-      if (deferNoAnimation && typeof requestAnimationFrame === "function") {
-        frame = requestAnimationFrame(() => {
-          if (!canceled) onEnd();
-        });
-      } else {
+      if (!("getAnimations" in element)) {
+        // JSDOM and other environments without the Web Animations API.
         onEnd();
+        return;
       }
-    };
 
-    const animations = element.getAnimations();
-    if (animations.length === 0) {
-      settle();
-    } else {
-      Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+      // `settle` mirrors React's post-commit `useLayoutEffect` timing (see the
+      // `deferNoAnimation` note above): a Solid effect runs synchronously inside
+      // the triggering input handler, and even the Web-Animations `finished`
+      // promise resolves in a microtask that drains *before* the gesture's later
+      // events (e.g. an Escape's `keyup`). Deferring the settle to the next frame
+      // pushes the overlay teardown past the rest of the current event dispatch,
+      // reproducing React's ordering (teardown after `keyup`, not between
+      // `keydown` and `keyup`). A real, non-trivial exit transition already
+      // finishes long after the gesture, so the extra frame is imperceptible; it
+      // only matters for the instant/near-zero-duration exits that would
+      // otherwise tear the focused overlay out mid-gesture. Unit environments
+      // (no `requestAnimationFrame`, or the no-defer callers) settle synchronously.
+      //
+      // `canceled` guards the promise path, whose `.then` runs outside the
+      // reactive owner. Apply's returned cleanup both sets the flag and
+      // cancels a pending frame.
+      let canceled = false;
+      let frame: number | undefined;
+      const settle = () => {
+        if (canceled) return;
+        if (deferNoAnimation && typeof requestAnimationFrame === "function") {
+          frame = requestAnimationFrame(() => {
+            if (!canceled) onEnd();
+          });
+        } else {
+          onEnd();
+        }
+      };
+
+      const animations = element.getAnimations();
+      if (animations.length === 0) {
         settle();
-      });
-    }
-
-    onCleanup(() => {
-      canceled = true;
-      if (frame !== undefined && typeof cancelAnimationFrame === "function") {
-        cancelAnimationFrame(frame);
+      } else {
+        Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+          settle();
+        });
       }
-    });
-  });
+
+      return () => {
+        canceled = true;
+        if (frame !== undefined && typeof cancelAnimationFrame === "function") {
+          cancelAnimationFrame(frame);
+        }
+      };
+    },
+  );
 }
 
 /**
@@ -151,22 +153,26 @@ export function createEnterAnimation(
   ref: ElementAccessor,
   isReady: Accessor<boolean> = () => true,
 ): Accessor<boolean> {
-  const [isEntering, setIsEntering] = createSignal(true);
+  const [isEntering, setIsEntering] = createSignal(true, { ownedWrite: true });
   const isAnimationReady = () => isEntering() && isReady();
 
   // Cancel any transitions triggered before the ready state (case 2 above), so
   // only the intended enter transition — the one that starts when the initial
   // styles are removed — runs.
-  createEffect(() => {
-    if (!isAnimationReady()) return;
-    const element = ref();
-    if (!element || !("getAnimations" in element)) return;
-    for (const animation of element.getAnimations()) {
-      if (animation instanceof CSSTransition) {
-        animation.cancel();
+  createEffect(
+    () => {
+      if (!isAnimationReady()) return null;
+      return ref() ?? null;
+    },
+    (element) => {
+      if (!element || !("getAnimations" in element)) return;
+      for (const animation of element.getAnimations()) {
+        if (animation instanceof CSSTransition) {
+          animation.cancel();
+        }
       }
-    }
-  });
+    },
+  );
 
   createAnimation(ref, isAnimationReady, () => setIsEntering(false));
 
@@ -207,26 +213,24 @@ export function createExitAnimation(
   // acknowledges the new value via `ackedFinish` carried in its own previous
   // result — a pure epoch/ack so the memo never mutates external state.
   type ExitState = "closed" | "open" | "exiting";
-  const [exitFinished, setExitFinished] = createSignal(0);
+  const [exitFinished, setExitFinished] = createSignal(0, { ownedWrite: true });
 
+  // Solid 2 createMemo no longer takes an initial value as the second argument
+  // (that slot is options). First compute receives `prev === undefined`.
   const exitState = createMemo<{ state: ExitState; ackedFinish: number }>(
-    (prev) => {
+    (prev = { state: "closed", ackedFinish: 0 }) => {
       const open = isOpen();
       const finish = exitFinished();
-      const compute = (): { state: ExitState; ackedFinish: number } => {
-        if (open) return { state: "open", ackedFinish: finish };
-        // Open element requested to close: begin exiting.
-        if (prev.state === "open") return { state: "exiting", ackedFinish: finish };
-        // Mid-exit: settle to closed only once the animation reports a new finish.
-        if (prev.state === "exiting") {
-          if (finish !== prev.ackedFinish) return { state: "closed", ackedFinish: finish };
-          return prev;
-        }
-        return { state: "closed", ackedFinish: finish };
-      };
-      return compute();
+      if (open) return { state: "open", ackedFinish: finish };
+      // Open element requested to close: begin exiting.
+      if (prev.state === "open") return { state: "exiting", ackedFinish: finish };
+      // Mid-exit: settle to closed only once the animation reports a new finish.
+      if (prev.state === "exiting") {
+        if (finish !== prev.ackedFinish) return { state: "closed", ackedFinish: finish };
+        return prev;
+      }
+      return { state: "closed", ackedFinish: finish };
     },
-    { state: isOpen() ? "open" : "closed", ackedFinish: 0 },
   );
 
   const isExiting = () => exitState().state === "exiting";
@@ -242,7 +246,7 @@ export function createExitAnimation(
   // triggering key's `keyup`). An eager reader forces the memo to track `isOpen`
   // continuously so `prev.state === "open"` holds when the close edge runs —
   // mirroring React, whose component re-renders and re-derives this every commit.
-  createComputed(() => void exitState());
+  createEffect(() => exitState(), () => {});
 
   createAnimation(
     ref,

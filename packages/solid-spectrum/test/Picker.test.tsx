@@ -1,10 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
-import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { createSignal } from "solid-js";
+import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library"; import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils"; import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { createSignal, flush } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { Picker, PickerItem } from "../src/picker";
@@ -183,6 +180,7 @@ describe("Picker (solid-spectrum)", () => {
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Accordion");
     expect(button).toHaveTextContent("Accordion");
     setLabel("Accordion group");
+    flush();
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Accordion group");
     expect(button).toHaveTextContent("Accordion group");
   });

@@ -13,11 +13,14 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Icon.tsx
 
 // Port of packages/@react-spectrum/s2/src/Icon.tsx.
-import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   createIsSkeleton,
   loadingStyle,
@@ -36,13 +39,10 @@ export interface IconContextValue {
 export const IconContext = createContext<IconContextValue>({});
 export const IllustrationContext = createContext<IconContextValue>({});
 
-export interface SpectrumIconProps extends JSX.SvgSVGAttributes<SVGSVGElement> {
-  slot?: string;
+export interface SpectrumIconProps
+  extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "aria-hidden"> {
   styles?: StyleString;
-  class?: string;
-  style?: JSX.CSSProperties | string;
-  "aria-label"?: string;
-  "aria-hidden"?: boolean | "false" | "true";
+  "aria-hidden"?: boolean | "false" | "true" | JSX.RemoveAttribute;
   UNSAFE_suppressDataSlot?: boolean;
 }
 
@@ -198,18 +198,20 @@ function createIconForBase(
 
     const ariaHidden = () => {
       if (local["aria-label"] || bare) {
-        return local["aria-hidden"] || undefined;
+        const value = local["aria-hidden"];
+        if (value === true || value === "true") return "true" as const;
+        if (value === false || value === "false") return "false" as const;
+        return undefined;
       }
 
-      return true;
+      return "true" as const;
     };
 
     const svg = (
       <Component
         {...rest}
         ref={mergeContextRefs((rest as { ref?: RefLike<SVGSVGElement> }).ref, skeletonRef)}
-        {...(bare ? {} : { focusable: false as const })}
-        role={bare ? undefined : "img"}
+        {...(bare ? {} : { focusable: "false" as const, role: "img" as const })}
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
@@ -256,17 +258,20 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
 
     const ariaHidden = () => {
       if (local["aria-label"]) {
-        return local["aria-hidden"] || undefined;
+        const value = local["aria-hidden"];
+        if (value === true || value === "true") return "true" as const;
+        if (value === false || value === "false") return "false" as const;
+        return undefined;
       }
 
-      return true;
+      return "true" as const;
     };
 
     const svg = (
       <Component
         {...rest}
         size={size()}
-        focusable={false}
+        focusable="false"
         role="img"
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}

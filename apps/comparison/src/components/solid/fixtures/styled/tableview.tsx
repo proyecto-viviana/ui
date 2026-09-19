@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -59,7 +59,7 @@ function SolidSpectrumTableViewDemo() {
   const visibleColumns = createMemo(() => tableViewVisibleColumns(demoProps()));
   const selectedKeyText = createMemo(() => serializeTableViewKeys(selectedKeys()));
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "tableview") {
         const nextProps = normalizeTableViewDemoProps({

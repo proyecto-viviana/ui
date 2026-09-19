@@ -20,7 +20,8 @@
  * either type to filter options or select from a list.
  */
 
-import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import { createMemo, createEffect, untrack } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
@@ -118,6 +119,8 @@ export interface ComboBoxState<T = unknown> {
   setSelectedKey(key: Key | null): void;
   /** The currently selected keys (multiple mode). */
   readonly selectedKeys: Accessor<Set<Key>>;
+  /** Replace the selected keys (multiple mode). */
+  setSelectedKeys(keys: Set<Key>): void;
   /** The currently selected items (multiple mode). */
   readonly selectedItems: Accessor<CollectionNode<T>[]>;
   /** Remove a selected key (multiple mode). */
@@ -730,6 +733,7 @@ export function createComboBoxState<T = unknown>(
     selectedItem,
     setSelectedKey,
     selectedKeys,
+    setSelectedKeys,
     selectedItems,
     removeSelectedKey,
     inputValue,

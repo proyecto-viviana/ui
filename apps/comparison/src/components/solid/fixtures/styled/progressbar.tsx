@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ProgressBar as SolidSpectrumProgressBar } from "@proyecto-viviana/solid-spectrum/ProgressBar";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -24,7 +24,7 @@ function SolidSpectrumProgressBarDemo() {
     progressBarDemoPropsFromWindow(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "progressbar") {
         setDemoProps(normalizeProgressBarDemoProps(event.detail.props ?? {}));

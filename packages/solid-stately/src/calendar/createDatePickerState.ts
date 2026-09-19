@@ -19,7 +19,8 @@
  * Based on @react-stately/datepicker useDatePickerState
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import {
   type DateValue,
   type CalendarDateTime,

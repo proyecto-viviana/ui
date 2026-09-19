@@ -69,10 +69,15 @@ tarballs without workspace symlinks. It then builds both targets:
   condition (`types`/`solid`/`import`/`default` + CSS) exists in the installed
   package, and Node's resolver honors every JS subpath specifier.
 - Encodes two facts every consumer needs: a dual-target build uses
-  `solid({ ssr: true })`, and the SSR resolver must include the `solid` condition
-  (otherwise it grabs the DOM-compiled `.js` and crashes calling `template()` on
-  the server).
+  `[...solid({ ssr: true })]` from `@solidjs/vite-plugin`, and the SSR resolver
+  must include the `solid` condition (otherwise it grabs the DOM-compiled `.js`
+  and crashes calling `template()` on the server).
+- Invokes vite-plus-core through `node dist/vite/node/cli.js`. The package is
+  aliased as `vite` but publishes as `@voidzero-dev/vite-plus-core`, so npm
+  does not create `.bin/vite`. Do not `npm exec -- vite` (that pulls stock
+  Vite) and do not assume a `vite` bin exists.
 
 Run `vp run ui:smoke` to pack the chain then consume it, or
 `vp run ui:consume-smoke` to reuse existing tarballs. Needs network (installs
-`vite` + `vite-plugin-solid` + `solid-js` into the throwaway app).
+`vite` + `@solidjs/vite-plugin` + `solid-js` + `@solidjs/web` into the throwaway
+app).

@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, For } from "solid-js";
+import { createEffect, createMemo, createSignal, For, createTrackedEffect } from "solid-js";
 import { ActionButton, Flex, Text, typeRoles } from "@proyecto-viviana/ui";
 import { ColorKnob } from "./ColorKnob";
 import { type TokenMap } from "@/utils/themeBase";
@@ -34,7 +34,7 @@ export function ThemeStudio(props: ThemeStudioProps) {
   const dark = createMemo(() => buildThemeTokens(inputs(), "dark"));
   const light = createMemo(() => buildThemeTokens(inputs(), "light"));
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     props.onChange({ inputs: inputs(), dark: dark(), light: light() });
   });
 

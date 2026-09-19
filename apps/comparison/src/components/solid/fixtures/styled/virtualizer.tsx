@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -40,7 +40,7 @@ function SolidSpectrumVirtualizerDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "virtualizer") {
         setDemoProps(normalizeVirtualizerDemoProps(event.detail.props ?? {}));

@@ -58,7 +58,7 @@ describe("Slider (solid-spectrum)", () => {
     const ref = vi.fn();
 
     render(() => (
-      <SliderContext.Provider
+      <SliderContext
         value={{
           "aria-label": "Context volume",
           defaultValue: 25,
@@ -68,7 +68,7 @@ describe("Slider (solid-spectrum)", () => {
         }}
       >
         <Slider />
-      </SliderContext.Provider>
+      </SliderContext>
     ));
 
     const slider = screen.getByRole("slider", { name: "Context volume" });

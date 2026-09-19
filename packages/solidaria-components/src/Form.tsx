@@ -19,12 +19,14 @@
  * Based on packages/react-aria-components/src/Form.tsx.
  */
 
-import { type JSX, createContext, splitProps } from "solid-js";
+import { createContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   FormValidationContext,
   type ValidationErrors,
   type ValidationBehavior,
 } from "@proyecto-viviana/solid-stately";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -60,7 +62,7 @@ export interface FormProps
   /** Character encodings accepted by the server. React-style alias for Solid's `accept-charset`. */
   acceptCharset?: string;
   /** Browser auto-capitalization hint. React-style alias for Solid's `autocapitalize`. */
-  autoCapitalize?: JSX.HTMLAttributes<HTMLFormElement>["autoCapitalize"];
+  autoCapitalize?: JSX.HTMLAttributes<HTMLElement>["autocapitalize"];
   /** Browser autocomplete behavior. React-style alias for Solid's `autocomplete`. */
   autoComplete?: JSX.FormHTMLAttributes<HTMLFormElement>["autocomplete"];
   /** Form encoding type. React-style alias for Solid's `enctype`. */
@@ -171,16 +173,16 @@ export function Form(props: FormProps): JSX.Element {
     <form
       {...filteredDomProps}
       ref={(el) => assignRef(local.ref, el)}
-      noValidate={validationBehavior() !== "native"}
+      novalidate={validationBehavior() !== "native"}
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
     >
-      <FormContext.Provider value={formContextValue}>
-        <FormValidationContext.Provider value={errors}>
+      <FormContext value={formContextValue}>
+        <FormValidationContext value={errors}>
           {renderProps.renderChildren()}
-        </FormValidationContext.Provider>
-      </FormContext.Provider>
+        </FormValidationContext>
+      </FormContext>
     </form>
   );
 }

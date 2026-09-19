@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { CollectionBuilder } from "@proyecto-viviana/solidaria-components";
@@ -59,6 +59,7 @@ describe("Skeleton (solid-spectrum)", () => {
     expect(screen.getByTestId("probe")).toHaveAttribute("data-skeleton", "true");
 
     setIsLoading(false);
+    flush();
 
     expect(screen.getByTestId("probe")).toHaveAttribute("data-skeleton", "false");
   });
@@ -76,6 +77,7 @@ describe("Skeleton (solid-spectrum)", () => {
     expect(container.querySelector("span[inert] span[inert]")).toBeInTheDocument();
 
     setIsLoading(false);
+    flush();
 
     expect(text).not.toHaveAttribute("inert");
     expect(container.querySelector("span[inert] span[inert]")).not.toBeInTheDocument();
@@ -144,9 +146,11 @@ describe("Skeleton (solid-spectrum)", () => {
       expect(animation.startTime).toBe(0);
 
       setIsAnimating(false);
+      flush();
       expect(cancel).toHaveBeenCalledTimes(1);
 
       setIsAnimating(true);
+      flush();
       expect(animate).toHaveBeenCalledTimes(2);
 
       unmount();

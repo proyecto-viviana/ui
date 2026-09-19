@@ -2,8 +2,7 @@
  * Tests for createTableState and TableCollection.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
 import {
   createTableState,
   TableCollection,

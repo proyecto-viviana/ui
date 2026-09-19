@@ -34,7 +34,8 @@
  * invoke and freeze them, breaking reactivity.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, createInternalSignal, type MaybeAccessor } from "../utils";
 
 import {

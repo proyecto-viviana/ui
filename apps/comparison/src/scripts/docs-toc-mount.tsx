@@ -1,4 +1,4 @@
-import { render } from "solid-js/web";
+import { render } from "@solidjs/web";
 import DocsToc from "@comparison/components/solid/DocsToc";
 import { parseTocItems } from "@comparison/data/docs-toc";
 import { mountOnAstroPage } from "./mount-on-astro-page";

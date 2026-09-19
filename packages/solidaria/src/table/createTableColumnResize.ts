@@ -20,7 +20,9 @@
  * correct ARIA attributes for screen readers.
  */
 
-import { createSignal, createMemo, type Accessor, type JSX } from "solid-js";
+import { createSignal, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, TableColumnResizeState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 
@@ -210,7 +212,7 @@ export function createTableColumnResize(
   // range input below, matching React Aria's ColumnResizer structure.
   const resizerProps: JSX.HTMLAttributes<HTMLDivElement> = {
     role: "presentation",
-    tabIndex: -1,
+    tabindex: -1,
     style: {
       "touch-action": "none",
       cursor: "col-resize",
@@ -225,7 +227,7 @@ export function createTableColumnResize(
     get type() {
       return "range";
     },
-    get tabIndex() {
+    get tabindex() {
       return getProps().isDisabled ? -1 : 0;
     },
     get disabled() {

@@ -1,4 +1,4 @@
-import { createComponent, render } from "solid-js/web";
+import { createComponent, render } from "@solidjs/web";
 import ComparisonIsland from "../components/solid/ComparisonIsland.tsx";
 import type { ComparisonLayerId, ComparisonSlug } from "../data/comparison-manifest";
 

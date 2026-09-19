@@ -18,8 +18,9 @@
  * Ported from packages/react-aria/src/dnd/useDropIndicator.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { DroppableCollectionState, DropTarget } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { createDroppableItem } from "./createDroppableItem";

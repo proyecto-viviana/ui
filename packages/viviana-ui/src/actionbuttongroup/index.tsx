@@ -13,8 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
-import { type JSX, splitProps } from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+import type { JSX } from "@solidjs/web";
+import { attrString, mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 import {
@@ -34,6 +34,7 @@ import {
   type RefLike,
 } from "../button/spectrum-context";
 import type { StaticColor } from "../button/types";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ActionButtonGroupProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
@@ -145,15 +146,17 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
   return (
     <HeadlessToolbar
       {...domProps}
+      aria-label={attrString(domProps["aria-label"])}
+      aria-labelledby={attrString(domProps["aria-labelledby"])}
       orientation={orientation()}
       ref={assignGroupRefs}
       class={className()}
       style={mergedUnsafeStyle()}
       data-orientation={orientation()}
     >
-      <ActionButtonGroupContext.Provider value={contextValue}>
+      <ActionButtonGroupContext value={contextValue}>
         {local.children}
-      </ActionButtonGroupContext.Provider>
+      </ActionButtonGroupContext>
     </HeadlessToolbar>
   );
 }

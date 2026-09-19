@@ -17,7 +17,8 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import { type JSX, createEffect, createSignal, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { TokenFieldState } from "@proyecto-viviana/solid-stately";
 
 export interface TokenProps {}
@@ -39,7 +40,9 @@ export function createToken(
 ): TokenAria {
   const [isSelected, setSelected] = createSignal(false);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (typeof document === "undefined") return;
 
     const onSelectionChange = () => {
@@ -58,12 +61,14 @@ export function createToken(
     };
 
     document.addEventListener("selectionchange", onSelectionChange);
-    onCleanup(() => document.removeEventListener("selectionchange", onSelectionChange));
-  });
+    _s2Cleanups.push(() => document.removeEventListener("selectionchange", onSelectionChange));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     tokenProps: {
-      contentEditable: false,
+      contenteditable: "false",
       // Solid has no suppressContentEditableWarning; keep the RAC contenteditable contract.
       style: {
         "user-select": "all",

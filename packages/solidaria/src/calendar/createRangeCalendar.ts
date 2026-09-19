@@ -19,7 +19,8 @@
  * Based on @react-aria/calendar useRangeCalendar
  */
 
-import { createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
+import { createMemo, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
@@ -193,7 +194,9 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // outside the calendar body, except when pressing the next or previous buttons to switch months.
   // Also commit on blur (e.g. tabbing away). Reads `getEventTarget` so shadow-DOM retargeting
   // still sees the inner node (`e.target` would be the shadow host).
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = ref?.();
     if (!element) {
       return;
@@ -266,7 +269,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     element.addEventListener("blur", onBlur, true);
     element.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       blurPending = false;
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", endDragging);
@@ -274,7 +277,9 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       element.removeEventListener("blur", onBlur, true);
       element.removeEventListener("touchmove", onTouchMove, true);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     get calendarProps() {

@@ -16,19 +16,9 @@
 
 // Port of packages/@react-spectrum/s2/src/ListView.tsx.
 
-import {
-  children as resolveChildren,
-  createContext,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
-import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+import { children as resolveChildren, createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { attrTrue, mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridList as HeadlessGridList,
   GridListItem as HeadlessGridListItem,
@@ -65,6 +55,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { Text, TextContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type GridListSize = "sm" | "md" | "lg";
 export type GridListVariant = "default" | "cards" | "bordered";
@@ -967,8 +958,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const overflowMode = (): GridListOverflowMode => local.overflowMode ?? "truncate";
   const isLoading = () =>
     local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
-  const [staticItems, setStaticItems] = createSignal<StaticGridListItem[]>([]);
-  const [registrationVersion, setRegistrationVersion] = createSignal(0);
+  const [staticItems, setStaticItems] = createSignal<StaticGridListItem[]>([], {
+    ownedWrite: true,
+  });
+  const [registrationVersion, setRegistrationVersion] = createSignal(0, { ownedWrite: true });
   const registeredItems = new Map<Key, ItemRegistration>();
   const usesStaticChildren = () => local.items == null;
   const syncRegisteredItems = () => {
@@ -1060,12 +1053,14 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   });
   const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    { ownedWrite: true },
   );
-  createEffect(() => {
-    setActionSelectedKeys(
-      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
-    );
-  });
+  createEffect(
+    () => selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    (keys) => {
+      setActionSelectedKeys(keys);
+    },
+  );
   const onSelectionChange = (keys: "all" | Set<Key>) => {
     setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
     headlessProps.onSelectionChange?.(keys);
@@ -1119,10 +1114,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   };
 
   const collection = (
-    <InternalListViewContext.Provider value={listViewContext()}>
-      <StaticGridListCollectionContext.Provider value={registrationContext}>
+    <InternalListViewContext value={listViewContext()}>
+      <StaticGridListCollectionContext value={registrationContext}>
         {registrationChildren()}
-      </StaticGridListCollectionContext.Provider>
+      </StaticGridListCollectionContext>
       <ImageCoordinator>
         <HeadlessGridList
           {...headlessProps}
@@ -1149,7 +1144,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           {(item: T) => renderItem(item)}
         </HeadlessGridList>
       </ImageCoordinator>
-    </InternalListViewContext.Provider>
+    </InternalListViewContext>
   );
 
   // Build the framed wrapper only on the branch that actually returns it. A `const framed = (<div/>)`
@@ -1207,18 +1202,27 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   // already committed an empty collection. See GridList's `registrationChildren`
   // for the read order this depends on, and `collectionItems` for why it must
   // NOT be a `createMemo` either.
-  createRenderEffect(() => {
-    if (!staticCollection) {
-      return;
-    }
-
-    staticCollection.registerItem({
+  createRenderEffect(
+    () => ({
+      collection: staticCollection,
       id: props.id,
       textValue: headlessProps.textValue ?? headlessProps["aria-label"],
       isDisabled: !!local.isDisabled,
-      props: staticCollection.mode === "static" ? (props as GridListItemProps<object>) : undefined,
-    });
-  });
+      itemProps: staticCollection?.mode === "static" ? (props as GridListItemProps<object>) : undefined,
+    }),
+    ({ collection, id, textValue, isDisabled, itemProps }) => {
+      if (!collection) {
+        return;
+      }
+
+      collection.registerItem({
+        id,
+        textValue,
+        isDisabled,
+        props: itemProps,
+      });
+    },
+  );
 
   onCleanup(() => {
     staticCollection?.unregisterItem(props.id);
@@ -1283,7 +1287,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   }));
 
   function ItemChildren(renderProps: GridListItemRenderProps) {
-    createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+    createTrackedEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() => {
@@ -1305,27 +1309,27 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     }
 
     return (
-      <TextContext.Provider value={textContext() as SpectrumContextValue<any>}>
-        <IconContext.Provider
+      <TextContext value={textContext() as SpectrumContextValue<any>}>
+        <IconContext
           value={{
             slot: "icon",
             styles: listViewSlotIcon,
           }}
         >
-          <ImageContext.Provider
+          <ImageContext
             value={{
               slot: "image",
               styles: listViewImage,
             }}
           >
-            <ActionButtonGroupContext.Provider
+            <ActionButtonGroupContext
               value={{
                 slot: "actions",
                 size: "S",
                 styles: listViewActions,
               }}
             >
-              <ActionMenuContext.Provider
+              <ActionMenuContext
                 value={{
                   slot: "actionmenu",
                   size: "S",
@@ -1378,11 +1382,11 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
                     aria-hidden="true"
                   />
                 ) : null}
-              </ActionMenuContext.Provider>
-            </ActionButtonGroupContext.Provider>
-          </ImageContext.Provider>
-        </IconContext.Provider>
-      </TextContext.Provider>
+              </ActionMenuContext>
+            </ActionButtonGroupContext>
+          </ImageContext>
+        </IconContext>
+      </TextContext>
     );
   }
 
@@ -1393,11 +1397,11 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       class={getClassName}
       style={getStyle}
       data-list-view-item=""
-      data-disabled={local.isDisabled || undefined}
+      data-disabled={attrTrue(!!local.isDisabled)}
       data-href={local.href || undefined}
       data-target={local.target || undefined}
-      data-has-child-items={local.hasChildItems || undefined}
-      data-has-trailing-icon={hasTrailingIcon() || undefined}
+      data-has-child-items={attrTrue(!!local.hasChildItems)}
+      data-has-trailing-icon={attrTrue(hasTrailingIcon())}
     >
       {(renderProps: GridListItemRenderProps) => <ItemChildren {...renderProps} />}
     </HeadlessGridListItem>
@@ -1445,9 +1449,9 @@ export function GridListSelectionCheckbox(props: {
           // IconContext the same way; keep an empty provider so a future
           // row-level IconContext (listViewSlotIcon `size: 20`) cannot restyle
           // the checkbox glyph if that skip is ever reverted.
-          <IconContext.Provider value={{}}>
+          <IconContext value={{}}>
             <Checkmark size="S" class={listViewCheckboxIcon} aria-hidden="true" />
-          </IconContext.Provider>
+          </IconContext>
         ) : null}
       </span>
     </span>

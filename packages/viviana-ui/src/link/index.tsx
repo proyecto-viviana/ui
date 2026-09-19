@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Link.tsx.
 
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Link as HeadlessLink,
@@ -36,6 +37,7 @@ import {
   staticColor as staticColorStyle,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type LinkVariant = "primary" | "secondary";
 type LinkStaticColor = "white" | "black" | "auto";

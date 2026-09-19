@@ -61,7 +61,7 @@ describe("InlineAlert (solid-spectrum)", () => {
     let localRef: HTMLDivElement | undefined;
 
     render(() => (
-      <InlineAlertContext.Provider
+      <InlineAlertContext
         value={{
           slots: {
             notice: {
@@ -89,7 +89,7 @@ describe("InlineAlert (solid-spectrum)", () => {
           <Heading>Payment Error</Heading>
           <Content>There was an error processing your request. Please try again.</Content>
         </InlineAlert>
-      </InlineAlertContext.Provider>
+      </InlineAlertContext>
     ));
 
     expect(root()).toHaveAttribute("id", "local-alert");

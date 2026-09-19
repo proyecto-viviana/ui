@@ -17,7 +17,8 @@
  * Based on @react-stately/select useSelectState.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";

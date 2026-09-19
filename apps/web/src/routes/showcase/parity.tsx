@@ -12,9 +12,7 @@
    on the server; that was fixed (render-effect item registration + a non-frozen
    collection accessor — see packages/viviana-ui/test/Collections.{ssr,hydrate}.test),
    so both twins now paint on first byte alongside the rest. */
-import { createFileRoute } from "@tanstack/solid-router";
-import { seo } from "@/seo";
-import { For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { seo } from "@/seo"; import { For } from "solid-js";
 import { SPEC_PANELS } from "@/components/parity/spec-panels";
 import { MIRROR_PANELS } from "@/components/parity/mirror";
 

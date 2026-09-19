@@ -14,7 +14,7 @@
  *
  * Nothing here runs on the server: the resting values are the CSS fallbacks
  * (`50%`, `0 0`), so a server render and its hydration pass agree. */
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
 
 export function createMeshField(
   getElement: () => HTMLElement | undefined,
@@ -29,7 +29,9 @@ export function createMeshField(
     element.style.setProperty("--gl-pos", position);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isEnabled()) return;
     let frame = 0;
     const onMove = (event: MouseEvent): void => {
@@ -48,11 +50,13 @@ export function createMeshField(
     align();
     // Fonts and images settle after first paint and move the card under the weave.
     const settle = window.setTimeout(align, 400);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       document.removeEventListener("mousemove", onMove);
       window.removeEventListener("resize", align);
       window.clearTimeout(settle);
       if (frame) cancelAnimationFrame(frame);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }

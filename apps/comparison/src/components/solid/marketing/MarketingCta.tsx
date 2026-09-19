@@ -1,4 +1,4 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { LinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { comparisonCoveragePath } from "@comparison/data/site-meta";

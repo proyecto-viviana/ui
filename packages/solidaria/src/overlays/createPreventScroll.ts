@@ -17,7 +17,7 @@
  * Based on @react-aria/overlays usePreventScroll.
  */
 
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
 import {
   chain,
   getActiveElement,
@@ -47,7 +47,9 @@ let restore: (() => void) | undefined;
  * shift due to the scrollbars disappearing.
  */
 export function createPreventScroll(options: PreventScrollOptions = {}): void {
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const isDisabled = options.isDisabled;
 
     if (isDisabled) {
@@ -63,14 +65,16 @@ export function createPreventScroll(options: PreventScrollOptions = {}): void {
       }
     }
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       preventScrollCount--;
       if (preventScrollCount === 0 && restore) {
         restore();
         restore = undefined;
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }
 
 // For most browsers, all we need to do is set `overflow: hidden` on the root element, and

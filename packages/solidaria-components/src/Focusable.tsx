@@ -19,14 +19,10 @@
  * focusable and capable of auto focus.
  */
 
-import {
-  type JSX,
-  children as resolveChildren,
-  createEffect,
-  onCleanup,
-  splitProps,
-} from "solid-js";
+import { children as resolveChildren, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocusable, type CreateFocusableProps } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface FocusableProps extends CreateFocusableProps {
   /** A single child element to make focusable. */
@@ -42,7 +38,7 @@ export interface FocusableProps extends CreateFocusableProps {
  * @example
  * ```tsx
  * <Focusable onFocus={() => console.log('focused')}>
- *   <div tabIndex={0}>Focusable content</div>
+ *   <div tabindex={0}>Focusable content</div>
  * </Focusable>
  * ```
  */
@@ -54,7 +50,9 @@ export function Focusable(props: FocusableProps): JSX.Element {
 
   const resolved = resolveChildren(() => local.children);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const child = resolved() as HTMLElement;
     if (child instanceof HTMLElement) {
       ref = child;
@@ -105,13 +103,15 @@ export function Focusable(props: FocusableProps): JSX.Element {
         }
       }
 
-      onCleanup(() => {
+      _s2Cleanups.push(() => {
         for (const [eventName, listener] of listeners) {
           child.removeEventListener(eventName, listener);
         }
       });
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return <>{resolved()}</>;
 }

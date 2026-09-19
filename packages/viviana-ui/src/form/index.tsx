@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Form.tsx.
 
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Form as HeadlessForm,
   FieldError as HeadlessFieldError,
@@ -27,6 +28,7 @@ import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { createIsSkeleton } from "../skeleton";
 import { assignRef } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type FormSize = "S" | "M" | "L" | "XL";
 export type FormLabelPosition = "top" | "side";
@@ -222,7 +224,7 @@ export function Form(props: FormProps): JSX.Element {
   };
 
   return (
-    <FormContext.Provider value={contextValue}>
+    <FormContext value={contextValue}>
       <HeadlessForm
         {...headlessProps}
         ref={(el) => assignRef(local.ref, el)}
@@ -234,7 +236,7 @@ export function Form(props: FormProps): JSX.Element {
           .join(" ")}
         style={local.UNSAFE_style}
       />
-    </FormContext.Provider>
+    </FormContext>
   );
 }
 

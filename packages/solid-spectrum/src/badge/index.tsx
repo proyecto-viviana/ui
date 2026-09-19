@@ -13,13 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Badge.tsx
 
 // Port of packages/@react-spectrum/s2/src/Badge.tsx.
-import {
-  children as resolveChildren,
-  type JSX,
-  createContext,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { lightDark, style } from "../style" with { type: "macro" };
@@ -29,6 +24,7 @@ import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { control, getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { SkeletonWrapper } from "../skeleton";
 import { Text, TextContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -331,12 +327,12 @@ export function Badge(props: BadgeProps): JSX.Element {
   }
 
   return (
-    <TextContext.Provider
+    <TextContext
       value={{
         styles: () => textStyles({ overflowMode: overflowMode() }),
       }}
     >
-      <IconContext.Provider
+      <IconContext
         value={{
           slot: "icon",
           render: centerBaseline({ slot: "icon", styles: iconCenterStyles }),
@@ -368,7 +364,7 @@ export function Badge(props: BadgeProps): JSX.Element {
             <BadgeContent />
           </span>
         </SkeletonWrapper>
-      </IconContext.Provider>
-    </TextContext.Provider>
+      </IconContext>
+    </TextContext>
   );
 }

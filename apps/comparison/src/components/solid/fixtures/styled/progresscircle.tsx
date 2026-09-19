@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ProgressCircle as SolidSpectrumProgressCircle } from "@proyecto-viviana/solid-spectrum/ProgressCircle";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -23,7 +23,7 @@ function SolidSpectrumProgressCircleDemo() {
     progressCircleDemoPropsFromWindow(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "progresscircle") {
         setDemoProps(normalizeProgressCircleDemoProps(event.detail.props ?? {}));

@@ -24,7 +24,8 @@
  * - packages/react-aria-components/src/Header.tsx
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext, For } from "solid-js";
+import { createContext, createMemo, useContext, For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { DragTypes, DropOperation, DropTarget } from "@proyecto-viviana/solid-stately";
 import {
@@ -35,6 +36,7 @@ import {
   type CollectionProps as AriaCollectionProps,
   type CollectionBuilderProps as AriaCollectionBuilderProps,
 } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,

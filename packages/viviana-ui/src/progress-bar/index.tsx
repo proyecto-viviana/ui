@@ -14,15 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ProgressBar.tsx.
 
-import {
-  type JSX,
-  For,
-  createContext,
-  createMemo,
-  createUniqueId,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { For, createContext, createMemo, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, createProgressBar, useLocale } from "@proyecto-viviana/solidaria";
 import { mergeStyles } from "../style/runtime";
 import type { StyleString } from "../style";
@@ -39,6 +32,7 @@ import {
   getAllowedOverrides,
   staticColor as staticColorStyles,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

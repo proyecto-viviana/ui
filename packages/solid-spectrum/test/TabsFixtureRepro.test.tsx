@@ -14,10 +14,8 @@
  * semantics; the bare-h wiring is kept here as `it.fails` documentation of the
  * upstream limitation.
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
-import { createComponent, createMemo, createSignal, Show, type JSX } from "solid-js";
-import h from "solid-js/h";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createComponent, createMemo, createSignal, flush, Show, type JSX } from "solid-js";
+import h from "@solidjs/h";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 import { Provider } from "../src/provider";
 import { Tabs, TabList, Tab, TabPanel } from "../src/tabs";
@@ -166,7 +164,7 @@ describe("controlled tabs round trip (comparison fixture wiring)", () => {
     await pressParityAndAssert(bareHFixture());
   });
 
-  it("compiled outer Tabs + h-built inner children", async () => {
+  it("compiled outer Tabs + createComponent inner children", async () => {
     const [selectedKey, setSelectedKey] = createSignal("overview");
     const onSelectionChange = vi.fn((key: unknown) => setSelectedKey(String(key)));
     render(() => (
@@ -175,24 +173,27 @@ describe("controlled tabs round trip (comparison fixture wiring)", () => {
         selectedKey={selectedKey()}
         onSelectionChange={onSelectionChange}
       >
-        {
-          h(
-            TabList,
-            {},
-            items.map((item) => h(Tab, { id: item.id }, [item.label])),
-          ) as unknown as JSX.Element
-        }
-        {items.map((item) => h(TabPanel, { id: item.id }, [`Content ${item.label}`]))}
+        {createComponent(TabList, {
+          get children() {
+            return items.map((item) =>
+              createComponent(Tab, { id: item.id, children: item.label }),
+            );
+          },
+        })}
+        {items.map((item) =>
+          createComponent(TabPanel, { id: item.id, children: `Content ${item.label}` }),
+        )}
       </Tabs>
     ));
     const parity = screen.getByRole("tab", { name: "Parity" });
     pressWithMouse(parity);
     await Promise.resolve();
+    flush();
     expect(onSelectionChange).toHaveBeenCalledWith("parity");
     expect(parity).toHaveAttribute("aria-selected", "true");
   });
 
-  it("h outer Tabs + compiled inner children", async () => {
+  it("hc outer Tabs + compiled inner children", async () => {
     const [selectedKey, setSelectedKey] = createSignal("overview");
     const onSelectionChange = vi.fn((key: unknown) => setSelectedKey(String(key)));
     const next: Record<string, unknown> = { "aria-label": "Mixed tabs B", onSelectionChange };
@@ -200,7 +201,7 @@ describe("controlled tabs round trip (comparison fixture wiring)", () => {
       enumerable: true,
       get: () => selectedKey(),
     });
-    const tree = h(Tabs, next, [
+    const tree = hc(Tabs, next, [
       () => (
         <>
           <TabList>
@@ -216,6 +217,7 @@ describe("controlled tabs round trip (comparison fixture wiring)", () => {
     const parity = screen.getByRole("tab", { name: "Parity" });
     pressWithMouse(parity);
     await Promise.resolve();
+    flush();
     expect(onSelectionChange).toHaveBeenCalledWith("parity");
     expect(parity).toHaveAttribute("aria-selected", "true");
   });

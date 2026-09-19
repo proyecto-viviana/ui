@@ -19,19 +19,9 @@
  * Port of react-aria-components/src/TextField.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  useContext,
-  createMemo,
-  createSignal,
-  createEffect,
-  onCleanup,
-  onMount,
-  splitProps,
-  untrack,
-} from "solid-js";
+import { createContext, useContext, createMemo, createSignal, createEffect, onCleanup, onSettled, untrack } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createTextField,
   createFocusRing,
@@ -51,9 +41,11 @@ import {
   filterDOMProps,
   Provider,
   useSlot,
+  dataAttr,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
+import { assignRef, attrString, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TextFieldRenderProps {
   /** Whether the text field is disabled. */
@@ -135,9 +127,12 @@ export function Input(props: InputProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let inputElement: HTMLInputElement | undefined;
 
-  createEffect(() => {
-    context?.setInputId?.(props.id);
-  });
+  createEffect(
+    () => attrString(props.id),
+    (id) => {
+      context?.setInputId?.(id);
+    },
+  );
 
   onCleanup(() => {
     context?.setInputId?.(undefined);
@@ -160,7 +155,7 @@ export function Input(props: InputProps): JSX.Element {
     return props.class == null ? { ...props, class: "solidaria-Input" } : props;
   };
 
-  onMount(() => {
+  onSettled(() => {
     const element = inputElement;
     if (!element) {
       return;
@@ -196,10 +191,10 @@ export function Input(props: InputProps): JSX.Element {
     element.addEventListener("input", inputHandler);
     element.addEventListener("change", changeHandler);
     clearDelegatedTextEntryHandlers(element);
-    onCleanup(() => {
+    return () => {
       element.removeEventListener("input", inputHandler);
       element.removeEventListener("change", changeHandler);
-    });
+    };
   });
 
   return (
@@ -207,16 +202,8 @@ export function Input(props: InputProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         inputElement = element;
-        const contextRef = context?.inputProps?.ref;
-        if (typeof contextRef === "function") {
-          contextRef(element);
-        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
-          (contextRef as { current: HTMLInputElement | null }).current = element;
-        }
-        const ref = props.ref;
-        if (typeof ref === "function") {
-          ref(element);
-        }
+        assignRef(context?.inputProps?.ref, element);
+        assignRef(props.ref, element);
       }}
     />
   );
@@ -236,9 +223,12 @@ export function TextArea(props: TextAreaProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let textAreaElement: HTMLTextAreaElement | undefined;
 
-  createEffect(() => {
-    context?.setInputId?.(props.id);
-  });
+  createEffect(
+    () => attrString(props.id),
+    (id) => {
+      context?.setInputId?.(id);
+    },
+  );
 
   onCleanup(() => {
     context?.setInputId?.(undefined);
@@ -262,7 +252,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
     return props.class == null ? { ...props, class: "solidaria-TextArea" } : props;
   };
 
-  onMount(() => {
+  onSettled(() => {
     const element = textAreaElement;
     if (!element) {
       return;
@@ -298,10 +288,10 @@ export function TextArea(props: TextAreaProps): JSX.Element {
     element.addEventListener("input", inputHandler);
     element.addEventListener("change", changeHandler);
     clearDelegatedTextEntryHandlers(element);
-    onCleanup(() => {
+    return () => {
       element.removeEventListener("input", inputHandler);
       element.removeEventListener("change", changeHandler);
-    });
+    };
   });
 
   return (
@@ -309,16 +299,8 @@ export function TextArea(props: TextAreaProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         textAreaElement = element;
-        const contextRef = context?.inputProps?.ref;
-        if (typeof contextRef === "function") {
-          (contextRef as (el: HTMLInputElement | HTMLTextAreaElement) => void)(element);
-        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
-          (contextRef as { current: HTMLTextAreaElement | null }).current = element;
-        }
-        const ref = props.ref;
-        if (typeof ref === "function") {
-          ref(element);
-        }
+        assignRef(context?.inputProps?.ref, element);
+        assignRef(props.ref, element);
       }}
     />
   );
@@ -345,7 +327,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
 export function TextField(props: TextFieldProps): JSX.Element {
   const formContext = useContext(FormContext);
   const contextProps = useContext(TextFieldContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<TextFieldProps>(() => {
     if (!contextProps) return {};
     const {
@@ -586,13 +568,13 @@ export function TextField(props: TextFieldProps): JSX.Element {
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,
-      "data-disabled": ariaProps.isDisabled || undefined,
-      "data-invalid": textFieldAria.isInvalid || undefined,
-      "data-readonly": ariaProps.isReadOnly || undefined,
-      "data-required": ariaProps.isRequired || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": isFocusVisible() || undefined,
+      "data-disabled": dataAttr(!!ariaProps.isDisabled),
+      "data-invalid": dataAttr(!!textFieldAria.isInvalid),
+      "data-readonly": dataAttr(!!ariaProps.isReadOnly),
+      "data-required": dataAttr(!!ariaProps.isRequired),
+      "data-hovered": dataAttr(isHovered()),
+      "data-focused": dataAttr(isFocused()),
+      "data-focus-visible": dataAttr(isFocusVisible()),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
   const customRootProps = () =>
     ({
@@ -601,9 +583,9 @@ export function TextField(props: TextFieldProps): JSX.Element {
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   return (
-    <FieldErrorContext.Provider value={fieldErrorContext}>
-      <LabelContext.Provider value={labelContextValue}>
-        <TextFieldContext.Provider value={contextValue}>
+    <FieldErrorContext value={fieldErrorContext}>
+      <LabelContext value={labelContextValue}>
+        <TextFieldContext value={contextValue}>
           {local.render ? (
             local.render(customRootProps(), renderValues())
           ) : (
@@ -611,9 +593,9 @@ export function TextField(props: TextFieldProps): JSX.Element {
               <FieldChildrenSlotted />
             </div>
           )}
-        </TextFieldContext.Provider>
-      </LabelContext.Provider>
-    </FieldErrorContext.Provider>
+        </TextFieldContext>
+      </LabelContext>
+    </FieldErrorContext>
   );
 }
 

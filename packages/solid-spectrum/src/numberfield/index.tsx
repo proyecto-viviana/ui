@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/NumberField.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
+import { createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   NumberField as HeadlessNumberField,
   NumberFieldLabel as HeadlessNumberFieldLabel,
@@ -58,6 +51,7 @@ import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { useProviderProps } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { HelpText } from "../form/HelpText";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type NumberFieldSize = "S" | "M" | "L" | "XL";
 type S2NumberFieldSize = NumberFieldSize;

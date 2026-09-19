@@ -12,7 +12,7 @@
  * rendered in place of the page. On the server the slot ids are emitted as is,
  * as `useSlotId` yields them before its layout effect.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

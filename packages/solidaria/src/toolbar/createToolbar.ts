@@ -19,10 +19,10 @@
  * Based on @react-aria/toolbar useToolbar.
  */
 
-import { createSignal, onMount, onCleanup, type Accessor } from "solid-js";
-import { type MaybeAccessor, access } from "../utils";
+import { type MaybeAccessor, access, onOwnedCleanup, getOwnerDocument, isFocusable, isTabbable } from "../utils";
+import { createSignal, onSettled } from "solid-js";
+import type { Accessor } from "solid-js";
 import { useLocale } from "../i18n";
-import { getOwnerDocument, isFocusable, isTabbable } from "../utils";
 import { focusSafely } from "../utils/focus";
 
 export type Orientation = "horizontal" | "vertical";
@@ -234,7 +234,7 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
   const focusManager = createFocusManager(() => toolbarRef);
 
   // Check if this toolbar is nested inside another toolbar
-  onMount(() => {
+  onSettled(() => {
     if (toolbarRef) {
       const parentToolbar = toolbarRef.parentElement?.closest('[role="toolbar"]');
       setIsInToolbar(!!parentToolbar);
@@ -357,7 +357,7 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
     el.addEventListener("focus", onFocus, true);
     el.addEventListener("blur", onBlur, true);
 
-    onCleanup(() => {
+    onOwnedCleanup(() => {
       el.removeEventListener("keydown", onKeyDown, true);
       el.removeEventListener("focus", onFocus, true);
       el.removeEventListener("blur", onBlur, true);

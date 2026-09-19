@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { StepList as SolidSpectrumStepList } from "@proyecto-viviana/solid-spectrum/StepList";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -30,7 +30,7 @@ function SolidSpectrumStepListDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "steplist") {
         setDemoProps(normalizeStepListDemoProps(event.detail.props ?? {}));

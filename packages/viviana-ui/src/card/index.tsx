@@ -16,15 +16,9 @@
 
 // Port of packages/@react-spectrum/s2/src/Card.tsx.
 
-import {
-  type Accessor,
-  type JSX,
-  Show,
-  createContext,
-  createMemo,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { Show, createContext, createMemo, useContext } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridListItem as HeadlessGridListItem,
@@ -54,6 +48,7 @@ import { css } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -843,8 +838,8 @@ function CardProviders(props: {
   children: JSX.Element;
 }): JSX.Element {
   return (
-    <ImageContext.Provider value={{ alt: "", styles: image({ layout: props.layout }) }}>
-      <TextContext.Provider
+    <ImageContext value={{ alt: "", styles: image({ layout: props.layout }) }}>
+      <TextContext
         value={{
           slots: {
             default: {},
@@ -853,10 +848,10 @@ function CardProviders(props: {
           },
         }}
       >
-        <ContentContext.Provider value={{ styles: content({ size: props.size }) }}>
-          <DividerContext.Provider value={{ size: "S" }}>
-            <FooterContext.Provider value={{ styles: footer }}>
-              <ActionMenuContext.Provider
+        <ContentContext value={{ styles: content({ size: props.size }) }}>
+          <DividerContext value={{ size: "S" }}>
+            <FooterContext value={{ styles: footer }}>
+              <ActionMenuContext
                 value={{
                   isQuiet: true,
                   size: actionButtonSize[props.size],
@@ -865,15 +860,15 @@ function CardProviders(props: {
                   styles: actionMenu,
                 }}
               >
-                <SkeletonContext.Provider value={props.isSkeleton}>
+                <SkeletonContext value={props.isSkeleton}>
                   <ImageCoordinator>{props.children}</ImageCoordinator>
-                </SkeletonContext.Provider>
-              </ActionMenuContext.Provider>
-            </FooterContext.Provider>
-          </DividerContext.Provider>
-        </ContentContext.Provider>
-      </TextContext.Provider>
-    </ImageContext.Provider>
+                </SkeletonContext>
+              </ActionMenuContext>
+            </FooterContext>
+          </DividerContext>
+        </ContentContext>
+      </TextContext>
+    </ImageContext>
   );
 }
 
@@ -1093,7 +1088,7 @@ export function Card(props: CardProps): JSX.Element {
         data-mesh={meshVariant()}
       >
         {(renderProps: LinkRenderProps) => (
-          <InternalCardContext.Provider
+          <InternalCardContext
             value={toInternalCardContext({
               size: size(),
               itemKey: itemKey(),
@@ -1104,7 +1099,7 @@ export function Card(props: CardProps): JSX.Element {
             })}
           >
             {children()}
-          </InternalCardContext.Provider>
+          </InternalCardContext>
         )}
       </HeadlessLink>
     );
@@ -1130,7 +1125,7 @@ export function Card(props: CardProps): JSX.Element {
         data-variant={variant()}
         data-mesh={meshVariant()}
       >
-        <InternalCardContext.Provider
+        <InternalCardContext
           value={toInternalCardContext({
             size: size(),
             itemKey: itemKey(),
@@ -1138,7 +1133,7 @@ export function Card(props: CardProps): JSX.Element {
           })}
         >
           {children()}
-        </InternalCardContext.Provider>
+        </InternalCardContext>
       </div>
     );
   }
@@ -1171,7 +1166,7 @@ export function Card(props: CardProps): JSX.Element {
         const isCheckboxSelection =
           renderProps.selectionMode !== "none" && renderProps.selectionBehavior === "toggle";
         return (
-          <InternalCardContext.Provider
+          <InternalCardContext
             value={toInternalCardContext({
               size: size(),
               itemKey: itemKey(),
@@ -1186,7 +1181,7 @@ export function Card(props: CardProps): JSX.Element {
             {!isQuiet() && <SelectionIndicator />}
             {!isQuiet() && isCheckboxSelection && <CardCheckbox />}
             <div class={displayContents}>{children()}</div>
-          </InternalCardContext.Provider>
+          </InternalCardContext>
         );
       }}
     </HeadlessGridListItem>
@@ -1246,7 +1241,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
       <Show when={local.tag}>{(tag) => <div class={previewTag}>{tag()}</div>}</Show>
       <div class={previewClip}>
         {isAssetPreview ? (
-          <IconContext.Provider
+          <IconContext
             value={{
               render: (icon) => (
                 <SkeletonWrapper>
@@ -1257,7 +1252,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
             }}
           >
             {local.children}
-          </IconContext.Provider>
+          </IconContext>
         ) : (
           local.children
         )}
@@ -1274,9 +1269,9 @@ export function CollectionCardPreview(props: CardPreviewProps): JSX.Element {
         {/* `collectionImage` takes no size condition, so the macro bakes it to a class string,
             not a selector function — passing `size` here threw at render. Inherited from the
             port; unnoticed because nothing rendered a collection preview until now. */}
-        <ImageContext.Provider value={{ styles: collectionImage }}>
+        <ImageContext value={{ styles: collectionImage }}>
           {props.children}
-        </ImageContext.Provider>
+        </ImageContext>
       </div>
     </CardPreview>
   );
@@ -1290,8 +1285,8 @@ export function AssetCard(props: AssetCardProps): JSX.Element {
            is one height in both card-view layouts — so the macro bakes it to a class
            string rather than a selector function, and calling it would throw. Same trap
            `collectionImage` documents a few components up. */
-        <ImageContext.Provider value={{ alt: "", styles: assetImage }}>
-          <IllustrationContext.Provider
+        <ImageContext value={{ alt: "", styles: assetImage }}>
+          <IllustrationContext
             value={{
               render: (icon) => (
                 <SkeletonWrapper>
@@ -1301,11 +1296,11 @@ export function AssetCard(props: AssetCardProps): JSX.Element {
               styles: assetIllustration,
             }}
           >
-            <InternalAssetPreviewContext.Provider value={true}>
+            <InternalAssetPreviewContext value={true}>
               {renderCardChildren(props.children, renderProps)}
-            </InternalAssetPreviewContext.Provider>
-          </IllustrationContext.Provider>
-        </ImageContext.Provider>
+            </InternalAssetPreviewContext>
+          </IllustrationContext>
+        </ImageContext>
       )}
     </Card>
   );
@@ -1315,8 +1310,8 @@ export function UserCard(props: UserCardProps): JSX.Element {
   return (
     <Card {...props} density="spacious">
       {(renderProps) => (
-        <ImageContext.Provider value={{ alt: "", styles: userImage }}>
-          <AvatarContext.Provider
+        <ImageContext value={{ alt: "", styles: userImage }}>
+          <AvatarContext
             value={{
               size: avatarSize[renderProps.size],
               UNSAFE_style: {
@@ -1327,8 +1322,8 @@ export function UserCard(props: UserCardProps): JSX.Element {
             }}
           >
             {renderCardChildren(props.children, renderProps)}
-          </AvatarContext.Provider>
-        </ImageContext.Provider>
+          </AvatarContext>
+        </ImageContext>
       )}
     </Card>
   );
@@ -1338,7 +1333,7 @@ export function ProductCard(props: ProductCardProps): JSX.Element {
   return (
     <Card {...props} density="spacious">
       {(renderProps) => (
-        <ImageContext.Provider
+        <ImageContext
           value={{
             slots: {
               preview: {
@@ -1352,14 +1347,14 @@ export function ProductCard(props: ProductCardProps): JSX.Element {
             },
           }}
         >
-          <FooterContext.Provider value={{ styles: mergeStyles(footer, productFooter) }}>
-            <ButtonContext.Provider value={{ size: buttonSize[renderProps.size] }}>
-              <LinkButtonContext.Provider value={{ size: buttonSize[renderProps.size] }}>
+          <FooterContext value={{ styles: mergeStyles(footer, productFooter) }}>
+            <ButtonContext value={{ size: buttonSize[renderProps.size] }}>
+              <LinkButtonContext value={{ size: buttonSize[renderProps.size] }}>
                 {renderCardChildren(props.children, renderProps)}
-              </LinkButtonContext.Provider>
-            </ButtonContext.Provider>
-          </FooterContext.Provider>
-        </ImageContext.Provider>
+              </LinkButtonContext>
+            </ButtonContext>
+          </FooterContext>
+        </ImageContext>
       )}
     </Card>
   );

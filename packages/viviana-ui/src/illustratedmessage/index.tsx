@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/IllustratedMessage.tsx
 
 // Port of packages/@react-spectrum/s2/src/IllustratedMessage.tsx.
-import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
+import { Show, createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { ButtonGroupContext } from "../button";
 import {
@@ -33,6 +34,7 @@ import {
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { ContentContext, HeadingContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type IllustratedMessageSize = "S" | "M" | "L";
 export type IllustratedMessageOrientation = "horizontal" | "vertical";
@@ -247,11 +249,11 @@ export function IllustratedMessage(props: IllustratedMessageProps): JSX.Element 
       class={className()}
       style={mergedUnsafeStyle()}
     >
-      <HeadingContext.Provider
+      <HeadingContext
         value={{ styles: () => heading({ orientation: orientation(), size: size() }) }}
       >
-        <ContentContext.Provider value={{ styles: () => content({ size: size() }) }}>
-          <IllustrationContext.Provider
+        <ContentContext value={{ styles: () => content({ size: size() }) }}>
+          <IllustrationContext
             value={{
               get size() {
                 return size() === "L" ? "L" : "M";
@@ -265,7 +267,7 @@ export function IllustratedMessage(props: IllustratedMessageProps): JSX.Element 
                 }),
             }}
           >
-            <ButtonGroupContext.Provider value={{ styles: buttonGroup }}>
+            <ButtonGroupContext value={{ styles: buttonGroup }}>
               <Show when={local.illustration}>
                 <div class={illustration({ orientation: orientation(), size: size() })}>
                   {local.illustration}
@@ -280,10 +282,10 @@ export function IllustratedMessage(props: IllustratedMessageProps): JSX.Element 
                 <div class={content({ size: size() })}>{local.description}</div>
               </Show>
               {local.children}
-            </ButtonGroupContext.Provider>
-          </IllustrationContext.Provider>
-        </ContentContext.Provider>
-      </HeadingContext.Provider>
+            </ButtonGroupContext>
+          </IllustrationContext>
+        </ContentContext>
+      </HeadingContext>
     </div>
   );
 }

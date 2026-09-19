@@ -22,7 +22,7 @@
  * This is a 1:1 port of @react-aria/link's useLink hook.
  */
 
-import { type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -179,7 +179,7 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
 
     // ARIA attributes
     const ariaProps: Record<string, unknown> = {
-      "aria-disabled": disabled || undefined,
+      "aria-disabled": disabled ? "true" : undefined,
     };
 
     if (p["aria-current"] !== undefined) {
@@ -219,7 +219,7 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
       ariaProps,
       focusableProps as Record<string, unknown>,
       pressProps as Record<string, unknown>,
-      { "on:click": onClick },
+      { onClick: onClick },
     );
   };
 

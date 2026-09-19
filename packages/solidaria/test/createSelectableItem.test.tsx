@@ -8,8 +8,7 @@
  * BEFORE any consumer migrates onto it.
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { createRoot } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";

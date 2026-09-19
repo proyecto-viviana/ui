@@ -17,7 +17,8 @@
  * Based on @react-stately/color useColorWheelState.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { Color } from "./types";
 import { createHSLColor, normalizeColor } from "./Color";
 import { createInternalSignal, readNow } from "../utils";

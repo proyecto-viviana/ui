@@ -17,7 +17,8 @@
  * Based on @react-stately/color useColorAreaState.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { Color, ColorChannel, ColorAxes, ColorSpace } from "./types";
 import { normalizeColor } from "./Color";
 import { createInternalSignal } from "../utils";
@@ -156,10 +157,13 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
   const xChannelPageStep = createMemo(() => xRange().pageSize);
   const yChannelPageStep = createMemo(() => yRange().pageSize);
 
+  let lastValue: Color | null = internalValue();
+
   // Update value
   const updateValue = (newColor: Color) => {
     const opts = getOptions();
     const nextColor = opts.colorSpace ? newColor.toFormat(opts.colorSpace) : newColor;
+    lastValue = nextColor;
 
     // Controlled mode
     if (opts.value !== undefined) {
@@ -260,7 +264,13 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
 
     // Call onChangeEnd when dragging ends
     if (wasDragging && !dragging) {
-      getOptions().onChangeEnd?.(value());
+      const opts = getOptions();
+      const current =
+        lastValue ??
+        (opts.value !== undefined ? normalizeValue(opts.value) : null) ??
+        internalValue() ??
+        value();
+      opts.onChangeEnd?.(current);
     }
   };
 

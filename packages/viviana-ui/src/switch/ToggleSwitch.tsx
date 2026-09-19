@@ -16,7 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Switch.tsx.
 
-import { type JSX, splitProps, Show, useContext } from "solid-js";
+import { Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   getSlottedContextProps,
   mergeContextStyles,
@@ -48,6 +49,7 @@ import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type SwitchSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2SwitchSize = "S" | "M" | "L" | "XL";

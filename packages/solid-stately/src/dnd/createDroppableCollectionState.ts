@@ -20,7 +20,8 @@
  * Ported from packages/react-stately/src/dnd/useDroppableCollectionState.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type {
   DropItem,
   DropTarget,

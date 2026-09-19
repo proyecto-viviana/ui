@@ -5,7 +5,7 @@
 // The client lives outside this workspace and has no pnpm workspace symlinks.
 // It builds `@proyecto-viviana/ui`, `@proyecto-viviana/kumo`, and
 // `@proyecto-viviana/geist` for the browser
-// and server with the same vite-plugin-solid setup that the web app uses.
+// and server with the same `@solidjs/vite-plugin` setup that the web app uses.
 //
 // Prereq: run `vp run pack:local-chain` first (or `vp run ui:smoke`, which chains
 // both). This script consumes the tarballs that produced; it does not build them.
@@ -66,6 +66,21 @@ function capture(cmd, args, opts = {}) {
   return result.stdout;
 }
 
+// vite-plus-core publishes as `vite` via the npm alias, but its package name is
+// `@voidzero-dev/vite-plus-core` so npm does not create `.bin/vite`. The CLI
+// still ships at dist/vite/node/cli.js (same entry `vp` wraps).
+function viteCli() {
+  const cli = join(consumerDir, "node_modules", "vite", "dist", "vite", "node", "cli.js");
+  if (!existsSync(cli)) {
+    throw new Error(`vite-plus-core CLI missing at ${cli}`);
+  }
+  return cli;
+}
+
+function runVite(args) {
+  run(process.execPath, [viteCli(), ...args]);
+}
+
 // --- Resolve tarballs ----------------------------------------------------------
 const tarballs = {};
 const missing = [];
@@ -83,7 +98,11 @@ if (missing.length > 0) {
 }
 
 const fileSpec = (name) => `file:${tarballs[name]}`;
-const overrides = Object.fromEntries(packages.map((p) => [p.name, fileSpec(p.name)]));
+const overrides = {
+  ...Object.fromEntries(packages.map((p) => [p.name, fileSpec(p.name)])),
+  "solid-js": "2.0.0-rc.9",
+  "@solidjs/web": "2.0.0-rc.9",
+};
 
 // --- Scaffold the out-of-workspace consumer ------------------------------------
 rmSync(consumerDir, { recursive: true, force: true });
@@ -100,11 +119,12 @@ writeFileSync(
         "@proyecto-viviana/kumo": fileSpec("@proyecto-viviana/kumo"),
         "@proyecto-viviana/geist": fileSpec("@proyecto-viviana/geist"),
         "@proyecto-viviana/ui": fileSpec("@proyecto-viviana/ui"),
-        "solid-js": "^1.9.0",
+        "@solidjs/web": "2.0.0-rc.9",
+        "solid-js": "2.0.0-rc.9",
       },
       devDependencies: {
-        vite: "^6.0.0",
-        "vite-plugin-solid": "^2.11.12",
+        "@solidjs/vite-plugin": "3.0.0-next.44",
+        vite: "npm:@voidzero-dev/vite-plus-core@0.2.9",
       },
       // The closure's internal deps were rewritten workspace:* -> concrete
       // versions that aren't on the registry; redirect every one to its tarball.
@@ -118,12 +138,12 @@ writeFileSync(
 writeFileSync(
   join(consumerDir, "vite.config.mjs"),
   `import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 
 // A client consuming the *pre-built* package does NOT author style() macros, so
-// no macro plugin is needed (that is UC-04). It only needs vite-plugin-solid plus
-// the standard "keep our Solid packages out of the optimizer, bundle them into
-// SSR" wiring — the same shape apps/web uses for workspace sources.
+// no macro plugin is needed (that is UC-04). It only needs @solidjs/vite-plugin
+// plus the standard "keep our Solid packages out of the optimizer, bundle them
+// into SSR" wiring — the same shape apps/web uses for workspace sources.
 const pkgs = [
   "@proyecto-viviana/ui",
   "@proyecto-viviana/kumo",
@@ -135,12 +155,12 @@ const pkgs = [
 ];
 
 export default defineConfig({
-  // ssr:true makes vite-plugin-solid emit generate:'ssr' for the server build and
-  // generate:'dom' (hydratable) for the client build — without it the plugin
+  // ssr:true makes @solidjs/vite-plugin emit generate:'ssr' for the server build
+  // and generate:'dom' (hydratable) for the client build — without it the plugin
   // hardcodes 'dom' even under \`vite build --ssr\`, and the server crashes calling
-  // template() (a client-only API). solid-start/TanStack Start wire this for you;
-  // a plain dual-target vite build must opt in.
-  plugins: [solid({ ssr: true })],
+  // template() (a client-only API). TanStack Start wires this for you; a plain
+  // dual-target vite build must opt in. Spread the plugin: it returns an array.
+  plugins: [...solid({ ssr: true, refresh: { disabled: true } })],
   optimizeDeps: { exclude: pkgs },
   // Vite's SSR resolver defaults don't include the "solid" condition, so it would
   // otherwise grab the DOM-compiled .js (import condition) instead of the .jsx the
@@ -170,7 +190,7 @@ writeFileSync(join(consumerDir, "src", "App.jsx"), app);
 
 writeFileSync(
   join(consumerDir, "src", "entry-client.jsx"),
-  `import { render } from "solid-js/web";
+  `import { render } from "@solidjs/web";
 import { App } from "./App.jsx";
 
 render(() => <App />, document.getElementById("root"));
@@ -179,7 +199,7 @@ render(() => <App />, document.getElementById("root"));
 
 writeFileSync(
   join(consumerDir, "src", "entry-ssr.jsx"),
-  `import { renderToString } from "solid-js/web";
+  `import { renderToString } from "@solidjs/web";
 import { App } from "./App.jsx";
 
 export function renderApp() {
@@ -202,16 +222,17 @@ writeFileSync(
 
 // --- Install + build -----------------------------------------------------------
 process.stdout.write(`\n=== Consumer: ${consumerDir} ===\n`);
-run("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error"]);
+// @solidjs/vite-plugin peers vite ^8 || ^9; vite-plus-core publishes as 0.2.9.
+run("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error", "--legacy-peer-deps"]);
 
 process.stdout.write(`\n=== DOM build ===\n`);
-run("npm", ["exec", "--", "vite", "build"]);
+runVite(["build"]);
 if (!existsSync(join(consumerDir, "dist", "index.html"))) {
   throw new Error("DOM build produced no dist/index.html");
 }
 
 process.stdout.write(`\n=== SSR build ===\n`);
-run("npm", ["exec", "--", "vite", "build", "--ssr", "src/entry-ssr.jsx", "--outDir", "dist-ssr"]);
+runVite(["build", "--ssr", "src/entry-ssr.jsx", "--outDir", "dist-ssr"]);
 
 process.stdout.write(`\n=== SSR render ===\n`);
 const html = capture("node", [

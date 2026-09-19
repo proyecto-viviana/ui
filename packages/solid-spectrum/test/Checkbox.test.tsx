@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { Checkbox, CheckboxContext, CheckboxGroup, CheckboxGroupContext, Form } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
@@ -359,7 +357,7 @@ describe("Checkbox", () => {
       const inputRef = vi.fn();
 
       render(() => (
-        <CheckboxContext.Provider
+        <CheckboxContext
           value={{
             "aria-label": "Context checkbox",
             defaultSelected: true,
@@ -370,7 +368,7 @@ describe("Checkbox", () => {
           }}
         >
           <Checkbox />
-        </CheckboxContext.Provider>
+        </CheckboxContext>
       ));
 
       const checkbox = screen.getByRole("checkbox", {
@@ -430,7 +428,7 @@ describe("Checkbox", () => {
       const ref = vi.fn();
 
       render(() => (
-        <CheckboxGroupContext.Provider
+        <CheckboxGroupContext
           value={{
             label: "Context notifications",
             defaultValue: ["sms"],
@@ -445,7 +443,7 @@ describe("Checkbox", () => {
             <Checkbox value="email">Email</Checkbox>
             <Checkbox value="sms">SMS</Checkbox>
           </CheckboxGroup>
-        </CheckboxGroupContext.Provider>
+        </CheckboxGroupContext>
       ));
 
       const group = screen.getByRole("group", { name: "Context notifications" });

@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, JSX, onMount, Show, For, Suspense, lazy } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, JSX, onMount, Show, For, Suspense, lazy } from "solid-js";
 import {
   Button,
   Badge,

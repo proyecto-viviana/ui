@@ -20,7 +20,8 @@
  * packages/react-aria-components/src/useDragAndDrop.tsx.
  */
 
-import type { Accessor, JSX } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { DragPreview } from "./DragPreview";
 import { ListDropTargetDelegate } from "./ListDropTargetDelegate";
 import {

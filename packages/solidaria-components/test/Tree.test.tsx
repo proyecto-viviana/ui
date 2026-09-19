@@ -9,29 +9,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import {
-  Tree,
-  TreeItem,
-  TreeLoadMoreItem,
-  TreeExpandButton,
-  TreeHeader,
-  TreeSection,
-  TreeSelectionCheckbox,
-} from "../src/Tree";
-import { useDragAndDrop } from "../src/useDragAndDrop";
-import type {
-  TreeItemData,
-  DraggableCollectionState,
-  DroppableCollectionState,
-  DropTarget,
-  DragTypes,
-  DropOperation,
-} from "@proyecto-viviana/solid-stately";
-import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { Tree, TreeItem, TreeLoadMoreItem, TreeExpandButton, TreeHeader, TreeSection, TreeSelectionCheckbox, } from "../src/Tree"; import { useDragAndDrop } from "../src/useDragAndDrop"; import type { TreeItemData, DraggableCollectionState, DroppableCollectionState, DropTarget, DragTypes, DropOperation, } from "@proyecto-viviana/solid-stately"; import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils"; import { I18nProvider } from "@proyecto-viviana/solidaria"; import { createSignal, flush } from "solid-js";
 
 interface TestItem {
   name: string;
@@ -295,6 +273,7 @@ describe("Tree", () => {
         expect(observer.observe).toHaveBeenCalledTimes(1);
         expect(observer.disconnect).not.toHaveBeenCalled();
         setScrollOffset(2);
+        flush();
         expect(observer.disconnect).toHaveBeenCalledTimes(1);
         expect(observer.observe).toHaveBeenCalledTimes(2);
       } finally {
@@ -477,9 +456,11 @@ describe("Tree", () => {
       expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
 
       onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+      flush();
       expect(screen.getByText("Item 1.1")).toBeInTheDocument();
 
       onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
+      flush();
       expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
     });
 

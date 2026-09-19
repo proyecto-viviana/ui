@@ -36,14 +36,9 @@
  * - packages/react-aria/src/dnd/utils.ts
  */
 
-import {
-  createMemo,
-  createEffect,
-  createSignal,
-  onCleanup,
-  untrack,
-  type Accessor,
-} from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createMemo, createEffect, createSignal, untrack } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { DraggableCollectionState } from "@proyecto-viviana/solid-stately";
 import { getTypes } from "./utils";
 import { isVirtualDragging } from "./DragManager";
@@ -55,11 +50,14 @@ import { isVirtualDragging } from "./DragManager";
 // reactivity only re-runs the indicator JSX if it subscribed to a signal. Plain
 // module `let`s would make the gate read a stale snapshot and never re-render.
 const [globalDraggingCollectionRef, setGlobalDraggingCollectionRefSignal] =
-  createSignal<HTMLElement | null>(null);
+  createSignal<HTMLElement | null>(null, { ownedWrite: true });
 const [globalDraggingKeys, setGlobalDraggingKeysSignal] = createSignal<Set<string | number>>(
   new Set(),
+  { ownedWrite: true },
 );
-const [globalDraggingTypes, setGlobalDraggingTypesSignal] = createSignal<Set<string>>(new Set());
+const [globalDraggingTypes, setGlobalDraggingTypesSignal] = createSignal<Set<string>>(new Set(), {
+  ownedWrite: true,
+});
 
 export function setGlobalDraggingCollectionRef(ref: HTMLElement | null): void {
   setGlobalDraggingCollectionRefSignal(ref);
@@ -107,50 +105,71 @@ export function createDraggableCollection(
   state: DraggableCollectionState,
 ): DraggableCollectionAria {
   const ref = createMemo(() => options.ref());
+  let published: HTMLElement | null = null;
 
-  // Track dragging state globally. This effect subscribes to THIS collection's
-  // `state.draggingKeys`; the global-ref reads are untracked so writing the
-  // globals (which are now signals) can't re-trigger this same effect into a
-  // loop — only a real change in this collection's dragging keys should re-run it.
-  createEffect(() => {
-    const currentRef = ref();
-    if (state.draggingKeys.size > 0) {
-      // Never write `null` over the element `createDraggableItem` stamped
-      // synchronously on keyboard pickup (RAC `useDraggableCollection.ts:29-32`
-      // sets `draggingCollectionRef` during render; a null `ref()` here would
-      // make `isInternal` false, `onReorder` cancel, and the collection drop
-      // out of `validDropTargets` so focusing the indicator bounces to
-      // `listbox:Permissions`).
-      if (currentRef && untrack(getGlobalDraggingCollectionRef) !== currentRef) {
-        setGlobalDraggingCollectionRef(currentRef);
+  // Track dragging state globally. Subscribe in compute; write globals in apply
+  // so this is not a forbidden write inside a tracked effect.
+  createEffect(
+    () => ({
+      currentRef: ref(),
+      size: state.draggingKeys.size,
+      keys: state.draggingKeys,
+      virtual: isVirtualDragging(),
+    }),
+    ({ currentRef, size, keys, virtual }) => {
+      const clearIfOwner = () => {
+        if (
+          untrack(getGlobalDraggingCollectionRef) === currentRef ||
+          untrack(getGlobalDraggingCollectionRef) === published
+        ) {
+          published = null;
+          setGlobalDraggingCollectionRef(null);
+          setGlobalDraggingKeys(new Set());
+          setGlobalDraggingTypes(new Set());
+        }
+      };
+
+      if (size > 0) {
+        // Never write `null` over the element `createDraggableItem` stamped
+        // synchronously on keyboard pickup (RAC `useDraggableCollection.ts:29-32`
+        // sets `draggingCollectionRef` during render; a null `ref()` here would
+        // make `isInternal` false, `onReorder` cancel, and the collection drop
+        // out of `validDropTargets` so focusing the indicator bounces to
+        // `listbox:Permissions`).
+        if (currentRef && untrack(getGlobalDraggingCollectionRef) !== currentRef) {
+          published = currentRef;
+          setGlobalDraggingCollectionRef(currentRef);
+        }
+        setGlobalDraggingKeys(keys);
+        setGlobalDraggingTypes(getTypes(state.getItems(keys)));
+        // Solid 2 apply cleanup runs on dispose even when onOwnedCleanup is a
+        // no-op (tests that createRoot-dispose before a later owner flush).
+        return clearIfOwner;
       }
-      setGlobalDraggingKeys(state.draggingKeys);
-      setGlobalDraggingTypes(getTypes(state.getItems(state.draggingKeys)));
-      return;
-    }
 
-    // A keyboard DragManager session owns these globals until teardown. Clearing
-    // them here races `beginDragging`'s rAF `setup()` when this effect still
-    // sees `draggingKeys.size === 0`.
-    if (isVirtualDragging()) {
-      return;
-    }
+      // A keyboard DragManager session owns these globals until teardown. Clearing
+      // them here races `beginDragging`'s rAF `setup()` when this effect still
+      // sees `draggingKeys.size === 0`.
+      if (virtual) {
+        return;
+      }
 
-    // Clear global drag tracking when this collection is no longer dragging.
-    if (untrack(getGlobalDraggingCollectionRef) === currentRef) {
-      setGlobalDraggingCollectionRef(null);
-      setGlobalDraggingKeys(new Set());
-      setGlobalDraggingTypes(new Set());
-    }
-  });
+      // Clear global drag tracking when this collection is no longer dragging.
+      clearIfOwner();
+    },
+  );
 
   // Clean up on unmount
-  onCleanup(() => {
-    if (untrack(getGlobalDraggingCollectionRef) === ref()) {
+  onOwnedCleanup(() => {
+    if (
+      untrack(getGlobalDraggingCollectionRef) === published ||
+      untrack(getGlobalDraggingCollectionRef) === untrack(ref)
+    ) {
       setGlobalDraggingCollectionRef(null);
       setGlobalDraggingKeys(new Set());
       setGlobalDraggingTypes(new Set());
     }
+    published = null;
   });
 
   return {

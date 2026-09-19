@@ -14,11 +14,11 @@
 
 // Ported from packages/react-aria/src/button/useToggleButtonGroup.ts.
 
-import type { JSX } from "solid-js";
-import { splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, ToggleGroupProps, ToggleGroupState } from "@proyecto-viviana/solid-stately";
 import { createToolbar, type Orientation } from "../toolbar";
 import { mergeProps } from "../utils";
+import { splitProps } from "../utils/splitProps";
 import {
   createToggleButton,
   type AriaToggleButtonProps,
@@ -78,7 +78,7 @@ export function createToggleButtonGroup(
       return state.selectionMode === "single" ? "radiogroup" : toolbarProps.role;
     },
     get "aria-disabled"() {
-      return props.isDisabled || undefined;
+      return props.isDisabled ? "true" : undefined;
     },
   }) as JSX.HTMLAttributes<HTMLElement>;
 
@@ -113,8 +113,7 @@ export function createToggleButtonGroupItem(
   );
 
   const baseButtonProps = toggleButton.buttonProps as Record<string, unknown>;
-  const buttonProps: Record<string, unknown> = {
-    ...baseButtonProps,
+  const buttonProps = mergeProps(baseButtonProps, {
     get role() {
       if (state.selectionMode === "single") {
         return "radio";
@@ -125,15 +124,15 @@ export function createToggleButtonGroupItem(
       if (state.selectionMode !== "single") {
         return undefined;
       }
-      return state.selectedKeys.has(props.id);
+      return state.selectedKeys.has(props.id) ? "true" : "false";
     },
     get "aria-pressed"() {
       if (state.selectionMode === "single") {
-        return undefined;
+        return null;
       }
       return baseButtonProps["aria-pressed"];
     },
-  };
+  });
 
   return {
     ...toggleButton,

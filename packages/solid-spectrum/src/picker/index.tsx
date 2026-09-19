@@ -16,17 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Picker.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  mergeProps,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, createUniqueId, merge, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Select as HeadlessSelect,
   SelectContext as HeadlessSelectContext,
@@ -88,6 +79,7 @@ import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import { HeaderContext, HeadingContext, TextContext } from "../text";
+import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   menuItemDescription,
   menuItemIcon,
@@ -704,9 +696,9 @@ function pickerValueContent<T>(
   // `InsideSelectValueContext`/`DefaultProvider` handshake (Picker.tsx:864-880).
   if (valueProps.selectedItems.length > 0 && renderValue) {
     return (
-      <InsidePickerValueContext.Provider value={true}>
+      <InsidePickerValueContext value={true}>
         <div style={{ display: "contents" }}>{renderValue(selectedValues(valueProps))}</div>
-      </InsidePickerValueContext.Provider>
+      </InsidePickerValueContext>
     );
   }
 
@@ -728,9 +720,9 @@ function pickerValueContent<T>(
   const selected = valueProps.selectedItems[0];
   if (selected != null && selected.value != null) {
     return (
-      <InsidePickerValueContext.Provider value={true}>
+      <InsidePickerValueContext value={true}>
         {renderItem(selected.value as T)}
-      </InsidePickerValueContext.Provider>
+      </InsidePickerValueContext>
     );
   }
 
@@ -929,7 +921,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   };
 
   return (
-    <PickerSizeContext.Provider value={size()}>
+    <PickerSizeContext value={size()}>
       <HeadlessSelect
         {...selectProps}
         placeholder={
@@ -970,7 +962,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                     }
                   >
                     {(valueProps) => (
-                      <IconContext.Provider
+                      <IconContext
                         value={{
                           slot: "icon",
                           render: centerBaseline({
@@ -980,7 +972,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                           styles: menuItemIcon,
                         }}
                       >
-                        <AvatarContext.Provider
+                        <AvatarContext
                           value={{
                             slots: {
                               default: {
@@ -994,7 +986,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                             },
                           }}
                         >
-                          <TextContext.Provider
+                          <TextContext
                             value={{
                               slots: {
                                 description: {},
@@ -1017,9 +1009,9 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                                 count: valueProps.selectedItems.length,
                               }),
                             )}
-                          </TextContext.Provider>
-                        </AvatarContext.Provider>
-                      </IconContext.Provider>
+                          </TextContext>
+                        </AvatarContext>
+                      </IconContext>
                     )}
                   </HeadlessSelectValue>
                   <Show when={isInvalid() && !triggerProps.isDisabled}>
@@ -1074,14 +1066,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <HeaderContext.Provider value={{ styles: () => listboxHeader({ size: size() }) }}>
-                <HeadingContext.Provider
+              <HeaderContext value={{ styles: () => listboxHeader({ size: size() }) }}>
+                <HeadingContext
                   value={{
                     role: "presentation",
                     styles: menuSectionHeading,
                   }}
                 >
-                  <TextContext.Provider
+                  <TextContext
                     value={{
                       slots: {
                         description: {
@@ -1122,14 +1114,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                         {listBoxChildren}
                       </HeadlessSelectListBox>
                     </Virtualizer>
-                  </TextContext.Provider>
-                </HeadingContext.Provider>
-              </HeaderContext.Provider>
+                  </TextContext>
+                </HeadingContext>
+              </HeaderContext>
             </PickerListBoxPopover>
           </>
         )}
       />
-    </PickerSizeContext.Provider>
+    </PickerSizeContext>
   );
 }
 
@@ -1196,7 +1188,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     const labelId = headlessText?.slots?.label?.id ?? headlessText?.slots?.default?.id;
     const descriptionId = headlessText?.slots?.description?.id;
     return (
-      <TextContext.Provider
+      <TextContext
         value={{
           slots: {
             default: {
@@ -1223,7 +1215,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
         }}
       >
         <PickerItemContents renderProps={contentProps.renderProps} />
-      </TextContext.Provider>
+      </TextContext>
     );
   };
   const PickerItemContents = (contentProps: { renderProps: SelectOptionRenderProps }) => {
@@ -1279,7 +1271,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
       style={pressScale(() => optionEl(), local.UNSAFE_style)}
     >
       {(renderProps) => (
-        <IconContext.Provider
+        <IconContext
           value={{
             slot: "icon",
             render: centerBaseline({
@@ -1289,7 +1281,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             styles: menuItemIcon,
           }}
         >
-          <AvatarContext.Provider
+          <AvatarContext
             value={{
               slots: {
                 default: { size: pickerAvatarSize[size], styles: pickerAvatar },
@@ -1298,8 +1290,8 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             }}
           >
             <PickerItemChrome renderProps={renderProps} />
-          </AvatarContext.Provider>
-        </IconContext.Provider>
+          </AvatarContext>
+        </IconContext>
       )}
     </HeadlessSelectOption>
   );

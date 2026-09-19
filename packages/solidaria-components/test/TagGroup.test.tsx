@@ -9,9 +9,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush, Show } from "solid-js";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -765,18 +763,23 @@ describe("TagGroup", () => {
     });
 
     it("drops Remove buttons when onRemove is cleared live", async () => {
-      const [onRemove, setOnRemove] = createSignal<((keys: Set<string>) => void) | undefined>(
-        vi.fn(),
-      );
+      const handler = vi.fn();
+      const [allowRemove, setAllowRemove] = createSignal(true);
       render(() => (
         <TagGroup>
-          <TagList items={sampleItems} aria-label="Test" onRemove={onRemove()}>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            onRemove={allowRemove() ? handler : undefined}
+          >
             {(item) => (
               <Tag id={item.id}>
                 {(renderProps) => (
                   <>
                     {item.name}
-                    {renderProps.allowsRemoving ? <TagRemoveButton /> : null}
+                    <Show when={renderProps.allowsRemoving}>
+                      <TagRemoveButton />
+                    </Show>
                   </>
                 )}
               </Tag>
@@ -784,9 +787,16 @@ describe("TagGroup", () => {
           </TagList>
         </TagGroup>
       ));
+      flush();
 
+      const tags = document.querySelectorAll(".solidaria-Tag");
+      expect(
+        [...tags].map((tag) => tag.getAttribute("data-allows-removing")),
+        `tags=${tags.length}`,
+      ).toEqual(["true", "true", "true", "true"]);
       expect(document.querySelectorAll(".solidaria-TagRemoveButton").length).toBe(4);
-      setOnRemove(undefined);
+      setAllowRemove(false);
+      flush();
       await waitFor(() => {
         expect(document.querySelectorAll(".solidaria-TagRemoveButton").length).toBe(0);
       });

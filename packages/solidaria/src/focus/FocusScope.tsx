@@ -17,26 +17,12 @@
  * Ported from packages/react-aria/src/focus/FocusScope.tsx.
  */
 
-import {
-  createContext,
-  useContext,
-  createEffect,
-  onCleanup,
-  type JSX,
-  type Accessor,
-  type ParentComponent,
-  createSignal,
-  onMount,
-} from "solid-js";
-import { isServer } from "solid-js/web";
-import {
-  getOwnerDocument,
-  isFocusable,
-  isTabbable,
-  getFocusableTreeWalker,
-  getActiveElement,
-} from "../utils";
-import { focusSafely, runAfterPaint } from "../utils/focus";
+import { getOwnerDocument, isFocusable, isTabbable, getFocusableTreeWalker, getActiveElement, useContextOptional, onOwnedCleanup } from "../utils";
+import { createContext, createEffect, createSignal, onSettled } from "solid-js";
+import type { Accessor, ParentComponent } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
+import { focusSafely, focusWithoutScrolling, runAfterPaint } from "../utils/focus";
 
 const RESTORE_FOCUS_EVENT = "react-aria-focus-scope-restore";
 
@@ -205,7 +191,7 @@ const FocusScopeContext = createContext<FocusScopeContextValue | null>(null);
  * a FocusScope, e.g. in response to user events like keyboard navigation.
  */
 export function useFocusManager(): FocusManager | undefined {
-  return useContext(FocusScopeContext)?.focusManager;
+  return useContextOptional(FocusScopeContext)?.focusManager;
 }
 
 /**
@@ -260,10 +246,12 @@ function focusFirstInScope(scope: Element[]): void {
 
 function restoreFocusToElement(node: HTMLElement): void {
   // Dispatch a custom event that parent elements can intercept to customize focus restoration.
+  // Restoration must be synchronous: `focusSafely` defers under virtual modality
+  // (`runAfterTransition`) and the leaving scope is gone by then.
   if (
     node.dispatchEvent(new CustomEvent(RESTORE_FOCUS_EVENT, { bubbles: true, cancelable: true }))
   ) {
-    focusSafely(node);
+    focusWithoutScrolling(node);
   }
 }
 
@@ -421,9 +409,9 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     return <>{props.children}</>;
   }
 
-  const [startEl, setStartEl] = createSignal<HTMLSpanElement | null>(null);
-  const [endEl, setEndEl] = createSignal<HTMLSpanElement | null>(null);
-  const [scopeElements, setScopeElements] = createSignal<Element[]>([]);
+  const [startEl, setStartEl] = createSignal<HTMLSpanElement | null>(null, { ownedWrite: true });
+  const [endEl, setEndEl] = createSignal<HTMLSpanElement | null>(null, { ownedWrite: true });
+  const [scopeElements, setScopeElements] = createSignal<Element[]>([], { ownedWrite: true });
 
   const syncScopeElements = () => {
     const next = collectScopeElements(startEl(), endEl());
@@ -435,9 +423,11 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   // The nearest enclosing FocusScope (through context, which Solid propagates
   // across portals) is this scope's parent in the focus-scope tree. Read it
   // before we shadow the context with our own provider below.
-  const parentScopeRef = useContext(FocusScopeContext)?.scopeRef ?? null;
+  const parentScopeRef = useContextOptional(FocusScopeContext)?.scopeRef ?? null;
 
-  // Store the element that was focused when the scope mounted
+  // Store the element that was focused when the scope mounted. Capture at
+  // setup — before autoFocus/contain effects — so we don't save a child of
+  // this scope after focus has already moved inside.
   let nodeToRestore: Element | null = null;
 
   const getRestorableElement = (element: Element | null, doc: Document): Element | null => {
@@ -446,6 +436,10 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     }
     return element;
   };
+
+  if (props.restoreFocus) {
+    nodeToRestore = getRestorableElement(getActiveElement(document), document);
+  }
 
   // Create focus manager
   const focusManager: FocusManager = {
@@ -546,52 +540,66 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   // Re-collect when sentinels mount and when siblings between them change.
   // A one-shot onMount miss (empty first paint, delayed collection) would leave
   // auto-focus and contain permanently disabled even after the overlay exists.
-  createEffect(() => {
-    const start = startEl();
-    const end = endEl();
-    if (!start || !end) {
-      return;
-    }
+  createEffect(
+    () => {
+      const start = startEl();
+      const end = endEl();
+      return { start, end };
+    },
+    ({ start, end }) => {
+      if (!start || !end) {
+        return;
+      }
 
-    syncScopeElements();
-    const parent = start.parentNode;
-    if (!parent) {
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
       syncScopeElements();
-    });
-    observer.observe(parent, { childList: true });
-    onCleanup(() => observer.disconnect());
-  });
+      const parent = start.parentNode;
+      if (!parent) {
+        return;
+      }
+
+      const observer = new MutationObserver(() => {
+        syncScopeElements();
+      });
+      observer.observe(parent, { childList: true });
+      return () => observer.disconnect();
+    },
+  );
 
   // Register this scope in the focus-scope tree so containment can recognize a
   // portaled descendant scope as "inside" it. The scope-elements accessor is a
   // stable identity, so it works as the tree key even before it's populated.
-  onMount(() => {
-    focusScopeTree.addTreeNode(scopeElements, parentScopeRef);
+  onSettled(() => {
+    focusScopeTree.addTreeNode(scopeElements, parentScopeRef, nodeToRestore ?? undefined);
   });
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     focusScopeTree.removeTreeNode(scopeElements);
   });
 
-  // Save the currently focused element for restoration (must happen before autoFocus/contain effects run).
-  onMount(() => {
+  // Persist the restore target onto the scope tree. Do not overwrite a
+  // setup-time capture with whatever is focused after autoFocus.
+  onSettled(() => {
     if (!props.restoreFocus) return;
 
-    // Focus can be in the main document, or inside this iframe's document.
-    const scopeDoc = startEl() ? getOwnerDocument(startEl() as Element) : document;
-    const scopeActive = getActiveElement(scopeDoc);
-    const topActive = getActiveElement(document);
-
     const persistRestoreTarget = (element: Element | null) => {
-      nodeToRestore = element;
+      if (element) {
+        nodeToRestore = element;
+      }
       const treeNode = focusScopeTree.getTreeNode(scopeElements);
       if (treeNode && nodeToRestore) {
         treeNode.nodeToRestore = nodeToRestore;
       }
     };
+
+    if (nodeToRestore && nodeToRestore.isConnected) {
+      persistRestoreTarget(nodeToRestore);
+      return;
+    }
+
+    // Focus can be in the main document, or inside this iframe's document.
+    const scopeDoc = startEl() ? getOwnerDocument(startEl() as Element) : document;
+    const scopeActive = getActiveElement(scopeDoc);
+    const topActive = getActiveElement(document);
+    const scope = scopeElements();
 
     // If the scope is in an iframe and that iframe is currently focused, prefer the iframe document's active element.
     if (
@@ -599,13 +607,17 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       document.activeElement instanceof HTMLIFrameElement &&
       document.activeElement.contentDocument === scopeDoc &&
       scopeActive &&
-      scopeActive !== scopeDoc.body
+      scopeActive !== scopeDoc.body &&
+      !isElementInScope(scopeActive, scope)
     ) {
       persistRestoreTarget(getRestorableElement(scopeActive, scopeDoc));
       return;
     }
 
-    persistRestoreTarget(getRestorableElement(topActive, document));
+    const candidate = getRestorableElement(topActive, document);
+    if (candidate && !isElementInScope(candidate, scope)) {
+      persistRestoreTarget(candidate);
+    }
   });
 
   // Match @react-aria/focus `useAutoFocus`: one-shot after paint so overlay
@@ -615,33 +627,47 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   // forever after children appear.
   let autoFocusStarted = false;
   let cancelAutoFocus: (() => void) | undefined;
-  createEffect(() => {
-    if (!props.autoFocus || autoFocusStarted) return;
+  createEffect(
+    () => {
+      const autoFocus = !!props.autoFocus;
+      const scope = scopeElements();
+      return {
+        autoFocus,
+        ready: scope.length > 0 && !!firstInScope(scope),
+        scope,
+      };
+    },
+    ({ autoFocus, ready, scope }) => {
+      if (!autoFocus || autoFocusStarted || !ready) return;
 
-    const scope = scopeElements();
-    if (scope.length === 0 || !firstInScope(scope)) return;
-
-    autoFocusStarted = true;
-    const doc = getOwnerDocument(scope[0]);
-    cancelAutoFocus = runAfterPaint(() => {
-      cancelAutoFocus = undefined;
-      const currentScope = scopeElements();
-      if (currentScope.length === 0) return;
-      const activeElement = getActiveElement(doc);
-      if (!isElementInScope(activeElement, currentScope)) {
-        focusFirstInScope(currentScope);
-      }
-    }, doc);
-  });
-  onCleanup(() => {
+      autoFocusStarted = true;
+      const doc = getOwnerDocument(scope[0]);
+      cancelAutoFocus = runAfterPaint(() => {
+        cancelAutoFocus = undefined;
+        const currentScope = scopeElements();
+        if (currentScope.length === 0) return;
+        const activeElement = getActiveElement(doc);
+        if (!isElementInScope(activeElement, currentScope)) {
+          focusFirstInScope(currentScope);
+        }
+      }, doc);
+    },
+  );
+  onOwnedCleanup(() => {
     cancelAutoFocus?.();
   });
 
-  // Focus containment
-  createEffect(() => {
-    if (!props.contain) return;
+  // Focus containment. Split createEffect so reading JSX `contain` (a compiler
+  // memo getter) does not create a primitive inside createTrackedEffect.
+  createEffect(
+    () => {
+      const contain = !!props.contain;
+      const scope = scopeElements();
+      return { contain, scope };
+    },
+    ({ contain, scope }) => {
+    if (!contain) return;
 
-    const scope = scopeElements();
     if (scope.length === 0) return;
 
     const doc = getOwnerDocument(scope[0]);
@@ -737,19 +763,20 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     doc.addEventListener("focusin", onFocusIn, true);
     doc.addEventListener("focusout", onFocusOut, true);
 
-    onCleanup(() => {
+    return () => {
       doc.removeEventListener("keydown", onKeyDown, true);
       doc.removeEventListener("focusin", onFocusIn, true);
       doc.removeEventListener("focusout", onFocusOut, true);
       if (restoreRaf != null) {
         (doc.defaultView ?? window).cancelAnimationFrame(restoreRaf);
       }
-    });
-  });
+    };
+    },
+  );
 
   // Restore focus on unmount. Walk ancestor scopes when nodeToRestore is gone
   // or a parent scope has nothing focusable, matching @react-aria/focus.
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (!props.restoreFocus) {
       return;
     }
@@ -765,48 +792,77 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     const clonedTree = focusScopeTree.clone();
     const win = scopeDoc.defaultView ?? window;
 
-    win.requestAnimationFrame(() => {
+    const restoreToParentScope = (): boolean => {
+      if (parentScopeRef) {
+        const first = firstInScope(parentScopeRef());
+        if (first) {
+          restoreFocusToElement(first);
+          return true;
+        }
+      }
+      let node: FocusScopeTreeNode | null | undefined =
+        clonedTree.getTreeNode(scopeElements)?.parent ?? null;
+      while (node) {
+        if (node.scopeRef && focusScopeTree.getTreeNode(node.scopeRef)) {
+          const first = firstInScope(node.scopeRef());
+          if (first) {
+            restoreFocusToElement(first);
+            return true;
+          }
+        }
+        node = node.parent;
+      }
+      return false;
+    };
+
+    const tryRestore = () => {
       // RAC FocusScope restores when the document's focus is the body after
       // unmount. Instant overlay unmount (no exit animation) can leave
       // activeElement on a detached dialog node instead of body; treat that
       // the same so DialogTrigger popovers restore the trigger (#274).
-      const active = scopeDoc.activeElement;
-      if (active && active !== scopeDoc.body && active.isConnected) {
+      // Do not restore while the leaving scope still holds focus — that must
+      // wait a frame so "restore after one frame" tests stay deferred.
+      const active = scopeDoc.activeElement as HTMLElement | null;
+      if (
+        active &&
+        active !== scopeDoc.body &&
+        active !== scopeDoc.documentElement &&
+        active.isConnected
+      ) {
+        return;
+      }
+
+      if (saved && saved.isConnected) {
+        restoreFocusToElement(saved);
         return;
       }
 
       let node: FocusScopeTreeNode | null | undefined = clonedTree.getTreeNode(scopeElements);
       while (node) {
-        if (node.nodeToRestore && node.nodeToRestore.isConnected) {
+        if (
+          node.nodeToRestore &&
+          node.nodeToRestore.isConnected &&
+          node.scopeRef !== scopeElements
+        ) {
           restoreFocusToElement(node.nodeToRestore as HTMLElement);
           return;
         }
         node = node.parent;
       }
 
-      // If no nodeToRestore was found, focus the first element in the nearest
-      // ancestor scope that is still in the tree. The scope may have nothing
-      // focusable in it; keep walking up in that case.
-      node = clonedTree.getTreeNode(scopeElements);
-      while (node) {
-        if (node.scopeRef && focusScopeTree.getTreeNode(node.scopeRef)) {
-          const first = firstInScope(node.scopeRef());
-          if (first) {
-            restoreFocusToElement(first);
-            return;
-          }
-        }
-        node = node.parent;
-      }
-    });
+      restoreToParentScope();
+    };
+
+    tryRestore();
+    win.requestAnimationFrame(tryRestore);
   });
 
   return (
-    <FocusScopeContext.Provider value={{ focusManager, scopeRef: scopeElements }}>
+    <FocusScopeContext value={{ focusManager, scopeRef: scopeElements }}>
       <span data-focus-scope-start hidden ref={(el) => setStartEl(el ?? null)} />
       {props.children}
       <span data-focus-scope-end hidden ref={(el) => setEndEl(el ?? null)} />
-    </FocusScopeContext.Provider>
+    </FocusScopeContext>
   );
 };
 

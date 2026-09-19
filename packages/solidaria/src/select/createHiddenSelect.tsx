@@ -17,16 +17,9 @@
  * Ported from packages/react-aria/src/select/HiddenSelect.tsx.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  For,
-  Show,
-  createEffect,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-} from "solid-js";
+import { For, Show, createEffect, createRenderEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createFormValidation } from "../form/createFormValidation";
 import { visuallyHiddenStyles } from "../visually-hidden/createVisuallyHidden";
@@ -115,22 +108,25 @@ export function createHiddenSelect<T>(
   // RAC HiddenSelect.tsx:144 — `value: state.value`. React applies that after
   // the option children commit; Solid has to write the DOM property once the
   // <option>s exist, or the native select stays on the empty placeholder.
-  createRenderEffect(() => {
-    const el = selectEl();
-    if (!el) return;
-    const next = nativeSelectValue();
-    if (Array.isArray(next)) {
-      const selected = new Set(next);
-      for (const option of el.options) {
-        option.selected = selected.has(option.value);
+  createRenderEffect(
+    () => [selectEl(), nativeSelectValue()] as const,
+    ([el, next]) => {
+      if (!el) return;
+      if (Array.isArray(next)) {
+        const selected = new Set(next);
+        for (const option of el.options) {
+          option.selected = selected.has(option.value);
+        }
+      } else if (el.value !== next) {
+        el.value = next;
       }
-    } else if (el.value !== next) {
-      el.value = next;
-    }
-  });
+    },
+  );
 
   // Set up form reset handler
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const p = getProps();
     const el = selectEl();
     if (!el) return;
@@ -146,10 +142,12 @@ export function createHiddenSelect<T>(
 
     form.addEventListener("reset", handleReset);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       form.removeEventListener("reset", handleReset);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     get containerProps() {
@@ -160,7 +158,7 @@ export function createHiddenSelect<T>(
           top: 0,
           left: 0,
         },
-        "aria-hidden": true,
+        "aria-hidden": "true",
         "data-a11y-ignore": "aria-hidden-focus",
         "data-react-aria-prevent-focus": true,
       } as JSX.HTMLAttributes<HTMLDivElement>;

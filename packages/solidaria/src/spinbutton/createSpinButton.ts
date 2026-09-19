@@ -22,7 +22,7 @@
  * segments drive value changes through the keyboard only.
  */
 
-import { createMemo, createEffect } from "solid-js";
+import { createMemo, createEffect, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createStringFormatter } from "../i18n";
 import { announce, clearAnnouncer } from "../live-announcer";
@@ -143,7 +143,7 @@ export function createSpinButton(props: MaybeAccessor<SpinButtonProps>): SpinBut
       : (p.textValue || `${p.value}`).replace("-", "−");
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const value = ariaTextValue();
     if (isFocused) {
       clearAnnouncer("assertive");

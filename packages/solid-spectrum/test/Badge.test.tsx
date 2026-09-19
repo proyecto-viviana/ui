@@ -80,7 +80,7 @@ describe("Badge (solid-spectrum)", () => {
 
   it("supports context props and unsafe escape hatches", () => {
     const { container } = render(() => (
-      <BadgeContext.Provider
+      <BadgeContext
         value={{
           variant: "negative",
           fillStyle: "outline",
@@ -91,7 +91,7 @@ describe("Badge (solid-spectrum)", () => {
         <Badge class="local-badge" UNSAFE_className="unsafe-badge">
           Context
         </Badge>
-      </BadgeContext.Provider>
+      </BadgeContext>
     ));
 
     const badge = container.querySelector('[role="presentation"]') as HTMLElement;

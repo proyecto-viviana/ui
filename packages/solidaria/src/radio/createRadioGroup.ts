@@ -21,7 +21,8 @@
  * This is a 1:1 port of @react-aria/radio's useRadioGroup hook.
  */
 
-import { JSX, createEffect } from "solid-js";
+import { createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { mergeProps } from "../utils/mergeProps";
@@ -183,13 +184,13 @@ export function createRadioGroup(
     radioGroupData.set(state, {
       name: groupName,
       form: getProps().form,
-      descriptionId: field.descriptionProps.id,
-      errorMessageId: field.errorMessageProps.id,
+      descriptionId: typeof field.descriptionProps.id === "string" ? field.descriptionProps.id : undefined,
+      errorMessageId: typeof field.errorMessageProps.id === "string" ? field.errorMessageProps.id : undefined,
       validationBehavior: validationBehavior(),
     });
   };
   updateRadioGroupData();
-  createEffect(updateRadioGroupData);
+  createTrackedEffect(updateRadioGroupData);
 
   const getNavigableRadios = (root: HTMLElement): HTMLInputElement[] => {
     return Array.from(root.querySelectorAll('input[type="radio"]')).filter(

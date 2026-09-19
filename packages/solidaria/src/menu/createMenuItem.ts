@@ -17,7 +17,8 @@
  * Based on @react-aria/menu useMenuItem.
  */
 
-import { type JSX, type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "../interactions/createPress";
 import { createHover } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
@@ -262,7 +263,6 @@ export function createMenuItem<T>(
   const selectableItemProps = () => {
     const props = selectableItem.itemProps as Record<string, unknown>;
     const onClick = props.onClick;
-    const onHostClick = props["on:click"];
 
     const interceptSyntheticClick = (event: MouseEvent, fallbackHandler?: unknown) => {
       // The menu layer's upstream-compatible target.click() should activate
@@ -288,10 +288,6 @@ export function createMenuItem<T>(
         typeof onClick === "function"
           ? (event: MouseEvent) => interceptSyntheticClick(event, onClick)
           : onClick,
-      "on:click":
-        typeof onHostClick === "function"
-          ? (event: MouseEvent) => interceptSyntheticClick(event, onHostClick)
-          : onHostClick,
     };
   };
 
@@ -378,18 +374,19 @@ export function createMenuItem<T>(
               : "menuitem",
         id: p.id ?? String(key),
         "aria-disabled": isDisabled() || undefined,
-        "aria-checked": mode !== "none" && !trigger ? selected : undefined,
+        "aria-checked":
+          mode !== "none" && !trigger ? (selected ? "true" : "false") : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
         "aria-describedby": [descriptionId(), keyboardId()].filter(Boolean).join(" ") || undefined,
         "aria-controls": p["aria-controls"],
         "aria-haspopup": p["aria-haspopup"],
         "aria-expanded": p["aria-expanded"],
-        "data-selected": selected || undefined,
-        "data-focused": isFocused() || undefined,
-        "data-focus-visible": isFocusVisible() || undefined,
-        "data-pressed": isPressed() || undefined,
-        "data-disabled": isDisabled() || undefined,
+        "data-selected": selected ? "true" : undefined,
+        "data-focused": isFocused() ? "true" : undefined,
+        "data-focus-visible": isFocusVisible() ? "true" : undefined,
+        "data-pressed": isPressed() ? "true" : undefined,
+        "data-disabled": isDisabled() ? "true" : undefined,
       };
 
       // Add link props when href is present
@@ -422,7 +419,7 @@ export function createMenuItem<T>(
       return { id: descriptionId() };
     },
     get keyboardShortcutProps() {
-      return { id: keyboardId(), "aria-hidden": true };
+      return { id: keyboardId(), "aria-hidden": "true" as const };
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),

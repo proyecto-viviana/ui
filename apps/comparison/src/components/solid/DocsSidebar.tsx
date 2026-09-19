@@ -1,4 +1,4 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
 import { comparisonComponentPath } from "@comparison/data/site-meta";

@@ -1,4 +1,5 @@
-import { type JSX, splitProps, Show } from "solid-js";
+import { Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Landmark as HeadlessLandmark,
   useLandmarkController,
@@ -7,6 +8,7 @@ import {
   type LandmarkController,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface LandmarkProps extends Omit<HeadlessLandmarkProps, "class" | "style"> {
   /** Additional CSS class name. */

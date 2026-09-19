@@ -6,7 +6,7 @@
  * `output/table-selectable-ssr.html`; Table.hydrate.test.tsx hydrates the
  * DOM-compiled fixture over it. Run this test first.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

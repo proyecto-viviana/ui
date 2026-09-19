@@ -17,7 +17,7 @@
  * Based on @react-stately/overlays useOverlayTriggerState.
  */
 
-import { type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface OverlayTriggerProps {

@@ -19,18 +19,9 @@
  * Solid adaptation of the pinned RangeCalendar implementation.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Index,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext, For, Show } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createRangeCalendar,
   createCalendarGrid,
@@ -57,8 +48,10 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
+  coerceDomRecord,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -283,8 +276,8 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
   );
 
   return (
-    <RangeCalendarStateContext.Provider value={state()}>
-      <RangeCalendarContext.Provider value={state()}>
+    <RangeCalendarStateContext value={state()}>
+      <RangeCalendarContext value={state()}>
         <div
           {...calendarAria.calendarProps}
           ref={(el) => {
@@ -311,12 +304,12 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
               aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
               disabled={Boolean(calendarAria.nextButtonProps.disabled)}
               onClick={() => state().focusNextPage()}
-              tabIndex={-1}
+              tabindex={-1}
             />
           </VisuallyHidden>
         </div>
-      </RangeCalendarContext.Provider>
-    </RangeCalendarStateContext.Provider>
+      </RangeCalendarContext>
+    </RangeCalendarStateContext>
   );
 }
 
@@ -379,8 +372,8 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
   );
 
   return (
-    <RangeCalendarStateContext.Provider value={state as unknown as RangeCalendarState<DateValue>}>
-      <RangeCalendarContext.Provider value={state as unknown as RangeCalendarState<DateValue>}>
+    <RangeCalendarStateContext value={state as unknown as RangeCalendarState<DateValue>}>
+      <RangeCalendarContext value={state as unknown as RangeCalendarState<DateValue>}>
         <div
           {...calendarAria.calendarProps}
           ref={(el) => {
@@ -407,12 +400,12 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
               aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
               disabled={Boolean(calendarAria.nextButtonProps.disabled)}
               onClick={() => state.focusNextPage()}
-              tabIndex={-1}
+              tabindex={-1}
             />
           </VisuallyHidden>
         </div>
-      </RangeCalendarContext.Provider>
-    </RangeCalendarStateContext.Provider>
+      </RangeCalendarContext>
+    </RangeCalendarStateContext>
   );
 }
 
@@ -536,14 +529,14 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
   });
 
   return (
-    <RangeCalendarGridMonthContext.Provider value={startDate}>
+    <RangeCalendarGridMonthContext value={startDate}>
       <table
         ref={setGridRef}
-        {...gridAria.gridProps}
+        {...coerceDomRecord(gridAria.gridProps as Record<string, unknown>)}
         class={renderProps.class()}
         style={renderProps.style()}
       >
-        <thead {...gridAria.headerProps}>
+        <thead {...coerceDomRecord(gridAria.headerProps as Record<string, unknown>)}>
           <tr>
             <For each={gridAria.weekDays}>
               {(day) => (
@@ -559,13 +552,13 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
           </tr>
         </thead>
         <tbody>
-          <Index each={allDates()}>
+          <For each={allDates()} keyed={false}>
             {(weekDates, weekIndex) => (
               <tr>
-                <Index each={weekDates()}>
+                <For each={weekDates()} keyed={false}>
                   {(date, dayIndex) => (
                     <Show when={date()} fallback={<td />}>
-                      <RangeCalendarGridCellPositionContext.Provider
+                      <RangeCalendarGridCellPositionContext
                         value={() => ({
                           weekIndex,
                           dayIndex,
@@ -573,16 +566,16 @@ export function RangeCalendarGrid(props: RangeCalendarGridProps): JSX.Element {
                         })}
                       >
                         {props.children?.(date()!)}
-                      </RangeCalendarGridCellPositionContext.Provider>
+                      </RangeCalendarGridCellPositionContext>
                     </Show>
                   )}
-                </Index>
+                </For>
               </tr>
             )}
-          </Index>
+          </For>
         </tbody>
       </table>
-    </RangeCalendarGridMonthContext.Provider>
+    </RangeCalendarGridMonthContext>
   );
 }
 
@@ -669,7 +662,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...cellAria.cellProps} class={cellRenderProps.class()} style={cellRenderProps.style()}>
+    <td {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)} class={cellRenderProps.class()} style={cellRenderProps.style()}>
       <div
         ref={setCellRef}
         {...mergeProps(cellAria.buttonProps, hoverProps)}

@@ -7,7 +7,7 @@
                           alignment for every `.mesh-card` inside a root element.
    The theme wipe used to live here too; it is now the library's
    `createThemeTransition`, which dissolves the old frame instead of covering it. */
-import { onCleanup, onMount } from "solid-js";
+import { onCleanup, onSettled } from "solid-js";
 
 export { meshStrip } from "@proyecto-viviana/ui";
 export type { MeshStripOptions } from "@proyecto-viviana/ui";
@@ -26,7 +26,7 @@ export function createMeshField(getRoot: () => HTMLElement | undefined): () => v
     });
   };
 
-  onMount(() => {
+  onSettled(() => {
     let raf = 0;
     const onMove = (event: MouseEvent): void => {
       if (raf) return;

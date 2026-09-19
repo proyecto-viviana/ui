@@ -1,8 +1,7 @@
 /* Panel 01 — Buttons. The exemplar panel route: every button-family component,
    every register-relevant state, composed from the shared Panel/Demo/Row
    chrome. Buttons are opaque on the mono face — glass is for surfaces. */
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
 import {
   ActionButton,
   ActionButtonGroup,

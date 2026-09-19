@@ -21,7 +21,7 @@
  * Ported from packages/react-aria/src/separator/useSeparator.ts.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { access, type MaybeAccessor } from "../utils";
 import { filterDOMProps } from "../utils";
 

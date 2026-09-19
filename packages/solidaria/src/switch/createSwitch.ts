@@ -21,7 +21,8 @@
  * This is a 1:1 port of @react-aria/switch's useSwitch hook.
  */
 
-import { JSX, Accessor } from "solid-js";
+import { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle/createToggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
 import { type MaybeAccessor } from "../utils/reactivity";

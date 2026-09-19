@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, onCleanup } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, onCleanup } from "solid-js";
 import { ProgressBar, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, StatusLight } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";

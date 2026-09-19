@@ -1,5 +1,4 @@
-import { describe, expect, it, vi } from "vite-plus/test";
-import { createSignal, type JSX } from "solid-js";
+import { describe, expect, it, vi } from "vite-plus/test"; import { createSignal, type JSX } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
 import {
   ActionButton,
@@ -30,12 +29,12 @@ function solidHelperTextChild(label: string): JSX.Element {
 describe("button-family S2 contexts", () => {
   it("applies ButtonGroupContext to grouped Button and LinkButton children", () => {
     render(() => (
-      <ButtonGroupContext.Provider value={{ size: "XL", isDisabled: true }}>
+      <ButtonGroupContext value={{ size: "XL", isDisabled: true }}>
         <ButtonGroup>
           <Button>Save</Button>
           <LinkButton href="/docs">Docs</LinkButton>
         </ButtonGroup>
-      </ButtonGroupContext.Provider>
+      </ButtonGroupContext>
     ));
 
     const button = screen.getByRole("button", { name: "Save" });
@@ -52,9 +51,9 @@ describe("button-family S2 contexts", () => {
     const localRef = vi.fn();
 
     render(() => (
-      <ButtonContext.Provider value={{ ref: contextRef }}>
+      <ButtonContext value={{ ref: contextRef }}>
         <Button ref={localRef}>Save</Button>
-      </ButtonContext.Provider>
+      </ButtonContext>
     ));
 
     const button = screen.getByRole("button", { name: "Save" });
@@ -64,11 +63,11 @@ describe("button-family S2 contexts", () => {
 
   it("allows ButtonGroupContext to hide the group like React Spectrum S2", () => {
     render(() => (
-      <ButtonGroupContext.Provider value={{ isHidden: true }}>
+      <ButtonGroupContext value={{ isHidden: true }}>
         <ButtonGroup>
           <Button>Hidden</Button>
         </ButtonGroup>
-      </ButtonGroupContext.Provider>
+      </ButtonGroupContext>
     ));
 
     expect(screen.queryByRole("button", { name: "Hidden" })).toBeNull();
@@ -76,9 +75,9 @@ describe("button-family S2 contexts", () => {
 
   it("applies ActionButtonContext to standalone ActionButtons", () => {
     render(() => (
-      <ActionButtonContext.Provider value={{ size: "XL", isDisabled: true }}>
+      <ActionButtonContext value={{ size: "XL", isDisabled: true }}>
         <ActionButton>Inspect</ActionButton>
-      </ActionButtonContext.Provider>
+      </ActionButtonContext>
     ));
 
     const button = screen.getByRole("button", { name: "Inspect" });
@@ -179,13 +178,13 @@ describe("button-family S2 contexts", () => {
 
   it("applies ActionButtonGroupContext to the group and its children", () => {
     render(() => (
-      <ActionButtonGroupContext.Provider
+      <ActionButtonGroupContext
         value={{ size: "XL", density: "compact", orientation: "vertical", isQuiet: true }}
       >
         <ActionButtonGroup aria-label="Actions">
           <ActionButton>Copy</ActionButton>
         </ActionButtonGroup>
-      </ActionButtonGroupContext.Provider>
+      </ActionButtonGroupContext>
     ));
 
     const toolbar = screen.getByRole("toolbar", { name: "Actions" });
@@ -236,9 +235,9 @@ describe("button-family S2 contexts", () => {
 
   it("applies ToggleButtonContext to standalone ToggleButtons", () => {
     render(() => (
-      <ToggleButtonContext.Provider value={{ size: "XL", isSelected: true }}>
+      <ToggleButtonContext value={{ size: "XL", isSelected: true }}>
         <ToggleButton>Bold</ToggleButton>
-      </ToggleButtonContext.Provider>
+      </ToggleButtonContext>
     ));
 
     const button = screen.getByRole("button", { name: "Bold" });
@@ -249,14 +248,14 @@ describe("button-family S2 contexts", () => {
 
   it("applies ToggleButtonGroupContext to selection state and child styling", () => {
     render(() => (
-      <ToggleButtonGroupContext.Provider
+      <ToggleButtonGroupContext
         value={{ size: "XL", isEmphasized: true, defaultSelectedKeys: ["left"] }}
       >
         <ToggleButtonGroup aria-label="Alignment" selectionMode="single">
           <ToggleButton id="left">Left</ToggleButton>
           <ToggleButton id="right">Right</ToggleButton>
         </ToggleButtonGroup>
-      </ToggleButtonGroupContext.Provider>
+      </ToggleButtonGroupContext>
     ));
 
     const left = screen.getByRole("radio", { name: "Left" });

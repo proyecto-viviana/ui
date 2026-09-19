@@ -18,7 +18,9 @@
  * Based on packages/react-aria-components/src/DragAndDrop.tsx.
  */
 
-import { type JSX, type Accessor, createContext, createMemo, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   DragTypes,
   DropOperation,
@@ -87,7 +89,7 @@ function DefaultDropIndicator(props: DropIndicatorProps): JSX.Element {
   return (
     <div
       role="option"
-      aria-disabled={true}
+      aria-disabled="true"
       class={renderProps.class()}
       style={renderProps.style()}
       data-drop-target={dataAttr(isDropTarget())}

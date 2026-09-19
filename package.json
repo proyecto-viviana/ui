@@ -154,6 +154,8 @@
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.1",
+    "@solidjs/diagnostics": "2.0.0-rc.9",
+    "@solidjs/h": "2.0.0-rc.9",
     "@solidjs/testing-library": "1.0.0-beta.3",
     "@solidjs/vite-plugin": "3.0.0-next.44",
     "@solidjs/web": "2.0.0-rc.9",

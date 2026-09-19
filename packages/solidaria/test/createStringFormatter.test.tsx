@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { render } from "@solidjs/testing-library";
 import { I18nProvider, createStringFormatter } from "../src/i18n";
 import { dndIntlStrings } from "../src/dnd/intl";
 import type { LocalizedString, LocalizedStrings } from "@internationalized/string";
@@ -48,18 +48,15 @@ function format(
   strings: LocalizedStrings<string, LocalizedString> = catalog,
 ): string {
   let result = "";
-  createRoot((dispose) => {
-    const tree = (
-      <I18nProvider locale={locale}>
-        {(() => {
-          result = createStringFormatter(strings)().format(key, variables);
-          return null;
-        })()}
-      </I18nProvider>
-    );
-    void tree;
-    dispose();
-  });
+  const { unmount } = render(() => (
+    <I18nProvider locale={locale}>
+      {(() => {
+        result = createStringFormatter(strings)().format(key, variables);
+        return null;
+      })()}
+    </I18nProvider>
+  ));
+  unmount();
   return result;
 }
 
@@ -164,36 +161,30 @@ describe("createStringFormatter ICU compile", () => {
   });
 
   it("memoizes per locale+key so a second format is the same compiled output", () => {
-    createRoot((dispose) => {
-      const tree = (
-        <I18nProvider locale="de-DE">
-          {(() => {
-            const formatter = createStringFormatter(catalog);
-            expect(formatter().format("count", { count: 1 })).toBe("1 Element");
-            expect(formatter().format("count", { count: 2 })).toBe("2 Elemente");
-            return null;
-          })()}
-        </I18nProvider>
-      );
-      void tree;
-      dispose();
-    });
+    const { unmount } = render(() => (
+      <I18nProvider locale="de-DE">
+        {(() => {
+          const formatter = createStringFormatter(catalog);
+          expect(formatter().format("count", { count: 1 })).toBe("1 Element");
+          expect(formatter().format("count", { count: 2 })).toBe("2 Elemente");
+          return null;
+        })()}
+      </I18nProvider>
+    ));
+    unmount();
     expect(format("en-US", "count", { count: 1 })).toBe("1 item");
   });
 
   it("compiles through createStringFormatter when the provider locale changes", () => {
-    createRoot((dispose) => {
-      const el = (
-        <I18nProvider locale="de-DE">
-          {(() => {
-            const formatter = createStringFormatter(catalog);
-            expect(formatter().format("actionbar.selected", { count: 1 })).toBe("1 ausgewählt");
-            return null;
-          })()}
-        </I18nProvider>
-      );
-      expect(el).toBeTruthy();
-      dispose();
-    });
+    const { unmount } = render(() => (
+      <I18nProvider locale="de-DE">
+        {(() => {
+          const formatter = createStringFormatter(catalog);
+          expect(formatter().format("actionbar.selected", { count: 1 })).toBe("1 ausgewählt");
+          return null;
+        })()}
+      </I18nProvider>
+    ));
+    unmount();
   });
 });

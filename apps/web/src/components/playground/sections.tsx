@@ -1,4 +1,6 @@
-import { For, Show, type Accessor, type JSX } from "solid-js";
+import { For, Show } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Button, Flex, Heading, Text, ToggleButton, typeRoles } from "@proyecto-viviana/ui";
 import { SECTION_IDS, SECTION_NAMES, type SectionId } from "./section-data";
 

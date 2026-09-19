@@ -14,17 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TreeView.tsx.
 
-import {
-  children as resolveChildren,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
+import { children as resolveChildren, createContext, createEffect, createMemo, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Tree as HeadlessTree,
   TreeItem as HeadlessTreeItem,
@@ -70,6 +61,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { Text, TextContext } from "../text";
+import { attrString, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TreeSelectionStyle = "checkbox" | "highlight";
 export type TreeLoadingState =
@@ -746,8 +738,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   ]);
   const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
   const isLoading = () => local.loadingState === "loading" || local.loadingState === "loadingMore";
-  const [staticItems, setStaticItems] = createSignal<StaticTreeItem[]>([]);
-  const [registrationVersion, setRegistrationVersion] = createSignal(0);
+  const [staticItems, setStaticItems] = createSignal<StaticTreeItem[]>([], { ownedWrite: true });
+  const [registrationVersion, setRegistrationVersion] = createSignal(0, { ownedWrite: true });
   const registeredItems = new Map<Key, ItemRegistration>();
   const usesStaticChildren = () => local.items == null;
   const syncRegisteredItems = () => {
@@ -812,12 +804,14 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   );
   const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    { ownedWrite: true },
   );
-  createEffect(() => {
-    setActionSelectedKeys(
-      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
-    );
-  });
+  createEffect(
+    () => selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    (keys) => {
+      setActionSelectedKeys(keys);
+    },
+  );
   const onSelectionChange = (keys: "all" | Set<Key>) => {
     setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
     headlessProps.onSelectionChange?.(keys);
@@ -905,11 +899,11 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   // actually a repeated `local.children` read in ResolvedItemContent /
   // TreeItemContent — see the read-once comments there.)
   const collection = () => (
-    <InternalTreeViewContext.Provider value={treeContext()}>
+    <InternalTreeViewContext value={treeContext()}>
       <div hidden inert aria-hidden="true" style={{ display: "none" }}>
-        <StaticTreeCollectionContext.Provider value={registrationContext}>
+        <StaticTreeCollectionContext value={registrationContext}>
           {registrationChildren()}
-        </StaticTreeCollectionContext.Provider>
+        </StaticTreeCollectionContext>
       </div>
       <HeadlessTree
         {...headlessProps}
@@ -932,7 +926,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       >
         {(item: TreeItemData<T>, state: TreeRenderItemState) => renderItem(item, state)}
       </HeadlessTree>
-    </InternalTreeViewContext.Provider>
+    </InternalTreeViewContext>
   );
 
   const hasChrome = () => Boolean(local.label || local.description || local.renderActionBar);
@@ -975,14 +969,14 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     "ref",
   ]);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!staticCollection) {
       return;
     }
 
     staticCollection.registerItem({
       id: props.id,
-      textValue: headlessProps.textValue ?? headlessProps["aria-label"],
+      textValue: attrString(headlessProps.textValue ?? headlessProps["aria-label"]),
       isDisabled: !!local.isDisabled,
       hasChildItems: !!local.hasChildItems,
       props: staticCollection.mode === "static" ? (props as TreeItemProps<object>) : undefined,
@@ -1047,7 +1041,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     !renderProps.isDisabled;
 
   function ItemChildren(renderProps: TreeItemRenderProps) {
-    createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+    createTrackedEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() => {
@@ -1078,21 +1072,21 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     }
 
     return (
-      <TextContext.Provider value={textContext(renderProps) as SpectrumContextValue<any>}>
-        <IconContext.Provider
+      <TextContext value={textContext(renderProps) as SpectrumContextValue<any>}>
+        <IconContext
           value={{
             slot: "icon",
             styles: treeSlotIcon,
           }}
         >
-          <ActionButtonGroupContext.Provider
+          <ActionButtonGroupContext
             value={{
               slot: "actions",
               size: "S",
               styles: treeActions,
             }}
           >
-            <ActionMenuContext.Provider
+            <ActionMenuContext
               value={{
                 slot: "actionmenu",
                 size: "S",
@@ -1121,16 +1115,17 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
                 </span>
               ) : null}
               <ResolvedItemContent />
-            </ActionMenuContext.Provider>
-          </ActionButtonGroupContext.Provider>
-        </IconContext.Provider>
-      </TextContext.Provider>
+            </ActionMenuContext>
+          </ActionButtonGroupContext>
+        </IconContext>
+      </TextContext>
     );
   }
 
   return (
     <HeadlessTreeItem
       {...headlessProps}
+      id={props.id}
       ref={(element) => assignItemRef(element)}
       hasChildItems={local.hasChildItems}
       isDisabled={local.isDisabled}
@@ -1203,7 +1198,7 @@ export function TreeExpandButton(
       <button
         {...headlessProps}
         type="button"
-        tabIndex={-1}
+        tabindex={-1}
         class={className()}
         style={local.style}
         aria-label="Expand"

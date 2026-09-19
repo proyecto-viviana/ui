@@ -17,7 +17,8 @@
 // Port of packages/@react-spectrum/s2/src/DateRangePicker.tsx.
 // Style-system types need a dedicated pass; removing this would require
 // fixing style-definition type mismatches unrelated to component behavior.
-import { createContext, createSignal, type JSX, Show, splitProps, useContext } from "solid-js";
+import { createContext, createSignal, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { pressScale } from "../pressScale";
 import {
   DateRangePicker as HeadlessDateRangePicker,
@@ -62,6 +63,7 @@ import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   control,
   controlBorderRadius,

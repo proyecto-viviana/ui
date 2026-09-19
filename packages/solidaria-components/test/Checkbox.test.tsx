@@ -4,9 +4,7 @@
  * These tests verify the headless Checkbox/CheckboxGroup components follow
  * react-aria-components patterns.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import {
   Checkbox,
   CheckboxContext,
@@ -118,9 +116,9 @@ describe("Checkbox", () => {
 
     it("should support slot", () => {
       render(() => (
-        <CheckboxContext.Provider value={{ slots: { test: { "aria-label": "test" } } }}>
+        <CheckboxContext value={{ slots: { test: { "aria-label": "test" } } }}>
           <Checkbox slot="test">Test</Checkbox>
-        </CheckboxContext.Provider>
+        </CheckboxContext>
       ));
 
       const checkbox = screen.getByRole("checkbox");
@@ -618,7 +616,7 @@ describe("Checkbox", () => {
       let inputRef: HTMLInputElement | undefined;
       let contextInputRef: HTMLInputElement | undefined;
       render(() => (
-        <CheckboxContext.Provider
+        <CheckboxContext
           value={{
             inputRef: (el) => {
               contextInputRef = el;
@@ -632,7 +630,7 @@ describe("Checkbox", () => {
           >
             Test
           </Checkbox>
-        </CheckboxContext.Provider>
+        </CheckboxContext>
       ));
 
       expect(inputRef).toBe(screen.getByRole("checkbox"));

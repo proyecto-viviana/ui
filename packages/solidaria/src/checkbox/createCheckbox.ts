@@ -22,11 +22,13 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckbox hook.
  */
 
-import { JSX, Accessor, createEffect } from "solid-js";
+import { Accessor, createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
 import { createPress } from "../interactions/createPress";
 import { mergeProps } from "../utils/mergeProps";
+import { attrTrue } from "../utils/domAttrs";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
 export interface AriaCheckboxProps extends AriaToggleProps {
@@ -88,7 +90,7 @@ export function createCheckbox(
   const { labelProps: baseLabelProps, isSelected, isPressed } = toggleResult;
 
   // Handle indeterminate state
-  createEffect(() => {
+  createTrackedEffect(() => {
     const input = inputRef();
     const isIndeterminate = getProps().isIndeterminate;
     if (input) {
@@ -125,7 +127,7 @@ export function createCheckbox(
 
       return mergeProps(toggleResult.inputProps, {
         checked: isSelected(),
-        "aria-required": (isRequired && validationBehavior === "aria") || undefined,
+        "aria-required": attrTrue(Boolean(isRequired && validationBehavior === "aria")),
         required: isRequired && validationBehavior === "native",
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },

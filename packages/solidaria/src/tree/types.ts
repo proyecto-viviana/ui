@@ -36,7 +36,7 @@
  * This module combines the tree hooks with the grid-list checkbox pattern.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, TreeNode } from "@proyecto-viviana/solid-stately";
 
 /**

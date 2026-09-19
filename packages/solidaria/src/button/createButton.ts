@@ -141,7 +141,7 @@ export function createButton(props: AriaButtonProps = {}): ButtonAria {
         return elementType === "input" ? isDisabled() : undefined;
       },
       get "aria-disabled"() {
-        return isDisabled() && elementType !== "input" ? true : undefined;
+        return isDisabled() && elementType !== "input" ? "true" : undefined;
       },
       get rel() {
         return isLink ? props.rel : undefined;

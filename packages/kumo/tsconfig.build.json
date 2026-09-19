@@ -9,6 +9,8 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
+      "@proyecto-viviana/solidaria": ["../solidaria/dist/index.d.ts"],
+      "@proyecto-viviana/solidaria/utils": ["../solidaria/dist/utils/index.d.ts"],
       "@proyecto-viviana/solidaria-components": ["../solidaria-components/dist/index.d.ts"]
     }
   },

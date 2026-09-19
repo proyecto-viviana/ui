@@ -2,8 +2,7 @@
  * Tests for overlay hooks and utilities
  */
 
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
 // Import from source path for proper module resolution in tests
 import { createOverlayTriggerState } from "../../solid-stately/src";
@@ -122,10 +121,10 @@ describe("createOverlayTrigger", () => {
       const state = createOverlayTriggerState();
       const { triggerProps } = createOverlayTrigger({ type: "dialog" }, state);
 
-      expect(triggerProps["aria-expanded"]).toBe(false);
+      expect(triggerProps["aria-expanded"]).toBe("false");
 
       state.open();
-      expect(triggerProps["aria-expanded"]).toBe(true);
+      expect(triggerProps["aria-expanded"]).toBe("true");
       dispose();
     });
   });
@@ -148,7 +147,7 @@ describe("createOverlayTrigger", () => {
       const state = createOverlayTriggerState();
       const { triggerProps } = createOverlayTrigger({ type: "menu" }, state);
 
-      expect(triggerProps["aria-haspopup"]).toBe(true);
+      expect(triggerProps["aria-haspopup"]).toBe("true");
       dispose();
     });
   });

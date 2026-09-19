@@ -3,7 +3,7 @@
    They live here so the spec panel and its mirror render in the SAME container code:
    any visual difference between a pair is then attributable to the components inside,
    which is the entire point of the side-by-side. Do not fork these per side. */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { MeshCard, ScanOverlay } from "./primitives";
 
 export const MONO = "var(--font-mono)";

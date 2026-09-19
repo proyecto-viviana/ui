@@ -19,18 +19,9 @@
  * Port of react-aria-components/src/Calendar.tsx
  */
 
-import {
-  type JSX,
-  type Accessor,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Index,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext, For, Show } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 import {
   createCalendar,
@@ -57,8 +48,10 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
+  coerceDomRecord,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -316,7 +309,7 @@ function CalendarWithState<
           aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
           disabled={Boolean(calendarAria.nextButtonProps.disabled)}
           onClick={() => state().focusNextPage()}
-          tabIndex={-1}
+          tabindex={-1}
         />
       </VisuallyHidden>
     </div>
@@ -387,7 +380,7 @@ function CalendarInner<
   );
 
   return (
-    <CalendarContext.Provider value={state as unknown as CalendarState<DateValue>}>
+    <CalendarContext value={state as unknown as CalendarState<DateValue>}>
       <div
         {...calendarAria.calendarProps}
         ref={(el) => assignRef(local.ref, el)}
@@ -410,11 +403,11 @@ function CalendarInner<
             aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
             disabled={Boolean(calendarAria.nextButtonProps.disabled)}
             onClick={() => state.focusNextPage()}
-            tabIndex={-1}
+            tabindex={-1}
           />
         </VisuallyHidden>
       </div>
-    </CalendarContext.Provider>
+    </CalendarContext>
   );
 }
 
@@ -566,14 +559,14 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
   });
 
   return (
-    <CalendarGridMonthContext.Provider value={startDate}>
+    <CalendarGridMonthContext value={startDate}>
       <table
         ref={setGridRef}
-        {...gridAria.gridProps}
+        {...coerceDomRecord(gridAria.gridProps as Record<string, unknown>)}
         class={renderProps.class()}
         style={renderProps.style()}
       >
-        <thead {...gridAria.headerProps}>
+        <thead {...coerceDomRecord(gridAria.headerProps as Record<string, unknown>)}>
           <tr>
             <For each={gridAria.weekDays}>
               {(day) => (
@@ -585,13 +578,13 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
           </tr>
         </thead>
         <tbody>
-          <Index each={allDates()}>
+          <For each={allDates()} keyed={false}>
             {(weekDates, weekIndex) => (
               <tr>
-                <Index each={weekDates()}>
+                <For each={weekDates()} keyed={false}>
                   {(date, dayIndex) => (
                     <Show when={date()} fallback={<td />}>
-                      <CalendarGridCellPositionContext.Provider
+                      <CalendarGridCellPositionContext
                         value={() => ({
                           weekIndex,
                           dayIndex,
@@ -599,16 +592,16 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
                         })}
                       >
                         {props.children?.(date()!)}
-                      </CalendarGridCellPositionContext.Provider>
+                      </CalendarGridCellPositionContext>
                     </Show>
                   )}
-                </Index>
+                </For>
               </tr>
             )}
-          </Index>
+          </For>
         </tbody>
       </table>
-    </CalendarGridMonthContext.Provider>
+    </CalendarGridMonthContext>
   );
 }
 
@@ -717,10 +710,10 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...cellAria.cellProps} class={cellRenderProps.class()} style={cellRenderProps.style()}>
+    <td {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)} class={cellRenderProps.class()} style={cellRenderProps.style()}>
       <div
         ref={setCellRef}
-        {...cellAria.buttonProps}
+        {...coerceDomRecord(cellAria.buttonProps as Record<string, unknown>)}
         {...hoverProps}
         class={renderProps.class()}
         style={renderProps.style()}

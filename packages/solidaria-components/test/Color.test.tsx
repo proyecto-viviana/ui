@@ -4,11 +4,7 @@
  * Tests for ColorSlider, ColorArea, ColorWheel, ColorField, and ColorSwatch.
  */
 
-import { describe, it, expect, afterEach, vi } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
-import { createSignal } from "solid-js";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { setupUser } from "@proyecto-viviana/solidaria-test-utils"; import { I18nProvider } from "@proyecto-viviana/solidaria"; import { createSignal } from "solid-js";
 import {
   ColorSlider,
   ColorSliderLabel,

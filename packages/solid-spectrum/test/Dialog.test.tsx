@@ -1,8 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { createSignal } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { createSignal } from "solid-js";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {

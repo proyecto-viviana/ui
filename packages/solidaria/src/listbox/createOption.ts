@@ -17,7 +17,8 @@
  * Based on @react-aria/listbox useOption.
  */
 
-import { type JSX, type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createHover, type HoverEvents } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";

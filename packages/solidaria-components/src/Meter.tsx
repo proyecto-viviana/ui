@@ -22,9 +22,11 @@
  * Unlike progress bars, meters represent a current value rather than progress toward a goal.
  */
 
-import { type JSX, createContext, createMemo, splitProps } from "solid-js";
+import { createContext, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createMeter, type AriaMeterProps } from "@proyecto-viviana/solidaria";
 import { LabelContext, type LabelProps } from "./Label";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -171,9 +173,9 @@ export function Meter(props: MeterProps): JSX.Element {
       slot={local.slot ?? undefined}
       ref={ref}
     >
-      <LabelContext.Provider value={labelContextValue}>
+      <LabelContext value={labelContextValue}>
         {renderProps.renderChildren()}
-      </LabelContext.Provider>
+      </LabelContext>
     </div>
   );
 }

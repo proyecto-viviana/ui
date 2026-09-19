@@ -19,24 +19,16 @@
  * Port of react-aria-components/src/RadioGroup.tsx
  */
 
-import {
-  type JSX,
-  type ParentProps,
-  type Context,
-  createContext,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, createUniqueId, useContext, Show } from "solid-js";
+import type { ParentProps, Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createRadio,
   createRadioGroup,
   createFocusRing,
   createHover,
   mergeProps,
+  bindCapture,
   type AriaRadioProps,
   type AriaRadioGroupProps,
 } from "@proyecto-viviana/solidaria";
@@ -61,8 +53,10 @@ import {
   Provider,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { TextContext } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -226,7 +220,7 @@ export const RadioContext = createContext<RadioContextValue | null>(null);
  */
 export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   const contextProps = useContext(RadioGroupContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<RadioGroupProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -334,9 +328,15 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     state.updateValidation(target.validity.valid ? validValidation : getNativeValidation(target));
     state.commitValidation();
   };
+  const [groupEl, setGroupEl] = createSignal<HTMLDivElement | null>(null);
   const setGroupRef = (el: HTMLDivElement) => {
+    setGroupEl(el);
     assignRef(local.ref, el);
   };
+  bindCapture(groupEl, {
+    invalid: handleGroupInvalidCapture as EventListener,
+    change: handleGroupChangeCapture as EventListener,
+  });
   const groupDescribedBy = () => {
     const ids = [
       (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"],
@@ -412,10 +412,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       </>
     );
   };
-  const groupEventProps = {
-    onInvalidCapture: handleGroupInvalidCapture,
-    onChangeCapture: handleGroupChangeCapture,
-  } as unknown as JSX.HTMLAttributes<HTMLDivElement>;
+  const groupEventProps = {} as unknown as JSX.HTMLAttributes<HTMLDivElement>;
   const customRootProps = () =>
     ({
       ...domProps(),
@@ -429,10 +426,10 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       style: renderProps.style(),
       slot: local.slot,
       "data-orientation": ariaProps.orientation ?? "vertical",
-      "data-disabled": state.isDisabled || undefined,
-      "data-readonly": state.isReadOnly || undefined,
-      "data-required": state.isRequired || undefined,
-      "data-invalid": isInvalid() || undefined,
+      "data-disabled": dataAttr(state.isDisabled),
+      "data-readonly": dataAttr(state.isReadOnly),
+      "data-required": dataAttr(state.isRequired),
+      "data-invalid": dataAttr(isInvalid()),
     }) as unknown as JSX.HTMLAttributes<HTMLDivElement>;
 
   // Do not call `groupDescribedBy()` in a `{local.render ? … : <div>}` ternary —
@@ -441,8 +438,8 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   // without remounting children (`useField.ts:66-70`). RadioGroupDefaultRoot
   // snapshots the child vnode once and reads describedby as an attribute.
   return (
-    <RadioGroupStateContext.Provider value={state}>
-      <FieldErrorContext.Provider value={fieldErrorContext}>
+    <RadioGroupStateContext value={state}>
+      <FieldErrorContext value={fieldErrorContext}>
         <RadioGroupDefaultRoot
           render={local.render}
           getCustomRootProps={customRootProps}
@@ -465,8 +462,8 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
         >
           <GroupChildren />
         </RadioGroupDefaultRoot>
-      </FieldErrorContext.Provider>
-    </RadioGroupStateContext.Provider>
+      </FieldErrorContext>
+    </RadioGroupStateContext>
   );
 }
 
@@ -487,7 +484,7 @@ function RadioGroupDefaultRoot(props: {
   getDescribedBy: () => string | undefined;
   getClass: () => string | undefined;
   getStyle: () => JSX.CSSProperties | string | undefined;
-  slot?: string;
+  slot?: string | JSX.RemoveAttribute;
   getOrientation: () => Orientation;
   getDisabled: () => true | undefined;
   getReadOnly: () => true | undefined;
@@ -513,10 +510,10 @@ function RadioGroupDefaultRoot(props: {
       style={props.getStyle()}
       slot={props.slot}
       data-orientation={props.getOrientation()}
-      data-disabled={props.getDisabled()}
-      data-readonly={props.getReadOnly()}
-      data-required={props.getRequired()}
-      data-invalid={props.getInvalid()}
+      data-disabled={dataAttr(props.getDisabled())}
+      data-readonly={dataAttr(props.getReadOnly())}
+      data-required={dataAttr(props.getRequired())}
+      data-invalid={dataAttr(props.getInvalid())}
     >
       {children}
     </div>
@@ -531,7 +528,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioContext);
-  const contextSlotProps = contextProps?.slots?.[props.radioProps.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.radioProps.slot === "string" ? props.radioProps.slot : "default"];
   const contextBaseProps = createMemo<RadioProps>(() => {
     if (!contextProps) return {} as RadioProps;
     const { slots: _slots, ...rest } = contextProps;
@@ -685,9 +682,6 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     );
   };
   const handleLabelClick: JSX.EventHandler<HTMLLabelElement, MouseEvent> = (event) => {
-    (ariaProps as unknown as { onClickCapture?: (event: MouseEvent) => void }).onClickCapture?.(
-      event as unknown as MouseEvent,
-    );
     (
       radioAria.labelProps as unknown as {
         onClick?: JSX.EventHandler<HTMLLabelElement, MouseEvent>;
@@ -717,9 +711,14 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     );
     state.commitValidation();
   };
+  const [labelEl, setLabelEl] = createSignal<HTMLLabelElement | null>(null);
   const setLabelRef = (el: HTMLLabelElement) => {
+    setLabelEl(el);
     assignRef(local.ref, el);
   };
+  bindCapture(labelEl, {
+    click: handleLabelClickCapture as EventListener,
+  });
   const setInputRef = (el: HTMLInputElement | undefined) => {
     if (!el) {
       setInputElement(null);
@@ -774,37 +773,32 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       style: renderProps.style(),
       slot: local.slot,
       onClick: handleLabelClick,
-      onClickCapture: handleLabelClickCapture,
-      "oncapture:click": handleLabelClickCapture,
-      "data-selected": radioAria.isSelected() || undefined,
-      "data-pressed": radioAria.isPressed() || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": isFocusVisible() || undefined,
-      "data-disabled": radioAria.isDisabled || undefined,
-      "data-readonly": state.isReadOnly || undefined,
-      "data-invalid": state.isInvalid || undefined,
-      "data-required": state.isRequired || undefined,
+      "data-selected": dataAttr(radioAria.isSelected()),
+      "data-pressed": dataAttr(radioAria.isPressed()),
+      "data-hovered": dataAttr(isHovered()),
+      "data-focused": dataAttr(isFocused()),
+      "data-focus-visible": dataAttr(isFocusVisible()),
+      "data-disabled": dataAttr(radioAria.isDisabled),
+      "data-readonly": dataAttr(state.isReadOnly),
+      "data-invalid": dataAttr(state.isInvalid),
+      "data-required": dataAttr(state.isRequired),
       children: labelChildren(),
     }) as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
-  const labelCaptureProps = {
-    onClickCapture: handleLabelClickCapture,
-    "oncapture:click": handleLabelClickCapture,
-  } as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  const labelCaptureProps = {} as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
 
   // One-time `if` (not a JSX ternary). A `{local.render ? … : <label>}` memo
   // that re-runs on a `createSlotId` probe recreates the label/input and
   // leaves refs pointing at the detached first nodes.
   if (local.render) {
     return (
-      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+      <SelectionIndicatorContext value={selectionIndicatorContext()}>
         {local.render(customLabelProps(), renderValues())}
-      </SelectionIndicatorContext.Provider>
+      </SelectionIndicatorContext>
     );
   }
 
   return (
-    <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext()}>
       <label
         {...domProps()}
         {...cleanLabelProps()}
@@ -815,19 +809,19 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
         slot={local.slot}
         onClick={handleLabelClick}
         {...labelCaptureProps}
-        data-selected={radioAria.isSelected() || undefined}
-        data-pressed={radioAria.isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
-        data-focused={isFocused() || undefined}
-        data-focus-visible={isFocusVisible() || undefined}
-        data-disabled={radioAria.isDisabled || undefined}
-        data-readonly={state.isReadOnly || undefined}
-        data-invalid={state.isInvalid || undefined}
-        data-required={state.isRequired || undefined}
+        data-selected={dataAttr(radioAria.isSelected())}
+        data-pressed={dataAttr(radioAria.isPressed())}
+        data-hovered={dataAttr(isHovered())}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
+        data-disabled={dataAttr(radioAria.isDisabled)}
+        data-readonly={dataAttr(state.isReadOnly)}
+        data-invalid={dataAttr(state.isInvalid)}
+        data-required={dataAttr(state.isRequired)}
       >
         {labelChildren()}
       </label>
-    </SelectionIndicatorContext.Provider>
+    </SelectionIndicatorContext>
   );
 }
 
@@ -971,7 +965,7 @@ function RadioFieldImpl(props: {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioFieldContext);
-  const contextSlotProps = contextProps?.slots?.[props.fieldProps.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.fieldProps.slot === "string" ? props.fieldProps.slot : "default"];
   const contextBaseProps = createMemo<Partial<RadioFieldProps>>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -1121,19 +1115,19 @@ function RadioFieldImpl(props: {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
-      data-selected={radioAria.isSelected() || undefined}
-      data-disabled={radioAria.isDisabled || undefined}
-      data-readonly={state.isReadOnly || undefined}
-      data-invalid={state.isInvalid || undefined}
-      data-required={state.isRequired || undefined}
+      data-selected={dataAttr(radioAria.isSelected())}
+      data-disabled={dataAttr(radioAria.isDisabled)}
+      data-readonly={dataAttr(state.isReadOnly)}
+      data-invalid={dataAttr(state.isInvalid)}
+      data-required={dataAttr(state.isRequired)}
     >
-      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-        <InternalRadioContext.Provider value={internalContext}>
+      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+        <InternalRadioContext value={internalContext}>
           <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
             <FieldChildren />
           </Provider>
-        </InternalRadioContext.Provider>
-      </SelectionIndicatorContext.Provider>
+        </InternalRadioContext>
+      </SelectionIndicatorContext>
     </div>
   );
 }
@@ -1265,15 +1259,15 @@ function RadioButtonImpl(props: {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={props.buttonProps.slot}
-      data-selected={ctx.isSelected() || undefined}
-      data-pressed={ctx.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={ctx.isDisabled() || undefined}
-      data-readonly={state.isReadOnly || undefined}
-      data-invalid={state.isInvalid || undefined}
-      data-required={state.isRequired || undefined}
+      data-selected={dataAttr(ctx.isSelected())}
+      data-pressed={dataAttr(ctx.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(ctx.isDisabled())}
+      data-readonly={dataAttr(state.isReadOnly)}
+      data-invalid={dataAttr(state.isInvalid)}
+      data-required={dataAttr(state.isRequired)}
     >
       <VisuallyHidden>
         <input

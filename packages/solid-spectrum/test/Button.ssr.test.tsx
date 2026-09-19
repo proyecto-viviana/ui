@@ -14,7 +14,7 @@
  * Runs under vitest.ssr.config.ts (renderToString, hydratable). The companion
  * Button.hydrate.test.tsx hydrates over this output.
  */
-import { renderToString } from "solid-js/web";
+import { renderToString } from "@solidjs/web";
 import { createMemo } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";

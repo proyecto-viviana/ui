@@ -14,7 +14,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/style-utils.ts
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 import { fontRelative as internalFontRelative } from "../style/spectrum-theme";
 import { StyleString } from "../style/types";

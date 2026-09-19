@@ -22,7 +22,7 @@
  * This is a 1:1 port of @react-aria/label's useField hook.
  */
 
-import { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createSlotId } from "../ssr";
 import {
   createLabel,

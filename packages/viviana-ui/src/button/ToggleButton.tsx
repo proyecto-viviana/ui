@@ -13,16 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ToggleButton.tsx
 
 // Port of packages/@react-spectrum/s2/src/ToggleButton.tsx.
-import {
-  children as resolveChildren,
-  createEffect,
-  createSignal,
-  type JSX,
-  mergeProps,
-  onCleanup,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, createEffect, createSignal, merge, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ToggleButton as HeadlessToggleButton,
   MenuTriggerContext,
@@ -63,6 +55,7 @@ import {
 } from "./spectrum-context";
 import { getSingleTextChild } from "./text-child";
 import CornerTriangle from "../icon/ui-icons/CornerTriangle";
+import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ToggleButtonSize = ActionButtonSize;
 
@@ -129,12 +122,9 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const defaultProps: Partial<ToggleButtonProps> = {
     size: "M",
   };
-  const standaloneProps = mergeAriaProps<RuntimeToggleButtonProps>(
-    defaultProps,
-    flags,
-    contextProps ?? {},
-    props,
-  );
+  const standaloneProps = contextProps
+    ? mergeAriaProps<RuntimeToggleButtonProps>(defaultProps, flags, contextProps, props)
+    : mergeAriaProps<RuntimeToggleButtonProps>(defaultProps, flags, props);
   const groupProps: Partial<ToggleButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;
@@ -166,7 +156,13 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     },
   };
 
-  const mergedProps = mergeProps(standaloneProps, groupProps);
+  const mergedProps = mergeProps<
+    RuntimeToggleButtonProps & {
+      density?: ActionButtonDensity;
+      orientation?: ActionButtonOrientation;
+      isJustified?: boolean;
+    }
+  >(standaloneProps, groupProps);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "staticColor",
@@ -275,7 +271,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     element.setAttribute(name, String(value));
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const element = resolvedButtonElement();
     if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
       return;
@@ -287,7 +283,9 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     syncMenuTriggerAttribute(element, "aria-controls", triggerProps["aria-controls"]);
     syncMenuTriggerAttribute(element, "aria-disabled", triggerProps["aria-disabled"]);
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = resolvedButtonElement();
     if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
       return;
@@ -300,8 +298,10 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     };
 
     element.addEventListener("keydown", onKeyDown);
-    onCleanup(() => element.removeEventListener("keydown", onKeyDown));
-  });
+    _s2Cleanups.push(() => element.removeEventListener("keydown", onKeyDown));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   function ToggleButtonContent() {
     const iconContextValue = {
@@ -323,19 +323,23 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       const content = () => resolvedChildren();
       const textChild = () => getSingleTextChild(content());
 
-      return textChild() !== undefined ? (
-        <span class={`${s2ToggleButtonText} ${style({ order: 1 })}`} data-rsp-slot="text">
-          {textChild()}
-        </span>
-      ) : (
-        content()
+      return (
+        <>
+          {textChild() !== undefined ? (
+            <span class={`${s2ToggleButtonText} ${style({ order: 1 })}`} data-rsp-slot="text">
+              {textChild()}
+            </span>
+          ) : (
+            content()
+          )}
+        </>
       );
     }
 
     return (
-      <SkeletonContext.Provider value={null}>
-        <TextContext.Provider value={textContextValue}>
-          <IconContext.Provider value={iconContextValue}>
+      <SkeletonContext value={null}>
+        <TextContext value={textContextValue}>
+          <IconContext value={iconContextValue}>
             <ResolvedContent />
             {local.holdAffordance ? (
               <CornerTriangle
@@ -368,9 +372,9 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
                 })({ direction: locale().direction, size: size() })}
               />
             ) : null}
-          </IconContext.Provider>
-        </TextContext.Provider>
-      </SkeletonContext.Provider>
+          </IconContext>
+        </TextContext>
+      </SkeletonContext>
     );
   }
 

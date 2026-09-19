@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Meter.tsx.
 
-import { type JSX, For, createContext, splitProps, useContext } from "solid-js";
+import { For, createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Label as HeadlessLabel,
@@ -34,6 +35,7 @@ import {
   getAllowedOverrides,
   staticColor as staticColorStyles,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

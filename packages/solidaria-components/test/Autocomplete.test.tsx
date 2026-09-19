@@ -1,21 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import {
-  Autocomplete,
-  AutocompleteContext,
-  AutocompleteStateContext,
-  AutocompleteCollectionContext,
-  useAutocompleteInput,
-  useAutocompleteState,
-  useAutocompleteCollection,
-} from "../src/Autocomplete";
-import { ListBox, ListBoxOption } from "../src/ListBox";
-import { SearchField, SearchFieldInput } from "../src/SearchField";
-import { createFilter } from "@proyecto-viviana/solidaria";
-import { For, Show, createSignal } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { Autocomplete, AutocompleteContext, AutocompleteStateContext, AutocompleteCollectionContext, useAutocompleteInput, useAutocompleteState, useAutocompleteCollection, } from "../src/Autocomplete"; import { ListBox, ListBoxOption } from "../src/ListBox"; import { SearchField, SearchFieldInput } from "../src/SearchField"; import { createFilter } from "@proyecto-viviana/solidaria"; import { For, Show, createSignal, flush } from "solid-js";
 
 // Simple test input component
 function TestInput() {
@@ -209,6 +195,7 @@ describe("Autocomplete", () => {
     const input = screen.getByTestId("input") as HTMLInputElement;
     expect(input.value).toBe("initial");
     setValue?.("updated");
+    flush();
     expect(input.value).toBe("updated");
   });
 

@@ -18,15 +18,9 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createHideableComponent,
   createHover,
@@ -45,6 +39,7 @@ import {
 import { LabelContext } from "./Label";
 import { TextContext } from "./Text";
 import { FieldInputContext, type TextFieldContextValue } from "./TextField";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Provider,
   type ClassNameOrFunction,
@@ -60,6 +55,7 @@ import {
   useRenderProps,
   useSlot,
   useSlottedContext,
+  dataAttr,
 } from "./utils";
 
 export interface TokenFieldRenderProps {
@@ -194,8 +190,8 @@ export const TokenField = createHideableComponent(function TokenField<
         assignRef(local.ref, el);
       }}
       slot={local.slot || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-readonly={isReadOnly() || undefined}
+      data-disabled={dataAttr(isDisabled())}
+      data-readonly={dataAttr(isReadOnly())}
       class={renderProps.class()}
       style={renderProps.style()}
     >
@@ -290,10 +286,10 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
         assignRef(local.ref, el);
       }}
       slot={local.slot || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={context.isDisabled || undefined}
-      data-readonly={context.isReadOnly || undefined}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(context.isDisabled)}
+      data-readonly={dataAttr(context.isReadOnly)}
       class={renderProps.class()}
       style={{
         ...(renderProps.style() as JSX.CSSProperties | undefined),
@@ -369,8 +365,8 @@ export function Token(props: TokenProps): JSX.Element {
         assignRef(local.ref, el);
       }}
       slot={local.slot || undefined}
-      data-selected={aria.isSelected() || undefined}
-      data-disabled={context.isDisabled || undefined}
+      data-selected={dataAttr(aria.isSelected())}
+      data-disabled={dataAttr(context.isDisabled)}
       class={renderProps.class()}
       style={{
         ...(renderProps.style() as JSX.CSSProperties | undefined),

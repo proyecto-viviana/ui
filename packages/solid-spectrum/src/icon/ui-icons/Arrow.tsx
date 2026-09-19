@@ -6,9 +6,10 @@
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize100.svg
 // Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize400.svg
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 const styles = style({
   width: {

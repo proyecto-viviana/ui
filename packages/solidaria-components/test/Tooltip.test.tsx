@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { resetTooltipState } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";

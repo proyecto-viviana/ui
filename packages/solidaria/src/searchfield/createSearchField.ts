@@ -18,7 +18,7 @@
  * Based on @react-aria/searchfield useSearchField.
  */
 
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createTextField, type AriaTextFieldProps, type TextFieldAria } from "../textfield";
 import { createStringFormatter } from "../i18n";
 import { mergeProps } from "../utils";

@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ColorSlider as SolidSpectrumColorSlider } from "@proyecto-viviana/solid-spectrum/ColorSlider";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -63,7 +63,7 @@ function SolidSpectrumColorSliderDemo() {
   );
   const locale = buttonDemoLocaleFromWindow();
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "colorslider") {
         const nextProps = normalizeColorSliderDemoProps(event.detail.props ?? {});

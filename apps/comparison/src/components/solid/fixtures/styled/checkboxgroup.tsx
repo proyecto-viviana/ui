@@ -1,6 +1,7 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount, Show, type JSX } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { createComponent } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { Checkbox as SolidSpectrumCheckbox } from "@proyecto-viviana/solid-spectrum/Checkbox";
 import { CheckboxGroup as SolidSpectrumCheckboxGroup } from "@proyecto-viviana/solid-spectrum/CheckboxGroup";
@@ -38,7 +39,7 @@ function SolidSpectrumCheckboxGroupDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "checkboxgroup") {
         const nextProps = normalizeCheckboxGroupDemoProps(event.detail.props ?? {});

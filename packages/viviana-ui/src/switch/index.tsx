@@ -1,4 +1,5 @@
-import { type JSX, createContext } from "solid-js";
+import { createContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type SpectrumContextValue } from "../button/spectrum-context";
 import { type ToggleSwitchProps } from "./ToggleSwitch";
 import { SegmentedControl, SegmentedControlItem } from "../segmentedcontrol";

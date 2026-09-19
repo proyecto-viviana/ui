@@ -13,17 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/TableView.tsx
 
 // Port of packages/@react-spectrum/s2/src/TableView.tsx.
-import {
-  Show,
-  createContext,
-  createEffect,
-  createSignal,
-  getOwner,
-  runWithOwner,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
+import { Show, createContext, createEffect, createSignal, getOwner, runWithOwner, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
   ColumnResizer as HeadlessColumnResizer,
@@ -99,6 +90,7 @@ import { ButtonGroup } from "../buttongroup";
 import { CustomDialog, DialogContainer } from "../dialog";
 import Cross from "../icon/ui-icons/Cross";
 import { s2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TableSize = "sm" | "md" | "lg";
 export type TableVariant = "default" | "striped" | "bordered";
@@ -1235,7 +1227,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
   );
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     setActionSelectedKeys(
       selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
     );
@@ -1331,9 +1323,9 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   );
 
   return (
-    <InternalTableContext.Provider value={contextValue}>
+    <InternalTableContext value={contextValue}>
       {renderFramed()}
-    </InternalTableContext.Provider>
+    </InternalTableContext>
   );
 }
 
@@ -1794,7 +1786,7 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
   // Position the popover relative to the cell: measure the trigger and table
   // widths, and offset upward by the row height so it overlays the cell. Mirrors
   // the S2 useLayoutEffect.
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!isOpen()) {
       return;
     }
@@ -1808,7 +1800,7 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
 
   // Auto-select the entire text range of the autofocused input when the editor
   // opens. Re-runs once the form element mounts. Mirrors the S2 useEffect.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const form = formEl();
     if (!isOpen() || !form) {
       return;
@@ -1899,13 +1891,13 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
   };
 
   return (
-    <ButtonContext.Provider value={null}>
-      <ActionButtonContext.Provider value={editSlots}>
+    <ButtonContext value={null}>
+      <ActionButtonContext value={editSlots}>
         <div class={tableCellContent({ align: props.align(), overflowMode: props.overflowMode() })}>
           {props.renderChildren()}
         </div>
 
-        <ActionButtonContext.Provider value={null}>
+        <ActionButtonContext value={null}>
           <Show when={!isMobile()}>
             <HeadlessPopover
               isOpen={isOpen()}
@@ -1921,7 +1913,7 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
                 maxWidth: `${tableWidth()}px`,
               })}
             >
-              <OverlayTriggerStateContext.Provider value={null}>
+              <OverlayTriggerStateContext value={null}>
                 <HeadlessForm
                   ref={attachForm}
                   action={props.action}
@@ -1946,7 +1938,7 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
                     </ActionButton>
                   </div>
                 </HeadlessForm>
-              </OverlayTriggerStateContext.Provider>
+              </OverlayTriggerStateContext>
             </HeadlessPopover>
           </Show>
 
@@ -1973,9 +1965,9 @@ function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
               </Show>
             </DialogContainer>
           </Show>
-        </ActionButtonContext.Provider>
-      </ActionButtonContext.Provider>
-    </ButtonContext.Provider>
+        </ActionButtonContext>
+      </ActionButtonContext>
+    </ButtonContext>
   );
 }
 

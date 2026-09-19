@@ -13,15 +13,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Provider.tsx
 
 // Port of packages/@react-spectrum/s2/src/Provider.tsx.
-import {
-  type JSX,
-  type ParentProps,
-  createContext,
-  createMemo,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 // Narrow subpaths, not the root barrel: a consumer that renders only a Provider
 // must not pull the whole primitive surface in with it. `guard:entry-import-budget`
 // holds the ceiling this keeps.
@@ -31,6 +25,7 @@ import { mergeStyles } from "../style/runtime";
 import { setColorScheme, style as s2Style } from "../style" with { type: "macro" };
 import type { StyleString } from "../style";
 import { generateDefaultColorSchemeStyles } from "../s2-internal/page.macro" with { type: "macro" };
+import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ColorScheme = "light" | "dark" | "light dark";
 export type Scale = "medium" | "large";
@@ -134,12 +129,24 @@ export function useProviderProps<T extends object>(props: T): T {
 
   return mergeProps(
     {
-      isQuiet: context.isQuiet,
-      isEmphasized: context.isEmphasized,
-      isDisabled: context.isDisabled,
-      isRequired: context.isRequired,
-      isReadOnly: context.isReadOnly,
-      validationState: context.validationState,
+      get isQuiet() {
+        return context.isQuiet;
+      },
+      get isEmphasized() {
+        return context.isEmphasized;
+      },
+      get isDisabled() {
+        return context.isDisabled;
+      },
+      get isRequired() {
+        return context.isRequired;
+      },
+      get isReadOnly() {
+        return context.isReadOnly;
+      },
+      get validationState() {
+        return context.validationState;
+      },
     } as unknown as Partial<T>,
     props,
   ) as T;
@@ -279,9 +286,9 @@ export function Provider(props: ProviderProps): JSX.Element {
   }));
 
   return (
-    <ProviderContext.Provider value={providerValue}>
-      <ThemeContext.Provider value={providerValue}>
-        <ColorSchemeContext.Provider value={colorScheme()}>
+    <ProviderContext value={providerValue}>
+      <ThemeContext value={providerValue}>
+        <ColorSchemeContext value={colorScheme()}>
           <I18nProvider locale={locale()}>
             <ModalProvider>
               <ProviderRoot
@@ -295,9 +302,9 @@ export function Provider(props: ProviderProps): JSX.Element {
               </ProviderRoot>
             </ModalProvider>
           </I18nProvider>
-        </ColorSchemeContext.Provider>
-      </ThemeContext.Provider>
-    </ProviderContext.Provider>
+        </ColorSchemeContext>
+      </ThemeContext>
+    </ProviderContext>
   );
 }
 

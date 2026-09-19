@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
 import { Link } from "@proyecto-viviana/solid-spectrum/Link";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -83,7 +83,7 @@ export default function DocsToc(props: DocsTocProps) {
     setMaskImage(`linear-gradient(to bottom, ${parts.join(", ")})`);
   };
 
-  onMount(() => {
+  onSettled(() => {
     updateMasks();
     requestAnimationFrame(updateMasks);
   });
@@ -194,7 +194,7 @@ export default function DocsToc(props: DocsTocProps) {
 function createCurrentHref(items: DocsTocItem[]) {
   const [currentHref, setCurrentHref] = createSignal(items[0]?.href ?? "");
 
-  onMount(() => {
+  onSettled(() => {
     const anchors = items
       .map((item) => document.getElementById(item.href.slice(1)))
       .filter((element): element is HTMLElement => element != null);

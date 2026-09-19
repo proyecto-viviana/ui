@@ -20,7 +20,8 @@
  * Ported from packages/react-aria/src/color/useColorSwatch.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { normalizeColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";

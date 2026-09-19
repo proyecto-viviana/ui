@@ -1,8 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createSignal, type Accessor } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal, flush, type Accessor } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createListState } from "../../solid-stately/src";
 import { createActionGroup, createActionGroupItem } from "../src/actiongroup";
@@ -282,6 +281,7 @@ describe("createActionGroup", () => {
     expect((italic as HTMLButtonElement).disabled).toBe(false);
 
     setDisabledKeys(["italic"]);
+    flush();
 
     expect((italic as HTMLButtonElement).disabled).toBe(true);
     expect(italic).toBeDisabled();
@@ -299,6 +299,7 @@ describe("createActionGroup", () => {
     render(() => <LiveDisabledKeysExample disabledKeys={disabledKeys} />);
 
     setDisabledKeys(["bold", "italic", "underline"]);
+    flush();
 
     expect(screen.getByRole("button", { name: "Bold" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Italic" })).toBeDisabled();
@@ -316,6 +317,7 @@ describe("createActionGroup", () => {
     expect(group).toHaveAttribute("aria-orientation", "horizontal");
 
     setSelectionMode("single");
+    flush();
 
     expect(group).toHaveAttribute("role", "radiogroup");
     expect(group).not.toHaveAttribute("aria-orientation");
@@ -332,6 +334,7 @@ describe("createActionGroup", () => {
     expect(group).toHaveAttribute("aria-orientation", "horizontal");
 
     setOrientation("vertical");
+    flush();
 
     expect(group).toHaveAttribute("role", "toolbar");
     expect(group).toHaveAttribute("aria-orientation", "vertical");
@@ -353,6 +356,7 @@ describe("createActionGroup", () => {
     expect(group).not.toHaveAttribute("aria-orientation");
 
     setSelectionMode("none");
+    flush();
 
     expect(group).toHaveAttribute("role", "group");
     expect(group).not.toHaveAttribute("aria-orientation");

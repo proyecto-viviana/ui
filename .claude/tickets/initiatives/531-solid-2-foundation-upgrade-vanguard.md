@@ -10,6 +10,11 @@ history:
       at: 2026-09-13,
       note: "opened to prepare the ui foundation as the vanguard for the ecosystem upgrade to Solid 2.0",
     }
+  - {
+      state: open,
+      at: 2026-09-19,
+      note: "Mechanical Solid 2 APIs through all seven pack packages; unit tests green; vp pack:local-chain + ui:consume-smoke (DOM+SSR, vite-plus-core CLI) green. #532 merged. #533–#537 (MaybeAccessor, SlotContext, one-read, 2118 recert) still open. @solidjs/diagnostics declared so vp dev auto-enables /__solid/diagnostics.",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

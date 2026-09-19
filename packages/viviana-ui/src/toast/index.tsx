@@ -23,20 +23,9 @@
  * This Solid module combines the pinned Toast component and transition stylesheet.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  batch,
-  createContext,
-  createEffect,
-  createSignal,
-  For,
-  onCleanup,
-  onMount,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createSignal, For, onCleanup, onSettled, Show, useContext, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   FocusScope,
   createHover,
@@ -80,6 +69,7 @@ import { s2IntlStrings } from "../intl";
 import { createMediaQuery } from "../utils/createMediaQuery";
 import { useTheme } from "../provider";
 import { focusRing, lightDark, setColorScheme, style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
 export type ToastVariant = "positive" | "negative" | "notice" | "info" | "neutral";
@@ -317,7 +307,7 @@ function startViewTransition(fn: () => void, type: string): void {
       doc.documentElement.classList.add("reduceMotion");
     }
 
-    const viewTransition = doc.startViewTransition(() => batch(fn));
+    const viewTransition = doc.startViewTransition(() => fn);
     void viewTransition.ready.catch(() => {});
     void viewTransition.finished.finally(() => {
       doc.documentElement.classList.remove(type, "reduceMotion");
@@ -807,7 +797,9 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     }
     toggleExpanded(visibleToasts);
   };
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isExpanded() || !containerContext) {
       return;
     }
@@ -828,8 +820,10 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     };
 
     ownerDocument.addEventListener("keydown", handleDocumentKeyDown, true);
-    onCleanup(() => ownerDocument.removeEventListener("keydown", handleDocumentKeyDown, true));
-  });
+    _s2Cleanups.push(() => ownerDocument.removeEventListener("keydown", handleDocumentKeyDown, true));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return (
     <HeadlessToastRegion
@@ -922,19 +916,23 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
   const [local, regionProps] = splitProps(props, ["PRIVATE_forceReducedMotion"]);
   const [isExpanded, setIsExpanded] = createSignal(false);
 
-  onMount(ensureToastAnimationStyles);
+  onSettled(ensureToastAnimationStyles);
 
   // Track prefers-reduced-motion and mirror it into the module-global flag that
   // startViewTransition reads, restoring the previous value on cleanup.
   const prefersReducedMotion = createMediaQuery("(prefers-reduced-motion)");
   const reduceMotion = () => local.PRIVATE_forceReducedMotion ?? prefersReducedMotion();
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const previous = globalReduceMotion;
     globalReduceMotion = reduceMotion();
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       globalReduceMotion = previous;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const unsubscribe = globalToastQueue.subscribe((toasts) => {
     if (toasts.length === 0) {
@@ -962,11 +960,11 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
   };
 
   return (
-    <ToastContainerContext.Provider value={context}>
+    <ToastContainerContext value={context}>
       <ToastProvider useGlobalQueue>
         <ToastRegion {...regionProps} />
       </ToastProvider>
-    </ToastContainerContext.Provider>
+    </ToastContainerContext>
   );
 }
 

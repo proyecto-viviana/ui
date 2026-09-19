@@ -18,7 +18,9 @@
  * Based on @react-aria/slider useSlider.
  */
 
-import { type JSX, onCleanup, onMount } from "solid-js";
+
+import { onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createLabel } from "../label/createLabel";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -264,19 +266,18 @@ export function createSlider(
   };
 
   // Set up global listeners on mount (client-side only)
-  onMount(() => {
+  onSettled(() => {
     if (typeof document === "undefined") return;
 
     document.addEventListener("pointermove", onDocumentPointerMove);
     document.addEventListener("pointerup", onDocumentPointerUp);
     document.addEventListener("pointercancel", onDocumentPointerUp);
 
-    // Cleanup when component unmounts
-    onCleanup(() => {
+    return () => {
       document.removeEventListener("pointermove", onDocumentPointerMove);
       document.removeEventListener("pointerup", onDocumentPointerUp);
       document.removeEventListener("pointercancel", onDocumentPointerUp);
-    });
+    };
   });
 
   const labelledBy = () => (fieldProps as { "aria-labelledby"?: string })["aria-labelledby"];
@@ -323,7 +324,7 @@ export function createSlider(
         "aria-valuenow": state.value(),
         "aria-valuetext": state.getFormattedValue(),
         "aria-orientation": state.orientation,
-        "aria-disabled": state.isDisabled || undefined,
+        "aria-disabled": state.isDisabled ? "true" : undefined,
         "aria-labelledby": labelledBy(),
         "aria-label": labelledBy() ? undefined : ariaLabel(),
         tabIndex: state.isDisabled ? undefined : 0,
@@ -349,7 +350,7 @@ export function createSlider(
         {
           type: "range",
           id: inputId,
-          "aria-hidden": true,
+          "aria-hidden": "true",
           min: state.minValue,
           max: state.maxValue,
           step: state.step,

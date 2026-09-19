@@ -17,7 +17,8 @@
  * Based on @react-stately/toast useToastState
  */
 
-import { onCleanup, type Accessor } from "solid-js";
+import { flush, onCleanup } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, readNow } from "../utils";
 
 
@@ -347,6 +348,15 @@ export function createToastState<T>(props: ToastStateProps<T>): ToastState<T> {
   // Subscribe to queue changes
   const unsubscribe = props.queue.subscribe((toasts) => {
     setVisibleToasts(toasts);
+    // Queue updates are typically called from event handlers or tests, not
+    // from effect apply. Flush so ToastRegion's Show sees the new length in
+    // the same turn (Solid 2 otherwise keeps the overlay unmounted until a
+    // later microtask).
+    try {
+      flush();
+    } catch {
+      // Ignore: flush is forbidden inside createEffect apply / createTrackedEffect.
+    }
   });
 
   onCleanup(() => {

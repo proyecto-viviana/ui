@@ -6,3 +6,4 @@ export {
   type MaybeAccessor,
   type MaybeAccessorValue,
 } from "./reactivity";
+export { useContextOptional } from "./owner";

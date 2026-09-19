@@ -23,8 +23,9 @@
  * - packages/react-aria/src/dnd/useDrop.ts
  */
 
-import { createEffect, createMemo, onCleanup, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createEffect, createMemo, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   DragType,
   DragTypes,
@@ -127,7 +128,9 @@ export function createDroppableItem(
   });
 
   // RAC `useDroppableItem.ts:49-68`: register with DragManager once the node exists.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = getOptions().ref();
     const target = resolvedTarget();
     const activateButtonRef = getOptions().activateButtonRef;
@@ -146,14 +149,18 @@ export function createDroppableItem(
       },
       activateButtonRef,
     });
-    onCleanup(unregister);
-  });
+    _s2Cleanups.push(unregister);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // RAC `useDroppableItem.ts:84-88`: focus the node when it becomes the active
   // virtual-drag target. Deferred to a microtask so this does not nest inside the
   // `setTarget` Solid flush (`onDropEnter` → indicator mount). A rAF lost the
   // race to collection focus under parallel Playwright workers.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = getOptions().ref();
     if (!dragSession() || !isDropTarget() || !el) return;
     let cancelled = false;
@@ -162,10 +169,12 @@ export function createDroppableItem(
         el.focus();
       }
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       cancelled = true;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const isValidDropTarget = createMemo(() => {
     const session = dragSession();

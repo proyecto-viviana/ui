@@ -3,19 +3,9 @@
 
 // Port of packages/@react-spectrum/s2/src/Image.tsx.
 // Port of packages/@react-spectrum/s2/src/ImageCoordinator.tsx.
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  Show,
-  splitProps,
-  type Context,
-  type JSX,
-  untrack,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, Show, untrack, useContext } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
@@ -31,6 +21,7 @@ import {
 } from "../button/spectrum-context";
 import { useTheme } from "../provider";
 import { createIsSkeleton, loadingStyle, useLoadingAnimation } from "../skeleton";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ImageSource {
   /** A comma-separated list of image URLs and descriptors. */
@@ -58,7 +49,7 @@ export interface ImageProps {
   decoding?: "async" | "auto" | "sync";
   fetchPriority?: "high" | "low" | "auto";
   loading?: "eager" | "lazy";
-  referrerPolicy?: JSX.ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
+  referrerPolicy?: JSX.ImgHTMLAttributes<HTMLImageElement>["referrerpolicy"];
   width?: number;
   height?: number;
   styles?: StyleString | (() => StyleString | undefined);
@@ -208,15 +199,17 @@ function ImageCoordinatorRoot(props: ImageCoordinatorProps): JSX.Element {
     });
   };
 
-  createEffect(() => {
-    if (loadedAll()) {
-      return;
-    }
-
-    const delay = Math.max(0, loadStartTime() + timeout() - Date.now());
-    const timeoutId = window.setTimeout(() => setTimedOut(true), delay);
-    onCleanup(() => window.clearTimeout(timeoutId));
-  });
+  createEffect(
+    () => {
+      if (loadedAll()) return null;
+      return Math.max(0, loadStartTime() + timeout() - Date.now());
+    },
+    (delay) => {
+      if (delay == null) return;
+      const timeoutId = window.setTimeout(() => setTimedOut(true), delay);
+      return () => window.clearTimeout(timeoutId);
+    },
+  );
 
   const value: ImageGroupValue = {
     get revealAll() {
@@ -227,7 +220,7 @@ function ImageCoordinatorRoot(props: ImageCoordinatorProps): JSX.Element {
     load,
   };
 
-  const GroupProvider = group().Provider;
+  const GroupProvider = group();
   return <GroupProvider value={value}>{props.children}</GroupProvider>;
 }
 
@@ -264,10 +257,12 @@ export function Image(props: ImageProps): JSX.Element {
   ]);
   const theme = useTheme();
   const imageGroup = useContext(local.group ?? DefaultImageGroup);
-  const [state, setState] = createSignal<ImageState>("loading");
-  const [lastCacheKey, setLastCacheKey] = createSignal(sourceCacheKey(local.src));
-  const [startTime, setStartTime] = createSignal(Date.now());
-  const [loadTime, setLoadTime] = createSignal(0);
+  const [state, setState] = createSignal<ImageState>("loading", { ownedWrite: true });
+  const [lastCacheKey, setLastCacheKey] = createSignal(sourceCacheKey(local.src), {
+    ownedWrite: true,
+  });
+  const [startTime, setStartTime] = createSignal(Date.now(), { ownedWrite: true });
+  const [loadTime, setLoadTime] = createSignal(0, { ownedWrite: true });
   const isSkeleton = createIsSkeleton();
   let imageElement: HTMLImageElement | undefined;
 
@@ -287,49 +282,58 @@ export function Image(props: ImageProps): JSX.Element {
   const animating = () => isSkeleton() || state() === "loading" || state() === "loaded";
   const loadingAnimationRef = useLoadingAnimation(animating);
 
-  createEffect(() => {
-    const nextKey = cacheKey();
-    if (nextKey !== lastCacheKey() && !hidden()) {
-      setState("loading");
-      setLastCacheKey(nextKey);
-      setStartTime(Date.now());
-      setLoadTime(0);
-    }
-  });
+  createEffect(
+    () => ({ nextKey: cacheKey(), hidden: hidden(), last: lastCacheKey() }),
+    ({ nextKey, hidden, last }) => {
+      if (nextKey !== last && !hidden) {
+        setState("loading");
+        setLastCacheKey(nextKey);
+        setStartTime(Date.now());
+        setLoadTime(0);
+      }
+    },
+  );
 
-  createEffect(() => {
-    if (hidden()) {
-      return;
-    }
+  createEffect(
+    () => (hidden() ? null : cacheKey()),
+    (key) => {
+      if (key == null) return;
+      imageGroup.register(key);
+      return () => imageGroup.unregister(key);
+    },
+  );
 
-    const key = cacheKey();
-    imageGroup.register(key);
-    onCleanup(() => imageGroup.unregister(key));
-  });
+  createEffect(
+    () => ({
+      loaded: state() === "loaded",
+      revealAll: imageGroup.revealAll,
+      hidden: hidden(),
+      start: startTime(),
+    }),
+    ({ loaded, revealAll, hidden, start }) => {
+      if (loaded && revealAll && !hidden) {
+        setState("revealed");
+        setLoadTime(Date.now() - start);
+      }
+    },
+  );
 
-  createEffect(() => {
-    if (state() === "loaded" && imageGroup.revealAll && !hidden()) {
-      setState("revealed");
-      setLoadTime(Date.now() - startTime());
-    }
-  });
-
-  createEffect(() => {
-    if (hidden()) {
-      return;
-    }
-
-    const image = imageElement;
-    if (state() === "loading" && image?.complete) {
-      queueMicrotask(() => {
-        if (image.naturalWidth === 0 && image.naturalHeight === 0) {
-          handleError();
-        } else {
-          handleLoad();
-        }
-      });
-    }
-  });
+  createEffect(
+    () => ({ hidden: hidden(), loading: state() === "loading" }),
+    ({ hidden, loading }) => {
+      if (hidden) return;
+      const image = imageElement;
+      if (loading && image?.complete) {
+        queueMicrotask(() => {
+          if (image.naturalWidth === 0 && image.naturalHeight === 0) {
+            handleError();
+          } else {
+            handleLoad();
+          }
+        });
+      }
+    },
+  );
 
   const handleLoad = () => {
     imageGroup.load(cacheKey());
@@ -386,16 +390,16 @@ export function Image(props: ImageProps): JSX.Element {
     <img
       src={typeof srcProp() === "string" && srcProp() ? (srcProp() as string) : undefined}
       alt={local.alt}
-      crossOrigin={local.crossOrigin}
+      crossorigin={local.crossOrigin}
       decoding={local.decoding}
       loading={local.loading}
-      referrerPolicy={local.referrerPolicy}
+      referrerpolicy={local.referrerPolicy}
       width={local.width}
       height={local.height}
       ref={(element) => {
         imageElement = element;
       }}
-      itemProp={local.itemProp}
+      itemprop={local.itemProp}
       onLoad={handleLoad}
       onError={handleError}
       class={imageStyles({

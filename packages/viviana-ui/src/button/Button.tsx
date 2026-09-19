@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import { type JSX, createMemo, splitProps, useContext } from "solid-js";
+import { createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
   type ButtonRenderProps,
@@ -49,6 +50,7 @@ import {
   type RefLike,
 } from "./spectrum-context";
 import { getSingleTextChild } from "./text-child";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RuntimeButtonProps = ButtonProps & {
   onHoverChange?: (isHovered: boolean) => void;
@@ -186,23 +188,27 @@ export function Button(props: ButtonProps): JSX.Element {
       const content = createMemo(() => local.children);
       const textChild = () => getSingleTextChild(content());
 
-      return textChild() !== undefined ? (
-        <span
-          class={`${s2ButtonText({ isProgressVisible: isProgressVisible() })} ${style({ order: 1 })}`}
-          data-rsp-slot="text"
-        >
-          {textChild()}
-        </span>
-      ) : (
-        content()
+      return (
+        <>
+          {textChild() !== undefined ? (
+            <span
+              class={`${s2ButtonText({ isProgressVisible: isProgressVisible() })} ${style({ order: 1 })}`}
+              data-rsp-slot="text"
+            >
+              {textChild()}
+            </span>
+          ) : (
+            content()
+          )}
+        </>
       );
     }
 
     return (
       <>
-        <SkeletonContext.Provider value={null}>
-          <TextContext.Provider value={textContextValue}>
-            <IconContext.Provider value={iconContextValue}>
+        <SkeletonContext value={null}>
+          <TextContext value={textContextValue}>
+            <IconContext value={iconContextValue}>
               <ResolvedContent />
               {local.isPending ? (
                 <div
@@ -218,9 +224,9 @@ export function Button(props: ButtonProps): JSX.Element {
                   />
                 </div>
               ) : null}
-            </IconContext.Provider>
-          </TextContext.Provider>
-        </SkeletonContext.Provider>
+            </IconContext>
+          </TextContext>
+        </SkeletonContext>
       </>
     );
   }

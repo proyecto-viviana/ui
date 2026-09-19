@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { FieldErrorContext } from "@proyecto-viviana/solidaria-components";
@@ -42,19 +42,21 @@ describe("HelpText (viviana-ui)", () => {
     expect(screen.queryByText("Quantity is required.")).not.toBeInTheDocument();
 
     setIsInvalid(true);
+    flush();
     expect(screen.queryByText("Enter a quantity.")).not.toBeInTheDocument();
     expect(screen.getByText("Quantity is required.")).toHaveAttribute("slot", "errorMessage");
 
     setIsInvalid(false);
+    flush();
     expect(screen.getByText("Enter a quantity.")).toHaveAttribute("slot", "description");
     expect(screen.queryByText("Quantity is required.")).not.toBeInTheDocument();
   });
 
   it("mounts context errors with no local isInvalid", () => {
     render(() => (
-      <FieldErrorContext.Provider value={CONTEXT_ERROR}>
+      <FieldErrorContext value={CONTEXT_ERROR}>
         <HelpText description="Enter a quantity." />
-      </FieldErrorContext.Provider>
+      </FieldErrorContext>
     ));
 
     expect(screen.queryByText("Enter a quantity.")).not.toBeInTheDocument();
@@ -63,9 +65,9 @@ describe("HelpText (viviana-ui)", () => {
 
   it("lets FieldErrorContext supply validationErrors instead of DEFAULT_VALIDATION_RESULT", () => {
     render(() => (
-      <FieldErrorContext.Provider value={{ validation: CONTEXT_ERROR }}>
+      <FieldErrorContext value={{ validation: CONTEXT_ERROR }}>
         <HelpText />
-      </FieldErrorContext.Provider>
+      </FieldErrorContext>
     ));
 
     expect(screen.getByText("Context error")).toHaveAttribute("slot", "errorMessage");

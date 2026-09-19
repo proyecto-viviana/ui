@@ -1,9 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
-import type { JSX } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
 import type {

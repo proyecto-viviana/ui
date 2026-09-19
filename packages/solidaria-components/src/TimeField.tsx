@@ -27,15 +27,9 @@
  * the inner DateInput sibling.
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createTimeField, mergeProps, type AriaTimeFieldProps } from "@proyecto-viviana/solidaria";
 import {
   createTimeFieldState,
@@ -56,6 +50,7 @@ import {
 } from "./utils";
 import { TextContext } from "./Text";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TimeFieldRenderProps {
   /** Whether the field is disabled. */
@@ -252,10 +247,10 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
   };
 
   return (
-    <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
-      <DateFieldStateContext.Provider value={state as unknown as DateFieldContextValue["state"]}>
-        <DateFieldContext.Provider value={dateFieldContextValue}>
-          <TimeFieldContext.Provider
+    <TimeFieldStateContext value={state as unknown as TimeFieldState<TimeValue>}>
+      <DateFieldStateContext value={state as unknown as DateFieldContextValue["state"]}>
+        <DateFieldContext value={dateFieldContextValue}>
+          <TimeFieldContext
             value={{
               state: state as unknown as TimeFieldState<TimeValue>,
               aria: {
@@ -292,10 +287,10 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
               RAC TimeField renders none (react-aria-components TimeField.mjs). The
               native-validation <input> is emitted by the inner DateInput sibling.
             */}
-          </TimeFieldContext.Provider>
-        </DateFieldContext.Provider>
-      </DateFieldStateContext.Provider>
-    </TimeFieldStateContext.Provider>
+          </TimeFieldContext>
+        </DateFieldContext>
+      </DateFieldStateContext>
+    </TimeFieldStateContext>
   );
 }
 

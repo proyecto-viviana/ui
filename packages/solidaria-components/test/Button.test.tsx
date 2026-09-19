@@ -8,10 +8,7 @@
  * - Context for slot composition
  * - Full accessibility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria"; import { createSignal, flush } from "solid-js";
 import { Button, ButtonContext, type ButtonRenderProps } from "../src/Button";
 import { ProgressBar } from "../src/ProgressBar";
 import { ToggleButton } from "../src/ToggleButton";
@@ -169,9 +166,9 @@ describe("Button", () => {
 
     it("should support slot", () => {
       render(() => (
-        <ButtonContext.Provider value={{ slots: { test: { "aria-label": "test" } } }}>
+        <ButtonContext value={{ slots: { test: { "aria-label": "test" } } }}>
           <Button slot="test">Test</Button>
-        </ButtonContext.Provider>
+        </ButtonContext>
       ));
       const button = screen.getByRole("button");
       expect(button).toHaveAttribute("slot", "test");
@@ -715,6 +712,7 @@ describe("Button", () => {
         expect(onPress).toHaveBeenCalledTimes(1);
 
         setBusy(false);
+        flush();
         expect(button).not.toHaveAttribute("data-pending");
         expect(button).not.toHaveAttribute("aria-disabled");
 
@@ -836,9 +834,9 @@ describe("Button", () => {
     it("disables press when in pending state for context", async () => {
       const onPress = vi.fn();
       render(() => (
-        <ButtonContext.Provider value={{ isPending: true, onPress }}>
+        <ButtonContext value={{ isPending: true, onPress }}>
           <Button>Delete</Button>
-        </ButtonContext.Provider>
+        </ButtonContext>
       ));
 
       await user.click(screen.getByRole("button"));

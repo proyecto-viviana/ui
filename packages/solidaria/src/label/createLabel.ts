@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/label's useLabel hook.
  */
 
-import { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "../ssr";
 import { createLabels } from "./createLabels";
 import { type MaybeAccessor, access } from "../utils/reactivity";
@@ -85,7 +85,9 @@ export function createLabel(props: MaybeAccessor<LabelAriaProps>): LabelAria {
 
     return {
       id: labelId,
-      ...(labelElementType === "label" ? { htmlFor: id() } : {}),
+      // Solid 2 JSX spreads emit `htmlfor` for `htmlFor`. The DOM attribute is
+      // `for`; mergeProps also canonicalizes `htmlFor` → `for`. Do not set both.
+      ...(labelElementType === "label" ? { for: id() } : {}),
     };
   };
 

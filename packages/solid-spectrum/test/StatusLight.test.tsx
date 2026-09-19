@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { Skeleton } from "../src/skeleton";
 import { StatusLight, StatusLightContext, type StatusLightProps } from "../src/statuslight";
 
@@ -45,7 +43,7 @@ describe("StatusLight (solid-spectrum)", () => {
 
   it("supports role, aria attributes, context props, and unsafe escape hatches", () => {
     const { container } = render(() => (
-      <StatusLightContext.Provider
+      <StatusLightContext
         value={{
           role: "status",
           variant: "negative",
@@ -63,7 +61,7 @@ describe("StatusLight (solid-spectrum)", () => {
         >
           Offline
         </StatusLight>
-      </StatusLightContext.Provider>
+      </StatusLightContext>
     ));
 
     const root = screen.getByRole("status", { name: "Connection status" }) as HTMLElement;
@@ -139,6 +137,7 @@ describe("StatusLight (solid-spectrum)", () => {
     const text = container.querySelector('[data-rsp-slot="text"]');
     expect(text).toHaveTextContent("Online");
     setLabel("Offline");
+    flush();
     expect(text).toHaveTextContent("Offline");
   });
 });

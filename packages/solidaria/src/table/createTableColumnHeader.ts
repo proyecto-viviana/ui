@@ -17,8 +17,9 @@
  * Based on @react-aria/table/useTableColumnHeader.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableColumnHeaderProps, TableColumnHeaderAria } from "./types";
 import { getTableData } from "./createTable";

@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Toolbar.tsx
 
 // Port of packages/@react-spectrum/s2/src/Toolbar.tsx.
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Toolbar as HeadlessToolbar,
   type ToolbarProps as HeadlessToolbarProps,

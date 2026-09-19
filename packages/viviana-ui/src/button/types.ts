@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { ButtonProps as HeadlessButtonProps } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 

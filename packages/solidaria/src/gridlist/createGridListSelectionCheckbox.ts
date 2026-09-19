@@ -17,8 +17,9 @@
  * Ported from packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { GridState, GridCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListSelectionCheckboxProps, GridListSelectionCheckboxAria } from "./types";

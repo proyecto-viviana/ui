@@ -16,7 +16,8 @@
 // Port of packages/@react-spectrum/s2/src/Avatar.tsx.
 // Port of packages/@react-spectrum/s2/src/AvatarGroup.tsx.
 
-import { createContext, splitProps, type JSX, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, createLabel, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
@@ -31,6 +32,7 @@ import {
 } from "../button/spectrum-context";
 import { centerBaselineBefore } from "../icon/center-baseline";
 import { Image, ImageContext } from "../image";
+import { attrString, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type AvatarSize =
   | 16
@@ -216,7 +218,7 @@ export function Avatar(props: AvatarProps) {
       .join(" ");
 
   return (
-    <ImageContext.Provider value={{}}>
+    <ImageContext value={{}}>
       <Image
         ref={mergeContextRefs(
           (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
@@ -234,7 +236,7 @@ export function Avatar(props: AvatarProps) {
           mergeContextStyles(contextProps?.styles, props.styles),
         )}
       />
-    </ImageContext.Provider>
+    </ImageContext>
   );
 }
 
@@ -272,10 +274,10 @@ export function AvatarGroup(props: AvatarGroupProps) {
   ]);
   const size = () => local.size ?? 24;
   const labelAria = createLabel(() => ({
-    id: domProps.id,
+    id: attrString(domProps.id),
     label: local.label,
-    "aria-label": domProps["aria-label"],
-    "aria-labelledby": domProps["aria-labelledby"],
+    "aria-label": attrString(domProps["aria-label"]),
+    "aria-labelledby": attrString(domProps["aria-labelledby"]),
     labelElementType: "span",
   }));
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
@@ -302,7 +304,7 @@ export function AvatarGroup(props: AvatarGroupProps) {
   } satisfies Partial<AvatarProps>;
 
   return (
-    <AvatarContext.Provider value={avatarContextValue}>
+    <AvatarContext value={avatarContextValue}>
       <div
         {...filterDOMProps(domProps)}
         ref={mergeContextRefs(
@@ -326,6 +328,6 @@ export function AvatarGroup(props: AvatarGroupProps) {
           </span>
         )}
       </div>
-    </AvatarContext.Provider>
+    </AvatarContext>
   );
 }

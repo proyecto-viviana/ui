@@ -10,9 +10,7 @@
  * - Controlled mode
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal, type Accessor } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush, type Accessor } from "solid-js";
 import { StepList, Step } from "../src/StepList";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -521,6 +519,7 @@ describe("StepList", () => {
       expect(details.getAttribute("tabindex")).toBe("0");
 
       setIsDisabled(true);
+      flush();
 
       expect(details.getAttribute("aria-disabled")).toBe("true");
       expect(details.getAttribute("tabindex")).toBeNull();
@@ -551,6 +550,7 @@ describe("StepList", () => {
       expect(selectOffers.getAttribute("aria-current")).toBe("step");
 
       setIsReadOnly(true);
+      flush();
 
       for (const link of [details, selectOffers, fallback, summary]) {
         expect(link.getAttribute("aria-disabled")).toBe("true");
@@ -569,6 +569,7 @@ describe("StepList", () => {
       expect(details.getAttribute("tabindex")).toBe("0");
 
       setDisabledKeys(["details"]);
+      flush();
 
       expect(details.getAttribute("aria-current")).toBe("step");
       expect(details.getAttribute("aria-disabled")).toBe("true");

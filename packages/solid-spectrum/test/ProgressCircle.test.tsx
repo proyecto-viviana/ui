@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ProgressCircle } from "../src/progress/ProgressCircle";
@@ -71,6 +71,7 @@ describe("ProgressCircle (solid-spectrum)", () => {
     expect(screen.getByRole("progressbar", { name: "Loading…" })).toBeInTheDocument();
 
     setLabel("Uploading files");
+    flush();
     expect(screen.getByRole("progressbar", { name: "Uploading files" })).toBeInTheDocument();
   });
 });

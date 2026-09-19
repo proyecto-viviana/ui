@@ -1,10 +1,11 @@
-import { render, screen } from "@solidjs/testing-library";
-import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { createSignal } from "solid-js";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, render, screen } from "@solidjs/testing-library"; import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils"; import { createSignal, flush } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { Button, ButtonContext } from "../src/button";
 
 describe("Button", () => {
+  afterEach(() => {
+    cleanup();
+  });
   it("updates direct reactive text children", () => {
     let setLabel!: (value: string) => void;
 
@@ -16,6 +17,7 @@ describe("Button", () => {
 
     expect(screen.getByRole("button")).toHaveTextContent("Save");
     setLabel("Saved");
+    flush();
     expect(screen.getByRole("button")).toHaveTextContent("Saved");
   });
 
@@ -62,6 +64,7 @@ describe("Button", () => {
       expect(onPress).toHaveBeenCalledTimes(1);
 
       setBusy(false);
+      flush();
       expect(button).not.toHaveAttribute("data-pending");
       expect(button).not.toHaveAttribute("aria-disabled");
 
@@ -79,9 +82,9 @@ describe("Button", () => {
     const calls: string[] = [];
 
     render(() => (
-      <ButtonContext.Provider value={{ onPress: () => calls.push("ctx") }}>
+      <ButtonContext value={{ onPress: () => calls.push("ctx") }}>
         <Button onPress={() => calls.push("prop")}>Save</Button>
-      </ButtonContext.Provider>
+      </ButtonContext>
     ));
 
     await user.click(screen.getByRole("button", { name: "Save" }));
@@ -93,9 +96,9 @@ describe("Button", () => {
     const onPress = vi.fn();
 
     render(() => (
-      <ButtonContext.Provider value={{ size: "XL" }}>
+      <ButtonContext value={{ size: "XL" }}>
         <Button onPress={onPress}>Save</Button>
-      </ButtonContext.Provider>
+      </ButtonContext>
     ));
 
     await user.click(screen.getByRole("button", { name: "Save" }));

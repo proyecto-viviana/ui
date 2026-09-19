@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled, Show } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { ButtonGroup as SolidSpectrumButtonGroup } from "@proyecto-viviana/solid-spectrum/ButtonGroup";
@@ -127,7 +127,7 @@ function SolidSpectrumToastDemo() {
       ),
     );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "toast") {
         closeExistingToasts();

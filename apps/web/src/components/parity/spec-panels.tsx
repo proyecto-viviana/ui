@@ -11,7 +11,8 @@
    The original single-column lab kept panels 04 (NAVIGATION) and 05 (STATUS)
    in one 2-up grid; here every panel is a standalone export so the Parity view
    can pair each with its mirror in its own aligned row. */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { MeshCard, PixelIcon, ScanOverlay } from "./primitives";
 import { badgeBase, btnBase, Caret, CH, MONO, Panel, Well } from "./lab-shell";
 

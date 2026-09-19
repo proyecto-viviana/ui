@@ -8,8 +8,9 @@
  * priority-based auto-focus queue API.
  */
 
-import { createEffect, onCleanup, onMount } from "solid-js";
-import { isServer } from "solid-js/web";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, onSettled } from "solid-js";
+import { isServer } from "@solidjs/web";
 import { focusSafely } from "../utils/focus";
 
 export interface AutoFocusOptions {
@@ -243,7 +244,7 @@ export function createAutoFocus(
   let canceled = false;
 
   // Queue auto-focus on mount
-  onMount(() => {
+  onSettled(() => {
     if (!isEnabled || canceled) return;
 
     queueAutoFocus({
@@ -258,7 +259,7 @@ export function createAutoFocus(
   });
 
   // Remove from queue on cleanup
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     removeFromQueue(ref);
   });
 

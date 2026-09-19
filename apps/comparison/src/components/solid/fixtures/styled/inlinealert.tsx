@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
 import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
@@ -27,7 +27,7 @@ function SolidSpectrumInlineAlertDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "inlinealert") {
         setDemoProps(normalizeInlineAlertDemoProps(event.detail.props ?? {}));

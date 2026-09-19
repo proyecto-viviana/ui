@@ -23,8 +23,10 @@
  * - packages/react-aria/src/dnd/useDrag.ts
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import { captureRef } from "../utils/capture";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   DraggableCollectionState,
   DragPreviewRenderer,
@@ -337,11 +339,13 @@ export function createDraggableItem(
     // useDrag: the Enter pickup is wired in the CAPTURE phase so it runs before
     // the collection item's own press/selection handlers (which also claim
     // Enter) and can stopPropagation to suppress them — a bubble-phase handler
-    // would never see the Enter keyup, since press consumes it first. In Solid,
-    // capture-phase spread props use the `oncapture:` prefix.
+    // would never see the Enter keyup, since press consumes it first. Solid 2
+    // has no `oncapture:` JSX; bind via ref + addEventListener(..., true).
     if (!opts.hasDragButton) {
-      baseProps["oncapture:keydown"] = onKeyDown;
-      baseProps["oncapture:keyup"] = onKeyUp;
+      baseProps.ref = captureRef({
+        keydown: onKeyDown as EventListener,
+        keyup: onKeyUp as EventListener,
+      });
     }
 
     // Reading the reactive getter here keeps this memo subscribed, so the id

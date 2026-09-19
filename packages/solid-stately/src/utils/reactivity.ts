@@ -4,13 +4,8 @@
  * Provides type-safe utilities for working with SolidJS reactivity patterns.
  */
 
-import {
-  Accessor,
-  createSignal,
-  getObserver,
-  type Signal,
-  type SignalOptions,
-} from "solid-js";
+import { Accessor, createSignal, getObserver } from "solid-js";
+import type { Signal, SignalOptions } from "solid-js";
 
 /**
  * A value that may be either a raw value or an accessor function.

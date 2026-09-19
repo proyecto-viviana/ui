@@ -17,15 +17,8 @@
  * https://github.com/adobe/react-spectrum/blob/main/packages/@react-aria/dialog/src/useDialog.ts
  */
 
-import {
-  Accessor,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-} from "solid-js";
-import { filterDOMProps, focusSafely } from "../utils";
+import { filterDOMProps, focusSafely, onOwnedCleanup } from "../utils";
+import { Accessor, createEffect, createMemo, createSignal, createUniqueId, createTrackedEffect } from "solid-js";
 import { runAfterPaint } from "../utils/focus";
 import type { AriaLabelingProps, DOMProps } from "./types";
 
@@ -79,7 +72,7 @@ export function createDialog(
   let didScheduleInitialFocus = false;
   let cancelInitialFocus: (() => void) | undefined;
   let safariTimeout: ReturnType<typeof setTimeout> | undefined;
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (typeof document === "undefined") return;
     if (didScheduleInitialFocus) return;
 
@@ -111,7 +104,7 @@ export function createDialog(
       }, 500);
     }, doc);
   });
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     cancelInitialFocus?.();
     if (safariTimeout !== undefined) {
       clearTimeout(safariTimeout);

@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
-import { createSignal, type Component } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createSignal, flush, type Component } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {
   Icon,
@@ -92,15 +90,16 @@ describe("Icon (solid-spectrum)", () => {
     let setIcon!: (next: ProbeIcon) => void;
 
     const { container } = render(() => {
-      const [icon, updateIcon] = createSignal<ProbeIcon>(ProbeA);
-      setIcon = (next) => updateIcon(() => next);
-      return <Icon icon={icon()} />;
+      const [icon, updateIcon] = createSignal<{ current: ProbeIcon }>({ current: ProbeA });
+      setIcon = (next) => updateIcon({ current: next });
+      return <Icon icon={icon().current} />;
     });
 
     expect(screen.getByTestId("icon-a")).toBeInTheDocument();
     expect(container.querySelector('[data-testid="icon-b"]')).not.toBeInTheDocument();
 
     setIcon(ProbeB);
+    flush();
 
     expect(screen.queryByTestId("icon-a")).not.toBeInTheDocument();
     expect(screen.getByTestId("icon-b")).toBeInTheDocument();
@@ -110,14 +109,15 @@ describe("Icon (solid-spectrum)", () => {
     let setIcon!: (next: ProbeIcon) => void;
 
     const { container } = render(() => {
-      const [icon, updateIcon] = createSignal<ProbeIcon>(ProbeA);
-      setIcon = (next) => updateIcon(() => next);
-      return <Icon icon={icon()} withShadow />;
+      const [icon, updateIcon] = createSignal<{ current: ProbeIcon }>({ current: ProbeA });
+      setIcon = (next) => updateIcon({ current: next });
+      return <Icon icon={icon().current} withShadow />;
     });
 
     expect(container.querySelectorAll('[data-testid="icon-a"]')).toHaveLength(2);
 
     setIcon(ProbeB);
+    flush();
 
     expect(container.querySelector('[data-testid="icon-a"]')).not.toBeInTheDocument();
     expect(container.querySelectorAll('[data-testid="icon-b"]')).toHaveLength(2);
@@ -154,6 +154,7 @@ describe("Icon (solid-spectrum)", () => {
     const svg = container.querySelector("svg");
     expect(svg?.getAttribute("class") ?? "").toContain("first");
     setCls("second");
+    flush();
     expect(svg?.getAttribute("class") ?? "").toContain("second");
     expect(svg?.getAttribute("class") ?? "").not.toContain("first");
   });
@@ -195,9 +196,9 @@ describe("Icon (solid-spectrum)", () => {
 
   it("createIcon inherits slot context used by component compositions", () => {
     const { container } = render(() => (
-      <IconContext.Provider value={{ slot: "icon" }}>
+      <IconContext value={{ slot: "icon" }}>
         <TestCreatedIcon />
-      </IconContext.Provider>
+      </IconContext>
     ));
 
     expect(container.querySelector("svg")).toHaveAttribute("data-slot", "icon");
@@ -205,14 +206,14 @@ describe("Icon (solid-spectrum)", () => {
 
   it("createIcon still wraps with IconContext.render", () => {
     const { container } = render(() => (
-      <IconContext.Provider
+      <IconContext
         value={{
           slot: "icon",
           render: (icon) => <div data-testid="workflow-icon-wrap">{icon}</div>,
         }}
       >
         <TestCreatedIcon />
-      </IconContext.Provider>
+      </IconContext>
     ));
 
     const wrap = container.querySelector('[data-testid="workflow-icon-wrap"]');
@@ -222,14 +223,14 @@ describe("Icon (solid-spectrum)", () => {
 
   it("createUIIcon does not consume IconContext render, slot, or styles", () => {
     const { container } = render(() => (
-      <IconContext.Provider
+      <IconContext
         value={{
           slot: "icon",
           render: (icon) => <div data-testid="ui-icon-wrap">{icon}</div>,
         }}
       >
         <Checkmark />
-      </IconContext.Provider>
+      </IconContext>
     ));
 
     expect(container.querySelector('[data-testid="ui-icon-wrap"]')).not.toBeInTheDocument();
@@ -272,9 +273,9 @@ describe("Icon (solid-spectrum)", () => {
 
   it("createIllustration inherits slot context used by component compositions", () => {
     const { container } = render(() => (
-      <IllustrationContext.Provider value={{ slot: "illustration" }}>
+      <IllustrationContext value={{ slot: "illustration" }}>
         <TestCreatedIllustration />
-      </IllustrationContext.Provider>
+      </IllustrationContext>
     ));
 
     expect(container.querySelector("svg")).toHaveAttribute("data-slot", "illustration");

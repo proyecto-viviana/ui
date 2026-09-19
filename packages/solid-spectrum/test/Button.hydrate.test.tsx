@@ -10,7 +10,8 @@
  *    without recreating the Button subtree.
  * Both shapes must hydrate with no throw and no console.error (no mismatch).
  */
-import { createMemo, createSignal, type JSX } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";

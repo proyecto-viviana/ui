@@ -12,7 +12,8 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/LabeledValue.tsx
 
-import { type JSX, Show, createMemo, splitProps } from "solid-js";
+import { Show, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { NumberFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
@@ -25,6 +26,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useFormProps, useIsInForm } from "../form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type LabeledValueSize = "S" | "M" | "L" | "XL";
 export type LabeledValueLabelPosition = "top" | "side";

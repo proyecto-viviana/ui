@@ -9,7 +9,8 @@
  * (i.e. a date picker, never a standalone field).
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { mergeProps } from "../utils/mergeProps";
 import { useLocale } from "../i18n";
 import { createPress } from "../interactions/createPress";
@@ -160,5 +161,7 @@ export function createDatePickerGroup(
     },
   });
 
-  return createMemo(() => mergeProps(pressProps, { onKeyDown }));
+  return createMemo(
+    () => mergeProps(pressProps, { onKeyDown }) as unknown as Record<string, unknown>,
+  );
 }

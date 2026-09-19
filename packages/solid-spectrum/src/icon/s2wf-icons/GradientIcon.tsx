@@ -5,8 +5,9 @@
 // Generator input: @react-spectrum/s2@1.7.0/icons/Gradient.mjs
 // Generator input: @react-spectrum/s2@1.7.0/icons/Gradient.cjs
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createIcon } from "../spectrum-icon";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 function GradientIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const [local, rest] = splitProps(props, ["class"]);

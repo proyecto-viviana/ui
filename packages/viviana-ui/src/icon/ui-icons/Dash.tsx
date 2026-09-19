@@ -14,9 +14,10 @@
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.mjs
 // Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.cjs
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 const styles = style({
   width: {

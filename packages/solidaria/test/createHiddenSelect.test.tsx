@@ -2,9 +2,7 @@
  * Tests for createHiddenSelect with form integration.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library";
-import { createSignal, Show } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library"; import { createSignal, flush, Show } from "solid-js";
 import { createHiddenSelect, HiddenSelect } from "../src/select/createHiddenSelect";
 import type { SelectState, Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 import { createFormValidationState } from "@proyecto-viviana/solid-stately";
@@ -223,6 +221,7 @@ describe("createHiddenSelect", () => {
 
       // Change selection
       state.setSelectedKey("bird");
+      flush();
       expect(state.selectedKey()).toBe("bird");
 
       // Reset form
@@ -255,9 +254,11 @@ describe("createHiddenSelect", () => {
       });
 
       state.setSelectedKey("bird");
+      flush();
       expect(state.selectedKey()).toBe("bird");
 
       setMounted(true);
+      flush();
 
       const form = screen.getByTestId("form") as HTMLFormElement;
       fireEvent.reset(form);
@@ -326,6 +327,7 @@ describe("HiddenSelect component", () => {
     expect(select.value).toBe("dog");
 
     state.setSelectedKey("bird");
+    flush();
     expect(select.value).toBe("bird");
     expect(select.options[select.selectedIndex]?.value).toBe("bird");
   });

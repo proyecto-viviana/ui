@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/button/LogicButton.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/button/LogicButton.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ToggleButton as HeadlessToggleButton,
   type ToggleButtonProps as HeadlessToggleButtonProps,
@@ -21,6 +21,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface LogicButtonProps extends Omit<
   HeadlessToggleButtonProps,

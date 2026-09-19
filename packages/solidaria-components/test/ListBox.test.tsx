@@ -9,10 +9,8 @@
  * - Selection modes (single/multiple)
  * - Full accessibility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
-import { createComponent } from "solid-js/web";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import {
   ListBox,
   ListBoxContext,
@@ -196,7 +194,7 @@ describe("ListBox", () => {
 
     it("should support slots", () => {
       render(() => (
-        <ListBoxContext.Provider
+        <ListBoxContext
           value={{ slots: { test: { "aria-label": "Slot listbox" } } } as never}
         >
           <ListBox<TestItem>
@@ -207,7 +205,7 @@ describe("ListBox", () => {
           >
             {(item) => <ListBoxOption id={item.id}>{item.name}</ListBoxOption>}
           </ListBox>
-        </ListBoxContext.Provider>
+        </ListBoxContext>
       ));
 
       expect(screen.getByRole("listbox")).toHaveAttribute("aria-label", "Slot listbox");
@@ -748,6 +746,7 @@ describe("ListBox", () => {
         expect(observe).toHaveBeenCalledTimes(1);
         expect(disconnect).not.toHaveBeenCalled();
         setScrollOffset(2);
+        flush();
         expect(disconnect).toHaveBeenCalledTimes(1);
         expect(observe).toHaveBeenCalledTimes(2);
       } finally {

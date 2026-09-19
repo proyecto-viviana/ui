@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { Form } from "../src/form";
 import { RadioGroup, Radio, RadioContext, RadioGroupContext } from "../src/radio";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -559,7 +557,7 @@ describe("RadioGroup", () => {
       const ref = vi.fn();
 
       render(() => (
-        <RadioGroupContext.Provider
+        <RadioGroupContext
           value={{
             label: "Context plan",
             defaultValue: "pro",
@@ -574,7 +572,7 @@ describe("RadioGroup", () => {
             <Radio value="starter">Starter</Radio>
             <Radio value="pro">Pro</Radio>
           </RadioGroup>
-        </RadioGroupContext.Provider>
+        </RadioGroupContext>
       ));
 
       const group = screen.getByRole("radiogroup", { name: "Context plan" });
@@ -594,7 +592,7 @@ describe("RadioGroup", () => {
 
       render(() => (
         <RadioGroup label="Plans">
-          <RadioContext.Provider
+          <RadioContext
             value={{
               value: "starter",
               children: "Starter",
@@ -605,7 +603,7 @@ describe("RadioGroup", () => {
             }}
           >
             <Radio />
-          </RadioContext.Provider>
+          </RadioContext>
         </RadioGroup>
       ));
 

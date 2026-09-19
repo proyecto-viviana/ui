@@ -1,6 +1,6 @@
 /* The nine Viviana-UI mirror twins, keyed by register number so the Parity
    route can zip each against its hand-built spec panel (see ../spec-panels). */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { MirrorPanel01 } from "./Panel01";
 import { MirrorPanel02 } from "./Panel02";
 import { MirrorPanel03 } from "./Panel03";

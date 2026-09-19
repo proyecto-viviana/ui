@@ -1,4 +1,4 @@
-import { createEffect } from "solid-js";
+import { createEffect, createTrackedEffect } from "solid-js";
 
 export interface OptimizerRefFixtureProps {
   onClose: () => void;
@@ -10,7 +10,7 @@ export function OptimizerRefFixture(props: OptimizerRefFixtureProps) {
     element = node;
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!element) return;
 
     element.setAttribute("data-ref-read", "true");

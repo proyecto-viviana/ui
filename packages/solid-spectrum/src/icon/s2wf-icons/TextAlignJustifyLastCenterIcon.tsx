@@ -5,8 +5,9 @@
 // Generator input: @react-spectrum/s2@1.7.0/icons/TextAlignJustifyLastCenter.mjs
 // Generator input: @react-spectrum/s2@1.7.0/icons/TextAlignJustifyLastCenter.cjs
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createIcon } from "../spectrum-icon";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 function TextAlignJustifyLastCenterIconSvg(
   props: JSX.SvgSVGAttributes<SVGSVGElement>,

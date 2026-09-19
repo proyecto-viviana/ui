@@ -15,8 +15,9 @@
  * standalone virtual-focus controller with this API.
  */
 
-import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createSignal, getObserver } from "solid-js";
+import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
 
 export interface VirtualFocusOptions<T> {
   /**
@@ -211,11 +212,23 @@ export function createVirtualFocus<T>(options: VirtualFocusOptions<T>): VirtualF
     };
   }
 
-  // Internal state for uncontrolled mode
-  const [internalKey, setInternalKey] = createSignal<string | null>(defaultFocusedKey ?? null);
+  // Internal state for uncontrolled mode. Live mirror so focusNext/focusPrevious
+  // then focusedKey() in the same turn (tests, keyboard handlers) sees the write.
+  let liveKey: string | null = defaultFocusedKey ?? null;
+  const [internalKey, setInternalKeySignal] = createSignal<string | null>(liveKey, {
+    ownedWrite: true,
+  });
+  const internalKeyRead = (() => {
+    if (getObserver()) internalKey();
+    return liveKey;
+  }) as typeof internalKey;
+  const setInternalKey = (key: string | null) => {
+    liveKey = key;
+    setInternalKeySignal(key);
+  };
 
   // Use controlled or uncontrolled value
-  const focusedKey = controlledFocusedKey ?? internalKey;
+  const focusedKey = controlledFocusedKey ?? internalKeyRead;
 
   const setFocusedKey = (key: string | null) => {
     if (controlledFocusedKey) {

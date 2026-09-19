@@ -57,7 +57,7 @@ describe("NotificationBadge (solid-spectrum)", () => {
     let localRef: HTMLSpanElement | undefined;
 
     render(() => (
-      <NotificationBadgeContext.Provider
+      <NotificationBadgeContext
         value={{
           value: 4,
           size: "XL",
@@ -75,7 +75,7 @@ describe("NotificationBadge (solid-spectrum)", () => {
           UNSAFE_style={{ margin: "2px" }}
           ref={(element) => (localRef = element)}
         />
-      </NotificationBadgeContext.Provider>
+      </NotificationBadgeContext>
     ));
 
     const badge = screen.getByTestId("context-badge") as HTMLSpanElement;

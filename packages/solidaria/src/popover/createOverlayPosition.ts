@@ -19,7 +19,8 @@
  * Ported from @react-aria/overlays useOverlayPosition.
  */
 
-import { createEffect, createSignal, onCleanup, type JSX } from "solid-js";
+import { createEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { useLocale } from "../i18n";
 import { addEvent, getActiveElement, getPropagationTargets, isFocusWithin } from "../utils/dom";
 import {
@@ -203,7 +204,7 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   // Track the last scale to freeze overlay during pinch zoom
   let lastScale = visualViewport?.scale;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (isOpen()) {
       lastScale = visualViewport?.scale;
     }
@@ -298,67 +299,88 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   // and never re-runs for non-signal overlayRef. overlayProps.style must still
   // spread the measured top/left; the previous `{ top: undefined }` after
   // setPosition wiped the mutated coordinates and a later measure flipped to top.
-  createEffect(() => {
-    shouldUpdatePosition();
-    placement();
-    overlayRef();
-    targetRef();
-    arrowRef();
-    scrollRef();
-    containerPadding();
-    shouldFlip();
-    boundaryElement();
-    offset();
-    crossOffset();
-    isOpen();
-    direction();
-    maxHeight();
-    arrowBoundaryOffset();
-    arrowSize();
-
-    updatePosition();
-  });
+  //
+  // `setPosition` must run in apply: a tracked effect is an owned scope and
+  // drops the write, leaving the fallback `position: fixed` style forever.
+  createEffect(
+    () => {
+      const open = isOpen();
+      const overlay = overlayRef();
+      const target = targetRef();
+      shouldUpdatePosition();
+      placement();
+      arrowRef();
+      scrollRef();
+      containerPadding();
+      shouldFlip();
+      boundaryElement();
+      offset();
+      crossOffset();
+      direction();
+      maxHeight();
+      arrowBoundaryOffset();
+      arrowSize();
+      return [open, overlay, target] as const;
+    },
+    () => {
+      updatePosition();
+    },
+  );
 
   // Update position on window resize
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen()) return;
 
     const handleResize = () => updatePosition();
     window.addEventListener("resize", handleResize, false);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       window.removeEventListener("resize", handleResize, false);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Update position when overlay changes size using ResizeObserver
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const overlayNode = overlayRef();
     if (!overlayNode || !isOpen()) return;
 
     const resizeObserver = new ResizeObserver(() => updatePosition());
     resizeObserver.observe(overlayNode);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       resizeObserver.disconnect();
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Update position when target changes size
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const targetNode = targetRef();
     if (!targetNode || !isOpen()) return;
 
     const resizeObserver = new ResizeObserver(() => updatePosition());
     resizeObserver.observe(targetNode);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       resizeObserver.disconnect();
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Handle visual viewport resize (for iOS virtual keyboard)
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen()) return;
 
     let timeout: ReturnType<typeof setTimeout>;
@@ -383,16 +405,20 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
     visualViewport?.addEventListener("scroll", onScroll);
     const cleanupScroll = addEvent(getPropagationTargets(window), "scroll", onScroll);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       visualViewport?.removeEventListener("resize", onResize);
       visualViewport?.removeEventListener("scroll", onScroll);
       cleanupScroll();
       clearTimeout(timeout);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Close on scroll (when scrolling a parent of the trigger)
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const targetNode = targetRef();
     const closeHandler = onClose();
     if (!targetNode || !isOpen() || !closeHandler) return;
@@ -413,10 +439,12 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
 
     document.addEventListener("scroll", handleScroll, true);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       document.removeEventListener("scroll", handleScroll, true);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     overlayProps: {

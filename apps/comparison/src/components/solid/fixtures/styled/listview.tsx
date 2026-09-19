@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
+import h from "@solidjs/h";
+import { createEffect, createMemo, createSignal, onCleanup, onSettled, Show, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -46,14 +46,14 @@ function SolidSpectrumListViewDemo() {
   const selectedKeyText = createMemo(() => serializeListViewKeys(selectedKeys()));
   let listViewRoot: HTMLElement | undefined;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     listViewRoot?.setAttribute(
       "data-comparison-control-props",
       serializeListViewDemoProps(demoProps()),
     );
   });
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "listview") {
         setDemoProps((current) => {

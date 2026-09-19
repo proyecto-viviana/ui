@@ -19,8 +19,10 @@
  * Based on packages/react-aria-components/src/FileTrigger.tsx.
  */
 
-import { type JSX, createSignal, splitProps } from "solid-js";
+import { createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface FileTriggerProps extends Omit<
   JSX.InputHTMLAttributes<HTMLInputElement>,
@@ -88,7 +90,6 @@ export function FileTrigger(props: FileTriggerProps): JSX.Element {
         multiple={local.allowsMultiple}
         capture={local.defaultCamera}
         disabled={local.disabled}
-        // @ts-expect-error Non-standard attribute supported by WebKit browsers.
         webkitdirectory={local.acceptDirectory ? "" : undefined}
         onChange={onInputChange}
       />

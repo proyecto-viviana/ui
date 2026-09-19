@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createEffect, createSignal, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createEffect, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import {
   Button as HeadlessButton,
   Popover as HeadlessPopover,
@@ -35,7 +35,7 @@ export default function ComparisonIsland(props: ComparisonIslandProps) {
     props.layer === "styled" ? undefined : null,
   );
 
-  onMount(() => {
+  onSettled(() => {
     if (props.layer !== "styled") {
       return;
     }
@@ -50,7 +50,7 @@ export default function ComparisonIsland(props: ComparisonIslandProps) {
     );
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (styledMod() !== undefined) {
       props.onFixtureReady?.();
     }

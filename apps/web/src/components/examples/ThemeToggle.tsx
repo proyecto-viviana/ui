@@ -8,7 +8,7 @@
  *
  * The button itself is the library's: a quiet `ActionButton` carrying
  * `ContrastIcon`, which is the same affordance the site header renders. */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ActionButton, ContrastIcon } from "@proyecto-viviana/ui";
 import { useTheme } from "@/utils/theme";
 

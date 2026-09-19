@@ -19,7 +19,8 @@
  * Port of react-aria-components/src/Separator.tsx
  */
 
-import { type JSX, createContext, createMemo, splitProps } from "solid-js";
+import { createContext, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import {
   createSeparator,
@@ -27,6 +28,7 @@ import {
   type Orientation,
 } from "@proyecto-viviana/solidaria";
 import { type SlotProps, filterDOMProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 

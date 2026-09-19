@@ -12,7 +12,8 @@
  * has no Icon counterpart.
  */
 
-import { type JSX, createContext, createMemo, Show, splitProps } from "solid-js";
+import { createContext, createMemo, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -20,9 +21,11 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { Button } from "./Button";
 import type { PressEvent } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface IconRenderProps {
   /** Whether the icon is purely decorative (no label). */
@@ -116,7 +119,7 @@ export function Icon(props: IconProps): JSX.Element {
           class={renderProps.class()}
           style={renderProps.style()}
           data-interactive={undefined}
-          data-decorative={isDecorative() || undefined}
+          data-decorative={dataAttr(isDecorative())}
         >
           {renderProps.renderChildren()}
         </span>

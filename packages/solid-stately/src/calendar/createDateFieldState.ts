@@ -31,7 +31,8 @@
  * display override. Solid 2 has no `createComputed`.
  */
 
-import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
+import { createMemo, createEffect, untrack } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, createInternalSignal, type MaybeAccessor } from "../utils";
 
 import {

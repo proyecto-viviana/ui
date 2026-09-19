@@ -20,8 +20,10 @@
  * item text values. Supports multi-character search with debouncing.
  */
 
-import { onCleanup } from "solid-js";
-import type { JSX, Accessor } from "solid-js";
+
+import { onOwnedCleanup } from "../utils/owner";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 import { createCollator } from "../i18n/createCollator";
 
@@ -256,7 +258,7 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
 
   // Mirror upstream's unmount cleanup (a useEffect teardown) so a pending
   // debounce timer never fires after the consumer is disposed.
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     clearTimeout(state.timeout);
   });
 

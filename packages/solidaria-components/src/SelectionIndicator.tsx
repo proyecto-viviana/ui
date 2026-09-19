@@ -17,15 +17,18 @@
  * Based on packages/react-aria-components/src/SelectionIndicator.tsx.
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext, Show } from "solid-js";
+import { createContext, createMemo, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
   useRenderProps,
+  dataAttr,
 } from "./utils";
 import { SharedElement, useHasSharedElementTransitionScope } from "./SharedElementTransition";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface SelectionIndicatorContextValue {
   isSelected: () => boolean;
@@ -102,7 +105,7 @@ export function SelectionIndicator(props: SelectionIndicatorProps): JSX.Element 
         aria-hidden="true"
         class={renderProps.class()}
         style={renderProps.style()}
-        data-selected={isSelected() || undefined}
+        data-selected={dataAttr(isSelected())}
       >
         {renderProps.renderChildren()}
       </SharedElement>
@@ -116,7 +119,7 @@ export function SelectionIndicator(props: SelectionIndicatorProps): JSX.Element 
         aria-hidden="true"
         class={renderProps.class()}
         style={renderProps.style()}
-        data-selected={isSelected() || undefined}
+        data-selected={dataAttr(isSelected())}
       >
         {renderProps.renderChildren()}
       </span>

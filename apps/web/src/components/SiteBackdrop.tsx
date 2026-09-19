@@ -14,7 +14,7 @@
    Rendered as the first child of a page root whose own `background` is
    `transparent`; it pins to the viewport at `z-index: -1` so content paints
    above it and the glass samples it. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { useTheme } from "@/utils/theme";
 
 export function SiteBackdrop(props: { variant?: "calm" | "scene" }): JSX.Element {

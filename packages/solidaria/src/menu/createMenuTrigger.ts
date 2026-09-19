@@ -17,7 +17,8 @@
  * Based on @react-aria/menu useMenuTrigger.
  */
 
-import { createEffect, onCleanup, type JSX } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { MenuTriggerState, MenuTriggerType } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import { createKeyboard } from "../interactions/createKeyboard";
@@ -26,7 +27,7 @@ import { createContextMenu } from "../interactions/createContextMenu";
 import type { CreatePressProps, PressEvent } from "../interactions/createPress";
 import { createStringFormatter } from "../i18n";
 import { onCloseMap } from "../overlays/createOverlayTrigger";
-import { access, focusWithoutScrolling, getEventTarget, mergeProps } from "../utils";
+import { access, attrTrue, focusWithoutScrolling, getEventTarget, mergeProps } from "../utils";
 import type { MaybeAccessor } from "../utils/reactivity";
 import { menuIntlStrings } from "./intl";
 
@@ -138,7 +139,9 @@ export function createMenuTrigger(
     },
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (
       !state.isOpen() ||
       getProps().trigger !== "contextMenu" ||
@@ -157,10 +160,12 @@ export function createMenuTrigger(
     };
 
     document.addEventListener("mousedown", onMouseDown);
-    onCleanup(() => document.removeEventListener("mousedown", onMouseDown));
-  });
+    _s2Cleanups.push(() => document.removeEventListener("mousedown", onMouseDown));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const element = ref?.();
     if (element) {
       onCloseMap.set(element, state.close);
@@ -173,9 +178,9 @@ export function createMenuTrigger(
       const trigger = getProps().trigger ?? "press";
       const baseProps: MenuTriggerInteractionProps = {
         "aria-haspopup": type === "menu" ? "menu" : "listbox",
-        "aria-expanded": state.isOpen(),
+        "aria-expanded": state.isOpen() ? "true" : "false",
         "aria-controls": state.isOpen() ? menuId : undefined,
-        "aria-disabled": getProps().isDisabled || undefined,
+        "aria-disabled": attrTrue(getProps().isDisabled),
         id: triggerId,
       };
 

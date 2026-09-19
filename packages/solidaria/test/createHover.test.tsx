@@ -5,11 +5,8 @@
  * Verifies that touch events don't trigger hover (mouse-only behavior).
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createHover, type HoverEvent, type HoverProps } from "../src/interactions/createHover";
-import type { Component } from "solid-js";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createHover, type HoverEvent, type HoverProps } from "../src/interactions/createHover"; import type { Component } from "solid-js";
+import { createSignal, flush } from "solid-js";
 
 const originalPointerEvent = typeof PointerEvent !== "undefined" ? PointerEvent : undefined;
 
@@ -48,6 +45,7 @@ function triggerPointerOver(
     target: eventTarget,
     pointerType,
   } as PointerEvent);
+  flush();
 }
 
 function triggerPointerOut(
@@ -61,6 +59,7 @@ function triggerPointerOut(
     target: eventTarget,
     pointerType,
   } as PointerEvent);
+  flush();
 }
 
 function triggerMouseEnter(hoverProps: HoverProps, element: Element) {
@@ -68,6 +67,7 @@ function triggerMouseEnter(hoverProps: HoverProps, element: Element) {
     currentTarget: element,
     target: element,
   } as MouseEvent);
+  flush();
 }
 
 function triggerMouseLeave(hoverProps: HoverProps, element: Element) {
@@ -75,6 +75,7 @@ function triggerMouseLeave(hoverProps: HoverProps, element: Element) {
     currentTarget: element,
     target: element,
   } as MouseEvent);
+  flush();
 }
 
 function triggerTouchStart(hoverProps: HoverProps, element: Element) {
@@ -82,6 +83,7 @@ function triggerTouchStart(hoverProps: HoverProps, element: Element) {
     currentTarget: element,
     target: element,
   } as TouchEvent);
+  flush();
 }
 
 // Test component that uses createHover
@@ -415,6 +417,7 @@ describe("createHover", () => {
 
       events.length = 0;
       setIsDisabled(true);
+      flush();
 
       el = screen.getByTestId("test-element");
       expect(el.textContent).toBe("test");
@@ -439,7 +442,7 @@ describe("createHover", () => {
         hoverPropsRef = hoverProps;
 
         return (
-          <div {...hoverProps} data-testid="test" data-hovered={isHovered() || undefined}>
+          <div {...hoverProps} data-testid="test" data-hovered={isHovered() ? "true" : undefined}>
             {show() ? <button onClick={() => setShow(false)}>hide</button> : null}
           </div>
         );
@@ -615,6 +618,7 @@ describe("createHover", () => {
 
       events.length = 0;
       setIsDisabled(true);
+      flush();
 
       el = screen.getByTestId("test-element");
       expect(el.textContent).toBe("test");

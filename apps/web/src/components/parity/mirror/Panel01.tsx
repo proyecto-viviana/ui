@@ -6,7 +6,7 @@
    The two that do NOT map — the mono `[ F5 ] RUN` well-button and the round
    notification bell — are substituted with the nearest real component and called
    out below rather than hand-rolled, since a faked control would hide the gap. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ActionButton,
   Button,

@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vite-plus/test";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { type JSX } from "solid-js";
+import { describe, expect, it, vi } from "vite-plus/test"; import { fireEvent, render, screen } from "@solidjs/testing-library"; import { type JSX } from "solid-js";
 import {
   Button,
   ButtonGroup,
@@ -94,7 +92,7 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     let localRef: HTMLDivElement | undefined;
 
     render(() => (
-      <IllustratedMessageContext.Provider
+      <IllustratedMessageContext
         value={{
           slots: {
             empty: {
@@ -120,7 +118,7 @@ describe("IllustratedMessage (solid-spectrum)", () => {
         >
           <TestIllustration slot="illustration" data-testid="message-illustration" />
         </IllustratedMessage>
-      </IllustratedMessageContext.Provider>
+      </IllustratedMessageContext>
     ));
 
     expect(root()).toHaveAttribute("id", "local-message-root");
@@ -143,13 +141,13 @@ describe("IllustratedMessage (solid-spectrum)", () => {
 
     render(() => (
       <>
-        <IllustratedMessageContext.Provider
+        <IllustratedMessageContext
           value={{ isInDropZone: true, isDropTarget: true, size: "L" }}
         >
           <IllustratedMessage data-testid="message-root" onClick={onClick}>
             <TestIllustration slot="illustration" data-testid="message-illustration" />
           </IllustratedMessage>
-        </IllustratedMessageContext.Provider>
+        </IllustratedMessageContext>
         <IllustratedMessage data-testid="baseline-message-root" size="L">
           <TestIllustration slot="illustration" data-testid="baseline-message-illustration" />
         </IllustratedMessage>

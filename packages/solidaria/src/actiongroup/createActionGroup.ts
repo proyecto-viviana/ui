@@ -19,16 +19,11 @@
  * - packages/react-aria/src/actiongroup/useActionGroupItem.ts
  */
 
-import { onCleanup, createSignal, type JSX, type Accessor } from "solid-js";
+import { filterDOMProps, getEventTarget, mergeProps, nodeContains, isFocusable, focusSafely, onOwnedCleanup } from "../utils";
+import { createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createButton } from "../button";
-import {
-  filterDOMProps,
-  getEventTarget,
-  mergeProps,
-  nodeContains,
-  isFocusable,
-  focusSafely,
-} from "../utils";
 import { useLocale } from "../i18n";
 import type { Orientation } from "../toolbar";
 import type { Key, ListState } from "@proyecto-viviana/solid-stately";
@@ -92,7 +87,7 @@ export function createActionGroup<T>(
 ): ActionGroupAria {
   const locale = useLocale();
   let groupRef: HTMLElement | undefined;
-  const [isInToolbar, setIsInToolbar] = createSignal(false);
+  const [isInToolbar, setIsInToolbar] = createSignal(false, { ownedWrite: true });
   const groupRole = (): string => {
     const mappedRole = GROUP_ROLE_BY_MODE[state.selectionMode()];
     return mappedRole === "toolbar" && isInToolbar() ? "group" : mappedRole;
@@ -173,7 +168,7 @@ export function createActionGroup<T>(
     }
   };
 
-  const actionGroupProps: JSX.HTMLAttributes<HTMLElement> = mergeProps(
+  const actionGroupProps = mergeProps(
     filterDOMProps(props as Record<string, unknown>, { labelable: true }),
     {
       ref: (el: HTMLElement) => {
@@ -201,7 +196,7 @@ export function createActionGroup<T>(
         return props["aria-label"] ? undefined : props["aria-labelledby"];
       },
       get "aria-disabled"() {
-        return isActionGroupDisabled(props, state) || undefined;
+        return isActionGroupDisabled(props, state) ? "true" : undefined;
       },
     },
   );
@@ -212,11 +207,11 @@ export function createActionGroup<T>(
     },
   });
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     actionGroupData.delete(state);
   });
 
-  return { actionGroupProps };
+  return { actionGroupProps: actionGroupProps as JSX.HTMLAttributes<HTMLElement> };
 }
 
 export function createActionGroupItem<T>(
@@ -237,7 +232,7 @@ export function createActionGroupItem<T>(
 
   const isFocused = () => props.key === state.focusedKey();
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (isFocused()) {
       state.setFocusedKey(null);
     }
@@ -250,7 +245,7 @@ export function createActionGroupItem<T>(
     get "aria-checked"() {
       const mode = state.selectionMode();
       if (mode === "none") return undefined;
-      return state.isSelected(props.key);
+      return state.isSelected(props.key) ? "true" : "false";
     },
     // Mirrors react-aria `useActionGroupItem` (3.50.0): every enabled item is
     // tabbable until focus engages the group, then the roving stop follows the

@@ -90,7 +90,7 @@ describe("SegmentedControl (solid-spectrum)", () => {
 
   it("merges SegmentedControlContext props", () => {
     render(() => (
-      <SegmentedControlContext.Provider
+      <SegmentedControlContext
         value={{
           "aria-label": "Context view mode",
           selectedKey: "grid",
@@ -103,7 +103,7 @@ describe("SegmentedControl (solid-spectrum)", () => {
           <SegmentedControlItem id="list">List</SegmentedControlItem>
           <SegmentedControlItem id="grid">Grid</SegmentedControlItem>
         </SegmentedControl>
-      </SegmentedControlContext.Provider>
+      </SegmentedControlContext>
     ));
 
     const group = screen.getByRole("radiogroup", { name: "Context view mode" });

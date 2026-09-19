@@ -21,18 +21,9 @@
  * Named "ToggleSwitch" to avoid conflict with SolidJS's built-in Switch component.
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  untrack,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, createUniqueId, untrack, useContext, Show } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createSwitch,
   createFocusRing,
@@ -57,8 +48,10 @@ import {
   Provider,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { TextContext } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ToggleSwitchRenderProps {
   /** Whether the switch is selected. */
@@ -256,13 +249,13 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-selected={switchAria.isSelected() || undefined}
-      data-pressed={switchAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={switchAria.isDisabled || undefined}
-      data-readonly={switchAria.isReadOnly || undefined}
+      data-selected={dataAttr(switchAria.isSelected())}
+      data-pressed={dataAttr(switchAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(switchAria.isDisabled)}
+      data-readonly={dataAttr(switchAria.isReadOnly)}
     >
       <VisuallyHidden>
         <input
@@ -480,15 +473,15 @@ function SwitchButtonImpl(props: {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={props.buttonProps.slot}
-      data-selected={switchAria.isSelected() || undefined}
-      data-pressed={switchAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={switchAria.isDisabled || undefined}
-      data-readonly={switchAria.isReadOnly || undefined}
-      data-invalid={switchAria.isInvalid || undefined}
-      data-required={ctx.isRequired || undefined}
+      data-selected={dataAttr(switchAria.isSelected())}
+      data-pressed={dataAttr(switchAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(switchAria.isDisabled)}
+      data-readonly={dataAttr(switchAria.isReadOnly)}
+      data-invalid={dataAttr(switchAria.isInvalid)}
+      data-required={dataAttr(ctx.isRequired)}
     >
       <VisuallyHidden>
         <input ref={ctx.setInputElement} {...cleanInputProps()} {...cleanFocusProps()} />
@@ -513,7 +506,7 @@ function SwitchButtonImpl(props: {
  */
 export function SwitchField(props: SwitchFieldProps): JSX.Element {
   const contextProps = useContext(SwitchFieldContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<SwitchFieldProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -644,24 +637,24 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
   };
 
   return (
-    <InternalSwitchContext.Provider value={internalContext}>
-      <FieldErrorContext.Provider value={fieldErrorContext}>
+    <InternalSwitchContext value={internalContext}>
+      <FieldErrorContext value={fieldErrorContext}>
         <div
           {...domProps()}
           class={renderProps.class()}
           style={renderProps.style()}
           slot={local.slot}
-          data-selected={switchAria.isSelected() || undefined}
-          data-disabled={switchAria.isDisabled || undefined}
-          data-readonly={switchAria.isReadOnly || undefined}
-          data-invalid={switchAria.isInvalid || undefined}
-          data-required={ariaProps.isRequired || false || undefined}
+          data-selected={dataAttr(switchAria.isSelected())}
+          data-disabled={dataAttr(switchAria.isDisabled)}
+          data-readonly={dataAttr(switchAria.isReadOnly)}
+          data-invalid={dataAttr(switchAria.isInvalid)}
+          data-required={dataAttr(ariaProps.isRequired || false)}
         >
           <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
             <FieldChildren />
           </Provider>
         </div>
-      </FieldErrorContext.Provider>
-    </InternalSwitchContext.Provider>
+      </FieldErrorContext>
+    </InternalSwitchContext>
   );
 }

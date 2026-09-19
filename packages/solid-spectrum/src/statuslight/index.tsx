@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/StatusLight.tsx
 
 // Port of packages/@react-spectrum/s2/src/StatusLight.tsx.
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
 import type { StyleString } from "../style";
@@ -25,6 +26,7 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useIsSkeleton } from "../skeleton";
 import { Text, TextContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -204,7 +206,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
   }
 
   return (
-    <TextContext.Provider value={{}}>
+    <TextContext value={{}}>
       <div
         {...(filterDOMProps(merged, {
           labelable: !!local.role,
@@ -232,6 +234,6 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
         </CenterBaseline>
         <Text>{content()}</Text>
       </div>
-    </TextContext.Provider>
+    </TextContext>
   );
 }

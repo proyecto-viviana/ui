@@ -2,8 +2,7 @@
  * Tests for createFormValidation
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   createFormValidation,
@@ -39,7 +38,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="" data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="" data-testid="input" />;
       };
 
       const { getByTestId } = render(() => <TestComponent />);
@@ -61,7 +60,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="valid" data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="valid" data-testid="input" />;
       };
 
       const { getByTestId } = render(() => <TestComponent />);
@@ -107,7 +106,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "aria" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="" data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="" data-testid="input" />;
       };
 
       const { getByTestId } = render(() => <TestComponent />);
@@ -133,7 +132,7 @@ describe("createFormValidation", () => {
 
         return (
           <form data-testid="form">
-            <input ref={inputRef} value="" required data-testid="input" />
+            <input ref={(el) => (inputRef = el)} value="" required data-testid="input" />
             <button type="submit">Submit</button>
           </form>
         );
@@ -161,7 +160,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="filled" data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="filled" data-testid="input" />;
       };
 
       const { getByTestId } = render(() => (
@@ -208,7 +207,7 @@ describe("createFormValidation", () => {
 
         return (
           <form data-testid="form">
-            <input ref={inputRef} value="" required data-testid="input" />
+            <input ref={(el) => (inputRef = el)} value="" required data-testid="input" />
           </form>
         );
       };
@@ -243,7 +242,7 @@ describe("createFormValidation", () => {
 
         return (
           <input
-            ref={inputRef}
+            ref={(el) => (inputRef = el)}
             value={value()}
             onInput={(e) => setValue(e.currentTarget.value)}
             data-testid="input"
@@ -284,7 +283,7 @@ describe("createFormValidation", () => {
 
         return (
           <form data-testid="form">
-            <input ref={inputRef} value="filled" data-testid="input" />
+            <input ref={(el) => (inputRef = el)} value="filled" data-testid="input" />
             <button type="reset">Reset</button>
           </form>
         );
@@ -317,7 +316,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="filled" data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="filled" data-testid="input" />;
       };
 
       const { getByTestId } = render(() => (
@@ -353,7 +352,7 @@ describe("createFormValidation", () => {
 
         createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
-        return <input ref={inputRef} value="" disabled data-testid="input" />;
+        return <input ref={(el) => (inputRef = el)} value="" disabled data-testid="input" />;
       };
 
       const { getByTestId } = render(() => <TestComponent />);
@@ -376,7 +375,7 @@ describe("ValidatableElement types", () => {
 
       createFormValidation({}, validationState, () => inputRef);
 
-      return <input ref={inputRef} data-testid="input" />;
+      return <input ref={(el) => (inputRef = el)} data-testid="input" />;
     };
 
     const { getByTestId } = render(() => <TestComponent />);

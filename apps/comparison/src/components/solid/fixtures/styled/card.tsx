@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import {
   Card as SolidSpectrumCard,
@@ -28,7 +28,7 @@ function SolidSpectrumCardDemo() {
   const [demoProps, setDemoProps] = createSignal<CardDemoProps>(cardDemoPropsFromWindow());
   const colorScheme = createComparisonResolvedThemeSignal();
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "card") {
         setDemoProps((current) =>

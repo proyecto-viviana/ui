@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { render, cleanup, waitFor, screen, within, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, cleanup, waitFor, screen, within, fireEvent } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
   DateRangePicker,

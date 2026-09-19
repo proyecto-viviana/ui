@@ -1,11 +1,13 @@
 // Local addition — no S2 counterpart. See the JSDoc on HudFrame below.
 
-import { type JSX, Show, splitProps } from "solid-js";
+import { Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { scanDown } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides, hudBracket } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /** The bracket arm length: 14px, 22px, 26px. */
 export type HudFrameBrackets = "S" | "M" | "L";

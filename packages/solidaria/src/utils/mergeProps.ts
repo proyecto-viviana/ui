@@ -12,15 +12,29 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/mergeProps.ts
 
+import { assignRef } from "./refs";
+import { canonicalAttrKey, coerceDomBoolean } from "./domAttrs";
+
 type Props = { [key: string]: unknown };
 
+type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never;
+
 function isEventHandlerKey(key: string): boolean {
-  // Solid host-native listeners (`on:click`, `oncapture:click`) are not
-  // `onClick`-shaped; chain them the same way as delegated `on*` handlers.
-  if (key.startsWith("on:") || key.startsWith("oncapture:")) {
-    return true;
-  }
   return key.startsWith("on") && key[2] === key[2]?.toUpperCase();
+}
+
+function isRefKey(key: string): boolean {
+  return key === "ref";
+}
+
+function concatRefs(existing: unknown, next: unknown): unknown {
+  if (existing == null) return next;
+  if (next == null) return existing;
+  return [existing, next].flat();
 }
 
 function isClassKey(key: string): boolean {
@@ -47,6 +61,26 @@ function needsEagerRead(key: string): boolean {
   return isEventHandlerKey(key) || isClassKey(key) || key === "style";
 }
 
+/** A later getter that reads the merged object for the same key must not recurse. */
+const MERGE_GETTER_STACK = new WeakMap<object, Set<string>>();
+
+function readWithReentryGuard(target: object, key: string, read: () => unknown): unknown {
+  let keys = MERGE_GETTER_STACK.get(target);
+  if (!keys) {
+    keys = new Set();
+    MERGE_GETTER_STACK.set(target, keys);
+  }
+  if (keys.has(key)) {
+    return undefined;
+  }
+  keys.add(key);
+  try {
+    return read();
+  } finally {
+    keys.delete(key);
+  }
+}
+
 /**
  * Merges multiple props objects together, handling event handlers specially
  * by chaining them rather than replacing.
@@ -56,31 +90,56 @@ function needsEagerRead(key: string): boolean {
  * @param args - Props objects to merge
  * @returns Merged props object. Use type parameter R to specify the result type.
  */
-export function mergeProps<R extends object = Record<string, unknown>, T extends object = object>(
-  ...args: T[]
-): R {
+export function mergeProps<const T extends object[]>(
+  ...args: [...T]
+): UnionToIntersection<T[number]>;
+export function mergeProps<R extends object>(...args: object[]): R;
+export function mergeProps(...args: object[]): object {
   const result: Props = {};
   const setResultValue = (key: string, value: unknown) => {
-    const resultDescriptor = Object.getOwnPropertyDescriptor(result, key);
+    const attr = canonicalAttrKey(key);
+    const coerced = coerceDomBoolean(key, value);
+    const resultDescriptor = Object.getOwnPropertyDescriptor(result, attr);
 
     if (resultDescriptor?.get || resultDescriptor?.set) {
-      Object.defineProperty(result, key, {
+      Object.defineProperty(result, attr, {
         enumerable: true,
         configurable: true,
         writable: true,
-        value,
+        value: coerced,
       });
       return;
     }
 
-    result[key] = value;
+    result[attr] = coerced;
   };
 
   for (const props of args) {
-    for (const key in props) {
-      const descriptor = Object.getOwnPropertyDescriptor(props, key);
+    for (const rawKey in props) {
+      const key = canonicalAttrKey(rawKey);
+      const descriptor = Object.getOwnPropertyDescriptor(props, rawKey);
       const hasGetter = typeof descriptor?.get === "function";
-      const getValue = () => (hasGetter ? descriptor.get!.call(props) : props[key]);
+      const getValue = () =>
+        hasGetter ? descriptor.get!.call(props) : (props as Props)[rawKey];
+
+      if (isRefKey(key)) {
+        const previousDescriptor = Object.getOwnPropertyDescriptor(result, key);
+        const previous = previousDescriptor
+          ? typeof previousDescriptor.get === "function"
+            ? () => previousDescriptor.get!()
+            : () => previousDescriptor.value
+          : undefined;
+        const getCombined = () => concatRefs(previous?.(), getValue());
+        Object.defineProperty(result, key, {
+          enumerable: true,
+          configurable: true,
+          get: getCombined,
+          set: (el: unknown) => {
+            assignRef(getCombined(), el as never);
+          },
+        });
+        continue;
+      }
 
       if (hasGetter && !needsEagerRead(key)) {
         // React Aria ends every non-special key with `b !== undefined ? b : a`.
@@ -98,37 +157,20 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
           configurable: true,
           get: previous
             ? () => {
-                const next = getValue();
-                return next !== undefined ? next : previous();
+                // Guard only the later getter. Walking `previous()` is the
+                // defined-value fallback, not reentry — holding the guard
+                // across that call made a later `undefined` getter wipe an
+                // earlier getter (createButton `aria-disabled`).
+                const next = readWithReentryGuard(result, key, getValue);
+                return coerceDomBoolean(key, next !== undefined ? next : previous());
               }
-            : getValue,
+            : () => readWithReentryGuard(result, key, () => coerceDomBoolean(key, getValue())),
         });
         continue;
       }
 
       const value = getValue();
       const existingValue = result[key];
-
-      if (
-        key === "onClick" &&
-        typeof result["on:click"] === "function" &&
-        typeof value === "function"
-      ) {
-        setResultValue(
-          "on:click",
-          chainHandlers(result["on:click"] as Function, value as Function),
-        );
-        continue;
-      }
-      if (
-        key === "on:click" &&
-        typeof result["onClick"] === "function" &&
-        typeof value === "function"
-      ) {
-        setResultValue("on:click", chainHandlers(result["onClick"] as Function, value as Function));
-        delete result["onClick"];
-        continue;
-      }
 
       if (
         typeof existingValue === "function" &&
@@ -155,7 +197,7 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
         Object.defineProperty(result, key, {
           enumerable: true,
           configurable: true,
-          get: getValue,
+          get: () => coerceDomBoolean(key, getValue()),
         });
       } else if (value !== undefined) {
         setResultValue(key, value);
@@ -163,7 +205,7 @@ export function mergeProps<R extends object = Record<string, unknown>, T extends
     }
   }
 
-  return result as R;
+  return result;
 }
 
 function chainHandlers(existingHandler: Function, newHandler: Function) {

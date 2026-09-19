@@ -37,8 +37,9 @@
  * ```
  */
 
-import { createSignal, createEffect, onCleanup, type Accessor } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
 
 export interface DescriptionProps {
   "aria-describedby"?: string;
@@ -70,7 +71,9 @@ export function createDescription(description: Accessor<string | undefined>): De
 
   const [id, setId] = createSignal<string | undefined>();
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const desc = description();
 
     if (!desc) {
@@ -98,13 +101,15 @@ export function createDescription(description: Accessor<string | undefined>): De
 
     node.refCount++;
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       if (node && --node.refCount === 0) {
         node.element.remove();
         descriptionNodes.delete(desc);
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     get "aria-describedby"() {

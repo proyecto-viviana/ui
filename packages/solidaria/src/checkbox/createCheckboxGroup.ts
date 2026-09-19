@@ -21,11 +21,13 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckboxGroup hook.
  */
 
-import { JSX, createEffect } from "solid-js";
+import { createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createField } from "../label";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
+import { attrString } from "../utils/domAttrs";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import {
   type CheckboxGroupState,
@@ -132,18 +134,19 @@ export function createCheckboxGroup(
   });
 
   const updateCheckboxGroupData = () => {
+    const p = getProps();
     checkboxGroupData.set(state, {
-      name: getProps().name,
-      form: getProps().form,
-      descriptionId: field.descriptionProps.id,
-      errorMessageId: field.errorMessageProps.id,
-      validationBehavior: getProps().validationBehavior ?? "native",
+      name: p.name,
+      form: p.form,
+      descriptionId: p.description ? attrString(field.descriptionProps.id) : undefined,
+      errorMessageId: p.errorMessage ? attrString(field.errorMessageProps.id) : undefined,
+      validationBehavior: p.validationBehavior ?? "native",
     });
   };
 
   // Store group metadata synchronously for first-render children, then keep it reactive.
   updateCheckboxGroupData();
-  createEffect(updateCheckboxGroupData);
+  createTrackedEffect(updateCheckboxGroupData);
 
   // Filter DOM props
   const domProps = () =>

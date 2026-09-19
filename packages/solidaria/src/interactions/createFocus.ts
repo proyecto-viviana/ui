@@ -19,8 +19,8 @@
  * Focus events on child elements will be ignored.
  */
 
-import { JSX, onCleanup } from "solid-js";
-import { getOwnerDocument, getEventTarget } from "../utils";
+import { getOwnerDocument, getEventTarget, onOwnedCleanup, access, type MaybeAccessor } from "../utils";
+import type { JSX } from "@solidjs/web";
 function getActiveElement(doc: Document): Element | null {
   let activeElement = doc.activeElement;
   while (activeElement && (activeElement as Element).shadowRoot?.activeElement) {
@@ -40,7 +40,7 @@ export interface FocusEvents {
 
 export interface CreateFocusProps extends FocusEvents {
   /** Whether the focus events should be disabled. */
-  isDisabled?: boolean;
+  isDisabled?: MaybeAccessor<boolean>;
 }
 
 export interface FocusResult {
@@ -124,7 +124,7 @@ export function createFocus(props: CreateFocusProps = {}): FocusResult {
   const syntheticBlurHandler = createSyntheticBlurHandler();
 
   // Cleanup on unmount
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (cleanupRef) {
       cleanupRef();
     }
@@ -171,13 +171,13 @@ export function createFocus(props: CreateFocusProps = {}): FocusResult {
   return {
     focusProps: {
       get onFocus() {
-        if (props.isDisabled) {
+        if (access(props.isDisabled)) {
           return undefined;
         }
         return props.onFocus || props.onFocusChange || props.onBlur ? onFocus : undefined;
       },
       get onBlur() {
-        if (props.isDisabled) {
+        if (access(props.isDisabled)) {
           return undefined;
         }
         return props.onBlur || props.onFocusChange ? onBlur : undefined;

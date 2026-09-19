@@ -5,21 +5,8 @@
  * Based on react-aria-components/src/Table.tsx
  */
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createUniqueId,
-  createSignal,
-  onCleanup,
-  splitProps,
-  untrack,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createRenderEffect, createUniqueId, createSignal, onCleanup, untrack, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createTable,
   createTableColumnHeader,
@@ -91,6 +78,7 @@ import {
   useRenderDropIndicator,
 } from "./DragAndDrop";
 import { createTreeDropTargetDelegate } from "./Tree";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TableRenderProps {
   /** Whether the table has focus. */
@@ -746,34 +734,30 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
   });
-  const dragState = createMemo(() => {
-    if (!hasDraggableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDraggableCollectionState?.({
-      items: stateProps.items,
-      collection: state.collection,
-      selectedKeys: state.selectedKeys,
-      isSelected: (key) => state.isSelected(key),
-    });
-  });
-  const dropState = createMemo(() => {
-    if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({
-      get collection() {
-        return state.collection;
-      },
-    });
-  });
-  createEffect(() => {
-    if (!hasDraggableDnd()) return;
-    const hooks = local.dragAndDropHooks;
-    const activeDragState = dragState();
-    if (!hooks?.useDraggableCollection || !activeDragState) return;
-    hooks.useDraggableCollection({}, activeDragState, () => ref());
-  });
-  const droppableCollection = createMemo(() => {
+  const dragStateValue = hasDraggableDnd()
+    ? local.dragAndDropHooks?.useDraggableCollectionState?.({
+        items: stateProps.items,
+        collection: state.collection,
+        selectedKeys: state.selectedKeys,
+        isSelected: (key) => state.isSelected(key),
+      })
+    : undefined;
+  const dragState = () => dragStateValue;
+  const dropStateValue = hasDroppableDnd()
+    ? local.dragAndDropHooks?.useDroppableCollectionState?.({
+        get collection() {
+          return state.collection;
+        },
+      })
+    : undefined;
+  const dropState = () => dropStateValue;
+  if (local.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
+    local.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => ref());
+  }
+  const droppableCollectionValue = (() => {
     if (!hasDroppableDnd()) return undefined;
     const hooks = local.dragAndDropHooks;
-    const activeDropState = dropState();
+    const activeDropState = dropStateValue;
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
     const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const baseDropTargetDelegate =
@@ -839,7 +823,8 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       activeDropState,
       () => ref(),
     );
-  });
+  })();
+  const droppableCollection = () => droppableCollectionValue;
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
@@ -912,19 +897,19 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
       ),
       class: renderProps.class(),
       style: renderProps.style(),
-      "data-focused": state.isFocused || undefined,
-      "data-focus-visible": isFocusVisible() || undefined,
-      "data-empty": stateProps.items.length === 0 || undefined,
-      "data-drop-target": isRootDropTarget() || undefined,
+      "data-focused": dataAttr(state.isFocused),
+      "data-focus-visible": dataAttr(isFocusVisible()),
+      "data-empty": dataAttr(stateProps.items.length === 0),
+      "data-drop-target": dataAttr(isRootDropTarget()),
       slot: local.slot,
     }) as JSX.HTMLAttributes<HTMLTableElement>;
 
   return (
-    <TableContext.Provider value={contextValue as unknown as TableContextValue<object>}>
-      <TableStateContext.Provider
+    <TableContext value={contextValue as unknown as TableContextValue<object>}>
+      <TableStateContext
         value={state as unknown as TableState<object, TableCollection<object>>}
       >
-        <CollectionRendererContext.Provider value={collectionRenderer()}>
+        <CollectionRendererContext value={collectionRenderer()}>
           {local.render ? (
             local.render({ ...tableProps(), children: tableChildren() }, renderValues())
           ) : (
@@ -932,9 +917,9 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
               {tableChildren()}
             </TableHost>
           )}
-        </CollectionRendererContext.Provider>
-      </TableStateContext.Provider>
-    </TableContext.Provider>
+        </CollectionRendererContext>
+      </TableStateContext>
+    </TableContext>
   );
 }
 
@@ -1022,7 +1007,7 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-hovered={isHovered() || undefined}
+      data-hovered={dataAttr(isHovered())}
     >
       <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row">
         {local.children}
@@ -1189,13 +1174,13 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
       ...mergeProps(cleanColumnHeaderProps(), cleanHoverProps(), cleanFocusProps()),
       class: renderProps.class(),
       style: columnStyle(),
-      "data-sortable": local.allowsSorting || undefined,
+      "data-sortable": dataAttr(!!local.allowsSorting),
       "data-sort-direction": sortDirection() || undefined,
-      "data-resizable": local.allowsResizing || undefined,
-      "data-resizing": isResizing() || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-focused": state.focusedKey === local.id || undefined,
-      "data-focus-visible": (isFocusVisible() && state.focusedKey === local.id) || undefined,
+      "data-resizable": dataAttr(!!local.allowsResizing),
+      "data-resizing": dataAttr(isResizing()),
+      "data-hovered": dataAttr(isHovered()),
+      "data-focused": dataAttr(state.focusedKey === local.id),
+      "data-focus-visible": dataAttr(isFocusVisible() && state.focusedKey === local.id),
       "data-key": local.id,
     }) as JSX.ThHTMLAttributes<HTMLTableCellElement>;
 
@@ -1208,9 +1193,9 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
 
   if (local.render) {
     return (
-      <TableColumnDefinitionContext.Provider value={columnDefinition}>
+      <TableColumnDefinitionContext value={columnDefinition}>
         {local.render({ ...columnAttrs(), children: columnChildren() }, renderValues())}
-      </TableColumnDefinitionContext.Provider>
+      </TableColumnDefinitionContext>
     );
   }
 
@@ -1220,11 +1205,11 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
   // object, so an eager entry would key the children ahead of the element on
   // the server and the client would claim the wrong nodes.
   return (
-    <TableColumnDefinitionContext.Provider value={columnDefinition}>
+    <TableColumnDefinitionContext value={columnDefinition}>
       <TableHost hostTag="th" virtualized={context.isVirtualized} {...columnAttrs()}>
         {columnChildren()}
       </TableHost>
-    </TableColumnDefinitionContext.Provider>
+    </TableColumnDefinitionContext>
   );
 }
 
@@ -1314,7 +1299,9 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       .filter((index) => index >= 0);
     return indexesOutsideRange(range, persistedIndexes);
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => items().length);
     virtualizer.setDropTargetIndexResolver((key) => {
@@ -1329,12 +1316,14 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
         key: typeof node.key === "string" || typeof node.key === "number" ? node.key : undefined,
       };
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       virtualizer.setDropTargetIndexResolver(undefined);
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const visibleItems = createMemo(() => {
     // Tree grid: render the flattened set of visible rows (top-level + expanded descendants)
     // the collection materialises in document order, so the render fn runs once per visible row.
@@ -1423,7 +1412,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       ...cleanRowGroupProps(),
       class: renderProps.class(),
       style: renderProps.style(),
-      "data-empty": isEmpty() || undefined,
+      "data-empty": dataAttr(isEmpty()),
       children: bodyChildren(),
     }) as JSX.HTMLAttributes<HTMLTableSectionElement>;
 
@@ -1438,7 +1427,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       {...cleanRowGroupProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-empty={isEmpty() || undefined}
+      data-empty={dataAttr(isEmpty())}
     >
       {bodyChildren()}
     </TableHost>
@@ -1497,11 +1486,9 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
 }
 
 export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
-  let sentinelRef: HTMLDivElement | undefined;
-  const setSentinelRef = (element: HTMLDivElement) => {
-    sentinelRef = element;
-  };
+  const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
+  const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
   const isLoading = () => !!props.isLoading || isPending();
   const tableContext = useContext(TableContext);
 
@@ -1515,21 +1502,26 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
     }
   };
 
-  createEffect(() => {
-    if (!sentinelRef || typeof IntersectionObserver !== "function") return;
-    const offset = props.scrollOffset ?? 1;
-    const margin = `0px 0px ${100 * offset}% 0px`;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void triggerLoadMore();
-        }
-      },
-      { rootMargin: margin },
-    );
-    observer.observe(sentinelRef);
-    onCleanup(() => observer.disconnect());
-  });
+  createEffect(
+    () => ({
+      current: sentinel(),
+      scrollOffset: scrollOffsetValue(),
+    }),
+    ({ current, scrollOffset }) => {
+      if (!current || typeof IntersectionObserver !== "function") return;
+      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            void triggerLoadMore();
+          }
+        },
+        { rootMargin: margin },
+      );
+      observer.observe(current);
+      return () => observer.disconnect();
+    },
+  );
 
   const renderProps = useRenderProps(
     {
@@ -1552,7 +1544,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
             <tr style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
               <td>
                 <div
-                  ref={setSentinelRef}
+                  ref={setSentinel}
                   data-testid="loadMoreSentinel"
                   style={{ position: "absolute", height: "1px", width: "1px" }}
                 />
@@ -1561,7 +1553,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
             <Show when={isLoading()}>
               <tr
                 role="row"
-                tabIndex={0}
+                tabindex={0}
                 onFocus={() => {
                   void triggerLoadMore();
                 }}
@@ -1569,7 +1561,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
                 style={renderProps.style()}
                 data-loading
               >
-                <td role="rowheader" colSpan={props.colSpan ?? 1}>
+                <td role="rowheader" colspan={props.colSpan ?? 1}>
                   {renderProps.renderChildren()}
                 </td>
               </tr>
@@ -1585,7 +1577,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
         >
           <TableHost hostTag="td" virtualized>
             <div
-              ref={setSentinelRef}
+              ref={setSentinel}
               data-testid="loadMoreSentinel"
               style={{ position: "absolute", height: "1px", width: "1px" }}
             />
@@ -1596,7 +1588,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
             hostTag="tr"
             virtualized
             role="row"
-            tabIndex={0}
+            tabindex={0}
             onFocus={() => {
               void triggerLoadMore();
             }}
@@ -1905,8 +1897,8 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   };
 
   return (
-    <TableRowContext.Provider value={rowContextValue}>
-      <ButtonContext.Provider value={buttonContextValue}>
+    <TableRowContext value={rowContextValue}>
+      <ButtonContext value={buttonContextValue}>
         {(() => {
           // Build the row's children HERE — inside BOTH providers — so each cell instantiates under
           // this owner. TableCell/EditableCell read TableRowContext, and a slotted
@@ -1940,6 +1932,10 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
               ref: (el: HTMLTableRowElement) => {
                 setRef(el);
                 assignRef(local.ref, el);
+                const dragRef = (
+                  draggableItem()?.dragProps as { ref?: (el: HTMLTableRowElement) => void } | undefined
+                )?.ref;
+                if (typeof dragRef === "function") dragRef(el);
               },
               ...domProps,
               ...mergeProps(
@@ -1953,13 +1949,13 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
               class: renderProps.class(),
               style: rowStyle(),
               "data-key": rowKey(),
-              "data-selected": isSelected() || undefined,
-              "data-focused": isFocused() || undefined,
-              "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
+              "data-selected": dataAttr(isSelected()),
+              "data-focused": dataAttr(isFocused()),
+              "data-focus-visible": dataAttr(isFocusVisible() && isFocused()),
               "data-focus-visible-within": dataAttr(isFocusWithin() && isGlobalFocusVisible()),
-              "data-pressed": isPressed() || undefined,
-              "data-hovered": isHovered() || undefined,
-              "data-disabled": isDisabled() || undefined,
+              "data-pressed": dataAttr(isPressed()),
+              "data-hovered": dataAttr(isHovered()),
+              "data-disabled": dataAttr(isDisabled()),
               "data-href": linkProps().href,
               "data-target": linkProps().target,
               "data-rel": linkProps().rel,
@@ -1971,10 +1967,10 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
                     : undefined,
               "data-ping": linkProps().ping,
               "data-referrer-policy": linkProps().referrerPolicy,
-              "data-dragging": draggableItem()?.isDragging || undefined,
-              "data-drop-target": droppableItem()?.isDropTarget || undefined,
-              "data-expanded": (isTreeRow() && isExpanded()) || undefined,
-              "data-has-child-items": (isTreeRow() && hasChildItems()) || undefined,
+              "data-dragging": dataAttr(!!draggableItem()?.isDragging),
+              "data-drop-target": dataAttr(!!droppableItem()?.isDropTarget),
+              "data-expanded": dataAttr(isTreeRow() && isExpanded()),
+              "data-has-child-items": dataAttr(isTreeRow() && hasChildItems()),
               "data-level": isTreeRow() ? rowLevel() : undefined,
               children: rowChildrenContent,
             }) as JSX.HTMLAttributes<HTMLTableRowElement>;
@@ -1994,8 +1990,8 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
             </Show>
           );
         })()}
-      </ButtonContext.Provider>
-    </TableRowContext.Provider>
+      </ButtonContext>
+    </TableRowContext>
   );
 }
 
@@ -2151,14 +2147,14 @@ export function TableCell(props: TableCellProps): JSX.Element {
       class: renderProps.class(),
       style: renderProps.style(),
       "data-key": cellNode().key,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": (isFocusVisible() && isFocused()) || undefined,
+      "data-focused": dataAttr(isFocused()),
+      "data-focus-visible": dataAttr(isFocusVisible() && isFocused()),
       "data-column-index": cellColumnIndex(),
-      "data-pressed": isPressed() || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-tree-column": isTreeColumn() || undefined,
-      "data-expanded": (isTreeGridCell() && cellIsExpanded()) || undefined,
-      "data-has-child-items": (isTreeGridCell() && cellHasChildItems()) || undefined,
+      "data-pressed": dataAttr(isPressed()),
+      "data-hovered": dataAttr(isHovered()),
+      "data-tree-column": dataAttr(isTreeColumn()),
+      "data-expanded": dataAttr(isTreeGridCell() && cellIsExpanded()),
+      "data-has-child-items": dataAttr(isTreeGridCell() && cellHasChildItems()),
       "data-level": isTreeGridCell() ? cellLevel() : undefined,
     }) as JSX.TdHTMLAttributes<HTMLTableCellElement>;
 
@@ -2206,7 +2202,7 @@ export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.
       {...selectionCheckboxAria.checkboxProps}
       class={props.class}
       style={props.style}
-      tabIndex={-1}
+      tabindex={-1}
       aria-label={props["aria-label"] ?? selectionCheckboxAria.checkboxProps["aria-label"]}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
@@ -2248,10 +2244,12 @@ export function TableSelectAllCheckbox(props: TableSelectAllCheckboxProps = {}):
     }
   };
 
-  createRenderEffect(() => {
-    void selectAllCheckboxAria.checkboxProps.checked;
-    applyIndeterminate(inputEl());
-  });
+  createRenderEffect(
+    () => [selectAllCheckboxAria.checkboxProps.checked, inputEl()] as const,
+    ([, input]) => {
+      applyIndeterminate(input);
+    },
+  );
 
   return (
     <input
@@ -2412,8 +2410,8 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
       {...cleanHoverProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-hovered={isHovered() || undefined}
-      data-resizing={columnResize.isResizing() || undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-resizing={dataAttr(columnResize.isResizing())}
     >
       <Show when={hasResizeContext}>
         <input
@@ -2462,7 +2460,9 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
   const [tableWidth, setTableWidth] = createSignal(0);
 
   // Track container width via ResizeObserver
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = containerRef();
     if (!el) return;
 
@@ -2476,14 +2476,16 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
         }
       });
       observer.observe(el);
-      onCleanup(() => observer.disconnect());
+      _s2Cleanups.push(() => observer.disconnect());
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Auto-collected columns from ColumnResizer children
   const [autoColumns, setAutoColumns] = createSignal<
     Map<Key, { key: Key; width?: ColumnSize; minWidth?: number; maxWidth?: number }>
-  >(new Map());
+  >(new Map(), { ownedWrite: true });
 
   const registerColumn = (
     key: Key,
@@ -2530,8 +2532,8 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
   };
 
   return (
-    <ResizableTableRegisterContext.Provider value={registerColumn}>
-      <TableColumnResizeStateContext.Provider value={contextValue}>
+    <ResizableTableRegisterContext value={registerColumn}>
+      <TableColumnResizeStateContext value={contextValue}>
         <div
           ref={setContainerRef}
           {...domProps}
@@ -2540,8 +2542,8 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
         >
           {local.children}
         </div>
-      </TableColumnResizeStateContext.Provider>
-    </ResizableTableRegisterContext.Provider>
+      </TableColumnResizeStateContext>
+    </ResizableTableRegisterContext>
   );
 }
 

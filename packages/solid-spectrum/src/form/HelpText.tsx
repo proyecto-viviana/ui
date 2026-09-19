@@ -13,11 +13,13 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Field.tsx
 
 // Port of packages/@react-spectrum/s2/src/Field.tsx HelpText (Field.tsx:407-468).
-import { type JSX, splitProps, useContext } from "solid-js";
+import { useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { FieldError, FieldErrorContext, Text } from "@proyecto-viviana/solidaria-components";
 import { DEFAULT_VALIDATION_RESULT, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { style } from "../style" with { type: "macro" };
 import { controlFont } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface HelpTextProps {
   /** The description text. */

@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createResource, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createResource, createSignal, onCleanup, onSettled } from "solid-js";
 import {
   comparisonControlsEvent,
   getComponentControlGroup,
@@ -58,7 +58,7 @@ function ExampleFilesBody(props: {
     copyTimer = setTimeout(() => setCopied(false), 1500);
   };
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       const detail = (event as CustomEvent<{ component?: string; props?: ExampleSourceValues }>)
         .detail;

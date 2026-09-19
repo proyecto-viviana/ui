@@ -292,9 +292,9 @@ describe("Meter", () => {
 
     it("lets explicit props override MeterContext props", () => {
       render(() => (
-        <MeterContext.Provider value={{ "aria-label": "Context name", value: 10 }}>
+        <MeterContext value={{ "aria-label": "Context name", value: 10 }}>
           <Meter aria-label="Local name" value={25} />
-        </MeterContext.Provider>
+        </MeterContext>
       ));
 
       const meter = screen.getByRole("meter", { name: "Local name" });

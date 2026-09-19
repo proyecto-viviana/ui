@@ -9,7 +9,7 @@
  * bare string, as in the playground TagGroup demos — exercises exactly the path that must not
  * throw or mis-wrap during `renderToString`.
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Provider, Tag, TagGroup } from "../../src";
 
 const FRAMEWORK_ITEMS = [

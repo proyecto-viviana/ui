@@ -14,7 +14,7 @@
  * `PrefixInputProvider` (pass both ids space-separated) — a unit suffix like
  * "kg" belongs in the accessible name exactly as a unit prefix does.
  */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { CenterBaseline } from "../icon/center-baseline";
 import { IconContext, type IconContextValue } from "../icon";
 import { style } from "../style" with { type: "macro" };
@@ -38,10 +38,10 @@ const suffixIconContext: IconContextValue = { styles: suffixIconStyles };
 /** Renders a field suffix node (text or icon) with the trailing slot styling. */
 export function FieldSuffix(props: { id: string; children: JSX.Element }): JSX.Element {
   return (
-    <IconContext.Provider value={suffixIconContext}>
+    <IconContext value={suffixIconContext}>
       <CenterBaseline id={props.id} styles={suffixStyles}>
         {props.children}
       </CenterBaseline>
-    </IconContext.Provider>
+    </IconContext>
   );
 }

@@ -16,7 +16,7 @@
  * Tracks whether the pointer is within a "safe area" connecting a trigger and its overlay.
  */
 
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
 import { getOwnerDocument, getOwnerWindow } from "../utils";
 
 interface Point {
@@ -46,7 +46,9 @@ const PADDING = 8;
  * Tracks whether the pointer is within a "safe area" connecting a trigger and its overlay.
  */
 export function createSafeArea(options: SafeAreaOptions): void {
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const trigger = options.triggerRef();
     if (options.isDisabled?.() || !options.isOpen() || !trigger) {
       return;
@@ -68,11 +70,13 @@ export function createSafeArea(options: SafeAreaOptions): void {
     const doc = getOwnerDocument(trigger);
     win.addEventListener("pointermove", onPointerMove);
     doc.documentElement.addEventListener("pointerleave", onPointerLeave);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       win.removeEventListener("pointermove", onPointerMove);
       doc.documentElement.removeEventListener("pointerleave", onPointerLeave);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }
 
 function isPointInSafeArea(point: Point, triggerRect: DOMRect, overlayRect?: DOMRect): boolean {

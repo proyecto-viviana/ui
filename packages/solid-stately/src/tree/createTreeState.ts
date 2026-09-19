@@ -19,7 +19,8 @@
  * Manages expansion state, selection, and focus for hierarchical tree data.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { TreeState, TreeStateOptions, TreeCollection } from "./types";
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
 import { createInternalSignal } from "../utils";
@@ -44,14 +45,15 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
     getInitialExpandedKeys(getOptions().defaultExpandedKeys),
   );
 
-  // Computed expanded keys (controlled or uncontrolled)
-  const expandedKeys = createMemo(() => {
+  // Live expanded keys (controlled or uncontrolled). A wrapping createMemo
+  // would hide createInternalSignal writes until flush().
+  const expandedKeys = (): Set<Key> => {
     const opts = getOptions();
     if (opts.expandedKeys !== undefined) {
       return new Set(opts.expandedKeys);
     }
     return internalExpandedKeys();
-  });
+  };
 
   // Collection - rebuilt when expanded keys change
   const collection = createMemo(() => {

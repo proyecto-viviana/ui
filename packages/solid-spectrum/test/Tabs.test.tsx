@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Tabs, TabList, Tab, TabPanel, TabPanels, Text, TabsContext } from "../src/tabs";
 import { TabsPicker } from "../src/tabs/TabsPicker";
@@ -339,7 +337,7 @@ describe("Tabs (solid-spectrum S2)", () => {
 
   it("merges slot context props from TabsContext", () => {
     render(() => (
-      <TabsContext.Provider
+      <TabsContext
         value={{
           slots: {
             default: {
@@ -356,7 +354,7 @@ describe("Tabs (solid-spectrum S2)", () => {
           </TabList>
           <TabPanel id="tab1">Content 1</TabPanel>
         </Tabs>
-      </TabsContext.Provider>
+      </TabsContext>
     ));
 
     expect(screen.getByRole("tablist", { name: "Context sections" })).toBeInTheDocument();

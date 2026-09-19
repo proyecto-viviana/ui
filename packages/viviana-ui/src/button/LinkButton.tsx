@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import { children as resolveChildren, splitProps, useContext, type JSX } from "solid-js";
+import { children as resolveChildren, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DialogTriggerContext,
@@ -42,6 +43,7 @@ import {
 } from "./spectrum-context";
 import type { ButtonFillStyle, ButtonSize, ButtonVariant, StaticColor } from "./types";
 import { getSingleTextChild } from "./text-child";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type StyledLinkButtonBaseProps = Omit<
   HeadlessLinkProps,
@@ -164,24 +166,28 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       const content = () => resolvedChildren();
       const textChild = () => getSingleTextChild(content());
 
-      return textChild() !== undefined ? (
-        <span class={s2ButtonText({ isProgressVisible: false })} data-rsp-slot="text">
-          {textChild()}
-        </span>
-      ) : (
-        content()
+      return (
+        <>
+          {textChild() !== undefined ? (
+            <span class={s2ButtonText({ isProgressVisible: false })} data-rsp-slot="text">
+              {textChild()}
+            </span>
+          ) : (
+            content()
+          )}
+        </>
       );
     }
 
     return (
       <>
-        <SkeletonContext.Provider value={null}>
-          <TextContext.Provider value={textContextValue}>
-            <IconContext.Provider value={iconContextValue}>
+        <SkeletonContext value={null}>
+          <TextContext value={textContextValue}>
+            <IconContext value={iconContextValue}>
               <ResolvedContent />
-            </IconContext.Provider>
-          </TextContext.Provider>
-        </SkeletonContext.Provider>
+            </IconContext>
+          </TextContext>
+        </SkeletonContext>
       </>
     );
   }

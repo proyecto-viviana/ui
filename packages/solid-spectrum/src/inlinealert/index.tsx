@@ -13,16 +13,10 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/InlineAlert.tsx
 
 // Port of packages/@react-spectrum/s2/src/InlineAlert.tsx.
-import {
-  type Component,
-  type JSX,
-  Show,
-  createContext,
-  onMount,
-  splitProps,
-  useContext,
-} from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { Show, createContext, onSettled, useContext } from "solid-js";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Dynamic } from "@solidjs/web";
 import {
   mergeProps,
   createFocusRing,
@@ -49,6 +43,7 @@ import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "m
 import type { StyleString } from "../style";
 import { focusRing, style } from "../style" with { type: "macro" };
 import { ContentContext, HeadingContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type InlineAlertVariant = "informative" | "positive" | "notice" | "negative" | "neutral";
 export type InlineAlertFillStyle = "border" | "subtleFill" | "boldFill";
@@ -260,7 +255,7 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
   const iconLabel = () => formatter().format(`inlinealert.${variant()}` as keyof S2IntlStrings);
   let rootElement: HTMLDivElement | undefined;
 
-  onMount(() => {
+  onSettled(() => {
     if (autoFocus() && rootElement) {
       focusSafely(rootElement);
     }
@@ -297,15 +292,15 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
       onFocus={focusProps.onFocus}
       onBlur={focusProps.onBlur}
       ref={setRootRef}
-      tabIndex={autoFocus() ? -1 : undefined}
+      tabindex={autoFocus() ? -1 : undefined}
       autofocus={autoFocus() || undefined}
       role="alert"
       class={className()}
       style={mergedUnsafeStyle()}
     >
-      <HeadingContext.Provider value={{ styles: () => heading({ fillStyle: fillStyle() }) }}>
-        <ContentContext.Provider value={{ styles: () => content({ fillStyle: fillStyle() }) }}>
-          <IconContext.Provider
+      <HeadingContext value={{ styles: () => heading({ fillStyle: fillStyle() }) }}>
+        <ContentContext value={{ styles: () => content({ fillStyle: fillStyle() }) }}>
+          <IconContext
             value={{ styles: () => icon({ variant: variant(), fillStyle: fillStyle() }) }}
           >
             <Show when={Icon()}>
@@ -314,9 +309,9 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
               )}
             </Show>
             {local.children}
-          </IconContext.Provider>
-        </ContentContext.Provider>
-      </HeadingContext.Provider>
+          </IconContext>
+        </ContentContext>
+      </HeadingContext>
     </div>
   );
 }

@@ -21,7 +21,8 @@
  * Port of @react-aria/tooltip useTooltipTrigger.
  */
 
-import { type JSX, createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type TooltipTriggerState } from "@proyecto-viviana/solid-stately";
 import { createHover } from "../interactions/createHover";
 import { createFocusable } from "../interactions/createFocusable";
@@ -145,7 +146,9 @@ export function createTooltipTrigger(
   };
 
   // Handle Escape key to dismiss tooltip
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!state.isOpen()) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -159,10 +162,12 @@ export function createTooltipTrigger(
     };
 
     document.addEventListener("keydown", onKeyDown, true);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       document.removeEventListener("keydown", onKeyDown, true);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const onHoverStart = () => {
     if (isDisabled() || trigger() === "focus") {

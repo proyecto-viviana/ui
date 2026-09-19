@@ -13,16 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Menu.tsx
 
 // Port of packages/@react-spectrum/s2/src/Menu.tsx.
-import {
-  type JSX,
-  Show,
-  createContext,
-  createSignal,
-  createUniqueId,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { Show, createContext, createSignal, createUniqueId, merge, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Menu as HeadlessMenu,
   MenuItem as HeadlessMenuItem,
@@ -103,6 +95,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { ActionButtonContext, ToggleButtonContext } from "../button/context";
+import { attrString, mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 export type { MenuAlign, MenuDirection };
@@ -270,9 +263,9 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   });
 
   return (
-    <MenuSizeContext.Provider value={size()}>
-      <ActionButtonContext.Provider value={actionButtonContextValue}>
-        <ToggleButtonContext.Provider value={toggleButtonContextValue}>
+    <MenuSizeContext value={size()}>
+      <ActionButtonContext value={actionButtonContextValue}>
+        <ToggleButtonContext value={toggleButtonContextValue}>
           <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
             <HeadlessMenuTrigger {...headlessProps}>
               <MenuTriggerOverlayContext
@@ -285,9 +278,9 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
               </MenuTriggerOverlayContext>
             </HeadlessMenuTrigger>
           </div>
-        </ToggleButtonContext.Provider>
-      </ActionButtonContext.Provider>
-    </MenuSizeContext.Provider>
+        </ToggleButtonContext>
+      </ActionButtonContext>
+    </MenuSizeContext>
   );
 }
 
@@ -339,7 +332,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
   };
 
   return (
-    <MenuTriggerOptionsContext.Provider
+    <MenuTriggerOptionsContext
       value={{
         align: props.align,
         direction: props.direction,
@@ -347,10 +340,10 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
         trigger: props.trigger,
       }}
     >
-      <PopoverTriggerContext.Provider value={popoverTriggerContext}>
+      <PopoverTriggerContext value={popoverTriggerContext}>
         {props.children}
-      </PopoverTriggerContext.Provider>
-    </MenuTriggerOptionsContext.Provider>
+      </PopoverTriggerContext>
+    </MenuTriggerOptionsContext>
   );
 }
 
@@ -419,15 +412,15 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     menuPlacement(triggerOptions?.direction(), triggerOptions?.align());
   const popoverShouldFlip = () => triggerOptions?.shouldFlip();
   const menuContent = () => (
-    <MenuSizeContext.Provider value={size()}>
-      <HeaderContext.Provider value={{ styles: () => menuSectionHeader({ size: size() }) }}>
-        <HeadingContext.Provider
+    <MenuSizeContext value={size()}>
+      <HeaderContext value={{ styles: () => menuSectionHeader({ size: size() }) }}>
+        <HeadingContext
           value={{
             role: "presentation",
             styles: menuSectionHeading,
           }}
         >
-          <TextContext.Provider
+          <TextContext
             value={{
               slots: {
                 default: {
@@ -457,15 +450,15 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
               style={getStandaloneStyle}
               children={local.children}
             />
-          </TextContext.Provider>
-        </HeadingContext.Provider>
-      </HeaderContext.Provider>
-    </MenuSizeContext.Provider>
+          </TextContext>
+        </HeadingContext>
+      </HeaderContext>
+    </MenuSizeContext>
   );
 
   if (isSubmenu()) {
     return (
-      <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+      <MenuLinkOutIconContext value={local.hideLinkOutIcon ?? false}>
         <Popover
           hideArrow
           padding="none"
@@ -480,13 +473,13 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
             {menuContent()}
           </div>
         </Popover>
-      </MenuLinkOutIconContext.Provider>
+      </MenuLinkOutIconContext>
     );
   }
 
   if (isMenuTriggerPopover()) {
     return (
-      <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+      <MenuLinkOutIconContext value={local.hideLinkOutIcon ?? false}>
         <Popover
           hideArrow
           padding="none"
@@ -501,14 +494,14 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
             {menuContent()}
           </div>
         </Popover>
-      </MenuLinkOutIconContext.Provider>
+      </MenuLinkOutIconContext>
     );
   }
 
   return (
-    <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
+    <MenuLinkOutIconContext value={local.hideLinkOutIcon ?? false}>
       {menuContent()}
-    </MenuLinkOutIconContext.Provider>
+    </MenuLinkOutIconContext>
   );
 }
 
@@ -590,7 +583,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         // Carry the headless description-slot id so the item's
         // `aria-describedby` resolves to this element (upstream two-context
         // `Text` delegation).
-        id: renderProps.descriptionProps?.id,
+        id: attrString(renderProps.descriptionProps?.id),
         styles: () => menuItemDescription(itemStyleProps(renderProps)),
         "data-rsp-slot": "text",
       },
@@ -603,7 +596,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const keyboardContextValue = (renderProps: MenuItemRenderProps) => ({
     // Carry the headless keyboard-slot id so it too is referenced by the item's
     // `aria-describedby`.
-    id: renderProps.keyboardShortcutProps?.id,
+    id: attrString(renderProps.keyboardShortcutProps?.id),
     styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
   });
   const MenuItemContents = (contentProps: { renderProps: MenuItemRenderProps }) => {
@@ -682,13 +675,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
 
   const renderChildren = (renderProps: MenuItemRenderProps) => {
     return (
-      <IconContext.Provider value={iconContextValue}>
-        <TextContext.Provider value={textContextValue(renderProps)}>
-          <KeyboardContext.Provider value={keyboardContextValue(renderProps)}>
+      <IconContext value={iconContextValue}>
+        <TextContext value={textContextValue(renderProps)}>
+          <KeyboardContext value={keyboardContextValue(renderProps)}>
             <MenuItemContents renderProps={renderProps} />
-          </KeyboardContext.Provider>
-        </TextContext.Provider>
-      </IconContext.Provider>
+          </KeyboardContext>
+        </TextContext>
+      </IconContext>
     );
   };
 
@@ -723,9 +716,9 @@ export function UnavailableMenuItemTrigger(props: UnavailableMenuItemTriggerProp
 
   return (
     <Show when={props.isUnavailable} fallback={firstChild()}>
-      <UnavailableMenuItemContext.Provider value>
+      <UnavailableMenuItemContext value>
         <HeadlessSubmenuTrigger>{props.children}</HeadlessSubmenuTrigger>
-      </UnavailableMenuItemContext.Provider>
+      </UnavailableMenuItemContext>
     </Show>
   );
 }

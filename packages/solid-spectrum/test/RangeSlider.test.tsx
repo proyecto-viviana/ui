@@ -82,7 +82,7 @@ describe("RangeSlider (solid-spectrum)", () => {
     const ref = vi.fn();
 
     render(() => (
-      <RangeSliderContext.Provider
+      <RangeSliderContext
         value={{
           "aria-label": "Context range",
           defaultValue: { start: 10, end: 30 },
@@ -92,7 +92,7 @@ describe("RangeSlider (solid-spectrum)", () => {
         }}
       >
         <RangeSlider />
-      </RangeSliderContext.Provider>
+      </RangeSliderContext>
     ));
 
     const root = screen.getByRole("group", { name: "Context range" });

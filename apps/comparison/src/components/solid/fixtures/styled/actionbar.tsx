@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -135,7 +135,7 @@ function SolidSpectrumActionBarDemo() {
       ],
     );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actionbar") {
         const nextProps = normalizeActionBarDemoProps(event.detail.props ?? {});

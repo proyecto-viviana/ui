@@ -22,12 +22,12 @@
  * events, and segment focus recovery on unmount mirrors upstream's layout effect.
  */
 
-import { createMemo, createEffect, onCleanup } from "solid-js";
+import { isMac, isIOS, scrollIntoViewport, getScrollParent, nodeContains, onOwnedCleanup } from "../utils";
+import { createMemo, createEffect, createTrackedEffect } from "solid-js";
 import { toCalendar, CalendarDate } from "@internationalized/date";
 import { NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
-import { isMac, isIOS, scrollIntoViewport, getScrollParent, nodeContains } from "../utils";
 import { createId } from "../ssr";
 import { createLabels } from "../label/createLabels";
 import { useLocale, createDateFormatter, createFilter } from "../i18n";
@@ -307,7 +307,9 @@ export function createDateSegment<T extends DateFieldState>(
 
   // Enforce that the selection is collapsed when inside a date segment. Otherwise, when tapping on a
   // segment in Android Chrome and then entering text, composition events break the DOM structure.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (typeof document === "undefined") {
       return;
     }
@@ -318,11 +320,15 @@ export function createDateSegment<T extends DateFieldState>(
       }
     };
     document.addEventListener("selectionchange", handler);
-    onCleanup(() => document.removeEventListener("selectionchange", handler));
-  });
+    _s2Cleanups.push(() => document.removeEventListener("selectionchange", handler));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   let compositionValue = "";
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = ref();
     if (!el) {
       return;
@@ -368,18 +374,20 @@ export function createDateSegment<T extends DateFieldState>(
     };
     el.addEventListener("beforeinput", onBeforeInput as EventListener);
     el.addEventListener("input", onInputEvent as EventListener);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       el.removeEventListener("beforeinput", onBeforeInput as EventListener);
       el.removeEventListener("input", onInputEvent as EventListener);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // If the focused segment is removed, focus the previous one, or the next one if there was no previous one.
   let focusedElement: HTMLElement | null = null;
-  createEffect(() => {
+  createTrackedEffect(() => {
     focusedElement = ref();
   });
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (typeof document !== "undefined" && document.activeElement === focusedElement) {
       const prev = focusManager?.focusPrevious();
       if (!prev) {
@@ -432,7 +440,7 @@ export function createDateSegment<T extends DateFieldState>(
 
     // Literal segments should not be visible to screen readers.
     if (seg.type === "literal") {
-      return { "aria-hidden": true };
+      return { "aria-hidden": "true" };
     }
 
     // Kebab-case CSS property names: this style object is merged via mergeProps
@@ -466,7 +474,7 @@ export function createDateSegment<T extends DateFieldState>(
         "aria-readonly": state.isReadOnly() || !seg.isEditable ? "true" : undefined,
         "aria-controls": (p["aria-controls"] as string | undefined) || undefined,
         "data-placeholder": seg.isPlaceholder || undefined,
-        contentEditable: isEditable,
+        contenteditable: isEditable ? "true" : undefined,
         suppressContentEditableWarning: isEditable,
         spellCheck: isEditable ? "false" : undefined,
         autoCorrect: isEditable ? "off" : undefined,
@@ -490,7 +498,7 @@ export function createDateSegment<T extends DateFieldState>(
     );
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const el = ref();
     const seg = segment();
     if (!el || seg.type === "literal") {

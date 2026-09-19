@@ -30,22 +30,10 @@
  * Port of react-aria-components/src/utils.tsx
  */
 
-import {
-  type JSX,
-  type Accessor,
-  type Context,
-  type FlowComponent,
-  createComponent,
-  createContext,
-  useContext,
-  createMemo,
-  createSignal,
-  onMount,
-  sharedConfig,
-  untrack,
-  Show,
-} from "solid-js";
-import { isServer } from "solid-js/web";
+import { createComponent, createContext, useContext, createMemo, createSignal, onSettled, sharedConfig, untrack, Show } from "solid-js";
+import type { Accessor, Context, FlowComponent } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria";
 
 /**
@@ -79,11 +67,16 @@ export interface RenderPropsBase<T> {
  * Slot props for named slots
  */
 export interface SlotProps {
-  /** A slot name for the component. */
-  slot?: string;
+  /** A slot name for the component. HTML `slot` may be `false` to omit. */
+  slot?: string | JSX.RemoveAttribute;
 }
 
 export const DEFAULT_SLOT = "default";
+
+/** HTML `slot` may be `false`; RAC slots are string names. */
+export function resolveSlot(slot: SlotProps["slot"]): string {
+  return typeof slot === "string" && slot.length > 0 ? slot : DEFAULT_SLOT;
+}
 
 /**
  * Return type for useRenderProps
@@ -136,20 +129,22 @@ export function useRenderProps<T extends object>(
   props: RenderPropsBase<T> & { defaultClassName?: string },
   values: Accessor<T>,
 ): RenderPropsResult<T> {
-  // Don't destructure children — access lazily to avoid eager evaluation
-  // that would trigger child component creation before context providers mount.
-  const { class: className, style, defaultClassName = "" } = props;
+  // Don't destructure children/class/style — those are often getters on the
+  // caller’s splitProps view. Reading them in this helper’s body is an
+  // untracked read in the calling component.
+  const defaultClassName = () => props.defaultClassName ?? "";
 
-  // Compute class and style eagerly (they don't depend on context)
   const computedClass = createMemo(() => {
     const currentValues = values();
+    const className = props.class;
     return typeof className === "function"
       ? className(currentValues)
-      : (className ?? defaultClassName);
+      : (className ?? defaultClassName());
   });
 
   const computedStyle = createMemo(() => {
     const currentValues = values();
+    const style = props.style;
     return typeof style === "function" ? style(currentValues) : style;
   });
 
@@ -329,7 +324,7 @@ export function mergeRefs<T>(...refs: Array<RefLike<T>>): (el: T) => void {
  */
 export function useSlottedContext<T>(
   context: Context<SlottedContextValue<T>>,
-  slot?: string | null,
+  slot?: string | null | JSX.RemoveAttribute,
 ): T | null | undefined {
   const ctx = useContext(context);
   if (slot === null) {
@@ -394,7 +389,7 @@ export function useSlot(initialState = true): [(el: Element | null) => void, Acc
     hasRun = true;
     setHasSlot(!!el);
   };
-  onMount(() => {
+  onSettled(() => {
     if (!hasRun) {
       setHasSlot(false);
     }
@@ -421,7 +416,7 @@ export function Provider(props: {
       return props.children;
     }
     const [context, value] = props.values[index];
-    return createComponent(context.Provider, {
+    return createComponent(context, {
       value,
       get children() {
         return build(index - 1);
@@ -434,9 +429,18 @@ export function Provider(props: {
 /**
  * Converts boolean state values to data attributes
  */
-export function dataAttr(value: boolean | undefined): "" | undefined {
-  return value ? "" : undefined;
+export function dataAttr(value: boolean | undefined): "true" | undefined {
+  return value ? "true" : undefined;
 }
+
+export {
+  ariaTrueFalse,
+  attrTrue,
+  attrString,
+  isAriaTrue,
+  coerceDomBoolean,
+  coerceDomRecord,
+} from "@proyecto-viviana/solidaria/utils";
 
 /**
  * Creates data attributes from render props
@@ -448,7 +452,7 @@ export function createDataAttributes<T extends Record<string, boolean | string |
 
   for (const [key, value] of Object.entries(values)) {
     if (typeof value === "boolean") {
-      result[`data-${camelToKebab(key)}`] = value ? "" : undefined;
+      result[`data-${camelToKebab(key)}`] = value ? "true" : undefined;
     } else if (value !== undefined) {
       result[`data-${camelToKebab(key)}`] = value;
     }
@@ -564,7 +568,7 @@ export const ClientOnly: FlowComponent<ClientOnlyProps> = (props) => {
   const [isHydrated, setIsHydrated] = createSignal(false);
 
   // onMount runs after hydration is complete
-  onMount(() => {
+  onSettled(() => {
     setIsHydrated(true);
   });
 
@@ -617,7 +621,7 @@ export function useIsHydrated(): Accessor<boolean> {
   // content as a fresh client-side update (Portal: no getNextElement walk, no
   // mismatch). This mirrors the component gate above and is strictly earlier
   // than a rAF tick.
-  onMount(() => {
+  onSettled(() => {
     setIsHydrated(true);
   });
 

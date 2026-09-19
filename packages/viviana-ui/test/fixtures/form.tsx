@@ -6,7 +6,7 @@
  * hydration keys in solid-spectrum (#184). viviana-ui copies the same
  * necessity nest and must stay green on the same input.
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Provider } from "../../src/provider";
 import { Form } from "../../src/form";
 import { TextField } from "../../src/textfield";

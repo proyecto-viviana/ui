@@ -2,9 +2,7 @@
  * Tests for GridList component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
   GridList,
@@ -242,6 +240,7 @@ describe("GridList", () => {
         expect(observer.observe).toHaveBeenCalledTimes(1);
         expect(observer.disconnect).not.toHaveBeenCalled();
         setScrollOffset(2);
+        flush();
         expect(observer.disconnect).toHaveBeenCalledTimes(1);
         expect(observer.observe).toHaveBeenCalledTimes(2);
       } finally {
@@ -1260,7 +1259,9 @@ describe("GridList", () => {
       const row = screen.getByRole("row", { name: "Apple" });
       const checkbox = row.querySelector('input[type="checkbox"]') as HTMLInputElement;
       row.focus();
+      flush();
       fireEvent.keyDown(row, { key: "ArrowRight" });
+      flush();
       expect(document.activeElement).toBe(checkbox);
       fireEvent.keyDown(checkbox, { key: "ArrowRight" });
       expect(document.activeElement).toBe(row.querySelector("button"));

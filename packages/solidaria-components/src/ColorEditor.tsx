@@ -7,7 +7,8 @@
  * https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/color/ColorEditor.tsx.
  */
 
-import { type JSX, createSignal, For, Show, splitProps, createMemo } from "solid-js";
+import { createSignal, For, Show, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ColorPicker,
   ColorArea,
@@ -21,6 +22,7 @@ import {
 } from "./Color";
 import { getColorChannels } from "@proyecto-viviana/solid-stately";
 import type { Color, ColorChannel, ColorSpace } from "@proyecto-viviana/solid-stately";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ColorEditorColorSpace = "rgb" | "hsl" | "hsb";
 

@@ -1,6 +1,7 @@
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
 import { wellScan } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type WellTone = "well" | "deep";
 export type WellSize = "S" | "M";

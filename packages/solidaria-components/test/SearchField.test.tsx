@@ -484,7 +484,7 @@ describe("SearchField", () => {
 
     it("should merge SearchFieldContext props", () => {
       render(() => (
-        <SearchFieldContext.Provider
+        <SearchFieldContext
           value={{
             slots: {
               default: {
@@ -495,7 +495,7 @@ describe("SearchField", () => {
           }}
         >
           <SearchField>{() => <SearchFieldInput />}</SearchField>
-        </SearchFieldContext.Provider>
+        </SearchFieldContext>
       ));
 
       const input = screen.getByRole("searchbox", { name: "Context search" });

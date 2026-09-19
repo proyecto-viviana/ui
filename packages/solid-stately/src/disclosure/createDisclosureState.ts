@@ -18,7 +18,8 @@
  * Based on @react-stately/disclosure useDisclosureState and useDisclosureGroupState
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 
 export interface DisclosureStateProps {

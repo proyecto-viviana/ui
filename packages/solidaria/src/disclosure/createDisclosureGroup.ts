@@ -5,7 +5,7 @@
  * has no disclosure-group ARIA hook.
  */
 
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type DisclosureGroupState } from "@proyecto-viviana/solid-stately";
 import { type MaybeAccessor } from "../utils/reactivity";
 

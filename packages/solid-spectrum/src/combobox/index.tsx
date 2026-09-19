@@ -16,18 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ComboBox.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
   createHover,
@@ -113,6 +103,7 @@ import {
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import { HeaderContext, HeadingContext, TextContext } from "../text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   menuItemDescription,
   menuItemIcon,
@@ -658,10 +649,14 @@ function ComboBoxFieldGroup(props: {
   // group's own keyboard-modality flag; `isKeyboardFocusEvent` auto-detects
   // the text input so ArrowDown/type/Enter do not flip it.
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
-    onCleanup(cleanup);
-  });
+    _s2Cleanups.push(cleanup);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const isFocusVisible = () => isFocused() && isFocusVisibleModality();
 
   // Upstream FieldGroup renders a RAC `<Group>`, whose own `useHover` drives the
@@ -723,7 +718,7 @@ function ComboBoxFieldSpinner(props: {
   const isLoadingOrFiltering = () =>
     props.loadingState() === "loading" || props.loadingState() === "filtering";
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const loading = isLoadingOrFiltering();
     const inputValue = comboBoxContext?.state?.inputValue?.();
     const currentlyShowing = showLoading();
@@ -996,7 +991,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const listBoxChildren = typeof local.children === "function" ? local.children : undefined;
 
   return (
-    <ComboBoxSizeContext.Provider value={size()}>
+    <ComboBoxSizeContext value={size()}>
       {/* RAC S2 ComboBox.tsx:401-404 — `{...comboBoxProps}` onto AriaComboBox
           keeps `items` and `defaultItems` distinct. RAC ComboBox.tsx:208-209
           passes `items: props.items` into useComboBoxState; coalescing
@@ -1092,7 +1087,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <FormContext.Provider
+              <FormContext
                 value={{
                   ...(formContext ?? {}),
                   get size() {
@@ -1101,14 +1096,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   isRequired: undefined,
                 }}
               >
-                <HeaderContext.Provider value={{ styles: () => listboxHeader({ size: size() }) }}>
-                  <HeadingContext.Provider
+                <HeaderContext value={{ styles: () => listboxHeader({ size: size() }) }}>
+                  <HeadingContext
                     value={{
                       role: "presentation",
                       styles: menuSectionHeading,
                     }}
                   >
-                    <TextContext.Provider
+                    <TextContext
                       value={{
                         slots: {
                           description: {
@@ -1161,15 +1156,15 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                           {listBoxChildren}
                         </HeadlessComboBoxListBox>
                       </Virtualizer>
-                    </TextContext.Provider>
-                  </HeadingContext.Provider>
-                </HeaderContext.Provider>
-              </FormContext.Provider>
+                    </TextContext>
+                  </HeadingContext>
+                </HeaderContext>
+              </FormContext>
             </ComboBoxListBoxPopover>
           </>
         )}
       />
-    </ComboBoxSizeContext.Provider>
+    </ComboBoxSizeContext>
   );
 }
 
@@ -1277,7 +1272,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     const labelId = headlessText?.slots?.label?.id ?? headlessText?.slots?.default?.id;
     const descriptionId = headlessText?.slots?.description?.id;
     return (
-      <TextContext.Provider
+      <TextContext
         value={{
           slots: {
             label: {
@@ -1299,7 +1294,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         }}
       >
         <ComboBoxOptionContents renderProps={contentProps.renderProps} />
-      </TextContext.Provider>
+      </TextContext>
     );
   };
   const ComboBoxOptionContents = (contentProps: { renderProps: ComboBoxOptionRenderProps }) => {
@@ -1345,7 +1340,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       style={pressScale(() => optionEl(), local.UNSAFE_style)}
     >
       {(renderProps: ComboBoxOptionRenderProps) => (
-        <IconContext.Provider
+        <IconContext
           value={{
             slot: "icon",
             render: centerBaseline({
@@ -1355,7 +1350,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             styles: menuItemIcon,
           }}
         >
-          <AvatarContext.Provider
+          <AvatarContext
             value={{
               slots: {
                 default: { size: "1lh", styles: comboBoxAvatar },
@@ -1364,8 +1359,8 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             }}
           >
             <ComboBoxOptionChrome renderProps={renderProps} />
-          </AvatarContext.Provider>
-        </IconContext.Provider>
+          </AvatarContext>
+        </IconContext>
       )}
     </HeadlessComboBoxOption>
   );

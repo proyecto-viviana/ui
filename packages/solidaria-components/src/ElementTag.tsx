@@ -3,8 +3,10 @@
  * The pinned React Aria Components source has no ElementTag counterpart.
  */
 
-import { type JSX, createMemo, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Dynamic } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ElementTagProps extends Record<string, unknown> {
   /** The HTML tag name to render. */

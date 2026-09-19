@@ -17,8 +17,9 @@
  * Based on @react-aria/tree/useTree.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeProps, TreeAria } from "./types";
@@ -324,7 +325,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     }
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const s = state();
     const key = s.focusedKey;
     const el = ref();

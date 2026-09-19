@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { DialogTrigger as SolidSpectrumDialogTrigger } from "@proyecto-viviana/solid-spectrum/Dialog";
@@ -23,7 +23,7 @@ function SolidSpectrumPopoverDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
   let anchorElement: HTMLDivElement | null = null;
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "popover") {
         setDemoProps(normalizePopoverDemoProps(event.detail.props ?? {}));

@@ -10,9 +10,7 @@
  * - MenuTrigger integration
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
-import { createSignal, For } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library"; import { createSignal, For, flush } from "solid-js";
 import {
   Menu,
   MenuItem,
@@ -2182,6 +2180,7 @@ describe("Menu async loading", () => {
     expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
 
     setIsLoading(true);
+    flush();
     options = screen.getAllByRole("menuitem");
     expect(options).toHaveLength(2);
     expect(options[1]).toHaveTextContent("empty state");
@@ -2237,6 +2236,7 @@ describe("Menu async loading", () => {
     expect(observe).toHaveBeenCalledTimes(1);
     expect(previous.disconnect).not.toHaveBeenCalled();
     setScrollOffset(2);
+    flush();
     expect(previous.disconnect).toHaveBeenCalled();
     expect(MockObserver.instance).not.toBe(previous);
     expect(observe).toHaveBeenCalledTimes(2);
@@ -2253,6 +2253,7 @@ describe("Menu async loading", () => {
     expect(observe).toHaveBeenCalledTimes(1);
     expect(previous.disconnect).not.toHaveBeenCalled();
     setItems([...asyncItems, { name: "Qux" }]);
+    flush();
     expect(previous.disconnect).toHaveBeenCalled();
     expect(MockObserver.instance).not.toBe(previous);
     expect(observe).toHaveBeenCalledTimes(2);

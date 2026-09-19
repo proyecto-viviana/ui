@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressCircle.tsx
 
 // Port of packages/@react-spectrum/s2/src/ProgressCircle.tsx.
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ProgressBar } from "@proyecto-viviana/solidaria-components";
 import type { StaticColor } from "./types";
 import type { ActionButtonSize } from "./group-context";

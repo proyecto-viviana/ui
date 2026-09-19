@@ -23,7 +23,7 @@
  */
 
 import { createProgressBar, type AriaProgressBarProps } from "../progress/createProgressBar";
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 export interface AriaMeterProps extends Omit<AriaProgressBarProps, "isIndeterminate"> {
   /** The current value (controlled). */

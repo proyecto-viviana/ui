@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionMenu as SolidSpectrumActionMenu } from "@proyecto-viviana/solid-spectrum/ActionMenu";
 import { Keyboard as SolidSpectrumKeyboard } from "@proyecto-viviana/solid-spectrum/Keyboard";
@@ -33,7 +33,7 @@ function SolidSpectrumActionMenuDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actionmenu") {
         setDemoProps(normalizeActionMenuDemoProps(event.detail.props ?? {}));

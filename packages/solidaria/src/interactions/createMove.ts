@@ -18,7 +18,8 @@
  * Port of @react-aria/interactions useMove, adapted for SolidJS.
  */
 
-import { JSX, createSignal, createEffect, onCleanup } from "solid-js";
+import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { disableTextSelection, restoreTextSelection, createGlobalListeners } from "../utils";
 
 export type PointerType = "mouse" | "pen" | "touch" | "keyboard";
@@ -129,7 +130,9 @@ export function createMove(props: MoveEvents = {}): MoveResult {
     }
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const activePointer = pointerDown();
     if (!activePointer) return;
 
@@ -162,7 +165,7 @@ export function createMove(props: MoveEvents = {}): MoveResult {
       addGlobalListener("pointermove", onPointerMove, { isWindow: true });
       addGlobalListener("pointerup", onPointerUp, { isWindow: true });
       addGlobalListener("pointercancel", onPointerUp, { isWindow: true });
-      onCleanup(() => {
+      _s2Cleanups.push(() => {
         removeGlobalListener("pointermove", onPointerMove, { isWindow: true });
         removeGlobalListener("pointerup", onPointerUp, { isWindow: true });
         removeGlobalListener("pointercancel", onPointerUp, { isWindow: true });
@@ -170,7 +173,9 @@ export function createMove(props: MoveEvents = {}): MoveResult {
     }
 
     // Mouse/touch listeners are attached directly in their handlers.
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const start = () => {
     disableTextSelection();

@@ -21,8 +21,9 @@
  * This is a 1:1 port of @react-aria/radio's useRadio hook.
  */
 
-import { JSX, Accessor, createEffect } from "solid-js";
-import { isServer } from "solid-js/web";
+import { Accessor, createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -115,7 +116,7 @@ export function createRadio(
     return selected === v;
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const p = getProps();
     const hasChildren = p.children != null;
     const hasAriaLabel = p["aria-label"] != null || p["aria-labelledby"] != null;
@@ -138,7 +139,7 @@ export function createRadio(
   //
   // We track `syncVersion` to ensure this effect runs on EVERY selection attempt,
   // even in controlled mode where isSelected() may not change.
-  createEffect(() => {
+  createTrackedEffect(() => {
     // The WeakMap accessor is outside the public API to maintain React Aria parity.
     const syncVersion = radioGroupSyncVersion.get(state);
     syncVersion?.();
@@ -352,7 +353,7 @@ export function createRadio(
     labelProps: mergeProps(labelPressProps, {
       onClick: (e: MouseEvent) => e.preventDefault(),
       onMouseDown: (e: MouseEvent) => e.preventDefault(),
-    }),
+    }) as JSX.LabelHTMLAttributes<HTMLLabelElement>,
     inputDescribedBy,
     get inputProps() {
       const groupData = getGroupData();

@@ -7,7 +7,7 @@
  * on this half (SSR output is strings; the eager-double-use node theft needs
  * real client DOM). The hydrate half owns the real catch.
  */
-import { renderToString } from "solid-js/web";
+import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

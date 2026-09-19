@@ -17,7 +17,8 @@
  * Based on @react-stately/numberfield useNumberFieldState.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { NumberFormatter, NumberParser } from "@internationalized/number";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import {

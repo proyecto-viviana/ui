@@ -19,7 +19,8 @@
  * Solid adaptation of the pinned Slider component.
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext, Show } from "solid-js";
+import { createContext, createMemo, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createSlider,
   createFocusRing,
@@ -40,8 +41,11 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  coerceDomRecord,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface SliderRenderProps {
   /** Whether the slider is disabled. */
@@ -340,7 +344,7 @@ export function Slider(props: SliderProps): JSX.Element {
   };
 
   return (
-    <SliderContext.Provider
+    <SliderContext
       value={{
         state,
         get trackProps() {
@@ -371,9 +375,9 @@ export function Slider(props: SliderProps): JSX.Element {
         ref={local.ref}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-disabled={state.isDisabled || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
         data-orientation={state.orientation}
-        data-dragging={state.isDragging() || undefined}
+        data-dragging={dataAttr(state.isDragging())}
       >
         <Show when={ariaProps.label}>
           <span {...sliderAria.labelProps}>{ariaProps.label}</span>
@@ -381,7 +385,7 @@ export function Slider(props: SliderProps): JSX.Element {
 
         {sliderChildren()}
       </div>
-    </SliderContext.Provider>
+    </SliderContext>
   );
 }
 
@@ -435,9 +439,9 @@ export function SliderTrack(props: SliderTrackProps): JSX.Element {
       {...cleanTrackProps()}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-disabled={state.isDisabled || undefined}
+      data-disabled={dataAttr(state.isDisabled)}
       data-orientation={state.orientation}
-      data-dragging={state.isDragging() || undefined}
+      data-dragging={dataAttr(state.isDragging())}
     >
       {renderProps.renderChildren()}
     </div>
@@ -522,15 +526,15 @@ export function SliderThumb(props: SliderThumbProps): JSX.Element {
       </VisuallyHidden>
       <div
         {...domProps}
-        {...cleanThumbProps()}
+        {...coerceDomRecord(cleanThumbProps() as Record<string, unknown>)}
         {...cleanHoverProps()}
         class={renderProps.class()}
         style={mergedStyle()}
-        data-disabled={state.isDisabled || undefined}
-        data-dragging={state.isDragging() || undefined}
-        data-focused={isFocused() || state.isFocused() || undefined}
-        data-focus-visible={isFocusVisible() || undefined}
-        data-hovered={isHovered() || undefined}
+        data-disabled={dataAttr(state.isDisabled)}
+        data-dragging={dataAttr(state.isDragging())}
+        data-focused={dataAttr(isFocused() || state.isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
+        data-hovered={dataAttr(isHovered())}
       >
         {renderProps.renderChildren()}
       </div>
@@ -636,8 +640,8 @@ export function SliderFill(props: SliderFillProps): JSX.Element {
       {...hoverProps}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-hovered={isHovered() || undefined}
-      data-disabled={state.isDisabled || undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(state.isDisabled)}
       data-orientation={state.orientation}
     >
       {renderProps.renderChildren()}

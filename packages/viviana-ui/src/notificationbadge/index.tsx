@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/NotificationBadge.tsx
 
 // Port of packages/@react-spectrum/s2/src/NotificationBadge.tsx.
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
   createStringFormatter,
@@ -33,6 +34,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { s2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface NotificationBadgeProps {
   /** The value to display in the notification badge. */

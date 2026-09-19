@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TextField.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createUniqueId,
-  mergeProps,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
+import { createContext, createUniqueId, merge, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   TextField as HeadlessTextField,
   Label as HeadlessLabel,
@@ -52,6 +45,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { HelpText } from "../form/HelpText";
+import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TextFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TextFieldSize = "S" | "M" | "L" | "XL";

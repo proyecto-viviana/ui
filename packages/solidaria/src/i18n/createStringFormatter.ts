@@ -19,13 +19,7 @@
  * Parcel transform time; this port imports JSON verbatim).
  */
 
-import {
-  LocalizedString,
-  LocalizedStringDictionary,
-  LocalizedStringFormatter,
-  type LocalizedStrings,
-} from "@internationalized/string";
-import { createMemo, type Accessor } from "solid-js";
+import { LocalizedString, LocalizedStringDictionary, LocalizedStringFormatter, type LocalizedStrings, } from "@internationalized/string"; import { createMemo, type Accessor } from "solid-js";
 import { compileIcu } from "./compileIcu";
 import { useLocale } from "./locale";
 

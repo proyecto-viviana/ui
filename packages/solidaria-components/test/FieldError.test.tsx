@@ -52,9 +52,9 @@ describe("FieldError", () => {
 
   it("uses context validation when prop is omitted", () => {
     render(() => (
-      <FieldErrorContext.Provider value={invalidResult}>
+      <FieldErrorContext value={invalidResult}>
         <FieldError />
-      </FieldErrorContext.Provider>
+      </FieldErrorContext>
     ));
 
     expect(screen.getByText("First error Second error")).toBeInTheDocument();

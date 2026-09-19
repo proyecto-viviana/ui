@@ -13,15 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/overlays/OpenTransition.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/overlays/OpenTransition.tsx.
-import {
-  type JSX,
-  createSignal,
-  createEffect,
-  on,
-  onCleanup,
-  Show,
-  children as resolveChildren,
-} from "solid-js";
+import { createSignal, createEffect, Show, children as resolveChildren } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 export interface OpenTransitionProps {
   /** Whether the content is open/visible. */
@@ -53,37 +46,36 @@ export function OpenTransition(props: OpenTransitionProps): JSX.Element {
   const [transitionClasses, setTransitionClasses] = createSignal("");
 
   createEffect(
-    on(
-      () => props.open,
-      (isOpen) => {
-        if (isOpen) {
-          setMounted(true);
-          setTransitionClasses(props.enterFrom ?? "");
+    () => props.open,
+    (isOpen) => {
+      if (isOpen) {
+        setMounted(true);
+        setTransitionClasses(props.enterFrom ?? "");
 
-          // Double RAF lets the browser commit the start class before the end class.
+        // Double RAF lets the browser commit the start class before the end class.
+        requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setTransitionClasses(props.enterTo ?? "");
-            });
+            setTransitionClasses(props.enterTo ?? "");
           });
-        } else {
-          setTransitionClasses(props.exitFrom ?? "");
+        });
+        return;
+      }
 
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setTransitionClasses(props.exitTo ?? "");
-            });
-          });
+      setTransitionClasses(props.exitFrom ?? "");
 
-          const timer = setTimeout(() => {
-            setMounted(false);
-            props.onExited?.();
-          }, duration());
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTransitionClasses(props.exitTo ?? "");
+        });
+      });
 
-          onCleanup(() => clearTimeout(timer));
-        }
-      },
-    ),
+      const timer = setTimeout(() => {
+        setMounted(false);
+        props.onExited?.();
+      }, duration());
+
+      return () => clearTimeout(timer);
+    },
   );
 
   const resolved = resolveChildren(() => props.children);

@@ -19,7 +19,9 @@
  * Port of react-aria-components/src/Link.tsx
  */
 
-import { type JSX, type ParentProps, createContext, createMemo, splitProps } from "solid-js";
+import { createContext, createMemo } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import {
   createLink,
@@ -38,6 +40,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { handleLinkClick, useRouter } from "./RouterProvider";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -238,7 +241,7 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
   const omitClickChannel = (raw: Record<string, unknown>): Record<string, unknown> => {
-    const { onClick: _onClick, "on:click": _nativeClick, ref: _ref, ...rest } = raw;
+    const { onClick: _onClick, ref: _ref, ...rest } = raw;
     return rest;
   };
   const cleanLinkProps = () => omitClickChannel(linkAria.linkProps as Record<string, unknown>);
@@ -251,7 +254,7 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
     return rest;
   };
   const onLinkClick = (event: MouseEvent) => {
-    const click = (linkAria.linkProps as Record<string, unknown>)["on:click"] as
+    const click = (linkAria.linkProps as Record<string, unknown>)["onClick"] as
       | ((event: MouseEvent) => void)
       | undefined;
     click?.(event);
@@ -266,7 +269,7 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
         cleanHoverProps(),
         cleanFocusProps(),
         {
-          "on:click": onLinkClick,
+          onClick: onLinkClick,
           get class() {
             return renderProps.class();
           },

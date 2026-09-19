@@ -16,7 +16,9 @@
  * PreviewTrigger displays a non-modal popover on hover, focus, or long press.
  */
 
-import { type Context, type JSX, createSignal, createUniqueId, splitProps } from "solid-js";
+import { createSignal, createUniqueId } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   FocusableProvider,
   createPreviewTrigger,
@@ -29,6 +31,7 @@ import {
   type OverlayTriggerState,
 } from "./contexts";
 import { Provider } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface PreviewTriggerProps extends AriaPreviewTriggerProps {
   /** The trigger and Popover that make up the preview trigger. */
@@ -75,8 +78,12 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
     },
   });
 
-  const [triggerEl, setTriggerRef] = createSignal<HTMLElement | null>(null);
-  const [popoverEl, setPopoverRef] = createSignal<HTMLElement | null>(null);
+  const [triggerEl, setTriggerRef] = createSignal<HTMLElement | null>(null, {
+    ownedWrite: true,
+  });
+  const [popoverEl, setPopoverRef] = createSignal<HTMLElement | null>(null, {
+    ownedWrite: true,
+  });
   const triggerId = createUniqueId();
 
   const aria = createPreviewTrigger(

@@ -19,18 +19,9 @@
  * Port of react-aria-components Dialog.
  */
 
-import {
-  type Context,
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createUniqueId,
-  splitProps,
-  useContext,
-  Switch,
-  Match,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createUniqueId, useContext, Switch, Match, createTrackedEffect } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createDialog,
   createOverlayTrigger,
@@ -46,6 +37,7 @@ import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
 import { OverlayContext } from "./Popover";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DEFAULT_SLOT,
   Provider,
@@ -157,7 +149,10 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
 
   const setTriggerRef = (el: HTMLElement | null) => {
     if (!el) return;
-    if (!triggerRef || !triggerRef.isConnected) {
+    // First registrant wins. Replacing a not-yet-connected trigger lets a later
+    // CloseButton steal ownership during defaultOpen (both refs fire before
+    // either node is in the document), then close+toggle reopens the dialog.
+    if (!triggerRef) {
       triggerRef = el;
     }
   };
@@ -182,9 +177,9 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
 
   // In SolidJS, we simply render children directly within the provider
   return (
-    <DialogTriggerContext.Provider value={contextValue()}>
+    <DialogTriggerContext value={contextValue()}>
       {props.children}
-    </DialogTriggerContext.Provider>
+    </DialogTriggerContext>
   );
 }
 
@@ -242,7 +237,7 @@ export function Dialog(props: DialogProps): JSX.Element {
     triggerContext?.state.close();
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!dialogRef || ariaProps["aria-label"] || ariaProps["aria-labelledby"]) return;
     const labelledBy = dialogRef.getAttribute("aria-labelledby");
     if (labelledBy && dialogRef.ownerDocument.getElementById(labelledBy)) return;
@@ -255,7 +250,7 @@ export function Dialog(props: DialogProps): JSX.Element {
 
   // RAC useDialog → useOverlayFocusContain: a nested Dialog still contains
   // focus when the parent Popover is not itself the dialog.
-  createEffect(() => {
+  createTrackedEffect(() => {
     overlayFocus?.setContain(true);
   });
 
@@ -280,7 +275,7 @@ export function Dialog(props: DialogProps): JSX.Element {
   );
 
   return (
-    <DialogContext.Provider value={{ close, titleId: titleId() }}>
+    <DialogContext value={{ close, titleId: titleId() }}>
       <section
         {...triggerContext?.overlayProps}
         {...dialogProps()}
@@ -311,7 +306,7 @@ export function Dialog(props: DialogProps): JSX.Element {
           {renderProps.renderChildren()}
         </Provider>
       </section>
-    </DialogContext.Provider>
+    </DialogContext>
   );
 }
 
@@ -339,7 +334,7 @@ export function Heading(props: HeadingProps): JSX.Element {
     headingRef = element;
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const el = headingRef;
     if (!el) return;
 

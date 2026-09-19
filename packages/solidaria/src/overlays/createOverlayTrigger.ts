@@ -17,7 +17,7 @@
  * Based on @react-aria/overlays useOverlayTrigger.
  */
 
-import { createEffect } from "solid-js";
+import { createEffect, createTrackedEffect } from "solid-js";
 import type { OverlayTriggerState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils";
@@ -30,8 +30,8 @@ export interface OverlayTriggerProps {
 export interface OverlayTriggerAria {
   /** Props for the trigger element. */
   triggerProps: {
-    "aria-haspopup"?: boolean | "listbox";
-    "aria-expanded": boolean;
+    "aria-haspopup"?: boolean | "true" | "listbox";
+    "aria-expanded": boolean | "true" | "false";
     "aria-controls"?: string;
     onPress: () => void;
   };
@@ -58,7 +58,7 @@ export function createOverlayTrigger(
 
   // Backward compatibility. Share state close function with useOverlayPosition so it can close on scroll
   // without forcing users to pass onClose.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const element = ref?.();
     if (element) {
       onCloseMap.set(element, state.close);
@@ -82,10 +82,11 @@ export function createOverlayTrigger(
   return {
     triggerProps: {
       get "aria-haspopup"() {
-        return getAriaHasPopup();
+        const value = getAriaHasPopup();
+        return value === true ? "true" : value;
       },
       get "aria-expanded"() {
-        return state.isOpen();
+        return state.isOpen() ? "true" : "false";
       },
       get "aria-controls"() {
         return state.isOpen() ? overlayId : undefined;

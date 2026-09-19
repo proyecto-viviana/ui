@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { NumberField } from "../src/numberfield";
 
 describe("NumberField (solid-spectrum)", () => {
@@ -63,6 +61,7 @@ describe("NumberField (solid-spectrum)", () => {
 
     expect(screen.getByText("Enter a quantity.")).toBeInTheDocument();
     setIsInvalid(true);
+    flush();
     expect(screen.queryByText("Enter a quantity.")).not.toBeInTheDocument();
     expect(screen.getByText("Quantity is required.")).toBeInTheDocument();
   });

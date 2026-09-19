@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Accordion.tsx
 
 // Port of packages/@react-spectrum/s2/src/Accordion.tsx.
-import { type JSX, createContext, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Disclosure,

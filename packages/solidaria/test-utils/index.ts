@@ -82,6 +82,8 @@ export {
 
 export { hydrateOverSsr } from "./hydrate";
 
+export { act, flush } from "./act";
+
 export {
   // axe-core a11y testing (INFRA-1)
   checkA11y,

@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Popover.tsx.
 
-import { type JSX, Show, splitProps } from "solid-js";
+import { Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Popover as HeadlessPopover,
   PopoverTrigger as HeadlessPopoverTrigger,
@@ -27,6 +28,7 @@ import type { StyleString } from "../style";
 import { setColorScheme, style } from "../style" with { type: "macro" };
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import { useTheme, type ColorScheme } from "../provider";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type PopoverPlacement = NonNullable<HeadlessPopoverProps["placement"]>;
 export type Placement = PopoverPlacement;

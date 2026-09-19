@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
 import {
   ColorSwatchPicker,
   ColorSwatchPickerItem,

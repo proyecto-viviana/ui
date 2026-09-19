@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ButtonGroup.tsx.
-import { createEffect, createSignal, onCleanup, onMount, type JSX, splitProps } from "solid-js";
+import { createEffect, createSignal, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
@@ -29,6 +30,7 @@ import {
   type RefLike,
 } from "../button/spectrum-context";
 import type { ButtonSize } from "../button/types";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ButtonGroupProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
@@ -84,7 +86,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
-  const [hasOverflow, setHasOverflow] = createSignal(false);
+  const [hasOverflow, setHasOverflow] = createSignal(false, { ownedWrite: true });
   let groupElement: HTMLDivElement | undefined;
   const assignGroupRefs = mergeContextRefs(
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
@@ -146,22 +148,33 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     });
   };
 
-  onMount(() => {
-    if (typeof ResizeObserver !== "undefined" && groupElement?.parentElement) {
+  onSettled(() => {
+    if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(scheduleOverflowCheck);
-      resizeObserver.observe(groupElement.parentElement);
+      if (groupElement) {
+        resizeObserver.observe(groupElement);
+        if (groupElement.parentElement) {
+          resizeObserver.observe(groupElement.parentElement);
+        }
+      }
     }
     scheduleOverflowCheck();
   });
 
-  createEffect(() => {
-    orientation();
-    align();
-    size();
-    local.children;
-    local.UNSAFE_style;
-    scheduleOverflowCheck();
-  });
+  // Do not read `local.children` here: mergeProps children getters instantiate
+  // JSX (Show/Button) and that is PRIMITIVE_IN_FORBIDDEN_SCOPE inside a tracked
+  // effect. Child size changes are picked up by observing the group element.
+  createEffect(
+    () => {
+      orientation();
+      align();
+      size();
+      local.UNSAFE_style;
+    },
+    () => {
+      scheduleOverflowCheck();
+    },
+  );
 
   onCleanup(() => {
     if (measurementFrame) {
@@ -196,11 +209,11 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
       class={className()}
       style={mergedUnsafeStyle()}
     >
-      <ButtonContext.Provider value={contextValue}>
-        <LinkButtonContext.Provider value={contextValue}>
+      <ButtonContext value={contextValue}>
+        <LinkButtonContext value={contextValue}>
           {local.children}
-        </LinkButtonContext.Provider>
-      </ButtonContext.Provider>
+        </LinkButtonContext>
+      </ButtonContext>
     </div>
   );
 }

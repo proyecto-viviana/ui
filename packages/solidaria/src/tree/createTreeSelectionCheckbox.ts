@@ -17,8 +17,9 @@
  * Based on @react-aria/gridlist/useGridListSelectionCheckbox.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeSelectionCheckboxProps, TreeSelectionCheckboxAria } from "./types";
@@ -44,17 +45,9 @@ export function createTreeSelectionCheckbox<
     return treeData ? `${treeData.treeId}-row-${String(props().key)}` : fallbackRowId;
   });
 
-  const isSelected = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isSelected(p.key);
-  });
+  const isSelected = () => state().isSelected(props().key);
 
-  const isDisabled = createMemo(() => {
-    const s = state();
-    const p = props();
-    return s.isDisabled(p.key);
-  });
+  const isDisabled = () => state().isDisabled(props().key);
 
   const onChange = (e: Event) => {
     const s = state();
@@ -75,24 +68,18 @@ export function createTreeSelectionCheckbox<
     e.stopPropagation();
   };
 
-  const checkboxProps = createMemo(() => {
-    const baseProps: Record<string, unknown> = {
-      type: "checkbox",
-      id: checkboxId,
-      "aria-label": "Select",
-      "aria-labelledby": `${checkboxId} ${rowId()}`,
-      checked: isSelected(),
-      disabled: isDisabled(),
-      onChange,
-      onClick,
-    };
-
-    return baseProps as JSX.InputHTMLAttributes<HTMLInputElement>;
-  });
-
   return {
     get checkboxProps() {
-      return checkboxProps();
+      return {
+        type: "checkbox",
+        id: checkboxId,
+        "aria-label": "Select",
+        "aria-labelledby": `${checkboxId} ${rowId()}`,
+        checked: isSelected(),
+        disabled: isDisabled(),
+        onChange,
+        onClick,
+      } as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
   };
 }

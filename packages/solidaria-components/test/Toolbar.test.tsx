@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { Toolbar, ToolbarContext } from "../src/Toolbar";
 import { Button } from "../src/Button";
 import { Separator } from "../src/Separator";
@@ -49,7 +47,7 @@ describe("Toolbar", () => {
 
   it("supports slots via ToolbarContext", () => {
     render(() => (
-      <ToolbarContext.Provider value={{ slots: { test: { "aria-label": "test label" } } }}>
+      <ToolbarContext value={{ slots: { test: { "aria-label": "test label" } } }}>
         <Toolbar slot="test">
           {() => (
             <>
@@ -59,7 +57,7 @@ describe("Toolbar", () => {
             </>
           )}
         </Toolbar>
-      </ToolbarContext.Provider>
+      </ToolbarContext>
     ));
 
     const toolbar = screen.getByRole("toolbar");

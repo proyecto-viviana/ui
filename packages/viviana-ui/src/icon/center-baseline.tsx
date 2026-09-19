@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/CenterBaseline.tsx
 
 // Port of packages/@react-spectrum/s2/src/CenterBaseline.tsx.
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeStyles } from "../style/runtime";
 import { style } from "../style" with { type: "macro" };
 import { css } from "../style/style-macro" with { type: "macro" };

@@ -19,17 +19,9 @@
  * Port of react-aria-components/src/DatePicker.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, useContext, Show, createTrackedEffect } from "solid-js";
+import type { Context, Signal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createDatePicker,
   createDateField,
@@ -77,6 +69,7 @@ import { HiddenDateInput } from "./HiddenDateInput";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import { Popover, type PopoverRenderProps } from "./Popover";
 import { Dialog } from "./Dialog";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DateRangePickerContext,
   useDateRangePickerContext,
@@ -453,7 +446,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   // the shared state focused on each false->true open transition; the
   // CalendarCell focus effect then pulls DOM focus to the value/today cell.
   let wasOpen = false;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const open = datePickerState.isOpen();
     if (open && !wasOpen) {
       calendarState.setFocused(true);
@@ -537,10 +530,10 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     );
 
   return (
-    <DatePickerStateContext.Provider value={fieldState as unknown as DateFieldState<DateValue>}>
-      <DatePickerContext.Provider value={contextValue}>
+    <DatePickerStateContext value={fieldState as unknown as DateFieldState<DateValue>}>
+      <DatePickerContext value={contextValue}>
         {/* Also provide DateFieldContext so DateInput/DateSegment work inside DatePicker */}
-        <DateFieldContext.Provider
+        <DateFieldContext
           value={{
             state: fieldState as unknown as DateFieldState<DateValue>,
             // Read through getters so the DateInput/DateSegment consumers see the
@@ -564,7 +557,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
             },
           }}
         >
-          <CalendarContext.Provider value={calendarState as unknown as CalendarState<DateValue>}>
+          <CalendarContext value={calendarState as unknown as CalendarState<DateValue>}>
             {/* BARE ROLELESS root — mirrors RAC `DatePicker`'s outer `<div>`. The
              * presentation FieldGroup shell (rendered as a child via
              * `DatePickerFieldGroup`) is what carries `pickerAria.groupProps`
@@ -620,10 +613,10 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                 granularity={datePickerState.granularity}
               />
             </Show>
-          </CalendarContext.Provider>
-        </DateFieldContext.Provider>
-      </DatePickerContext.Provider>
-    </DatePickerStateContext.Provider>
+          </CalendarContext>
+        </DateFieldContext>
+      </DatePickerContext>
+    </DatePickerStateContext>
   );
 }
 
@@ -727,7 +720,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   // range state across opens, so flag it focused on each false->true open
   // transition to reproduce that behavior.
   let wasRangeOpen = false;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const open = overlayState.isOpen;
     if (open && !wasRangeOpen) {
       calendarState.setFocused(true);
@@ -741,12 +734,12 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
       calendarState.validationState() === "invalid",
   );
   const isRequired = createMemo(() => Boolean((rest as { isRequired?: boolean }).isRequired));
-  const [startFieldValue, setStartFieldValue] = createSignal<T | null>(
-    currentRangeValue()?.start ?? null,
-  );
-  const [endFieldValue, setEndFieldValue] = createSignal<T | null>(
-    currentRangeValue()?.end ?? null,
-  );
+  const [startFieldValue, setStartFieldValue] = createSignal(
+    (currentRangeValue()?.start ?? null) as never,
+  ) as unknown as Signal<T | null>;
+  const [endFieldValue, setEndFieldValue] = createSignal(
+    (currentRangeValue()?.end ?? null) as never,
+  ) as unknown as Signal<T | null>;
   const rangeGranularity = createMemo<"day" | "hour" | "minute" | "second">(() => {
     if (stateProps.granularity) {
       return stateProps.granularity;
@@ -758,7 +751,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     return "day";
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const value = currentRangeValue();
     setStartFieldValue(() => value?.start ?? null);
     setEndFieldValue(() => value?.end ?? null);
@@ -921,11 +914,11 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   );
 
   return (
-    <DateRangePickerStateContext.Provider
+    <DateRangePickerStateContext
       value={calendarState as unknown as RangeCalendarState<DateValue>}
     >
-      <DateRangePickerContext.Provider value={contextValue}>
-        <RangeCalendarContext.Provider
+      <DateRangePickerContext value={contextValue}>
+        <RangeCalendarContext
           value={calendarState as unknown as RangeCalendarState<DateValue>}
         >
           {/* BARE ROLELESS root — mirrors RAC `DateRangePicker`'s outer `<div>`.
@@ -989,9 +982,9 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
               granularity={rangeGranularity()}
             />
           </Show>
-        </RangeCalendarContext.Provider>
-      </DateRangePickerContext.Provider>
-    </DateRangePickerStateContext.Provider>
+        </RangeCalendarContext>
+      </DateRangePickerContext>
+    </DateRangePickerStateContext>
   );
 }
 

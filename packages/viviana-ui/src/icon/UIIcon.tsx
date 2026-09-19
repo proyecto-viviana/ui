@@ -13,8 +13,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/icon/UIIcon.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/icon/UIIcon.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type UIIconSize = "xs" | "sm" | "md" | "lg";
 
@@ -28,7 +29,7 @@ export interface UIIconProps {
   /** Accessibility label. */
   "aria-label"?: string;
   /** Whether the icon is hidden from screen readers. @default true */
-  "aria-hidden"?: boolean;
+  "aria-hidden"?: boolean | "false" | "true";
 }
 
 // A fixed-size inline box for internal UI glyphs. Sized through the S2 macro so
@@ -52,7 +53,13 @@ export function UIIcon(props: UIIconProps): JSX.Element {
     <span
       {...rest}
       role={rest["aria-label"] ? "img" : undefined}
-      aria-hidden={rest["aria-hidden"] ?? !rest["aria-label"]}
+      aria-hidden={
+        rest["aria-hidden"] === true || rest["aria-hidden"] === "true" || !rest["aria-label"]
+          ? "true"
+          : rest["aria-hidden"] === false || rest["aria-hidden"] === "false"
+            ? "false"
+            : undefined
+      }
       class={[iconStyles({ size: local.size ?? "md" }), local.class].filter(Boolean).join(" ")}
     >
       {local.children}

@@ -19,7 +19,9 @@
  * Port of @react-aria/utils useFormReset.
  */
 
-import { type Accessor, createEffect, onCleanup } from "solid-js";
+import { createEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import { followRef } from "../utils/refs";
 
 export interface FormResetOptions<T> {
   /** The default value to reset to. */
@@ -45,26 +47,28 @@ export function createFormReset<T>(
   defaultValue: T,
   onReset: (value: T) => void,
 ): void {
-  createEffect(() => {
-    const element = ref();
-    if (!element) return;
+  const element = followRef(ref);
+  createEffect(
+    () => element(),
+    (node) => {
+      if (!node) return;
+      const handleReset = (e: Event) => {
+        if (e.defaultPrevented) return;
+        // RAC useFormReset binds the form captured at effect time
+        // (`useFormReset.ts:29`). A `form` attribute associated after mount
+        // (D14's injected probe form) leaves that capture null. Read the live
+        // association when reset fires — same class of fix as #466.
+        if (node.form && e.target === node.form) {
+          onReset(defaultValue);
+        }
+      };
 
-    const handleReset = (e: Event) => {
-      if (e.defaultPrevented) return;
-      // RAC useFormReset binds the form captured at effect time
-      // (`useFormReset.ts:29`). A `form` attribute associated after mount
-      // (D14's injected probe form) leaves that capture null. Read the live
-      // association when reset fires — same class of fix as #466.
-      if (element.form && e.target === element.form) {
-        onReset(defaultValue);
-      }
-    };
-
-    // Reset bubbles. Listening on document covers late `form=""` without
-    // capturing a null form at effect setup.
-    document.addEventListener("reset", handleReset);
-    onCleanup(() => {
-      document.removeEventListener("reset", handleReset);
-    });
-  });
+      // Reset bubbles. Listening on document covers late `form=""` without
+      // capturing a null form at effect setup.
+      document.addEventListener("reset", handleReset);
+      return () => {
+        document.removeEventListener("reset", handleReset);
+      };
+    },
+  );
 }

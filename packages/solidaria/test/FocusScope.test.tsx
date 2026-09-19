@@ -4,12 +4,7 @@
  * Tests for focus containment, restoration, and auto-focus behavior.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { FocusScope, useFocusManager } from "../src/focus/FocusScope";
-import { preventFocus } from "../src/utils/focus";
-import { setInteractionModality } from "../src/interactions/createInteractionModality";
-import { createSignal, type Component, Show } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { FocusScope, useFocusManager } from "../src/focus/FocusScope"; import { preventFocus } from "../src/utils/focus"; import { setInteractionModality } from "../src/interactions/createInteractionModality"; import { createSignal, flush, type Component, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser is consolidated in solidaria-test-utils.
@@ -572,11 +567,13 @@ describe("FocusScope", () => {
       expect(document.activeElement).toBe(restoreTarget);
 
       setShow(true);
+      flush();
       vi.runAllTimers();
       expect(document.activeElement).toBe(screen.getByTestId("inside"));
 
       setShow(false);
       setShowRestoreTarget(false);
+      flush();
       expect(() => {
         vi.runAllTimers();
       }).not.toThrow();
@@ -611,11 +608,13 @@ describe("FocusScope", () => {
 
       screen.getByTestId("restore-target").focus();
       setShow(true);
+      flush();
       vi.runAllTimers();
       expect(document.activeElement).toBe(screen.getByTestId("inside"));
 
       setShow(false);
       setShowRestoreTarget(false);
+      flush();
       vi.runAllTimers();
       expect(document.activeElement).toBe(screen.getByTestId("parent-first"));
     });

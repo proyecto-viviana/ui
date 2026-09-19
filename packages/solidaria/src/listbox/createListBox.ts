@@ -18,7 +18,8 @@
  * Based on @react-aria/listbox useListBox.
  */
 
-import { createEffect, onCleanup, type JSX } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { createSelectableList } from "../selection/createSelectableList";
@@ -182,13 +183,17 @@ export function createListBox<T>(
   updateSharedData();
 
   // Share data with child options
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     updateSharedData();
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       listBoxData.delete(state);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Handle focus within
   const { focusWithinProps } = createFocusWithin({
@@ -268,12 +273,12 @@ export function createListBox<T>(
         domProps(),
         focusWithinProps as Record<string, unknown>,
         labelAria.fieldProps as Record<string, unknown>,
-        p.isDisabled ? {} : (selectableList.listProps as Record<string, unknown>),
+        p.isDisabled === true ? {} : (selectableList.listProps as Record<string, unknown>),
         {
           role: "listbox",
           "aria-orientation": p.orientation ?? "vertical",
-          "aria-disabled": p.isDisabled || undefined,
-          "aria-multiselectable": selectionMode === "multiple" ? true : undefined,
+          "aria-disabled": p.isDisabled === true ? "true" : undefined,
+          "aria-multiselectable": selectionMode === "multiple" ? "true" : undefined,
         },
       ) as JSX.HTMLAttributes<HTMLElement>;
     },

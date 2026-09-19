@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import {
   ColorArea as SolidSpectrumColorArea,
@@ -50,7 +50,7 @@ function SolidSpectrumColorAreaDemo() {
   );
   const locale = buttonDemoLocaleFromWindow();
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "colorarea") {
         const nextProps = normalizeColorAreaDemoProps(event.detail.props ?? {});

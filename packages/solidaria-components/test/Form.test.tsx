@@ -1,9 +1,7 @@
 /**
  * Tests for solidaria-components Form
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { createSignal, useContext } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { fireEvent, render, screen } from "@solidjs/testing-library"; import { createSignal, flush, useContext } from "solid-js";
 import { FormValidationContext, type ValidationErrors } from "@proyecto-viviana/solid-stately";
 import { Form } from "../src/Form";
 import { Input, Label, TextField } from "../src/TextField";
@@ -123,9 +121,11 @@ describe("Form", () => {
       expect(form).not.toHaveAttribute("novalidate");
 
       setBehavior("aria");
+      flush();
       expect(form).toHaveAttribute("novalidate");
 
       setBehavior("native");
+      flush();
       expect(form).not.toHaveAttribute("novalidate");
     });
 
@@ -141,6 +141,7 @@ describe("Form", () => {
       expect(screen.getByTestId("behavior")).toHaveTextContent("native");
 
       setBehavior("aria");
+      flush();
       expect(screen.getByTestId("behavior")).toHaveTextContent("aria");
     });
   });
@@ -230,6 +231,7 @@ describe("Form", () => {
       expect(input).not.toHaveAttribute("aria-required");
 
       setBehavior("aria");
+      flush();
       expect(input).not.toHaveAttribute("required");
       expect(input).toHaveAttribute("aria-required", "true");
     });

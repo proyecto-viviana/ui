@@ -19,7 +19,9 @@
  * Based on packages/react-aria-components/src/Keyboard.tsx.
  */
 
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface KeyboardProps extends JSX.HTMLAttributes<HTMLElement> {
   children?: JSX.Element;

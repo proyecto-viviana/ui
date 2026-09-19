@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
 import { SearchField } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";

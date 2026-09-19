@@ -17,8 +17,9 @@
  * Based on @react-aria/gridlist/useGridList.
  */
 
-import { createMemo, createEffect, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo, createEffect, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { GridState, GridCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListProps, GridListAria } from "./types";
@@ -392,7 +393,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   // transient tabindex. Selection and activation live on the row
   // (createGridListItem) to match upstream, so keyboard nav has to carry focus
   // there for the row's Space/Enter handlers to act on.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const s = state();
     const key = s.focusedKey;
     const el = ref();

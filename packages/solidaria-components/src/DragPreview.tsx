@@ -16,7 +16,8 @@
  * Based on packages/react-aria/src/dnd/DragPreview.tsx.
  */
 
-import { onCleanup, type JSX } from "solid-js";
+import { onCleanup } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { DragItem, DragPreviewRenderer } from "@proyecto-viviana/solid-stately";
 
 export interface DragPreviewProps {

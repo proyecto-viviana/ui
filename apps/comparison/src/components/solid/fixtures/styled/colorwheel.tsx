@@ -1,6 +1,6 @@
-import h from "solid-js/h";
-import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { ColorWheel as SolidSpectrumColorWheel } from "@proyecto-viviana/solid-spectrum/ColorWheel";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -58,7 +58,7 @@ function SolidSpectrumColorWheelDemo() {
   );
   const locale = buttonDemoLocaleFromWindow();
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "colorwheel") {
         const nextProps = normalizeColorWheelDemoProps(event.detail.props ?? {});

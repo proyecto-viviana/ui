@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -56,14 +56,14 @@ function SolidSpectrumTreeViewDemo() {
   const expandedKeyText = createMemo(() => serializeTreeViewKeys(expandedKeys()));
   let treeViewRoot: HTMLElement | undefined;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     treeViewRoot?.setAttribute(
       "data-comparison-control-props",
       serializeTreeViewDemoProps(demoProps()),
     );
   });
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "treeview") {
         setDemoProps((current) => {

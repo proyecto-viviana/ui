@@ -12,6 +12,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
+import { flush } from "solid-js";
 import { Breadcrumbs, BreadcrumbItem } from "../src/Breadcrumbs";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -365,6 +366,7 @@ describe("Breadcrumbs", () => {
 
       const homeLink = screen.getByText("Home");
       homeLink.focus();
+      flush();
       expect(homeLink).toHaveAttribute("data-focused");
 
       await user.hover(homeLink);

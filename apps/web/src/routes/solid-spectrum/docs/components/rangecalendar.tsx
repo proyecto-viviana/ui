@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
 import { RangeCalendar } from "@proyecto-viviana/solid-spectrum";
 import {
   CalendarDateClass as CalendarDate,

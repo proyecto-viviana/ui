@@ -17,16 +17,8 @@
 // Port of packages/@react-spectrum/s2/src/TimeField.tsx.
 
 // Style-system generics need the same dedicated pass as DateField.
-import {
-  createContext,
-  createEffect,
-  createSignal,
-  type JSX,
-  onCleanup,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   TimeField as HeadlessTimeField,
   TimeFieldLabel as HeadlessTimeFieldLabel,
@@ -64,6 +56,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TimeFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TimeFieldSize = "S" | "M" | "L" | "XL";
@@ -361,10 +354,14 @@ function TimeFieldContent(props: {
   // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
-    onCleanup(cleanup);
-  });
+    _s2Cleanups.push(cleanup);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const isFocusVisibleWithin = () => isFocusWithin() && isFocusVisibleModality();
 
   return (

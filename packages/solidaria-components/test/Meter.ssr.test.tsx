@@ -4,7 +4,7 @@
  * The companion Meter.hydrate.test.tsx hydrates over this output and checks
  * that the shared Label relationship stays stable.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

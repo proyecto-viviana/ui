@@ -1,6 +1,4 @@
-import { render, screen } from "@solidjs/testing-library";
-import userEvent from "@testing-library/user-event";
-import { createSignal } from "solid-js";
+import { render, screen } from "@solidjs/testing-library"; import userEvent from "@testing-library/user-event"; import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { Button } from "../src/components/button";
 
@@ -60,10 +58,12 @@ describe("Geist Button", () => {
     expect(button).not.toHaveAttribute("aria-disabled", "true");
 
     setLoading(true);
+    flush();
     expect(button).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByRole("status", { name: "Loading" })).toBeInTheDocument();
 
     setLoading(false);
+    flush();
     expect(button).not.toHaveAttribute("aria-disabled", "true");
     expect(screen.queryByRole("status", { name: "Loading" })).not.toBeInTheDocument();
   });
@@ -195,6 +195,7 @@ describe("Geist Button", () => {
     const button = screen.getByRole("button");
     expect(button.querySelector(".pv-geist-Button__label")).toHaveTextContent("Save");
     setLabel("Saved");
+    flush();
     expect(button.querySelector(".pv-geist-Button__label")).toHaveTextContent("Saved");
   });
 });

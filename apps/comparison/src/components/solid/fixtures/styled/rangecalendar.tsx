@@ -1,6 +1,6 @@
-import h from "solid-js/h";
-import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { RangeCalendar as SolidSpectrumRangeCalendar } from "@proyecto-viviana/solid-spectrum/RangeCalendar";
@@ -38,7 +38,7 @@ function SolidSpectrumRangeCalendarDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "rangecalendar") {
         const nextProps = normalizeRangeCalendarDemoProps({

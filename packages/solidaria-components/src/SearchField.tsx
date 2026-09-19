@@ -19,17 +19,9 @@
  * Port of react-aria-components/src/SearchField.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createMemo,
-  onCleanup,
-  onMount,
-  splitProps,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, onSettled, useContext, Show } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createSearchField,
   createFocusRing,
@@ -54,10 +46,13 @@ import {
   filterDOMProps,
   Provider,
   useSlot,
+  dataAttr,
+  attrString,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
 import { useAutocompleteInput } from "./Autocomplete";
+import { assignRef, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface SearchFieldRenderProps {
   /** Whether the search field is empty. */
@@ -192,7 +187,7 @@ function clearDelegatedTextEntryHandlers(element: HTMLElement) {
 export function SearchField(props: SearchFieldProps): JSX.Element {
   const formContext = useContext(FormContext);
   const contextProps = useContext(SearchFieldContext);
-  const contextSlotProps = contextProps?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<SearchFieldProps>(() => {
     if (!contextProps) return {};
     const {
@@ -576,38 +571,38 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       const labelProps = searchFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
         htmlFor?: string;
       };
-      return labelProps.htmlFor ?? labelProps.for;
+      return attrString(labelProps.htmlFor ?? labelProps.for);
     },
     get for() {
       const labelProps = searchFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
         htmlFor?: string;
       };
-      return labelProps.htmlFor ?? labelProps.for;
+      return attrString(labelProps.htmlFor ?? labelProps.for);
     },
   };
 
   return (
-    <FieldErrorContext.Provider value={fieldErrorContext}>
-      <LabelContext.Provider value={labelContextValue}>
-        <SearchFieldContext.Provider value={contextValue}>
+    <FieldErrorContext value={fieldErrorContext}>
+      <LabelContext value={labelContextValue}>
+        <SearchFieldContext value={contextValue}>
           <div
             {...domProps()}
             ref={local.ref}
             class={renderProps.class()}
             style={renderProps.style()}
-            data-empty={state.value() === "" || undefined}
-            data-disabled={ariaProps.isDisabled || undefined}
-            data-invalid={searchFieldAria.isInvalid || undefined}
-            data-required={ariaProps.isRequired || undefined}
-            data-readonly={ariaProps.isReadOnly || undefined}
+            data-empty={dataAttr(state.value() === "")}
+            data-disabled={dataAttr(ariaProps.isDisabled)}
+            data-invalid={dataAttr(searchFieldAria.isInvalid)}
+            data-required={dataAttr(ariaProps.isRequired)}
+            data-readonly={dataAttr(ariaProps.isReadOnly)}
           >
             <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
               {fieldChildren()}
             </Provider>
           </div>
-        </SearchFieldContext.Provider>
-      </LabelContext.Provider>
-    </FieldErrorContext.Provider>
+        </SearchFieldContext>
+      </LabelContext>
+    </FieldErrorContext>
   );
 }
 
@@ -729,7 +724,7 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
       ...autocompleteInputAttrs(),
     }) as Record<string, unknown>;
 
-  onMount(() => {
+  onSettled(() => {
     const element = inputElement;
     if (!element) {
       return;
@@ -765,10 +760,10 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
     element.addEventListener("input", inputHandler);
     element.addEventListener("change", changeHandler);
     clearDelegatedTextEntryHandlers(element);
-    onCleanup(() => {
+    return () => {
       element.removeEventListener("input", inputHandler);
       element.removeEventListener("change", changeHandler);
-    });
+    };
   });
 
   return (
@@ -778,24 +773,16 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
         inputElement = element;
         context.setInputRef?.(element);
         autocompleteInput?.inputRef(element);
-        const contextRef = context.inputProps?.ref;
-        if (typeof contextRef === "function") {
-          contextRef(element);
-        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
-          (contextRef as { current: HTMLInputElement | null }).current = element;
-        }
-        const ref = (domProps as { ref?: unknown }).ref;
-        if (typeof ref === "function") {
-          ref(element);
-        }
+        assignRef(context.inputProps?.ref, element);
+        assignRef((domProps as { ref?: unknown }).ref, element);
       }}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={context.isDisabled || undefined}
-      data-invalid={context.isInvalid || undefined}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(context.isDisabled)}
+      data-invalid={dataAttr(context.isInvalid)}
     />
   );
 }
@@ -866,7 +853,7 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
         {...domProps}
         type="button"
         aria-label={context.clearButtonProps?.["aria-label"] ?? "Clear search"}
-        tabIndex={context.clearButtonProps?.tabIndex ?? -1}
+        tabindex={context.clearButtonProps?.tabIndex ?? -1}
         disabled={context.clearButtonProps?.disabled}
         onMouseDown={context.clearButtonProps?.onMouseDown}
         {...cleanPressProps()}
@@ -876,9 +863,9 @@ export function SearchFieldClearButton(props: SearchFieldClearButtonProps): JSX.
         {...cleanHoverProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-pressed={isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
-        data-disabled={isDisabled() || undefined}
+        data-pressed={dataAttr(isPressed())}
+        data-hovered={dataAttr(isHovered())}
+        data-disabled={dataAttr(isDisabled())}
       >
         {renderProps.renderChildren()}
       </button>

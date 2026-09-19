@@ -18,10 +18,12 @@
  * This is a 1-1 port of React-Aria's useFocusable hook adapted for SolidJS.
  */
 
-import { JSX, Accessor, createContext, useContext, onMount, splitProps } from "solid-js";
+import { mergeProps, focusSafely, useContextOptional } from "../utils";
+import { Accessor, createContext, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocus, type FocusEvents } from "./createFocus";
 import { createKeyboard, type KeyboardEvents } from "./createKeyboard";
-import { mergeProps, focusSafely } from "../utils";
+import { splitProps } from "../utils/splitProps";
 
 export interface FocusableDOMProps {
   /** Whether to exclude the element from the sequential tab order. */
@@ -65,7 +67,7 @@ function useFocusableContext(): {
   props: Omit<FocusableContextValue, "ref">;
   syncRef: (el: HTMLElement) => void;
 } {
-  const context = useContext(FocusableContext) ?? {};
+  const context = useContextOptional(FocusableContext) ?? {};
   const [, otherProps] = splitProps(context, ["ref"]);
   return {
     props: otherProps,
@@ -135,14 +137,14 @@ export function createFocusable(
 
   // Get focus and keyboard props from the respective hooks
   const { focusProps } = createFocus({
-    isDisabled: isDisabledValue(props.isDisabled),
+    isDisabled: () => isDisabledValue(props.isDisabled),
     onFocus: props.onFocus,
     onBlur: props.onBlur,
     onFocusChange: props.onFocusChange,
   });
 
   const { keyboardProps } = createKeyboard({
-    isDisabled: isDisabledValue(props.isDisabled),
+    isDisabled: () => isDisabledValue(props.isDisabled),
     onKeyDown: props.onKeyDown,
     onKeyUp: props.onKeyUp,
   });
@@ -154,7 +156,7 @@ export function createFocusable(
   const interactionProps = isDisabledValue(props.isDisabled) ? {} : context.props;
 
   // Handle autoFocus
-  onMount(() => {
+  onSettled(() => {
     if (props.autoFocus && elementRef && !autoFocusDone) {
       focusSafely(elementRef);
       autoFocusDone = true;

@@ -22,7 +22,8 @@
  * CalendarYearPicker).
  */
 
-import { type JSX, useContext } from "solid-js";
+import { useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 import {
   createCalendarMonthPicker,

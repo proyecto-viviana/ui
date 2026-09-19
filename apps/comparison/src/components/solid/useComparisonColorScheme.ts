@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,
@@ -10,7 +10,7 @@ export function createComparisonColorScheme() {
   const [themeChoice, setThemeChoice] = createSignal<ComparisonThemeChoice>("system");
   const [resolvedTheme, setResolvedTheme] = createSignal<ComparisonResolvedTheme>("light");
 
-  onMount(() => {
+  onSettled(() => {
     const updateFromDocument = () => {
       setThemeChoice(
         (document.body.dataset.theme as ComparisonThemeChoice | undefined) ?? "system",

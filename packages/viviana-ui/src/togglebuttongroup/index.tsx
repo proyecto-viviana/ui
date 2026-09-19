@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,
@@ -37,6 +37,7 @@ import {
   type RefLike,
 } from "../button/spectrum-context";
 import type { StaticColor } from "../button/types";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ToggleButtonGroupProps extends Omit<
   HeadlessToggleButtonGroupProps,
@@ -183,9 +184,9 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       data-disabled={local.isDisabled || undefined}
     >
       {() => (
-        <ToggleButtonGroupContext.Provider value={contextValue}>
+        <ToggleButtonGroupContext value={contextValue}>
           {local.children}
-        </ToggleButtonGroupContext.Provider>
+        </ToggleButtonGroupContext>
       )}
     </HeadlessToggleButtonGroup>
   );

@@ -22,18 +22,8 @@
  * and uses grid keyboard navigation.
  */
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createGridList,
   createGridListItem,
@@ -61,6 +51,7 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
@@ -74,6 +65,7 @@ import {
 } from "./Collection";
 import { TextContext } from "./Text";
 import { useVirtualizerContext, PersistedVirtualItem, type Orientation } from "./Virtualizer";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getNormalizedDropTargetKey,
   indexesOutsideRange,
@@ -365,7 +357,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   const locale = useLocale();
 
-  const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLDivElement | null>(null, { ownedWrite: true });
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
 
   const collection = createMemo(() =>
@@ -417,19 +409,45 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   // mirroring how ListBox consumes `listBoxAria.listBoxProps`.
   const gridListAria = createGridList<T, GridCollection<T>>(
     () => ({
-      id: ariaProps.id,
-      "aria-label": ariaProps["aria-label"],
-      "aria-labelledby": ariaProps["aria-labelledby"],
-      "aria-describedby": ariaProps["aria-describedby"],
-      isVirtualized: ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized,
-      onAction: ariaProps.onAction,
-      isDisabled: ariaProps.isDisabled,
-      selectionBehavior: state.selectionBehavior,
-      keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
-      orientation: orientation(),
-      direction: resolveDirection(),
-      layout: local.layout,
-      columnCount: local.columnCount,
+      get id() {
+        return ariaProps.id;
+      },
+      get "aria-label"() {
+        return ariaProps["aria-label"];
+      },
+      get "aria-labelledby"() {
+        return ariaProps["aria-labelledby"];
+      },
+      get "aria-describedby"() {
+        return ariaProps["aria-describedby"];
+      },
+      get isVirtualized() {
+        return ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized;
+      },
+      get onAction() {
+        return ariaProps.onAction;
+      },
+      get isDisabled() {
+        return ariaProps.isDisabled;
+      },
+      get selectionBehavior() {
+        return state.selectionBehavior;
+      },
+      get keyboardNavigationBehavior() {
+        return ariaProps.keyboardNavigationBehavior;
+      },
+      get orientation() {
+        return orientation();
+      },
+      get direction() {
+        return resolveDirection();
+      },
+      get layout() {
+        return local.layout;
+      },
+      get columnCount() {
+        return local.columnCount;
+      },
     }),
     () => state,
     ref,
@@ -494,34 +512,30 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     const hooks = local.dragAndDropHooks;
     return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
   });
-  const dragState = createMemo(() => {
-    if (!hasDraggableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDraggableCollectionState?.({
-      items: stateProps.items,
-      collection: state.collection,
-      selectedKeys: state.selectedKeys,
-      isSelected: (key) => state.isSelected(key),
-    });
-  });
-  const dropState = createMemo(() => {
-    if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({
-      get collection() {
-        return state.collection;
-      },
-    });
-  });
-  createEffect(() => {
-    if (!hasDraggableDnd()) return;
-    const hooks = local.dragAndDropHooks;
-    const activeDragState = dragState();
-    if (!hooks?.useDraggableCollection || !activeDragState) return;
-    hooks.useDraggableCollection({}, activeDragState, () => ref());
-  });
-  const droppableCollection = createMemo(() => {
+  const dragStateValue = hasDraggableDnd()
+    ? local.dragAndDropHooks?.useDraggableCollectionState?.({
+        items: stateProps.items,
+        collection: state.collection,
+        selectedKeys: state.selectedKeys,
+        isSelected: (key) => state.isSelected(key),
+      })
+    : undefined;
+  const dragState = () => dragStateValue;
+  const dropStateValue = hasDroppableDnd()
+    ? local.dragAndDropHooks?.useDroppableCollectionState?.({
+        get collection() {
+          return state.collection;
+        },
+      })
+    : undefined;
+  const dropState = () => dropStateValue;
+  if (local.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
+    local.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => ref());
+  }
+  const droppableCollectionValue = (() => {
     if (!hasDroppableDnd()) return undefined;
     const hooks = local.dragAndDropHooks;
-    const activeDropState = dropState();
+    const activeDropState = dropStateValue;
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
@@ -557,7 +571,8 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       activeDropState,
       () => ref(),
     );
-  });
+  })();
+  const droppableCollection = () => droppableCollectionValue;
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
@@ -608,7 +623,9 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       .filter((index) => index >= 0);
     return indexesOutsideRange(range, persistedIndexes);
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => state.collection.size);
     virtualizer.setDropTargetIndexResolver((key) => {
@@ -624,12 +641,14 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
         key: typeof node.key === "string" || typeof node.key === "number" ? node.key : undefined,
       };
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       virtualizer.setDropTargetIndexResolver(undefined);
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const visibleItems = createMemo(() => {
     const range = virtualRange();
     if (!range) return stateProps.items;
@@ -654,11 +673,11 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const CollectionRoot = useCollectionRoot();
 
   return (
-    <GridListContext.Provider value={contextValue() as unknown as GridListContextValue<object>}>
-      <GridListStateContext.Provider
+    <GridListContext value={contextValue() as unknown as GridListContextValue<object>}>
+      <GridListStateContext
         value={state as unknown as GridState<object, GridCollection<object>>}
       >
-        <CollectionRendererContext.Provider value={collectionRenderer()}>
+        <CollectionRendererContext value={collectionRenderer()}>
           <div
             ref={(element) => {
               setRef(element);
@@ -672,11 +691,11 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
             )}
             class={renderProps.class()}
             style={renderProps.style()}
-            data-focused={state.isFocused || undefined}
-            data-focus-visible={isFocusVisible() || undefined}
-            data-disabled={ariaProps.isDisabled || undefined}
-            data-empty={isEmpty() || undefined}
-            data-drop-target={isRootDropTarget() || undefined}
+            data-focused={dataAttr(state.isFocused)}
+            data-focus-visible={dataAttr(isFocusVisible())}
+            data-disabled={dataAttr(ariaProps.isDisabled)}
+            data-empty={dataAttr(isEmpty())}
+            data-drop-target={dataAttr(isRootDropTarget())}
             data-orientation={orientation()}
           >
             <SharedElementTransition>
@@ -735,9 +754,9 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
               <GridListLoadMoreItem onLoadMore={local.onLoadMore} isLoading={local.isLoading} />
             )}
           </div>
-        </CollectionRendererContext.Provider>
-      </GridListStateContext.Provider>
-    </GridListContext.Provider>
+        </CollectionRendererContext>
+      </GridListStateContext>
+    </GridListContext>
   );
 }
 
@@ -765,7 +784,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   const state = context as GridState<T, GridCollection<T>>;
   const listContext = useContext(GridListContext) as GridListContextValue<T> | null;
 
-  const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLDivElement | null>(null, { ownedWrite: true });
 
   const itemNode = createMemo(() => {
     const node = state.collection.getItem(local.id);
@@ -872,6 +891,10 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       ref={(element) => {
         setRef(element);
         assignRef(local.ref, element);
+        const dragRef = (
+          draggableItem()?.dragProps as { ref?: (el: HTMLDivElement) => void } | undefined
+        )?.ref;
+        if (typeof dragRef === "function") dragRef(element);
       }}
       {...domProps}
       {...mergeProps(
@@ -884,16 +907,16 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       class={renderProps.class()}
       style={renderProps.style()}
       data-key={local.id}
-      data-selected={isSelected() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
-      data-pressed={isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-dragging={draggableItem()?.isDragging || undefined}
-      data-drop-target={droppableItem()?.isDropTarget || undefined}
+      data-selected={dataAttr(isSelected())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr((isFocusVisible() && isFocused()))}
+      data-pressed={dataAttr(isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(isDisabled())}
+      data-dragging={dataAttr(draggableItem()?.isDragging)}
+      data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
     >
-      <TextContext.Provider
+      <TextContext
         value={{
           slots: {
             description: itemAria.descriptionProps,
@@ -901,7 +924,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
         }}
       >
         <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
-      </TextContext.Provider>
+      </TextContext>
     </div>
   );
 }
@@ -933,18 +956,16 @@ export function GridListSelectionCheckbox(props: {
       {...checkboxAria.checkboxProps}
       class={props.class}
       style={props.style}
-      tabIndex={props.excludeFromTabOrder ? -1 : undefined}
+      tabindex={props.excludeFromTabOrder ? -1 : undefined}
       aria-label={props["aria-label"] ?? checkboxAria.checkboxProps["aria-label"]}
     />
   );
 }
 
 export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Element {
-  let sentinelRef: HTMLDivElement | undefined;
-  const setSentinelRef = (element: HTMLDivElement) => {
-    sentinelRef = element;
-  };
+  const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
+  const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
   const isLoading = () => !!props.isLoading || isPending();
 
   const triggerLoadMore = async () => {
@@ -957,21 +978,26 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
     }
   };
 
-  createEffect(() => {
-    if (!sentinelRef || typeof IntersectionObserver !== "function") return;
-    const offset = props.scrollOffset ?? 1;
-    const margin = `0px 0px ${100 * offset}% 0px`;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void triggerLoadMore();
-        }
-      },
-      { rootMargin: margin },
-    );
-    observer.observe(sentinelRef);
-    onCleanup(() => observer.disconnect());
-  });
+  createEffect(
+    () => ({
+      current: sentinel(),
+      scrollOffset: scrollOffsetValue(),
+    }),
+    ({ current, scrollOffset }) => {
+      if (!current || typeof IntersectionObserver !== "function") return;
+      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            void triggerLoadMore();
+          }
+        },
+        { rootMargin: margin },
+      );
+      observer.observe(current);
+      return () => observer.disconnect();
+    },
+  );
 
   const renderProps = useRenderProps(
     {
@@ -988,17 +1014,17 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div ref={setSentinel} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
         role="row"
-        tabIndex={0}
+        tabindex={0}
         onFocus={() => {
           void triggerLoadMore();
         }}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-loading={isLoading() || undefined}
+        data-loading={dataAttr(isLoading())}
       >
         {renderProps.renderChildren()}
       </div>
@@ -1074,11 +1100,11 @@ export function GridListSection(props: GridListSectionProps): JSX.Element {
       slot={local.slot}
       data-section
     >
-      <GridListHeaderContext.Provider value={section.rowProps}>
-        <GridListHeaderInnerContext.Provider value={section.rowHeaderProps}>
+      <GridListHeaderContext value={section.rowProps}>
+        <GridListHeaderInnerContext value={section.rowHeaderProps}>
           {local.children}
-        </GridListHeaderInnerContext.Provider>
-      </GridListHeaderContext.Provider>
+        </GridListHeaderInnerContext>
+      </GridListHeaderContext>
     </div>
   );
 }

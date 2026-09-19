@@ -167,14 +167,14 @@ describe("Image", () => {
 
   it("applies ImageContext hidden and style props", () => {
     const { container } = render(() => (
-      <ImageContext.Provider
+      <ImageContext
         value={{
           hidden: true,
           UNSAFE_className: "context-image",
         }}
       >
         <Image src="/hidden.png" alt="Hidden" />
-      </ImageContext.Provider>
+      </ImageContext>
     ));
 
     expect(screen.queryByRole("img", { name: "Hidden" })).toBeNull();
@@ -183,7 +183,7 @@ describe("Image", () => {
 
   it("applies ImageContext styles and lets local unsafe props override class props", () => {
     render(() => (
-      <ImageContext.Provider
+      <ImageContext
         value={{
           UNSAFE_className: "context-image",
           UNSAFE_style: { margin: "2px", padding: "1px" },
@@ -197,7 +197,7 @@ describe("Image", () => {
           UNSAFE_style={{ margin: "4px" }}
           styles={"local-generated-image" as never}
         />
-      </ImageContext.Provider>
+      </ImageContext>
     ));
 
     const wrapper = screen.getByRole("img", { name: "Context" }).parentElement as HTMLElement;

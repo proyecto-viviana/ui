@@ -18,7 +18,7 @@
    The name and spec columns are panel chrome, hand-set identically to the spec
    (same MONO/CH tokens, same widths) so the two panels line up row-for-row and
    only the middle column is under comparison. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Content,
   Divider,

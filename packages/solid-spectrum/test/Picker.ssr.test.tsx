@@ -8,7 +8,7 @@
  * DOM-compiled Picker over it and asserts there is no mismatch. Run this test
  * first (the hydrate suite reads the file it writes).
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

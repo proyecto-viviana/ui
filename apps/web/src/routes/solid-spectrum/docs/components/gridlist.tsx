@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
 import { GridList, GridListItem } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { Badge, typeRoles } from "@proyecto-viviana/ui";
@@ -112,7 +111,7 @@ function GridListPage() {
                 {(renderProps) => (
                   <div
                     class="hd-row hd-row--split"
-                    classList={{ "hd-row--selected": renderProps.isSelected }}
+                    class={{ "hd-row--selected": renderProps.isSelected }}
                   >
                     <div>
                       <div class={typeRoles.label}>{item.title}</div>
@@ -176,7 +175,7 @@ function GridListPage() {
             {(item) => (
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
-                  <div class="hd-row" classList={{ "hd-row--selected": renderProps.isSelected }}>
+                  <div class="hd-row" class={{ "hd-row--selected": renderProps.isSelected }}>
                     <span class={`${typeRoles.terminal} hd-row__gutter`}>
                       {statusIcon[item.status]}
                     </span>

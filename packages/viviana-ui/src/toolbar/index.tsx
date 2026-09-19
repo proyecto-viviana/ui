@@ -14,13 +14,14 @@
 
 // Port of packages/@react-spectrum/s2/src/Toolbar.tsx.
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Toolbar as HeadlessToolbar,
   type ToolbarProps as HeadlessToolbarProps,
   type ToolbarRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type { ToolbarRenderProps };
 export type ToolbarProps = HeadlessToolbarProps;

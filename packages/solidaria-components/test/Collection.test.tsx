@@ -84,13 +84,13 @@ describe("Collection primitives", () => {
     }
 
     render(() => (
-      <CollectionRendererContext.Provider
+      <CollectionRendererContext
         value={{
           renderItem: (item: { label: string }) => <span>{item.label}</span>,
         }}
       >
         <Consumer />
-      </CollectionRendererContext.Provider>
+      </CollectionRendererContext>
     ));
 
     expect(screen.getByText("Hello")).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe("Collection primitives", () => {
   it("supports SectionContext renderer override", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     render(() => (
-      <SectionContext.Provider
+      <SectionContext
         value={{
           name: "ListBoxSection",
           render: (props, className) => (
@@ -117,7 +117,7 @@ describe("Collection primitives", () => {
         }}
       >
         <Section>Override content</Section>
-      </SectionContext.Provider>
+      </SectionContext>
     ));
 
     expect(screen.getByTestId("section-override")).toHaveClass("solidaria-Section");

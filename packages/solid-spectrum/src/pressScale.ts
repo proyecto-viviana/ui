@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/pressScale.ts
 
 // Port of packages/@react-spectrum/s2/src/pressScale.ts.
-import type { Accessor, JSX } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 type ElementRef =
   | HTMLElement

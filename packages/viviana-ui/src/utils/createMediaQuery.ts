@@ -21,35 +21,40 @@
  * `false` during SSR (and before mount) so the server and first client render
  * agree, then resolves to the real value once mounted on the client.
  */
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 
 export function createMediaQuery(query: string): () => boolean {
   const supportsMatchMedia =
     typeof window !== "undefined" && typeof window.matchMedia === "function";
 
-  const [matches, setMatches] = createSignal(false);
+  // First paint stays `false` (SSR/hydration agreement). The effect then
+  // writes the live match — `ownedWrite` because that write is in apply.
+  const [matches, setMatches] = createSignal(false, { ownedWrite: true });
 
-  onMount(() => {
-    if (!supportsMatchMedia) {
-      return;
-    }
+  createEffect(
+    () => query,
+    () => {
+      if (!supportsMatchMedia) {
+        return;
+      }
 
-    const mq = window.matchMedia(query);
-    setMatches(mq.matches);
+      const mq = window.matchMedia(query);
+      setMatches(mq.matches);
 
-    const onChange = (event: MediaQueryListEvent): void => {
-      setMatches(event.matches);
-    };
+      const onChange = (event: MediaQueryListEvent): void => {
+        setMatches(event.matches);
+      };
 
-    if (typeof mq.addEventListener === "function") {
-      mq.addEventListener("change", onChange);
-      onCleanup(() => mq.removeEventListener("change", onChange));
-    } else {
+      if (typeof mq.addEventListener === "function") {
+        mq.addEventListener("change", onChange);
+        return () => mq.removeEventListener("change", onChange);
+      }
+
       // Safari < 14 only supports the deprecated MediaQueryList listener API.
       mq.addListener(onChange);
-      onCleanup(() => mq.removeListener(onChange));
-    }
-  });
+      return () => mq.removeListener(onChange);
+    },
+  );
 
   return matches;
 }

@@ -1,4 +1,4 @@
-import { renderToString } from "solid-js/web";
+import { renderToString } from "@solidjs/web";
 import rawStyledSource from "./styled.jsx?raw";
 import { Styled } from "./styled.jsx?tsr-split=component";
 

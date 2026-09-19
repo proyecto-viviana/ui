@@ -18,7 +18,7 @@ import type { ScreenshotDiffThreshold } from "../visual-diff";
  * `formStyles` is byte-identical to upstream's grid style() (upstream also lists a dead
  * `XS` row-gap branch the `S|M|L|XL` type never reaches — omitted here), and `useFormProps`
  * merges context into undefined props with Skeleton forcing `isDisabled`. The one benign
- * structural difference: the port nests `<FormContext.Provider>` OUTSIDE `<form>` while
+ * structural difference: the port nests `<FormContext>` OUTSIDE `<form>` while
  * upstream nests it inside — invisible in the DOM (a provider renders nothing) and children
  * resolve the same value either way, so it is a no-op for parity and not "fixed".
  *

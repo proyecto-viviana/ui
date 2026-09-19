@@ -1,4 +1,4 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import ComponentExampleControls from "./ComponentExampleControls";
 import ComponentExampleFiles from "./ComponentExampleFiles";

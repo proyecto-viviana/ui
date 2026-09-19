@@ -21,8 +21,9 @@
  * Port of react-stately's useFormValidationState.
  */
 
-import { type Accessor, createContext, createEffect, createMemo, useContext } from "solid-js";
-import { createInternalSignal } from "../utils";
+import { createContext, createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import { createInternalSignal, useContextOptional } from "../utils";
 
 /** Standard HTML ValidityState interface. */
 export interface ValidityState {
@@ -226,8 +227,9 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
     return builtinValidationProp;
   });
 
-  // Server errors from context
-  const serverErrors = useContext(FormValidationContext);
+  // Server errors from context. Optional: hook factories and tests call this
+  // outside a component / FormValidationContext provider.
+  const serverErrors = useContextOptional(FormValidationContext) ?? {};
   const serverErrorMessages = createMemo(() => {
     const name = props.name;
     if (name) {

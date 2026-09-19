@@ -18,8 +18,11 @@
  * Based on @react-aria/combobox useComboBox.
  */
 
-import { type JSX, type Accessor, createEffect, onCleanup, untrack } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createEffect, onCleanup, untrack, createTrackedEffect } from "solid-js";
+import { bindCapture } from "../utils/capture";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 import {
   createFormValidationState,
   type ComboBoxState,
@@ -33,6 +36,7 @@ import { createField } from "../label/createField";
 import { createLabels } from "../label/createLabels";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
+import { attrString } from "../utils/domAttrs";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isAppleDevice } from "../utils/platform";
@@ -177,6 +181,17 @@ export function createComboBox<T>(
 
   // Track if a pointerdown happened inside the listbox to prevent blur from closing
   let isPointerDownInsideListBox = false;
+  bindCapture(
+    () => listBoxRef?.() ?? null,
+    {
+      pointerdown: () => {
+        isPointerDownInsideListBox = true;
+      },
+      mousedown: () => {
+        isPointerDownInsideListBox = true;
+      },
+    },
+  );
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -217,23 +232,27 @@ export function createComboBox<T>(
 
   // Set up global pointerdown listener to track clicks inside listbox
   // This is needed because the option's createPress stops propagation
-  createEffect(() => {
-    if (typeof document === "undefined") return;
+  createEffect(
+    () => {
+      if (typeof document === "undefined") return false;
+      return true;
+    },
+    (ready) => {
+      if (!ready) return;
+      const handleGlobalPointerDown = (e: PointerEvent) => {
+        const target = e.target as HTMLElement;
+        // Check if the click is inside the listbox
+        if (target.closest(`[id="${listBoxId}"]`) || target.closest("[role='option']")) {
+          isPointerDownInsideListBox = true;
+        }
+      };
 
-    const handleGlobalPointerDown = (e: PointerEvent) => {
-      const target = e.target as HTMLElement;
-      // Check if the click is inside the listbox
-      if (target.closest(`[id="${listBoxId}"]`)) {
-        isPointerDownInsideListBox = true;
-      }
-    };
-
-    document.addEventListener("pointerdown", handleGlobalPointerDown, true);
-
-    onCleanup(() => {
-      document.removeEventListener("pointerdown", handleGlobalPointerDown, true);
-    });
-  });
+      document.addEventListener("pointerdown", handleGlobalPointerDown, true);
+      return () => {
+        document.removeEventListener("pointerdown", handleGlobalPointerDown, true);
+      };
+    },
+  );
 
   // Filter DOM props
   const domProps = () =>
@@ -243,13 +262,17 @@ export function createComboBox<T>(
     });
 
   // Share data with child options
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     comboBoxData.set(state, { id, listBoxId });
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       comboBoxData.delete(state);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // RAC `useComboBox.ts:302-331` reaches `useField` through `useTextField`.
   // Field wiring (description/error slot ids + input `aria-describedby`) lives
@@ -311,7 +334,7 @@ export function createComboBox<T>(
   // VoiceOver has issues with announcing aria-activedescendant properly on change
   // (especially on iOS). We use a live region announcer to announce focus changes
   // manually. This matches React Aria's behavior.
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (isServer || !stringFormatter) return;
 
     const focusedKey = state.focusedKey();
@@ -342,7 +365,7 @@ export function createComboBox<T>(
   });
 
   // Announce the number of available suggestions when it changes
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (isServer || !stringFormatter) return;
 
     const isOpen = state.isOpen();
@@ -372,7 +395,7 @@ export function createComboBox<T>(
   });
 
   // Announce when a selection occurs for VoiceOver. Other screen readers typically do this automatically.
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (isServer || !stringFormatter) return;
 
     const selectedKey = state.selectedKey();
@@ -393,47 +416,55 @@ export function createComboBox<T>(
   // `undefined` (Solid applies focusedKey before isOpen) must not dispatch.
   let skipVirtualFocusRestore = true;
   let hadVirtualFocusedItem = false;
-  createEffect(() => {
-    const focusedKey = state.focusedKey();
-    const isOpen = state.isOpen();
-    const hasVirtualFocusedItem =
-      focusedKey != null && isOpen && state.collection().getItem(focusedKey) != null;
+  createEffect(
+    () => {
+      const focusedKey = state.focusedKey();
+      const isOpen = state.isOpen();
+      return focusedKey != null && isOpen && state.collection().getItem(focusedKey) != null;
+    },
+    (hasVirtualFocusedItem) => {
+      if (skipVirtualFocusRestore) {
+        skipVirtualFocusRestore = false;
+        hadVirtualFocusedItem = hasVirtualFocusedItem;
+        return;
+      }
 
-    if (skipVirtualFocusRestore) {
-      skipVirtualFocusRestore = false;
+      const lostVirtualFocusedItem = hadVirtualFocusedItem && !hasVirtualFocusedItem;
       hadVirtualFocusedItem = hasVirtualFocusedItem;
-      return;
-    }
+      if (!lostVirtualFocusedItem) return;
 
-    const lostVirtualFocusedItem = hadVirtualFocusedItem && !hasVirtualFocusedItem;
-    hadVirtualFocusedItem = hasVirtualFocusedItem;
-    if (!lostVirtualFocusedItem) return;
+      const input = untrack(() => inputRef());
+      if (isServer || !input) return;
 
-    const input = untrack(() => inputRef());
-    if (isServer || !input) return;
-
-    if (getActiveElement(getOwnerDocument(input)) === input) {
-      dispatchVirtualFocus(input, null);
-    }
-  });
+      if (getActiveElement(getOwnerDocument(input)) === input) {
+        dispatchVirtualFocus(input, null);
+      }
+    },
+  );
 
   // Hide other page content from screen readers when the listbox is open.
   // RAC useComboBox.ts:469-474 hides outside input + popover. Dismiss is a
   // popover sibling of the listbox, so a listbox-only set would hide it.
-  createEffect(() => {
-    if (isServer) return;
-
-    const isOpen = state.isOpen();
-    const inputEl = inputRef();
-    const popoverEl = popoverRef?.() ?? listBoxRef?.();
-
-    if (isOpen && inputEl && popoverEl) {
-      const cleanup = ariaHideOutside(
+  // If the caller passed popoverRef, wait for it — falling back to the listbox
+  // on the first paint aria-hides that sibling until the ref settles.
+  createEffect(
+    () => {
+      if (isServer) {
+        return { isOpen: false, inputEl: null as HTMLElement | null, popoverEl: null as Element | null };
+      }
+      return {
+        isOpen: state.isOpen(),
+        inputEl: inputRef(),
+        popoverEl: popoverRef ? popoverRef() : (listBoxRef?.() ?? null),
+      };
+    },
+    ({ isOpen, inputEl, popoverEl }) => {
+      if (!isOpen || !inputEl || !popoverEl) return;
+      return ariaHideOutside(
         [inputEl, popoverEl].filter((element): element is Element => element != null),
       );
-      onCleanup(cleanup);
-    }
-  });
+    },
+  );
 
   // Handle press on button trigger
   let wasOpenOnButtonPressStart = false;
@@ -666,7 +697,10 @@ export function createComboBox<T>(
     const blurFromButton = nodeContains(button ?? null, relatedTarget);
 
     // Don't blur if focus is moving into the listbox/popover
-    const blurIntoPopover = nodeContains(listBox ?? null, relatedTarget);
+    const blurIntoPopover =
+      nodeContains(listBox ?? null, relatedTarget) ||
+      relatedTarget?.closest?.("[role='listbox']") != null ||
+      relatedTarget?.closest?.("[role='option']") != null;
 
     if (blurFromButton || blurIntoPopover) {
       return;
@@ -787,7 +821,7 @@ export function createComboBox<T>(
       const triggerLabels = createLabels({
         id: buttonId,
         "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? attrString(field.labelProps.id),
       });
 
       return mergeProps(
@@ -816,14 +850,14 @@ export function createComboBox<T>(
       const boxLabels = createLabels({
         id: listBoxId,
         "aria-label": stringFormatter?.().format("listboxLabel") ?? "Suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? attrString(field.labelProps.id),
       });
       return {
         id: listBoxId,
         role: "listbox",
         "aria-label": boxLabels["aria-label"],
         "aria-labelledby": boxLabels["aria-labelledby"],
-        "aria-multiselectable": isMulti || undefined,
+        "aria-multiselectable": isMulti ? "true" : undefined,
         // No tabIndex here: useComboBox's listBoxProps never set one
         // (useComboBox.ts:488-496) — the popover listbox's tabIndex flows from
         // `useSelectableCollection`, which leaves it `undefined` under virtual

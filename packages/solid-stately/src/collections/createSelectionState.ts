@@ -20,7 +20,8 @@
  * - packages/react-stately/src/selection/SelectionManager.ts
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import type {
   Collection,

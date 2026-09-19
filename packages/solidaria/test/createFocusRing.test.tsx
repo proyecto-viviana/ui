@@ -5,10 +5,7 @@
  * but hidden when using mouse/touch.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createFocusRing } from "../src/interactions/createFocusRing";
-import type { Component } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createFocusRing } from "../src/interactions/createFocusRing"; import { flush, type Component } from "solid-js";
 
 // Test component that uses createFocusRing
 interface ExampleProps {
@@ -29,8 +26,8 @@ const Example: Component<ExampleProps> = (props) => {
       tabIndex={0}
       {...focusProps}
       data-testid="example"
-      data-focused={isFocused()}
-      data-focus-visible={isFocusVisible()}
+      data-focused={isFocused() ? "true" : "false"}
+      data-focus-visible={isFocusVisible() ? "true" : "false"}
     >
       <button data-testid="inner-button">Inner</button>
     </div>
@@ -207,8 +204,8 @@ describe("createFocusRing", () => {
             type="text"
             {...focusProps}
             data-testid="input"
-            data-focused={isFocused()}
-            data-focus-visible={isFocusVisible()}
+            data-focused={isFocused() ? "true" : "false"}
+            data-focus-visible={isFocusVisible() ? "true" : "false"}
           />
         );
       };
@@ -236,8 +233,8 @@ describe("createFocusRing", () => {
             type="text"
             {...focusProps}
             data-testid="input-visible"
-            data-focused={isFocused()}
-            data-focus-visible={isFocusVisible()}
+            data-focused={isFocused() ? "true" : "false"}
+            data-focus-visible={isFocusVisible() ? "true" : "false"}
           />
         );
       };
@@ -297,13 +294,13 @@ describe("createFocusRing", () => {
               tabIndex={0}
               {...first.focusProps}
               data-testid="first"
-              data-focused={first.isFocused()}
+              data-focused={first.isFocused() ? "true" : "false"}
             />
             <div
               tabIndex={0}
               {...second.focusProps}
               data-testid="second"
-              data-focused={second.isFocused()}
+              data-focused={second.isFocused() ? "true" : "false"}
             />
           </div>
         );
@@ -389,8 +386,8 @@ describe("createFocusRing", () => {
             tabIndex={0}
             {...focusProps}
             data-testid="within"
-            data-focused={isFocused()}
-            data-focus-visible={isFocusVisible()}
+            data-focused={isFocused() ? "true" : "false"}
+            data-focus-visible={isFocusVisible() ? "true" : "false"}
           >
             <button data-testid="within-button">Inner</button>
           </div>
@@ -407,6 +404,7 @@ describe("createFocusRing", () => {
         currentTarget: container,
         target: button,
       } as unknown as FocusEvent);
+      flush();
 
       expect(container.dataset.focused).toBe("true");
       expect(container.dataset.focusVisible).toBe("true");

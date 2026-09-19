@@ -1,5 +1,6 @@
 // Port of packages/@react-spectrum/s2/src/ContextualHelp.tsx.
-import { type JSX, createContext, createUniqueId, splitProps, useContext } from "solid-js";
+import { createContext, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { MenuTriggerContext, PopoverTriggerContext } from "@proyecto-viviana/solidaria-components";
 import { mergeProps, createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { Popover, type PopoverProps, type PopoverTriggerProps } from "../popover";
@@ -11,6 +12,7 @@ import { ContentContext, FooterContext, HeadingContext, TextContext } from "../t
 import { HelpCircleIcon } from "../icon/s2wf-icons/HelpCircleIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings, type S2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -204,15 +206,15 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
     >
       <div class={contextualHelpFrame}>
         <div class={contextualHelpInner} style={contextualHelpInnerStyle}>
-          <TextContext.Provider value={textContext}>
-            <ContentContext.Provider value={contentContext}>
-              <FooterContext.Provider value={footerContext}>
-                <HeadingContext.Provider value={headingContext}>
+          <TextContext value={textContext}>
+            <ContentContext value={contentContext}>
+              <FooterContext value={footerContext}>
+                <HeadingContext value={headingContext}>
                   {local.children}
-                </HeadingContext.Provider>
-              </FooterContext.Provider>
-            </ContentContext.Provider>
-          </TextContext.Provider>
+                </HeadingContext>
+              </FooterContext>
+            </ContentContext>
+          </TextContext>
         </div>
       </div>
     </Popover>
@@ -343,15 +345,15 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
       >
         <div class={contextualHelpFrame}>
           <div class={contextualHelpInner} style={contextualHelpInnerStyle}>
-            <TextContext.Provider value={textContext}>
-              <ContentContext.Provider value={contentContext}>
-                <FooterContext.Provider value={footerContext}>
-                  <HeadingContext.Provider value={headingContext}>
+            <TextContext value={textContext}>
+              <ContentContext value={contentContext}>
+                <FooterContext value={footerContext}>
+                  <HeadingContext value={headingContext}>
                     {content()}
-                  </HeadingContext.Provider>
-                </FooterContext.Provider>
-              </ContentContext.Provider>
-            </TextContext.Provider>
+                  </HeadingContext>
+                </FooterContext>
+              </ContentContext>
+            </TextContext>
           </div>
         </div>
       </Popover>

@@ -1,4 +1,4 @@
-import { For, Show, createEffect, createMemo, createResource, createSignal, on } from "solid-js";
+import { For, Show, createEffect, createMemo, createResource, createSignal } from "solid-js";
 import { Markdown } from "./Markdown";
 import {
   type DocEntry,
@@ -39,10 +39,8 @@ export function DocsPanel(props: {
 
   // Switching docs discards any in-flight draft.
   createEffect(
-    on(
-      () => props.openPath,
-      () => setEditing(false),
-    ),
+    () => props.openPath,
+    () => setEditing(false),
   );
 
   const reviews = createMemo(() =>
@@ -128,7 +126,7 @@ export function DocsPanel(props: {
                         <li>
                           <button
                             class="doc-link"
-                            classList={{ active: props.openPath === entry.path }}
+                            class={{ active: props.openPath === entry.path }}
                             title={entry.path}
                             onClick={() => props.onOpenDoc(entry.path)}
                           >

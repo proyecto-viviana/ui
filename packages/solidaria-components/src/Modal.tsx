@@ -19,18 +19,9 @@
  * Port of react-aria-components Modal.
  */
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  createEffect,
-  onCleanup,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
-import { Portal, isServer } from "solid-js/web";
+import { createContext, createMemo, createSignal, createEffect, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Portal, isServer } from "@solidjs/web";
 import {
   createInteractOutside,
   ariaHideOutside,
@@ -54,6 +45,7 @@ import {
   type OverlayTriggerState,
 } from "./contexts";
 import { VisuallyHidden } from "./VisuallyHidden";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /**
  * Internal context to signal that Modal is wrapped in ModalOverlay.
@@ -219,13 +211,13 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   // Signal-backed so the enter/exit effects re-run once the element mounts — a
   // plain closure over `overlayRef` would read `null` if the effect fired first
   // and, with no reactive dep on the ref, never recover (stuck `data-entering`).
-  const [overlayEl, setOverlayEl] = createSignal<HTMLElement | null>(null);
+  const [overlayEl, setOverlayEl] = createSignal<HTMLElement | null>(null, { ownedWrite: true });
   const overlayRefAccessor = () => overlayEl();
   const registerOverlayRef = (element: HTMLDivElement) => {
     overlayRef = element;
     setOverlayEl(element);
   };
-  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null);
+  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null, { ownedWrite: true });
 
   const isOverlayEntering = createEnterAnimation(overlayRefAccessor, isOpen);
   const isOverlayExiting = createExitAnimation(overlayRefAccessor, isOpen);
@@ -275,7 +267,9 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     }
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen() || local.isKeyboardDismissDisabled) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -292,10 +286,12 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     // consume Escape first) and would also fire before the event is recorded by
     // capture-phase listeners, inverting the keydown/onOpenChange order.
     document.addEventListener("keydown", handleKeyDown, false);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       document.removeEventListener("keydown", handleKeyDown, false);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Resolve children - handle both static JSX and render functions
   // IMPORTANT: We access props.children directly (not local.children) to preserve
@@ -311,8 +307,8 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   return (
     <Show when={isHydrated() && (isOpen() || combinedExiting())}>
       <Portal mount={portalContainer()}>
-        <OverlayTriggerStateContext.Provider value={state}>
-          <InternalModalContext.Provider value={internalModalContext}>
+        <OverlayTriggerStateContext value={state}>
+          <InternalModalContext value={internalModalContext}>
             <div
               {...domProps()}
               ref={registerOverlayRef}
@@ -324,8 +320,8 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
             >
               {resolveChildren()}
             </div>
-          </InternalModalContext.Provider>
-        </OverlayTriggerStateContext.Provider>
+          </InternalModalContext>
+        </OverlayTriggerStateContext>
       </Portal>
     </Show>
   );
@@ -410,7 +406,7 @@ function ModalContent(props: ModalProps): JSX.Element {
   // Signal-backed element for the enter animation, so the effect re-runs when
   // the surface mounts (see the overlay's note); the plain `modalRef` var still
   // backs the synchronous consumers (focus stack, interact-outside, aria-hide).
-  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null);
+  const [modalEl, setModalEl] = createSignal<HTMLElement | null>(null, { ownedWrite: true });
 
   // Get state from parent OverlayTriggerStateContext (provided by ModalOverlay)
   const parentState = useContext(OverlayTriggerStateContext);
@@ -445,7 +441,9 @@ function ModalContent(props: ModalProps): JSX.Element {
   const isModalExiting = () => internalContext?.isExiting?.() ?? local.isExiting ?? false;
 
   // Keep this modal in a global stack so nested modals dismiss in top-down order.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen()) return;
 
     pruneDisconnectedModals();
@@ -453,13 +451,15 @@ function ModalContent(props: ModalProps): JSX.Element {
       visibleModals.push(modalRefAccessor);
     }
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       const index = visibleModals.indexOf(modalRefAccessor);
       if (index >= 0) {
         visibleModals.splice(index, 1);
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const isTopMostModal = () => {
     pruneDisconnectedModals();
@@ -475,35 +475,39 @@ function ModalContent(props: ModalProps): JSX.Element {
   };
 
   // Prevent scroll when modal is open
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen()) return;
 
     const html = document.documentElement;
     const prevOverflow = html.style.overflow;
     html.style.overflow = "hidden";
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       html.style.overflow = prevOverflow;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Click outside to close (if dismissable)
-  createEffect(() => {
-    if (!isOpen() || !isDismissable()) return;
-
-    createInteractOutside({
-      ref: modalRefAccessor,
-      onInteractOutside: () => {
-        if (isTopMostModal()) {
-          close();
-        }
-      },
-      isDisabled: false,
-    });
+  createInteractOutside({
+    ref: modalRefAccessor,
+    onInteractOutside: () => {
+      if (isTopMostModal()) {
+        close();
+      }
+    },
+    get isDisabled() {
+      return !isOpen() || !isDismissable();
+    },
   });
 
   // Escape key to close
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen() || isKeyboardDismissDisabled()) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -517,13 +521,17 @@ function ModalContent(props: ModalProps): JSX.Element {
     // Bubble phase — see the ModalOverlay handler above for why (react-aria
     // `useOverlay` parity; inner-widget Escape precedence; event-order fidelity).
     document.addEventListener("keydown", handleKeyDown, false);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       document.removeEventListener("keydown", handleKeyDown, false);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Aria-hide outside content
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isOpen() || !modalRef) return;
 
     let cleanup: (() => void) | undefined;
@@ -541,11 +549,13 @@ function ModalContent(props: ModalProps): JSX.Element {
       ownerWindow.queueMicrotask(hideOutside);
     }
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       cancelled = true;
       cleanup?.();
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const renderValues = createMemo<ModalRenderProps>(() => ({
     isEntering: isModalEntering(),
@@ -607,7 +617,7 @@ function ModalContent(props: ModalProps): JSX.Element {
           <VisuallyHidden elementType="div">
             <button
               aria-label="Dismiss"
-              tabIndex={-1}
+              tabindex={-1}
               onClick={close}
               style={{ width: "1px", height: "1px" }}
             />

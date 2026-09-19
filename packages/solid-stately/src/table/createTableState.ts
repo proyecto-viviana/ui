@@ -17,7 +17,8 @@
  * Based on @react-stately/table/useTableState.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createGridState } from "../grid/createGridState";
 import type { Key } from "../collections/types";
 import type {

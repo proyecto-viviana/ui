@@ -10,9 +10,7 @@
  * - `useSlot` reports whether slotted content was rendered.
  */
 
-import { describe, it, expect, afterEach } from "vite-plus/test";
-import { render, cleanup } from "@solidjs/testing-library";
-import { type Context, createContext, useContext } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, cleanup } from "@solidjs/testing-library"; import { type Context, createContext, useContext } from "solid-js";
 import {
   Provider,
   useSlottedContext,

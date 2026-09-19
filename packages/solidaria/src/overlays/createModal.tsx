@@ -17,18 +17,12 @@
  * Based on @react-aria/overlays useModal.
  */
 
-import {
-  createContext,
-  createSignal,
-  useContext,
-  createEffect,
-  onCleanup,
-  type JSX,
-  type Accessor,
-  type ParentComponent,
-} from "solid-js";
-import { Portal } from "solid-js/web";
-import { isServer } from "solid-js/web";
+import { useContextOptional } from "../utils/owner";
+import { createContext, createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor, ParentComponent } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Portal } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 
 export interface ModalProviderProps {
   children: JSX.Element;
@@ -63,11 +57,11 @@ const PortalContext = createContext<PortalProviderContextValue>({});
  * like portals, which can cause the component tree and the DOM tree to differ significantly in structure.
  */
 export const ModalProvider: ParentComponent<ModalProviderProps> = (props) => {
-  const parent = useContext(ModalContext);
+  const parent = useContextOptional(ModalContext);
   const [modalCount, setModalCount] = createSignal(0);
 
   const context: ModalContext = {
-    parent,
+    parent: parent ?? null,
     modalCount,
     addModal() {
       setModalCount((count) => count + 1);
@@ -83,7 +77,7 @@ export const ModalProvider: ParentComponent<ModalProviderProps> = (props) => {
     },
   };
 
-  return <ModalContext.Provider value={context}>{props.children}</ModalContext.Provider>;
+  return <ModalContext value={context}>{props.children}</ModalContext>;
 };
 
 /**
@@ -93,14 +87,14 @@ export const UNSAFE_PortalProvider: ParentComponent<PortalProviderProps> = (prop
   const parent = useUNSAFE_PortalContext();
 
   return (
-    <PortalContext.Provider
+    <PortalContext
       value={{
         getContainer:
           props.getContainer === null ? undefined : (props.getContainer ?? parent.getContainer),
       }}
     >
       {props.children}
-    </PortalContext.Provider>
+    </PortalContext>
   );
 };
 
@@ -108,13 +102,13 @@ export const UNSAFE_PortalProvider: ParentComponent<PortalProviderProps> = (prop
  * Returns the portal container configuration inherited from the nearest provider.
  */
 export function useUNSAFE_PortalContext(): PortalProviderContextValue {
-  return useContext(PortalContext) ?? {};
+  return useContextOptional(PortalContext) ?? {};
 }
 
 export interface ModalProviderAria {
   /** Props to be spread on the container element. */
   modalProviderProps: {
-    "aria-hidden"?: true;
+    "aria-hidden"?: "true";
   };
 }
 
@@ -123,11 +117,11 @@ export interface ModalProviderAria {
  * modals are open.
  */
 export function useModalProvider(): ModalProviderAria {
-  const context = useContext(ModalContext);
+  const context = useContextOptional(ModalContext);
   return {
     modalProviderProps: {
       get "aria-hidden"() {
-        return context && context.modalCount() > 0 ? true : undefined;
+        return context && context.modalCount() > 0 ? "true" : undefined;
       },
     },
   };
@@ -139,7 +133,7 @@ export function useModalProvider(): ModalProviderAria {
 const OverlayContainerDOM: ParentComponent<ModalProviderProps> = (props) => {
   const { modalProviderProps } = useModalProvider();
   return (
-    <div data-overlay-container {...modalProviderProps}>
+    <div data-overlay-container="true" {...modalProviderProps}>
       {props.children}
     </div>
   );
@@ -186,7 +180,7 @@ export const OverlayContainer: ParentComponent<OverlayContainerProps> = (props) 
   const portalContainer = () =>
     props.portalContainer ?? portalContext.getContainer?.() ?? document.body;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const container = portalContainer();
     if (container?.closest("[data-overlay-container]")) {
       throw new Error(
@@ -222,13 +216,15 @@ export interface ModalAria {
  */
 export function createModal(options?: AriaModalOptions): ModalAria {
   // Add aria-hidden to all parent providers on mount, and restore on unmount.
-  const context = useContext(ModalContext);
+  const context = useContextOptional(ModalContext);
 
   if (!context) {
     throw new Error("Modal is not contained within a provider");
   }
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (options?.isDisabled || !context.parent) {
       return;
     }
@@ -237,12 +233,14 @@ export function createModal(options?: AriaModalOptions): ModalAria {
     // want to trigger aria-hidden on its parents not on the modal provider itself.
     context.parent.addModal();
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       if (context.parent) {
         context.parent.removeModal();
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     modalProps: {

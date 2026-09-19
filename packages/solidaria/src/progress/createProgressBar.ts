@@ -23,7 +23,7 @@
  */
 
 import { createLabel } from "../label/createLabel";
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";

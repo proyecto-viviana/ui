@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test"; import { createRoot } from "solid-js";
 import type { DropTarget, DroppableCollectionState } from "@proyecto-viviana/solid-stately";
 
 let capturedOptionsAccessor:

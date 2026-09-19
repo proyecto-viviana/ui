@@ -2,8 +2,7 @@
    primitives: plain Card sweeps, the three purpose-built cards (Asset, User,
    Product), the collection preview, Avatar/AvatarGroup, and the empty-state
    IllustratedMessage. Composed from the shared Panel/Demo/Row chrome. */
-import { createFileRoute } from "@tanstack/solid-router";
-import { For, type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { For, type JSX } from "solid-js";
 import {
   ActionButton,
   ActionMenu,

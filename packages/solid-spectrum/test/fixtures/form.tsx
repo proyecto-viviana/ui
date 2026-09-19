@@ -5,7 +5,7 @@
  * TextField / Button (and a plain submit button). A hydration mismatch here
  * blanks the whole route — Solid aborts the tree on the first desync.
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Provider } from "../../src/provider";
 import { Form } from "../../src/form";
 import { TextArea, TextField } from "../../src/textfield";

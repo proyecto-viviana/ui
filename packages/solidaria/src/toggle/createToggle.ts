@@ -20,7 +20,8 @@
  * This is a 1:1 port of @react-aria/toggle's useToggle hook.
  */
 
-import { JSX, Accessor, createEffect } from "solid-js";
+import { Accessor, createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -296,7 +297,7 @@ export function createToggle(
   };
 
   // Warn if no accessible label
-  createEffect(() => {
+  createTrackedEffect(() => {
     const p = getProps();
     const hasChildren = p.children != null;
     const hasAriaLabel = p["aria-label"] != null || p["aria-labelledby"] != null;

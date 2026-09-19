@@ -14,7 +14,7 @@
  * moves), so only the live page loses the subtree — silently: no mismatch
  * warning, no throw, no error boundary. Hence two fixtures, one per branch.
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Provider, Text, Tree, TreeItem, TreeItemContent } from "../../src";
 
 export const TREE_ITEMS = [

@@ -19,7 +19,8 @@
  * Based on packages/react-aria-components/src/ToggleButton.tsx.
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createToggleButton,
   createToggleButtonGroupItem,
@@ -36,8 +37,10 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { useToggleButtonGroupStateContext } from "./ToggleButtonGroup";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -172,12 +175,12 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       style={renderProps.style()}
       ref={(el) => assignRef(local.ref, el)}
       slot={local.slot}
-      data-pressed={toggleAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-selected={toggleAria.isSelected() || undefined}
+      data-pressed={dataAttr(toggleAria.isPressed())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-disabled={dataAttr(isDisabled())}
+      data-selected={dataAttr(toggleAria.isSelected())}
     >
       {renderProps.renderChildren()}
     </button>

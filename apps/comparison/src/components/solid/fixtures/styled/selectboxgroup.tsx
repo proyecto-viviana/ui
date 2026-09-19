@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -38,14 +38,14 @@ function SolidSpectrumSelectBoxGroupDemo() {
   const selectedKeyText = createMemo(() => serializeSelectBoxGroupKeys(selectedKeys()));
   let selectBoxGroupRoot: HTMLElement | undefined;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     selectBoxGroupRoot?.setAttribute(
       "data-comparison-control-props",
       serializeSelectBoxGroupDemoProps(demoProps()),
     );
   });
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "selectboxgroup") {
         setDemoProps((current) => {

@@ -21,15 +21,9 @@
  * Port of react-aria-components/src/Autocomplete.tsx
  */
 
-import {
-  type JSX,
-  type ParentProps,
-  createContext,
-  useContext,
-  createMemo,
-  splitProps,
-  createSignal,
-} from "solid-js";
+import { createContext, useContext, createMemo, createSignal } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createAutocomplete,
   type AriaAutocompleteOptions,
@@ -43,6 +37,7 @@ import {
   type CollectionNode,
 } from "@proyecto-viviana/solid-stately";
 import { type SlotProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface AutocompleteProps<T = unknown>
   extends
@@ -177,12 +172,12 @@ export function Autocomplete<T = unknown>(props: AutocompleteProps<T>): JSX.Elem
   }));
 
   return (
-    <AutocompleteStateContext.Provider value={state}>
-      <AutocompleteContext.Provider value={inputContextValue()}>
-        <AutocompleteCollectionContext.Provider value={collectionContextValue()}>
+    <AutocompleteStateContext value={state}>
+      <AutocompleteContext value={inputContextValue()}>
+        <AutocompleteCollectionContext value={collectionContextValue()}>
           {props.children}
-        </AutocompleteCollectionContext.Provider>
-      </AutocompleteContext.Provider>
-    </AutocompleteStateContext.Provider>
+        </AutocompleteCollectionContext>
+      </AutocompleteContext>
+    </AutocompleteStateContext>
   );
 }

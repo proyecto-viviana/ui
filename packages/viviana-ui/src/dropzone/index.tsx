@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/DropZone.tsx.
 
-import { type JSX, Show, createContext, createSignal, splitProps, useContext } from "solid-js";
+import { Show, createContext, createSignal, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   DropZone as HeadlessDropZone,
   type DropZoneProps as HeadlessDropZoneProps,
@@ -35,6 +36,7 @@ import {
 } from "../button/spectrum-context";
 import { IllustratedMessageContext } from "../illustratedmessage";
 import { s2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type DropZoneSize = "S" | "M" | "L";
 
@@ -167,7 +169,7 @@ export function DropZone(props: DropZoneProps): JSX.Element {
   ]);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const size = () => local.size ?? "M";
-  const [isDropTarget, setIsDropTarget] = createSignal(false);
+  const [isDropTarget, setIsDropTarget] = createSignal(false, { ownedWrite: true });
   let previousIsDropTarget = false;
   const syncIsDropTarget = (nextIsDropTarget: boolean) => {
     if (previousIsDropTarget !== nextIsDropTarget) {
@@ -202,7 +204,7 @@ export function DropZone(props: DropZoneProps): JSX.Element {
         syncIsDropTarget(renderProps.isDropTarget);
         return (
           <>
-            <IllustratedMessageContext.Provider
+            <IllustratedMessageContext
               value={{
                 isInDropZone: true,
                 get isDropTarget() {
@@ -214,7 +216,7 @@ export function DropZone(props: DropZoneProps): JSX.Element {
               }}
             >
               {local.children}
-            </IllustratedMessageContext.Provider>
+            </IllustratedMessageContext>
             <Show when={renderProps.isDropTarget && local.isFilled}>
               <div class={banner({ size: size() })}>
                 <span>

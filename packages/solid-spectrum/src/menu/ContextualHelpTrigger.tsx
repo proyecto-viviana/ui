@@ -13,12 +13,13 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ContextualHelpTrigger as HeadlessContextualHelpTrigger,
   type ContextualHelpTriggerProps as HeadlessContextualHelpTriggerProps,
 } from "@proyecto-viviana/solidaria-components";
 import { css } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 // The headless trigger hardcodes the class names on its internal button and
 // popover (`-trigger`/`-content`) and exposes no per-part class hook, so styling

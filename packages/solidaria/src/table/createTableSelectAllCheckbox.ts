@@ -17,8 +17,9 @@
  * Ported from packages/react-aria/src/table/useTableSelectionCheckbox.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { TableSelectAllCheckboxAria } from "./types";
 import { createStringFormatter } from "../i18n";

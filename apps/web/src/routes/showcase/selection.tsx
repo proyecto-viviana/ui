@@ -1,8 +1,7 @@
 /* Panel — Selection. Checkbox/Radio/Switch families plus the register's own
    SelectBoxGroup and SegmentedControl. Composed from the shared
    Panel/Demo/Row chrome, following the buttons.tsx exemplar. */
-import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
 import {
   Checkbox,
   CheckboxGroup,

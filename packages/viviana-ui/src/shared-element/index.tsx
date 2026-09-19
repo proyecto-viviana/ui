@@ -1,5 +1,5 @@
-import { splitProps } from "solid-js";
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   SharedElement as HeadlessSharedElement,
   SharedElementTransition as HeadlessSharedElementTransition,

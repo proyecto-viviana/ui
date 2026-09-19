@@ -1,8 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import type { JSX } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import type { JSX } from "solid-js";
 import { createSignal } from "solid-js";
 import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -475,7 +474,7 @@ describe("Menu (solid-spectrum)", () => {
     it("supports MenuContext slots, refs, unsafe classes, and unsafe styles", () => {
       let menuElement: HTMLDivElement | undefined;
       render(() => (
-        <MenuContext.Provider
+        <MenuContext
           value={{
             slots: {
               toolbar: {
@@ -494,7 +493,7 @@ describe("Menu (solid-spectrum)", () => {
               Copy
             </MenuItem>
           </Menu>
-        </MenuContext.Provider>
+        </MenuContext>
       ));
 
       const menu = screen.getByRole("menu", { name: "Context menu" });

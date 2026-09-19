@@ -42,7 +42,7 @@ export function AdminPage() {
           <For each={TABS}>
             {(entry) => (
               <button
-                classList={{ active: tab() === entry.id }}
+                class={{ active: tab() === entry.id }}
                 aria-current={tab() === entry.id ? "page" : undefined}
                 onClick={() => setTab(entry.id)}
               >

@@ -1,4 +1,4 @@
-import { render } from "solid-js/web";
+import { render } from "@solidjs/web";
 import ComponentDetailMeta from "@comparison/components/solid/ComponentDetailMeta";
 import { mountOnAstroPage } from "./mount-on-astro-page";
 

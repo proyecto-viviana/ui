@@ -16,17 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TextField.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createSignal, onCleanup, onSettled, Show, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
   Label as HeadlessLabel,
@@ -53,6 +44,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { textAreaFieldGroupStyles, textAreaInputStyles } from "./s2-textarea-styles";
 import { HelpText } from "../form/HelpText";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TextAreaSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TextAreaSize = "S" | "M" | "L" | "XL";
@@ -304,7 +296,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
 
-  onMount(() => {
+  onSettled(() => {
     const element = textAreaElement;
     if (!element) {
       return;
@@ -313,10 +305,10 @@ export function TextArea(props: TextAreaProps): JSX.Element {
     const resize = () => resizeTextArea(element);
     element.addEventListener("input", resize);
     queueMicrotask(resize);
-    onCleanup(() => element.removeEventListener("input", resize));
+    return () => element.removeEventListener("input", resize);
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     headlessProps.value;
     headlessProps.defaultValue;
     queueMicrotask(() => resizeTextArea(textAreaElement));

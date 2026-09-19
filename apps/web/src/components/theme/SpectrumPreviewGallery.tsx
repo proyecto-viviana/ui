@@ -1,4 +1,5 @@
-import { For, createSignal, type JSX } from "solid-js";
+import { For, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button,
   Badge,
@@ -110,7 +111,7 @@ function Panel(props: {
 }) {
   return (
     <section
-      classList={{ "pv-gallery__wide": props.wide }}
+      class={{ "pv-gallery__wide": props.wide }}
       style={{
         padding: "16px",
         background: props.chrome.surface,

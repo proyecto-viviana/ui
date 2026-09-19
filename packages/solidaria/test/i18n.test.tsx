@@ -2,8 +2,8 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal } from "solid-js";
+import { render, cleanup } from "@solidjs/testing-library";
 import {
   // Utils
   isRTL,
@@ -169,113 +169,97 @@ describe("useLocale", () => {
 });
 
 describe("I18nProvider", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("should provide locale to children", () => {
-    createRoot((dispose) => {
-      let capturedLocale: ReturnType<typeof useLocale> | undefined;
+    let capturedLocale: ReturnType<typeof useLocale> | undefined;
 
-      const el = (
-        <I18nProvider locale="en-US">
-          {(() => {
-            capturedLocale = useLocale();
-            return null;
-          })()}
-        </I18nProvider>
-      );
+    render(() => (
+      <I18nProvider locale="en-US">
+        {(() => {
+          capturedLocale = useLocale();
+          return null;
+        })()}
+      </I18nProvider>
+    ));
 
-      expect(capturedLocale).toBeDefined();
-      expect(capturedLocale!().locale).toBe("en-US");
-      expect(capturedLocale!().direction).toBe("ltr");
-
-      dispose();
-    });
+    expect(capturedLocale).toBeDefined();
+    expect(capturedLocale!().locale).toBe("en-US");
+    expect(capturedLocale!().direction).toBe("ltr");
   });
 
   it("should provide RTL direction for Arabic locale", () => {
-    createRoot((dispose) => {
-      let capturedLocale: ReturnType<typeof useLocale> | undefined;
+    let capturedLocale: ReturnType<typeof useLocale> | undefined;
 
-      const el = (
-        <I18nProvider locale="ar-SA">
-          {(() => {
-            capturedLocale = useLocale();
-            return null;
-          })()}
-        </I18nProvider>
-      );
+    render(() => (
+      <I18nProvider locale="ar-SA">
+        {(() => {
+          capturedLocale = useLocale();
+          return null;
+        })()}
+      </I18nProvider>
+    ));
 
-      expect(capturedLocale!().locale).toBe("ar-SA");
-      expect(capturedLocale!().direction).toBe("rtl");
-
-      dispose();
-    });
+    expect(capturedLocale!().locale).toBe("ar-SA");
+    expect(capturedLocale!().direction).toBe("rtl");
   });
 
   it("should provide RTL direction for Hebrew locale", () => {
-    createRoot((dispose) => {
-      let capturedLocale: ReturnType<typeof useLocale> | undefined;
+    let capturedLocale: ReturnType<typeof useLocale> | undefined;
 
-      const el = (
-        <I18nProvider locale="he-IL">
-          {(() => {
-            capturedLocale = useLocale();
-            return null;
-          })()}
-        </I18nProvider>
-      );
+    render(() => (
+      <I18nProvider locale="he-IL">
+        {(() => {
+          capturedLocale = useLocale();
+          return null;
+        })()}
+      </I18nProvider>
+    ));
 
-      expect(capturedLocale!().locale).toBe("he-IL");
-      expect(capturedLocale!().direction).toBe("rtl");
-
-      dispose();
-    });
+    expect(capturedLocale!().locale).toBe("he-IL");
+    expect(capturedLocale!().direction).toBe("rtl");
   });
 
   it("should use browser default when no locale provided", () => {
-    createRoot((dispose) => {
-      let capturedLocale: ReturnType<typeof useLocale> | undefined;
+    let capturedLocale: ReturnType<typeof useLocale> | undefined;
 
-      const el = (
-        <I18nProvider>
-          {(() => {
-            capturedLocale = useLocale();
-            return null;
-          })()}
-        </I18nProvider>
-      );
+    render(() => (
+      <I18nProvider>
+        {(() => {
+          capturedLocale = useLocale();
+          return null;
+        })()}
+      </I18nProvider>
+    ));
 
-      expect(capturedLocale).toBeDefined();
-      expect(capturedLocale!().locale).toBeTruthy();
-
-      dispose();
-    });
+    expect(capturedLocale).toBeDefined();
+    expect(capturedLocale!().locale).toBeTruthy();
   });
 
   it("should support nested providers", () => {
-    createRoot((dispose) => {
-      let outerLocale: ReturnType<typeof useLocale> | undefined;
-      let innerLocale: ReturnType<typeof useLocale> | undefined;
+    let outerLocale: ReturnType<typeof useLocale> | undefined;
+    let innerLocale: ReturnType<typeof useLocale> | undefined;
 
-      const el = (
-        <I18nProvider locale="en-US">
-          {(() => {
-            outerLocale = useLocale();
-            return (
-              <I18nProvider locale="de-DE">
-                {(() => {
-                  innerLocale = useLocale();
-                  return null;
-                })()}
-              </I18nProvider>
-            );
-          })()}
-        </I18nProvider>
-      );
+    render(() => (
+      <I18nProvider locale="en-US">
+        {(() => {
+          outerLocale = useLocale();
+          return (
+            <I18nProvider locale="de-DE">
+              {(() => {
+                innerLocale = useLocale();
+                return null;
+              })()}
+            </I18nProvider>
+          );
+        })()}
+      </I18nProvider>
+    ));
 
-      expect(outerLocale!().locale).toBe("en-US");
-      expect(innerLocale!().locale).toBe("de-DE");
-
-      dispose();
-    });
+    expect(outerLocale!().locale).toBe("en-US");
+    expect(innerLocale!().locale).toBe("de-DE");
   });
 });
 

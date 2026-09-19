@@ -24,8 +24,8 @@
  * effect restores that behavior through our `scrollIntoViewport` util.
  */
 
-import { createEffect } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createEffect, createTrackedEffect } from "solid-js";
+import { isServer } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 import { scrollIntoViewport } from "../utils";
@@ -55,7 +55,7 @@ export function createScrollIntoViewOnFocus(options: ScrollIntoViewOnFocusOption
     options.getItemElement ??
     ((root, key) => root.querySelector<HTMLElement>(`[data-key="${key}"]`));
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const key = options.focusedKey();
     if (key == null) return;
     if (options.isActive && !options.isActive()) return;

@@ -21,7 +21,8 @@
  * @react-aria/datepicker `useDisplayNames`.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { useLocale } from "../i18n";
 import { datePickerDictionary } from "./intl";
 

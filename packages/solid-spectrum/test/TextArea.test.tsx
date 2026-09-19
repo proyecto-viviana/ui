@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { TextArea } from "../src/textfield/TextArea";
@@ -178,10 +178,12 @@ describe("TextArea (solid-spectrum)", () => {
       expect(screen.queryByText("Notes are required.")).not.toBeInTheDocument();
 
       setIsInvalid(true);
+      flush();
       expect(screen.queryByText("Use a short multiline project note.")).not.toBeInTheDocument();
       expect(screen.getByText("Notes are required.")).toBeInTheDocument();
 
       setIsInvalid(false);
+      flush();
       expect(screen.getByText("Use a short multiline project note.")).toBeInTheDocument();
       expect(screen.queryByText("Notes are required.")).not.toBeInTheDocument();
     });

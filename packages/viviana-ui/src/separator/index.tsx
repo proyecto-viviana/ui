@@ -14,12 +14,13 @@
 
 // Port of packages/@react-spectrum/s2/src/Divider.tsx.
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Separator as HeadlessSeparator,
   type SeparatorProps as HeadlessSeparatorProps,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /**
  * The rule's colour weight.

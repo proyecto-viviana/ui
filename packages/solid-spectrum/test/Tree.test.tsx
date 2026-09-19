@@ -535,7 +535,7 @@ describe("TreeView (solid-spectrum)", () => {
     const ref = vi.fn();
 
     render(() => (
-      <TreeViewContext.Provider
+      <TreeViewContext
         value={{
           "aria-label": "Context files",
           selectionStyle: "highlight",
@@ -545,7 +545,7 @@ describe("TreeView (solid-spectrum)", () => {
         <TreeView items={files}>
           {(item) => <TreeViewItem id={itemKey(item)}>{item.value?.label}</TreeViewItem>}
         </TreeView>
-      </TreeViewContext.Provider>
+      </TreeViewContext>
     ));
 
     const tree = screen.getByRole("treegrid", { name: "Context files" });

@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { destroyAnnouncer } from "@proyecto-viviana/solidaria";
 import {
   assertAriaIdIntegrity,
@@ -84,6 +82,7 @@ describe("ActionBar (headless)", () => {
 
       expect(queryActionBar()).toBeInTheDocument();
       setCount(0);
+      flush();
       expect(queryActionBar()).not.toBeInTheDocument();
     });
   });
@@ -159,6 +158,7 @@ describe("ActionBar (headless)", () => {
       expect(root).toHaveStyle({ opacity: "1" });
 
       setCount("all");
+      flush();
       expect(root).toHaveClass("bulk-open");
       expect(root).toHaveClass("selected-all");
       expect(root).toHaveStyle({ opacity: "0.75" });
@@ -234,6 +234,7 @@ describe("ActionBar (headless)", () => {
       ));
 
       setCount(1);
+      flush();
 
       expect(screen.getByText("Acciones disponibles.")).toBeInTheDocument();
     });

@@ -41,7 +41,7 @@ describe("Divider (solid-spectrum)", () => {
 
   it("supports context props and unsafe escape hatches", () => {
     render(() => (
-      <DividerContext.Provider
+      <DividerContext
         value={{
           orientation: "vertical",
           size: "L",
@@ -51,7 +51,7 @@ describe("Divider (solid-spectrum)", () => {
         }}
       >
         <Divider aria-label="Context divider" UNSAFE_className="local-divider" />
-      </DividerContext.Provider>
+      </DividerContext>
     ));
 
     const divider = screen.getByRole("separator", { name: "Context divider" }) as HTMLElement;
@@ -94,9 +94,9 @@ describe("Divider (solid-spectrum)", () => {
     const localRef = vi.fn();
 
     render(() => (
-      <DividerContext.Provider value={{ ref: contextRef }}>
+      <DividerContext value={{ ref: contextRef }}>
         <Divider aria-label="Ref divider" ref={localRef} />
-      </DividerContext.Provider>
+      </DividerContext>
     ));
 
     const divider = screen.getByRole("separator", { name: "Ref divider" });
@@ -106,9 +106,9 @@ describe("Divider (solid-spectrum)", () => {
 
   it("lets local props override context props", () => {
     render(() => (
-      <DividerContext.Provider value={{ orientation: "vertical", size: "L" }}>
+      <DividerContext value={{ orientation: "vertical", size: "L" }}>
         <Divider aria-label="Local divider" orientation="horizontal" size="S" />
-      </DividerContext.Provider>
+      </DividerContext>
     ));
 
     const divider = screen.getByRole("separator", { name: "Local divider" });

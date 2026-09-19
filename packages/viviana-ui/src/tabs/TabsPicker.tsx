@@ -16,7 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TabsPicker.tsx.
 
-import { createMemo, Show, splitProps, useContext, type JSX } from "solid-js";
+import { createMemo, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Select as HeadlessSelect,
   SelectContext as HeadlessSelectContext,
@@ -45,6 +46,7 @@ import {
 import { TextContext } from "../text";
 import { Popover } from "../popover";
 import type { TabsDensity, TabsLabelBehavior } from "./index";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TabsPickerItem {
   id: Key;
@@ -265,8 +267,8 @@ function TabsPickerOption(props: HeadlessSelectOptionProps<TabsPickerItem>): JSX
   return (
     <HeadlessSelectOption {...headlessProps} class={optionClass}>
       {(renderProps) => (
-        <IconContext.Provider value={iconContextValue}>
-          <TextContext.Provider value={textContextValue}>
+        <IconContext value={iconContextValue}>
+          <TextContext value={textContextValue}>
             <CheckmarkIcon
               size="M"
               // Apply via `class` (raw), not `styles`: the icon `styles` path
@@ -288,8 +290,8 @@ function TabsPickerOption(props: HeadlessSelectOptionProps<TabsPickerItem>): JSX
                 {local.children}
               </span>
             </Show>
-          </TextContext.Provider>
-        </IconContext.Provider>
+          </TextContext>
+        </IconContext>
       )}
     </HeadlessSelectOption>
   );

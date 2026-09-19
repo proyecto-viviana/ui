@@ -13,7 +13,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatch.tsx
 
 // Port of packages/@react-spectrum/s2/src/ColorSwatch.tsx.
-import { createContext, type Accessor, type JSX } from "solid-js";
+import { createContext } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Color } from "@proyecto-viviana/solid-stately";
 
 export type InternalColorSwatchSize = "XS" | "S" | "M" | "L";

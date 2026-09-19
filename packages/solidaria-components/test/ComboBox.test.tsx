@@ -11,9 +11,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal, onMount } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, onMount, onSettled } from "solid-js";
 import {
   ComboBox,
   ComboBoxInput,
@@ -1800,7 +1798,7 @@ describe("ComboBox", () => {
     it("does not remount option render-prop children when focus moves", async () => {
       let mounts = 0;
       const Probe = (props: { name: string }) => {
-        onMount(() => {
+        onSettled(() => {
           mounts += 1;
         });
         return <span slot="label">{props.name}</span>;

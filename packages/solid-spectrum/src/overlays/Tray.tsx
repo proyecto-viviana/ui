@@ -13,13 +13,14 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/overlays/Tray.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/overlays/Tray.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ModalOverlay as HeadlessModalOverlay,
   Modal as HeadlessModal,
   type ModalOverlayProps as HeadlessModalOverlayProps,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TrayProps extends Omit<HeadlessModalOverlayProps, "class"> {
   /** Additional CSS class name. */

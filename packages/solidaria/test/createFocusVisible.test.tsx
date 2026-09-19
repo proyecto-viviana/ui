@@ -2,18 +2,7 @@
  * createFocusVisible tests - Port of React Aria's useFocusVisible.test.js
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createFocusRing } from "../src/interactions/createFocusRing";
-import {
-  addWindowFocusTracking,
-  createFocusVisible,
-  createFocusVisibleListener,
-  hasSetupGlobalListeners,
-} from "../src/interactions/createInteractionModality";
-import { createButton } from "../src/button";
-import { mergeProps } from "../src/utils/mergeProps";
-import type { Component } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createFocusRing } from "../src/interactions/createFocusRing"; import { addWindowFocusTracking, createFocusVisible, createFocusVisibleListener, hasSetupGlobalListeners, } from "../src/interactions/createInteractionModality"; import { createButton } from "../src/button"; import { mergeProps } from "../src/utils/mergeProps"; import type { Component } from "solid-js";
 import userEvent from "@testing-library/user-event";
 import { pointerMap } from "@proyecto-viviana/solidaria-test-utils";
 

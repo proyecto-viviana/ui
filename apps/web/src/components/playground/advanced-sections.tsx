@@ -1,4 +1,6 @@
-import { type Accessor, createSignal, For, JSX, Show, Suspense, lazy } from "solid-js";
+import { createSignal, For, Show, Suspense, lazy } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button,
   Meter,

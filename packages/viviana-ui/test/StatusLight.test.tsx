@@ -1,7 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test";
-import { render } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, expect, it } from "vite-plus/test"; import { render } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { StatusLight } from "../src/statuslight";
 
 describe("StatusLight", () => {
@@ -15,6 +13,7 @@ describe("StatusLight", () => {
     const text = container.querySelector('[data-rsp-slot="text"]');
     expect(text).toHaveTextContent("Online");
     setLabel("Offline");
+    flush();
     expect(text).toHaveTextContent("Offline");
   });
 });

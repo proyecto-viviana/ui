@@ -10,9 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
 import { Text } from "../src/Text";

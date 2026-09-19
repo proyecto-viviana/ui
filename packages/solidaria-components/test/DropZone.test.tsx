@@ -153,11 +153,11 @@ describe("DropZone", () => {
 
   it("merges props from DropZoneContext", () => {
     render(() => (
-      <DropZoneContext.Provider
+      <DropZoneContext
         value={{ "aria-label": "Context upload", class: "context-dropzone" }}
       >
         <DropZone>Drop files</DropZone>
-      </DropZoneContext.Provider>
+      </DropZoneContext>
     ));
 
     expect(screen.getByRole("button", { name: "Context upload" })).toBeInTheDocument();

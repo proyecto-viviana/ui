@@ -28,12 +28,14 @@
  * This Solid module combines the upstream hooks and keyboard delegate.
  */
 
-import { type Accessor, batch, createEffect, createMemo } from "solid-js";
+import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createFocusRing } from "../interactions";
 import { createPress } from "../interactions";
 import { createHover } from "../interactions";
 import { createId } from "../ssr";
 import { useLocale } from "../i18n";
+import { ariaTrueFalse, attrTrue } from "../utils/domAttrs";
 import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 
@@ -103,8 +105,8 @@ export interface TabAria {
   tabProps: {
     id: string;
     role: "tab";
-    "aria-selected": boolean;
-    "aria-disabled": boolean | undefined;
+    "aria-selected": boolean | "true" | "false";
+    "aria-disabled": boolean | "true" | undefined;
     "aria-controls": string | undefined;
     "aria-label"?: string;
     "aria-labelledby"?: string;
@@ -305,7 +307,7 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       // effect the instant `setFocusedKey` runs — so focus moves *before* the
       // selection callback, inverting React's order. React batches both state
       // updates in the handler (callback fires synchronously) and defers the
-      // focus move to a layout effect. `batch()` is the Solid equivalent: it
+      // focus move to a layout effect. `` is the Solid equivalent: it
       // holds the focus effect until the batch closes, so the synchronous
       // `onSelectionChange` fires first, then focus moves — matching upstream's
       // `callback → focusout → focusin` sequence (D4 event-sequence oracle).
@@ -315,15 +317,15 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       // item focus-move effect is gated on `isFocused` (RAC
       // `manager.isFocused`). Setting it here, together with `focusedKey`,
       // avoids the previous-tab effect stealing focus back mid-gesture.
-      batch(() => {
-        state.setFocused(true);
+      {
+state.setFocused(true);
         state.setFocusedKey(nextKey);
         // Selection follows focus only for keyboard navigation in automatic mode
         // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
         if (keyboardActivation() === "automatic") {
           state.setSelectedKey(nextKey);
         }
-      });
+};
       // Move DOM focus in the keydown handler so it lands before keyup.
       // Solid `createEffect` is scheduled after paint; Playwright records
       // keyup in the same turn, and a non-reactive `let` tab ref can leave
@@ -468,10 +470,10 @@ export function createTab<T>(
     // Batch collection-focused + roving key. Native `focus` is too early:
     // setting isFocused there flushes the previous tab's focus-move effect
     // and steals a touch tap back to Overview (D4 touch-tap).
-    batch(() => {
-      state.setFocused(true);
+    {
+state.setFocused(true);
       state.setFocusedKey(key());
-    });
+};
   };
 
   const handleBlur = (e: FocusEvent) => {
@@ -499,7 +501,7 @@ export function createTab<T>(
   // Only while the tab list itself is focused (mirrors useSelectableItem's
   // manager.isFocused guard), so programmatic selection changes don't steal
   // focus from elsewhere in the document.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const element = ref?.();
     if (!state.isFocused() || !isKeyFocused() || !element) return;
 
@@ -514,10 +516,10 @@ export function createTab<T>(
       id: tabId,
       role: "tab",
       get "aria-selected"() {
-        return isSelected();
+        return ariaTrueFalse(isSelected());
       },
       get "aria-disabled"() {
-        return isDisabled() || undefined;
+        return attrTrue(isDisabled());
       },
       get "aria-controls"() {
         return isSelected() ? tabPanelId : undefined;

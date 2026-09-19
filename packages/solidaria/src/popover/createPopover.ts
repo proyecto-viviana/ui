@@ -19,7 +19,8 @@
  * Ported from @react-aria/overlays usePopover.
  */
 
-import { createEffect, onCleanup, type JSX } from "solid-js";
+import { createEffect, onCleanup } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createOverlay } from "../overlays/createOverlay";
 import {
   createOverlayPosition,
@@ -129,11 +130,10 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
       },
       onClose: state.close,
       get shouldCloseOnBlur() {
-        // RAC useOverlay has no document focusin listener — only onBlurWithin
-        // after focus has been inside the overlay. Our createOverlay adds a
-        // focusin-outside close; that fires on the trigger's own focus when
-        // PreviewTrigger opens from keyboard, and the preview never stays open.
-        // createPreviewTrigger already closes on trigger blur / popover focusout.
+        // RAC useOverlay has no extra document focusin listener — only
+        // onBlurWithin after focus has been inside. We still enable blur
+        // dismiss for modal popovers (FocusScope + programmatic focus-out
+        // tests). Submenus and PreviewTrigger race the trigger's own focus.
         return !isSubmenu() && props.trigger !== "PreviewTrigger";
       },
       get isDismissable() {
@@ -142,8 +142,9 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
       get isKeyboardDismissDisabled() {
         return isKeyboardDismissDisabled();
       },
-      get shouldCloseOnInteractOutside() {
-        return shouldCloseOnInteractOutside();
+      shouldCloseOnInteractOutside: (element: Element) => {
+        const filter = shouldCloseOnInteractOutside();
+        return filter ? filter(element) : true;
       },
     },
     () => groupRef() ?? popoverRef(),
@@ -223,24 +224,19 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
   });
 
   // Aria-hide outside elements
-  createEffect(() => {
-    if (state.isOpen() && popoverRef()) {
-      const element = groupRef() ?? popoverRef();
+  createEffect(
+    () => {
+      if (!state.isOpen()) return null;
+      return groupRef() ?? popoverRef() ?? null;
+    },
+    (element) => {
       if (!element) return;
-
-      let cleanup: (() => void) | undefined;
-
-      if (isNonModal()) {
-        cleanup = keepVisible(element);
-      } else {
-        cleanup = ariaHideOutside([element], { shouldUseInert: true });
-      }
-
-      onCleanup(() => {
-        cleanup?.();
-      });
-    }
-  });
+      const cleanup = isNonModal()
+        ? keepVisible(element)
+        : ariaHideOutside([element], { shouldUseInert: true });
+      return () => cleanup?.();
+    },
+  );
 
   const merged = mergeProps(overlayProps, positionProps) as Record<string, unknown>;
   const popoverProps = new Proxy(merged, {

@@ -9,7 +9,7 @@
    renders the "in flight" dither past its fill via `pendingValue`, and AvatarGroup stacks
    at the register's 30px / -9px / raised-ring geometry. What is left between the pair is
    footprint (L's 64px box inside the spec's 76px slot), called out at its site. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Avatar, AvatarGroup, ProgressBar, ProgressCircle, Provider } from "@proyecto-viviana/ui";
 import { MONO, Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";

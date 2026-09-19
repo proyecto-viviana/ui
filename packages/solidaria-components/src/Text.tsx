@@ -12,9 +12,11 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Text.tsx
 
-import { type JSX, createContext, splitProps } from "solid-js";
+import { createContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import { type ContextValue, type SlotProps, useContextProps, filterDOMProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TextProps extends JSX.HTMLAttributes<HTMLElement>, SlotProps {
   /** The element type to render as. @default 'span' */

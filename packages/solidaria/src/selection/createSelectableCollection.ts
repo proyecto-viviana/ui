@@ -35,7 +35,9 @@
  *    around it is preserved.
  */
 
-import { createEffect, on, onCleanup, type JSX } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, createTrackedEffect, flush } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { FocusStrategy, Key, SelectionManager } from "@proyecto-viviana/solid-stately";
 import type { KeyboardDelegate } from "../grid/types";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -458,6 +460,12 @@ export function createSelectableCollection<T = unknown>(
         }
       }
     }
+
+    try {
+      flush();
+    } catch {
+      /* inside an effect apply — DOM updates on the current flush */
+    }
   };
 
   const onFocusOut = (e: FocusEvent) => {
@@ -529,46 +537,42 @@ export function createSelectableCollection<T = unknown>(
 
   // Update active descendant (skip-first; runs on [firstKey, collection.size]).
   createEffect(
-    on(
-      () => [delegate().getFirstKey?.() ?? null, manager.collection.size] as const,
-      ([firstKey]) => {
-        if (!shouldVirtualFocusFirst) {
-          return;
-        }
-        if (firstKey == null) {
-          // No focusable items: clear the virtual-focus intent once the
-          // collection is settled. Ticket #100 tracks the missing AT cursor
-          // reset for this branch.
-          if (manager.collection.size > 0) {
-            shouldVirtualFocusFirst = false;
-          }
-        } else {
-          manager.setFocusedKey(firstKey);
+    () => [delegate().getFirstKey?.() ?? null, manager.collection.size] as const,
+    ([firstKey]) => {
+      if (!shouldVirtualFocusFirst) {
+        return;
+      }
+      if (firstKey == null) {
+        // No focusable items: clear the virtual-focus intent once the
+        // collection is settled. Ticket #100 tracks the missing AT cursor
+        // reset for this branch.
+        if (manager.collection.size > 0) {
           shouldVirtualFocusFirst = false;
         }
-      },
-      { defer: true },
-    ),
+      } else {
+        manager.setFocusedKey(firstKey);
+        shouldVirtualFocusFirst = false;
+      }
+    },
+    { defer: true },
   );
 
   // Reset the focus-first flag if the focused key changed by any other means.
   createEffect(
-    on(
-      () => manager.focusedKey,
-      () => {
-        if (manager.collection.size > 0) {
-          shouldVirtualFocusFirst = false;
-        }
-      },
-      { defer: true },
-    ),
+    () => manager.focusedKey,
+    () => {
+      if (manager.collection.size > 0) {
+        shouldVirtualFocusFirst = false;
+      }
+    },
+    { defer: true },
   );
 
   // Auto-focus the collection (or its first/last/selected item) on mount, once
   // the collection has items. Re-runs as the collection size changes.
   let autoFocusActive = autoFocus !== false;
   let didAutoFocus = false;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const size = manager.collection.size;
     const selectedKeys = manager.selectedKeys;
     if (!autoFocusActive) {
@@ -621,7 +625,7 @@ export function createSelectableCollection<T = unknown>(
   // Scroll the focused element into view when the focusedKey changes.
   let lastFocusedKey = manager.focusedKey;
   let raf: number | null = null;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const isFocused = manager.isFocused;
     const focusedKey = manager.focusedKey;
     const root = ref();
@@ -675,7 +679,7 @@ export function createSelectableCollection<T = unknown>(
     didAutoFocus = false;
   });
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (raf != null) {
       cancelAnimationFrame(raf);
     }
@@ -686,6 +690,8 @@ export function createSelectableCollection<T = unknown>(
     e.preventDefault();
     manager.setFocused(true);
   });
+  addRefListener(ref, "focusin", (e) => onFocusIn(e as FocusEvent));
+  addRefListener(ref, "focusout", (e) => onFocusOut(e as FocusEvent));
 
   const onMouseDown = (e: MouseEvent) => {
     // Ignore events that bubbled through portals.
@@ -718,6 +724,13 @@ export function createSelectableCollection<T = unknown>(
         repeatKeyboardProps as Record<string, unknown>,
         {
           onFocusIn,
+          // jsdom `element.focus()` always fires `focus`; `focusin` is delegated
+          // and can miss the collection. Same navigation, guarded by isFocused.
+          onFocus: (e: FocusEvent) => {
+            if (getEventTarget(e) === e.currentTarget) {
+              onFocusIn(e);
+            }
+          },
           onFocusOut,
           onMouseDown,
         },
@@ -741,12 +754,16 @@ function addRefListener(
   type: string,
   handler: (e: Event) => void,
 ): void {
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const el = ref();
     if (!el) {
       return;
     }
     el.addEventListener(type, handler);
-    onCleanup(() => el.removeEventListener(type, handler));
-  });
+    _s2Cleanups.push(() => el.removeEventListener(type, handler));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }

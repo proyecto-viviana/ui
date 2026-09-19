@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
-import solid from "vite-plugin-solid";
+import solidPlugin from "@solidjs/vite-plugin";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 import {
   packageMacros,
@@ -104,8 +104,8 @@ const deps = {
   alwaysBundle: [/^@adobe\/spectrum-tokens(\/.*)?$/],
   neverBundle: [
     "solid-js",
-    "solid-js/web",
-    "solid-js/store",
+    "@solidjs/web",
+    "solid-js",
     /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
     // src/vite.ts imports unplugin-parcel-macros; it's an (optional) peer that
     // must stay external so dist/vite.js uses the app's installed instance (the
@@ -159,7 +159,7 @@ export default defineConfig({
       plugins: [
         sourceMapWarningGuard(),
         packageMacros(),
-        solid({ solid: { generate: "dom", hydratable: true } }),
+        ...solidPlugin({ ssr: true, refresh: { disabled: true } }),
       ],
       deps,
       copy: copiedCssFiles,

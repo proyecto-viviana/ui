@@ -13,14 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressBar.tsx
 
 // Port of packages/@react-spectrum/s2/src/ProgressBar.tsx.
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createUniqueId,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { createProgressBar } from "@proyecto-viviana/solidaria/progress";
 import { useLocale } from "@proyecto-viviana/solidaria/i18n";
@@ -37,6 +31,7 @@ import {
   getAllowedOverrides,
   staticColor as staticColorStyles,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

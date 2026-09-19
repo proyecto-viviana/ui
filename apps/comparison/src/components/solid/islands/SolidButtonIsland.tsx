@@ -1,4 +1,4 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 /**
  * Hydratable JSX port of `SolidSpectrumButtonDemo` (fixtures/styled.tsx), for the
  * D12 (SSR/hydration) pair-oracle.
@@ -18,7 +18,8 @@
  * pass bare reactive text as Button children (that shape does not re-bind — see the
  * hydrate test's documentation assertion).
  */
-import { createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { createIcon } from "@proyecto-viviana/solid-spectrum/Icon";
@@ -98,7 +99,7 @@ export default function SolidButtonIsland() {
   // server-vs-hydrated button comparison.
   const [hydrated, setHydrated] = createSignal(false);
 
-  onMount(() => {
+  onSettled(() => {
     setHydrated(true);
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "button") {

@@ -19,28 +19,10 @@
  * All behaviors, edge cases, and platform-specific handling are preserved.
  */
 
-import { createSignal, JSX, Accessor, onCleanup } from "solid-js";
+import { nodeContains, getEventTarget, isValidKeyboardEvent, isHTMLAnchorLink, shouldPreventDefaultKeyboard, isVirtualClick, isVirtualPointerEvent, isPointOverTarget, getTouchFromEvent, getTouchById, disableTextSelection, restoreTextSelection, preventFocus, openLink, isMac, createGlobalListeners, setEventTarget, focusWithoutScrolling, onOwnedCleanup } from "../utils";
+import { createSignal, Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { PressEvent, PointerType, createPressEvent, type PressEventSource } from "./PressEvent";
-import {
-  nodeContains,
-  getEventTarget,
-  isValidKeyboardEvent,
-  isHTMLAnchorLink,
-  shouldPreventDefaultKeyboard,
-  isVirtualClick,
-  isVirtualPointerEvent,
-  isPointOverTarget,
-  getTouchFromEvent,
-  getTouchById,
-  disableTextSelection,
-  restoreTextSelection,
-  preventFocus,
-  openLink,
-  isMac,
-  createGlobalListeners,
-  setEventTarget,
-  focusWithoutScrolling,
-} from "../utils";
 
 export { PressEvent, type PointerType } from "./PressEvent";
 export type { IPressEvent, PressEventType } from "./PressEvent";
@@ -147,7 +129,7 @@ function injectPressableCSS(): void {
  */
 export function createPress(props: CreatePressProps = {}): PressResult {
   // Internal pressed state (for visual feedback)
-  const [internalIsPressed, setInternalIsPressed] = createSignal(false);
+  const [internalIsPressed, setInternalIsPressed] = createSignal(false, { ownedWrite: true });
 
   // Use controlled isPressed if provided, otherwise internal state
   const isPressed = (): boolean => {
@@ -898,14 +880,14 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
   const pressProps: JSX.HTMLAttributes<HTMLElement> & {
     "data-solidaria-pressable": string;
-    "on:click": JSX.EventHandler<HTMLElement, MouseEvent>;
+    onClick: JSX.EventHandler<HTMLElement, MouseEvent>;
   } =
     typeof PointerEvent !== "undefined"
       ? {
           // Keyboard events
           onKeyDown,
           onKeyUp,
-          "on:click": onClick,
+          onClick: onClick,
           onDragStart,
           // Pointer events (preferred when available)
           onPointerDown,
@@ -926,7 +908,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
           // Keyboard events
           onKeyDown,
           onKeyUp,
-          "on:click": onClick,
+          onClick: onClick,
           onDragStart,
           // Mouse events (fallback when PointerEvent not available)
           onMouseDown: onMouseDownFallback,
@@ -942,18 +924,8 @@ export function createPress(props: CreatePressProps = {}): PressResult {
           "data-solidaria-pressable": "",
         };
 
-  // createTabs (and similar) call pressProps.onClick directly. Keep the
-  // handler readable without spreading a delegated `onClick` onto the host
-  // beside native `on:click`.
-  Object.defineProperty(pressProps, "onClick", {
-    configurable: true,
-    enumerable: false,
-    writable: true,
-    value: onClick,
-  });
-
   // Clean up on unmount
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     removeAllGlobalListeners();
     // Clean up click timeout/listener if pending
     if (pressState.clickCleanup) {

@@ -20,7 +20,8 @@
  * Ensures only one tooltip is open at a time and controls the delay for showing a tooltip.
  */
 
-import { onCleanup, type Accessor } from "solid-js";
+import { flush, onCleanup } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createOverlayTriggerState, type OverlayTriggerProps } from "../overlays";
 import { isServer } from "../ssr";
 import { createInternalSignal } from "../utils";
@@ -122,6 +123,14 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
     setShouldSkipAnimation(!!instant);
     globalWarmedUp = true;
     overlayState.open();
+    // Timer callbacks and event handlers can flush. Overlay `Show` otherwise
+    // stays unmounted until a later microtask (fake-timer tests read the DOM
+    // in the same turn as `advanceTimersByTime`).
+    try {
+      flush();
+    } catch {
+      // Ignore: flush is forbidden inside createEffect apply / createTrackedEffect.
+    }
 
     if (globalWarmUpTimeout) {
       clearTimeout(globalWarmUpTimeout);

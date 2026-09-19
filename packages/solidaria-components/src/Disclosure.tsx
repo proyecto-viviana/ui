@@ -21,14 +21,8 @@
  * Port of react-aria-components Disclosure.
  */
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createDisclosureState,
   createDisclosureGroupState,
@@ -43,6 +37,7 @@ import {
   createFocusRing,
   mergeProps,
 } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -50,6 +45,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  coerceDomRecord,
 } from "./utils";
 
 type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
@@ -237,8 +233,8 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
   const { ref: _ref, ...cleanGroupProps } = groupProps as Record<string, unknown>;
 
   return (
-    <DisclosureGroupStateContext.Provider value={state}>
-      <DisclosureGroupContext.Provider value={contextValue}>
+    <DisclosureGroupStateContext value={state}>
+      <DisclosureGroupContext value={contextValue}>
         <div
           ref={(el) => assignRef(local.ref, el)}
           {...domProps()}
@@ -249,8 +245,8 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
         >
           {props.children}
         </div>
-      </DisclosureGroupContext.Provider>
-    </DisclosureGroupStateContext.Provider>
+      </DisclosureGroupContext>
+    </DisclosureGroupStateContext>
   );
 }
 
@@ -357,9 +353,9 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
   };
 
   return (
-    <DisclosureStateContext.Provider value={state}>
-      <DisclosureContext.Provider value={contextValue}>
-        <DisclosurePanelRefContext.Provider value={setPanelRef}>
+    <DisclosureStateContext value={state}>
+      <DisclosureContext value={contextValue}>
+        <DisclosurePanelRefContext value={setPanelRef}>
           <div
             ref={(el) => assignRef(local.ref, el)}
             {...mergeProps(
@@ -374,9 +370,9 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
           >
             {props.children}
           </div>
-        </DisclosurePanelRefContext.Provider>
-      </DisclosureContext.Provider>
-    </DisclosureStateContext.Provider>
+        </DisclosurePanelRefContext>
+      </DisclosureContext>
+    </DisclosureStateContext>
   );
 }
 
@@ -493,7 +489,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
         domProps() as Record<string, unknown>,
         focusWithinProps as Record<string, unknown>,
       )}
-      {...getPanelProps()}
+      {...coerceDomRecord(getPanelProps() as Record<string, unknown>)}
       ref={(el) => {
         panelRefSetter?.(el);
         assignRef(local.ref, el);

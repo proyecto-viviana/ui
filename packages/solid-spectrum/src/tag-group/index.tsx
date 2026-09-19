@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TagGroup.tsx.
 
-import {
-  type JSX,
-  children as resolveChildren,
-  createContext,
-  createUniqueId,
-  splitProps,
-  useContext,
-  Show,
-} from "solid-js";
+import { children as resolveChildren, createContext, createUniqueId, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
   TagList as HeadlessTagList,
@@ -52,6 +45,7 @@ import { CrossIcon } from "../icon/ui-icons/Cross";
 import { ActionButton } from "../button/ActionButton";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TagGroupSize = "S" | "M" | "L" | "sm" | "md" | "lg";
 type S2TagGroupSize = "S" | "M" | "L";
@@ -706,7 +700,7 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
   };
 
   return (
-    <StyledTagGroupContext.Provider value={contextValue}>
+    <StyledTagGroupContext value={contextValue}>
       <div
         id={local.id}
         class={rootClass()}
@@ -801,7 +795,7 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
           </p>
         </Show>
       </div>
-    </StyledTagGroupContext.Provider>
+    </StyledTagGroupContext>
   );
 }
 

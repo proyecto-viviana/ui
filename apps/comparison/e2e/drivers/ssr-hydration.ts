@@ -167,7 +167,7 @@ export function registerSsrHydrationDriver(scenario: SsrHydrationScenario) {
         });
 
         await page.goto(ssrPageRoute(caseDef.route), { waitUntil: "networkidle" });
-        // onMount (client-only, post-hydration) flips this marker on the wrapper.
+        // onSettled(client-only, post-hydration) flips this marker on the wrapper.
         await expect(page.locator("[data-comparison-hydrated='true']")).toBeAttached({
           timeout: caseDef.hydrationTimeoutMs ?? defaultHydrationTimeoutMs,
         });

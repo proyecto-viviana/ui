@@ -19,21 +19,9 @@
  * Port of react-aria-components/src/ComboBox.tsx
  */
 
-import {
-  type JSX,
-  type Accessor,
-  type Context,
-  createContext,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { Accessor, Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createComboBox,
   createListBox,
@@ -70,12 +58,14 @@ import {
   useRenderProps,
   filterDOMProps,
   Provider,
+  dataAttr,
 } from "./utils";
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { useCollectionRenderer, useCollectionRoot } from "./Collection";
 import { ListBoxLoadMoreItem } from "./ListBox";
 import { VirtualizerItem } from "./Virtualizer";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
@@ -392,7 +382,7 @@ function callInputKeyDown(
  */
 export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const parentContext = useContext(ComboBoxContext) as ComboBoxContextValue<T> | null;
-  const contextSlotProps = parentContext?.slots?.[props.slot ?? "default"];
+  const contextSlotProps = parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const mergedComboBoxProps = contextSlotProps
     ? (mergeProps(contextSlotProps, props) as ComboBoxProps<T>)
     : props;
@@ -428,7 +418,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     ],
   );
 
-  let inputRef: HTMLInputElement | null = null;
+  const [inputEl, setInputEl] = createSignal<HTMLInputElement | null>(null, {
+    ownedWrite: true,
+  });
   let buttonRef: HTMLElement | null = null;
   let triggerRef: HTMLElement | null = null;
   let listBoxRef: HTMLElement | null = null;
@@ -552,7 +544,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       },
     }),
     state,
-    () => inputRef,
+    () => inputEl(),
     () => buttonRef,
     () => listBoxRef,
     () => popoverRef(),
@@ -638,7 +630,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   };
 
   return (
-    <ComboBoxContext.Provider
+    <ComboBoxContext
       value={
         {
           state,
@@ -661,9 +653,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           isFocused: comboBoxAria.isFocused,
           isFocusVisible: comboBoxAria.isFocusVisible,
           items: stateProps.items ?? stateProps.defaultItems ?? [],
-          inputRef: () => inputRef,
+          inputRef: () => inputEl(),
           setInputRef: (el) => {
-            inputRef = el;
+            setInputEl(el);
           },
           buttonRef: () => buttonRef,
           setButtonRef: (el) => {
@@ -691,7 +683,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
         } as ComboBoxContextValue<unknown>
       }
     >
-      <ComboBoxStateContext.Provider value={state}>
+      <ComboBoxStateContext value={state}>
         <div
           {...domProps()}
           ref={(el) => {
@@ -700,12 +692,12 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           }}
           class={renderProps.class()}
           style={renderProps.style()}
-          data-open={comboBoxAria.isOpen() || undefined}
-          data-focused={comboBoxAria.isFocused() || undefined}
-          data-disabled={ariaProps.isDisabled || undefined}
-          data-required={ariaProps.isRequired || undefined}
-          data-invalid={comboBoxAria.isInvalid || undefined}
-          data-readonly={ariaProps.isReadOnly || undefined}
+          data-open={dataAttr(comboBoxAria.isOpen())}
+          data-focused={dataAttr(comboBoxAria.isFocused())}
+          data-disabled={dataAttr(ariaProps.isDisabled)}
+          data-required={dataAttr(ariaProps.isRequired)}
+          data-invalid={dataAttr(comboBoxAria.isInvalid)}
+          data-readonly={dataAttr(ariaProps.isReadOnly)}
           slot={local.slot}
         >
           <Provider
@@ -728,8 +720,8 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
             />
           </Show>
         </div>
-      </ComboBoxStateContext.Provider>
-    </ComboBoxContext.Provider>
+      </ComboBoxStateContext>
+    </ComboBoxContext>
   );
 }
 
@@ -881,10 +873,10 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
       value={state.inputValue()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={state.isDisabled || undefined}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(state.isDisabled)}
     />
   );
 }
@@ -937,7 +929,7 @@ export function ComboBoxValue(props: ComboBoxValueProps): JSX.Element {
     <span
       class={renderProps.class()}
       style={renderProps.style()}
-      data-placeholder={isPlaceholder() || undefined}
+      data-placeholder={dataAttr(isPlaceholder())}
     >
       {props.children
         ? renderProps.renderChildren()
@@ -1035,11 +1027,11 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
       }}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-pressed={isPressed() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={state.isDisabled || undefined}
+      data-pressed={dataAttr(isPressed())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(state.isDisabled)}
     >
       {renderProps.renderChildren()}
     </button>
@@ -1100,6 +1092,9 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
         return;
       }
       if (button?.contains(target)) {
+        return;
+      }
+      if (target.closest('[role="listbox"]') || target.closest('[role="option"]')) {
         return;
       }
       if (isOpen()) {
@@ -1178,21 +1173,25 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     );
   };
 
-  const [listBoxEl, setListBoxEl] = createSignal<HTMLElement | null>(null);
+  const [listBoxEl, setListBoxEl] = createSignal<HTMLElement | null>(null, {
+    ownedWrite: true,
+  });
 
   // Resolve the overlay root after the listbox is inserted. A ref callback can
   // fire before parentNode exists, so closest("[data-placement]") would miss
   // the Popover (RAC ComboBox PopoverContext.ref) and hide-outside would keep
   // only the listbox — aria-hiding the dismiss sibling.
-  createEffect(() => {
-    const el = listBoxEl();
-    if (!el) {
-      setPopoverRef(null);
-      return;
-    }
-    const overlay = el.closest("[data-placement]");
-    setPopoverRef(overlay instanceof HTMLElement ? overlay : el);
-  });
+  createEffect(
+    () => listBoxEl(),
+    (el) => {
+      if (!el) {
+        setPopoverRef(null);
+        return;
+      }
+      const overlay = el.closest("[data-placement]");
+      setPopoverRef(overlay instanceof HTMLElement ? overlay : el);
+    },
+  );
 
   const setListBoxElement = (el: HTMLElement) => {
     listBoxRef = el;
@@ -1219,9 +1218,9 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
         {...cleanFocusProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-focused={isListBoxFocused() || undefined}
-        data-focus-visible={isListBoxFocusVisible() || undefined}
-        data-empty={state.collection().size === 0 || undefined}
+        data-focused={dataAttr(isListBoxFocused())}
+        data-focus-visible={dataAttr(isListBoxFocusVisible())}
+        data-empty={dataAttr(state.collection().size === 0)}
         data-layout="stack"
         data-orientation="vertical"
       >
@@ -1304,13 +1303,17 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
     return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const key = local.id;
     comboBoxContext?.registerOptionAction(key, local.onAction);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       comboBoxContext?.registerOptionAction(key, undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Create option aria props using ComboBoxState's ListState-compatible interface
   const optionAria = createOption<T>(
@@ -1408,31 +1411,35 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   // slot id onto that node so `createSlotId` can resolve `aria-labelledby`.
   // Render-prop children recreate the span when `isFocused` flips (End/Home);
   // observe childList so the replacement node keeps the same id.
-  createRenderEffect(() => {
-    const el = ref();
-    const labelId = optionAria.labelProps.id;
-    const descriptionId = optionAria.descriptionProps.id;
-    if (!el) return;
-    const stamp = () => {
-      if (labelId) {
-        const label = el.querySelector("[slot='label']");
-        if (label && label.id !== labelId) label.id = labelId;
-      }
-      if (descriptionId) {
-        const description = el.querySelector("[slot='description']");
-        if (description && description.id !== descriptionId) description.id = descriptionId;
-      }
-    };
-    stamp();
-    const observer = new MutationObserver(stamp);
-    observer.observe(el, { childList: true, subtree: true });
-    onCleanup(() => observer.disconnect());
-  });
+  createRenderEffect(
+    () => ({
+      el: ref(),
+      labelId: optionAria.labelProps.id,
+      descriptionId: optionAria.descriptionProps.id,
+    }),
+    ({ el, labelId, descriptionId }) => {
+      if (!el) return;
+      const stamp = () => {
+        if (labelId) {
+          const label = el.querySelector("[slot='label']");
+          if (label && label.id !== labelId) label.id = labelId;
+        }
+        if (descriptionId) {
+          const description = el.querySelector("[slot='description']");
+          if (description && description.id !== descriptionId) description.id = descriptionId;
+        }
+      };
+      stamp();
+      const observer = new MutationObserver(stamp);
+      observer.observe(el, { childList: true, subtree: true });
+      return () => observer.disconnect();
+    },
+  );
 
   const selectionMode = () => listState.selectionMode();
 
   return (
-    <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext()}>
       {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
           `role` comes from the spread option aria props (createOption). */}
       <div
@@ -1443,12 +1450,12 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
         {...cleanOptionProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-selected={optionAria.isSelected() || undefined}
-        data-focused={optionAria.isFocused() || undefined}
-        data-focus-visible={isOptionFocusVisible() || undefined}
-        data-pressed={optionAria.isPressed() || undefined}
-        data-hovered={optionAria.isHovered() || undefined}
-        data-disabled={optionAria.isDisabled() || undefined}
+        data-selected={dataAttr(optionAria.isSelected())}
+        data-focused={dataAttr(optionAria.isFocused())}
+        data-focus-visible={dataAttr(isOptionFocusVisible())}
+        data-pressed={dataAttr(optionAria.isPressed())}
+        data-hovered={dataAttr(optionAria.isHovered())}
+        data-disabled={dataAttr(optionAria.isDisabled())}
         data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
@@ -1462,7 +1469,7 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
           />
         </Provider>
       </div>
-    </SelectionIndicatorContext.Provider>
+    </SelectionIndicatorContext>
   );
 }
 
@@ -1550,7 +1557,7 @@ export function ComboBoxTag(props: ComboBoxTagProps): JSX.Element {
         aria-label={`Remove ${props.item.label}`}
         onClick={handleRemove}
         class="solidaria-ComboBox-tag-remove"
-        tabIndex={-1}
+        tabindex={-1}
       >
         &#215;
       </button>
@@ -1614,6 +1621,10 @@ function createComboBoxListStateAdapter<T>(state: ComboBoxState<T>): ListState<T
     toggleSelection: (key) => state.select(key),
     replaceSelection: (key) => state.select(key),
     setSelectedKeys: (keys) => {
+      if (state.selectionMode() === "multiple") {
+        state.setSelectedKeys(new Set(keys));
+        return;
+      }
       const first = keys[Symbol.iterator]().next().value as Key | undefined;
       state.setSelectedKey(first ?? null);
     },

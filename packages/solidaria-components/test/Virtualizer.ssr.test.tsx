@@ -6,7 +6,7 @@
  * Virtualizer.hydrate.test.tsx hydrates over this output with a real
  * (non-zero) client viewport, and over the element-children ListBox markup.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

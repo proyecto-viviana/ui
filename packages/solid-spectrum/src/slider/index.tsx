@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Slider.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createUniqueId,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createUniqueId, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import {
   Slider as HeadlessSlider,
@@ -51,6 +44,7 @@ import {
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

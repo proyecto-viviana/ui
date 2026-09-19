@@ -20,18 +20,10 @@
  * Port of @react-aria/i18n context and useDefaultLocale.
  */
 
-import {
-  type Accessor,
-  type Context,
-  type JSX,
-  type ParentProps,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  useContext,
-} from "solid-js";
+import { useContextOptional } from "../utils/owner";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor, Context, ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { isRTL } from "./utils";
 import { access } from "../utils/reactivity";
 
@@ -124,7 +116,9 @@ export function createDefaultLocale(): Accessor<Locale> {
 
   const [locale, setLocale] = createSignal<Locale>(currentLocale);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (typeof window === "undefined") {
       return;
     }
@@ -135,13 +129,15 @@ export function createDefaultLocale(): Accessor<Locale> {
 
     listeners.add(setLocale);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       listeners.delete(setLocale);
       if (listeners.size === 0) {
         window.removeEventListener("languagechange", updateLocale);
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return locale;
 }
@@ -158,7 +154,7 @@ export function createDefaultLocale(): Accessor<Locale> {
  * ```
  */
 export function useLocale(): Accessor<Locale> {
-  const context = useContext(I18nContext);
+  const context = useContextOptional(I18nContext);
   const defaultLocale = createDefaultLocale();
   return context || defaultLocale;
 }
@@ -193,5 +189,5 @@ export function I18nProvider(props: I18nProviderProps): JSX.Element {
     return defaultLocale();
   });
 
-  return <I18nContext.Provider value={locale}>{props.children}</I18nContext.Provider>;
+  return <I18nContext value={locale}>{props.children}</I18nContext>;
 }

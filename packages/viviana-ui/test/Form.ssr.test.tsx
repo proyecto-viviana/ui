@@ -4,7 +4,7 @@
  * Writes hydratable markup for the `isRequired + description` profile shape
  * so Form.hydrate.test.tsx can adopt it. See solid-spectrum Form.ssr.test.tsx.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

@@ -1,5 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/solid-router";
-import { Show, createSignal, lazy, onMount } from "solid-js";
+import { createFileRoute, redirect } from "@tanstack/solid-router"; import { Show, createSignal, lazy, onMount } from "solid-js";
 import adminCss from "@/app/admin/admin.css?url";
 
 // Dev-only internal dashboard (see .claude/current/admin-dashboard.md). The
@@ -24,7 +23,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminRoute() {
   const [mounted, setMounted] = createSignal(false);
-  onMount(() => setMounted(true));
+  onSettled(() => setMounted(true));
   return (
     <Show when={import.meta.env.DEV && mounted()} fallback={<p>Not found.</p>}>
       <AdminPage />

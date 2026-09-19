@@ -4,8 +4,7 @@
  * This is a 1:1 port of @react-aria/textfield's useTextField.test.js
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createRoot } from "solid-js";
 import { createTextField } from "../src";
 
 describe("createTextField hook", () => {

@@ -45,7 +45,7 @@
  * Solid-specific adapters.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, GridNode } from "@proyecto-viviana/solid-stately";
 import type { AriaButtonProps } from "../button/types";
 

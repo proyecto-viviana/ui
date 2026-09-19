@@ -1,5 +1,5 @@
 /* Glasselated primitives shared by the showcase (and, later, the real screens). */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { meshStrip } from "@/lib/glasselated";
 import { useGlasselatedTheme } from "./glasselated-theme";
 

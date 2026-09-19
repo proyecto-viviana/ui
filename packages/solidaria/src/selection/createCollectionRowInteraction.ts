@@ -12,7 +12,8 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/gridlist/useGridListItem.ts
 
-import type { Accessor, JSX } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   getActiveElement,
   getEventTarget,
@@ -45,7 +46,6 @@ interface CollectionRowInteractionOptions {
 
 type CollectionRowInteractionProps<T extends HTMLElement> = JSX.HTMLAttributes<T> & {
   onKeyDownCapture?: JSX.EventHandler<T, KeyboardEvent>;
-  "oncapture:keydown"?: JSX.EventHandler<T, KeyboardEvent>;
 };
 
 /**
@@ -108,7 +108,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   rowProps: CollectionRowInteractionProps<T>,
   options: CollectionRowInteractionOptions,
 ): CollectionRowInteractionProps<T> {
-  const baseOnKeyDownCapture = (rowProps["oncapture:keydown"] ?? rowProps.onKeyDownCapture) as
+  const baseOnKeyDownCapture = rowProps.onKeyDownCapture as
     | ((event: KeyboardEvent) => void)
     | undefined;
   const baseOnKeyDown = rowProps.onKeyDown as ((event: KeyboardEvent) => void) | undefined;
@@ -267,10 +267,9 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
 
   return {
     ...rowProps,
-    // Solid ignores React's `onKeyDownCapture` on a spread; `oncapture:keydown` is
-    // the live capture binding (same prefix as createDraggableItem). Keep the
-    // RAC name so unit tests can still invoke the handler off rowProps.
-    "oncapture:keydown": captureHandler,
+    // Solid 2 has no capture JSX. The live binding is `bindCapture` in
+    // createGridListItem / createTreeItem. Keep the RAC name so unit tests
+    // can still invoke the handler off rowProps.
     onKeyDownCapture: captureHandler,
     onKeyDown,
     onPointerDown,

@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, fireEvent, screen } from "@solidjs/testing-library";
-import { createSignal, createRoot, Show } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, fireEvent, screen } from "@solidjs/testing-library"; import { createSignal, createRoot, flush, Show } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "@proyecto-viviana/solid-stately";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createTooltip, createTooltipTrigger } from "../src/tooltip";
@@ -390,6 +388,7 @@ describe("createTooltipTrigger - hover behavior", () => {
     // Leave trigger
     fireEvent.pointerLeave(trigger);
     vi.advanceTimersByTime(500);
+    flush();
 
     // Tooltip should be hidden
     expect(screen.queryByTestId("tooltip")).toBeNull();

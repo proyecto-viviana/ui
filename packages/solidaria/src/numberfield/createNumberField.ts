@@ -17,7 +17,10 @@
  * Based on @react-aria/numberfield useNumberField.
  */
 
-import { type JSX, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { followRef } from "../utils/refs";
+import { createEffect, createMemo, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { NumberFieldState, ValidityState } from "@proyecto-viviana/solid-stately";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -134,8 +137,9 @@ export function createNumberField(
   const id = createId(getProps().id);
   const displayValidation = () => state.displayValidation();
 
+  const resolvedInput = followRef(() => inputRef?.() ?? null);
   createFormReset(
-    () => inputRef?.() ?? undefined,
+    () => resolvedInput() ?? undefined,
     state.defaultNumberValue,
     (value) => state.setNumberValue(value),
   );
@@ -144,12 +148,12 @@ export function createNumberField(
       get validationBehavior() {
         return getProps().validationBehavior ?? "native";
       },
-      focus: () => inputRef?.()?.focus(),
+      focus: () => resolvedInput()?.focus(),
     },
     state,
-    () => inputRef?.() ?? undefined,
+    () => resolvedInput() ?? undefined,
   );
-  createNativeValidation(state, getProps, inputRef);
+  createNativeValidation(state, getProps, () => resolvedInput() ?? null);
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -232,13 +236,15 @@ export function createNumberField(
     p.onFocusChange?.(true);
   };
 
-  createEffect(() => {
-    const value = state.inputValue();
-    if (isFocused) {
-      clearAnnouncer("assertive");
-      announce(value, "assertive");
-    }
-  });
+  createEffect(
+    () => state.inputValue(),
+    (value) => {
+      if (isFocused) {
+        clearAnnouncer("assertive");
+        announce(value, "assertive");
+      }
+    },
+  );
 
   // Handle keyboard events
   const onKeyDown: JSX.EventHandler<HTMLInputElement, KeyboardEvent> = (e) => {
@@ -343,7 +349,7 @@ export function createNumberField(
     }
     isSpinning = false;
   };
-  onCleanup(clearSpin);
+  onOwnedCleanup(clearSpin);
 
   const startSpin = (direction: "up" | "down", initialDelay: number) => {
     clearSpin();
@@ -454,8 +460,8 @@ export function createNumberField(
     get groupProps() {
       return mergeProps(focusWithinProps, {
         role: "group",
-        "aria-disabled": getProps().isDisabled || undefined,
-        "aria-invalid": displayValidation().isInvalid || undefined,
+        "aria-disabled": getProps().isDisabled ? "true" : undefined,
+        "aria-invalid": displayValidation().isInvalid ? "true" : undefined,
       }) as JSX.HTMLAttributes<HTMLElement>;
     },
     get inputProps() {
@@ -597,59 +603,73 @@ function createNativeValidation(
   getProps: () => AriaNumberFieldProps,
   inputRef?: () => HTMLInputElement | null,
 ): void {
-  createEffect(() => {
-    const commitBehavior = getProps().commitBehavior ?? "snap";
-    const input = inputRef?.() ?? null;
-    if (
-      commitBehavior !== "validate" ||
-      state.realtimeValidation().isInvalid ||
-      !input ||
-      input.disabled
-    ) {
-      return;
-    }
+  createEffect(
+    () => ({
+      commitBehavior: getProps().commitBehavior ?? "snap",
+      input: inputRef?.() ?? null,
+      realtimeInvalid: state.realtimeValidation().isInvalid,
+      min: state.minValue(),
+      max: state.maxValue(),
+      step: state.step(),
+      value: state.numberValue(),
+      // Re-apply after the text input's value is written; assigning `value`
+      // clears customValidity in the DOM.
+      inputValue: state.inputValue(),
+      validationBehavior: getProps().validationBehavior ?? "native",
+    }),
+    ({ commitBehavior, input, realtimeInvalid, min, max, step, value, validationBehavior }) => {
+      if (commitBehavior !== "validate" || !input || input.disabled) {
+        return;
+      }
 
-    if (!numberInput && typeof document !== "undefined") {
-      numberInput = document.createElement("input");
-      numberInput.type = "number";
-    }
+      if (!numberInput && typeof document !== "undefined") {
+        numberInput = document.createElement("input");
+        numberInput.type = "number";
+      }
 
-    if (!numberInput) {
-      return;
-    }
+      if (!numberInput) {
+        return;
+      }
 
-    const min = state.minValue();
-    const max = state.maxValue();
-    const step = state.step();
-    const value = state.numberValue();
+      numberInput.min = min != null && !isNaN(min) ? String(min) : "";
+      numberInput.max = max != null && !isNaN(max) ? String(max) : "";
+      numberInput.step = step != null && !isNaN(step) ? String(step) : "";
+      numberInput.value = value != null && !isNaN(value) ? String(value) : "";
 
-    numberInput.min = min != null && !isNaN(min) ? String(min) : "";
-    numberInput.max = max != null && !isNaN(max) ? String(max) : "";
-    numberInput.step = step != null && !isNaN(step) ? String(step) : "";
-    numberInput.value = value != null && !isNaN(value) ? String(value) : "";
+      const rangeOverflow = max != null && !isNaN(max) && value != null && !isNaN(value) && value > max;
+      const rangeUnderflow =
+        min != null && !isNaN(min) && value != null && !isNaN(value) && value < min;
+      const nativeInvalid = !numberInput.validity.valid || rangeOverflow || rangeUnderflow;
+      if (!nativeInvalid) {
+        return;
+      }
 
-    const valid = input.validity.valid && numberInput.validity.valid;
-    const validationMessage = input.validationMessage || numberInput.validationMessage;
-    state.updateValidation({
-      isInvalid: !valid,
-      validationErrors: validationMessage ? [validationMessage] : [],
-      validationDetails: {
-        badInput: input.validity.badInput,
-        customError: input.validity.customError,
-        patternMismatch: input.validity.patternMismatch,
-        rangeOverflow: numberInput.validity.rangeOverflow,
-        rangeUnderflow: numberInput.validity.rangeUnderflow,
-        stepMismatch: numberInput.validity.stepMismatch,
-        tooLong: input.validity.tooLong,
-        tooShort: input.validity.tooShort,
-        typeMismatch: input.validity.typeMismatch,
-        valueMissing: input.validity.valueMissing,
-        valid,
-      },
-    });
-
-    if ((getProps().validationBehavior ?? "native") === "native" && !numberInput.validity.valid) {
-      input.setCustomValidity(numberInput.validationMessage);
-    }
-  });
+      const validationMessage =
+        numberInput.validationMessage ||
+        (rangeOverflow ? "Value exceeds the maximum." : "") ||
+        (rangeUnderflow ? "Value is below the minimum." : "");
+      if (validationBehavior === "native") {
+        input.setCustomValidity(validationMessage);
+      }
+      if (!realtimeInvalid) {
+        state.updateValidation({
+          isInvalid: true,
+          validationErrors: validationMessage ? [validationMessage] : [],
+          validationDetails: {
+            badInput: input.validity.badInput,
+            customError: true,
+            patternMismatch: input.validity.patternMismatch,
+            rangeOverflow: rangeOverflow || numberInput.validity.rangeOverflow,
+            rangeUnderflow: rangeUnderflow || numberInput.validity.rangeUnderflow,
+            stepMismatch: numberInput.validity.stepMismatch,
+            tooLong: input.validity.tooLong,
+            tooShort: input.validity.tooShort,
+            typeMismatch: input.validity.typeMismatch,
+            valueMissing: input.validity.valueMissing,
+            valid: false,
+          },
+        });
+      }
+    },
+  );
 }

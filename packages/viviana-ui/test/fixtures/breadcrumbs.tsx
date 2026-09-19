@@ -13,7 +13,7 @@
  * Six items exceeds MAX_VISIBLE_ITEMS (4), so both halves render the collapsed shape: first item,
  * overflow menu, then the fallback tail.
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Breadcrumb, Breadcrumbs, Provider } from "../../src";
 
 export interface CrumbItem {

@@ -17,7 +17,8 @@
  * Based on @react-stately/slider useSliderState.
  */
 
-import { type Accessor, createMemo } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 
 export type SliderOrientation = "horizontal" | "vertical";

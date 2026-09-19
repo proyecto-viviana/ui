@@ -18,7 +18,7 @@
  * Provides accessible step list and step item props.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { StepListState } from "@proyecto-viviana/solid-stately";
 import type { Key } from "@proyecto-viviana/solid-stately";
 
@@ -105,7 +105,7 @@ export function createStep(props: AriaStepProps, state: StepListState): StepAria
           return isSelected() ? ("step" as const) : undefined;
         },
         get "aria-disabled"() {
-          return !selectable() ? true : undefined;
+          return !selectable() ? "true" : undefined;
         },
         get tabIndex() {
           return selectable() ? 0 : undefined;

@@ -1,10 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
-import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { createSignal } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library"; import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils"; import { createSignal } from "solid-js";
 import packageJson from "../package.json";
 import * as actionMenuSubpath from "../src/ActionMenu";
 import {
@@ -264,7 +261,7 @@ describe("ActionMenu (solid-spectrum)", () => {
 
   it("resolves slotted ActionMenuContext props and lets local props override context", () => {
     render(() => (
-      <ActionMenuContext.Provider
+      <ActionMenuContext
         value={{
           slots: {
             primary: {
@@ -288,7 +285,7 @@ describe("ActionMenu (solid-spectrum)", () => {
           getKey={(item) => item.id}
         />
         <ActionMenu slot={null} label="Local actions" items={items} getKey={(item) => item.id} />
-      </ActionMenuContext.Provider>
+      </ActionMenuContext>
     ));
 
     const slottedTrigger = screen.getByRole("button", { name: "Context actions" });
@@ -850,7 +847,7 @@ describe("ActionMenu (solid-spectrum)", () => {
   it("merges ActionMenuContext props, styles, unsafe style, and refs into the trigger", () => {
     let triggerElement: HTMLButtonElement | undefined;
     render(() => (
-      <ActionMenuContext.Provider
+      <ActionMenuContext
         value={{
           size: "XL",
           isQuiet: true,
@@ -863,7 +860,7 @@ describe("ActionMenu (solid-spectrum)", () => {
         }}
       >
         <ActionMenu items={items} getKey={(item) => item.id} />
-      </ActionMenuContext.Provider>
+      </ActionMenuContext>
     ));
 
     const trigger = screen.getByRole("button", { name: "More actions" });

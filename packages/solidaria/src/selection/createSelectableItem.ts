@@ -41,7 +41,9 @@
  *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
-import { createEffect, createUniqueId, type Accessor, type JSX } from "solid-js";
+import { createEffect, createUniqueId, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   Collection,
   DisabledBehavior,
@@ -316,7 +318,7 @@ export function createSelectableItem<T>(
   // is the imperative half of roving tabindex — the tabIndex 0/-1 swap below is
   // only declarative.
   const dragSession = createDragSession();
-  createEffect(() => {
+  createTrackedEffect(() => {
     // While a keyboard drag session is active, real DOM focus is owned by the
     // DragManager (it lives on drop indicators / the collection), and upstream's
     // React `useSelectableItem` focus effect provably cannot re-run mid-drag —

@@ -32,19 +32,9 @@
  * Port of react-aria-components/src/DateField.tsx
  */
 
-import {
-  type JSX,
-  type Context,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-  Index,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createDateField,
   createDateSegment,
@@ -81,6 +71,7 @@ import {
 } from "./utils";
 import { TextContext } from "./Text";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DateRangePickerContext,
   type DateRangePickerFieldContextValue,
@@ -188,7 +179,7 @@ export function useDateFieldContext(): DateFieldContextValue {
 }
 
 function useDateInputContext(
-  slot?: string,
+  slot?: string | JSX.RemoveAttribute,
 ): DateFieldContextValue | DateRangePickerFieldContextValue {
   const dateFieldContext = useContext(DateFieldContext);
   if (dateFieldContext) {
@@ -326,8 +317,8 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
   };
 
   return (
-    <DateFieldStateContext.Provider value={state as unknown as DateFieldState<DateValue>}>
-      <DateFieldContext.Provider
+    <DateFieldStateContext value={state as unknown as DateFieldState<DateValue>}>
+      <DateFieldContext
         value={{
           state: state as unknown as DateFieldState<DateValue>,
           // Read through getters so consumers see the LIVE memo values, not a
@@ -379,7 +370,7 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
         {/*
           RAC renders <HiddenDateInput> UNCONDITIONALLY at the DateField root
           (react-aria-components DateField.mjs). It is NOT a validation input — it
-          is a clipped, aria-hidden, tabIndex={-1} native date input that mirrors
+          is a clipped, aria-hidden, tabindex={-1} native date input that mirrors
           the value for browser autofill. Its `form=""` detaches it from form
           submission (the DateInput's <Input> above is what submits), so it never
           double-counts in FormData. It renders regardless of `name` — hence no
@@ -392,8 +383,8 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
           isDisabled={state.isDisabled()}
           state={state as unknown as DateFieldState<DateValue>}
         />
-      </DateFieldContext.Provider>
-    </DateFieldStateContext.Provider>
+      </DateFieldContext>
+    </DateFieldStateContext>
   );
 }
 
@@ -411,7 +402,7 @@ interface RootHiddenDateInputProps {
 /**
  * The always-rendered hidden date input at the DateField root — a faithful port
  * of react-aria-components/src/HiddenDateInput.tsx. It is NOT a validation
- * input: it is a clipped, aria-hidden, tabIndex={-1} native
+ * input: it is a clipped, aria-hidden, tabindex={-1} native
  * date input that mirrors the current value for browser autofill. `form=""`
  * detaches it from form submission (the DateInput's <Input> submits), so it
  * never double-counts in FormData. RAC renders it unconditionally, which is why
@@ -476,7 +467,7 @@ function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
       data-testid="hidden-dateinput-container"
     >
       <input
-        tabIndex={-1}
+        tabindex={-1}
         autocomplete={props.autoComplete}
         disabled={props.isDisabled}
         type={inputType()}
@@ -527,7 +518,9 @@ export function DateInput(props: DateInputProps): JSX.Element {
     }),
   );
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = inputRef();
     const handler = props.onPointerDownCapture;
     if (!element || !handler) return;
@@ -535,11 +528,13 @@ export function DateInput(props: DateInputProps): JSX.Element {
     const listener = (event: PointerEvent) =>
       (handler as unknown as (event: PointerEvent) => void)(event);
     element.addEventListener("pointerdown", listener, { capture: true });
-    onCleanup(() => element.removeEventListener("pointerdown", listener, { capture: true }));
-  });
+    _s2Cleanups.push(() => element.removeEventListener("pointerdown", listener, { capture: true }));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return (
-    <DateFieldContext.Provider value={context as DateFieldContextValue}>
+    <DateFieldContext value={context as DateFieldContextValue}>
       <div
         ref={setInputRef}
         {...inputDivProps()}
@@ -548,12 +543,12 @@ export function DateInput(props: DateInputProps): JSX.Element {
         data-focused={dataAttr(isFocused())}
       >
         {/*
-          <Index> keys by position, not identity, so each DateSegment instance
-          stays alive across keystrokes (state.segments() re-mints segment
-          objects every edit). A stable Proxy forwards property reads to the
-          live per-index accessor so the child stays reactive.
+          <For keyed={false}> keys by position, not identity, so each DateSegment
+          instance stays alive across keystrokes (state.segments() re-mints
+          segment objects every edit). A stable Proxy forwards property reads to
+          the live per-index accessor so the child stays reactive.
         */}
-        <Index each={state.segments()}>
+        <For each={state.segments()} keyed={false}>
           {(segment) => {
             const liveSegment = new Proxy({} as DateSegmentType, {
               get: (_t, key) => (segment() as unknown as Record<PropertyKey, unknown>)[key],
@@ -561,7 +556,7 @@ export function DateInput(props: DateInputProps): JSX.Element {
             });
             return props.children?.(liveSegment);
           }}
-        </Index>
+        </For>
       </div>
       {/*
         The hidden validation input, sibling of the group — mirrors RAC's
@@ -577,7 +572,7 @@ export function DateInput(props: DateInputProps): JSX.Element {
           <input {...(hiddenInputProps() as JSX.InputHTMLAttributes<HTMLInputElement>)} />
         )}
       </Show>
-    </DateFieldContext.Provider>
+    </DateFieldContext>
   );
 }
 
@@ -658,14 +653,14 @@ export function DateSegment(props: DateSegmentProps): JSX.Element {
       ref={setSegmentRef}
       {...segmentElementProps()}
       class={renderProps.class()}
-      data-placeholder={props.segment.isPlaceholder || undefined}
-      data-invalid={state.isInvalid() || undefined}
-      data-readonly={state.isReadOnly() || undefined}
-      data-disabled={state.isDisabled() || undefined}
+      data-placeholder={dataAttr(props.segment.isPlaceholder)}
+      data-invalid={dataAttr(state.isInvalid())}
+      data-readonly={dataAttr(state.isReadOnly())}
+      data-disabled={dataAttr(state.isDisabled())}
       data-type={props.segment.type}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
     >
       {getChildren()}
     </span>

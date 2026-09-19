@@ -17,7 +17,8 @@
  * Ported from packages/react-stately/src/tabs/useTabListState.ts.
  */
 
-import { createEffect, createMemo, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createMemo, onCleanup } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "../collections/ListCollection";
 import type {

@@ -20,7 +20,9 @@
  * Ported from packages/react-aria/src/color/useColorWheel.ts.
  */
 
-import { createMemo, onCleanup, type Accessor } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { ColorWheelState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
@@ -144,7 +146,7 @@ export function createColorWheel(
     };
   };
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     cleanupPointerDrag?.();
     cleanupMouseDrag?.();
   });

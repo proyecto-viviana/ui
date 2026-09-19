@@ -11,7 +11,8 @@
  * `CardPreview` under `HudFrame` brackets, the words beneath it. Same content,
  * same order, drawn by the register rather than by the app.
  */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button,
   Card,

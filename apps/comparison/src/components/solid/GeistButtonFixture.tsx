@@ -1,5 +1,7 @@
-/** @jsxImportSource solid-js */
-import { Show, createSignal, onCleanup, onMount, type Component, type JSX } from "solid-js";
+/** @jsxImportSource @solidjs/web */
+import { Show, createSignal, onCleanup, onSettled } from "solid-js";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Button } from "@proyecto-viviana/geist/components/button";
 import {
   GEIST_BUTTON_FIXTURE_DEFAULTS,
@@ -101,7 +103,7 @@ export default function GeistButtonFixture() {
   const [formResult, setFormResult] = createSignal("idle");
   const [hydrated, setHydrated] = createSignal(false);
 
-  onMount(() => {
+  onSettled(() => {
     setHydrated(true);
     const updateState = (event: Event) => {
       const detail = (event as CustomEvent<unknown>).detail;

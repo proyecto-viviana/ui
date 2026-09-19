@@ -1,5 +1,6 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount, type JSX } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { Image as SolidSpectrumImage } from "@proyecto-viviana/solid-spectrum/Image";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -80,7 +81,7 @@ function SolidSpectrumSkeletonDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "skeleton") {
         setDemoProps(normalizeSkeletonDemoProps(event.detail.props ?? {}));

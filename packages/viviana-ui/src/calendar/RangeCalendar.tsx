@@ -20,17 +20,8 @@
 // Port of packages/@react-spectrum/s2/src/Calendar.tsx.
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
 
-import {
-  type JSX,
-  For,
-  Show,
-  createContext,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { For, Show, createContext, createMemo, createSignal, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   RangeCalendar as HeadlessRangeCalendar,
   RangeCalendarButton,
@@ -58,6 +49,7 @@ import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

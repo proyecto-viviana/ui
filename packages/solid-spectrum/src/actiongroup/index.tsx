@@ -31,7 +31,7 @@
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/SegmentedControl.tsx.
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ActionGroup as HeadlessActionGroup,
   type ActionGroupProps as HeadlessActionGroupProps,
@@ -44,6 +44,7 @@ import type { StyleString } from "../style";
 import { baseColor, css, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ActionGroupProps<T extends ActionGroupItem = ActionGroupItem> {
   /** The items in the action group. */

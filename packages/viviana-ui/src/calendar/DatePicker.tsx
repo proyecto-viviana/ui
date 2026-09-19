@@ -18,7 +18,8 @@
 
 // Style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
-import { createContext, createSignal, type JSX, splitProps, Show, useContext } from "solid-js";
+import { createContext, createSignal, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { pressScale } from "../pressScale";
 import {
   DatePicker as HeadlessDatePicker,
@@ -53,6 +54,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   control,
   controlBorderRadius,

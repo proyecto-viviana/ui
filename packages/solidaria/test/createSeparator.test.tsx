@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
-import { Dynamic } from "solid-js/web";
+import { describe, it, expect } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { Dynamic } from "@solidjs/web";
 import { createMemo } from "solid-js";
 import { createSeparator } from "../src/separator";
 

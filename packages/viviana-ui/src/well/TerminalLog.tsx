@@ -1,11 +1,13 @@
 // Local addition — no S2 counterpart. See the JSDoc on TerminalLog below.
 
-import { type JSX, For, Show, splitProps } from "solid-js";
+import { For, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { bootIn as bootInKeyframes, tglCaret } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides, wellScan } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /**
  * The ink a log line (or one span of it) reports in. The four status channels are

@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import {
   Breadcrumb as SolidSpectrumBreadcrumb,
@@ -36,7 +36,7 @@ function SolidSpectrumBreadcrumbsDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "breadcrumbs") {
         const nextProps = normalizeBreadcrumbsDemoProps(event.detail.props ?? {});

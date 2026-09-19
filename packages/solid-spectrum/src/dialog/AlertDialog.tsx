@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/AlertDialog.tsx
 
 // Port of packages/@react-spectrum/s2/src/AlertDialog.tsx.
-import { type JSX, Show, splitProps } from "solid-js";
+import { Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { Button, type ButtonVariant } from "../button";
 import { ButtonGroup } from "../buttongroup";
@@ -25,6 +26,7 @@ import { s2IntlStrings } from "../intl";
 import { Content, Heading } from "../text";
 import { style } from "../style" with { type: "macro" };
 import { Dialog, DialogTrigger, type DialogRenderProps, type DialogSize } from "./Dialog";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type AlertDialogVariant =
   | "confirmation"
@@ -147,7 +149,7 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
     >
       {({ close }: DialogRenderProps) => (
         <>
-          <IconContext.Provider value={{ styles: () => icon({ variant: variant() }) }}>
+          <IconContext value={{ styles: () => icon({ variant: variant() }) }}>
             <Heading slot="title">
               <CenterBaseline>
                 <Show when={variant() === "error"}>
@@ -165,7 +167,7 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
                 {local.title}
               </CenterBaseline>
             </Heading>
-          </IconContext.Provider>
+          </IconContext>
           <Content>{local.children}</Content>
           <ButtonGroup>
             <Show when={local.cancelLabel}>

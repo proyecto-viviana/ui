@@ -3,10 +3,7 @@
  *
  * Ported from @react-stately/searchfield useSearchFieldState.
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createSignal } from "./owned-signal";
-
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
 import { createSearchFieldState } from "../src/searchfield/createSearchFieldState";
 
 describe("createSearchFieldState", () => {

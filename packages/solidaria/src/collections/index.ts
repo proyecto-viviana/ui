@@ -15,8 +15,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/collections/Hidden.tsx
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/collections/useCachedChildren.ts
 
-import { createContext, createMemo, useContext, type Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { access, type MaybeAccessor, useContextOptional } from "../utils";
+import { createContext, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import {
   ListCollection,
   type Collection as StatelyCollection,
@@ -152,7 +153,7 @@ export function createHideableComponent<TProps>(
 }
 
 export function useIsHidden(): Accessor<boolean> {
-  return useContext(HiddenContext) ?? (() => false);
+  return useContextOptional(HiddenContext) ?? (() => false);
 }
 
 /**

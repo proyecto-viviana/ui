@@ -15,16 +15,9 @@
 
 // Port of packages/@react-spectrum/s2/src/Skeleton.tsx.
 // Port of packages/@react-spectrum/s2/src/SkeletonCollection.tsx.
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  type Accessor,
-  type JSX,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
 import { css } from "../style/style-macro" with { type: "macro" };
 import { skSweep } from "../style/motion" with { type: "macro" };
@@ -142,22 +135,28 @@ export function useLoadingAnimation(
   const [element, setElement] = createSignal<Element | null>(null);
   let animation: Animation | undefined;
 
-  createEffect(() => {
-    const target = element();
-    const shouldAnimate = access(isAnimating) && !reduceMotion();
-
-    if (target && shouldAnimate && !animation && typeof target.animate === "function") {
-      animation = target.animate([{ backgroundPosition: "100%" }, { backgroundPosition: "0%" }], {
-        duration: 2000,
-        iterations: Infinity,
-        easing: "ease-in-out",
-      });
-      animation.startTime = 0;
-    } else if ((!target || !shouldAnimate) && animation) {
-      animation.cancel();
-      animation = undefined;
-    }
-  });
+  createEffect(
+    () => {
+      const target = element();
+      const shouldAnimate = access(isAnimating) && !reduceMotion();
+      return { target, shouldAnimate };
+    },
+    ({ target, shouldAnimate }) => {
+      if (target && shouldAnimate && !animation && typeof target.animate === "function") {
+        animation = target.animate([{ backgroundPosition: "100%" }, { backgroundPosition: "0%" }], {
+          duration: 2000,
+          iterations: Infinity,
+          easing: "ease-in-out",
+        });
+        animation.startTime = 0;
+        return;
+      }
+      if ((!target || !shouldAnimate) && animation) {
+        animation.cancel();
+        animation = undefined;
+      }
+    },
+  );
 
   onCleanup(() => {
     animation?.cancel();
@@ -172,18 +171,23 @@ export function useInertAttribute(
 ): (element: Element | null) => void {
   const [element, setElement] = createSignal<Element | null>(null);
 
-  createEffect(() => {
-    const target = element();
-    if (!target) {
-      return;
-    }
-
-    if (access(isInert)) {
-      target.setAttribute("inert", "true");
-    } else {
-      target.removeAttribute("inert");
-    }
-  });
+  createEffect(
+    () => {
+      const target = element();
+      const inert = access(isInert);
+      return { target, inert };
+    },
+    ({ target, inert }) => {
+      if (!target) {
+        return;
+      }
+      if (inert) {
+        target.setAttribute("inert", "true");
+      } else {
+        target.removeAttribute("inert");
+      }
+    },
+  );
 
   return setElement;
 }
@@ -191,7 +195,7 @@ export function useInertAttribute(
 export function Skeleton(props: SkeletonProps): JSX.Element {
   const isLoading = createMemo(() => props.isLoading);
 
-  return <SkeletonContext.Provider value={isLoading}>{props.children}</SkeletonContext.Provider>;
+  return <SkeletonContext value={isLoading}>{props.children}</SkeletonContext>;
 }
 
 export function SkeletonText(props: { children: JSX.Element }): JSX.Element {
@@ -246,7 +250,7 @@ export function SkeletonWrapper(props: { children: JSX.Element }): JSX.Element {
   }
 
   return (
-    <SkeletonContext.Provider value={null}>
+    <SkeletonContext value={null}>
       {isLoading() ? (
         <span
           ref={(element) => {
@@ -260,7 +264,7 @@ export function SkeletonWrapper(props: { children: JSX.Element }): JSX.Element {
       ) : (
         props.children
       )}
-    </SkeletonContext.Provider>
+    </SkeletonContext>
   );
 }
 

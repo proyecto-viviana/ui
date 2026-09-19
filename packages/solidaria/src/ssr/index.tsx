@@ -23,20 +23,11 @@
  * This module adds Solid-specific hydration, document-access, and portal-owner utilities.
  */
 
-import {
-  type Accessor,
-  type JSX,
-  type ParentProps,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-  useContext,
-  createUniqueId,
-} from "solid-js";
-import { isServer } from "solid-js/web";
+import { useContextOptional } from "../utils/owner";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, onSettled, createUniqueId, createTrackedEffect } from "solid-js";
+import type { Accessor, ParentProps, Signal } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 
 export interface SSRProviderProps extends ParentProps {}
 
@@ -92,9 +83,9 @@ export function createId(defaultId?: string): string {
   if (defaultId) {
     return defaultId;
   }
-  const ctx = useContext(SSRContext);
+  const ctx = useContextOptional(SSRContext);
   const uniqueId = createUniqueId();
-  return ctx.prefix ? `solidaria-${ctx.prefix}-${uniqueId}` : `solidaria-${uniqueId}`;
+  return ctx?.prefix ? `solidaria-${ctx.prefix}-${uniqueId}` : `solidaria-${uniqueId}`;
 }
 
 /**
@@ -122,7 +113,7 @@ export function createSlotId(deps: Array<Accessor<unknown>> = []): Accessor<stri
   // id first so a slot that just mounted can receive it, then probe the DOM
   // after that render commits. `probeTick` is a separate signal so this
   // effect does not re-yield when the probe clears `resolvedId`.
-  createEffect(() => {
+  createTrackedEffect(() => {
     for (const dep of deps) {
       dep();
     }
@@ -130,7 +121,7 @@ export function createSlotId(deps: Array<Accessor<unknown>> = []): Accessor<stri
     setProbeTick((tick) => tick + 1);
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     probeTick();
     if (resolvedId() !== id) {
       return;
@@ -164,18 +155,18 @@ export function createSlotId(deps: Array<Accessor<unknown>> = []): Accessor<stri
  * ```
  */
 export function SSRProvider(props: SSRProviderProps & { prefix?: string }): JSX.Element {
-  const parentContext = useContext(SSRContext);
+  const parentContext = useContextOptional(SSRContext);
 
   const value = createMemo<SSRContextValue>(() => ({
     isSSR: isServer,
     prefix: props.prefix
-      ? parentContext.prefix
+      ? parentContext?.prefix
         ? `${parentContext.prefix}-${props.prefix}`
         : props.prefix
-      : parentContext.prefix,
+      : (parentContext?.prefix ?? ""),
   }));
 
-  return <SSRContext.Provider value={value()}>{props.children}</SSRContext.Provider>;
+  return <SSRContext value={value()}>{props.children}</SSRContext>;
 }
 
 /**
@@ -207,7 +198,7 @@ export function createHydrationState(): Accessor<boolean> {
   // On the client, track hydration state
   const [isHydrating, setIsHydrating] = createSignal(true);
 
-  onMount(() => {
+  onSettled(() => {
     setIsHydrating(false);
   });
 
@@ -226,7 +217,7 @@ export function createHydrationState(): Accessor<boolean> {
  * function BrowserOnlyFeature() {
  *   const isSSR = useIsSSR();
  *
- *   createEffect(() => {
+ *   createTrackedEffect(() => {
  *     if (!isSSR()) {
  *       // Safe to access browser APIs here
  *       window.localStorage.getItem('key');
@@ -265,12 +256,16 @@ export function createBrowserEffect(fn: () => void | (() => void)): void {
     return;
   }
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = fn();
     if (typeof cleanup === "function") {
-      onCleanup(cleanup);
+      _s2Cleanups.push(cleanup);
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 }
 
 /**
@@ -297,9 +292,9 @@ export function createBrowserValue<T>(fn: () => T, fallback: T): Accessor<T> {
     return () => fallback;
   }
 
-  const [value, setValue] = createSignal<T>(fallback);
+  const [value, setValue] = createSignal(fallback as Exclude<T, Function>) as Signal<T>;
 
-  onMount(() => {
+  onSettled(() => {
     setValue(() => fn());
   });
 

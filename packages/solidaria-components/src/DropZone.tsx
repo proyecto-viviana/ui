@@ -19,15 +19,8 @@
  * Based on packages/react-aria-components/src/DropZone.tsx.
  */
 
-import {
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createDrop,
   createFocusRing,
@@ -36,6 +29,7 @@ import {
   type HoverEvents,
   type AriaDropOptions,
   createStringFormatter,
+  mergeProps,
 } from "@proyecto-viviana/solidaria";
 import {
   type ClassNameOrFunction,
@@ -44,9 +38,11 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
 import { racIntlStrings } from "./intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface DropZoneRenderProps {
   isHovered: boolean;
@@ -87,7 +83,7 @@ function isFocusableElement(target: Element): boolean {
  */
 export function DropZone(props: DropZoneProps): JSX.Element {
   const contextProps = useContext(DropZoneContext);
-  const mergedProps = mergeProps(contextProps ?? {}, props);
+  const mergedProps = mergeProps<DropZoneProps>(contextProps ?? {}, props);
   const [local, dropProps, hoverEventProps, domProps] = splitProps(
     mergedProps,
     ["children", "class", "style", "slot", "aria-label", "aria-labelledby"],
@@ -231,11 +227,11 @@ export function DropZone(props: DropZoneProps): JSX.Element {
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
-      data-hovered={isHovered() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-drop-target={dropAria.isDropTarget || undefined}
-      data-disabled={dropProps.isDisabled || undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-drop-target={dataAttr(dropAria.isDropTarget)}
+      data-disabled={dataAttr(dropProps.isDisabled)}
     >
       <VisuallyHidden>
         <button

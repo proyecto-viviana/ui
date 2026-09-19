@@ -13,18 +13,8 @@
 
 // Port of packages/@react-spectrum/s2/src/SelectBoxGroup.tsx.
 
-import {
-  children as resolveChildren,
-  createContext,
-  createEffect,
-  createMemo,
-  type JSX,
-  onCleanup,
-  Show,
-  splitProps,
-  createSignal,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, createContext, createEffect, createMemo, onCleanup, Show, createSignal, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ListBox as HeadlessListBox,
@@ -42,6 +32,7 @@ import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import { pressScale } from "../pressScale";
 import { glassSurface } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -422,7 +413,9 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   const orientation = (): SelectBoxOrientation => local.orientation ?? "vertical";
   const selectionMode = (): "single" | "multiple" =>
     local.selectionMode === "multiple" ? "multiple" : "single";
-  const [staticItems, setStaticItems] = createSignal<StaticSelectBoxItem[]>([]);
+  const [staticItems, setStaticItems] = createSignal<StaticSelectBoxItem[]>([], {
+    ownedWrite: true,
+  });
   const staticItemMap = new Map<Key, StaticSelectBoxItem>();
   const usesStaticChildren = () => headlessProps.items == null;
   const syncStaticItems = () => setStaticItems(Array.from(staticItemMap.values()));
@@ -504,12 +497,12 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   };
 
   return (
-    <SelectBoxContext.Provider value={contextValue}>
-      <StaticSelectBoxCollectionContext.Provider
+    <SelectBoxContext value={contextValue}>
+      <StaticSelectBoxCollectionContext
         value={usesStaticChildren() ? staticCollectionContext : null}
       >
         {staticRegistrationChildren()}
-      </StaticSelectBoxCollectionContext.Provider>
+      </StaticSelectBoxCollectionContext>
       <HeadlessListBox
         {...headlessProps}
         ref={(element) => assignGroupRefs(element)}
@@ -529,7 +522,7 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
       >
         {(item: T) => renderItem(item)}
       </HeadlessListBox>
-    </SelectBoxContext.Provider>
+    </SelectBoxContext>
   );
 }
 
@@ -623,7 +616,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     "class",
     "ref",
   ]);
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!staticCollection) {
       return;
     }
@@ -669,7 +662,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
 
   function SelectBoxContent(renderProps: ListBoxOptionRenderProps) {
     const resolvedChildren = resolveChildren(() => local.children);
-    createEffect(() => applySlotClasses(optionElement, renderProps, orientation(), isDisabled()));
+    createTrackedEffect(() => applySlotClasses(optionElement, renderProps, orientation(), isDisabled()));
 
     return (
       <>

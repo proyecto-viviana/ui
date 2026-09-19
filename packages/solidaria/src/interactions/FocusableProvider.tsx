@@ -18,8 +18,10 @@
  * Ported from packages/react-aria/src/interactions/useFocusable.tsx.
  */
 
-import { JSX, ParentComponent, splitProps } from "solid-js";
+import { ParentComponent } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { FocusableContext, FocusableContextValue, FocusableProviderProps } from "./createFocusable";
+import { splitProps } from "../utils/splitProps";
 
 /**
  * Provides DOM props to the nearest focusable child.
@@ -53,8 +55,8 @@ export const FocusableProvider: ParentComponent<
   const [, otherProps] = splitProps(props, ["children"]);
 
   return (
-    <FocusableContext.Provider value={otherProps as FocusableContextValue}>
+    <FocusableContext value={otherProps as FocusableContextValue}>
       {props.children}
-    </FocusableContext.Provider>
+    </FocusableContext>
   );
 };

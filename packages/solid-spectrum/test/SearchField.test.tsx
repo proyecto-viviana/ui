@@ -211,11 +211,11 @@ describe("SearchField (solid-spectrum)", () => {
 
     it("merges public SearchFieldContext props", () => {
       render(() => (
-        <SearchFieldContext.Provider
+        <SearchFieldContext
           value={{ "aria-label": "Context search", defaultValue: "context value", size: "XL" }}
         >
           <SearchField />
-        </SearchFieldContext.Provider>
+        </SearchFieldContext>
       ));
       expect(screen.getByRole("searchbox", { name: "Context search" })).toHaveValue(
         "context value",

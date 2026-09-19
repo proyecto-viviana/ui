@@ -3,9 +3,7 @@
  * A setup-time snapshot of the callback would ignore a later function.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"; import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { createOverlayTriggerState } from "../../solid-stately/src";
 import { createPopover } from "../src/popover/createPopover";
 
@@ -44,17 +42,25 @@ describe("createPopover", () => {
     const state = createOverlayTriggerState({ defaultOpen: true });
     const keepOpen = () => false;
     const allowClose = () => true;
-    const [shouldClose, setShouldClose] = createSignal<(element: Element) => boolean>(keepOpen);
+    // Solid 2 treats a function initial value as a writable memo, not a stored
+    // callback. Box the filter so the signal holds an object.
+    const [shouldClose, setShouldClose] = createSignal<{ fn: (element: Element) => boolean }>({
+      fn: keepOpen,
+    });
 
     render(() => {
-      let trigger: HTMLButtonElement | undefined;
-      let popover: HTMLDivElement | undefined;
+      const [trigger, setTrigger] = createSignal<HTMLButtonElement | null>(null, {
+        ownedWrite: true,
+      });
+      const [popover, setPopover] = createSignal<HTMLDivElement | null>(null, {
+        ownedWrite: true,
+      });
       const { popoverProps } = createPopover(
         {
-          triggerRef: () => trigger ?? null,
-          popoverRef: () => popover ?? null,
+          triggerRef: trigger,
+          popoverRef: popover,
           get shouldCloseOnInteractOutside() {
-            return shouldClose();
+            return shouldClose().fn;
           },
         },
         state,
@@ -63,10 +69,10 @@ describe("createPopover", () => {
       return (
         <div>
           <div data-testid="outside">outside</div>
-          <button ref={(el) => (trigger = el)} type="button">
+          <button ref={setTrigger} type="button">
             trigger
           </button>
-          <div ref={(el) => (popover = el)} data-testid="popover" {...popoverProps}>
+          <div ref={setPopover} data-testid="popover" {...popoverProps}>
             content
           </div>
         </div>
@@ -79,7 +85,8 @@ describe("createPopover", () => {
     clickOutside(outside);
     expect(state.isOpen()).toBe(true);
 
-    setShouldClose(() => allowClose);
+    setShouldClose({ fn: allowClose });
+    flush();
 
     clickOutside(outside);
     expect(state.isOpen()).toBe(false);

@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/SearchField.tsx.
 
-import {
-  type JSX,
-  createContext,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
+import { createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   SearchField as HeadlessSearchField,
   SearchFieldLabel as HeadlessSearchFieldLabel,
@@ -58,6 +51,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { HelpText } from "../form/HelpText";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

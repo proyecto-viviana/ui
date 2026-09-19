@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig } from "vite-plus";
-import solid from "unplugin-solid/rolldown";
+import solidPlugin from "@solidjs/vite-plugin";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 
 // Keep the lower layers external. Regexes (not bare strings) so the per-primitive
@@ -9,8 +9,8 @@ import { packageAttributionBanner } from "../../scripts/package-attribution-bann
 // and resolve from the consumer's node_modules at runtime.
 const neverBundle = [
   "solid-js",
-  "solid-js/web",
-  "solid-js/store",
+  "@solidjs/web",
+  "solid-js",
   /^@proyecto-viviana\/solidaria(\/.*)?$/,
   /^@proyecto-viviana\/solid-stately(\/.*)?$/,
 ];
@@ -82,7 +82,7 @@ export default defineConfig({
         chunkFileNames: "[name].js",
         banner: packageAttributionBanner,
       },
-      plugins: [solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [...solidPlugin({ ssr: true, refresh: { disabled: true } })],
     },
   ],
 });

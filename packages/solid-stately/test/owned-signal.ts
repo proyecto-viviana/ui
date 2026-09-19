@@ -2,11 +2,8 @@
  * Test-owned signals are written from inside `createRoot` (controlled-prop
  * getters). Solid 2 throws on those writes unless the signal opts in.
  */
-import {
-  createSignal as createSolidSignal,
-  type Signal,
-  type SignalOptions,
-} from "solid-js";
+import { createSignal as createSolidSignal } from "solid-js";
+import type { Signal, SignalOptions } from "solid-js";
 
 export function createSignal<T>(): Signal<T | undefined>;
 export function createSignal<T>(

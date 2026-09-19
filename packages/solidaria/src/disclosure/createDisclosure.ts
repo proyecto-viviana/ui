@@ -20,7 +20,9 @@
  * Port of @react-aria/disclosure useDisclosure.
  */
 
-import { type JSX, createEffect, onCleanup } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type DisclosureState } from "@proyecto-viviana/solid-stately";
 import { createId, canUseDOM } from "../ssr";
 import { createPress } from "../interactions/createPress";
@@ -125,7 +127,9 @@ export function createDisclosure(
   };
 
   // Handle browser find-in-page reveal for collapsed panels.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!canUseDOM) return;
 
     const panel = panelRef();
@@ -144,13 +148,15 @@ export function createDisclosure(
     };
 
     panel.addEventListener("beforematch", handleBeforeMatch);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       panel.removeEventListener("beforematch", handleBeforeMatch);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Handle panel visibility and animation sizing.
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!canUseDOM) return;
 
     const panel = panelRef();
@@ -200,7 +206,7 @@ export function createDisclosure(
     isExpandedRef = isExpanded;
   });
 
-  onCleanup(cancelPendingRaf);
+  onOwnedCleanup(cancelPendingRaf);
 
   // Use createPress for proper interaction handling (matches Select/Menu pattern)
   const { pressProps, isPressed } = createPress({
@@ -242,7 +248,7 @@ export function createDisclosure(
         id: panelId,
         role: "group",
         "aria-labelledby": triggerId,
-        "aria-hidden": !state.isExpanded(),
+        "aria-hidden": state.isExpanded() ? "false" : "true",
         hidden: getDisclosurePanelHiddenAttribute(state.isExpanded()),
       };
     },

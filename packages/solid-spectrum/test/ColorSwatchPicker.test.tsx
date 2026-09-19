@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 import packageJson from "../package.json";
 import { ColorSwatch } from "../src/color";
@@ -131,11 +129,11 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
 
   it("applies ColorSwatchPickerContext defaults through S2 slots", () => {
     render(() => (
-      <ColorSwatchPickerContext.Provider value={{ "aria-label": "Context palette" }}>
+      <ColorSwatchPickerContext value={{ "aria-label": "Context palette" }}>
         <ColorSwatchPicker>
           <ColorSwatch color="#ff0000" />
         </ColorSwatchPicker>
-      </ColorSwatchPickerContext.Provider>
+      </ColorSwatchPickerContext>
     ));
 
     expect(screen.getByRole("listbox", { name: "Context palette" })).toBeInTheDocument();
@@ -167,9 +165,11 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
     expect(listbox.id).toMatch(/^solidaria-/);
 
     setId("contract-colorswatchpicker");
+    flush();
     expect(listbox).toHaveAttribute("id", "contract-colorswatchpicker");
 
     setLabel("");
+    flush();
     expect(screen.getByRole("listbox", { name: "Color swatches" })).toBeInTheDocument();
   });
 
@@ -236,14 +236,17 @@ describe("ColorSwatchPicker (solid-spectrum)", () => {
     const initialOptionClass = option.className;
 
     setSize("XS");
+    flush();
     const xsSwatchClass = swatch.className;
     expect(xsSwatchClass).not.toBe(initialSwatchClass);
 
     setSize("L");
+    flush();
     expect(swatch.className).not.toBe(initialSwatchClass);
     expect(swatch.className).not.toBe(xsSwatchClass);
 
     setRounding("full");
+    flush();
     expect(option.className).not.toBe(initialOptionClass);
     expect(swatch.className).not.toBe(initialSwatchClass);
   });

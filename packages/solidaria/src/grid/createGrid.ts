@@ -17,8 +17,9 @@
  * Based on @react-aria/grid/useGrid.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { GridState, GridCollection, Key } from "@proyecto-viviana/solid-stately";
 import type { GridProps, GridAria, KeyboardDelegate } from "./types";

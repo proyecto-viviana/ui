@@ -17,8 +17,9 @@
  * Based on @react-aria/table/useTable.
  */
 
-import { createMemo, createEffect, on, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo, createEffect, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TableState, TableCollection, Key, GridNode } from "@proyecto-viviana/solid-stately";
 import type { AriaTableProps, TableAria } from "./types";
@@ -141,32 +142,30 @@ export function createTable<T extends object>(
 
   // Announce sort changes (only after initial render)
   createEffect(
-    on(
-      () => state().sortDescriptor,
-      (sortDescriptor) => {
-        if (isFirstRender) {
-          isFirstRender = false;
-          prevSortDescriptor = sortDescriptor;
-          return;
-        }
-
-        if (
-          sortDescriptor &&
-          (sortDescriptor.column !== prevSortDescriptor?.column ||
-            sortDescriptor.direction !== prevSortDescriptor?.direction)
-        ) {
-          const collection = state().collection;
-          const column = collection.columns.find((c) => c.key === sortDescriptor.column);
-          const columnName = column?.textValue ?? String(sortDescriptor.column);
-          const directionText =
-            sortDescriptor.direction === "ascending" ? "ascending" : "descending";
-
-          announce(`Sorted by ${columnName}, ${directionText}`, "assertive", 500);
-        }
-
+    () => state().sortDescriptor,
+    (sortDescriptor) => {
+      if (isFirstRender) {
+        isFirstRender = false;
         prevSortDescriptor = sortDescriptor;
-      },
-    ),
+        return;
+      }
+
+      if (
+        sortDescriptor &&
+        (sortDescriptor.column !== prevSortDescriptor?.column ||
+          sortDescriptor.direction !== prevSortDescriptor?.direction)
+      ) {
+        const collection = state().collection;
+        const column = collection.columns.find((c) => c.key === sortDescriptor.column);
+        const columnName = column?.textValue ?? String(sortDescriptor.column);
+        const directionText =
+          sortDescriptor.direction === "ascending" ? "ascending" : "descending";
+
+        announce(`Sorted by ${columnName}, ${directionText}`, "assertive", 500);
+      }
+
+      prevSortDescriptor = sortDescriptor;
+    },
   );
 
   // Keyboard navigation handler with full 2D navigation
@@ -603,7 +602,7 @@ export function createTable<T extends object>(
   // rather than by transient tabindex. Doing this imperatively during the key
   // handler (in a microtask) raced Solid's reconciliation and dropped focus to
   // <body>, so Space/Enter never reached the grid's selection handler.
-  createEffect(() => {
+  createTrackedEffect(() => {
     const s = state();
     const key = s.focusedKey;
     const el = ref();

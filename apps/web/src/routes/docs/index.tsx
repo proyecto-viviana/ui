@@ -1,5 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/solid-router";
-import { For } from "solid-js";
+import { Link, createFileRoute } from "@tanstack/solid-router"; import { For } from "solid-js";
 import { FONT_DISPLAY, FONT_MONO, FONT_SANS } from "@/components/docs";
 import { apiPages } from "@/data/api-reference";
 import { seo } from "@/seo";

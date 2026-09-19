@@ -4,8 +4,11 @@
  * See ../../LICENSE-CLOUDFLARE and the package README for the current evidence gap.
  */
 
-import { Show, createMemo, splitProps, type Component, type JSX } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { Show, createMemo } from "solid-js";
+import type { Component } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Dynamic } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Button as HeadlessButton,
   type ButtonProps as HeadlessButtonProps,

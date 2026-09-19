@@ -21,7 +21,8 @@
  * Ported from packages/react-aria/src/dnd/useDrag.ts.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createDragState, type DropOperation } from "@proyecto-viviana/solid-stately";
 import type { AriaDragOptions, DragAria } from "./types";
 import {

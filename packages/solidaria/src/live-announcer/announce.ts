@@ -25,8 +25,9 @@
  * will only be created when running in the browser.
  */
 
-import { onCleanup, createEffect } from "solid-js";
-import { isServer } from "solid-js/web";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, createTrackedEffect } from "solid-js";
+import { isServer } from "@solidjs/web";
 
 export type Assertiveness = "assertive" | "polite";
 
@@ -217,7 +218,7 @@ export function clearAnnouncer(assertiveness?: Assertiveness): void {
  * @example
  * ```tsx
  * // Clean up on app unmount
- * onCleanup(() => {
+ * onOwnedCleanup(() => {
  *   destroyAnnouncer();
  * });
  * ```
@@ -251,7 +252,7 @@ export interface UseAnnouncerResult {
  * function SearchResults(props) {
  *   const announcer = useAnnouncer();
  *
- *   createEffect(() => {
+ *   createTrackedEffect(() => {
  *     const count = props.results.length;
  *     announcer.announce(`${count} results found`, 'polite');
  *   });
@@ -288,7 +289,7 @@ export function useAnnouncer(): UseAnnouncerResult {
   }
 
   // Ensure the announcer is initialized
-  createEffect(() => {
+  createTrackedEffect(() => {
     // Initialize on first use
     if (!liveAnnouncer) {
       liveAnnouncer = new LiveAnnouncer();

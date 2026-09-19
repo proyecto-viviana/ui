@@ -20,7 +20,8 @@
  * Port of @react-aria/i18n useListFormatter.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { useLocale } from "./locale";
 
 /**

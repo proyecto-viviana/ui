@@ -1,5 +1,72 @@
 import "@testing-library/jest-dom/vitest";
 import { vi, afterEach } from "vite-plus/test";
+import { flush } from "solid-js";
+
+const DIAGNOSTIC_NOISE = [
+  "[STRICT_READ_UNTRACKED]",
+  "[NO_OWNER_CLEANUP]",
+  "[NO_OWNER_EFFECT]",
+  "[solid-refresh]",
+  // Follow-on spam after the first uncaught error; keep the original
+  // "[REACTIVITY_HALTED] An uncaught error…" line so the real crash is visible.
+  "[REACTIVITY_HALTED] Update ignored",
+];
+function isDiagnosticNoise(args: unknown[]): boolean {
+  const first = args[0];
+  if (typeof first !== "string") return false;
+  return DIAGNOSTIC_NOISE.some((prefix) => first.includes(prefix));
+}
+const originalWarn = console.warn.bind(console);
+const originalError = console.error.bind(console);
+const originalInfo = console.info.bind(console);
+console.warn = (...args: unknown[]) => {
+  if (isDiagnosticNoise(args)) return;
+  originalWarn(...args);
+};
+console.error = (...args: unknown[]) => {
+  if (isDiagnosticNoise(args)) return;
+  originalError(...args);
+};
+console.info = (...args: unknown[]) => {
+  if (isDiagnosticNoise(args)) return;
+  originalInfo(...args);
+};
+
+function flushAfter(fn: () => void): void {
+  fn();
+  try {
+    flush();
+  } catch {
+    // Solid 2 forbids flush() inside createTrackedEffect / onSettled / effect
+    // apply. Defer the drain so writes from synthetic events still land.
+    queueMicrotask(() => {
+      try {
+        flush();
+      } catch {
+        /* nested forbidden scope; the running flush will continue */
+      }
+    });
+  }
+}
+
+const originalDispatchEvent = EventTarget.prototype.dispatchEvent;
+EventTarget.prototype.dispatchEvent = function (event: Event): boolean {
+  let result = false;
+  flushAfter(() => {
+    result = originalDispatchEvent.call(this, event);
+  });
+  return result;
+};
+
+const originalFocus = HTMLElement.prototype.focus;
+HTMLElement.prototype.focus = function (this: HTMLElement, options?: FocusOptions): void {
+  flushAfter(() => originalFocus.call(this, options));
+};
+
+const originalBlur = HTMLElement.prototype.blur;
+HTMLElement.prototype.blur = function (this: HTMLElement): void {
+  flushAfter(() => originalBlur.call(this));
+};
 
 // ============================================
 // POLYFILLS

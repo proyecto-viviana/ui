@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Picker.tsx.
 
-import { type JSX, Show, splitProps, createContext, useContext, createUniqueId } from "solid-js";
+import { Show, createContext, useContext, createUniqueId } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Select as HeadlessSelect,
   SelectTrigger as HeadlessSelectTrigger,
@@ -35,6 +36,7 @@ import {
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type SelectSize = "sm" | "md" | "lg";
 
@@ -256,7 +258,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       .join(" ") || undefined;
 
   return (
-    <SelectSizeContext.Provider value={size}>
+    <SelectSizeContext value={size}>
       <HeadlessSelect
         {...headlessProps}
         label={styledLabel()}
@@ -276,7 +278,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           </span>
         </Show>
       </HeadlessSelect>
-    </SelectSizeContext.Provider>
+    </SelectSizeContext>
   );
 }
 

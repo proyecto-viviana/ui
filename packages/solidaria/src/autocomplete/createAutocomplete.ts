@@ -21,7 +21,8 @@
  * Based on @react-aria/autocomplete useAutocomplete.
  */
 
-import { createSignal, createEffect, onCleanup, type Accessor } from "solid-js";
+import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createId, getOwnerDocument } from "../ssr";
 import { type AutocompleteState, type CollectionNode } from "@proyecto-viviana/solid-stately";
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../selection/constants";
@@ -204,15 +205,19 @@ export function createAutocomplete<T = unknown>(
   };
 
   // Set up beforeinput event listener
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const input = inputRef();
     if (input) {
       input.addEventListener("beforeinput", handleBeforeInput);
-      onCleanup(() => {
+      _s2Cleanups.push(() => {
         input.removeEventListener("beforeinput", handleBeforeInput);
       });
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Focus first item in collection
   const focusFirstItem = () => {
@@ -476,17 +481,21 @@ export function createAutocomplete<T = unknown>(
     delayNextActiveDescendant = false;
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!shouldUseVirtualFocus()) return;
     const collection = collectionRef();
     if (collection) {
       collection.addEventListener("focusin", updateActiveDescendant);
-      onCleanup(() => {
+      _s2Cleanups.push(() => {
         collection.removeEventListener("focusin", updateActiveDescendant);
         clearTimeout(activeDescendantTimeout);
       });
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Create filter function. The user's 3-arg predicate (textValue, inputValue,
   // node) is closed over the current input value and exposed to the collection

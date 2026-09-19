@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell (with range support)
  */
 
-import { createSignal, createMemo, createEffect, onCleanup } from "solid-js";
+import { createSignal, createMemo, createEffect, onCleanup, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
@@ -133,7 +133,9 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // cell took the pointer (in-canvas click) or when it mounted already focused
   // (Next/Previous). Solid `createEffect` is a microtask (before paint), so one
   // rAF still runs in that same frame — double rAF waits until after first paint.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!startedUnfocused) {
       return;
     }
@@ -149,11 +151,13 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
         }
       });
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const isFocusVisible = createMemo(() =>
     startedUnfocused ? isOverlayAutoFocusVisible() : isCellFocusVisible(),
@@ -257,7 +261,9 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // RAC uses useEffect (after paint). Solid createEffect is sync, so a
   // Next/Previous click would steal focus onto the new cell before the
   // nav button receives click-focus (#279).
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = ref?.();
     if (!element || !isFocused()) return;
     const frame = requestAnimationFrame(() => {
@@ -266,8 +272,10 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       if (navLabel === "Next" || navLabel === "Previous") return;
       focusSafely(element);
     });
-    onCleanup(() => cancelAnimationFrame(frame));
-  });
+    _s2Cleanups.push(() => cancelAnimationFrame(frame));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({

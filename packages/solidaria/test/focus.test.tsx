@@ -2,8 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { createRoot, createSignal, flush } from "solid-js";
 import {
   // Focus Restoration
   createFocusRestore,
@@ -347,7 +346,9 @@ describe("createVirtualFocus", () => {
   it("should work with controlled focus", () => {
     createRoot((dispose) => {
       const items = createItems();
-      const [focusedKey, setFocusedKey] = createSignal<string | null>("1");
+      const [focusedKey, setFocusedKey] = createSignal<string | null>("1", {
+        ownedWrite: true,
+      });
 
       const onFocusChange = vi.fn((key: string | null) => setFocusedKey(key));
 
@@ -359,6 +360,7 @@ describe("createVirtualFocus", () => {
       });
 
       virtualFocus.focusNext();
+      flush();
       expect(onFocusChange).toHaveBeenCalledWith("2");
       expect(focusedKey()).toBe("2");
 

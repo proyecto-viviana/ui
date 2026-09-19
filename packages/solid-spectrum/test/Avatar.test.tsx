@@ -55,7 +55,7 @@ describe("Avatar (solid-spectrum)", () => {
 
   it("supports context props, local overrides, and unsafe escape hatches", () => {
     const { container } = render(() => (
-      <AvatarContext.Provider
+      <AvatarContext
         value={{
           size: 80,
           isOverBackground: true,
@@ -64,7 +64,7 @@ describe("Avatar (solid-spectrum)", () => {
         }}
       >
         <Avatar alt="Kai" size={40} class="local-avatar" />
-      </AvatarContext.Provider>
+      </AvatarContext>
     ));
 
     const root = container.querySelector('[slot="avatar"]') as HTMLElement;

@@ -8,7 +8,8 @@
  * has no Landmark counterpart; Solidaria owns the underlying ARIA behavior.
  */
 
-import { type JSX, createContext, createMemo, createSignal, splitProps } from "solid-js";
+import { createContext, createMemo, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import {
   createLandmark,
@@ -18,6 +19,7 @@ import {
   type LandmarkController,
 } from "@proyecto-viviana/solidaria";
 import { type SlotProps, filterDOMProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface LandmarkRenderProps {
   /** The ARIA landmark role. */

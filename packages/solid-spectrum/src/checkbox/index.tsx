@@ -20,7 +20,8 @@
 // Port of packages/@react-spectrum/s2/src/CheckboxGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
 
-import { createContext, createUniqueId, type JSX, splitProps, Show, useContext } from "solid-js";
+import { createContext, createUniqueId, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   CheckboxField as HeadlessCheckboxField,
   CheckboxButton as HeadlessCheckboxButton,
@@ -59,6 +60,7 @@ import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -613,7 +615,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     isInCheckboxGroup ? false : fieldRenderProps.isInvalid;
 
   const renderHelpText = (fieldRenderProps: CheckboxFieldRenderProps): JSX.Element => (
-    <TextContext.Provider value={null}>
+    <TextContext value={null}>
       <Show when={local.description && !invalidFor(fieldRenderProps)}>
         <Text
           slot="description"
@@ -642,7 +644,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
           <span>{local.errorMessage}</span>
         </Text>
       </Show>
-    </TextContext.Provider>
+    </TextContext>
   );
 
   return (
@@ -827,7 +829,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
           orientation: local.orientation,
         })}
       >
-        <FormContext.Provider
+        <FormContext
           value={{
             ...(formContext ?? {}),
             get size() {
@@ -836,7 +838,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             isRequired: undefined,
           }}
         >
-          <CheckboxContext.Provider
+          <CheckboxContext
             value={{
               get isEmphasized() {
                 return local.isEmphasized;
@@ -844,10 +846,10 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             }}
           >
             {local.children}
-          </CheckboxContext.Provider>
-        </FormContext.Provider>
+          </CheckboxContext>
+        </FormContext>
       </div>
-      <TextContext.Provider value={null}>
+      <TextContext value={null}>
         {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
             RAC `<Text slot="description">` (a `<span>`), not a `<div>`. */}
         <Show when={local.description && !renderProps.isInvalid}>
@@ -875,12 +877,12 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             <span>{local.errorMessage}</span>
           </Text>
         </Show>
-      </TextContext.Provider>
+      </TextContext>
     </>
   );
 
   return (
-    <CheckboxGroupStyleContext.Provider
+    <CheckboxGroupStyleContext
       value={{
         get size() {
           return local.size;
@@ -915,6 +917,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       >
         {renderChildren}
       </HeadlessCheckboxGroup>
-    </CheckboxGroupStyleContext.Provider>
+    </CheckboxGroupStyleContext>
   );
 }

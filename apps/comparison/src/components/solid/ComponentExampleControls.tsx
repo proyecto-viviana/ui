@@ -1,5 +1,6 @@
-import h from "solid-js/h";
-import { createResource, createSignal, type JSX } from "solid-js";
+import h from "@solidjs/h";
+import { createResource, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { Content } from "@proyecto-viviana/solid-spectrum/Content";
 import { ContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";

@@ -19,13 +19,9 @@
  * to make an element pressable.
  */
 
-import {
-  type JSX,
-  children as resolveChildren,
-  createEffect,
-  onCleanup,
-  splitProps,
-} from "solid-js";
+import { children as resolveChildren, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   createPress,
   createFocusable,
@@ -47,7 +43,7 @@ export interface PressableProps extends CreatePressProps {
  * @example
  * ```tsx
  * <Pressable onPress={() => console.log('pressed')}>
- *   <div role="button" tabIndex={0}>Click me</div>
+ *   <div role="button" tabindex={0}>Click me</div>
  * </Pressable>
  * ```
  */
@@ -63,7 +59,9 @@ export function Pressable(props: PressableProps): JSX.Element {
 
   const resolved = resolveChildren(() => local.children);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const child = resolved() as HTMLElement;
     if (child instanceof HTMLElement) {
       ref = child;
@@ -110,13 +108,15 @@ export function Pressable(props: PressableProps): JSX.Element {
         }
       }
 
-      onCleanup(() => {
+      _s2Cleanups.push(() => {
         for (const [eventName, listener] of listeners) {
           child.removeEventListener(eventName, listener);
         }
       });
     }
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return <>{resolved()}</>;
 }

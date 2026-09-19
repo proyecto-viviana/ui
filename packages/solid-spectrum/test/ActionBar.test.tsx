@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { destroyAnnouncer } from "@proyecto-viviana/solidaria";
 import {
   ActionBar,
@@ -207,11 +205,12 @@ describe("ActionBar (solid-spectrum)", () => {
 
       vi.useFakeTimers();
       setCount(0);
+      flush();
       expect(screen.getByRole("toolbar")).toBeInTheDocument();
       expect(screen.getByText("3 selected")).toBeInTheDocument();
 
       vi.advanceTimersByTime(201);
-      await Promise.resolve();
+      flush();
       expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
       vi.useRealTimers();
     });
@@ -274,7 +273,7 @@ describe("ActionBar (solid-spectrum)", () => {
     it("merges ActionBarContext props and refs", () => {
       let actionBarElement: HTMLDivElement | undefined;
       const { container } = render(() => (
-        <ActionBarContext.Provider
+        <ActionBarContext
           value={{
             selectedItemCount: 2,
             onClearSelection: () => {},
@@ -288,7 +287,7 @@ describe("ActionBar (solid-spectrum)", () => {
           <ActionBar>
             <button>Edit</button>
           </ActionBar>
-        </ActionBarContext.Provider>
+        </ActionBarContext>
       ));
 
       // Context class/style/ref merge onto the roleless root container.
@@ -301,11 +300,11 @@ describe("ActionBar (solid-spectrum)", () => {
 
     it("lets local props override ActionBarContext selected count", () => {
       render(() => (
-        <ActionBarContext.Provider value={{ selectedItemCount: 2, onClearSelection: () => {} }}>
+        <ActionBarContext value={{ selectedItemCount: 2, onClearSelection: () => {} }}>
           <ActionBar selectedItemCount={0}>
             <button>Edit</button>
           </ActionBar>
-        </ActionBarContext.Provider>
+        </ActionBarContext>
       ));
 
       expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();

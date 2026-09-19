@@ -8,7 +8,7 @@
  * Shapes are taken from the akade design-handoff-v2 mirror panels that surfaced the failure:
  * Panel04 (Tabs with defaultSelectedKey) and Panel08 (ListView with per-row descriptions).
  */
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Badge,
   BellIcon,

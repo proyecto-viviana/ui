@@ -19,7 +19,8 @@
  * Ported from packages/react-stately/src/steplist/useStepListState.ts.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal } from "../utils";
 
 import type { Key } from "../collections/types";

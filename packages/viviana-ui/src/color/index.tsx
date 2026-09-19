@@ -24,19 +24,9 @@
 // Port of packages/@react-spectrum/s2/src/ColorSwatch.tsx.
 // Port of packages/@react-spectrum/s2/src/ColorWheel.tsx.
 
-import {
-  type JSX,
-  splitProps,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-  useContext,
-  Show,
-} from "solid-js";
-import { Portal } from "solid-js/web";
+import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, useContext, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Portal } from "@solidjs/web";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import {
@@ -103,6 +93,7 @@ import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { HelpText } from "../form/HelpText";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   InternalColorSwatchContext,
   type InternalColorSwatchRounding,
@@ -678,7 +669,7 @@ function ColorAreaLoupe(props: {
     height: number;
   } | null>(null);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (props.isOpen) {
       setPhase("open");
     } else if (phase() === "open") {
@@ -686,7 +677,9 @@ function ColorAreaLoupe(props: {
     }
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     props.color.toString("css");
 
     if ((phase() === "closed" && !props.isOpen) || typeof window === "undefined") {
@@ -713,11 +706,13 @@ function ColorAreaLoupe(props: {
     update();
     window.addEventListener("scroll", update, true);
     window.addEventListener("resize", update);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return (
     <Show when={phase() !== "closed" && typeof document !== "undefined" && rect()}>
@@ -1331,7 +1326,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
                     <Show
                       when={necessityIndicator() === "icon"}
                       fallback={
-                        <span aria-hidden={renderProps.isRequired ? true : undefined}>
+                        <span aria-hidden={renderProps.isRequired ? "true" : undefined}>
                           {stringFormatter().format(
                             renderProps.isRequired ? "label.(required)" : "label.(optional)",
                           )}

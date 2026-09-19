@@ -19,18 +19,9 @@
  * Port of react-aria-components Breadcrumbs.
  */
 
-import {
-  type Accessor,
-  type JSX,
-  createContext,
-  createMemo,
-  createSignal,
-  children as resolveChildren,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createSignal, children as resolveChildren, useContext, For, Show } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import {
   createBreadcrumbs,
@@ -42,6 +33,7 @@ import {
   type AriaBreadcrumbItemProps,
   type PressEvent,
 } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -49,6 +41,8 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  attrTrue,
 } from "./utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
@@ -156,7 +150,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   const hasCollectionItems = () => local.items !== undefined;
   const getItemKey = (item: T, index: number): string | number =>
     local.getKey?.(item) ?? defaultItemKey(item, index);
-  const [staticItemCount, setStaticItemCount] = createSignal(0);
+  const [staticItemCount, setStaticItemCount] = createSignal(0, { ownedWrite: true });
   let nextStaticIndex = 0;
   const resetStaticItems = () => {
     nextStaticIndex = 0;
@@ -200,7 +194,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
   return (
-    <BreadcrumbsContext.Provider
+    <BreadcrumbsContext
       value={{
         isDisabled,
         onAction: local.onAction,
@@ -229,7 +223,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
         ref={(element) => assignRef(local.ref, element)}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-disabled={isDisabled() || undefined}
+        data-disabled={dataAttr(isDisabled())}
       >
         <Show
           when={hasCollectionItems()}
@@ -243,16 +237,16 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
 
               return (
                 <li style={{ display: "flex", "align-items": "center" }}>
-                  <BreadcrumbItemContext.Provider value={{ itemKey, isLast }}>
+                  <BreadcrumbItemContext value={{ itemKey, isLast }}>
                     {renderItem?.(item)}
-                  </BreadcrumbItemContext.Provider>
+                  </BreadcrumbItemContext>
                 </li>
               );
             }}
           </For>
         </Show>
       </ol>
-    </BreadcrumbsContext.Provider>
+    </BreadcrumbsContext>
   );
 }
 
@@ -432,15 +426,15 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       {...mergedItemProps()}
       ref={(element: HTMLElement) => assignRef(local.ref, element)}
       aria-current={isCurrent() ? (ariaProps["aria-current"] ?? "page") : undefined}
-      aria-disabled={isDisabled() || isCurrent() || undefined}
+      aria-disabled={attrTrue(isDisabled() || isCurrent())}
       class={renderProps.class()}
       style={mergedStyle()}
-      data-current={isCurrent() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-pressed={isPressed() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
+      data-current={dataAttr(isCurrent())}
+      data-disabled={dataAttr(isDisabled())}
+      data-pressed={dataAttr(isPressed())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
     >
       {renderProps.renderChildren()}
     </ElementTag>

@@ -4,7 +4,7 @@
  * Runs under vitest.ssr.config.ts so renderToString emits hydratable server
  * HTML. The companion Button.hydrate.test.tsx hydrates over this output.
  */
-import { renderToString } from "solid-js/web";
+import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";

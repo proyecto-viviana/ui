@@ -17,7 +17,8 @@
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/ButtonGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
-import { createContext, useContext, type JSX } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import type { ButtonSize, StaticColor } from "./types";

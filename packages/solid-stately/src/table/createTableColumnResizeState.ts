@@ -21,7 +21,8 @@
  * width distribution and clamping.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal } from "../utils";
 
 import type { Key } from "../collections/types";

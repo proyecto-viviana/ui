@@ -1,5 +1,4 @@
-import { describe, it, expect } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
 import { createTreeData } from "../../src/data/createTreeData";
 
 interface TreeItem {

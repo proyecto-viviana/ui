@@ -1,3 +1,4 @@
+import { createEffect } from "solid-js";
 /* Mirror of spec panel 08 (LIST ROWS) built from real @proyecto-viviana/ui
    components, in the same <Panel> chrome as the spec.
 
@@ -25,7 +26,7 @@
    where the spec has it, instead of stacked under the title). It was rejected:
    it brings a header row, sort affordances and column semantics the spec has
    none of, and "list rows" is the thing being specified. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Badge,
   ListView,

@@ -19,21 +19,9 @@
  * Port of react-aria-components/src/Select.tsx
  */
 
-import {
-  type JSX,
-  type Accessor,
-  createContext,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Show,
-  untrack,
-  type Context,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createRenderEffect, createSignal, useContext, For, Show, untrack, createTrackedEffect } from "solid-js";
+import type { Accessor, Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createSelect,
   createHiddenSelect,
@@ -71,6 +59,10 @@ import {
   Provider,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  ariaTrueFalse,
+  attrTrue,
+  coerceDomRecord,
 } from "./utils";
 import {
   SelectionIndicatorContext,
@@ -80,6 +72,7 @@ import { ListBoxLoadMoreItem } from "./ListBox";
 import { TextContext } from "./Text";
 import { useCollectionRenderer } from "./Collection";
 import { racIntlStrings } from "./intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -329,7 +322,7 @@ const selectRootLabelProps = new Set([
  */
 export function Select<T>(props: SelectProps<T>): JSX.Element {
   const parentContext = useContext(SelectContext) as SelectContextValue<T> | null;
-  const contextSlotProps = parentContext?.slots?.[props.slot ?? "default"] as
+  const contextSlotProps = parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"] as
     | Partial<SelectProps<T>>
     | undefined;
   const mergedSelectProps = (
@@ -659,7 +652,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     }
     return [state.selectedKey()];
   };
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (hasSelection() && selectValidation().isInvalid) {
       setSelectValidation(DEFAULT_VALIDATION_RESULT);
     }
@@ -724,7 +717,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             </Show>
           }
         >
-          <div {...containerProps} data-testid="hidden-select-container">
+          <div {...coerceDomRecord(containerProps as Record<string, unknown>)} data-testid="hidden-select-container">
             <label>
               {ariaProps.label}
               <select
@@ -803,7 +796,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   };
 
   return (
-    <SelectContext.Provider
+    <SelectContext
       value={
         {
           state,
@@ -839,12 +832,12 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
         } as SelectContextValue<unknown>
       }
     >
-      <SelectStateContext.Provider value={state}>
-        <FieldErrorContext.Provider value={fieldErrorContext}>
+      <SelectStateContext value={state}>
+        <FieldErrorContext value={fieldErrorContext}>
           <RootContent />
-        </FieldErrorContext.Provider>
-      </SelectStateContext.Provider>
-    </SelectContext.Provider>
+        </FieldErrorContext>
+      </SelectStateContext>
+    </SelectContext>
   );
 }
 
@@ -866,7 +859,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
     assignRef(local.ref, el);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (context.autoFocus) {
       triggerRef?.focus();
     }
@@ -921,22 +914,22 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       {...cleanHoverProps()}
       type="button"
       id={triggerAriaProps().id as string | undefined}
-      tabIndex={state.isDisabled ? undefined : 0}
+      tabindex={state.isDisabled ? undefined : 0}
       disabled={state.isDisabled || undefined}
       aria-label={triggerAriaProps()["aria-label"] as string | undefined}
       aria-labelledby={triggerAriaProps()["aria-labelledby"] as string | undefined}
       aria-haspopup="listbox"
-      aria-expanded={isOpen()}
+      aria-expanded={ariaTrueFalse(isOpen())}
       aria-controls={isOpen() ? (menuAriaProps().id as string | undefined) : undefined}
-      aria-required={triggerAriaProps()["aria-required"] as boolean | undefined}
+      aria-required={attrTrue(Boolean(triggerAriaProps()["aria-required"]))}
       aria-describedby={triggerAriaProps()["aria-describedby"] as string | undefined}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-open={isOpen() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={state.isDisabled || undefined}
+      data-open={dataAttr(isOpen())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-hovered={dataAttr(isHovered())}
+      data-disabled={dataAttr(state.isDisabled)}
     >
       {renderProps.renderChildren()}
     </button>
@@ -1017,7 +1010,7 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
       {...valueProps}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-placeholder={!renderValues().isSelected || undefined}
+      data-placeholder={dataAttr(!renderValues().isSelected)}
     >
       {props.children == null
         ? (renderValues().selectedText ?? renderValues().placeholder ?? "")
@@ -1050,7 +1043,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   const { menuProps, rootRef, state: selectState, isOpen } = context;
   const state = selectState as SelectState<T>;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!isOpen()) {
       return;
     }
@@ -1167,7 +1160,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     // the first item selected on open — the bug this override prevents.)
     return {
       ...rest,
-      tabIndex: state.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
+      tabindex: state.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
     };
   };
   const cleanListBoxFocusProps = () => {
@@ -1176,7 +1169,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   };
 
   const items = () => Array.from(state.collection());
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!isOpen()) return;
     const focusedKey = state.focusedKey();
     if (focusedKey == null) return;
@@ -1202,7 +1195,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     // div-based for virtualization parity. `<ul>`/`<li>` here was a self-inflicted
     // structural divergence surfaced by the Picker recertification (D5/D6/D8 saw
     // `li[option]`/`ul[listbox]` where the React oracle sees `div`).
-    <SelectListBoxInPopoverContext.Provider value={local.isInPopover === true}>
+    <SelectListBoxInPopoverContext value={local.isInPopover === true}>
       <div
         ref={(el) => (listBoxRef = el)}
         {...domProps}
@@ -1211,9 +1204,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
         {...cleanListBoxFocusProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-focused={isListBoxFocused() || undefined}
-        data-focus-visible={isListBoxFocusVisible() || undefined}
-        data-empty={state.collection().size === 0 || undefined}
+        data-focused={dataAttr(isListBoxFocused())}
+        data-focus-visible={dataAttr(isListBoxFocusVisible())}
+        data-empty={dataAttr(state.collection().size === 0)}
         data-layout="stack"
         data-orientation="vertical"
       >
@@ -1245,7 +1238,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
           </ListBoxLoadMoreItem>
         </Show>
       </div>
-    </SelectListBoxInPopoverContext.Provider>
+    </SelectListBoxInPopoverContext>
   );
 
   return (
@@ -1416,20 +1409,24 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     },
   };
 
-  createRenderEffect(() => {
-    const el = ref();
-    const labelId = optionAria.labelProps.id;
-    const descriptionId = optionAria.descriptionProps.id;
-    if (!el) return;
-    if (labelId) {
-      const label = el.querySelector("[slot='label']");
-      if (label && !label.id) label.id = labelId;
-    }
-    if (descriptionId) {
-      const description = el.querySelector("[slot='description']");
-      if (description && !description.id) description.id = descriptionId;
-    }
-  });
+  createRenderEffect(
+    () => ({
+      el: ref(),
+      labelId: optionAria.labelProps.id,
+      descriptionId: optionAria.descriptionProps.id,
+    }),
+    ({ el, labelId, descriptionId }) => {
+      if (!el) return;
+      if (labelId) {
+        const label = el.querySelector("[slot='label']");
+        if (label && !label.id) label.id = labelId;
+      }
+      if (descriptionId) {
+        const description = el.querySelector("[slot='description']");
+        if (description && !description.id) description.id = descriptionId;
+      }
+    },
+  );
   const selectOption = () => {
     if (optionAria.isDisabled()) {
       return;
@@ -1448,7 +1445,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   };
 
   return (
-    <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+    <SelectionIndicatorContext value={selectionIndicatorContext()}>
       {/* `<div role="option">`, not `<li>` — see the SelectListBox note; upstream
           RAC options are div-based. */}
       <div
@@ -1456,12 +1453,12 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         {...cleanOptionProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-selected={optionAria.isSelected() || undefined}
-        data-focused={optionAria.isFocused() || undefined}
-        data-focus-visible={isOptionFocusVisible() || undefined}
-        data-pressed={optionAria.isPressed() || undefined}
-        data-hovered={optionAria.isHovered() || undefined}
-        data-disabled={optionAria.isDisabled() || undefined}
+        data-selected={dataAttr(optionAria.isSelected())}
+        data-focused={dataAttr(optionAria.isFocused())}
+        data-focus-visible={dataAttr(isOptionFocusVisible())}
+        data-pressed={dataAttr(optionAria.isPressed())}
+        data-hovered={dataAttr(optionAria.isHovered())}
+        data-disabled={dataAttr(optionAria.isDisabled())}
         data-selection-mode={state.selectionMode()}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
@@ -1475,7 +1472,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
           />
         </Provider>
       </div>
-    </SelectionIndicatorContext.Provider>
+    </SelectionIndicatorContext>
   );
 }
 

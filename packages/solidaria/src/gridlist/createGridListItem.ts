@@ -17,8 +17,10 @@
  * Based on @react-aria/gridlist/useGridListItem.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import { bindCapture } from "../utils/capture";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   Collection,
   GridState,
@@ -153,6 +155,15 @@ export function createGridListItem<
       direction: () => gridListData?.direction ?? "ltr",
       layout: () => gridListData?.layout ?? "stack",
     });
+  });
+
+  bindCapture(ref, {
+    keydown: (event) => {
+      const handler = (
+        rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void }
+      ).onKeyDownCapture;
+      handler?.(event as KeyboardEvent);
+    },
   });
 
   const gridCellProps = createMemo(() => {

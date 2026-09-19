@@ -29,7 +29,9 @@
  *    prefix's id to the input's `aria-labelledby`, mirroring upstream's
  *    `InputContext.Provider value={{...ctx, 'aria-labelledby': ...}}`.
  */
-import { type Context, type JSX, useContext } from "solid-js";
+import { useContext } from "solid-js";
+import type { Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { CenterBaseline } from "../icon/center-baseline";
 import { IconContext, type IconContextValue } from "../icon";
 import { style } from "../style" with { type: "macro" };
@@ -53,11 +55,11 @@ const prefixIconContext: IconContextValue = { styles: prefixIconStyles };
 /** Renders a field prefix node (text or icon) with the upstream prefix styling. */
 export function FieldPrefix(props: { id: string; children: JSX.Element }): JSX.Element {
   return (
-    <IconContext.Provider value={prefixIconContext}>
+    <IconContext value={prefixIconContext}>
       <CenterBaseline id={props.id} styles={prefixStyles}>
         {props.children}
       </CenterBaseline>
-    </IconContext.Provider>
+    </IconContext>
   );
 }
 
@@ -119,5 +121,5 @@ export function PrefixInputProvider<T extends object>(props: {
 }): JSX.Element {
   const context = useContext(props.context);
   const value = withPrefixLabelledBy(context, props.prefixId, props.inputPropsIsFunction);
-  return <props.context.Provider value={value}>{props.children}</props.context.Provider>;
+  return <props.context value={value}>{props.children}</props.context>;
 }

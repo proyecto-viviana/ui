@@ -10,9 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import {
   Tabs,
   TabList,
@@ -610,6 +608,7 @@ describe("Tabs", () => {
 
       const tabs = screen.getAllByRole("tab");
       tabs[0].focus();
+      flush();
 
       expect(tabs[0]).toHaveAttribute("data-focused");
     });
@@ -724,6 +723,7 @@ describe("Tabs", () => {
       expect(tabs[1]).toHaveAttribute("aria-selected", "true");
 
       setItems(testTabs.filter((tab) => tab.id !== "tab2"));
+      flush();
 
       tabs = screen.getAllByRole("tab");
       expect(tabs).toHaveLength(2);
@@ -797,11 +797,11 @@ describe("Tabs", () => {
 
       const [selectedKey, setSelectedKey] = createSignal<Key>("tab1");
       render(() => (
-        <TabsStateContext.Provider value={{ selectedKey } as any}>
+        <TabsStateContext value={{ selectedKey } as any}>
           <TabPanels>
             <div role="tabpanel">Content</div>
           </TabPanels>
-        </TabsStateContext.Provider>
+        </TabsStateContext>
       ));
 
       setSelectedKey("tab2");
@@ -831,11 +831,11 @@ describe("Tabs", () => {
 
       const [selectedKey, setSelectedKey] = createSignal<Key>("tab1");
       render(() => (
-        <TabsStateContext.Provider value={{ selectedKey } as any}>
+        <TabsStateContext value={{ selectedKey } as any}>
           <TabPanels>
             <div role="tabpanel">Content</div>
           </TabPanels>
-        </TabsStateContext.Provider>
+        </TabsStateContext>
       ));
 
       setSelectedKey("tab2");

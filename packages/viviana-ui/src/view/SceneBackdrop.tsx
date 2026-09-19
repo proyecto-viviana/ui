@@ -1,10 +1,12 @@
 // Local addition — no S2 counterpart. See the JSDoc on SceneBackdrop below.
 
-import { type JSX, For, Show, splitProps } from "solid-js";
+import { For, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
 import { css } from "../style/style-macro" with { type: "macro" };
 import { scanDown } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface SceneBackdropProps {
   /** The scene image. Omit it to keep only the generated layers. */

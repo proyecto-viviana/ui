@@ -20,8 +20,9 @@
  * Port of @react-aria/toast useToast.
  */
 
-import { type JSX, createMemo, createRenderEffect, createSignal } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createMemo, createRenderEffect, createSignal } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 
@@ -90,12 +91,15 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
 
   // RAC useToast hides the alert until after layout so the live region
   // announces on appear, not during SSR. `useLayoutEffect` → createRenderEffect.
-  const [isVisible, setIsVisible] = createSignal(false);
-  createRenderEffect(() => {
-    if (!isServer) {
-      setIsVisible(true);
-    }
-  });
+  const [isVisible, setIsVisible] = createSignal(false, { ownedWrite: true });
+  createRenderEffect(
+    () => isServer,
+    (server) => {
+      if (!server) {
+        setIsVisible(true);
+      }
+    },
+  );
 
   // Toast container - role="alertdialog" for screen readers
   const toastProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({

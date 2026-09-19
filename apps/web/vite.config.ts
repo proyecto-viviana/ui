@@ -151,7 +151,7 @@ export default defineConfig({
       // solid-js/solid-js/web are excluded so the SSR env never pre-bundles a
       // second copy: HydrationScript (solid-js/web) and the renderer (solid-js)
       // must share one sharedConfig, or SSR throws "Cannot destructure 'nonce'".
-      exclude: [...workspacePackages, "solid-js", "solid-js/web"],
+      exclude: [...workspacePackages, "solid-js", "@solidjs/web"],
     },
   },
   optimizeDeps: {

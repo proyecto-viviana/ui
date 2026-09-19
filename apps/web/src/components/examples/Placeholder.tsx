@@ -7,7 +7,7 @@
  * page — a heading, what the screen is, and which exports it is going to have
  * to carry. Batches C1–C6 replace each call with the screen itself.
  */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Heading, Text, typeRoles } from "@proyecto-viviana/ui";
 import { exampleBySlug } from "./registry";
 

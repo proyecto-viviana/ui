@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vite-plus/test";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { type JSX, useContext } from "solid-js";
+import { describe, expect, it } from "vite-plus/test"; import { fireEvent, render, screen } from "@solidjs/testing-library"; import { type JSX, useContext } from "solid-js";
 import { DropZone, DropZoneContext } from "../src/dropzone";
 import { IllustratedMessageContext } from "../src/illustratedmessage";
 
@@ -55,7 +53,7 @@ describe("DropZone (solid-spectrum)", () => {
 
   it("supports S2 context, unsafe escape hatches, and local prop overrides", () => {
     render(() => (
-      <DropZoneContext.Provider
+      <DropZoneContext
         value={{
           "aria-label": "Context upload",
           UNSAFE_className: "context-dropzone",
@@ -70,7 +68,7 @@ describe("DropZone (solid-spectrum)", () => {
         >
           Drop files here
         </DropZone>
-      </DropZoneContext.Provider>
+      </DropZoneContext>
     ));
 
     const zone = getZone("dropzone-root");

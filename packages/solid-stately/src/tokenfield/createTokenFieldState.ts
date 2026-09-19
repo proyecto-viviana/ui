@@ -19,7 +19,7 @@
  * @react-stately/tokenfield useTokenFieldState.
  */
 
-import { type Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal, type MaybeAccessor, access } from "../utils";
 import { TokenFieldValue } from "./TokenFieldValue";
 

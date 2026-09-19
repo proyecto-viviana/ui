@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ListBox.tsx.
 
-import { type JSX, splitProps, createContext, useContext, Show, createUniqueId } from "solid-js";
+import { createContext, useContext, Show, createUniqueId } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ListBox as HeadlessListBox,
   ListBoxOption as HeadlessListBoxOption,
@@ -28,6 +29,7 @@ import {
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ListBoxSize = "sm" | "md" | "lg";
 
@@ -226,7 +228,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       .join(" ") || undefined;
 
   return (
-    <ListBoxSizeContext.Provider value={size}>
+    <ListBoxSizeContext value={size}>
       <div class={fieldStyles}>
         <Show when={local.label}>
           <span id={labelId} class={labelStyles({ size })}>
@@ -248,7 +250,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
           </span>
         </Show>
       </div>
-    </ListBoxSizeContext.Provider>
+    </ListBoxSizeContext>
   );
 }
 

@@ -22,26 +22,16 @@
  * Based on packages/react-aria-components/src/SharedElementTransition.tsx.
  */
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-  splitProps,
-  untrack,
-  useContext,
-  Show,
-  on,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, untrack, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type RenderChildren,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 
 type SharedElementLifecycle = "hidden" | "entering" | "visible" | "exiting";
@@ -79,7 +69,7 @@ export function SharedElementTransition(props: SharedElementTransitionProps): JS
   };
 
   return (
-    <SharedElementContext.Provider value={scope}>{props.children}</SharedElementContext.Provider>
+    <SharedElementContext value={scope}>{props.children}</SharedElementContext>
   );
 }
 
@@ -123,15 +113,22 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
   ]);
 
   const [lifecycle, setLifecycle] = createSignal<SharedElementLifecycle>(
-    local.isVisible === false ? "hidden" : "visible",
+    untrack(() => (local.isVisible === false ? "hidden" : "visible")),
   );
+  // Fresh-enter (data-entering) is only for elements that were hidden and then
+  // shown. An element that starts visible must not queue the enter microtask on
+  // first mount — that microtask would otherwise fire after a later hide and
+  // resurrect the outgoing node as `data-entering`.
+  let pendingFreshEnter = false;
 
   // The mounted div, tracked as a signal so the FLIP-read effect below REACTS to
   // it appearing. React guarantees `ref.current` is committed before the layout
   // effect body runs; Solid gives no such ordering between the `<Show>`'s
   // insertion render-effect and a plain createEffect, so we make the read depend
   // on the element instead of racing its mount (see READ PHASE).
-  const [element, setElement] = createSignal<HTMLDivElement | undefined>();
+  const [element, setElement] = createSignal<HTMLDivElement | undefined>(undefined, {
+    ownedWrite: true,
+  });
   let frame: number | undefined;
 
   const setRef = (el: HTMLDivElement) => {
@@ -174,14 +171,13 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
   // only enter fresh — never FLIP. Keyed on `isVisible` (untracked lifecycle
   // read) so it cannot loop.
   createRenderEffect(
-    on(
-      () => local.isVisible !== false,
-      (isVisible) => {
-        if (isVisible && untrack(lifecycle) === "hidden") {
-          setLifecycle("visible");
-        }
-      },
-    ),
+    () => local.isVisible !== false,
+    (isVisible) => {
+      if (isVisible && untrack(lifecycle) === "hidden") {
+        pendingFreshEnter = true;
+        setLifecycle("visible");
+      }
+    },
   );
 
   // STORE PHASE — a render effect runs before user effects within a Solid
@@ -194,16 +190,14 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
   // the outgoing snapshot. This mirrors React closing over `element =
   // ref.current`, which is null while hidden.
   createRenderEffect(
-    on(
-      () => local.isVisible !== false,
-      (isVisible) => {
-        onCleanup(() => {
-          if (isVisible) {
-            storeSnapshot();
-          }
-        });
-      },
-    ),
+    () => local.isVisible !== false,
+    (isVisible) => {
+      return () => {
+        if (isVisible) {
+          storeSnapshot();
+        }
+      };
+    },
   );
 
   // READ PHASE — mirrors upstream's layout-effect body, which reads the freshly
@@ -216,7 +210,12 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
   // fresh-enter branch: with no committed div there is nothing to measure, so we
   // wait — exactly as React never runs the body before commit.
   createEffect(
-    on([() => local.isVisible !== false, element] as const, ([isVisible, el]) => {
+    () => {
+      const isVisible = local.isVisible !== false;
+      const el = element();
+      return { isVisible, el };
+    },
+    ({ isVisible, el }) => {
       const name = local.name;
 
       if (frame != null) {
@@ -229,6 +228,7 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
 
         if (prevSnapshot) {
           // FLIP: Element is transitioning from a previous instance.
+          pendingFreshEnter = false;
           setLifecycle("visible");
           const animations = getAnimations(el);
 
@@ -263,32 +263,31 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
           });
 
           delete scope.snapshots[name];
-        } else {
+        } else if (pendingFreshEnter) {
           // No previous instance exists, apply the entering state.
-          queueMicrotask(() => setLifecycle("entering"));
+          pendingFreshEnter = false;
+          setLifecycle("entering");
           frame = requestAnimationFrame(() => {
             frame = undefined;
             setLifecycle("visible");
           });
         }
-      } else if (!isVisible && el) {
-        // Wait a microtask to check if a snapshot still exists (meaning no new
-        // SharedElement consumed it), then enter exiting state.
+      } else if (!isVisible) {
+        // Unmount immediately. The outgoing snapshot was stored in the
+        // store-phase cleanup before this user effect, so a sibling FLIP in
+        // the same flush can still consume it. Deferring hide to a microtask
+        // left the outgoing node mounted after flush() (React unmounts when
+        // isVisible is false). Drop an unconsumed snapshot after the flush so
+        // a later same-name mount does not FLIP from a stale rect.
+        setLifecycle("hidden");
+        const snapshotName = name;
         queueMicrotask(() => {
-          if (scope.snapshots[name]) {
-            delete scope.snapshots[name];
-            setLifecycle("exiting");
-            // Wait for animations to finish before hiding.
-            Promise.all(getAnimations(el).map((a) => a.finished))
-              .then(() => setLifecycle("hidden"))
-              .catch(() => {});
-          } else {
-            // Snapshot was consumed by another instance, unmount immediately.
-            setLifecycle("hidden");
+          if (scope.snapshots[snapshotName]) {
+            delete scope.snapshots[snapshotName];
           }
         });
       }
-    }),
+    },
   );
 
   // Cancel any pending FLIP frame on disposal. The snapshot store lives in the
@@ -323,8 +322,8 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
         {...filteredDomProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-entering={lifecycle() === "entering" || undefined}
-        data-exiting={lifecycle() === "exiting" || undefined}
+        data-entering={dataAttr(lifecycle() === "entering")}
+        data-exiting={dataAttr(lifecycle() === "exiting")}
       >
         {renderProps.renderChildren()}
       </div>

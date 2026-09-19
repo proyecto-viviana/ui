@@ -18,9 +18,10 @@
  * Port of @react-aria/interactions useLongPress, adapted for SolidJS.
  */
 
-import { JSX, onCleanup } from "solid-js";
+
+import { mergeProps, focusWithoutScrolling, createGlobalListeners, onOwnedCleanup } from "../utils";
+import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "./createPress";
-import { mergeProps, focusWithoutScrolling, createGlobalListeners } from "../utils";
 import { createDescription } from "../utils/createDescription";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 
@@ -176,7 +177,7 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
       : undefined,
   );
 
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (timeoutId) {
       clearTimeout(timeoutId);
       timeoutId = undefined;

@@ -17,8 +17,9 @@
  * Based on @react-aria/table/useTableRow.
  */
 
-import { createMemo, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   Collection,
   Key,
@@ -57,11 +58,11 @@ export function createTableRow<T extends object>(
 
   const hasChildRows = createMemo(() => props().node.isExpandable ?? false);
 
-  const isExpanded = createMemo(() => {
+  const isExpanded = () => {
     const s = state();
     if (s.treeColumn == null) return false;
     return s.expandedKeys === "all" || s.expandedKeys.has(props().node.key);
-  });
+  };
 
   // aria-posinset / aria-setsize among same-level sibling rows.
   const siblingInfo = createMemo(() => {
@@ -256,21 +257,19 @@ export function createTableRow<T extends object>(
     s.setFocusedKey(p.node.key);
   };
 
-  const expandButtonProps = createMemo<ExpandButtonProps>(() => ({
-    isDisabled: isDisabled(),
-    onPress: onExpandPress,
-    excludeFromTabOrder: true,
-    preventFocusOnPress: true,
-    "data-react-aria-prevent-focus": true,
-    "aria-label": isExpanded() ? "Collapse" : "Expand",
-  }));
-
   return {
     get rowProps() {
       return rowProps();
     },
     get expandButtonProps() {
-      return expandButtonProps();
+      return {
+        isDisabled: isDisabled(),
+        onPress: onExpandPress,
+        excludeFromTabOrder: true,
+        preventFocusOnPress: true,
+        "data-react-aria-prevent-focus": true,
+        "aria-label": isExpanded() ? "Collapse" : "Expand",
+      } as ExpandButtonProps;
     },
     get isSelected() {
       return isSelected();

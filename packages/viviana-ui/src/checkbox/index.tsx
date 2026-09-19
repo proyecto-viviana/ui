@@ -20,7 +20,8 @@
 // Port of packages/@react-spectrum/s2/src/CheckboxGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
 
-import { createContext, createUniqueId, type JSX, splitProps, Show, useContext } from "solid-js";
+import { createContext, createUniqueId, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   CheckboxField as HeadlessCheckboxField,
   CheckboxButton as HeadlessCheckboxButton,
@@ -57,6 +58,7 @@ import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -869,7 +871,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
           orientation: local.orientation,
         })}
       >
-        <FormContext.Provider
+        <FormContext
           value={{
             ...(formContext ?? {}),
             get size() {
@@ -878,7 +880,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             isRequired: undefined,
           }}
         >
-          <CheckboxContext.Provider
+          <CheckboxContext
             value={{
               get isEmphasized() {
                 return local.isEmphasized;
@@ -886,8 +888,8 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
             }}
           >
             {local.children}
-          </CheckboxContext.Provider>
-        </FormContext.Provider>
+          </CheckboxContext>
+        </FormContext>
       </div>
       {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
           RAC `<Text slot="description">` (a `<span>`), not a `<div>`. */}
@@ -920,7 +922,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   );
 
   return (
-    <CheckboxGroupStyleContext.Provider
+    <CheckboxGroupStyleContext
       value={{
         get size() {
           return local.size;
@@ -955,6 +957,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       >
         {renderChildren}
       </HeadlessCheckboxGroup>
-    </CheckboxGroupStyleContext.Provider>
+    </CheckboxGroupStyleContext>
   );
 }

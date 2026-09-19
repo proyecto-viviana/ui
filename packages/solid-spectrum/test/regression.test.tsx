@@ -90,6 +90,7 @@ function normalizeIds(html: string): string {
   let counter = 0;
   let tokenCounter = 0;
   return html
+    .replace(/<!---->/g, "")
     .replace(/\sclass="[^"]*"/g, ' class="[generated]"')
     .replace(/\s(data-[\w-]*class)="[^"]*"/g, ' $1="[generated]"')
     .replace(/\sstyle=""/g, "")

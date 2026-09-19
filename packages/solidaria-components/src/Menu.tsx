@@ -19,19 +19,8 @@
  * Port of react-aria-components/src/Menu.tsx
  */
 
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createMenu,
   createMenuItem,
@@ -68,6 +57,8 @@ import {
   useRenderProps,
   filterDOMProps,
   assignRef,
+  dataAttr,
+  isAriaTrue,
   type RefLike,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
@@ -96,6 +87,7 @@ import {
 } from "./DragAndDrop";
 import { PopoverTriggerContext } from "./contexts";
 import { OverlayContext } from "./Popover";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface MenuRenderProps {
   /** Whether the menu is focused. */
@@ -399,8 +391,8 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   );
 
   return (
-    <RootMenuTriggerStateContext.Provider value={state}>
-      <MenuTriggerContext.Provider
+    <RootMenuTriggerStateContext value={state}>
+      <MenuTriggerContext
         value={{
           state,
           get triggerProps() {
@@ -416,7 +408,7 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
           onPressStart,
         }}
       >
-        <PopoverTriggerContext.Provider
+        <PopoverTriggerContext
           value={{
             state,
             triggerRef,
@@ -446,9 +438,9 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
           }}
         >
           {props.children}
-        </PopoverTriggerContext.Provider>
-      </MenuTriggerContext.Provider>
-    </RootMenuTriggerStateContext.Provider>
+        </PopoverTriggerContext>
+      </MenuTriggerContext>
+    </RootMenuTriggerStateContext>
   );
 }
 
@@ -571,7 +563,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       id: triggerId,
       "aria-haspopup": "menu",
       get "aria-expanded"() {
-        return state.isOpen() || undefined;
+        return state.isOpen() ? ("true" as const) : undefined;
       },
       get "aria-controls"() {
         return state.isOpen() ? menuId : undefined;
@@ -601,14 +593,14 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
   }));
 
   return (
-    <PopoverTriggerContext.Provider value={popoverTriggerContext()}>
-      <MenuTriggerContext.Provider value={menuTriggerContext()}>
-        <MenuItemContext.Provider value={{ ...parentMenuItemContext, ...itemContext() }}>
+    <PopoverTriggerContext value={popoverTriggerContext()}>
+      <MenuTriggerContext value={menuTriggerContext()}>
+        <MenuItemContext value={{ ...parentMenuItemContext, ...itemContext() }}>
           {trigger()}
-        </MenuItemContext.Provider>
+        </MenuItemContext>
         {content()}
-      </MenuTriggerContext.Provider>
-    </PopoverTriggerContext.Provider>
+      </MenuTriggerContext>
+    </PopoverTriggerContext>
   );
 }
 
@@ -665,7 +657,10 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const locale = useLocale();
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
-  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
+  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>(
+    [],
+    { ownedWrite: true },
+  );
   const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
   const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
   const itemCloseMap = new Map<Key, () => boolean | undefined>();
@@ -955,23 +950,23 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const hooks = stateProps.dragAndDropHooks;
     return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
   });
-  const dragState = createMemo(() => {
-    if (!hasDraggableDnd()) return undefined;
-    return stateProps.dragAndDropHooks?.useDraggableCollectionState?.({
-      items: flatItems(),
-      collection: state.collection(),
-      selectedKeys: state.selectionManager.selectedKeys,
-      isSelected: (key) => state.selectionManager.isSelected(key),
-    });
-  });
-  const dropState = createMemo(() => {
-    if (!hasDroppableDnd()) return undefined;
-    return stateProps.dragAndDropHooks?.useDroppableCollectionState?.({
-      get collection() {
-        return state.collection();
-      },
-    });
-  });
+  const dragStateValue = hasDraggableDnd()
+    ? stateProps.dragAndDropHooks?.useDraggableCollectionState?.({
+        items: flatItems(),
+        collection: state.collection(),
+        selectedKeys: state.selectionManager.selectedKeys,
+        isSelected: (key) => state.selectionManager.isSelected(key),
+      })
+    : undefined;
+  const dragState = () => dragStateValue;
+  const dropStateValue = hasDroppableDnd()
+    ? stateProps.dragAndDropHooks?.useDroppableCollectionState?.({
+        get collection() {
+          return state.collection();
+        },
+      })
+    : undefined;
+  const dropState = () => dropStateValue;
   const persistedKeys = useDndPersistedKeys(
     { focusedKey: state.focusedKey },
     stateProps.dragAndDropHooks,
@@ -1011,17 +1006,13 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     if (!range) return items;
     return items.slice(range.start, range.end);
   });
-  createEffect(() => {
-    if (!hasDraggableDnd()) return;
-    const hooks = stateProps.dragAndDropHooks;
-    const activeDragState = dragState();
-    if (!hooks?.useDraggableCollection || !activeDragState) return;
-    hooks.useDraggableCollection({}, activeDragState, () => menuRef());
-  });
-  const droppableCollection = createMemo(() => {
+  if (stateProps.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
+    stateProps.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => menuRef());
+  }
+  const droppableCollectionValue = (() => {
     if (!hasDroppableDnd()) return undefined;
     const hooks = stateProps.dragAndDropHooks;
-    const activeDropState = dropState();
+    const activeDropState = dropStateValue;
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
     const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
@@ -1050,7 +1041,8 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       activeDropState,
       () => menuRef(),
     );
-  });
+  })();
+  const droppableCollection = () => droppableCollectionValue;
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
@@ -1267,15 +1259,15 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,
-      "data-focused": state.isFocused() || undefined,
-      "data-disabled": resolveDisabled() || undefined,
-      "data-empty": state.collection().size === 0 || undefined,
-      "data-drop-target": isRootDropTarget() || undefined,
+      "data-focused": dataAttr(state.isFocused()),
+      "data-disabled": dataAttr(resolveDisabled()),
+      "data-empty": dataAttr(state.collection().size === 0),
+      "data-drop-target": dataAttr(isRootDropTarget()),
       children: menuListChildren(),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   const menuContent = () => (
-    <MenuContext.Provider
+    <MenuContext
       value={
         {
           state,
@@ -1286,14 +1278,14 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         } as MenuContextValue<unknown>
       }
     >
-      <MenuStateContext.Provider value={state}>
-        <MenuSectionSelectionRegistryContext.Provider value={sectionSelectionRegistry}>
-          <MenuItemCloseRegistryContext.Provider value={itemCloseRegistry}>
-            <StaticMenuCollectionContext.Provider
+      <MenuStateContext value={state}>
+        <MenuSectionSelectionRegistryContext value={sectionSelectionRegistry}>
+          <MenuItemCloseRegistryContext value={itemCloseRegistry}>
+            <StaticMenuCollectionContext
               value={usesStaticChildren() ? staticCollectionContext : null}
             >
-              <MenuItemContext.Provider value={menuItemContextValue()}>
-                <CollectionRendererContext.Provider value={collectionRenderer()}>
+              <MenuItemContext value={menuItemContextValue()}>
+                <CollectionRendererContext value={collectionRenderer()}>
                   <>
                     <Show when={ariaProps.label}>
                       <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
@@ -1315,22 +1307,22 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                         class={renderProps.class()}
                         style={renderProps.style()}
                         slot={local.slot}
-                        data-focused={state.isFocused() || undefined}
-                        data-disabled={resolveDisabled() || undefined}
-                        data-empty={state.collection().size === 0 || undefined}
-                        data-drop-target={isRootDropTarget() || undefined}
+                        data-focused={dataAttr(state.isFocused())}
+                        data-disabled={dataAttr(resolveDisabled())}
+                        data-empty={dataAttr(state.collection().size === 0)}
+                        data-drop-target={dataAttr(isRootDropTarget())}
                       >
                         {menuListChildren()}
                       </div>
                     )}
                   </>
-                </CollectionRendererContext.Provider>
-              </MenuItemContext.Provider>
-            </StaticMenuCollectionContext.Provider>
-          </MenuItemCloseRegistryContext.Provider>
-        </MenuSectionSelectionRegistryContext.Provider>
-      </MenuStateContext.Provider>
-    </MenuContext.Provider>
+                </CollectionRendererContext>
+              </MenuItemContext>
+            </StaticMenuCollectionContext>
+          </MenuItemCloseRegistryContext>
+        </MenuSectionSelectionRegistryContext>
+      </MenuStateContext>
+    </MenuContext>
   );
 
   // RAC MenuInner always renders and uses a plain FocusScope. Popover's
@@ -1418,21 +1410,25 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     }
   };
 
-  createEffect(() => {
-    if (!staticCollection) return;
-
-    if (registeredStaticKey != null && registeredStaticKey !== local.id) {
-      staticCollection.unregisterItem(registeredStaticKey);
-    }
-
-    registeredStaticKey = local.id;
-    staticCollection.registerItem({
-      id: local.id,
-      textValue: local.textValue ?? ariaProps["aria-label"],
-      isDisabled:
-        resolveBoolean(ariaProps.isDisabled) || (sectionSelection?.isDisabled(local.id) ?? false),
-    });
-  });
+  createEffect(
+    () => {
+      if (!staticCollection) return null;
+      return {
+        id: local.id,
+        textValue: local.textValue ?? ariaProps["aria-label"],
+        isDisabled:
+          resolveBoolean(ariaProps.isDisabled) || (sectionSelection?.isDisabled(local.id) ?? false),
+      };
+    },
+    (item) => {
+      if (!staticCollection || !item) return;
+      if (registeredStaticKey != null && registeredStaticKey !== item.id) {
+        staticCollection.unregisterItem(registeredStaticKey);
+      }
+      registeredStaticKey = item.id;
+      staticCollection.registerItem(item);
+    },
+  );
 
   onCleanup(() => {
     if (registeredStaticKey != null) {
@@ -1440,22 +1436,27 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     }
   });
 
-  createEffect(() => {
-    const selection = activeSectionSelection();
-    if (!sectionSelectionRegistry || !selection) {
+  createEffect(
+    () => ({
+      selection: activeSectionSelection(),
+      id: local.id,
+    }),
+    ({ selection, id }) => {
+      if (!sectionSelectionRegistry || !selection) {
+        unregisterSectionSelection();
+        return;
+      }
+
+      if (registeredSectionSelectionKey === id && registeredSectionSelection === selection) {
+        return;
+      }
+
       unregisterSectionSelection();
-      return;
-    }
-
-    if (registeredSectionSelectionKey === local.id && registeredSectionSelection === selection) {
-      return;
-    }
-
-    unregisterSectionSelection();
-    registeredSectionSelectionKey = local.id;
-    registeredSectionSelection = selection;
-    sectionSelectionRegistry.registerItem(local.id, selection);
-  });
+      registeredSectionSelectionKey = id;
+      registeredSectionSelection = selection;
+      sectionSelectionRegistry.registerItem(id, selection);
+    },
+  );
 
   onCleanup(unregisterSectionSelection);
 
@@ -1467,21 +1468,28 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     }
   };
 
-  createEffect(() => {
-    if (!itemCloseRegistry) {
+  createEffect(
+    () => ({
+      id: local.id,
+      shouldClose: itemCloseOnSelect,
+      registry: itemCloseRegistry,
+    }),
+    ({ id, shouldClose, registry }) => {
+      if (!registry) {
+        unregisterItemClose();
+        return;
+      }
+
+      if (registeredCloseKey === id && registeredCloseAccessor === shouldClose) {
+        return;
+      }
+
       unregisterItemClose();
-      return;
-    }
-
-    if (registeredCloseKey === local.id && registeredCloseAccessor === itemCloseOnSelect) {
-      return;
-    }
-
-    unregisterItemClose();
-    registeredCloseKey = local.id;
-    registeredCloseAccessor = itemCloseOnSelect;
-    itemCloseRegistry.registerItem(local.id, itemCloseOnSelect);
-  });
+      registeredCloseKey = id;
+      registeredCloseAccessor = shouldClose;
+      registry.registerItem(id, shouldClose);
+    },
+  );
 
   onCleanup(unregisterItemClose);
 
@@ -1553,7 +1561,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       isHovered: isHovered(),
       isDisabled: itemAria.isDisabled(),
       hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
-      isOpen: contextProps()["aria-expanded"] === true,
+      isOpen: isAriaTrue(contextProps()["aria-expanded"]),
       descriptionProps: itemAria.descriptionProps,
       keyboardShortcutProps: itemAria.keyboardShortcutProps,
     };
@@ -1653,16 +1661,16 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const dataAttrs = () => {
     const selection = activeSectionSelection();
     return {
-      "data-focused": itemAria.isFocused() || undefined,
-      "data-focus-visible": itemAria.isFocusVisible() || undefined,
-      "data-pressed": itemAria.isPressed() || undefined,
-      "data-hovered": isHovered() || undefined,
-      "data-disabled": itemAria.isDisabled() || undefined,
-      "data-selected": (selection?.isSelected(local.id) ?? itemAria.isSelected()) || undefined,
-      "data-has-submenu": Boolean(contextProps()["aria-haspopup"]) || undefined,
-      "data-open": contextProps()["aria-expanded"] === true || undefined,
-      "data-dragging": draggableItem()?.isDragging || undefined,
-      "data-drop-target": droppableItem()?.isDropTarget || undefined,
+      "data-focused": dataAttr(itemAria.isFocused()),
+      "data-focus-visible": dataAttr(itemAria.isFocusVisible()),
+      "data-pressed": dataAttr(itemAria.isPressed()),
+      "data-hovered": dataAttr(isHovered()),
+      "data-disabled": dataAttr(itemAria.isDisabled()),
+      "data-selected": dataAttr(selection?.isSelected(local.id) ?? itemAria.isSelected()),
+      "data-has-submenu": dataAttr(Boolean(contextProps()["aria-haspopup"])),
+      "data-open": dataAttr(isAriaTrue(contextProps()["aria-expanded"])),
+      "data-dragging": dataAttr(!!draggableItem()?.isDragging),
+      "data-drop-target": dataAttr(!!droppableItem()?.isDropTarget),
     };
   };
 
@@ -1676,6 +1684,10 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     setRef(el);
     itemContext?.setItemRef?.(el);
     if (el) assignRef(local.ref, el);
+    const dragRef = (
+      draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined
+    )?.ref;
+    if (el && typeof dragRef === "function") dragRef(el);
   };
   const menuItemProps = () =>
     ({
@@ -1719,11 +1731,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       when={isLink()}
       fallback={
         <div
-          ref={(el) => {
-            setRef(el);
-            itemContext?.setItemRef?.(el);
-            assignRef(local.ref, el);
-          }}
+          ref={setResolvedItemRef}
           {...mergeProps(
             cleanItemProps(),
             contextProps() as Record<string, unknown>,
@@ -1746,11 +1754,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         // Upstream renders the link menuitem as a bare <a role="menuitem"> (no
         // presentation wrapper); the <div> root makes the wrapper unnecessary.
         <a
-          ref={(el) => {
-            setRef(el);
-            itemContext?.setItemRef?.(el);
-            assignRef(local.ref, el);
-          }}
+          ref={setResolvedItemRef}
           {...mergeProps(
             cleanItemPropsForLink(),
             contextProps() as Record<string, unknown>,
@@ -1831,9 +1835,9 @@ export function MenuSection(props: MenuSectionProps): JSX.Element {
   };
 
   return (
-    <MenuSectionSelectionContext.Provider value={sectionSelection}>
+    <MenuSectionSelectionContext value={sectionSelection}>
       <Section {...sectionProps} />
-    </MenuSectionSelectionContext.Provider>
+    </MenuSectionSelectionContext>
   );
 }
 
@@ -1864,6 +1868,8 @@ export interface MenuLoadMoreItemProps extends SlotProps {
 export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
   const state = useContext(MenuStateContext);
   const [sentinel, setSentinel] = createSignal<HTMLElement | null>(null);
+  const [collectionEpoch, setCollectionEpoch] = createSignal(0);
+  let seenCollectionSize: number | undefined;
   const [local, domProps] = splitProps(props, [
     "onLoadMore",
     "isLoading",
@@ -1874,30 +1880,48 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
     "ref",
     "slot",
   ]);
+  const scrollOffsetValue = createMemo(() => local.scrollOffset ?? 1);
 
-  createEffect(() => {
-    const current = sentinel();
-    const collection = state?.collection();
-    void collection;
-    const onLoadMore = local.onLoadMore;
-    const scrollOffset = local.scrollOffset ?? 1;
-    if (!current || typeof IntersectionObserver !== "function") return;
+  createEffect(
+    () => state?.collection()?.size ?? 0,
+    (size) => {
+      if (seenCollectionSize === undefined || seenCollectionSize === 0) {
+        seenCollectionSize = size;
+        return;
+      }
+      if (size !== seenCollectionSize) {
+        seenCollectionSize = size;
+        setCollectionEpoch((n) => n + 1);
+      }
+    },
+  );
 
-    const margin = 100 * scrollOffset;
-    const rootMargin = `0px ${margin}% ${margin}% ${margin}%`;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && onLoadMore) {
-            void onLoadMore();
+  createEffect(
+    () => ({
+      current: sentinel(),
+      scrollOffset: scrollOffsetValue(),
+      epoch: collectionEpoch(),
+    }),
+    ({ current, scrollOffset }) => {
+      if (!current || typeof IntersectionObserver !== "function") return;
+
+      const onLoadMore = local.onLoadMore;
+      const margin = 100 * scrollOffset;
+      const rootMargin = `0px ${margin}% ${margin}% ${margin}%`;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting && onLoadMore) {
+              void onLoadMore();
+            }
           }
-        }
-      },
-      { rootMargin },
-    );
-    observer.observe(current);
-    onCleanup(() => observer.disconnect());
-  });
+        },
+        { rootMargin },
+      );
+      observer.observe(current);
+      return () => observer.disconnect();
+    },
+  );
 
   const isLoading = () => !!local.isLoading;
 
@@ -1926,7 +1950,7 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
         <div
           {...filterDOMProps(domProps as Record<string, unknown>, { global: true })}
           role="menuitem"
-          tabIndex={-1}
+          tabindex={-1}
           ref={(el) => assignRef(local.ref, el)}
           class={renderProps.class()}
           style={renderProps.style()}

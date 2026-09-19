@@ -13,12 +13,13 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/style-utils.ts
 
 // Port of packages/@react-spectrum/s2/src/style-utils.ts.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Label as HeadlessLabel,
   type LabelProps as HeadlessLabelProps,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type LabelSize = "sm" | "md" | "lg";
 

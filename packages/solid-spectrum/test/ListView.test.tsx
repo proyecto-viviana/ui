@@ -264,7 +264,7 @@ describe("ListView (solid-spectrum)", () => {
     const ref = vi.fn();
 
     render(() => (
-      <ListViewContext.Provider
+      <ListViewContext
         value={{
           "aria-label": "Context documents",
           isQuiet: true,
@@ -279,7 +279,7 @@ describe("ListView (solid-spectrum)", () => {
         <ListView items={documents} getKey={(item) => item.id} getTextValue={(item) => item.name}>
           {(item) => <ListViewItem id={item.id}>{item.name}</ListViewItem>}
         </ListView>
-      </ListViewContext.Provider>
+      </ListViewContext>
     ));
 
     const grid = screen.getByRole("grid", { name: "Context documents" });

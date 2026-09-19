@@ -20,12 +20,15 @@
  * Ported from packages/react-aria/src/color/useColorField.ts.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
 import { createFormValidation } from "../form/createFormValidation";
+import { ariaTrueFalse } from "../utils/domAttrs";
+import type { JSX } from "@solidjs/web";
 import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
 
 /**
@@ -43,7 +46,7 @@ export function createColorField(
   const labelId = createId();
 
   let didAutoFocus = false;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const input = inputRef();
     if (!didAutoFocus && getProps().autoFocus && input) {
       didAutoFocus = true;
@@ -222,8 +225,8 @@ export function createColorField(
       "aria-errormessage": invalid
         ? (p["aria-errormessage"] ?? field.errorMessageProps.id)
         : undefined,
-      "aria-invalid": invalid || undefined,
-      "aria-required": validationBehavior() === "aria" && required ? true : undefined,
+      "aria-invalid": invalid ? ariaTrueFalse(true) : undefined,
+      "aria-required": validationBehavior() === "aria" && required ? "true" : undefined,
       role: s.channel ? undefined : ("textbox" as const),
       "aria-valuenow": undefined,
       "aria-valuemin": undefined,
@@ -254,7 +257,7 @@ export function createColorField(
       return labelProps();
     },
     get inputProps() {
-      return inputProps();
+      return inputProps() as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get descriptionProps() {
       return descriptionProps();

@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ClearButton.tsx
 
 // Port of packages/@react-spectrum/s2/src/ClearButton.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
   type ButtonProps as HeadlessButtonProps,
@@ -24,6 +24,7 @@ import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import CrossIcon from "../icon/ui-icons/Cross";
 import { style, focusRing } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ClearButtonSize = "sm" | "md" | "lg";
 
@@ -107,9 +108,9 @@ export function ClearButton(props: ClearButtonProps): JSX.Element {
       aria-label={headlessProps["aria-label"] ?? "Clear"}
       class={getClassName}
     >
-      <IconContext.Provider value={{ slot: "icon", render: centerBaseline({ slot: "icon" }) }}>
+      <IconContext value={{ slot: "icon", render: centerBaseline({ slot: "icon" }) }}>
         <CrossIcon style={iconSizes[size()]} />
-      </IconContext.Provider>
+      </IconContext>
     </HeadlessButton>
   );
 }

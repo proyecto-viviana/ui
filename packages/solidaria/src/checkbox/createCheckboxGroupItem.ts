@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckboxGroupItem hook.
  */
 
-import { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createCheckbox, type AriaCheckboxProps, type CheckboxAria } from "./createCheckbox";
 import { type ToggleState, type CheckboxGroupState } from "@proyecto-viviana/solid-stately";
 import { checkboxGroupData } from "./createCheckboxGroup";

@@ -13,8 +13,10 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Field.tsx
 
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
-import { type JSX, splitProps, Show } from "solid-js";
+import { Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type FieldSize = "sm" | "md" | "lg";
 

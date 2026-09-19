@@ -21,7 +21,9 @@
  * Ported from packages/react-aria/src/visually-hidden/VisuallyHidden.tsx.
  */
 
-import { type Accessor, type JSX, createMemo, createSignal } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { access, type MaybeAccessor } from "../utils";
 import { mergeProps } from "../utils/mergeProps";
@@ -117,7 +119,7 @@ export function createVisuallyHidden(
   });
 
   const visuallyHiddenProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
-    ...mergeProps(
+    ...(mergeProps(
       focusWithinProps as unknown as Record<string, unknown>,
       isFocusable()
         ? {
@@ -132,7 +134,7 @@ export function createVisuallyHidden(
           }
         : {},
       { style: combinedStyles() },
-    ),
+    ) as JSX.HTMLAttributes<HTMLElement>),
   }));
 
   return {

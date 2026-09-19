@@ -4,7 +4,7 @@
  * Do not edit by hand.
  */
 
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createIcon } from "../spectrum-icon";
 
 function PixelNavSettingsIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {

@@ -10,10 +10,9 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal, useContext } from "solid-js";
-import h from "solid-js/h";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, useContext } from "solid-js";
+import h from "@solidjs/h";
+import { hc, renderProp } from "../../../apps/comparison/src/components/solid/solid-h";
 import {
   Select,
   SelectTrigger,
@@ -527,7 +526,7 @@ describe("Select", () => {
 
     it("updates SelectValue for uncontrolled option selection when composed with solid-js/h", async () => {
       function HSelectValueDemo() {
-        return h(
+        return hc(
           Select<TestItem>,
           {
             "aria-label": "Test Select",
@@ -540,15 +539,17 @@ describe("Select", () => {
             },
           },
           [
-            h(SelectTrigger, {}, h(SelectValue, { placeholder: "Select an option" })),
-            h(SelectListBox<TestItem>, {}, (item: TestItem) =>
-              h(SelectOption, { id: item.id }, item.name),
+            hc(SelectTrigger, {}, [hc(SelectValue, { placeholder: "Select an option" })]),
+            hc(
+              SelectListBox<TestItem>,
+              {},
+              renderProp((item: TestItem) => hc(SelectOption, { id: item.id }, [item.name])),
             ),
           ],
         )();
       }
 
-      render(() => h(HSelectValueDemo, {})());
+      render(() => hc(HSelectValueDemo, {})());
 
       const trigger = screen.getByRole("button");
       expect(trigger).toHaveTextContent("Dog");

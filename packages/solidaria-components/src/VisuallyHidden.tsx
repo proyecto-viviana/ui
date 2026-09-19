@@ -19,11 +19,14 @@
  * Solid adaptation of the pinned VisuallyHidden component.
  */
 
-import { type JSX, type ParentProps, splitProps } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import { createVisuallyHidden, mergeProps } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
-export interface VisuallyHiddenProps extends ParentProps, JSX.HTMLAttributes<HTMLElement> {
+export interface VisuallyHiddenProps
+  extends ParentProps, Omit<JSX.HTMLAttributes<HTMLElement>, "children"> {
   /** The element type to render. @default 'span' */
   elementType?: keyof JSX.IntrinsicElements;
   /** Whether the element should be focusable when focused. */

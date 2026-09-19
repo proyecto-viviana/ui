@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Divider.tsx
 
 // Port of packages/@react-spectrum/s2/src/Divider.tsx.
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Separator as HeadlessSeparator,
@@ -26,6 +27,7 @@ import {
   getAllowedOverrides,
   staticColor,
 } from "../s2-internal/style-utils" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

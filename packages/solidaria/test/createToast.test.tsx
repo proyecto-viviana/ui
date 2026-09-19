@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
-import { createRoot, createSignal, For } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library"; import { createRoot, createSignal, flush, For } from "solid-js";
 import { createToast, createToastRegion } from "../src/toast";
 
 describe("createToast", () => {
@@ -20,6 +18,7 @@ describe("createToast", () => {
       } as any;
 
       const aria = createToast({ toast, state });
+      flush();
 
       expect(aria.toastProps.role).toBe("alertdialog");
       expect(aria.toastProps["aria-modal"]).toBe("false");

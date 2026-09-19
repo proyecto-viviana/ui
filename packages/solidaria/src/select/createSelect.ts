@@ -18,7 +18,9 @@
  * Based on @react-aria/select useSelect.
  */
 
-import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
+import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { createField } from "../label/createField";
@@ -134,13 +136,17 @@ export function createSelect<T>(
     filterDOMProps(getProps() as unknown as Record<string, unknown>, { labelable: true });
 
   // Share data with child options
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     selectData.set(state, { id });
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       selectData.delete(state);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // RAC `useSelect.ts:181-186`: field wiring (label + description/error slot
   // ids + trigger `aria-describedby`) comes from `useField`, with
@@ -477,7 +483,7 @@ export function createSelect<T>(
         ]
           .filter(Boolean)
           .join(" "),
-        "aria-multiselectable": state.selectionMode() === "multiple" ? true : undefined,
+        "aria-multiselectable": state.selectionMode() === "multiple" ? "true" : undefined,
         tabIndex: -1,
         onBlur: (e: FocusEvent) => {
           // Only a blur that leaves the listbox entirely blurs the select.

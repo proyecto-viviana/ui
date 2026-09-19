@@ -3,9 +3,7 @@
  *
  * Ported from react-aria-components Dialog.test.js
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, within } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, within } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { Dialog, DialogTrigger, Heading, type DialogRenderProps } from "../src/Dialog";
 import { Text } from "../src/Text";
 import { Modal, ModalOverlay } from "../src/Modal";
@@ -386,7 +384,9 @@ describe("DialogTrigger", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
     setIsOpen(true);
+    flush();
     vi.runAllTimers();
+    flush();
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled(); // Not called on programmatic change

@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Disclosure.tsx.
 
-import { type JSX, createContext, splitProps, useContext, Show } from "solid-js";
+import { createContext, useContext, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "@proyecto-viviana/solidaria-components";
 import {
   Disclosure as HeadlessDisclosure,
@@ -39,6 +40,7 @@ import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "m
 import { mergeStyles } from "../style/runtime";
 import { ActionButtonContext } from "../button/context";
 import type { ActionButtonSize } from "../button/group-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -474,7 +476,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
   };
 
   return (
-    <DisclosureContext.Provider value={disclosureContext}>
+    <DisclosureContext value={disclosureContext}>
       <HeadlessDisclosureGroup
         {...(headlessProps as HeadlessDisclosureGroupProps)}
         ref={mergeContextRefs(
@@ -492,7 +494,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
       >
         {local.children}
       </HeadlessDisclosureGroup>
-    </DisclosureContext.Provider>
+    </DisclosureContext>
   );
 }
 
@@ -561,7 +563,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
   };
 
   return (
-    <DisclosureContext.Provider value={disclosureContext}>
+    <DisclosureContext value={disclosureContext}>
       <HeadlessDisclosure
         {...(headlessProps as HeadlessDisclosureProps)}
         ref={mergeContextRefs(
@@ -579,7 +581,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
       >
         {local.children}
       </HeadlessDisclosure>
-    </DisclosureContext.Provider>
+    </DisclosureContext>
   );
 }
 
@@ -612,8 +614,8 @@ export function DisclosureHeader(props: DisclosureHeaderProps): JSX.Element {
   };
 
   return (
-    <ActionButtonContext.Provider value={actionButtonContext}>
-      <InternalDisclosureHeaderContext.Provider value>
+    <ActionButtonContext value={actionButtonContext}>
+      <InternalDisclosureHeaderContext value>
         <div
           {...domProps}
           ref={mergeContextRefs(local.ref)}
@@ -630,8 +632,8 @@ export function DisclosureHeader(props: DisclosureHeaderProps): JSX.Element {
         >
           {local.children}
         </div>
-      </InternalDisclosureHeaderContext.Provider>
-    </ActionButtonContext.Provider>
+      </InternalDisclosureHeaderContext>
+    </ActionButtonContext>
   );
 }
 

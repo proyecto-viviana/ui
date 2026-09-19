@@ -21,9 +21,11 @@
  * Port of react-aria's useFormValidation.
  */
 
-import { type Accessor, createEffect, onCleanup } from "solid-js";
+import { createEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { type FormValidationState, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { setInteractionModality } from "../interactions/createInteractionModality";
+import { followRef } from "../utils/refs";
 
 export type ValidatableElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -115,117 +117,130 @@ export function createFormValidation(
 ): void {
   const validationBehavior = () => props.validationBehavior ?? "aria";
   const focus = () => props.focus;
+  const inputRef = followRef(ref);
 
   // Track whether we should ignore form reset (for React-like programmatic resets)
   let isIgnoredReset = false;
 
-  // Set custom validity on the native input
-  createEffect(() => {
-    const input = ref();
-    // `'setCustomValidity' in input` guards refs that aren't true form elements
-    // (e.g. a custom element), matching upstream useFormValidation.
-    if (
-      validationBehavior() === "native" &&
-      input &&
-      "setCustomValidity" in input &&
-      !input.disabled
-    ) {
+  // Set custom validity on the native input. Writes (`updateValidation`) must
+  // run in apply — createTrackedEffect is an owned scope and rejects them.
+  createEffect(
+    () => {
+      const input = inputRef();
       const realtimeValidation = state.realtimeValidation();
-      const errorMessage = realtimeValidation.isInvalid
-        ? realtimeValidation.validationErrors.join(" ") || "Invalid value."
-        : "";
-      input.setCustomValidity(errorMessage);
+      return {
+        input,
+        behavior: validationBehavior(),
+        isInvalid: realtimeValidation.isInvalid,
+        errorMessage: realtimeValidation.isInvalid
+          ? realtimeValidation.validationErrors.join(" ") || "Invalid value."
+          : "",
+        disabled: !!input?.disabled,
+      };
+    },
+    ({ input, behavior, isInvalid, errorMessage, disabled }) => {
+      // `'setCustomValidity' in input` guards refs that aren't true form elements
+      // (e.g. a custom element), matching upstream useFormValidation.
+      if (behavior === "native" && input && "setCustomValidity" in input && !disabled) {
+        // Prevent default tooltip for validation message
+        if (!input.hasAttribute("title")) {
+          input.title = "";
+        }
 
-      // Prevent default tooltip for validation message
-      if (!input.hasAttribute("title")) {
-        input.title = "";
+        if (isInvalid) {
+          input.setCustomValidity(errorMessage);
+        } else {
+          // Do not wipe a custom error owned by native constraint hooks
+          // (`createNativeValidation`) before reading validity.
+          state.updateValidation(getNativeValidity(input));
+          if (input.validity.valid) {
+            input.setCustomValidity("");
+          }
+        }
       }
-
-      // Update validation with native validity if not already invalid
-      if (!realtimeValidation.isInvalid) {
-        state.updateValidation(getNativeValidity(input));
-      }
-    }
-  });
+    },
+  );
 
   // Set up event listeners
-  createEffect(() => {
-    const input = ref();
-    if (!input) {
-      return;
-    }
-
-    // Effect-time `input.form` is null when the control is associated later
-    // via `form="…"`. Keep it only for the RAC `form.reset` monkey-patch
-    // (programmatic React-style resets). The reset *listener* reads the live
-    // association, matching #466 / #467.
-    const form = input.form;
-
-    // Handle invalid event
-    const onInvalid = (e: Event) => {
-      // Only commit validation if we are not already displaying one
-      if (!state.displayValidation().isInvalid) {
-        state.commitValidation();
+  createEffect(
+    () => inputRef(),
+    (input) => {
+      if (!input) {
+        return;
       }
 
-      // RAC reads `ref.current?.form` at event time (`useFormValidation.ts:75`).
-      // A `form` attribute associated after mount (D14's injected probe form)
-      // leaves the effect-time `input.form` null; using the live association
-      // is what focuses TextField / SearchField / Checkbox after requestSubmit.
-      const associatedForm = input.form;
-      if (!e.defaultPrevented && associatedForm && getFirstInvalidInput(associatedForm) === input) {
-        const focusFn = focus();
-        if (focusFn) {
-          focusFn();
-        } else {
-          input.focus();
+      // Effect-time `input.form` is null when the control is associated later
+      // via `form="…"`. Keep it only for the RAC `form.reset` monkey-patch
+      // (programmatic React-style resets). The reset *listener* reads the live
+      // association, matching #466 / #467.
+      const form = input.form;
+
+      // Handle invalid event
+      const onInvalid = (e: Event) => {
+        // Only commit validation if we are not already displaying one
+        if (!state.displayValidation().isInvalid) {
+          state.commitValidation();
         }
-        // Always show focus ring
-        setInteractionModality("keyboard");
-      }
 
-      // Prevent default browser error UI
-      e.preventDefault();
-    };
+        // RAC reads `ref.current?.form` at event time (`useFormValidation.ts:75`).
+        // A `form` attribute associated after mount (D14's injected probe form)
+        // leaves the effect-time `input.form` null; using the live association
+        // is what focuses TextField / SearchField / Checkbox after requestSubmit.
+        const associatedForm = input.form;
+        if (!e.defaultPrevented && associatedForm && getFirstInvalidInput(associatedForm) === input) {
+          const focusFn = focus();
+          if (focusFn) {
+            focusFn();
+          } else {
+            input.focus();
+          }
+          // Always show focus ring
+          setInteractionModality("keyboard");
+        }
 
-    // Handle change event
-    const onChange = () => {
-      state.commitValidation();
-    };
-
-    // Handle form reset. Read `input.form` at event time so a late `form=""`
-    // still clears displayValidation (D14-style association after mount).
-    const onReset = (e: Event) => {
-      if (input.form && e.target === input.form && !isIgnoredReset) {
-        state.resetValidation();
-      }
-    };
-
-    // Patch form.reset to detect programmatic resets
-    let originalReset: (() => void) | undefined;
-    if (form) {
-      originalReset = form.reset.bind(form);
-      form.reset = () => {
-        // Ignore programmatic resets outside user events
-        isIgnoredReset =
-          !window.event ||
-          (window.event.type === "message" && window.event.target instanceof MessagePort);
-        originalReset?.();
-        isIgnoredReset = false;
+        // Prevent default browser error UI
+        e.preventDefault();
       };
-    }
 
-    input.addEventListener("invalid", onInvalid);
-    input.addEventListener("change", onChange);
-    document.addEventListener("reset", onReset);
+      // Handle change event
+      const onChange = () => {
+        state.commitValidation();
+      };
 
-    onCleanup(() => {
-      input.removeEventListener("invalid", onInvalid);
-      input.removeEventListener("change", onChange);
-      document.removeEventListener("reset", onReset);
-      if (form && originalReset) {
-        form.reset = originalReset;
+      // Handle form reset. Read `input.form` at event time so a late `form=""`
+      // still clears displayValidation (D14-style association after mount).
+      const onReset = (e: Event) => {
+        if (input.form && e.target === input.form && !isIgnoredReset) {
+          state.resetValidation();
+        }
+      };
+
+      // Patch form.reset to detect programmatic resets
+      let originalReset: (() => void) | undefined;
+      if (form) {
+        originalReset = form.reset.bind(form);
+        form.reset = () => {
+          // Ignore programmatic resets outside user events
+          isIgnoredReset =
+            !window.event ||
+            (window.event.type === "message" && window.event.target instanceof MessagePort);
+          originalReset?.();
+          isIgnoredReset = false;
+        };
       }
-    });
-  });
+
+      input.addEventListener("invalid", onInvalid);
+      input.addEventListener("change", onChange);
+      document.addEventListener("reset", onReset);
+
+      return () => {
+        input.removeEventListener("invalid", onInvalid);
+        input.removeEventListener("change", onChange);
+        document.removeEventListener("reset", onReset);
+        if (form && originalReset) {
+          form.reset = originalReset;
+        }
+      };
+    },
+  );
 }

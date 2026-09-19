@@ -4,7 +4,9 @@
  * public page on 2026-09-10. This is not a copy of @vercel/geistcn.
  */
 
-import { Show, createMemo, splitProps, type JSX } from "solid-js";
+import { Show, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   Button as HeadlessButton,
   type ButtonProps as HeadlessButtonProps,

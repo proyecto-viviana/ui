@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Content.tsx
 
 // Port of packages/@react-spectrum/s2/src/Content.tsx.
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
 import {
@@ -24,6 +25,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface TextProps extends BaseContentProps<HTMLSpanElement> {}
 

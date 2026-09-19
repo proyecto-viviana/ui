@@ -627,7 +627,7 @@ export default defineConfig({
         "react-dom",
         "react-dom/client",
         "solid-js",
-        "solid-js/web",
+        "@solidjs/web",
       ],
     },
     ssr: {

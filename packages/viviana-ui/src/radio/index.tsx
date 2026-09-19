@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/RadioGroup.tsx.
 
-import {
-  children as resolveChildren,
-  Show,
-  splitProps,
-  type JSX,
-  createContext,
-  createUniqueId,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, Show, createContext, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   RadioGroup as HeadlessRadioGroup,
   Radio as HeadlessRadio,
@@ -54,6 +47,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -529,7 +523,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
           orientation: local.orientation,
         })}
       >
-        <FormContext.Provider
+        <FormContext
           value={{
             ...(formContext ?? {}),
             get size() {
@@ -538,7 +532,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
             isRequired: undefined,
           }}
         >
-          <RadioContext.Provider
+          <RadioContext
             value={{
               get isEmphasized() {
                 return local.isEmphasized;
@@ -546,8 +540,8 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
             }}
           >
             {local.children}
-          </RadioContext.Provider>
-        </FormContext.Provider>
+          </RadioContext>
+        </FormContext>
       </div>
       {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
           RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
@@ -582,7 +576,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
   );
 
   return (
-    <RadioStyleContext.Provider
+    <RadioStyleContext
       value={{
         get size() {
           return local.size;
@@ -618,7 +612,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
       >
         {renderChildren}
       </HeadlessRadioGroup>
-    </RadioStyleContext.Provider>
+    </RadioStyleContext>
   );
 }
 

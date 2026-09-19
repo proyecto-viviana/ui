@@ -1,4 +1,5 @@
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   FileTrigger as HeadlessFileTrigger,
   type FileTriggerProps as HeadlessFileTriggerProps,

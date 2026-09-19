@@ -1,9 +1,10 @@
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ColorEditor as HeadlessColorEditor,
   type ColorEditorProps as HeadlessColorEditorProps,
 } from "@proyecto-viviana/solidaria-components";
 import { css } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ColorEditorProps extends Omit<HeadlessColorEditorProps, "class" | "style"> {
   /** Additional CSS class name. */

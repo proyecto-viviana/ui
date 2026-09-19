@@ -19,7 +19,8 @@
  * Based on @react-aria/calendar useCalendarCell
  */
 
-import { createSignal, createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { scrollIntoViewport, getScrollParent } from "../utils";
@@ -125,7 +126,9 @@ export function createCalendarCell<T extends CalendarState>(
   // cell took the pointer (in-canvas click) or when it mounted already focused
   // (Next/Previous). Solid `createEffect` is a microtask (before paint), so one
   // rAF still runs in that same frame — double rAF waits until after first paint.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!startedUnfocused) {
       return;
     }
@@ -141,11 +144,13 @@ export function createCalendarCell<T extends CalendarState>(
         }
       });
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const isFocusVisible = createMemo(() =>
     startedUnfocused ? isOverlayAutoFocusVisible() : isCellFocusVisible(),
@@ -215,7 +220,9 @@ export function createCalendarCell<T extends CalendarState>(
   // Next/Previous click would steal focus onto the new cell before the
   // nav button receives click-focus (#279). Defer to a frame so a focused
   // nav button can clear calendar-level isFocused first.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = ref?.();
     if (!element || !isFocused()) return;
     const frame = requestAnimationFrame(() => {
@@ -232,8 +239,10 @@ export function createCalendarCell<T extends CalendarState>(
         scrollIntoViewport(element, { containingElement: getScrollParent(element) });
       }
     });
-    onCleanup(() => cancelAnimationFrame(frame));
-  });
+    _s2Cleanups.push(() => cancelAnimationFrame(frame));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({

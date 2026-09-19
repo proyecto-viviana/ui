@@ -15,7 +15,8 @@
      • CardPreview is the only full-bleed region Card offers (it bleeds by negative
        --card-padding-*). The spec's console header bar is full-bleed, so it lives there
        even though the slot is nominally for media — see the note at its site. */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Badge,
   Button,

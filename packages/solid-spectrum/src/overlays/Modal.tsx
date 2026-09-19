@@ -13,13 +13,14 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Modal.tsx
 
 // Port of packages/@react-spectrum/s2/src/Modal.tsx.
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Modal as HeadlessModal,
   ModalOverlay as HeadlessModalOverlay,
   type ModalOverlayProps as HeadlessModalOverlayProps,
 } from "@proyecto-viviana/solidaria-components";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ModalSize = "sm" | "md" | "lg" | "fullscreen";
 

@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx
 
 // Port of packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx.
-import { type JSX, createContext, Show, splitProps, useContext } from "solid-js";
+import { createContext, Show, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ColorSwatch as HeadlessColorSwatch,
@@ -36,6 +37,7 @@ import {
   mergeContextUnsafeStyle,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   InternalColorSwatchContext,
   type InternalColorSwatchRounding,
@@ -280,7 +282,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       }
       style={mergedUnsafeStyle()}
     >
-      <InternalColorSwatchContext.Provider
+      <InternalColorSwatchContext
         value={{
           useWrapper,
           get size() {
@@ -292,7 +294,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
         }}
       >
         {local.children}
-      </InternalColorSwatchContext.Provider>
+      </InternalColorSwatchContext>
     </HeadlessColorSwatchPicker>
   );
 }
@@ -349,9 +351,9 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
     >
       {(renderProps) => (
         <>
-          <InternalColorSwatchContext.Provider value={null}>
+          <InternalColorSwatchContext value={null}>
             {renderChildren(renderProps)}
-          </InternalColorSwatchContext.Provider>
+          </InternalColorSwatchContext>
           <Show when={renderProps.isSelected}>
             <div aria-hidden="true" class={colorSwatchPickerSelectedOverlay} />
           </Show>

@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { Button, ButtonContext } from "../src/button";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
@@ -87,6 +85,7 @@ describe("Button", () => {
 
     expect(screen.getByRole("button")).toHaveTextContent("Save");
     setLabel("Saved");
+    flush();
     expect(screen.getByRole("button")).toHaveTextContent("Saved");
   });
 
@@ -453,9 +452,9 @@ describe("Button", () => {
 
     it("inherits ButtonContext props like React Spectrum S2", () => {
       render(() => (
-        <ButtonContext.Provider value={{ size: "XL", isDisabled: true }}>
+        <ButtonContext value={{ size: "XL", isDisabled: true }}>
           <Button>Click Me</Button>
-        </ButtonContext.Provider>
+        </ButtonContext>
       ));
 
       const button = screen.getByRole("button");
@@ -467,9 +466,9 @@ describe("Button", () => {
       const calls: string[] = [];
 
       render(() => (
-        <ButtonContext.Provider value={{ onPress: () => calls.push("ctx") }}>
+        <ButtonContext value={{ onPress: () => calls.push("ctx") }}>
           <Button onPress={() => calls.push("prop")}>Click Me</Button>
-        </ButtonContext.Provider>
+        </ButtonContext>
       ));
 
       await user.click(screen.getByRole("button"));
@@ -480,9 +479,9 @@ describe("Button", () => {
       const onPress = vi.fn();
 
       render(() => (
-        <ButtonContext.Provider value={{ size: "XL" }}>
+        <ButtonContext value={{ size: "XL" }}>
           <Button onPress={onPress}>Click Me</Button>
-        </ButtonContext.Provider>
+        </ButtonContext>
       ));
 
       await user.click(screen.getByRole("button"));
@@ -602,6 +601,7 @@ describe("Button", () => {
         expect(onPress).toHaveBeenCalledTimes(1);
 
         setBusy(false);
+        flush();
         expect(button).not.toHaveAttribute("data-pending");
         expect(button).not.toHaveAttribute("aria-disabled");
 

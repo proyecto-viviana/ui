@@ -2,8 +2,7 @@
  * Tests for createTree, createTreeItem, createTreeSelectionCheckbox
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createRoot, createSignal, flush } from "solid-js";
 import { createTree, createTreeItem, createTreeSelectionCheckbox, getTreeData } from "../src/tree";
 import {
   createTreeState,
@@ -148,7 +147,7 @@ describe("createTree", () => {
       );
 
       expect(treeProps.tabIndex).toBeUndefined();
-      expect(treeProps["aria-disabled"]).toBe(true);
+      expect(treeProps["aria-disabled"]).toBe("true");
 
       dispose();
     });
@@ -165,7 +164,7 @@ describe("createTree", () => {
         ref,
       );
 
-      expect(treeProps["aria-multiselectable"]).toBe(true);
+      expect(treeProps["aria-multiselectable"]).toBe("true");
 
       dispose();
     });
@@ -296,7 +295,7 @@ describe("createTreeItem", () => {
         ref,
       );
 
-      expect(rowProps["aria-expanded"]).toBe(true);
+      expect(rowProps["aria-expanded"]).toBe("true");
       expect(isExpanded).toBe(true);
       expect(isExpandable).toBe(true);
 
@@ -362,12 +361,13 @@ describe("createTreeItem", () => {
       );
 
       expect(item.isSelected).toBe(false);
-      expect(item.rowProps["aria-selected"]).toBe(false);
+      expect(item.rowProps["aria-selected"]).toBe("false");
 
       state.toggleSelection("1");
+      flush();
 
       expect(item.isSelected).toBe(true);
-      expect(item.rowProps["aria-selected"]).toBe(true);
+      expect(item.rowProps["aria-selected"]).toBe("true");
 
       dispose();
     });
@@ -386,7 +386,7 @@ describe("createTreeItem", () => {
       );
 
       expect(isDisabled).toBe(true);
-      expect(rowProps["aria-disabled"]).toBe(true);
+      expect(rowProps["aria-disabled"]).toBe("true");
 
       dispose();
     });
@@ -497,6 +497,7 @@ describe("createTreeSelectionCheckbox", () => {
       expect(checkbox.checkboxProps.checked).toBe(false);
 
       state.toggleSelection("1");
+      flush();
 
       // Re-access the getter to get updated props
       expect(checkbox.checkboxProps.checked).toBe(true);
@@ -547,6 +548,7 @@ describe("createTree RTL direction parity", () => {
         key: "ArrowLeft",
         preventDefault,
       } as unknown as KeyboardEvent);
+      flush();
 
       expect(state.isExpanded("1")).toBe(true);
       expect(preventDefault).toHaveBeenCalled();
@@ -557,6 +559,7 @@ describe("createTree RTL direction parity", () => {
         key: "ArrowRight",
         preventDefault: preventDefault2,
       } as unknown as KeyboardEvent);
+      flush();
 
       expect(state.isExpanded("1")).toBe(false);
 
@@ -583,6 +586,7 @@ describe("createTree RTL direction parity", () => {
         key: "ArrowRight",
         preventDefault,
       } as unknown as KeyboardEvent);
+      flush();
 
       expect(state.isExpanded("1")).toBe(true);
 
@@ -591,6 +595,7 @@ describe("createTree RTL direction parity", () => {
         key: "ArrowLeft",
         preventDefault: vi.fn(),
       } as unknown as KeyboardEvent);
+      flush();
 
       expect(state.isExpanded("1")).toBe(false);
 

@@ -21,8 +21,11 @@
  * https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx.
  */
 
-import { type JSX, createSignal, splitProps, Show, createEffect, createUniqueId } from "solid-js";
+import { createSignal, Show, createEffect, createUniqueId, createTrackedEffect } from "solid-js";
+import { dataAttr, ariaTrueFalse } from "./utils";
+import type { JSX } from "@solidjs/web";
 import { createInteractOutside } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ContextualHelpTriggerProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -139,7 +142,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
     },
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (!isOpen()) return;
     contentEl()?.focus();
   });
@@ -160,10 +163,10 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
         id={triggerId}
         ref={setTriggerEl}
         aria-haspopup="dialog"
-        aria-expanded={isOpen()}
+        aria-expanded={ariaTrueFalse(isOpen())}
         aria-controls={isOpen() ? contentId : undefined}
-        data-unavailable={isUnavailable() || undefined}
-        data-disabled={isDisabled() || undefined}
+        data-unavailable={dataAttr(isUnavailable())}
+        data-disabled={dataAttr(isDisabled())}
         disabled={isDisabled()}
         onClick={handleTriggerClick}
         onKeyDown={handleTriggerKeyDown}
@@ -178,7 +181,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
           ref={setContentEl}
           role="dialog"
           aria-labelledby={triggerId}
-          tabIndex={-1}
+          tabindex={-1}
           class="solidaria-ContextualHelpTrigger-content"
           style={{ position: "absolute", "z-index": "50" }}
           onKeyDown={(e) => {

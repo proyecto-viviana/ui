@@ -16,16 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Calendar.tsx.
 
-import {
-  type JSX,
-  For,
-  Show,
-  createContext,
-  createSignal,
-  createUniqueId,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { For, Show, createContext, createSignal, createUniqueId, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Calendar as HeadlessCalendar,
   CalendarButton,
@@ -52,6 +44,7 @@ import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,

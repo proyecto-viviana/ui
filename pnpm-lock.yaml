@@ -41,6 +41,12 @@ importers:
       '@changesets/cli':
         specifier: ^3.0.1
         version: 3.0.1
+      '@solidjs/diagnostics':
+        specifier: 2.0.0-rc.9
+        version: 2.0.0-rc.9(vitest@4.1.11)
+      '@solidjs/h':
+        specifier: 2.0.0-rc.9
+        version: 2.0.0-rc.9(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))
       '@solidjs/testing-library':
         specifier: 1.0.0-beta.3
         version: 1.0.0-beta.3(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(solid-js@2.0.0-rc.9)
@@ -244,6 +250,9 @@ importers:
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
+      '@solidjs/diagnostics':
+        specifier: 2.0.0-rc.9
+        version: 2.0.0-rc.9(vitest@4.1.11)
       '@solidjs/vite-plugin':
         specifier: 3.0.0-next.44
         version: 3.0.0-next.44(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(@testing-library/jest-dom@6.9.1)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(solid-js@2.0.0-rc.9)(supports-color@10.2.2)
@@ -2233,6 +2242,20 @@ packages:
 
   '@solidjs/compiler@2.0.0-rc.9':
     resolution: {integrity: sha512-TzxMcJDhVswSEL3UtXuUWfFzIyNBx0LN6KAJZ6ryvlElAEdq2T2mpaw/Vn5fMjXcv0bCqas8CVADBhrkDVfPMg==}
+
+  '@solidjs/diagnostics@2.0.0-rc.9':
+    resolution: {integrity: sha512-bQiY+6qpcxVak9ESgforx8aXCw6QqymTkQC4uGyHFgnq0IiIX3Qy8573rAUcV5nBLlbDnFR1DIw2V7FFrPOJwA==}
+    peerDependencies:
+      vitest: 4.1.11
+    peerDependenciesMeta:
+      vitest:
+        optional: true
+
+  '@solidjs/h@2.0.0-rc.9':
+    resolution: {integrity: sha512-EMEQfUy3YaKjKoc27JPTGia1vRjQXYFJPitIVZVRu5ydq7P8lO20hwYcFu8EmXJ9crQyCfeEPR+YTKf4VGoBOg==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      '@solidjs/web': ^2.0.0-rc.9
 
   '@solidjs/meta@0.29.4':
     resolution: {integrity: sha512-zdIWBGpR9zGx1p1bzIPqF5Gs+Ks/BH8R6fWhmUa/dcK1L2rUC8BAcZJzNRYBQv74kScf1TSOs0EY//Vd/I0V8g==}
@@ -6547,6 +6570,16 @@ snapshots:
       '@solidjs/compiler-linux-x64-gnu': 2.0.0-rc.9
       '@solidjs/compiler-wasm32-wasi': 2.0.0-rc.9
       '@solidjs/compiler-win32-x64-msvc': 2.0.0-rc.9
+
+  '@solidjs/diagnostics@2.0.0-rc.9(vitest@4.1.11)':
+    dependencies:
+      '@solidjs/signals': 2.0.0-rc.9
+    optionalDependencies:
+      vitest: 4.1.11(@types/node@26.2.0)(@vitest/browser-preview@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(jsdom@29.1.1)
+
+  '@solidjs/h@2.0.0-rc.9(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))':
+    dependencies:
+      '@solidjs/web': 2.0.0-rc.9(solid-js@2.0.0-rc.9)
 
   '@solidjs/meta@0.29.4(solid-js@2.0.0-rc.9)':
     dependencies:

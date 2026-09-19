@@ -1,5 +1,5 @@
-/** @jsxImportSource solid-js */
-import { createSignal, onMount } from "solid-js";
+/** @jsxImportSource @solidjs/web */
+import { createSignal, onSettled } from "solid-js";
 import { createKeyboard } from "@proyecto-viviana/solidaria/interactions";
 
 export default function SolidKeyboardShortcutsIsland() {
@@ -60,7 +60,7 @@ export default function SolidKeyboardShortcutsIsland() {
     },
   });
 
-  onMount(() => setHydrated(true));
+  onSettled(() => setHydrated(true));
 
   return (
     <main

@@ -14,7 +14,7 @@ describe("createDisclosure SSR", () => {
     const panel = serverPanelProps(false);
 
     expect(panel.role).toBe("group");
-    expect(panel["aria-hidden"]).toBe(true);
+    expect(panel["aria-hidden"]).toBe("true");
     expect(panel.hidden).toBe(true);
   });
 
@@ -22,7 +22,7 @@ describe("createDisclosure SSR", () => {
     const panel = serverPanelProps(true);
 
     expect(panel.role).toBe("group");
-    expect(panel["aria-hidden"]).toBe(false);
+    expect(panel["aria-hidden"]).toBe("false");
     expect(panel.hidden).toBeUndefined();
   });
 

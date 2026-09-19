@@ -1,6 +1,4 @@
-import { afterEach, describe, expect, it } from "vite-plus/test";
-import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { afterEach, describe, expect, it } from "vite-plus/test"; import { cleanup, render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { Calendar, CalendarContext } from "../src/Calendar";
 import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
@@ -135,7 +133,7 @@ describe("Calendar (solid-spectrum)", () => {
     let localRef: HTMLDivElement | undefined;
 
     render(() => (
-      <CalendarContext.Provider
+      <CalendarContext
         value={{
           isDisabled: true,
           firstDayOfWeek: "mon",
@@ -151,7 +149,7 @@ describe("Calendar (solid-spectrum)", () => {
           }}
           UNSAFE_style={{ width: "224px" }}
         />
-      </CalendarContext.Provider>
+      </CalendarContext>
     ));
     await waitForCalendar();
 

@@ -17,8 +17,9 @@
  * Based on @react-aria/grid/useGridCell.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { GridState, GridCollection } from "@proyecto-viviana/solid-stately";
 import type { GridCellProps, GridCellAria } from "./types";
 import { getGridData } from "./createGrid";

@@ -13,23 +13,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Breadcrumbs.tsx
 
 // Port of packages/@react-spectrum/s2/src/Breadcrumbs.tsx.
-import {
-  type Accessor,
-  For,
-  type JSX,
-  Show,
-  createContext,
-  createEffect,
-  createMemo,
-  createRoot,
-  createSignal,
-  createUniqueId,
-  onCleanup,
-  onMount,
-  splitProps,
-  untrack,
-  useContext,
-} from "solid-js";
+import { For, Show, createContext, createEffect, createMemo, createRoot, createSignal, createUniqueId, onCleanup, onSettled, untrack, useContext, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   BreadcrumbItem as HeadlessBreadcrumbItem,
   BreadcrumbItemContext as HeadlessBreadcrumbItemContext,
@@ -56,6 +42,7 @@ import { Menu, MenuItem, MenuTrigger, Text } from "../Menu";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import FolderBreadcrumbIcon from "../icon/s2wf-icons/FolderBreadcrumbIcon";
 import { s2IntlStrings } from "../intl";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   breadcrumbStyles,
   chevronStyles,
@@ -482,7 +469,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
     queueOverflowUpdate();
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     allItems().length;
     canMeasure();
     size();
@@ -490,7 +477,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
     queueOverflowUpdate();
   });
 
-  onMount(() => {
+  onSettled(() => {
     const nextCanMeasure = canMeasureOverflow();
     setCanMeasure(nextCanMeasure);
 
@@ -583,7 +570,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
     const sliceIndex = Math.max(1, items.length - tailCount);
     return sliceIndex > 1;
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
     shouldCollapse();
     queueOverflowUpdate();
   });
@@ -627,7 +614,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
   };
 
   return (
-    <InternalBreadcrumbsContext.Provider value={{ size, isDisabled, showSeparator }}>
+    <InternalBreadcrumbsContext value={{ size, isDisabled, showSeparator }}>
       <Show
         when={shouldCollapse()}
         fallback={
@@ -708,7 +695,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
                   data-hidden-breadcrumb
                   style={{ display: "inline-flex", "align-items": "center" }}
                 >
-                  <HeadlessBreadcrumbItemContext.Provider
+                  <HeadlessBreadcrumbItemContext
                     value={{
                       get itemKey() {
                         return itemKey();
@@ -717,7 +704,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
                     }}
                   >
                     {renderDynamicItem(item)}
-                  </HeadlessBreadcrumbItemContext.Provider>
+                  </HeadlessBreadcrumbItemContext>
                 </div>
               );
             }}
@@ -732,7 +719,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
           </ActionButton>
         </div>
       </Show>
-    </InternalBreadcrumbsContext.Provider>
+    </InternalBreadcrumbsContext>
   );
 }
 
@@ -811,7 +798,7 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const assignRefs = mergeContextRefs(props.ref);
   const mergedStyles = () => mergeContextStyles(undefined, local.styles);
   const size = () => context.size();
-  const [isCurrent, setIsCurrent] = createSignal(false);
+  const [isCurrent, setIsCurrent] = createSignal(false, { ownedWrite: true });
 
   const syncRenderProps = (renderProps: BreadcrumbItemRenderProps) => {
     untrack(() => {

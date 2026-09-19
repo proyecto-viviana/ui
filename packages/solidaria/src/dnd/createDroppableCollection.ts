@@ -21,8 +21,10 @@
  * Ported from packages/react-aria/src/dnd/useDroppableCollection.ts.
  */
 
-import { createEffect, createMemo, onCleanup, untrack, type Accessor } from "solid-js";
-import type { JSX } from "solid-js";
+import { onOwnedCleanup } from "../utils/owner";
+import { createEffect, createMemo, untrack, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   Collection,
   DroppableCollectionState,
@@ -413,7 +415,7 @@ export function createDroppableCollection(
   };
 
   // Clean up on unmount
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     clearTimeout(focusAfterDropTimeout);
     const ref = getOptions().ref();
     if (globalDropCollectionRef === ref) {
@@ -456,7 +458,9 @@ export function createDroppableCollection(
   // DragManager DropTarget — replacing the port's former self-contained
   // `collectionProps.onKeyDown` engine. Re-runs when the element or locale
   // direction changes (upstream keys the effect on `[localState, ref, onDrop, direction]`).
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     // Track only the scroller element and writing direction. Calling
     // `getOptions()` here would also subscribe to `collection` / `selectedKeys`
     // (ListBox getters), re-register a *new* DropTarget object mid-drag, and
@@ -824,8 +828,10 @@ export function createDroppableCollection(
       },
     });
 
-    onCleanup(unregister);
-  });
+    _s2Cleanups.push(unregister);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const collectionProps = createMemo<Record<string, unknown>>(() => ({
     ...drop.dropProps,

@@ -2,8 +2,7 @@
  * Tests for createSelect and createHiddenSelect.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot, createSignal } from "solid-js";
 import { render, fireEvent, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createSelect, createHiddenSelect, HiddenSelect } from "../src/select";
 import { createSelectState } from "@proyecto-viviana/solid-stately";
@@ -50,11 +49,11 @@ describe("createSelect", () => {
         const state = createTestState();
         const { triggerProps } = createSelect({}, state);
 
-        expect(triggerProps["aria-expanded"]).toBe(false);
+        expect(triggerProps["aria-expanded"]).toBe("false");
 
         state.open();
         const afterOpen = createSelect({}, state).triggerProps;
-        expect(afterOpen["aria-expanded"]).toBe(true);
+        expect(afterOpen["aria-expanded"]).toBe("true");
         dispose();
       });
     });
@@ -78,7 +77,7 @@ describe("createSelect", () => {
         const state = createTestState({ isDisabled: true });
         const { triggerProps } = createSelect({ isDisabled: true }, state);
 
-        expect(triggerProps["aria-disabled"]).toBe(true);
+        expect(triggerProps["aria-disabled"]).toBe("true");
         dispose();
       });
     });
@@ -88,7 +87,7 @@ describe("createSelect", () => {
         const state = createTestState();
         const { triggerProps } = createSelect({ isRequired: true }, state);
 
-        expect(triggerProps["aria-required"]).toBe(true);
+        expect(triggerProps["aria-required"]).toBe("true");
         dispose();
       });
     });
@@ -98,7 +97,7 @@ describe("createSelect", () => {
         const state = createTestState({ defaultOpen: true });
         const { triggerProps } = createSelect({}, state);
 
-        expect(triggerProps["data-open"]).toBe(true);
+        expect(triggerProps["data-open"]).toBe("true");
         dispose();
       });
     });
@@ -130,7 +129,7 @@ describe("createSelect", () => {
         const state = createTestState({ selectionMode: "multiple" });
         const { menuProps } = createSelect({}, state);
 
-        expect(menuProps["aria-multiselectable"]).toBe(true);
+        expect(menuProps["aria-multiselectable"]).toBe("true");
         dispose();
       });
     });
@@ -462,7 +461,7 @@ describe("createHiddenSelect", () => {
 
       const { containerProps } = createHiddenSelect({ state });
 
-      expect(containerProps["aria-hidden"]).toBe(true);
+      expect(containerProps["aria-hidden"]).toBe("true");
       dispose();
     });
   });

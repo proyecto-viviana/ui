@@ -3,7 +3,8 @@
  * Based on packages/react-stately/src/grid/useGridState.ts.
  */
 
-import { createEffect, createMemo, type Accessor } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { GridState, GridStateOptions, GridCollection, GridNode } from "./types";
 import type { Key, FocusStrategy, SelectionBehavior, Selection } from "../collections/types";
 import { createInternalSignal } from "../utils";

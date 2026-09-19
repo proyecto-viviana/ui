@@ -1,9 +1,7 @@
 /**
  * Tests for solidaria-components Virtualizer
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createMemo, type JSX } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createMemo, type JSX } from "solid-js";
 import {
   GridLayout,
   ListLayout,

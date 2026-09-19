@@ -1,6 +1,8 @@
-import h from "solid-js/h";
-import { createSignal, mergeProps, onCleanup, onMount, splitProps, type JSX } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, merge, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createIcon, createIllustration } from "@proyecto-viviana/solid-spectrum/Icon";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,
@@ -169,7 +171,7 @@ export function createComparisonResolvedThemeSignal() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
-  onMount(() => {
+  onSettled(() => {
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);

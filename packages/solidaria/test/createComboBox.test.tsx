@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal, onMount } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal, onMount, onSettled } from "solid-js";
 import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
 import { I18nProvider } from "../src/i18n";
@@ -39,7 +38,7 @@ describe("createComboBox", () => {
         expect(comboBox.inputProps.role).toBe("combobox");
         expect(comboBox.inputProps.type).toBe("text");
         expect(comboBox.inputProps["aria-haspopup"]).toBeUndefined();
-        expect(comboBox.inputProps["aria-expanded"]).toBe(false);
+        expect(comboBox.inputProps["aria-expanded"]).toBe("false");
         expect(comboBox.inputProps["aria-autocomplete"]).toBe("list");
         expect(comboBox.inputProps.autoComplete).toBe("off");
         dispose();
@@ -58,13 +57,13 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({}, state, () => inputRef);
 
-        expect(comboBox.inputProps["aria-expanded"]).toBe(false);
+        expect(comboBox.inputProps["aria-expanded"]).toBe("false");
 
         state.open();
-        expect(comboBox.inputProps["aria-expanded"]).toBe(true);
+        expect(comboBox.inputProps["aria-expanded"]).toBe("true");
 
         state.close();
-        expect(comboBox.inputProps["aria-expanded"]).toBe(false);
+        expect(comboBox.inputProps["aria-expanded"]).toBe("false");
         dispose();
       });
     });
@@ -143,7 +142,7 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({}, state, () => inputRef);
 
-        expect(comboBox.inputProps["aria-disabled"]).toBe(true);
+        expect(comboBox.inputProps["aria-disabled"]).toBe("true");
         expect(comboBox.inputProps.disabled).toBe(true);
         dispose();
       });
@@ -398,7 +397,7 @@ describe("createComboBox", () => {
         expect(comboBox.inputProps["data-open"]).toBeUndefined();
 
         state.open();
-        expect(comboBox.inputProps["data-open"]).toBe(true);
+        expect(comboBox.inputProps["data-open"]).toBe("true");
         dispose();
       });
     });
@@ -416,7 +415,7 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({}, state, () => inputRef);
 
-        expect(comboBox.inputProps["data-disabled"]).toBe(true);
+        expect(comboBox.inputProps["data-disabled"]).toBe("true");
         dispose();
       });
     });
@@ -434,7 +433,7 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({}, state, () => inputRef);
 
-        expect(comboBox.inputProps["data-readonly"]).toBe(true);
+        expect(comboBox.inputProps["data-readonly"]).toBe("true");
         dispose();
       });
     });
@@ -578,7 +577,7 @@ describe("createComboBox", () => {
         );
 
         expect(comboBox.inputProps.required).toBe(false);
-        expect(comboBox.inputProps["aria-required"]).toBe(true);
+        expect(comboBox.inputProps["aria-required"]).toBe("true");
         dispose();
       });
     });
@@ -1438,7 +1437,7 @@ describe("createComboBox", () => {
           () => listBoxEl ?? null,
           () => popoverEl ?? null,
         );
-        onMount(() => state.open());
+        onSettled(() => state.open());
         return (
           <div>
             <p data-testid="outside">Outside</p>

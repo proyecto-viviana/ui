@@ -13,7 +13,7 @@
  * Runs under vitest.ssr.config.ts (renderToString, hydratable). The companion
  * Breadcrumbs.hydrate.test.tsx hydrates over this output and asserts no mismatch.
  */
-import { renderToString } from "solid-js/web";
+import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

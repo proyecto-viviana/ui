@@ -3,9 +3,7 @@
  * Based on @react-spectrum/tabs tests.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { render, fireEvent, screen, waitFor } from "@solidjs/testing-library";
-import { createRoot, createSignal, For, Show, type Accessor } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { render, fireEvent, screen, waitFor } from "@solidjs/testing-library"; import { createRoot, createSignal, flush, For, Show, type Accessor } from "solid-js";
 import {
   createTabList,
   createTab,
@@ -789,6 +787,7 @@ describe("createTabs", () => {
       expect(screen.getAllByRole("tab")).toHaveLength(2);
 
       setItems([...defaultItems]);
+      flush();
 
       expect(screen.getAllByRole("tab")).toHaveLength(3);
     });
@@ -801,6 +800,7 @@ describe("createTabs", () => {
       expect(screen.getAllByRole("tab")).toHaveLength(3);
 
       setItems(defaultItems.slice(0, 2));
+      flush();
 
       expect(screen.getAllByRole("tab")).toHaveLength(2);
     });
@@ -815,6 +815,7 @@ describe("createTabs", () => {
 
       // Remove the last tab (which was NOT selected)
       setItems(defaultItems.slice(0, 2));
+      flush();
 
       const remainingTabs = screen.getAllByRole("tab");
       expect(remainingTabs).toHaveLength(2);
@@ -831,6 +832,7 @@ describe("createTabs", () => {
       expect(tabs[1]).toHaveAttribute("aria-selected", "true");
 
       setItems(defaultItems.filter((item) => item.key !== "tab2"));
+      flush();
 
       tabs = screen.getAllByRole("tab");
       expect(tabs).toHaveLength(2);

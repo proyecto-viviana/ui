@@ -2,8 +2,8 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { createRoot, createSignal, createEffect } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { createRoot, createSignal, createEffect } from "solid-js";
+import { render, cleanup } from "@solidjs/testing-library";
 import {
   // Basic utilities
   createIsSSR,
@@ -89,72 +89,64 @@ describe("createId", () => {
 // ============================================
 
 describe("SSRProvider", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("should provide context to children", () => {
-    createRoot((dispose) => {
-      let capturedId: string | undefined;
+    let capturedId: string | undefined;
 
-      const el = (
-        <SSRProvider>
-          {(() => {
-            capturedId = createId();
-            return null;
-          })()}
-        </SSRProvider>
-      );
+    render(() => (
+      <SSRProvider>
+        {(() => {
+          capturedId = createId();
+          return null;
+        })()}
+      </SSRProvider>
+    ));
 
-      expect(capturedId).toBeTruthy();
-      expect(capturedId).toMatch(/^solidaria-/);
-
-      dispose();
-    });
+    expect(capturedId).toBeTruthy();
+    expect(capturedId).toMatch(/^solidaria-/);
   });
 
   it("should support custom prefix", () => {
-    createRoot((dispose) => {
-      let capturedId: string | undefined;
+    let capturedId: string | undefined;
 
-      const el = (
-        <SSRProvider prefix="widget">
-          {(() => {
-            capturedId = createId();
-            return null;
-          })()}
-        </SSRProvider>
-      );
+    render(() => (
+      <SSRProvider prefix="widget">
+        {(() => {
+          capturedId = createId();
+          return null;
+        })()}
+      </SSRProvider>
+    ));
 
-      expect(capturedId).toBeTruthy();
-      expect(capturedId).toMatch(/^solidaria-widget-/);
-
-      dispose();
-    });
+    expect(capturedId).toBeTruthy();
+    expect(capturedId).toMatch(/^solidaria-widget-/);
   });
 
   it("should support nested providers with combined prefixes", () => {
-    createRoot((dispose) => {
-      let outerId: string | undefined;
-      let innerId: string | undefined;
+    let outerId: string | undefined;
+    let innerId: string | undefined;
 
-      const el = (
-        <SSRProvider prefix="outer">
-          {(() => {
-            outerId = createId();
-            return (
-              <SSRProvider prefix="inner">
-                {(() => {
-                  innerId = createId();
-                  return null;
-                })()}
-              </SSRProvider>
-            );
-          })()}
-        </SSRProvider>
-      );
+    render(() => (
+      <SSRProvider prefix="outer">
+        {(() => {
+          outerId = createId();
+          return (
+            <SSRProvider prefix="inner">
+              {(() => {
+                innerId = createId();
+                return null;
+              })()}
+            </SSRProvider>
+          );
+        })()}
+      </SSRProvider>
+    ));
 
-      expect(outerId).toMatch(/^solidaria-outer-/);
-      expect(innerId).toMatch(/^solidaria-outer-inner-/);
-
-      dispose();
-    });
+    expect(outerId).toMatch(/^solidaria-outer-/);
+    expect(innerId).toMatch(/^solidaria-outer-inner-/);
   });
 });
 
@@ -363,58 +355,54 @@ describe("getPortalContainer", () => {
 // ============================================
 
 describe("SSR Integration", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("should work with SolidJS components", () => {
-    createRoot((dispose) => {
-      let labelId: string | undefined;
-      let inputId: string | undefined;
+    let labelId: string | undefined;
+    let inputId: string | undefined;
 
-      function TextField() {
-        labelId = createId();
-        inputId = createId();
-        return null;
-      }
+    function TextField() {
+      labelId = createId();
+      inputId = createId();
+      return null;
+    }
 
-      const el = (
-        <SSRProvider>
-          <TextField />
-        </SSRProvider>
-      );
+    render(() => (
+      <SSRProvider>
+        <TextField />
+      </SSRProvider>
+    ));
 
-      expect(labelId).toBeTruthy();
-      expect(inputId).toBeTruthy();
-      expect(labelId).not.toBe(inputId);
-
-      dispose();
-    });
+    expect(labelId).toBeTruthy();
+    expect(inputId).toBeTruthy();
+    expect(labelId).not.toBe(inputId);
   });
 
   it("should handle multiple SSR providers in parallel", () => {
-    createRoot((dispose) => {
-      let widget1Id: string | undefined;
-      let widget2Id: string | undefined;
+    let widget1Id: string | undefined;
+    let widget2Id: string | undefined;
 
-      const el = (
-        <>
-          <SSRProvider prefix="widget1">
-            {(() => {
-              widget1Id = createId();
-              return null;
-            })()}
-          </SSRProvider>
-          <SSRProvider prefix="widget2">
-            {(() => {
-              widget2Id = createId();
-              return null;
-            })()}
-          </SSRProvider>
-        </>
-      );
+    render(() => (
+      <>
+        <SSRProvider prefix="widget1">
+          {(() => {
+            widget1Id = createId();
+            return null;
+          })()}
+        </SSRProvider>
+        <SSRProvider prefix="widget2">
+          {(() => {
+            widget2Id = createId();
+            return null;
+          })()}
+        </SSRProvider>
+      </>
+    ));
 
-      expect(widget1Id).toMatch(/widget1/);
-      expect(widget2Id).toMatch(/widget2/);
-      expect(widget1Id).not.toBe(widget2Id);
-
-      dispose();
-    });
+    expect(widget1Id).toMatch(/widget1/);
+    expect(widget2Id).toMatch(/widget2/);
+    expect(widget1Id).not.toBe(widget2Id);
   });
 });

@@ -1,6 +1,6 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { createMemo } from "solid-js";
-import { createComponent } from "solid-js/web";
+import { createComponent } from "@solidjs/web";
 
 type ComponentLike = string | ((props: never) => unknown);
 type Props = Record<string, unknown>;

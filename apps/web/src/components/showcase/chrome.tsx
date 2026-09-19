@@ -2,7 +2,8 @@
    wipe) and the panel/demo scaffolding every showcase route composes. All
    paint comes from the `gls-*` classes in styles/glasselated.css, which in
    turn use only register tokens. */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Link, useLocation, useNavigate } from "@tanstack/solid-router";
 import { ActionButton } from "@proyecto-viviana/ui";
 import ContrastIcon from "@proyecto-viviana/ui/ContrastIcon";

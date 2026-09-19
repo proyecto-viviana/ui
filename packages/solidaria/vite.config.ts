@@ -1,13 +1,13 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig } from "vite-plus";
-import solid from "unplugin-solid/rolldown";
+import solidPlugin from "@solidjs/vite-plugin";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 
 const neverBundle = [
   "solid-js",
-  "solid-js/web",
-  "solid-js/store",
+  "@solidjs/web",
+  "solid-js",
   /^@proyecto-viviana\/solid-stately(\/.*)?$/,
 ];
 
@@ -75,7 +75,7 @@ export default defineConfig({
         chunkFileNames: "_chunk/[name].js",
         banner: packageAttributionBanner,
       },
-      plugins: [solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [...solidPlugin({ ssr: true, refresh: { disabled: true } })],
     },
   ],
 });

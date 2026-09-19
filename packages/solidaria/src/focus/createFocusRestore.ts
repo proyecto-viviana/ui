@@ -8,9 +8,9 @@
  * standalone retrying focus-restore stack API.
  */
 
-import { createEffect, onCleanup, onMount } from "solid-js";
-import { isServer } from "solid-js/web";
-import { getOwnerDocument } from "../utils";
+import { getOwnerDocument, onOwnedCleanup } from "../utils";
+import { createEffect, onSettled } from "solid-js";
+import { isServer } from "@solidjs/web";
 import { focusSafely } from "../utils/focus";
 
 export interface FocusRestoreOptions {
@@ -227,12 +227,12 @@ export function createFocusRestore(options: FocusRestoreOptions = {}): FocusRest
   let savedElement: HTMLElement | null = null;
 
   // Save focus on mount
-  onMount(() => {
+  onSettled(() => {
     saveCurrentFocus();
   });
 
   // Restore focus on cleanup
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     if (restoreOnUnmount && savedElement) {
       tryRestoreFocus(savedElement, {
         maxRetries,

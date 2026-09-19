@@ -14,7 +14,8 @@
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/steplist/StepList.tsx.
 
-import { type JSX, splitProps, createContext, useContext, createSignal, Show } from "solid-js";
+import { createContext, useContext, createSignal, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   StepList as HeadlessStepList,
   Step as HeadlessStep,
@@ -26,6 +27,7 @@ import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { visuallyHiddenStyles } from "@proyecto-viviana/solidaria/visually-hidden";
 import { useProviderProps } from "../provider";
 import { style, focusRing, lightDark } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type StepListSize = "sm" | "md" | "lg";
 
@@ -174,7 +176,7 @@ export function StepList<T extends { key: Key; label: string }>(
   };
 
   return (
-    <StepListSizeContext.Provider
+    <StepListSizeContext
       value={{
         get size() {
           return size();
@@ -189,7 +191,7 @@ export function StepList<T extends { key: Key; label: string }>(
         class={[listStyles, customClass()].filter(Boolean).join(" ")}
         children={renderStep}
       />
-    </StepListSizeContext.Provider>
+    </StepListSizeContext>
   );
 }
 
@@ -250,9 +252,9 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
       <a
         role="link"
         aria-current={props.renderProps.isSelected ? "step" : undefined}
-        aria-disabled={!props.renderProps.isSelectable ? true : undefined}
+        aria-disabled={!props.renderProps.isSelectable ? "true" : undefined}
         aria-labelledby={`${numberId} ${stateId} ${labelId}`}
-        tabIndex={props.renderProps.isSelectable ? 0 : undefined}
+        tabindex={props.renderProps.isSelectable ? 0 : undefined}
         class={stepLinkStyles({ ...state(), isFocusVisible: isFocusVisible() })}
         style={{ cursor: props.renderProps.isSelectable ? "pointer" : "default" }}
         onClick={(e) => {

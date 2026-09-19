@@ -54,7 +54,7 @@ describe("AvatarGroup", () => {
 
   it("applies AvatarGroupContext to the group with local overrides and unsafe escape hatches", () => {
     const { container } = render(() => (
-      <AvatarGroupContext.Provider
+      <AvatarGroupContext
         value={{
           size: 40,
           label: "Context team",
@@ -65,7 +65,7 @@ describe("AvatarGroup", () => {
         <AvatarGroup class="local-group">
           <Avatar alt="Alana" />
         </AvatarGroup>
-      </AvatarGroupContext.Provider>
+      </AvatarGroupContext>
     ));
 
     const group = screen.getByRole("group", { name: "Context team" });

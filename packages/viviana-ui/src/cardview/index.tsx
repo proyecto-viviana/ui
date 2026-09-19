@@ -16,17 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/CardView.tsx.
 
-import {
-  type JSX,
-  Show,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-  splitProps,
-} from "solid-js";
+import { Show, createContext, createEffect, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Collection,
   GridList as HeadlessGridList,
@@ -45,6 +36,7 @@ import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import type { RefLike, SpectrumContextValue } from "../button/spectrum-context";
 import { mergeContextRefs } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type CardViewLayout = "grid" | "waterfall";
 export type CardViewSize = "XS" | "S" | "M" | "L" | "XL";
@@ -237,8 +229,8 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
   const selectionStyle = (): CardViewSelectionStyle => local.selectionStyle ?? "checkbox";
   const isLoading = () =>
     local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
-  const [maxSizeIndex, setMaxSizeIndex] = createSignal(SIZES.length - 1);
-  const [viewportWidth, setViewportWidth] = createSignal(0);
+  const [maxSizeIndex, setMaxSizeIndex] = createSignal(SIZES.length - 1, { ownedWrite: true });
+  const [viewportWidth, setViewportWidth] = createSignal(0, { ownedWrite: true });
   let rootElement: HTMLDivElement | undefined;
   const assignRootRef = mergeContextRefs(local.ref, (element: HTMLDivElement) => {
     rootElement = element;
@@ -263,7 +255,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
     setMaxSizeIndex(index);
   };
 
-  onMount(() => {
+  onSettled(() => {
     updateSize();
     if (typeof ResizeObserver !== "function" || !rootElement) {
       return;
@@ -271,14 +263,18 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
 
     const observer = new ResizeObserver(updateSize);
     observer.observe(rootElement);
-    onCleanup(() => observer.disconnect());
+    return () => observer.disconnect();
   });
 
-  createEffect(() => {
-    density();
-    requestedSize();
-    updateSize();
-  });
+  createEffect(
+    () => {
+      density();
+      requestedSize();
+    },
+    () => {
+      updateSize();
+    },
+  );
 
   const size = (): CardViewSize =>
     SIZES[Math.min(maxSizeIndex(), Math.max(0, SIZES.indexOf(requestedSize())))];
@@ -289,14 +285,17 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
     if (width <= 0) return 1;
     return Math.max(1, Math.floor((width + minSpace) / (minItemSize + minSpace)));
   };
+  const gridColumnCount = createMemo(() => (layout() === "waterfall" ? 1 : columnCount()));
   const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    { ownedWrite: true },
   );
-  createEffect(() => {
-    setActionSelectedKeys(
-      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
-    );
-  });
+  createEffect(
+    () => selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    (keys) => {
+      setActionSelectedKeys(keys);
+    },
+  );
   const onSelectionChange = (keys: "all" | Set<Key>) => {
     setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
     headlessProps.onSelectionChange?.(keys);
@@ -320,10 +319,10 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
       .join(" ");
 
   const cardView = (
-    <InternalCardViewContext.Provider
+    <InternalCardViewContext
       value={{ ElementType: HeadlessGridListItem, layout: layout() }}
     >
-      <CardContext.Provider value={{ size: size(), variant: variant() }}>
+      <CardContext value={{ size: size(), variant: variant() }}>
         <ImageCoordinator>
           <HeadlessGridList
             {...headlessProps}
@@ -334,7 +333,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
               "--cardview-columns": String(columnCount()),
             }}
             layout="grid"
-            columnCount={layout() === "waterfall" ? 1 : columnCount()}
+            columnCount={gridColumnCount()}
             selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
             onSelectionChange={onSelectionChange}
             isLoading={isLoading()}
@@ -350,8 +349,8 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
             {(item: T) => local.children(item)}
           </HeadlessGridList>
         </ImageCoordinator>
-      </CardContext.Provider>
-    </InternalCardViewContext.Provider>
+      </CardContext>
+    </InternalCardViewContext>
   );
 
   return (

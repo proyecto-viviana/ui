@@ -99,13 +99,12 @@ export function createToggleButton(props: AriaToggleButtonProps = {}): ToggleBut
     }) as AriaButtonProps,
   );
 
-  // Create buttonProps with a getter for aria-pressed so it stays reactive
-  const buttonProps = {
-    ...baseButtonProps,
+  // Solid 2 omits boolean `false` attributes; ARIA needs the literal "false".
+  const buttonProps = mergeProps(baseButtonProps, {
     get "aria-pressed"() {
-      return isSelected();
+      return isSelected() ? "true" : "false";
     },
-  };
+  });
 
   return {
     buttonProps,

@@ -8,8 +8,9 @@
  * `effects` in `finally`.
  */
 
-import { sharedConfig, type JSX } from "solid-js";
-import { hydrate } from "solid-js/web";
+import { sharedConfig } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { hydrate } from "@solidjs/web";
 
 const MISMATCH = /Hydration Mismatch|template is not a function/i;
 

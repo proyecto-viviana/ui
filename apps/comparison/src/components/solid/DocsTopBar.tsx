@@ -1,5 +1,5 @@
-import { For, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import h from "solid-js/h";
+import { For, createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import h from "@solidjs/h";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { CloseIcon } from "@proyecto-viviana/solid-spectrum/CloseIcon";
 import { ContrastIcon } from "@proyecto-viviana/solid-spectrum/ContrastIcon";
@@ -184,7 +184,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     return entries.slice(0, 8);
   });
 
-  onMount(() => {
+  onSettled(() => {
     const desktopQuery = window.matchMedia("(min-width: 861px)");
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
@@ -230,7 +230,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     });
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const trigger = mobileNavTrigger();
     if (!trigger) {
       return;
@@ -239,7 +239,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     trigger.setAttribute("aria-expanded", isMobileNavOpen() ? "true" : "false");
   });
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const trigger = searchTrigger();
     if (!trigger) {
       return;
@@ -530,14 +530,14 @@ function createMobileCurrentHref(
 ): [() => string, (href: string) => void] {
   const [currentHref, setCurrentHref] = createSignal(items()[0]?.href ?? "");
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const nextItems = items();
     setCurrentHref((current) =>
       nextItems.some((item) => item.href === current) ? current : (nextItems[0]?.href ?? ""),
     );
   });
 
-  onMount(() => {
+  onSettled(() => {
     const hash = window.location.hash;
     if (hash && items().some((item) => item.href === hash)) {
       setCurrentHref(hash);

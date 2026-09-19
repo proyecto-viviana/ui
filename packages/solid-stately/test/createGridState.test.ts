@@ -3,10 +3,7 @@
  * Based on @react-stately/grid tests.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
-import { createSignal } from "./owned-signal";
-
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
 import { createGridState, type GridCollection, type GridNode, type Key } from "../src";
 
 // Helper to create a mock grid collection

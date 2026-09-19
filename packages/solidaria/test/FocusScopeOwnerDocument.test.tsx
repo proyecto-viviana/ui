@@ -7,13 +7,9 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
-import { fireEvent, render, waitFor, cleanup } from "@solidjs/testing-library";
-import { FocusScope } from "../src/focus/FocusScope";
-import { Portal } from "solid-js/web";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test"; import { fireEvent, render, waitFor, cleanup } from "@solidjs/testing-library"; import { FocusScope } from "../src/focus/FocusScope"; import { Portal } from "@solidjs/web";
 import userEvent from "@testing-library/user-event";
-import { pointerMap } from "@proyecto-viviana/solidaria-test-utils";
-import { createSignal, Show } from "solid-js";
+import { pointerMap } from "@proyecto-viviana/solidaria-test-utils"; import { createSignal, flush, Show } from "solid-js";
 
 describe("FocusScope (ownerDocument)", () => {
   let iframe: HTMLIFrameElement;
@@ -148,6 +144,7 @@ describe("FocusScope (ownerDocument)", () => {
       outside.focus();
 
       setShow(true);
+      flush();
 
       await waitFor(() => {
         expect(
@@ -167,6 +164,7 @@ describe("FocusScope (ownerDocument)", () => {
       });
 
       setShow(false);
+      flush();
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
       expect(document.activeElement).toBe(outside);
     });

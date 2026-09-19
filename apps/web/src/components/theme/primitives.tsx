@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/solid-router";
-import { type JSX } from "solid-js";
+import { Link } from "@tanstack/solid-router"; import { type JSX } from "solid-js";
 
 /**
  * Shared design vocabulary for the docs-site chrome (landing + Theme Studio),

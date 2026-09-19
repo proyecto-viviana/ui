@@ -18,8 +18,9 @@
  * This is a 1-1 port of React-Aria's useFocusWithin hook adapted for SolidJS.
  */
 
-import { JSX, onCleanup } from "solid-js";
-import { getOwnerDocument, getEventTarget, nodeContains, createGlobalListeners } from "../utils";
+
+import { getOwnerDocument, getEventTarget, nodeContains, createGlobalListeners, onOwnedCleanup } from "../utils";
+import type { JSX } from "@solidjs/web";
 import { setEventTarget } from "../utils/events";
 
 export interface FocusWithinProps {
@@ -121,7 +122,7 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
   let cleanupRef: (() => void) | undefined;
 
   // Cleanup on unmount
-  onCleanup(() => {
+  onOwnedCleanup(() => {
     cleanupRef?.();
     removeAllGlobalListeners();
   });

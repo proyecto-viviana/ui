@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { ActionButtonGroup as SolidSpectrumActionButtonGroup } from "@proyecto-viviana/solid-spectrum/ActionButtonGroup";
@@ -49,7 +49,7 @@ function SolidSpectrumActionButtonGroupDemo() {
     setSelectedKeys(new Set([key]));
   };
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "actionbuttongroup") {
         setGroupProps(normalizeActionButtonGroupDemoProps(event.detail.props ?? {}));

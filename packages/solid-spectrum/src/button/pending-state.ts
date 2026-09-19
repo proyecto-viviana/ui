@@ -13,28 +13,24 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Button.tsx
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
-import { createEffect, createSignal, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
+import type { Accessor } from "solid-js";
 
 export function createPendingState(isPending: Accessor<boolean | undefined>) {
-  const [isProgressVisible, setIsProgressVisible] = createSignal(false);
+  const [isProgressVisible, setIsProgressVisible] = createSignal(false, { ownedWrite: true });
 
-  createEffect(() => {
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-
-    if (isPending()) {
-      timeout = setTimeout(() => {
-        setIsProgressVisible(true);
-      }, 1000);
-    } else {
-      setIsProgressVisible(false);
-    }
-
-    onCleanup(() => {
-      if (timeout) {
-        clearTimeout(timeout);
+  createEffect(
+    () => isPending() ?? false,
+    (pending) => {
+      if (pending) {
+        const timeout = setTimeout(() => {
+          setIsProgressVisible(true);
+        }, 1000);
+        return () => clearTimeout(timeout);
       }
-    });
-  });
+      setIsProgressVisible(false);
+    },
+  );
 
   return { isProgressVisible };
 }

@@ -10,7 +10,8 @@
  * is nowhere to go — so it is the library's shipped selected affordance, a
  * `ToggleButton` held selected, which is also what gives it the register's
  * active surface without any app CSS. */
-import { For, Show, type JSX } from "solid-js";
+import { For, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Link } from "@tanstack/solid-router";
 import {
   Avatar,

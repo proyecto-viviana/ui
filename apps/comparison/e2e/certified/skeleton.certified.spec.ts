@@ -5,7 +5,7 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
 /**
  * Recertification march unit (Tier 1, last primitive): Skeleton — the loading
  * placeholder. Unlike every other Tier-1 unit, `Skeleton` renders NO DOM of its
- * own: it is a pure `<SkeletonContext.Provider value={isLoading}>` (upstream S2
+ * own: it is a pure `<SkeletonContext value={isLoading}>` (upstream S2
  * `Skeleton.tsx`, port `skeleton/index.tsx` — both byte-identical). The visible
  * treatment is applied by the DESCENDANTS that consume the context — here the
  * demo's `Text` lines and one `Icon` — via three faithful helpers verified

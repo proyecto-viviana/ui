@@ -22,18 +22,8 @@
  * supporting keyboard navigation and selection.
  */
 
-import {
-  type JSX,
-  onCleanup,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  splitProps,
-  useContext,
-  For,
-  Show,
-} from "solid-js";
+import { onCleanup, createContext, createEffect, createMemo, createSignal, useContext, For, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createTree,
   createTreeItem,
@@ -64,6 +54,7 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
@@ -91,6 +82,7 @@ import {
   type GridListHeaderProps,
 } from "./GridList";
 import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   handleLinkClick,
   type LinkDOMProps,
@@ -881,7 +873,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   const [lastExpandedKeys, setLastExpandedKeys] = createSignal<Set<Key>>(new Set());
   const [lastItemsLength, setLastItemsLength] = createSignal(flatItems().length);
   const [collectionVersion, setCollectionVersion] = createSignal(0);
-  createEffect(() => {
+  createTrackedEffect(() => {
     const expanded = state.expandedKeys;
     const items = flatItems();
     if (!areSetsEqual(lastExpandedKeys(), expanded) || lastItemsLength() !== items.length) {
@@ -977,60 +969,58 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
   });
-  const dragState = createMemo(() => {
-    if (!hasDraggableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDraggableCollectionState?.({
-      items: visibleRows().map((node) => node.value as T),
-      collection: state.collection,
-      selectedKeys: state.selectedKeys,
-      isSelected: (key) => state.isSelected(key),
-    });
-  });
-  const dropState = createMemo(() => {
-    if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({
-      get collection() {
-        return state.collection;
-      },
-    });
-  });
-  createEffect(() => {
-    const activeDropState = dropState();
-    if (!activeDropState) return;
-    const originalGetDropOperation = activeDropState.getDropOperation.bind(activeDropState);
+  const dragStateValue = hasDraggableDnd()
+    ? local.dragAndDropHooks?.useDraggableCollectionState?.({
+        items: visibleRows().map((node) => node.value as T),
+        collection: state.collection,
+        selectedKeys: state.selectedKeys,
+        isSelected: (key) => state.isSelected(key),
+      })
+    : undefined;
+  const dragState = () => dragStateValue;
+  const dropStateValue = hasDroppableDnd()
+    ? local.dragAndDropHooks?.useDroppableCollectionState?.({
+        get collection() {
+          return state.collection;
+        },
+      })
+    : undefined;
+  const dropState = () => dropStateValue;
+  createEffect(
+    () => dropState(),
+    (activeDropState) => {
+      if (!activeDropState) return;
+      const originalGetDropOperation = activeDropState.getDropOperation.bind(activeDropState);
 
-    activeDropState.getDropOperation = (target, types, allowedOperations) => {
-      const currentDraggingKeys = dragState()?.draggingKeys ?? new Set<string | number>();
-      if (target.type === "item" && currentDraggingKeys.size > 0) {
-        if (currentDraggingKeys.has(target.key) && target.dropPosition === "on") {
-          return "cancel";
-        }
-
-        let currentKey: Key | null = target.key;
-        while (currentKey != null) {
-          const item = state.collection.getItem(currentKey);
-          const parentKey = item?.parentKey;
-          if (parentKey != null && currentDraggingKeys.has(parentKey)) {
+      activeDropState.getDropOperation = (target, types, allowedOperations) => {
+        const currentDraggingKeys = dragState()?.draggingKeys ?? new Set<string | number>();
+        if (target.type === "item" && currentDraggingKeys.size > 0) {
+          if (currentDraggingKeys.has(target.key) && target.dropPosition === "on") {
             return "cancel";
           }
-          currentKey = parentKey ?? null;
+
+          let currentKey: Key | null = target.key;
+          while (currentKey != null) {
+            const item = state.collection.getItem(currentKey);
+            const parentKey = item?.parentKey;
+            if (parentKey != null && currentDraggingKeys.has(parentKey)) {
+              return "cancel";
+            }
+            currentKey = parentKey ?? null;
+          }
         }
-      }
 
-      return originalGetDropOperation(target, types, allowedOperations);
-    };
+        return originalGetDropOperation(target, types, allowedOperations);
+      };
 
-    onCleanup(() => {
-      activeDropState.getDropOperation = originalGetDropOperation;
-    });
-  });
-  createEffect(() => {
-    if (!hasDraggableDnd()) return;
-    const hooks = local.dragAndDropHooks;
-    const activeDragState = dragState();
-    if (!hooks?.useDraggableCollection || !activeDragState) return;
-    hooks.useDraggableCollection({}, activeDragState, () => ref());
-  });
+      return () => {
+        activeDropState.getDropOperation = originalGetDropOperation;
+      };
+    },
+  );
+  if (local.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
+    local.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => ref());
+  }
   const contextValue = createMemo<TreeContextValue<T>>(() => ({
     state,
     collection: state.collection,
@@ -1040,10 +1030,10 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     dragState: dragState(),
     dropState: dropState(),
   }));
-  const droppableCollection = createMemo(() => {
+  const droppableCollectionValue = (() => {
     if (!hasDroppableDnd()) return undefined;
     const hooks = local.dragAndDropHooks;
-    const activeDropState = dropState();
+    const activeDropState = dropStateValue;
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
     const direction = locale().direction;
     const baseDropTargetDelegate =
@@ -1118,7 +1108,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       activeDropState,
       () => ref(),
     );
-  });
+  })();
+  const droppableCollection = () => droppableCollectionValue;
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
@@ -1165,7 +1156,9 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     if (!range) return visibleRows();
     return visibleRows().slice(range.start, range.end);
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => visibleRows().length);
     virtualizer.setDropTargetIndexResolver((key) => {
@@ -1188,12 +1181,14 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         level: typeof node.level === "number" ? node.level : undefined,
       };
     });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       virtualizer.setDropTargetIndexResolver(undefined);
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const rowIndexByKey = createMemo(() => {
     const map = new Map<Key, number>();
     const rows = visibleRows();
@@ -1235,7 +1230,9 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   // Install tree-aware keyboard navigation override into the Virtualizer (if present).
   // This replaces the generic index-based navigation with collection-level semantics
   // (tree branch traversal, level-aware wrapping — RAC parity item #36).
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!virtualizer) return;
     const direction = locale().direction;
     const parentDelegate: TreeDropTargetDelegate = {
@@ -1258,10 +1255,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         ? (target, dir, isValid) => treeDelegate.getKeyboardNavigationTarget!(target, dir, isValid)
         : undefined,
     );
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       virtualizer.setKeyboardNavigationOverride(undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
     renderItem: (item) => item as JSX.Element,
@@ -1341,11 +1340,11 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   };
 
   return (
-    <TreeContext.Provider value={contextValue() as unknown as TreeContextValue<object>}>
-      <TreeStateContext.Provider
+    <TreeContext value={contextValue() as unknown as TreeContextValue<object>}>
+      <TreeStateContext
         value={state as unknown as TreeState<object, TreeCollection<object>>}
       >
-        <CollectionRendererContext.Provider value={collectionRenderer()}>
+        <CollectionRendererContext value={collectionRenderer()}>
           <div
             ref={(element) => {
               setRef(element);
@@ -1359,15 +1358,15 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
             )}
             class={renderProps.class()}
             style={renderProps.style()}
-            data-focused={state.isFocused || undefined}
-            data-focus-visible={isFocusVisible() || undefined}
-            data-disabled={ariaProps.isDisabled || undefined}
-            data-empty={isEmpty() || undefined}
-            data-drop-target={isRootDropTarget() || undefined}
+            data-focused={dataAttr(state.isFocused)}
+            data-focus-visible={dataAttr(isFocusVisible())}
+            data-disabled={dataAttr(ariaProps.isDisabled)}
+            data-empty={dataAttr(isEmpty())}
+            data-drop-target={dataAttr(isRootDropTarget())}
             data-selection-mode={
               stateProps.selectionMode !== "none" ? stateProps.selectionMode : undefined
             }
-            data-allows-dragging={hasDraggableDnd() || undefined}
+            data-allows-dragging={dataAttr(hasDraggableDnd())}
           >
             <SharedElementTransition>
               {isEmpty() && local.renderEmptyState ? (
@@ -1479,9 +1478,9 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
               </TreeLoadMoreItem>
             )}
           </div>
-        </CollectionRendererContext.Provider>
-      </TreeStateContext.Provider>
-    </TreeContext.Provider>
+        </CollectionRendererContext>
+      </TreeStateContext>
+    </TreeContext>
   );
 }
 
@@ -1533,6 +1532,10 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   const setItemRef = (element: HTMLElement) => {
     setRef(element);
     assignRef(local.ref, element);
+    const dragRef = (
+      draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined
+    )?.ref;
+    if (typeof dragRef === "function") dragRef(element);
   };
 
   const itemNode = createMemo(() => {
@@ -1659,11 +1662,11 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   });
 
   const rowContent = () => (
-    <TreeItemContentContext.Provider value={renderValues()}>
+    <TreeItemContentContext value={renderValues()}>
       <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
         {renderProps.renderChildren()}
       </div>
-    </TreeItemContentContext.Provider>
+    </TreeItemContentContext>
   );
 
   const mergedRowProps = () =>
@@ -1702,7 +1705,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       : {};
 
   return (
-    <TreeItemContext.Provider value={itemContextValue() as unknown as TreeItemContextValue<object>}>
+    <TreeItemContext value={itemContextValue() as unknown as TreeItemContextValue<object>}>
       <div
         ref={setItemRef}
         {...domProps}
@@ -1710,25 +1713,25 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         {...linkedRowDomProps()}
         class={renderProps.class()}
         style={rowStyle()}
-        data-selected={isSelected() || undefined}
-        data-focused={isFocused() || undefined}
-        data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
-        data-pressed={isPressed() || undefined}
-        data-hovered={isHovered() || undefined}
-        data-disabled={isDisabled() || undefined}
-        data-expanded={isExpanded() || undefined}
-        data-expandable={isExpandable() || undefined}
-        data-has-child-items={isExpandable() || undefined}
+        data-selected={dataAttr(isSelected())}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr((isFocusVisible() && isFocused()))}
+        data-pressed={dataAttr(isPressed())}
+        data-hovered={dataAttr(isHovered())}
+        data-disabled={dataAttr(isDisabled())}
+        data-expanded={dataAttr(isExpanded())}
+        data-expandable={dataAttr(isExpandable())}
+        data-has-child-items={dataAttr(isExpandable())}
         data-level={level()}
         data-selection-mode={
           treeContext?.state.selectionMode !== "none" ? treeContext?.state.selectionMode : undefined
         }
-        data-dragging={draggableItem()?.isDragging || undefined}
-        data-drop-target={droppableItem()?.isDropTarget || undefined}
+        data-dragging={dataAttr(draggableItem()?.isDragging)}
+        data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
       >
         {rowContent()}
       </div>
-    </TreeItemContext.Provider>
+    </TreeItemContext>
   );
 }
 
@@ -1784,7 +1787,7 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
         {...dataProps()}
         class={props.class ?? "solidaria-Tree-expand-button"}
         style={props.style}
-        data-expanded={isExpanded() || undefined}
+        data-expanded={dataAttr(isExpanded())}
       >
         {renderChildren()}
       </button>
@@ -1819,18 +1822,16 @@ export function TreeSelectionCheckbox(props: {
       {...treeSelectionCheckboxAria.checkboxProps}
       class={props.class ?? "solidaria-Tree-checkbox"}
       style={props.style}
-      tabIndex={props.excludeFromTabOrder ? -1 : 0}
+      tabindex={props.excludeFromTabOrder ? -1 : 0}
       aria-label={props["aria-label"] ?? treeSelectionCheckboxAria.checkboxProps["aria-label"]}
     />
   );
 }
 
 export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
-  let sentinelRef: HTMLDivElement | undefined;
-  const setSentinelRef = (element: HTMLDivElement) => {
-    sentinelRef = element;
-  };
+  const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
+  const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
   const isLoading = () =>
     !!props.isLoading ||
     props.loadingState === "loading" ||
@@ -1847,21 +1848,26 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
     }
   };
 
-  createEffect(() => {
-    if (!sentinelRef || typeof IntersectionObserver !== "function") return;
-    const offset = props.scrollOffset ?? 1;
-    const margin = `0px 0px ${100 * offset}% 0px`;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void triggerLoadMore();
-        }
-      },
-      { rootMargin: margin },
-    );
-    observer.observe(sentinelRef);
-    onCleanup(() => observer.disconnect());
-  });
+  createEffect(
+    () => ({
+      current: sentinel(),
+      scrollOffset: scrollOffsetValue(),
+    }),
+    ({ current, scrollOffset }) => {
+      if (!current || typeof IntersectionObserver !== "function") return;
+      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            void triggerLoadMore();
+          }
+        },
+        { rootMargin: margin },
+      );
+      observer.observe(current);
+      return () => observer.disconnect();
+    },
+  );
 
   const renderProps = useRenderProps(
     {
@@ -1878,7 +1884,7 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div ref={setSentinel} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
         role="row"
@@ -1891,7 +1897,7 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
         }}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-loading={isLoading() || undefined}
+        data-loading={dataAttr(isLoading())}
         data-level={props.level ?? 1}
       >
         <div
@@ -1973,11 +1979,11 @@ export function TreeSection(props: TreeSectionProps): JSX.Element {
       slot={local.slot}
       data-section
     >
-      <GridListHeaderContext.Provider value={section.rowProps}>
-        <GridListHeaderInnerContext.Provider value={section.rowHeaderProps}>
+      <GridListHeaderContext value={section.rowProps}>
+        <GridListHeaderInnerContext value={section.rowHeaderProps}>
           {local.children}
-        </GridListHeaderInnerContext.Provider>
-      </GridListHeaderContext.Provider>
+        </GridListHeaderInnerContext>
+      </GridListHeaderContext>
     </div>
   );
 }

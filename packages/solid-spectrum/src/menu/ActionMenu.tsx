@@ -13,14 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionMenu.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionMenu.tsx.
-import {
-  type JSX,
-  createContext,
-  createEffect,
-  createSignal,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createSignal, useContext, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   MenuTrigger as HeadlessMenuTrigger,
   Button as HeadlessButton,
@@ -62,6 +56,7 @@ import {
 import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
 import { MenuItem } from "./index";
 import { Popover } from "../popover";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -245,20 +240,20 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     >;
   const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
   const [isMenuOpen, setMenuOpen] = createSignal(Boolean(local.defaultOpen ?? local.isOpen));
-  createEffect(() => {
+  createTrackedEffect(() => {
     if (local.isOpen !== undefined) {
       setMenuOpen(Boolean(local.isOpen));
     }
   });
   let didAutoFocus = false;
-  createEffect(() => {
+  createTrackedEffect(() => {
     const trigger = triggerElement();
     if (!didAutoFocus && local.autoFocus && trigger) {
       didAutoFocus = true;
       trigger.focus();
     }
   });
-  createEffect(() => {
+  createTrackedEffect(() => {
     const trigger = triggerElement();
     if (!trigger) {
       return;
@@ -426,9 +421,9 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         data-action-menu-direction={local.direction ?? "bottom"}
         data-action-menu-should-flip={local.shouldFlip === false ? "false" : undefined}
       >
-        <IconContext.Provider value={iconContextValue}>
+        <IconContext value={iconContextValue}>
           <MoreIcon />
-        </IconContext.Provider>
+        </IconContext>
       </HeadlessButton>
       <ActionMenuPopover
         menuProps={menuOnlyProps}
@@ -480,18 +475,18 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
       autoFocus={false}
     >
       <div class={menuFrame}>
-        <MenuSizeContext.Provider value={props.menuSize()}>
-          <MenuLinkOutIconContext.Provider value={props.hideLinkOutIcon()}>
-            <HeaderContext.Provider
+        <MenuSizeContext value={props.menuSize()}>
+          <MenuLinkOutIconContext value={props.hideLinkOutIcon()}>
+            <HeaderContext
               value={{ styles: () => menuSectionHeader({ size: props.menuSize() }) }}
             >
-              <HeadingContext.Provider
+              <HeadingContext
                 value={{
                   role: "presentation",
                   styles: menuSectionHeading,
                 }}
               >
-                <TextContext.Provider
+                <TextContext
                   value={{
                     slots: {
                       default: {
@@ -523,11 +518,11 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
                   >
                     {usesStaticChildren() ? undefined : props.renderMenuItem}
                   </HeadlessMenu>
-                </TextContext.Provider>
-              </HeadingContext.Provider>
-            </HeaderContext.Provider>
-          </MenuLinkOutIconContext.Provider>
-        </MenuSizeContext.Provider>
+                </TextContext>
+              </HeadingContext>
+            </HeaderContext>
+          </MenuLinkOutIconContext>
+        </MenuSizeContext>
       </div>
     </Popover>
   );

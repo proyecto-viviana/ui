@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Content.tsx.
 
-import { type JSX, createContext, splitProps, useContext } from "solid-js";
+import { createContext, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { createIsSkeleton, useInertAttribute, useSkeletonText } from "../skeleton";
 import {
@@ -26,6 +27,7 @@ import {
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { typeRoles } from "./type-roles";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /* Standalone type-role defaults (Glasselated register, mirror panel 09):
  * Text, Content and Keyboard were pure slot markers — bare elements with an

@@ -38,24 +38,19 @@
  * action as separate headless primitives.
  */
 
-import {
-  type JSX,
-  type ParentProps,
-  Show,
-  createContext,
-  createMemo,
-  createEffect,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { Show, createContext, createMemo, createEffect, useContext } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { announce } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
@@ -132,7 +127,9 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     "ref",
   ]);
 
-  const selectedItemCount = () => local.selectedItemCount ?? 0;
+  // Hoist the JSX getter: `selectedItemCount={count()}` compiles as a memo
+  // created on first read, and createTrackedEffect forbids primitives.
+  const selectedItemCount = createMemo(() => local.selectedItemCount ?? 0);
   const isOpen = () => selectedItemCount() !== 0;
 
   // Faithful to S2 `ActionBar` (ActionBar.tsx:192): the ROOT is a PLAIN
@@ -145,14 +142,15 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   // toolbar props — `aria-label`/`aria-labelledby` are consumed by the inner
   // ActionButtonGroup at the styled layer.
   let wasOpen = false;
-  createEffect(() => {
-    const open = isOpen();
-    const message = local.actionsAvailableMessage;
-    if (open && !wasOpen && message) {
-      announce(message);
-    }
-    wasOpen = open;
-  });
+  createEffect(
+    () => ({ open: isOpen(), message: local.actionsAvailableMessage }),
+    ({ open, message }) => {
+      if (open && !wasOpen && message) {
+        announce(message);
+      }
+      wasOpen = open;
+    },
+  );
 
   const handleKeyDown: JSX.EventHandlerUnion<HTMLDivElement, KeyboardEvent> = (e) => {
     const onKeyDown = local.onKeyDown as
@@ -195,19 +193,19 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
 
   return (
     <Show when={isOpen()}>
-      <ActionBarContext.Provider value={contextValue()}>
+      <ActionBarContext value={contextValue()}>
         <div
           {...filteredDOMProps()}
           class={renderProps.class()}
           style={renderProps.style()}
           slot={local.slot}
-          data-open={isOpen() || undefined}
+          data-open={dataAttr(isOpen())}
           onKeyDown={handleKeyDown}
           ref={(el) => assignRef(local.ref, el)}
         >
           {local.children}
         </div>
-      </ActionBarContext.Provider>
+      </ActionBarContext>
     </Show>
   );
 }

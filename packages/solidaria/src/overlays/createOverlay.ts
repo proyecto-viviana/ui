@@ -17,10 +17,11 @@
  * Based on @react-aria/overlays useOverlay.
  */
 
-import { createEffect, onCleanup, type JSX } from "solid-js";
+import { createEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createInteractOutside } from "./createInteractOutside";
 import { createFocusWithin } from "../interactions/createFocusWithin";
-import { getOwnerDocument, nodeContains } from "../utils";
+import { getOwnerDocument, nodeContains, followRef } from "../utils";
 
 export interface AriaOverlayProps {
   /** Whether the overlay is currently open. */
@@ -64,6 +65,7 @@ const visibleOverlays: Array<() => Element | null> = [];
  * or optionally, on blur. Only the top-most overlay will close at once.
  */
 export function createOverlay(props: AriaOverlayProps, ref: () => Element | null): OverlayAria {
+  const overlayEl = followRef(ref);
   const onClose = () => props.onClose;
   const shouldCloseOnBlur = () => props.shouldCloseOnBlur;
   const isOpen = () => props.isOpen ?? false;
@@ -72,18 +74,21 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
   const shouldCloseOnInteractOutside = () => props.shouldCloseOnInteractOutside;
 
   // Add the overlay ref to the stack of visible overlays on mount, and remove on unmount.
-  createEffect(() => {
-    if (isOpen() && !visibleOverlays.includes(ref)) {
-      visibleOverlays.push(ref);
-    }
-
-    onCleanup(() => {
-      const index = visibleOverlays.indexOf(ref);
-      if (index >= 0) {
-        visibleOverlays.splice(index, 1);
+  createEffect(
+    () => isOpen(),
+    (open) => {
+      if (!open) return;
+      if (!visibleOverlays.includes(ref)) {
+        visibleOverlays.push(ref);
       }
-    });
-  });
+      return () => {
+        const index = visibleOverlays.indexOf(ref);
+        if (index >= 0) {
+          visibleOverlays.splice(index, 1);
+        }
+      };
+    },
+  );
 
   // Only hide the overlay when it is the topmost visible overlay in the stack
   const onHide = () => {
@@ -93,9 +98,16 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
     }
   };
 
+  const allowsCloseOnOutside = (target: EventTarget | null): boolean => {
+    const filter = shouldCloseOnInteractOutside();
+    if (typeof filter === "function") {
+      return !target || !(target instanceof Element) ? true : filter(target);
+    }
+    return true;
+  };
+
   const onInteractOutsideStart = (e: PointerEvent) => {
-    const shouldClose = shouldCloseOnInteractOutside();
-    if (!shouldClose || shouldClose(e.target as Element)) {
+    if (allowsCloseOnOutside(e.target)) {
       if (visibleOverlays[visibleOverlays.length - 1] === ref) {
         e.stopPropagation();
         e.preventDefault();
@@ -104,8 +116,7 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
   };
 
   const onInteractOutside = (e: PointerEvent) => {
-    const shouldClose = shouldCloseOnInteractOutside();
-    if (!shouldClose || shouldClose(e.target as Element)) {
+    if (allowsCloseOnOutside(e.target)) {
       if (visibleOverlays[visibleOverlays.length - 1] === ref) {
         e.stopPropagation();
         e.preventDefault();
@@ -115,50 +126,44 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
   };
 
   // Handle clicking outside the overlay to close it.
-  createEffect(() => {
-    if (!isDismissable() || !isOpen()) {
-      return;
-    }
-
-    createInteractOutside({
-      ref,
-      onInteractOutside,
-      onInteractOutsideStart,
-      isDisabled: false,
-    });
+  createInteractOutside({
+    ref: () => overlayEl() ?? null,
+    onInteractOutside,
+    onInteractOutsideStart,
+    get isDisabled() {
+      return !isDismissable() || !isOpen();
+    },
   });
 
-  createEffect(() => {
-    if (!isOpen() || !shouldCloseOnBlur()) {
-      return;
-    }
+  createEffect(
+    () => {
+      if (!isOpen() || !shouldCloseOnBlur()) return null;
+      return overlayEl() ?? null;
+    },
+    (overlay) => {
+      if (!overlay) return;
 
-    const overlay = ref();
-    if (!overlay) {
-      return;
-    }
+      const ownerDocument = getOwnerDocument(overlay);
+      const onFocusIn = (event: FocusEvent) => {
+        if (!isOpen()) {
+          return;
+        }
 
-    const ownerDocument = getOwnerDocument(overlay);
-    const onFocusIn = (event: FocusEvent) => {
-      if (!isOpen()) {
-        return;
-      }
+        const currentOverlay = overlayEl();
+        const target = event.target as Element | null;
+        if (!currentOverlay || !target || nodeContains(currentOverlay, target)) {
+          return;
+        }
 
-      const currentOverlay = ref();
-      const target = event.target as Element | null;
-      if (!currentOverlay || !target || nodeContains(currentOverlay, target)) {
-        return;
-      }
+        if (allowsCloseOnOutside(target)) {
+          onHide();
+        }
+      };
 
-      const shouldClose = shouldCloseOnInteractOutside();
-      if (!shouldClose || shouldClose(target)) {
-        onHide();
-      }
-    };
-
-    ownerDocument.addEventListener("focusin", onFocusIn, true);
-    onCleanup(() => ownerDocument.removeEventListener("focusin", onFocusIn, true));
-  });
+      ownerDocument.addEventListener("focusin", onFocusIn, true);
+      return () => ownerDocument.removeEventListener("focusin", onFocusIn, true);
+    },
+  );
 
   // Handle focus within for blur detection
   const { focusWithinProps } = createFocusWithin({
@@ -173,8 +178,7 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
         return;
       }
 
-      const shouldClose = shouldCloseOnInteractOutside();
-      if (!shouldClose || shouldClose(e.relatedTarget as Element)) {
+      if (allowsCloseOnOutside(e.relatedTarget)) {
         onClose()?.();
       }
     },

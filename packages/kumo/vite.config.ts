@@ -1,5 +1,5 @@
 import { defineConfig } from "vite-plus";
-import solid from "unplugin-solid/rolldown";
+import solidPlugin from "@solidjs/vite-plugin";
 
 const entry = {
   index: "src/index.ts",
@@ -8,7 +8,7 @@ const entry = {
 
 const neverBundle = [
   "solid-js",
-  "solid-js/web",
+  "@solidjs/web",
   /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
 ];
 
@@ -39,7 +39,7 @@ export default defineConfig({
       dts: false,
       deps: { neverBundle },
       outputOptions: { entryFileNames: "[name].js", chunkFileNames: "[name].js" },
-      plugins: [solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [...solidPlugin({ ssr: true, refresh: { disabled: true } })],
     },
   ],
 });

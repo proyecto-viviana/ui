@@ -1,6 +1,4 @@
-import { describe, it, expect, afterEach } from "vite-plus/test";
-import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, screen, waitFor, cleanup } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { DatePicker } from "../src/calendar/DatePicker";
 import {
   CalendarDateClass as CalendarDate,

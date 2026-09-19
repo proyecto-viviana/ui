@@ -1,4 +1,4 @@
-import h from "solid-js/h";
+import h from "@solidjs/h";
 import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
 import { Link } from "@proyecto-viviana/solid-spectrum/Link";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";

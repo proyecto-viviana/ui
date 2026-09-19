@@ -20,8 +20,9 @@
  * provides focus-visible state and listeners.
  */
 
-import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";
-import { isServer } from "solid-js/web";
+import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
 import { getEventTarget, getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
 import { isVirtualClick } from "../utils/events";
 import { isMac } from "../utils/platform";
@@ -406,10 +407,14 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
   // body runs once). Mirrors upstream useFocusVisible's [isTextInput] dep.
   const [isVisible, setIsVisible] = createSignal<boolean>(props.autoFocus || isFocusVisible());
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = createFocusVisibleListener(setIsVisible, { isTextInput: props.isTextInput });
-    onCleanup(cleanup);
-  });
+    _s2Cleanups.push(cleanup);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return { isFocusVisible: isVisible };
 }
@@ -426,16 +431,20 @@ export function createInteractionModality(): InteractionModalityResult {
 
   const [modality, setModality] = createSignal<Modality | null>(currentModality);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     setupGlobalFocusEvents();
     const handler: Handler = (newModality: Modality) => {
       setModality(newModality);
     };
     changeHandlers.add(handler);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       changeHandlers.delete(handler);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   return {
     modality,

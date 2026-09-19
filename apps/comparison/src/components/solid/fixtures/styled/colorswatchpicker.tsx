@@ -1,6 +1,6 @@
-import h from "solid-js/h";
-import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { ColorSwatch as SolidSpectrumColorSwatch } from "@proyecto-viviana/solid-spectrum/ColorSwatch";
 import { ColorSwatchPicker as SolidSpectrumColorSwatchPicker } from "@proyecto-viviana/solid-spectrum/ColorSwatchPicker";
@@ -42,7 +42,7 @@ function SolidSpectrumColorSwatchPickerDemo() {
   );
   const locale = buttonDemoLocaleFromWindow();
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "colorswatchpicker") {
         const nextProps = normalizeColorSwatchPickerDemoProps(event.detail.props ?? {});

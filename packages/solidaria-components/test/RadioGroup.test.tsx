@@ -197,14 +197,14 @@ describe("RadioGroup", () => {
 
     it("should support slot", () => {
       render(() => (
-        <RadioGroupContext.Provider value={{ slots: { test: { "aria-label": "test" } } }}>
-          <RadioContext.Provider value={{ "data-test": "test" }}>
+        <RadioGroupContext value={{ slots: { test: { "aria-label": "test" } } }}>
+          <RadioContext value={{ "data-test": "test" }}>
             <RadioGroup slot="test">
               <Radio value="a">A</Radio>
               <Radio value="b">B</Radio>
             </RadioGroup>
-          </RadioContext.Provider>
-        </RadioGroupContext.Provider>
+          </RadioContext>
+        </RadioGroupContext>
       ));
 
       expect(screen.getByRole("radiogroup")).toHaveAttribute("slot", "test");
@@ -392,7 +392,7 @@ describe("RadioGroup", () => {
     it("should support render props", () => {
       render(() => (
         <RadioGroup aria-label="Options" isRequired>
-          {({ isRequired }) => <div data-required={isRequired}>Test</div>}
+          {({ isRequired }) => <div data-required={isRequired ? "true" : undefined}>Test</div>}
         </RadioGroup>
       ));
 
@@ -982,7 +982,7 @@ describe("RadioGroup", () => {
       let contextInputRef: HTMLInputElement | undefined;
       render(() => (
         <RadioGroup aria-label="Options">
-          <RadioContext.Provider
+          <RadioContext
             value={{
               inputRef: (el) => {
                 contextInputRef = el;
@@ -997,7 +997,7 @@ describe("RadioGroup", () => {
             >
               A
             </Radio>
-          </RadioContext.Provider>
+          </RadioContext>
         </RadioGroup>
       ));
 

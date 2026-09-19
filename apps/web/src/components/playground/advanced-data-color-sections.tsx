@@ -1,4 +1,6 @@
-import { type Accessor, createSignal, For, type JSX } from "solid-js";
+import { createSignal, For } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   RangeCalendar,
   DateField,

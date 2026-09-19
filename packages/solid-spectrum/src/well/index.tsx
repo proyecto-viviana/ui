@@ -1,5 +1,6 @@
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface WellProps extends JSX.HTMLAttributes<HTMLDivElement> {
   class?: string;

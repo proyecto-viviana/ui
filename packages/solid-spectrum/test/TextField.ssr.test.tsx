@@ -4,7 +4,7 @@
  * Runs under vitest.ssr.config.ts so renderToString emits hydratable server
  * markup. The companion TextField.hydrate.test.tsx hydrates over this output.
  */
-import { renderToString, isServer } from "solid-js/web";
+import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";

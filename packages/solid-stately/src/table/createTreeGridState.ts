@@ -20,7 +20,8 @@
  * collection from it, and layers the expansion API on top of {@link createTableState}.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo } from "solid-js";
+import type { Accessor } from "solid-js";
 import { createInternalSignal } from "../utils";
 
 import { createTableState } from "./createTableState";
@@ -44,13 +45,13 @@ export function createTreeGridState<
     getInitialExpanded(getOptions().UNSTABLE_defaultExpandedKeys),
   );
 
-  const expandedKeys = createMemo<"all" | Set<Key>>(() => {
+  const expandedKeys = (): "all" | Set<Key> => {
     const controlled = getOptions().UNSTABLE_expandedKeys;
     if (controlled !== undefined) {
       return convertExpanded(controlled);
     }
     return internalExpandedKeys();
-  });
+  };
 
   // Rebuild the tree collection whenever the expanded keys (or the data) change.
   const collection = createMemo(

@@ -18,7 +18,7 @@
  * and each `Card` runs its own instance, so there is nothing for a shell to
  * call — the app-level helper in `@/lib/glasselated` drives `.mesh-card`
  * classes the examples are not allowed to author. */
-import { type JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
 import { Provider, SceneBackdrop } from "@proyecto-viviana/ui";
 import { useTheme } from "@/utils/theme";

@@ -6,6 +6,7 @@
  */
 
 import { fireEvent } from "@solidjs/testing-library";
+import { flush } from "solid-js";
 
 /**
  * Pointer map entry for userEvent configuration
@@ -201,6 +202,7 @@ export function createPressSequence(
  */
 export function firePointerDown(target: Element, options: PointerEventOptions = {}): void {
   fireEvent(target, createPointerEvent("pointerdown", options));
+  flush();
 }
 
 /**
@@ -208,6 +210,7 @@ export function firePointerDown(target: Element, options: PointerEventOptions = 
  */
 export function firePointerUp(target: Element, options: PointerEventOptions = {}): void {
   fireEvent(target, createPointerEvent("pointerup", { buttons: 0, ...options }));
+  flush();
 }
 
 /**
@@ -217,6 +220,7 @@ export function firePointerClick(target: Element, options: PointerEventOptions =
   firePointerDown(target, options);
   firePointerUp(target, options);
   fireEvent.click(target, { detail: 1 });
+  flush();
 }
 
 /**

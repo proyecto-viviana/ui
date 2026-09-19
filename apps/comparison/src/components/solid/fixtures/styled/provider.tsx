@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -15,7 +15,7 @@ import { providerShellStyle } from "../styled-shared.tsx";
 function SolidSpectrumProviderDemo() {
   const [demoProps, setDemoProps] = createSignal<ProviderDemoProps>(providerDemoPropsFromWindow());
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "provider") {
         setDemoProps(normalizeProviderDemoProps(event.detail.props ?? {}));

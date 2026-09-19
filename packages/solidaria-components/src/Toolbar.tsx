@@ -19,20 +19,16 @@
  * Port of react-aria-components/src/Toolbar.tsx
  */
 
-import {
-  type JSX,
-  type ParentProps,
-  createContext,
-  createMemo,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createToolbar,
   type AriaToolbarProps,
   type Orientation,
 } from "@proyecto-viviana/solidaria";
 import { type SlotProps, filterDOMProps } from "./utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ToolbarRenderProps {
   /** The orientation of the toolbar. */
@@ -92,7 +88,7 @@ export function Toolbar(props: ToolbarProps): JSX.Element {
   const ctx = useContext(ToolbarContext);
   const slotProps = () => {
     if (ctx?.slots && local.slot) {
-      return ctx.slots[local.slot] || {};
+      return ctx.slots[typeof local.slot === "string" ? local.slot : "default"] || {};
     }
     return {};
   };

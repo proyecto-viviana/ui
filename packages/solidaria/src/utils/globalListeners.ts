@@ -19,8 +19,9 @@
  * In SolidJS, we use onCleanup for automatic cleanup instead of useEffect return.
  */
 
-import { onCleanup } from "solid-js";
 
+
+import { onOwnedCleanup } from "./owner";
 export interface GlobalListenerOptions extends AddEventListenerOptions {
   /** Whether to add the listener to the window instead of document */
   isWindow?: boolean;
@@ -121,7 +122,7 @@ export function createGlobalListeners() {
   }
 
   // Automatically clean up when the component/scope is disposed
-  onCleanup(removeAllGlobalListeners);
+  onOwnedCleanup(removeAllGlobalListeners);
 
   return {
     addGlobalListener,

@@ -1,4 +1,4 @@
-import { render } from "solid-js/web";
+import { render } from "@solidjs/web";
 import ComponentExampleSection from "@comparison/components/solid/ComponentExampleSection";
 import { initializeComparisonControls } from "@comparison/scripts/component-controls";
 import { mountOnAstroPage } from "./mount-on-astro-page";

@@ -19,21 +19,10 @@
  * Port of react-aria-components Toast.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  type Context,
-  createContext,
-  createMemo,
-  createEffect,
-  createRenderEffect,
-  createSignal,
-  onCleanup,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
-import { Portal } from "solid-js/web";
+import { createContext, createMemo, createEffect, createRenderEffect, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import type { Accessor, Context } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { Portal } from "@solidjs/web";
 import {
   type ToastState,
   type QueuedToast,
@@ -49,6 +38,7 @@ import {
 } from "@proyecto-viviana/solidaria";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ContextValue,
   type RenderChildren,
@@ -217,7 +207,7 @@ export function ToastProvider(props: ToastProviderProps): JSX.Element {
 
   const state = createToastState({ queue });
 
-  return <ToastContext.Provider value={state}>{props.children}</ToastContext.Provider>;
+  return <ToastContext value={state}>{props.children}</ToastContext>;
 }
 
 /**
@@ -406,15 +396,19 @@ export function Toast(props: ToastProps): JSX.Element {
 
   const state = useToastContext();
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const key = local.toast.key;
     toastStateByKey.set(key, state);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       if (toastStateByKey.get(key) === state) {
         toastStateByKey.delete(key);
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const hasTitle = () => !!(local.toast.content.children ?? local.toast.content.title);
   const toastAria = createToast({
@@ -468,7 +462,9 @@ export function Toast(props: ToastProps): JSX.Element {
   // In JSDOM or when no animations are running, remove immediately.
   // Reduced-motion is handled by CSS (shorter/no animations), so the lifecycle
   // naturally completes faster when the user prefers reduced motion.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (local.toast.animation !== "exiting") return;
     const toastRef = toastEl();
     if (!toastRef) {
@@ -504,10 +500,12 @@ export function Toast(props: ToastProps): JSX.Element {
         }
       });
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       canceled = true;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const { ref: _ref, ...cleanToastProps } = toastAria.toastProps as Record<string, unknown>;
 
@@ -515,44 +513,48 @@ export function Toast(props: ToastProps): JSX.Element {
   // descendants that opted in via data-solidaria-toast-* (S2 used a raw
   // content div before ToastContent). Signal ref + createRenderEffect so
   // a first-run null ref still reapplies after mount, before paint.
-  createRenderEffect(() => {
-    const toastRef = toastEl();
-    if (!toastRef) return;
+  createRenderEffect(
+    () => {
+      const toastRef = toastEl();
+      const titleId = (toastAria.titleProps as Record<string, unknown>).id as string | undefined;
+      const descriptionId = (toastAria.descriptionProps as Record<string, unknown>).id as
+        | string
+        | undefined;
+      const contentProps = toastAria.contentProps as Record<string, unknown>;
+      return { toastRef, titleId, descriptionId, contentProps };
+    },
+    ({ toastRef, titleId, descriptionId, contentProps }) => {
+      if (!toastRef) return;
 
-    const titleId = (toastAria.titleProps as Record<string, unknown>).id as string | undefined;
-    const descriptionId = (toastAria.descriptionProps as Record<string, unknown>).id as
-      | string
-      | undefined;
-    const contentProps = toastAria.contentProps as Record<string, unknown>;
-
-    if (titleId) {
-      const titleEl = toastRef.querySelector("[data-solidaria-toast-title]");
-      if (titleEl instanceof HTMLElement) {
-        titleEl.id = titleId;
+      if (titleId) {
+        const titleEl = toastRef.querySelector("[data-solidaria-toast-title]");
+        if (titleEl instanceof HTMLElement) {
+          titleEl.id = titleId;
+        }
       }
-    }
 
-    if (descriptionId) {
-      const descriptionEl = toastRef.querySelector("[data-solidaria-toast-description]");
-      if (descriptionEl instanceof HTMLElement) {
-        descriptionEl.id = descriptionId;
+      if (descriptionId) {
+        const descriptionEl = toastRef.querySelector("[data-solidaria-toast-description]");
+        if (descriptionEl instanceof HTMLElement) {
+          descriptionEl.id = descriptionId;
+        }
       }
-    }
 
-    const contentEl = toastRef.querySelector("[data-solidaria-toast-content]");
-    if (contentEl instanceof HTMLElement) {
-      const role = contentProps.role as string | undefined;
-      const ariaAtomic = contentProps["aria-atomic"] as string | undefined;
-      const ariaHidden = contentProps["aria-hidden"] as string | undefined;
-      if (role) contentEl.setAttribute("role", role);
-      if (ariaAtomic) contentEl.setAttribute("aria-atomic", ariaAtomic);
-      if (ariaHidden) contentEl.setAttribute("aria-hidden", ariaHidden);
-      else contentEl.removeAttribute("aria-hidden");
-    }
-  });
+      const contentEl = toastRef.querySelector("[data-solidaria-toast-content]");
+      if (contentEl instanceof HTMLElement) {
+        const role = contentProps.role as string | undefined;
+        const ariaAtomic = contentProps["aria-atomic"] as string | undefined;
+        const ariaHidden = contentProps["aria-hidden"] as string | undefined;
+        if (role) contentEl.setAttribute("role", role);
+        if (ariaAtomic) contentEl.setAttribute("aria-atomic", ariaAtomic);
+        if (ariaHidden) contentEl.setAttribute("aria-hidden", ariaHidden);
+        else contentEl.removeAttribute("aria-hidden");
+      }
+    },
+  );
 
   return (
-    <ToastAriaContext.Provider
+    <ToastAriaContext
       value={{
         titleProps: toastAria.titleProps,
         descriptionProps: toastAria.descriptionProps,
@@ -568,7 +570,7 @@ export function Toast(props: ToastProps): JSX.Element {
         data-animation={local.toast.animation}
         data-type={local.toast.content.type ?? local.toast.content.variant}
         data-variant={local.toast.content.variant}
-        on:click={handleRootClick}
+        onClick={handleRootClick}
       >
         <Provider
           values={
@@ -611,7 +613,7 @@ export function Toast(props: ToastProps): JSX.Element {
           {renderProps.renderChildren()}
         </Provider>
       </div>
-    </ToastAriaContext.Provider>
+    </ToastAriaContext>
   );
 }
 
@@ -724,7 +726,6 @@ export function ToastCloseButton(props: ToastCloseButtonProps): JSX.Element {
       style={props.style}
       aria-label={props["aria-label"] ?? "Close"}
       data-solidaria-toast-close-button=""
-      on:click={handleClose}
       onClick={handleClose}
     >
       {props.children ?? "×"}

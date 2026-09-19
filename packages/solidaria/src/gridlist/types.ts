@@ -38,7 +38,7 @@
  * The orientation, direction, and collection-disabled fields are Solid-specific adapters.
  */
 
-import type { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type { Key, GridNode } from "@proyecto-viviana/solid-stately";
 
 /**

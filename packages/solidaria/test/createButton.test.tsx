@@ -1,6 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { createButton, createToggleButton } from "../src/button";
 import { setupUser, firePointerDown, firePointerUp } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -83,6 +81,7 @@ describe("createButton", () => {
 
       expect(button).not.toBeDisabled();
       setDisabled(true);
+      flush();
       expect(button).toBeDisabled();
     });
   });
@@ -110,7 +109,7 @@ describe("createButton", () => {
 
     it("sets aria-disabled for disabled non-native buttons", () => {
       const { buttonProps } = createButton({ elementType: "div", isDisabled: true });
-      expect(buttonProps["aria-disabled"]).toBe(true);
+      expect(buttonProps["aria-disabled"]).toBe("true");
     });
   });
 
@@ -152,6 +151,7 @@ describe("createButton", () => {
       expect(button).toHaveAttribute("href", "https://example.com");
       expect(button).not.toHaveAttribute("aria-disabled");
       setDisabled(true);
+      flush();
       expect(button).not.toHaveAttribute("href");
       expect(button).toHaveAttribute("aria-disabled", "true");
     });
@@ -168,14 +168,14 @@ describe("createButton", () => {
       expect(buttonProps.href).toBeUndefined();
       expect(buttonProps.target).toBe("_blank");
       expect(buttonProps.rel).toBe("noopener noreferrer");
-      expect(buttonProps["aria-disabled"]).toBe(true);
+      expect(buttonProps["aria-disabled"]).toBe("true");
     });
   });
 
   describe("ARIA attributes", () => {
     it("passes through aria-pressed", () => {
       const { buttonProps } = createButton({ "aria-pressed": true });
-      expect(buttonProps["aria-pressed"]).toBe(true);
+      expect(buttonProps["aria-pressed"]).toBe("true");
     });
 
     it("passes through aria-haspopup", () => {
@@ -185,7 +185,7 @@ describe("createButton", () => {
 
     it("passes through aria-expanded", () => {
       const { buttonProps } = createButton({ "aria-expanded": true });
-      expect(buttonProps["aria-expanded"]).toBe(true);
+      expect(buttonProps["aria-expanded"]).toBe("true");
     });
 
     it("passes through aria-label", () => {
@@ -440,7 +440,7 @@ describe("createButton", () => {
 
     it("handles aria-current with boolean value", () => {
       const { buttonProps } = createButton({ "aria-current": true });
-      expect(buttonProps["aria-current"]).toBe(true);
+      expect(buttonProps["aria-current"]).toBe("true");
     });
   });
 
@@ -664,7 +664,7 @@ describe("createButton", () => {
         allowFocusWhenDisabled: true,
       });
       expect(buttonProps.tabIndex).toBe(-1);
-      expect(buttonProps["aria-disabled"]).toBe(true);
+      expect(buttonProps["aria-disabled"]).toBe("true");
     });
   });
 

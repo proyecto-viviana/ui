@@ -26,15 +26,9 @@
  * Components has no ActionGroup component, so this file wires the two hooks.
  */
 
-import {
-  type JSX,
-  type ParentProps,
-  createContext,
-  createMemo,
-  splitProps,
-  useContext,
-  For,
-} from "solid-js";
+import { createContext, createMemo, useContext, For } from "solid-js";
+import type { ParentProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   createActionGroup,
   createActionGroupItem,
@@ -46,12 +40,14 @@ import {
   type Key,
   type SelectionMode,
 } from "@proyecto-viviana/solid-stately";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 
 export interface ActionGroupRenderProps {
@@ -208,8 +204,8 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
   );
 
   return (
-    <ActionGroupContext.Provider value={{ state: state as ListState<ActionGroupItem> }}>
-      <ActionGroupStateContext.Provider value={state as ListState<ActionGroupItem>}>
+    <ActionGroupContext value={{ state: state as ListState<ActionGroupItem> }}>
+      <ActionGroupStateContext value={state as ListState<ActionGroupItem>}>
         <div
           {...filteredDOMProps()}
           {...actionGroupProps}
@@ -221,7 +217,7 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
           style={renderProps.style()}
           slot={local.slot}
           data-orientation={orientation()}
-          data-disabled={local.isDisabled || undefined}
+          data-disabled={dataAttr(local.isDisabled)}
         >
           <For each={local.items}>
             {(item) => (
@@ -238,8 +234,8 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
             )}
           </For>
         </div>
-      </ActionGroupStateContext.Provider>
-    </ActionGroupContext.Provider>
+      </ActionGroupStateContext>
+    </ActionGroupContext>
   );
 }
 
@@ -281,9 +277,9 @@ function ActionGroupItemWrapper(props: ActionGroupItemWrapperProps): JSX.Element
   return (
     <button
       {...restButtonProps}
-      data-selected={isSelected() || undefined}
-      data-disabled={isDisabled() || undefined}
-      data-focused={isFocused() || undefined}
+      data-selected={dataAttr(isSelected())}
+      data-disabled={dataAttr(isDisabled())}
+      data-focused={dataAttr(isFocused())}
     >
       {props.renderChild(props.item, renderProps())}
     </button>

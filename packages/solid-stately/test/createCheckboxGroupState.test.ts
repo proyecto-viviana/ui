@@ -4,10 +4,7 @@
  * Ported from @react-stately/checkbox's useCheckboxGroupState.
  * Tests follow the same patterns as @react-stately tests.
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { createSignal } from "./owned-signal";
-
-import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
 import {
   createCheckboxGroupState,
   type CheckboxGroupProps,

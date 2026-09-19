@@ -1,6 +1,7 @@
 // Local addition — no S2 counterpart. See the JSDoc on PixelMeter below.
 
-import { type JSX, For, Show, createMemo, splitProps } from "solid-js";
+import { For, Show, createMemo } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   Label as HeadlessLabel,
   Meter as HeadlessMeter,
@@ -11,6 +12,7 @@ import { tglRingBlink } from "../style/motion" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
 import type { RefLike } from "../button/spectrum-context";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 /** The three pixel forms the register draws a measurement in. */
 export type PixelMeterShape = "row" | "ring" | "grid";

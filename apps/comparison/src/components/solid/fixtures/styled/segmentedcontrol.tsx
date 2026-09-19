@@ -1,14 +1,7 @@
-import h from "solid-js/h";
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-  type JSX,
-} from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { createEffect, createMemo, createSignal, onCleanup, onSettled, Show, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { createComponent } from "@solidjs/web";
 import { hc } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -45,14 +38,14 @@ function SolidSpectrumSegmentedControlDemo() {
   );
   let segmentedControlRoot: HTMLElement | undefined;
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     segmentedControlRoot?.setAttribute(
       "data-comparison-control-props",
       serializeSegmentedControlDemoProps(demoProps()),
     );
   });
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "segmentedcontrol") {
         const nextProps = normalizeSegmentedControlDemoProps(event.detail.props ?? {});

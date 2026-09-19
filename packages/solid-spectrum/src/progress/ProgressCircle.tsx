@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressCircle.tsx
 
 // Port of packages/@react-spectrum/s2/src/ProgressCircle.tsx.
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { createProgressBar } from "@proyecto-viviana/solidaria/progress";
 import type { StyleString } from "../style";
@@ -32,6 +33,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { s2ProgressCircleIndeterminateAnimation } from "./progress-circle-animation";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type ProgressCircleSize = "S" | "M" | "L";
 export type ProgressCircleStaticColor = "white" | "black" | "auto";

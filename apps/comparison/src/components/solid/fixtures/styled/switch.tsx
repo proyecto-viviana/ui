@@ -1,6 +1,7 @@
-import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
-import { createComponent } from "solid-js/web";
+import h from "@solidjs/h";
+import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { createComponent } from "@solidjs/web";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { Switch as SolidSpectrumSwitch } from "@proyecto-viviana/solid-spectrum/Switch";
 import {
@@ -24,7 +25,7 @@ function SolidSpectrumSwitchDemo() {
     getComparisonResolvedThemeFromDocument(),
   );
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "switch") {
         const nextProps = normalizeSwitchDemoProps(event.detail.props ?? {});

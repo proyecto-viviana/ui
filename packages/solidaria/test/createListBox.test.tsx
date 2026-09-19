@@ -4,8 +4,7 @@
  * Tests ARIA attributes, keyboard navigation, selection modes, and type-to-select.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
 import { createListBox, createOption } from "../src/listbox";
@@ -74,7 +73,7 @@ describe("createListBox", () => {
         const state = createBasicListState({ selectionMode: "multiple" });
         const { listBoxProps } = createListBox({}, state);
 
-        expect(listBoxProps["aria-multiselectable"]).toBe(true);
+        expect(listBoxProps["aria-multiselectable"]).toBe("true");
         dispose();
       });
     });
@@ -94,7 +93,7 @@ describe("createListBox", () => {
         const state = createBasicListState();
         const { listBoxProps } = createListBox({ isDisabled: true }, state);
 
-        expect(listBoxProps["aria-disabled"]).toBe(true);
+        expect(listBoxProps["aria-disabled"]).toBe("true");
         dispose();
       });
     });
@@ -936,7 +935,7 @@ describe("createOption", () => {
         const state = createBasicListState({ defaultSelectedKeys: ["a"] });
         const { optionProps } = createOption({ key: "a" }, state);
 
-        expect(optionProps["aria-selected"]).toBe(true);
+        expect(optionProps["aria-selected"]).toBe("true");
         dispose();
       });
     });
@@ -946,7 +945,7 @@ describe("createOption", () => {
         const state = createBasicListState();
         const { optionProps } = createOption({ key: "b" }, state);
 
-        expect(optionProps["aria-selected"]).toBe(false);
+        expect(optionProps["aria-selected"]).toBe("false");
         dispose();
       });
     });
@@ -956,7 +955,7 @@ describe("createOption", () => {
         const state = createBasicListState({ disabledKeys: ["a"] });
         const { optionProps, isDisabled } = createOption({ key: "a" }, state);
 
-        expect(optionProps["aria-disabled"]).toBe(true);
+        expect(optionProps["aria-disabled"]).toBe("true");
         expect(isDisabled()).toBe(true);
         dispose();
       });
@@ -979,7 +978,7 @@ describe("createOption", () => {
         createListBox({ isDisabled: true }, state);
         const { optionProps, isDisabled } = createOption({ key: "a" }, state);
 
-        expect(optionProps["aria-disabled"]).toBe(true);
+        expect(optionProps["aria-disabled"]).toBe("true");
         expect(isDisabled()).toBe(true);
         dispose();
       });

@@ -21,14 +21,9 @@
  * Port of @react-aria/interactions useHover.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  createSignal,
-  createEffect,
-  onCleanup,
-  createMemo,
-} from "solid-js";
+import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isTestEnv } from "../utils/env";
 import { createGlobalListeners, nodeContains } from "../utils";
@@ -65,6 +60,7 @@ export type HoverProps = Pick<
   | "onPointerOut"
   | "onMouseEnter"
   | "onMouseLeave"
+  | "onTouchStart"
 >;
 
 export interface HoverResult {
@@ -137,18 +133,24 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
   };
 
   // Setup global touch events
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = setupGlobalTouchEvents();
-    onCleanup(cleanup);
-  });
+    _s2Cleanups.push(cleanup);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // Reset hover when disabled
-  createEffect(() => {
-    const p = getProps();
-    if (p.isDisabled && state.isHovered) {
-      triggerHoverEnd(state.target as Element, state.pointerType as "mouse" | "pen");
-    }
-  });
+  createEffect(
+    () => !!getProps().isDisabled,
+    (isDisabled) => {
+      if (isDisabled && state.isHovered) {
+        triggerHoverEnd(state.target as Element, state.pointerType as "mouse" | "pen");
+      }
+    },
+  );
 
   function triggerHoverStart(
     target: Element,
@@ -212,72 +214,71 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
     setIsHovered(false);
   }
 
-  const hoverProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => {
-    if (typeof PointerEvent !== "undefined") {
-      return {
-        onPointerEnter: (e: PointerEvent) => {
-          if (globalIgnoreEmulatedMouseEvents && e.pointerType === "mouse") {
-            return;
-          }
-          if (e.pointerType === "touch") {
-            return;
-          }
-          triggerHoverStart(
-            e.currentTarget as Element,
-            e.pointerType as "mouse" | "pen",
-            e.target as Element,
-          );
-        },
-        onPointerLeave: (e: PointerEvent) => {
-          const p = getProps();
-          if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
-            triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
-          }
-        },
-        onPointerOver: (e: PointerEvent) => {
-          if (globalIgnoreEmulatedMouseEvents && e.pointerType === "mouse") {
-            return;
-          }
-          if (e.pointerType === "touch") {
-            return;
-          }
-          triggerHoverStart(
-            e.currentTarget as Element,
-            e.pointerType as "mouse" | "pen",
-            e.target as Element,
-          );
-        },
-        onPointerOut: (e: PointerEvent) => {
-          const p = getProps();
-          if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
-            triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
-          }
-        },
-      };
-    }
-
-    // Fallback for environments without PointerEvent (mainly tests)
-    return {
-      onTouchStart: () => {
-        state.ignoreEmulatedMouseEvents = true;
-      },
-      onMouseEnter: (e: MouseEvent) => {
-        if (!state.ignoreEmulatedMouseEvents && !globalIgnoreEmulatedMouseEvents) {
-          triggerHoverStart(e.currentTarget as Element, "mouse", e.target as Element);
+  // Handlers read getProps() live; do not wrap this object in a memo/getter.
+  // A getter that reads the memo on destructure (`const { hoverProps } = createHover()`)
+  // is STRICT_READ_UNTRACKED inside HMR's untrack(component, "<Name>").
+  const hoverProps: HoverProps =
+    typeof PointerEvent !== "undefined"
+      ? {
+          onPointerEnter: (e: PointerEvent) => {
+            if (globalIgnoreEmulatedMouseEvents && e.pointerType === "mouse") {
+              return;
+            }
+            if (e.pointerType === "touch") {
+              return;
+            }
+            triggerHoverStart(
+              e.currentTarget as Element,
+              e.pointerType as "mouse" | "pen",
+              e.target as Element,
+            );
+          },
+          onPointerLeave: (e: PointerEvent) => {
+            const p = getProps();
+            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+              triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
+            }
+          },
+          onPointerOver: (e: PointerEvent) => {
+            if (globalIgnoreEmulatedMouseEvents && e.pointerType === "mouse") {
+              return;
+            }
+            if (e.pointerType === "touch") {
+              return;
+            }
+            triggerHoverStart(
+              e.currentTarget as Element,
+              e.pointerType as "mouse" | "pen",
+              e.target as Element,
+            );
+          },
+          onPointerOut: (e: PointerEvent) => {
+            const p = getProps();
+            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+              triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
+            }
+          },
         }
-        state.ignoreEmulatedMouseEvents = false;
-      },
-      onMouseLeave: (e: MouseEvent) => {
-        const p = getProps();
-        if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
-          triggerHoverEnd(e.currentTarget as Element, "mouse");
-        }
-      },
-    };
-  });
+      : {
+          onTouchStart: () => {
+            state.ignoreEmulatedMouseEvents = true;
+          },
+          onMouseEnter: (e: MouseEvent) => {
+            if (!state.ignoreEmulatedMouseEvents && !globalIgnoreEmulatedMouseEvents) {
+              triggerHoverStart(e.currentTarget as Element, "mouse", e.target as Element);
+            }
+            state.ignoreEmulatedMouseEvents = false;
+          },
+          onMouseLeave: (e: MouseEvent) => {
+            const p = getProps();
+            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+              triggerHoverEnd(e.currentTarget as Element, "mouse");
+            }
+          },
+        };
 
   return {
-    hoverProps: hoverProps() as HoverProps,
+    hoverProps,
     isHovered,
   };
 }

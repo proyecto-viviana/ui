@@ -19,18 +19,10 @@
  * Port of react-aria-components/src/Tooltip.tsx
  */
 
-import {
-  type JSX,
-  type ParentComponent,
-  createContext,
-  useContext,
-  createMemo,
-  createSignal,
-  createEffect,
-  onCleanup,
-  Show,
-} from "solid-js";
-import { isServer } from "solid-js/web";
+import { createContext, useContext, createMemo, createSignal, createEffect, onCleanup, Show, createTrackedEffect } from "solid-js";
+import type { ParentComponent } from "solid-js";
+import type { JSX } from "@solidjs/web";
+import { isServer } from "@solidjs/web";
 import {
   createTooltipTriggerState,
   type TooltipTriggerState,
@@ -50,6 +42,7 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 
 export interface TooltipRenderProps {
@@ -224,11 +217,11 @@ export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (pr
   };
 
   return (
-    <TooltipTriggerStateContext.Provider value={state}>
-      <TooltipTriggerContext.Provider value={context}>
+    <TooltipTriggerStateContext value={state}>
+      <TooltipTriggerContext value={context}>
         {processChildren()}
-      </TooltipTriggerContext.Provider>
-    </TooltipTriggerStateContext.Provider>
+      </TooltipTriggerContext>
+    </TooltipTriggerStateContext>
   );
 };
 
@@ -276,7 +269,9 @@ const TriggerWrapper: ParentComponent<{
     return wrapperProps as JSX.HTMLAttributes<HTMLSpanElement>;
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const element = triggerElement();
     if (!element) {
       return;
@@ -323,7 +318,7 @@ const TriggerWrapper: ParentComponent<{
       }
     }
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       for (const [target, eventName, listener] of listeners) {
         target.removeEventListener(eventName, listener);
       }
@@ -331,7 +326,9 @@ const TriggerWrapper: ParentComponent<{
         element.removeAttribute("aria-describedby");
       }
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   // We wrap in a span with display:contents to not affect layout.
   // However, display:contents makes getBoundingClientRect return zeros,
@@ -409,12 +406,16 @@ const TriggerWrapper: ParentComponent<{
 export function Tooltip(props: TooltipProps): JSX.Element {
   const context = useContext(TooltipTriggerContext);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     context?.setTooltipId(props.id);
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       context?.setTooltipId(undefined);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const localState = createTooltipTriggerState({
     get isOpen() {
@@ -443,7 +444,7 @@ export function Tooltip(props: TooltipProps): JSX.Element {
     isOpen() ? "open" : "closed",
   );
 
-  createEffect(() => {
+  createTrackedEffect(() => {
     const open = isOpen();
     const current = exitState();
     if (current === "open" && !open) {
@@ -457,7 +458,9 @@ export function Tooltip(props: TooltipProps): JSX.Element {
   const [tooltipEl, setTooltipEl] = createSignal<HTMLDivElement | null>(null);
 
   // When exiting, wait for CSS animations to finish, then set state to closed
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (exitState() !== "exiting") return;
     const el = tooltipEl();
     if (!el || !("getAnimations" in el)) {
@@ -477,10 +480,12 @@ export function Tooltip(props: TooltipProps): JSX.Element {
       .catch(() => {
         if (!canceled) setExitState((s) => (s === "exiting" ? "closed" : s));
       });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       canceled = true;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const shouldRender = () => isOpen() || exitState() === "exiting";
   const isExiting = () => exitState() === "exiting";
@@ -551,7 +556,9 @@ function TooltipContent(
   // no CSS defined, reduced-motion), clears immediately.
   const [isEntering, setIsEntering] = createSignal(true);
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     if (!isEntering()) return;
     if (!tooltipRef || !("getAnimations" in tooltipRef)) {
       setIsEntering(false);
@@ -576,10 +583,12 @@ function TooltipContent(
       .catch(() => {
         if (!canceled) setIsEntering(false);
       });
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       canceled = true;
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const values = createMemo<TooltipRenderProps>(() => ({
     isEntering: isEntering(),
@@ -682,7 +691,9 @@ function TooltipContent(
 
   // Set up positioning and scroll-close effects. Positioning retries while the
   // trigger ref resolves, and pending rAF/setTimeout IDs are canceled on cleanup.
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     // Track positioning inputs synchronously so updates from controlled route
     // props reschedule measurement even though layout reads happen in rAF.
     props.placement;
@@ -726,13 +737,15 @@ function TooltipContent(
     window.addEventListener("scroll", closeOnScroll, true);
     window.addEventListener("resize", updatePosition);
 
-    onCleanup(() => {
+    _s2Cleanups.push(() => {
       if (pendingRaf) cancelAnimationFrame(pendingRaf);
       if (pendingTimeout) clearTimeout(pendingTimeout);
       window.removeEventListener("scroll", closeOnScroll, true);
       window.removeEventListener("resize", updatePosition);
     });
-  });
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const domProps = filterDOMProps(props, { global: true });
   const tooltipId = () => props.contextTooltipProps.id ?? (domProps as { id?: string }).id;
@@ -775,8 +788,8 @@ function TooltipContent(
           ...renderProps.style(),
         }}
         data-placement={renderedPlacement()}
-        data-entering={isEntering() || undefined}
-        data-exiting={props.isExiting || undefined}
+        data-entering={dataAttr(isEntering())}
+        data-exiting={dataAttr(props.isExiting)}
       >
         {renderProps.renderChildren()}
       </div>

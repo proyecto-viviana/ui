@@ -15,12 +15,12 @@ describe("mergeProps", () => {
 
   it("chains on:click handlers in order", () => {
     const calls: string[] = [];
-    const merged = mergeProps<{ "on:click": (value: string) => void }>(
-      { "on:click": () => calls.push("first") },
-      { "on:click": () => calls.push("second") },
+    const merged = mergeProps<{ onClick: (value: string) => void }>(
+      { onClick: () => calls.push("first") },
+      { onClick: () => calls.push("second") },
     );
 
-    merged["on:click"]("event");
+    merged["onClick"]("event");
     expect(calls).toEqual(["first", "second"]);
   });
 
@@ -112,5 +112,30 @@ describe("mergeProps", () => {
     later = "own";
     expect(merged.children).toBe("own");
     expect(reads).toBe(2);
+  });
+
+  it("falls back to an earlier getter when a later getter yields undefined", () => {
+    // createButton merges a live aria-disabled getter with a later
+    // pass-through getter. Both are getters on the same merged object; a
+    // later undefined must not be swallowed by the reentry guard.
+    const earlier = {};
+    Object.defineProperty(earlier, "aria-disabled", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return "true";
+      },
+    });
+    const later = {};
+    Object.defineProperty(later, "aria-disabled", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return undefined;
+      },
+    });
+
+    const merged = mergeProps<{ "aria-disabled": string | undefined }>(earlier, later);
+    expect(merged["aria-disabled"]).toBe("true");
   });
 });

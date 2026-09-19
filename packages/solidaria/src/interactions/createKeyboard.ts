@@ -18,9 +18,10 @@
  * This is a 1-1 port of React-Aria's useKeyboard hook adapted for SolidJS.
  */
 
-import { JSX } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { chain } from "../utils/events";
 import { getEventTarget, nodeContains } from "../utils/dom";
+import { access, type MaybeAccessor } from "../utils";
 import {
   createKeyboardShortcutHandler,
   type KeyboardShortcutBindings,
@@ -44,7 +45,7 @@ export interface KeyboardEvents {
 
 export interface CreateKeyboardProps extends KeyboardEvents {
   /** Whether the keyboard events should be disabled. */
-  isDisabled?: boolean;
+  isDisabled?: MaybeAccessor<boolean>;
   /** Keyboard shortcuts to handle. */
   shortcuts?: KeyboardShortcutBindings;
   /** Whether shortcut handlers receive repeated keydown events. @default false */
@@ -153,12 +154,14 @@ export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult 
   }
 
   return {
-    keyboardProps: props.isDisabled
-      ? {}
-      : {
-          onKeyDown,
-          onKeyUp,
-        },
+    keyboardProps: {
+      get onKeyDown() {
+        return access(props.isDisabled) ? undefined : onKeyDown;
+      },
+      get onKeyUp() {
+        return access(props.isDisabled) ? undefined : onKeyUp;
+      },
+    },
   };
 }
 

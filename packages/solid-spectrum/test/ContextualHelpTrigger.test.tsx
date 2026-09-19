@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { ContextualHelp, ContextualHelpContext } from "../src/contextualhelp";
 import { ContextualHelpTrigger } from "../src/menu/ContextualHelpTrigger";
@@ -191,7 +189,7 @@ describe("ContextualHelp (solid-spectrum)", () => {
   it("accepts ContextualHelpContext trigger props and refs", async () => {
     let triggerRef: HTMLButtonElement | undefined;
     render(() => (
-      <ContextualHelpContext.Provider
+      <ContextualHelpContext
         value={{
           id: "field-help",
           "aria-labelledby": "field-label field-help",
@@ -205,7 +203,7 @@ describe("ContextualHelp (solid-spectrum)", () => {
           <Heading>Context from field label</Heading>
           <Content>Contextual help content</Content>
         </ContextualHelp>
-      </ContextualHelpContext.Provider>
+      </ContextualHelpContext>
     ));
 
     const trigger = document.getElementById("field-help");

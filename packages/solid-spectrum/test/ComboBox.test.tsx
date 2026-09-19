@@ -1,9 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, afterEach, vi } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test"; import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import {
   ComboBox,
@@ -486,7 +484,7 @@ describe("ComboBox (solid-spectrum)", () => {
     const ref: { current?: HTMLDivElement | null } = { current: null };
 
     render(() => (
-      <ComboBoxContext.Provider
+      <ComboBoxContext
         value={{
           label: "Context fruit",
           isRequired: true,
@@ -501,7 +499,7 @@ describe("ComboBox (solid-spectrum)", () => {
         >
           {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
         </ComboBox>
-      </ComboBoxContext.Provider>
+      </ComboBoxContext>
     ));
 
     expect(screen.getByRole("combobox", { name: "Context fruit" })).toBeInTheDocument();
@@ -554,6 +552,7 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(option).toHaveTextContent("Apple");
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apple");
     setLabel("Apricot");
+    flush();
     expect(option).toHaveTextContent("Apricot");
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apricot");
   });

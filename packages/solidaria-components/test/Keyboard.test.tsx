@@ -15,9 +15,9 @@ describe("Keyboard", () => {
 
   it("merges props from context", () => {
     render(() => (
-      <KeyboardContext.Provider value={{ class: "from-context" }}>
+      <KeyboardContext value={{ class: "from-context" }}>
         <Keyboard>⌘</Keyboard>
-      </KeyboardContext.Provider>
+      </KeyboardContext>
     ));
     expect(screen.getByText("⌘")).toHaveClass("from-context");
   });

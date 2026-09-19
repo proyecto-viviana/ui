@@ -34,17 +34,9 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx
  */
 
-import {
-  type Accessor,
-  type JSX,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import type {
   DragTypes,
   DropOperation,
@@ -60,6 +52,7 @@ import {
   type CollectionRootProps,
   type CollectionBranchProps,
 } from "./Collection";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridLayout,
   ListLayout,
@@ -246,34 +239,34 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     "allowsWindowScrolling",
   ]);
   // The scroll view's own scroll position (its scrollTop).
-  const [scrollOffset, setScrollOffset] = createSignal(0);
+  const [scrollOffset, setScrollOffset] = createSignal(0, { ownedWrite: true });
   // The scroll view's horizontal scroll position (its scrollLeft), used as the
   // primary scroll axis when the layout's orientation is horizontal.
-  const [scrollOffsetX, setScrollOffsetX] = createSignal(0);
+  const [scrollOffsetX, setScrollOffsetX] = createSignal(0, { ownedWrite: true });
   // How far the scroll view's top edge is above the window viewport, due to the
   // page (or an ancestor) being scrolled. Mirrors upstream ScrollView.viewportOffset.
-  const [viewportOffset, setViewportOffset] = createSignal(0);
+  const [viewportOffset, setViewportOffset] = createSignal(0, { ownedWrite: true });
   // The window viewport height, used as the visible height cap when window scrolling.
-  const [windowViewportSize, setWindowViewportSize] = createSignal(0);
+  const [windowViewportSize, setWindowViewportSize] = createSignal(0, { ownedWrite: true });
   // The scroll view's own measured size (clientHeight/clientWidth).
-  const [measuredViewportSize, setMeasuredViewportSize] = createSignal(0);
-  const [measuredViewportWidth, setMeasuredViewportWidth] = createSignal(0);
+  const [measuredViewportSize, setMeasuredViewportSize] = createSignal(0, { ownedWrite: true });
+  const [measuredViewportWidth, setMeasuredViewportWidth] = createSignal(0, { ownedWrite: true });
   const allowsWindowScrolling = createMemo(() => local.allowsWindowScrolling ?? true);
   const [dropTargetResolver, setDropTargetResolver] = createSignal<
     VirtualizerDropTargetResolver | undefined
-  >(undefined);
+  >(undefined, { ownedWrite: true });
   const [dropTargetItemCountResolver, setDropTargetItemCountResolver] = createSignal<
     (() => number) | undefined
-  >(undefined);
+  >(undefined, { ownedWrite: true });
   const [dropTargetIndexResolver, setDropTargetIndexResolver] = createSignal<
     ((key: string | number) => number | null) | undefined
-  >(undefined);
+  >(undefined, { ownedWrite: true });
   const [dropOperationResolver, setDropOperationResolver] = createSignal<
     VirtualizerDropOperationResolver | undefined
-  >(undefined);
+  >(undefined, { ownedWrite: true });
   const [keyboardNavigationOverride, setKeyboardNavigationOverride] = createSignal<
     VirtualizerKeyboardNavigationOverride | undefined
-  >(undefined);
+  >(undefined, { ownedWrite: true });
   const fallbackLayout = new ListLayout();
   const visibleRangeCache = new Map<number, VirtualizerVisibleRange>();
   const layoutInfoCache = new Map<number, LayoutInfo>();
@@ -841,9 +834,9 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   // RAC `Virtualizer.tsx:71-96`: context-only — no DOM. The collection element
   // is the scroller; CollectionRoot owns useScrollView against that ref.
   return (
-    <CollectionRendererContext.Provider value={collectionRenderer()}>
-      <VirtualizerContext.Provider value={contextValue()}>
-        <VirtualizerOptionsContext.Provider
+    <CollectionRendererContext value={collectionRenderer()}>
+      <VirtualizerContext value={contextValue()}>
+        <VirtualizerOptionsContext
           value={{
             layout: resolvedLayout() as VirtualizerLayout<unknown>,
             layoutOptions: resolvedLayoutOptions(),
@@ -851,12 +844,12 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
             allowsWindowScrolling: allowsWindowScrolling(),
           }}
         >
-          <VirtualizerScrollRuntimeContext.Provider value={scrollRuntime}>
+          <VirtualizerScrollRuntimeContext value={scrollRuntime}>
             {local.children}
-          </VirtualizerScrollRuntimeContext.Provider>
-        </VirtualizerOptionsContext.Provider>
-      </VirtualizerContext.Provider>
-    </CollectionRendererContext.Provider>
+          </VirtualizerScrollRuntimeContext>
+        </VirtualizerOptionsContext>
+      </VirtualizerContext>
+    </CollectionRendererContext>
   );
 }
 
@@ -997,7 +990,9 @@ export function VirtualizerItem(props: {
     return virtualizer.getLayoutInfo(index);
   };
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const node = el();
     if (!node) return;
     const info = layout();
@@ -1034,7 +1029,7 @@ export function VirtualizerItem(props: {
           measureIndexed();
           requestAnimationFrame(measureIndexed);
         });
-        onCleanup(() => cancelAnimationFrame(frame));
+        _s2Cleanups.push(() => cancelAnimationFrame(frame));
       }
       // RAC ResizeObserver on the wrapper's direct children, not the wrapper
       // (`useVirtualizerItem.ts:63-87`). The wrapper height is layout-fixed.
@@ -1043,7 +1038,7 @@ export function VirtualizerItem(props: {
         for (const child of node.children) {
           resizeObserver.observe(child);
         }
-        onCleanup(() => resizeObserver.disconnect());
+        _s2Cleanups.push(() => resizeObserver.disconnect());
       }
       return;
     }
@@ -1063,8 +1058,10 @@ export function VirtualizerItem(props: {
       readBox();
       requestAnimationFrame(readBox);
     });
-    onCleanup(() => cancelAnimationFrame(frame));
-  });
+    _s2Cleanups.push(() => cancelAnimationFrame(frame));
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const style = (): JSX.CSSProperties => {
     const info = layout();

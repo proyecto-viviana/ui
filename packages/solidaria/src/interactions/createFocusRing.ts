@@ -8,14 +8,9 @@
  * Port of @react-aria/focus useFocusRing.
  */
 
-import {
-  type JSX,
-  type Accessor,
-  createSignal,
-  createEffect,
-  onCleanup,
-  createMemo,
-} from "solid-js";
+import { createSignal, createEffect, onCleanup, createMemo, createTrackedEffect } from "solid-js";
+import type { Accessor } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocus } from "./createFocus";
 import { createFocusWithin } from "./createFocusWithin";
 import {
@@ -53,19 +48,25 @@ export interface FocusRingResult {
 export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
   const { isTextInput = false, autoFocus = false, within = false } = props;
 
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(autoFocus || isGlobalFocusVisible());
+  const [isFocused, setIsFocused] = createSignal(false, { ownedWrite: true });
+  const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(autoFocus || isGlobalFocusVisible(), {
+    ownedWrite: true,
+  });
   const isFocusVisible = createMemo(() => isFocused() && focusVisibleFlag());
 
-  createEffect(() => {
+  createTrackedEffect(() => {
+const _s2Cleanups: Array<() => void> = [];
+
     const cleanup = createFocusVisibleListener(
       (visible) => {
         setFocusVisibleFlag(visible);
       },
       { isTextInput, enabled: isFocused() },
     );
-    onCleanup(cleanup);
-  });
+    _s2Cleanups.push(cleanup);
+  
+return () => { for (const c of _s2Cleanups) c(); };
+});
 
   const onFocusChange = (focused: boolean) => {
     setIsFocused(focused);

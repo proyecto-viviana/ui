@@ -1,4 +1,5 @@
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from "../../src/Tabs";
 
 export const TAB_KEYS = ["lesson", "code", "notes", "tutor"];

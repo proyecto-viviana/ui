@@ -13,18 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionBar.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionBar.tsx.
-import {
-  type JSX,
-  Show,
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { Show, createContext, createEffect, createMemo, createSignal, flush, onCleanup, onSettled, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ActionBar as HeadlessActionBar,
   ActionBarContainer as HeadlessActionBarContainer,
@@ -50,6 +40,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import type { StaticColor } from "../button/types";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type ScrollRef = { current?: HTMLElement | null } | HTMLElement | undefined;
 type SelectedItemCount = number | "all";
@@ -327,9 +318,9 @@ export function createActionBarContainer(
     selectedKeys,
     onSelectionChange: setSelectedKeys,
     actionBar: () => (
-      <ActionBarContext.Provider value={actionBarContext}>
+      <ActionBarContext value={actionBarContext}>
         {props.renderActionBar?.(selectedKeys())}
-      </ActionBarContext.Provider>
+      </ActionBarContext>
     ),
     actionBarHeight,
   };
@@ -420,12 +411,15 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     "ref",
     "scrollRef",
   ]);
-  const [scrollbarWidth, setScrollbarWidth] = createSignal(0);
-  const [isRendered, setIsRendered] = createSignal((headlessProps.selectedItemCount ?? 0) !== 0);
-  const [isEntering, setIsEntering] = createSignal(false);
-  const [isExiting, setIsExiting] = createSignal(false);
+  const [scrollbarWidth, setScrollbarWidth] = createSignal(0, { ownedWrite: true });
+  const [isRendered, setIsRendered] = createSignal((headlessProps.selectedItemCount ?? 0) !== 0, {
+    ownedWrite: true,
+  });
+  const [isEntering, setIsEntering] = createSignal(false, { ownedWrite: true });
+  const [isExiting, setIsExiting] = createSignal(false, { ownedWrite: true });
   const [lastCount, setLastCount] = createSignal<SelectedItemCount>(
     headlessProps.selectedItemCount ?? 0,
+    { ownedWrite: true },
   );
   let exitTimeout: ReturnType<typeof setTimeout> | undefined;
   let enterFrame: number | undefined;
@@ -456,65 +450,89 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
     setScrollbarWidth(element ? element.offsetWidth - element.clientWidth : 0);
   };
 
-  createEffect(updateScrollbarWidth);
-  createEffect(() => {
-    const count = selectedItemCount();
-    const open = count !== 0;
-
-    if (count === "all" || count > 0) {
-      setLastCount(count);
-    }
-
-    if (exitTimeout) {
-      clearTimeout(exitTimeout);
-      exitTimeout = undefined;
-    }
-
-    if (open) {
-      setIsRendered(true);
-      setIsExiting(false);
-
-      if (local.scrollRef) {
-        setIsEntering(true);
-        if (typeof requestAnimationFrame !== "undefined") {
-          if (enterFrame != null) {
-            cancelAnimationFrame(enterFrame);
-          }
-          enterFrame = requestAnimationFrame(() => {
-            enterFrame = requestAnimationFrame(() => {
-              enterFrame = undefined;
-              setIsEntering(false);
-            });
-          });
-        } else {
-          setTimeout(() => setIsEntering(false), 0);
-        }
-      } else {
-        setIsEntering(false);
+  createEffect(
+    () => scrollElement(),
+    () => {
+      updateScrollbarWidth();
+    },
+  );
+  createEffect(
+    () => {
+      const count = selectedItemCount();
+      return {
+        count,
+        open: count !== 0,
+        rendered: isRendered(),
+        hasScrollRef: !!local.scrollRef,
+      };
+    },
+    ({ count, open, rendered, hasScrollRef }) => {
+      if (count === "all" || (typeof count === "number" && count > 0)) {
+        setLastCount(count);
       }
-      return;
-    }
 
-    setIsEntering(false);
-    if (!isRendered()) {
-      setIsExiting(false);
-      return;
-    }
+      if (exitTimeout) {
+        clearTimeout(exitTimeout);
+        exitTimeout = undefined;
+      }
 
-    if (!local.scrollRef) {
-      setIsRendered(false);
-      setIsExiting(false);
-      return;
-    }
+      if (open) {
+        setIsRendered(true);
+        setIsExiting(false);
 
-    setIsExiting(true);
-    exitTimeout = setTimeout(() => {
-      exitTimeout = undefined;
-      setIsRendered(false);
-      setIsExiting(false);
-    }, ACTION_BAR_EXIT_DURATION);
-  });
-  onMount(() => {
+        if (hasScrollRef) {
+          setIsEntering(true);
+          if (typeof requestAnimationFrame !== "undefined") {
+            if (enterFrame != null) {
+              cancelAnimationFrame(enterFrame);
+            }
+            enterFrame = requestAnimationFrame(() => {
+              enterFrame = requestAnimationFrame(() => {
+                enterFrame = undefined;
+                setIsEntering(false);
+              });
+            });
+          } else {
+            setTimeout(() => setIsEntering(false), 0);
+          }
+        } else {
+          setIsEntering(false);
+        }
+        return;
+      }
+
+      setIsEntering(false);
+      if (!rendered) {
+        setIsExiting(false);
+        return;
+      }
+
+      if (!hasScrollRef) {
+        setIsRendered(false);
+        setIsExiting(false);
+        return;
+      }
+
+      setIsExiting(true);
+      exitTimeout = setTimeout(() => {
+        exitTimeout = undefined;
+        setIsRendered(false);
+        setIsExiting(false);
+        try {
+          flush();
+        } catch {
+          /* forbidden in apply */
+        }
+      }, ACTION_BAR_EXIT_DURATION);
+      return () => {
+        if (exitTimeout) {
+          clearTimeout(exitTimeout);
+          exitTimeout = undefined;
+        }
+      };
+    },
+  );
+  onSettled(() => {
     updateScrollbarWidth();
     const element = scrollElement();
     if (!element || typeof ResizeObserver === "undefined") {
@@ -523,7 +541,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
 
     const observer = new ResizeObserver(updateScrollbarWidth);
     observer.observe(element);
-    onCleanup(() => observer.disconnect());
+    return () => observer.disconnect();
   });
   onCleanup(() => {
     if (exitTimeout) {

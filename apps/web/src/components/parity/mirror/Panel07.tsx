@@ -10,7 +10,8 @@
    What the library is being asked for here is two things: a severity-keyed log line
    and a labelled metric readout. StatusLight and LabeledValue/Meter are the real
    counterparts; the residuals are in what they can express, documented at each site. */
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   LabeledValue,
   Meter,

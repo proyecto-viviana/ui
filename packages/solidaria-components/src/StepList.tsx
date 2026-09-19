@@ -24,14 +24,18 @@
  * - packages/react-stately/src/steplist/useStepListState.ts
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext, For } from "solid-js";
+import { createContext, createMemo, useContext, For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createStepListState, type StepListState, type Key } from "@proyecto-viviana/solid-stately";
 import { createStepList, type AriaStepListProps } from "@proyecto-viviana/solidaria";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  attrTrue,
 } from "./utils";
 
 export interface StepListItemRenderProps {
@@ -198,13 +202,13 @@ export function StepList<T extends { key: Key; label: string }>(
   );
 
   return (
-    <StepListStateContext.Provider value={state}>
+    <StepListStateContext value={state}>
       <ol
         {...stepListProps}
         {...domProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-disabled={state.isDisabled() || undefined}
+        data-disabled={dataAttr(state.isDisabled())}
       >
         <For each={local.items}>
           {(item, index) => {
@@ -238,7 +242,7 @@ export function StepList<T extends { key: Key; label: string }>(
           }}
         </For>
       </ol>
-    </StepListStateContext.Provider>
+    </StepListStateContext>
   );
 }
 
@@ -280,18 +284,18 @@ export function Step(props: StepProps): JSX.Element {
       {...domProps}
       class={local.class}
       style={local.style}
-      data-selected={isSelected() || undefined}
-      data-completed={isCompleted() || undefined}
-      data-disabled={!selectable() || undefined}
-      data-selectable={selectable() || undefined}
+      data-selected={dataAttr(isSelected())}
+      data-completed={dataAttr(isCompleted())}
+      data-disabled={dataAttr(!selectable())}
+      data-selectable={dataAttr(selectable())}
     >
       <a
         role="link"
         aria-current={isSelected() ? "step" : undefined}
-        aria-disabled={!selectable() ? true : undefined}
-        tabIndex={selectable() ? 0 : undefined}
+        aria-disabled={attrTrue(!selectable())}
+        tabindex={selectable() ? 0 : undefined}
         onClick={handleClick}
-        on:keydown={handleKeyDown}
+        onKeyDown={handleKeyDown}
       >
         {local.children}
       </a>

@@ -19,13 +19,15 @@
  * Based on packages/react-aria-components/src/ToggleButtonGroup.tsx.
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createToggleButtonGroup, mergeProps } from "@proyecto-viviana/solidaria";
 import {
   createToggleGroupState,
   type Key,
   type ToggleGroupState,
 } from "@proyecto-viviana/solid-stately";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -33,6 +35,8 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  dataAttr,
+  attrString,
 } from "./utils";
 
 export interface ToggleButtonGroupRenderProps {
@@ -98,10 +102,10 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
         return !!local.isDisabled;
       },
       get "aria-label"() {
-        return local["aria-label"];
+        return attrString(local["aria-label"]);
       },
       get "aria-labelledby"() {
-        return local["aria-labelledby"];
+        return attrString(local["aria-labelledby"]);
       },
     },
     state,
@@ -135,7 +139,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       style={renderProps.style()}
       slot={local.slot}
       data-orientation={local.orientation ?? "horizontal"}
-      data-disabled={local.isDisabled || undefined}
+      data-disabled={dataAttr(local.isDisabled)}
       ref={(el) => {
         if (!local.ref) return;
         if (typeof local.ref === "function") {
@@ -143,11 +147,11 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
         }
       }}
     >
-      <ToggleButtonGroupContext.Provider value={props}>
-        <ToggleButtonGroupStateContext.Provider value={state}>
+      <ToggleButtonGroupContext value={props}>
+        <ToggleButtonGroupStateContext value={state}>
           {renderProps.renderChildren()}
-        </ToggleButtonGroupStateContext.Provider>
-      </ToggleButtonGroupContext.Provider>
+        </ToggleButtonGroupStateContext>
+      </ToggleButtonGroupContext>
     </div>
   );
 }

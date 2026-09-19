@@ -23,7 +23,7 @@
  * published to each segment through the shared `hookData` WeakMap.
  */
 
-import { createMemo, onMount } from "solid-js";
+import { createMemo, onSettled } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -215,7 +215,7 @@ export function createDateField<T extends DateFieldState>(
   });
 
   // Auto focus the first segment on mount when requested.
-  onMount(() => {
+  onSettled(() => {
     if (getProps().autoFocus) {
       focusManager.focusFirst();
     }

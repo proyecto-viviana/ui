@@ -1,7 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test";
-import { render, screen, waitFor, within } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { describe, expect, it } from "vite-plus/test"; import { render, screen, waitFor, within } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
 import { Picker, PickerItem } from "../src/picker";
 import { Header, Heading, Text } from "../src";
 
@@ -39,6 +37,7 @@ describe("Picker", () => {
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Accordion");
     expect(button).toHaveTextContent("Accordion");
     setLabel("Accordion group");
+    flush();
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Accordion group");
     expect(button).toHaveTextContent("Accordion group");
   });

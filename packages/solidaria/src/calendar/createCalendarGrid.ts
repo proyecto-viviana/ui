@@ -201,9 +201,9 @@ export function createCalendarGrid<T extends CalendarState>(
       role: "grid",
       "aria-label": gridLabel || undefined,
       "aria-labelledby": data?.ariaLabelledBy,
-      "aria-readonly": state.isReadOnly() || undefined,
-      "aria-disabled": state.isDisabled() || undefined,
-      "aria-multiselectable": isMultiSelectable() || undefined,
+      "aria-readonly": state.isReadOnly() ? "true" : undefined,
+      "aria-disabled": state.isDisabled() ? "true" : undefined,
+      "aria-multiselectable": isMultiSelectable() ? "true" : undefined,
       onFocus: () => state.setFocused(true),
       onBlur: () => state.setFocused(false),
       onKeyDown: handleKeyDown,
@@ -214,7 +214,7 @@ export function createCalendarGrid<T extends CalendarState>(
   // screen reader easier — the day names are already included in each cell's
   // label, so there's no need to announce them twice. Consumers render this on
   // <thead>. Mirrors @react-aria/calendar useCalendarGrid headerProps.
-  const headerProps = createMemo(() => ({ "aria-hidden": true }));
+  const headerProps = createMemo(() => ({ "aria-hidden": "true" as const }));
 
   return {
     get gridProps() {

@@ -145,7 +145,7 @@ describe("Meter (solid-spectrum)", () => {
 
   it("supports context props and lets local unsafe props override context", () => {
     render(() => (
-      <MeterContext.Provider
+      <MeterContext
         value={{
           variant: "negative",
           size: "XL",
@@ -160,7 +160,7 @@ describe("Meter (solid-spectrum)", () => {
           UNSAFE_className="local-meter"
           UNSAFE_style={{ margin: "4px" }}
         />
-      </MeterContext.Provider>
+      </MeterContext>
     ));
 
     const contextMeter = screen.getByRole("meter", { name: "Context" }) as HTMLElement;

@@ -16,7 +16,7 @@ import {
 describe("DragAndDrop parity primitives", () => {
   it("DropIndicator marks active drop target", () => {
     render(() => (
-      <DragAndDropContext.Provider
+      <DragAndDropContext
         value={{
           dropState: {
             isDropTarget: (target) => target.type === "item" && target.key === "a",
@@ -24,7 +24,7 @@ describe("DragAndDrop parity primitives", () => {
         }}
       >
         <DropIndicator target={{ type: "item", key: "a", dropPosition: "before" }} />
-      </DragAndDropContext.Provider>
+      </DragAndDropContext>
     ));
 
     const indicator = screen.getByRole("option");
@@ -33,13 +33,13 @@ describe("DragAndDrop parity primitives", () => {
 
   it("DropIndicatorContext can override rendering", () => {
     render(() => (
-      <DropIndicatorContext.Provider
+      <DropIndicatorContext
         value={{
           render: () => <div data-testid="custom-indicator" />,
         }}
       >
         <DropIndicator target={{ type: "item", key: "a", dropPosition: "before" }} />
-      </DropIndicatorContext.Provider>
+      </DropIndicatorContext>
     ));
 
     expect(screen.getByTestId("custom-indicator")).toBeInTheDocument();

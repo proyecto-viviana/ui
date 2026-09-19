@@ -9,15 +9,18 @@
  * has no Alert counterpart.
  */
 
-import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
   filterDOMProps,
+  dataAttr,
 } from "./utils";
 import { Button, type ButtonProps } from "./Button";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type AlertVariant = "info" | "success" | "warning" | "error";
 
@@ -111,20 +114,20 @@ export function Alert(props: AlertProps): JSX.Element {
   // Children are accessed lazily inside the Provider scope (via local.children
   // in JSX) so sub-components like AlertDismissButton can read AlertContext.
   return (
-    <AlertContext.Provider value={contextValue}>
+    <AlertContext value={contextValue}>
       <div
         {...domProps()}
         role="alert"
         class={computedClass()}
         style={computedStyle()}
         data-variant={variant()}
-        data-dismissible={isDismissible() || undefined}
+        data-dismissible={dataAttr(isDismissible())}
       >
         {typeof local.children === "function"
           ? (local.children as (props: AlertRenderProps) => JSX.Element)(renderValues())
           : local.children}
       </div>
-    </AlertContext.Provider>
+    </AlertContext>
   );
 }
 

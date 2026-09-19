@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Show } from "solid-js";
+import { createEffect, createSignal, Show, createTrackedEffect } from "solid-js";
 // Same sourcing rule as ThemeCreator: everything but the OS colour picker comes from
 // the design system, because nothing in the library replaces `<input type="color">`.
 import { Flex, Text, TextField, typeRoles } from "@proyecto-viviana/ui";
@@ -32,7 +32,7 @@ export function ColorKnob(props: ColorKnobProps) {
   // binding it straight to the colour would revert every character that does not yet
   // spell a complete `#rrggbb`.
   const [draft, setDraft] = createSignal(props.value);
-  createEffect(() => setDraft(props.value));
+  createTrackedEffect(() => setDraft(props.value));
 
   return (
     <Flex direction="column" gap={1.5}>

@@ -13,14 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/SegmentedControl.tsx
 
 // Port of packages/@react-spectrum/s2/src/SegmentedControl.tsx.
-import {
-  children as resolveChildren,
-  createContext,
-  type JSX,
-  onMount,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { children as resolveChildren, createContext, onSettled, useContext } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   SelectionIndicator,
@@ -40,6 +34,7 @@ import { control } from "../s2-internal/style-utils" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -310,9 +305,9 @@ function DefaultSelectionTracker(props: {
   };
 
   return (
-    <InternalSegmentedControlContext.Provider value={contextValue}>
+    <InternalSegmentedControlContext value={contextValue}>
       {props.children}
-    </InternalSegmentedControlContext.Provider>
+    </InternalSegmentedControlContext>
   );
 }
 
@@ -331,7 +326,7 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
   ]);
   let buttonElement: HTMLButtonElement | undefined;
 
-  onMount(() => context.register?.(local.id));
+  onSettled(() => context.register?.(local.id));
 
   const getClassName = (renderProps: ToggleButtonRenderProps): string =>
     [
@@ -397,9 +392,9 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
           isSelected={renderProps.isSelected}
           class={selectionIndicator({ isDisabled: renderProps.isDisabled })}
         />
-        <IconContext.Provider value={iconContextValue}>
+        <IconContext value={iconContextValue}>
           <ResolvedContent />
-        </IconContext.Provider>
+        </IconContext>
       </>
     );
   }

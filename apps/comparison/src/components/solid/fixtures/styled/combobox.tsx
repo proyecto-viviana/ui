@@ -1,5 +1,5 @@
-import h from "solid-js/h";
-import { Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import h from "@solidjs/h";
+import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import {
   ComboBox as SolidSpectrumComboBox,
@@ -81,7 +81,7 @@ function SolidSpectrumComboBoxDemo() {
     setEvents((prev) => [...prev, { name, args }]);
   };
 
-  onMount(() => {
+  onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "combobox") {
         if (event.detail.stack && event.detail.stack !== "solid") {
