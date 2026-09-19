@@ -13,7 +13,7 @@
  * (`get children()` in Popover/Modal/Toast) so nothing is instantiated during
  * the synchronous hydration walk that the server never emitted.
  */
-import { afterEach, describe, it } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
@@ -40,14 +40,28 @@ describe("Picker hydration over SSR markup", () => {
   });
 
   it("hydrates the server markup without a mismatch", async () => {
-    await hydrateOverSsr(ssrHtml, () => (
-      <Picker<SectionItem>
-        aria-label="Table of contents"
-        items={sections}
-        getKey={(item) => item.href}
-        getTextValue={(item) => item.label}
-        selectedKey="#page-title"
-      />
-    ));
+    const selector = "button[aria-haspopup]";
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      ssrHtml,
+      () => (
+        <Picker<SectionItem>
+          aria-label="Table of contents"
+          items={sections}
+          getKey={(item) => item.href}
+          getTextValue={(item) => item.label}
+          selectedKey="#page-title"
+        />
+      ),
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(1);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
   });
 });

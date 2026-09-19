@@ -5,8 +5,10 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { CalendarDate } from "@internationalized/date";
+import { waitFor } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
-import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
+import { hydrateOverSsr, setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { cleanupHydrationRoots } from "../../solidaria/test-utils/hydrate";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { DateInput, DateSegment } from "../src/DateField";
 import {
@@ -40,6 +42,7 @@ function DatePickerFixture() {
 
 describe("DatePicker hydration over SSR markup", () => {
   afterEach(() => {
+    cleanupHydrationRoots();
     document.body.innerHTML = "";
   });
 
@@ -48,10 +51,33 @@ describe("DatePicker hydration over SSR markup", () => {
       resolve(import.meta.dirname, "../../../output/datepicker-ssr.html"),
       "utf8",
     );
-    const container = await hydrateOverSsr(html, () => <DatePickerFixture />);
+    const selector = '[role="spinbutton"], button[aria-haspopup="dialog"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(html, () => <DatePickerFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(4);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     const hidden = container.querySelector('input[name="event"][hidden]');
     expect(hidden).not.toBeNull();
     expect(hidden?.getAttribute("value")).toBe("2026-09-04");
+
+    const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]')!;
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await setupUser().click(trigger);
+    await waitFor(() => {
+      expect(document.querySelector(".solidaria-DatePickerContent")).toBeInTheDocument();
+    });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    const openNodes = container.querySelectorAll(selector);
+    expect(openNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(openNodes[index]).toBe(node));
+    expect(container.querySelector('input[name="event"][hidden]')).toBe(hidden);
+    expect(hidden).toHaveAttribute("value", "2026-09-04");
   });
 });

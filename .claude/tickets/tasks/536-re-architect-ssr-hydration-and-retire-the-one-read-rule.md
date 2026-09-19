@@ -41,6 +41,11 @@ history:
       at: 2026-09-19,
       note: "#542 now also passes its complete owning ordinary proof after authorized two-test lifecycle cleanup, with fresh full SSR 48/48 then hydration 56/56. This task remains open for explicit eligible workaround inventory, justified removal and complex conditional/render-prop coverage under separately named admission; the green bounded harness does not close it",
     }
+  - {
+      state: open,
+      at: 2026-09-19,
+      note: "coordination: #542's stricter identity proof exposed four replacements, now repaired by owning nested followRef's initial reactive read. Fresh full SSR 49/49 and hydration 57/57 pass, including new ref regression that fails with the old implementation. This does not inventory or justify removing eligible Solid 1 workarounds and does not close this task's conditional/render-prop coverage; those requirements remain",
+    }
 ---
 
 ## Cause

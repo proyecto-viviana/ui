@@ -35,7 +35,17 @@ describe("Meter hydration over server markup", () => {
   });
 
   it("hydrates without a mismatch and keeps the label relationship", async () => {
-    const container = await hydrateOverSsr(ssrHtml, () => <MeterFixture />);
+    const selector = '[role~="meter"], span[id]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <MeterFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(2);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     const meter = container.querySelector<HTMLElement>('[role~="meter"]');
     const label = container.querySelector<HTMLElement>("span[id]");
     expect(meter).not.toBeNull();

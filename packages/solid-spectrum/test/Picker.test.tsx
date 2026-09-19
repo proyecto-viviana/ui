@@ -1,7 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library"; import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils"; import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { createSignal, flush } from "solid-js";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createSignal, flush } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { Picker, PickerItem } from "../src/picker";
@@ -14,6 +17,8 @@ interface SectionItem {
   href: string;
   label: string;
 }
+
+afterEach(cleanup);
 
 const sections: SectionItem[] = [
   { href: "#page-title", label: "Accordion" },

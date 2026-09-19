@@ -20,9 +20,21 @@ describe("viviana-ui Form hydrates over SSR markup", () => {
   });
 
   it("Form+TextField (isRequired + description)", async () => {
-    const container = await hydrateOverSsr(readSsr("viviana-ui-form-textfield-ssr.html"), () => (
-      <FormTextFieldFixture />
-    ));
+    const selector = "form, label, input, button";
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("viviana-ui-form-textfield-ssr.html"),
+      () => <FormTextFieldFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(6);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.textContent).toContain("Nombre");
     expect(container.textContent).toContain("Username");
     expect(container.querySelector("input")).not.toBeNull();

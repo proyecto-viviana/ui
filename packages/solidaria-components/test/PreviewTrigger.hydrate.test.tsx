@@ -8,7 +8,9 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
+import { hydrateOverSsr, setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { waitFor } from "@solidjs/testing-library";
+import { cleanupHydrationRoots } from "../../solidaria/test-utils/hydrate";
 import { PreviewTrigger } from "../src/PreviewTrigger";
 import { Popover } from "../src/Popover";
 import { Link } from "../src/Link";
@@ -31,11 +33,22 @@ const ssrHtml = readFileSync(
 
 describe("PreviewTrigger hydration over server markup", () => {
   afterEach(() => {
+    cleanupHydrationRoots();
     document.body.innerHTML = "";
   });
 
   it("hydrates the closed trigger without a mismatch or a popover", async () => {
-    const container = await hydrateOverSsr(ssrHtml, () => <PreviewTriggerFixture />);
+    const selector = 'a[aria-haspopup="dialog"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <PreviewTriggerFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(1);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     const link = container.querySelector("a");
     expect(link).not.toBeNull();
     expect(link?.textContent).toBe("Example");
@@ -43,5 +56,16 @@ describe("PreviewTrigger hydration over server markup", () => {
     expect(link?.getAttribute("aria-expanded")).toBe("false");
     expect(link?.hasAttribute("aria-controls")).toBe(false);
     expect(container.textContent).not.toContain("Preview content");
+
+    await setupUser().tab();
+    await waitFor(() => {
+      expect(document.querySelector('[data-testid="preview"]')).toBeInTheDocument();
+    });
+    const preview = document.querySelector('[data-testid="preview"]')!;
+    expect(document.activeElement).toBe(link);
+    expect(container.querySelector("a")).toBe(serverNodes[0]);
+    expect(link).toHaveAttribute("aria-expanded", "true");
+    expect(link).toHaveAttribute("aria-controls", preview.id);
+    expect(preview).toHaveTextContent("Preview content");
   });
 });

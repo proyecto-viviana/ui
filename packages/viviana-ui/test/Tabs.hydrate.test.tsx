@@ -15,7 +15,17 @@ describe("Tabs hydration over SSR markup", () => {
   });
 
   it("hydrates tabs without hydration mismatch", async () => {
-    const container = await hydrateOverSsr(ssrHtml, () => <TabsFixture />);
+    const selector = '[role="tablist"], [role="tab"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <TabsFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(5);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     const tabList = container.querySelector('[role="tablist"]');
     expect(tabList).not.toBeNull();
     const tabs = container.querySelectorAll('[role="tab"]');

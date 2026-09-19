@@ -32,7 +32,17 @@ describe("Tree hydrates over SSR markup", () => {
   });
 
   it("bare Tree keeps its rows after hydration", async () => {
-    const container = await hydrateOverSsr(readSsr("tree-ssr.html"), () => <TreeFixture />);
+    const selector = '[role="row"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(readSsr("tree-ssr.html"), () => <TreeFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(4);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     // THE regression assertion: the theft left the live DOM with only
     // hydration markers here while both checks above still passed.
     expect(container.querySelectorAll('[role="row"]').length).toBe(4);
@@ -40,9 +50,21 @@ describe("Tree hydrates over SSR markup", () => {
   });
 
   it("labeled (framed) Tree keeps its rows after hydration", async () => {
-    const container = await hydrateOverSsr(readSsr("tree-labeled-ssr.html"), () => (
-      <TreeLabeledFixture />
-    ));
+    const selector = '[role="row"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("tree-labeled-ssr.html"),
+      () => <TreeLabeledFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(4);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="row"]').length).toBe(4);
     expect(container.textContent).toContain("Projects");
   });

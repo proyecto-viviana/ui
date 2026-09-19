@@ -8,7 +8,7 @@
  */
 
 import { createEffect, createSignal, onSettled } from "solid-js";
-import type { Accessor, Signal } from "solid-js";
+import type { Accessor } from "solid-js";
 
 export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined | RefLike<T>[];
 
@@ -17,15 +17,14 @@ export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefi
  * insert. `createEffect(() => ref())` runs once with `null` and never
  * re-runs; `onSettled` picks the element up after commit.
  */
-export function followRef<T>(
-  ref: Accessor<T | null | undefined>,
-): Accessor<T | null | undefined> {
-  // Solid 2 treats a function initial value as a compute fn. Seed with
-  // `undefined` and write the live ref through the setter.
-  const [el, setEl] = createSignal(undefined as never, {
+export function followRef<T>(ref: Accessor<T | null | undefined>): Accessor<T | null | undefined> {
+  // The computed initializer owns the initial ref read. Seeding undefined and
+  // then reading through a setter instead makes nested ref followers read a
+  // stale hydration snapshot in their caller's owner, rebuilding its children
+  // when hydration completes.
+  const [el, setEl] = createSignal<T | null | undefined>(() => ref(), {
     ownedWrite: true,
-  }) as unknown as Signal<T | null | undefined>;
-  setEl(() => ref());
+  });
   createEffect(
     () => ref(),
     (node) => {

@@ -29,7 +29,17 @@ describe("DateField hydration over SSR markup", () => {
       resolve(import.meta.dirname, "../../../output/datefield-ssr.html"),
       "utf8",
     );
-    const container = await hydrateOverSsr(html, () => <DateFieldFixture />);
+    const selector = '[role="spinbutton"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(html, () => <DateFieldFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(3);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     expect(container.querySelector('[data-testid="hidden-dateinput-container"]')).not.toBeNull();
   });

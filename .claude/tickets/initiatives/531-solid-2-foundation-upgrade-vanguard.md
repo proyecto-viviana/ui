@@ -55,6 +55,16 @@ history:
       at: 2026-09-19,
       note: "owner authorized #542's bounded green repair for commit/push: SSR 48/48, hydration 56/56, owning ordinary 171/171 and ecosystem gate 38/38. #542 is merged, not verified: final review retains its all-migrated-test node-identity coverage obligation. This initiative remains in-progress with every child/build requirement, #536 inventory/removal and #194/#537 live 2177-case same-revision zero-waiver acceptance intact",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#542's owner-approved 18-file identity-proof continuation preserves all behavior expectations and exposes four previously undetected node replacements: standalone Picker, Form+Picker, DatePicker and PreviewTrigger. Fresh focused SSR is 36/36 and hydration 33/37 with one worker; product repair awaits a new named-path extension, and complete lanes remain pending focused success. #542 stays merged but unverified; #536's separate inventory/removal, every initiative build/child requirement, #139 packaging safety and #194/#537 live 2177-case same-revision zero-waiver acceptance remain",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner's autonomous-execution instruction permits the justified #542 ref-helper repair and owning regressions. Fresh complete SSR 49/49 then hydration 57/57 pass with strict node identity; the four replacement failures share nested followRef's eager snapshot read, not a provider or DateField defect. All remaining child/build requirements, #536 inventory/removal and conditional coverage, #139 packaging safety and #194/#537 live 2177-case same-revision zero-waiver acceptance remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

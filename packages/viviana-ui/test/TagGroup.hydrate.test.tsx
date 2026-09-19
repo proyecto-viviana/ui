@@ -23,16 +23,40 @@ describe("TagGroup hydrates over SSR markup", () => {
   });
 
   it("plain string tag content hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("tag-group-ssr.html"), () => (
-      <TagGroupFixture />
-    ));
+    const selector = '[role="row"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("tag-group-ssr.html"),
+      () => <TagGroupFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(3);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="row"]').length).toBe(3);
   });
 
   it("prebuilt <Tag> render-prop content hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("tag-group-prebuilt-ssr.html"), () => (
-      <TagGroupPrebuiltTagFixture />
-    ));
+    const selector = '[role="row"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("tag-group-prebuilt-ssr.html"),
+      () => <TagGroupPrebuiltTagFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(3);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="row"]').length).toBe(3);
   });
 });

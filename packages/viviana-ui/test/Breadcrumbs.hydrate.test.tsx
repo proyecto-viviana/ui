@@ -23,9 +23,21 @@ describe("Breadcrumbs hydrates over SSR markup", () => {
   });
 
   it("hydrates the overflowing item list with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("breadcrumbs-overflow-ssr.html"), () => (
-      <BreadcrumbsOverflowFixture />
-    ));
+    const selector = 'a, [data-rsp-breadcrumb-menu], [aria-current="page"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readSsr("breadcrumbs-overflow-ssr.html"),
+      () => <BreadcrumbsOverflowFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(4);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     // Collapsed shape survives hydration: root item, overflow menu trigger, fallback tail.
     expect(container.querySelector("[data-rsp-breadcrumb-menu]")).not.toBeNull();
     expect(container.textContent).toContain("Home");

@@ -5,7 +5,7 @@
  * DOM-compiled TextField over it, and asserts that the label/input subtree does
  * not drift during the hydration walk.
  */
-import { afterEach, describe, it } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
@@ -34,6 +34,16 @@ describe("TextField hydration over SSR markup", () => {
   });
 
   it("hydrates the server markup without a mismatch", async () => {
-    await hydrateOverSsr(ssrHtml, () => <TextFieldFixture />);
+    const selector = "form, label, input, button";
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(ssrHtml, () => <TextFieldFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(4);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
   });
 });

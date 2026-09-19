@@ -31,6 +31,27 @@ function readSsr(name: string): string {
   return readFileSync(resolve(import.meta.dirname, `../../../output/${name}`), "utf8");
 }
 
+async function hydrateCollection(
+  ssrFile: string,
+  fixture: Parameters<typeof hydrateOverSsr>[1],
+  role: "tab" | "row",
+  expectedItems: number,
+) {
+  // Check every server-rendered item before any interaction can replace it.
+  const selector = `[role="${role}"]`;
+  let serverItems: Element[] = [];
+  const container = await hydrateOverSsr(readSsr(ssrFile), fixture, {
+    beforeHydrate(container) {
+      serverItems = Array.from(container.querySelectorAll(selector));
+      expect(serverItems).toHaveLength(expectedItems);
+    },
+  });
+  const items = container.querySelectorAll(selector);
+  expect(items).toHaveLength(serverItems.length);
+  serverItems.forEach((item, index) => expect(items[index]).toBe(item));
+  return container;
+}
+
 describe("collection components hydrate over SSR markup", () => {
   let disposeClientMount: (() => void) | undefined;
   afterEach(() => {
@@ -44,23 +65,26 @@ describe("collection components hydrate over SSR markup", () => {
   });
 
   it("Tabs hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("tabs-ssr.html"), () => <TabsFixture />);
+    const container = await hydrateCollection("tabs-ssr.html", () => <TabsFixture />, "tab", 3);
     // The selected tab keeps its indicator through hydration.
     expect(container.querySelectorAll('[data-rsp-slot="selection-indicator"]').length).toBe(1);
   });
 
   it("Tabs with a raw span hydrates with no mismatch", async () => {
-    await hydrateOverSsr(readSsr("tabs-plain-ssr.html"), () => <TabsPlainFixture />);
+    await hydrateCollection("tabs-plain-ssr.html", () => <TabsPlainFixture />, "tab", 3);
   });
 
   it("Tabs with a trivial local component child hydrates with no mismatch", async () => {
-    await hydrateOverSsr(readSsr("tabs-comp-ssr.html"), () => <TabsCompFixture />);
+    await hydrateCollection("tabs-comp-ssr.html", () => <TabsCompFixture />, "tab", 3);
   });
 
   it("Tabs settles focus order after hydrating a panel with a tabbable child", async () => {
-    const container = await hydrateOverSsr(readSsr("tabs-focusable-panel-ssr.html"), () => (
-      <TabsFocusablePanelFixture />
-    ));
+    const container = await hydrateCollection(
+      "tabs-focusable-panel-ssr.html",
+      () => <TabsFocusablePanelFixture />,
+      "tab",
+      2,
+    );
     flush();
 
     const panel = container.querySelector<HTMLElement>('[role="tabpanel"]');
@@ -101,29 +125,43 @@ describe("collection components hydrate over SSR markup", () => {
   });
 
   it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("tabs-badge-ssr.html"), () => (
-      <TabsBadgeFixture />
-    ));
+    const container = await hydrateCollection(
+      "tabs-badge-ssr.html",
+      () => <TabsBadgeFixture />,
+      "tab",
+      3,
+    );
     // The badge element survives hydration rather than being dropped for an empty <span>.
     expect(container.textContent).toContain("4");
   });
 
   it("Tabs with an element-first (icon) child hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("tabs-icon-ssr.html"), () => (
-      <TabsIconFixture />
-    ));
+    const container = await hydrateCollection(
+      "tabs-icon-ssr.html",
+      () => <TabsIconFixture />,
+      "tab",
+      3,
+    );
     expect(container.textContent).toContain("Home");
   });
 
   it("ListView hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("listview-ssr.html"), () => <ListViewFixture />);
+    const container = await hydrateCollection(
+      "listview-ssr.html",
+      () => <ListViewFixture />,
+      "row",
+      2,
+    );
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
   });
 
   it("ListView rows respond to interaction after hydration (focus + selection)", async () => {
-    const container = await hydrateOverSsr(readSsr("listview-interactive-ssr.html"), () => (
-      <ListViewInteractiveFixture />
-    ));
+    const container = await hydrateCollection(
+      "listview-interactive-ssr.html",
+      () => <ListViewInteractiveFixture />,
+      "row",
+      2,
+    );
     flush();
 
     const rowA = container.querySelector<HTMLElement>('[role="row"][data-key="row-a"]');
@@ -146,9 +184,12 @@ describe("collection components hydrate over SSR markup", () => {
   });
 
   it("ListView with static <ListViewItem> children hydrates and rows respond to interaction", async () => {
-    const container = await hydrateOverSsr(readSsr("listview-static-interactive-ssr.html"), () => (
-      <ListViewStaticInteractiveFixture />
-    ));
+    const container = await hydrateCollection(
+      "listview-static-interactive-ssr.html",
+      () => <ListViewStaticInteractiveFixture />,
+      "row",
+      2,
+    );
 
     // The rows must be present at all — not the "No items" empty-state row — and
     // must survive hydration without being replaced by a later client-only render.
@@ -166,9 +207,12 @@ describe("collection components hydrate over SSR markup", () => {
   });
 
   it("ListView with label + description + actions slots hydrates with no mismatch", async () => {
-    const container = await hydrateOverSsr(readSsr("listview-slotted-ssr.html"), () => (
-      <ListViewSlottedFixture />
-    ));
+    const container = await hydrateCollection(
+      "listview-slotted-ssr.html",
+      () => <ListViewSlottedFixture />,
+      "row",
+      2,
+    );
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
     // The actions-slot Badge survives hydration.
     expect(container.textContent).toContain("READ");

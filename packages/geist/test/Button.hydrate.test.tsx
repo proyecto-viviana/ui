@@ -23,11 +23,25 @@ describe("Geist Button hydrates over SSR markup", () => {
   });
 
   it("hydrates with no mismatch and responds to press", async () => {
-    const container = await hydrateOverSsr(ssrHtml, () => (
-      <div data-theme="geist">
-        <Button variant="default">Upload</Button>
-      </div>
-    ));
+    const selector = "button";
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      ssrHtml,
+      () => (
+        <div data-theme="geist">
+          <Button variant="default">Upload</Button>
+        </div>
+      ),
+      {
+        beforeHydrate(container) {
+          serverNodes = Array.from(container.querySelectorAll(selector));
+          expect(serverNodes).toHaveLength(1);
+        },
+      },
+    );
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     const button = container.querySelector<HTMLButtonElement>("button");
     expect(button).not.toBeNull();
     expect(button).toHaveAttribute("data-geist-component", "Button");

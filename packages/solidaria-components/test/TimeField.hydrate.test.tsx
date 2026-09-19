@@ -30,7 +30,17 @@ describe("TimeField hydration over SSR markup", () => {
       resolve(import.meta.dirname, "../../../output/timefield-ssr.html"),
       "utf8",
     );
-    const container = await hydrateOverSsr(html, () => <TimeFieldFixture />);
+    const selector = '[role="spinbutton"]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(html, () => <TimeFieldFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(3);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
   });
 });

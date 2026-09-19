@@ -56,6 +56,21 @@ history:
       at: 2026-09-19,
       note: "owner authorized this worker to commit and push the bounded repair; transition takes effect with this implementation commit. Unchanged source/test diff 9504514c5698e41ab8caa58b5888d56921e1b2a034ef13a44d6dbdb3797de5df passes fresh single-worker SSR 48/48 then hydration 56/56, owning ordinary 171/171 and typecheck. Direct docs checks pass; authorized outside-sandbox ecosystem rerun passes 38/38. Final review identifies incomplete direct node-identity coverage against Done when 6 in async-only migrated tests; retain that requirement and do not mark verified. #536 stays open and #531 in-progress",
     }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "owner approved the exact 18-file additive identity-proof continuation over 92ddc52b. All 36 SSR-to-hydrate cases now capture nonempty semantic server nodes and require exact object identity before interactions; original expectations and complementary CSR coverage remain. Fresh focused SSR passes 36/36, but focused hydration is 33/37: standalone Picker, Form+Picker, DatePicker and PreviewTrigger replace server nodes. Independent assertion review finds no weakening or scope violation. Retain the failing checks; product diagnosis and a new named-path extension are required. Complete lanes are not rerun while focused proof is red, and this already-merged task remains unverified",
+    }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "owner instructed autonomous planning/execution without per-step permission; exact snapshot tracing identifies nested followRef eager initialization as the shared cause of all four replacement failures. A computed signal initializer owns that read while retaining effect and settled-ref refresh. New owning regression fails on old initialization and passes on the fix, proving node identity, single construction, adopted ref, interaction and disposal. Fresh complete SSR passes 49/49 then hydration 57/57 with one worker; all original expectations and 18-file identity additions remain. Source review finds no blockers; remaining checks are recorded in the receipt. #536 and #531 are not completed by this bounded repair",
+    }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "final autonomous continuation retains all identity/behavior expectations and adds successful post-hydration DatePicker/PreviewTrigger opening proof with root-before-portal teardown. Baseline-controlled ordinary stalls exposed missing explicit cleanup in Spectrum Picker; adding it preserves all queries and makes the original eight-file owning command pass 214/214. Fresh complete SSR 49/49 (27.59s) then hydration 57/57 (12.86s) pass sequentially with one worker. Read-only source/test reviews find no blockers; final static/docs and source identity are in the execution receipt. #536 and #531 remain open to their full acceptance requirements",
+    }
 ---
 
 ## Scope
@@ -105,6 +120,28 @@ all test cases, queries and assertions:
 
 - `packages/solid-spectrum/test/Breadcrumbs.test.tsx`
 - `packages/viviana-ui/test/Tabs.test.tsx`
+
+The subsequent owner-approved identity-proof continuation adds direct semantic
+node-reference checks in the 18 existing hydrate files listed in the dated
+execution receipt. It changes tests only, not products, helpers or configs.
+The four replacement failures it exposes were repaired under the owner's
+subsequent autonomous-execution instruction on 2026-09-19. Runtime snapshot
+tracing narrowed the actual owner to `packages/solidaria/src/utils/refs.ts`:
+nested `followRef` initialization must own its initial reactive read. The
+bounded regression paths are `packages/solidaria/test/refs.test.tsx`,
+`packages/solidaria/test/refs.ssr.test.tsx`,
+`packages/solidaria/test/refs.hydrate.test.tsx`, and
+`packages/solidaria/test/fixtures/followRef.tsx`. No Provider, FocusableProvider,
+DateField, description, or slot-ID workaround is needed. Prior green proof
+without identity assertions remains historical, not acceptance of them.
+
+The same autonomous continuation adds explicit `afterEach(cleanup)` in
+`packages/solid-spectrum/test/Picker.test.tsx`. Its unchanged combined owning
+suite stalled with both the old and corrected ref initialization, while the
+old-ref log also exposed retained prior fixtures (multiple matching buttons).
+All 21 cases passed in isolation. Explicit cleanup preserves every query and
+assertion and makes the unchanged five-file command pass 188/188. The complete
+eight-file rerun and fresh full lanes are recorded in the execution receipt.
 
 ## Work
 

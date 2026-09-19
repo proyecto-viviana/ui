@@ -44,7 +44,17 @@ describe("Calendar hydration over SSR markup", () => {
       resolve(import.meta.dirname, "../../../output/calendar-ssr.html"),
       "utf8",
     );
-    const container = await hydrateOverSsr(html, () => <CalendarFixture />);
+    const selector = '[role="grid"], [role="gridcell"], [role="button"], button';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(html, () => <CalendarFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes.length).toBeGreaterThan(0);
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
     expect(container.querySelector('[role="grid"]')).not.toBeNull();
     expect(container.querySelectorAll('[role="gridcell"]').length).toBeGreaterThan(0);
   });

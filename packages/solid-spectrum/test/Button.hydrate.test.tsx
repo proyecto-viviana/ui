@@ -49,7 +49,14 @@ async function hydrateAndFlip(
   Fixture: (props: { count: () => number }) => JSX.Element,
 ): Promise<{ before?: string; after?: string }> {
   const [count, setCount] = createSignal(0);
-  const container = await hydrateOverSsr(readSsr(ssrFile), () => <Fixture count={count} />);
+  let serverButton: HTMLButtonElement | null = null;
+  const container = await hydrateOverSsr(readSsr(ssrFile), () => <Fixture count={count} />, {
+    beforeHydrate(container) {
+      serverButton = container.querySelector("button");
+      expect(serverButton).not.toBeNull();
+    },
+  });
+  expect(container.querySelector("button")).toBe(serverButton);
   const before = container.querySelector("button")?.textContent?.trim();
   setCount(1);
   flush();
