@@ -62,10 +62,28 @@ history:
       at: 2026-09-19,
       note: "owner instructed autonomous planning and execution without per-step permission, preserving the already adopted foundation-first sequence and this ordered census. #542's justified shared-ref repair now passes fresh SSR 49/49 then hydration 57/57; finish bounded evidence before remaining #531 work, #139 before packaging and #194/#537 before certified acceptance. Existing owner-held tasks, skip #254, public-name and publication boundaries remain unchanged; autonomy is not release acceptance",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner explicitly requested a persistent autonomous goal through all work and release of eligible packages. Foundation-first sequencing and this ordered census remain authoritative; ordinary steps need no repeated permission. Release requires the actual candidate's same-revision gates and guarded publication with artifact verification, while explicit holds, public-name/dependency choices and experimental first-release boundaries remain. Historical #443/#448 train references must be reconciled before publication",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later
 item is easier.
+
+## 2026-09-19 autonomous release objective
+
+The owner explicitly requested a persistent autonomous goal through completed
+work and release of eligible packages. Continue the already recorded
+foundation-first exception, then this authoritative census, without routine
+per-step permission requests. This adds a release objective, not release
+acceptance: exact-revision evidence, the guarded publication workflow, explicit
+owner-held decisions, dependency/public-name approval and Kumo/Geist first-release
+boundaries remain. Reconcile the historical #443/#448 train against the actual
+candidate before versioning or publishing; stale counts and PR references are
+not a candidate definition. The goal remains active until publication and
+artifact verification, not merely local green tests.
 
 ## Current evidence
 

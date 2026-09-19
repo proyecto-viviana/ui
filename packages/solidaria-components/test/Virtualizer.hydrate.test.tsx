@@ -14,13 +14,16 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { flush } from "solid-js";
+import { flush, sharedConfig } from "solid-js";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
+import { cleanupHydrationRoots } from "../../solidaria/test-utils/hydrate";
 import {
   ElementChildrenListBoxFixture,
+  ScrollViewLifecycleFixture,
   VIRTUALIZED_ITEM_COUNT,
   VIRTUALIZED_ROW_HEIGHT,
   VirtualizedListBoxFixture,
+  type ScrollViewEvent,
 } from "./fixtures/virtualizer";
 
 function readSsr(name: string): string {
@@ -29,11 +32,113 @@ function readSsr(name: string): string {
 
 const CLIENT_VIEWPORT_HEIGHT = 320;
 
-describe("Virtualizer hydration over server markup", () => {
-  afterEach(() => {
+afterEach(() => {
+  try {
+    cleanupHydrationRoots();
+  } finally {
     document.body.innerHTML = "";
+    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  }
+});
+
+describe("Virtualizer hydration over server markup", () => {
+  it("defers viewport measurements until adoption ends and cleans up live observers and scroll work", async () => {
+    const height = vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(320);
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(240);
+    const rect = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockReturnValue(new DOMRect(0, -24, 240, 320));
+    vi.stubGlobal("innerHeight", 800);
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    let resized!: () => void;
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: () => void) {
+          resized = callback;
+        }
+        observe = observe;
+        disconnect = disconnect;
+      },
+    );
+    const events: Array<{ event: ScrollViewEvent; hydrating: boolean }> = [];
+    let serverNodes: Element[] = [];
+    let followingId = "";
+    const container = await hydrateOverSsr(
+      readSsr("scroll-view-lifecycle-ssr.html"),
+      () => (
+        <ScrollViewLifecycleFixture
+          event={(event) => events.push({ event, hydrating: sharedConfig.hydrating })}
+        />
+      ),
+      {
+        beforeHydrate(container) {
+          serverNodes = [...container.querySelectorAll("section, [data-scroll-view]")];
+          expect(serverNodes).toHaveLength(3);
+          followingId = serverNodes[2]!.id;
+        },
+      },
+    );
+    const adoptedNodes = [...container.querySelectorAll("section, [data-scroll-view]")];
+    expect(adoptedNodes).toHaveLength(3);
+    adoptedNodes.forEach((node, index) => expect(node).toBe(serverNodes[index]));
+    expect(serverNodes[2]!.id).toBe(followingId);
+    expect(followingId).not.toBe("");
+    expect(events.filter(({ hydrating }) => hydrating)).toEqual([]);
+    expect(events.map(({ event }) => event)).toEqual(
+      expect.arrayContaining([
+        { kind: "size", width: 240, height: 320 },
+        { kind: "window", height: 800 },
+        { kind: "offset", offset: 24 },
+      ]),
+    );
+    const viewport = container.querySelector<HTMLElement>('[data-scroll-view="viewport"]')!;
+    expect(observe).toHaveBeenCalledExactlyOnceWith(viewport);
+    height.mockReturnValue(480);
+    rect.mockReturnValue(new DOMRect(0, -40, 240, 480));
+    events.length = 0;
+    window.dispatchEvent(new Event("resize"));
+    resized();
+    expect(events.map(({ event }) => event)).toEqual([
+      { kind: "size", width: 240, height: 480 },
+      { kind: "window", height: 800 },
+      { kind: "offset", offset: 40 },
+      { kind: "size", width: 240, height: 480 },
+      { kind: "window", height: 800 },
+      { kind: "offset", offset: 40 },
+    ]);
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame"],
+    });
+    viewport.scrollTop = 160;
+    viewport.scrollLeft = 40;
+    events.length = 0;
+    viewport.dispatchEvent(new Event("scroll"));
+    vi.advanceTimersByTime(16);
+    expect(events.map(({ event }) => event)).toEqual([
+      { kind: "start" },
+      { kind: "scroll", x: 40, y: 160 },
+      { kind: "size", width: 240, height: 480 },
+    ]);
+    vi.advanceTimersByTime(300);
+    expect(events.at(-1)?.event).toEqual({ kind: "end" });
+    viewport.dispatchEvent(new Event("scroll"));
+    expect(vi.getTimerCount()).toBe(2);
+    cleanupHydrationRoots();
+    expect(disconnect).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(0);
+    events.length = 0;
+    // Keep the old target connected so a leaked document scroll listener would
+    // still receive its event after root disposal.
+    container.append(viewport);
+    expect(viewport.isConnected).toBe(true);
+    window.dispatchEvent(new Event("resize"));
+    viewport.dispatchEvent(new Event("scroll"));
+    vi.advanceTimersByTime(500);
+    expect(events).toEqual([]);
   });
 
   it("hydrates the server window without a mismatch, then grows the range to the measured viewport", async () => {
@@ -76,10 +181,6 @@ describe("Virtualizer hydration over server markup", () => {
 });
 
 describe("ListBox option hydration over server markup", () => {
-  afterEach(() => {
-    document.body.innerHTML = "";
-  });
-
   it("hydrates element option children without a mismatch and keeps the server nodes", async () => {
     const ssrHtml = readSsr("listbox-element-children-ssr.html");
     let firstServerOption: Element | undefined;

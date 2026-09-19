@@ -51,6 +51,11 @@ history:
       at: 2026-09-19,
       note: "owner-directed autonomous foundation slice inventories remaining workaround families and retires ElementTag's obsolete Solid 1.9.14 static-tag switch using native Solid 2 dynamic. New conditional/render-prop/Provider coverage proves SSR adoption, node identity, live updates and delayed creation; old-source controls expose fallback component-attribute override and independent owning-test cleanup gaps. Fresh complete SSR 51/51 then hydration 59/59 and affected ordinary 183/183 pass with one worker. Full task remains in-progress: stale hydration-state guards, allocation-parity suspects, stale documentation and actual async streaming proof remain; semantic one-read caches are not blanket-removed",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "autonomous hydration-state slice replaces obsolete sharedConfig.context checks in ClientOnly/useIsHydrated and ScrollView with symmetric Solid 2 client-source effects. Old-source controls expose fallback key drift and six mid-hydration geometry callbacks. Fresh complete SSR 53/53 then hydration 61/61 and owning ordinary 229/229 pass with one worker; same-owner IDs, fallback adoption, immediate CSR/remount and scroll cleanup are covered. Allocation-parity suspects, stale guidance, actual async streaming and full foundation/release acceptance remain open",
+    }
 ---
 
 ## Cause
@@ -111,8 +116,7 @@ evidence.
 | Probe-then-render sites in headless DatePicker, Calendar, RangeCalendar, DateField, Table, Menu and styled TabsPicker/color/menu/radio/tree                                                                                                                                                                                                      | Remaining #441 class; retaining existing snapshots does not close this backlog.                                                                                                                                                                                                                                                              |
 | `solid-stately/src/utils/reactivity.ts`; interaction/focus scheduling mirrors; Viviana `tag-group` serialized `{t}` inspection                                                                                                                                                                                                                   | Accessor migration belongs to #533, scheduler behavior to #534; serialized tag detection needs separate representation-specific coverage. None removed here.                                                                                                                                                                                 |
 
-Remaining #536 acceptance: migrate the stale hydration-state guards with
-owning coverage, resolve the allocation-parity suspects, update stale One-Read
+Remaining #536 acceptance: resolve the allocation-parity suspects, update stale One-Read
 documentation/comments, prove actual asynchronous streaming (the new fixtures
 use synchronous `renderToString` plus post-hydration conditional updates), and
 rerun every SSR/hydrate suite after the final justified retirements. This slice
@@ -128,6 +132,38 @@ updated reviewed hash matches. The repository-wide attribution gate remains
 red and requires separately scoped reconciliation, not a waiver or mass hash
 refresh. Its 103 mappings needing review are a separate inventory statistic.
 Commands, controls and logs: `.agents/UI-EXECUTION-536-2026-09-19.md`.
+
+## 2026-09-19 hydration-state migration
+
+The subsequent autonomous slice supersedes the pending hydration-state-guard
+row above. `ClientOnly` and `useIsHydrated` now use one symmetric owner structure
+on server/client, a boolean initialized immediately ready for CSR/remounts,
+and a Solid 2 client-source effect to release gated content after hydration.
+Both `createScrollView` effect registrations use that same supported effect
+option. All package-source `sharedConfig.context` references are gone; this is
+not blanket removal of semantic child caches or acceptance of the remaining
+allocation-parity suspects.
+
+Installed rc.9 has `sharedConfig.hydrating`, not `context`. Its renderer can
+flush ordinary effects before hydration ends, so merely renaming the private
+guard or relying on `onSettled` would not establish the required boundary.
+`ssrSource: "client"` effects reserve a matching server owner slot without
+executing browser work and wait for the hydration snapshot release on client.
+
+Old-source controls fail meaningfully: the new utils hydration regression
+reports missing key `00311`; the new ScrollView regression records six viewport
+callbacks with `hydrating: true`. Corrected focused SSR is 7/7 and hydration
+6/6. Fresh complete SSR is 53/53 (25 files), then hydration 61/61 (24 files),
+one worker. Proof covers actual fallback-node adoption, the ID allocated
+immediately after the hook in the same owner, absent fallback, immediate CSR
+and remounts, deferred children, stable bindings and balanced disposal. Scroll
+proof retains the 200-item virtualized integration and adds nonzero geometry,
+resize/scroll behavior, observer disconnect, pending frame/timer cancellation,
+and removal of the connected-target scroll listener.
+
+This does not prove real async streaming or close #536/#531. Source paths,
+full command ledger and remaining gates are recorded in
+`.agents/UI-EXECUTION-536-GUARDS-2026-09-19.md`.
 
 ## Done when
 

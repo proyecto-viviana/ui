@@ -70,6 +70,11 @@ history:
       at: 2026-09-19,
       note: "autonomous #536 foundation slice now inventories workaround families and removes the obsolete ElementTag static-tag switch with native Solid 2 dynamic plus owning conditional/render-prop/Provider proof. Fresh complete SSR 51/51 then hydration 59/59 and affected ordinary 183/183 pass with one worker. This is bounded progress, not child/initiative acceptance: #536 still requires stale hydration-state guard migration, allocation-parity and async streaming proof; all other child/build requirements, #139 safety and #194/#537 live 2177-case same-revision zero-waiver gates remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536's next bounded slice retires stale private hydration-state guards with supported Solid 2 client-source effects and owner-parity proof. Fresh complete SSR 53/53 then hydration 61/61 and owning ordinary 229/229 pass, one worker. Remaining allocation-parity and actual streaming proof, all sibling/build requirements, attribution reconciliation, #139 packaging safety and #194/#537 live 2177-case same-revision zero-waiver gates still block foundation/release acceptance",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

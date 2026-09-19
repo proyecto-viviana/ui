@@ -8,7 +8,13 @@ import {
   type Context,
 } from "solid-js";
 import { ElementTag } from "../../src/ElementTag";
-import { OptionContent, Provider, useRenderProps } from "../../src/utils";
+import {
+  ClientOnly,
+  OptionContent,
+  Provider,
+  useIsHydrated,
+  useRenderProps,
+} from "../../src/utils";
 
 const LabelContext = createContext("outside");
 const SuffixContext = createContext("missing");
@@ -137,6 +143,73 @@ export function RenderPropsFixture(props: RenderProbe) {
             {label()}
           </ElementTag>
         </Show>
+      </section>
+    </Provider>
+  );
+}
+
+export interface HydrationGateProbe {
+  controls?: (controls: RenderControls) => void;
+  state?: (hydrated: boolean) => void;
+  constructed?: (kind: string, id: string) => void;
+  disposed?: (kind: string) => void;
+  ref?: (kind: string, element: HTMLSpanElement) => void;
+}
+
+function GateContent(props: HydrationGateProbe & { kind: string; label: string }) {
+  const id = createUniqueId();
+  const context = useContext(LabelContext);
+  props.constructed?.(props.kind, id);
+  onCleanup(() => props.disposed?.(props.kind));
+  return (
+    <span id={id} data-gate={props.kind} ref={(element) => props.ref?.(props.kind, element)}>
+      {context}:{props.label}
+    </span>
+  );
+}
+
+function HookGate(props: HydrationGateProbe & { label: string }) {
+  const hydrated = useIsHydrated();
+  const id = createUniqueId();
+  props.constructed?.("hook-following", id);
+  onCleanup(() => props.disposed?.("hook-following"));
+  props.state?.(hydrated());
+  return (
+    <>
+      <Show when={hydrated()} fallback={<GateContent {...props} kind="hook-fallback" />}>
+        <GateContent {...props} kind="hook-child" />
+      </Show>
+      <span
+        id={id}
+        data-gate="hook-following"
+        ref={(element) => props.ref?.("hook-following", element)}
+      >
+        Hook sibling
+      </span>
+    </>
+  );
+}
+
+/** Fallbacks must be adopted before client-only children mount, without shifting sibling IDs. */
+export function HydrationGateFixture(props: HydrationGateProbe) {
+  const [label, setLabel] = createSignal("first");
+  const [visible, setVisible] = createSignal(true);
+  props.controls?.({ update: () => setLabel("second"), reveal: setVisible });
+  return (
+    <Provider values={[[LabelContext, "gate-context"]] as Array<[Context<unknown>, unknown]>}>
+      <section>
+        <Show when={visible()}>
+          <ClientOnly
+            fallback={<GateContent {...props} kind="component-fallback" label={label()} />}
+          >
+            <GateContent {...props} kind="component-child" label={label()} />
+          </ClientOnly>
+          <ClientOnly>
+            <GateContent {...props} kind="empty-child" label={label()} />
+          </ClientOnly>
+          <HookGate {...props} label={label()} />
+        </Show>
+        <GateContent {...props} kind="following" label={label()} />
       </section>
     </Provider>
   );

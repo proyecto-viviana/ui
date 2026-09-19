@@ -12,13 +12,28 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   ElementChildrenListBoxFixture,
+  ScrollViewLifecycleFixture,
   VIRTUALIZED_ITEM_COUNT,
   VirtualizedListBoxFixture,
+  type ScrollViewEvent,
 } from "./fixtures/virtualizer";
 
 const outDir = resolve(import.meta.dirname, "../../../output");
 
 describe("Virtualizer SSR", () => {
+  it("does not measure the viewport on the server and preserves a following generated ID", () => {
+    const events: ScrollViewEvent[] = [];
+    const html = renderToString(() => (
+      <ScrollViewLifecycleFixture event={(event) => events.push(event)} />
+    ));
+    expect(events).toEqual([]);
+    expect(html).toMatch(/\s_hk=/);
+    expect(html).toContain('data-scroll-view="viewport"');
+    expect(html).toMatch(/<span[^>]*id="[^"]+"[^>]*data-scroll-view="following"/);
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(resolve(outDir, "scroll-view-lifecycle-ssr.html"), html, "utf8");
+  });
+
   it("is compiled for the server", () => {
     expect(isServer).toBe(true);
   });

@@ -33,6 +33,7 @@
 import {
   createComponent,
   createContext,
+  createEffect,
   useContext,
   createMemo,
   createSignal,
@@ -565,24 +566,7 @@ export interface ClientOnlyProps {
  * ```
  */
 export const ClientOnly: FlowComponent<ClientOnlyProps> = (props) => {
-  // On server, always render fallback
-  if (isServer) {
-    return <>{props.fallback}</>;
-  }
-
-  // Outside a hydration walk there is nothing to defer (see useIsHydrated).
-  if (!sharedConfig.context) {
-    return <>{props.children}</>;
-  }
-
-  // Hydrating: render the fallback until the walk completes.
-  const [isHydrated, setIsHydrated] = createSignal(false);
-
-  // onMount runs after hydration is complete
-  onSettled(() => {
-    setIsHydrated(true);
-  });
-
+  const isHydrated = useIsHydrated();
   return (
     <Show when={isHydrated()} fallback={props.fallback}>
       {props.children}
@@ -605,36 +589,20 @@ export const ClientOnly: FlowComponent<ClientOnlyProps> = (props) => {
  * ```
  */
 export function useIsHydrated(): Accessor<boolean> {
-  // On server, always return false
-  if (isServer) {
-    return () => false;
-  }
+  // CSR and post-hydration remounts are ready immediately. Starting them false
+  // would unnecessarily rebuild gated children and can loop through providers.
+  const [isHydrated, setIsHydrated] = createSignal(!isServer && !sharedConfig.hydrating);
 
-  // Outside a hydration walk (pure CSR, or a remount created after hydration
-  // finished) the caller is already "hydrated" — report true immediately.
-  // Solid sets `sharedConfig.context` only while synchronously walking
-  // server-rendered DOM, so this is exactly the window the false→true flip
-  // exists for. A fresh per-instance false→true flip on every remount is not
-  // just wasted work: ancestor `children()`/`Context.Provider` resolution
-  // unwraps and tracks the <Show> accessor this hook gates, so the post-mount
-  // flip re-resolves those children, recreates the subtree (with another fresh
-  // signal), and loops forever — a stack overflow with no overlay rendered.
-  if (!sharedConfig.context) {
-    return () => true;
-  }
-
-  // Hydrating: start false (so the first render matches the server, which
-  // emitted nothing for hydrated-gated content) and flip to true after mount.
-  const [isHydrated, setIsHydrated] = createSignal(false);
-
-  // onMount runs in the effect phase — *after* the synchronous hydration pass
-  // has finished walking the server DOM — so flipping here renders the gated
-  // content as a fresh client-side update (Portal: no getNextElement walk, no
-  // mismatch). This mirrors the component gate above and is strictly earlier
-  // than a rAF tick.
-  onSettled(() => {
-    setIsHydrated(true);
-  });
+  // Register on both server and client to preserve owner/ID allocation. Solid 2
+  // can flush ordinary effects before hydrate returns; a client-source effect
+  // waits until its hydration snapshot is released before revealing children.
+  createEffect(
+    () => true,
+    () => {
+      setIsHydrated(true);
+    },
+    { ssrSource: "client" },
+  );
 
   return isHydrated;
 }

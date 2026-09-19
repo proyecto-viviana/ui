@@ -18,7 +18,7 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx (`useScrollView`)
  */
 
-import { createEffect, createRenderEffect, createSignal, flush, sharedConfig } from "solid-js";
+import { createEffect, createRenderEffect, createSignal, flush } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -95,23 +95,14 @@ export function createScrollView(options: CreateScrollViewOptions): ScrollViewAr
     () => options.getScrollElement(),
     (element) => {
       if (!element) return;
-      // RAC `useScrollView` `ScrollView.tsx:305-315` initializes viewport size
-      // in a layout effect so the first visible-rect emit has a real size.
-      //
-      // React runs that layout effect after the hydrated commit; Solid runs
-      // render effects while the hydration walk is still live (`sharedConfig.context`
-      // set, `done` unset — dom-expressions' `isHydrating()`). The server measured
-      // a zero viewport and emitted only the overscan window, so a real size here
-      // widens the visible range mid-walk and the rows mounted for it look for
-      // server nodes that were never rendered: Solid throws "Hydration Mismatch"
-      // and abandons the whole tree. During the walk, leave the first emit to the
-      // effect below — Solid clears the hydrate context before running user
-      // effects (`runUserEffects`), so that emit re-renders instead of hydrating.
-      if (sharedConfig.context && !sharedConfig.done) return;
+      // RAC initializes viewport size in a layout effect. A client-source
+      // effect waits for Solid 2's hydration snapshot to release, so nonzero
+      // geometry cannot grow the server's row window during DOM adoption.
       updateSize(element);
       updateWindowViewport();
       updateViewportOffset(element);
     },
+    { ssrSource: "client" },
   );
 
   createEffect(
@@ -200,6 +191,7 @@ export function createScrollView(options: CreateScrollViewOptions): ScrollViewAr
         if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
       };
     },
+    { ssrSource: "client" },
   );
 
   const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => ({

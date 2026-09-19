@@ -16,6 +16,7 @@ import { type Context, createContext, createSignal, flush, useContext } from "so
 import h from "@solidjs/h";
 import { Text, TextContext } from "../src/Text";
 import { ElementTag } from "../src/ElementTag";
+import { HydrationGateFixture, type RenderControls } from "./fixtures/utils";
 import {
   Provider,
   useSlottedContext,
@@ -31,6 +32,56 @@ import {
 describe("utils — context/slot machinery", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  it("renders client-only content immediately in CSR and on later remounts", () => {
+    let controls!: RenderControls;
+    const states: boolean[] = [];
+    const constructions: string[] = [];
+    const disposals: string[] = [];
+    const { container } = render(() => (
+      <HydrationGateFixture
+        controls={(value) => {
+          controls = value;
+        }}
+        state={(hydrated) => states.push(hydrated)}
+        constructed={(kind) => constructions.push(kind)}
+        disposed={(kind) => disposals.push(kind)}
+      />
+    ));
+    expect(states).toEqual([true]);
+    expect(constructions).toEqual([
+      "component-child",
+      "empty-child",
+      "hook-following",
+      "hook-child",
+      "following",
+    ]);
+    const children = [...container.querySelectorAll('[data-gate$="child"]')];
+    const following = container.querySelector('[data-gate="following"]');
+    controls.update();
+    flush();
+    children.forEach((node) => {
+      expect(container.contains(node)).toBe(true);
+      expect(node).toHaveTextContent("gate-context:second");
+    });
+    controls.reveal(false);
+    flush();
+    expect(disposals.sort()).toEqual([
+      "component-child",
+      "empty-child",
+      "hook-child",
+      "hook-following",
+    ]);
+    controls.reveal(true);
+    flush();
+    expect(states).toEqual([true, true]);
+    expect(constructions.filter((kind) => kind.endsWith("fallback"))).toEqual([]);
+    expect(constructions).toHaveLength(9);
+    expect(container.querySelector('[data-gate="following"]')).toBe(following);
+    expect(container.querySelectorAll('[data-gate$="child"]')).toHaveLength(3);
+    cleanup();
+    expect([...disposals].sort()).toEqual([...constructions].sort());
   });
 
   describe("ElementTag", () => {

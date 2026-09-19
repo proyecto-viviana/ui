@@ -2,11 +2,39 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
-import { DynamicFixture, RenderPropsFixture } from "./fixtures/utils";
+import { DynamicFixture, HydrationGateFixture, RenderPropsFixture } from "./fixtures/utils";
 
 const output = resolve(import.meta.dirname, "../../../output");
 
 describe("utils SSR ownership", () => {
+  it("renders only client-only fallbacks and leaves a generated-ID sibling after the gates", () => {
+    const states: boolean[] = [];
+    const constructed: string[] = [];
+    const html = renderToString(() => (
+      <HydrationGateFixture
+        state={(hydrated) => states.push(hydrated)}
+        constructed={(kind) => constructed.push(kind)}
+      />
+    ));
+    expect(states).toEqual([false]);
+    expect(constructed).toEqual([
+      "component-fallback",
+      "hook-following",
+      "hook-fallback",
+      "following",
+    ]);
+    expect(html).toMatch(/\s_hk=/);
+    for (const kind of constructed) {
+      expect(html).toMatch(new RegExp(`<span[^>]*id="[^"]+"[^>]*data-gate="${kind}"`));
+    }
+    expect(html.replace(/<!--[\s\S]*?-->/g, "")).toContain("gate-context:first");
+    expect(html).not.toContain('data-gate="component-child"');
+    expect(html).not.toContain('data-gate="empty-child"');
+    expect(html).not.toContain('data-gate="hook-child"');
+    mkdirSync(output, { recursive: true });
+    writeFileSync(resolve(output, "utils-hydration-gates-ssr.html"), html, "utf8");
+  });
+
   it("serializes nested dynamic contexts and the conditional fallback", () => {
     const html = renderToString(() => <DynamicFixture />);
     expect(html).toMatch(/\s_hk=/);
