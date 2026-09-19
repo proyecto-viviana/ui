@@ -19,7 +19,18 @@
  * Port of react-aria-components/src/Select.tsx
  */
 
-import { createContext, createEffect, createMemo, createRenderEffect, createSignal, useContext, For, Show, untrack, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  useContext,
+  For,
+  Show,
+  untrack,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor, Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -322,9 +333,9 @@ const selectRootLabelProps = new Set([
  */
 export function Select<T>(props: SelectProps<T>): JSX.Element {
   const parentContext = useContext(SelectContext) as SelectContextValue<T> | null;
-  const contextSlotProps = parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"] as
-    | Partial<SelectProps<T>>
-    | undefined;
+  const contextSlotProps = parentContext?.slots?.[
+    typeof props.slot === "string" ? props.slot : "default"
+  ] as Partial<SelectProps<T>> | undefined;
   const mergedSelectProps = (
     contextSlotProps ? mergeProps(contextSlotProps, props) : props
   ) as SelectProps<T>;
@@ -717,7 +728,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             </Show>
           }
         >
-          <div {...coerceDomRecord(containerProps as Record<string, unknown>)} data-testid="hidden-select-container">
+          <div
+            {...coerceDomRecord(containerProps as Record<string, unknown>)}
+            data-testid="hidden-select-container"
+          >
             <label>
               {ariaProps.label}
               <select
@@ -1463,11 +1477,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
           <OptionContent
-            render={
-              typeof props.children === "function" && props.children.length > 0
-                ? renderProps.renderChildrenStable
-                : renderProps.renderChildren
-            }
+            render={renderProps.renderChildrenStable}
             labelProps={optionAria.labelProps}
           />
         </Provider>

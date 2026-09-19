@@ -26,6 +26,21 @@ history:
       at: 2026-09-19,
       note: "#542 review corrected remaining structure-warning, cleanup-error, and regression-isolation gaps; fresh SSR remains 48/48 and hydration is 38/55 with 17 failures. Shared-hook source evidence narrows the proposed product extension without authorizing edits or completing this task's separate coverage and workaround inventory/removal",
     }
+  - {
+      state: open,
+      at: 2026-09-19,
+      note: "owner-approved four-path #542 product repair reduces focused hydration failures from 17 to four, with fresh focused SSR and unchanged assertions. This task remains open: complete lanes, conditional/render-prop coverage and justified workaround inventory/removal are still required. Same-file latent createFocusVisible/useIsKeyboardFocused server-only early returns are deferred inventory, not silently repaired or declared covered",
+    }
+  - {
+      state: open,
+      at: 2026-09-19,
+      note: "#542's owner-approved next extension now passes fresh complete SSR 48/48 then hydration 56/56 with one worker and unchanged original expectations. This satisfies that harness lane, not this task: explicit eligible Solid 1 workaround inventory, justified removals and complex conditional/render-prop coverage still require named-path admission. No retirement or task closure is inferred",
+    }
+  - {
+      state: open,
+      at: 2026-09-19,
+      note: "#542 now also passes its complete owning ordinary proof after authorized two-test lifecycle cleanup, with fresh full SSR 48/48 then hydration 56/56. This task remains open for explicit eligible workaround inventory, justified removal and complex conditional/render-prop coverage under separately named admission; the green bounded harness does not close it",
+    }
 ---
 
 ## Cause

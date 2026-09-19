@@ -4,7 +4,7 @@ type: task
 title: "Correct Solid 2 SSR and hydration test compilation"
 created: 2026-09-19
 parent: 531
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -26,6 +26,36 @@ history:
       at: 2026-09-19,
       note: "review follow-up rejects structure-mismatch warnings, preserves exact falsy teardown errors, and makes registry/lifecycle tests independent; 15 helper regressions pass and the formerly dependent pair passes alone; fresh SSR is 48/48 and hydration 38/55 with the same 17 failures. Earlier direct-product-owner attribution was too broad: the extension request is narrowed to three shared hooks and Breadcrumbs; static ListView and Tabs still need diagnosis. Product edits remain unauthorized and full acceptance remains open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner approved four-path product extension over cf65504b: createDescription, createScrollIntoViewOnFocus, createInteractionModality, and Viviana Breadcrumbs. Preserve SSR/client primitive allocation, browser effects, cleanup and behavior; further owners and the Spectrum Breadcrumbs twin require named scope. No full-task closure or #536 retirement is inferred",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "approved repair passes fresh focused SSR 18/18, then a refreshed Breadcrumbs fixture 1/1 after fixing its current-item initial snapshot; focused hydration is now 18/22, resolving 13 of the former 17 failures without changing assertions. Hook behavior is 49/49. Remaining focused failures are Virtualizer wrapper, element-child ListBox, static ListView, and Tabs. Full lanes are not rerun while this focused gate is red; additional named owner paths and the Spectrum Breadcrumbs twin remain requested. See execution receipt for exact commands and diagnostics",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner approved the next nine named paths: Spectrum Breadcrumbs twin, static GridList, tabbable-child lifecycle, Virtualizer, three option consumers, renderer utility and its owning test. Existing Collections hydrate-test scope adds a complementary client mutation regression. Focused fresh SSR 5/5 and hydrate 14/14 pass; fresh complete SSR 48/48 then hydration 56/56 pass sequentially with one worker, retaining all original expectations. Independent source reviews found no blockers; exact commands and remaining acceptance are in the receipt. Not merged or verified; #536 and #531 remain open",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "additional owning ordinary proof is 165/171: six retained-DOM failures in Spectrum Breadcrumbs and Viviana Tabs, both lacking explicit testing-library cleanup. All six pass individually; independent review confirms stale prior fixtures in the combined log, while the precise automatic-hook registration cause remains unverified. Request exactly those two owning test paths for afterEach(cleanup), then rerun both full files and the unchanged five-file command. No query narrowing or assertion weakening; these test paths remain unedited pending authorization. Fresh complete SSR/hydrate remain green, but acceptance remains open",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner authorized the exact two-path ordinary-test cleanup extension. Imported afterEach(cleanup) in Spectrum Breadcrumbs and Viviana Tabs preserves all queries/assertions and resolves retained prior-test DOM: both complete files pass 11/11 and the unchanged five-file owning command passes 171/171. Fresh complete SSR 48/48 then hydration 56/56 pass sequentially with one worker. Read-only review found no issue; no additional product/helper/config change. Ready for conductor review, not merged or verified; #536/#531 requirements remain",
+    }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "owner authorized this worker to commit and push the bounded repair; transition takes effect with this implementation commit. Unchanged source/test diff 9504514c5698e41ab8caa58b5888d56921e1b2a034ef13a44d6dbdb3797de5df passes fresh single-worker SSR 48/48 then hydration 56/56, owning ordinary 171/171 and typecheck. Direct docs checks pass; authorized outside-sandbox ecosystem rerun passes 38/38. Final review identifies incomplete direct node-identity coverage against Done when 6 in async-only migrated tests; retain that requirement and do not mark verified. #536 stays open and #531 in-progress",
+    }
 ---
 
 ## Scope
@@ -39,8 +69,42 @@ tests.
 
 Product behavior or API changes, dependencies, broad one-read/context-workaround
 retirement, and SlotContext work are non-goals. This task does not complete #536
-or #531. Product-source repair for failures revealed by the honest verifier
-requires a separate named-path extension.
+or #531. On 2026-09-19 the owner approved the following bounded product repair
+for failures revealed by the honest verifier:
+
+- `packages/solidaria/src/utils/createDescription.ts`
+- `packages/solidaria/src/selection/createScrollIntoViewOnFocus.ts`
+- `packages/solidaria/src/interactions/createInteractionModality.ts`
+- `packages/viviana-ui/src/breadcrumbs/index.tsx`
+
+Keep effect/root allocation aligned and current-item initialization faithful
+without changing descriptions, scrolling, modality, cleanup, or overflow.
+Other product-source repair still requires a separate named-path extension.
+
+The owner's subsequent 2026-09-19 approval adds these exact paths:
+
+- `packages/solid-spectrum/src/breadcrumbs/index.tsx`
+- `packages/viviana-ui/src/gridlist/index.tsx`
+- `packages/solidaria/src/focus/createHasTabbableChild.ts`
+- `packages/solidaria-components/src/Virtualizer.tsx`
+- `packages/solidaria-components/src/ListBox.tsx`
+- `packages/solidaria-components/src/ComboBox.tsx`
+- `packages/solidaria-components/src/Select.tsx`
+- `packages/solidaria-components/src/utils.tsx`
+- `packages/solidaria-components/test/utils.test.tsx`
+
+The existing authorized `packages/viviana-ui/test/Collections.hydrate.test.tsx`
+also proves static registration add/remove, retained row identity and selection,
+and disabled/re-enabled behavior. Keep slot ownership, live render props,
+zero-argument accessors, focus order, cleanup, and intentional styled differences.
+This bounded repair is not general One-Read/context-ID retirement.
+
+The final 2026-09-19 owner-approved test-only extension adds explicit
+testing-library lifecycle cleanup in these owning ordinary suites, preserving
+all test cases, queries and assertions:
+
+- `packages/solid-spectrum/test/Breadcrumbs.test.tsx`
+- `packages/viviana-ui/test/Tabs.test.tsx`
 
 ## Work
 

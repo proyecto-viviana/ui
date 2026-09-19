@@ -19,7 +19,18 @@
  * Port of react-aria-components/src/ComboBox.tsx
  */
 
-import { createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor, Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -382,7 +393,8 @@ function callInputKeyDown(
  */
 export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const parentContext = useContext(ComboBoxContext) as ComboBoxContextValue<T> | null;
-  const contextSlotProps = parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const mergedComboBoxProps = contextSlotProps
     ? (mergeProps(contextSlotProps, props) as ComboBoxProps<T>)
     : props;
@@ -1304,16 +1316,18 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const key = local.id;
     comboBoxContext?.registerOptionAction(key, local.onAction);
     _s2Cleanups.push(() => {
       comboBoxContext?.registerOptionAction(key, undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Create option aria props using ComboBoxState's ListState-compatible interface
   const optionAria = createOption<T>(
@@ -1460,11 +1474,7 @@ return () => { for (const c of _s2Cleanups) c(); };
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
           <OptionContent
-            render={
-              typeof props.children === "function" && props.children.length > 0
-                ? renderProps.renderChildrenStable
-                : renderProps.renderChildren
-            }
+            render={renderProps.renderChildrenStable}
             labelProps={optionAria.labelProps}
           />
         </Provider>

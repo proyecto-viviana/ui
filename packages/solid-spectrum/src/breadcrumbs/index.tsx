@@ -13,7 +13,21 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Breadcrumbs.tsx
 
 // Port of packages/@react-spectrum/s2/src/Breadcrumbs.tsx.
-import { For, Show, createContext, createEffect, createMemo, createRoot, createSignal, createUniqueId, onCleanup, onSettled, untrack, useContext, createTrackedEffect } from "solid-js";
+import {
+  For,
+  Show,
+  createContext,
+  createEffect,
+  createMemo,
+  createRoot,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  onSettled,
+  untrack,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -185,10 +199,6 @@ function fallbackVisibleTailCount(itemCount: number): number {
  * Breadcrumbs show hierarchy and navigational context for a user's location within an application.
  */
 export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
-  if (typeof window === "undefined") {
-    return renderBreadcrumbs(props, () => {});
-  }
-
   return createRoot((disposeRoot) => renderBreadcrumbs(props, disposeRoot));
 }
 
@@ -798,7 +808,12 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const assignRefs = mergeContextRefs(props.ref);
   const mergedStyles = () => mergeContextStyles(undefined, local.styles);
   const size = () => context.size();
-  const [isCurrent, setIsCurrent] = createSignal(false, { ownedWrite: true });
+  const itemContext = useContext(HeadlessBreadcrumbItemContext);
+  // Hydration reads the initial signal snapshot before render-prop writes settle.
+  const [isCurrent, setIsCurrent] = createSignal(
+    headlessProps.isCurrent ?? itemContext?.isLast() ?? false,
+    { ownedWrite: true },
+  );
 
   const syncRenderProps = (renderProps: BreadcrumbItemRenderProps) => {
     untrack(() => {

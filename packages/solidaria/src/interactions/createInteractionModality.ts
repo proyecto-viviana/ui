@@ -20,7 +20,7 @@
  * provides focus-visible state and listeners.
  */
 
-import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { getEventTarget, getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
@@ -408,13 +408,15 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
   const [isVisible, setIsVisible] = createSignal<boolean>(props.autoFocus || isFocusVisible());
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const cleanup = createFocusVisibleListener(setIsVisible, { isTextInput: props.isTextInput });
     _s2Cleanups.push(cleanup);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return { isFocusVisible: isVisible };
 }
@@ -423,16 +425,12 @@ return () => { for (const c of _s2Cleanups) c(); };
  * Tracks the current interaction modality.
  */
 export function createInteractionModality(): InteractionModalityResult {
-  if (isServer) {
-    return {
-      modality: () => null,
-    };
-  }
+  const [modality, setModality] = createSignal<Modality | null>(isServer ? null : currentModality);
 
-  const [modality, setModality] = createSignal<Modality | null>(currentModality);
-
+  // Register the owner on both sides; only the browser subscribes to events.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    if (isServer) return;
+    const _s2Cleanups: Array<() => void> = [];
 
     setupGlobalFocusEvents();
     const handler: Handler = (newModality: Modality) => {
@@ -442,9 +440,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       changeHandlers.delete(handler);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     modality,

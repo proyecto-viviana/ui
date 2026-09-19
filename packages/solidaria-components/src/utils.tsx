@@ -30,7 +30,17 @@
  * Port of react-aria-components/src/utils.tsx
  */
 
-import { createComponent, createContext, useContext, createMemo, createSignal, onSettled, sharedConfig, untrack, Show } from "solid-js";
+import {
+  createComponent,
+  createContext,
+  useContext,
+  createMemo,
+  createSignal,
+  onSettled,
+  sharedConfig,
+  untrack,
+  Show,
+} from "solid-js";
 import type { Accessor, Context, FlowComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
@@ -176,7 +186,8 @@ export function useRenderProps<T extends object>(
     },
     renderChildrenStable: () => {
       const children = props.children;
-      if (typeof children !== "function") {
+      // Like renderChildren, let insertion own zero-argument accessors/thunks.
+      if (typeof children !== "function" || children.length === 0) {
         return children as JSX.Element;
       }
       // Invoke the render function exactly once, over a getter view of the

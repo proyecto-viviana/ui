@@ -116,6 +116,21 @@ history:
       at: 2026-09-19,
       note: "coordination only: #542 review follow-up is confined to authorized harness/tests and records fresh 48/48 SSR, 38/55 hydration, and a narrower product-source extension request; #251/#257/#252/#256 remain owner-gated, successor #245 and skip #254 are unchanged",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination only: owner adopted broader foundation-first sequencing and the four-path #542 product extension, with #139/#194 prerequisites before their consumers. #87's census remains authoritative; #251/#257/#252/#256 stay owner-gated, successor remains #245, and skip #254 is unchanged. No audit hold or publication boundary is released",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination only: #542's next owner-approved extension passes fresh complete SSR 48/48 then hydration 56/56. This does not close the foundation or audit, authorize packaging before #139, or replace #194/#537 release proof. Preserve #251/#257/#252/#256 owner gates, successor #245 and skip #254; no held-task authorization is inferred",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination only: #542's authorized cleanup yields owning ordinary 171/171 and fresh complete SSR 48/48 then hydration 56/56. Preserve #251/#257/#252/#256 owner gates, successor #245 and skip #254. No packaging before #139 or replacement for #194/#537 acceptance, and no held-task authority is inferred",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

@@ -16,7 +16,17 @@
 
 // Port of packages/@react-spectrum/s2/src/ListView.tsx.
 
-import { children as resolveChildren, createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { attrTrue, mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -958,22 +968,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const overflowMode = (): GridListOverflowMode => local.overflowMode ?? "truncate";
   const isLoading = () =>
     local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
-  const [staticItems, setStaticItems] = createSignal<StaticGridListItem[]>([], {
-    ownedWrite: true,
-  });
+  let staticItems: StaticGridListItem[] = [];
   const [registrationVersion, setRegistrationVersion] = createSignal(0, { ownedWrite: true });
   const registeredItems = new Map<Key, ItemRegistration>();
   const usesStaticChildren = () => local.items == null;
   const syncRegisteredItems = () => {
-    setStaticItems(
-      Array.from(registeredItems.values())
-        .filter((item) => item.props)
-        .map((item) => ({
-          id: item.id,
-          textValue: item.textValue,
-          isDisabled: item.isDisabled,
-          props: item.props!,
-        })),
+    staticItems = Array.from(registeredItems.values()).filter(
+      (item): item is StaticGridListItem => item.props !== undefined,
     );
     setRegistrationVersion((version) => version + 1);
   };
@@ -992,7 +993,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
         return;
       }
 
-      registeredItems.set(item.id, item);
+      // Keep unchanged rows mounted across additions and metadata updates.
+      // A new props owner for a key still replaces that registration.
+      if (previous && previous.props === item.props) {
+        Object.assign(previous, item);
+      } else {
+        registeredItems.set(item.id, item);
+      }
       syncRegisteredItems();
     },
     unregisterItem(id) {
@@ -1008,22 +1015,14 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  // Deliberately NOT a `createMemo`: static children register themselves into
-  // `staticItems` (via a `createRenderEffect` in `GridListItem`) synchronously
-  // DURING this same render pass, before this accessor is read for the
-  // `HeadlessGridList` `items` prop below — but AFTER `collectionItems` itself
-  // would have been constructed. A `createMemo` here caches its FIRST
-  // evaluation and, under solid-js's SSR reactive system, never re-runs on a
-  // later read even though the `staticItems` signal was written meanwhile
-  // (memo invalidation is a client-only concern; `renderToString` computes
-  // memos once and freezes them) — so every static-children ListView would
-  // render `renderEmptyState()` ("No items") on the server no matter how many
-  // real `<ListViewItem>` children it had. A plain accessor re-reads the
-  // signal fresh on every call in both SSR and CSR, and still participates
-  // correctly in client-side reactivity because reading `staticItems()`
-  // inside it registers the dependency on whichever computation calls it.
-  const collectionItems = () =>
-    usesStaticChildren() ? (staticItems() as unknown as T[]) : (local.items ?? []);
+  // Registration happens during render, before HeadlessGridList reads items.
+  // Read the current cache, not an SSR memo or hydration's initial [] signal
+  // snapshot. The version signal still invalidates consumers after mutations.
+  const collectionItems = () => {
+    if (!usesStaticChildren()) return local.items ?? [];
+    registrationVersion();
+    return staticItems as unknown as T[];
+  };
   const getKey = createMemo(() =>
     usesStaticChildren()
       ? (item: T) => (item as unknown as StaticGridListItem).id
@@ -1100,10 +1099,12 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     ) : typeof local.children === "function" ? (
       local.children(item)
     ) : null;
+  // Return the resolver, not its current value: updates must re-read the
+  // existing registration owners, not construct replacements whose old
+  // cleanup would unregister the same keys.
   const registrationChildren = () => {
     if (usesStaticChildren()) {
-      const resolved = resolveChildren(() => local.children as JSX.Element);
-      return resolved();
+      return resolveChildren(() => local.children as JSX.Element);
     }
 
     if (typeof local.children !== "function") {
@@ -1208,7 +1209,8 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       id: props.id,
       textValue: headlessProps.textValue ?? headlessProps["aria-label"],
       isDisabled: !!local.isDisabled,
-      itemProps: staticCollection?.mode === "static" ? (props as GridListItemProps<object>) : undefined,
+      itemProps:
+        staticCollection?.mode === "static" ? (props as GridListItemProps<object>) : undefined,
     }),
     ({ collection, id, textValue, isDisabled, itemProps }) => {
       if (!collection) {

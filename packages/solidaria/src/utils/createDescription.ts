@@ -37,7 +37,7 @@
  * ```
  */
 
-import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { isServer } from "@solidjs/web";
 
@@ -65,14 +65,12 @@ const descriptionNodes = new Map<string, { refCount: number; element: Element }>
  * ```
  */
 export function createDescription(description: Accessor<string | undefined>): DescriptionProps {
-  if (isServer) {
-    return {};
-  }
-
   const [id, setId] = createSignal<string | undefined>();
 
+  // Solid 2 counts effects toward hydration IDs, even when SSR skips the callback.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    if (isServer) return;
+    const _s2Cleanups: Array<() => void> = [];
 
     const desc = description();
 
@@ -107,9 +105,15 @@ const _s2Cleanups: Array<() => void> = [];
         descriptionNodes.delete(desc);
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
+
+  if (isServer) {
+    return {};
+  }
 
   return {
     get "aria-describedby"() {

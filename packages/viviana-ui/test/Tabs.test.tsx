@@ -1,9 +1,11 @@
-import { render, screen, waitFor } from "@solidjs/testing-library";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { Tab, TabList, TabPanel, Tabs } from "../src/tabs";
 
 describe("Tabs", () => {
+  afterEach(cleanup);
+
   it("tabs directly into a tabbable panel child in both directions", async () => {
     const user = setupUser();
 

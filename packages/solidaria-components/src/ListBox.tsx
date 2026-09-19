@@ -19,7 +19,19 @@
  * Solid adaptation of the pinned ListBox component.
  */
 
-import { createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, untrack, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  untrack,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { Context, Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -391,7 +403,8 @@ function ListBoxItemWithDropIndicators<T>(props: {
  */
 export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const parentContext = useContext(ListBoxContext) as ListBoxContextValue<T> | null;
-  const contextSlotProps = parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const mergedListBoxProps = contextSlotProps
     ? (mergeProps(contextSlotProps, props) as ListBoxProps<T>)
     : props;
@@ -594,7 +607,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     // the re-dispatched keyboard event.
     let shouldVirtualFocusFirst = false;
     createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+      const _s2Cleanups: Array<() => void> = [];
 
       const list = listRef();
       if (!list) return;
@@ -619,9 +632,11 @@ const _s2Cleanups: Array<() => void> = [];
         list.removeEventListener(FOCUS_EVENT, onFocusEvent);
         list.removeEventListener(CLEAR_FOCUS_EVENT, onClearFocusEvent);
       });
-    
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+      return () => {
+        for (const c of _s2Cleanups) c();
+      };
+    });
 
     // Focus the first item once the (filtered) collection settles after the user
     // types forward. If nothing survives the filter, clear the input's active
@@ -820,7 +835,7 @@ return () => { for (const c of _s2Cleanups) c(); };
     return indexesOutsideRange(range, persistedIndexes);
   });
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     const getItemNodes = () =>
@@ -843,9 +858,11 @@ const _s2Cleanups: Array<() => void> = [];
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
     const items = collectionItems();
@@ -1281,11 +1298,7 @@ export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
           <OptionContent
-            render={
-              typeof props.children === "function" && props.children.length > 0
-                ? renderProps.renderChildrenStable
-                : renderProps.renderChildren
-            }
+            render={renderProps.renderChildrenStable}
             labelProps={optionAria.labelProps}
           />
         </Provider>

@@ -12,7 +12,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/focus/useHasTabbableChild.ts
 
-import { createEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import type { Accessor } from "solid-js";
 import { getFocusableTreeWalker } from "../utils/dom";
 
@@ -32,46 +32,47 @@ export function createHasTabbableChild(
 ): Accessor<boolean> {
   const [hasTabbableChild, setHasTabbableChild] = createSignal(false);
 
-  createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
-
-    const element = ref();
-    if (!element || options?.isDisabled?.()) {
-      setHasTabbableChild(false);
-      return;
-    }
-
-    const update = () => {
-      const walker = getFocusableTreeWalker(element, { tabbable: true });
-      setHasTabbableChild(Boolean(walker.nextNode()));
-    };
-    let isCurrent = true;
-
-    update();
-    // Selection can make a force-mounted panel reactive before Solid applies
-    // the corresponding `inert` DOM update. Recheck once that DOM work settles,
-    // matching React Aria's post-render layout-effect observation.
-    queueMicrotask(() => {
-      if (isCurrent && ref() === element && !options?.isDisabled?.()) {
-        update();
+  // DOM refs are client state: read them after hydration releases its initial
+  // signal snapshot, then measure in the post-render effect.
+  createEffect(
+    () => ({ element: ref(), isDisabled: options?.isDisabled?.() }),
+    ({ element, isDisabled }) => {
+      if (!element || isDisabled) {
+        setHasTabbableChild(false);
+        return;
       }
-    });
 
-    const observer =
-      typeof MutationObserver === "undefined" ? undefined : new MutationObserver(update);
-    observer?.observe(element, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["tabindex", "disabled", "inert", "data-inert"],
-    });
-    _s2Cleanups.push(() => {
-      isCurrent = false;
-      observer?.disconnect();
-    });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+      const update = () => {
+        const walker = getFocusableTreeWalker(element, { tabbable: true });
+        setHasTabbableChild(Boolean(walker.nextNode()));
+      };
+      let isCurrent = true;
+
+      update();
+      // Selection can make a force-mounted panel reactive before Solid applies
+      // the corresponding `inert` DOM update. Recheck once that DOM work settles,
+      // matching React Aria's post-render layout-effect observation.
+      queueMicrotask(() => {
+        if (isCurrent && ref() === element && !options?.isDisabled?.()) {
+          update();
+        }
+      });
+
+      const observer =
+        typeof MutationObserver === "undefined" ? undefined : new MutationObserver(update);
+      observer?.observe(element, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["tabindex", "disabled", "inert", "data-inert"],
+      });
+      return () => {
+        isCurrent = false;
+        observer?.disconnect();
+      };
+    },
+    { ssrSource: "client" },
+  );
 
   return () => (options?.isDisabled?.() ? false : hasTabbableChild());
 }

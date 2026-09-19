@@ -42,6 +42,21 @@ history:
       at: 2026-09-19,
       note: "owner authorized foundation-first sequencing for the bounded #542 Solid 2 test-harness repair; the ordered census remains authority and is neither waived nor silently reordered",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "owner adopted the broader foundation-first orchestration proposal and approved #542's four named product paths: finish #542 and remaining #531 work with #139 packaging safety and #194 evidence prerequisites before their consumers, then resume this census starting with owner decision #1 and hygiene #90/#3/#91 onward. This explicit sequencing exception preserves the census, per-ticket admission, all holds, and publication boundaries; it is not blanket source authorization",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination: the owner-approved next #542 extension reaches fresh SSR 48/48 and hydration 56/56. Continue the already adopted foundation-first exception through per-ticket admission; this census remains authoritative and unchanged. No new source scope, held work, publication, or release acceptance is authorized by the green harness",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "coordination: authorized #542 cleanup completes the current bounded source proof with owning ordinary 171/171 and fresh SSR 48/48 then hydration 56/56, pending conductor acceptance. The dated foundation-first sequencing exception preserves this ordered census and per-ticket admission; no automatic next-ticket dispatch or publication authority",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later

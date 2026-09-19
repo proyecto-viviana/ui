@@ -10,7 +10,11 @@
  * - `useSlot` reports whether slotted content was rendered.
  */
 
-import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, cleanup } from "@solidjs/testing-library"; import { type Context, createContext, useContext } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test";
+import { render, cleanup } from "@solidjs/testing-library";
+import { type Context, createContext, createSignal, flush, useContext } from "solid-js";
+import h from "@solidjs/h";
+import { Text, TextContext } from "../src/Text";
 import {
   Provider,
   useSlottedContext,
@@ -19,11 +23,168 @@ import {
   createSlottedContext,
   mergeRefs,
   assignRef,
+  useRenderProps,
+  OptionContent,
 } from "../src/utils";
 
 describe("utils — context/slot machinery", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  describe("stable option children", () => {
+    it("keeps render-prop nodes and updates their reactive state without rereading children", () => {
+      const [selected, setSelected] = createSignal(false);
+      const [hovered, setHovered] = createSignal(false);
+      let reads = 0;
+      let renders = 0;
+      function Option() {
+        const props = useRenderProps(
+          {
+            get children() {
+              reads++;
+              return (state: { selected: boolean; hovered: boolean }) => {
+                renders++;
+                return (
+                  <span data-selected={String(state.selected)}>
+                    {state.hovered ? "hovered" : "idle"}
+                  </span>
+                );
+              };
+            },
+          },
+          () => ({ selected: selected(), hovered: hovered() }),
+        );
+        return <OptionContent render={props.renderChildrenStable} labelProps={{ id: "label" }} />;
+      }
+      const { container } = render(() => <Option />);
+      const node = container.firstElementChild;
+      expect(node).toHaveAttribute("data-selected", "false");
+      expect(node).toHaveTextContent("idle");
+      setSelected(true);
+      setHovered(true);
+      flush();
+      expect(container.firstElementChild).toBe(node);
+      expect(node).toHaveAttribute("data-selected", "true");
+      expect(node).toHaveTextContent("hovered");
+      setSelected(false);
+      setHovered(false);
+      flush();
+      expect(container.firstElementChild).toBe(node);
+      expect(node).toHaveAttribute("data-selected", "false");
+      expect(node).toHaveTextContent("idle");
+      expect(reads).toBe(1);
+      expect(renders).toBe(1);
+    });
+
+    it("returns zero-argument accessors untouched and keeps their text reactive", () => {
+      const [label, setLabel] = createSignal("first");
+      let calls = 0;
+      const child = () => {
+        calls++;
+        return label();
+      };
+      function Option() {
+        const props = useRenderProps({ children: child }, () => ({}));
+        expect(props.renderChildrenStable()).toBe(child);
+        expect(calls).toBe(0);
+        return <OptionContent render={props.renderChildrenStable} labelProps={{ id: "unused" }} />;
+      }
+      const { container } = render(() => <Option />);
+      expect(container.textContent).toBe("first");
+      setLabel("second");
+      flush();
+      expect(container.textContent).toBe("second");
+      setLabel("third");
+      flush();
+      expect(container.textContent).toBe("third");
+      expect(container.querySelector("span")).toBeNull();
+    });
+
+    it("preserves an h thunk node and its bindings across unrelated render-state updates", () => {
+      const [label, setLabel] = createSignal("first");
+      const [selected, setSelected] = createSignal(false);
+      function Option() {
+        const props = useRenderProps({ children: h("span", () => label()) }, () => ({
+          selected: selected(),
+        }));
+        return <OptionContent render={props.renderChildrenStable} labelProps={{ id: "unused" }} />;
+      }
+      const { container } = render(() => <Option />);
+      const node = container.firstElementChild;
+      expect(node).toHaveTextContent("first");
+      setLabel("second");
+      flush();
+      expect(node).toHaveTextContent("second");
+      setSelected(true);
+      flush();
+      expect(container.firstElementChild).toBe(node);
+      setLabel("third");
+      flush();
+      expect(container.firstElementChild).toBe(node);
+      expect(node).toHaveTextContent("third");
+    });
+
+    it.each(["label", 0])("wraps primitive %s with its full label props", (child) => {
+      function Option() {
+        const props = useRenderProps({ children: child }, () => ({}));
+        return (
+          <OptionContent
+            render={props.renderChildrenStable}
+            labelProps={{ id: "option-label", "aria-hidden": "true" }}
+          />
+        );
+      }
+      const { container } = render(() => <Option />);
+      expect(container.children).toHaveLength(1);
+      expect(container.firstElementChild?.tagName).toBe("SPAN");
+      expect(container.firstElementChild).toHaveAttribute("id", "option-label");
+      expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+      expect(container.textContent).toBe(String(child));
+    });
+
+    it("constructs slotted Text once inside the owning option context", () => {
+      let reads = 0;
+      function Option() {
+        const props = useRenderProps(
+          {
+            get children() {
+              reads++;
+              return (
+                <>
+                  <Text slot="label">Label</Text>
+                  <Text slot="description">Description</Text>
+                </>
+              );
+            },
+          },
+          () => ({}),
+        );
+        return (
+          <TextContext
+            value={{
+              slots: { label: { id: "inner-label" }, description: { id: "inner-description" } },
+            }}
+          >
+            <OptionContent render={props.renderChildrenStable} labelProps={{ id: "unused" }} />
+          </TextContext>
+        );
+      }
+      const { container } = render(() => (
+        <TextContext
+          value={{
+            slots: { label: { id: "outer-label" }, description: { id: "outer-description" } },
+          }}
+        >
+          <Option />
+        </TextContext>
+      ));
+      expect(reads).toBe(1);
+      expect(container.children).toHaveLength(2);
+      expect(container.querySelector("#inner-label")).toHaveTextContent("Label");
+      expect(container.querySelector("#inner-description")).toHaveTextContent("Description");
+      expect(container.querySelector("#outer-label, #outer-description, #unused")).toBeNull();
+    });
   });
 
   describe("Provider", () => {

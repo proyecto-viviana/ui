@@ -24,7 +24,7 @@
  * effect restores that behavior through our `scrollIntoViewport` util.
  */
 
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import { isServer } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { getInteractionModality } from "../interactions/createInteractionModality";
@@ -49,13 +49,14 @@ export interface ScrollIntoViewOnFocusOptions {
 }
 
 export function createScrollIntoViewOnFocus(options: ScrollIntoViewOnFocusOptions): void {
-  if (isServer) return;
+  const getItemElement = isServer
+    ? undefined
+    : (options.getItemElement ??
+      ((root: HTMLElement, key: Key) => root.querySelector<HTMLElement>(`[data-key="${key}"]`)));
 
-  const getItemElement =
-    options.getItemElement ??
-    ((root, key) => root.querySelector<HTMLElement>(`[data-key="${key}"]`));
-
+  // Register the same effect on SSR so subsequent hydration IDs stay aligned.
   createTrackedEffect(() => {
+    if (isServer || !getItemElement) return;
     const key = options.focusedKey();
     if (key == null) return;
     if (options.isActive && !options.isActive()) return;

@@ -6,11 +6,13 @@
  * tree on the first one, so a single off-by-one in a collection's node count ships a whole route
  * with dead event handlers. See Collections.ssr.test.tsx for the mechanism.
  */
-import { afterEach, describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { waitFor } from "@solidjs/testing-library";
+import { render } from "@solidjs/web";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { flush } from "solid-js";
+import { createSignal, For, flush } from "solid-js";
+import { ListView, ListViewItem, Provider, Text } from "../src";
 import {
   TabsFixture,
   TabsPlainFixture,
@@ -30,8 +32,15 @@ function readSsr(name: string): string {
 }
 
 describe("collection components hydrate over SSR markup", () => {
+  let disposeClientMount: (() => void) | undefined;
   afterEach(() => {
-    document.body.innerHTML = "";
+    const dispose = disposeClientMount;
+    disposeClientMount = undefined;
+    try {
+      dispose?.();
+    } finally {
+      document.body.innerHTML = "";
+    }
   });
 
   it("Tabs hydrates with no mismatch", async () => {
@@ -163,5 +172,73 @@ describe("collection components hydrate over SSR markup", () => {
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
     // The actions-slot Badge survives hydration.
     expect(container.textContent).toContain("READ");
+  });
+
+  it("keeps static registration reactive after client mount (complementary to hydration)", async () => {
+    const [keys, setKeys] = createSignal(["a", "b"]);
+    const [disabled, setDisabled] = createSignal(false);
+    const onSelectionChange = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    disposeClientMount = render(
+      () => (
+        <Provider background="base" colorScheme="dark">
+          <ListView
+            aria-label="Mutable static rows"
+            selectionMode="multiple"
+            onSelectionChange={onSelectionChange}
+          >
+            <For each={keys()}>
+              {(key) => (
+                <ListViewItem id={key} textValue={key} isDisabled={key === "a" && disabled()}>
+                  <Text slot="label">{key}</Text>
+                </ListViewItem>
+              )}
+            </For>
+          </ListView>
+        </Provider>
+      ),
+      container,
+    );
+    const rows = () =>
+      Array.from(container.querySelectorAll<HTMLElement>('[role="row"][data-key]'));
+    const rowA = rows()[0];
+    expect(rows().map((row) => row.dataset.key)).toEqual(["a", "b"]);
+    const user = setupUser();
+    await user.click(rowA);
+    flush();
+    expect(rowA).toHaveAttribute("aria-selected", "true");
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set(["a"]));
+
+    setKeys(["a", "b", "c"]);
+    flush();
+    await waitFor(() => expect(rows().map((row) => row.dataset.key)).toEqual(["a", "b", "c"]));
+    expect(rows()[0]).toBe(rowA);
+    expect(rowA).toHaveAttribute("aria-selected", "true");
+
+    setDisabled(true);
+    flush();
+    await waitFor(() => expect(rowA).toHaveAttribute("aria-disabled", "true"));
+    // Disabled rows intentionally omit aria-selected. Check the event contract
+    // here and the retained selection after re-enabling below.
+    expect(rowA).not.toHaveAttribute("aria-selected");
+    const selectionEvents = onSelectionChange.mock.calls.length;
+    await user.click(rowA);
+    flush();
+    expect(onSelectionChange).toHaveBeenCalledTimes(selectionEvents);
+
+    setKeys(["a", "c"]);
+    setDisabled(false);
+    flush();
+    await waitFor(() => {
+      expect(rows().map((row) => row.dataset.key)).toEqual(["a", "c"]);
+      expect(rowA).not.toHaveAttribute("aria-disabled");
+    });
+    expect(rows()[0]).toBe(rowA);
+    expect(rowA).toHaveAttribute("aria-selected", "true");
+    await user.click(rowA);
+    flush();
+    expect(rowA).toHaveAttribute("aria-selected", "false");
+    expect(onSelectionChange).toHaveBeenLastCalledWith(new Set());
   });
 });

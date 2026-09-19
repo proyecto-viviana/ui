@@ -34,7 +34,15 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx
  */
 
-import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type {
@@ -901,7 +909,9 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
     return virtualizer.getVisibleRange(count);
   });
 
-  const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => {
+  // Keep collection getter allocations in a stable owner, independent of the
+  // wrapper's hydration-key order.
+  const contentProps = createMemo<JSX.HTMLAttributes<HTMLDivElement>>(() => {
     const base = scrollView.contentProps();
     const nextRange = range();
     const count = itemCount();
@@ -926,7 +936,7 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
           : { "padding-top": `${padStart}px`, "padding-bottom": `${padEnd}px` }),
       },
     };
-  };
+  });
 
   return (
     <div {...contentProps()}>
@@ -991,7 +1001,7 @@ export function VirtualizerItem(props: {
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const node = el();
     if (!node) return;
@@ -1059,9 +1069,11 @@ const _s2Cleanups: Array<() => void> = [];
       requestAnimationFrame(readBox);
     });
     _s2Cleanups.push(() => cancelAnimationFrame(frame));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const style = (): JSX.CSSProperties => {
     const info = layout();
