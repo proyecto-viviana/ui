@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
+import { cleanup, render, screen } from "@solidjs/testing-library";
 import { Separator } from "../src/Separator";
 import {
   assertNoA11yViolations,
@@ -10,6 +10,8 @@ import {
 } from "@proyecto-viviana/solidaria-test-utils";
 
 describe("Separator", () => {
+  afterEach(cleanup);
+
   it("should render with default class", () => {
     render(() => <Separator />);
     const separator = screen.getByRole("separator");

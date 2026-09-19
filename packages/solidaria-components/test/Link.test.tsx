@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
+import { cleanup, render, screen, fireEvent } from "@solidjs/testing-library";
 import { Link } from "../src/Link";
 import { RouterProvider } from "../src/RouterProvider";
 import {
@@ -12,6 +12,8 @@ import {
 } from "@proyecto-viviana/solidaria-test-utils";
 
 describe("Link", () => {
+  afterEach(cleanup);
+
   it("should render a link with default class", () => {
     render(() => <Link>Test</Link>);
     const link = screen.getByRole("link");

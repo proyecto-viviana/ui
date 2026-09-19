@@ -742,7 +742,7 @@
   {
     "localPath": "packages/solidaria-components/src/ElementTag.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "bf83363699f7d81fbe2615bb7284ed0f0db862fcffb3e4e1c9f59c1ec109390a"
+    "contentSha256": "c365345e8f6149b265d355ecc017f0648aff333833a34601abd0ac2cd9173756"
   },
   {
     "localPath": "packages/solidaria-components/src/Icon.tsx",

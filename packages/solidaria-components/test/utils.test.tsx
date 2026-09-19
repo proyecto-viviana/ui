@@ -15,6 +15,7 @@ import { render, cleanup } from "@solidjs/testing-library";
 import { type Context, createContext, createSignal, flush, useContext } from "solid-js";
 import h from "@solidjs/h";
 import { Text, TextContext } from "../src/Text";
+import { ElementTag } from "../src/ElementTag";
 import {
   Provider,
   useSlottedContext,
@@ -30,6 +31,93 @@ import {
 describe("utils — context/slot machinery", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  describe("ElementTag", () => {
+    it.each([
+      "span",
+      "a",
+      "p",
+      "label",
+      "strong",
+      "em",
+      "small",
+      "div",
+      "hr",
+      "li",
+      "ul",
+      "ol",
+      "figure",
+      "blockquote",
+      "address",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "main",
+      "nav",
+      "header",
+      "footer",
+      "aside",
+      "section",
+      "article",
+      "form",
+      "search",
+      "button",
+      "output",
+      "mark",
+    ])("renders %s and forwards props without consuming a component attribute", (tag) => {
+      const refs: HTMLElement[] = [];
+      let clicks = 0;
+      const { container } = render(() => (
+        <ElementTag
+          tag={tag}
+          component="forwarded"
+          title="Title"
+          data-purpose="tag"
+          ref={(element: HTMLElement) => refs.push(element)}
+          onClick={() => clicks++}
+        />
+      ));
+      const element = container.firstElementChild as HTMLElement;
+      expect(container.children).toHaveLength(1);
+      expect(element.localName).toBe(tag);
+      expect(element).toHaveAttribute("component", "forwarded");
+      expect(element).toHaveAttribute("title", "Title");
+      expect(element).toHaveAttribute("data-purpose", "tag");
+      expect(element).not.toHaveAttribute("tag");
+      expect(refs).toHaveLength(1);
+      expect(refs[0]).toBe(element);
+      element.click();
+      expect(clicks).toBe(1);
+    });
+
+    it("isolates tag selection from reactive spread updates and replaces only on a tag change", () => {
+      const [tag, setTag] = createSignal("button");
+      const [label, setLabel] = createSignal("first");
+      const { container } = render(() => (
+        <ElementTag {...{ tag: tag(), title: label(), class: label() }} tabIndex={0}>
+          {label()}
+        </ElementTag>
+      ));
+      const initial = container.firstElementChild as HTMLElement;
+      initial.focus();
+      setLabel("second");
+      flush();
+      expect(container.firstElementChild).toBe(initial);
+      expect(document.activeElement).toBe(initial);
+      expect(initial).toHaveTextContent("second");
+      expect(initial).toHaveAttribute("title", "second");
+      expect(initial).toHaveClass("second");
+      setTag("a");
+      flush();
+      expect(container.firstElementChild).not.toBe(initial);
+      expect(container.firstElementChild?.localName).toBe("a");
+      expect(container.firstElementChild).toHaveTextContent("second");
+      expect(container.contains(initial)).toBe(false);
+    });
   });
 
   describe("stable option children", () => {

@@ -65,6 +65,11 @@ history:
       at: 2026-09-19,
       note: "owner's autonomous-execution instruction permits the justified #542 ref-helper repair and owning regressions. Fresh complete SSR 49/49 then hydration 57/57 pass with strict node identity; the four replacement failures share nested followRef's eager snapshot read, not a provider or DateField defect. All remaining child/build requirements, #536 inventory/removal and conditional coverage, #139 packaging safety and #194/#537 live 2177-case same-revision zero-waiver acceptance remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "autonomous #536 foundation slice now inventories workaround families and removes the obsolete ElementTag static-tag switch with native Solid 2 dynamic plus owning conditional/render-prop/Provider proof. Fresh complete SSR 51/51 then hydration 59/59 and affected ordinary 183/183 pass with one worker. This is bounded progress, not child/initiative acceptance: #536 still requires stale hydration-state guard migration, allocation-parity and async streaming proof; all other child/build requirements, #139 safety and #194/#537 live 2177-case same-revision zero-waiver gates remain",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)
@@ -75,6 +80,16 @@ and styled libraries to Solid 2.0.
 All four layers build, pass SSR/hydration, and satisfy the live 2,177 certified
 interaction parity tests on the Solid 2.0 reactive runtime without Solid 1.x
 hydration context counter workarounds.
+
+## Remaining gate debt observed 2026-09-19
+
+The bounded #536 retirement passes complete SSR 51/51, hydration 59/59 and
+owning ordinary 183/183, but `guard:attribution-headers` remains red with one
+exact-source and 63 reviewed-local mismatches on paths unchanged by that slice.
+ElementTag's reviewed hash matches. Track separate source/header review and
+reconciliation before claiming all foundation/release gates green; do not
+bulk-refresh hashes to erase unreviewed drift. Receipt:
+`.agents/UI-EXECUTION-536-2026-09-19.md`. This adds no waiver or held-task authority.
 
 ## Relationship
 

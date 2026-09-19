@@ -53,11 +53,8 @@ export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
       visuallyHiddenProps() as unknown as Record<string, unknown>,
     );
 
-  // elementType is read once (structural, not reactive). `ElementTag` renders it
-  // as a statically compiled element; `<Dynamic component={string}>` desyncs
-  // Solid's hydration markers, leaving the registry dirty so a later sibling
-  // re-render throws "template is not a function" in prod (and a hard hydration
-  // crash under solid-refresh in dev). See ElementTag.tsx for the mechanism.
+  // elementType is read once (structural, not reactive). ElementTag delegates
+  // element creation and hydration adoption to Solid 2's native dynamic helper.
   const tag = local.elementType ?? "span";
   return (
     <ElementTag tag={tag} {...mergedProps()}>
