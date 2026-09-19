@@ -56,6 +56,11 @@ history:
       at: 2026-09-19,
       note: "autonomous hydration-state slice replaces obsolete sharedConfig.context checks in ClientOnly/useIsHydrated and ScrollView with symmetric Solid 2 client-source effects. Old-source controls expose fallback key drift and six mid-hydration geometry callbacks. Fresh complete SSR 53/53 then hydration 61/61 and owning ordinary 229/229 pass with one worker; same-owner IDs, fallback adoption, immediate CSR/remount and scroll cleanup are covered. Allocation-parity suspects, stale guidance, actual async streaming and full foundation/release acceptance remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "bounded hook-parity slice confirms six old-source hydration key failures and repairs createFocusVisible/useIsKeyboardFocused plus createHydrationState/useIsSSR/createBrowserEffect/createBrowserValue through symmetric registration. Independent review additionally caught and prevented function-valued fallback invocation. Fresh complete SSR 60/60 then hydration 68/68 pass with one worker. Focus lifecycle/FocusScope work, portal route proof, stale guidance and genuine async streaming remain; no task, initiative or release acceptance inferred",
+    }
 ---
 
 ## Cause
@@ -164,6 +169,60 @@ and removal of the connected-target scroll listener.
 This does not prove real async streaming or close #536/#531. Source paths,
 full command ledger and remaining gates are recorded in
 `.agents/UI-EXECUTION-536-GUARDS-2026-09-19.md`.
+
+## 2026-09-19 hook parity and remaining route audit
+
+This slice supersedes the interaction-modality and SSR-utility portion of the
+pending allocation-parity inventory. All six old-source hydration cases fail
+with client key `32` versus server key `31`, leaving one unclaimed span. The
+regressions allocate `createUniqueId()` in the hook's own owner immediately
+after calling it, then prove computed ID equality and exact node adoption.
+
+`createFocusVisible` and `useIsKeyboardFocused` now register their real effects
+on both sides while retaining false SSR state and browser event semantics.
+`createHydrationState`/`useIsSSR` retain true SSR/initial-hydration state and
+become immediately false for CSR/remounts. The browser effect keeps tracked
+reads and cleanup before reruns/disposal but waits for snapshot release;
+browser values remain one-time, untracked computations. A function-valued
+fallback/value is retained by identity, never invoked as an initializer. A
+review-driven negative control fails if that initializer wrapper is removed.
+Focused SSR/hydrate are 7/7 each; fresh complete SSR 60/60 then hydrate 68/68
+pass. Exact commands and additional checks are in
+`.agents/UI-EXECUTION-536-HOOKS-2026-09-19.md`.
+
+Owning ordinary proof passes 87/87 after a baseline-controlled test-precondition
+repair in `createFocusRing.test.tsx`. The original combined run was 85/86;
+restoring the two committed source files reproduces the same focus-ring failure
+(plus both new CSR regressions). Pinned React Aria and local focus handlers
+re-sample global modality on focus, so the positive autoFocus case now explicitly
+establishes keyboard modality and retains its true assertion. A paired pointer
+case asserts focused with no ring. Product focus behavior is unchanged; this
+test repair does not complete #534's separate scheduler audit.
+
+Read-only route review narrows, but does not silently close, the remaining work:
+
+- `createAutoFocus` and `createFocusRestore` skip a real `onSettled` owner
+  reservation on SSR. Next repair must register that lifecycle symmetrically,
+  preserve server no-op methods, and prove focus/save/cancel/disposal behavior.
+- `createVirtualFocus` skips only a literal signal, which reserves no owner ID.
+  Retain the guard for allocation purposes; add a same-owner control. Its
+  default-focused-key SSR semantics are a separate concern, not counter proof.
+- Public standalone `FocusScope` returns bare children on SSR but context and
+  two sentinels on client. It needs structural/context adoption coverage and a
+  genuine symmetric implementation, not counter padding; browser document reads
+  must remain guarded and containment/restoration behavior must remain intact.
+- Public `OverlayContainer` and open Tooltip are portal routes. Prove adopted
+  outer nodes plus settled portal creation/ARIA/close/disposal before deciding
+  whether their private-owner server returns need changes. Normal public Modal
+  routes gate private ModalContent off during SSR; retain that defensive return.
+- Real streaming requires an unresolved shell before server resolution, tail
+  arrival while client hydration is pending, exact streamed-node adoption, and
+  bounded completion/error cleanup. Awaiting a fully resolved stream string or
+  showing a child after synchronous hydration does not satisfy this requirement.
+
+Stale guidance/comments and final complete lanes after all justified retirements
+remain open. No semantic one-read cache, held task, publication boundary or
+#537 zero-waiver live 2,177-case requirement is waived.
 
 ## Done when
 

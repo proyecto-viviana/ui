@@ -5,7 +5,10 @@
  * but hidden when using mouse/touch.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createFocusRing } from "../src/interactions/createFocusRing"; import { flush, type Component } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createFocusRing } from "../src/interactions/createFocusRing";
+import { flush, type Component } from "solid-js";
 
 // Test component that uses createFocusRing
 interface ExampleProps {
@@ -102,12 +105,25 @@ describe("createFocusRing", () => {
       expect(el.dataset.focusVisible).toBe("false");
     });
 
-    it("should show focus ring when autoFocus is true", () => {
+    it("should show focus ring when autoFocus is true in keyboard modality", () => {
+      // Focus re-samples the current modality, so do not inherit another
+      // fixture's pointer state when testing the keyboard-visible case.
+      fireEvent.keyDown(document.body, { key: "Tab" });
       render(() => <Example autoFocus />);
 
       const el = screen.getByTestId("example");
       el.focus();
       expect(el.dataset.focusVisible).toBe("true");
+    });
+
+    it("does not let autoFocus override pointer modality on focus", () => {
+      fireEvent.pointerDown(document.body, { pointerType: "mouse" });
+      render(() => <Example autoFocus />);
+
+      const el = screen.getByTestId("example");
+      el.focus();
+      expect(el.dataset.focused).toBe("true");
+      expect(el.dataset.focusVisible).toBe("false");
     });
 
     it("should hide focus ring when element loses focus", () => {

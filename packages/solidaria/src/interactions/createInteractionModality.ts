@@ -398,15 +398,14 @@ export function createFocusVisibleListener(
  * Manages focus visible state for the page.
  */
 export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleResult {
-  if (isServer) {
-    return { isFocusVisible: () => false };
-  }
-
   // autoFocus seeds the initial value once; isTextInput is read inside the effect
   // so it re-subscribes reactively (a top-level destructure would freeze it — the
   // body runs once). Mirrors upstream useFocusVisible's [isTextInput] dep.
-  const [isVisible, setIsVisible] = createSignal<boolean>(props.autoFocus || isFocusVisible());
+  const [isVisible, setIsVisible] = createSignal<boolean>(
+    isServer ? false : props.autoFocus || isFocusVisible(),
+  );
 
+  // Reserve the effect owner during SSR too; its callback runs only on client.
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];
 
@@ -468,10 +467,6 @@ export function addModalityListener(handler: (modality: Modality) => void): () =
  * Hook to track whether the user is currently interacting with the keyboard.
  */
 export function useIsKeyboardFocused(): Accessor<boolean> {
-  if (isServer) {
-    return () => false;
-  }
-
   const { modality } = createInteractionModality();
   return () => modality() === "keyboard";
 }

@@ -75,6 +75,11 @@ history:
       at: 2026-09-19,
       note: "#536's next bounded slice retires stale private hydration-state guards with supported Solid 2 client-source effects and owner-parity proof. Fresh complete SSR 53/53 then hydration 61/61 and owning ordinary 229/229 pass, one worker. Remaining allocation-parity and actual streaming proof, all sibling/build requirements, attribution reconciliation, #139 packaging safety and #194/#537 live 2177-case same-revision zero-waiver gates still block foundation/release acceptance",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 hook-parity slice repairs six baseline key-drift cases and preserves function-valued browser fallbacks, reactive effect cleanup and keyboard/pointer behavior. Fresh complete SSR 60/60 then hydrate 68/68 pass with one worker. Remaining focus/portal route proof, genuine streaming, stale guidance, all sibling/build requirements, attribution reconciliation and #139/#194/#537 exact-revision release gates remain outstanding",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

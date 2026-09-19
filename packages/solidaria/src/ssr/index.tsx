@@ -24,7 +24,15 @@
  */
 
 import { useContextOptional } from "../utils/owner";
-import { createContext, createEffect, createMemo, createSignal, onCleanup, onSettled, createUniqueId, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  createTrackedEffect,
+  sharedConfig,
+} from "solid-js";
 import type { Accessor, ParentProps, Signal } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
@@ -190,17 +198,17 @@ export function SSRProvider(props: SSRProviderProps & { prefix?: string }): JSX.
  * ```
  */
 export function createHydrationState(): Accessor<boolean> {
-  // On the server, always return true
-  if (isServer) {
-    return () => true;
-  }
+  const [isHydrating, setIsHydrating] = createSignal(isServer || sharedConfig.hydrating);
 
-  // On the client, track hydration state
-  const [isHydrating, setIsHydrating] = createSignal(true);
-
-  onSettled(() => {
-    setIsHydrating(false);
-  });
+  // Register the same owner on server and client. Client-source effects wait
+  // for the hydration snapshot to release, unlike a plain mount callback.
+  createEffect(
+    () => true,
+    () => {
+      setIsHydrating(false);
+    },
+    { ssrSource: "client" },
+  );
 
   return isHydrating;
 }
@@ -252,20 +260,13 @@ export function useIsSSR(): Accessor<boolean> {
  * ```
  */
 export function createBrowserEffect(fn: () => void | (() => void)): void {
-  if (isServer) {
-    return;
-  }
-
+  const isHydrating = createHydrationState();
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
-
-    const cleanup = fn();
-    if (typeof cleanup === "function") {
-      _s2Cleanups.push(cleanup);
-    }
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+    if (isHydrating()) return;
+    // Keep reads inside fn tracked, and let Solid run its cleanup before a
+    // reactive rerun or disposal. Neither callback executes during SSR.
+    return fn();
+  });
 }
 
 /**
@@ -288,15 +289,17 @@ return () => { for (const c of _s2Cleanups) c(); };
  * ```
  */
 export function createBrowserValue<T>(fn: () => T, fallback: T): Accessor<T> {
-  if (isServer) {
-    return () => fallback;
-  }
+  // Solid 2 treats function initializers as computations. Wrap the value so a
+  // function-valued fallback is stored, never invoked as browser work on SSR.
+  const [value, setValue] = createSignal(() => fallback) as Signal<T>;
 
-  const [value, setValue] = createSignal(fallback as Exclude<T, Function>) as Signal<T>;
-
-  onSettled(() => {
-    setValue(() => fn());
-  });
+  createEffect(
+    () => true,
+    () => {
+      setValue(() => fn());
+    },
+    { ssrSource: "client" },
+  );
 
   return value;
 }
