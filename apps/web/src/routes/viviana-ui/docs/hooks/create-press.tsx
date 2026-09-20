@@ -54,7 +54,7 @@ function CreatePressPage() {
 });
 
 return (
-  <div {...pressProps} tabIndex={0} role="button">
+  <div {...pressProps} tabindex={0} role="button">
     Press me
   </div>
 );`}</code>
@@ -69,7 +69,7 @@ return (
 
 <div
   {...pressProps}
-  tabIndex={0}
+  tabindex={0}
   role="button"
   class={isPressed() ? 'scale-95' : ''}
 >
@@ -78,7 +78,7 @@ return (
       >
         <div
           {...(pressProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
-          tabIndex={0}
+          tabindex={0}
           role="button"
           style={{
             ...target,
@@ -258,7 +258,7 @@ return (
         <li>Supports keyboard activation via Enter and Space keys</li>
         <li>Works with screen reader virtual clicks</li>
         <li>
-          Remember to add <code>role="button"</code> and <code>tabIndex={0}</code> for non-button
+          Remember to add <code>role="button"</code> and <code>tabindex={0}</code> for non-button
           elements
         </li>
         <li>Press is cancelled if pointer exits element (prevents accidental activation)</li>
@@ -285,7 +285,7 @@ function PressStateDemo() {
     <Flex alignItems="start" gap={6}>
       <div
         {...(pressProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
-        tabIndex={0}
+        tabindex={0}
         role="button"
         style={{
           ...target,
