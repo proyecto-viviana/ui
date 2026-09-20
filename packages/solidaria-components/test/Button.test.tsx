@@ -8,7 +8,10 @@
  * - Context for slot composition
  * - Full accessibility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
+import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria";
+import { createSignal, flush } from "solid-js";
 import { Button, ButtonContext, type ButtonRenderProps } from "../src/Button";
 import { ProgressBar } from "../src/ProgressBar";
 import { ToggleButton } from "../src/ToggleButton";
@@ -21,6 +24,10 @@ import {
 } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser and pointer helpers are consolidated in solidaria-test-utils.
+
+// Own cleanup in this file, including the sibling ToggleButton suite, even when
+// a reused test worker has already evaluated testing-library's auto-registration.
+afterEach(cleanup);
 
 describe("Button", () => {
   let user: ReturnType<typeof setupUser>;

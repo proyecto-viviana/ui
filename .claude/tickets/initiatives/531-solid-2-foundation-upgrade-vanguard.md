@@ -120,6 +120,11 @@ history:
       at: 2026-09-19,
       note: "#534 delayed-autofocus repair tracks per-request ownership after dequeue and cancels timers on cancel/disposal/clear without shared-ref interference. Nine old-source regressions now pass; owning 46/46, focused SSR/hydrate 16/16 each and fresh complete SSR 75/75 then hydrate 98/98 pass with one worker. #534 remains in-progress for its broader interaction audit; #533/#535, builds/attribution and #139/#194/#537 live 2177-case same-revision zero-waiver release requirements remain intact",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#534 native Press proof retains eventPathContains after a decisive detached-target negative control, restores exact upstream propagation expectations and proves global/pending-click disposal cleanup. A combined-worker Button fixture leak is repaired by owning test cleanup only, with 56-failure removal control. Final affected ordinary 235/235 and fresh complete SSR 75/75 then hydrate 98/98 pass, one worker; no lasting product changes. Native Hover, Menu drag/item-keyboard/modality, virtual-focus handoff and final owning audit remain; all sibling/build/attribution and release gates stay open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

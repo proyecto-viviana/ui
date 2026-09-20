@@ -5,8 +5,11 @@
  * This matches React Aria's test patterns for compatibility.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createPress, type PressEvent } from "../src/interactions/createPress"; import { Dynamic } from "@solidjs/web";
-import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createPress, type PressEvent } from "../src/interactions/createPress";
+import { Dynamic } from "@solidjs/web";
+import { createSignal, flush } from "solid-js";
 import type { Component } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { setupUser, createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -399,6 +402,109 @@ describe("createPress", () => {
           pointerType: "mouse",
         }),
       );
+    });
+
+    it("uses the native event path when the target is detached before parent press handling", () => {
+      const sequence: string[] = [];
+      const onPress = vi.fn((event: PressEvent) => sequence.push(event.type));
+      const onPressChange = vi.fn((pressed: boolean) => sequence.push(`change:${pressed}`));
+      render(() => (
+        <Example
+          onPressStart={onPress}
+          onPressUp={onPress}
+          onPressEnd={onPress}
+          onPress={onPress}
+          onPressChange={onPressChange}
+        >
+          <span data-testid="native-target">target</span>
+        </Example>
+      ));
+      const parent = screen.getByTestId("test-element");
+      const target = screen.getByTestId("native-target");
+      const replacement = document.createElement("span");
+      const snapshots: unknown[] = [];
+      target.addEventListener(
+        "pointerdown",
+        (event) => {
+          target.replaceWith(replacement);
+          // Capture during native dispatch, before ancestor press handling and
+          // before the setup dispatchEvent wrapper flushes Solid's queued work.
+          snapshots.push({
+            connected: target.isConnected,
+            contained: parent.contains(event.target as Node),
+            inPath: event.composedPath().includes(parent),
+            calls: onPress.mock.calls.length,
+          });
+          sequence.push("replace");
+        },
+        { once: true },
+      );
+
+      target.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      expect(snapshots).toEqual([{ connected: false, contained: false, inPath: true, calls: 0 }]);
+      expect(sequence).toEqual(["replace", "pressstart", "change:true"]);
+      expect(parent).toHaveAttribute("data-pressed", "true");
+
+      replacement.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+      replacement.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+      vi.runAllTimers();
+      expect(sequence).toEqual([
+        "replace",
+        "pressstart",
+        "change:true",
+        "pressup",
+        "pressend",
+        "change:false",
+        "press",
+      ]);
+      expect(
+        onPress.mock.calls.map(([event]) => [event.type, event.pointerType, event.target]),
+      ).toEqual([
+        ["pressstart", "mouse", parent],
+        ["pressup", "mouse", parent],
+        ["pressend", "mouse", parent],
+        ["press", "mouse", parent],
+      ]);
+      expect(onPressChange.mock.calls).toEqual([[true], [false]]);
+      expect(parent).not.toHaveAttribute("data-pressed");
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("does not treat an unrelated native release path as part of an active press", () => {
+      const onPress = vi.fn();
+      const onPressUp = vi.fn();
+      const onPressEnd = vi.fn();
+      const onPressChange = vi.fn();
+      render(() => (
+        <>
+          <Example
+            onPress={onPress}
+            onPressUp={onPressUp}
+            onPressEnd={onPressEnd}
+            onPressChange={onPressChange}
+          />
+          <button type="button" data-testid="unrelated">
+            outside
+          </button>
+        </>
+      ));
+      const target = screen.getByTestId("test-element");
+      const unrelated = screen.getByTestId("unrelated");
+      target.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      expect(target).toHaveAttribute("data-pressed", "true");
+      expect(target.contains(unrelated)).toBe(false);
+      unrelated.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+      // A later physical click must not revive the canceled interaction.
+      target.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+      vi.runAllTimers();
+      expect(onPressEnd).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ type: "pressend", pointerType: "mouse", target }),
+      );
+      expect(onPressChange.mock.calls).toEqual([[true], [false]]);
+      expect(onPressUp).not.toHaveBeenCalled();
+      expect(onPress).not.toHaveBeenCalled();
+      expect(target).not.toHaveAttribute("data-pressed");
+      expect(vi.getTimerCount()).toBe(0);
     });
 
     it("should fire onPressEnd on pointer up", () => {
@@ -1997,8 +2103,24 @@ describe("createPress", () => {
         pointerEvent("pointerup", { pointerId: 1, pointerType: "touch", clientX: 0, clientY: 0 }),
       );
 
-      // Advance timers to trigger fallback click
-      vi.advanceTimersByTime(90);
+      // Keep the live fallback as the positive control for disposal cleanup.
+      vi.advanceTimersByTime(79);
+      expect(events.map((event) => event.type)).toEqual(["pressstart", "presschange"]);
+      expect(el).toHaveAttribute("data-pressed", "true");
+      vi.advanceTimersByTime(1);
+      expect(events.map((event) => event.type)).toEqual([
+        "pressstart",
+        "presschange",
+        "pressup",
+        "pressend",
+        "presschange",
+        "press",
+      ]);
+      // Native element.click() inside the timer does not cross the setup's
+      // dispatchEvent wrapper; drain the resulting Solid DOM updates explicitly.
+      flush();
+      expect(el).not.toHaveAttribute("data-pressed");
+      expect(vi.getTimerCount()).toBe(0);
 
       expect(events).toContainEqual(
         expect.objectContaining({ type: "pressstart", pointerType: "touch" }),
@@ -2580,6 +2702,7 @@ describe("createPress", () => {
         onPress: props.onPress,
         onPressStart: props.onPressStart,
         onPressEnd: props.onPressEnd,
+        onPressUp: props.onPressUp,
       });
       return (
         <div {...pressProps} data-testid={props["data-testid"]}>
@@ -2617,13 +2740,17 @@ describe("createPress", () => {
       vi.runAllTimers();
 
       expect(outerPressMock).not.toHaveBeenCalled();
-      expect(innerPressMock).toHaveBeenCalled();
+      expect(innerPressMock.mock.calls.map(([event]) => event.type)).toEqual([
+        "pressstart",
+        "pressend",
+        "press",
+      ]);
     });
 
     it("should allow propagation if continuePropagation is called", () => {
       const outerPressMock = vi.fn();
       const innerPressMock = vi.fn().mockImplementation((e: PressEvent) => {
-        e.continuePropagation?.();
+        e.continuePropagation();
       });
 
       render(() => (
@@ -2652,9 +2779,14 @@ describe("createPress", () => {
 
       vi.runAllTimers();
 
-      // Both should be called if continuePropagation is called
-      // Note: This depends on the implementation supporting continuePropagation
-      expect(innerPressMock).toHaveBeenCalled();
+      for (const mock of [innerPressMock, outerPressMock]) {
+        expect(mock.mock.calls.map(([event]) => event.type)).toEqual([
+          "pressstart",
+          "pressup",
+          "pressend",
+          "press",
+        ]);
+      }
     });
   });
 
@@ -2664,23 +2796,93 @@ describe("createPress", () => {
 
   describe("cleanup", () => {
     it("should clean up global listeners on unmount", () => {
-      const onPressEnd = vi.fn();
-
-      const { unmount } = render(() => <Example onPressEnd={onPressEnd} />);
-
+      const onPress = vi.fn();
+      const onPressChange = vi.fn();
+      const { unmount } = render(() => (
+        <Example
+          onPressStart={onPress}
+          onPressEnd={onPress}
+          onPressUp={onPress}
+          onPress={onPress}
+          onPressChange={onPressChange}
+        />
+      ));
       const el = screen.getByTestId("test-element");
+      const add = vi.spyOn(document, "addEventListener");
+      const remove = vi.spyOn(document, "removeEventListener");
+      try {
+        el.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+        const listeners = add.mock.calls.filter(
+          ([type]) => type === "pointerup" || type === "pointercancel",
+        );
+        expect(listeners.map(([type]) => type)).toEqual(["pointerup", "pointercancel"]);
+        expect(el).toHaveAttribute("data-pressed", "true");
+        unmount();
+        for (const listener of listeners) {
+          expect(remove).toHaveBeenCalledWith(...listener);
+        }
+        document.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+        document.dispatchEvent(
+          pointerEvent("pointercancel", { pointerId: 1, pointerType: "mouse" }),
+        );
+        vi.runAllTimers();
+        expect(onPress.mock.calls.map(([event]) => event.type)).toEqual(["pressstart"]);
+        expect(onPressChange.mock.calls).toEqual([[true]]);
+      } finally {
+        unmount();
+        add.mockRestore();
+        remove.mockRestore();
+      }
+    });
 
-      // Start a press
-      fireEvent(el, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+    it("cancels the pending click fallback and capture listener on unmount", () => {
+      const onPress = vi.fn();
+      const onPressChange = vi.fn();
+      const { unmount } = render(() => (
+        <Example
+          onPressStart={onPress}
+          onPressEnd={onPress}
+          onPressUp={onPress}
+          onPress={onPress}
+          onPressChange={onPressChange}
+        />
+      ));
+      const el = screen.getByTestId("test-element");
+      const add = vi.spyOn(document, "addEventListener");
+      const remove = vi.spyOn(document, "removeEventListener");
+      const click = vi.spyOn(el, "click");
+      const focus = vi.spyOn(el, "focus");
+      try {
+        el.dispatchEvent(pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+        el.dispatchEvent(pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+        const listeners = add.mock.calls.filter(
+          ([type, , options]) => type === "click" && options === true,
+        );
+        expect(listeners).toHaveLength(1);
+        expect(vi.getTimerCount()).toBe(1);
+        expect(click).not.toHaveBeenCalled();
+        expect(focus).not.toHaveBeenCalled();
 
-      // Unmount while pressed
-      unmount();
-
-      // Global pointer up should not cause errors
-      fireEvent(document, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
-
-      // No errors should occur
-      expect(true).toBe(true);
+        unmount();
+        // Do not let a detached-node guard substitute for actual timer cleanup.
+        document.body.append(el);
+        expect(el.isConnected).toBe(true);
+        const timersAfterUnmount = vi.getTimerCount();
+        vi.advanceTimersByTime(80);
+        expect(click).not.toHaveBeenCalled();
+        expect(focus).not.toHaveBeenCalled();
+        expect(onPress.mock.calls.map(([event]) => event.type)).toEqual(["pressstart"]);
+        expect(onPressChange.mock.calls).toEqual([[true]]);
+        expect(timersAfterUnmount).toBe(0);
+        expect(remove).toHaveBeenCalledWith(...listeners[0]);
+      } finally {
+        unmount();
+        el.remove();
+        add.mockRestore();
+        remove.mockRestore();
+        click.mockRestore();
+        focus.mockRestore();
+      }
     });
   });
 });
