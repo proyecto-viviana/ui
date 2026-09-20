@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { type JSX, type FlowComponent, createSignal, onMount, Show } from "solid-js";
+import { type FlowComponent, createSignal, onSettled, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import {

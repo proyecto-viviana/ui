@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/solid-router";
-import { Show, createSignal, lazy, onMount } from "solid-js";
+import { Show, createSignal, lazy, onSettled } from "solid-js";
 import adminCss from "@/app/admin/admin.css?url";
 
 // Dev-only internal dashboard (see .claude/current/admin-dashboard.md). The

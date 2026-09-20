@@ -3,7 +3,8 @@
    Product), the collection preview, Avatar/AvatarGroup, and the empty-state
    IllustratedMessage. Composed from the shared Panel/Demo/Row chrome. */
 import { createFileRoute } from "@tanstack/solid-router";
-import { For, type JSX } from "solid-js";
+import { For } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   ActionButton,
   ActionMenu,

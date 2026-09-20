@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { createSignal, For, onSettled, Show } from "solid-js";
 import { Button, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { Header, SiteBackdrop } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";

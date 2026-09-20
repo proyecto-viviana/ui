@@ -12,7 +12,8 @@ import { Button as GeistButton } from "@proyecto-viviana/geist";
 import "@proyecto-viviana/geist/styles.css";
 import { Button as KumoButton } from "@proyecto-viviana/kumo";
 import "@proyecto-viviana/kumo/styles.css";
-import { createSignal, Show, type JSX } from "solid-js";
+import { createSignal, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { Header, SiteBackdrop } from "@/components";
 import {
   CtaButton,

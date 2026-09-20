@@ -1,7 +1,8 @@
 import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { createVisuallyHidden } from "@proyecto-viviana/solidaria";
-import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
+import { createSignal, onSettled, onCleanup, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { REPO_URL } from "@/lib/site";
 import { useTheme } from "@/utils/theme";
 import "@/components/theme/studio.css";
