@@ -23,6 +23,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createSignal,
   createUniqueId,
   useContext,
   Switch,
@@ -111,15 +112,17 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     onOpenChange: local.onOpenChange,
   });
 
-  let triggerRef: HTMLElement | null = null;
+  // A signal, so a consumer reading `triggerRef()` (e.g. the dialog's
+  // trigger-label fallback) re-reads once the trigger mounts.
+  const [triggerRef, setTriggerElement] = createSignal<HTMLElement | null>(null);
   const triggerId = createUniqueId();
 
   // Create overlay trigger props so registered trigger components can expose
   // the same expanded/controls relationship as React Aria DialogTrigger.
-  const triggerAria = createOverlayTrigger({ type: "dialog" }, state, () => triggerRef);
+  const triggerAria = createOverlayTrigger({ type: "dialog" }, state, triggerRef);
 
   const restoreFocusToTrigger = () => {
-    const trigger = triggerRef;
+    const trigger = triggerRef();
     if (!trigger?.isConnected) return;
 
     const win = trigger.ownerDocument.defaultView ?? window;
@@ -161,15 +164,15 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     // First registrant wins. Replacing a not-yet-connected trigger lets a later
     // CloseButton steal ownership during defaultOpen (both refs fire before
     // either node is in the document), then close+toggle reopens the dialog.
-    if (!triggerRef) {
-      triggerRef = el;
+    if (!triggerRef()) {
+      setTriggerElement(el);
     }
   };
 
   // Context value - memoized to avoid unnecessary re-renders
   const contextValue = createMemo(() => ({
     state: stateWithFocusRestore,
-    triggerRef: () => triggerRef,
+    triggerRef,
     setTriggerRef,
     triggerId,
     triggerProps: triggerAria.triggerProps,
@@ -242,16 +245,20 @@ export function Dialog(props: DialogProps): JSX.Element {
     triggerContext?.state.close();
   };
 
-  createTrackedEffect(() => {
-    if (!dialogRef || ariaProps["aria-label"] || ariaProps["aria-labelledby"]) return;
-    const labelledBy = dialogRef.getAttribute("aria-labelledby");
-    if (labelledBy && dialogRef.ownerDocument.getElementById(labelledBy)) return;
-
-    const trigger = triggerContext?.triggerRef();
-    if (trigger?.id) {
-      dialogRef.setAttribute("aria-labelledby", trigger.id);
+  // Label the dialog by its trigger when no title slot resolved. Mirrors RAC
+  // `Dialog`: the trigger id arrives by context, so it is a fallback only and a
+  // rendered title still wins. `createDialog`'s slot id clears itself when no
+  // element takes it, which is what makes the fallback reachable.
+  const ariaLabelledBy = () => {
+    const p = dialogProps();
+    if (p["aria-labelledby"]) {
+      return p["aria-labelledby"] as string;
     }
-  });
+    if (p["aria-label"]) {
+      return undefined;
+    }
+    return triggerContext?.triggerRef()?.id ?? triggerContext?.triggerId;
+  };
 
   // RAC useDialog → useOverlayFocusContain: a nested Dialog still contains
   // focus when the parent Popover is not itself the dialog.
@@ -285,6 +292,7 @@ export function Dialog(props: DialogProps): JSX.Element {
         {...triggerContext?.overlayProps}
         {...dialogProps()}
         {...domProps()}
+        aria-labelledby={ariaLabelledBy()}
         ref={setDialogRef}
         class={renderProps.class()}
         style={renderProps.style()}

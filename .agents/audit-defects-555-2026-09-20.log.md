@@ -138,3 +138,39 @@ hook, and `Color.tsx` already carries a note describing the same defect from its
 own side. Opened as #557, which owns both the port and the listener's removal.
 Here the listener keeps a comment naming it as not upstream and pointing at
 #557.
+
+## 4 — createDialog's ids are slots, not unique ids
+
+Upstream `useDialog` (`useDialog.ts:56-60`) takes both ids from `useSlotId`:
+each resolves to `undefined` unless an element actually renders with it, so a
+dialog with no title, or an alertdialog with no content, emits no dangling
+`aria-labelledby` / `aria-describedby`. Ours used `createUniqueId`, so both
+attributes always pointed somewhere — at nothing, when the slot was empty.
+Measured red: `aria-labelledby="cl-38"` on a title-less dialog and
+`aria-describedby="cl-43"` on a content-less alertdialog.
+
+`createSlotId` (`packages/solidaria/src/ssr/index.tsx:115`) is already the 1:1
+port of `useSlotId` and is already used by `createRadio`, `createToggle` and
+`createMenuItem`; the fix is to call it here too, and to read it as an accessor
+inside the two memos.
+
+That exposed a second defect one layer up. `Dialog` labelled itself by its
+trigger through a one-shot effect that mutated the DOM: read
+`aria-labelledby`, and if it pointed at nothing, `setAttribute` the trigger's
+id. It only ever worked because the slot id never cleared; with a real slot the
+memo re-ran afterwards and wiped the attribute (measured: the dialog lost its
+name, `Dialog.test.tsx` → "should get default aria label from trigger" red).
+RAC does this as a derived value, not a mutation (`Dialog.tsx:148-153`: fall
+back to the context's `aria-labelledby` only when neither `aria-label` nor a
+title slot resolved), so `Dialog` now derives it the same way.
+
+For the derivation to be correct the trigger element has to be readable
+reactively, so `DialogTrigger`'s `triggerRef` is now a signal. Its context
+already advertised `triggerRef: () => HTMLElement | null`, so no consumer
+changes.
+
+Proof: `vp test run` over `createDialog`, `createPopover`,
+`solidaria-components` Dialog / DialogTriggerDebug / Modal / Popover and
+`solid-spectrum` Dialog — 148 passed; then ContextualHelpTrigger, Popover,
+Menu, ActionMenu, Button (`solid-spectrum`), Dialog, Button (`viviana-ui`) —
+199 passed.

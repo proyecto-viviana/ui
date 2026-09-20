@@ -312,6 +312,49 @@ describe("createDialog titleProps", () => {
   });
 });
 
+describe("createDialog slot ids", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("drops aria-labelledby when no element consumes the title slot", () => {
+    // Upstream `useSlotId` resolves to undefined when nothing renders with the
+    // generated id, so a dialog without a title never points at a missing node.
+    render(() => <TestDialog>No title here</TestDialog>);
+
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-labelledby");
+  });
+
+  it("keeps aria-labelledby when a title element consumes the slot", () => {
+    let dialogRef: HTMLDivElement | null = null;
+
+    render(() => {
+      const { dialogProps, titleProps } = createDialog(
+        () => ({}),
+        () => dialogRef,
+      );
+      return (
+        <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog">
+          <h2 {...titleProps()}>Title</h2>
+        </div>
+      );
+    });
+
+    const dialog = screen.getByTestId("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+    expect(labelledBy).toBeTruthy();
+    expect(document.getElementById(labelledBy as string)).toBe(
+      screen.getByRole("heading", { name: "Title" }),
+    );
+  });
+
+  it("drops aria-describedby when no element consumes the alertdialog content slot", () => {
+    render(() => <TestDialog role="alertdialog" aria-label="Delete" />);
+
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-describedby");
+  });
+});
+
 describe("createDialog edge cases", () => {
   afterEach(() => {
     cleanup();

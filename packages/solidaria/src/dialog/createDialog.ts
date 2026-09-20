@@ -18,14 +18,8 @@
  */
 
 import { filterDOMProps, focusSafely, onOwnedCleanup } from "../utils";
-import {
-  Accessor,
-  createEffect,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  createTrackedEffect,
-} from "solid-js";
+import { Accessor, createMemo, createSignal, createTrackedEffect } from "solid-js";
+import { createSlotId } from "../ssr";
 import { runAfterPaint } from "../utils/focus";
 import type { AriaLabelingProps, DOMProps } from "./types";
 
@@ -60,18 +54,21 @@ export function createDialog(
   const getProps = typeof props === "function" ? props : () => props;
 
   const role = () => getProps().role ?? "dialog";
-  const generatedTitleId = createUniqueId();
-  const generatedContentId = createUniqueId();
+  // Slot ids, like upstream `useDialog` (`useSlotId`): each resolves to
+  // undefined unless an element actually renders with it, so a dialog without a
+  // title or an alertdialog without content never points at a missing node.
+  const generatedTitleId = createSlotId();
+  const generatedContentId = createSlotId();
   const [isRefocusing, setIsRefocusing] = createSignal(false);
 
   const titleId = createMemo(() => {
     const p = getProps();
-    return p["aria-label"] ? undefined : generatedTitleId;
+    return p["aria-label"] ? undefined : generatedTitleId();
   });
 
   const contentId = createMemo(() => {
     const p = getProps();
-    return role() === "alertdialog" && !p["aria-describedby"] ? generatedContentId : undefined;
+    return role() === "alertdialog" && !p["aria-describedby"] ? generatedContentId() : undefined;
   });
 
   // Match @react-aria/dialog `useDialog`: initial focus is `useEffect`-timed
