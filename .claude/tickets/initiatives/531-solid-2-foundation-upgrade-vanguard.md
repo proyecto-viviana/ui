@@ -170,6 +170,11 @@ history:
       at: 2026-09-20,
       note: "#543's externally accepted presentation leaves and released action/basic controls return 30 existing teardowns across 28 named fixtures without merging owner boundaries. Census falls65/62 to35/34; shared real-control CSR passes72/72 with exact removal, disposal/remount, live semantics and rendered interaction/focus identity; scoped checks and root typecheck pass. Actual SSR/hydration, remaining lifecycle/config/warnings, broader app/web, four-layer builds, attribution, packaging and #139/#194/#537 release gates remain open; no child/foundation/release acceptance or waiver is inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543's accepted date/color and overlay stages plus released disclosure/navigation Stage C return19 exact fixture teardowns; census falls35/34 to16/15 and shared real-control CSR passes109/109. Rendered focus/action/selection/current proof preserves nonstructural identity, confines Breadcrumb path/mode and Disclosure header shape changes, and keeps StepList defaults initialization-only. Root typecheck/scoped gates pass. Actual fixture SSR/hydration, remaining collection/async lifecycle, warnings, broader app/web, four-layer builds, attribution, packaging and #139/#194/#537 same-revision release gates remain open; no child/foundation/release acceptance or waiver is inferred",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

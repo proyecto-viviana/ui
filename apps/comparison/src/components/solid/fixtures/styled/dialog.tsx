@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
@@ -49,10 +49,10 @@ function SolidSpectrumDialogDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() =>
@@ -61,6 +61,7 @@ function SolidSpectrumDialogDemo() {
       isOpen: isOpen(),
     }),
   );
+  const dialogRole = createMemo(() => demoProps().role);
 
   const handleOpenChange = (nextOpen: boolean) => {
     dispatchComparisonCallback("dialog", "onOpenChange", {
@@ -118,7 +119,7 @@ function SolidSpectrumDialogDemo() {
                   [() => demoProps().triggerLabel],
                 ),
               () =>
-                demoProps().role === "alertdialog"
+                dialogRole() === "alertdialog"
                   ? hc(
                       SolidSpectrumAlertDialog,
                       {

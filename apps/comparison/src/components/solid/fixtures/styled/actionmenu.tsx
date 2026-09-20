@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionMenu as SolidSpectrumActionMenu } from "@proyecto-viviana/solid-spectrum/ActionMenu";
 import { Keyboard as SolidSpectrumKeyboard } from "@proyecto-viviana/solid-spectrum/Keyboard";
@@ -51,10 +51,10 @@ function SolidSpectrumActionMenuDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   return hc(

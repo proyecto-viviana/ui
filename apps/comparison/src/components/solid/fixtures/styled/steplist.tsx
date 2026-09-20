@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { StepList as SolidSpectrumStepList } from "@proyecto-viviana/solid-spectrum/StepList";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -44,10 +44,10 @@ function SolidSpectrumStepListDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const renderedStepList = createMemo(() =>

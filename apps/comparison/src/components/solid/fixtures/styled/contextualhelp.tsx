@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
 import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
@@ -45,10 +45,10 @@ function SolidSpectrumContextualHelpDemo() {
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setDemoProps(contextualHelpDemoPropsFromWindow());
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   return hc(

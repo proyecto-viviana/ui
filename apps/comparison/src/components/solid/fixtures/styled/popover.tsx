@@ -1,6 +1,7 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
-import { hc } from "../../solid-h";
+import { createComponent } from "@solidjs/web";
+import { createMemo, createSignal, onSettled } from "solid-js";
+import { hc, Keyed } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { DialogTrigger as SolidSpectrumDialogTrigger } from "@proyecto-viviana/solid-spectrum/Dialog";
 import { Form as SolidSpectrumForm } from "@proyecto-viviana/solid-spectrum/Form";
@@ -21,6 +22,8 @@ import { createComparisonResolvedThemeSignal, providerShellStyle } from "../styl
 function SolidSpectrumPopoverDemo() {
   const [demoProps, setDemoProps] = createSignal<PopoverDemoProps>(popoverDemoPropsFromWindow());
   const colorScheme = createComparisonResolvedThemeSignal();
+  const triggerMode = createMemo(() => demoProps().triggerMode);
+  const isOpen = createMemo(() => demoProps().isOpen);
   let anchorElement: HTMLDivElement | null = null;
 
   onSettled(() => {
@@ -30,7 +33,7 @@ function SolidSpectrumPopoverDemo() {
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   });
 
   const updateOpen = (nextOpen: boolean) => {
@@ -99,13 +102,13 @@ function SolidSpectrumPopoverDemo() {
       SolidSpectrumDialogTrigger,
       {
         get isOpen() {
-          return demoProps().isOpen;
+          return isOpen();
         },
         onOpenChange: updateOpen,
       },
       [
-        hc(SolidSpectrumButton, { variant: "secondary" }, [() => demoProps().triggerLabel]),
-        hc(SolidSpectrumPopover, popoverProps, [popoverContent]),
+        () => hc(SolidSpectrumButton, { variant: "secondary" }, [() => demoProps().triggerLabel]),
+        () => hc(SolidSpectrumPopover, popoverProps, [popoverContent]),
       ],
     );
   const customAnchorContent = () => [
@@ -163,7 +166,7 @@ function SolidSpectrumPopoverDemo() {
           return demoProps().ariaLabel;
         },
         get isOpen() {
-          return demoProps().isOpen;
+          return isOpen();
         },
         onOpenChange: updateOpen,
         triggerRef: () => anchorElement,
@@ -171,8 +174,15 @@ function SolidSpectrumPopoverDemo() {
       [popoverContent],
     ),
   ];
-  const routedPopoverContent = () =>
-    demoProps().triggerMode === "dialogTrigger" ? dialogTriggerContent() : customAnchorContent();
+  const routedPopoverContent = createComponent(Keyed, {
+    get when() {
+      return triggerMode();
+    },
+    children: (mode) =>
+      mode === "dialogTrigger"
+        ? dialogTriggerContent()()
+        : customAnchorContent().map((child) => child()),
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -193,7 +203,7 @@ function SolidSpectrumPopoverDemo() {
             return serializePopoverDemoProps(demoProps());
           },
           get "data-comparison-open"() {
-            return String(demoProps().isOpen);
+            return String(isOpen());
           },
           get "data-comparison-popover-trigger-mode"() {
             return demoProps().triggerMode;

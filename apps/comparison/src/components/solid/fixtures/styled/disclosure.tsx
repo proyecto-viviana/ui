@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import {
@@ -34,6 +34,7 @@ function SolidSpectrumDisclosureDemo() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
+  const withHeaderAction = createMemo(() => demoProps().withHeaderAction);
 
   onSettled(() => {
     const handleControlsChange = (event: Event) => {
@@ -49,10 +50,10 @@ function SolidSpectrumDisclosureDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const disclosureTitle = () =>
@@ -67,7 +68,7 @@ function SolidSpectrumDisclosureDemo() {
     );
 
   const disclosureHeader = () =>
-    demoProps().withHeaderAction
+    withHeaderAction()
       ? hc(SolidSpectrumDisclosureHeader, {}, [
           disclosureTitle(),
           hc(SolidSpectrumActionButton, { "aria-label": "Edit system requirements" }, [
@@ -134,7 +135,7 @@ function SolidSpectrumDisclosureDemo() {
               },
             },
             [
-              disclosureHeader(),
+              disclosureHeader,
               hc(
                 SolidSpectrumDisclosurePanel,
                 {

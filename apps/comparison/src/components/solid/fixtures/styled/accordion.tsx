@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import {
   Accordion as SolidSpectrumAccordion,
@@ -52,10 +52,10 @@ function SolidSpectrumAccordionDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const controlledExpandedKeys = createMemo(() => {

@@ -1,6 +1,7 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
-import { hc, renderProp } from "../../solid-h";
+import { createComponent } from "@solidjs/web";
+import { createMemo, createSignal, onSettled } from "solid-js";
+import { hc, Keyed, renderProp } from "../../solid-h";
 import {
   Breadcrumb as SolidSpectrumBreadcrumb,
   Breadcrumbs as SolidSpectrumBreadcrumbs,
@@ -35,15 +36,21 @@ function SolidSpectrumBreadcrumbsDemo() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
+  const breadcrumbsStructure = createMemo(
+    () => `${demoProps().itemSet}:${serializeBreadcrumbPath(pathItems())}`,
+  );
 
   onSettled(() => {
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "breadcrumbs") {
         const nextProps = normalizeBreadcrumbsDemoProps(event.detail.props ?? {});
+        const itemSetChanged = demoProps().itemSet !== nextProps.itemSet;
         setDemoProps(nextProps);
-        setPathItems(breadcrumbsItemsForSet(nextProps.itemSet));
-        setActionCount(0);
-        setLastAction("");
+        if (itemSetChanged) {
+          setPathItems(breadcrumbsItemsForSet(nextProps.itemSet));
+          setActionCount(0);
+          setLastAction("");
+        }
       }
     };
     const handleThemeChange = (event: Event) => {
@@ -54,10 +61,10 @@ function SolidSpectrumBreadcrumbsDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const handleAction = (key: string | number) => {
@@ -70,6 +77,70 @@ function SolidSpectrumBreadcrumbsDemo() {
       setPathItems(sourceItems.slice(0, index + 1));
     }
   };
+  const directChildBreadcrumbs = () =>
+    hc(
+      SolidSpectrumBreadcrumbs,
+      {
+        get size() {
+          return demoProps().size;
+        },
+        get isDisabled() {
+          return demoProps().isDisabled;
+        },
+        UNSAFE_style: { width: "100%" },
+        "aria-label": "Project location",
+        onAction: handleAction,
+      },
+      [
+        () =>
+          pathItems().map((item) =>
+            h(
+              SolidSpectrumBreadcrumb,
+              {
+                id: item.id,
+                href: item.href,
+              },
+              item.label,
+            ),
+          ),
+      ],
+    );
+  const itemBreadcrumbs = () =>
+    hc(
+      SolidSpectrumBreadcrumbs,
+      {
+        get items() {
+          return pathItems();
+        },
+        getKey: (item: BreadcrumbsItem) => item.id,
+        get size() {
+          return demoProps().size;
+        },
+        get isDisabled() {
+          return demoProps().isDisabled;
+        },
+        UNSAFE_style: { width: "100%" },
+        "aria-label": "Project location",
+        onAction: handleAction,
+      },
+      renderProp((item: BreadcrumbsItem) =>
+        h(
+          SolidSpectrumBreadcrumb,
+          {
+            id: item.id,
+            href: item.href,
+          },
+          item.label,
+        ),
+      ),
+    );
+  const renderedBreadcrumbs = createComponent(Keyed, {
+    get when() {
+      return breadcrumbsStructure();
+    },
+    children: (structure) =>
+      structure.startsWith("standard:") ? directChildBreadcrumbs()() : itemBreadcrumbs()(),
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -102,65 +173,7 @@ function SolidSpectrumBreadcrumbsDemo() {
             return serializeBreadcrumbPath(pathItems());
           },
         },
-        [
-          () =>
-            demoProps().itemSet === "standard"
-              ? hc(
-                  SolidSpectrumBreadcrumbs,
-                  {
-                    get size() {
-                      return demoProps().size;
-                    },
-                    get isDisabled() {
-                      return demoProps().isDisabled;
-                    },
-                    UNSAFE_style: { width: "100%" },
-                    "aria-label": "Project location",
-                    onAction: handleAction,
-                  },
-                  [
-                    () =>
-                      pathItems().map((item) =>
-                        h(
-                          SolidSpectrumBreadcrumb,
-                          {
-                            id: item.id,
-                            href: item.href,
-                          },
-                          item.label,
-                        ),
-                      ),
-                  ],
-                )
-              : hc(
-                  SolidSpectrumBreadcrumbs,
-                  {
-                    get items() {
-                      return pathItems();
-                    },
-                    getKey: (item: BreadcrumbsItem) => item.id,
-                    get size() {
-                      return demoProps().size;
-                    },
-                    get isDisabled() {
-                      return demoProps().isDisabled;
-                    },
-                    UNSAFE_style: { width: "100%" },
-                    "aria-label": "Project location",
-                    onAction: handleAction,
-                  },
-                  renderProp((item: BreadcrumbsItem) =>
-                    h(
-                      SolidSpectrumBreadcrumb,
-                      {
-                        id: item.id,
-                        href: item.href,
-                      },
-                      item.label,
-                    ),
-                  ),
-                ),
-        ],
+        [renderedBreadcrumbs],
       ),
     ],
   );

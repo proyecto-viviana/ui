@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "externally accepted date/color and synchronous-overlay stages plus released disclosure/navigation Stage C return the existing teardown from19 fixture-owned onSettled callbacks. Census falls35/34 to16/15; shared real-control CSR passes109/109 with exact removal, inert disposal/remount, rendered focus/action/selection/current semantics and bounded structural identity. Breadcrumb path changes now rebuild only their semantic branch while size-only focus/identity and outer action/root ownership persist. Root typecheck and scoped gates pass. Actual fixture SSR/hydration, remaining collection/async lifecycle and warning debt, broader app/web, builds, attribution, packaging and release gates remain open; #543/#531 stay in-progress",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "externally accepted presentation leaves plus the released action/basic-control slice return the existing teardown from 30 onSettled callbacks across 28 named styled fixtures. The AST census falls from65 registrations/62 files to35/34; shared real-control CSR passes72/72 with exact tuple removal, inert disposal, clean remount, live semantics and rendered press/toggle/selection/focus identity. Scoped checks and root typecheck pass. Actual fixture SSR/hydration, remaining lifecycle/config/warning debt, broader app/build/attribution/packaging and release gates remain open; #543/#531 stay in-progress",
     }
   - {
@@ -419,6 +424,44 @@ match the negative control exactly. Existing intentional failure-path and Solid
 diagnostics remain outside this optimizer repair. Receipt:
 `.agents/UI-EXECUTION-543-OPTIMIZER-2026-09-20.md`; raw ledger and inventories:
 `/tmp/ui-543-optimizer-result.md`. #543 remains in-progress.
+
+## 2026-09-20 date, overlays, disclosure and navigation lifecycle slice
+
+After independent acceptance of Stage A (nine date/color fixtures) and Stage B
+(six synchronous overlay fixtures), the released Stage C repaired Accordion,
+Breadcrumbs, Disclosure and StepList. All 19 fixture-owned `onSettled`
+callbacks now return their existing listener teardown directly, preserving
+event sources, listener tuples, initialization, callback identities and state
+owners. Popover retains its shared theme owner and external-open guard; Dialog
+retains its distinct controlled-open owner.
+
+The shared fixture CSR file passes 109/109. Its bounded proof uses actual
+rendered controls for date grid/segment/picker, color input, overlay trigger,
+menu navigation, accordion/disclosure expansion, breadcrumb activation/current
+state and StepList traversal/selection behavior. Exact listener removal, inert
+disposed owners, clean remount and stable focus/root identity are covered.
+
+Breadcrumbs exposed one fixture-local structural defect: action-driven path
+narrowing changed direct children without rebuilding the static collection, so
+the new last item lacked `aria-current`. The fixture now keys only the
+Breadcrumbs branch by mode plus serialized path. Size-only updates retain the
+same focused link; action narrowing rebuilds the affected branch with Home as
+`aria-current="page"`; the outer fixture root, action count, last action and
+path ownership remain outside it. The items/render-prop mode switch is likewise
+a collection-shape boundary. Disclosure's optional explicit header wrapper is
+a separate child-shape boundary; its outer Disclosure remains stable. Accordion
+needs no structural boundary here. StepList's defaults remain initialization-
+only: the proof initializes them through the URL and does not remount to make
+uncontrolled defaults live.
+
+The AST census falls from 35 registrations in 34 files to 16 in 15, exactly 19
+registrations removed from the 19 named fixtures. Root typecheck and scoped
+format/lint/diff gates pass. This remains CSR test-DOM evidence, not actual
+fixture SSR/hydration or real-browser navigation/overlay certification.
+Remaining lifecycle registrations, warning/config debt, broader app/web work,
+four-layer builds, attribution, packaging and #139/#194/#537 release gates stay
+open. Receipt: `.agents/UI-EXECUTION-543-DATE-OVERLAYS-NAV-2026-09-20.md`;
+detailed log ledger: `/tmp/ui-543-date-overlays-nav-result.md`.
 
 ## Relationship
 

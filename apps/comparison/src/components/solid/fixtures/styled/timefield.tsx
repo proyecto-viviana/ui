@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
 import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
@@ -48,10 +48,10 @@ function SolidSpectrumTimeFieldDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() => serializeTimeFieldDemoProps(demoProps()));

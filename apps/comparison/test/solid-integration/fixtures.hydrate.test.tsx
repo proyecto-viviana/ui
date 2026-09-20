@@ -45,6 +45,25 @@ import Form from "../../src/components/solid/fixtures/styled/form";
 import ToggleButton from "../../src/components/solid/fixtures/styled/togglebutton";
 import ToggleButtonGroup from "../../src/components/solid/fixtures/styled/togglebuttongroup";
 import Toolbar from "../../src/components/solid/fixtures/styled/toolbar";
+import Calendar from "../../src/components/solid/fixtures/styled/calendar";
+import ColorArea from "../../src/components/solid/fixtures/styled/colorarea";
+import ColorField from "../../src/components/solid/fixtures/styled/colorfield";
+import ColorSlider from "../../src/components/solid/fixtures/styled/colorslider";
+import ColorSwatch from "../../src/components/solid/fixtures/styled/colorswatch";
+import DateField from "../../src/components/solid/fixtures/styled/datefield";
+import DatePicker from "../../src/components/solid/fixtures/styled/datepicker";
+import DateRangePicker from "../../src/components/solid/fixtures/styled/daterangepicker";
+import TimeField from "../../src/components/solid/fixtures/styled/timefield";
+import ActionMenu from "../../src/components/solid/fixtures/styled/actionmenu";
+import ContextualHelp from "../../src/components/solid/fixtures/styled/contextualhelp";
+import Dialog from "../../src/components/solid/fixtures/styled/dialog";
+import Menu from "../../src/components/solid/fixtures/styled/menu";
+import Popover from "../../src/components/solid/fixtures/styled/popover";
+import Tooltip from "../../src/components/solid/fixtures/styled/tooltip";
+import Accordion from "../../src/components/solid/fixtures/styled/accordion";
+import Breadcrumbs from "../../src/components/solid/fixtures/styled/breadcrumbs";
+import Disclosure from "../../src/components/solid/fixtures/styled/disclosure";
+import StepList from "../../src/components/solid/fixtures/styled/steplist";
 import { checkboxDemoDefaults, comparisonControlsEvent } from "../../src/data/checkbox-demo";
 import { tabsDemoDefaults } from "../../src/data/tabs-demo";
 import { checkboxGroupDemoDefaults } from "../../src/data/checkboxgroup-demo";
@@ -88,6 +107,26 @@ import {
 import { dropZoneDemoDefaults } from "../../src/data/dropzone-demo";
 import { formDemoDefaults } from "../../src/data/form-demo";
 import { toolbarDemoDefaults } from "../../src/data/toolbar-demo";
+import { calendarDemoDefaults } from "../../src/data/calendar-demo";
+import { colorAreaDemoDefaults } from "../../src/data/colorarea-demo";
+import { colorFieldDemoDefaults } from "../../src/data/colorfield-demo";
+import { colorSliderDemoDefaults } from "../../src/data/colorslider-demo";
+import { colorSwatchDemoDefaults } from "../../src/data/colorswatch-demo";
+import { dateFieldDemoDefaults } from "../../src/data/datefield-demo";
+import { datePickerDemoDefaults } from "../../src/data/datepicker-demo";
+import { dateRangePickerDemoDefaults } from "../../src/data/daterangepicker-demo";
+import { timeFieldDemoDefaults } from "../../src/data/timefield-demo";
+import { actionMenuDemoDefaults } from "../../src/data/actionmenu-demo";
+import { contextualHelpDemoDefaults } from "../../src/data/contextualhelp-demo";
+import { dialogDemoDefaults } from "../../src/data/dialog-demo";
+import { menuDemoDefaults } from "../../src/data/menu-demo";
+import { popoverDemoDefaults } from "../../src/data/popover-demo";
+import { tooltipDemoDefaults } from "../../src/data/tooltip-demo";
+import { accordionDemoDefaults } from "../../src/data/accordion-demo";
+import { breadcrumbsDemoDefaults } from "../../src/data/breadcrumbs-demo";
+import { disclosureDemoDefaults } from "../../src/data/disclosure-demo";
+import { stepListDemoDefaults } from "../../src/data/steplist-demo";
+import { comparisonCallbackEvent } from "../../src/data/event-log";
 import { comparisonThemeChangeEvent } from "../../src/data/theme";
 
 // Actual manual fixture source with real built package components, not mock
@@ -137,6 +176,10 @@ async function settle() {
   await new Promise<void>((done) => setTimeout(done, 0));
   flush();
 }
+async function nextAnimationFrame() {
+  await new Promise<void>((done) => requestAnimationFrame(() => done()));
+  flush();
+}
 function controls(component: string, props: object) {
   window.dispatchEvent(new CustomEvent(comparisonControlsEvent, { detail: { component, props } }));
 }
@@ -147,6 +190,1212 @@ function inputValue(element: HTMLInputElement | HTMLTextAreaElement, value: stri
 function keyDown(element: Element, key: string) {
   element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 }
+
+const dateColorFixtures = [
+  {
+    component: "calendar",
+    Fixture: Calendar,
+    defaults: calendarDemoDefaults,
+    updated: {
+      ...calendarDemoDefaults,
+      value: "2025-02-03",
+      focusedValue: "2025-02-04",
+      isInvalid: true,
+    },
+    value: "2025-02-03",
+  },
+  {
+    component: "colorarea",
+    Fixture: ColorArea,
+    defaults: colorAreaDemoDefaults,
+    updated: { ...colorAreaDemoDefaults, ariaLabel: "Updated color area", value: "#336699" },
+    value: "rgb(51, 102, 153)",
+  },
+  {
+    component: "colorfield",
+    Fixture: ColorField,
+    defaults: colorFieldDemoDefaults,
+    updated: { ...colorFieldDemoDefaults, label: "Updated color", value: "#112233" },
+    value: "rgb(17, 34, 51)",
+  },
+  {
+    component: "colorslider",
+    Fixture: ColorSlider,
+    defaults: colorSliderDemoDefaults,
+    updated: { ...colorSliderDemoDefaults, label: "Updated hue", value: "hsl(60, 100%, 50%)" },
+    value: "hsl(60, 100%, 50%)",
+  },
+  {
+    component: "colorswatch",
+    Fixture: ColorSwatch,
+    defaults: colorSwatchDemoDefaults,
+    updated: {
+      ...colorSwatchDemoDefaults,
+      ariaLabel: "Ocean swatch",
+      color: "#336699",
+      colorName: "Ocean",
+    },
+  },
+  {
+    component: "datefield",
+    Fixture: DateField,
+    defaults: dateFieldDemoDefaults,
+    updated: {
+      ...dateFieldDemoDefaults,
+      label: "Updated appointment",
+      value: "2025-02-04",
+      isRequired: true,
+    },
+    value: "2025-02-04",
+  },
+  {
+    component: "datepicker",
+    Fixture: DatePicker,
+    defaults: datePickerDemoDefaults,
+    updated: {
+      ...datePickerDemoDefaults,
+      label: "Updated due date",
+      value: "2025-02-03",
+      isRequired: true,
+    },
+    value: "2025-02-03",
+  },
+  {
+    component: "daterangepicker",
+    Fixture: DateRangePicker,
+    defaults: dateRangePickerDemoDefaults,
+    updated: {
+      ...dateRangePickerDemoDefaults,
+      label: "Updated trip dates",
+      startValue: "2025-02-03",
+      endValue: "2025-02-08",
+      isRequired: true,
+    },
+    value: "2025-02-03/2025-02-08",
+  },
+  {
+    component: "timefield",
+    Fixture: TimeField,
+    defaults: timeFieldDemoDefaults,
+    updated: {
+      ...timeFieldDemoDefaults,
+      label: "Updated start time",
+      value: "10:45:00",
+      isRequired: true,
+    },
+    value: "10:45:00",
+  },
+];
+
+it.each(dateColorFixtures)(
+  "stage A $component removes exact listeners, stays inert, and cleanly remounts",
+  async ({ component, Fixture, defaults, updated, value }) => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const fixtureCalls = (calls: [string, ...unknown[]][]) =>
+      calls.filter(([type]) =>
+        [comparisonControlsEvent, comparisonThemeChangeEvent].includes(type),
+      );
+
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(root).not.toBeNull();
+    const registrations = fixtureCalls(add.mock.calls);
+    expect(registrations).toHaveLength(2);
+    const initialProps = root?.dataset.comparisonControlProps;
+
+    controls(component, updated);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
+    );
+    await settle();
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+    expect(root?.dataset.comparisonColorScheme).toBe("dark");
+    const liveProps = JSON.parse(root?.dataset.comparisonControlProps ?? "{}");
+    for (const [key, expected] of Object.entries(updated)) {
+      expect(liveProps[key]).toBe(expected);
+    }
+    if (value) {
+      expect(root?.dataset.comparisonValue).toBe(value);
+    }
+    switch (component) {
+      case "calendar": {
+        const selected = root?.querySelector<HTMLElement>('[aria-label*="February 3, 2025"]');
+        const focused = root?.querySelector<HTMLElement>('[aria-label*="February 4, 2025"]');
+        expect(selected).toHaveAttribute("data-selected", "true");
+        expect(focused).toHaveAttribute("tabindex", "0");
+        break;
+      }
+      case "colorarea": {
+        const inputs = root?.querySelectorAll<HTMLInputElement>('input[type="range"]');
+        expect(inputs).toHaveLength(2);
+        expect(inputs?.[0]).toHaveValue("51");
+        expect(inputs?.[1]).toHaveValue("102");
+        expect(root?.querySelector('[role="group"]')?.getAttribute("aria-label")).toContain(
+          "Updated color area",
+        );
+        break;
+      }
+      case "colorfield": {
+        expect(root).toHaveTextContent("Updated color");
+        expect(root?.querySelector<HTMLInputElement>('input[type="text"]')).toHaveValue("#112233");
+        break;
+      }
+      case "colorslider": {
+        const input = root?.querySelector<HTMLInputElement>('input[type="range"]');
+        expect(root).toHaveTextContent("Updated hue");
+        expect(input).toHaveValue("60");
+        expect(input?.getAttribute("aria-valuetext")).toMatch(/yellow/i);
+        break;
+      }
+      case "colorswatch": {
+        const swatch = root?.querySelector<HTMLElement>('[role="img"]');
+        expect(swatch?.getAttribute("aria-label")).toBe("Ocean, Ocean swatch");
+        expect(swatch?.style.background).toContain("rgb(51, 102, 153)");
+        break;
+      }
+      case "datefield":
+      case "timefield": {
+        expect(root).toHaveTextContent(
+          component === "datefield" ? "Updated appointment" : "Updated start time",
+        );
+        expect(root?.querySelector("[data-required]")).not.toBeNull();
+        const expectedSegments = component === "datefield" ? ["2", "4", "2025"] : ["10", "45"];
+        const segments = [...(root?.querySelectorAll<HTMLElement>('[role="spinbutton"]') ?? [])];
+        for (const expected of expectedSegments) {
+          expect(
+            segments.some((segment) => segment.getAttribute("aria-valuenow") === expected),
+          ).toBe(true);
+        }
+        break;
+      }
+      case "datepicker":
+      case "daterangepicker": {
+        const expectedLabel =
+          component === "datepicker" ? "Updated due date" : "Updated trip dates";
+        const label = [...(root?.querySelectorAll<HTMLElement>("[id]") ?? [])].find(
+          (candidate) =>
+            candidate.textContent?.trim() === expectedLabel &&
+            root?.querySelector(`[aria-labelledby~="${candidate.id}"]`),
+        );
+        expect(label).not.toBeUndefined();
+        expect(label?.querySelector('[aria-hidden="true"]')).not.toBeNull();
+        const days = [...(root?.querySelectorAll<HTMLElement>('[role="spinbutton"]') ?? [])]
+          .filter((segment) => segment.dataset.type === "day")
+          .map((segment) => segment.getAttribute("aria-valuenow"));
+        expect(days).toEqual(component === "datepicker" ? ["3"] : ["3", "8"]);
+        break;
+      }
+    }
+    const retainedProps = root?.dataset.comparisonControlProps;
+    const retainedTheme = root?.dataset.comparisonColorScheme;
+
+    dispose();
+    dispose = undefined;
+    expectExactListenerRemoval(registrations, fixtureCalls(remove.mock.calls));
+    controls(component, defaults);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "light" } }),
+    );
+    await settle();
+    expect(root?.isConnected).toBe(false);
+    expect(root?.dataset.comparisonControlProps).toBe(retainedProps);
+    expect(root?.dataset.comparisonColorScheme).toBe(retainedTheme);
+
+    add.mockClear();
+    remove.mockClear();
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const replacement = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(replacement).not.toBeNull();
+    expect(replacement).not.toBe(root);
+    expect(replacement?.dataset.comparisonControlProps).toBe(initialProps);
+    expect(fixtureCalls(add.mock.calls)).toHaveLength(2);
+  },
+);
+
+it("stage A calendar retains focused grid navigation and selection semantics", async () => {
+  window.history.replaceState({}, "", "/?value=2025-02-03");
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Calendar(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="calendar"]');
+  const selected = container.querySelector<HTMLElement>('[aria-label*="February 3, 2025"]');
+  expect(root?.dataset.comparisonValue).toBe("2025-02-03");
+  expect(root?.dataset.comparisonFocusedValue).toBe("2025-02-03");
+  expect(selected).not.toBeNull();
+  selected?.focus();
+  await user.keyboard("{ArrowRight}");
+  await nextAnimationFrame();
+  await settle();
+  const next = container.querySelector<HTMLElement>('[aria-label*="February 4, 2025"]');
+  expect(next).not.toBeNull();
+  expect(next).not.toBe(selected);
+  expect(next).toHaveAttribute("data-focused", "true");
+  expect(next).toHaveAttribute("tabindex", "0");
+  expect(root?.dataset.comparisonFocusedValue).toBe("2025-02-04");
+  expect(document.activeElement).toBe(next);
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(root?.dataset.comparisonValue).toBe("2025-02-04");
+  expect(document.activeElement).toBe(next);
+  expect(next).toHaveAttribute("data-selected", "true");
+  expect(next?.getAttribute("aria-label")).toMatch(/selected/i);
+  expect(next?.closest('[role="gridcell"]')).toHaveAttribute("aria-selected", "true");
+  expect(container.querySelector('[data-comparison-control-root="calendar"]')).toBe(root);
+});
+
+it.each([
+  ["colorarea", ColorArea],
+  ["colorslider", ColorSlider],
+] as const)(
+  "stage A %s retains its focused slider and publishes live/final values",
+  async (component, Fixture) => {
+    const user = userEvent.setup({ delay: null });
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const slider = container.querySelector<HTMLInputElement>('input[type="range"]');
+    const initialValue = root?.dataset.comparisonValue;
+    const initialFinalValue = root?.dataset.comparisonFinalValue;
+    const initialInputValue = slider?.value;
+    const initialValueText = slider?.getAttribute("aria-valuetext");
+    expect(slider).not.toBeNull();
+    slider?.focus();
+    await user.keyboard("{ArrowRight}");
+    await settle();
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+    expect(container.querySelector('input[type="range"]')).toBe(slider);
+    expect(document.activeElement).toBe(slider);
+    expect(root?.dataset.comparisonValue).not.toBe(initialValue);
+    expect(root?.dataset.comparisonFinalValue).not.toBe(initialFinalValue);
+    expect(slider?.value).not.toBe(initialInputValue);
+    expect(slider?.getAttribute("aria-valuetext")).not.toBe(initialValueText);
+  },
+);
+
+it("stage A colorfield retains its focused input through a real edit", async () => {
+  dispose = render(() => ColorField(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="colorfield"]');
+  const input = container.querySelector<HTMLInputElement>('input[type="text"]');
+  expect(input).not.toBeNull();
+  input?.focus();
+  inputValue(input!, "#112233");
+  input?.dispatchEvent(new Event("change", { bubbles: true }));
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="colorfield"]')).toBe(root);
+  expect(container.querySelector('input[type="text"]')).toBe(input);
+  expect(document.activeElement).toBe(input);
+  expect(root?.dataset.comparisonValue).toBe("rgb(17, 34, 51)");
+});
+
+it.each([
+  ["datefield", DateField, "2025-02-04"],
+  ["timefield", TimeField, "10:30:00"],
+] as const)(
+  "stage A %s retains the focused segment through keyboard increment",
+  async (component, Fixture, expectedValue) => {
+    const user = userEvent.setup({ delay: null });
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const segments = [...container.querySelectorAll<HTMLElement>('[role="spinbutton"]')];
+    const segment =
+      component === "datefield"
+        ? segments.find((candidate) => candidate.dataset.type === "day")
+        : segments.find((candidate) => candidate.dataset.type === "hour");
+    expect(segment).not.toBeUndefined();
+    const initialRenderedValue = segment?.getAttribute("aria-valuenow");
+    const initialRenderedText = segment?.textContent;
+    segment?.focus();
+    await user.keyboard("{ArrowUp}");
+    await settle();
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+    expect(document.activeElement).toBe(segment);
+    expect(root?.dataset.comparisonValue).toBe(expectedValue);
+    expect(segment?.getAttribute("aria-valuenow")).not.toBe(initialRenderedValue);
+    expect(segment?.textContent).not.toBe(initialRenderedText);
+  },
+);
+
+it.each([
+  ["datepicker", DatePicker],
+  ["daterangepicker", DateRangePicker],
+] as const)(
+  "stage A %s moves deferred focus, selects a stable value, and returns focus on Escape",
+  async (component, Fixture) => {
+    window.history.replaceState(
+      {},
+      "",
+      component === "datepicker"
+        ? "/?value=2025-02-03"
+        : "/?startValue=2025-02-03&endValue=2025-02-08",
+    );
+    const user = userEvent.setup({ delay: null });
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]');
+    expect(trigger).not.toBeNull();
+    trigger?.focus();
+    await user.click(trigger!);
+    await settle();
+    expect(root?.dataset.comparisonOpen).toBe("true");
+    await nextAnimationFrame();
+    const selected = document.querySelector<HTMLElement>(
+      '[role="dialog"] [aria-label*="February 3, 2025"]',
+    );
+    expect(selected).not.toBeNull();
+    selected?.focus();
+    await user.keyboard("{ArrowRight}");
+    await nextAnimationFrame();
+    await settle();
+    const next = document.querySelector<HTMLElement>(
+      '[role="dialog"] [aria-label*="February 4, 2025"]',
+    );
+    expect(next).not.toBeNull();
+    expect(document.activeElement).toBe(next);
+    await user.keyboard("{Enter}");
+    await settle();
+    if (component === "daterangepicker") {
+      await nextAnimationFrame();
+      await settle();
+      const rangeEnd = document.querySelector<HTMLElement>(
+        '[role="dialog"] [aria-label*="February 5, 2025"]',
+      );
+      expect(document.activeElement).toBe(rangeEnd);
+      await user.keyboard("{Enter}");
+      await settle();
+    }
+    expect(root?.dataset.comparisonValue).toBe(
+      component === "datepicker" ? "2025-02-04" : "2025-02-04/2025-02-05",
+    );
+    const renderedDays = [...(root?.querySelectorAll<HTMLElement>('[role="spinbutton"]') ?? [])]
+      .filter((segment) => segment.dataset.type === "day")
+      .map((segment) => segment.getAttribute("aria-valuenow"));
+    expect(renderedDays).toEqual(component === "datepicker" ? ["4"] : ["4", "5"]);
+    await user.click(trigger!);
+    await settle();
+    await nextAnimationFrame();
+    expect(root?.dataset.comparisonOpen).toBe("true");
+    await user.keyboard("{Escape}");
+    await settle();
+    expect(root?.dataset.comparisonOpen).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+  },
+);
+
+const overlayFixtures = [
+  {
+    component: "actionmenu",
+    Fixture: ActionMenu,
+    defaults: actionMenuDemoDefaults,
+    updated: { ...actionMenuDemoDefaults, size: "L" as const, isQuiet: true },
+  },
+  {
+    component: "contextualhelp",
+    Fixture: ContextualHelp,
+    defaults: contextualHelpDemoDefaults,
+    updated: {
+      ...contextualHelpDemoDefaults,
+      triggerLabel: "Updated help",
+      heading: "Updated guidance",
+      content: "Updated contextual details",
+      isOpen: true,
+    },
+  },
+  {
+    component: "dialog",
+    Fixture: Dialog,
+    defaults: dialogDemoDefaults,
+    updated: {
+      ...dialogDemoDefaults,
+      triggerLabel: "Updated dialog trigger",
+      title: "Updated dialog title",
+      body: "Updated dialog body",
+      isOpen: true,
+    },
+  },
+  {
+    component: "menu",
+    Fixture: Menu,
+    defaults: menuDemoDefaults,
+    updated: { ...menuDemoDefaults, triggerSize: "L" as const, isDisabled: true },
+  },
+  {
+    component: "popover",
+    Fixture: Popover,
+    defaults: popoverDemoDefaults,
+    updated: {
+      ...popoverDemoDefaults,
+      triggerLabel: "Updated feedback",
+      ariaLabel: "Updated feedback dialog",
+      bodyText: "Updated popover body",
+      isOpen: true,
+    },
+  },
+  {
+    component: "tooltip",
+    Fixture: Tooltip,
+    defaults: tooltipDemoDefaults,
+    updated: {
+      ...tooltipDemoDefaults,
+      actionLabel: "Updated inspect",
+      children: "Updated tooltip content",
+      isOpen: true,
+    },
+  },
+];
+
+it.each(overlayFixtures)(
+  "stage B $component removes exact listeners, stays inert, and cleanly remounts",
+  async ({ component, Fixture, defaults, updated }) => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const fixtureCalls = (calls: [string, ...unknown[]][]) =>
+      calls.filter(([type]) =>
+        [comparisonControlsEvent, comparisonThemeChangeEvent].includes(type),
+      );
+
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(root).not.toBeNull();
+    const registrations = fixtureCalls(add.mock.calls);
+    expect(registrations).toHaveLength(2);
+    const initialProps = root?.dataset.comparisonControlProps;
+
+    controls(component, updated);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
+    );
+    await settle();
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+    expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}")).toMatchObject(updated);
+    const trigger = container.querySelector<HTMLButtonElement>("button");
+    switch (component) {
+      case "actionmenu":
+        expect(trigger).toHaveAttribute("data-size", "L");
+        expect(trigger).toHaveAttribute("data-quiet");
+        break;
+      case "contextualhelp":
+        expect(trigger?.getAttribute("aria-label")).toContain("Updated help");
+        expect(document.querySelector('[role="dialog"]')).toHaveTextContent("Updated guidance");
+        expect(document.querySelector('[role="dialog"]')).toHaveTextContent(
+          "Updated contextual details",
+        );
+        break;
+      case "dialog":
+        expect(trigger).toHaveTextContent("Updated dialog trigger");
+        expect(document.querySelector('[role="dialog"]')).toHaveTextContent("Updated dialog title");
+        expect(document.querySelector('[role="dialog"]')).toHaveTextContent("Updated dialog body");
+        break;
+      case "menu":
+        expect(trigger).toBeDisabled();
+        break;
+      case "popover":
+        expect(trigger).toHaveTextContent("Updated feedback");
+        expect(document.querySelector('[role="dialog"]')).toHaveAttribute(
+          "aria-label",
+          "Updated feedback dialog",
+        );
+        expect(document.querySelector('[role="dialog"]')).toHaveTextContent("Updated popover body");
+        break;
+      case "tooltip":
+        expect(trigger).toHaveAttribute("aria-label", "Updated inspect");
+        expect(document.querySelector('[role="tooltip"]')).toHaveTextContent(
+          "Updated tooltip content",
+        );
+        break;
+    }
+    const retainedProps = root?.dataset.comparisonControlProps;
+
+    dispose();
+    dispose = undefined;
+    expectExactListenerRemoval(registrations, fixtureCalls(remove.mock.calls));
+    controls(component, defaults);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "light" } }),
+    );
+    await settle();
+    expect(root?.isConnected).toBe(false);
+    expect(root?.dataset.comparisonControlProps).toBe(retainedProps);
+
+    add.mockClear();
+    remove.mockClear();
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const replacement = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(replacement).not.toBeNull();
+    expect(replacement).not.toBe(root);
+    expect(replacement?.dataset.comparisonControlProps).toBe(initialProps);
+    expect(fixtureCalls(add.mock.calls)).toHaveLength(2);
+  },
+);
+
+it.each([
+  ["actionmenu", ActionMenu, "More actions"],
+  ["menu", Menu, "Layer actions"],
+] as const)(
+  "stage B %s provides keyboard navigation, callback evidence, Escape, and focus return",
+  async (component, Fixture, triggerName) => {
+    const user = userEvent.setup({ delay: null });
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>(
+      `button[aria-label="${triggerName}"]`,
+    );
+    expect(trigger).not.toBeNull();
+    trigger?.focus();
+    await user.keyboard("{Enter}");
+    await settle();
+    await nextAnimationFrame();
+    await settle();
+    const menu = document.querySelector<HTMLElement>('[role="menu"]');
+    const items = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(menu).not.toBeNull();
+    expect(items.length).toBeGreaterThan(1);
+    expect(menu?.contains(document.activeElement)).toBe(true);
+    const initiallyFocused = document.activeElement;
+    await user.keyboard("{ArrowDown}");
+    await settle();
+    expect(menu?.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(initiallyFocused);
+    await user.keyboard("{Enter}");
+    await settle();
+    expect(root?.dataset.comparisonActionCount).toBe("1");
+    expect(root?.dataset.comparisonLastAction).not.toBe("");
+    expect(root?.dataset.comparisonLastOpenState).toBe("false");
+    expect(document.activeElement).toBe(trigger);
+
+    await user.keyboard("{Enter}");
+    await settle();
+    expect(document.querySelector('[role="menu"]')).not.toBeNull();
+    await user.keyboard("{Escape}");
+    await settle();
+    expect(document.querySelector('[role="menu"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+  },
+);
+
+function addPinnedOpenControl(component: "contextualhelp" | "popover" | "tooltip") {
+  const form = document.createElement("form");
+  form.dataset.comparisonControls = component;
+  const field = document.createElement(component === "tooltip" ? "select" : "input");
+  field.setAttribute("name", "isOpen");
+  if (field instanceof HTMLSelectElement) {
+    field.append(new Option("true", "true"));
+    field.value = "true";
+  } else {
+    field.type = "checkbox";
+    field.checked = true;
+  }
+  form.append(field);
+  document.body.append(form);
+  return () => form.remove();
+}
+
+it("stage B contextual help permits Escape close, pins external open, and keeps live semantics", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => ContextualHelp(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>(
+    '[data-comparison-control-root="contextualhelp"]',
+  );
+  const trigger = container.querySelector<HTMLButtonElement>(
+    'button[aria-label^="Contextual help"]',
+  );
+  expect(trigger).not.toBeNull();
+  await user.click(trigger!);
+  await settle();
+  await nextAnimationFrame();
+  await settle();
+  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+  expect(dialog).toHaveTextContent("Permission required");
+  expect(dialog?.contains(document.activeElement)).toBe(true);
+  controls("contextualhelp", {
+    ...contextualHelpDemoDefaults,
+    triggerLabel: "Live help",
+    heading: "Live guidance",
+    content: "Live contextual content",
+    isOpen: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="contextualhelp"]')).toBe(root);
+  expect(container.querySelector("button")).toBe(trigger);
+  expect(trigger?.getAttribute("aria-label")).toContain("Live help");
+  expect(dialog).toHaveTextContent("Live guidance");
+  expect(dialog).toHaveTextContent("Live contextual content");
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+
+  const removeControl = addPinnedOpenControl("contextualhelp");
+  controls("contextualhelp", { ...contextualHelpDemoDefaults, isOpen: true });
+  await settle();
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}").isOpen).toBe(true);
+  removeControl();
+});
+
+it("stage B dialog preserves its trigger owner, live content, callback, and focus restoration", async () => {
+  const user = userEvent.setup({ delay: null });
+  const callbacks: CustomEvent[] = [];
+  const onCallback = (event: Event) => callbacks.push(event as CustomEvent);
+  document.addEventListener(comparisonCallbackEvent, onCallback);
+  dispose = render(() => Dialog(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="dialog"]');
+  const trigger = container.querySelector<HTMLButtonElement>("button");
+  await user.click(trigger!);
+  await settle();
+  await nextAnimationFrame();
+  await settle();
+  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+  expect(dialog).not.toBeNull();
+  expect(dialog?.contains(document.activeElement)).toBe(true);
+  const focusedDialogDescendant = document.activeElement;
+  controls("dialog", {
+    ...dialogDemoDefaults,
+    triggerLabel: "Live dialog trigger",
+    title: "Live dialog title",
+    body: "Live dialog body",
+    isOpen: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="dialog"]')).toBe(root);
+  expect(container.querySelector("button")).toBe(trigger);
+  expect(trigger).toHaveTextContent("Live dialog trigger");
+  expect(document.querySelector('[role="dialog"]')).toBe(dialog);
+  expect(document.activeElement).toBe(focusedDialogDescendant);
+  expect(dialog).toHaveTextContent("Live dialog title");
+  expect(dialog).toHaveTextContent("Live dialog body");
+  controls("dialog", {
+    ...dialogDemoDefaults,
+    role: "alertdialog",
+    title: "Structural alert title",
+    body: "Structural alert body",
+    isOpen: true,
+  });
+  await settle();
+  const alertDialog = document.querySelector<HTMLElement>('[role="alertdialog"]');
+  expect(container.querySelector('[data-comparison-control-root="dialog"]')).toBe(root);
+  expect(container.querySelector("button")).toBe(trigger);
+  expect(dialog?.isConnected).toBe(false);
+  expect(alertDialog).toHaveTextContent("Structural alert title");
+  expect(alertDialog).toHaveTextContent("Structural alert body");
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(root?.dataset.comparisonOpen).toBe("false");
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+  expect(
+    callbacks.some(
+      (event) => event.detail.component === "dialog" && event.detail.value === "false",
+    ),
+  ).toBe(true);
+  document.removeEventListener(comparisonCallbackEvent, onCallback);
+});
+
+it("stage B popover permits Escape close, pins external open, and retains live descendants", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Popover(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="popover"]');
+  const trigger = container.querySelector<HTMLButtonElement>("button");
+  await user.click(trigger!);
+  await settle();
+  await nextAnimationFrame();
+  await settle();
+  const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+  expect(dialog).toHaveAttribute("aria-label", "Feedback");
+  expect(dialog?.contains(document.activeElement)).toBe(true);
+  expect(container.querySelector("button")).toBe(trigger);
+  const focusedPopoverDescendant = document.activeElement;
+  controls("popover", {
+    ...popoverDemoDefaults,
+    triggerLabel: "Live feedback",
+    ariaLabel: "Live feedback dialog",
+    bodyText: "Live popover content",
+    isOpen: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="popover"]')).toBe(root);
+  expect(container.querySelector("button")).toBe(trigger);
+  expect(document.querySelector('[role="dialog"]')).toBe(dialog);
+  expect(document.activeElement).toBe(focusedPopoverDescendant);
+  expect(trigger).toHaveTextContent("Live feedback");
+  expect(dialog).toHaveAttribute("aria-label", "Live feedback dialog");
+  expect(dialog).toHaveTextContent("Live popover content");
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(root?.dataset.comparisonOpen).toBe("false");
+  expect(document.activeElement).toBe(trigger);
+
+  controls("popover", {
+    ...popoverDemoDefaults,
+    triggerMode: "customAnchor",
+  });
+  await settle();
+  const customTrigger = container.querySelector<HTMLButtonElement>("button");
+  expect(container.querySelector('[data-comparison-control-root="popover"]')).toBe(root);
+  expect(trigger?.isConnected).toBe(false);
+  expect(dialog?.isConnected).toBe(false);
+  expect(customTrigger).toHaveTextContent("Open Feedback");
+  expect(container).toHaveTextContent("Popover anchor");
+
+  const removeControl = addPinnedOpenControl("popover");
+  controls("popover", { ...popoverDemoDefaults, isOpen: true });
+  await settle();
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  expect(root?.dataset.comparisonOpen).toBe("true");
+  removeControl();
+});
+
+it("stage B tooltip uses its focus delay, supports permitted and pinned close, and updates live", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Tooltip(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="tooltip"]');
+  controls("tooltip", {
+    ...tooltipDemoDefaults,
+    trigger: "hover",
+    delay: 10,
+    actionLabel: "Focus inspect",
+  });
+  await settle();
+  const trigger = container.querySelector<HTMLButtonElement>('button[aria-label="Focus inspect"]');
+  const hoverEvent = new Event("pointerenter", { cancelable: true, bubbles: true });
+  Object.defineProperty(hoverEvent, "pointerType", { value: "mouse" });
+  trigger?.dispatchEvent(hoverEvent);
+  await new Promise<void>((done) => setTimeout(done, 50));
+  await nextAnimationFrame();
+  flush();
+  const tooltip = document.querySelector<HTMLElement>('[role="tooltip"]');
+  expect(tooltip).toHaveTextContent("Tooltip content");
+  expect(trigger).toHaveAttribute("aria-describedby", tooltip?.id);
+  trigger?.focus();
+  expect(document.activeElement).toBe(trigger);
+  controls("tooltip", {
+    ...tooltipDemoDefaults,
+    trigger: "hover",
+    delay: 10,
+    actionLabel: "Live inspect",
+    children: "Live tooltip content",
+    isOpen: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="tooltip"]')).toBe(root);
+  expect(container.querySelector("button")).toBe(trigger);
+  expect(trigger).toHaveAttribute("aria-label", "Live inspect");
+  expect(tooltip).toHaveTextContent("Live tooltip content");
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+
+  const removeControl = addPinnedOpenControl("tooltip");
+  controls("tooltip", { ...tooltipDemoDefaults, trigger: "hover", delay: 10, isOpen: true });
+  await settle();
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}").isOpen).toBe(true);
+  removeControl();
+});
+
+const navigationFixtures = [
+  {
+    component: "accordion",
+    Fixture: Accordion,
+    defaults: accordionDemoDefaults,
+    updated: {
+      ...accordionDemoDefaults,
+      size: "L" as const,
+      density: "compact" as const,
+      isQuiet: true,
+      allowsMultipleExpanded: true,
+    },
+  },
+  {
+    component: "breadcrumbs",
+    Fixture: Breadcrumbs,
+    defaults: breadcrumbsDemoDefaults,
+    updated: { ...breadcrumbsDemoDefaults, size: "L" as const, isDisabled: true },
+  },
+  {
+    component: "disclosure",
+    Fixture: Disclosure,
+    defaults: disclosureDemoDefaults,
+    updated: {
+      ...disclosureDemoDefaults,
+      size: "L" as const,
+      density: "compact" as const,
+      isQuiet: true,
+      isExpanded: false,
+    },
+  },
+  {
+    component: "steplist",
+    Fixture: StepList,
+    defaults: stepListDemoDefaults,
+    updated: {
+      ...stepListDemoDefaults,
+      disabledKeys: "fallback-offer",
+      isReadOnly: true,
+    },
+  },
+];
+
+it.each(navigationFixtures)(
+  "stage C $component removes exact listeners, stays inert, and cleanly remounts",
+  async ({ component, Fixture, defaults, updated }) => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const fixtureCalls = (calls: [string, ...unknown[]][]) =>
+      calls.filter(([type]) =>
+        [comparisonControlsEvent, comparisonThemeChangeEvent].includes(type),
+      );
+
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(root).not.toBeNull();
+    const registrations = fixtureCalls(add.mock.calls);
+    expect(registrations).toHaveLength(2);
+    const initialProps = root?.dataset.comparisonControlProps;
+
+    controls(component, updated);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
+    );
+    await settle();
+    expect(container.querySelector(`[data-comparison-control-root="${component}"]`)).toBe(root);
+    expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}")).toMatchObject(updated);
+    switch (component) {
+      case "accordion": {
+        const group = root?.querySelector<HTMLElement>('[data-rsp-component="DisclosureGroup"]');
+        expect(group).toHaveAttribute("data-size", "L");
+        expect(group).toHaveAttribute("data-density", "compact");
+        expect(group).toHaveAttribute("data-quiet", "true");
+        break;
+      }
+      case "breadcrumbs": {
+        const list = root?.querySelector<HTMLOListElement>('ol[aria-label="Project location"]');
+        expect(list).toHaveAttribute("data-disabled", "true");
+        expect(list?.querySelector('[data-disabled="true"]')).not.toBeNull();
+        break;
+      }
+      case "disclosure": {
+        const disclosure = root?.querySelector<HTMLElement>('[data-rsp-component="Disclosure"]');
+        expect(disclosure).toHaveAttribute("data-size", "L");
+        expect(disclosure).toHaveAttribute("data-density", "compact");
+        expect(disclosure).toHaveAttribute("data-quiet", "true");
+        expect(root?.querySelector("button")).toHaveAttribute("aria-expanded", "false");
+        break;
+      }
+      case "steplist": {
+        expect(root).toHaveAttribute("aria-label", "Checkout steps");
+        for (const link of root?.querySelectorAll('[role="link"]') ?? []) {
+          expect(link).toHaveAttribute("aria-disabled", "true");
+        }
+        break;
+      }
+    }
+    const themeShell = container.querySelector<HTMLElement>("[data-color-scheme]");
+    expect(themeShell).toHaveAttribute("data-color-scheme", "dark");
+    const retainedProps = root?.dataset.comparisonControlProps;
+
+    dispose();
+    dispose = undefined;
+    expectExactListenerRemoval(registrations, fixtureCalls(remove.mock.calls));
+    controls(component, defaults);
+    window.dispatchEvent(
+      new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "light" } }),
+    );
+    await settle();
+    expect(root?.isConnected).toBe(false);
+    expect(root?.dataset.comparisonControlProps).toBe(retainedProps);
+    expect(themeShell).toHaveAttribute("data-color-scheme", "dark");
+
+    add.mockClear();
+    remove.mockClear();
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const replacement = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(replacement).not.toBeNull();
+    expect(replacement).not.toBe(root);
+    expect(replacement?.dataset.comparisonControlProps).toBe(initialProps);
+    expect(fixtureCalls(add.mock.calls)).toHaveLength(2);
+  },
+);
+
+it("stage C accordion keeps focused headers live through expansion and visual controls", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Accordion(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="accordion"]');
+  const group = root?.querySelector<HTMLElement>('[data-rsp-component="DisclosureGroup"]');
+  const personal = [
+    ...(root?.querySelectorAll<HTMLButtonElement>("button[aria-expanded]") ?? []),
+  ].find((button) => button.textContent?.includes("Personal Information"));
+  const billing = [
+    ...(root?.querySelectorAll<HTMLButtonElement>("button[aria-expanded]") ?? []),
+  ].find((button) => button.textContent?.includes("Billing Address"));
+  expect(personal).toHaveAttribute("aria-expanded", "true");
+  expect(billing).toHaveAttribute("aria-expanded", "false");
+  billing?.focus();
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(document.activeElement).toBe(billing);
+  expect(personal).toHaveAttribute("aria-expanded", "false");
+  expect(billing).toHaveAttribute("aria-expanded", "true");
+  expect(root?.dataset.comparisonExpandedKeys).toBe("billing");
+  expect(root?.dataset.comparisonExpandedChangeCount).toBe("1");
+  expect(root?.dataset.comparisonExpandedChangeKeys).toBe("billing");
+
+  controls("accordion", {
+    ...accordionDemoDefaults,
+    size: "L",
+    density: "compact",
+    isQuiet: true,
+    allowsMultipleExpanded: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="accordion"]')).toBe(root);
+  expect(root?.querySelector('[data-rsp-component="DisclosureGroup"]')).toBe(group);
+  expect(root?.querySelectorAll("button[aria-expanded]")[1]).toBe(billing);
+  expect(document.activeElement).toBe(billing);
+  expect(group).toHaveAttribute("data-size", "L");
+  expect(group).toHaveAttribute("data-density", "compact");
+  expect(group).toHaveAttribute("data-quiet", "true");
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(billing).toHaveAttribute("aria-expanded", "false");
+  expect(root?.dataset.comparisonExpandedKeys).toBe("");
+  expect(root?.dataset.comparisonExpandedChangeCount).toBe("2");
+  expect(document.activeElement).toBe(billing);
+});
+
+it("stage C breadcrumbs retains links within modes and replaces only the item-mode branch", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Breadcrumbs(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="breadcrumbs"]');
+  const standardList = root?.querySelector<HTMLOListElement>('ol[aria-label="Project location"]');
+  const home = [...(standardList?.querySelectorAll<HTMLElement>('[role="link"]') ?? [])].find(
+    (link) => link.textContent?.includes("Home"),
+  );
+  const current = [
+    ...(standardList?.querySelectorAll<HTMLElement>('[aria-current="page"]') ?? []),
+  ].find((item) => item.textContent?.includes("Breadcrumbs"));
+  const initialClass = home?.className;
+  expect(current).not.toBeUndefined();
+  home?.focus();
+  controls("breadcrumbs", { ...breadcrumbsDemoDefaults, size: "L" });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="breadcrumbs"]')).toBe(root);
+  expect(root?.querySelector('ol[aria-label="Project location"]')).toBe(standardList);
+  expect(
+    [...(standardList?.querySelectorAll<HTMLElement>('[role="link"]') ?? [])].find((link) =>
+      link.textContent?.includes("Home"),
+    ),
+  ).toBe(home);
+  expect(document.activeElement).toBe(home);
+  expect(home?.className).not.toBe(initialClass);
+
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(root?.dataset.comparisonActionCount).toBe("1");
+  expect(root?.dataset.comparisonLastAction).toBe("home");
+  expect(root?.dataset.comparisonPath).toBe("home");
+  expect(home?.isConnected).toBe(false);
+  const narrowedList = root?.querySelector<HTMLOListElement>('ol[aria-label="Project location"]');
+  expect(narrowedList?.querySelector('[aria-current="page"]')).toHaveTextContent("Home");
+
+  controls("breadcrumbs", { ...breadcrumbsDemoDefaults, size: "L", itemSet: "overflow" });
+  await settle();
+  const overflowList = root?.querySelector<HTMLOListElement>('ol[aria-label="Project location"]');
+  const overflowHome = [
+    ...(overflowList?.querySelectorAll<HTMLElement>('[role="link"]') ?? []),
+  ].find((link) => link.textContent?.includes("Home"));
+  expect(container.querySelector('[data-comparison-control-root="breadcrumbs"]')).toBe(root);
+  expect(narrowedList?.isConnected).toBe(false);
+  expect(overflowList).not.toBe(narrowedList);
+  expect(root?.dataset.comparisonPath).toBe("home,files,projects,reports,annual-report");
+  expect(overflowList?.querySelector('[aria-current="page"]')).toHaveTextContent("Annual report");
+  expect(overflowHome).not.toBeUndefined();
+  const overflowClass = overflowHome?.className;
+  overflowHome?.focus();
+  controls("breadcrumbs", { ...breadcrumbsDemoDefaults, itemSet: "overflow" });
+  await settle();
+  expect(root?.querySelector('ol[aria-label="Project location"]')).toBe(overflowList);
+  expect(
+    [...(overflowList?.querySelectorAll<HTMLElement>('[role="link"]') ?? [])].find((link) =>
+      link.textContent?.includes("Home"),
+    ),
+  ).toBe(overflowHome);
+  expect(document.activeElement).toBe(overflowHome);
+  expect(overflowHome?.className).not.toBe(overflowClass);
+});
+
+it("stage C disclosure preserves live focus and confines header-action structure", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Disclosure(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="disclosure"]');
+  const disclosure = root?.querySelector<HTMLElement>('[data-rsp-component="Disclosure"]');
+  const trigger = [
+    ...(root?.querySelectorAll<HTMLButtonElement>("button[aria-expanded]") ?? []),
+  ].find((button) => button.textContent?.includes("System Requirements"));
+  const action = root?.querySelector<HTMLButtonElement>(
+    'button[aria-label="Edit system requirements"]',
+  );
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  trigger?.focus();
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  expect(root?.dataset.comparisonExpandedChangeCount).toBe("1");
+  expect(root?.dataset.comparisonExpandedChangeValue).toBe("false");
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  expect(root?.dataset.comparisonExpandedChangeCount).toBe("2");
+  expect(document.activeElement).toBe(trigger);
+
+  controls("disclosure", {
+    ...disclosureDemoDefaults,
+    size: "L",
+    density: "compact",
+    isQuiet: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="disclosure"]')).toBe(root);
+  expect(root?.querySelector('[data-rsp-component="Disclosure"]')).toBe(disclosure);
+  expect(root?.querySelector("button[aria-expanded]")).toBe(trigger);
+  expect(root?.querySelector('button[aria-label="Edit system requirements"]')).toBe(action);
+  expect(document.activeElement).toBe(trigger);
+  expect(disclosure).toHaveAttribute("data-size", "L");
+  expect(disclosure).toHaveAttribute("data-density", "compact");
+  expect(disclosure).toHaveAttribute("data-quiet", "true");
+
+  controls("disclosure", {
+    ...disclosureDemoDefaults,
+    size: "L",
+    density: "compact",
+    isQuiet: true,
+    withHeaderAction: false,
+  });
+  await settle();
+  const replacementTrigger = root?.querySelector<HTMLButtonElement>("button[aria-expanded]");
+  expect(container.querySelector('[data-comparison-control-root="disclosure"]')).toBe(root);
+  expect(root?.querySelector('[data-rsp-component="Disclosure"]')).toBe(disclosure);
+  expect(action?.isConnected).toBe(false);
+  expect(trigger?.isConnected).toBe(false);
+  expect(replacementTrigger).not.toBe(trigger);
+  expect(replacementTrigger).toHaveTextContent("System Requirements");
+  expect(root?.querySelector('button[aria-label="Edit system requirements"]')).toBeNull();
+});
+
+it("stage C steplist uses initialization defaults and keeps live navigation descendants", async () => {
+  window.history.replaceState(
+    {},
+    "",
+    "/?defaultSelectedKey=details&defaultLastCompletedStep=details",
+  );
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => StepList(), container);
+  await settle();
+  const root = container.querySelector<HTMLOListElement>(
+    '[data-comparison-control-root="steplist"]',
+  );
+  const before = [...container.querySelectorAll<HTMLButtonElement>("button")].find(
+    (button) => button.textContent === "Before",
+  );
+  const after = [...container.querySelectorAll<HTMLButtonElement>("button")].find(
+    (button) => button.textContent === "After",
+  );
+  const links = [...(root?.querySelectorAll<HTMLAnchorElement>('[role="link"]') ?? [])];
+  expect(links).toHaveLength(4);
+  expect(links[0]).toHaveAttribute("aria-current", "step");
+  expect(links[0].closest("li")).toHaveAttribute("data-completed");
+  before?.focus();
+  await user.tab();
+  expect(document.activeElement).toBe(links[0]);
+  await user.tab();
+  expect(document.activeElement).toBe(links[1]);
+  await user.tab();
+  expect(document.activeElement).toBe(after);
+
+  links[1].focus();
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(links[0]).not.toHaveAttribute("aria-current");
+  expect(links[1]).toHaveAttribute("aria-current", "step");
+  expect(links[1].closest("li")).toHaveAttribute("data-selected");
+  expect(document.activeElement).toBe(links[1]);
+
+  controls("steplist", {
+    defaultSelectedKey: "details",
+    defaultLastCompletedStep: "details",
+    disabledKeys: "fallback-offer",
+    isDisabled: false,
+    isReadOnly: false,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="steplist"]')).toBe(root);
+  expect([...(root?.querySelectorAll('[role="link"]') ?? [])]).toEqual(links);
+  expect(document.activeElement).toBe(links[1]);
+  expect(links[1]).toHaveAttribute("aria-current", "step");
+  expect(links[2]).toHaveAttribute("aria-disabled", "true");
+  controls("steplist", {
+    defaultSelectedKey: "details",
+    defaultLastCompletedStep: "details",
+    disabledKeys: "fallback-offer",
+    isDisabled: false,
+    isReadOnly: true,
+  });
+  await settle();
+  expect(container.querySelector('[data-comparison-control-root="steplist"]')).toBe(root);
+  expect([...(root?.querySelectorAll('[role="link"]') ?? [])]).toEqual(links);
+  expect(document.activeElement).toBe(links[1]);
+  expect(links[1]).toHaveAttribute("aria-current", "step");
+  for (const link of links) {
+    expect(link).toHaveAttribute("aria-disabled", "true");
+  }
+});
 
 it("checkbox preserves same-key nodes, remounts changed defaults and removes exact listeners", async () => {
   window.history.replaceState({}, "", "/?selectionSource=defaultSelected&defaultSelected=false");
