@@ -377,9 +377,10 @@ async function generateUiIcon(spec, s2Package) {
     ...svgVariants.flatMap(({ inputs }) => inputs),
   ])}
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createUIIcon } from "../spectrum-icon";
 import { style } from "../../style" with { type: "macro" };
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 const styles = style(${sizeStyle.styleObject});
 
@@ -421,8 +422,9 @@ async function generateWorkflowIcon(inventoryFile, s2Package) {
     iconName,
     content: `${generatedNotice}${provenanceLines(inputs)}
 
-import { type JSX, splitProps } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createIcon } from "../spectrum-icon";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 ${buildWorkflowIconComponent(iconName, tree)}
 
