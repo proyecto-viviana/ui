@@ -18,7 +18,7 @@
  * Based on @react-aria/listbox useListBox.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";

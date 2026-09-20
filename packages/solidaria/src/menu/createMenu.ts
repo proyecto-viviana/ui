@@ -19,7 +19,7 @@
  */
 
 import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";

@@ -312,7 +312,6 @@ export function createColorSlider(
   // Track props
   const trackProps = createMemo(() => {
     const s = getState();
-    const p = getProps();
     const bg = generateBackground();
     return {
       id: trackElementId(),

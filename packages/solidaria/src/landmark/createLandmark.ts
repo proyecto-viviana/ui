@@ -26,7 +26,7 @@
 
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { filterDOMProps } from "../utils";
 

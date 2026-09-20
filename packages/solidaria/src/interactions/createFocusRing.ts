@@ -8,7 +8,7 @@
  * Port of @react-aria/focus useFocusRing.
  */
 
-import { createSignal, createEffect, onCleanup, createMemo, createTrackedEffect } from "solid-js";
+import { createSignal, createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocus } from "./createFocus";

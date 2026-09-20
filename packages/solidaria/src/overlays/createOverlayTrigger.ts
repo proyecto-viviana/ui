@@ -17,7 +17,7 @@
  * Based on @react-aria/overlays useOverlayTrigger.
  */
 
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { OverlayTriggerState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils";

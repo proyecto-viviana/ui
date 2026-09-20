@@ -17,7 +17,7 @@
  * Based on @react-aria/menu useMenuTrigger.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { MenuTriggerState, MenuTriggerType } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";

@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/radio's useRadio hook.
  */
 
-import { Accessor, createEffect, createTrackedEffect } from "solid-js";
+import { Accessor, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";

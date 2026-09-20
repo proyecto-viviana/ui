@@ -22,7 +22,7 @@
  * segments drive value changes through the keyboard only.
  */
 
-import { createMemo, createEffect, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createStringFormatter } from "../i18n";
 import { announce, clearAnnouncer } from "../live-announcer";

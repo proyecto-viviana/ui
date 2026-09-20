@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell
  */
 
-import { createSignal, createMemo, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";

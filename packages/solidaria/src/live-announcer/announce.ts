@@ -25,8 +25,7 @@
  * will only be created when running in the browser.
  */
 
-import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import { isServer } from "@solidjs/web";
 
 export type Assertiveness = "assertive" | "polite";

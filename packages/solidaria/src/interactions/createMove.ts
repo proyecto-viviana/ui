@@ -18,7 +18,7 @@
  * Port of @react-aria/interactions useMove, adapted for SolidJS.
  */
 
-import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { disableTextSelection, restoreTextSelection, createGlobalListeners } from "../utils";
 

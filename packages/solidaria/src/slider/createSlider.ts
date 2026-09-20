@@ -105,7 +105,7 @@ export function createSlider(
   });
 
   // Focus ring for keyboard focus styling
-  const { isFocusVisible, focusProps } = createFocusRing({
+  const { focusProps } = createFocusRing({
     within: true,
   });
 

@@ -28,7 +28,7 @@
  * This Solid module combines the upstream hooks and keyboard delegate.
  */
 
-import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createFocusRing } from "../interactions";
 import { createPress } from "../interactions";

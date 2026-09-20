@@ -41,7 +41,7 @@
  *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
-import { createEffect, createUniqueId, createTrackedEffect } from "solid-js";
+import { createUniqueId, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type {

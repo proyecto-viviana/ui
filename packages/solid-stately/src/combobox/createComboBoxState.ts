@@ -553,11 +553,13 @@ export function createComboBoxState<T = unknown>(
 
   // ---- Focus Handling ----
   const [isFocused, setIsFocused] = createInternalSignal(false);
-  let valueOnFocus = "";
 
+  // RAC useComboBoxState.ts:578-593 also keeps `valueOnFocus` and, on blur,
+  // calls `validation.commitValidation()` when the input value or the display
+  // value moved while focused. This hook has no validation state at all, so
+  // the binding was written and never read; #560 owes the whole wiring.
   const setFocused = (focused: boolean) => {
     if (focused) {
-      valueOnFocus = inputValue();
       if (menuTrigger() === "focus" && !getProps().isReadOnly) {
         open(null, "focus");
       }

@@ -53,9 +53,6 @@ export function createTableRow<T extends object>(
 ): TableRowAria {
   const locale = useLocale();
 
-  // Tree-grid (expandable rows): only active when the collection has a tree column.
-  const isTreeRow = createMemo(() => state().treeColumn != null);
-
   const hasChildRows = createMemo(() => props().node.isExpandable ?? false);
 
   const isExpanded = () => {

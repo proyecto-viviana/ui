@@ -22,7 +22,7 @@
  */
 
 import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type ToastState } from "@proyecto-viviana/solid-stately";

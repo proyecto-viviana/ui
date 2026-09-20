@@ -22,7 +22,7 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckbox hook.
  */
 
-import { Accessor, createEffect, createTrackedEffect } from "solid-js";
+import { Accessor, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";

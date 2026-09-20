@@ -28,7 +28,6 @@ import type {
   DropOperation,
   DragTypes,
   DroppableCollectionEnterEvent,
-  DroppableCollectionMoveEvent,
   DroppableCollectionActivateEvent,
   DroppableCollectionExitEvent,
   DroppableCollectionDropEvent,

@@ -17,7 +17,7 @@
  * Based on @react-aria/gridlist/useGridList.
  */
 
-import { createMemo, createEffect, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";

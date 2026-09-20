@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useRangeCalendar
  */
 
-import { createMemo, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";

@@ -21,7 +21,7 @@
  */
 
 import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type DisclosureState } from "@proyecto-viviana/solid-stately";
 import { createId, canUseDOM } from "../ssr";

@@ -20,7 +20,7 @@
  * Ported from packages/react-aria/src/color/useColorField.ts.
  */
 
-import { createEffect, createMemo, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";

@@ -17,7 +17,7 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import { createEffect, createMemo, onCleanup, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { announce } from "../live-announcer";
 import { createField, type AriaLabelingProps } from "../label";

@@ -20,7 +20,6 @@ import {
   getFocusableTreeWalker,
   getScrollParent,
   isFocusable,
-  isTabbable,
   nodeContains,
 } from "../utils/dom";
 import { focusSafely } from "../utils/focus";

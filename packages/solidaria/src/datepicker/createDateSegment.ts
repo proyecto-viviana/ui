@@ -30,7 +30,7 @@ import {
   nodeContains,
   onOwnedCleanup,
 } from "../utils";
-import { createMemo, createEffect, createTrackedEffect } from "solid-js";
+import { createMemo, createTrackedEffect } from "solid-js";
 import { toCalendar, CalendarDate } from "@internationalized/date";
 import { NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -41,7 +41,7 @@ import { useLocale, createDateFormatter, createFilter } from "../i18n";
 import { createSpinButton } from "../spinbutton";
 import { createDisplayNames } from "./createDisplayNames";
 import { hookData } from "./createDateField";
-import type { DateFieldState, DateSegment, DateSegmentType } from "@proyecto-viviana/solid-stately";
+import type { DateFieldState, DateSegment } from "@proyecto-viviana/solid-stately";
 
 export interface AriaDateSegmentProps {
   /** The segment data. */

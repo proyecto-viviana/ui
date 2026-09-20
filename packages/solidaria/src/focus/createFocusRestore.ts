@@ -8,7 +8,7 @@
  * standalone retrying focus-restore stack API.
  */
 
-import { getOwnerDocument, onOwnedCleanup } from "../utils";
+import { onOwnedCleanup } from "../utils";
 import { onSettled } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { focusSafely } from "../utils/focus";

@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/radio's useRadioGroup hook.
  */
 
-import { createEffect, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";

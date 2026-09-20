@@ -26,7 +26,6 @@ import { access, createInternalSignal, readNow, type MaybeAccessor } from "../ut
 import type {
   Collection,
   DisabledBehavior,
-  FocusStrategy,
   Key,
   Selection,
   SelectionBehavior,

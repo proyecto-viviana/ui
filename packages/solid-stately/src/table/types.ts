@@ -36,8 +36,8 @@
  * - packages/@react-types/table/src/index.d.ts
  */
 
-import type { Key, FocusStrategy } from "../collections/types";
-import type { GridState, GridCollection, GridNode, GridNodeType } from "../grid/types";
+import type { Key } from "../collections/types";
+import type { GridState, GridCollection, GridNode } from "../grid/types";
 
 /**
  * Sort direction for table columns.

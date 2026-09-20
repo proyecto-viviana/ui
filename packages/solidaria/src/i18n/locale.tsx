@@ -21,14 +21,7 @@
  */
 
 import { useContextOptional } from "../utils/owner";
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  createTrackedEffect,
-} from "solid-js";
+import { createContext, createMemo, createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor, Context, ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isRTL } from "./utils";

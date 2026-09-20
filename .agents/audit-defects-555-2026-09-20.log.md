@@ -456,3 +456,59 @@ release gate is red, and the fix is in how the extractor renders types, not in
 re-blessing the output.
 
 Changeset `.changeset/toast-region-doc-block.md`.
+
+## Item 8.3 — the 73 unused bindings, and the flip that did not land
+
+The conductor's count reproduced exactly:
+`node_modules/.bin/tsc --noEmit -p packages/solidaria/tsconfig.json
+--noUnusedLocals` → 73 lines, 65 TS6133 + 8 TS6196, no other error class. 65 in
+solidaria, 8 in solid-stately. After this commit the same command prints
+nothing.
+
+Sixty-nine were import specifiers — the codemod residue, `createEffect` and
+`onCleanup` left beside `createTrackedEffect` across ~35 files, plus eight
+type-only imports in solid-stately. Those were cut mechanically from the tsc
+coordinates, not by hand-editing lines by eye.
+
+**Four were not imports, and the brief was right that they need reading.** Each
+was read against upstream before it was touched:
+
+- `createColorSlider.ts:315` `const p = getProps()` — the memo's aria-label and
+  aria-labelledby come from their own accessors, and upstream's `trackProps`
+  merges `groupProps` for the same job. A leftover binding. Deleted.
+- `createSlider.ts:108` `isFocusVisible` — upstream `useSlider` has no
+  `useFocusRing` at all; ours adds one and uses only `focusProps`. Leftover
+  destructure. Narrowed to `const { focusProps }`.
+- `createTableRow.ts:57` `isTreeRow` — the same predicate, `s.treeColumn !=
+  null`, is written inline at lines 63, 171, 227 and 237, which are the four
+  places tree-grid actually branches. A duplicate that was never wired.
+  Deleted.
+- `createComboBoxState.ts:556` `valueOnFocus` — **this one was a dropped
+  write.** Upstream `react-stately/src/combobox/useComboBoxState.ts:578-593`
+  keeps `valueOnFocus = useRef([inputValue, displayValue])` and, on blur, calls
+  `validation.commitValidation()` when either moved while focused. Our hook has
+  no validation object at all: `rg commitValidation packages/solid-stately/src`
+  names select, radio group, checkbox group, number field and date field, never
+  combobox. So the unused local was the visible end of a missing feature. The
+  dead write is gone, with a comment citing the upstream lines, and the wiring
+  is **#560**.
+
+**The flip did not land, under the brief's own stop rule.** With the 73 gone I
+made the change and measured it: extending `../../tsconfig.json` instead of
+`../../tsconfig.typecheck.json` costs six more errors, none of them in the 73.
+Five are `noUnusedParameters` — which the root config also turns on and which
+the typecheck config also disables — and three of those five are unused *type*
+parameters on exported interfaces (`TimeFieldState<T>`,
+`DraggableCollectionStateOptions<T>`), where dropping the parameter is a
+breaking change to every consumer that writes it. The sixth is not an unused
+binding at all: `utils/dom.ts:617` reads `process.env.NODE_ENV`, and the root
+config does not carry the typecheck config's `"types": ["node"]`. That is a
+question about whether a test-only branch belongs in library source, which is
+not this item. Reverted the flip, filed **#561** with the six named.
+
+Checks: `tsc --noEmit -p packages/solidaria/tsconfig.json` clean, `tsc --noEmit
+-p tsconfig.typecheck.json` clean, solidaria + solid-stately 131 files / 2703
+green, and — since #556 is merged and the ceiling holds — the whole discovered
+set, 350 files / 6689 passed / 1 expected fail / 6 skipped in 70s.
+
+Tooling and dead code only; no published behaviour changes, so no changeset.

@@ -21,7 +21,7 @@
  * Port of @react-aria/interactions useHover.
  */
 
-import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createEffect, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type MaybeAccessor, access } from "../utils/reactivity";

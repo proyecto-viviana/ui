@@ -18,7 +18,7 @@
  * Based on @react-aria/select useSelect.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";

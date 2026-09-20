@@ -16,7 +16,7 @@
  * Tracks whether the pointer is within a "safe area" connecting a trigger and its overlay.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import { getOwnerDocument, getOwnerWindow } from "../utils";
 
 interface Point {

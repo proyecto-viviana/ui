@@ -21,7 +21,7 @@
  * Based on @react-aria/autocomplete useAutocomplete.
  */
 
-import { createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createId, getOwnerDocument } from "../ssr";
 import { type AutocompleteState, type CollectionNode } from "@proyecto-viviana/solid-stately";

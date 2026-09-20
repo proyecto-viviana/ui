@@ -21,7 +21,7 @@
  * Port of @react-aria/tooltip useTooltipTrigger.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type TooltipTriggerState } from "@proyecto-viviana/solid-stately";
 import { createHover } from "../interactions/createHover";

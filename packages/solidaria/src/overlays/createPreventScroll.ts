@@ -17,7 +17,7 @@
  * Based on @react-aria/overlays usePreventScroll.
  */
 
-import { createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createTrackedEffect } from "solid-js";
 import {
   chain,
   getActiveElement,

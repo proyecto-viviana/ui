@@ -17,7 +17,7 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import { createEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { TokenFieldState } from "@proyecto-viviana/solid-stately";
 

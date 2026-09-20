@@ -26,9 +26,6 @@ import type {
   ColorChannel,
   ColorChannelRange,
   ColorAxes,
-  RGBColor,
-  HSLColor,
-  HSBColor,
 } from "./types";
 import { getColorStringForLocale, formatColorMessage, type ColorStringKey } from "./intl";
 

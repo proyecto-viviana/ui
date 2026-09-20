@@ -18,7 +18,7 @@
  * Based on @react-aria/combobox useComboBox.
  */
 
-import { createEffect, onCleanup, untrack, createTrackedEffect } from "solid-js";
+import { createEffect, untrack, createTrackedEffect } from "solid-js";
 import { bindCapture } from "../utils/capture";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";

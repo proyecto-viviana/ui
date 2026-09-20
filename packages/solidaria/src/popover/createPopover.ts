@@ -19,7 +19,7 @@
  * Ported from @react-aria/overlays usePopover.
  */
 
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createOverlay } from "../overlays/createOverlay";
 import {
