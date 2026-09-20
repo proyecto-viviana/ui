@@ -376,6 +376,103 @@ describe("Picker (solid-spectrum)", () => {
     expect(select).toHaveValue("#page-title");
   });
 
+  it("hands keyboard-open focus from the selected Picker item to navigation and restores the trigger", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    const plans = [
+      { id: "starter", label: "Starter" },
+      { id: "pro", label: "Pro" },
+      { id: "enterprise", label: "Enterprise" },
+    ];
+    const { container } = render(() => (
+      <Picker<(typeof plans)[number]>
+        aria-label="Plan"
+        items={plans}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.label}
+        defaultSelectedKey="pro"
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => (
+          <PickerItem id={item.id} textValue={item.label}>
+            {item.label}
+          </PickerItem>
+        )}
+      </Picker>
+    ));
+
+    const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="listbox"]');
+    expect(trigger).not.toBeNull();
+    trigger!.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    let openKeyTarget: EventTarget | null = null;
+    let openKeyActiveElement: Element | null = null;
+    trigger!.addEventListener(
+      "keydown",
+      (event) => {
+        openKeyTarget = event.target;
+        openKeyActiveElement = document.activeElement;
+      },
+      { once: true },
+    );
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
+    expect(openKeyTarget).toBe(trigger);
+    expect(openKeyTarget).toBe(openKeyActiveElement);
+
+    flush();
+    await Promise.resolve();
+
+    const listbox = screen.getByRole("listbox");
+    const pro = within(listbox).getByRole("option", { name: "Pro" });
+    expect(pro).toHaveAttribute("aria-selected", "true");
+    expect(pro).toHaveAttribute("data-focused");
+    const activeElementAtOpenCheckpoint = document.activeElement;
+    expect([trigger, pro]).toContain(activeElementAtOpenCheckpoint);
+
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+    expect(document.activeElement).toBe(pro);
+
+    let navigationKeyTarget: EventTarget | null = null;
+    let navigationKeyActiveElement: Element | null = null;
+    pro.addEventListener(
+      "keydown",
+      (event) => {
+        navigationKeyTarget = event.target;
+        navigationKeyActiveElement = document.activeElement;
+      },
+      { once: true },
+    );
+    await user.keyboard("{ArrowDown}");
+    expect(navigationKeyTarget).toBe(pro);
+    expect(navigationKeyTarget).toBe(navigationKeyActiveElement);
+
+    const enterprise = within(listbox).getByRole("option", { name: "Enterprise" });
+    expect(enterprise).not.toHaveAttribute("aria-disabled", "true");
+    expect(enterprise).toHaveAttribute("data-focused");
+    expect(pro).not.toHaveAttribute("data-focused");
+    expect(document.activeElement).toBe(enterprise);
+
+    let enterKeyTarget: EventTarget | null = null;
+    let enterKeyActiveElement: Element | null = null;
+    enterprise.addEventListener(
+      "keydown",
+      (event) => {
+        enterKeyTarget = event.target;
+        enterKeyActiveElement = document.activeElement;
+      },
+      { once: true },
+    );
+    await user.keyboard("{Enter}");
+    expect(enterKeyTarget).toBe(enterprise);
+    expect(enterKeyTarget).toBe(enterKeyActiveElement);
+    expect(onSelectionChange).toHaveBeenCalledWith("enterprise");
+    expect(trigger).toHaveTextContent("Enterprise");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it("natively disables the trigger when isDisabled", () => {
     render(() => (
       <Picker<SectionItem>

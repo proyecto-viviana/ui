@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled, Show } from "solid-js";
+import { createSignal, onSettled, Show } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { ButtonGroup as SolidSpectrumButtonGroup } from "@proyecto-viviana/solid-spectrum/ButtonGroup";
@@ -145,11 +145,11 @@ function SolidSpectrumToastDemo() {
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setDemoProps(toastDemoPropsFromWindow());
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
       closeExistingToasts();
-    });
+    };
   });
 
   return hc(

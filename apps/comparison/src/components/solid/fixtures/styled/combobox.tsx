@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { Show, createMemo, createSignal, onSettled } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import {
   ComboBox as SolidSpectrumComboBox,
@@ -55,15 +55,14 @@ function SolidSpectrumComboBoxDemo() {
     const parsed = Number.parseInt(demoProps().menuWidth, 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
   });
+  const itemsPreset = createMemo(() => demoProps().itemsPreset);
+  const itemsSource = createMemo(() => demoProps().itemsSource);
+  const disableEnterprise = createMemo(() => demoProps().disableEnterprise);
   const listItems = createMemo(
-    () => comboBoxItemsForPreset(demoProps().itemsPreset) as ComboBoxFixtureItem[],
+    () => comboBoxItemsForPreset(itemsPreset()) as ComboBoxFixtureItem[],
   );
   const disabledKeys = createMemo(() =>
-    demoProps().itemsPreset === "many"
-      ? ["item-25"]
-      : demoProps().disableEnterprise
-        ? ["enterprise"]
-        : undefined,
+    itemsPreset() === "many" ? ["item-25"] : disableEnterprise() ? ["enterprise"] : undefined,
   );
   const contextualHelp = createMemo(() =>
     demoProps().withContextualHelp
@@ -102,10 +101,10 @@ function SolidSpectrumComboBoxDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() => serializeComboBoxDemoProps(demoProps()));
@@ -165,10 +164,10 @@ function SolidSpectrumComboBoxDemo() {
             SolidSpectrumComboBox,
             {
               get items() {
-                return demoProps().itemsSource === "defaultItems" ? undefined : listItems();
+                return itemsSource() === "defaultItems" ? undefined : listItems();
               },
               get defaultItems() {
-                return demoProps().itemsSource === "defaultItems" ? listItems() : undefined;
+                return itemsSource() === "defaultItems" ? listItems() : undefined;
               },
               getKey: (item: ComboBoxFixtureItem) => item.id,
               getTextValue: (item: ComboBoxFixtureItem) => item.textValue ?? item.label,
@@ -318,8 +317,8 @@ function SolidSpectrumComboBoxDemo() {
                   id: item.id,
                   get isDisabled() {
                     return (
-                      (demoProps().itemsPreset === "many" && item.id === "item-25") ||
-                      (item.id === "enterprise" && demoProps().disableEnterprise)
+                      (itemsPreset() === "many" && item.id === "item-25") ||
+                      (item.id === "enterprise" && disableEnterprise())
                     );
                   },
                   get href() {

@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "root accepts the collections/async Stage A20 and Stage B10 generation. A fresh actual-Spectrum-Picker ownership case fails only at the real-focus handoff, then passes after the minimal Select keyboard-modality exception; pointer behavior, whole Select86, whole Picker22 and Tree16 controls pass. The complete shared hydrate file passes139/139, root typecheck exits0 and the final cleanup census is0 registrations/0 files. Strict diagnostics, actual-island and browser gates remain open; #543/#531 stay in-progress and #532 remains merged-not-verified",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "externally accepted date/color and synchronous-overlay stages plus released disclosure/navigation Stage C return the existing teardown from19 fixture-owned onSettled callbacks. Census falls35/34 to16/15; shared real-control CSR passes109/109 with exact removal, inert disposal/remount, rendered focus/action/selection/current semantics and bounded structural identity. Breadcrumb path changes now rebuild only their semantic branch while size-only focus/identity and outer action/root ownership persist. Root typecheck and scoped gates pass. Actual fixture SSR/hydration, remaining collection/async lifecycle and warning debt, broader app/web, builds, attribution, packaging and release gates remain open; #543/#531 stay in-progress",
     }
   - {
@@ -462,6 +467,147 @@ Remaining lifecycle registrations, warning/config debt, broader app/web work,
 four-layer builds, attribution, packaging and #139/#194/#537 release gates stay
 open. Receipt: `.agents/UI-EXECUTION-543-DATE-OVERLAYS-NAV-2026-09-20.md`;
 detailed log ledger: `/tmp/ui-543-date-overlays-nav-result.md`.
+
+## 2026-09-20 bounded TreeView owning-package admission
+
+Root released one narrow Stage A extension for the confirmed dynamic
+TreeViewItem registration identity gap. In addition to the already admitted
+collections fixture/test/docs scope, only
+`packages/solid-spectrum/src/tree/index.tsx` and
+`packages/solid-spectrum/test/Tree.test.tsx` may change. The admission is
+limited to preserving an unaffected selected/focused keyed item while another
+dynamic item changes `isDisabled`; structural add/remove/reorder, labels and
+actions remain negative controls. It does not authorize a fixture focus
+workaround, public API, dependency, `solidaria-components`, or Stage B change.
+
+Before any product edit, the exact TreeView fixture source remained at SHA-256
+`9723fca769a99a3fe14d389b1d081d2aa315fe755be40eb93b3a40fa419e4e5b` and a
+single CSR diagnostic passed only its asserted setup before changing
+`disabledItem` from `none` to `project` with Weekly Report selected and focused.
+The configured passing-test reporter suppressed the diagnostic's structured
+post-update console record. It is therefore inconclusive for Project disabled
+state, Weekly identity/connectivity and selection state, and post-update focus;
+no value or focus outcome is inferred from that absence. Owning-package source
+repair is admitted only if the requested focused
+Tree regression first captures RED within the two added paths; otherwise work
+stops. Stage B remains locked and #543/#531 remain in progress.
+
+The admission gate did not produce RED. Both a flat Project/Weekly collection
+and the exact nested Documents → Project → Weekly owning regression passed the
+single compact observation assertion: Project became disabled, the selected
+and focused Weekly row retained exact identity and connectivity, and selection
+and focus semantics remained intact. The full owning Tree file then passed
+16/16. No `packages/solid-spectrum/src/tree/index.tsx` edit was made.
+
+The original fixture `disabledItem: "project"` lifecycle-matrix case was
+restored instead of retaining the temporary `disabledKeys` substitution. Its
+first command selected zero tests and is not evidence. A corrected command
+matching Vitest's quoted parameterized name executed exactly one case and
+passed, with 129 skipped. This proves retained Weekly identity and rendered
+Project disabled semantics for fixture snapshot 9723, but makes no post-update
+focus claim because that fixture-matrix case does not focus the row. The prior
+console-only diagnostic remains inconclusive. Stage B remains locked pending
+independent Stage A review.
+
+## 2026-09-20 Picker keyboard-focus implementation admission
+
+Root accepted the actual Spectrum Picker ownership RED and admitted exactly
+`packages/solidaria-components/src/Select.tsx` alongside the already admitted
+`packages/solid-spectrum/test/Picker.test.tsx`. The focused owning-package case
+passed its open prerequisite: the real trigger was active and received ArrowDown,
+the actual listbox rendered, and Pro was selected and logically focused after the
+established flush plus one microtask. It then failed only after exactly one rAF
+followed by timeout(0), when the Popover dialog retained real DOM focus instead
+of Pro.
+
+The exact raw result was **1 failed, 21 skipped, 22 total**. Raw log:
+`/tmp/ui-543-picker-focus-focused.log`; compact result:
+`/tmp/ui-543-picker-focus-result.md`.
+
+The admitted repair is limited to the existing SelectListBox focus path: preserve
+the early return for non-keyboard interaction modalities and allow its existing
+`focusSafely` option handoff for keyboard modality. No Select test, Picker
+implementation, shared interaction-modality implementation, generic
+Select-in-Popover test, dependency or public API change is admitted. After the
+required focused and whole-file controls pass, only the original Stage-B Picker
+case may be corrected to assert real focused-option navigation after the full
+handoff while retaining identity, live-label, selection, close and trigger-focus
+restoration obligations.
+
+The admitted implementation is the keyboard-only modality exception described
+above. Required proof is green, one heavy process at a time: focused Picker
+1/1 (21 skipped), click-open pointer negative control 1/1 (85 skipped), whole
+Select 86/86, whole Picker 22/22, and the final Stage-B async-tail slice 10/10
+(129 skipped). The original Stage-B Picker case alone now waits through rAF
+then timeout-bearing settlement, verifies Pro owns real focus before navigating
+to focused Enterprise, and retains its keyed identity, live-label, selection,
+close, and trigger-focus restoration obligations. Raw logs are
+`/tmp/ui-543-picker-focus-{green,pointer-negative,select-full,picker-full,stage-b10}.log`.
+
+Chronology is explicit: the fresh actual-Spectrum-Picker RED is
+`/tmp/ui-543-picker-focus-focused.log` (exit 1; 1 failed, 21 skipped,
+22 total). Root then admitted the minimal Select keyboard-only guard. Its five
+post-change proofs are `/tmp/ui-543-picker-focus-green.log` (exit 0; 1 passed,
+21 skipped, 22 total), `/tmp/ui-543-picker-focus-pointer-negative.log` (exit 0;
+1 passed, 85 skipped, 86 total), `/tmp/ui-543-picker-focus-select-full.log`
+(exit 0; 86/86), `/tmp/ui-543-picker-focus-picker-full.log` (exit 0; 22/22),
+and `/tmp/ui-543-picker-focus-stage-b10.log` (exit 0; 10 passed, 129 skipped,
+139 total). Earlier rejected generic Select-in-Popover experiments are separate
+historical non-qualifying evidence; `Select.test.tsx` is baseline-clean and none
+of those experiments is part of this admission or GREEN chain.
+
+This fresh worker began with 23 dirty paths: 18 task paths (this ticket, 15
+fixtures, the shared fixture test, and Tree test) plus five protected #534 paths.
+Its two admitted additions, Picker test and Select source, produce the current
+25 dirty paths: 20 task paths plus the same five protected paths.
+
+The final authorized integration allowlist is independently 24 task paths: the
+original 22 authorized task paths plus `packages/solid-spectrum/test/Picker.test.tsx`
+and `packages/solidaria-components/src/Select.tsx`. Four final-phase documentation
+paths in that allowlist are not dirty yet:
+`.claude/tickets/initiatives/531-solid-2-foundation-upgrade-vanguard.md`,
+`.claude/current/status.md`, `.claude/current/roadmap.md`, and
+`.agents/UI-EXECUTION-543-COLLECTIONS-ASYNC-2026-09-20.md`; this #543 ticket is
+already among the current 20 task paths. Therefore the expected final checkout
+dirt before staging is 29 paths: 24 task paths plus five protected paths.
+
+## 2026-09-20 collections and async final validation
+
+Root accepted the two-source-generation result. The first generation returns
+the final 16 fixture cleanup registrations across 15 collection/async fixtures
+and extends the shared real-control coverage, with the independently accepted
+Stage A slice passing 20/20 (109 skipped, 129 total). Its permanent Spectrum
+Tree regression passes in the accepted whole Tree file, 16/16; no Spectrum
+Tree source repair was needed.
+
+The second generation is the actual Spectrum Picker ownership chain. The real
+Picker case established an active trigger, open listbox, and selected/logically
+focused Pro before failing only after the full rAF then timeout handoff because
+the dialog, rather than Pro, owned DOM focus. That qualifying RED is exactly
+1 failed, 21 skipped, 22 total. The admitted SelectListBox change preserves the
+early return for non-keyboard modalities and permits the existing `focusSafely`
+option path only for keyboard modality. Focused Picker, pointer negative,
+whole Select, whole Picker, and final Stage B pass respectively 1/1, 1/1,
+86/86, 22/22, and 10/10 (129 skipped, 139 total). Earlier generic
+Select-in-Popover experiments remain rejected, non-qualifying history;
+`Select.test.tsx` is baseline-clean.
+
+Final released validation ran once on the completed source generation. The
+whole shared fixture hydrate file exits 0 with 139/139 cases; its three CSS
+parse notices remain non-failing. Root `vp run typecheck` exits 0. The final
+AST cleanup census reports exactly zero registrations in zero files. The exact
+commands, raw-log hashes, working-tree hashes, protected #534 hashes, rejected
+attempt ledger, and 29-path accounting are consolidated in
+`.agents/UI-EXECUTION-543-COLLECTIONS-ASYNC-2026-09-20.md`; final compact state
+is in `/tmp/ui-543-picker-focus-result.md`.
+
+This evidence closes only the admitted collection/async lifecycle and Picker
+focus slice. The known 1,353/1,553/944 strict-warning diagnostics still require
+classification rather than suppression. Actual Astro island SSR/hydration and
+identity on the completed fixture generation, real-browser collection/async
+navigation and overlay behavior, broader app/web work, four-layer builds,
+attribution, packaging, and #139/#194/#537 same-revision release gates remain
+open. #543 and #531 remain in progress; #532 remains merged, not verified.
 
 ## Relationship
 

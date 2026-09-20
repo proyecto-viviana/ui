@@ -1,5 +1,12 @@
 import h from "@solidjs/h";
-import { createEffect, createMemo, createSignal, onCleanup, onSettled, Show, createTrackedEffect } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  onSettled,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -51,7 +58,7 @@ function SolidSpectrumCardViewDemo() {
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   });
 
   return hc(

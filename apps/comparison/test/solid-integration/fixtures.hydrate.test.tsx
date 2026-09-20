@@ -64,6 +64,22 @@ import Accordion from "../../src/components/solid/fixtures/styled/accordion";
 import Breadcrumbs from "../../src/components/solid/fixtures/styled/breadcrumbs";
 import Disclosure from "../../src/components/solid/fixtures/styled/disclosure";
 import StepList from "../../src/components/solid/fixtures/styled/steplist";
+import CardView from "../../src/components/solid/fixtures/styled/cardview";
+import DndListBox from "../../src/components/solid/fixtures/styled/dnd-listbox";
+import GridList from "../../src/components/solid/fixtures/styled/gridlist";
+import ListBox from "../../src/components/solid/fixtures/styled/listbox";
+import ListView from "../../src/components/solid/fixtures/styled/listview";
+import SelectBoxGroup from "../../src/components/solid/fixtures/styled/selectboxgroup";
+import TableView from "../../src/components/solid/fixtures/styled/tableview";
+import TagGroup from "../../src/components/solid/fixtures/styled/taggroup";
+import TreeView from "../../src/components/solid/fixtures/styled/treeview";
+import Virtualizer from "../../src/components/solid/fixtures/styled/virtualizer";
+import Autocomplete from "../../src/components/solid/fixtures/styled/autocomplete";
+import ComboBox from "../../src/components/solid/fixtures/styled/combobox";
+import Image from "../../src/components/solid/fixtures/styled/image";
+import Picker from "../../src/components/solid/fixtures/styled/picker";
+import Toast from "../../src/components/solid/fixtures/styled/toast";
+import { globalToastQueue } from "@proyecto-viviana/solid-spectrum/Toast";
 import { checkboxDemoDefaults, comparisonControlsEvent } from "../../src/data/checkbox-demo";
 import { tabsDemoDefaults } from "../../src/data/tabs-demo";
 import { checkboxGroupDemoDefaults } from "../../src/data/checkboxgroup-demo";
@@ -126,6 +142,21 @@ import { accordionDemoDefaults } from "../../src/data/accordion-demo";
 import { breadcrumbsDemoDefaults } from "../../src/data/breadcrumbs-demo";
 import { disclosureDemoDefaults } from "../../src/data/disclosure-demo";
 import { stepListDemoDefaults } from "../../src/data/steplist-demo";
+import { cardViewDemoDefaults } from "../../src/data/cardview-demo";
+import { dndListBoxDemoDefaults } from "../../src/data/dnd-listbox-demo";
+import { gridListDemoDefaults } from "../../src/data/gridlist-demo";
+import { listBoxDemoDefaults } from "../../src/data/listbox-demo";
+import { listViewDemoDefaults } from "../../src/data/listview-demo";
+import { selectBoxGroupDemoDefaults } from "../../src/data/selectboxgroup-demo";
+import { tableViewDemoDefaults } from "../../src/data/tableview-demo";
+import { tagGroupDemoDefaults } from "../../src/data/taggroup-demo";
+import { treeViewDemoDefaults } from "../../src/data/treeview-demo";
+import { virtualizerDemoDefaults } from "../../src/data/virtualizer-demo";
+import { autocompleteDemoDefaults } from "../../src/data/autocomplete-demo";
+import { comboBoxDemoDefaults } from "../../src/data/combobox-demo";
+import { imageDemoDefaults, imageMissingSource } from "../../src/data/image-demo";
+import { pickerDemoDefaults } from "../../src/data/picker-demo";
+import { toastDemoDefaults } from "../../src/data/toast-demo";
 import { comparisonCallbackEvent } from "../../src/data/event-log";
 import { comparisonThemeChangeEvent } from "../../src/data/theme";
 
@@ -480,6 +511,1019 @@ it.each([
     expect(slider?.getAttribute("aria-valuetext")).not.toBe(initialValueText);
   },
 );
+
+const stageACollectionFixtures = [
+  {
+    component: "cardview",
+    Fixture: CardView,
+    defaults: cardViewDemoDefaults,
+    update: { ...cardViewDemoDefaults, density: "spacious" },
+    expectedKey: "density",
+    expectedValue: "spacious",
+    itemRole: "row",
+    itemText: "Apollo",
+  },
+  {
+    component: "dnd-listbox",
+    Fixture: DndListBox,
+    defaults: dndListBoxDemoDefaults,
+    update: { ...dndListBoxDemoDefaults, selectionMode: "single" },
+    expectedKey: "selectionMode",
+    expectedValue: "single",
+    itemRole: "option",
+    itemText: "Read",
+  },
+  {
+    component: "gridlist",
+    Fixture: GridList,
+    defaults: gridListDemoDefaults,
+    update: { ...gridListDemoDefaults, selectionMode: "multiple" },
+    expectedKey: "selectionMode",
+    expectedValue: "multiple",
+    itemRole: "row",
+    itemText: "Read",
+  },
+  {
+    component: "listbox",
+    Fixture: ListBox,
+    defaults: listBoxDemoDefaults,
+    update: { ...listBoxDemoDefaults, selectionMode: "multiple" },
+    expectedKey: "selectionMode",
+    expectedValue: "multiple",
+    itemRole: "option",
+    itemText: "Read",
+  },
+  {
+    component: "listview",
+    Fixture: ListView,
+    defaults: listViewDemoDefaults,
+    update: { ...listViewDemoDefaults, isQuiet: true },
+    expectedKey: "isQuiet",
+    expectedValue: true,
+    itemRole: "row",
+    itemText: "Project brief.pdf",
+  },
+  {
+    component: "selectboxgroup",
+    Fixture: SelectBoxGroup,
+    defaults: selectBoxGroupDemoDefaults,
+    update: { ...selectBoxGroupDemoDefaults, orientation: "vertical" },
+    expectedKey: "orientation",
+    expectedValue: "vertical",
+    itemRole: "option",
+    itemText: "Starter",
+  },
+  {
+    component: "tableview",
+    Fixture: TableView,
+    defaults: tableViewDemoDefaults,
+    update: { ...tableViewDemoDefaults, isQuiet: true },
+    expectedKey: "isQuiet",
+    expectedValue: true,
+    itemRole: "row",
+    itemText: "Project brief.pdf",
+  },
+  {
+    component: "taggroup",
+    Fixture: TagGroup,
+    defaults: tagGroupDemoDefaults,
+    update: { ...tagGroupDemoDefaults, isEmphasized: true },
+    expectedKey: "isEmphasized",
+    expectedValue: true,
+    itemRole: "row",
+    itemText: "Landscape",
+  },
+  {
+    component: "treeview",
+    Fixture: TreeView,
+    defaults: treeViewDemoDefaults,
+    update: { ...treeViewDemoDefaults, disabledItem: "project" },
+    expectedKey: "disabledItem",
+    expectedValue: "project",
+    itemRole: "row",
+    itemText: "Weekly Report",
+  },
+  {
+    component: "virtualizer",
+    Fixture: Virtualizer,
+    defaults: virtualizerDemoDefaults,
+    update: { ...virtualizerDemoDefaults, selectionMode: "multiple" },
+    expectedKey: "selectionMode",
+    expectedValue: "multiple",
+    itemRole: "option",
+    itemText: "Item 0",
+  },
+] as const;
+
+function stageACollectionItem(role: string, textValue: string) {
+  return Array.from(container.querySelectorAll<HTMLElement>(`[role="${role}"]`)).find((element) =>
+    element.textContent?.includes(textValue),
+  );
+}
+
+it.each(stageACollectionFixtures)(
+  "stage A collections $component removes exact listeners, retains keyed identity, stays inert, and remounts cleanly",
+  async ({
+    component,
+    Fixture,
+    defaults,
+    update,
+    expectedKey,
+    expectedValue,
+    itemRole,
+    itemText,
+  }) => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const fixtureCalls = (calls: [string, ...unknown[]][]) =>
+      calls.filter(([type]) =>
+        [comparisonControlsEvent, comparisonThemeChangeEvent].includes(type),
+      );
+
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const item = stageACollectionItem(itemRole, itemText);
+    const registrations = fixtureCalls(add.mock.calls);
+    expect(root).not.toBeNull();
+    expect(item).not.toBeUndefined();
+    expect(registrations).toHaveLength(2);
+
+    controls(component, update);
+    theme("dark");
+    await settle();
+    expect(
+      container.querySelector<HTMLElement>(`[data-comparison-control-root="${component}"]`),
+    ).toBe(root);
+    expect(stageACollectionItem(itemRole, itemText)).toBe(item);
+    expect(item?.textContent).toContain(itemText);
+    if (["dnd-listbox", "listbox", "virtualizer"].includes(component)) {
+      expect(root?.getAttribute("aria-multiselectable")).toBe(
+        update.selectionMode === "multiple" ? "true" : null,
+      );
+    } else {
+      expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}")[expectedKey]).toBe(
+        expectedValue,
+      );
+    }
+    if (component === "treeview") {
+      expect(root?.querySelector('[role="row"][data-key="project"]')).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+    }
+    const themeShell = container.querySelector<HTMLElement>('[data-color-scheme="dark"]');
+    expect(themeShell).not.toBeNull();
+    const retainedProps = root?.dataset.comparisonControlProps;
+
+    dispose();
+    dispose = undefined;
+    expectExactListenerRemoval(registrations, fixtureCalls(remove.mock.calls));
+    controls(component, defaults);
+    theme("light");
+    await settle();
+    expect(root?.isConnected).toBe(false);
+    expect(item?.isConnected).toBe(false);
+    expect(root?.dataset.comparisonControlProps).toBe(retainedProps);
+    expect(themeShell?.getAttribute("data-color-scheme")).toBe("dark");
+
+    add.mockClear();
+    remove.mockClear();
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const replacement = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(replacement).not.toBeNull();
+    expect(replacement).not.toBe(root);
+    expect(stageACollectionItem(itemRole, itemText)).not.toBe(item);
+    expect(fixtureCalls(add.mock.calls)).toHaveLength(2);
+  },
+);
+
+it.each([
+  ["cardview", CardView, "row", "Apollo", "Zephyr", "End", true],
+  ["gridlist", GridList, "row", "Read", "Write", "ArrowDown", false],
+  ["listbox", ListBox, "option", "Read", "Write", "ArrowDown", false],
+  ["selectboxgroup", SelectBoxGroup, "option", "Starter", "Pro", "ArrowRight", false],
+] as const)(
+  "stage A collections %s moves rendered focus and selection between semantic items",
+  async (_component, Fixture, role, firstText, secondText, nextKey, selectionFollowsFocus) => {
+    const user = userEvent.setup({ delay: null });
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const first = stageACollectionItem(role, firstText);
+    const second = stageACollectionItem(role, secondText);
+    expect(first).not.toBeUndefined();
+    expect(second).not.toBeUndefined();
+
+    first?.focus();
+    await user.keyboard(`{${nextKey}}`);
+    await nextAnimationFrame();
+    expect(document.activeElement).toBe(second);
+    expect(second?.getAttribute("role")).toBe(role);
+    expect(second?.textContent).toContain(secondText);
+
+    if (!selectionFollowsFocus) {
+      await user.click(second!);
+      await settle();
+    }
+    expect(document.activeElement).toBe(second);
+    expect(second?.getAttribute("aria-selected")).toBe("true");
+    expect(second?.textContent).toContain(secondText);
+  },
+);
+
+it("stage A collections ListView preserves row focus and publishes real selection and action", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => ListView(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="listview"]');
+  const project = stageACollectionItem("row", "Project brief.pdf");
+  const quarterly = stageACollectionItem("row", "Quarterly report.docx");
+  const budget = stageACollectionItem("row", "Budget.xlsx");
+  expect(root).not.toBeNull();
+  expect(project).not.toBeUndefined();
+  expect(quarterly).not.toBeUndefined();
+  expect(budget).not.toBeUndefined();
+
+  project?.focus();
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  expect(document.activeElement).toBe(quarterly);
+  expect(quarterly?.getAttribute("role")).toBe("row");
+  expect(quarterly?.textContent).toContain("Quarterly report.docx");
+
+  await user.click(budget!);
+  await settle();
+  expect(budget?.getAttribute("aria-selected")).toBe("true");
+  expect(
+    container.querySelector<HTMLElement>("[data-comparison-selected-keys]")?.dataset
+      .comparisonSelectedKeys,
+  ).toContain("budget");
+
+  controls("listview", {
+    ...listViewDemoDefaults,
+    selectionMode: "none",
+    selectionStyle: "highlight",
+  });
+  await settle();
+  const actionRow = stageACollectionItem("row", "Budget.xlsx");
+  await user.click(actionRow!);
+  await settle();
+  expect(root?.parentElement?.dataset.comparisonActionKey).toBe("budget");
+  expect(actionRow?.textContent).toContain("Budget.xlsx");
+});
+
+it("stage A collections TableView exercises focused rows, selection, action, and sorting", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => TableView(), container);
+  await settle();
+  const marker = container.querySelector<HTMLElement>('[data-comparison-control-root="tableview"]');
+  const project = stageACollectionItem("row", "Project brief.pdf");
+  const quarterly = stageACollectionItem("row", "Quarterly report.docx");
+  const budget = stageACollectionItem("row", "Budget.xlsx");
+  expect(marker).not.toBeNull();
+  expect(project).not.toBeUndefined();
+  expect(quarterly).not.toBeUndefined();
+  expect(budget).not.toBeUndefined();
+
+  project?.focus();
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  expect(document.activeElement).toBe(quarterly);
+  expect(quarterly?.getAttribute("role")).toBe("row");
+  expect(quarterly?.textContent).toContain("Quarterly report.docx");
+
+  await user.click(budget!);
+  await settle();
+  expect(budget?.getAttribute("aria-selected")).toBe("true");
+  expect(marker?.dataset.comparisonSelectedKeys).toContain("budget");
+
+  controls("tableview", {
+    ...tableViewDemoDefaults,
+    selectionMode: "none",
+    sortColumn: "name",
+    sortDirection: "ascending",
+  });
+  await settle();
+  const actionRow = stageACollectionItem("row", "Budget.xlsx");
+  await user.click(actionRow!);
+  await settle();
+  expect(marker?.dataset.comparisonActionKey).toBe("budget");
+  const nameHeader = Array.from(
+    container.querySelectorAll<HTMLElement>('[role="columnheader"]'),
+  ).find((element) => element.textContent?.includes("Name"));
+  expect(nameHeader).not.toBeUndefined();
+  await user.click(nameHeader!);
+  await settle();
+  expect(marker?.dataset.comparisonSortDescriptor).toBe("name:descending");
+  expect(nameHeader?.getAttribute("aria-sort")).toBe("descending");
+});
+
+it("stage A collections TagGroup invokes its group action and removes only the requested tag", async () => {
+  const user = userEvent.setup({ delay: null });
+  window.history.replaceState({}, "", "/?withGroupAction=true");
+  dispose = render(() => TagGroup(), container);
+  await settle();
+  const marker = container.querySelector<HTMLElement>('[data-comparison-control-root="taggroup"]');
+  const landscape = stageACollectionItem("row", "Landscape");
+  const portrait = stageACollectionItem("row", "Portrait");
+  expect(marker).not.toBeNull();
+  expect(landscape).not.toBeUndefined();
+  expect(portrait).not.toBeUndefined();
+
+  const groupAction = Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(
+    (button) => button.textContent?.includes("Add tag"),
+  );
+  expect(groupAction).not.toBeUndefined();
+  await user.click(groupAction!);
+  await settle();
+  expect(marker?.dataset.comparisonActionCount).toBe("1");
+  expect(document.activeElement).toBe(groupAction);
+
+  const remove = landscape?.querySelector<HTMLButtonElement>('button[aria-label="Remove"]');
+  expect(remove).not.toBeNull();
+  await user.click(remove!);
+  await settle();
+  expect(landscape?.isConnected).toBe(false);
+  expect(stageACollectionItem("row", "Portrait")).toBe(portrait);
+  expect(marker?.dataset.comparisonTagCount).toBe("3");
+});
+
+it("stage A collections TreeView expands and reconciles removed focus to a surviving keyed row", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => TreeView(), container);
+  await settle();
+  const tree = container.querySelector<HTMLElement>('[data-comparison-control-root="treeview"]');
+  const documents = tree?.querySelector<HTMLElement>('[role="row"][data-key="documents"]');
+  expect(tree).not.toBeNull();
+  expect(documents?.getAttribute("aria-expanded")).toBe("true");
+
+  documents?.focus();
+  await user.keyboard("{ArrowLeft}");
+  await settle();
+  await nextAnimationFrame();
+  const collapsedDocuments = tree?.querySelector<HTMLElement>('[role="row"][data-key="documents"]');
+  expect(documents?.isConnected).toBe(false);
+  expect(collapsedDocuments).not.toBe(documents);
+  expect(collapsedDocuments?.getAttribute("data-key")).toBe("documents");
+  expect(collapsedDocuments?.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(collapsedDocuments);
+
+  await user.keyboard("{ArrowRight}");
+  await settle();
+  await nextAnimationFrame();
+  const expandedDocuments = tree?.querySelector<HTMLElement>('[role="row"][data-key="documents"]');
+  expect(collapsedDocuments?.isConnected).toBe(false);
+  expect(expandedDocuments).not.toBe(collapsedDocuments);
+  expect(expandedDocuments?.getAttribute("data-key")).toBe("documents");
+  expect(expandedDocuments?.getAttribute("aria-expanded")).toBe("true");
+  expect(document.activeElement).toBe(expandedDocuments);
+
+  const archive = tree?.querySelector<HTMLElement>('[role="row"][data-key="archive"]');
+  expect(tree?.querySelector<HTMLElement>('[role="row"][data-key="weekly-report"]')).not.toBeNull();
+  expect(archive).not.toBeNull();
+  archive?.focus();
+  controls("treeview", {
+    ...treeViewDemoDefaults,
+    selectionSource: "selectedKeys",
+    selectedKeys: "weekly-report",
+    expandedSource: "expandedKeys",
+    expandedKeys: "documents,project",
+    itemCount: "2",
+  });
+  await settle();
+  await nextAnimationFrame();
+  expect(archive?.isConnected).toBe(false);
+  const survivingWeekly = tree?.querySelector<HTMLElement>(
+    '[role="row"][data-key="weekly-report"]',
+  );
+  expect(survivingWeekly).not.toBeNull();
+  expect(survivingWeekly?.getAttribute("aria-selected")).toBe("true");
+  expect(survivingWeekly?.getAttribute("role")).toBe("row");
+  expect(survivingWeekly?.textContent).toContain("Weekly Report");
+  const survivingPhotos = tree?.querySelector<HTMLElement>('[role="row"][data-key="photos"]');
+  expect(survivingPhotos).not.toBeNull();
+  expect(survivingPhotos?.getAttribute("role")).toBe("row");
+  expect(survivingPhotos?.getAttribute("data-key")).toBe("photos");
+  expect(survivingPhotos?.getAttribute("aria-selected")).toBe("false");
+  expect(survivingPhotos?.textContent).toContain("Photos");
+  expect(document.activeElement).toBe(survivingPhotos);
+});
+
+it("stage A collections DnD ListBox reorders by keyboard and publishes the live order", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => DndListBox(), container);
+  await settle();
+  const before = Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(
+    (element) => element.textContent === "Before",
+  );
+  const listbox = container.querySelector<HTMLElement>(
+    '[data-comparison-control-root="dnd-listbox"]',
+  );
+  const read = stageACollectionItem("option", "Read");
+  expect(before).not.toBeUndefined();
+  expect(listbox).not.toBeNull();
+  expect(read).not.toBeUndefined();
+  expect(JSON.parse(listbox?.dataset.comparisonOrder ?? "[]")).toEqual(["read", "write", "admin"]);
+
+  before?.focus();
+  await user.keyboard("{Tab}");
+  expect(document.activeElement).toBe(read);
+  expect(read?.getAttribute("role")).toBe("option");
+  expect(read?.textContent).toContain("Read");
+  await user.keyboard("{Enter}");
+  await nextAnimationFrame();
+  for (const key of ["ArrowDown", "ArrowDown", "Enter"]) {
+    await user.keyboard(`{${key}}`);
+    await settle();
+  }
+  expect(JSON.parse(listbox?.dataset.comparisonOrder ?? "[]")).not.toEqual([
+    "read",
+    "write",
+    "admin",
+  ]);
+  expect(JSON.parse(listbox?.dataset.comparisonOrder ?? "[]")).toEqual(["write", "admin", "read"]);
+  const focused = document.activeElement as HTMLElement;
+  expect(focused.getAttribute("role")).toBe("option");
+  expect(focused.textContent).toContain("Read");
+});
+
+it("stage A collections Virtualizer windows semantic options and retains focused keyed identity", async () => {
+  vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback: FrameRequestCallback) => {
+    callback(0);
+    return 1;
+  });
+  vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+  const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockImplementation(
+    function (this: HTMLElement) {
+      if (this.getAttribute("role") === "listbox") return 240;
+      return clientHeight?.get?.call(this) ?? 0;
+    },
+  );
+
+  dispose = render(() => Virtualizer(), container);
+  await settle();
+  const listbox = container.querySelector<HTMLElement>(
+    '[data-comparison-control-root="virtualizer"]',
+  );
+  const item0 = stageACollectionItem("option", "Item 0");
+  expect(listbox).not.toBeNull();
+  expect(item0).not.toBeUndefined();
+  expect(container.querySelectorAll('[role="option"]').length).toBeLessThan(60);
+  expect(item0?.getAttribute("aria-posinset")).toBe("1");
+  expect(item0?.getAttribute("aria-setsize")).toBe("60");
+  item0?.focus();
+  await settle();
+
+  listbox!.scrollTop = 2160;
+  listbox?.dispatchEvent(new Event("scroll", { bubbles: false }));
+  await settle();
+  const item54 = stageACollectionItem("option", "Item 54");
+  expect(item54).not.toBeUndefined();
+  expect(item54?.getAttribute("aria-posinset")).toBe("55");
+  expect(item54?.getAttribute("aria-setsize")).toBe("60");
+  expect(stageACollectionItem("option", "Item 20")).toBeUndefined();
+  const persistedItem0 = stageACollectionItem("option", "Item 0");
+  expect(persistedItem0).not.toBeUndefined();
+  expect(persistedItem0).not.toBe(item0);
+  expect(item0?.isConnected).toBe(false);
+  expect(persistedItem0?.closest("[data-persisted-virtual-item]")).not.toBeNull();
+  expect(document.activeElement).toBe(persistedItem0);
+  expect(persistedItem0?.getAttribute("role")).toBe("option");
+  expect(persistedItem0?.getAttribute("data-key")).toBe("item-0");
+  expect(persistedItem0?.textContent).toContain("Item 0");
+});
+
+const stageBAsyncFixtures = [
+  {
+    component: "autocomplete",
+    Fixture: Autocomplete,
+    defaults: autocompleteDemoDefaults,
+    update: { ...autocompleteDemoDefaults, selectionMode: "single" },
+    expectedKey: "selectionMode",
+    expectedValue: "single",
+  },
+  {
+    component: "combobox",
+    Fixture: ComboBox,
+    defaults: comboBoxDemoDefaults,
+    update: { ...comboBoxDemoDefaults, label: "Updated plan" },
+    expectedKey: "label",
+    expectedValue: "Updated plan",
+  },
+  {
+    component: "image",
+    Fixture: Image,
+    defaults: imageDemoDefaults,
+    update: { ...imageDemoDefaults, objectFit: "contain" },
+    expectedKey: "objectFit",
+    expectedValue: "contain",
+  },
+  {
+    component: "picker",
+    Fixture: Picker,
+    defaults: pickerDemoDefaults,
+    update: { ...pickerDemoDefaults, isQuiet: true },
+    expectedKey: "isQuiet",
+    expectedValue: true,
+  },
+  {
+    component: "toast",
+    Fixture: Toast,
+    defaults: toastDemoDefaults,
+    update: { ...toastDemoDefaults, activeSide: "solid" },
+    expectedKey: "activeSide",
+    expectedValue: "solid",
+  },
+] as const;
+
+it.each(stageBAsyncFixtures)(
+  "stage B async tail $component removes exact listeners, stays inert, and remounts cleanly",
+  async ({ component, Fixture, defaults, update, expectedKey, expectedValue }) => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const fixtureCalls = (calls: [string, ...unknown[]][]) =>
+      calls.filter(([type]) =>
+        [comparisonControlsEvent, comparisonThemeChangeEvent].includes(type),
+      );
+
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    const registrations = fixtureCalls(add.mock.calls);
+    expect(root).not.toBeNull();
+    expect(registrations).toHaveLength(2);
+
+    controls(component, update);
+    theme("dark");
+    await settle();
+    expect(
+      container.querySelector<HTMLElement>(`[data-comparison-control-root="${component}"]`),
+    ).toBe(root);
+    expect(JSON.parse(root?.dataset.comparisonControlProps ?? "{}")[expectedKey]).toBe(
+      expectedValue,
+    );
+    expect(container.querySelector('[data-color-scheme="dark"]')).not.toBeNull();
+    const retainedProps = root?.dataset.comparisonControlProps;
+
+    dispose();
+    dispose = undefined;
+    expectExactListenerRemoval(registrations, fixtureCalls(remove.mock.calls));
+    controls(component, defaults);
+    theme("light");
+    await settle();
+    expect(root?.isConnected).toBe(false);
+    expect(root?.dataset.comparisonControlProps).toBe(retainedProps);
+
+    add.mockClear();
+    remove.mockClear();
+    dispose = render(() => Fixture(), container);
+    await settle();
+    const replacement = container.querySelector<HTMLElement>(
+      `[data-comparison-control-root="${component}"]`,
+    );
+    expect(replacement).not.toBeNull();
+    expect(replacement).not.toBe(root);
+    expect(fixtureCalls(add.mock.calls)).toHaveLength(2);
+  },
+);
+
+it("stage B async tail Autocomplete filters, virtually focuses, selects, and retains live keyed nodes", async () => {
+  const user = userEvent.setup({ delay: null });
+  window.history.replaceState({}, "", "/?selectionMode=single");
+  dispose = render(() => Autocomplete(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>(
+    '[data-comparison-control-root="autocomplete"]',
+  );
+  const input = container.querySelector<HTMLInputElement>('input[type="search"]');
+  const apple = container.querySelector<HTMLElement>('[role="option"][data-key="apple"]');
+  expect(root).not.toBeNull();
+  expect(input).not.toBeNull();
+  expect(input).toHaveAccessibleName("Search fruits");
+  expect(input).toHaveAttribute("aria-controls");
+  expect(apple?.textContent).toContain("Apple");
+
+  input?.focus();
+  await user.type(input!, "a");
+  await settle();
+  expect(
+    Array.from(container.querySelectorAll<HTMLElement>('[role="option"]')).map((option) =>
+      option.textContent?.trim(),
+    ),
+  ).toEqual(["Apple", "Banana", "Grape", "Mango", "Orange", "Peach"]);
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  const activeDescendant = input?.getAttribute("aria-activedescendant");
+  const focusedOption = activeDescendant
+    ? (document.getElementById(activeDescendant) as HTMLElement | null)
+    : null;
+  expect(document.activeElement).toBe(input);
+  expect(focusedOption?.getAttribute("role")).toBe("option");
+  expect(focusedOption?.getAttribute("data-key")).toBe("banana");
+  expect(focusedOption?.textContent).toContain("Banana");
+  expect(focusedOption).toHaveAttribute("data-focused");
+
+  await user.keyboard("{Enter}");
+  await settle();
+  const selectedBanana = container.querySelector<HTMLElement>('[role="option"][data-key="banana"]');
+  expect(document.activeElement).toBe(input);
+  expect(selectedBanana?.isConnected).toBe(true);
+  expect(selectedBanana).toBe(focusedOption);
+  expect(selectedBanana).toHaveAttribute("aria-selected", "true");
+
+  controls("autocomplete", { ...autocompleteDemoDefaults, selectionMode: "multiple" });
+  theme("dark");
+  await settle();
+  expect(container.querySelector('input[type="search"]')).toBe(input);
+  expect(container.querySelector('[role="option"][data-key="apple"]')).toBe(apple);
+  expect(container.querySelector('[role="option"][data-key="banana"]')).toBe(selectedBanana);
+  expect(selectedBanana?.isConnected).toBe(true);
+  expect(selectedBanana).toHaveAttribute("aria-selected", "true");
+  expect(root?.getAttribute("aria-multiselectable")).toBeNull();
+  expect(
+    container.querySelector('[data-comparison-control-root="autocomplete"] [role="listbox"]'),
+  ).toHaveAttribute("aria-multiselectable", "true");
+  expect(document.activeElement).toBe(input);
+});
+
+it("stage B async tail ComboBox filters, navigates, selects, and returns input focus on Escape", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => ComboBox(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="combobox"]');
+  const input = container.querySelector<HTMLInputElement>('[role="combobox"]');
+  const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="listbox"]');
+  expect(root).not.toBeNull();
+  expect(input).not.toBeNull();
+  expect(trigger).not.toBeNull();
+
+  input?.focus();
+  expect(document.activeElement).toBe(input);
+  await user.click(trigger!);
+  await settle();
+  const listbox = document.querySelector<HTMLElement>('[role="listbox"]');
+  const pro = document.querySelector<HTMLElement>('[role="option"][data-key="pro"]');
+  const enterprise = document.querySelector<HTMLElement>('[role="option"][data-key="enterprise"]');
+  expect(input).toHaveAttribute("aria-expanded", "true");
+  expect(listbox).not.toBeNull();
+  expect(pro?.textContent).toContain("Pro");
+  expect(enterprise?.textContent).toContain("Enterprise");
+
+  controls("combobox", {
+    ...comboBoxDemoDefaults,
+    label: "Updated plan",
+    disableEnterprise: true,
+  });
+  theme("dark");
+  await settle();
+  expect(container.querySelector('[role="combobox"]')).toBe(input);
+  expect(document.querySelector('[role="listbox"]')).toBe(listbox);
+  expect(document.querySelector('[role="option"][data-key="pro"]')).toBe(pro);
+  expect(document.querySelector('[role="option"][data-key="enterprise"]')).toBe(enterprise);
+  expect(input).toHaveAccessibleName("Updated plan");
+  expect(enterprise).toHaveAttribute("aria-disabled", "true");
+
+  controls("combobox", {
+    ...comboBoxDemoDefaults,
+    label: "Updated plan",
+    selectedKey: "none",
+    inputValue: "",
+    itemsPreset: "many",
+  });
+  await settle();
+  const firstManyOption = document.querySelector<HTMLElement>(
+    '[role="option"][data-key="item-01"]',
+  );
+  expect(pro?.isConnected).toBe(false);
+  expect(enterprise?.isConnected).toBe(false);
+  expect(firstManyOption?.getAttribute("role")).toBe("option");
+  expect(firstManyOption?.textContent).toContain("Item 01");
+
+  controls("combobox", {
+    ...comboBoxDemoDefaults,
+    label: "Updated plan",
+    selectedKey: "none",
+    inputValue: "",
+    disableEnterprise: true,
+  });
+  await settle();
+  expect(firstManyOption?.isConnected).toBe(false);
+
+  const starterInItems = document.querySelector<HTMLElement>('[role="option"][data-key="starter"]');
+  const proInItems = document.querySelector<HTMLElement>('[role="option"][data-key="pro"]');
+  const enterpriseInItems = document.querySelector<HTMLElement>(
+    '[role="option"][data-key="enterprise"]',
+  );
+  await user.clear(input!);
+  await user.type(input!, "Sta");
+  await settle();
+  expect(document.querySelector('[role="option"][data-key="starter"]')).toBe(starterInItems);
+  expect(document.querySelector('[role="option"][data-key="pro"]')).toBe(proInItems);
+  expect(document.querySelector('[role="option"][data-key="enterprise"]')).toBe(enterpriseInItems);
+  expect(starterInItems?.isConnected).toBe(true);
+  expect(proInItems?.isConnected).toBe(true);
+  expect(enterpriseInItems?.isConnected).toBe(true);
+
+  controls("combobox", {
+    ...comboBoxDemoDefaults,
+    label: "Updated plan",
+    selectedKey: "none",
+    inputValue: "",
+    disableEnterprise: true,
+    itemsSource: "defaultItems",
+    itemsPreset: "three",
+  });
+  await settle();
+  const defaultItemsInput = container.querySelector<HTMLInputElement>('[role="combobox"]');
+  await user.type(defaultItemsInput!, "Sta");
+  await settle();
+  const starter = document.querySelector<HTMLElement>('[role="option"][data-key="starter"]');
+  expect(starter?.getAttribute("role")).toBe("option");
+  expect(starter?.textContent).toContain("Starter");
+  expect(document.querySelector('[role="option"][data-key="pro"]')).toBeNull();
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  expect(document.activeElement).toBe(defaultItemsInput);
+  expect(starter).toHaveAttribute("data-focused");
+  expect(defaultItemsInput?.getAttribute("aria-activedescendant")).toBe(starter?.id);
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(defaultItemsInput).toHaveValue("Starter");
+  expect(root?.dataset.comparisonValue).toBe("starter");
+  expect(defaultItemsInput).toHaveAttribute("aria-expanded", "false");
+  expect(document.activeElement).toBe(defaultItemsInput);
+
+  await user.click(trigger!);
+  await settle();
+  expect(defaultItemsInput).toHaveAttribute("aria-expanded", "true");
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(defaultItemsInput).toHaveAttribute("aria-expanded", "false");
+  expect(document.activeElement).toBe(defaultItemsInput);
+});
+
+it("stage B async tail Picker navigates, selects, and returns trigger focus on Escape", async () => {
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Picker(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="picker"]');
+  const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="listbox"]');
+  expect(root).not.toBeNull();
+  expect(trigger).not.toBeNull();
+  trigger?.focus();
+  expect(document.activeElement).toBe(trigger);
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  await settle();
+  const listbox = document.querySelector<HTMLElement>('[role="listbox"]');
+  const pro = document.querySelector<HTMLElement>('[role="option"][data-key="pro"]');
+  expect(listbox).not.toBeNull();
+  expect(pro?.textContent).toContain("Pro");
+  expect(pro).toHaveAttribute("aria-selected", "true");
+  expect(pro).toHaveAttribute("data-focused");
+  expect(document.activeElement).toBe(pro);
+
+  controls("picker", { ...pickerDemoDefaults, label: "Updated plan" });
+  theme("dark");
+  await settle();
+  expect(container.querySelector('button[aria-haspopup="listbox"]')).toBe(trigger);
+  expect(document.querySelector('[role="listbox"]')).toBe(listbox);
+  expect(document.querySelector('[role="option"][data-key="pro"]')).toBe(pro);
+  const labelledByIds = trigger?.getAttribute("aria-labelledby")?.split(" ") ?? [];
+  const visibleLabel =
+    labelledByIds
+      .map((id) => document.getElementById(id))
+      .find((element) => element?.textContent?.trim() === "Updated plan") ?? null;
+  expect(visibleLabel).not.toBeNull();
+  expect(labelledByIds).toContain(visibleLabel?.id);
+  expect(trigger).toHaveAccessibleName("Pro Updated plan");
+  expect(document.activeElement).toBe(pro);
+
+  await user.keyboard("{ArrowDown}");
+  await settle();
+  const enterprise = document.querySelector<HTMLElement>('[role="option"][data-key="enterprise"]');
+  expect(enterprise?.getAttribute("role")).toBe("option");
+  expect(enterprise?.textContent).toContain("Enterprise");
+  expect(enterprise).toHaveAttribute("data-focused");
+  expect(document.activeElement).toBe(enterprise);
+  await user.keyboard("{Enter}");
+  await settle();
+  expect(root?.dataset.comparisonValue).toBe("enterprise");
+  expect(trigger?.textContent).toContain("Enterprise");
+  expect(document.querySelector('[role="listbox"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+
+  await user.keyboard("{ArrowDown}");
+  await nextAnimationFrame();
+  await settle();
+  expect(document.querySelector('[role="listbox"]')).not.toBeNull();
+  expect(document.activeElement).toBe(
+    document.querySelector('[role="option"][data-key="enterprise"]'),
+  );
+  await user.keyboard("{Escape}");
+  await settle();
+  expect(document.querySelector('[role="listbox"]')).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+});
+
+it("stage B async tail Image exercises source modes and isolates stale load and error work", async () => {
+  const add = vi.spyOn(window, "addEventListener");
+  const remove = vi.spyOn(window, "removeEventListener");
+  dispose = render(() => Image(), container);
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="image"]');
+  const basic = container.querySelector<HTMLImageElement>('img[alt="Gradient landscape"]');
+  expect(root).not.toBeNull();
+  expect(basic?.src).toContain("Basic");
+  expect(basic?.parentElement?.style.objectFit).toBe("cover");
+
+  controls("image", { alt: "Conditional image", sourceMode: "conditional", objectFit: "contain" });
+  await settle();
+  const conditional = container.querySelector<HTMLImageElement>('img[alt="Conditional image"]');
+  expect(basic?.isConnected).toBe(false);
+  expect(conditional?.closest("picture")).not.toBeNull();
+  expect(container.querySelector("source")?.getAttribute("srcset")).toContain("Light");
+  expect(conditional?.closest("picture")?.parentElement?.style.objectFit).toBe("contain");
+  theme("dark");
+  await settle();
+  expect(container.querySelector("source")?.getAttribute("srcset")).toContain("Dark");
+
+  controls("image", { alt: "Coordinated", sourceMode: "coordinator", objectFit: "cover" });
+  await settle();
+  const coordinated = Array.from(container.querySelectorAll<HTMLImageElement>("img"));
+  expect(coordinated.map((image) => image.alt)).toEqual(["Coordinated one", "Coordinated two"]);
+  const firstWrapper = coordinated[0]?.parentElement;
+  const initialClass = firstWrapper?.className;
+  coordinated[0]?.dispatchEvent(new Event("load"));
+  await settle();
+  expect(firstWrapper?.className).toBe(initialClass);
+  coordinated[1]?.dispatchEvent(new Event("load"));
+  await settle();
+  expect(firstWrapper?.className).not.toBe(initialClass);
+
+  controls("image", { alt: "Missing image", sourceMode: "error", objectFit: "cover" });
+  await settle();
+  const missing = container.querySelector<HTMLImageElement>('img[alt="Missing image"]');
+  expect(coordinated.every((image) => !image.isConnected)).toBe(true);
+  expect(missing?.getAttribute("src")).toBe(imageMissingSource);
+  coordinated[0]?.dispatchEvent(new Event("error"));
+  coordinated[1]?.dispatchEvent(new Event("load"));
+  await settle();
+  expect(container.querySelector('img[alt="Missing image"]')).toBe(missing);
+  expect(container.querySelector(".comparison-image-error")).toBeNull();
+  missing?.dispatchEvent(new Event("error"));
+  await settle();
+  expect(container.querySelector(".comparison-image-error")?.textContent).toBe(
+    "Error loading image",
+  );
+
+  dispose();
+  dispose = undefined;
+  expect(container.querySelector('[data-comparison-control-root="image"]')).toBeNull();
+  add.mockClear();
+  remove.mockClear();
+  dispose = render(() => Image(), container);
+  await settle();
+  const replacement = container.querySelector<HTMLImageElement>('img[alt="Gradient landscape"]');
+  expect(replacement).not.toBeNull();
+  expect(replacement).not.toBe(missing);
+  missing?.dispatchEvent(new Event("load"));
+  missing?.dispatchEvent(new Event("error"));
+  await settle();
+  expect(container.querySelector('img[alt="Gradient landscape"]')).toBe(replacement);
+  expect(container.querySelector(".comparison-image-error")).toBeNull();
+});
+
+it("stage B async tail Toast owns action, close, replacement, timeout, and remount cleanup", async () => {
+  globalToastQueue.clear();
+  const add = vi.spyOn(window, "addEventListener");
+  const remove = vi.spyOn(window, "removeEventListener");
+  const subscribe = globalToastQueue.subscribe.bind(globalToastQueue);
+  const unsubscribes: Array<ReturnType<typeof vi.fn>> = [];
+  vi.spyOn(globalToastQueue, "subscribe").mockImplementation((callback) => {
+    const unsubscribe = vi.fn(subscribe(callback));
+    unsubscribes.push(unsubscribe);
+    return unsubscribe;
+  });
+  const user = userEvent.setup({ delay: null });
+  dispose = render(() => Toast(), container);
+  await settle();
+  controls("toast", {
+    ...toastDemoDefaults,
+    activeSide: "solid",
+    children: "Actionable toast",
+    showAction: true,
+    shouldCloseOnAction: true,
+  });
+  await settle();
+  const root = container.querySelector<HTMLElement>('[data-comparison-control-root="toast"]');
+  const neutralTrigger = Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(
+    (button) => button.textContent?.includes("Show Neutral Toast"),
+  );
+  expect(root).not.toBeNull();
+  expect(neutralTrigger).not.toBeUndefined();
+  await user.click(neutralTrigger!);
+  await settle();
+  expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain("Actionable toast");
+  const action = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button'),
+  ).find((button) => button.textContent?.includes("Undo"));
+  expect(action).not.toBeUndefined();
+  await user.click(action!);
+  await settle();
+  expect(root?.dataset.comparisonToastActionCount).toBe("1");
+  expect(root?.dataset.comparisonToastCloseCount).toBe("1");
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+
+  await user.click(neutralTrigger!);
+  await settle();
+  const dismiss = document.querySelector<HTMLButtonElement>(
+    '[role="alertdialog"] button[aria-label]',
+  );
+  expect(dismiss).not.toBeNull();
+  await user.click(dismiss!);
+  await settle();
+  expect(root?.dataset.comparisonToastCloseCount).toBe("2");
+
+  await user.click(neutralTrigger!);
+  await settle();
+  controls("toast", {
+    ...toastDemoDefaults,
+    activeSide: "solid",
+    children: "Replacement toast",
+  });
+  await settle();
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+  expect(root?.dataset.comparisonToastActionCount).toBe("0");
+  expect(root?.dataset.comparisonToastCloseCount).toBe("0");
+  controls("toast", { ...toastDemoDefaults, activeSide: "react" });
+  await settle();
+  expect(container.textContent).not.toContain("Show Neutral Toast");
+
+  vi.useFakeTimers();
+  controls("toast", {
+    ...toastDemoDefaults,
+    activeSide: "solid",
+    children: "Timed toast",
+    autoDismiss: true,
+    timeout: 5000,
+  });
+  await Promise.resolve();
+  flush();
+  const timedTrigger = Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(
+    (button) => button.textContent?.includes("Show Neutral Toast"),
+  );
+  timedTrigger?.click();
+  await Promise.resolve();
+  flush();
+  expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain("Timed toast");
+  await vi.advanceTimersByTimeAsync(5000);
+  flush();
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+  expect(root?.dataset.comparisonToastCloseCount).toBe("1");
+
+  timedTrigger?.click();
+  await Promise.resolve();
+  flush();
+  expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
+  const firstSubscriptionCount = unsubscribes.length;
+  dispose();
+  dispose = undefined;
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+  expect(
+    unsubscribes
+      .slice(0, firstSubscriptionCount)
+      .every((unsubscribe) => unsubscribe.mock.calls.length === 1),
+  ).toBe(true);
+
+  add.mockClear();
+  remove.mockClear();
+  dispose = render(() => Toast(), container);
+  await Promise.resolve();
+  flush();
+  controls("toast", { ...toastDemoDefaults, activeSide: "solid" });
+  await Promise.resolve();
+  flush();
+  const replacementRoot = container.querySelector<HTMLElement>(
+    '[data-comparison-control-root="toast"]',
+  );
+  expect(replacementRoot).not.toBe(root);
+  expect(replacementRoot?.dataset.comparisonToastActionCount).toBe("0");
+  expect(replacementRoot?.dataset.comparisonToastCloseCount).toBe("0");
+  await vi.advanceTimersByTimeAsync(5000);
+  flush();
+  expect(document.querySelector('[role="alertdialog"]')).toBeNull();
+  expect(replacementRoot?.dataset.comparisonToastCloseCount).toBe("0");
+  vi.useRealTimers();
+});
 
 it("stage A colorfield retains its focused input through a real edit", async () => {
   dispose = render(() => ColorField(), container);

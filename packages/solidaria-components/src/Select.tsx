@@ -43,6 +43,7 @@ import {
   createFocusRing,
   FocusScope,
   focusSafely,
+  getInteractionModality,
   mergeProps,
   type AriaSelectProps,
   type AriaListBoxProps,
@@ -1187,11 +1188,10 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     if (!isOpen()) return;
     const focusedKey = state.focusedKey();
     if (focusedKey == null) return;
-    // Overlay mouse-open: keep manager `isFocused` + selected `focusedKey`
+    // Overlay non-keyboard-open: keep manager `isFocused` + selected `focusedKey`
     // (roving tabindex / `data-focused`) but do not `focusSafely` the option.
-    // RAC leaves the popover dialog as `document.activeElement`; an already-
-    // focused option also blocks headless Popover autofocus (`contains`).
-    if (local.isInPopover === true) return;
+    // Keyboard-open must hand real focus to that option for subsequent navigation.
+    if (local.isInPopover === true && getInteractionModality() !== "keyboard") return;
 
     queueMicrotask(() => {
       const option = Array.from(

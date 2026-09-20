@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
 import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
@@ -50,8 +50,41 @@ function SolidSpectrumTreeViewDemo() {
   const [actionKey, setActionKey] = createSignal("");
   const [loadMoreCount, setLoadMoreCount] = createSignal(0);
   const colorScheme = createComparisonResolvedThemeSignal();
-  const items = createMemo(() => treeViewDemoItems(demoProps()));
-  const itemKeys = createMemo(() => treeViewVisibleKeys(demoProps()));
+  const itemCount = createMemo(() => demoProps().itemCount);
+  const selectionMode = createMemo(() => demoProps().selectionMode);
+  const selectionStyle = createMemo(() => demoProps().selectionStyle);
+  const selectionSource = createMemo(() => demoProps().selectionSource);
+  const expandedSource = createMemo(() => demoProps().expandedSource);
+  const defaultSelectedKeyValue = createMemo(() => demoProps().defaultSelectedKeys);
+  const defaultExpandedKeyValue = createMemo(() => demoProps().defaultExpandedKeys);
+  const disabledKeyValue = createMemo(() => demoProps().disabledKeys);
+  const disabledItem = createMemo(() => demoProps().disabledItem);
+  const showIcons = createMemo(() => demoProps().showIcons);
+  const showActionBar = createMemo(() => demoProps().showActionBar);
+  const itemActionSlot = createMemo(() => demoProps().itemActionSlot);
+  const linkItem = createMemo(() => demoProps().linkItem);
+  const showLoadMore = createMemo(() => demoProps().showLoadMore);
+  const loadingState = createMemo(() => demoProps().loadingState);
+  const items = createMemo(() => treeViewDemoItems({ itemCount: itemCount() }));
+  const itemKeys = createMemo(() => treeViewVisibleKeys({ itemCount: itemCount() }));
+  const disabledKeys = createMemo(() =>
+    treeViewKeysFromValue(disabledKeyValue(), [], "multiple", itemKeys()),
+  );
+  const defaultSelectedKeys = createMemo(() =>
+    treeViewKeysFromValue(
+      defaultSelectedKeyValue(),
+      itemKeys().includes("weekly-report") ? ["weekly-report"] : [],
+      selectionMode(),
+      itemKeys(),
+    ),
+  );
+  const defaultExpandedKeys = createMemo(() =>
+    treeViewExpandedKeysFromValue(
+      defaultExpandedKeyValue(),
+      ["documents", "project"].filter((key) => itemKeys().includes(key)),
+      itemKeys(),
+    ),
+  );
   const selectedKeyText = createMemo(() => serializeTreeViewKeys(selectedKeys()));
   const expandedKeyText = createMemo(() => serializeTreeViewKeys(expandedKeys()));
   let treeViewRoot: HTMLElement | undefined;
@@ -80,7 +113,7 @@ function SolidSpectrumTreeViewDemo() {
       }
     };
     window.addEventListener(treeViewControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(treeViewControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(treeViewControlsEvent, handleControlsChange);
   });
 
   return hc(
@@ -127,37 +160,28 @@ function SolidSpectrumTreeViewDemo() {
                 return items();
               },
               get selectionMode() {
-                return demoProps().selectionMode;
+                return selectionMode();
               },
               get selectionStyle() {
-                return demoProps().selectionStyle;
+                return selectionStyle();
               },
               get disabledKeys() {
-                return treeViewKeysFromValue(demoProps().disabledKeys, [], "multiple", itemKeys());
+                return disabledKeys();
               },
               get selectedKeys() {
-                return demoProps().selectionSource === "selectedKeys" ? selectedKeys() : undefined;
+                return selectionSource() === "selectedKeys" ? selectedKeys() : undefined;
               },
               get defaultSelectedKeys() {
-                return demoProps().selectionSource === "defaultSelectedKeys"
-                  ? treeViewKeysFromValue(
-                      demoProps().defaultSelectedKeys,
-                      itemKeys().includes("weekly-report") ? ["weekly-report"] : [],
-                      demoProps().selectionMode,
-                      itemKeys(),
-                    )
+                return selectionSource() === "defaultSelectedKeys"
+                  ? defaultSelectedKeys()
                   : undefined;
               },
               get expandedKeys() {
-                return demoProps().expandedSource === "expandedKeys" ? expandedKeys() : undefined;
+                return expandedSource() === "expandedKeys" ? expandedKeys() : undefined;
               },
               get defaultExpandedKeys() {
-                return demoProps().expandedSource === "defaultExpandedKeys"
-                  ? treeViewExpandedKeysFromValue(
-                      demoProps().defaultExpandedKeys,
-                      ["documents", "project"].filter((key) => itemKeys().includes(key)),
-                      itemKeys(),
-                    )
+                return expandedSource() === "defaultExpandedKeys"
+                  ? defaultExpandedKeys()
                   : undefined;
               },
               renderEmptyState: () =>
@@ -166,7 +190,7 @@ function SolidSpectrumTreeViewDemo() {
                   hc(SolidSpectrumContent, {}, ["Create or upload a file to continue."]),
                 ]),
               get renderActionBar() {
-                return demoProps().showActionBar
+                return showActionBar()
                   ? (keys: "all" | Set<string | number>) =>
                       hc(
                         SolidSpectrumActionBar,
@@ -192,74 +216,80 @@ function SolidSpectrumTreeViewDemo() {
                 setExpandedKeys(new Set<string>(Array.from(keys, String))),
               UNSAFE_style: collectionTreeStyle,
             },
-            renderProp((item: TreeViewDemoItem) => [
-              hc(
-                SolidSpectrumTreeViewItem,
-                {
-                  id: item.id,
-                  textValue: item.title,
-                  get isDisabled() {
-                    return demoProps().disabledItem === item.id;
-                  },
-                  get href() {
-                    return demoProps().linkItem === item.id
-                      ? `https://example.com/treeview/${item.id}`
-                      : undefined;
-                  },
-                  get target() {
-                    return demoProps().linkItem === item.id ? "_blank" : undefined;
-                  },
-                },
-                [
-                  hc(SolidSpectrumTreeViewItemContent, {}, [
-                    () =>
-                      demoProps().showIcons ? h(SolidNewIcon, { "aria-hidden": "true" }) : null,
-                    hc(SolidSpectrumText, {}, [item.title]),
-                    () => {
-                      const actionSlot = demoProps().itemActionSlot;
-                      if (actionSlot === "buttonGroup") {
-                        return hc(
-                          SolidSpectrumActionButtonGroup,
-                          { "aria-label": `${item.title} actions` },
-                          [
-                            hc(
-                              SolidSpectrumActionButton,
-                              { "aria-label": `Archive ${item.title}` },
-                              [h(SolidNewIcon, { "aria-hidden": "true" })],
-                            ),
-                          ],
-                        );
-                      }
+            renderProp((item: TreeViewDemoItem) => {
+              const isDisabled = createMemo(() => disabledItem() === item.id);
+              const isLinked = createMemo(() => linkItem() === item.id);
 
-                      if (actionSlot === "actionMenu") {
-                        return hc(SolidSpectrumActionMenu, { "aria-label": `${item.title} menu` }, [
-                          hc(
-                            SolidSpectrumMenuItem,
-                            {
-                              id: `${item.id}-copy`,
-                              textValue: "Copy",
-                            },
-                            [hc(SolidSpectrumText, {}, ["Copy"])],
-                          ),
-                        ]);
-                      }
-
-                      return null;
+              return [
+                hc(
+                  SolidSpectrumTreeViewItem,
+                  {
+                    id: item.id,
+                    textValue: item.title,
+                    get isDisabled() {
+                      return isDisabled();
                     },
-                  ]),
-                ],
-              ),
-              () =>
-                demoProps().showLoadMore && item.id === "image-1"
-                  ? hc(SolidSpectrumTreeViewLoadMoreItem, {
-                      onLoadMore: () => setLoadMoreCount((count) => count + 1),
-                      level: 2,
-                      get loadingState() {
-                        return demoProps().loadingState;
+                    get href() {
+                      return isLinked() ? `https://example.com/treeview/${item.id}` : undefined;
+                    },
+                    get target() {
+                      return isLinked() ? "_blank" : undefined;
+                    },
+                  },
+                  [
+                    hc(SolidSpectrumTreeViewItemContent, {}, [
+                      () => (showIcons() ? h(SolidNewIcon, { "aria-hidden": "true" }) : null),
+                      hc(SolidSpectrumText, {}, [item.title]),
+                      () => {
+                        const actionSlot = itemActionSlot();
+                        if (actionSlot === "buttonGroup") {
+                          return hc(
+                            SolidSpectrumActionButtonGroup,
+                            { "aria-label": `${item.title} actions` },
+                            [
+                              hc(
+                                SolidSpectrumActionButton,
+                                { "aria-label": `Archive ${item.title}` },
+                                [h(SolidNewIcon, { "aria-hidden": "true" })],
+                              ),
+                            ],
+                          );
+                        }
+
+                        if (actionSlot === "actionMenu") {
+                          return hc(
+                            SolidSpectrumActionMenu,
+                            { "aria-label": `${item.title} menu` },
+                            [
+                              hc(
+                                SolidSpectrumMenuItem,
+                                {
+                                  id: `${item.id}-copy`,
+                                  textValue: "Copy",
+                                },
+                                [hc(SolidSpectrumText, {}, ["Copy"])],
+                              ),
+                            ],
+                          );
+                        }
+
+                        return null;
                       },
-                    })
-                  : null,
-            ]),
+                    ]),
+                  ],
+                ),
+                () =>
+                  showLoadMore() && item.id === "image-1"
+                    ? hc(SolidSpectrumTreeViewLoadMoreItem, {
+                        onLoadMore: () => setLoadMoreCount((count) => count + 1),
+                        level: 2,
+                        get loadingState() {
+                          return loadingState();
+                        },
+                      })
+                    : null,
+              ];
+            }),
           ),
           hc("button", {}, ["After"]),
         ],

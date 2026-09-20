@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -66,10 +66,10 @@ function SolidSpectrumSelectBoxGroupDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   return hc(

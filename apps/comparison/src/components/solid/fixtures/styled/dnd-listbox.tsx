@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import { createComponent } from "@solidjs/web";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -54,10 +54,10 @@ function SolidSpectrumDndListBoxDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const { dragAndDropHooks } = useSolidDragAndDrop<DndListBoxDemoItem>({

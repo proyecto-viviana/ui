@@ -287,19 +287,43 @@ describe("TreeView (solid-spectrum)", () => {
     expect(within(archive).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
   });
 
-  it("supports dynamic TreeViewItem isDisabled props", () => {
+  it("supports dynamic TreeViewItem isDisabled props", async () => {
+    const dynamicItems: TreeItemData<FileItem>[] = [
+      {
+        id: "documents",
+        value: { id: "documents", label: "Documents" },
+        textValue: "Documents",
+        children: [
+          {
+            id: "project",
+            value: { id: "project", label: "Project" },
+            textValue: "Project",
+            children: [
+              {
+                id: "weekly-report",
+                value: { id: "weekly-report", label: "Weekly Report" },
+                textValue: "Weekly Report",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const [disabledItem, setDisabledItem] = createSignal<string>("none");
+
     render(() => (
       <TreeView
         aria-label="Files"
-        items={files}
-        defaultExpandedKeys={["projects"]}
+        items={dynamicItems}
         selectionMode="multiple"
+        defaultExpandedKeys={["documents", "project"]}
+        defaultSelectedKeys={["weekly-report"]}
       >
         {(item) => (
           <TreeViewItem
             id={itemKey(item)}
             textValue={item.textValue}
-            isDisabled={itemKey(item) === "report"}
+            isDisabled={disabledItem() === itemKey(item)}
           >
             {item.value?.label}
           </TreeViewItem>
@@ -307,9 +331,38 @@ describe("TreeView (solid-spectrum)", () => {
       </TreeView>
     ));
 
-    const report = screen.getByRole("row", { name: /Quarterly report/ });
-    expect(report).toHaveAttribute("aria-disabled", "true");
-    expect(within(report).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
+    const weeklyBefore = screen.getByRole("row", { name: /Weekly Report/ });
+    weeklyBefore.focus();
+    expect(document.activeElement).toBe(weeklyBefore);
+    setDisabledItem("project");
+
+    await waitFor(() => {
+      const projectAfter = screen.getByRole("row", { name: /^Project/ });
+      const weeklyAfter = screen.getByRole("row", { name: /Weekly Report/ });
+      const activeElement = document.activeElement as HTMLElement | null;
+      expect({
+        projectAriaDisabled: projectAfter.getAttribute("aria-disabled"),
+        weeklyIdentityRetained: weeklyAfter === weeklyBefore,
+        weeklyBeforeIsConnected: weeklyBefore.isConnected,
+        weeklyAfterIsConnected: weeklyAfter.isConnected,
+        weeklyAfterAriaSelected: weeklyAfter.getAttribute("aria-selected"),
+        weeklyAfterDataSelected: weeklyAfter.getAttribute("data-selected"),
+        activeElementKey: activeElement?.getAttribute("data-key") ?? null,
+        activeElementRole: activeElement?.getAttribute("role") ?? null,
+      }).toEqual({
+        projectAriaDisabled: "true",
+        weeklyIdentityRetained: true,
+        weeklyBeforeIsConnected: true,
+        weeklyAfterIsConnected: true,
+        weeklyAfterAriaSelected: "true",
+        weeklyAfterDataSelected: "true",
+        activeElementKey: "weekly-report",
+        activeElementRole: "row",
+      });
+    });
+
+    const project = screen.getByRole("row", { name: /^Project/ });
+    expect(within(project).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
   });
 
   it("applies the disabled content color to the row, description, and chevron", () => {

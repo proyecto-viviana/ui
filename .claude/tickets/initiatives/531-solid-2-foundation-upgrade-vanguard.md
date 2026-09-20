@@ -6,6 +6,11 @@ created: 2026-09-13
 status: in-progress
 history:
   - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543's accepted collections/async generation removes the final16 fixture cleanup registrations across15 files; Stage A20, actual Picker RED-to-GREEN, pointer control, Select86, Picker22, Tree16, Stage B10 and complete shared hydrate139 all pass. Root typecheck exits0 and census is0/0. This is bounded child progress only: strict diagnostics, actual-island/browser proof, broader app/web, four-layer builds, attribution, #139 packaging and #194/#537 same-revision release gates remain; #543/#531 stay in-progress and #532 is merged-not-verified",
+    }
+  - {
       state: open,
       at: 2026-09-13,
       note: "opened to prepare the ui foundation as the vanguard for the ecosystem upgrade to Solid 2.0",
@@ -195,6 +200,21 @@ ElementTag's reviewed hash matches. Track separate source/header review and
 reconciliation before claiming all foundation/release gates green; do not
 bulk-refresh hashes to erase unreviewed drift. Receipt:
 `.agents/UI-EXECUTION-536-2026-09-19.md`. This adds no waiver or held-task authority.
+
+## 2026-09-20 collections and async checkpoint
+
+Child #543 has an accepted final collection/async source generation: the
+remaining fixture cleanup census is zero registrations in zero files, Stage A
+passes 20/20, the actual Spectrum Picker focus defect is covered by a qualifying
+RED and minimal keyboard-only Select handoff, Stage B passes 10/10, and the
+completed shared hydrate file passes 139/139. Root typecheck exits 0. The
+durable receipt is
+`.agents/UI-EXECUTION-543-COLLECTIONS-ASYNC-2026-09-20.md`.
+
+This does not verify the initiative. #543 and #531 remain in progress; #532 is
+merged, not verified. Strict diagnostics, actual-island and real-browser proof,
+broader app/web compatibility, four-layer builds, attribution, packaging, and
+the same-revision #139/#194/#537 release gates remain open.
 
 ## Relationship
 
