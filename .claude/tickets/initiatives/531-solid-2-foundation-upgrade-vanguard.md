@@ -90,6 +90,11 @@ history:
       at: 2026-09-19,
       note: "#536 FocusScope now renders symmetric context and sentinels with browser capture guarded. Three failing old-source SSR cases are corrected; fresh complete SSR 66/66 then hydrate 74/74 and owning 47/47 pass with one worker, preserving containment/restoration and cancellation. Public portal routes, real streaming, stale guidance, all sibling/build/attribution requirements and #139/#194/#537 same-revision release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 public OverlayContainer route proof diagnoses a compiler-generated lazy mount prop read inside a child-forbidden callback. Minimal owned-compute validation repair retains the SSR portal guard and behavior. Fresh complete SSR 69/69 then hydrate 77/77 and owning 29/29 pass with one worker. Tooltip routes, real streaming, stale guidance, sibling/build/attribution requirements and #139/#194/#537 same-revision release gates remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

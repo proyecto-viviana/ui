@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { flush, sharedConfig, type Accessor } from "solid-js";
 import { afterEach, describe, expect, it } from "vite-plus/test";
+import { waitFor } from "@solidjs/testing-library";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { cleanupHydrationRoots } from "../test-utils/hydrate";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
@@ -17,6 +18,8 @@ import {
   FocusScopeFixture,
   hookCases,
   HydrationHookFixture,
+  OverlayPortalFixture,
+  portalModes,
   scopeModes,
 } from "./fixtures/hydrationHooks";
 
@@ -27,6 +30,141 @@ afterEach(() => {
     clearAutoFocusQueue();
     clearFocusStack();
     document.body.innerHTML = "";
+  }
+});
+
+describe("public OverlayContainer hydration routes", () => {
+  for (const mode of portalModes) {
+    it(`adopts the outer ${mode} route and owns portal ARIA and cleanup`, async () => {
+      const inherited = document.createElement("aside");
+      const explicit = document.createElement("aside");
+      const inheritedSentinel = document.createTextNode("Inherited mount sentinel");
+      const explicitSentinel = document.createTextNode("Explicit mount sentinel");
+      inherited.append(inheritedSentinel);
+      explicit.append(explicitSentinel);
+      document.body.append(inherited, explicit);
+      const mount = mode === "body" ? document.body : mode === "inherited" ? inherited : explicit;
+      const selectors = [
+        "[data-overlay-container]",
+        "[data-portal-route]",
+        "[data-portal-background]",
+        "[data-portal-label]",
+        "[data-portal-input]",
+      ];
+      let nodes: Element[] = [];
+      let mountNodes: ChildNode[] = [];
+      let serverId = "";
+      let id = "";
+      let adopted: HTMLInputElement | undefined;
+      let reveal!: (visible: boolean) => void;
+      const created: boolean[] = [];
+      const modalValues: boolean[] = [];
+      let disposed = 0;
+      let inheritedReads = 0;
+      let explicitReads = 0;
+      const html = readFileSync(
+        resolve(import.meta.dirname, `../../../output/overlay-portal-${mode}-ssr.html`),
+        "utf8",
+      );
+      const container = await hydrateOverSsr(
+        html,
+        () => (
+          <OverlayPortalFixture
+            mode={mode}
+            inherited={() => {
+              inheritedReads++;
+              return inherited;
+            }}
+            explicit={() => {
+              explicitReads++;
+              return explicit;
+            }}
+            created={() => created.push(sharedConfig.hydrating)}
+            modal={(value) => modalValues.push(value)}
+            disposed={() => {
+              disposed++;
+            }}
+            id={(value) => {
+              id = value;
+            }}
+            ref={(element) => {
+              adopted = element;
+            }}
+            reveal={(set) => {
+              reveal = set;
+            }}
+          />
+        ),
+        {
+          beforeHydrate(container) {
+            nodes = selectors.map((selector) => container.querySelector(selector)!);
+            nodes.forEach((node) => expect(node).not.toBeNull());
+            expect(document.querySelector("[data-portal-modal]")).toBeNull();
+            expect(nodes[0]).not.toHaveAttribute("aria-hidden");
+            serverId = nodes[4].id;
+            expect(serverId).not.toBe("");
+            mountNodes = Array.from(mount.childNodes);
+          },
+        },
+      );
+      const assertIdentity = () => {
+        selectors.forEach((selector, index) =>
+          expect(container.querySelector(selector)).toBe(nodes[index]),
+        );
+        expect(adopted).toBe(nodes[4]);
+        expect(id).toBe(serverId);
+        expect(nodes[4].id).toBe(serverId);
+        expect(nodes[3]).toHaveAttribute("for", serverId);
+      };
+      const assertMountRestored = () => {
+        expect(mount.childNodes).toHaveLength(mountNodes.length);
+        mountNodes.forEach((node, index) => expect(mount.childNodes[index]).toBe(node));
+        expect(inherited.childNodes).toHaveLength(1);
+        expect(inherited.firstChild).toBe(inheritedSentinel);
+        expect(explicit.childNodes).toHaveLength(1);
+        expect(explicit.firstChild).toBe(explicitSentinel);
+      };
+      await waitFor(() => expect(document.querySelectorAll("[data-portal-modal]")).toHaveLength(1));
+      assertIdentity();
+      const firstModal = document.querySelector("[data-portal-modal]")!;
+      expect(mount.contains(firstModal)).toBe(true);
+      expect(container.contains(firstModal)).toBe(false);
+      // The hook supplies boolean true; Solid serializes this data marker as
+      // an empty attribute. Consumers select its presence, not a string token.
+      expect(modalValues).toEqual([true]);
+      expect(firstModal).toHaveAttribute("data-ismodal", "");
+      expect(nodes[0]).toHaveAttribute("aria-hidden", "true");
+      expect(firstModal.closest("[data-overlay-container]")).not.toHaveAttribute("aria-hidden");
+      expect(created).toEqual([false]);
+      expect(inheritedReads > 0).toBe(mode === "inherited");
+      expect(explicitReads > 0).toBe(mode === "explicit");
+      reveal(false);
+      flush();
+      expect(firstModal.isConnected).toBe(false);
+      expect(document.querySelector("[data-portal-modal]")).toBeNull();
+      expect(nodes[0]).not.toHaveAttribute("aria-hidden");
+      expect(disposed).toBe(1);
+      assertIdentity();
+      assertMountRestored();
+      reveal(true);
+      flush();
+      await waitFor(() => expect(document.querySelectorAll("[data-portal-modal]")).toHaveLength(1));
+      const nextModal = document.querySelector("[data-portal-modal]")!;
+      expect(nextModal).not.toBe(firstModal);
+      expect(mount.contains(nextModal)).toBe(true);
+      expect(nodes[0]).toHaveAttribute("aria-hidden", "true");
+      expect(created).toEqual([false, false]);
+      expect(modalValues).toEqual([true, true]);
+      assertIdentity();
+      cleanupHydrationRoots();
+      flush();
+      expect(disposed).toBe(2);
+      expect(nextModal.isConnected).toBe(false);
+      expect(document.querySelector("[data-portal-modal]")).toBeNull();
+      assertMountRestored();
+      expect(inherited.isConnected).toBe(true);
+      expect(explicit.isConnected).toBe(true);
+    });
   }
 });
 

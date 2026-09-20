@@ -9,6 +9,8 @@ import {
   FocusScopeFixture,
   hookCases,
   HydrationHookFixture,
+  OverlayPortalFixture,
+  portalModes,
   scopeModes,
 } from "./fixtures/hydrationHooks";
 import { getAutoFocusQueueLength } from "../src/focus/createAutoFocus";
@@ -150,6 +152,47 @@ describe("FocusScope SSR structure and context", () => {
       const output = resolve(import.meta.dirname, "../../../output");
       mkdirSync(output, { recursive: true });
       writeFileSync(resolve(output, `focus-scope-${mode}-ssr.html`), html, "utf8");
+    });
+  }
+});
+
+describe("public OverlayContainer SSR routes", () => {
+  for (const mode of portalModes) {
+    it(`retains the ${mode} route without evaluating portal content or mount`, () => {
+      const calls: string[] = [];
+      let id = "";
+      const html = renderToString(() => (
+        <OverlayPortalFixture
+          mode={mode}
+          inherited={() => {
+            calls.push("inherited");
+            return null;
+          }}
+          explicit={() => {
+            throw new Error("SSR evaluated the explicit browser mount");
+          }}
+          created={() => calls.push("created")}
+          disposed={() => calls.push("disposed")}
+          modal={() => calls.push("modal")}
+          ref={() => calls.push("ref")}
+          id={(value) => {
+            id = value;
+          }}
+        />
+      ));
+      expect(calls).toEqual([]);
+      expect(html).toContain('data-overlay-container="true"');
+      expect(html).toContain(`data-portal-route="${mode}"`);
+      expect(html).toContain("Background");
+      expect(html).not.toContain("data-portal-modal");
+      expect(html).not.toContain("aria-hidden");
+      expect(id).not.toBe("");
+      expect(html).toContain(`for="${id}"`);
+      expect(html).toContain(`id="${id}"`);
+      expect(html).toMatch(/\s_hk=/);
+      const output = resolve(import.meta.dirname, "../../../output");
+      mkdirSync(output, { recursive: true });
+      writeFileSync(resolve(output, `overlay-portal-${mode}-ssr.html`), html, "utf8");
     });
   }
 });

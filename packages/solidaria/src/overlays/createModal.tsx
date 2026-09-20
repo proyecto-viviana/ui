@@ -18,7 +18,7 @@
  */
 
 import { useContextOptional } from "../utils/owner";
-import { createContext, createSignal, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import { createContext, createSignal, createEffect, createTrackedEffect } from "solid-js";
 import type { Accessor, ParentComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
@@ -180,8 +180,9 @@ export const OverlayContainer: ParentComponent<OverlayContainerProps> = (props) 
   const portalContainer = () =>
     props.portalContainer ?? portalContext.getContainer?.() ?? document.body;
 
-  createTrackedEffect(() => {
-    const container = portalContainer();
+  // Compiler-generated prop getters may allocate a memo on first read.
+  // Read in the owned compute phase, not a child-forbidden tracked callback.
+  createEffect(portalContainer, (container) => {
     if (container?.closest("[data-overlay-container]")) {
       throw new Error(
         "An OverlayContainer must not be inside another container. Please change the portalContainer prop.",
@@ -223,7 +224,7 @@ export function createModal(options?: AriaModalOptions): ModalAria {
   }
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (options?.isDisabled || !context.parent) {
       return;
@@ -238,9 +239,11 @@ const _s2Cleanups: Array<() => void> = [];
         context.parent.removeModal();
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     modalProps: {

@@ -1,4 +1,4 @@
-import { createSignal, createUniqueId, Show, type Accessor } from "solid-js";
+import { createSignal, createUniqueId, onCleanup, Show, type Accessor } from "solid-js";
 import {
   createBrowserEffect,
   createBrowserValue,
@@ -13,6 +13,12 @@ import { createAutoFocus, type AutoFocusResult } from "../../src/focus/createAut
 import { createFocusRestore, type FocusRestoreResult } from "../../src/focus/createFocusRestore";
 import { createVirtualFocus, type VirtualFocusResult } from "../../src/focus/createVirtualFocus";
 import { FocusScope, useFocusManager, type FocusManager } from "../../src/focus/FocusScope";
+import {
+  createModal,
+  OverlayContainer,
+  OverlayProvider,
+  UNSAFE_PortalProvider,
+} from "../../src/overlays";
 
 export const hookCases = [
   "focus-visible",
@@ -220,5 +226,66 @@ export function FocusScopeFixture(props: ScopeProbe) {
         </FocusScope>
       </Show>
     </section>
+  );
+}
+
+export const portalModes = ["body", "inherited", "explicit"] as const;
+
+interface PortalProbe {
+  mode: (typeof portalModes)[number];
+  inherited?: () => Element | null;
+  explicit?: () => Element;
+  created?: () => void;
+  disposed?: () => void;
+  modal?: (value: boolean) => void;
+  id?: (id: string) => void;
+  ref?: (node: HTMLInputElement) => void;
+  reveal?: (set: (visible: boolean) => void) => void;
+}
+
+function PortalModal(props: PortalProbe) {
+  const { modalProps } = createModal();
+  props.modal?.(modalProps["data-ismodal"]);
+  props.created?.();
+  onCleanup(() => props.disposed?.());
+  return (
+    <div {...modalProps} data-portal-modal>
+      Modal content
+    </div>
+  );
+}
+
+function PortalSibling(props: PortalProbe) {
+  const id = createUniqueId();
+  props.id?.(id);
+  return (
+    <>
+      <label for={id} data-portal-label>
+        Following field
+      </label>
+      <input id={id} ref={props.ref} data-portal-input />
+    </>
+  );
+}
+
+export function OverlayPortalFixture(props: PortalProbe) {
+  const [visible, setVisible] = createSignal(true);
+  props.reveal?.(setVisible);
+  return (
+    <OverlayProvider>
+      <UNSAFE_PortalProvider getContainer={props.mode === "body" ? undefined : props.inherited}>
+        <section data-portal-route={props.mode}>
+          <button data-portal-background>Background</button>
+          <Show when={visible()}>
+            <OverlayContainer
+              portalContainer={props.mode === "explicit" ? props.explicit?.() : undefined}
+            >
+              <PortalModal {...props} />
+            </OverlayContainer>
+          </Show>
+          <PortalSibling {...props} />
+        </section>
+      </UNSAFE_PortalProvider>
+    </OverlayProvider>
   );
 }

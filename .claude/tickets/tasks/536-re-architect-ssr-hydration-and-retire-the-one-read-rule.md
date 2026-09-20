@@ -71,6 +71,11 @@ history:
       at: 2026-09-19,
       note: "bounded FocusScope slice repairs the SSR-only bare-child return with symmetric provider/sentinels and a guarded document capture. Three old-source SSR cases lack the manager; corrected complete SSR 66/66 then hydrate 74/74 and owning 47/47 pass with one worker. Exact adoption, containment, restoration, dynamic collection and meaningful cleanup are covered, including a failing cancellation-removal control. Public portal routes, stale guidance and genuine streaming remain; no task or release closure inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "public OverlayContainer body/inherited/explicit route proof exposes a lazy prop memo first read inside a child-forbidden tracked callback. Bounded createModal.tsx repair moves only mount validation into createEffect's owned compute phase, retaining the SSR guard. Fresh complete SSR 69/69 then hydrate 77/77 and owning 29/29 pass with one worker. Outer identity, generated IDs, modal ARIA and close/reopen/disposal are preserved. Tooltip routes, stale guidance, real streaming and all initiative/release gates remain open",
+    }
 ---
 
 ## Cause
@@ -294,6 +299,37 @@ Receipt and exact ledger: `.agents/UI-EXECUTION-536-SCOPE-2026-09-19.md`.
 Public portal routes, stale guidance/comments, genuine unresolved-shell/late-tail
 streaming and final complete lanes remain. Nested/portaled FocusScope hydration
 is not claimed by these standalone fixtures. No initiative or release gate closes.
+
+## 2026-09-19 public OverlayContainer routes
+
+This slice supersedes OverlayContainer's pending route entry. Real public
+fixtures cover body, inherited and explicit mounts with a following generated-ID
+sibling. SSR must not evaluate portal content or browser mount callbacks. The
+existing server guard is correct and remains; hydration creates the portal only
+after the walk while adopting all five outer elements and their original IDs.
+
+The first old-source hydration run stalled and was stopped without claiming
+completion. A bounded one-case diagnostic captured PRIMITIVE_IN_FORBIDDEN_SCOPE:
+the compiler-generated portalContainer getter first allocates a lazy memo in
+createTrackedEffect's child-forbidden callback. The justified source extension
+changes only OverlayContainer validation to createEffect(portalContainer,
+callback), so that read occurs in the supported compute owner. Existing nesting
+validation, error, Portal and separate modal registration are unchanged.
+
+New assertions separate the hook's boolean data-ismodal prop from Solid's empty
+serialized presence marker. Hydration verifies mount precedence, parent ARIA,
+close/reopen, child disposal and exact preservation of caller-owned mounts.
+The ordinary reactive mount case verifies legitimate portal-child replacement,
+balanced disposal and ARIA; installed Solid's insertion-root cleanup and the
+pinned Adobe/React portal route support remounting when the target changes.
+No original expectation was relaxed and no identity cache was introduced.
+
+Fresh complete SSR passes 69/69 (26 files), then hydrate 77/77 (25 files),
+one worker. Owning overlays passes 29/29. Receipt and exact command ledger:
+`.agents/UI-EXECUTION-536-PORTAL-2026-09-19.md`.
+Tooltip public-route proof, stale guidance/comments, actual unresolved-shell/
+late-tail streaming and final complete lanes remain. Private ModalContent's
+normal public SSR guard remains justified; no task or release closure inferred.
 
 ## Done when
 

@@ -2,7 +2,8 @@
  * Tests for overlay hooks and utilities
  */
 
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot, createSignal, flush, onCleanup, Show } from "solid-js";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
 // Import from source path for proper module resolution in tests
 import { createOverlayTriggerState } from "../../solid-stately/src";
@@ -14,6 +15,7 @@ import {
   ariaHideOutside,
   createModal,
   ModalProvider,
+  OverlayProvider,
   OverlayContainer,
   UNSAFE_PortalProvider,
   useModalProvider,
@@ -564,5 +566,72 @@ describe("createModal", () => {
 
     document.body.removeChild(inheritedRoot);
     document.body.removeChild(explicitRoot);
+  });
+
+  it("tracks a computed portal mount while preserving modal ownership and cleanup", () => {
+    const first = document.createElement("aside");
+    const second = document.createElement("aside");
+    const firstSentinel = document.createTextNode("First mount");
+    const secondSentinel = document.createTextNode("Second mount");
+    first.append(firstSentinel);
+    second.append(secondSentinel);
+    document.body.append(first, second);
+    const [useFirst, setUseFirst] = createSignal(true);
+    const [visible, setVisible] = createSignal(true);
+    const disposed = vi.fn();
+    function ModalChild() {
+      const { modalProps } = createModal();
+      onCleanup(disposed);
+      return (
+        <div {...modalProps} data-moving-modal>
+          Modal
+        </div>
+      );
+    }
+    const { container, unmount } = render(() => (
+      <OverlayProvider>
+        <Show when={visible()}>
+          <OverlayContainer portalContainer={useFirst() ? first : second}>
+            <ModalChild />
+          </OverlayContainer>
+        </Show>
+      </OverlayProvider>
+    ));
+    try {
+      const provider = container.querySelector("[data-overlay-container]")!;
+      const modal = first.querySelector("[data-moving-modal]")!;
+      expect(modal).not.toBeNull();
+      expect(provider).toHaveAttribute("aria-hidden", "true");
+      expect(second.childNodes).toHaveLength(1);
+      setUseFirst(false);
+      flush();
+      // Portal disposes the old insertion root when its mount changes.
+      const movedModal = second.querySelector("[data-moving-modal]")!;
+      expect(movedModal).not.toBeNull();
+      expect(second.querySelectorAll("[data-moving-modal]")).toHaveLength(1);
+      expect(movedModal).not.toBe(modal);
+      expect(movedModal).toHaveAttribute("data-ismodal", "");
+      expect(modal.isConnected).toBe(false);
+      expect(first.childNodes).toHaveLength(1);
+      expect(first.firstChild).toBe(firstSentinel);
+      expect(container.querySelector("[data-overlay-container]")).toBe(provider);
+      expect(provider).toHaveAttribute("aria-hidden", "true");
+      expect(disposed).toHaveBeenCalledTimes(1);
+      setVisible(false);
+      flush();
+      expect(provider).not.toHaveAttribute("aria-hidden");
+      expect(movedModal.isConnected).toBe(false);
+      expect(disposed).toHaveBeenCalledTimes(2);
+      expect(second.childNodes).toHaveLength(1);
+      expect(second.firstChild).toBe(secondSentinel);
+      unmount();
+      expect(disposed).toHaveBeenCalledTimes(2);
+      expect(first.isConnected).toBe(true);
+      expect(second.isConnected).toBe(true);
+    } finally {
+      unmount();
+      first.remove();
+      second.remove();
+    }
   });
 });
