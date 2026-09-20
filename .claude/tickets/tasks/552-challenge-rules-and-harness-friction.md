@@ -109,6 +109,27 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
     60 lines — the owner's "small tasks only" rule made mechanical. Extends
     item 10. _(harness)_
 
+19. **A harness runtime owned by an agent's own session is a single point of
+    failure.** The conductor's session restarted at 12:33 and took its
+    background-task runtime, and with it every worker bound to that runtime.
+    Start the runtime detached (`nohup setsid`) so it outlives the session
+    that opened it, and say so in the agent-launch procedure. _(harness)_
+20. **`earlyoom` is configured to kill the agent before the work.** Its
+    `--prefer` list names `claude` and `codex` but not `node`, so when
+    vitest's node workers eat the memory the 360 MiB agent dies and the
+    workers live — three writers lost this way on 2026-09-20 (12:41, 12:46,
+    and the 12:33 session). The agent is the one process whose death loses
+    work. Proposal to the owner (system config, not ours to edit): move
+    `claude|codex` from `--prefer` to `--avoid`, and add `node`. Mitigation in
+    our hands: cap vitest at `--maxWorkers=2`, check `free -m` before a heavy
+    step, and commit the log before each one. _(system)_
+21. **The harness runtime roots its caches in a RAM-backed `/tmp`.** Each
+    runtime re-downloads a 224 MB claude build, a 204 MB vite-plus runtime and
+    pnpm/uv caches into tmpfs, which lives in RAM and swap; `/tmp` held 6.0 GB
+    on 2026-09-20, swap sat at 4095/4096 MB, and earlyoom's swap condition was
+    therefore permanently true. Proposal: root the runtime under `~/.cache/`
+    and keep only sockets in `/tmp`. Cause of item 20's deaths. _(harness)_
+
 ## Done when
 
 The campaign ends with each item fixed, ticketed where it belongs, or rejected

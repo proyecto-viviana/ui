@@ -49,3 +49,11 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - Behavior research uses the MCP servers in `.claude/current/tooling.md`.
 - `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
   untracked; they are local tool state.
+- One editing session per git, with the owner's 2026-09-20 exception for
+  campaign #544: one extra writer in `.claude/worktrees/public-face`, owning
+  only `README.md`, `CONTRIBUTING.md`, `CREDITS.md`, `packages/*/README.md`,
+  and page content under `apps/web/src/**` and `apps/comparison/src/**`. The
+  main writer keeps everything else, heavy builds and browser proof stay
+  serialized, and the conductor alone integrates into `main`. It ends when
+  #548, #549 and #550 close; the wording is in the hub
+  [`AGENTS.md`](../AGENTS.md).
