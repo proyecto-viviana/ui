@@ -5,8 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 6 — pin npm exactly in `release.yml`.
-Slices P, 0, 1, 2, 3, 4 and 5 are closed. Third writer; brief
+Slice 7 — `guard:entry-import-budget` fails on an unbuilt budgeted entry.
+Slices P, 0, 1, 2, 3, 4, 5 and 6 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -545,5 +545,46 @@ direct push, and this guard holds the push path.
     $ vp lint           pass: Found no warnings or lint errors in 3163 files
     $ node scripts/test-ci-guard-contracts.mjs   all PASS
     $ vp run guard:publish-drift                 exit 0
+
+Commit `767bb471`.
+
+## Slice 6 — npm pinned, and a guard that keeps it pinned
+
+Every `uses:` in the workflow set is pinned to a commit SHA. One line was not:
+
+    .github/workflows/release.yml:58
+    run: npm install -g npm@^11.5.1
+
+That range let the registry choose which npm ran in the one job holding
+`contents: write`, `pull-requests: write` and the publish token.
+
+    $ npm view npm@11 version    # 2026-09-20
+    npm@11.19.1 '11.19.1'
+
+Fourteen minors past the version anyone reviewed. Pinned to `npm@11.19.1`, with
+the same "bump deliberately" note the pinned actions carry.
+
+The planted case is the range itself, so the gate is a new guard,
+`scripts/check-workflow-pins.mjs`: an action ref must be a 40-character SHA, a
+global install must name an exact version. Red on the tree as it stood:
+
+    $ node scripts/check-workflow-pins.mjs
+    Workflows run unpinned code:
+      .github/workflows/release.yml:58: installs npm@^11.5.1 globally — name an exact version, and bump it deliberately.
+    EXIT=1
+
+Green after the pin:
+
+    $ node scripts/check-workflow-pins.mjs
+    workflow pins: 6 workflows, every action and global install pinned.
+    EXIT=0
+
+`guard:workflow-pins` runs first in `ci:release-readiness`. Held by 7 cases in
+`scripts/check-workflow-pins.test.ts` (range, exact, no version at all, mutable
+tag, SHA, local action, and this repository's own workflows).
+
+    $ vp check          pass: All 4332 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3165 files
+    $ node scripts/test-ci-guard-contracts.mjs   all PASS
 
 Commit `PENDING`.

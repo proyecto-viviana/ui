@@ -26,6 +26,11 @@ history:
       at: 2026-09-20,
       note: "slice 5 done: guard:publish-drift diffs each package's manifest as well as its src. A package's contract is its package.json — a new exports subpath, a widened peer range, a changed main ships to consumers exactly the way source does, and the guard was blind to all of it. Proved on a throwaway git fixture: a commit adding an exports subpath to packages/a/package.json printed 'No publish drift' and exit 0 before, and after the repair fails with packages/a/package.json named, exit 0 again once a changeset names the package. Held by 4 cases in scripts/check-publish-drift.test.ts. release-policy.md now records why Changesets Check stays pull_request-only: this guard holds the push path",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 6 done: npm is pinned exactly in release.yml, 11.19.1 (npm view npm@11 version, 2026-09-20). Every uses: in the workflow set is pinned to a commit SHA because a tag is mutable; npm install -g npm@^11.5.1 was the one exception, letting the registry choose which npm ran in the job that holds contents: write, pull-requests: write and the publish token — fourteen minors past the reviewed version. New guard:workflow-pins (scripts/check-workflow-pins.mjs) holds both rules and ran red on the range before the pin, green after; wired into ci:release-readiness. 7 cases in scripts/check-workflow-pins.test.ts",
+    }
 ---
 
 ## Scope

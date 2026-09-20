@@ -54,8 +54,10 @@ jobs:
           RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: node scripts/check-release-evidence.mjs
 
+      # Exact, like every `uses:` above: a range let the registry choose which
+      # npm ran in the job that holds the publish token. Bump deliberately.
       - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@^11.5.1
+        run: npm install -g npm@11.19.1
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
