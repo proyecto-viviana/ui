@@ -793,14 +793,17 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         }
       };
 
+      // `focusin` is not in TypeScript's `ElementEventMap`, so the listener is
+      // registered through the `EventListener` overload, as it is on documents.
+      const onFocusListener = onFocus as EventListener;
       doc.addEventListener("focusin", onFocus, false);
       for (const element of scope) {
-        element.addEventListener("focusin", onFocus, false);
+        element.addEventListener("focusin", onFocusListener, false);
       }
       return () => {
         doc.removeEventListener("focusin", onFocus, false);
         for (const element of scope) {
-          element.removeEventListener("focusin", onFocus, false);
+          element.removeEventListener("focusin", onFocusListener, false);
         }
       };
     },
