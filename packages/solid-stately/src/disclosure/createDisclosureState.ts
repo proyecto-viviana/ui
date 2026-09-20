@@ -164,8 +164,7 @@ export function createDisclosureGroupState(
   const toggleKey = (key: Key) => {
     const p = propsAccessor();
     const allowsMultiple = p.allowsMultipleExpanded ?? false;
-    const currentKeys =
-      p.expandedKeys !== undefined ? expandedKeys() : readNow(internalKeys);
+    const currentKeys = p.expandedKeys !== undefined ? expandedKeys() : readNow(internalKeys);
 
     let newKeys: Set<Key>;
     if (allowsMultiple) {

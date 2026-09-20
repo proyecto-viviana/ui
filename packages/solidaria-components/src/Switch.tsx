@@ -21,7 +21,15 @@
  * Named "ToggleSwitch" to avoid conflict with SolidJS's built-in Switch component.
  */
 
-import { createContext, createMemo, createSignal, createUniqueId, untrack, useContext, Show } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  untrack,
+  useContext,
+  Show,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -506,7 +514,8 @@ function SwitchButtonImpl(props: {
  */
 export function SwitchField(props: SwitchFieldProps): JSX.Element {
   const contextProps = useContext(SwitchFieldContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<SwitchFieldProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;

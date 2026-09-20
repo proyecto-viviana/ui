@@ -3,7 +3,9 @@
  *
  * Ported from @react-stately/numberfield useNumberFieldState.
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createSignal } from "./owned-signal";
+import { flush, createRoot } from "solid-js";
 import { createNumberFieldState } from "../src/numberfield/createNumberFieldState";
 
 describe("createNumberFieldState", () => {

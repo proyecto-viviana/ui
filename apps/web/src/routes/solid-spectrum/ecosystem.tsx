@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_BODY, FONT_DISPLAY, SiteFooter } from "@/components/theme/primitives";
 import { PARENT_APP_URL, repoPackageUrl } from "@/lib/site";

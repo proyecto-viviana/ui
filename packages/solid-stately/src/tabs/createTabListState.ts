@@ -217,7 +217,9 @@ export function createTabListState<T = unknown>(
 
   const [isFocused, setIsFocused] = createInternalSignal(false);
   const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(
+    null,
+  );
 
   const setFocusedKey = (key: Key | null, childStrategy?: FocusStrategy) => {
     setFocusedKeyInternal(key);

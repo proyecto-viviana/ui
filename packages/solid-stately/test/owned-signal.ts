@@ -6,10 +6,7 @@ import { createSignal as createSolidSignal } from "solid-js";
 import type { Signal, SignalOptions } from "solid-js";
 
 export function createSignal<T>(): Signal<T | undefined>;
-export function createSignal<T>(
-  value: Exclude<T, Function>,
-  options?: SignalOptions<T>,
-): Signal<T>;
+export function createSignal<T>(value: Exclude<T, Function>, options?: SignalOptions<T>): Signal<T>;
 export function createSignal<T>(
   value?: Exclude<T, Function>,
   options?: SignalOptions<T>,

@@ -49,13 +49,16 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
   const { isTextInput = false, autoFocus = false, within = false } = props;
 
   const [isFocused, setIsFocused] = createSignal(false, { ownedWrite: true });
-  const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(autoFocus || isGlobalFocusVisible(), {
-    ownedWrite: true,
-  });
+  const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(
+    autoFocus || isGlobalFocusVisible(),
+    {
+      ownedWrite: true,
+    },
+  );
   const isFocusVisible = createMemo(() => isFocused() && focusVisibleFlag());
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const cleanup = createFocusVisibleListener(
       (visible) => {
@@ -64,9 +67,11 @@ const _s2Cleanups: Array<() => void> = [];
       { isTextInput, enabled: isFocused() },
     );
     _s2Cleanups.push(cleanup);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const onFocusChange = (focused: boolean) => {
     setIsFocused(focused);

@@ -159,9 +159,8 @@ export function createGridListItem<
 
   bindCapture(ref, {
     keydown: (event) => {
-      const handler = (
-        rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void }
-      ).onKeyDownCapture;
+      const handler = (rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void })
+        .onKeyDownCapture;
       handler?.(event as KeyboardEvent);
     },
   });

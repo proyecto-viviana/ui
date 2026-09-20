@@ -1,4 +1,5 @@
-import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/solid-router"; import { For, Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/solid-router";
+import { For, Show, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_DISPLAY, FONT_SANS } from "@/components/docs";
 import { apiPages } from "@/data/api-reference";

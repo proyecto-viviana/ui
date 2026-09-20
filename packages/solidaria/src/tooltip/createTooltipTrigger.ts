@@ -147,7 +147,7 @@ export function createTooltipTrigger(
 
   // Handle Escape key to dismiss tooltip
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!state.isOpen()) return;
 
@@ -165,9 +165,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       document.removeEventListener("keydown", onKeyDown, true);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const onHoverStart = () => {
     if (isDisabled() || trigger() === "focus") {

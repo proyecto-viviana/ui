@@ -19,7 +19,13 @@
  * Focus events on child elements will be ignored.
  */
 
-import { getOwnerDocument, getEventTarget, onOwnedCleanup, access, type MaybeAccessor } from "../utils";
+import {
+  getOwnerDocument,
+  getEventTarget,
+  onOwnedCleanup,
+  access,
+  type MaybeAccessor,
+} from "../utils";
 import type { JSX } from "@solidjs/web";
 function getActiveElement(doc: Document): Element | null {
   let activeElement = doc.activeElement;

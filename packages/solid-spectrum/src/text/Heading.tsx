@@ -15,7 +15,8 @@
 // Port of packages/@react-spectrum/s2/src/Content.tsx.
 import { createContext, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { mergeProps } from "@proyecto-viviana/solidaria/utils"; import { Dynamic } from "@solidjs/web";
+import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+import { Dynamic } from "@solidjs/web";
 import {
   getSlottedContextProps,
   mergeContextRefs,

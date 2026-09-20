@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot } from "solid-js";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDatePickerGroup } from "../src/datepicker/createDatePickerGroup";
 import { createPress } from "../src/interactions/createPress";

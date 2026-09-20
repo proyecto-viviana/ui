@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { ToggleSwitch, TabSwitch } from "../src/switch";
 import { SegmentedControl } from "../src/segmentedcontrol";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";

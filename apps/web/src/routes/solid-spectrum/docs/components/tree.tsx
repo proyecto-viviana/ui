@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
 import { Tree, TreeItem } from "@proyecto-viviana/solid-spectrum";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
 import { typeRoles } from "@proyecto-viviana/ui";

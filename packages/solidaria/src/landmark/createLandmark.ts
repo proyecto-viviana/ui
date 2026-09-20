@@ -322,7 +322,7 @@ export function createLandmark<T extends HTMLElement = HTMLElement>(
 ): LandmarkAria<T> {
   // Register with the landmark manager
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const element = ref();
     if (!element) return;
@@ -341,9 +341,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       manager.unregister(element);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const getLandmarkProps = (): JSX.HTMLAttributes<T> => {
     const p = access(props);

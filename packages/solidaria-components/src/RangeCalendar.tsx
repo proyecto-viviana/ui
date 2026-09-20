@@ -662,7 +662,11 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)} class={cellRenderProps.class()} style={cellRenderProps.style()}>
+    <td
+      {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)}
+      class={cellRenderProps.class()}
+      style={cellRenderProps.style()}
+    >
       <div
         ref={setCellRef}
         {...mergeProps(cellAria.buttonProps, hoverProps)}

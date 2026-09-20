@@ -340,9 +340,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
         trigger: props.trigger,
       }}
     >
-      <PopoverTriggerContext value={popoverTriggerContext}>
-        {props.children}
-      </PopoverTriggerContext>
+      <PopoverTriggerContext value={popoverTriggerContext}>{props.children}</PopoverTriggerContext>
     </MenuTriggerOptionsContext>
   );
 }

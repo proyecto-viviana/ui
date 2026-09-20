@@ -1,7 +1,8 @@
 /* /showcase — the register overview: the nine type roles as living specimens,
    the accent discipline, and the directory of panels. This page is chrome +
    tokens only; the component demos live in the numbered panel routes. */
-import { createFileRoute, Link } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute, Link } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import { PANELS } from "@/components/showcase/registry";
 import { seo } from "@/seo";
 

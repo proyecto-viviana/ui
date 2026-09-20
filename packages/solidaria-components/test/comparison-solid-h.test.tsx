@@ -1,4 +1,6 @@
-import { afterEach, describe, expect, it } from "vite-plus/test"; import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library"; import { createSignal, For, onCleanup } from "solid-js";
+import { afterEach, describe, expect, it } from "vite-plus/test";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { createSignal, For, onCleanup } from "solid-js";
 import { Button } from "../src/Button";
 import { Checkbox } from "../src/Checkbox";
 import {

@@ -126,8 +126,7 @@ export function createCheckboxGroupState(
     return controlled !== undefined ? controlled : internalValue();
   };
 
-  const liveValue = (): readonly string[] =>
-    isControlled() ? value() : readNow(internalValue);
+  const liveValue = (): readonly string[] => (isControlled() ? value() : readNow(internalValue));
 
   const isRequired: Accessor<boolean> = () => {
     const p = getProps();

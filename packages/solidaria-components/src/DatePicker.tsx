@@ -19,7 +19,15 @@
  * Port of react-aria-components/src/DatePicker.tsx
  */
 
-import { createContext, createEffect, createMemo, createSignal, useContext, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  useContext,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { Context, Signal } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -914,13 +922,9 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   );
 
   return (
-    <DateRangePickerStateContext
-      value={calendarState as unknown as RangeCalendarState<DateValue>}
-    >
+    <DateRangePickerStateContext value={calendarState as unknown as RangeCalendarState<DateValue>}>
       <DateRangePickerContext value={contextValue}>
-        <RangeCalendarContext
-          value={calendarState as unknown as RangeCalendarState<DateValue>}
-        >
+        <RangeCalendarContext value={calendarState as unknown as RangeCalendarState<DateValue>}>
           {/* BARE ROLELESS root — mirrors RAC `DateRangePicker`'s outer `<div>`.
            * The presentation FieldGroup shell (rendered as a child via the styled
            * DateRangeDisplay) is what carries `pickerAria.groupProps` (role=

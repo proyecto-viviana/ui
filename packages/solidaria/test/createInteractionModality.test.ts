@@ -2,7 +2,8 @@
  * Tests for createInteractionModality
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot } from "solid-js";
 import {
   createInteractionModality,
   getInteractionModality,

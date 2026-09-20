@@ -2,7 +2,8 @@
  * Tests for createMenu, createMenuItem, and createMenuTrigger hooks
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot, flush } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { createRoot, flush } from "solid-js";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createMenuState,

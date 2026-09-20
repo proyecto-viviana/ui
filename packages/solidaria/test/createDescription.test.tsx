@@ -2,7 +2,9 @@
  * Tests for createDescription utility.
  */
 
-import { describe, it, expect, afterEach, beforeEach } from "vite-plus/test"; import { render, cleanup } from "@solidjs/testing-library"; import { createRoot, createEffect } from "solid-js";
+import { describe, it, expect, afterEach, beforeEach } from "vite-plus/test";
+import { render, cleanup } from "@solidjs/testing-library";
+import { createRoot, createEffect } from "solid-js";
 import {
   createDescription,
   getDescriptionNodeCount,

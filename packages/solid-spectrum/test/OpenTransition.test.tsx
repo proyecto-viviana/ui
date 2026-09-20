@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { render, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { OpenTransition } from "../src/overlays/OpenTransition";
 
 describe("OpenTransition (solid-spectrum)", () => {

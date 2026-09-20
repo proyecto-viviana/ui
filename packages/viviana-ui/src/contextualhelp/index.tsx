@@ -209,9 +209,7 @@ export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.El
           <TextContext value={textContext}>
             <ContentContext value={contentContext}>
               <FooterContext value={footerContext}>
-                <HeadingContext value={headingContext}>
-                  {local.children}
-                </HeadingContext>
+                <HeadingContext value={headingContext}>{local.children}</HeadingContext>
               </FooterContext>
             </ContentContext>
           </TextContext>
@@ -348,9 +346,7 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
             <TextContext value={textContext}>
               <ContentContext value={contentContext}>
                 <FooterContext value={footerContext}>
-                  <HeadingContext value={headingContext}>
-                    {content()}
-                  </HeadingContext>
+                  <HeadingContext value={headingContext}>{content()}</HeadingContext>
                 </FooterContext>
               </ContentContext>
             </TextContext>

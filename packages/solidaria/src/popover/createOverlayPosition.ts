@@ -329,7 +329,7 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
 
   // Update position on window resize
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
 
@@ -339,13 +339,15 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       window.removeEventListener("resize", handleResize, false);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Update position when overlay changes size using ResizeObserver
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const overlayNode = overlayRef();
     if (!overlayNode || !isOpen()) return;
@@ -356,13 +358,15 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       resizeObserver.disconnect();
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Update position when target changes size
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const targetNode = targetRef();
     if (!targetNode || !isOpen()) return;
@@ -373,13 +377,15 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       resizeObserver.disconnect();
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Handle visual viewport resize (for iOS virtual keyboard)
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
 
@@ -411,13 +417,15 @@ const _s2Cleanups: Array<() => void> = [];
       cleanupScroll();
       clearTimeout(timeout);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Close on scroll (when scrolling a parent of the trigger)
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const targetNode = targetRef();
     const closeHandler = onClose();
@@ -442,9 +450,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       document.removeEventListener("scroll", handleScroll, true);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     overlayProps: {

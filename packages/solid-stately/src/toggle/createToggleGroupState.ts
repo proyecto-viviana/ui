@@ -123,9 +123,7 @@ export function createToggleGroupState(
       return getProps().isDisabled ?? false;
     },
     get selectedKeys() {
-      return new Set(
-        isControlled() ? selectedKeys() : readNow(internalSelectedKeys),
-      );
+      return new Set(isControlled() ? selectedKeys() : readNow(internalSelectedKeys));
     },
     toggleKey,
     setSelected,

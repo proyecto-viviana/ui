@@ -22,7 +22,17 @@
  * Based on packages/react-aria-components/src/SharedElementTransition.tsx.
  */
 
-import { createContext, createEffect, createMemo, createRenderEffect, createSignal, onCleanup, untrack, useContext, Show } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  untrack,
+  useContext,
+  Show,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -68,9 +78,7 @@ export function SharedElementTransition(props: SharedElementTransitionProps): JS
     snapshots: {},
   };
 
-  return (
-    <SharedElementContext value={scope}>{props.children}</SharedElementContext>
-  );
+  return <SharedElementContext value={scope}>{props.children}</SharedElementContext>;
 }
 
 export interface SharedElementRenderProps {

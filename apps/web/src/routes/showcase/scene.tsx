@@ -3,7 +3,8 @@
    hero sits on, and HudFrame puts the corner brackets, CRT grille and scan
    sweep around media. Both are pure scenery — aria-hidden, pointer-events:none
    — so everything here is decoration around real content, never instead of it. */
-import { createFileRoute } from "@tanstack/solid-router"; import { type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { type JSX } from "solid-js";
 import { Flex, Heading, HudFrame, SceneBackdrop, Text } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug, panelSeo } from "@/components/showcase/registry";

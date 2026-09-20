@@ -402,7 +402,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     props.defaultValue ?? null,
   );
   const initialFocusedDate = constrainDate(getInitialFocusedDate());
-  const [focusedDate, setFocusedDateInternal] = createInternalSignal<CalendarDate>(initialFocusedDate);
+  const [focusedDate, setFocusedDateInternal] =
+    createInternalSignal<CalendarDate>(initialFocusedDate);
   const [visibleRangeStart, setVisibleRangeStart] = createInternalSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );

@@ -16,7 +16,15 @@
 
 // Port of packages/@react-spectrum/s2/src/DateField.tsx.
 // Style-system generics need the same dedicated pass as DatePicker.
-import { createContext, createEffect, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   DateField as HeadlessDateField,
@@ -363,13 +371,15 @@ function DateFieldContent(props: {
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
     _s2Cleanups.push(cleanup);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const isFocusVisibleWithin = () => isFocusWithin() && isFocusVisibleModality();
 
   return (

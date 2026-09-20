@@ -18,7 +18,6 @@
  * Port of @react-aria/interactions useLongPress, adapted for SolidJS.
  */
 
-
 import { mergeProps, focusWithoutScrolling, createGlobalListeners, onOwnedCleanup } from "../utils";
 import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "./createPress";

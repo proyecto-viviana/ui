@@ -24,7 +24,17 @@
 // Port of packages/@react-spectrum/s2/src/ColorSwatch.tsx.
 // Port of packages/@react-spectrum/s2/src/ColorWheel.tsx.
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, useContext, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  useContext,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
@@ -678,7 +688,7 @@ function ColorAreaLoupe(props: {
   });
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     props.color.toString("css");
 
@@ -710,9 +720,11 @@ const _s2Cleanups: Array<() => void> = [];
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return (
     <Show when={phase() !== "closed" && typeof document !== "undefined" && rect()}>

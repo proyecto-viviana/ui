@@ -4,7 +4,8 @@
    terminal when standalone (composed inside a parent they still defer to its
    context). Flex/Grid/Divider/Separator carry the layout; Provider shows the
    scheme-override seam. */
-import { createFileRoute } from "@tanstack/solid-router"; import { For, type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { For, type JSX } from "solid-js";
 import {
   Heading,
   Text,

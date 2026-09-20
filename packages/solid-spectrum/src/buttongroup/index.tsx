@@ -210,9 +210,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
       style={mergedUnsafeStyle()}
     >
       <ButtonContext value={contextValue}>
-        <LinkButtonContext value={contextValue}>
-          {local.children}
-        </LinkButtonContext>
+        <LinkButtonContext value={contextValue}>{local.children}</LinkButtonContext>
       </ButtonContext>
     </div>
   );

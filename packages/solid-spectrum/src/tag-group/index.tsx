@@ -16,7 +16,13 @@
 
 // Port of packages/@react-spectrum/s2/src/TagGroup.tsx.
 
-import { children as resolveChildren, createContext, createUniqueId, useContext, Show } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createUniqueId,
+  useContext,
+  Show,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {

@@ -21,7 +21,6 @@ import { flush, onCleanup } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal, readNow } from "../utils";
 
-
 export interface ToastOptions {
   /** A timeout to automatically close the toast, in milliseconds. */
   timeout?: number;

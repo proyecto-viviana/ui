@@ -22,7 +22,17 @@
  * and uses grid keyboard navigation.
  */
 
-import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createGridList,
@@ -624,7 +634,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     return indexesOutsideRange(range, persistedIndexes);
   });
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => state.collection.size);
@@ -646,9 +656,11 @@ const _s2Cleanups: Array<() => void> = [];
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
     if (!range) return stateProps.items;
@@ -674,9 +686,7 @@ return () => { for (const c of _s2Cleanups) c(); };
 
   return (
     <GridListContext value={contextValue() as unknown as GridListContextValue<object>}>
-      <GridListStateContext
-        value={state as unknown as GridState<object, GridCollection<object>>}
-      >
+      <GridListStateContext value={state as unknown as GridState<object, GridCollection<object>>}>
         <CollectionRendererContext value={collectionRenderer()}>
           <div
             ref={(element) => {
@@ -909,7 +919,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       data-key={local.id}
       data-selected={dataAttr(isSelected())}
       data-focused={dataAttr(isFocused())}
-      data-focus-visible={dataAttr((isFocusVisible() && isFocused()))}
+      data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
       data-pressed={dataAttr(isPressed())}
       data-hovered={dataAttr(isHovered())}
       data-disabled={dataAttr(isDisabled())}

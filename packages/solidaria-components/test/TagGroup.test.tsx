@@ -9,7 +9,9 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush, Show } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
+import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
+import { createSignal, flush, Show } from "solid-js";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { I18nProvider } from "@proyecto-viviana/solidaria";

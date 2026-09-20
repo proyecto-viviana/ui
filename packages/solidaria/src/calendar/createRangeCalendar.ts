@@ -195,7 +195,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // Also commit on blur (e.g. tabbing away). Reads `getEventTarget` so shadow-DOM retargeting
   // still sees the inner node (`e.target` would be the shadow host).
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const element = ref?.();
     if (!element) {
@@ -277,9 +277,11 @@ const _s2Cleanups: Array<() => void> = [];
       element.removeEventListener("blur", onBlur, true);
       element.removeEventListener("touchmove", onTouchMove, true);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     get calendarProps() {

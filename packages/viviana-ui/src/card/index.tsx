@@ -1269,9 +1269,7 @@ export function CollectionCardPreview(props: CardPreviewProps): JSX.Element {
         {/* `collectionImage` takes no size condition, so the macro bakes it to a class string,
             not a selector function — passing `size` here threw at render. Inherited from the
             port; unnoticed because nothing rendered a collection preview until now. */}
-        <ImageContext value={{ styles: collectionImage }}>
-          {props.children}
-        </ImageContext>
+        <ImageContext value={{ styles: collectionImage }}>{props.children}</ImageContext>
       </div>
     </CardPreview>
   );

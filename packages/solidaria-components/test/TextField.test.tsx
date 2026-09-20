@@ -7,7 +7,9 @@
  * The Label, Input, and TextArea sub-components automatically wire up to
  * TextField context for proper accessibility and focus tracking.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import {
   TextField,
   TextFieldContext,

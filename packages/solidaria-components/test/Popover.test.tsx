@@ -1,7 +1,13 @@
 /**
  * Tests for Popover component
  */
-import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, screen, cleanup, waitFor } from "@solidjs/testing-library"; import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria"; import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover"; import { Button } from "../src/Button"; import { DialogTrigger } from "../src/Dialog"; import { createSignal, flush, onMount, onSettled } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
+import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
+import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
+import { Button } from "../src/Button";
+import { DialogTrigger } from "../src/Dialog";
+import { createSignal, flush, onMount, onSettled } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 function mockGetAnimations(impl: () => Animation[]): () => void {

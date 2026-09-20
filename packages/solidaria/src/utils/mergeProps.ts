@@ -119,8 +119,7 @@ export function mergeProps(...args: object[]): object {
       const key = canonicalAttrKey(rawKey);
       const descriptor = Object.getOwnPropertyDescriptor(props, rawKey);
       const hasGetter = typeof descriptor?.get === "function";
-      const getValue = () =>
-        hasGetter ? descriptor.get!.call(props) : (props as Props)[rawKey];
+      const getValue = () => (hasGetter ? descriptor.get!.call(props) : (props as Props)[rawKey]);
 
       if (isRefKey(key)) {
         const previousDescriptor = Object.getOwnPropertyDescriptor(result, key);

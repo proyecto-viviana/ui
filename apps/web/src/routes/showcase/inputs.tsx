@@ -1,7 +1,8 @@
 /* Panel 02 — Inputs. Text entry: TextField, TextArea, NumberField,
    SearchField, Form, LabeledValue — label/description/error states on the
    matte well the register reserves for editable surfaces. */
-import { createFileRoute } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import {
   Form,
   Keyboard,

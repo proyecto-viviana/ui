@@ -128,7 +128,7 @@ export function createDisclosure(
 
   // Handle browser find-in-page reveal for collapsed panels.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!canUseDOM) return;
 
@@ -151,9 +151,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       panel.removeEventListener("beforematch", handleBeforeMatch);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Handle panel visibility and animation sizing.
   createTrackedEffect(() => {

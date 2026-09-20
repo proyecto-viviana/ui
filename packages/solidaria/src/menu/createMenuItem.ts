@@ -374,8 +374,7 @@ export function createMenuItem<T>(
               : "menuitem",
         id: p.id ?? String(key),
         "aria-disabled": isDisabled() || undefined,
-        "aria-checked":
-          mode !== "none" && !trigger ? (selected ? "true" : "false") : undefined,
+        "aria-checked": mode !== "none" && !trigger ? (selected ? "true" : "false") : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
         "aria-describedby": [descriptionId(), keyboardId()].filter(Boolean).join(" ") || undefined,

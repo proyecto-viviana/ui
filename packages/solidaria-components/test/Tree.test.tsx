@@ -9,7 +9,29 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { Tree, TreeItem, TreeLoadMoreItem, TreeExpandButton, TreeHeader, TreeSection, TreeSelectionCheckbox, } from "../src/Tree"; import { useDragAndDrop } from "../src/useDragAndDrop"; import type { TreeItemData, DraggableCollectionState, DroppableCollectionState, DropTarget, DragTypes, DropOperation, } from "@proyecto-viviana/solid-stately"; import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils"; import { I18nProvider } from "@proyecto-viviana/solidaria"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import {
+  Tree,
+  TreeItem,
+  TreeLoadMoreItem,
+  TreeExpandButton,
+  TreeHeader,
+  TreeSection,
+  TreeSelectionCheckbox,
+} from "../src/Tree";
+import { useDragAndDrop } from "../src/useDragAndDrop";
+import type {
+  TreeItemData,
+  DraggableCollectionState,
+  DroppableCollectionState,
+  DropTarget,
+  DragTypes,
+  DropOperation,
+} from "@proyecto-viviana/solid-stately";
+import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { createSignal, flush } from "solid-js";
 
 interface TestItem {
   name: string;

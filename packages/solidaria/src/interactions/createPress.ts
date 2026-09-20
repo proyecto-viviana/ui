@@ -19,7 +19,27 @@
  * All behaviors, edge cases, and platform-specific handling are preserved.
  */
 
-import { nodeContains, getEventTarget, isValidKeyboardEvent, isHTMLAnchorLink, shouldPreventDefaultKeyboard, isVirtualClick, isVirtualPointerEvent, isPointOverTarget, getTouchFromEvent, getTouchById, disableTextSelection, restoreTextSelection, preventFocus, openLink, isMac, createGlobalListeners, setEventTarget, focusWithoutScrolling, onOwnedCleanup } from "../utils";
+import {
+  nodeContains,
+  getEventTarget,
+  isValidKeyboardEvent,
+  isHTMLAnchorLink,
+  shouldPreventDefaultKeyboard,
+  isVirtualClick,
+  isVirtualPointerEvent,
+  isPointOverTarget,
+  getTouchFromEvent,
+  getTouchById,
+  disableTextSelection,
+  restoreTextSelection,
+  preventFocus,
+  openLink,
+  isMac,
+  createGlobalListeners,
+  setEventTarget,
+  focusWithoutScrolling,
+  onOwnedCleanup,
+} from "../utils";
 import { createSignal, Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { PressEvent, PointerType, createPressEvent, type PressEventSource } from "./PressEvent";

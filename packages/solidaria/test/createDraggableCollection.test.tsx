@@ -1,4 +1,5 @@
-import { describe, it, expect, afterEach } from "vite-plus/test"; import { createRoot, createSignal, flush } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test";
+import { createRoot, createSignal, flush } from "solid-js";
 import {
   createDraggableCollection,
   getGlobalDraggingCollectionRef,

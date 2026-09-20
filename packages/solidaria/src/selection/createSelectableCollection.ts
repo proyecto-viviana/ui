@@ -755,7 +755,7 @@ function addRefListener(
   handler: (e: Event) => void,
 ): void {
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = ref();
     if (!el) {
@@ -763,7 +763,9 @@ const _s2Cleanups: Array<() => void> = [];
     }
     el.addEventListener(type, handler);
     _s2Cleanups.push(() => el.removeEventListener(type, handler));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 }

@@ -13,7 +13,15 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ToggleButton.tsx
 
 // Port of packages/@react-spectrum/s2/src/ToggleButton.tsx.
-import { children as resolveChildren, createEffect, createSignal, merge, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createEffect,
+  createSignal,
+  merge,
+  onCleanup,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   ToggleButton as HeadlessToggleButton,
@@ -284,7 +292,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     syncMenuTriggerAttribute(element, "aria-disabled", triggerProps["aria-disabled"]);
   });
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const element = resolvedButtonElement();
     if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
@@ -299,9 +307,11 @@ const _s2Cleanups: Array<() => void> = [];
 
     element.addEventListener("keydown", onKeyDown);
     _s2Cleanups.push(() => element.removeEventListener("keydown", onKeyDown));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   function ToggleButtonContent() {
     const iconContextValue = {

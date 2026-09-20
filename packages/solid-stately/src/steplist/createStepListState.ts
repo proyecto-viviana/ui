@@ -83,9 +83,8 @@ export function createStepListState(props: StepListStateProps): StepListState {
   const isReadOnly: Accessor<boolean> = () => props.isReadOnly ?? false;
 
   // Last completed step signal (uncontrolled)
-  const [lastCompletedStepInternal, setLastCompletedStepInternal] = createInternalSignal<Key | null>(
-    props.defaultLastCompletedStep ?? null,
-  );
+  const [lastCompletedStepInternal, setLastCompletedStepInternal] =
+    createInternalSignal<Key | null>(props.defaultLastCompletedStep ?? null);
 
   const lastCompletedStep: Accessor<Key | null> = () => {
     if (props.lastCompletedStep !== undefined) {

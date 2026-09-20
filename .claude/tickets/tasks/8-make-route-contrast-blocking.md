@@ -6,15 +6,29 @@ created: 2026-08-08
 status: merged
 history:
   - { state: open, at: 2026-08-08, note: "opened from the project and CI review" }
-  - { state: done, at: 2026-08-08, note: "154 generated routes and all 61 live playground sections pass axe color-contrast in both themes; gate added to ci:site" }
-  - { state: done, at: 2026-08-08, note: "expanded playground audit classified and promoted after 10/10 playground, 80/80 comparison, and 44/44 smoke" }
-  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "154 generated routes and all 61 live playground sections pass axe color-contrast in both themes; gate added to ci:site",
+    }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "expanded playground audit classified and promoted after 10/10 playground, 80/80 comparison, and 44/44 smoke",
+    }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record",
+    }
 ---
 
 The blocking accessibility command scanned one playground and disabled axe
 `color-contrast`. Shared text and fill roles could fail throughout the published
 site without turning CI red.
+
 ## Scope
+
 Derive the route set from the generated router tree rather than a second list.
 Check every route in light and dark with axe's `color-contrast` rule enabled.
 Repair shared roles at their source, preserve the S2 style-macro boundary, and
@@ -22,7 +36,9 @@ document any standards-backed exemption in the test. Exercise every live
 playground section with `color-contrast` enabled so interaction-state examples
 cannot hide behind the route's initial collapsed state. Run the passing sweep
 from the blocking Site Gate.
+
 ## Resolution
+
 `apps/web/e2e/contrast.spec.ts` runs one test per generated route and checks
 both themes. The initial full run was `80` passing / `74` failing routes; token,
 shared-chrome, style-macro, and demo-chrome repairs reduced it to `154/154`. The
@@ -40,7 +56,9 @@ exemption cannot be added to one suite without becoming visible to the other.
 `ci:site` / Site Gate, and `a11y:axe:aa` fails on playground contrast as part of
 that same chain. This is a site-level floor; component certification still
 requires interaction-state and upstream-parity evidence.
+
 ## Adjacent full-audit closure
+
 The same pass made `a11y:full` honest rather than merely non-blocking. WCAG
 2.1/2.2 AA and best-practice rules are strict in both themes. The audit found
 and closed two non-contrast defects: the playground heading outline skipped a
@@ -55,6 +73,8 @@ every other AAA rule fails the test. Experimental permits only the
 focusable row/gridcell structure exactly mirrors React Aria's `useTag` →
 `useGridListItem`; every other experimental rule fails. Final full-audit
 evidence: playground `10/10`, comparison `80/80`, and browser smoke `44/44`.
+
 ## Relationship
+
 Closes `tech-debt.md` → "axe color-contrast excluded from the blocking gate".
 Complements ticket #2: a passing check that CI never invokes is not a gate.

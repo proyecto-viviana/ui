@@ -459,7 +459,7 @@ export function createDroppableCollection(
   // `collectionProps.onKeyDown` engine. Re-runs when the element or locale
   // direction changes (upstream keys the effect on `[localState, ref, onDrop, direction]`).
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     // Track only the scroller element and writing direction. Calling
     // `getOptions()` here would also subscribe to `collection` / `selectedKeys`
@@ -829,9 +829,11 @@ const _s2Cleanups: Array<() => void> = [];
     });
 
     _s2Cleanups.push(unregister);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const collectionProps = createMemo<Record<string, unknown>>(() => ({
     ...drop.dropProps,

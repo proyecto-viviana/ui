@@ -24,7 +24,6 @@
 import { createMemo } from "solid-js";
 import { createInternalSignal } from "../utils";
 
-
 export type Key = string | number;
 export type Selection = "all" | Set<Key>;
 

@@ -6,7 +6,8 @@
  * `useTableRow` for the `UNSTABLE_` tree-grid feature.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test"; import { createRoot, flush, type Accessor } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createRoot, flush, type Accessor } from "solid-js";
 import {
   createTreeGridState,
   createTableState,

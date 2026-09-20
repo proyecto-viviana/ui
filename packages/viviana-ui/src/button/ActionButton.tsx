@@ -275,7 +275,9 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   const menuTriggerButtonProps: Partial<HeadlessButtonProps> = !menuTriggerContext
     ? {}
     : mergeProps<Partial<HeadlessButtonProps>>(
-        splitProps(menuTriggerContext.triggerProps as Record<string, unknown>, ["onKeyDown"])[1] as Partial<HeadlessButtonProps>,
+        splitProps(menuTriggerContext.triggerProps as Record<string, unknown>, [
+          "onKeyDown",
+        ])[1] as Partial<HeadlessButtonProps>,
         {
           onPressStart: menuTriggerContext.onPressStart,
         } as Partial<HeadlessButtonProps>,
@@ -323,9 +325,9 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     (element) => {
       if (!element) return;
       const onKeyDown = (event: KeyboardEvent) => {
-        (menuTriggerContext?.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void } | undefined)?.onKeyDown?.(
-          event,
-        );
+        (
+          menuTriggerContext?.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void } | undefined
+        )?.onKeyDown?.(event);
       };
       element.addEventListener("keydown", onKeyDown);
       return () => element.removeEventListener("keydown", onKeyDown);

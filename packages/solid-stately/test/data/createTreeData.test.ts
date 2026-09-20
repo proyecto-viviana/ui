@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import { createTreeData } from "../../src/data/createTreeData";
 
 interface TreeItem {
@@ -216,7 +217,7 @@ describe("createTreeData", () => {
       tree.move(11, 2, 0);
       flush();
       const parentA = tree.getItem(1);
-            const parentB = tree.getItem(2);
+      const parentB = tree.getItem(2);
       expect(parentA!.children).toHaveLength(1);
       flush();
       expect(parentA!.children![0].value.name).toBe("A2");

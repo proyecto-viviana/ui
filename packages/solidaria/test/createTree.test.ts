@@ -2,7 +2,8 @@
  * Tests for createTree, createTreeItem, createTreeSelectionCheckbox
  */
 
-import { describe, it, expect, vi } from "vite-plus/test"; import { createRoot, createSignal, flush } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createRoot, createSignal, flush } from "solid-js";
 import { createTree, createTreeItem, createTreeSelectionCheckbox, getTreeData } from "../src/tree";
 import {
   createTreeState,

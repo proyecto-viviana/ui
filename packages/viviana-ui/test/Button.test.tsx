@@ -1,4 +1,6 @@
-import { cleanup, render, screen } from "@solidjs/testing-library"; import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils"; import { createSignal, flush } from "solid-js";
+import { cleanup, render, screen } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { createSignal, flush } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { Button, ButtonContext } from "../src/button";
 

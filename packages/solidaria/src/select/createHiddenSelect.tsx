@@ -17,7 +17,15 @@
  * Ported from packages/react-aria/src/select/HiddenSelect.tsx.
  */
 
-import { For, Show, createEffect, createRenderEffect, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import {
+  For,
+  Show,
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -125,7 +133,7 @@ export function createHiddenSelect<T>(
 
   // Set up form reset handler
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const p = getProps();
     const el = selectEl();
@@ -145,9 +153,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       form.removeEventListener("reset", handleReset);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     get containerProps() {

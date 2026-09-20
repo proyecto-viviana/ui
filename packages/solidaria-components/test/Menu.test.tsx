@@ -10,7 +10,9 @@
  * - MenuTrigger integration
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library"; import { createSignal, For, flush } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
+import { createSignal, For, flush } from "solid-js";
 import {
   Menu,
   MenuItem,

@@ -137,16 +137,18 @@ export function createSelect<T>(
 
   // Share data with child options
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     selectData.set(state, { id });
 
     _s2Cleanups.push(() => {
       selectData.delete(state);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // RAC `useSelect.ts:181-186`: field wiring (label + description/error slot
   // ids + trigger `aria-describedby`) comes from `useField`, with

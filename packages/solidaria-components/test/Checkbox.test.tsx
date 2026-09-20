@@ -4,7 +4,9 @@
  * These tests verify the headless Checkbox/CheckboxGroup components follow
  * react-aria-components patterns.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import {
   Checkbox,
   CheckboxContext,

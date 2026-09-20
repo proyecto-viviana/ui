@@ -2,7 +2,8 @@
    shows segmented entry. apps/web has no @internationalized/date dependency,
    so every demo here stays uncontrolled — no value/defaultValue/
    placeholderValue — letting the components manage their own blank state. */
-import { createFileRoute } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import {
   Calendar,
   DateField,

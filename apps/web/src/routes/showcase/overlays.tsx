@@ -6,7 +6,8 @@
    not an opaque label — so the whole panel reads as one family whichever
    trigger you open. Corners: 8 for the popover and the menu, 12 for a dialog,
    5 for a tooltip. */
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal, For } from "solid-js";
 import {
   ActionButton,
   AlertDialog,

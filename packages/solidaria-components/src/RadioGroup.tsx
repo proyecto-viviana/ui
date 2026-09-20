@@ -19,7 +19,14 @@
  * Port of react-aria-components/src/RadioGroup.tsx
  */
 
-import { createContext, createMemo, createSignal, createUniqueId, useContext, Show } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  useContext,
+  Show,
+} from "solid-js";
 import type { ParentProps, Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -220,7 +227,8 @@ export const RadioContext = createContext<RadioContextValue | null>(null);
  */
 export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   const contextProps = useContext(RadioGroupContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<RadioGroupProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -528,7 +536,10 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.radioProps.slot === "string" ? props.radioProps.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[
+      typeof props.radioProps.slot === "string" ? props.radioProps.slot : "default"
+    ];
   const contextBaseProps = createMemo<RadioProps>(() => {
     if (!contextProps) return {} as RadioProps;
     const { slots: _slots, ...rest } = contextProps;
@@ -965,7 +976,10 @@ function RadioFieldImpl(props: {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const { state } = props;
   const contextProps = useContext(RadioFieldContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.fieldProps.slot === "string" ? props.fieldProps.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[
+      typeof props.fieldProps.slot === "string" ? props.fieldProps.slot : "default"
+    ];
   const contextBaseProps = createMemo<Partial<RadioFieldProps>>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;

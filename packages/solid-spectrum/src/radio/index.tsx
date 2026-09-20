@@ -16,7 +16,13 @@
 
 // Port of packages/@react-spectrum/s2/src/RadioGroup.tsx.
 
-import { children as resolveChildren, Show, createContext, createUniqueId, useContext } from "solid-js";
+import {
+  children as resolveChildren,
+  Show,
+  createContext,
+  createUniqueId,
+  useContext,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   RadioGroup as HeadlessRadioGroup,

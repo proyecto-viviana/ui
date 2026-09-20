@@ -48,7 +48,7 @@ let restore: (() => void) | undefined;
  */
 export function createPreventScroll(options: PreventScrollOptions = {}): void {
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const isDisabled = options.isDisabled;
 
@@ -72,9 +72,11 @@ const _s2Cleanups: Array<() => void> = [];
         restore = undefined;
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 }
 
 // For most browsers, all we need to do is set `overflow: hidden` on the root element, and

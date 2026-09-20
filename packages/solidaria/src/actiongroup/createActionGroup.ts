@@ -19,7 +19,15 @@
  * - packages/react-aria/src/actiongroup/useActionGroupItem.ts
  */
 
-import { filterDOMProps, getEventTarget, mergeProps, nodeContains, isFocusable, focusSafely, onOwnedCleanup } from "../utils";
+import {
+  filterDOMProps,
+  getEventTarget,
+  mergeProps,
+  nodeContains,
+  isFocusable,
+  focusSafely,
+  onOwnedCleanup,
+} from "../utils";
 import { createSignal } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";

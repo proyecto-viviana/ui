@@ -9,7 +9,9 @@
  * - Accordion (DisclosureGroup) behavior
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
+import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Disclosure, DisclosureTrigger, DisclosurePanel, DisclosureGroup } from "../src/Disclosure";
 import {
   assertNoA11yViolations,

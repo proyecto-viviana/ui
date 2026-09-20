@@ -1,4 +1,5 @@
-import { createThemeTransition } from "@proyecto-viviana/ui"; import { createRoot, createSignal, onMount } from "solid-js";
+import { createThemeTransition } from "@proyecto-viviana/ui";
+import { createRoot, createSignal, onMount } from "solid-js";
 
 export type Theme = "dark" | "light";
 

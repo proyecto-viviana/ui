@@ -10,7 +10,9 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, useContext } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal, useContext } from "solid-js";
 import h from "@solidjs/h";
 import { hc, renderProp } from "../../../apps/comparison/src/components/solid/solid-h";
 import {

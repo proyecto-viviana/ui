@@ -23,7 +23,17 @@
  * This Solid module combines the pinned Toast component and transition stylesheet.
  */
 
-import { createContext, createEffect, createSignal, For, onCleanup, onSettled, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  onSettled,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -726,7 +736,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     toggleExpanded(visibleToasts);
   };
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isExpanded() || !containerContext) {
       return;
@@ -748,10 +758,14 @@ const _s2Cleanups: Array<() => void> = [];
     };
 
     ownerDocument.addEventListener("keydown", handleDocumentKeyDown, true);
-    _s2Cleanups.push(() => ownerDocument.removeEventListener("keydown", handleDocumentKeyDown, true));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+    _s2Cleanups.push(() =>
+      ownerDocument.removeEventListener("keydown", handleDocumentKeyDown, true),
+    );
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return (
     <HeadlessToastRegion
@@ -850,16 +864,18 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
   const prefersReducedMotion = createMediaQuery("(prefers-reduced-motion)");
   const reduceMotion = () => local.PRIVATE_forceReducedMotion ?? prefersReducedMotion();
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const previous = globalReduceMotion;
     globalReduceMotion = reduceMotion();
     _s2Cleanups.push(() => {
       globalReduceMotion = previous;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const unsubscribe = globalToastQueue.subscribe((toasts) => {
     if (toasts.length === 0) {

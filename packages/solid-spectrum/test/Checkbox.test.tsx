@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Checkbox, CheckboxContext, CheckboxGroup, CheckboxGroupContext, Form } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";

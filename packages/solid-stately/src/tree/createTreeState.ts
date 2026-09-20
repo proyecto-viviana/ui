@@ -64,7 +64,9 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   // Focus state
   const [isFocused, setIsFocused] = createInternalSignal(false);
   const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(
+    null,
+  );
   const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createInternalSignal(false);
 
   // Selection state
@@ -125,7 +127,6 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
       disabled: disabledKeys(),
     }),
     ({ coll, currentFocusedKey, disabled }) => {
-
       if (currentFocusedKey != null && cachedCollection) {
         // Check if the focused item is still visible
         const visibleKeys = [...coll.getKeys()];
@@ -170,7 +171,8 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
       }
 
       cachedCollection = coll;
-  });
+    },
+  );
 
   // Selection methods
   const isSelected = (key: Key): boolean => {

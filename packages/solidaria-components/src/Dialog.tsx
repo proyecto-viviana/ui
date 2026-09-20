@@ -19,7 +19,16 @@
  * Port of react-aria-components Dialog.
  */
 
-import { createContext, createEffect, createMemo, createUniqueId, useContext, Switch, Match, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createUniqueId,
+  useContext,
+  Switch,
+  Match,
+  createTrackedEffect,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -176,11 +185,7 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   }
 
   // In SolidJS, we simply render children directly within the provider
-  return (
-    <DialogTriggerContext value={contextValue()}>
-      {props.children}
-    </DialogTriggerContext>
-  );
+  return <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>;
 }
 
 /**

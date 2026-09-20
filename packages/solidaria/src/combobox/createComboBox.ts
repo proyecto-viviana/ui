@@ -181,17 +181,14 @@ export function createComboBox<T>(
 
   // Track if a pointerdown happened inside the listbox to prevent blur from closing
   let isPointerDownInsideListBox = false;
-  bindCapture(
-    () => listBoxRef?.() ?? null,
-    {
-      pointerdown: () => {
-        isPointerDownInsideListBox = true;
-      },
-      mousedown: () => {
-        isPointerDownInsideListBox = true;
-      },
+  bindCapture(() => listBoxRef?.() ?? null, {
+    pointerdown: () => {
+      isPointerDownInsideListBox = true;
     },
-  );
+    mousedown: () => {
+      isPointerDownInsideListBox = true;
+    },
+  });
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -263,16 +260,18 @@ export function createComboBox<T>(
 
   // Share data with child options
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     comboBoxData.set(state, { id, listBoxId });
 
     _s2Cleanups.push(() => {
       comboBoxData.delete(state);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // RAC `useComboBox.ts:302-331` reaches `useField` through `useTextField`.
   // Field wiring (description/error slot ids + input `aria-describedby`) lives
@@ -450,7 +449,11 @@ return () => { for (const c of _s2Cleanups) c(); };
   createEffect(
     () => {
       if (isServer) {
-        return { isOpen: false, inputEl: null as HTMLElement | null, popoverEl: null as Element | null };
+        return {
+          isOpen: false,
+          inputEl: null as HTMLElement | null,
+          popoverEl: null as Element | null,
+        };
       }
       return {
         isOpen: state.isOpen(),

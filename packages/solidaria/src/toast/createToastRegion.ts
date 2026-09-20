@@ -25,7 +25,21 @@ import { onOwnedCleanup } from "../utils/owner";
 import { createEffect, createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { type ToastState } from "@proyecto-viviana/solid-stately"; import { createHover } from "../interactions/createHover"; import { getInteractionModality } from "../interactions/createInteractionModality"; import { createLandmark } from "../landmark/createLandmark"; import { focusWithoutScrolling } from "../utils/focus"; export interface AriaToastRegionProps<T> { /** The toast state from createToastState. */ state: ToastState<T>; /** The toast region element. Required for landmark navigation and focus recovery. */ ref?: Accessor<HTMLElement | undefined>; /** An accessible label for the region. */ "aria-label"?: string; } export interface ToastRegionAria { /** Props for the toast region container element. */ regionProps: JSX.HTMLAttributes<HTMLElement>; } /** * Provides the accessibility implementation for a ToastRegion component. * * The region is a landmark (role="region") that contains all visible toasts. * It pauses toast timers on hover or focus to give users time to read/interact. * * @example * ```tsx * import { createToastRegion } from 'solidaria'; * import { For, Show } from "solid-js";
+import { type ToastState } from "@proyecto-viviana/solid-stately";
+import { createHover } from "../interactions/createHover";
+import { getInteractionModality } from "../interactions/createInteractionModality";
+import { createLandmark } from "../landmark/createLandmark";
+import { focusWithoutScrolling } from "../utils/focus";
+export interface AriaToastRegionProps<T> {
+  /** The toast state from createToastState. */ state: ToastState<T>;
+  /** The toast region element. Required for landmark navigation and focus recovery. */ ref?: Accessor<
+    HTMLElement | undefined
+  >;
+  /** An accessible label for the region. */ "aria-label"?: string;
+}
+export interface ToastRegionAria {
+  /** Props for the toast region container element. */ regionProps: JSX.HTMLAttributes<HTMLElement>;
+} /** * Provides the accessibility implementation for a ToastRegion component. * * The region is a landmark (role="region") that contains all visible toasts. * It pauses toast timers on hover or focus to give users time to read/interact. * * @example * ```tsx * import { createToastRegion } from 'solidaria'; * import { For, Show } from "solid-js";
  *
  * function ToastRegion(props) {
  *   let ref;

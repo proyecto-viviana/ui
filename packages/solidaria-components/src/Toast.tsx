@@ -19,7 +19,17 @@
  * Port of react-aria-components Toast.
  */
 
-import { createContext, createMemo, createEffect, createRenderEffect, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor, Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
@@ -397,7 +407,7 @@ export function Toast(props: ToastProps): JSX.Element {
   const state = useToastContext();
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const key = local.toast.key;
     toastStateByKey.set(key, state);
@@ -406,9 +416,11 @@ const _s2Cleanups: Array<() => void> = [];
         toastStateByKey.delete(key);
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const hasTitle = () => !!(local.toast.content.children ?? local.toast.content.title);
   const toastAria = createToast({
@@ -463,7 +475,7 @@ return () => { for (const c of _s2Cleanups) c(); };
   // Reduced-motion is handled by CSS (shorter/no animations), so the lifecycle
   // naturally completes faster when the user prefers reduced motion.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (local.toast.animation !== "exiting") return;
     const toastRef = toastEl();
@@ -503,9 +515,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       canceled = true;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const { ref: _ref, ...cleanToastProps } = toastAria.toastProps as Record<string, unknown>;
 

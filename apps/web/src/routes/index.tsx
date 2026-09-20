@@ -1,4 +1,18 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { Badge as VivianaBadge, Button as VivianaButton, TextField, ToggleSwitch, typeRoles, } from "@proyecto-viviana/ui"; import { Badge as SpectrumBadge, Button as SpectrumButton } from "@proyecto-viviana/solid-spectrum"; import { Provider as SpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider"; import { Button as GeistButton } from "@proyecto-viviana/geist"; import "@proyecto-viviana/geist/styles.css"; import { Button as KumoButton } from "@proyecto-viviana/kumo"; import "@proyecto-viviana/kumo/styles.css"; import { createSignal, Show, type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import {
+  Badge as VivianaBadge,
+  Button as VivianaButton,
+  TextField,
+  ToggleSwitch,
+  typeRoles,
+} from "@proyecto-viviana/ui";
+import { Badge as SpectrumBadge, Button as SpectrumButton } from "@proyecto-viviana/solid-spectrum";
+import { Provider as SpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Button as GeistButton } from "@proyecto-viviana/geist";
+import "@proyecto-viviana/geist/styles.css";
+import { Button as KumoButton } from "@proyecto-viviana/kumo";
+import "@proyecto-viviana/kumo/styles.css";
+import { createSignal, Show, type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import {
   CtaButton,

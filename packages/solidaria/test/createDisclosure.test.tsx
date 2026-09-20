@@ -1,4 +1,6 @@
-import { describe, it, expect, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createRoot, createSignal } from "solid-js";
 import { createDisclosureState, createDisclosureGroupState } from "@proyecto-viviana/solid-stately";
 import { firePointerClick } from "@proyecto-viviana/solidaria-test-utils";
 import { createDisclosure, createDisclosureGroup } from "../src/disclosure";

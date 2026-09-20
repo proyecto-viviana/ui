@@ -2,7 +2,9 @@
  * Tests for createHiddenSelect with form integration.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library"; import { createSignal, flush, Show } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library";
+import { createSignal, flush, Show } from "solid-js";
 import { createHiddenSelect, HiddenSelect } from "../src/select/createHiddenSelect";
 import type { SelectState, Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 import { createFormValidationState } from "@proyecto-viviana/solid-stately";

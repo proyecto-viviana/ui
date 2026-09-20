@@ -153,9 +153,7 @@ describe("DropZone", () => {
 
   it("merges props from DropZoneContext", () => {
     render(() => (
-      <DropZoneContext
-        value={{ "aria-label": "Context upload", class: "context-dropzone" }}
-      >
+      <DropZoneContext value={{ "aria-label": "Context upload", class: "context-dropzone" }}>
         <DropZone>Drop files</DropZone>
       </DropZoneContext>
     ));

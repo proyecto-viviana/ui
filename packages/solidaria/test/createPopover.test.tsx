@@ -3,7 +3,9 @@
  * A setup-time snapshot of the callback would ignore a later function.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"; import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { createOverlayTriggerState } from "../../solid-stately/src";
 import { createPopover } from "../src/popover/createPopover";
 

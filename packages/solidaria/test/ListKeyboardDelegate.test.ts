@@ -12,7 +12,8 @@
  * null), which is exactly the no-DOM case here.
  */
 
-import { describe, it, expect } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { createRoot } from "solid-js";
 import { createListState, type ListStateProps } from "../../solid-stately/src";
 import {
   ListKeyboardDelegate,

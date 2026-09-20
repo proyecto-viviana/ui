@@ -21,7 +21,11 @@ history:
       at: 2026-08-08,
       note: "hosted head 98670653651fc4bd11d6e2338a05212bef019f1a passed all four intended contexts; strict main protection now requires those exact contexts",
     }
-  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record",
+    }
 ---
 
 The Release workflow ran independently on every push to `main`. On 2026-08-08,

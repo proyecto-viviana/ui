@@ -15,7 +15,14 @@
 
 // Port of packages/@react-spectrum/s2/src/Skeleton.tsx.
 // Port of packages/@react-spectrum/s2/src/SkeletonCollection.tsx.
-import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createLeafComponent } from "@proyecto-viviana/solidaria-components";

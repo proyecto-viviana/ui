@@ -15,7 +15,11 @@ history:
       at: 2026-09-07,
       note: "decided by Rule #2 under the owner's 2026-09-07 delegation: TabSwitch duplicates SegmentedControl on the same primitives with an invented API, so it becomes a deprecated wrapper and is removed next breaking release; decision in steering.md, work in #491",
     }
-  - { state: merged, at: 2026-09-17, note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record" }
+  - {
+      state: merged,
+      at: 2026-09-17,
+      note: "migrated from the pre-v1 state done, which no status filter can see; merged not verified, no owner confirmation on record",
+    }
 ---
 
 `solid-spectrum` exports both `TabSwitch` and the upstream-shaped

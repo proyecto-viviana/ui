@@ -187,7 +187,8 @@ function clearDelegatedTextEntryHandlers(element: HTMLElement) {
 export function SearchField(props: SearchFieldProps): JSX.Element {
   const formContext = useContext(FormContext);
   const contextProps = useContext(SearchFieldContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<SearchFieldProps>(() => {
     if (!contextProps) return {};
     const {

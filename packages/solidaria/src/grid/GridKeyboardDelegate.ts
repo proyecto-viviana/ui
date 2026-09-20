@@ -17,7 +17,9 @@
  * Based on @react-aria/grid/GridKeyboardDelegate.
  */
 
-import type { GridCollection, GridNode, Key } from "@proyecto-viviana/solid-stately"; import type { KeyboardDelegate } from "./types"; import type { Accessor } from "solid-js";
+import type { GridCollection, GridNode, Key } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "./types";
+import type { Accessor } from "solid-js";
 
 export interface GridKeyboardDelegateOptions<T> {
   /** The grid collection. */

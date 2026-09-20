@@ -62,7 +62,18 @@
  * This Solid module combines the upstream component files and grid keyboard behavior.
  */
 
-import { createContext, createEffect, createMemo, createSignal, flush, onCleanup, untrack, useContext, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  flush,
+  onCleanup,
+  untrack,
+  useContext,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -2147,10 +2158,9 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     "slot",
   ]);
 
-  const [itemMap, setItemMap] = createSignal<Map<string, ColorSwatchPickerItemData>>(
-    new Map(),
-    { ownedWrite: true },
-  );
+  const [itemMap, setItemMap] = createSignal<Map<string, ColorSwatchPickerItemData>>(new Map(), {
+    ownedWrite: true,
+  });
   const [itemOrder, setItemOrder] = createSignal<string[]>([], { ownedWrite: true });
   const [internalColor, setInternalColor] = createSignal<Color>(
     normalizeColor(local.defaultValue ?? pickerContext?.value ?? "#ff0000"),

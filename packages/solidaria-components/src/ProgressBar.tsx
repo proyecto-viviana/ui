@@ -21,7 +21,11 @@
 
 import { createContext, createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { createProgressBar, mergeProps, type AriaProgressBarProps } from "@proyecto-viviana/solidaria";
+import {
+  createProgressBar,
+  mergeProps,
+  type AriaProgressBarProps,
+} from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,

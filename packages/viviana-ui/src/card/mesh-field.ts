@@ -30,7 +30,7 @@ export function createMeshField(
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isEnabled()) return;
     let frame = 0;
@@ -56,7 +56,9 @@ const _s2Cleanups: Array<() => void> = [];
       window.clearTimeout(settle);
       if (frame) cancelAnimationFrame(frame);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 }

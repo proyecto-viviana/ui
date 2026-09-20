@@ -2,7 +2,8 @@
    shared Panel/Demo/Row chrome per the buttons.tsx exemplar. The filled
    track is always the register's accent — there is no neutral fill to
    sweep, so size, track style, and disabled state carry these demos. */
-import { createFileRoute } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import { RangeSlider, Slider } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug, panelSeo } from "@/components/showcase/registry";

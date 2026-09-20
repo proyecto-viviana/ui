@@ -10,7 +10,9 @@
  * - Controlled mode
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush, type Accessor } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createSignal, flush, type Accessor } from "solid-js";
 import { StepList, Step } from "../src/StepList";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";

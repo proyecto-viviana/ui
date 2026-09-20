@@ -20,7 +20,6 @@
  * item text values. Supports multi-character search with debouncing.
  */
 
-
 import { onOwnedCleanup } from "../utils/owner";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";

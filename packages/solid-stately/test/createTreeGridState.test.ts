@@ -2,7 +2,8 @@
  * Tests for createTreeGridState and TableCollection tree-grid mode.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import {
   createTreeGridState,
   createTableCollection,

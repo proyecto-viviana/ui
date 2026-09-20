@@ -17,7 +17,15 @@
  * A preview trigger displays a popover on hover, focus, or long press.
  */
 
-import { focusWithoutScrolling, getActiveElement, getFocusableTreeWalker, getOwnerDocument, mergeProps, nodeContains, onOwnedCleanup } from "../utils";
+import {
+  focusWithoutScrolling,
+  getActiveElement,
+  getFocusableTreeWalker,
+  getOwnerDocument,
+  mergeProps,
+  nodeContains,
+  onOwnedCleanup,
+} from "../utils";
 import { createEffect, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -157,7 +165,7 @@ export function createPreviewTrigger(
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const trigger = props.triggerRef();
     if (!trigger) return;
@@ -167,10 +175,14 @@ const _s2Cleanups: Array<() => void> = [];
       trigger.focus();
     };
     trigger.addEventListener("react-aria-focus-scope-restore", onRestore);
-    _s2Cleanups.push(() => trigger.removeEventListener("react-aria-focus-scope-restore", onRestore));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+    _s2Cleanups.push(() =>
+      trigger.removeEventListener("react-aria-focus-scope-restore", onRestore),
+    );
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const onTriggerKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Tab" && !e.shiftKey && state.isOpen() && props.popoverRef()) {

@@ -19,7 +19,14 @@
  * Port of react-aria-components/src/Button.tsx
  */
 
-import { createContext, createEffect, createMemo, createSignal, untrack, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  untrack,
+  useContext,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   announce,
@@ -221,7 +228,9 @@ export const ButtonContext = createContext<ButtonContextValue | null>(null);
  */
 export function Button(props: ButtonProps): JSX.Element {
   const contextProps = useContext(ButtonContext);
-  const contextSlotProps = untrack(() => contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"]);
+  const contextSlotProps = untrack(
+    () => contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"],
+  );
   const contextBaseProps = createMemo<ButtonProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -420,9 +429,9 @@ export function Button(props: ButtonProps): JSX.Element {
     return filtered;
   };
 
-  const buttonPropsRef = untrack(
-    () => (buttonAria.buttonProps as Record<string, unknown>).ref,
-  ) as ((el: HTMLElement) => void) | undefined;
+  const buttonPropsRef = untrack(() => (buttonAria.buttonProps as Record<string, unknown>).ref) as
+    | ((el: HTMLElement) => void)
+    | undefined;
   const focusPropsRef = untrack(() => (focusProps as Record<string, unknown>).ref) as
     | ((el: HTMLElement) => void)
     | undefined;
@@ -563,9 +572,7 @@ export function Button(props: ButtonProps): JSX.Element {
   const dataState = (value: boolean) => (value ? "true" : undefined);
   const buttonChildren = () => renderProps.renderChildren();
   const buttonContent = () => (
-    <ProgressBarContext value={{ id: progressId }}>
-      {buttonChildren()}
-    </ProgressBarContext>
+    <ProgressBarContext value={{ id: progressId }}>{buttonChildren()}</ProgressBarContext>
   );
   let wasPending = false;
   let pendingAnnounceReady = false;

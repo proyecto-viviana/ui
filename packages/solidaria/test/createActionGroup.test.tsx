@@ -1,7 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal, flush, type Accessor } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createSignal, flush, type Accessor } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createListState } from "../../solid-stately/src";
 import { createActionGroup, createActionGroupItem } from "../src/actiongroup";

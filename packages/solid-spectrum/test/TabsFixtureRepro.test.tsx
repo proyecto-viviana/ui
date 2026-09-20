@@ -14,7 +14,9 @@
  * semantics; the bare-h wiring is kept here as `it.fails` documentation of the
  * upstream limitation.
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createComponent, createMemo, createSignal, flush, Show, type JSX } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, screen } from "@solidjs/testing-library";
+import { createComponent, createMemo, createSignal, flush, Show, type JSX } from "solid-js";
 import h from "@solidjs/h";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
 import { Provider } from "../src/provider";
@@ -175,9 +177,7 @@ describe("controlled tabs round trip (comparison fixture wiring)", () => {
       >
         {createComponent(TabList, {
           get children() {
-            return items.map((item) =>
-              createComponent(Tab, { id: item.id, children: item.label }),
-            );
+            return items.map((item) => createComponent(Tab, { id: item.id, children: item.label }));
           },
         })}
         {items.map((item) =>

@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vite-plus/test"; import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 import packageJson from "../package.json";
 import { ColorSwatch } from "../src/color";

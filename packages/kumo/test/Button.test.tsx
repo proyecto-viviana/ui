@@ -1,4 +1,6 @@
-import { render, screen } from "@solidjs/testing-library"; import userEvent from "@testing-library/user-event"; import { createSignal, flush } from "solid-js";
+import { render, screen } from "@solidjs/testing-library";
+import userEvent from "@testing-library/user-event";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { Button } from "../src/components/button";
 

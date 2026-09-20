@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { Dynamic } from "@solidjs/web";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { Dynamic } from "@solidjs/web";
 import { createLink } from "../src/link";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 

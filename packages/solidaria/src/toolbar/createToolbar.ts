@@ -19,7 +19,14 @@
  * Based on @react-aria/toolbar useToolbar.
  */
 
-import { type MaybeAccessor, access, onOwnedCleanup, getOwnerDocument, isFocusable, isTabbable } from "../utils";
+import {
+  type MaybeAccessor,
+  access,
+  onOwnedCleanup,
+  getOwnerDocument,
+  isFocusable,
+  isTabbable,
+} from "../utils";
 import { createSignal, onSettled } from "solid-js";
 import type { Accessor } from "solid-js";
 import { useLocale } from "../i18n";

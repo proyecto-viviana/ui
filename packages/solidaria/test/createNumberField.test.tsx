@@ -3,7 +3,11 @@
  * Based on @react-aria/numberfield useNumberField tests.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library"; import { createNumberField } from "../src/numberfield/createNumberField"; import { createNumberFieldState } from "@proyecto-viviana/solid-stately"; import { Show } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createNumberField } from "../src/numberfield/createNumberField";
+import { createNumberFieldState } from "@proyecto-viviana/solid-stately";
+import { Show } from "solid-js";
 
 // Test component that uses createNumberField
 function TestNumberField(props: {

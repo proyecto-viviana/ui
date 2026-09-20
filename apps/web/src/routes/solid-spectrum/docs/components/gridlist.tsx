@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
 import { GridList, GridListItem } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { Badge, typeRoles } from "@proyecto-viviana/ui";

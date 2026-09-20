@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createSignal, flush, type Component } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { render, screen } from "@solidjs/testing-library";
+import { createSignal, flush, type Component } from "solid-js";
 import { Icon } from "../src/icon";
 
 type ProbeIcon = Component<{ size?: string | number; color?: string }>;

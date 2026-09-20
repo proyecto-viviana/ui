@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal, onMount, onSettled } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot, createSignal, onMount, onSettled } from "solid-js";
 import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
 import { I18nProvider } from "../src/i18n";

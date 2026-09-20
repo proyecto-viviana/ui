@@ -14,7 +14,17 @@
 
 // Port of packages/@react-spectrum/s2/src/ActionBar.tsx.
 
-import { Show, createContext, createEffect, createMemo, createSignal, flush, onCleanup, onSettled, useContext } from "solid-js";
+import {
+  Show,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  flush,
+  onCleanup,
+  onSettled,
+  useContext,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   ActionBar as HeadlessActionBar,

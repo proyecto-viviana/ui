@@ -184,9 +184,7 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
       data-disabled={local.isDisabled || undefined}
     >
       {() => (
-        <ToggleButtonGroupContext value={contextValue}>
-          {local.children}
-        </ToggleButtonGroupContext>
+        <ToggleButtonGroupContext value={contextValue}>{local.children}</ToggleButtonGroupContext>
       )}
     </HeadlessToggleButtonGroup>
   );

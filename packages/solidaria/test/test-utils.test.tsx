@@ -2,7 +2,9 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { render, screen, cleanup } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
+import { render, screen, cleanup } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 
 // Import test utilities
 import {
@@ -55,12 +57,7 @@ import {
   assertFocused,
   assertFocusWithin,
 } from "../test-utils/focus";
-import {
-  setupTestEnvironment,
-  cleanupTestEnvironment,
-  wait,
-  waitFor,
-} from "../test-utils/setup";
+import { setupTestEnvironment, cleanupTestEnvironment, wait, waitFor } from "../test-utils/setup";
 
 // ============================================
 // POINTER UTILITIES

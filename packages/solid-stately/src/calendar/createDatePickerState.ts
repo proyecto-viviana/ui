@@ -91,7 +91,9 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const timeZone = getLocalTimeZone();
 
   // Internal signals for value and overlay state
-  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(
+    props.defaultValue ?? null,
+  );
   const [internalOpen, setInternalOpen] = createInternalSignal(props.defaultOpen ?? false);
 
   // Transient selections for date and time

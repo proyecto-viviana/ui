@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, afterEach, vi } from "vite-plus/test"; import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
+import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import {
   ComboBox,

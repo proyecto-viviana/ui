@@ -22,7 +22,14 @@
  * events, and segment focus recovery on unmount mirrors upstream's layout effect.
  */
 
-import { isMac, isIOS, scrollIntoViewport, getScrollParent, nodeContains, onOwnedCleanup } from "../utils";
+import {
+  isMac,
+  isIOS,
+  scrollIntoViewport,
+  getScrollParent,
+  nodeContains,
+  onOwnedCleanup,
+} from "../utils";
 import { createMemo, createEffect, createTrackedEffect } from "solid-js";
 import { toCalendar, CalendarDate } from "@internationalized/date";
 import { NumberParser } from "@internationalized/number";
@@ -308,7 +315,7 @@ export function createDateSegment<T extends DateFieldState>(
   // Enforce that the selection is collapsed when inside a date segment. Otherwise, when tapping on a
   // segment in Android Chrome and then entering text, composition events break the DOM structure.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (typeof document === "undefined") {
       return;
@@ -321,13 +328,15 @@ const _s2Cleanups: Array<() => void> = [];
     };
     document.addEventListener("selectionchange", handler);
     _s2Cleanups.push(() => document.removeEventListener("selectionchange", handler));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   let compositionValue = "";
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = ref();
     if (!el) {
@@ -378,9 +387,11 @@ const _s2Cleanups: Array<() => void> = [];
       el.removeEventListener("beforeinput", onBeforeInput as EventListener);
       el.removeEventListener("input", onInputEvent as EventListener);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // If the focused segment is removed, focus the previous one, or the next one if there was no previous one.
   let focusedElement: HTMLElement | null = null;

@@ -140,7 +140,7 @@ export function createMenuTrigger(
   });
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (
       !state.isOpen() ||
@@ -161,9 +161,11 @@ const _s2Cleanups: Array<() => void> = [];
 
     document.addEventListener("mousedown", onMouseDown);
     _s2Cleanups.push(() => document.removeEventListener("mousedown", onMouseDown));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   createTrackedEffect(() => {
     const element = ref?.();

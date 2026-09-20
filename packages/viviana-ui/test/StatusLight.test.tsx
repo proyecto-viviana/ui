@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test"; import { render } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, expect, it } from "vite-plus/test";
+import { render } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { StatusLight } from "../src/statuslight";
 
 describe("StatusLight", () => {

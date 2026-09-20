@@ -179,9 +179,7 @@ export function Form(props: FormProps): JSX.Element {
       slot={local.slot}
     >
       <FormContext value={formContextValue}>
-        <FormValidationContext value={errors}>
-          {renderProps.renderChildren()}
-        </FormValidationContext>
+        <FormValidationContext value={errors}>{renderProps.renderChildren()}</FormValidationContext>
       </FormContext>
     </form>
   );

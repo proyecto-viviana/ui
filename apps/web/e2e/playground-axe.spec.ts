@@ -46,7 +46,7 @@ async function showAllSections(page: Page) {
 function isMeterFallbackRole(html: string | undefined) {
   return Boolean(
     html &&
-      (html.includes('role="meter progressbar"') || html.includes("role='meter progressbar'")),
+    (html.includes('role="meter progressbar"') || html.includes("role='meter progressbar'")),
   );
 }
 

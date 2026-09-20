@@ -309,7 +309,9 @@ export function createDateFieldState<T extends DateValue = DateValue>(
   const hourCycle = (): HourCycle => calendarAndHourCycle()[1];
 
   // Controlled vs uncontrolled committed value.
-  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(
+    props.defaultValue ?? null,
+  );
   const rawValue = createMemo<T | null>(() => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();

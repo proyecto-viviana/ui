@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vite-plus/test"; import { fireEvent, render, screen } from "@solidjs/testing-library"; import { type JSX } from "solid-js";
+import { describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { type JSX } from "solid-js";
 import {
   Button,
   ButtonGroup,
@@ -141,9 +143,7 @@ describe("IllustratedMessage (solid-spectrum)", () => {
 
     render(() => (
       <>
-        <IllustratedMessageContext
-          value={{ isInDropZone: true, isDropTarget: true, size: "L" }}
-        >
+        <IllustratedMessageContext value={{ isInDropZone: true, isDropTarget: true, size: "L" }}>
           <IllustratedMessage data-testid="message-root" onClick={onClick}>
             <TestIllustration slot="illustration" data-testid="message-illustration" />
           </IllustratedMessage>

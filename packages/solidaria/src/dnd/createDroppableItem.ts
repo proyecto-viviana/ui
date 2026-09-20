@@ -129,7 +129,7 @@ export function createDroppableItem(
 
   // RAC `useDroppableItem.ts:49-68`: register with DragManager once the node exists.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = getOptions().ref();
     const target = resolvedTarget();
@@ -150,16 +150,18 @@ const _s2Cleanups: Array<() => void> = [];
       activateButtonRef,
     });
     _s2Cleanups.push(unregister);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // RAC `useDroppableItem.ts:84-88`: focus the node when it becomes the active
   // virtual-drag target. Deferred to a microtask so this does not nest inside the
   // `setTarget` Solid flush (`onDropEnter` → indicator mount). A rAF lost the
   // race to collection focus under parallel Playwright workers.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = getOptions().ref();
     if (!dragSession() || !isDropTarget() || !el) return;
@@ -172,9 +174,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       cancelled = true;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const isValidDropTarget = createMemo(() => {
     const session = dragSession();

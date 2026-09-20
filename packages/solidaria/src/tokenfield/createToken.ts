@@ -41,7 +41,7 @@ export function createToken(
   const [isSelected, setSelected] = createSignal(false);
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (typeof document === "undefined") return;
 
@@ -62,9 +62,11 @@ const _s2Cleanups: Array<() => void> = [];
 
     document.addEventListener("selectionchange", onSelectionChange);
     _s2Cleanups.push(() => document.removeEventListener("selectionchange", onSelectionChange));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     tokenProps: {

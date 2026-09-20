@@ -1,7 +1,8 @@
 /* Panel 11 — Color. Every color-family component, wired to real register
    palette values (blue/cyan/fuchsia/red — the register's channels), composed from the
    shared Panel/Demo/Row chrome. */
-import { createFileRoute } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import {
   ColorArea,
   ColorEditor,

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "../src/tooltip";
 
 describe("createTooltipTriggerState", () => {

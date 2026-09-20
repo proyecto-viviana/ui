@@ -87,15 +87,17 @@ function bindNativeEvent(
   handler: (e: Event) => void,
 ): void {
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = getEl();
     if (!el) return;
     el.addEventListener(type, handler);
     _s2Cleanups.push(() => el.removeEventListener(type, handler));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 }
 
 /**
@@ -796,15 +798,17 @@ function createMutationTracker(getEl: () => Element | null) {
   let stopMutations: (() => void) | null = null;
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     _s2Cleanups.push(() => {
       stopMutations?.();
       stopMutations = null;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return {
     start() {

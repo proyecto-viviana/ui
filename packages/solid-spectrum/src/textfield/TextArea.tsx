@@ -16,7 +16,16 @@
 
 // Port of packages/@react-spectrum/s2/src/TextField.tsx.
 
-import { createContext, createEffect, createSignal, onCleanup, onSettled, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onSettled,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {

@@ -2,7 +2,8 @@
    Chips are wells, not gray steps — see badge/tag-group source comments for
    the register's rationale. Green now lives here for one reason only: the
    semantic success channel, shown as the negative/warning/success trio. */
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal, For } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal, For } from "solid-js";
 import { Badge, Tag, TagGroup } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug, panelSeo } from "@/components/showcase/registry";

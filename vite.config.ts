@@ -24,6 +24,9 @@ const ignoredPaths = [
   // TSX and already satisfy the house style, so a disagreement there is a real
   // signal that the extractor's template needs updating.
   "apps/web/src/data/api-reference/pages/**",
+  // Dated receipts are evidence and are never edited after their day, so the
+  // formatter must not rewrite one it did not see on the day it was written.
+  ".agents/**",
 ];
 
 export default defineConfig({

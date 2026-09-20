@@ -184,16 +184,18 @@ export function createListBox<T>(
 
   // Share data with child options
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     updateSharedData();
 
     _s2Cleanups.push(() => {
       listBoxData.delete(state);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Handle focus within
   const { focusWithinProps } = createFocusWithin({

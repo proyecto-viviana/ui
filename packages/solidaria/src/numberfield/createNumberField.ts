@@ -636,7 +636,8 @@ function createNativeValidation(
       numberInput.step = step != null && !isNaN(step) ? String(step) : "";
       numberInput.value = value != null && !isNaN(value) ? String(value) : "";
 
-      const rangeOverflow = max != null && !isNaN(max) && value != null && !isNaN(value) && value > max;
+      const rangeOverflow =
+        max != null && !isNaN(max) && value != null && !isNaN(value) && value > max;
       const rangeUnderflow =
         min != null && !isNaN(min) && value != null && !isNaN(value) && value < min;
       const nativeInvalid = !numberInput.validity.valid || rangeOverflow || rangeUnderflow;

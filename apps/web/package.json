@@ -18,11 +18,11 @@
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",
     "@proyecto-viviana/ui": "workspace:*",
+    "@solidjs/web": "2.0.0-rc.9",
     "@tanstack/router-core": "1.171.26",
     "@tanstack/solid-router": "1.170.29",
     "@tanstack/solid-start": "1.168.46",
     "solid-icons": "^1.2.0",
-    "@solidjs/web": "2.0.0-rc.9",
     "solid-js": "2.0.0-rc.9",
     "vite": "catalog:",
     "yaml": "^2.9.0"
@@ -31,10 +31,10 @@
     "@axe-core/playwright": "^4.13.0",
     "@cloudflare/vite-plugin": "^1.53.0",
     "@playwright/test": "^1.62.1",
-    "playwright": "^1.62.1",
-    "typescript": "6.0.3",
     "@solidjs/diagnostics": "2.0.0-rc.9",
     "@solidjs/vite-plugin": "3.0.0-next.44",
+    "playwright": "^1.62.1",
+    "typescript": "6.0.3",
     "wrangler": "^4.124.0"
   }
 }

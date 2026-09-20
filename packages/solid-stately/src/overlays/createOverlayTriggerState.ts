@@ -55,7 +55,9 @@ export function createOverlayTriggerState(
 ): OverlayTriggerState {
   const propsAccessor = () => access(props);
 
-  const [internalOpen, setInternalOpen] = createInternalSignal(propsAccessor().defaultOpen ?? false);
+  const [internalOpen, setInternalOpen] = createInternalSignal(
+    propsAccessor().defaultOpen ?? false,
+  );
   const [point, setPoint] = createInternalSignal<{ x: number; y: number } | null>(null);
 
   const isOpen: Accessor<boolean> = () => {

@@ -5,7 +5,20 @@
  * Based on react-aria-components/src/Table.tsx
  */
 
-import { createContext, createEffect, createMemo, createRenderEffect, createUniqueId, createSignal, onCleanup, untrack, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createRenderEffect,
+  createUniqueId,
+  createSignal,
+  onCleanup,
+  untrack,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createTable,
@@ -906,9 +919,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
 
   return (
     <TableContext value={contextValue as unknown as TableContextValue<object>}>
-      <TableStateContext
-        value={state as unknown as TableState<object, TableCollection<object>>}
-      >
+      <TableStateContext value={state as unknown as TableState<object, TableCollection<object>>}>
         <CollectionRendererContext value={collectionRenderer()}>
           {local.render ? (
             local.render({ ...tableProps(), children: tableChildren() }, renderValues())
@@ -1300,7 +1311,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     return indexesOutsideRange(range, persistedIndexes);
   });
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => items().length);
@@ -1321,9 +1332,11 @@ const _s2Cleanups: Array<() => void> = [];
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const visibleItems = createMemo(() => {
     // Tree grid: render the flattened set of visible rows (top-level + expanded descendants)
     // the collection materialises in document order, so the render fn runs once per visible row.
@@ -1933,7 +1946,9 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
                 setRef(el);
                 assignRef(local.ref, el);
                 const dragRef = (
-                  draggableItem()?.dragProps as { ref?: (el: HTMLTableRowElement) => void } | undefined
+                  draggableItem()?.dragProps as
+                    | { ref?: (el: HTMLTableRowElement) => void }
+                    | undefined
                 )?.ref;
                 if (typeof dragRef === "function") dragRef(el);
               },
@@ -2461,7 +2476,7 @@ export function ResizableTableContainer(props: ResizableTableContainerProps): JS
 
   // Track container width via ResizeObserver
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const el = containerRef();
     if (!el) return;
@@ -2478,9 +2493,11 @@ const _s2Cleanups: Array<() => void> = [];
       observer.observe(el);
       _s2Cleanups.push(() => observer.disconnect());
     }
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Auto-collected columns from ColumnResizer children
   const [autoColumns, setAutoColumns] = createSignal<

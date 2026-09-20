@@ -39,8 +39,10 @@ export interface IconContextValue {
 export const IconContext = createContext<IconContextValue>({});
 export const IllustrationContext = createContext<IconContextValue>({});
 
-export interface SpectrumIconProps
-  extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "aria-hidden"> {
+export interface SpectrumIconProps extends Omit<
+  JSX.SvgSVGAttributes<SVGSVGElement>,
+  "aria-hidden"
+> {
   styles?: StyleString;
   "aria-hidden"?: boolean | "false" | "true" | JSX.RemoveAttribute;
   UNSAFE_suppressDataSlot?: boolean;

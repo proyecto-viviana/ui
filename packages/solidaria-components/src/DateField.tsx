@@ -32,7 +32,17 @@
  * Port of react-aria-components/src/DateField.tsx
  */
 
-import { createContext, createEffect, createMemo, createSignal, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -519,7 +529,7 @@ export function DateInput(props: DateInputProps): JSX.Element {
   );
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const element = inputRef();
     const handler = props.onPointerDownCapture;
@@ -529,9 +539,11 @@ const _s2Cleanups: Array<() => void> = [];
       (handler as unknown as (event: PointerEvent) => void)(event);
     element.addEventListener("pointerdown", listener, { capture: true });
     _s2Cleanups.push(() => element.removeEventListener("pointerdown", listener, { capture: true }));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return (
     <DateFieldContext value={context as DateFieldContextValue}>

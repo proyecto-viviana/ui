@@ -18,8 +18,13 @@
  * This is a 1-1 port of React-Aria's useFocusWithin hook adapted for SolidJS.
  */
 
-
-import { getOwnerDocument, getEventTarget, nodeContains, createGlobalListeners, onOwnedCleanup } from "../utils";
+import {
+  getOwnerDocument,
+  getEventTarget,
+  nodeContains,
+  createGlobalListeners,
+  onOwnedCleanup,
+} from "../utils";
 import type { JSX } from "@solidjs/web";
 import { setEventTarget } from "../utils/events";
 

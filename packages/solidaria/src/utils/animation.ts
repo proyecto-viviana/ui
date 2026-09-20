@@ -246,7 +246,10 @@ export function createExitAnimation(
   // triggering key's `keyup`). An eager reader forces the memo to track `isOpen`
   // continuously so `prev.state === "open"` holds when the close edge runs —
   // mirroring React, whose component re-renders and re-derives this every commit.
-  createEffect(() => exitState(), () => {});
+  createEffect(
+    () => exitState(),
+    () => {},
+  );
 
   createAnimation(
     ref,

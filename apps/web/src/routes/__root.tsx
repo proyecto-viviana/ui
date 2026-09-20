@@ -2,7 +2,8 @@
 import { Suspense, Errored } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-router"; import { HydrationScript } from "@solidjs/web";
+import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-router";
+import { HydrationScript } from "@solidjs/web";
 import { Provider } from "@proyecto-viviana/ui";
 import { useTheme } from "@/utils/theme";
 import { seo, SITE_NAME, SITE_DESCRIPTION } from "@/seo";

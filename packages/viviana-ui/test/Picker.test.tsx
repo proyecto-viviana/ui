@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test"; import { render, screen, waitFor, within } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, expect, it } from "vite-plus/test";
+import { render, screen, waitFor, within } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { Picker, PickerItem } from "../src/picker";
 import { Header, Heading, Text } from "../src";
 

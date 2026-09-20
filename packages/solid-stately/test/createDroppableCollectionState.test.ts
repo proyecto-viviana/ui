@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import { ListCollection } from "../src/collections/ListCollection";
 import { createDroppableCollectionState } from "../src/dnd/createDroppableCollectionState";
 import type { CollectionNode } from "../src/collections/types";

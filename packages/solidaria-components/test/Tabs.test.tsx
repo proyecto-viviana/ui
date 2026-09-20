@@ -10,7 +10,9 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import {
   Tabs,
   TabList,

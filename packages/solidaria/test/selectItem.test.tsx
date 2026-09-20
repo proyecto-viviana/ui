@@ -5,7 +5,8 @@
  * select() only knows pointerType + selectionBehavior.
  */
 
-import { describe, it, expect, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect, afterEach } from "vite-plus/test";
+import { createRoot } from "solid-js";
 import { createListState } from "../../solid-stately/src";
 import { selectItem } from "../src/selection/selectItem";
 import { isCtrlKeyPressed } from "../src/utils/keyboard";

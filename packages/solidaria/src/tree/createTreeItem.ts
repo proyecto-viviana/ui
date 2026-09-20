@@ -249,9 +249,8 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
 
   bindCapture(ref, {
     keydown: (event) => {
-      const handler = (
-        rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void }
-      ).onKeyDownCapture;
+      const handler = (rowProps() as { onKeyDownCapture?: (event: KeyboardEvent) => void })
+        .onKeyDownCapture;
       handler?.(event as KeyboardEvent);
     },
   });

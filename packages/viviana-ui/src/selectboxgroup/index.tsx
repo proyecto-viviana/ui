@@ -13,7 +13,17 @@
 
 // Port of packages/@react-spectrum/s2/src/SelectBoxGroup.tsx.
 
-import { children as resolveChildren, createContext, createEffect, createMemo, onCleanup, Show, createSignal, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  onCleanup,
+  Show,
+  createSignal,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -662,7 +672,9 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
 
   function SelectBoxContent(renderProps: ListBoxOptionRenderProps) {
     const resolvedChildren = resolveChildren(() => local.children);
-    createTrackedEffect(() => applySlotClasses(optionElement, renderProps, orientation(), isDisabled()));
+    createTrackedEffect(() =>
+      applySlotClasses(optionElement, renderProps, orientation(), isDisabled()),
+    );
 
     return (
       <>

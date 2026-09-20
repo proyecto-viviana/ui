@@ -303,7 +303,8 @@ export function createCalendarState<
   const [internalValue, setInternalValue] = createInternalSignal<T | T[] | null>(
     (props.defaultValue as T | T[] | null) ?? null,
   );
-  const [focusedDate, setFocusedDateInternal] = createInternalSignal<CalendarDate>(initialFocusedDate);
+  const [focusedDate, setFocusedDateInternal] =
+    createInternalSignal<CalendarDate>(initialFocusedDate);
   const [visibleRangeStart, setVisibleRangeStart] = createInternalSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );
@@ -670,8 +671,7 @@ export function createCalendarState<
     if (isReadOnly() || isDisabled()) return;
 
     if (selectionMode() === "multiple") {
-      const current =
-        access(props.value) !== undefined ? value() : readNow(internalValue);
+      const current = access(props.value) !== undefined ? value() : readNow(internalValue);
       const base: CalendarDate[] = Array.isArray(current)
         ? current.map((v) => toDisplayCalendarDate(v))
         : current != null

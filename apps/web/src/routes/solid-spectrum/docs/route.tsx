@@ -1,4 +1,5 @@
-import { Outlet, createFileRoute, Link, useLocation } from "@tanstack/solid-router"; import { For, createSignal, Show, onMount, onCleanup } from "solid-js";
+import { Outlet, createFileRoute, Link, useLocation } from "@tanstack/solid-router";
+import { For, createSignal, Show, onMount, onCleanup } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_SANS, FONT_DISPLAY } from "@/components/docs";
 import { useThemeColors, useTheme } from "@/utils/theme";

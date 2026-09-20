@@ -154,7 +154,9 @@ export function createTimeFieldState<T extends TimeValue = Time>(
   const placeholderValue: TimeValue = props.placeholderValue ?? new Time();
 
   // Controlled/uncontrolled Time value (mirrors useControlledState).
-  const [internalValue, setInternalValue] = createInternalSignal<T | null>(props.defaultValue ?? null);
+  const [internalValue, setInternalValue] = createInternalSignal<T | null>(
+    props.defaultValue ?? null,
+  );
   const value = (): T | null => {
     const controlled = access(props.value);
     return controlled !== undefined ? controlled : internalValue();

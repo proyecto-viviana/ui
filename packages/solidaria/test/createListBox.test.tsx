@@ -4,7 +4,8 @@
  * Tests ARIA attributes, keyboard navigation, selection modes, and type-to-select.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { createRoot } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { createRoot } from "solid-js";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
 import { createListBox, createOption } from "../src/listbox";

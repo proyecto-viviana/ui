@@ -2,7 +2,8 @@
  * Tests for createFormValidation
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot, createSignal } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   createFormValidation,

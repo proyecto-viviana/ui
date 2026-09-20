@@ -6,7 +6,8 @@
  * - Toast sub-components
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { createRoot, For } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
+import { createRoot, For } from "solid-js";
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createToastState, ToastQueue } from "@proyecto-viviana/solid-stately";
 import {

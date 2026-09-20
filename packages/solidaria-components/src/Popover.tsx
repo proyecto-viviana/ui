@@ -19,7 +19,17 @@
  * Port of react-aria-components Popover.
  */
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, useContext, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  useContext,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
 import {
@@ -292,11 +302,7 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
     trigger: "PopoverTrigger",
   }));
 
-  return (
-    <PopoverTriggerContext value={contextValue()}>
-      {props.children}
-    </PopoverTriggerContext>
-  );
+  return <PopoverTriggerContext value={contextValue()}>{props.children}</PopoverTriggerContext>;
 }
 
 /**
@@ -546,7 +552,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     setTriggerWidth(`${width}px`);
   };
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
     updateTriggerWidth();
@@ -557,9 +563,11 @@ const _s2Cleanups: Array<() => void> = [];
     const observer = new ResizeObserver(updateTriggerWidth);
     observer.observe(trigger);
     _s2Cleanups.push(() => observer.disconnect());
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
@@ -732,17 +740,17 @@ return () => { for (const c of _s2Cleanups) c(); };
       keyboardDismissDisabled: !!local.isKeyboardDismissDisabled,
     }),
     ({ open, keyboardDismissDisabled }) => {
-    if (!open) return;
-    if (keyboardDismissDisabled) return;
+      if (!open) return;
+      if (keyboardDismissDisabled) return;
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      if (event.defaultPrevented) return;
-      close();
-    };
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key !== "Escape") return;
+        if (event.defaultPrevented) return;
+        close();
+      };
 
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
     },
   );
 

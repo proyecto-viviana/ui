@@ -18,7 +18,6 @@
  * Based on @react-aria/slider useSlider.
  */
 
-
 import { onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createLabel } from "../label/createLabel";

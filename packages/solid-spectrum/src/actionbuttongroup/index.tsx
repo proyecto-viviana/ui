@@ -154,9 +154,7 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
       style={mergedUnsafeStyle()}
       data-orientation={orientation()}
     >
-      <ActionButtonGroupContext value={contextValue}>
-        {local.children}
-      </ActionButtonGroupContext>
+      <ActionButtonGroupContext value={contextValue}>{local.children}</ActionButtonGroupContext>
     </HeadlessToolbar>
   );
 }

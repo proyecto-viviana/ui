@@ -19,7 +19,16 @@
  * Port of react-aria-components Modal.
  */
 
-import { createContext, createMemo, createSignal, createEffect, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createEffect,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal, isServer } from "@solidjs/web";
 import {
@@ -268,7 +277,7 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen() || local.isKeyboardDismissDisabled) return;
 
@@ -289,9 +298,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       document.removeEventListener("keydown", handleKeyDown, false);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Resolve children - handle both static JSX and render functions
   // IMPORTANT: We access props.children directly (not local.children) to preserve
@@ -442,7 +453,7 @@ function ModalContent(props: ModalProps): JSX.Element {
 
   // Keep this modal in a global stack so nested modals dismiss in top-down order.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
 
@@ -457,9 +468,11 @@ const _s2Cleanups: Array<() => void> = [];
         visibleModals.splice(index, 1);
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const isTopMostModal = () => {
     pruneDisconnectedModals();
@@ -476,7 +489,7 @@ return () => { for (const c of _s2Cleanups) c(); };
 
   // Prevent scroll when modal is open
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
 
@@ -487,9 +500,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       html.style.overflow = prevOverflow;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Click outside to close (if dismissable)
   createInteractOutside({
@@ -506,7 +521,7 @@ return () => { for (const c of _s2Cleanups) c(); };
 
   // Escape key to close
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen() || isKeyboardDismissDisabled()) return;
 
@@ -524,13 +539,15 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       document.removeEventListener("keydown", handleKeyDown, false);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Aria-hide outside content
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen() || !modalRef) return;
 
@@ -553,9 +570,11 @@ const _s2Cleanups: Array<() => void> = [];
       cancelled = true;
       cleanup?.();
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const renderValues = createMemo<ModalRenderProps>(() => ({
     isEntering: isModalEntering(),

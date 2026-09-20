@@ -20,7 +20,15 @@
 // Port of packages/@react-spectrum/s2/src/Calendar.tsx.
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
 
-import { For, Show, createContext, createMemo, createSignal, createUniqueId, useContext } from "solid-js";
+import {
+  For,
+  Show,
+  createContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  useContext,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   RangeCalendar as HeadlessRangeCalendar,

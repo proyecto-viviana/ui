@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, fireEvent } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { Button, ButtonContext } from "../src/button";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";

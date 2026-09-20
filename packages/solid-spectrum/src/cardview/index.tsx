@@ -16,7 +16,15 @@
 
 // Port of packages/@react-spectrum/s2/src/CardView.tsx.
 
-import { Show, createContext, createEffect, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import {
+  Show,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  onSettled,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Collection,
@@ -319,9 +327,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
       .join(" ");
 
   const cardView = (
-    <InternalCardViewContext
-      value={{ ElementType: HeadlessGridListItem, layout: layout() }}
-    >
+    <InternalCardViewContext value={{ ElementType: HeadlessGridListItem, layout: layout() }}>
       <CardContext value={{ size: size(), variant: variant() }}>
         <ImageCoordinator>
           <HeadlessGridList

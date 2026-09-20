@@ -16,7 +16,17 @@
 
 // Port of packages/@react-spectrum/s2/src/ListView.tsx.
 
-import { children as resolveChildren, createContext, createEffect, createMemo, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { attrTrue, mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {

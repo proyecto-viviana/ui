@@ -18,7 +18,14 @@
  */
 
 import { filterDOMProps, focusSafely, onOwnedCleanup } from "../utils";
-import { Accessor, createEffect, createMemo, createSignal, createUniqueId, createTrackedEffect } from "solid-js";
+import {
+  Accessor,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  createTrackedEffect,
+} from "solid-js";
 import { runAfterPaint } from "../utils/focus";
 import type { AriaLabelingProps, DOMProps } from "./types";
 

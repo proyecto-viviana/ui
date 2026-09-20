@@ -3,7 +3,15 @@
 
 // Port of packages/@react-spectrum/s2/src/Image.tsx.
 // Port of packages/@react-spectrum/s2/src/ImageCoordinator.tsx.
-import { createContext, createEffect, createMemo, createSignal, Show, untrack, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  Show,
+  untrack,
+  useContext,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";

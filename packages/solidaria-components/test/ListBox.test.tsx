@@ -9,7 +9,9 @@
  * - Selection modes (single/multiple)
  * - Full accessibility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, flush } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { createComponent } from "@solidjs/web";
 import {
   ListBox,
@@ -194,9 +196,7 @@ describe("ListBox", () => {
 
     it("should support slots", () => {
       render(() => (
-        <ListBoxContext
-          value={{ slots: { test: { "aria-label": "Slot listbox" } } } as never}
-        >
+        <ListBoxContext value={{ slots: { test: { "aria-label": "Slot listbox" } } } as never}>
           <ListBox<TestItem>
             slot="test"
             aria-label={undefined as never}

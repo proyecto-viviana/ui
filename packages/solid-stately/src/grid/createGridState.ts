@@ -25,7 +25,9 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
 
   const [isFocused, setIsFocused] = createInternalSignal(false);
   const [focusedKey, setFocusedKeyInternal] = createInternalSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(
+    null,
+  );
   const [isKeyboardNavigationDisabled, setKeyboardNavigationDisabled] = createInternalSignal(false);
 
   const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<"all" | Set<Key>>(
@@ -101,70 +103,66 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
       disabled: disabledKeys(),
     }),
     ({ collection, currentFocusedKey, disabled }) => {
-        if (
-          currentFocusedKey != null &&
-          cachedCollection &&
-          !collection.getItem(currentFocusedKey)
-        ) {
-          // The focused item was deleted, find a new one to focus
-          const node = cachedCollection.getItem(currentFocusedKey);
-          const parentNode =
-            node?.parentKey != null &&
-            (node.type === "cell" || node.type === "rowheader" || node.type === "column")
-              ? cachedCollection.getItem(node.parentKey)
-              : node;
+      if (currentFocusedKey != null && cachedCollection && !collection.getItem(currentFocusedKey)) {
+        // The focused item was deleted, find a new one to focus
+        const node = cachedCollection.getItem(currentFocusedKey);
+        const parentNode =
+          node?.parentKey != null &&
+          (node.type === "cell" || node.type === "rowheader" || node.type === "column")
+            ? cachedCollection.getItem(node.parentKey)
+            : node;
 
-          if (!parentNode) {
-            setFocusedKeyInternal(null);
-            cachedCollection = collection;
-            return;
+        if (!parentNode) {
+          setFocusedKeyInternal(null);
+          cachedCollection = collection;
+          return;
+        }
+
+        const cachedRows = cachedCollection.rows;
+        const rows = collection.rows;
+        const diff = cachedRows.length - rows.length;
+
+        let index = Math.min(
+          diff > 1 ? Math.max(parentNode.index - diff + 1, 0) : parentNode.index,
+          rows.length - 1,
+        );
+
+        let newRow: GridNode<T> | null = null;
+
+        // Search forward once from the deleted position, then backward once.
+        // The previous direction-switching loop could bounce forever between
+        // two disabled rows when the focused row was deleted.
+        for (let i = Math.max(0, index); i < rows.length; i++) {
+          const row = rows[i];
+          if (!disabled.has(row.key) && row.type !== "headerrow") {
+            newRow = row;
+            break;
           }
+        }
 
-          const cachedRows = cachedCollection.rows;
-          const rows = collection.rows;
-          const diff = cachedRows.length - rows.length;
-
-          let index = Math.min(
-            diff > 1 ? Math.max(parentNode.index - diff + 1, 0) : parentNode.index,
-            rows.length - 1,
-          );
-
-          let newRow: GridNode<T> | null = null;
-
-          // Search forward once from the deleted position, then backward once.
-          // The previous direction-switching loop could bounce forever between
-          // two disabled rows when the focused row was deleted.
-          for (let i = Math.max(0, index); i < rows.length; i++) {
+        if (newRow === null) {
+          for (let i = index - 1; i >= 0; i--) {
             const row = rows[i];
             if (!disabled.has(row.key) && row.type !== "headerrow") {
               newRow = row;
               break;
             }
           }
-
-          if (newRow === null) {
-            for (let i = index - 1; i >= 0; i--) {
-              const row = rows[i];
-              if (!disabled.has(row.key) && row.type !== "headerrow") {
-                newRow = row;
-                break;
-              }
-            }
-          }
-
-          if (newRow) {
-            const childNodes = newRow.hasChildNodes ? [...collection.getChildren(newRow.key)] : [];
-            const keyToFocus =
-              newRow.hasChildNodes && parentNode !== node && node && node.index < childNodes.length
-                ? childNodes[node.index].key
-                : newRow.key;
-            setFocusedKeyInternal(keyToFocus);
-          } else {
-            setFocusedKeyInternal(null);
-          }
         }
 
-        cachedCollection = collection;
+        if (newRow) {
+          const childNodes = newRow.hasChildNodes ? [...collection.getChildren(newRow.key)] : [];
+          const keyToFocus =
+            newRow.hasChildNodes && parentNode !== node && node && node.index < childNodes.length
+              ? childNodes[node.index].key
+              : newRow.key;
+          setFocusedKeyInternal(keyToFocus);
+        } else {
+          setFocusedKeyInternal(null);
+        }
+      }
+
+      cachedCollection = collection;
     },
   );
 

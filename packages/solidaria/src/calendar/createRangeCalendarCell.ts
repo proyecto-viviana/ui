@@ -134,7 +134,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // (Next/Previous). Solid `createEffect` is a microtask (before paint), so one
   // rAF still runs in that same frame — double rAF waits until after first paint.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!startedUnfocused) {
       return;
@@ -155,9 +155,11 @@ const _s2Cleanups: Array<() => void> = [];
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const isFocusVisible = createMemo(() =>
     startedUnfocused ? isOverlayAutoFocusVisible() : isCellFocusVisible(),
@@ -262,7 +264,7 @@ return () => { for (const c of _s2Cleanups) c(); };
   // Next/Previous click would steal focus onto the new cell before the
   // nav button receives click-focus (#279).
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const element = ref?.();
     if (!element || !isFocused()) return;
@@ -273,9 +275,11 @@ const _s2Cleanups: Array<() => void> = [];
       focusSafely(element);
     });
     _s2Cleanups.push(() => cancelAnimationFrame(frame));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({

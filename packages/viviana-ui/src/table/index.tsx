@@ -14,7 +14,17 @@
 
 // Port of packages/@react-spectrum/s2/src/TableView.tsx.
 
-import { Show, createContext, createEffect, createMemo, createSignal, getOwner, runWithOwner, useContext, createTrackedEffect } from "solid-js";
+import {
+  Show,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  getOwner,
+  runWithOwner,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
@@ -1309,11 +1319,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     </div>
   );
 
-  return (
-    <InternalTableContext value={context()}>
-      {renderFramed()}
-    </InternalTableContext>
-  );
+  return <InternalTableContext value={context()}>{renderFramed()}</InternalTableContext>;
 }
 
 export function TableHeader(props: TableHeaderProps): JSX.Element {

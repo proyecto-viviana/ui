@@ -1,7 +1,8 @@
 /* /examples — the directory of screens. Where /showcase is organised by
    component, this is organised by product surface: ten whole screens, each
    built from @proyecto-viviana/ui exports and nothing else. */
-import { createFileRoute, Link } from "@tanstack/solid-router"; import { For } from "solid-js";
+import { createFileRoute, Link } from "@tanstack/solid-router";
+import { For } from "solid-js";
 import { Card, Heading, Text, typeRoles } from "@proyecto-viviana/ui";
 import { EXAMPLES } from "@/components/examples/registry";
 import { seo } from "@/seo";

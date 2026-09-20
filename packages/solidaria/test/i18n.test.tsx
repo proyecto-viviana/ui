@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test"; import { createRoot, createSignal } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
+import { createRoot, createSignal } from "solid-js";
 import { render, cleanup } from "@solidjs/testing-library";
 import {
   // Utils

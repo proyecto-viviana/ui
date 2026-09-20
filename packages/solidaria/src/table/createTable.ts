@@ -158,8 +158,7 @@ export function createTable<T extends object>(
         const collection = state().collection;
         const column = collection.columns.find((c) => c.key === sortDescriptor.column);
         const columnName = column?.textValue ?? String(sortDescriptor.column);
-        const directionText =
-          sortDescriptor.direction === "ascending" ? "ascending" : "descending";
+        const directionText = sortDescriptor.direction === "ascending" ? "ascending" : "descending";
 
         announce(`Sorted by ${columnName}, ${directionText}`, "assertive", 500);
       }

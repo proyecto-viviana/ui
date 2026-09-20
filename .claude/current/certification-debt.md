@@ -22,10 +22,10 @@ Meter `role="meter progressbar"`.
 
 Two runs, same 2177 tests:
 
-| Run | Command / source | Passed | Failed | Skipped | Waived | Flaky | Revision |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| CI Certification Gates | run `35286043422`, `certified-summary-from-ci.md` | 2051 | **122** | 4 | 0 | 1 | `3aeed2f9` |
-| Local (this write-up) | `apps/comparison` Playwright `e2e/certified`, 8 workers, `certified-summary.ts`; `generatedAt` `2026-09-18T01:38:58.245Z` | 2049 | **124** | 4 | 0 | 0 | `f3172f61` |
+| Run                    | Command / source                                                                                                          | Passed |  Failed | Skipped | Waived | Flaky | Revision   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- | -----: | ------: | ------: | -----: | ----: | ---------- |
+| CI Certification Gates | run `35286043422`, `certified-summary-from-ci.md`                                                                         |   2051 | **122** |       4 |      0 |     1 | `3aeed2f9` |
+| Local (this write-up)  | `apps/comparison` Playwright `e2e/certified`, 8 workers, `certified-summary.ts`; `generatedAt` `2026-09-18T01:38:58.245Z` |   2049 | **124** |       4 |      0 |     0 | `f3172f61` |
 
 The local 124 is the inventory below. The extra 2 versus CI are group K
 (Dialog leftover overlay). Every other group matches CI 122 one-for-one.
@@ -35,12 +35,12 @@ D13 3, D7 2, D8 1.
 
 Kind of the 124:
 
-| Kind | Count | Groups |
-| --- | ---: | --- |
-| Shared bug (one code path, many cells) | 59 | A 39 + D 12 + F 8 |
-| Unported / pair-oracle miss | 63 | B 22 + C 21 + E 11 + G 4 + H 2 + J 2 + I 1 |
-| Test asserting something upstream never promised | 0 | — |
-| Local-only isolation (not in CI 122) | 2 | K |
+| Kind                                             | Count | Groups                                     |
+| ------------------------------------------------ | ----: | ------------------------------------------ |
+| Shared bug (one code path, many cells)           |    59 | A 39 + D 12 + F 8                          |
+| Unported / pair-oracle miss                      |    63 | B 22 + C 21 + E 11 + G 4 + H 2 + J 2 + I 1 |
+| Test asserting something upstream never promised |     0 | —                                          |
+| Local-only isolation (not in CI 122)             |     2 | K                                          |
 
 ## Cheapest fix
 
@@ -66,12 +66,12 @@ those tests left. Unmatched after that pass: 0.
 
 Shared bug.
 
-| Component | Driver | n |
-| --- | --- | ---: |
-| ToggleButtonGroup | D3 | 15 |
-| ToggleButton | D3 | 12 |
-| Button | D3 | 6 |
-| ActionButton | D3 | 6 |
+| Component         | Driver |   n |
+| ----------------- | ------ | --: |
+| ToggleButtonGroup | D3     |  15 |
+| ToggleButton      | D3     |  12 |
+| Button            | D3     |   6 |
+| ActionButton      | D3     |   6 |
 
 Every error line is `· pressed screenshot mismatch`. Examples: Button
 `accent-fill` dark 92/12096 (bounds ~59×31); ToggleButton `size-xl` dark
@@ -87,13 +87,13 @@ One pressScale / pressed-paint path. Do not raise the D3 threshold.
 Unported paint on the selected row. All `combobox-list`. Not overlay crop
 (ticket #248 is a different shape).
 
-| Driver | n | What the oracle compared |
-| --- | ---: | --- |
-| D1 | 6 | `checkmarkSelected` `currentColor` |
-| D3 | 6 | pixel, selected-row band ~2.1–2.6% |
-| D9 | 6 | forced-colors, same checkmark color |
-| D10 | 2 | RTL, same checkmark color |
-| D7 | 2 | selected label “Pro” contrast vs React |
+| Driver |   n | What the oracle compared               |
+| ------ | --: | -------------------------------------- |
+| D1     |   6 | `checkmarkSelected` `currentColor`     |
+| D3     |   6 | pixel, selected-row band ~2.1–2.6%     |
+| D9     |   6 | forced-colors, same checkmark color    |
+| D10    |   2 | RTL, same checkmark color              |
+| D7     |   2 | selected label “Pro” contrast vs React |
 
 Checkmark color (D1 / D9 / D10): dark React `rgb(105, 149, 254)` vs Solid
 `rgb(86, 129, 255)`; light React `rgb(39, 77, 234)` vs Solid
@@ -113,13 +113,13 @@ ComboBox list D8 (target size) passed. Distinct from group C.
 Unported listbox geometry. All `picker-list`. Three options; Solid is
 missing 8+8 list padding.
 
-| Driver | n | Delta |
-| --- | ---: | --- |
-| D1 | 6 | target height S 88→72, M 112→96, L 136→120 |
-| D3 | 6 | `height delta` 16 |
-| D9 | 6 | forced-colors, same heights |
-| D10 | 2 | RTL, same heights |
-| D8 | 1 | option width 192→208; height 32 matches |
+| Driver |   n | Delta                                      |
+| ------ | --: | ------------------------------------------ |
+| D1     |   6 | target height S 88→72, M 112→96, L 136→120 |
+| D3     |   6 | `height delta` 16                          |
+| D9     |   6 | forced-colors, same heights                |
+| D10    |   2 | RTL, same heights                          |
+| D8     |   1 | option width 192→208; height 32 matches    |
 
 Open ticket #252 (virtualize ComboBox/Picker listboxes as S2) is a
 candidate, not proof this is ListLayout.
@@ -141,8 +141,7 @@ defined, so Form context never wins.
 
 ### E — Calendar / RangeCalendar dark-theme paint wash — 11
 
-Unported dark tokens. D3 dark only (light passed). Calendar 6 + RangeCalendar
-5. Shared bounds on the default cell: `left 39 top 41 right 248 bottom 267`,
+Unported dark tokens. D3 dark only (light passed). Calendar 6 + RangeCalendar 5. Shared bounds on the default cell: `left 39 top 41 right 248 bottom 267`,
 ~3.4–7.9% of 89280 px (Calendar default dark 3058/89280; RangeCalendar
 default dark 7032/89280). Solid reads as light tokens on a dark canvas
 (range highlight pale, numbers/nav dim).
@@ -214,11 +213,11 @@ CI run `35291788795` (`site-gate`, HEAD `578b2f96`),
   dark/light loop).
 - **Element:** playground Meter,
   `<div id="solidaria-cl-713" … role="meter progressbar"
-  aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
-  aria-valuetext="75%">`. Same class, 8 nodes (`solidaria-cl-713` …
+aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
+aria-valuetext="75%">`. Same class, 8 nodes (`solidaria-cl-713` …
   `solidaria-cl-727`; last node `aria-label="Progress"`).
 - **Dark:** logged `[dark] WCAG 2.2 AA violations (1): aria-allowed-attr
-  (8 nodes)`, then two retries, then 1 failed. **Light:** the same test
+(8 nodes)`, then two retries, then 1 failed. **Light:** the same test
   body is `[2/2]` in that job; serial describe, so light did not produce
   its own violation dump after dark failed. The nodes are not theme-specific.
 
@@ -245,8 +244,8 @@ Applied in this change:
 ## How counted
 
 - Local certified: `cd apps/comparison && stdbuf -oL -eL pnpm exec playwright
-  test e2e/certified --workers=8 --reporter=line
-  --reporter=./e2e/reporters/certified-summary.ts` after
+test e2e/certified --workers=8 --reporter=line
+--reporter=./e2e/reporters/certified-summary.ts` after
   `node scripts/check-upstream-oracle.mjs --acquire` and
   `vp run comparison:build`. Host:
   `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`.

@@ -184,8 +184,10 @@ export function createRadioGroup(
     radioGroupData.set(state, {
       name: groupName,
       form: getProps().form,
-      descriptionId: typeof field.descriptionProps.id === "string" ? field.descriptionProps.id : undefined,
-      errorMessageId: typeof field.errorMessageProps.id === "string" ? field.errorMessageProps.id : undefined,
+      descriptionId:
+        typeof field.descriptionProps.id === "string" ? field.descriptionProps.id : undefined,
+      errorMessageId:
+        typeof field.errorMessageProps.id === "string" ? field.errorMessageProps.id : undefined,
       validationBehavior: validationBehavior(),
     });
   };

@@ -19,7 +19,12 @@
  * to make an element pressable.
  */
 
-import { children as resolveChildren, createEffect, onCleanup, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createEffect,
+  onCleanup,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -60,7 +65,7 @@ export function Pressable(props: PressableProps): JSX.Element {
   const resolved = resolveChildren(() => local.children);
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const child = resolved() as HTMLElement;
     if (child instanceof HTMLElement) {
@@ -114,9 +119,11 @@ const _s2Cleanups: Array<() => void> = [];
         }
       });
     }
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return <>{resolved()}</>;
 }

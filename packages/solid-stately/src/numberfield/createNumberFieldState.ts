@@ -329,9 +329,7 @@ export function createNumberFieldState(
     if (input === "" || input === "-") {
       // Clear value
       setNumberValue(NaN);
-      setInputValueInternal(
-        p.value === undefined ? "" : formatNumber(readNow(actualNumberValue)),
-      );
+      setInputValueInternal(p.value === undefined ? "" : formatNumber(readNow(actualNumberValue)));
       p.onChange?.(NaN);
       validation.commitValidation();
       return;

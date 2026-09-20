@@ -19,7 +19,16 @@
  * Port of react-aria-components/src/TextField.tsx
  */
 
-import { createContext, useContext, createMemo, createSignal, createEffect, onCleanup, onSettled, untrack } from "solid-js";
+import {
+  createContext,
+  useContext,
+  createMemo,
+  createSignal,
+  createEffect,
+  onCleanup,
+  onSettled,
+  untrack,
+} from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -327,7 +336,8 @@ export function TextArea(props: TextAreaProps): JSX.Element {
 export function TextField(props: TextFieldProps): JSX.Element {
   const formContext = useContext(FormContext);
   const contextProps = useContext(TextFieldContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<TextFieldProps>(() => {
     if (!contextProps) return {};
     const {

@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
 import { TimeField } from "@proyecto-viviana/solid-spectrum";
 import { type TimeValue } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";

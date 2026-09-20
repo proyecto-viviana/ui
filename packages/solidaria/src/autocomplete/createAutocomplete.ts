@@ -206,7 +206,7 @@ export function createAutocomplete<T = unknown>(
 
   // Set up beforeinput event listener
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const input = inputRef();
     if (input) {
@@ -215,9 +215,11 @@ const _s2Cleanups: Array<() => void> = [];
         input.removeEventListener("beforeinput", handleBeforeInput);
       });
     }
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Focus first item in collection
   const focusFirstItem = () => {
@@ -482,7 +484,7 @@ return () => { for (const c of _s2Cleanups) c(); };
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!shouldUseVirtualFocus()) return;
     const collection = collectionRef();
@@ -493,9 +495,11 @@ const _s2Cleanups: Array<() => void> = [];
         clearTimeout(activeDescendantTimeout);
       });
     }
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Create filter function. The user's 3-arg predicate (textValue, inputValue,
   // node) is closed over the current input value and exposed to the collection

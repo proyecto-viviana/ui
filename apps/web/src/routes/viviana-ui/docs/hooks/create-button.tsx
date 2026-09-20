@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
 import { createButton } from "@proyecto-viviana/solidaria";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";

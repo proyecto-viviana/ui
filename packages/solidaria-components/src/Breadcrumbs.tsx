@@ -19,7 +19,15 @@
  * Port of react-aria-components Breadcrumbs.
  */
 
-import { createContext, createMemo, createSignal, children as resolveChildren, useContext, For, Show } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  children as resolveChildren,
+  useContext,
+  For,
+  Show,
+} from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";

@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { type JSX } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { type JSX } from "solid-js";
 import { FONT_SANS, FONT_MONO } from "@/components/docs";
 import { useThemeColors } from "@/utils/theme";
 import { seo } from "@/seo";

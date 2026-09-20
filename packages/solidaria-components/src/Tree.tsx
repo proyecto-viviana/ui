@@ -22,7 +22,17 @@
  * supporting keyboard navigation and selection.
  */
 
-import { onCleanup, createContext, createEffect, createMemo, createSignal, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  onCleanup,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createTree,
@@ -1157,7 +1167,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     return visibleRows().slice(range.start, range.end);
   });
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
     virtualizer.setDropTargetItemCountResolver(() => visibleRows().length);
@@ -1186,9 +1196,11 @@ const _s2Cleanups: Array<() => void> = [];
       virtualizer.setDropTargetItemCountResolver(undefined);
       virtualizer.setDropTargetResolver(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const rowIndexByKey = createMemo(() => {
     const map = new Map<Key, number>();
     const rows = visibleRows();
@@ -1231,7 +1243,7 @@ return () => { for (const c of _s2Cleanups) c(); };
   // This replaces the generic index-based navigation with collection-level semantics
   // (tree branch traversal, level-aware wrapping — RAC parity item #36).
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!virtualizer) return;
     const direction = locale().direction;
@@ -1258,9 +1270,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       virtualizer.setKeyboardNavigationOverride(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
     renderItem: (item) => item as JSX.Element,
@@ -1341,9 +1355,7 @@ return () => { for (const c of _s2Cleanups) c(); };
 
   return (
     <TreeContext value={contextValue() as unknown as TreeContextValue<object>}>
-      <TreeStateContext
-        value={state as unknown as TreeState<object, TreeCollection<object>>}
-      >
+      <TreeStateContext value={state as unknown as TreeState<object, TreeCollection<object>>}>
         <CollectionRendererContext value={collectionRenderer()}>
           <div
             ref={(element) => {
@@ -1532,9 +1544,8 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   const setItemRef = (element: HTMLElement) => {
     setRef(element);
     assignRef(local.ref, element);
-    const dragRef = (
-      draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined
-    )?.ref;
+    const dragRef = (draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined)
+      ?.ref;
     if (typeof dragRef === "function") dragRef(element);
   };
 
@@ -1715,7 +1726,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         style={rowStyle()}
         data-selected={dataAttr(isSelected())}
         data-focused={dataAttr(isFocused())}
-        data-focus-visible={dataAttr((isFocusVisible() && isFocused()))}
+        data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
         data-pressed={dataAttr(isPressed())}
         data-hovered={dataAttr(isHovered())}
         data-disabled={dataAttr(isDisabled())}

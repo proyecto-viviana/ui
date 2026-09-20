@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { render, screen } from "@solidjs/testing-library"; import { createSignal, flush, type Component } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { render, screen } from "@solidjs/testing-library";
+import { createSignal, flush, type Component } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {
   Icon,

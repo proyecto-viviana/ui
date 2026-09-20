@@ -3,12 +3,7 @@ export { splitProps } from "./splitProps";
 export { assignRef, followRef, type RefLike } from "./refs";
 export { useContextOptional, onOwnedCleanup } from "./owner";
 export { filterDOMProps, type FilterDOMPropsOptions } from "./filterDOMProps";
-export {
-  attachCaptureListeners,
-  bindCapture,
-  captureRef,
-  type CaptureListeners,
-} from "./capture";
+export { attachCaptureListeners, bindCapture, captureRef, type CaptureListeners } from "./capture";
 
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./reactivity";
 export {

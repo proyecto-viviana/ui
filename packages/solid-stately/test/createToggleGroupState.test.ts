@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createSignal } from "./owned-signal";
 
-
 import { createToggleGroupState } from "../src";
 
 describe("createToggleGroupState", () => {

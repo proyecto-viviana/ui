@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library"; import { createRoot, createSignal, flush, For } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
+import { createRoot, createSignal, flush, For } from "solid-js";
 import { createToast, createToastRegion } from "../src/toast";
 
 describe("createToast", () => {

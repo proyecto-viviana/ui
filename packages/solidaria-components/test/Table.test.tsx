@@ -2,7 +2,9 @@
  * Tests for Table component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library"; import { createSignal, flush, For } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
+import { createSignal, flush, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";

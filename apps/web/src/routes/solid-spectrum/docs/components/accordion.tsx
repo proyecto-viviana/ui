@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/solid-router"; import { createSignal } from "solid-js";
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
 import {
   Accordion,
   AccordionItem,

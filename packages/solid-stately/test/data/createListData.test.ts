@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import { createListData } from "../../src/data/createListData";
 
 interface Item {

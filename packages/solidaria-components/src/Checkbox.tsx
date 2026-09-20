@@ -19,7 +19,14 @@
  * Port of react-aria-components/src/Checkbox.tsx
  */
 
-import { createContext, useContext, createMemo, createSignal, createUniqueId, Show } from "solid-js";
+import {
+  createContext,
+  useContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  Show,
+} from "solid-js";
 import type { Context, Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -340,7 +347,8 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const formContext = useContext(FormContext);
   const contextProps = useContext(CheckboxContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<CheckboxProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
@@ -765,7 +773,8 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
   const formContext = useContext(FormContext);
   const contextProps = useContext(CheckboxFieldContext);
-  const contextSlotProps = contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
+  const contextSlotProps =
+    contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const contextBaseProps = createMemo<CheckboxFieldProps>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;

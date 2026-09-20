@@ -47,7 +47,7 @@ const PADDING = 8;
  */
 export function createSafeArea(options: SafeAreaOptions): void {
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const trigger = options.triggerRef();
     if (options.isDisabled?.() || !options.isOpen() || !trigger) {
@@ -74,9 +74,11 @@ const _s2Cleanups: Array<() => void> = [];
       win.removeEventListener("pointermove", onPointerMove);
       doc.documentElement.removeEventListener("pointerleave", onPointerLeave);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 }
 
 function isPointInSafeArea(point: Point, triggerRect: DOMRect, overlayRect?: DOMRect): boolean {

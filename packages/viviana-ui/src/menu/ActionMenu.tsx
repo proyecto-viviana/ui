@@ -13,7 +13,13 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionMenu.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionMenu.tsx.
-import { createContext, createEffect, createSignal, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   MenuTrigger as HeadlessMenuTrigger,
@@ -477,9 +483,7 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
       <div class={menuFrame}>
         <MenuSizeContext value={props.menuSize()}>
           <MenuLinkOutIconContext value={props.hideLinkOutIcon()}>
-            <HeaderContext
-              value={{ styles: () => menuSectionHeader({ size: props.menuSize() }) }}
-            >
+            <HeaderContext value={{ styles: () => menuSectionHeader({ size: props.menuSize() }) }}>
               <HeadingContext
                 value={{
                   role: "presentation",

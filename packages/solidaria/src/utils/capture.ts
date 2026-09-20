@@ -13,10 +13,7 @@ export type CaptureListeners = Record<
   EventListenerOrEventListenerObject | undefined | null
 >;
 
-export function attachCaptureListeners(
-  el: EventTarget,
-  listeners: CaptureListeners,
-): () => void {
+export function attachCaptureListeners(el: EventTarget, listeners: CaptureListeners): () => void {
   const attached: [string, EventListenerOrEventListenerObject][] = [];
   for (const [type, handler] of Object.entries(listeners)) {
     if (!handler) continue;

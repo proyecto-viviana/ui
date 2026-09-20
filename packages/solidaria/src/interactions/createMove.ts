@@ -131,7 +131,7 @@ export function createMove(props: MoveEvents = {}): MoveResult {
   };
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const activePointer = pointerDown();
     if (!activePointer) return;
@@ -173,9 +173,11 @@ const _s2Cleanups: Array<() => void> = [];
     }
 
     // Mouse/touch listeners are attached directly in their handlers.
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const start = () => {
     disableTextSelection();

@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vite-plus/test"; import { createRoot, createSignal as createSolidSignal, flush } from "solid-js";
+import { describe, it, expect } from "vite-plus/test";
+import { createRoot, createSignal as createSolidSignal, flush } from "solid-js";
 import type { SignalOptions } from "solid-js";
 
 function createSignal<T>(value: T, options?: SignalOptions<T>) {

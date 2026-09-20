@@ -710,7 +710,11 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
   };
 
   return (
-    <td {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)} class={cellRenderProps.class()} style={cellRenderProps.style()}>
+    <td
+      {...coerceDomRecord(cellAria.cellProps as Record<string, unknown>)}
+      class={cellRenderProps.class()}
+      style={cellRenderProps.style()}
+    >
       <div
         ref={setCellRef}
         {...coerceDomRecord(cellAria.buttonProps as Record<string, unknown>)}

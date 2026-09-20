@@ -173,9 +173,7 @@ export function Meter(props: MeterProps): JSX.Element {
       slot={local.slot ?? undefined}
       ref={ref}
     >
-      <LabelContext value={labelContextValue}>
-        {renderProps.renderChildren()}
-      </LabelContext>
+      <LabelContext value={labelContextValue}>{renderProps.renderChildren()}</LabelContext>
     </div>
   );
 }

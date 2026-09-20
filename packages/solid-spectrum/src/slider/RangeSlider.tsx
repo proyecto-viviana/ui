@@ -16,7 +16,16 @@
 
 // Port of packages/@react-spectrum/s2/src/RangeSlider.tsx.
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import { ariaTrueFalse } from "@proyecto-viviana/solidaria/utils";

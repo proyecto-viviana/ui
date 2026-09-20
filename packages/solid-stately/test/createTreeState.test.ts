@@ -2,7 +2,8 @@
  * Tests for createTreeState
  */
 
-import { describe, it, expect, vi } from "vite-plus/test"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { flush, createRoot } from "solid-js";
 import { createTreeState, TreeCollection, createTreeCollection } from "../src/tree";
 import type {
   TreeItemData,

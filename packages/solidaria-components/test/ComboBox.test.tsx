@@ -11,7 +11,9 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { createSignal, onMount, onSettled } from "solid-js";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal, onMount, onSettled } from "solid-js";
 import {
   ComboBox,
   ComboBoxInput,

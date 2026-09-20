@@ -4,7 +4,9 @@
  * Ported from @react-stately/calendar's useCalendarState.
  * Tests follow the same patterns as @react-stately tests.
  */
-import { describe, it, expect, vi } from "vite-plus/test"; import { createSignal } from "./owned-signal"; import { flush, createRoot } from "solid-js";
+import { describe, it, expect, vi } from "vite-plus/test";
+import { createSignal } from "./owned-signal";
+import { flush, createRoot } from "solid-js";
 import { createCalendarState } from "../src/calendar/createCalendarState";
 import {
   CalendarDate,

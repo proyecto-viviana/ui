@@ -19,7 +19,18 @@
  * Port of react-aria-components/src/Menu.tsx
  */
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, useContext, For, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  useContext,
+  For,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createMenu,
@@ -657,10 +668,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const locale = useLocale();
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
-  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>(
-    [],
-    { ownedWrite: true },
-  );
+  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([], {
+    ownedWrite: true,
+  });
   const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
   const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
   const itemCloseMap = new Map<Key, () => boolean | undefined>();
@@ -1684,9 +1694,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     setRef(el);
     itemContext?.setItemRef?.(el);
     if (el) assignRef(local.ref, el);
-    const dragRef = (
-      draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined
-    )?.ref;
+    const dragRef = (draggableItem()?.dragProps as { ref?: (el: HTMLElement) => void } | undefined)
+      ?.ref;
     if (el && typeof dragRef === "function") dragRef(el);
   };
   const menuItemProps = () =>

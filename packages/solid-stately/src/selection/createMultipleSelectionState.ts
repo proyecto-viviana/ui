@@ -120,7 +120,9 @@ export function createMultipleSelectionState(
   // because React requires both a synchronous read and a re-render trigger.
   const [isFocused, setIsFocused] = createInternalSignal(false);
   const [focusedKey, setFocusedKeySignal] = createInternalSignal<Key | null>(null);
-  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
+  const [childFocusStrategy, setChildFocusStrategy] = createInternalSignal<FocusStrategy | null>(
+    null,
+  );
 
   const defaultSelectedKeys = convertSelection(
     getProps().defaultSelectedKeys,

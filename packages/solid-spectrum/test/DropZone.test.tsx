@@ -1,7 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vite-plus/test"; import { fireEvent, render, screen } from "@solidjs/testing-library"; import { type JSX, useContext } from "solid-js";
+import { describe, expect, it } from "vite-plus/test";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { type JSX, useContext } from "solid-js";
 import { DropZone, DropZoneContext } from "../src/dropzone";
 import { IllustratedMessageContext } from "../src/illustratedmessage";
 

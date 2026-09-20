@@ -2,7 +2,9 @@
  * Tests for createFormReset utility.
  */
 
-import { describe, it, expect, vi, afterEach } from "vite-plus/test"; import { render, cleanup, fireEvent } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { createFormReset } from "../src/form/createFormReset";
 
 afterEach(() => {
