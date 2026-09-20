@@ -148,6 +148,12 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
     },
   });
 
+  // Not upstream: `useOverlay` closes on blur from `onBlurWithin` alone. Our
+  // `createFocusWithin` returns `onFocus`/`onBlur`, which in Solid bind the
+  // non-bubbling native events, so focus in a descendant never reaches it and
+  // an overlay whose focus lives in a child never blurs. #557 fixes that and
+  // removes this listener; until then it is the only thing closing a popover
+  // when focus leaves it.
   createEffect(
     () => {
       if (!isOpen() || !shouldCloseOnBlur()) return null;

@@ -113,3 +113,28 @@ Fix: record the topmost overlay in `onInteractOutsideStart`, hide only when
 
 Green: `vp test run packages/solidaria/test/overlays.test.tsx packages/solidaria-components/test/Popover.test.tsx`
 → 76/76. Changeset `.changeset/overlay-last-visible.md`.
+
+## 3b — the document-level focusin listener: invented, and kept for now
+
+It is invented: `useOverlay` has no document listener at all; it closes on blur
+from `onBlurWithin`. Ours came in with `47746917` ("Add ActionMenu focus-out
+lifecycle coverage"), alongside the Popover test and the paired ActionMenu
+Playwright spec that need focus leaving the overlay to close it.
+
+Removing it turns `packages/solidaria-components/test/Popover.test.tsx` →
+"should close modal popovers when focus moves outside" red (measured: 1 failed,
+43 passed). The reason is not this listener but the hook under it. Probe:
+`createFocusWithin` on a div, a real `.focus()` on a child button — neither
+`onFocusWithin` nor `onBlurWithin` fires. `focusWithinProps` returns
+`onFocus`/`onBlur`, which in Solid bind the native, non-bubbling events, while
+React's synthetic pair bubbles, which is exactly what upstream relies on. So an
+overlay whose focus lives in a child never blurs, and the listener is the only
+thing closing it.
+
+Fixing that is not a `createOverlay` edit: `createFocusRing`, `createMenu`,
+`createListBox`, `createRadioGroup`, `createCheckboxGroup`, `createNumberField`,
+`createDateField`, `createVisuallyHidden` and `createOverlay` all consume the
+hook, and `Color.tsx` already carries a note describing the same defect from its
+own side. Opened as #557, which owns both the port and the listener's removal.
+Here the listener keeps a comment naming it as not upstream and pointing at
+#557.
