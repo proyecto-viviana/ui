@@ -113,6 +113,28 @@ try {
   );
   console.log("PASS: release readiness proves the pack-pass sourcemap contract after the build.");
 
+  // The unit chain used to run `vp test run packages scripts` and then name one
+  // app file, so fifteen app test files were reachable from no workflow at all.
+  // Discovery, not enumeration: the root config already includes the app tests,
+  // and each app suite that needs its own config is run by that config.
+  assert(
+    rootManifest.scripts?.["test:run"] === "vp test run",
+    "test:run must discover tests from the config, not filter them to named directories",
+  );
+  for (const script of [
+    "vp run test:run",
+    "vp run test:comparison-ssr",
+    "vp run test:comparison-hydrate",
+    "vp run test:web",
+    "vp run comparison:test:journeys-driver",
+  ]) {
+    assert(
+      releaseReadiness.includes(script),
+      `release readiness must run ${script}; an app suite in no chain is a suite nobody runs`,
+    );
+  }
+  console.log("PASS: release readiness runs every app unit suite by discovery.");
+
   const changesetsWorkflow = readFileSync(
     path.join(ROOT, ".github", "workflows", "changesets-check.yml"),
     "utf8",

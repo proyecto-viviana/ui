@@ -5,8 +5,14 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 9 — `ci:release-readiness` discovers the apps' unit tests.
-Slices P, 0, 1, 2, 3, 4, 5, 6, 7 and 8 are closed. Third writer; brief
+Slice 9 in progress — `ci:release-readiness` discovers the apps' unit tests.
+Scripts are rewired (`test:run` filter dropped, the two app configs and the
+journeys-driver config added to the chain, `test:comparison-data` gone) and the
+app suites all run green on their own: 14 files/99 cases under the root config,
+1/8 SSR, 4/175 hydrate, 1/5 drivers. Left to do: a full `vp test run` under the
+new discovery — the first attempt died with "Worker exited unexpectedly" early
+in the packages suite, retrying at `--maxWorkers=1`. Slices P, 0, 1, 2, 3, 4, 5,
+6, 7 and 8 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -665,7 +671,7 @@ Wired:
     $ vp check          pass: All 4333 files are correctly formatted
     $ vp lint           pass: Found no warnings or lint errors in 3166 files
 
-Commit `PENDING`.
+Commit `9d29e858`.
 
 ## Left red
 
