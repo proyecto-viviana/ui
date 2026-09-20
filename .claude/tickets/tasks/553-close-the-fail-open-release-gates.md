@@ -16,6 +16,11 @@ history:
       at: 2026-09-20,
       note: "slice 0 done: guard:dependency-security is now scripts/check-dependency-security.mjs — a ratcheting peers allowlist (scripts/check-peers.mjs + expected-unmet-peers.json, 17 TanStack entries, unit test on both failure paths) plus both audits, each run whatever the one before returned. The first run the audits had had since the Solid 2 port found a moderate prod advisory, devalue <5.9.1 via astro (GHSA-9rgm-9g3h-6x36); fixed with a pnpm-workspace override to ^5.9.1, in the same block as the ws/undici/svgo security overrides. Guard exit 0",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 4 done: guard:release-prerequisites enumerates its subjects from the tree. It read a hand-written list that named one ignored package and none of the five shipping ones, so it printed PASS while inspecting nothing releasable. Candidate derivation and the pending-changeset scan are now one helper, scripts/release-candidates.mjs, shared with check-publish-drift.mjs (they were two copies that disagreed). A candidate with no entry fails; proved by removing @proyecto-viviana/ui from the list. Recorded re-runnable evidence for all five: npm view <pkg> name version dist-tags --json, and npm view <pkg>@<version> dist.attestations --json showing SLSA provenance on every published tarball. Held by 7 cases in scripts/release-candidates.test.ts; test-ci-guard-contracts.mjs exit 0",
+    }
 ---
 
 ## Scope

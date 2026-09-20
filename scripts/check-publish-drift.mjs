@@ -27,57 +27,17 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-const PACKAGES_DIR = "packages";
-const CHANGESET_DIR = ".changeset";
+import {
+  PACKAGES_DIR,
+  pendingChangesetPackages,
+  releasablePackages,
+} from "./release-candidates.mjs";
 
 function git(args) {
   return execFileSync("git", args, { encoding: "utf8" }).trim();
-}
-
-/** Packages changesets may publish: everything under packages/ that is not private or ignored. */
-function releasablePackages() {
-  const ignored = new Set(
-    JSON.parse(readFileSync(join(CHANGESET_DIR, "config.json"), "utf8")).ignore ?? [],
-  );
-
-  return readdirSync(PACKAGES_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const manifestPath = join(PACKAGES_DIR, entry.name, "package.json");
-      if (!existsSync(manifestPath)) return null;
-      const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-      return {
-        dir: entry.name,
-        name: manifest.name,
-        version: manifest.version,
-        private: !!manifest.private,
-      };
-    })
-    .filter((pkg) => pkg && !pkg.private && !ignored.has(pkg.name));
-}
-
-/** Package names named in the frontmatter of every pending changeset. */
-function pendingChangesetPackages() {
-  if (!existsSync(CHANGESET_DIR)) return new Set();
-
-  const named = new Set();
-  for (const file of readdirSync(CHANGESET_DIR)) {
-    if (!file.endsWith(".md") || file === "README.md") continue;
-    const frontmatter = readFileSync(join(CHANGESET_DIR, file), "utf8").match(
-      /^---\r?\n([\s\S]*?)\r?\n---/,
-    );
-    if (!frontmatter) continue;
-    for (const line of frontmatter[1].split("\n")) {
-      const named_ = line.match(
-        /^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/,
-      );
-      if (named_) named.add(named_[1]);
-    }
-  }
-  return named;
 }
 
 /**

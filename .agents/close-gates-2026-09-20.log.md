@@ -5,8 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 4 — `guard:release-prerequisites` enumerates from the tree. Slices P, 0,
-1, 2 and 3 are closed. Third writer; brief
+Slice 5 — `guard:publish-drift` diffs the package manifest, not only `src`.
+Slices P, 0, 1, 2, 3 and 4 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -445,3 +445,52 @@ silently.
 the shard-outcome and acceptance-schema suites, 30 green. `comparison:typecheck`
 0 errors, `vp lint`, `vp check` and `guard:certified-case-floor` exit 0. No
 changeset: `apps/comparison` publishes nothing.
+
+Slice 3 commit: `afa80ec3`.
+
+## Slice 4 — release prerequisites enumerate from the tree
+
+`scripts/release-prerequisites.json` listed one package, `@proyecto-viviana/kumo`,
+which `.changeset/config.json` ignores. The five packages a release actually
+publishes were not in it, so the guard inspected nothing releasable and said so
+in the affirmative:
+
+    node scripts/check-release-prerequisites.mjs
+    SKIP: @proyecto-viviana/kumo@0.0.0 is not a publish candidate.
+    release prerequisites — PASS
+    PREREQ EXIT=0
+
+The subjects come from the tree now — non-private `packages/*` minus the
+Changesets `ignore` list — and a candidate with no entry fails. Planted defect:
+`@proyecto-viviana/ui` removed from the list.
+
+    release prerequisites — FAIL: @proyecto-viviana/ui@0.7.0 is a publish
+      candidate with no entry in scripts/release-prerequisites.json — record its
+      prerequisites and the evidence for each.
+    PREREQ EXIT=1
+
+Restored: `PASS`, exit 0.
+
+That derivation existed twice and the two copies disagreed —
+`check-publish-drift.mjs` read the tree, this one read the list — so both now
+call `scripts/release-candidates.mjs` (`releasablePackages`,
+`pendingChangesetPackages`). `check-publish-drift.mjs` still exits 0.
+
+Evidence recorded for the five candidates, all of it re-runnable by anyone:
+
+    npm view <pkg> name version dist-tags --json
+    npm view <pkg>@<version> dist.attestations --json
+
+solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3,
+solidaria-components 0.5.1, ui 0.6.3 — each carries SLSA provenance
+(`predicateType=https://slsa.dev/provenance/v1`) on its published tarball, which
+is the registry's own record that the publish came from the workflow over OIDC.
+Nothing here is owner-attested, so nothing from this slice goes to `## Left red`;
+kumo's 2026-09-04 `npm trust list` entry is untouched and still owner-captured.
+
+`scripts/release-candidates.test.ts` is 7 cases green, three of them running the
+guard against a fixture tree (forgotten candidate, satisfied candidate,
+satisfaction claimed with blank evidence). `node scripts/test-ci-guard-contracts.mjs`
+exit 0 — it caught two regressions first: a fixture with no
+`.changeset/config.json`, and a `0.0.0` workspace version being counted as a
+candidate. `vp lint` and `vp check` exit 0. No changeset: scripts publish nothing.

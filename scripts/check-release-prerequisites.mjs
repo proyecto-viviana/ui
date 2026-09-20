@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+
+import { pendingChangesetPackages, releasablePackages } from "./release-candidates.mjs";
 
 const root = process.cwd();
 const configPath = path.join(root, "scripts", "release-prerequisites.json");
-const changesetConfigPath = path.join(root, ".changeset", "config.json");
-const changesetDir = path.join(root, ".changeset");
 
 function fail(message) {
   console.error(`release prerequisites — FAIL: ${message}`);
@@ -22,34 +22,6 @@ function readJson(file, description) {
   }
 }
 
-function ignoredPackages() {
-  if (!existsSync(changesetConfigPath)) return new Set();
-  const config = readJson(changesetConfigPath, "Changesets configuration");
-  if (!config) return new Set();
-  return new Set(Array.isArray(config.ignore) ? config.ignore : []);
-}
-
-/** Package names named in the frontmatter of every pending changeset. */
-function pendingChangesetPackages() {
-  if (!existsSync(changesetDir)) return new Set();
-
-  const named = new Set();
-  for (const file of readdirSync(changesetDir)) {
-    if (!file.endsWith(".md") || file === "README.md") continue;
-    const frontmatter = readFileSync(path.join(changesetDir, file), "utf8").match(
-      /^---\r?\n([\s\S]*?)\r?\n---/,
-    );
-    if (!frontmatter) continue;
-    for (const line of frontmatter[1].split("\n")) {
-      const named_ = line.match(
-        /^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/,
-      );
-      if (named_) named.add(named_[1]);
-    }
-  }
-  return named;
-}
-
 const config = readJson(configPath, "release prerequisite configuration");
 
 if (!config) {
@@ -61,8 +33,21 @@ if (!Array.isArray(config.packages)) {
   process.exit();
 }
 
-const ignored = ignoredPackages();
-const pending = pendingChangesetPackages();
+const candidates = releasablePackages(root);
+const pending = pendingChangesetPackages(root);
+const listed = new Set(config.packages.map((entry) => entry?.name));
+
+// The guard's subjects come from the tree, never from the list: a candidate the
+// list forgets is exactly the release nobody checked.
+for (const candidate of candidates) {
+  if (listed.has(candidate.name)) continue;
+  // A workspace version of 0.0.0 has never been published; the entry loop skips it too.
+  if (candidate.version === "0.0.0") continue;
+  fail(
+    `${candidate.name}@${candidate.version} is a publish candidate with no entry in ` +
+      `scripts/release-prerequisites.json — record its prerequisites and the evidence for each.`,
+  );
+}
 
 for (const entry of config.packages) {
   if (
@@ -85,7 +70,7 @@ for (const entry of config.packages) {
   }
 
   if (manifest.version === "0.0.0") {
-    if (pending.has(entry.name) && !ignored.has(entry.name)) {
+    if (pending.has(entry.name) && candidates.some((pkg) => pkg.name === entry.name)) {
       fail(
         `${entry.name}@0.0.0 is not a publish candidate, but pending changesets name it. ` +
           "Versioning would bump it off 0.0.0 and publish a fake first release. " +
