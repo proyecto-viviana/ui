@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "bounded common-form lifecycle slice returns each existing cleanup from onSettled in eight styled fixtures without changing listeners or contracts. The shared-defect control emits CLEANUP_IN_FORBIDDEN_SCOPE before the known vmThreads collection hang; final actual-control CSR proof passes 25/25 with retained identities, focused keyboard behavior, exact removal, disposal and remount. AST recensus is 65 registrations in 62 comparison fixture files; root typecheck and scoped lint/format pass. Actual fixture SSR/hydration, remaining lifecycle/warning debt and all foundation/release gates stay open",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "bounded app type/keyed-fixture repair removes the reproduced 40 app-check errors without masking callable boundaries. Actual helper/fixture regressions pass19/19, owning Tabs/Geist74/74, fresh complete SSR78/78 then hydrate98/98 and app paired8/45. Separately named fixes preserve Geist's existing JSX prefix slot and keep four tablist ARIA outputs reactive. Browser proof covers Checkbox, both Tabs frameworks and German RangeCalendar; React reference key diagnostic is corrected without suppressing errors. Strict warnings, remaining fixture lifecycles, broader integration/web and all foundation/release gates remain open; no acceptance waiver",
     }
   - {
@@ -356,6 +361,31 @@ Broader navigation/async-island scope and the main web app remain unfinished.
 
 Full remaining-work plan: #87; exact evidence/working-tree ownership:
 `.agents/UI-SESSION-HANDOFF-2026-09-20.md`. #543 stays in-progress.
+
+## 2026-09-20 common-form lifecycle slice
+
+Starting from accepted and pushed `067d485e537ec4abe773e9a529be07f66bb0d438`,
+the eight planned common-form fixtures now return their existing two-listener
+cleanup directly from `onSettled`. Listener types, callbacks, initialization,
+values, controlled/default props, providers and component contracts are
+unchanged. No keyed/materialization or shared-helper repair was necessary.
+
+The owned red control emits `CLEANUP_IN_FORBIDDEN_SCOPE` at the TextField's
+nested cleanup, then fails to exit after `SIGINT` under the separately known
+vmThreads/config-inheritance debt; the bounded timeout escalates after ten
+seconds and reports 124. Final actual client-rendered fixture proof passes
+25/25 with live inputs, same-key identity, focused keyboard actions, both
+RangeSlider thumbs, exact listener removal, inert disposal and clean remount.
+SearchField has observable input/clear contracts but no existing submit signal,
+so the regression does not claim Enter/submit coverage or add an API.
+
+The TypeScript-AST recensus reports 65 forbidden registrations in 62 tracked
+comparison fixture files. Root typecheck and scoped source/test lint/format
+pass. This is CSR execution of built controls under the hydrate test config,
+not actual fixture SSR/hydration, browser styling certification or clean-console
+acceptance. The remaining lifecycle/config/warning and broader route debt stays
+open. Receipt: `.agents/UI-EXECUTION-543-FORMS-2026-09-20.md`; detailed ledger:
+`/tmp/ui-543-forms-result.md`. #543 remains in-progress.
 
 ## Relationship
 

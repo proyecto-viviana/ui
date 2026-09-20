@@ -155,6 +155,11 @@ history:
       at: 2026-09-20,
       note: "independent own-scope review verifies child #536 through source endpoint 5cef9209 and metadata reconciliation 08b4c00b; focused helper/streaming31/31 and fresh SSR75/75 then hydrate98/98 satisfy its explicit final inventory without key desynchronization or reported context leaks. #531 remains in-progress; #533/#534/#535/#537/#543, four-layer builds, attribution, #139 packaging safety and #194/#537 same-revision certified and release gates remain unchanged",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543's bounded eight-fixture common-form lifecycle slice returns exact onSettled cleanup and passes actual-control CSR25/25, including focused keyboard/identity, both RangeSlider thumbs, exact removal, disposal and remount. The AST recensus falls from73/70 to65/62; root typecheck and scoped lint/format pass. Actual fixture SSR/hydration, the known vmThreads collection debt, remaining lifecycle/warnings, web/TanStack and every build/attribution/#139/#194/#537 release gate stay open; no child, foundation or release acceptance is inferred",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

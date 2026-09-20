@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
 import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
@@ -47,10 +47,10 @@ function SolidSpectrumRangeSliderDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() => serializeRangeSliderDemoProps(demoProps()));
