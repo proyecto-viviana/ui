@@ -1,6 +1,6 @@
-import { For, Show, createMemo, createResource } from "solid-js";
+import { For, Show, createMemo } from "solid-js";
 import { Markdown } from "./Markdown";
-import { type DocsPayload, fetchDoc } from "./api";
+import { type DocContent, type DocsPayload, fetchDoc } from "./api";
 
 interface GlossaryExtra {
   term: string;
@@ -11,7 +11,10 @@ interface GlossaryExtra {
 // glossary.md is the vocabulary source of truth; per-doc frontmatter
 // `glossary:` entries aggregate underneath it.
 export function GlossaryPanel(props: { data: DocsPayload; onOpenDoc: (path: string) => void }) {
-  const [glossary] = createResource(() => fetchDoc(".claude/current/glossary.md"));
+  const glossary = createMemo<DocContent | undefined>(
+    () => fetchDoc(".claude/current/glossary.md"),
+    { loadingValue: undefined },
+  );
 
   const extras = createMemo(() => {
     const out: GlossaryExtra[] = [];

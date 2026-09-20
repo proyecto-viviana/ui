@@ -1,10 +1,12 @@
-import { For, Show, createResource } from "solid-js";
-import { fetchPackages } from "./api";
+import { For, Show, createMemo } from "solid-js";
+import { type PackageInfo, fetchPackages } from "./api";
 
 // Live workspace graph from pnpm-workspace.yaml + each package.json (internal
 // dependencies only).
 export function ArchitecturePanel() {
-  const [packages] = createResource(fetchPackages);
+  const packages = createMemo<{ packages: PackageInfo[] } | undefined>(() => fetchPackages(), {
+    loadingValue: undefined,
+  });
 
   const dependents = (name: string) =>
     packages()

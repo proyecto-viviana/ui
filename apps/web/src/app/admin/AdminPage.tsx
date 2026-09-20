@@ -1,11 +1,11 @@
-import { For, Match, Show, Switch, createResource, createSignal } from "solid-js";
+import { For, Match, Show, Switch, createMemo, createSignal, refresh } from "solid-js";
 import { ArchitecturePanel } from "./ArchitecturePanel";
 import { DocsPanel } from "./DocsPanel";
 import { GlossaryPanel } from "./GlossaryPanel";
 import { HomePanel } from "./HomePanel";
 import { RoadmapPanel } from "./RoadmapPanel";
 import { TasksPanel } from "./TasksPanel";
-import { fetchDocs, fetchGit } from "./api";
+import { type DocsPayload, type GitPayload, fetchDocs, fetchGit } from "./api";
 
 type TabId = "home" | "roadmap" | "tasks" | "docs" | "architecture" | "glossary";
 
@@ -21,8 +21,8 @@ const TABS: { id: TabId; label: string }[] = [
 export function AdminPage() {
   const [tab, setTab] = createSignal<TabId>("home");
   const [openDocPath, setOpenDocPath] = createSignal<string | null>(null);
-  const [docs, { refetch: refetchDocs }] = createResource(fetchDocs);
-  const [git, { refetch: refetchGit }] = createResource(fetchGit);
+  const docs = createMemo<DocsPayload | undefined>(() => fetchDocs(), { loadingValue: undefined });
+  const git = createMemo<GitPayload | undefined>(() => fetchGit(), { loadingValue: undefined });
 
   const openDoc = (path: string) => {
     setOpenDocPath(path);
@@ -30,8 +30,8 @@ export function AdminPage() {
   };
 
   const onChanged = () => {
-    void refetchDocs();
-    void refetchGit();
+    void refresh(docs);
+    void refresh(git);
   };
 
   return (

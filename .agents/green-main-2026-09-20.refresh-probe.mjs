@@ -1,0 +1,23 @@
+import { createRoot, createMemo, createSignal, createEffect, refresh, flush } from "/home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js";
+let calls = 0;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+await createRoot(async () => {
+  const [path, setPath] = createSignal("a");
+  const doc = createMemo(async () => { const p = path(); calls++; await sleep(10); return p + ":" + calls; }, { loadingValue: undefined });
+  const docNoOpt = createMemo(async () => { await sleep(10); return "x" + calls; });
+  const seen = [];
+  createEffect(() => doc(), (v) => { seen.push(v); });
+  flush();
+  console.log("initial read (pending):", (() => { try { return doc(); } catch (e) { return "THROWS " + e.constructor.name; } })());
+  await sleep(30); flush();
+  console.log("after settle:", doc(), "calls", calls, "seen", JSON.stringify(seen));
+  const r = await refresh(doc);
+  flush();
+  console.log("after refresh: resolved", r, "read", doc(), "calls", calls, "seen", JSON.stringify(seen));
+  setPath("b"); flush();
+  console.log("during source change:", (() => { try { return doc(); } catch (e) { return "THROWS " + e.constructor.name; } })());
+  await sleep(30); flush();
+  console.log("after source change:", doc(), "calls", calls, "seen", JSON.stringify(seen));
+  void refresh(doc); await sleep(30); flush();
+  console.log("fire-and-forget refresh:", doc(), "calls", calls);
+});

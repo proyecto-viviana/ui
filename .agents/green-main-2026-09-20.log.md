@@ -5,11 +5,13 @@ One commit per slice, proof recorded here.
 
 ## Now
 
-Chain `ci:release-readiness`, step `build` -> `build:web`. Four errors, all the
-same: `createResource` is not exported by `solid-js@2.0.0-rc.9`. Solid 2
-removed it and the four admin panels still call it. That port is a behaviour
-decision, not a mechanical repair — see **Left red**. Nothing after `build` in
-either chain has been reached yet.
+Chain `ci:release-readiness`, step `build` -> `build:web`. One error, and it is
+upstream, not ours: `@tanstack/solid-start@2.0.0-rc.8` imports
+`parseServerFunctionUrl` from `@solidjs/web/server-functions/server`, and
+`@solidjs/web@2.0.0-rc.9` does not export that name. See **Left red**. Every
+`apps/web` source error `build:web` reported is now fixed; this is the only one
+left, and no source change can reach it. Steps after `build` are being run
+individually and recorded.
 
 ## Slice 1 — vestigial Solid 1 toolchain
 
@@ -101,7 +103,7 @@ already made the same swap in `apps/comparison/integrations/solid/island.mjs:1,1
 No `Loading` identifier collided in the three files. `__root.tsx` had already
 been ported to Solid 2's `Errored`; only `Suspense` was missed.
 
-Commit: `SLICE2HASH`
+Commit: `dd634d36`
 
 Proof — `vp run build:web`. Before, the build died on the router; after, the
 router resolves and the only remaining errors are the four `createResource`
@@ -115,38 +117,103 @@ Build failed with 4 errors:
 `vp run guard:deploy-target` and a browser pass over the three routes are still
 owed; they cannot run until the build completes.
 
+## Slice 3 — the rest of the apps/web Solid 2 port
+
+Four mechanical repairs, one commit each, all of them a renamed or moved API
+rather than a behaviour change.
+
+- `d7bcadf5` — finished the half-applied import codemod over 17 files:
+  `JSX` moved from `solid-js` to `@solidjs/web`, `onMount` -> `onSettled`.
+- `7e1bf524` — six effect callbacks braced to return `void`. Solid 2 types an
+  effect callback as `void | (() => void)`, where a returned function is a
+  cleanup, so `onSettled(() => setMounted(true))` was passing `true` as a
+  cleanup. Sites: `components/ThemeCreator.tsx:64`,
+  `components/showcase/GlasselatedShell.tsx:26`,
+  `components/theme/ColorKnob.tsx:35`, `routes/admin.tsx:27`,
+  `routes/solid-spectrum/docs/components/table.tsx:23`, `routes/theme.tsx:66`.
+- `574dfad2` — three duplicate `class` attributes merged into Solid 2's array
+  form (`gridlist.tsx:113,178`, `admin/DocsPanel.tsx:129`). A prior codemod had
+  turned Solid 1's `classList` into a second `class` attribute instead of
+  merging, which is `TS17001`. Solid 2 types `class` as
+  `ClassValue | RemoveAttribute` and its own docstring gives the array idiom
+  `["card", props.class, { active: isActive() }]`
+  (`@solidjs/web/types/jsx.d.ts:896-908`).
+
+Proof — `vp run typecheck:apps` error count, in order: 45 -> 28 -> 22 -> 11.
+
+## Slice 4 — the four admin `createResource` panels
+
+Ported on the conductor's written decision,
+`.agents/green-main-2026-09-20.decision-createResource.md`, committed here with
+its probe. The decision is right and my earlier reading was wrong: my probes had
+used a three-argument `createMemo(source, fetcher, options)`, so `loadingValue`
+was silently dropped and the first read threw. `createMemo` is
+`(compute, options)`.
+
+Proof — `node .agents/green-main-2026-09-20.refresh-probe.mjs`, re-run here
+against the installed `@solidjs/signals@2.0.0-rc.9`:
+
+```
+initial read (pending): undefined
+after settle: a:1 calls 1 seen [null,"a:1"]
+after refresh: resolved a:2 read a:2 calls 2 seen [null,"a:1","a:2"]
+during source change: a:2
+after source change: b:3 calls 3 seen [null,"a:1","a:2","b:3"]
+fire-and-forget refresh: b:4 calls 4
+```
+
+So `refresh(memo)` does re-invoke the fetcher, `await refresh(memo)` resolves
+with the new value, and the first read is `undefined` rather than a throw. The
+form applied, at all four sites:
+`createResource(f)` -> `createMemo<T | undefined>(() => f(), { loadingValue: undefined })`,
+`refetch()` -> `refresh(x)`. `DocsPanel`'s source form keeps its skip: the
+compute is not `async`, it reads `props.openPath` and returns
+`path ? fetchDoc(path) : undefined`. `refresh()` is the idiom in Solid 2's own
+docs for exactly this (`@solidjs/signals/dist/types/signals.d.ts:525-534`,
+whose example is `<button onClick={() => refresh(user)}>Reload</button>`).
+
+Also in this commit: `DocsPanel.tsx:41` — the `createEffect` effect arm braced
+to return `void`, same class as `7e1bf524`.
+
+Proof — `vp run typecheck:apps`: 11 errors, none of them in
+`src/app/admin/`. Before this commit there were 16, the five extra being the
+four `createResource` imports and the effect arm. `grep -rn createResource
+apps/web/src/` is empty.
+
+Browser pass: unverified in browser. The admin route is dev-only and
+`build:web` does not complete (see **Left red**), so Reload and Save were not
+exercised live.
+
 ## Left red
 
-### `createResource` in the four admin panels — a behaviour decision
+### `build:web` — `@tanstack/solid-start@2.0.0-rc.8` against `@solidjs/web@2.0.0-rc.9`
 
-`apps/web/src/app/admin/AdminPage.tsx:1,24,25`,
-`DocsPanel.tsx:1,35,82,94`, `ArchitecturePanel.tsx:1,7`,
-`GlossaryPanel.tsx:1,14`. Solid 2 removed `createResource`. I did not port it,
-because the faithful replacement is not mechanical. Evidence, from probes run
-against the installed `solid-js@2.0.0-rc.9`:
+This is the one thing between here and a green `build:web`, and it is a break
+between two upstream packages. Not repairable from this repository's sources.
 
-- The **read** side has a verified faithful form. A bare async
-  `createMemo` is *not* one: reading it while pending throws `NotReadyError`,
-  so today's `<Show when={docs()} fallback={...}>` would throw instead of
-  rendering its fallback. With `{ loadingValue: undefined }` the read returns
-  `undefined` while pending, which is exactly `createResource`'s contract at
-  these call sites (they only call the accessor; none reads `.loading` or
-  `.error`). `latest()` also throws `NotReadyError` while pending.
-- The **refetch** side is unverified. `AdminPage` and `DocsPanel` rely on
-  `refetch`. Solid 2's documented successor is `refresh()`
-  (`@solidjs/signals/dist/types/signals.d.ts:534`, whose own example is an
-  async `createMemo` behind a Reload button). In four probes I could not get
-  `refresh()` to re-invoke the memo's fetcher — the call count stayed at 1
-  every time, including with an explicit observer and with `flush()`. A
-  version-signal dependency (`version(); return fetchDocs()`) did not re-invoke
-  it either. My probes ran outside a render root and may well be the thing at
-  fault rather than `refresh()`; what I can say is that I could not prove the
-  port preserves behaviour, and the admin Reload buttons depend on it.
+```
+[MISSING_EXPORT] "parseServerFunctionUrl" is not exported by
+  ".../@solidjs+web@2.0.0-rc.9/node_modules/@solidjs/web/server-functions/dist/server.js".
+  ╭─[ .../@tanstack/solid-start/dist/esm/server-functions-handler.js:4:90 ]
+```
 
-Deciding this needs the app actually rendering — a loading-boundary design for
-each panel and a check that Reload still refetches. That is the behaviour work
-this seat was told not to invent. It blocks `build:web`, and so blocks the rest
-of both chains.
+Evidence:
+
+- `@solidjs/web@2.0.0-rc.9`'s `server-functions/server` export list has
+  `parseServerFunctionActionUrl` and `serverFunctionActionUrl`, and no
+  `parseServerFunctionUrl` (`server-functions/dist/server.js:2665`). rc.9
+  renamed it.
+- `@tanstack/solid-start@2.0.0-rc.8` still imports the old name, while
+  declaring `"@solidjs/web": ">=2.0.0-rc.6 <3.0.0"` — a range that includes the
+  rc.9 it cannot load.
+- `npm view @tanstack/solid-start versions` ends at `2.0.0-rc.8`. There is no
+  later release to bump to.
+
+The two repairs I can see are both out of this seat's bounds: pin
+`@solidjs/web` back to an rc that still exports the name (a repo-wide framework
+downgrade, and `solid-js@2.0.0-rc.9` is pinned alongside it), or patch the
+upstream import. Both are owner calls. `guard:deploy-target` and the browser
+pass for #545 stay owed behind it.
 
 ### `vp exec pnpm peers check` cannot go clean by bumping
 

@@ -1,6 +1,7 @@
-import { For, Show, createEffect, createMemo, createResource, createSignal } from "solid-js";
+import { For, Show, createEffect, createMemo, createSignal, refresh } from "solid-js";
 import { Markdown } from "./Markdown";
 import {
+  type DocContent,
   type DocEntry,
   type DocsPayload,
   type GitPayload,
@@ -32,15 +33,21 @@ export function DocsPanel(props: {
   const [saving, setSaving] = createSignal(false);
   const [collapsed, setCollapsed] = createSignal<Set<string>>(new Set(["research", "archive"]));
 
-  const [doc, { refetch: refetchDoc }] = createResource(
-    () => props.openPath,
-    (path) => fetchDoc(path),
+  // A falsy path skips the fetch, as the Solid 1 source form did.
+  const doc = createMemo<DocContent | undefined>(
+    () => {
+      const path = props.openPath;
+      return path ? fetchDoc(path) : undefined;
+    },
+    { loadingValue: undefined },
   );
 
   // Switching docs discards any in-flight draft.
   createEffect(
     () => props.openPath,
-    () => setEditing(false),
+    () => {
+      setEditing(false);
+    },
   );
 
   const reviews = createMemo(() =>
@@ -79,7 +86,7 @@ export function DocsPanel(props: {
     try {
       await saveDoc(props.openPath, draft());
       setEditing(false);
-      await refetchDoc();
+      await refresh(doc);
       props.onChanged();
     } finally {
       setSaving(false);
@@ -91,7 +98,7 @@ export function DocsPanel(props: {
     setSaving(true);
     try {
       await postMarkReviewed(props.openPath);
-      await refetchDoc();
+      await refresh(doc);
       props.onChanged();
     } finally {
       setSaving(false);
