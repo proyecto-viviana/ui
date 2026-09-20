@@ -39,3 +39,11 @@ project's Rust build, swap is full, and earlyoom is configured to kill
   `test:hydrate`, `test:web`. One heavy command at a time, output to a file.
 - Append to your log and commit it **before** each heavy step. If you are
   killed, the next worker starts from your log, not from nothing.
+
+## State 13:20 — read after the sections above
+
+- Memory is relieved (owner cleared `/tmp` and the Rust build ended). The memory rules above still hold. **You are the only heavy process allowed: one test command at a time, never two.**
+- Already landed by the conductor, do not redo: `.agents/CONDUCTOR-PENDING-2026-09-20b.md`, `lens4b-site-examples.md`, this file. HEAD = origin/main = `6addb5de`.
+- The chain walk is recorded in `.agents/close-gates-2026-09-20.log.md` ("Conductor walk"): four steps green, `test:run` inconclusive. **Start there:** run `vp test run packages/<dir> --maxWorkers=2` one package at a time, record a row per package, then repair what is red if it is a mechanical Solid 2 port error (the two `regression.test.tsx` snapshot failures first: read the diff before you update any snapshot, and say in the log why the new output is right). Anything that is not mechanical: log it, leave it, move on.
+- Then slice 0, slices 1–10, and slice 11 ("A gate never reuses a server", defined in `CONDUCTOR-PENDING-2026-09-20b.md`). That file's "For the writer" list also asks for a pointer to the worktree exception in `AGENTS.md` Local rules, and #552 items 19–21.
+- `README.md`, `CONTRIBUTING.md`, `CREDITS.md` and `packages/*/README.md` belong to the public-face worktree. Do not edit them.
