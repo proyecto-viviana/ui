@@ -700,7 +700,7 @@ and the full green build above compiled all six. So `dom.ts:617` was the only
 site of its kind, which is what the brief wanted known before anyone writes a
 guard — one example is not a pattern, and no guard is added here.
 
-Worth a ticket rather than a fix in this item: those six casts are six copies of
+Left as #563 rather than fixed in this item: those six casts are six copies of
 what `env.ts` already does once, and `env.ts` is solidaria-private. That is the
 "never the third copy" rule with five extra copies, and it is the shape a guard
 should be written against once the helper is shared.
