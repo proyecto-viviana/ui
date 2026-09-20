@@ -406,3 +406,20 @@ exhaustion, not with file order. Receipts:
 Also in this commit: the "memory is not a constraint" line under "Two
 corrections to the standing brief" is struck and replaced with the conductor's
 16:45 measurement, which this A/B confirms.
+
+## Item 8.1 — the dead `Portal` `ref` in `Popover.tsx`
+
+Removed, with its comment. `@solidjs/web`'s `Portal` takes `{ mount, children }`
+only and `portalImpl` never reads `props.ref`; it typechecked because
+`JSX.IntrinsicAttributes` declares `ref?: Ref<unknown>` on every component, so
+`el.style.display = "contents"` has never run under Solid 2. The replacement
+comment says only what is true: Solid 2 splices the children into the mount
+between two text markers, so there is no wrapper to style, which is RAC's
+`createPortal` shape.
+
+Proof that it was dead is that removing it moves nothing:
+`packages/solid-spectrum/test/regression.test.tsx` 50/50 green with **no `-u`**,
+and `git status` reports `__snapshots__/` unchanged. Popover suites green too,
+45/45 across `solidaria-components` and `solid-spectrum`.
+
+Changeset `.changeset/popover-portal-dead-ref.md`.

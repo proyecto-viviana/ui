@@ -885,15 +885,10 @@ export function Popover(props: PopoverProps): JSX.Element {
   return (
     <Show when={!isHidden()} fallback={hiddenChildren()}>
       <Show when={isHydrated() && (isOpen() || isExiting())}>
-        <Portal
-          mount={portalContainer()}
-          ref={(el: HTMLElement) => {
-            // RAC Overlay uses createPortal with no wrapper. Solid Portal always
-            // inserts a div; display:contents lets the overlay stack in the mount
-            // the way RAC does, so the list is not painted under the page.
-            el.style.display = "contents";
-          }}
-        >
+        {/* Solid 2's Portal splices its children into the mount between two
+            text markers, so there is no wrapper element to style — the same
+            shape as RAC's `createPortal`. */}
+        <Portal mount={portalContainer()}>
           <FocusableContext value={null}>
             {/* RAC Overlay.tsx:76-81 wraps portal children in FocusScope so the
                 start/end sentinels sit beside the display:contents group, not
