@@ -611,9 +611,53 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   // portaled descendant scope as "inside" it. The scope-elements accessor is a
   // stable identity, so it works as the tree key even before it's populated.
   onSettled(() => {
-    focusScopeTree.addTreeNode(scopeElements, parentScopeRef, nodeToRestore ?? undefined);
+    // If a new scope mounts outside the active scope (a dialog launched from a
+    // menu), take the active scope as the parent instead of the context one.
+    // Upstream `FocusScope.tsx:100-113`; only a parent that is already in the
+    // tree is re-pointed, so an ancestor still mounting is left alone.
+    let parentScope = parentScopeRef;
+    if (
+      focusScopeTree.getTreeNode(parentScope) &&
+      activeScope &&
+      !isAncestorScope(activeScope, parentScope) &&
+      focusScopeTree.getTreeNode(activeScope)
+    ) {
+      parentScope = activeScope;
+    }
+
+    focusScopeTree.addTreeNode(scopeElements, parentScope, nodeToRestore ?? undefined);
   });
 
+  // Once the tree is complete, the bottom-most scope that contains the focused
+  // element becomes the active one. Upstream `FocusScope.tsx:154-173`: this is
+  // what makes a scope active when focus is already inside it at mount, with
+  // neither `autoFocus` to claim it nor a later `focusin` to follow. Upstream
+  // can run it on mount because its nodes are collected in a layout effect;
+  // ours are collected in an effect plus a MutationObserver, so the pass waits
+  // for the first non-empty collection and then runs once, as upstream does.
+  let didActivateOnMount = false;
+  createEffect(scopeElements, (scope) => {
+    if (didActivateOnMount || scope.length === 0) {
+      return;
+    }
+    didActivateOnMount = true;
+
+    const activeElement = getActiveElement(getOwnerDocument(scope[0]));
+    if (!activeElement || !isElementInScope(activeElement, scope)) {
+      return;
+    }
+
+    let bottomMost: FocusScopeTreeNode | null = null;
+    for (const node of focusScopeTree.traverse()) {
+      if (node.scopeRef && isElementInScope(activeElement, node.scopeRef())) {
+        bottomMost = node;
+      }
+    }
+
+    if (bottomMost && bottomMost === focusScopeTree.getTreeNode(scopeElements)) {
+      activeScope = bottomMost.scopeRef;
+    }
+  });
   onOwnedCleanup(() => {
     // Hand the active scope back to the parent before the node goes, like
     // upstream's unmount cleanup (`FocusScope.tsx:182-190`). `removeTreeNode`

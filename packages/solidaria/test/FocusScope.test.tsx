@@ -13,10 +13,18 @@ import {
 } from "../src/focus/FocusScope";
 import { preventFocus } from "../src/utils/focus";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
-import { createSignal, flush, type Component, Show } from "solid-js";
+import { createEffect, createSignal, flush, type Component, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser is consolidated in solidaria-test-utils.
+
+// Focuses itself on mount, the way a child that manages its own initial focus
+// does, so the scope holds focus before the post-mount pass runs.
+const FocusOnMount: Component<{ testid: string }> = (props) => {
+  const [el, setEl] = createSignal<HTMLInputElement>();
+  createEffect(el, (input) => input?.focus());
+  return <input data-testid={props.testid} ref={setEl} />;
+};
 
 describe("FocusScope", () => {
   let usingFakeTimers = true;
@@ -1126,6 +1134,57 @@ describe("FocusScope", () => {
       // answers true for every scope on the page.
       expect(isElementInChildOfActiveScope(input2)).toBe(true);
       expect(isElementInChildOfActiveScope(input3)).toBe(false);
+    });
+
+    it("becomes active when focus is already inside it at mount", () => {
+      // Upstream `FocusScope.tsx:154-173`. With neither `autoFocus` to claim the
+      // scope nor a later `focusin` to follow, the post-mount pass is the only
+      // thing that makes the bottom-most scope holding focus the active one.
+      render(() => (
+        <>
+          <FocusScope>
+            <FocusOnMount testid="mounted-input" />
+          </FocusScope>
+          <FocusScope>
+            <input data-testid="sibling-input" />
+          </FocusScope>
+        </>
+      ));
+
+      const mounted = screen.getByTestId("mounted-input");
+      const sibling = screen.getByTestId("sibling-input");
+      expect(document.activeElement).toBe(mounted);
+      expect(isElementInChildOfActiveScope(mounted)).toBe(true);
+      expect(isElementInChildOfActiveScope(sibling)).toBe(false);
+    });
+
+    it("parents a scope that mounts outside the active scope under it", () => {
+      // Upstream `FocusScope.tsx:100-113`: a dialog launched from a menu takes
+      // the active scope as its parent, not the context one, so focus moving
+      // into it still counts as inside the scope that opened it.
+      const [showLaunched, setShowLaunched] = createSignal(false);
+
+      render(() => (
+        <>
+          <FocusScope contain autoFocus>
+            <input data-testid="launcher-input" />
+          </FocusScope>
+          <Show when={showLaunched()}>
+            <FocusScope>
+              <input data-testid="launched-input" />
+            </FocusScope>
+          </Show>
+        </>
+      ));
+
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(screen.getByTestId("launcher-input"));
+
+      setShowLaunched(true);
+      flush();
+      vi.runAllTimers();
+
+      expect(isElementInChildOfActiveScope(screen.getByTestId("launched-input"))).toBe(true);
     });
   });
 

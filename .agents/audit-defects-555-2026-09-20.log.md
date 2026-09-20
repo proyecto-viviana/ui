@@ -84,6 +84,58 @@ Green: `vp test run` over `FocusScope`, `FocusScopeOwnerDocument`, `overlays`,
 `createToast`, `focus` and `focusSafely` → 228/228.
 Changeset `.changeset/focus-scope-active-scope.md`.
 
+### 2b — the rest of `activeScope`'s lifetime (conductor review of `d0f095a1`)
+
+Conductor review: upstream assigns `activeScope` at seven sites; `d0f095a1`
+ported four (auto focus, the restore branch, the tracker branch, containment's
+focusin) and left three. Read again in
+`react-spectrum/packages/react-aria/src/focus/FocusScope.tsx`.
+
+Item 1, the unmount cleanup (`FocusScope.tsx:182-190`). Reachable and reached.
+Ours called `removeTreeNode` with no reparenting, so `activeScope` kept pointing
+at the unmounted scope's accessor. The symptom here is not the predicted
+"returns false for everything": our `traverse(node = this.root)` defaults to the
+root when handed `getTreeNode(deadScope)` → `undefined`, so a dead `activeScope`
+makes `isElementInChildScope` walk the whole tree and answer true for *every*
+scope — over-permissive, not locked out. The red test is shaped around that: a
+scope outside the newly active one must answer false. Red on `70a8d478`
+(expected false, received true), green after. Commit `d77c494b`, changeset
+`.changeset/focus-scope-active-scope-unmount.md`.
+
+Item 2, the post-mount pass (`FocusScope.tsx:154-173`). Reachable, ported.
+Upstream runs it once on mount, after the layout effect that collects the scope
+nodes. Ours collects nodes in an effect plus a `MutationObserver`, so the same
+callback in an `onSettled` sees `scopeElements()` empty — measured with a probe:
+`scope.length === 0` on both mounts, so the `isElementInScope` guard returned
+early and nothing was ever activated. Ported as a `createEffect(scopeElements,
+…)` that runs once on the first non-empty collection, which is upstream's
+timing, not upstream's hook. Without it, a scope holding focus at mount with
+neither `autoFocus` nor a later `focusin` never becomes active.
+
+Item 3, the mount re-parent (`FocusScope.tsx:100-113`). Reachable, ported. Our
+`addTreeNode` took the context parent only; a scope mounting outside the active
+scope (a DialogContainer launched from a menu) now takes `activeScope` as its
+parent, guarded as upstream guards it — only when both the context parent and
+the active scope are already in the tree, and the active scope is not already an
+ancestor.
+
+Red first, all three, on the `70a8d478` source: 3 failed | 34 passed. Green with
+the fix: 37/37. Then `vp test run` over `FocusScope`, `FocusScopeOwnerDocument`,
+`overlays`, `createDialog`, `createPopover`, `focus` → 145/145, and over
+`Dialog`, `DialogTriggerDebug`, `Menu`, `Modal`, `Popover`, `Select`, `ComboBox`,
+`Tooltip` in `solidaria-components` → 446/446.
+
+### Two corrections to the standing brief (conductor, measured)
+
+- earlyoom has killed nothing since 13:19; every kill today was 12:21-12:53,
+  collateral of a Rust build that also killed rustc. It fires only when mem
+  available <= 6% **and** swap free <= 25%. The handoff's "wait if swap free <
+  30%" rule was gating for no reason: gate on `free -m` **mem available**.
+- The detached whole-suite run is healthy (88 minutes, 101% CPU, RSS sawtoothing
+  2.1-3.1 GB against a 4288 MB heap ceiling). Do not bound worker counts in any
+  vitest config — #556 item 3 forbids the ceiling fix, and the premise that
+  default parallelism kills workers is not currently true.
+
 ## 3a — createOverlay's lastVisibleOverlay, and the preventDefault
 
 Upstream read: `useOverlay.ts:78-126`. `lastVisibleOverlay` is a ref holding the
