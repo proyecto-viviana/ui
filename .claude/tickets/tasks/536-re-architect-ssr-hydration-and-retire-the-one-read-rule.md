@@ -86,6 +86,11 @@ history:
       at: 2026-09-19,
       note: "bounded guidance reconciliation replaces obsolete global-counter, universal One-Read and render-prop prohibition claims with installed rc.9 owner/structure/adoption contracts. Semantic caches, reactive evaluation and all assertions remain; structural AST equivalence passes 21/21 code paths. Fresh complete SSR 74/74 then hydration 82/82 pass with one worker. Genuine unresolved-shell streaming, final full proof and all sibling/build/attribution/release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "real renderToStream proof now emits an unresolved Loading shell before resolving data, then hydrates the exact late template nodes under Provider/render-prop/Show updates and disposal. Bounded helper waits for rc.9 completion and isolates script/runtime descriptors; missing-tail, honest late-tag and falsy pending errors prove same-ID recovery. Focused hydrate 31/31; fresh complete SSR 75/75 then hydrate 98/98, one worker. Final task inventory/acceptance reconciliation and all sibling/build/attribution/release requirements remain open; no product source or dependency changed",
+    }
 ---
 
 ## Cause
@@ -398,6 +403,41 @@ Actual unresolved-shell/late-tail streaming and final complete lanes still remai
 This documents justified retained caches, not blanket retirement or full #536
 acceptance. Sibling/build, attribution and same-revision release requirements
 remain unchanged.
+
+## 2026-09-19 genuine asynchronous streaming
+
+The new utilsStreaming pair supersedes the earlier unresolved-shell coverage
+debt. One real renderToStream pipe writes the shell while its controlled Promise
+is unresolved. Only after asserting fallback/markers and absent resolved content
+does SSR resolve the Promise and record its separately emitted tail. The client
+starts hydration over that shell; the tail arrives after hydrate returns a
+callable disposer while isHydrationInProgress is still true. No fully buffered
+string or post-hydration client mount substitutes for this sequence.
+
+Exact template-node adoption and immutable server IDs cover nested Provider,
+positive-arity useRenderProps/OptionContent, Show, a stable following sibling,
+reactive updates/remount and once-only per-instance cleanup. A distinct client
+loader value confirms that the serialized server result remains authoritative.
+The helper now awaits rc.9 onHydrationEnd with a bounded timeout, then drains
+the later verifier timer. Failed pending roots are disposed before that drain
+and before restoring exact bootstrap/script/runtime/console descriptors.
+
+Missing tail, a same-key EM-for-SPAN late corruption, and all five falsy pending
+callback errors preserve primary failures, remove failed containers, leave
+prior accessors/read-only maps untouched after delayed checks, and recover by
+adopting the next stream's exact nodes with the same fragment ID. Additional
+controls reject invalid timeouts, unsafe descriptors and asynchronous seams,
+observe their rejected Promises, and clean roots if descriptor restoration fails.
+All original helper assertions remain. No product source, private counter or
+fragment-map reset, dependency change, head/module-streaming claim, or arbitrary
+producer-timer guarantee is introduced.
+
+Independent helper/test reviews accept the bounded scope. Focused hydration
+passes 31/31; fresh complete SSR passes 75/75 (28 files), then hydration 98/98
+(27 files), one worker. Receipt and exact command ledger:
+`.agents/UI-EXECUTION-536-STREAMING-2026-09-19.md`.
+Final inventory/acceptance reconciliation remains before closing this task;
+all initiative sibling/build/attribution and exact-revision release gates remain.
 
 ## Done when
 

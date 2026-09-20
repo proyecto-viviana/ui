@@ -3,7 +3,7 @@
  * must fail the mismatched hydration without leaking helper-owned DOM/global
  * state into the next valid hydration.
  */
-import { afterEach, describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { flush, onCleanup, sharedConfig, type Setter } from "solid-js";
@@ -19,6 +19,161 @@ const matching = readFileSync(
 describe("hydrateOverSsr Solid 2 lifecycle", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+  });
+
+  it.each([0, -1, Infinity, NaN])(
+    "rejects invalid hydration timeout %s before changing state",
+    async (hydrationTimeoutMs) => {
+      const before = vi.fn();
+      const children = [...document.body.childNodes];
+      const descriptor = Object.getOwnPropertyDescriptor(globalThis, "_$HY");
+      await expect(
+        hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+          hydrationTimeoutMs,
+          beforeHydrate: before,
+        }),
+      ).rejects.toThrow("hydrationTimeoutMs must be positive and finite");
+      expect(before).not.toHaveBeenCalled();
+      expect([...document.body.childNodes]).toEqual(children);
+      expect(Object.getOwnPropertyDescriptor(globalThis, "_$HY")).toEqual(descriptor);
+    },
+  );
+
+  it("preflights all descriptors before touching globals or constructing the fixture", async () => {
+    const names = ["_$HY", "$R", "$dfj"];
+    const originals = names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name));
+    const warn = console.warn;
+    const error = console.error;
+    const childCount = document.body.childElementCount;
+    const before = vi.fn();
+    const fixture = vi.fn(() => <HydrateOverSsrFixture />);
+    const getDescriptor = Object.getOwnPropertyDescriptor;
+    const spy = vi.spyOn(Object, "getOwnPropertyDescriptor").mockImplementation((target, key) => {
+      if (target === globalThis && key === "$dfj") return { value: "locked", configurable: false };
+      return getDescriptor(target, key);
+    });
+    try {
+      await expect(hydrateOverSsr(matching, fixture, { beforeHydrate: before })).rejects.toThrow(
+        "non-configurable property $dfj",
+      );
+    } finally {
+      spy.mockRestore();
+    }
+    expect(before).not.toHaveBeenCalled();
+    expect(fixture).not.toHaveBeenCalled();
+    expect(names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name))).toEqual(
+      originals,
+    );
+    expect(console.warn).toBe(warn);
+    expect(console.error).toBe(error);
+    expect(document.body.childElementCount).toBe(childCount);
+    let root: Element | null = null;
+    const container = await hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+      beforeHydrate(container) {
+        root = container.firstElementChild;
+      },
+    });
+    expect(container.firstElementChild).toBe(root);
+  });
+
+  it("rejects an asynchronous afterHydrate seam and still disposes its root", async () => {
+    let disposed = false;
+    let failed!: HTMLElement;
+    await expect(
+      hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+        beforeHydrate(container) {
+          failed = container;
+        },
+        afterHydrate: async () => {
+          throw new Error("rejected async seam must be observed");
+        },
+        cleanupHydration(dispose) {
+          expect(typeof dispose).toBe("function");
+          dispose!();
+          disposed = true;
+        },
+      }),
+    ).rejects.toThrow("afterHydrate must be synchronous");
+    expect(disposed).toBe(true);
+    expect(failed.isConnected).toBe(false);
+  });
+
+  it("disposes and removes a successful root if restoring a descriptor fails", async () => {
+    const original = Object.getOwnPropertyDescriptor(console, "warn")!;
+    const define = Object.defineProperty;
+    const failure = new Error("restore failed");
+    let failed!: HTMLElement;
+    let cleanupCount = 0;
+    let restoring = false;
+    const spy = vi.spyOn(Object, "defineProperty").mockImplementation((target, key, descriptor) => {
+      if (restoring && target === console && key === "warn" && descriptor.value === original.value)
+        throw failure;
+      return define(target, key, descriptor);
+    });
+    try {
+      await expect(
+        hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+          beforeHydrate(container) {
+            failed = container;
+          },
+          beforeVerify() {
+            restoring = true;
+          },
+          cleanupHydration(dispose) {
+            expect(typeof dispose).toBe("function");
+            dispose!();
+            cleanupCount++;
+          },
+        }),
+      ).rejects.toBe(failure);
+    } finally {
+      spy.mockRestore();
+      define(console, "warn", original);
+    }
+    expect(cleanupCount).toBe(1);
+    expect(failed.isConnected).toBe(false);
+    cleanupHydrationRoots();
+    expect(cleanupCount).toBe(1);
+  });
+
+  it("fails closed when deleting a temporary global fails and cleans up the root", async () => {
+    const prior = Object.getOwnPropertyDescriptor(globalThis, "$dfj");
+    Reflect.deleteProperty(globalThis, "$dfj");
+    const remove = Reflect.deleteProperty;
+    let failed!: HTMLElement;
+    let cleanupCount = 0;
+    const spy = vi.spyOn(Reflect, "deleteProperty").mockImplementation((target, key) => {
+      if (target === globalThis && key === "$dfj") return false;
+      return remove(target, key);
+    });
+    try {
+      await expect(
+        hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+          beforeHydrate(container) {
+            failed = container;
+          },
+          cleanupHydration(dispose) {
+            expect(typeof dispose).toBe("function");
+            dispose!();
+            cleanupCount++;
+          },
+        }),
+      ).rejects.toThrow("could not restore absent property $dfj");
+    } finally {
+      spy.mockRestore();
+      if (prior) Object.defineProperty(globalThis, "$dfj", prior);
+      else Reflect.deleteProperty(globalThis, "$dfj");
+    }
+    expect(cleanupCount).toBe(1);
+    expect(failed.isConnected).toBe(false);
+    let serverRoot: Element | null = null;
+    const container = await hydrateOverSsr(matching, () => <HydrateOverSsrFixture />, {
+      beforeHydrate(container) {
+        serverRoot = container.firstElementChild;
+      },
+    });
+    expect(serverRoot).not.toBeNull();
+    expect(container.firstElementChild).toBe(serverRoot);
   });
 
   it("reports a real mismatch and the next hydrate still claims the server nodes", async () => {

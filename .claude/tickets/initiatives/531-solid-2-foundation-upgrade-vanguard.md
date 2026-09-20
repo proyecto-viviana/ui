@@ -105,6 +105,11 @@ history:
       at: 2026-09-19,
       note: "#536 live hydration guidance and owning comments now describe rc.9 owner allocation and retain justified reactive/provider child sharing. No runtime/assertion changes; structural AST equivalence passes 21/21 code paths. Fresh complete SSR 74/74 then hydrate 82/82 pass with one worker. Genuine streaming and all remaining child/build/attribution and #139/#194/#537 same-revision zero-waiver release requirements remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 genuine shell-first renderToStream coverage now proves exact late-node adoption, context/render props/reactivity/disposal and bounded pending-failure recovery without product changes. Focused hydrate 31/31; fresh complete SSR 75/75 then hydrate 98/98 pass, one worker. Helper and test review accept the bounded classic-inline scope. Final child acceptance review, #533/#534/#535, every build/attribution requirement and #139/#194/#537 live 2177-case same-revision zero-waiver release gates remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)
