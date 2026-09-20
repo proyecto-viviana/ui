@@ -61,7 +61,9 @@ function ColorControl(props: { label: string; value: string; onChange: (hex: str
   // Binding the field straight to the colour would revert every character that does
   // not yet spell a complete `#rrggbb`, which makes the input impossible to edit.
   const [draft, setDraft] = createSignal(props.value);
-  createTrackedEffect(() => setDraft(props.value));
+  createTrackedEffect(() => {
+    setDraft(props.value);
+  });
 
   const oklch = () => {
     const o = hexToOklch(props.value);

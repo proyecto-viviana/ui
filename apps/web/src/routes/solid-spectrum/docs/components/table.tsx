@@ -20,7 +20,10 @@ import { seo } from "@/seo";
 /** Renders children only on the client after hydration. Same component tree on server/client for hydration compat. */
 const ClientOnly: FlowComponent<{ fallback?: JSX.Element }> = (props) => {
   const [ready, setReady] = createSignal(false);
-  if (!isServer) onSettled(() => setReady(true));
+  if (!isServer)
+    onSettled(() => {
+      setReady(true);
+    });
   return (
     <Show when={ready()} fallback={props.fallback}>
       {props.children}

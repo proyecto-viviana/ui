@@ -24,7 +24,9 @@ export const Route = createFileRoute("/admin")({
 
 function AdminRoute() {
   const [mounted, setMounted] = createSignal(false);
-  onSettled(() => setMounted(true));
+  onSettled(() => {
+    setMounted(true);
+  });
   return (
     <Show when={import.meta.env.DEV && mounted()} fallback={<p>Not found.</p>}>
       <AdminPage />

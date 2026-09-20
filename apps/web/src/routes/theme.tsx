@@ -63,7 +63,9 @@ function ThemePage() {
   const activePkg = () => REGISTERS.find((r) => r.id === register())!.pkg;
   const [copied, setCopied] = createSignal(false);
   const [mounted, setMounted] = createSignal(false);
-  onSettled(() => setMounted(true));
+  onSettled(() => {
+    setMounted(true);
+  });
 
   const css = () => buildThemeCss({ dark: result().dark, light: result().light });
   const activeTokens = () => (scheme() === "dark" ? result().dark : result().light);

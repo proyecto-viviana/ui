@@ -23,7 +23,9 @@ export function GlasselatedShell(props: { readonly children: JSX.Element }): JSX
   let root: HTMLDivElement | undefined;
   const align = createMeshField(() => root);
 
-  onSettled(() => setShellRoot(root));
+  onSettled(() => {
+    setShellRoot(root);
+  });
   // Re-anchor the weave whenever the theme (hence each card's mesh image) changes.
   createTrackedEffect(() => {
     theme();

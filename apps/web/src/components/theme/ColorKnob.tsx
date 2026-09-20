@@ -32,7 +32,9 @@ export function ColorKnob(props: ColorKnobProps) {
   // binding it straight to the colour would revert every character that does not yet
   // spell a complete `#rrggbb`.
   const [draft, setDraft] = createSignal(props.value);
-  createTrackedEffect(() => setDraft(props.value));
+  createTrackedEffect(() => {
+    setDraft(props.value);
+  });
 
   return (
     <Flex direction="column" gap={1.5}>
