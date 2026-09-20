@@ -1,11 +1,19 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { FullConfig, Reporter, TestCase, TestResult } from "@playwright/test/reporter";
+import type {
+  FullConfig,
+  FullResult,
+  Reporter,
+  TestCase,
+  TestError,
+  TestResult,
+} from "@playwright/test/reporter";
 
 import { clearCompositorPaintLatch } from "../visual-diff";
 import {
   applyWaiverCounts,
+  CERTIFIED_RUN_STATUSES,
   certifiedSummaryPath,
   emptyCell,
   emptyTotals,
@@ -15,6 +23,8 @@ import {
   parseDriverId,
   relativeSpecFile,
   type CertifiedCell,
+  type CertifiedRunError,
+  type CertifiedRunStatus,
   type CertifiedSummary,
 } from "../../scripts/certified-summary";
 import type { CertifiedFailure } from "../../scripts/certified-waivers";
@@ -34,8 +44,10 @@ interface RecordedTest {
 
 export default class CertifiedSummaryReporter implements Reporter {
   private readonly tests = new Map<string, RecordedTest>();
+  private readonly errors: CertifiedRunError[] = [];
   private shard: { current: number; total: number } | null = null;
   private revision: string | null = null;
+  private runStatus: CertifiedRunStatus | null = null;
 
   onBegin(config: FullConfig): void {
     clearCompositorPaintLatch();
@@ -54,7 +66,18 @@ export default class CertifiedSummaryReporter implements Reporter {
     this.tests.set(test.id, { test, result });
   }
 
-  onEnd(): void {
+  /** Playwright reports a spec that failed to load here, and nowhere else. */
+  onError(error: TestError): void {
+    const comparisonRoot = comparisonRootFrom(import.meta.url);
+    const file = error.location?.file ?? null;
+    this.errors.push({
+      file: file ? relativeSpecFile(comparisonRoot, file) : null,
+      message: error.message ?? error.value ?? String(error.stack ?? "unknown error"),
+    });
+  }
+
+  onEnd(result: FullResult): void {
+    this.runStatus = normalizeRunStatus(result?.status);
     const comparisonRoot = comparisonRootFrom(import.meta.url);
     const cells = new Map<string, CertifiedCell>();
     const failures: CertifiedFailure[] = [];
@@ -105,6 +128,8 @@ export default class CertifiedSummaryReporter implements Reporter {
       generatedAt: new Date().toISOString(),
       revision: this.revision,
       shard: this.shard,
+      runStatus: this.runStatus,
+      errors: this.errors,
       totals,
       cells: [...cells.values()].sort(
         (left, right) =>
@@ -133,6 +158,15 @@ export default class CertifiedSummaryReporter implements Reporter {
     // eslint-disable-next-line no-console
     console.log(markdown);
 
+    if (summary.errors.length > 0) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[certified-summary] run errors (the merge fails the job):\n${summary.errors
+          .map((error) => `- ${error.file ?? "no file"}: ${error.message.split("\n", 1)[0]}`)
+          .join("\n")}`,
+      );
+    }
+
     if (summary.waiverProblems.length > 0) {
       // eslint-disable-next-line no-console
       console.error(
@@ -142,6 +176,12 @@ export default class CertifiedSummaryReporter implements Reporter {
       );
     }
   }
+}
+
+function normalizeRunStatus(status: string | undefined): CertifiedRunStatus | null {
+  return (CERTIFIED_RUN_STATUSES as readonly string[]).includes(status ?? "")
+    ? (status as CertifiedRunStatus)
+    : null;
 }
 
 function classifyResult(result: TestResult): "passed" | "failed" | "skipped" {

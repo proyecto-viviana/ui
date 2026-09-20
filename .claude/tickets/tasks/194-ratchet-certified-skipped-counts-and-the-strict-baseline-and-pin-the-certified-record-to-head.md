@@ -27,6 +27,11 @@ history:
       at: 2026-09-20,
       note: "report-merger parse blocker fixed: 163f4377 dropped the import opener at merge-certified-reports.ts line 12, so the Certification Gates merge step died in esbuild after all eight shards passed, and vp check could not start. Restored byte-exact; the script now parses and reaches its own no-summaries guard. Found behind it: vp check reports 374 unformatted files, which CI also listed; handled as its own mechanical commit. Evidence-integrity work here stays open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "slice 1 of .agents/close-gates-2026-09-20.task.md done: a certified shard must now explain its own exit. The reporter gained onError (each load-time error with its file) and records Playwright's FullResult status; merge-certified-reports fails on any shard load error, on a non-pass status the summary does not explain, and on a summary carrying no status at all. Proved with a spec that throws at import: the merge passed it before (exit 0, all zeros) and fails it now, naming the file. Held by 10 cases in apps/comparison/src/data/certified-shard-outcomes.test.ts",
+    }
 ---
 
 ## Cause

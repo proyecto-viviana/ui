@@ -47,15 +47,35 @@ export interface CertifiedSummaryTotals {
   flaky: number;
 }
 
+export const CERTIFIED_RUN_STATUSES = ["passed", "failed", "timedout", "interrupted"] as const;
+
+export type CertifiedRunStatus = (typeof CERTIFIED_RUN_STATUSES)[number];
+
+/** An error Playwright reported outside a test: a spec that failed to load, a global-setup throw. */
+export interface CertifiedRunError {
+  file: string | null;
+  message: string;
+}
+
 export interface CertifiedSummary {
   generatedAt: string;
   revision: string | null;
   shard: { current: number; total: number } | null;
+  runStatus: CertifiedRunStatus | null;
+  errors: CertifiedRunError[];
   totals: CertifiedSummaryTotals;
   cells: CertifiedCell[];
   waived: Array<{ failure: CertifiedFailure; ticket: number }>;
   unwaived: CertifiedFailure[];
   waiverProblems: WaiverProblem[];
+}
+
+export type ShardOutcomeProblemKind = "load-error" | "missing-status" | "unexplained-status";
+
+export interface ShardOutcomeProblem {
+  kind: ShardOutcomeProblemKind;
+  shard: string;
+  detail: string;
 }
 
 export const CERTIFIED_SUMMARY_FILENAME = "certified-summary.json";
@@ -122,10 +142,12 @@ export function mergeCertifiedSummaries(summaries: readonly CertifiedSummary[]):
   const waived: CertifiedSummary["waived"] = [];
   const unwaived: CertifiedFailure[] = [];
   const waiverProblems: WaiverProblem[] = [];
+  const errors: CertifiedRunError[] = [];
   let revision: string | null = null;
 
   for (const summary of summaries) {
     addToTotals(totals, summary.totals);
+    errors.push(...(summary.errors ?? []));
     if (revision == null) revision = summary.revision;
     waived.push(...summary.waived);
     unwaived.push(...summary.unwaived);
@@ -147,12 +169,76 @@ export function mergeCertifiedSummaries(summaries: readonly CertifiedSummary[]):
     generatedAt: new Date().toISOString(),
     revision,
     shard: null,
+    runStatus: mergeRunStatuses(summaries),
+    errors,
     totals,
     cells: [...cells.values()].sort(compareCells),
     waived,
     unwaived,
     waiverProblems: uniqueProblems(waiverProblems),
   };
+}
+
+/** `passed` only when every shard passed; `null` when any shard failed to record a status. */
+function mergeRunStatuses(summaries: readonly CertifiedSummary[]): CertifiedRunStatus | null {
+  if (summaries.length === 0) return null;
+  const statuses = summaries.map((summary) => summary.runStatus ?? null);
+  if (statuses.some((status) => status == null)) return null;
+  return (statuses as CertifiedRunStatus[]).find((status) => status !== "passed") ?? "passed";
+}
+
+export function shardLabel(summary: Pick<CertifiedSummary, "shard">): string {
+  return summary.shard ? `shard ${summary.shard.current}/${summary.shard.total}` : "unsharded run";
+}
+
+function firstLine(message: string): string {
+  const line = message.split("\n", 1)[0]?.trim() ?? "";
+  return line.length > 200 ? `${line.slice(0, 197)}...` : line;
+}
+
+/** Does the summary name something that accounts for a non-pass exit? */
+function explainsNonPass(summary: CertifiedSummary): boolean {
+  return (
+    summary.totals.failed > 0 ||
+    summary.totals.waived > 0 ||
+    summary.unwaived.length > 0 ||
+    summary.waiverProblems.length > 0 ||
+    (summary.errors?.length ?? 0) > 0
+  );
+}
+
+/**
+ * Every shard must explain its own exit: a load error is always a problem, and a non-pass run
+ * status with nothing failed, waived or errored in the summary means the shard died silently.
+ */
+export function checkShardOutcomes(summaries: readonly CertifiedSummary[]): ShardOutcomeProblem[] {
+  const problems: ShardOutcomeProblem[] = [];
+  for (const summary of summaries) {
+    const shard = shardLabel(summary);
+    for (const error of summary.errors ?? []) {
+      problems.push({
+        kind: "load-error",
+        shard,
+        detail: `${error.file ?? "no file"}: ${firstLine(error.message)}`,
+      });
+    }
+    if (summary.runStatus == null) {
+      problems.push({
+        kind: "missing-status",
+        shard,
+        detail: "the summary records no run status, so the reporter never saw the run end",
+      });
+      continue;
+    }
+    if (summary.runStatus === "passed") continue;
+    if (explainsNonPass(summary)) continue;
+    problems.push({
+      kind: "unexplained-status",
+      shard,
+      detail: `run status ${summary.runStatus}, but the summary records no failed case and no error`,
+    });
+  }
+  return problems;
 }
 
 function uniqueProblems(problems: readonly WaiverProblem[]): WaiverProblem[] {
@@ -230,6 +316,10 @@ export function formatCertifiedSummaryMarkdown(summary: CertifiedSummary): strin
     lines.push(`Shard: ${summary.shard.current}/${summary.shard.total}.`);
     lines.push("");
   }
+  if (summary.runStatus) {
+    lines.push(`Run status: \`${summary.runStatus}\`.`);
+    lines.push("");
+  }
   const { totals } = summary;
   lines.push(
     `Totals: **${totals.passed} passed**, **${totals.failed} failed**, **${totals.skipped} skipped**, **${totals.waived} waived**, **${totals.flaky} flaky**.`,
@@ -267,6 +357,17 @@ export function formatCertifiedSummaryMarkdown(summary: CertifiedSummary): strin
     lines.push("");
   }
 
+  if (summary.errors && summary.errors.length > 0) {
+    lines.push("### Run errors");
+    lines.push("");
+    lines.push("An error outside a test — a spec that failed to load — fails the certified job.");
+    lines.push("");
+    for (const error of summary.errors) {
+      lines.push(`- \`${error.file ?? "no file"}\` — ${firstLine(error.message)}`);
+    }
+    lines.push("");
+  }
+
   if (summary.waiverProblems.length > 0) {
     lines.push("### Waiver problems");
     lines.push("");
@@ -288,7 +389,9 @@ export function certifiedSummaryPath(outputDir: string, shard: { current: number
 
 export function readCertifiedSummaryFile(path: string): CertifiedSummary | null {
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf8")) as CertifiedSummary;
+  const raw = JSON.parse(readFileSync(path, "utf8")) as CertifiedSummary;
+  // A summary written before the run-status field existed keeps `null`, which is itself a problem.
+  return { ...raw, runStatus: raw.runStatus ?? null, errors: raw.errors ?? [] };
 }
 
 export function relativeSpecFile(comparisonRoot: string, file: string): string {

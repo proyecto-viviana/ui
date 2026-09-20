@@ -5,9 +5,9 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 0 — the peers allowlist and the always-run audits. Slice P is closed:
-`test:run` is green apart from two snapshots, now repaired. Third writer;
-brief `.agents/close-gates-2026-09-20.resume.task.md`.
+Slice 2 — a committed floor on discovered cases per certified spec file.
+Slices P, 0 and 1 are closed. Third writer; brief
+`.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
 
@@ -257,3 +257,80 @@ guard:dependency-security: peers allowlist and both audits passed. EXIT=0
 
 Slice 0 commit: see below. No changeset: `scripts/**`, the root manifest and
 `pnpm-workspace.yaml` are not a published package's `src` or manifest.
+
+## Slice 1 — a certified shard must explain its own exit
+
+The shard job is `continue-on-error: true`
+(`.github/workflows/certification-gates.yml:629-632`), so the merge is the only
+gate. It exited non-zero only for waiver problems, and the reporter recorded
+neither Playwright's run status nor any error outside a test. A spec that never
+loaded was therefore green.
+
+Red, before — the planted defect is `throw new Error("x")` on line 1 of
+`apps/comparison/e2e/certified/accordion.certified.spec.ts`. One shard, no web
+server (`COMPARISON_BASE_URL` set, so the config manages none) because the spec
+dies at import and never reaches the network:
+
+```
+$ pnpm exec playwright test e2e/certified/accordion.certified.spec.ts --shard=1/1
+  Error: x at e2e/certified/accordion.certified.spec.ts:1:7          EXIT=1
+  [certified-summary] wrote test-results/certified-summary.1.json
+  Totals: 0 passed, 0 failed, 0 skipped, 0 waived, 0 flaky
+
+$ CERTIFIED_SHARD_TOTAL=1 pnpm exec tsx \
+    apps/comparison/scripts/merge-certified-reports.ts <shards>
+  Totals: 0 passed, 0 failed, 0 skipped, 0 waived, 0 flaky        EXIT=0
+```
+
+Exit 0 on a suite where a certified spec never ran: the fail-open the audit
+named, reproduced.
+
+Repair, three files:
+
+- `apps/comparison/scripts/certified-summary.ts` — `CertifiedSummary` gains
+  `runStatus` and `errors`; `mergeCertifiedSummaries` carries both (merged
+  status is `passed` only when every shard passed, `null` if any shard recorded
+  none); `readCertifiedSummaryFile` normalizes a summary written before the
+  fields existed to `runStatus: null`, which is itself a problem, not a pass;
+  and the new pure `checkShardOutcomes` returns one problem per load error, per
+  missing status, and per non-pass status that nothing in the summary explains.
+  A failed, waived or errored case explains a non-pass exit; nothing else does.
+- `apps/comparison/e2e/reporters/certified-summary.ts` — `onError` records each
+  error with its spec file, `onEnd(result)` records `result.status`, both land
+  in the written summary, and the errors are echoed to stderr.
+- `apps/comparison/scripts/merge-certified-reports.ts` — runs
+  `checkShardOutcomes` over the shard summaries and exits 1 if any problem
+  survives, after writing the report and the step summary so the evidence
+  still exists.
+
+Green and red, same planted defect, same two commands:
+
+```
+# defect planted, after the repair
+$ pnpm exec playwright test … --shard=1/1
+  Run status: `failed`.
+  ### Run errors
+  - `e2e/certified/accordion.certified.spec.ts` — Error: x               EXIT=1
+$ … merge-certified-reports.ts <shards>
+  Certified shards that do not explain their own exit:
+  - shard 1/1: load-error: e2e/certified/accordion.certified.spec.ts: Error: x
+                                                                       EXIT=1
+# defect removed (`--list`, so no server and no browser)
+$ pnpm exec playwright test … --shard=1/1 --list      "runStatus": "passed"
+$ … merge-certified-reports.ts <shards>   Run status: `passed`.        EXIT=0
+# the same green summary with runStatus flipped to "interrupted", a shard killed
+$ … merge-certified-reports.ts <shards>
+  - shard 1/1: unexplained-status: run status interrupted, but the summary
+    records no failed case and no error                                EXIT=1
+```
+
+The planted case is held by `apps/comparison/src/data/certified-shard-outcomes.test.ts`
+(10 cases, green), beside the existing `certified-waivers.test.ts`: load error,
+unexplained non-pass, interrupted, missing status, the two shapes that *do*
+explain a non-pass (a failed case, a waived one), shard labelling, and the two
+merge fields. `vp run test:run` already discovers it —
+`apps/comparison/src/data/**/*.test.ts` is in the vitest include.
+
+The planted defect is removed; `git status` shows no change to
+`accordion.certified.spec.ts`. `vp check` and `comparison:typecheck` exit 0.
+No changeset: `apps/comparison` publishes nothing.

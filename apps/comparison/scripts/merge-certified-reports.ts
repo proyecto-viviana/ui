@@ -12,6 +12,7 @@ import { basename, join } from "node:path";
 import {
   applyWaiverCounts,
   CERTIFIED_SUMMARY_FILENAME,
+  checkShardOutcomes,
   formatCertifiedSummaryMarkdown,
   mergeCertifiedSummaries,
   readCertifiedSummaryFile,
@@ -81,6 +82,8 @@ if (Number.isFinite(expectedShards) && expectedShards > 0 && summaries.length !=
   process.exit(1);
 }
 
+const shardProblems = checkShardOutcomes(summaries);
+
 const merged = mergeCertifiedSummaries(summaries);
 const loaded = loadCertifiedWaivers(defaultWaiversPath(comparisonRoot));
 const evaluation = evaluateCertifiedWaivers({
@@ -136,6 +139,25 @@ if (walkBlobZips(blobDir).length > 0) {
   }
 }
 
-if (waiverGateFails({ ...evaluation, problems: finalSummary.waiverProblems })) {
+if (shardProblems.length > 0) {
+  console.error(
+    `Certified shards that do not explain their own exit:\n${shardProblems
+      .map((problem) => `- ${problem.shard}: ${problem.kind}: ${problem.detail}`)
+      .join("\n")}`,
+  );
+  if (stepSummary) {
+    appendFileSync(
+      stepSummary,
+      `\n### Unexplained shard exits\n\n${shardProblems
+        .map((problem) => `- \`${problem.shard}\` ${problem.kind}: ${problem.detail}`)
+        .join("\n")}\n`,
+    );
+  }
+}
+
+if (
+  shardProblems.length > 0 ||
+  waiverGateFails({ ...evaluation, problems: finalSummary.waiverProblems })
+) {
   process.exit(1);
 }
