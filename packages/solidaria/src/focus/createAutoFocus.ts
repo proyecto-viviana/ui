@@ -9,7 +9,7 @@
  */
 
 import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, onSettled } from "solid-js";
+import { onSettled } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { focusSafely } from "../utils/focus";
 
@@ -233,17 +233,10 @@ export function createAutoFocus(
     onSkip,
   } = options;
 
-  // During SSR, return no-op functions
-  if (isServer) {
-    return {
-      focus: () => {},
-      cancel: () => {},
-    };
-  }
-
   let canceled = false;
 
-  // Queue auto-focus on mount
+  // Register on both sides to preserve the following owner IDs. The server
+  // reserves this lifecycle slot without executing the browser callback.
   onSettled(() => {
     if (!isEnabled || canceled) return;
 
@@ -257,6 +250,14 @@ export function createAutoFocus(
       onSkip,
     });
   });
+
+  // During SSR, keep the public methods inert and skip browser cleanup.
+  if (isServer) {
+    return {
+      focus: () => {},
+      cancel: () => {},
+    };
+  }
 
   // Remove from queue on cleanup
   onOwnedCleanup(() => {

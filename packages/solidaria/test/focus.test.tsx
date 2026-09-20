@@ -2,7 +2,9 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { createRoot, createSignal, flush } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
+import { createRoot, createSignal, flush } from "solid-js";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import {
   // Focus Restoration
   createFocusRestore,
@@ -158,6 +160,55 @@ describe("createFocusRestore", () => {
       });
     });
   });
+
+  for (const mode of ["restore", "disabled", "cleared"] as const) {
+    it(`preserves ${mode} focus restoration through owner disposal`, () => {
+      setInteractionModality("keyboard");
+      vi.useFakeTimers();
+      const trigger = document.createElement("button");
+      const target = document.createElement("button");
+      document.body.append(trigger, target);
+      const onRestore = vi.fn();
+      const onRestoreFailed = vi.fn();
+      let dispose = () => {};
+      let api!: ReturnType<typeof createFocusRestore>;
+      try {
+        trigger.focus();
+        createRoot((cleanup) => {
+          dispose = cleanup;
+          api = createFocusRestore({
+            restoreOnUnmount: mode !== "disabled",
+            onRestore,
+            onRestoreFailed,
+          });
+          expect(api.getSavedElement()).toBeNull();
+        });
+        flush();
+        expect(api.getSavedElement()).toBe(trigger);
+        target.focus();
+        if (mode === "cleared") api.clear();
+        dispose();
+        expect(trigger.isConnected).toBe(true);
+        expect(target.isConnected).toBe(true);
+        expect(document.activeElement).toBe(target);
+        expect(onRestore).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(40);
+        expect(document.activeElement).toBe(mode === "restore" ? trigger : target);
+        expect(onRestore).toHaveBeenCalledTimes(mode === "restore" ? 1 : 0);
+        if (mode === "restore") expect(onRestore).toHaveBeenCalledWith(trigger);
+        expect(onRestoreFailed).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(200);
+        expect(onRestore).toHaveBeenCalledTimes(mode === "restore" ? 1 : 0);
+      } finally {
+        dispose();
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        clearFocusStack();
+        trigger.remove();
+        target.remove();
+      }
+    });
+  }
 });
 
 describe("focus stack", () => {
@@ -666,6 +717,45 @@ describe("createAutoFocus", () => {
       });
     });
   });
+
+  for (const action of ["cancel", "dispose"] as const) {
+    it(`removes a settled request on ${action} before queue processing`, () => {
+      setInteractionModality("keyboard");
+      vi.useFakeTimers();
+      const trigger = document.createElement("button");
+      const target = document.createElement("button");
+      document.body.append(trigger, target);
+      const onFocus = vi.fn();
+      const onSkip = vi.fn();
+      let dispose = () => {};
+      let api!: ReturnType<typeof createAutoFocus>;
+      try {
+        trigger.focus();
+        createRoot((cleanup) => {
+          dispose = cleanup;
+          api = createAutoFocus(() => target, { force: true, onFocus, onSkip });
+        });
+        flush();
+        expect(getAutoFocusQueueLength()).toBe(1);
+        expect(document.activeElement).toBe(trigger);
+        if (action === "cancel") api.cancel();
+        else dispose();
+        expect(getAutoFocusQueueLength()).toBe(0);
+        expect(target.isConnected).toBe(true);
+        vi.advanceTimersByTime(100);
+        expect(document.activeElement).toBe(trigger);
+        expect(onFocus).not.toHaveBeenCalled();
+        expect(onSkip).not.toHaveBeenCalled();
+      } finally {
+        dispose();
+        clearAutoFocusQueue();
+        vi.clearAllTimers();
+        vi.useRealTimers();
+        trigger.remove();
+        target.remove();
+      }
+    });
+  }
 });
 
 describe("auto-focus queue utilities", () => {

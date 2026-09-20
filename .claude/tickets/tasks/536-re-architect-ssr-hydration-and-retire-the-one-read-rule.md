@@ -61,6 +61,11 @@ history:
       at: 2026-09-19,
       note: "bounded hook-parity slice confirms six old-source hydration key failures and repairs createFocusVisible/useIsKeyboardFocused plus createHydrationState/useIsSSR/createBrowserEffect/createBrowserValue through symmetric registration. Independent review additionally caught and prevented function-valued fallback invocation. Fresh complete SSR 60/60 then hydration 68/68 pass with one worker. Focus lifecycle/FocusScope work, portal route proof, stale guidance and genuine async streaming remain; no task, initiative or release acceptance inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "bounded focus lifecycle slice proves and repairs createAutoFocus/createFocusRestore SSR owner omissions by registering their unchanged onSettled callbacks symmetrically; VirtualFocus passes unchanged as an allocation control. Old-source hydration fails exactly two key-2/key-1 cases; fresh complete SSR 63/63 then hydration 71/71 pass with one worker. FocusScope structure, portal routes, stale guidance and genuine streaming remain; already-dequeued delayed autofocus cancellation is explicitly recorded under #534, not claimed fixed",
+    }
 ---
 
 ## Cause
@@ -223,6 +228,39 @@ Read-only route review narrows, but does not silently close, the remaining work:
 Stale guidance/comments and final complete lanes after all justified retirements
 remain open. No semantic one-read cache, held task, publication boundary or
 #537 zero-waiver live 2,177-case requirement is waived.
+
+## 2026-09-19 focus lifecycle parity
+
+This slice supersedes the createAutoFocus/createFocusRestore pending entry.
+Each now registers its existing real `onSettled` callback before the SSR no-op
+return. Installed server registration reserves an owner ID without invoking the
+callback; browser cleanup remains client-only. Client callback timing is
+unchanged: restoration captures the settled trigger before queued autofocus,
+while autofocus's actual ref/focus callback runs after the hydration walk.
+
+Three same-owner fixtures allocate an ID immediately after the hook. Old-source
+SSR passes 10/10, but hydration fails only AutoFocus and FocusRestore: client key
+`2` versus unclaimed server div key `1`/ID `0`. VirtualFocus passes unchanged;
+its literal signal does not reserve an owner ID, so no counter-driven guard
+removal is justified. Its default-focused-key SSR semantics are not covered by
+this null-initial-state allocation control.
+
+The corrected proof retains exact SSR node/ref identity, immutable pre-hydration
+ID comparison, inert server APIs, enabled autofocus after hydration, captured
+external trigger and explicit restore/clear behavior. VirtualFocus keyboard
+events retain physical focus, update aria-activedescendant and skip disabled
+items. Owning ordinary cases prove restoration, disabled/cleared restoration,
+and queued-request cancel/disposal with connected targets. Immediate focus
+assertions explicitly establish keyboard modality rather than inheriting it.
+Full SSR is 63/63 (26 files), then hydrate 71/71 (25 files), one worker.
+Receipt and exact command ledger: `.agents/UI-EXECUTION-536-FOCUS-2026-09-19.md`.
+
+Cancellation after a positive-delay autofocus winner leaves the queue is a
+different branch: its timer is untracked and needs its own failing regression
+and repair under #534. This slice neither changes nor claims coverage of it.
+FocusScope structural/context symmetry, public portal-route reachability,
+stale guidance/comments, actual shell-first streaming and final complete lanes
+remain before #536 can close. All #531 and release gates remain intact.
 
 ## Done when
 

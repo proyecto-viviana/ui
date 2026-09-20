@@ -80,6 +80,11 @@ history:
       at: 2026-09-19,
       note: "#536 hook-parity slice repairs six baseline key-drift cases and preserves function-valued browser fallbacks, reactive effect cleanup and keyboard/pointer behavior. Fresh complete SSR 60/60 then hydrate 68/68 pass with one worker. Remaining focus/portal route proof, genuine streaming, stale guidance, all sibling/build requirements, attribution reconciliation and #139/#194/#537 exact-revision release gates remain outstanding",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 focus lifecycle parity now repairs two baseline hydration-key failures through symmetric real onSettled registration, preserving inert SSR and client timing. Fresh complete SSR 63/63 then hydrate 71/71 pass with one worker; VirtualFocus remains an unchanged passing allocation control. FocusScope, portal routes, real streaming, stale guidance, #534 delayed-cancellation debt and every sibling/build/attribution/release requirement remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

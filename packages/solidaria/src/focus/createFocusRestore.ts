@@ -9,7 +9,7 @@
  */
 
 import { getOwnerDocument, onOwnedCleanup } from "../utils";
-import { createEffect, onSettled } from "solid-js";
+import { onSettled } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { focusSafely } from "../utils/focus";
 
@@ -214,7 +214,15 @@ export function createFocusRestore(options: FocusRestoreOptions = {}): FocusRest
     preventScroll = true,
   } = options;
 
-  // During SSR, return no-op functions
+  let savedElement: HTMLElement | null = null;
+
+  // Reserve the lifecycle owner on SSR too. Keep the existing client timing:
+  // capture settled focus before another component's queued autofocus runs.
+  onSettled(() => {
+    saveCurrentFocus();
+  });
+
+  // During SSR, keep the public methods inert and skip browser cleanup.
   if (isServer) {
     return {
       restore: () => false,
@@ -223,13 +231,6 @@ export function createFocusRestore(options: FocusRestoreOptions = {}): FocusRest
       clear: () => {},
     };
   }
-
-  let savedElement: HTMLElement | null = null;
-
-  // Save focus on mount
-  onSettled(() => {
-    saveCurrentFocus();
-  });
 
   // Restore focus on cleanup
   onOwnedCleanup(() => {

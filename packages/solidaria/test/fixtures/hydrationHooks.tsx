@@ -9,6 +9,9 @@ import {
   createFocusVisible,
   useIsKeyboardFocused,
 } from "../../src/interactions/createInteractionModality";
+import { createAutoFocus, type AutoFocusResult } from "../../src/focus/createAutoFocus";
+import { createFocusRestore, type FocusRestoreResult } from "../../src/focus/createFocusRestore";
+import { createVirtualFocus, type VirtualFocusResult } from "../../src/focus/createVirtualFocus";
 
 export const hookCases = [
   "focus-visible",
@@ -98,5 +101,73 @@ export function HydrationHookFixture(
         <HookOwner {...props} />
       </Show>
     </section>
+  );
+}
+
+export const focusHookCases = ["auto-focus", "focus-restore", "virtual-focus"] as const;
+export type FocusHookCase = (typeof focusHookCases)[number];
+
+interface FocusItem {
+  key: string;
+  disabled?: boolean;
+}
+
+export interface FocusHookProbe {
+  kind: FocusHookCase;
+  id?: (id: string) => void;
+  ref?: (element: HTMLDivElement) => void;
+  readRef?: () => void;
+  auto?: (api: AutoFocusResult) => void;
+  restore?: (api: FocusRestoreResult) => void;
+  virtual?: (api: VirtualFocusResult<FocusItem>) => void;
+  focused?: (element: HTMLElement) => void;
+  restored?: (element: HTMLElement) => void;
+}
+
+export function FocusHookFixture(props: FocusHookProbe) {
+  let element: HTMLDivElement | undefined;
+  let auto: AutoFocusResult | undefined;
+  let restore: FocusRestoreResult | undefined;
+  let virtual: VirtualFocusResult<FocusItem> | undefined;
+  if (props.kind === "auto-focus") {
+    auto = createAutoFocus(
+      () => {
+        props.readRef?.();
+        return element;
+      },
+      { onFocus: props.focused },
+    );
+  } else if (props.kind === "focus-restore") {
+    restore = createFocusRestore({ restoreOnUnmount: false, onRestore: props.restored });
+  } else {
+    virtual = createVirtualFocus({
+      items: () => [{ key: "one" }, { key: "disabled", disabled: true }, { key: "three" }],
+      getKey: (item) => item.key,
+      isDisabled: (item) => !!item.disabled,
+    });
+  }
+  // This ID must remain in the hook's own owner, before another primitive.
+  const id = createUniqueId();
+  props.id?.(id);
+  if (auto) props.auto?.(auto);
+  if (restore) props.restore?.(restore);
+  if (virtual) props.virtual?.(virtual);
+  return (
+    <div
+      id={id}
+      data-focus-hook={props.kind}
+      tabIndex={0}
+      role={virtual ? "listbox" : undefined}
+      aria-activedescendant={virtual?.containerProps["aria-activedescendant"]()}
+      onKeyDown={virtual?.containerProps.onKeyDown}
+      ref={(node) => {
+        element = node;
+        props.ref?.(node);
+      }}
+    >
+      <span id="item-one">One</span>
+      <span id="item-disabled">Disabled</span>
+      <span id="item-three">Three</span>
+    </div>
   );
 }
