@@ -72,10 +72,16 @@ history:
       at: 2026-09-20,
       note: "owner requested the complete remaining-work plan and organized docs for a fresh session. Added a dated dependency-respecting execution plan and evidence/working-tree pointers without changing this ordered census, ticket states, holds or release authority. Current #543 slice remains uncommitted and separate from five preserved #534 paths; no new implementation or publication in the handoff",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "owner retains required foundation-first and census precedence and chooses the simplest closure-ready ticket only where ordering is flexible. Independent own-scope review now verifies #542 through 7b370277 and #536 through 5cef9209 with their durable receipts; #531 remains in-progress and no dependency, hold, certification or release boundary changes",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later
-item is easier.
+item is easier. Where the required sequence leaves work unordered, choose the
+simplest closure-ready ticket.
 
 ## 2026-09-20 fresh-session execution plan
 
@@ -132,9 +138,9 @@ head/SEO, theme and disposal, not merely `test:web`'s tooling tests.
 
 ### 2. Finish and independently accept the foundation
 
-Current #531 children: #532/#536/#542 are merged, not verified; #534/#543 are
-in-progress; #533/#535/#537 are open. Retain accepted bounded work instead of
-restarting it from stale handoffs. The remaining source sequence is:
+Current #531 children: #536/#542 are verified; #532 remains merged; #534/#543
+are in-progress; #533/#535/#537 are open. Retain accepted bounded work instead
+of restarting it from stale handoffs. The remaining source sequence is:
 
 1. Reconcile and finish the preserved #534 Hover timing slice, then Menu
    drag/item-level keyboard/modality/reentry, virtual-focus cancellation after

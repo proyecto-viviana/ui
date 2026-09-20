@@ -150,6 +150,11 @@ history:
       at: 2026-09-20,
       note: "independent own-scope review verifies child #542 through committed endpoint 7b370277 and its durable receipt: fresh SSR49/49, hydrate57/57 and owning214/214 retain exact server-node identity and behavior proof. #531 remains in-progress; #533/#534/#535/#536/#537/#543, four-layer builds, attribution, #139 packaging safety and #194/#537 same-revision certified and release gates remain unchanged",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "independent own-scope review verifies child #536 through source endpoint 5cef9209 and metadata reconciliation 08b4c00b; focused helper/streaming31/31 and fresh SSR75/75 then hydrate98/98 satisfy its explicit final inventory without key desynchronization or reported context leaks. #531 remains in-progress; #533/#534/#535/#537/#543, four-layer builds, attribution, #139 packaging safety and #194/#537 same-revision certified and release gates remain unchanged",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

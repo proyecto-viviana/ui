@@ -4,7 +4,7 @@ type: task
 title: "Re-architect SSR hydration and retire the One-Read Rule"
 created: 2026-09-13
 parent: 531
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -95,6 +95,11 @@ history:
       state: merged,
       at: 2026-09-19,
       note: "final independent own-scope review accepts source through 5cef9209: all three Work items and complete SSR75/75 then hydrate98/98 are satisfied. Explicit final dispositions supersede historical pending inventory; semantic caches, allocation-neutral and public-route portal guards, and TagGroup's runtime-supported serialized adapter remain justified. This reconciliation closes #536 as merged, not verified; #531 siblings/builds/attribution and all certified/release gates remain open",
+    }
+  - {
+      state: verified,
+      at: 2026-09-20,
+      note: "independent own-scope acceptance verifies source through 5cef9209 and metadata reconciliation 08b4c00b. The durable receipts record focused helper/streaming31/31 and fresh single-worker SSR75/75 then hydrate98/98 without key desynchronization or reported context leaks; the final inventory explicitly resolves every Work item and justified-retention family. This verifies #536 only: #531 remains in-progress with siblings, builds, attribution, certification and release gates unchanged",
     }
 ---
 
