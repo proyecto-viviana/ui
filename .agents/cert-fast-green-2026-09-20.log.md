@@ -63,7 +63,35 @@ Re-hashed all 63 in `scripts/attribution-local-reviews.json`; nothing else in
 the file changed (63 insertions, 63 deletions). After the slice: reviewed local
 source satisfied 254, mismatch 0.
 
+## Slice 2 — the one exact-source header
+
+`packages/solid-stately/src/data/createTreeData.ts`. The header was not missing:
+the Solid 2 spike (`ca1a0d82`, #532) inserted
+`import { createInternalSignal } from "../utils";` as line 1, above the Adobe
+block, and `attributionHeaderContract` requires the block plus the port line to
+prefix the file body (after an optional `// @ts-nocheck`). Moved that one import
+below the header and its docblock; an ES import hoists, so the module behaves
+identically. Header text and port line untouched.
+
+After the slice: exact-source header contracts satisfied 472, mismatch 0.
+
+## Green
+
+`vp run guard:attribution-headers` → exit 0.
+
+```
+PASS: 472 exact-source headers match their upstream blocks and port lines.
+PASS: 12 reviewed exact mappings remain headerless and match their recorded source evidence.
+PASS: 75 reviewed composite mappings match their recorded upstream source sets.
+PASS: 75 composite headers preserve every distinct upstream block and exact source path.
+PASS: 254 reviewed local files match their recorded content.
+```
+
+The 11 `generated-unresolved` ui-icons print under "files that need special
+attention" but are not one of this guard's five contracts — they never held the
+exit code. Step 4 of the brief is taken up next on its own terms.
+
 ## Now
 
-Two reasons still red: the `createTreeData.ts` exact-source header and the 11
-`generated-unresolved` ui-icons.
+The guard is green. Remaining: the 11 `generated-unresolved` ui-icons
+(brief step 4), which the attribution guard reports but does not gate.

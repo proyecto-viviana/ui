@@ -1,4 +1,3 @@
-import { createInternalSignal } from "../utils";
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -21,6 +20,8 @@ import { createInternalSignal } from "../utils";
  *
  * Ported from packages/react-stately/src/data/useTreeData.ts.
  */
+
+import { createInternalSignal } from "../utils";
 
 export type Key = string | number;
 export type Selection = "all" | Set<Key>;
