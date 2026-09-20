@@ -79,7 +79,7 @@ function setGlobalIgnoreEmulatedMouseEvents() {
   globalIgnoreEmulatedMouseEvents = true;
   setTimeout(() => {
     globalIgnoreEmulatedMouseEvents = false;
-  }, 50);
+  }, 500);
 }
 
 function handleGlobalPointerEvent(e: PointerEvent) {

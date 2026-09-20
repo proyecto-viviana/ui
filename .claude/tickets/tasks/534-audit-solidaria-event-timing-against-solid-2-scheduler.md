@@ -31,6 +31,11 @@ history:
       at: 2026-09-19,
       note: "native Hover boundary/lifecycle slice repairs two reproduced failures: original-owner target loss and false exit between children. Owning 28/28 and affected 287/287 pass; fresh SSR 75/75 then hydrate 98/98, one worker. A later order-dependent Pressable fixture leak is repaired by owning test cleanup, without changing assertions. Native disable/disposal/shared-listener proof and a decisive cleanup negative control pass review. Separate 50 ms versus 500 ms touch timing audit, Menu/virtual-focus/final owning proof and all sibling/build/attribution/release requirements remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "touch timing slice: pinned useHover clears emulated-mouse suppression after 500 ms; ours cleared after 50. Source now 500. A boundary test holds both the pointer and the mouse-fallback path at 499 ms and releases at 500; with 50 restored it fails 2 of 30. Affected files pass 145/145, one worker. Tooltip and Button suites own their cleanup and settle the suppression timer. Menu, virtual-focus and the final owning audit remain",
+    }
 ---
 
 ## Cause

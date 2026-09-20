@@ -1,21 +1,24 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, waitFor } from "@solidjs/testing-library"; import { createSignal } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { resetTooltipState } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Tooltip, TooltipTrigger } from "../src/Tooltip";
 import { Button } from "../src/Button";
 
+beforeEach(() => {
+  vi.useFakeTimers();
+  resetTooltipState();
+});
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  resetTooltipState();
+});
+
 describe("TooltipTrigger", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it("should render trigger and tooltip", () => {
     render(() => (
       <TooltipTrigger isOpen>
@@ -193,16 +196,6 @@ describe("TooltipTrigger", () => {
 });
 
 describe("Tooltip", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it('should have role="tooltip"', async () => {
     // Use real timers for this test since visibility depends on requestAnimationFrame
     vi.useRealTimers();

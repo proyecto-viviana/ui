@@ -549,6 +549,21 @@ describe("Button", () => {
   });
 
   describe("touch interaction", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      cleanup();
+      try {
+        // Touch suppression intentionally outlives its owner. Settle that
+        // global timer before an unrelated test starts a new interaction.
+        vi.runAllTimers();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it("should handle touch press", async () => {
       const onPress = vi.fn();
       render(() => <Button onPress={onPress}>Test</Button>);

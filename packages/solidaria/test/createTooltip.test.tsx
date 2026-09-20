@@ -1,19 +1,22 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, fireEvent, screen } from "@solidjs/testing-library"; import { createSignal, createRoot, flush, Show } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
+import { createSignal, createRoot, flush, Show } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "@proyecto-viviana/solid-stately";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createTooltip, createTooltipTrigger } from "../src/tooltip";
 
+beforeEach(() => {
+  vi.useFakeTimers();
+  resetTooltipState();
+});
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  resetTooltipState();
+});
+
 describe("createTooltipTrigger", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it("should provide aria-describedby when tooltip is open", () => {
     function TestComponent() {
       let ref: HTMLButtonElement | undefined;
@@ -171,16 +174,6 @@ describe("createTooltipTrigger", () => {
 });
 
 describe("createTooltip", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it('should add role="tooltip" to the element', () => {
     function TestComponent() {
       const { tooltipProps } = createTooltip();
@@ -248,16 +241,6 @@ describe("createTooltip", () => {
 });
 
 describe("createTooltipTrigger - hover behavior", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it("opens tooltip on hover after delay", () => {
     function TestComponent() {
       let ref: HTMLButtonElement | undefined;
@@ -427,16 +410,6 @@ describe("createTooltipTrigger - hover behavior", () => {
 });
 
 describe("createTooltipTrigger - focus behavior", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   // Note: Focus-based tooltip opening requires keyboard modality detection (focus-visible)
   // which uses module-level state that doesn't reset properly between tests in jsdom.
   // This tests the state API directly instead of relying on the modality detection.
@@ -490,16 +463,6 @@ describe("createTooltipTrigger - focus behavior", () => {
 });
 
 describe("createTooltipTrigger - global tooltip behavior", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    resetTooltipState();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    resetTooltipState();
-  });
-
   it("closes other tooltips when a new one opens", () => {
     function TestComponent() {
       let ref1: HTMLButtonElement | undefined;

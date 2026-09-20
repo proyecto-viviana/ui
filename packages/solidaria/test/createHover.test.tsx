@@ -127,6 +127,78 @@ describe("createHover", () => {
     cleanup();
   });
 
+  describe("touch suppression boundary", () => {
+    afterEach(() => {
+      cleanup();
+      restorePointerEvents();
+    });
+
+    it.each(["pointer", "mouse fallback"] as const)(
+      "suppresses native %s hover until 500 ms after touch",
+      (mode) => {
+        if (mode === "pointer") {
+          enablePointerEventsMock();
+        } else {
+          disablePointerEvents();
+        }
+
+        const events: Array<HoverEvent | boolean> = [];
+        render(() => (
+          <Example
+            onHoverStart={(event) => events.push(event)}
+            onHoverEnd={(event) => events.push(event)}
+            onHoverChange={(hovered) => events.push(hovered)}
+          />
+        ));
+        const el = screen.getByTestId("test-element");
+        const enterMouse = () =>
+          el.dispatchEvent(
+            mode === "pointer"
+              ? new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" })
+              : new MouseEvent("mouseenter"),
+          );
+        const leaveMouse = () =>
+          el.dispatchEvent(
+            mode === "pointer"
+              ? new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" })
+              : new MouseEvent("mouseleave"),
+          );
+
+        if (mode === "pointer") {
+          el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" }));
+        } else {
+          el.dispatchEvent(new Event("touchstart", { bubbles: true }));
+          el.dispatchEvent(new Event("touchend", { bubbles: true }));
+        }
+        // Consume the fallback's per-instance flag so it cannot mask an early
+        // expiry of global suppression in the subsequent 499 ms assertion.
+        enterMouse();
+        leaveMouse();
+        expect(events).toEqual([]);
+        expect(el.textContent).toBe("test");
+
+        vi.advanceTimersByTime(499);
+        enterMouse();
+        leaveMouse();
+        expect(events).toEqual([]);
+        expect(el.textContent).toBe("test");
+
+        vi.advanceTimersByTime(1);
+        enterMouse();
+        expect(events).toEqual([{ type: "hoverstart", target: el, pointerType: "mouse" }, true]);
+        expect(el.textContent).toBe("test-hovered");
+        leaveMouse();
+        expect(events).toEqual([
+          { type: "hoverstart", target: el, pointerType: "mouse" },
+          true,
+          { type: "hoverend", target: el, pointerType: "mouse" },
+          false,
+        ]);
+        expect(el.textContent).toBe("test");
+      },
+    );
+  });
+
   // ============================================
   // POINTER EVENTS
   // ============================================
@@ -494,7 +566,8 @@ describe("createHover", () => {
       triggerPointerOver(hoverPropsRef!, el, "touch");
       triggerPointerOut(hoverPropsRef!, el, "touch");
 
-      vi.advanceTimersByTime(100);
+      // Match pinned useHover's recovery test, beyond its 500 ms suppression window.
+      vi.advanceTimersByTime(600);
 
       triggerPointerOver(hoverPropsRef!, el, "mouse");
       triggerPointerOut(hoverPropsRef!, el, "mouse");
@@ -774,7 +847,8 @@ describe("createHover", () => {
       triggerMouseEnter(hoverPropsRef!, el);
       triggerMouseLeave(hoverPropsRef!, el);
 
-      vi.advanceTimersByTime(100);
+      // Match pinned useHover's recovery test, beyond its 500 ms suppression window.
+      vi.advanceTimersByTime(600);
 
       triggerMouseEnter(hoverPropsRef!, el);
       triggerMouseLeave(hoverPropsRef!, el);
