@@ -4,7 +4,7 @@ import { stripVTControlCharacters } from "node:util";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import { getContainerRenderer } from "@astrojs/react/container-renderer";
-import solid from "@astrojs/solid-js";
+import solid from "./integrations/solid/index.mjs";
 import reactVitePlugin from "@vitejs/plugin-react";
 import macros from "unplugin-parcel-macros";
 import {
@@ -517,8 +517,12 @@ export default defineConfig({
       ],
     }),
     solid({
+      // Align dev island compilation with the paired hydration harness.
+      // Runtime restart parity remains a separate #543 investigation.
+      refresh: { disabled: true },
       include: [
         "src/components/solid/**/*",
+        "src/scripts/**/*.tsx",
         "../../packages/solid-stately/src/**/*",
         "../../packages/solidaria/src/**/*",
         "../../packages/solidaria/dist/**/*.jsx",

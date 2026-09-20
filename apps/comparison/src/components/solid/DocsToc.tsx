@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
 import { Link } from "@proyecto-viviana/solid-spectrum/Link";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -229,7 +229,7 @@ function createCurrentHref(items: DocsTocItem[]) {
       observer.observe(anchor);
     }
 
-    onCleanup(() => observer.disconnect());
+    return () => observer.disconnect();
   });
 
   return currentHref;

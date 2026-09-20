@@ -1,4 +1,11 @@
-import { For, createEffect, createMemo, createSignal, onCleanup, onSettled, createTrackedEffect } from "solid-js";
+import {
+  For,
+  createEffect,
+  createMemo,
+  createSignal,
+  onSettled,
+  createTrackedEffect,
+} from "solid-js";
 import h from "@solidjs/h";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { CloseIcon } from "@proyecto-viviana/solid-spectrum/CloseIcon";
@@ -224,10 +231,10 @@ export default function DocsTopBar(props: DocsTopBarProps) {
     desktopQuery.addEventListener("change", handleDesktopChange);
     handleDesktopChange();
 
-    onCleanup(() => {
+    return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       desktopQuery.removeEventListener("change", handleDesktopChange);
-    });
+    };
   });
 
   createTrackedEffect(() => {
@@ -581,7 +588,7 @@ function createMobileCurrentHref(
       observer.observe(anchor);
     }
 
-    onCleanup(() => observer.disconnect());
+    return () => observer.disconnect();
   });
 
   return [currentHref, setCurrentHref];

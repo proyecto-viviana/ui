@@ -1,5 +1,5 @@
 /** @jsxImportSource @solidjs/web */
-import { Show, createSignal, onCleanup, onSettled } from "solid-js";
+import { Show, createSignal, onSettled } from "solid-js";
 import type { Component } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Button } from "@proyecto-viviana/kumo/components/button";
@@ -98,7 +98,7 @@ export default function KumoButtonFixture() {
     };
 
     window.addEventListener(KUMO_FIXTURE_STATE_EVENT, updateState);
-    onCleanup(() => window.removeEventListener(KUMO_FIXTURE_STATE_EVENT, updateState));
+    return () => window.removeEventListener(KUMO_FIXTURE_STATE_EVENT, updateState);
   });
 
   return (

@@ -1,5 +1,5 @@
 /** @jsxImportSource @solidjs/web */
-import { Show, createSignal, onCleanup, onSettled } from "solid-js";
+import { Show, createSignal, onSettled } from "solid-js";
 import type { Component } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Button } from "@proyecto-viviana/geist/components/button";
@@ -111,7 +111,7 @@ export default function GeistButtonFixture() {
     };
 
     window.addEventListener(GEIST_FIXTURE_STATE_EVENT, updateState);
-    onCleanup(() => window.removeEventListener(GEIST_FIXTURE_STATE_EVENT, updateState));
+    return () => window.removeEventListener(GEIST_FIXTURE_STATE_EVENT, updateState);
   });
 
   return (

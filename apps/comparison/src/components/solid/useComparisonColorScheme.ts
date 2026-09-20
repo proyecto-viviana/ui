@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,
@@ -26,7 +26,7 @@ export function createComparisonColorScheme() {
 
     updateFromDocument();
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    return () => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
   });
 
   return { resolvedTheme, themeChoice };

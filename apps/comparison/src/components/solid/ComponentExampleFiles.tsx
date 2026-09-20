@@ -1,5 +1,6 @@
 import h from "@solidjs/h";
-import { createResource, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, Loading, onCleanup, onSettled } from "solid-js";
+import { createComponent } from "@solidjs/web";
 import {
   comparisonControlsEvent,
   getComponentControlGroup,
@@ -24,16 +25,15 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
     return h("div", { class: "s2-empty-state" }, "Example source is unavailable.")();
   }
 
-  const [controlGroup] = createResource(() => getComponentControlGroup(entry));
+  const controlGroup = createMemo(() => getComponentControlGroup(entry));
 
   return h("div", { class: "s2-example-files-content" }, [
-    () => {
-      const group = controlGroup();
-      if (!group) {
-        return undefined;
-      }
-      return ExampleFilesBody({ entry, controlGroup: group });
-    },
+    () =>
+      createComponent(Loading, {
+        get children() {
+          return ExampleFilesBody({ entry, controlGroup: controlGroup() });
+        },
+      }),
   ])();
 }
 
@@ -71,7 +71,7 @@ function ExampleFilesBody(props: {
     };
 
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   });
 
   onCleanup(() => clearTimeout(copyTimer));

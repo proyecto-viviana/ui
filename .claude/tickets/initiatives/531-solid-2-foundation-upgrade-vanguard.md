@@ -130,6 +130,11 @@ history:
       at: 2026-09-19,
       note: "native Hover boundary/lifecycle slice repairs two reproduced failures: original-owner target loss and false exit between children. Owning 28/28 and affected 287/287 pass; fresh SSR 75/75 then hydrate 98/98, one worker. A later order-dependent Pressable fixture leak is repaired by owning test cleanup, without changing assertions. Native disable/disposal/shared-listener proof and a decisive cleanup negative control pass review. Separate 50 ms versus 500 ms touch timing audit, Menu/virtual-focus/final owning proof and all sibling/build/attribution/release requirements remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "owner's incremental app-testing request adds bounded child #543: private comparison Solid 2 renderer and app lifecycle/loading migration without dependency changes. Fresh paired adapter SSR 8/8 and client 26/26, comparison build 91 pages, and settled dev Button/D12 identity and mouse/Enter proof pass. Viewer strict warnings, restart parity and full route coverage remain; main web/TanStack compatibility is separate. No child/foundation/release acceptance or waiver is inferred; #139/#194/#537 and live 2177-case same-revision zero-waiver requirements remain intact",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

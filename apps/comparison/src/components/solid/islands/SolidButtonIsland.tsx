@@ -18,7 +18,7 @@
  * pass bare reactive text as Button children (that shape does not re-bind — see the
  * hydrate test's documentation assertion).
  */
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -92,7 +92,7 @@ export default function SolidButtonIsland() {
     getComparisonResolvedThemeFromDocument(),
   );
   // A crisp hydration-complete signal for the D12 (SSR/hydration) driver.
-  // onMount runs only on the client, once, AFTER hydration reconciles — never
+  // onSettled runs only on the client, once, AFTER hydration reconciles — never
   // during SSR — so the server HTML lacks this attribute and the client adds it
   // post-hydration (a normal client effect, not a hydration mismatch). It lives
   // on the wrapper, outside the diffed button subtree, so it never perturbs the
@@ -114,10 +114,10 @@ export default function SolidButtonIsland() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const renderedButton = createMemo(() => {

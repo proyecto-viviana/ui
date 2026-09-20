@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createResource, createSignal } from "solid-js";
+import { createMemo, createSignal, Loading } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { Content } from "@proyecto-viviana/solid-spectrum/Content";
@@ -35,7 +35,7 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     return h("div", { class: "s2-empty-state" }, "Interactive controls are unavailable.")();
   }
 
-  const [controlGroup] = createResource(() => getComponentControlGroup(entry));
+  const controlGroup = createMemo(() => getComponentControlGroup(entry));
 
   return hc(
     Provider,
@@ -48,13 +48,7 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     },
     [
       h("h2", { id: "example-title" }, "Example"),
-      () => {
-        const group = controlGroup();
-        if (!group) {
-          return undefined;
-        }
-        return ControlsForm({ entry, controlGroup: group });
-      },
+      hc(Loading, {}, [() => ControlsForm({ entry, controlGroup: controlGroup() })]),
     ],
   )();
 }
