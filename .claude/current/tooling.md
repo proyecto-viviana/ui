@@ -169,7 +169,9 @@ keeps generated CSS in module-level maps that concurrent passes in one process
 race on; the symptom was "A macro CSS import reached renderChunk" on CI. Only
 `vp pack --watch` (the `dev` script) runs both passes in one process.
 `selectPackPasses` in `scripts/package-macro-plugin.mjs` owns the switch and
-`guard:package-sourcemaps` holds its contract.
+`guard:package-sourcemaps` holds its contract, running in
+`ci:release-readiness` right after `build` — the only place the built packages
+it measures exist.
 
 The comparison app uses `astro build`, but its Playwright server uses foreground
 `vp preview`. Astro 7 automatically backgrounds preview when it detects an

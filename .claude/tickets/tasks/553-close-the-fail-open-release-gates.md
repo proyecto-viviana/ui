@@ -36,6 +36,11 @@ history:
       at: 2026-09-20,
       note: "slice 7 done: guard:entry-import-budget fails a budgeted entry that is not built. It skipped one silently and only failed when every entry was unbuilt, so a renamed exports target, a package dropped from the build, or a half-built tree read as a pass on each entry it removed. Proved on the real dist: with packages/viviana-ui/dist/Provider.js moved aside the guard printed 'entries measured: 1/2' and exit 0, and after the repair exit 1 naming @proyecto-viviana/ui ./Provider as not built. 3 cases in scripts/check-entry-import-budget.test.ts. Separately, the guard is red on main for its own reason and stays red, unfixed here: 5/5 entries over their module ceilings (ui ./Provider 25 vs 21, solid-spectrum ./Provider 25 vs 21, ./ButtonGroup 29 vs 28, ./ProgressBar 24 vs 23, ./ProgressCircle 20 vs 19) against a 12:20 build. Raising the ceilings would be papering over it; recorded under Left red",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 8 done: guard:package-sourcemaps runs in ci:release-readiness immediately after build. It passed on the built tree (generated 1:13 maps to scripts/fixtures/style-macro-sourcemap.ts:3:13; JSX-preserve transform keeps its map, build rejects SOURCEMAP_BROKEN, PACK_PASS selects one pack pass per process) but was reachable from no chain, while tooling.md claimed it held the pack-pass contract. The order is now asserted in scripts/test-ci-guard-contracts.mjs alongside the generated-icon ordering: unwired it exits 1 with 'release readiness must run guard:package-sourcemaps after building packages', wired it exits 0. tooling.md says where it runs",
+    }
 ---
 
 ## Scope

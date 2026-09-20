@@ -103,6 +103,16 @@ try {
   );
   console.log("PASS: release readiness checks both generated icon trees without writing them.");
 
+  // The sourcemap contract can only be proved on built packages, so its guard
+  // has to run after the build in the same chain — unwired, it proved nothing
+  // while tooling.md claimed it held the pack-pass contract.
+  const sourcemapGuardIndex = releaseReadiness.indexOf("vp run guard:package-sourcemaps");
+  assert(
+    sourcemapGuardIndex > releaseBuildIndex && releaseBuildIndex >= 0,
+    "release readiness must run guard:package-sourcemaps after building packages",
+  );
+  console.log("PASS: release readiness proves the pack-pass sourcemap contract after the build.");
+
   const changesetsWorkflow = readFileSync(
     path.join(ROOT, ".github", "workflows", "changesets-check.yml"),
     "utf8",

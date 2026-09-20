@@ -5,8 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 8 — `guard:package-sourcemaps` after a build: wire it, or correct the claim.
-Slices P, 0, 1, 2, 3, 4, 5, 6 and 7 are closed. Third writer; brief
+Slice 9 — `ci:release-readiness` discovers the apps' unit tests.
+Slices P, 0, 1, 2, 3, 4, 5, 6, 7 and 8 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -630,6 +630,40 @@ nothing built says to build first. 3 cases green.
     $ vp check          pass: All 4333 files are correctly formatted
     $ vp lint           pass: Found no warnings or lint errors in 3166 files
     $ node scripts/test-ci-guard-contracts.mjs   all PASS
+
+Commit `5c57cf2f`.
+
+## Slice 8 — the sourcemap guard runs somewhere
+
+It passes on the built tree:
+
+    $ node scripts/check-package-macro-sourcemaps.mjs
+    guard:package-sourcemaps — PASS: generated 1:13 maps to .../scripts/fixtures/style-macro-sourcemap.ts:3:13;
+    the JSX-preserve transform retains its map, the build rejects SOURCEMAP_BROKEN,
+    and PACK_PASS selects one pack pass per process.
+    EXIT=0
+
+It was in no chain and no workflow, while `.claude/current/tooling.md` said it
+held the pack-pass contract. Wired into `ci:release-readiness` immediately after
+`build`, the only point where the packages it measures exist.
+
+The planted case is the wiring itself, so the assertion joins the existing
+ordering contract in `scripts/test-ci-guard-contracts.mjs` (no second copy).
+With the guard removed from the chain:
+
+    $ node scripts/test-ci-guard-contracts.mjs
+    Error: release readiness must run guard:package-sourcemaps after building packages
+    UNWIRED EXIT=1
+
+Wired:
+
+    PASS: release readiness proves the pack-pass sourcemap contract after the build.
+    WIRED EXIT=0
+
+`tooling.md` now says where it runs instead of only that it exists.
+
+    $ vp check          pass: All 4333 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3166 files
 
 Commit `PENDING`.
 
