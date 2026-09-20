@@ -39,7 +39,18 @@ export interface AriaToastRegionProps<T> {
 }
 export interface ToastRegionAria {
   /** Props for the toast region container element. */ regionProps: JSX.HTMLAttributes<HTMLElement>;
-} /** * Provides the accessibility implementation for a ToastRegion component. * * The region is a landmark (role="region") that contains all visible toasts. * It pauses toast timers on hover or focus to give users time to read/interact. * * @example * ```tsx * import { createToastRegion } from 'solidaria'; * import { For, Show } from "solid-js";
+}
+
+/**
+ * Provides the accessibility implementation for a ToastRegion component.
+ *
+ * The region is a landmark (role="region") that contains all visible toasts.
+ * It pauses toast timers on hover or focus to give users time to read/interact.
+ *
+ * @example
+ * ```tsx
+ * import { createToastRegion } from 'solidaria';
+ * import { For, Show } from "solid-js";
  *
  * function ToastRegion(props) {
  *   let ref;

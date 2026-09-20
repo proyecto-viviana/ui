@@ -423,3 +423,36 @@ and `git status` reports `__snapshots__/` unchanged. Popover suites green too,
 45/45 across `solidaria-components` and `solid-spectrum`.
 
 Changeset `.changeset/popover-portal-dead-ref.md`.
+
+## Item 8.2 — the squashed `createToastRegion` header
+
+`createToastRegion.ts:42` was a closing brace plus a whole JSDoc block, its
+paragraphs and its fenced `@example`, on one 348-character line (401 with the
+brace). Re-expanded; the fragments were printed before and after the split, so
+the content is 1:1 with what was there. A scan for the same shape across
+`packages/*/src` found no twin: the only other 200-plus-character doc lines are
+`s2-internal/style-utils.ts` in solid-spectrum and viviana-ui, and those are
+ordinary single-line member docs, not squashed blocks.
+
+**The brief's proof does not exist, and the reason is worth recording.** The
+generated reference covers two registers only — `REGISTERS` in
+`scripts/extract-api-reference.ts` is viviana-ui and solid-spectrum — so this
+solidaria hook has no emitted page, and `grep createToastRegion apps/web/src`
+finds nothing. The squash was hurting editor hovers and any future extraction,
+not a shipped page. Proof offered instead: fragments preserved, solidaria
+typecheck green, `createToastRegion` 10/10.
+
+**A red found on the way, not mine and not this item.** `vp run
+guard:api-reference` reports 81 of 84 pages drifted. It is not my toast edit
+(solidaria is not extracted) and not the ButtonGroup commit. Regenerating makes
+it worse, not better: the checker now renders `JSX.Element` as
+`import("../../node_modules/solid-js/types/types").RenderedElement | ...`, i.e.
+a machine-specific relative path baked into shipped docs data, where the
+committed pages say `Node | JSX.ArrayElement`. I ran `api:extract` once to see
+the diff and reverted all of it, including the three
+`apps/web/src/routes/docs/components/*.tsx` SEO lines it rewrites (prop counts)
+— those belong to the `public-face` worktree. Needs its own ticket: a blocking
+release gate is red, and the fix is in how the extractor renders types, not in
+re-blessing the output.
+
+Changeset `.changeset/toast-region-doc-block.md`.
