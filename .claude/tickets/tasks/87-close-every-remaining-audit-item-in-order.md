@@ -77,6 +77,11 @@ history:
       at: 2026-09-20,
       note: "owner retains required foundation-first and census precedence and chooses the simplest closure-ready ticket only where ordering is flexible. Independent own-scope review now verifies #542 through 7b370277 and #536 through 5cef9209 with their durable receipts; #531 remains in-progress and no dependency, hold, certification or release boundary changes",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "owner opened campaign #544: adversarial audit (#546), web app on TanStack 2.0.0-rc.8 (#545, dependency approved), an -rc prerelease on the next dist-tag (#547), public docs (#548-#550) and GitHub-hosted-only CI (#551, supersedes #140's Blacksmith acceptance). #544 orders its own work over this plan's sections 1-4 and leaves the census, the holds and #537's bar for latest unchanged",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later
