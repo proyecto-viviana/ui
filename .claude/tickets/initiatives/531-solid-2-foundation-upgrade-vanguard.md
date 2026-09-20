@@ -160,6 +160,11 @@ history:
       at: 2026-09-20,
       note: "#543's bounded eight-fixture common-form lifecycle slice returns exact onSettled cleanup and passes actual-control CSR25/25, including focused keyboard/identity, both RangeSlider thumbs, exact removal, disposal and remount. The AST recensus falls from73/70 to65/62; root typecheck and scoped lint/format pass. Actual fixture SSR/hydration, the known vmThreads collection debt, remaining lifecycle/warnings, web/TanStack and every build/attribution/#139/#194/#537 release gate stay open; no child, foundation or release acceptance is inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543 applies the existing hydrate no-discovery policy to Vitest's actual __vitest_vm__ client environment. A cold unchanged-source app control passes4/61 while reproducing exactly three upstream Parcel JSX scan errors; repaired cold root SSR29/78, app SSR1/8, root hydrate27/98 and app hydrate4/61 pass sequentially, one worker, with resolved noDiscovery:true/include:[], no optimizer directory and zero scan/parse diagnostics. #543/#531, remaining app/web, build/attribution and #139/#194/#537 release gates stay open; no acceptance or waiver is inferred",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

@@ -28,6 +28,14 @@ export default defineConfig({
     noDiscovery: true,
     entries: ["packages/**/test/**/*.hydrate.test.{ts,tsx}"],
   },
+  environments: {
+    __vitest_vm__: {
+      optimizeDeps: {
+        noDiscovery: true,
+        include: [],
+      },
+    },
+  },
   test: {
     name: "hydrate",
     environment: "jsdom",

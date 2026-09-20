@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "root hydrate config now applies its existing no-discovery policy to Vitest's actual vmThreads client environment. A cold unchanged-source comparison control passes the same 4 files/61 cases but reproduces the three upstream Parcel JSX scan errors with resolved noDiscovery:false; repaired cold root SSR78/78, app SSR8/8, root hydrate98/98 and app hydrate61/61 pass sequentially with one worker. Both hydrate environments resolve noDiscovery:true/include:[] with no scan metadata or parse diagnostics. #543/#531, lifecycle/warning/web and every release gate remain open",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "bounded common-form lifecycle slice returns each existing cleanup from onSettled in eight styled fixtures without changing listeners or contracts. The shared-defect control emits CLEANUP_IN_FORBIDDEN_SCOPE before the known vmThreads collection hang; final actual-control CSR proof passes 25/25 with retained identities, focused keyboard behavior, exact removal, disposal and remount. AST recensus is 65 registrations in 62 comparison fixture files; root typecheck and scoped lint/format pass. Actual fixture SSR/hydration, remaining lifecycle/warning debt and all foundation/release gates stay open",
     }
   - {
@@ -386,6 +391,29 @@ not actual fixture SSR/hydration, browser styling certification or clean-console
 acceptance. The remaining lifecycle/config/warning and broader route debt stays
 open. Receipt: `.agents/UI-EXECUTION-543-FORMS-2026-09-20.md`; detailed ledger:
 `/tmp/ui-543-forms-result.md`. #543 remains in-progress.
+
+## 2026-09-20 vmThreads optimizer repair
+
+Vitest creates the vmThreads client-consumer environment as `__vitest_vm__`.
+The installed Vite environment resolver does not inherit the root
+`optimizeDeps` policy into that custom environment, so its cold default was
+`noDiscovery: false` with no entries and Vite scanned `**/*.html`. The unchanged
+source control passed the expected 4 comparison files and 61 cases, but emitted
+one failed dependency scan with exactly three JSX-in-`.js` parse errors from the
+valid upstream Parcel examples/fixture. It also created an empty
+`deps___vitest_vm__/_metadata.json` after the failed scan.
+
+`vitest.hydrate.config.ts` now sets only
+`environments.__vitest_vm__.optimizeDeps` to `{noDiscovery: true, include: []}`.
+Fresh separate caches pass root SSR 78/78, comparison SSR 8/8, root hydrate
+98/98 and comparison hydrate 61/61, sequentially with one worker. Both hydrate
+logs record the resolved custom environment as `consumer: "client"`,
+`noDiscovery: true`, `include: []`; neither creates a dependency-optimizer
+directory or emits a scan/parse diagnostic. The comparison file and case names
+match the negative control exactly. Existing intentional failure-path and Solid
+diagnostics remain outside this optimizer repair. Receipt:
+`.agents/UI-EXECUTION-543-OPTIMIZER-2026-09-20.md`; raw ledger and inventories:
+`/tmp/ui-543-optimizer-result.md`. #543 remains in-progress.
 
 ## Relationship
 
