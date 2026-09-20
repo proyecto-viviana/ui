@@ -1,0 +1,14 @@
+$ vp test run --config apps/comparison/vitest.solid-hydrate.config.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+
+ Test Files  4 passed (4)
+      Tests  175 passed (175)
+   Start at  18:12:01
+   Duration  14.67s (transform 8.84s, setup 801ms, import 10.65s, tests 8.06s, environment 2.20s)
+
+

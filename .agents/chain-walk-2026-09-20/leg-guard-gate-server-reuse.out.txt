@@ -1,0 +1,3 @@
+$ node scripts/check-gate-server-reuse.mjs ⊘ cache disabled
+gate server reuse: 2 Playwright configs and 3 manifests all set VIVIANA_GATE.
+

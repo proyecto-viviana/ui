@@ -1,0 +1,12 @@
+$ node scripts/check-dependency-security.mjs ⊘ cache disabled
+peers: 17 unmet peers, all of them expected and explained.
+
+=== audit (high): vp pm audit -- --audit-level=high
+1 vulnerabilities found
+Severity: 1 moderate
+
+=== audit (prod, low): vp pm audit -- --prod --audit-level=low
+No known vulnerabilities found
+
+guard:dependency-security: peers allowlist and both audits passed.
+

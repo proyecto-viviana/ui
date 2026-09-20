@@ -1,0 +1,45 @@
+$ vp test run ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+Unreleased source or manifest changes with no changeset to publish them:
+
+  @scope/a@1.0.0 — 1 changed file(s) since a3397092
+      packages/a/package.json
+
+These changes will not reach npm: nothing bumps the version that would carry them,
+so the registry keeps serving the old tarball under a version consumers already resolve.
+Add a changeset naming each package above via `vp run changeset`.
+Could not parse CSS stylesheet
+Unreleased source or manifest changes with no changeset to publish them:
+
+  @scope/a@1.0.0 — 1 changed file(s) since fd8bb6e6
+      packages/a/src/index.ts
+
+These changes will not reach npm: nothing bumps the version that would carry them,
+so the registry keeps serving the old tarball under a version consumers already resolve.
+Add a changeset naming each package above via `vp run changeset`.
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+
+entry import budget FAILED: 1 budgeted entry(ies) not built:
+  @proyecto-viviana/ui ./Provider
+
+Build the packages (vp run build). If an entry is gone for good, drop its line
+from scripts/entry-import-budget.json in the commit that removes it.
+No budgeted entry resolved to a built file — build the packages first (vp run build).
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+release prerequisites — FAIL: @scope/a@1.0.0 is a publish candidate with no entry in scripts/release-prerequisites.json — record its prerequisites and the evidence for each.
+release prerequisites — FAIL: @scope/a@1.0.0 requires npm-package-registered; set satisfied=true and record independently verifiable evidence before release
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  350 passed (350)
+      Tests  6689 passed | 1 expected fail | 6 skipped (6696)
+   Start at  16:58:55
+   Duration  74.10s (transform 154.28s, setup 57.14s, import 640.02s, tests 267.34s, environment 73.06s)
+
+
+LEG=test:run EXIT=0 SECONDS=75

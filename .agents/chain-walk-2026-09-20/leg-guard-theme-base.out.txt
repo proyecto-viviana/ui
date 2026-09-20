@@ -1,0 +1,3 @@
+$ node scripts/generate-theme-base.mjs --check ⊘ cache disabled
+themeBase.ts is up to date (110 dark / 110 light tokens).
+

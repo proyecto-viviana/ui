@@ -1,0 +1,61 @@
+=================== guard:workflow-pins ===================
+$ node scripts/check-workflow-pins.mjs ⊘ cache disabled
+workflow pins: 6 workflows, every action and global install pinned.
+
+LEG=guard:workflow-pins EXIT=0 SECONDS=1
+=================== guard:gate-server-reuse ===================
+$ node scripts/check-gate-server-reuse.mjs ⊘ cache disabled
+gate server reuse: 2 Playwright configs and 3 manifests all set VIVIANA_GATE.
+
+LEG=guard:gate-server-reuse EXIT=0 SECONDS=0
+=================== guard:attribution ===================
+$ node scripts/check-package-attribution.mjs ⊘ cache disabled
+guard:attribution — PASS: 5 Adobe-derived packages ship exact MIT, Apache-2.0, and NOTICE copies; Kumo ships its local and upstream MIT licenses.
+Source inventory (report only; it is not a compliance claim):
+- @proyecto-viviana/solid-stately: 97 TS/TSX files, 60 Adobe headers, 64 source markers
+- @proyecto-viviana/solidaria: 259 TS/TSX files, 172 Adobe headers, 196 source markers
+- @proyecto-viviana/solidaria-components: 77 TS/TSX files, 66 Adobe headers, 70 source markers
+- @proyecto-viviana/solid-spectrum: 659 TS/TSX files, 119 Adobe headers, 122 source markers
+- @proyecto-viviana/ui: 650 TS/TSX files, 118 Adobe headers, 121 source markers
+
+LEG=guard:attribution EXIT=0 SECONDS=0
+=================== guard:generated-icons ===================
+$ node scripts/generate-solid-spectrum-icons.mjs --check ⊘ cache disabled
+Verified 846 generated icon files (0 changed, 0 removed).
+
+LEG=guard:generated-icons EXIT=0 SECONDS=3
+=================== guard:theme-base ===================
+$ node scripts/generate-theme-base.mjs --check ⊘ cache disabled
+themeBase.ts is up to date (110 dark / 110 light tokens).
+
+LEG=guard:theme-base EXIT=0 SECONDS=1
+=================== guard:dependency-security ===================
+$ node scripts/check-dependency-security.mjs ⊘ cache disabled
+peers: 17 unmet peers, all of them expected and explained.
+
+=== audit (high): vp pm audit -- --audit-level=high
+1 vulnerabilities found
+Severity: 1 moderate
+
+=== audit (prod, low): vp pm audit -- --prod --audit-level=low
+No known vulnerabilities found
+
+guard:dependency-security: peers allowlist and both audits passed.
+
+LEG=guard:dependency-security EXIT=0 SECONDS=3
+=================== guard:certified-case-floor ===================
+$ node scripts/check-certified-case-floor.mjs ⊘ cache disabled
+certified case floor: 73 files, 2177 cases, none below the floor.
+
+LEG=guard:certified-case-floor EXIT=0 SECONDS=3
+=================== guard:source-artifacts ===================
+$ node scripts/check-source-artifacts.mjs ⊘ cache disabled
+guard:source-artifacts — PASS: only 2 intentional ambient declaration(s) exist in public-package source.
+
+LEG=guard:source-artifacts EXIT=0 SECONDS=0
+=================== guard:package-sourcemaps ===================
+$ node scripts/check-package-macro-sourcemaps.mjs ⊘ cache disabled
+guard:package-sourcemaps — PASS: generated 1:13 maps to /home/emoporemilio/projects/viviana-hub/ui/scripts/fixtures/style-macro-sourcemap.ts:3:13; the JSX-preserve transform retains its map, the build rejects SOURCEMAP_BROKEN, and PACK_PASS selects one pack pass per process.
+
+LEG=guard:package-sourcemaps EXIT=0 SECONDS=0
+WALK DONE 2026-09-20T16:44:22-03:00

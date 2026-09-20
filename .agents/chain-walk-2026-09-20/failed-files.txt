@@ -1,0 +1,25 @@
+packages/solid-spectrum/test/ActionMenu.test.tsx (34 tests | 1 failed) 4730ms
+packages/solid-spectrum/test/Button.test.tsx (40 tests | 1 failed) 1459ms
+packages/solid-spectrum/test/ContextualHelpTrigger.test.tsx (16 tests | 1 failed) 1159ms
+packages/solid-spectrum/test/ListBox.test.tsx (4 tests | 1 failed) 573ms
+packages/solid-spectrum/test/Table.test.tsx (24 tests | 3 failed) 5732ms
+packages/solid-spectrum/test/Tooltip.test.tsx (23 tests | 1 failed) 1050ms
+packages/solidaria-components/test/Button.test.tsx (72 tests | 6 failed) 2403ms
+packages/solidaria-components/test/ComboBox.test.tsx (107 tests | 2 failed) 6365ms
+packages/solidaria-components/test/Disclosure.test.tsx (33 tests | 2 failed) 1061ms
+packages/solidaria-components/test/GridList.test.tsx (48 tests | 7 failed) 1505ms
+packages/solidaria-components/test/ListBox.test.tsx (86 tests | 8 failed) 3619ms
+packages/solidaria-components/test/Table.test.tsx (151 tests | 10 failed | 4 skipped) 8232ms
+packages/solidaria-components/test/Tooltip.test.tsx (25 tests | 1 failed) 629ms
+packages/solidaria-components/test/Tree.test.tsx (68 tests | 4 failed) 3301ms
+packages/solidaria/test/createButton.test.tsx (66 tests | 3 failed) 840ms
+packages/solidaria/test/createDatePickerGroup.test.tsx (8 tests | 2 failed) 505ms
+packages/solidaria/test/createDateRangePicker.test.tsx (8 tests | 1 failed) 175ms
+packages/solidaria/test/createDisclosure.test.tsx (9 tests | 4 failed) 204ms
+packages/solidaria/test/createFocusVisible.test.tsx (17 tests | 1 failed) 1065ms
+packages/solidaria/test/createPress.test.tsx (90 tests | 43 failed) 787ms
+packages/solidaria/test/createSelectableItem.test.tsx (17 tests | 7 failed) 261ms
+packages/solidaria/test/createTooltip.test.tsx (18 tests | 1 failed) 811ms
+packages/solidaria/test/focus.test.tsx (46 tests | 1 failed) 732ms
+packages/solidaria/test/runAfterTransition.test.ts (5 tests | 1 failed) 73ms
+packages/solidaria/test/test-utils.test.tsx (62 tests | 8 failed) 749ms

@@ -1,0 +1,11 @@
+$ vp test run --config vitest.hydrate.config.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+
+ Test Files  28 passed (28)
+      Tests  99 passed (99)
+   Start at  18:11:44
+   Duration  14.87s (transform 86.32s, setup 7.08s, import 135.00s, tests 6.40s, environment 20.69s)
+
+

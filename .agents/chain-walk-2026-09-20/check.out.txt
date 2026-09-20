@@ -1,0 +1,9 @@
+$ vp check ⊘ cache disabled
+[1m[94mpass:[39m[0m All 4350 files are correctly formatted [2m(10970ms, 16 threads)[0m
+[1m[94mpass:[39m[0m Found no warnings or lint errors in 3172 files [2m(4.2s, 16 threads)[0m
+
+$ vp exec tsc --noEmit -p tsconfig.typecheck.json ⊘ cache disabled
+
+---
+vp run: 0/2 cache hit (0%). (Run `vp run --last-details` for full details)
+LEG=check EXIT=0

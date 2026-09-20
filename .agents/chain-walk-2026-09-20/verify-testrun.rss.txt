@@ -1,0 +1,15 @@
+16:58:55 vitest=1MB avail=11800MB
+16:59:00 vitest=1MB avail=8696MB
+16:59:05 vitest=1MB avail=6841MB
+16:59:10 vitest=1MB avail=5905MB
+16:59:15 vitest=1MB avail=5294MB
+16:59:20 vitest=1MB avail=4349MB
+16:59:25 vitest=1MB avail=3869MB
+16:59:30 vitest=1MB avail=3766MB
+16:59:35 vitest=1MB avail=4216MB
+16:59:40 vitest=1MB avail=3638MB
+16:59:45 vitest=1MB avail=2893MB
+16:59:50 vitest=1MB avail=3007MB
+16:59:55 vitest=1MB avail=4089MB
+17:00:00 vitest=1MB avail=4144MB
+17:00:05 vitest=1MB avail=4031MB

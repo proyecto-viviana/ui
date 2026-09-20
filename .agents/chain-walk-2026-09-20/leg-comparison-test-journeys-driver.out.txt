@@ -1,0 +1,11 @@
+$ vp test run --config apps/comparison/vitest.config.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui/apps/comparison
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  18:12:18
+   Duration  608ms (transform 142ms, setup 0ms, import 469ms, tests 5ms, environment 0ms)
+
+

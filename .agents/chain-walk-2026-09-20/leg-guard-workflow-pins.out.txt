@@ -1,0 +1,3 @@
+$ node scripts/check-workflow-pins.mjs ⊘ cache disabled
+workflow pins: 6 workflows, every action and global install pinned.
+

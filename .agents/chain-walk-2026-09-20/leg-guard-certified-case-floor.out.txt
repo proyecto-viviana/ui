@@ -1,0 +1,62 @@
+$ node scripts/check-certified-case-floor.mjs ⊘ cache disabled
+node:internal/errors:986
+  const err = new Error(message);
+              ^
+
+Error: Command failed: pnpm exec playwright test e2e/certified --list --reporter=json
+    at genericNodeError (node:internal/errors:986:15)
+    at wrappedFn (node:internal/errors:540:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at readCertifiedListing (file:///home/emoporemilio/projects/viviana-hub/ui/scripts/check-certified-case-floor.mjs:89:18)
+    at checkCertifiedCaseFloor (file:///home/emoporemilio/projects/viviana-hub/ui/scripts/check-certified-case-floor.mjs:132:18)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/scripts/check-certified-case-floor.mjs:188:16
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    'Scope: all 12 workspace projects\n' +
+      '[ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY] Aborted removal of modules directory due to no TTY\n' +
+      '\n' +
+      'If you are running pnpm in CI, set the CI environment variable to "true", or set "confirmModulesPurge" to "false".\n' +
+      '[ERROR] Command failed with exit code 1: pnpm install\n' +
+      '\n' +
+      'pnpm: Command failed with exit code 1: pnpm install\n' +
+      '    at getFinalError (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:89203:14)\n' +
+      '    at makeError (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:91510:21)\n' +
+      '    at getSyncResult (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93354:10)\n' +
+      '    at spawnSubprocessSync (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93314:14)\n' +
+      '    at execaCoreSync (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93244:23)\n' +
+      '    at callBoundExeca (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95772:23)\n' +
+      '    at boundExeca (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95749:49)\n' +
+      '    at sync2 (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95904:14)\n' +
+      '    at runPnpmCli (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:271525:5)\n' +
+      '    at runDepsStatusCheck (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:273323:7)\n',
+    ''
+  ],
+  pid: 423813,
+  stdout: 'Scope: all 12 workspace projects\n' +
+    '[ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY] Aborted removal of modules directory due to no TTY\n' +
+    '\n' +
+    'If you are running pnpm in CI, set the CI environment variable to "true", or set "confirmModulesPurge" to "false".\n' +
+    '[ERROR] Command failed with exit code 1: pnpm install\n' +
+    '\n' +
+    'pnpm: Command failed with exit code 1: pnpm install\n' +
+    '    at getFinalError (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:89203:14)\n' +
+    '    at makeError (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:91510:21)\n' +
+    '    at getSyncResult (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93354:10)\n' +
+    '    at spawnSubprocessSync (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93314:14)\n' +
+    '    at execaCoreSync (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:93244:23)\n' +
+    '    at callBoundExeca (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95772:23)\n' +
+    '    at boundExeca (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95749:49)\n' +
+    '    at sync2 (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:95904:14)\n' +
+    '    at runPnpmCli (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:271525:5)\n' +
+    '    at runDepsStatusCheck (file:///home/emoporemilio/.local/share/vite-plus/package_manager/pnpm/11.22.0/pnpm/dist/pnpm.mjs:273323:7)\n',
+  stderr: ''
+}
+
+Node.js v24.21.0
+

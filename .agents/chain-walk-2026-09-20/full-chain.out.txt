@@ -1,0 +1,535 @@
+start 2026-09-20T16:40:00-03:00 avail=7261MB
+$ vp check ⊘ cache disabled
+[1m[94mpass:[39m[0m All 4347 files are correctly formatted [2m(10432ms, 16 threads)[0m
+[1m[94mpass:[39m[0m Found no warnings or lint errors in 3170 files [2m(6.6s, 16 threads)[0m
+
+$ vp exec tsc --noEmit -p tsconfig.typecheck.json ⊘ cache disabled
+
+$ node scripts/check-workflow-pins.mjs ⊘ cache disabled
+workflow pins: 6 workflows, every action and global install pinned.
+
+$ node scripts/check-gate-server-reuse.mjs ⊘ cache disabled
+gate server reuse: 2 Playwright configs and 3 manifests all set VIVIANA_GATE.
+
+$ node scripts/check-package-attribution.mjs ⊘ cache disabled
+guard:attribution — PASS: 5 Adobe-derived packages ship exact MIT, Apache-2.0, and NOTICE copies; Kumo ships its local and upstream MIT licenses.
+Source inventory (report only; it is not a compliance claim):
+- @proyecto-viviana/solid-stately: 97 TS/TSX files, 60 Adobe headers, 64 source markers
+- @proyecto-viviana/solidaria: 259 TS/TSX files, 172 Adobe headers, 196 source markers
+- @proyecto-viviana/solidaria-components: 77 TS/TSX files, 66 Adobe headers, 70 source markers
+- @proyecto-viviana/solid-spectrum: 659 TS/TSX files, 119 Adobe headers, 122 source markers
+- @proyecto-viviana/ui: 650 TS/TSX files, 118 Adobe headers, 121 source markers
+
+$ node scripts/generate-solid-spectrum-icons.mjs --check ⊘ cache disabled
+Verified 846 generated icon files (0 changed, 0 removed).
+
+$ node scripts/generate-theme-base.mjs --check ⊘ cache disabled
+themeBase.ts is up to date (110 dark / 110 light tokens).
+
+$ node scripts/check-dependency-security.mjs ⊘ cache disabled
+peers: 17 unmet peers, all of them expected and explained.
+
+=== audit (high): vp pm audit -- --audit-level=high
+1 vulnerabilities found
+Severity: 1 moderate
+
+=== audit (prod, low): vp pm audit -- --prod --audit-level=low
+No known vulnerabilities found
+
+guard:dependency-security: peers allowlist and both audits passed.
+
+$ node scripts/check-certified-case-floor.mjs ⊘ cache disabled
+certified case floor: 73 files, 2177 cases, none below the floor.
+
+$ node scripts/check-source-artifacts.mjs ⊘ cache disabled
+guard:source-artifacts — PASS: only 2 intentional ambient declaration(s) exist in public-package source.
+
+$ vp exec tsc --noEmit -p tsconfig.typecheck.json ⊘ cache disabled
+
+~/packages/solid-stately$ rm -rf dist ⊘ cache disabled
+
+~/packages/solid-stately$ vp pack ⊘ cache disabled
+[34mℹ[39m entry: [34msrc/index.ts, src/flags/flags.ts[39m
+[34mℹ[39m tsconfig: [34mtsconfig.json[39m
+[34mℹ[39m Build start
+[34mℹ[39m [2mdist/[22m[1mindex.js[22m                    [2m435.98 kB[22m [2m│ gzip:  84.70 kB[22m
+[34mℹ[39m [2mdist/[22m[1mprivate/flags/flags.js[22m      [2m  1.10 kB[22m [2m│ gzip:   0.64 kB[22m
+[34mℹ[39m [2mdist/[22mindex.js.map                [2m944.73 kB[22m [2m│ gzip: 183.33 kB[22m
+[34mℹ[39m [2mdist/[22mprivate/flags/flags.js.map  [2m  1.28 kB[22m [2m│ gzip:   0.73 kB[22m
+[34mℹ[39m 4 files, total: 1.38 MB
+[32m✔[39m Build complete in [32m154ms[39m
+
+~/packages/solid-stately$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solid-stately$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solid-stately$ node ../../scripts/write-package-declaration-attribution.mjs . ⊘ cache disabled
+write-package-declaration-attribution — wrote 0 runtime and 5 declaration attribution banner(s) in .
+
+~/packages/solidaria$ rm -rf dist ⊘ cache disabled
+
+~/packages/solidaria$ vp pack ⊘ cache disabled
+[34mℹ[39m entry: [34msrc/index.ts, src/actiongroup/index.ts, src/autocomplete/index.ts, src/breadcrumbs/index.ts, src/button/index.ts, src/calendar/index.ts, src/checkbox/index.ts, src/collections/index.ts, src/color/index.ts, src/combobox/index.ts, src/datepicker/index.ts, src/dialog/index.ts, src/disclosure/index.ts, src/dnd/index.ts, src/focus/index.ts, src/form/index.ts, src/grid/index.ts, src/gridlist/index.ts, src/i18n/index.ts, src/interactions/index.ts, src/label/index.ts, src/landmark/index.ts, src/link/index.ts, src/listbox/index.ts, src/live-announcer/index.ts, src/menu/index.ts, src/meter/index.ts, src/numberfield/index.ts, src/overlays/index.ts, src/popover/index.ts, src/progress/index.ts, src/radio/index.ts, src/searchfield/index.ts, src/select/index.ts, src/selection/index.ts, src/separator/index.ts, src/slider/index.ts, src/spinbutton/index.ts, src/ssr/index.tsx, src/steplist/index.ts, src/switch/index.ts, src/table/index.ts, src/tabs/index.ts, src/tag/index.ts, src/textfield/index.ts, src/toast/index.ts, src/toggle/index.ts, src/tokenfield/index.ts, src/toolbar/index.ts, src/tooltip/index.ts, src/tree/index.ts, src/utils/index.ts, src/virtualizer/index.ts, src/visually-hidden/index.ts[39m
+[34mℹ[39m tsconfig: [34mtsconfig.json[39m
+[34mℹ[39m entry: [34msrc/index.ts, src/actiongroup/index.ts, src/autocomplete/index.ts, src/breadcrumbs/index.ts, src/button/index.ts, src/calendar/index.ts, src/checkbox/index.ts, src/collections/index.ts, src/color/index.ts, src/combobox/index.ts, src/datepicker/index.ts, src/dialog/index.ts, src/disclosure/index.ts, src/dnd/index.ts, src/focus/index.ts, src/form/index.ts, src/grid/index.ts, src/gridlist/index.ts, src/i18n/index.ts, src/interactions/index.ts, src/label/index.ts, src/landmark/index.ts, src/link/index.ts, src/listbox/index.ts, src/live-announcer/index.ts, src/menu/index.ts, src/meter/index.ts, src/numberfield/index.ts, src/overlays/index.ts, src/popover/index.ts, src/progress/index.ts, src/radio/index.ts, src/searchfield/index.ts, src/select/index.ts, src/selection/index.ts, src/separator/index.ts, src/slider/index.ts, src/spinbutton/index.ts, src/ssr/index.tsx, src/steplist/index.ts, src/switch/index.ts, src/table/index.ts, src/tabs/index.ts, src/tag/index.ts, src/textfield/index.ts, src/toast/index.ts, src/toggle/index.ts, src/tokenfield/index.ts, src/toolbar/index.ts, src/tooltip/index.ts, src/tree/index.ts, src/utils/index.ts, src/virtualizer/index.ts, src/visually-hidden/index.ts[39m
+[34mℹ[39m tsconfig: [34mtsconfig.json[39m
+[34mℹ[39m Build start
+[34mℹ[39m [2mdist/[22m[1mindex.jsx[22m                                      [2m 14.67 kB[22m [2m│ gzip:  3.34 kB[22m
+[34mℹ[39m [2mdist/[22m[1mssr/index.jsx[22m                                  [2m  9.02 kB[22m [2m│ gzip:  3.27 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcollections/index.jsx[22m                          [2m  6.46 kB[22m [2m│ gzip:  2.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mutils/index.jsx[22m                                [2m  3.08 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdnd/index.jsx[22m                                  [2m  2.02 kB[22m [2m│ gzip:  0.59 kB[22m
+[34mℹ[39m [2mdist/[22m[1minteractions/index.jsx[22m                         [2m  1.45 kB[22m [2m│ gzip:  0.39 kB[22m
+[34mℹ[39m [2mdist/[22m[1mselection/index.jsx[22m                            [2m  0.86 kB[22m [2m│ gzip:  0.31 kB[22m
+[34mℹ[39m [2mdist/[22m[1mfocus/index.jsx[22m                                [2m  0.84 kB[22m [2m│ gzip:  0.28 kB[22m
+[34mℹ[39m [2mdist/[22m[1moverlays/index.jsx[22m                             [2m  0.82 kB[22m [2m│ gzip:  0.29 kB[22m
+[34mℹ[39m [2mdist/[22m[1mi18n/index.jsx[22m                                 [2m  0.75 kB[22m [2m│ gzip:  0.27 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtable/index.jsx[22m                                [2m  0.53 kB[22m [2m│ gzip:  0.20 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdatepicker/index.jsx[22m                           [2m  0.46 kB[22m [2m│ gzip:  0.21 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcalendar/index.jsx[22m                             [2m  0.40 kB[22m [2m│ gzip:  0.16 kB[22m
+[34mℹ[39m [2mdist/[22m[1mgridlist/index.jsx[22m                             [2m  0.29 kB[22m [2m│ gzip:  0.15 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcheckbox/index.jsx[22m                             [2m  0.29 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtokenfield/index.jsx[22m                           [2m  0.28 kB[22m [2m│ gzip:  0.16 kB[22m
+[34mℹ[39m [2mdist/[22m[1mradio/index.jsx[22m                                [2m  0.26 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcolor/index.jsx[22m                                [2m  0.26 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mbutton/index.jsx[22m                               [2m  0.25 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlabel/index.jsx[22m                                [2m  0.24 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mgrid/index.jsx[22m                                 [2m  0.23 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mautocomplete/index.jsx[22m                         [2m  0.23 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtooltip/index.jsx[22m                              [2m  0.22 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtree/index.jsx[22m                                 [2m  0.21 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mvirtualizer/index.jsx[22m                          [2m  0.21 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mform/index.jsx[22m                                 [2m  0.20 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mselect/index.jsx[22m                               [2m  0.20 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlive-announcer/index.jsx[22m                       [2m  0.19 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mmenu/index.jsx[22m                                 [2m  0.19 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mspinbutton/index.jsx[22m                           [2m  0.19 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mpopover/index.jsx[22m                              [2m  0.18 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoggle/index.jsx[22m                               [2m  0.18 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mvisually-hidden/index.jsx[22m                      [2m  0.16 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlistbox/index.jsx[22m                              [2m  0.16 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtag/index.jsx[22m                                  [2m  0.15 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mactiongroup/index.jsx[22m                          [2m  0.15 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mbreadcrumbs/index.jsx[22m                          [2m  0.15 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtabs/index.jsx[22m                                 [2m  0.15 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdisclosure/index.jsx[22m                           [2m  0.15 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlandmark/index.jsx[22m                             [2m  0.15 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcombobox/index.jsx[22m                             [2m  0.13 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoast/index.jsx[22m                                [2m  0.12 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1msteplist/index.jsx[22m                             [2m  0.12 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mprogress/index.jsx[22m                             [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mnumberfield/index.jsx[22m                          [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1msearchfield/index.jsx[22m                          [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mseparator/index.jsx[22m                            [2m  0.09 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtextfield/index.jsx[22m                            [2m  0.09 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoolbar/index.jsx[22m                              [2m  0.09 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdialog/index.jsx[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mslider/index.jsx[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mswitch/index.jsx[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mmeter/index.jsx[22m                                [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlink/index.jsx[22m                                 [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dnd.jsx.map                             [2m144.85 kB[22m [2m│ gzip: 30.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dnd.jsx                                 [2m137.94 kB[22m [2m│ gzip: 26.09 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/datepicker.jsx.map                      [2m136.35 kB[22m [2m│ gzip: 27.23 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/calendar.jsx.map                        [2m110.30 kB[22m [2m│ gzip: 20.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/color.jsx.map                           [2m107.21 kB[22m [2m│ gzip: 19.27 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/combobox.jsx.map                        [2m106.33 kB[22m [2m│ gzip: 17.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/table.jsx.map                           [2m100.30 kB[22m [2m│ gzip: 20.16 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dom.jsx.map                             [2m 84.33 kB[22m [2m│ gzip: 20.68 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/menu.jsx.map                            [2m 70.77 kB[22m [2m│ gzip: 17.88 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableList.jsx.map            [2m 67.78 kB[22m [2m│ gzip: 15.68 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/datepicker.jsx                          [2m 65.58 kB[22m [2m│ gzip: 13.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/popover.jsx.map                         [2m 64.76 kB[22m [2m│ gzip: 15.29 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/table.jsx                               [2m 59.88 kB[22m [2m│ gzip: 13.71 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/color.jsx                               [2m 55.88 kB[22m [2m│ gzip: 10.60 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/utils.jsx.map                           [2m 54.13 kB[22m [2m│ gzip: 14.64 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/DragManager.jsx.map                     [2m 49.87 kB[22m [2m│ gzip: 12.60 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/calendar.jsx                            [2m 49.76 kB[22m [2m│ gzip:  9.45 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/combobox.jsx                            [2m 49.61 kB[22m [2m│ gzip:  8.92 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/FocusScope.jsx.map                      [2m 48.40 kB[22m [2m│ gzip: 12.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dom.jsx                                 [2m 47.59 kB[22m [2m│ gzip: 10.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createPress.jsx.map                     [2m 47.56 kB[22m [2m│ gzip: 11.37 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tree.jsx.map                            [2m 47.42 kB[22m [2m│ gzip: 11.24 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/grid.jsx.map                            [2m 44.86 kB[22m [2m│ gzip:  7.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tokenfield.jsx.map                      [2m 44.42 kB[22m [2m│ gzip: 11.56 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/select.jsx.map                          [2m 40.93 kB[22m [2m│ gzip: 10.17 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/gridlist.jsx.map                        [2m 40.91 kB[22m [2m│ gzip: 10.31 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tooltip.jsx.map                         [2m 39.91 kB[22m [2m│ gzip: 10.21 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tag.jsx.map                             [2m 38.80 kB[22m [2m│ gzip:  9.51 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableItem.jsx.map            [2m 36.53 kB[22m [2m│ gzip: 10.40 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlay.jsx.map                   [2m 35.71 kB[22m [2m│ gzip: 10.10 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/focus.jsx.map                           [2m 33.45 kB[22m [2m│ gzip:  8.80 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/radio.jsx.map                           [2m 32.09 kB[22m [2m│ gzip:  8.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tabs.jsx.map                            [2m 31.80 kB[22m [2m│ gzip:  8.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/numberfield.jsx.map                     [2m 31.67 kB[22m [2m│ gzip:  8.41 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableList.jsx                [2m 31.11 kB[22m [2m│ gzip:  7.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/popover.jsx                             [2m 30.75 kB[22m [2m│ gzip:  6.95 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/menu.jsx                                [2m 30.32 kB[22m [2m│ gzip:  8.30 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/utils.jsx                               [2m 30.03 kB[22m [2m│ gzip:  8.05 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createStringFormatter.jsx.map           [2m 27.16 kB[22m [2m│ gzip:  6.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/listbox.jsx.map                         [2m 25.60 kB[22m [2m│ gzip:  6.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/DragManager.jsx                         [2m 24.53 kB[22m [2m│ gzip:  6.23 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/autocomplete.jsx.map                    [2m 24.36 kB[22m [2m│ gzip:  7.46 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/ariaHideOutside.jsx.map                 [2m 23.82 kB[22m [2m│ gzip:  6.56 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/FocusScope.jsx                          [2m 21.85 kB[22m [2m│ gzip:  5.64 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/grid.jsx                                [2m 21.51 kB[22m [2m│ gzip:  3.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/searchfield.jsx.map                     [2m 21.20 kB[22m [2m│ gzip:  4.49 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tree.jsx                                [2m 20.93 kB[22m [2m│ gzip:  5.59 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/checkbox.jsx.map                        [2m 20.81 kB[22m [2m│ gzip:  5.00 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tokenfield.jsx                          [2m 20.53 kB[22m [2m│ gzip:  5.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createPress.jsx                         [2m 20.47 kB[22m [2m│ gzip:  4.69 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tooltip.jsx                             [2m 19.71 kB[22m [2m│ gzip:  5.92 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/gridlist.jsx                            [2m 19.14 kB[22m [2m│ gzip:  4.67 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/overlays.jsx.map                        [2m 18.89 kB[22m [2m│ gzip:  4.99 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/button.jsx.map                          [2m 17.78 kB[22m [2m│ gzip:  4.51 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tag.jsx                                 [2m 17.47 kB[22m [2m│ gzip:  5.18 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/slider.jsx.map                          [2m 17.38 kB[22m [2m│ gzip:  4.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toast.jsx.map                           [2m 17.10 kB[22m [2m│ gzip:  4.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/select.jsx                              [2m 17.05 kB[22m [2m│ gzip:  4.41 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/env.jsx.map                             [2m 16.86 kB[22m [2m│ gzip:  5.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/interactions.jsx.map                    [2m 16.74 kB[22m [2m│ gzip:  4.42 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createToggle.jsx.map                    [2m 16.70 kB[22m [2m│ gzip:  4.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/focus.jsx                               [2m 16.39 kB[22m [2m│ gzip:  4.54 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toolbar.jsx.map                         [2m 16.30 kB[22m [2m│ gzip:  4.47 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableItem.jsx                [2m 15.52 kB[22m [2m│ gzip:  4.75 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createKeyboard.jsx.map                  [2m 15.26 kB[22m [2m│ gzip:  4.38 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlay.jsx                       [2m 15.14 kB[22m [2m│ gzip:  4.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/textfield.jsx.map                       [2m 14.94 kB[22m [2m│ gzip:  4.46 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLandmark.jsx.map                  [2m 14.77 kB[22m [2m│ gzip:  4.75 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/spinbutton.jsx.map                      [2m 14.38 kB[22m [2m│ gzip:  3.64 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualizer.jsx.map                     [2m 14.31 kB[22m [2m│ gzip:  4.40 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createStringFormatter.jsx               [2m 13.70 kB[22m [2m│ gzip:  3.86 kB[22m
+[34mℹ[39m [2mdist/[22mssr/index.jsx.map                              [2m 13.49 kB[22m [2m│ gzip:  4.70 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/intl.jsx                                [2m 13.31 kB[22m [2m│ gzip:  3.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/numberfield.jsx                         [2m 13.12 kB[22m [2m│ gzip:  3.56 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/radio.jsx                               [2m 13.09 kB[22m [2m│ gzip:  3.45 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollectionRowInteraction.jsx.map  [2m 12.56 kB[22m [2m│ gzip:  3.59 kB[22m
+[34mℹ[39m [2mdist/[22mcollections/index.jsx.map                      [2m 12.47 kB[22m [2m│ gzip:  3.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/disclosure.jsx.map                      [2m 12.45 kB[22m [2m│ gzip:  3.81 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/actiongroup.jsx.map                     [2m 12.30 kB[22m [2m│ gzip:  4.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/i18n.jsx.map                            [2m 12.29 kB[22m [2m│ gzip:  2.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createTypeSelect.jsx.map                [2m 12.23 kB[22m [2m│ gzip:  4.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tabs.jsx                                [2m 12.08 kB[22m [2m│ gzip:  3.33 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createHover.jsx.map                     [2m 11.91 kB[22m [2m│ gzip:  3.48 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/ariaHideOutside.jsx                     [2m 11.90 kB[22m [2m│ gzip:  3.33 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/locale.jsx.map                          [2m 11.54 kB[22m [2m│ gzip:  3.95 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/announce.jsx.map                        [2m 11.43 kB[22m [2m│ gzip:  3.83 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormValidation.jsx.map            [2m 11.01 kB[22m [2m│ gzip:  3.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/listbox.jsx                             [2m 10.40 kB[22m [2m│ gzip:  2.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusWithin.jsx.map               [2m 10.18 kB[22m [2m│ gzip:  3.41 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/checkbox.jsx                            [2m  9.97 kB[22m [2m│ gzip:  2.37 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/link.jsx.map                            [2m  9.68 kB[22m [2m│ gzip:  2.95 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/button.jsx                              [2m  9.56 kB[22m [2m│ gzip:  2.39 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/intl.jsx.map                            [2m  8.97 kB[22m [2m│ gzip:  1.59 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/autocomplete.jsx                        [2m  8.97 kB[22m [2m│ gzip:  2.88 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/i18n.jsx                                [2m  8.94 kB[22m [2m│ gzip:  2.19 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/breadcrumbs.jsx.map                     [2m  8.85 kB[22m [2m│ gzip:  2.68 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/env.jsx                                 [2m  8.78 kB[22m [2m│ gzip:  3.07 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toast.jsx                               [2m  8.69 kB[22m [2m│ gzip:  2.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/interactions.jsx                        [2m  8.57 kB[22m [2m│ gzip:  2.32 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/slider.jsx                              [2m  8.49 kB[22m [2m│ gzip:  2.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLongPress.jsx.map                 [2m  8.47 kB[22m [2m│ gzip:  2.97 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocus.jsx.map                     [2m  8.27 kB[22m [2m│ gzip:  2.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/searchfield.jsx                         [2m  7.77 kB[22m [2m│ gzip:  2.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toolbar.jsx                             [2m  7.71 kB[22m [2m│ gzip:  2.27 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createKeyboard.jsx                      [2m  7.55 kB[22m [2m│ gzip:  2.32 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualizer.jsx                         [2m  7.50 kB[22m [2m│ gzip:  2.35 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dialog.jsx.map                          [2m  7.05 kB[22m [2m│ gzip:  2.79 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusable.jsx.map                 [2m  7.02 kB[22m [2m│ gzip:  2.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/overlays.jsx                            [2m  7.01 kB[22m [2m│ gzip:  2.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createProgressBar.jsx.map               [2m  6.86 kB[22m [2m│ gzip:  2.42 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLandmark.jsx                      [2m  6.55 kB[22m [2m│ gzip:  2.40 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/disclosure.jsx                          [2m  6.49 kB[22m [2m│ gzip:  2.15 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/announce.jsx                            [2m  6.47 kB[22m [2m│ gzip:  2.38 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollectionRowInteraction.jsx      [2m  6.37 kB[22m [2m│ gzip:  1.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/locale.jsx                              [2m  6.34 kB[22m [2m│ gzip:  2.21 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createToggle.jsx                        [2m  6.31 kB[22m [2m│ gzip:  2.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/textfield.jsx                           [2m  6.01 kB[22m [2m│ gzip:  2.04 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createField.jsx.map                     [2m  5.92 kB[22m [2m│ gzip:  2.17 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/actiongroup.jsx                         [2m  5.85 kB[22m [2m│ gzip:  2.13 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createVisuallyHidden.jsx.map            [2m  5.71 kB[22m [2m│ gzip:  2.28 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/spinbutton.jsx                          [2m  5.42 kB[22m [2m│ gzip:  2.06 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createHover.jsx                         [2m  5.38 kB[22m [2m│ gzip:  1.72 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormValidation.jsx                [2m  5.31 kB[22m [2m│ gzip:  1.98 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabel.jsx.map                     [2m  5.00 kB[22m [2m│ gzip:  1.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/steplist.jsx.map                        [2m  4.96 kB[22m [2m│ gzip:  1.80 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusWithin.jsx                   [2m  4.80 kB[22m [2m│ gzip:  1.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/filterDOMProps.jsx.map                  [2m  4.79 kB[22m [2m│ gzip:  1.84 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createTypeSelect.jsx                    [2m  4.63 kB[22m [2m│ gzip:  1.93 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/selection.jsx.map                       [2m  4.28 kB[22m [2m│ gzip:  2.00 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlayTrigger.jsx.map            [2m  4.26 kB[22m [2m│ gzip:  1.81 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocus.jsx                         [2m  4.16 kB[22m [2m│ gzip:  1.55 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusRing.jsx.map                 [2m  4.15 kB[22m [2m│ gzip:  1.55 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/breadcrumbs.jsx                         [2m  4.04 kB[22m [2m│ gzip:  1.32 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/switch.jsx.map                          [2m  4.04 kB[22m [2m│ gzip:  1.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusable.jsx                     [2m  3.90 kB[22m [2m│ gzip:  1.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLongPress.jsx                     [2m  3.80 kB[22m [2m│ gzip:  1.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/separator.jsx.map                       [2m  3.67 kB[22m [2m│ gzip:  1.49 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createVisuallyHidden.jsx                [2m  3.41 kB[22m [2m│ gzip:  1.50 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/meter.jsx.map                           [2m  3.37 kB[22m [2m│ gzip:  1.39 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dialog.jsx                              [2m  3.35 kB[22m [2m│ gzip:  1.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/link.jsx                                [2m  3.33 kB[22m [2m│ gzip:  1.25 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createProgressBar.jsx                   [2m  3.31 kB[22m [2m│ gzip:  1.33 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollator.jsx.map                  [2m  3.07 kB[22m [2m│ gzip:  1.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualFocus.jsx.map                    [2m  3.07 kB[22m [2m│ gzip:  1.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormReset.jsx.map                 [2m  3.07 kB[22m [2m│ gzip:  1.48 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabels.jsx.map                    [2m  2.92 kB[22m [2m│ gzip:  1.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/filterDOMProps.jsx                      [2m  2.86 kB[22m [2m│ gzip:  1.22 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/steplist.jsx                            [2m  2.43 kB[22m [2m│ gzip:  1.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/refs.jsx.map                            [2m  2.39 kB[22m [2m│ gzip:  1.16 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollator.jsx                      [2m  2.37 kB[22m [2m│ gzip:  1.13 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/selection.jsx                           [2m  2.26 kB[22m [2m│ gzip:  1.15 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabel.jsx                         [2m  2.25 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualFocus.jsx                        [2m  2.24 kB[22m [2m│ gzip:  0.89 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createField.jsx                         [2m  2.21 kB[22m [2m│ gzip:  0.97 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlayTrigger.jsx                [2m  2.14 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusRing.jsx                     [2m  2.08 kB[22m [2m│ gzip:  0.79 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormReset.jsx                     [2m  1.76 kB[22m [2m│ gzip:  0.93 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabels.jsx                        [2m  1.74 kB[22m [2m│ gzip:  0.88 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/constants.jsx.map                       [2m  1.72 kB[22m [2m│ gzip:  0.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/switch.jsx                              [2m  1.68 kB[22m [2m│ gzip:  0.85 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/meter.jsx                               [2m  1.64 kB[22m [2m│ gzip:  0.82 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/separator.jsx                           [2m  1.60 kB[22m [2m│ gzip:  0.84 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/constants.jsx                           [2m  1.59 kB[22m [2m│ gzip:  0.85 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/reactivity.jsx.map                      [2m  1.44 kB[22m [2m│ gzip:  0.63 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/refs.jsx                                [2m  1.20 kB[22m [2m│ gzip:  0.67 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/owner.jsx.map                           [2m  1.12 kB[22m [2m│ gzip:  0.64 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/owner.jsx                               [2m  0.81 kB[22m [2m│ gzip:  0.47 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/reactivity.jsx                          [2m  0.55 kB[22m [2m│ gzip:  0.30 kB[22m
+[34mℹ[39m 222 files, total: 3.55 MB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+[32m✔[39m Build complete in [32m453ms[39m
+[34mℹ[39m [2mdist/[22m[1mindex.js[22m                                      [2m 14.59 kB[22m [2m│ gzip:  3.33 kB[22m
+[34mℹ[39m [2mdist/[22m[1mssr/index.js[22m                                  [2m  9.10 kB[22m [2m│ gzip:  3.29 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcollections/index.js[22m                          [2m  6.46 kB[22m [2m│ gzip:  2.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mutils/index.js[22m                                [2m  3.07 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdnd/index.js[22m                                  [2m  2.02 kB[22m [2m│ gzip:  0.58 kB[22m
+[34mℹ[39m [2mdist/[22m[1minteractions/index.js[22m                         [2m  1.44 kB[22m [2m│ gzip:  0.39 kB[22m
+[34mℹ[39m [2mdist/[22m[1mselection/index.js[22m                            [2m  0.86 kB[22m [2m│ gzip:  0.31 kB[22m
+[34mℹ[39m [2mdist/[22m[1mfocus/index.js[22m                                [2m  0.83 kB[22m [2m│ gzip:  0.28 kB[22m
+[34mℹ[39m [2mdist/[22m[1moverlays/index.js[22m                             [2m  0.82 kB[22m [2m│ gzip:  0.29 kB[22m
+[34mℹ[39m [2mdist/[22m[1mi18n/index.js[22m                                 [2m  0.75 kB[22m [2m│ gzip:  0.26 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtable/index.js[22m                                [2m  0.52 kB[22m [2m│ gzip:  0.20 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdatepicker/index.js[22m                           [2m  0.46 kB[22m [2m│ gzip:  0.21 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcalendar/index.js[22m                             [2m  0.40 kB[22m [2m│ gzip:  0.16 kB[22m
+[34mℹ[39m [2mdist/[22m[1mgridlist/index.js[22m                             [2m  0.29 kB[22m [2m│ gzip:  0.15 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcheckbox/index.js[22m                             [2m  0.29 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtokenfield/index.js[22m                           [2m  0.28 kB[22m [2m│ gzip:  0.16 kB[22m
+[34mℹ[39m [2mdist/[22m[1mradio/index.js[22m                                [2m  0.26 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcolor/index.js[22m                                [2m  0.26 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mbutton/index.js[22m                               [2m  0.24 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlabel/index.js[22m                                [2m  0.24 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mgrid/index.js[22m                                 [2m  0.23 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mautocomplete/index.js[22m                         [2m  0.23 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtooltip/index.js[22m                              [2m  0.22 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtree/index.js[22m                                 [2m  0.21 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mvirtualizer/index.js[22m                          [2m  0.21 kB[22m [2m│ gzip:  0.14 kB[22m
+[34mℹ[39m [2mdist/[22m[1mform/index.js[22m                                 [2m  0.20 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mselect/index.js[22m                               [2m  0.20 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlive-announcer/index.js[22m                       [2m  0.19 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mmenu/index.js[22m                                 [2m  0.19 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mspinbutton/index.js[22m                           [2m  0.19 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mpopover/index.js[22m                              [2m  0.18 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoggle/index.js[22m                               [2m  0.18 kB[22m [2m│ gzip:  0.13 kB[22m
+[34mℹ[39m [2mdist/[22m[1mvisually-hidden/index.js[22m                      [2m  0.16 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlistbox/index.js[22m                              [2m  0.15 kB[22m [2m│ gzip:  0.12 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtag/index.js[22m                                  [2m  0.15 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mactiongroup/index.js[22m                          [2m  0.15 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mbreadcrumbs/index.js[22m                          [2m  0.15 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtabs/index.js[22m                                 [2m  0.15 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdisclosure/index.js[22m                           [2m  0.14 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlandmark/index.js[22m                             [2m  0.14 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mcombobox/index.js[22m                             [2m  0.13 kB[22m [2m│ gzip:  0.11 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoast/index.js[22m                                [2m  0.12 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1msteplist/index.js[22m                             [2m  0.12 kB[22m [2m│ gzip:  0.10 kB[22m
+[34mℹ[39m [2mdist/[22m[1mprogress/index.js[22m                             [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mnumberfield/index.js[22m                          [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1msearchfield/index.js[22m                          [2m  0.10 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mseparator/index.js[22m                            [2m  0.09 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtextfield/index.js[22m                            [2m  0.09 kB[22m [2m│ gzip:  0.09 kB[22m
+[34mℹ[39m [2mdist/[22m[1mtoolbar/index.js[22m                              [2m  0.09 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mdialog/index.js[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mslider/index.js[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mswitch/index.js[22m                               [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mmeter/index.js[22m                                [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m[1mlink/index.js[22m                                 [2m  0.08 kB[22m [2m│ gzip:  0.08 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dnd.js.map                             [2m144.85 kB[22m [2m│ gzip: 30.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dnd.js                                 [2m137.94 kB[22m [2m│ gzip: 26.09 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/datepicker.js.map                      [2m136.35 kB[22m [2m│ gzip: 27.23 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/calendar.js.map                        [2m110.30 kB[22m [2m│ gzip: 20.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/color.js.map                           [2m107.21 kB[22m [2m│ gzip: 19.27 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/combobox.js.map                        [2m106.33 kB[22m [2m│ gzip: 17.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/table.js.map                           [2m100.30 kB[22m [2m│ gzip: 20.16 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dom.js.map                             [2m 84.32 kB[22m [2m│ gzip: 20.67 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/menu.js.map                            [2m 70.77 kB[22m [2m│ gzip: 17.87 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableList.js.map            [2m 67.78 kB[22m [2m│ gzip: 15.68 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/datepicker.js                          [2m 65.56 kB[22m [2m│ gzip: 13.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/popover.js.map                         [2m 64.76 kB[22m [2m│ gzip: 15.29 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/table.js                               [2m 59.87 kB[22m [2m│ gzip: 13.71 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/color.js                               [2m 55.86 kB[22m [2m│ gzip: 10.59 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/utils.js.map                           [2m 54.13 kB[22m [2m│ gzip: 14.64 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/DragManager.js.map                     [2m 49.87 kB[22m [2m│ gzip: 12.60 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/calendar.js                            [2m 49.76 kB[22m [2m│ gzip:  9.45 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/combobox.js                            [2m 49.60 kB[22m [2m│ gzip:  8.92 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/FocusScope.js.map                      [2m 49.00 kB[22m [2m│ gzip: 12.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dom.js                                 [2m 47.56 kB[22m [2m│ gzip: 10.71 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createPress.js.map                     [2m 47.56 kB[22m [2m│ gzip: 11.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tree.js.map                            [2m 47.41 kB[22m [2m│ gzip: 11.24 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/select.js.map                          [2m 47.14 kB[22m [2m│ gzip: 10.70 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/grid.js.map                            [2m 44.86 kB[22m [2m│ gzip:  7.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tokenfield.js.map                      [2m 44.42 kB[22m [2m│ gzip: 11.56 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/gridlist.js.map                        [2m 40.91 kB[22m [2m│ gzip: 10.31 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tooltip.js.map                         [2m 39.91 kB[22m [2m│ gzip: 10.21 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tag.js.map                             [2m 38.80 kB[22m [2m│ gzip:  9.51 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableItem.js.map            [2m 36.53 kB[22m [2m│ gzip: 10.40 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlay.js.map                   [2m 35.71 kB[22m [2m│ gzip: 10.10 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/focus.js.map                           [2m 33.45 kB[22m [2m│ gzip:  8.79 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/radio.js.map                           [2m 32.09 kB[22m [2m│ gzip:  8.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tabs.js.map                            [2m 31.80 kB[22m [2m│ gzip:  8.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/numberfield.js.map                     [2m 31.66 kB[22m [2m│ gzip:  8.41 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableList.js                [2m 31.10 kB[22m [2m│ gzip:  7.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/popover.js                             [2m 30.74 kB[22m [2m│ gzip:  6.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/menu.js                                [2m 30.30 kB[22m [2m│ gzip:  8.29 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/utils.js                               [2m 30.02 kB[22m [2m│ gzip:  8.05 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createStringFormatter.js.map           [2m 27.16 kB[22m [2m│ gzip:  6.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/listbox.js.map                         [2m 25.60 kB[22m [2m│ gzip:  6.73 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/DragManager.js                         [2m 24.53 kB[22m [2m│ gzip:  6.22 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/autocomplete.js.map                    [2m 24.36 kB[22m [2m│ gzip:  7.46 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/ariaHideOutside.js.map                 [2m 23.82 kB[22m [2m│ gzip:  6.56 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/FocusScope.js                          [2m 22.29 kB[22m [2m│ gzip:  5.75 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/grid.js                                [2m 21.51 kB[22m [2m│ gzip:  3.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/searchfield.js.map                     [2m 21.20 kB[22m [2m│ gzip:  4.49 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tree.js                                [2m 20.93 kB[22m [2m│ gzip:  5.58 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/checkbox.js.map                        [2m 20.81 kB[22m [2m│ gzip:  4.99 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tokenfield.js                          [2m 20.52 kB[22m [2m│ gzip:  5.19 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createPress.js                         [2m 20.46 kB[22m [2m│ gzip:  4.69 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/overlays.js.map                        [2m 19.93 kB[22m [2m│ gzip:  5.19 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tooltip.js                             [2m 19.70 kB[22m [2m│ gzip:  5.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/gridlist.js                            [2m 19.13 kB[22m [2m│ gzip:  4.66 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/select.js                              [2m 18.68 kB[22m [2m│ gzip:  4.81 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/button.js.map                          [2m 17.78 kB[22m [2m│ gzip:  4.50 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tag.js                                 [2m 17.46 kB[22m [2m│ gzip:  5.17 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/slider.js.map                          [2m 17.38 kB[22m [2m│ gzip:  4.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toast.js.map                           [2m 17.10 kB[22m [2m│ gzip:  4.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/interactions.js.map                    [2m 16.91 kB[22m [2m│ gzip:  4.44 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/env.js.map                             [2m 16.86 kB[22m [2m│ gzip:  5.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createToggle.js.map                    [2m 16.70 kB[22m [2m│ gzip:  4.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/focus.js                               [2m 16.38 kB[22m [2m│ gzip:  4.54 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toolbar.js.map                         [2m 16.30 kB[22m [2m│ gzip:  4.47 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createSelectableItem.js                [2m 15.51 kB[22m [2m│ gzip:  4.74 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createKeyboard.js.map                  [2m 15.26 kB[22m [2m│ gzip:  4.38 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlay.js                       [2m 15.14 kB[22m [2m│ gzip:  4.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/textfield.js.map                       [2m 14.94 kB[22m [2m│ gzip:  4.46 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLandmark.js.map                  [2m 14.77 kB[22m [2m│ gzip:  4.75 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/spinbutton.js.map                      [2m 14.38 kB[22m [2m│ gzip:  3.63 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualizer.js.map                     [2m 14.31 kB[22m [2m│ gzip:  4.40 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createStringFormatter.js               [2m 13.70 kB[22m [2m│ gzip:  3.85 kB[22m
+[34mℹ[39m [2mdist/[22mssr/index.js.map                              [2m 13.59 kB[22m [2m│ gzip:  4.74 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/intl.js                                [2m 13.31 kB[22m [2m│ gzip:  3.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/numberfield.js                         [2m 13.11 kB[22m [2m│ gzip:  3.55 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/radio.js                               [2m 13.08 kB[22m [2m│ gzip:  3.45 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollectionRowInteraction.js.map  [2m 12.56 kB[22m [2m│ gzip:  3.59 kB[22m
+[34mℹ[39m [2mdist/[22mcollections/index.js.map                      [2m 12.47 kB[22m [2m│ gzip:  3.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/disclosure.js.map                      [2m 12.45 kB[22m [2m│ gzip:  3.81 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/actiongroup.js.map                     [2m 12.30 kB[22m [2m│ gzip:  4.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/i18n.js.map                            [2m 12.29 kB[22m [2m│ gzip:  2.91 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createTypeSelect.js.map                [2m 12.23 kB[22m [2m│ gzip:  4.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/tabs.js                                [2m 12.07 kB[22m [2m│ gzip:  3.33 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createHover.js.map                     [2m 11.91 kB[22m [2m│ gzip:  3.48 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/ariaHideOutside.js                     [2m 11.89 kB[22m [2m│ gzip:  3.33 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/locale.js.map                          [2m 11.65 kB[22m [2m│ gzip:  3.99 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/announce.js.map                        [2m 11.43 kB[22m [2m│ gzip:  3.83 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormValidation.js.map            [2m 11.01 kB[22m [2m│ gzip:  3.86 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/listbox.js                             [2m 10.39 kB[22m [2m│ gzip:  2.78 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusWithin.js.map               [2m 10.18 kB[22m [2m│ gzip:  3.41 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/checkbox.js                            [2m  9.97 kB[22m [2m│ gzip:  2.37 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/link.js.map                            [2m  9.68 kB[22m [2m│ gzip:  2.95 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/button.js                              [2m  9.55 kB[22m [2m│ gzip:  2.39 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/intl.js.map                            [2m  8.97 kB[22m [2m│ gzip:  1.59 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/autocomplete.js                        [2m  8.96 kB[22m [2m│ gzip:  2.87 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/i18n.js                                [2m  8.94 kB[22m [2m│ gzip:  2.19 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/breadcrumbs.js.map                     [2m  8.85 kB[22m [2m│ gzip:  2.68 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/env.js                                 [2m  8.78 kB[22m [2m│ gzip:  3.07 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toast.js                               [2m  8.68 kB[22m [2m│ gzip:  2.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/interactions.js                        [2m  8.64 kB[22m [2m│ gzip:  2.34 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/slider.js                              [2m  8.48 kB[22m [2m│ gzip:  2.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLongPress.js.map                 [2m  8.47 kB[22m [2m│ gzip:  2.97 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocus.js.map                     [2m  8.27 kB[22m [2m│ gzip:  2.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/searchfield.js                         [2m  7.76 kB[22m [2m│ gzip:  2.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/toolbar.js                             [2m  7.71 kB[22m [2m│ gzip:  2.26 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createKeyboard.js                      [2m  7.55 kB[22m [2m│ gzip:  2.31 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualizer.js                         [2m  7.50 kB[22m [2m│ gzip:  2.34 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/overlays.js                            [2m  7.48 kB[22m [2m│ gzip:  2.92 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dialog.js.map                          [2m  7.05 kB[22m [2m│ gzip:  2.79 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusable.js.map                 [2m  7.02 kB[22m [2m│ gzip:  2.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createProgressBar.js.map               [2m  6.86 kB[22m [2m│ gzip:  2.42 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLandmark.js                      [2m  6.55 kB[22m [2m│ gzip:  2.39 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/disclosure.js                          [2m  6.49 kB[22m [2m│ gzip:  2.14 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/announce.js                            [2m  6.47 kB[22m [2m│ gzip:  2.38 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/locale.js                              [2m  6.43 kB[22m [2m│ gzip:  2.22 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollectionRowInteraction.js      [2m  6.37 kB[22m [2m│ gzip:  1.93 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createToggle.js                        [2m  6.30 kB[22m [2m│ gzip:  2.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/textfield.js                           [2m  6.01 kB[22m [2m│ gzip:  2.03 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createField.js.map                     [2m  5.92 kB[22m [2m│ gzip:  2.17 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/actiongroup.js                         [2m  5.84 kB[22m [2m│ gzip:  2.13 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createVisuallyHidden.js.map            [2m  5.70 kB[22m [2m│ gzip:  2.28 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/spinbutton.js                          [2m  5.42 kB[22m [2m│ gzip:  2.06 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createHover.js                         [2m  5.38 kB[22m [2m│ gzip:  1.72 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormValidation.js                [2m  5.31 kB[22m [2m│ gzip:  1.97 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabel.js.map                     [2m  4.99 kB[22m [2m│ gzip:  1.94 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/steplist.js.map                        [2m  4.96 kB[22m [2m│ gzip:  1.80 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusWithin.js                   [2m  4.80 kB[22m [2m│ gzip:  1.62 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/filterDOMProps.js.map                  [2m  4.79 kB[22m [2m│ gzip:  1.84 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createTypeSelect.js                    [2m  4.63 kB[22m [2m│ gzip:  1.93 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/selection.js.map                       [2m  4.28 kB[22m [2m│ gzip:  2.00 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlayTrigger.js.map            [2m  4.25 kB[22m [2m│ gzip:  1.80 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocus.js                         [2m  4.16 kB[22m [2m│ gzip:  1.55 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusRing.js.map                 [2m  4.15 kB[22m [2m│ gzip:  1.55 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/switch.js.map                          [2m  4.04 kB[22m [2m│ gzip:  1.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/breadcrumbs.js                         [2m  4.04 kB[22m [2m│ gzip:  1.32 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusable.js                     [2m  3.90 kB[22m [2m│ gzip:  1.61 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLongPress.js                     [2m  3.80 kB[22m [2m│ gzip:  1.53 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/separator.js.map                       [2m  3.67 kB[22m [2m│ gzip:  1.49 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createVisuallyHidden.js                [2m  3.41 kB[22m [2m│ gzip:  1.49 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/meter.js.map                           [2m  3.37 kB[22m [2m│ gzip:  1.39 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/dialog.js                              [2m  3.35 kB[22m [2m│ gzip:  1.43 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/link.js                                [2m  3.32 kB[22m [2m│ gzip:  1.26 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createProgressBar.js                   [2m  3.31 kB[22m [2m│ gzip:  1.32 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollator.js.map                  [2m  3.07 kB[22m [2m│ gzip:  1.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualFocus.js.map                    [2m  3.07 kB[22m [2m│ gzip:  1.20 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormReset.js.map                 [2m  3.07 kB[22m [2m│ gzip:  1.48 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabels.js.map                    [2m  2.92 kB[22m [2m│ gzip:  1.36 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/filterDOMProps.js                      [2m  2.86 kB[22m [2m│ gzip:  1.22 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/steplist.js                            [2m  2.43 kB[22m [2m│ gzip:  1.01 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/refs.js.map                            [2m  2.39 kB[22m [2m│ gzip:  1.15 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createCollator.js                      [2m  2.37 kB[22m [2m│ gzip:  1.12 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/selection.js                           [2m  2.26 kB[22m [2m│ gzip:  1.14 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabel.js                         [2m  2.24 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/virtualFocus.js                        [2m  2.24 kB[22m [2m│ gzip:  0.89 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createField.js                         [2m  2.20 kB[22m [2m│ gzip:  0.97 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createOverlayTrigger.js                [2m  2.14 kB[22m [2m│ gzip:  1.04 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFocusRing.js                     [2m  2.07 kB[22m [2m│ gzip:  0.79 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createFormReset.js                     [2m  1.76 kB[22m [2m│ gzip:  0.93 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/createLabels.js                        [2m  1.74 kB[22m [2m│ gzip:  0.88 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/constants.js.map                       [2m  1.72 kB[22m [2m│ gzip:  0.90 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/switch.js                              [2m  1.68 kB[22m [2m│ gzip:  0.85 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/meter.js                               [2m  1.64 kB[22m [2m│ gzip:  0.82 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/separator.js                           [2m  1.60 kB[22m [2m│ gzip:  0.84 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/constants.js                           [2m  1.59 kB[22m [2m│ gzip:  0.85 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/reactivity.js.map                      [2m  1.43 kB[22m [2m│ gzip:  0.63 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/refs.js                                [2m  1.20 kB[22m [2m│ gzip:  0.67 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/owner.js.map                           [2m  1.12 kB[22m [2m│ gzip:  0.63 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/owner.js                               [2m  0.81 kB[22m [2m│ gzip:  0.47 kB[22m
+[34mℹ[39m [2mdist/[22m_chunk/reactivity.js                          [2m  0.55 kB[22m [2m│ gzip:  0.30 kB[22m
+[34mℹ[39m 222 files, total: 3.56 MB
+[32m✔[39m Build complete in [32m523ms[39m
+
+~/packages/solidaria$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solidaria$ tsc -p tsconfig.build.json ⊘ cache disabled
+src/utils/dom.ts(617,43): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+
+---
+vp run: 0/20 cache hit (0%), 1 failed. (Run `vp run --last-details` for full details)
+EXIT=1 at 2026-09-20T16:41:52-03:00

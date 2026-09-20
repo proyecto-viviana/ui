@@ -1,0 +1,11 @@
+$ vp test run --config apps/comparison/vitest.solid-ssr.config.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  18:12:00
+   Duration  397ms (transform 185ms, setup 0ms, import 238ms, tests 35ms, environment 0ms)
+
+

@@ -4,12 +4,22 @@ type: task
 title: "Fix the overlay, dialog and link defects the audit confirmed"
 created: 2026-09-20
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "audit lenses 1 and 5; the conductor reproduced each row against upstream source, see .agents/audit-2026-09-20/VERIFIED.md. RC blocker for the three overlay HIGHs, createDialog and ButtonGroup",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "all eight scope items landed, in eighteen commits from `f13fd341` to `31bf3585`, each with its changeset and its red-then-green test. Item 3's document-level focusin listener was the one rejected reading: named as not upstream and ticketed rather than kept (`9a6d7691`). Two of the eight needed a repair the scope did not foresee, both found by walking `ci:release-readiness` leg by leg rather than by review — item 9 (`ef21edf4`) repairs item 7, whose test never entered the hydrating branch its comment argued from, and item 10 (`31bf3585`) repairs item 6, whose faithful upstream `process.env` compiles under `tsconfig.typecheck.json` and not under the Node-free declaration build. The conductor reviewed and pushed both originals, so both misses are the conductor's",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "merged, not verified. Items 8.3–8.5, 9 and 10 were re-run independently by the conductor against the named tests and the `build` leg. Items 1–7 were reviewed against upstream source and their own tests, which is what let item 7 through; a `verified` transition should wait for the certified suite to run over the overlay and dialog components as a whole",
     }
 ---
 

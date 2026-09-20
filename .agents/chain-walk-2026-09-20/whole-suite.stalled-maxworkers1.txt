@@ -1,0 +1,7 @@
+start 2026-09-20T14:50:30-03:00 avail=11171MB
+[1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+Terminated
+EXIT=143 at 2026-09-20T16:32:07-03:00

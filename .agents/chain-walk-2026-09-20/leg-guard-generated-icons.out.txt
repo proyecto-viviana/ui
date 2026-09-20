@@ -1,0 +1,3 @@
+$ node scripts/generate-solid-spectrum-icons.mjs --check ⊘ cache disabled
+Verified 846 generated icon files (0 changed, 0 removed).
+

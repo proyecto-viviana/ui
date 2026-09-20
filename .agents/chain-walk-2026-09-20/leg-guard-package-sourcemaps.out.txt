@@ -1,0 +1,3 @@
+$ node scripts/check-package-macro-sourcemaps.mjs ⊘ cache disabled
+guard:package-sourcemaps — PASS: generated 1:13 maps to /home/emoporemilio/projects/viviana-hub/ui/scripts/fixtures/style-macro-sourcemap.ts:3:13; the JSX-preserve transform retains its map, the build rejects SOURCEMAP_BROKEN, and PACK_PASS selects one pack pass per process.
+

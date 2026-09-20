@@ -1,0 +1,11 @@
+$ vp test run --config apps/web/vitest.config.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui/apps/web
+
+
+ Test Files  9 passed (9)
+      Tests  48 passed (48)
+   Start at  18:12:17
+   Duration  334ms (transform 583ms, setup 0ms, import 901ms, tests 110ms, environment 1ms)
+
+

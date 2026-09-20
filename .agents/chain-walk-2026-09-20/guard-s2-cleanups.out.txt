@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/check-s2-cleanups-strand.ts ⊘ cache disabled
+guard:s2-cleanups — PASS: 58 _s2Cleanups bodies, no stranded cleanup.
+

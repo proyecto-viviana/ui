@@ -1,0 +1,58 @@
+package: packages/solid-spectrum
+scanned 8847 property signatures; 20 render with an import("…") path
+18 distinct renderings:
+
+  NoTruncation           : import("./PressEvent").PointerType
+  +UseAliasDefinedOutside: PointerType
+
+  NoTruncation           : import("@solidjs/web").JSX.HTMLAttributes<HTMLElement>
+  +UseAliasDefinedOutside: JSX.HTMLAttributes<HTMLElement>
+
+  NoTruncation           : ((e: import("..").HoverEvent) => void) | undefined
+  +UseAliasDefinedOutside: ((e: HoverEvent) => void) | undefined
+
+  NoTruncation           : import("../interactions/PressEvent").PointerType
+  +UseAliasDefinedOutside: PointerType
+
+  NoTruncation           : ((props: import("./DragPreview").DragPreviewProps) => JSX.Element) | undefined
+  +UseAliasDefinedOutside: ((props: DragPreviewProps) => JSX.Element) | undefined
+
+  NoTruncation           : import("@proyecto-viviana/solidaria").DateRangePickerAria
+  +UseAliasDefinedOutside: DateRangePickerAria
+
+  NoTruncation           : import("@proyecto-viviana/solid-stately").SegmentType
+  +UseAliasDefinedOutside: DateSegmentType
+
+  NoTruncation           : import("@proyecto-viviana/solidaria").DatePickerAria
+  +UseAliasDefinedOutside: DatePickerAria
+
+  NoTruncation           : import("@proyecto-viviana/solid-stately").CalendarPageBehavior | undefined
+  +UseAliasDefinedOutside: CalendarPageBehavior | undefined
+
+  NoTruncation           : import("@proyecto-viviana/solid-stately").CalendarSelectionAlignment | undefined
+  +UseAliasDefinedOutside: CalendarSelectionAlignment | undefined
+
+  NoTruncation           : number | boolean | Node | import("../node_modules/solid-js/types/types").RenderedElement | import("solid-js").ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: TableRenderProps) => JSX.Element) | null | undefined
+  +UseAliasDefinedOutside: number | boolean | Node | RenderedElement | ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: TableRenderProps) => JSX.Element) | null | undefined
+
+  NoTruncation           : number | boolean | Node | import("../node_modules/solid-js/types/types").RenderedElement | import("solid-js").ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefin
+  +UseAliasDefinedOutside: number | boolean | Node | RenderedElement | ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element) | null | undefined
+
+  NoTruncation           : number | boolean | Node | import("../node_modules/solid-js/types/types").RenderedElement | import("solid-js").ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: ColumnResizerRenderProps) => JSX.Element) | null | undefined
+  +UseAliasDefinedOutside: number | boolean | Node | RenderedElement | ArrayElement | (string & {}) | JSX.ArrayElement | ((renderProps: ColumnResizerRenderProps) => JSX.Element) | null | undefined
+
+  NoTruncation           : import("@proyecto-viviana/solidaria-components").CollectionEntry<T>[] | undefined
+  +UseAliasDefinedOutside: CollectionEntry<T>[] | undefined
+
+  NoTruncation           : import("@proyecto-viviana/solid-stately").MaybeAccessor<import("@proyecto-viviana/solid-stately").ValidationState | undefined>
+  +UseAliasDefinedOutside: MaybeAccessor<ValidationState | undefined>
+
+  NoTruncation           : ((identifier: import("@internationalized/date").CalendarIdentifier) => import("@internationalized/date").Calendar) | undefined
+  +UseAliasDefinedOutside: ((identifier: CalendarIdentifier) => Calendar) | undefined
+
+  NoTruncation           : import("../s2-internal/style-utils").StylesProp | (() => StyleString | undefined) | undefined
+  +UseAliasDefinedOutside: StylesProp | (() => StyleString | undefined) | undefined
+
+  NoTruncation           : import("@proyecto-viviana/solidaria-components").RouterOptions | undefined
+  +UseAliasDefinedOutside: RouterOptions | undefined
+

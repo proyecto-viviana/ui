@@ -1,0 +1,972 @@
+start 2026-09-20T16:36:43-03:00 avail=9924MB
+cmd: vitest run --reporter=default (default concurrency, pool=vmThreads)
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+stderr | packages/solidaria-components/test/ComboBox.test.tsx > ComboBox > opening/closing > dispatches virtual focusin on the input when the focused option disappears
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#flush_in_effect_callback
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+stderr | packages/solidaria-components/test/ComboBox.test.tsx > ComboBox > selection > should render SelectionIndicator only for selected option
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+ ✓ packages/solidaria-components/test/Popover.test.tsx (44 tests) 3379ms
+       ✓ should toggle state when toggle is called directly  427ms
+stderr | packages/solidaria-components/test/ComboBox.test.tsx > ComboBox > keyboard navigation > should select on Enter
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+stderr | packages/solidaria-components/test/ComboBox.test.tsx > ComboBox > keyboard navigation > should support onAction with keyboard
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+ ✓ packages/solidaria-components/test/RadioGroup.test.tsx (80 tests) 4465ms
+       ✓ should render a radio group with default class  395ms
+ ✓ packages/solid-spectrum/test/Switch.test.tsx (28 tests) 1630ms
+       ✓ renders with role="switch"  334ms
+ ✓ packages/solidaria-components/test/Menu.test.tsx (120 tests) 5809ms
+       ✓ should render with menu role  351ms
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableHeader is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableHeader must be used within a Table
+    at TableHeader (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:952:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableHeader (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+[REACTIVITY_HALTED] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#reactivity_halted
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableColumn is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableColumn must be used within a Table
+    at TableColumn (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:1059:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableColumn (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableBody is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableBody must be used within a Table
+    at TableBody (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:1247:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableBody (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableRow is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableRow must be used within a Table
+    at TableRow (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:1649:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableRow (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableCell is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableCell must be used within a Table
+    at TableCell (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:2032:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableCell (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableSelectionCheckbox is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableSelectionCheckbox must be used within a Table
+    at TableSelectionCheckbox (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:2204:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableSelectionCheckbox (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Table.test.tsx > Table > context errors > should throw when TableSelectAllCheckbox is used outside Table
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: TableSelectAllCheckbox must be used within a Table
+    at TableSelectAllCheckbox (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Table.tsx:2243:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]TableSelectAllCheckbox (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+ ✓ packages/solidaria-components/test/ComboBox.test.tsx (107 tests) 6532ms
+ ✓ packages/solidaria-components/test/RangeCalendar.test.tsx (46 tests) 7513ms
+       ✓ should follow RTL arrow direction from I18nProvider without document.dir  524ms
+       ✓ should keep focus on cell after pointer select and allow arrow navigation  338ms
+       ✓ should fire onChange once after completing a range selection  327ms
+       ✓ should keep in-progress range during keyboard arrow navigation  648ms
+       ✓ should localize range prompt descriptions from the calendar locale  304ms
+       ✓ should switch the focused cell description to the finish range prompt after anchoring  313ms
+       ✓ should cancel an active range anchor with Escape and let idle Escape bubble  455ms
+ ✓ packages/solid-spectrum/test/ActionMenu.test.tsx (34 tests) 4263ms
+     ✓ renders an S2 action button trigger with the localized default label  301ms
+     ✓ supports unavailable menu item composition from the ActionMenu subpath  307ms
+ ✓ packages/solidaria-components/test/Table.test.tsx (151 tests | 4 skipped) 8017ms
+       ✓ should support custom render function  435ms
+       ✓ keeps Select All synchronized through controlled selection transitions  385ms
+ ✓ packages/solidaria-components/test/Select.test.tsx (86 tests) 8950ms
+       ✓ provides slots  315ms
+       ✓ should support multiple selection form integration with many items  2826ms
+ ✓ packages/solid-spectrum/test/DatePicker.test.tsx (19 tests) 6099ms
+     ✓ links visible label and description to the presentation field group  405ms
+     ✓ renders TimeField inside popover when granularity includes time  679ms
+     ✓ renders TimeField inside popover when defaultValue is a CalendarDateTime  551ms
+     ✓ forwards shouldForceLeadingZeros to the popup TimeField  427ms
+     ✓ wires popup TimeField changes back to the DatePicker value  426ms
+     ✓ routes calendar state props into the popup calendar  727ms
+     ✓ renders fixed medium calendar popover geometry by default  331ms
+     ✓ widens the calendar popover when maxVisibleMonths is greater than 1  418ms
+     ✓ disables calendar previous and next when the next page is outside min/max  424ms
+     ✓ keeps focus on Next and names the grid for the new month after paging  640ms
+     ✓ tabs Previous → month grid → Next inside the open popover  339ms
+ ✓ packages/solidaria-components/test/Calendar.test.tsx (51 tests) 9893ms
+       ✓ should expose the grid table structure (rowgroups, columnheaders, rows, gridcells)  300ms
+       ✓ should navigate with 'ArrowRight' keyboard input  552ms
+       ✓ should navigate with 'ArrowLeft' keyboard input  421ms
+       ✓ should navigate with 'ArrowDown' keyboard input  302ms
+       ✓ should navigate with 'End' keyboard input  311ms
+       ✓ should navigate with 'PageUp' keyboard input  416ms
+       ✓ should navigate with 'PageDown' keyboard input  564ms
+       ✓ should navigate with 'PageUp' keyboard input  375ms
+       ✓ should navigate with 'PageDown' keyboard input  427ms
+       ✓ should move PageDown by one month even when button paging advances by visible months  579ms
+       ✓ should follow RTL arrow direction from I18nProvider without document.dir  314ms
+       ✓ selects a date before the visible range when isDateUnavailable is provided  502ms
+       ✓ selects a date after the visible range when isDateUnavailable is provided  541ms
+ ✓ apps/comparison/src/data/report-component-parity-options.test.ts (2 tests) 2944ms
+     ✓ returns a failure for the current full backlog  2934ms
+ ✓ packages/solid-spectrum/test/Calendar.test.tsx (14 tests) 7157ms
+     ✓ renders the public Calendar subpath with a selected controlled value  864ms
+     ✓ inherits Provider locale for month formatting and locale default week start  457ms
+     ✓ renders invalid error text and multi-month grids  566ms
+     ✓ pages by visible months by default and by one month when pageBehavior is single  1397ms
+     ✓ exposes keyboard focus-visible state and unavailable strike markup  560ms
+     ✓ syncs controlled focusedValue changes to the visible range  654ms
+     ✓ routes the selected-cell label through the localized string formatter  615ms
+     ✓ disables outside-month cells and retains a single tabbable cell across multi-month grids  445ms
+     ✓ keeps visibleMonths reactive after mount and enables in-range cells on the expanded month  479ms
+ ✓ packages/solidaria-components/test/DatePicker.test.tsx (41 tests) 3623ms
+ ✓ packages/solidaria-components/test/Virtualizer.test.tsx (79 tests) 2915ms
+     ✓ retains far active drop target in virtualized listbox when bounded retention is enabled  329ms
+ ✓ packages/solid-spectrum/test/DateRangePicker.test.tsx (21 tests) 2982ms
+       ✓ routes range calendar props into the popup calendar  524ms
+       ✓ renders popup time fields and wires time changes back to the range value  500ms
+       ✓ anchors the popover trigger width to the FieldGroup  372ms
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > rendering > should render with default class
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > rendering > should render with custom class
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > rendering > should render input element
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > rendering > should render with label
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > slots > provides description and errorMessage slots (RAC ColorField.test.js)
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > slots > links aria-describedby to a <Text slot="description"> via TextContext slots
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > data attributes > should have data-disabled when disabled
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > data attributes > should have data-readonly when read-only
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > data attributes > should expose channel and required data attributes
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > channel mode > should support single channel mode
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > channel mode > should submit channel mode with a hidden input
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > channel mode > should update visible and hidden channel values after keyboard increments
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > interactions > should filter invalid partial hex input
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > interactions > should increment hex values with the keyboard
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > interactions > should support native and aria required validation modes
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > interactions > should commit the typed value on Enter
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > ColorField > interactions > should restore the previous value on Enter if the typed value cannot be parsed
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria-components/test/Checkbox.test.tsx (67 tests) 3136ms
+ ✓ packages/solidaria-components/test/ListBox.test.tsx (86 tests) 3468ms
+ ✓ packages/solid-spectrum/test/Radio.test.tsx (40 tests) 2784ms
+ ✓ packages/solid-spectrum/test/EditableCell.test.tsx (7 tests) 2282ms
+       ✓ renders the S2 presentational focus ring on a focus-visible editable cell  312ms
+       ✓ opens an editor popover from the edit button and submits  730ms
+       ✓ opens a full dialog from the edit button and submits  416ms
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorSliderTrack is used outside ColorSlider
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorSliderTrack must be used within a ColorSlider
+    at ColorSliderTrack (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:487:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorSliderTrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+[REACTIVITY_HALTED] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#reactivity_halted
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorSliderThumb is used outside ColorSlider
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorSliderThumb must be used within a ColorSlider
+    at ColorSliderThumb (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:550:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorSliderThumb (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorAreaGradient is used outside ColorArea
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorAreaGradient must be used within a ColorArea
+    at ColorAreaGradient (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:916:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorAreaGradient (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorAreaThumb is used outside ColorArea
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorAreaThumb must be used within a ColorArea
+    at ColorAreaThumb (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:973:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorAreaThumb (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorWheelTrack is used outside ColorWheel
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorWheelTrack must be used within a ColorWheel
+    at ColorWheelTrack (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:1306:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorWheelTrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorWheelThumb is used outside ColorWheel
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorWheelThumb must be used within a ColorWheel
+    at ColorWheelThumb (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:1366:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorWheelThumb (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorFieldInput is used outside ColorField
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorFieldInput must be used within a ColorField
+    at ColorFieldInput (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:1798:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorFieldInput (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/Color.test.tsx > Color Components > context errors > should throw when ColorSwatchPickerItem is used outside ColorSwatchPicker
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: ColorSwatchPickerItem must be used within a ColorSwatchPicker
+    at ColorSwatchPickerItem (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Color.tsx:2546:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]ColorSwatchPickerItem (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+ ✓ packages/solidaria-components/test/Color.test.tsx (97 tests) 3471ms
+ ✓ packages/solid-spectrum/test/SearchField.test.tsx (30 tests) 1333ms
+ ✓ packages/solid-spectrum/test/Tree.test.tsx (16 tests) 1882ms
+     ✓ renders dynamic id-based items with S2 treegrid semantics and slots  660ms
+stderr | packages/solid-spectrum/test/ComboBox.test.tsx > ComboBox (solid-spectrum) > does not mark the field group focus-visible after pointer open then keyboard select
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#flush_in_effect_callback
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+ ✓ packages/solid-spectrum/test/Table.test.tsx (24 tests) 5086ms
+     ✓ renders S2 table semantics and stable root state  776ms
+     ✓ keeps legacy size as a density alias without changing quiet styling  304ms
+     ✓ suppresses the inner block edges for contiguous selected rows  440ms
+ ✓ packages/solidaria-components/test/Dialog.test.tsx (33 tests) 2556ms
+ ✓ packages/solidaria-components/test/Button.test.tsx (72 tests) 1554ms
+ ✓ packages/solid-spectrum/test/ContextualHelpTrigger.test.tsx (16 tests) 1088ms
+ ✓ packages/solid-spectrum/test/ComboBox.test.tsx (32 tests) 4249ms
+     ✓ filters defaultItems when items is undefined  473ms
+     ✓ does not mark the field group focus-visible after pointer open then keyboard select  312ms
+stderr | packages/solid-spectrum/test/Tabs.test.tsx > Tabs (solid-spectrum S2) > requires an accessible label on Tabs
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: Tabs requires either an aria-label or aria-labelledby prop.
+    at requireTabsLabel (/home/emoporemilio/projects/viviana-hub/ui/packages/solid-spectrum/src/tabs/index.tsx:464:11)
+    at Tabs (/home/emoporemilio/projects/viviana-hub/ui/packages/solid-spectrum/src/tabs/index.tsx:565:3)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+[REACTIVITY_HALTED] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#reactivity_halted
+
+ ✓ packages/solid-spectrum/test/Picker.test.tsx (22 tests) 3533ms
+     ✓ uses getKey for generated options from object-backed items  500ms
+     ✓ composes the S2 Popover surface, including entering motion, matching a bare Popover  304ms
+ ✓ packages/solid-spectrum/test/Menu.test.tsx (32 tests) 4808ms
+       ✓ opens contextual help popovers for unavailable menu items  656ms
+     ✓ keeps the menu mounted through popover exit so ArrowUp after unmount focuses the last item  462ms
+ ✓ packages/solid-spectrum/test/regression.test.tsx (50 tests) 4581ms
+     ✓ renders with role, unchecked default, toggle, label, and snapshot  304ms
+     ✓ renders grid with day cells, nav buttons, and snapshot  320ms
+Could not parse CSS stylesheet
+ ✓ packages/solidaria-components/test/Tree.test.tsx (68 tests) 2657ms
+ ✓ packages/solidaria-components/test/DateRangePicker.test.tsx (29 tests) 2103ms
+     ✓ renders and opens content via trigger button  328ms
+ ✓ packages/solidaria/test/focus.test.tsx (46 tests) 706ms
+ ✓ packages/solidaria-components/test/Modal.test.tsx (24 tests) 628ms
+stderr | packages/solidaria/test/FocusScope.test.tsx > FocusScope > active scope lifetime > becomes active when focus is already inside it at mount
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#flush_in_effect_callback
+
+ ✓ packages/solidaria/test/FocusScope.test.tsx (37 tests) 1086ms
+ ✓ packages/solid-spectrum/test/Tabs.test.tsx (19 tests) 2048ms
+     ✓ composes the S2 Popover surface on TabsPicker, including entering motion, matching a bare Popover  389ms
+ ✓ packages/solid-spectrum/test/Button.test.tsx (40 tests) 864ms
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+ ✓ packages/solid-spectrum/test/Toast.test.tsx (39 tests) 2272ms
+ ✓ packages/solidaria/test/createTabs.test.tsx (54 tests) 1255ms
+ ✓ packages/solid-spectrum/test/Checkbox.test.tsx (41 tests) 2287ms
+ ✓ packages/solid-spectrum/test/Dialog.test.tsx (13 tests) 1561ms
+     ✓ opens from trigger and closes via close action  361ms
+ ✓ packages/solidaria-components/test/TimeField.test.tsx (43 tests | 2 skipped) 1714ms
+ ✓ packages/solidaria-components/test/Tabs.test.tsx (62 tests) 1498ms
+ ✓ packages/solidaria-components/test/DateField.test.tsx (38 tests) 1705ms
+ ✓ packages/solid-spectrum/test/RangeCalendar.test.tsx (13 tests) 7559ms
+     ✓ renders the public RangeCalendar export with a selected controlled range  712ms
+     ✓ keeps every rendered month grid to seven columns  361ms
+     ✓ renders invalid error text and describes invalid selected cells  1046ms
+     ✓ inherits Provider locale for month formatting and locale default week start  426ms
+     ✓ merges RangeCalendarContext props  338ms
+     ✓ pages by visible months by default and by one month when pageBehavior is single  1917ms
+     ✓ advances keyboard focus after selecting the range start  597ms
+     ✓ does not auto-advance focus after a pointer range-start selection  634ms
+     ✓ disables outside-month cells and retains a single tabbable cell across multi-month grids  394ms
+     ✓ keeps visibleMonths reactive after mount and expands the visible range title  507ms
+ ✓ packages/solidaria-components/test/Tooltip.test.tsx (25 tests) 354ms
+ ✓ packages/solidaria-components/test/DialogTriggerDebug.test.tsx (7 tests) 349ms
+ ✓ packages/solid-stately/test/data/getColorChannels.test.ts (5 tests) 183ms
+ ✓ packages/solidaria-components/test/NumberField.test.tsx (47 tests) 1150ms
+ ✓ packages/kumo/test/Button.test.tsx (23 tests) 646ms
+ ✓ packages/solidaria-components/test/Switch.test.tsx (30 tests) 951ms
+ ✓ packages/solidaria-components/test/TagGroup.test.tsx (42 tests) 1129ms
+ ✓ packages/solid-spectrum/test/ListView.test.tsx (11 tests) 918ms
+ ✓ packages/solidaria/test/createMenu.test.tsx (64 tests) 387ms
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when dropdown closes via Escape on trigger
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when dropdown closes via Escape on trigger
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria-components/test/SearchField.test.tsx (49 tests) 1379ms
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when dropdown closes via Escape on trigger
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when dropdown closes via Escape on trigger
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/GridList.test.tsx > GridList > context errors > should throw when GridListItem is used outside GridList
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: GridListItem must be used within a GridList
+    at GridListItem (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/GridList.tsx:792:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]GridListItem (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+[REACTIVITY_HALTED] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#reactivity_halted
+
+stderr | packages/solidaria-components/test/GridList.test.tsx > GridList > context errors > should throw when GridListSelectionCheckbox is used outside GridList
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: GridListSelectionCheckbox must be used within a GridList
+    at GridListSelectionCheckbox (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/GridList.tsx:954:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]GridListSelectionCheckbox (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria-components/test/GridList.test.tsx (48 tests) 1421ms
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should restore focus to trigger button when option is selected
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria/test/FocusScopeOwnerDocument.test.tsx (3 tests) 411ms
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should auto-focus the listbox when opened
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should auto-focus the listbox when opened
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should auto-focus the listbox when opened
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > focus restoration > should auto-focus the listbox when opened
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > keyboard navigation with focus > should allow keyboard navigation through options while focused
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[solidaria] A ListBox requires an aria-label or aria-labelledby attribute for accessibility.
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > keyboard navigation with focus > should allow keyboard navigation through options while focused
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+Unreleased source or manifest changes with no changeset to publish them:
+
+  @scope/a@1.0.0 — 1 changed file(s) since e42a7cd3
+      packages/a/package.json
+
+These changes will not reach npm: nothing bumps the version that would carry them,
+so the registry keeps serving the old tarball under a version consumers already resolve.
+Add a changeset naming each package above via `vp run changeset`.
+stderr | packages/solidaria-components/test/FocusManagement.test.tsx > Select Focus Management > keyboard navigation with focus > should allow keyboard navigation through options while focused
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria-components/test/FocusManagement.test.tsx (11 tests) 1403ms
+       ✓ should restore focus to trigger button when option is selected  327ms
+ ✓ packages/solidaria-components/test/TextField.test.tsx (60 tests) 1711ms
+Unreleased source or manifest changes with no changeset to publish them:
+
+  @scope/a@1.0.0 — 1 changed file(s) since 5d560d1e
+      packages/a/src/index.ts
+
+These changes will not reach npm: nothing bumps the version that would carry them,
+so the registry keeps serving the old tarball under a version consumers already resolve.
+Add a changeset naming each package above via `vp run changeset`.
+ ✓ scripts/check-publish-drift.test.ts (4 tests) 1922ms
+     ✓ passes a tree with nothing unreleased  435ms
+     ✓ fails a new exports subpath that no changeset publishes  505ms
+     ✓ passes that same subpath once a changeset names the package  458ms
+     ✓ still fails an unreleased source change  522ms
+ ✓ packages/geist/test/Button.test.tsx (20 tests) 1060ms
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > basic rendering > renders the editor container
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > basic rendering > renders ColorArea
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > basic rendering > renders hue slider
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > basic rendering > renders alpha controls by default
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > basic rendering > renders color format selector
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > color space > defaults to hex color space
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > color space > changes color space via selector
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > color space > shows hex format option
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > color space > accepts string value/defaultValue inputs via ColorPicker contract
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ apps/comparison/src/data/fixture-registry-split.test.ts (7 tests) 590ms
+     ✓ keeps the live registries on dynamic import() entries and per-slug modules  579ms
+ ✓ packages/solidaria/test/createPress.test.tsx (90 tests) 573ms
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > color space > calls onColorSpaceChange when space changes
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > hideAlphaChannel > hides alpha controls when hideAlphaChannel=true
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+stderr | packages/solidaria-components/test/ColorEditor.test.tsx > ColorEditor (headless) > disabled state > disables the format selector
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+ ✓ packages/solidaria-components/test/ColorEditor.test.tsx (14 tests) 561ms
+ ✓ packages/solidaria-components/test/CalendarPicker.test.tsx (10 tests) 1331ms
+       ✓ lists every month of the focused year with the focused month selected  317ms
+ ✓ packages/solid-spectrum/test/intl-strings.test.tsx (9 tests) 1669ms
+     ✓ renders the ar-AE DatePicker time label instead of English  444ms
+     ✓ renders ar-AE DateRangePicker start and end time labels instead of English  445ms
+stderr | packages/solidaria-components/test/Slider.test.tsx > SliderFill > should throw when used outside a Slider
+[REACTIVITY_HALTED] An uncaught error halted the reactive system. No further updates will be processed. Handle errors with createErrorBoundary/<Errored> or treat this as a crash. Error: SliderFill must be used within a Slider
+    at SliderFill (/home/emoporemilio/projects/viviana-hub/ui/packages/solidaria-components/src/Slider.tsx:573:11)
+    at file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:32
+    at untrack (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5192:12)
+    at Object.HMRComp.createMemo.name [as _fn] (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:33:18)
+    at recompute (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4359:27)
+    at setupComputedNode (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:5005:21)
+    at computed (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev-shared.js:4857:3)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/@solidjs+signals@2.0.0-rc.9/node_modules/@solidjs/signals/dist/dev.js:2220:19)
+    at createMemo (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/solid.dev.js:797:39)
+    at [solid-refresh]SliderFill (file:///home/emoporemilio/projects/viviana-hub/ui/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/dist/refresh.dev.js:30:14)
+[REACTIVITY_HALTED] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#reactivity_halted
+
+ ✓ packages/solidaria-components/test/Slider.test.tsx (50 tests) 881ms
+stderr | packages/solidaria-components/test/PreviewTrigger.test.tsx > PreviewTrigger long press (touch) > opens on long press and moves focus into the popover
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+[FLUSH_IN_EFFECT_CALLBACK] repair guide: node_modules/solid-js/skills/reactivity-diagnostics/SKILL.md — https://github.com/solidjs/solid/blob/main/packages/solid/skills/reactivity-diagnostics/SKILL.md#flush_in_effect_callback
+[FLUSH_IN_EFFECT_CALLBACK] flush() called from inside an effect callback is a no-op: the flush that runs effects is already in progress. Writes made here are processed in the same flush's continuation; to force a drain afterwards, defer it: queueMicrotask(() => flush()).
+
+ ✓ packages/solidaria-components/test/PreviewTrigger.test.tsx (11 tests) 707ms
+ ✓ packages/solidaria-components/test/RangeCalendar.shadow.test.tsx (4 tests) 672ms
+ ✓ packages/solidaria/test/test-utils.test.tsx (62 tests) 405ms
+ ✓ packages/solidaria/test/createNumberField.test.tsx (52 tests) 562ms
+ ✓ packages/solidaria-components/test/comparison-solid-h.test.tsx (13 tests) 749ms
+ ✓ packages/solidaria-components/test/FormFieldWrappers.test.tsx (18 tests) 701ms
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+ ✓ packages/solidaria-components/test/Breadcrumbs.test.tsx (31 tests) 519ms
+ ✓ packages/solidaria-components/test/Pressable.test.tsx (7 tests) 276ms
+ ✓ packages/solid-spectrum/test/Popover.test.tsx (1 test) 138ms
+Not implemented: navigation to another Document
+ ✓ packages/solid-spectrum/test/Breadcrumbs.test.tsx (8 tests) 576ms
+ ✓ packages/solidaria/test/createCheckboxGroup.test.tsx (18 tests) 591ms
+ ✓ packages/solid-spectrum/test/ActionBar.test.tsx (26 tests) 695ms
+ ✓ packages/solid-spectrum/test/TextField.test.tsx (42 tests) 741ms
+ ✓ packages/solidaria-components/test/Toast.test.tsx (29 tests) 412ms
+ ✓ packages/viviana-ui/test/Button.test.tsx (4 tests) 194ms
+ ✓ packages/solidaria/test/createDialog.test.tsx (26 tests) 250ms
+ ✓ packages/solidaria/test/overlays.test.tsx (32 tests) 162ms
+ ✓ packages/solidaria-components/test/Disclosure.test.tsx (33 tests) 714ms
+ ✓ packages/solid-stately/test/data/createAsyncList.test.ts (13 tests) 276ms
+ ✓ packages/solid-spectrum/test/CardView.test.tsx (10 tests) 710ms
+ ✓ packages/solid-spectrum/test/TabsFixtureRepro.test.tsx (5 tests) 614ms
+ ✓ packages/solidaria-components/test/ActionGroup.test.tsx (21 tests) 547ms
+EXIT=143 at 2026-09-20T16:37:24-03:00 avail=11527MB

@@ -1,0 +1,9 @@
+$ node scripts/check-package-attribution.mjs ⊘ cache disabled
+guard:attribution — PASS: 5 Adobe-derived packages ship exact MIT, Apache-2.0, and NOTICE copies; Kumo ships its local and upstream MIT licenses.
+Source inventory (report only; it is not a compliance claim):
+- @proyecto-viviana/solid-stately: 97 TS/TSX files, 60 Adobe headers, 64 source markers
+- @proyecto-viviana/solidaria: 261 TS/TSX files, 174 Adobe headers, 198 source markers
+- @proyecto-viviana/solidaria-components: 77 TS/TSX files, 66 Adobe headers, 70 source markers
+- @proyecto-viviana/solid-spectrum: 659 TS/TSX files, 119 Adobe headers, 122 source markers
+- @proyecto-viviana/ui: 650 TS/TSX files, 118 Adobe headers, 121 source markers
+
