@@ -832,7 +832,7 @@
   {
     "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "28f99697d88fdf8be6906ec85a83ae0355e9defc3e137aab427bb0c413cca0ce"
+    "contentSha256": "9599dbb2788ca75a05f6fa4d8625be088d84485e9d546187f8eef0d32467fe58"
   },
   {
     "localPath": "packages/solidaria/src/focus/createVirtualFocus.ts",

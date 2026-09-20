@@ -549,3 +549,19 @@ Proof, both directions:
   are ignored, and the real `Virtualizer.tsx` reads clean.
 
 Tooling only; no changeset.
+
+### Follow-on to 8.3: one attribution re-attestation, and two reds that are not mine
+
+`node scripts/report-attribution-mappings.mjs --check-headers` records a
+content hash per reviewed-local file, so dropping the unused
+`getOwnerDocument` import moved `packages/solidaria/src/focus/createFocusRestore.ts`
+off its recorded hash. The file is still what the record says it is — a local
+Solid helper, no upstream counterpart — so the hash is re-attested, not the
+classification.
+
+Two further mismatches are **pre-existing and not mine**:
+`packages/solidaria/src/index.ts` and `packages/solidaria/src/utils/index.ts`.
+Proved by hashing each at `8db7c298~1`: both match their current content
+exactly and neither matches the recorded hash, so they were already red on
+`origin/main` before this ticket. `guard:attribution-headers` is therefore red
+on main for a reason this ticket did not cause; conductor's to route.
