@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ProgressCircle as SolidSpectrumProgressCircle } from "@proyecto-viviana/solid-spectrum/ProgressCircle";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -30,7 +30,7 @@ function SolidSpectrumProgressCircleDemo() {
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   });
 
   return hc(

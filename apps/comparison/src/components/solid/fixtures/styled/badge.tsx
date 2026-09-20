@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Badge as SolidSpectrumBadge } from "@proyecto-viviana/solid-spectrum/Badge";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -48,33 +48,38 @@ function SolidSpectrumBadgeDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedBadge = createMemo(() => {
-    const props = demoProps();
-
-    return hc(
-      SolidSpectrumBadge,
-      {
-        "data-comparison-control-root": "badge",
-        "data-comparison-control-props": serializeBadgeDemoProps(props),
-        id: "badge-route-root",
-        "aria-label": "Badge route label",
-        "aria-labelledby": "badge-route-labelledby",
-        "aria-describedby": "badge-route-description",
-        "aria-details": "badge-route-details",
-        hidden: true,
-        variant: props.variant,
-        fillStyle: props.fillStyle,
-        size: props.size,
-        overflowMode: props.overflowMode,
-      },
-      solidBadgeChildren(props),
-    );
+  const renderedBadge = hc(SolidSpectrumBadge, {
+    "data-comparison-control-root": "badge",
+    get "data-comparison-control-props"() {
+      return serializeBadgeDemoProps(demoProps());
+    },
+    id: "badge-route-root",
+    "aria-label": "Badge route label",
+    "aria-labelledby": "badge-route-labelledby",
+    "aria-describedby": "badge-route-description",
+    "aria-details": "badge-route-details",
+    hidden: true,
+    get variant() {
+      return demoProps().variant;
+    },
+    get fillStyle() {
+      return demoProps().fillStyle;
+    },
+    get size() {
+      return demoProps().size;
+    },
+    get overflowMode() {
+      return demoProps().overflowMode;
+    },
+    get children() {
+      return solidBadgeChildren(demoProps());
+    },
   });
 
   return hc(

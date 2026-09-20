@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionGroup as SolidSpectrumActionGroup } from "@proyecto-viviana/solid-spectrum/ActionGroup";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -32,9 +32,9 @@ function SolidSpectrumActionGroupFixture() {
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
-    });
+    };
   });
 
   return hc(
@@ -83,9 +83,9 @@ function SolidSpectrumActionGroupDemo() {
     };
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   return hc(

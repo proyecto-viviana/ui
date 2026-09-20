@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { StatusLight as SolidSpectrumStatusLight } from "@proyecto-viviana/solid-spectrum/StatusLight";
@@ -39,31 +39,35 @@ function SolidSpectrumStatusLightDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedStatusLight = createMemo(() => {
-    const props = demoProps();
-
-    return hc(
-      SolidSpectrumStatusLight,
-      {
-        "data-comparison-control-root": "statuslight",
-        "data-comparison-control-props": serializeStatusLightDemoProps(props),
-        id: "statuslight-route-root",
-        "aria-label": "StatusLight route label",
-        "aria-describedby": "statuslight-route-description",
-        "aria-details": "statuslight-route-details",
-        variant: props.variant,
-        size: props.size,
-        role: props.role || undefined,
+  const renderedStatusLight = hc(
+    SolidSpectrumStatusLight,
+    {
+      "data-comparison-control-root": "statuslight",
+      get "data-comparison-control-props"() {
+        return serializeStatusLightDemoProps(demoProps());
       },
-      [props.children],
-    );
-  });
+      id: "statuslight-route-root",
+      "aria-label": "StatusLight route label",
+      "aria-describedby": "statuslight-route-description",
+      "aria-details": "statuslight-route-details",
+      get variant() {
+        return demoProps().variant;
+      },
+      get size() {
+        return demoProps().size;
+      },
+      get role() {
+        return demoProps().role || undefined;
+      },
+    },
+    [() => demoProps().children],
+  );
 
   return hc(
     SolidSpectrumProvider,

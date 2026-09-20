@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Avatar as SolidSpectrumAvatar } from "@proyecto-viviana/solid-spectrum/Avatar";
 import { AvatarGroup as SolidSpectrumAvatarGroup } from "@proyecto-viviana/solid-spectrum/AvatarGroup";
@@ -41,10 +41,30 @@ function SolidSpectrumAvatarGroupDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
+  });
+
+  const avatars = avatarGroupItems.map((item) =>
+    h(SolidSpectrumAvatar, { alt: item.alt, src: item.src }),
+  );
+  const renderedGroup = hc(SolidSpectrumAvatarGroup, {
+    get label() {
+      return demoProps().label || undefined;
+    },
+    get "aria-label"() {
+      return demoProps().ariaLabel;
+    },
+    "aria-describedby": "avatargroup-route-description",
+    "aria-details": "avatargroup-route-details",
+    get size() {
+      return Number(demoProps().size) as 16 | 20 | 24 | 28 | 32 | 36 | 40;
+    },
+    get children() {
+      return avatars.slice(0, Number(demoProps().count));
+    },
   });
 
   return hc(
@@ -77,26 +97,7 @@ function SolidSpectrumAvatarGroupDemo() {
             hidden: true,
             children: "Avatar group route details",
           }),
-          () =>
-            hc(
-              SolidSpectrumAvatarGroup,
-              {
-                get label() {
-                  return demoProps().label || undefined;
-                },
-                get "aria-label"() {
-                  return demoProps().ariaLabel;
-                },
-                "aria-describedby": "avatargroup-route-description",
-                "aria-details": "avatargroup-route-details",
-                get size() {
-                  return Number(demoProps().size) as 16 | 20 | 24 | 28 | 32 | 36 | 40;
-                },
-              },
-              avatarGroupItems
-                .slice(0, Number(demoProps().count))
-                .map((item) => h(SolidSpectrumAvatar, { alt: item.alt, src: item.src })),
-            ),
+          renderedGroup,
         ],
       ),
     ],

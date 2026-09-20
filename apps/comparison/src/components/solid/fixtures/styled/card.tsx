@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import {
   Card as SolidSpectrumCard,
@@ -37,7 +37,7 @@ function SolidSpectrumCardDemo() {
       }
     };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    onCleanup(() => window.removeEventListener(comparisonControlsEvent, handleControlsChange));
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
   });
 
   return hc(

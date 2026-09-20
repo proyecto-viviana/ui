@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Link as SolidSpectrumLink } from "@proyecto-viviana/solid-spectrum/Link";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -41,28 +41,37 @@ function SolidSpectrumLinkDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedLink = createMemo(() => {
-    const props = demoProps();
-    return hc(
-      SolidSpectrumLink,
-      {
-        "data-comparison-control-root": "link",
-        "data-comparison-control-props": serializeLinkDemoProps(props),
-        href: props.href,
-        variant: props.variant,
-        staticColor: props.staticColor,
-        isStandalone: props.isStandalone,
-        isQuiet: props.isQuiet,
+  const renderedLink = hc(
+    SolidSpectrumLink,
+    {
+      "data-comparison-control-root": "link",
+      get "data-comparison-control-props"() {
+        return serializeLinkDemoProps(demoProps());
       },
-      [props.children],
-    );
-  });
+      get href() {
+        return demoProps().href;
+      },
+      get variant() {
+        return demoProps().variant;
+      },
+      get staticColor() {
+        return demoProps().staticColor;
+      },
+      get isStandalone() {
+        return demoProps().isStandalone;
+      },
+      get isQuiet() {
+        return demoProps().isQuiet;
+      },
+    },
+    [() => demoProps().children],
+  );
 
   return hc(
     SolidSpectrumProvider,

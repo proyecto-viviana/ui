@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { LinkButton as SolidSpectrumLinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -45,31 +45,44 @@ function SolidSpectrumLinkButtonDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedLinkButton = createMemo(() => {
-    const props = demoProps();
-    return hc(
-      SolidSpectrumLinkButton,
-      {
-        "data-comparison-control-root": "linkbutton",
-        "data-comparison-control-props": serializeLinkButtonDemoProps(props),
-        href: props.href,
-        variant: props.variant,
-        fillStyle: props.fillStyle,
-        size: props.size,
-        staticColor: props.staticColor,
-        isDisabled: props.isDisabled,
-        "aria-label": props.iconPlacement === "only" ? props.children : undefined,
-      },
-      solidSingleButtonFamilyChildren(props.children, props.iconPlacement, () =>
+  const renderedLinkButton = hc(SolidSpectrumLinkButton, {
+    "data-comparison-control-root": "linkbutton",
+    get "data-comparison-control-props"() {
+      return serializeLinkButtonDemoProps(demoProps());
+    },
+    get href() {
+      return demoProps().href;
+    },
+    get variant() {
+      return demoProps().variant;
+    },
+    get fillStyle() {
+      return demoProps().fillStyle;
+    },
+    get size() {
+      return demoProps().size;
+    },
+    get staticColor() {
+      return demoProps().staticColor;
+    },
+    get isDisabled() {
+      return demoProps().isDisabled;
+    },
+    get "aria-label"() {
+      return demoProps().iconPlacement === "only" ? demoProps().children : undefined;
+    },
+    get children() {
+      const props = demoProps();
+      return solidSingleButtonFamilyChildren(props.children, props.iconPlacement, () =>
         s2ButtonText({ isProgressVisible: false }),
-      ),
-    );
+      );
+    },
   });
 
   return hc(

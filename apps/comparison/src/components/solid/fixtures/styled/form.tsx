@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createEffect, createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { Form as SolidSpectrumForm } from "@proyecto-viviana/solid-spectrum/Form";
@@ -21,6 +21,7 @@ import {
 import { providerShellStyle } from "../styled-shared.tsx";
 
 function SolidSpectrumFormDemo() {
+  let formElement: HTMLFormElement | undefined;
   const [demoProps, setDemoProps] = createSignal<FormDemoProps>(formDemoPropsFromWindow());
   const [value, setValue] = createSignal(demoProps().value);
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
@@ -43,10 +44,10 @@ function SolidSpectrumFormDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() =>
@@ -55,6 +56,10 @@ function SolidSpectrumFormDemo() {
       value: value(),
     }),
   );
+
+  createEffect(serializedProps, (value) => {
+    formElement?.setAttribute("data-comparison-control-props", value);
+  });
 
   return hc(
     SolidSpectrumProvider,
@@ -78,6 +83,9 @@ function SolidSpectrumFormDemo() {
           hc(
             SolidSpectrumForm,
             {
+              ref: (element: HTMLFormElement) => {
+                formElement = element;
+              },
               "data-comparison-control-root": "form",
               get "data-comparison-control-props"() {
                 return serializedProps();

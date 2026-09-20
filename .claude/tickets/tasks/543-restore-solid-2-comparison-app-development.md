@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "externally accepted presentation leaves plus the released action/basic-control slice return the existing teardown from 30 onSettled callbacks across 28 named styled fixtures. The AST census falls from65 registrations/62 files to35/34; shared real-control CSR passes72/72 with exact tuple removal, inert disposal, clean remount, live semantics and rendered press/toggle/selection/focus identity. Scoped checks and root typecheck pass. Actual fixture SSR/hydration, remaining lifecycle/config/warning debt, broader app/build/attribution/packaging and release gates remain open; #543/#531 stay in-progress",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "root hydrate config now applies its existing no-discovery policy to Vitest's actual vmThreads client environment. A cold unchanged-source comparison control passes the same 4 files/61 cases but reproduces the three upstream Parcel JSX scan errors with resolved noDiscovery:false; repaired cold root SSR78/78, app SSR8/8, root hydrate98/98 and app hydrate61/61 pass sequentially with one worker. Both hydrate environments resolve noDiscovery:true/include:[] with no scan metadata or parse diagnostics. #543/#531, lifecycle/warning/web and every release gate remain open",
     }
   - {

@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Meter as SolidSpectrumMeter } from "@proyecto-viviana/solid-spectrum/Meter";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -41,28 +41,44 @@ function SolidSpectrumMeterDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedMeter = createMemo(() => {
-    const props = demoProps();
-
-    return h(SolidSpectrumMeter, {
-      "data-comparison-control-root": "meter",
-      "data-comparison-control-props": serializeMeterDemoProps(props),
-      label: props.label,
-      value: props.value,
-      minValue: props.minValue,
-      maxValue: props.maxValue,
-      valueLabel: props.valueLabel || undefined,
-      variant: props.variant,
-      size: props.size,
-      staticColor: props.staticColor || undefined,
-      labelPosition: props.labelPosition,
-    });
+  const renderedMeter = h(SolidSpectrumMeter, {
+    "data-comparison-control-root": "meter",
+    get "data-comparison-control-props"() {
+      return serializeMeterDemoProps(demoProps());
+    },
+    get label() {
+      return demoProps().label;
+    },
+    get value() {
+      return demoProps().value;
+    },
+    get minValue() {
+      return demoProps().minValue;
+    },
+    get maxValue() {
+      return demoProps().maxValue;
+    },
+    get valueLabel() {
+      return demoProps().valueLabel || undefined;
+    },
+    get variant() {
+      return demoProps().variant;
+    },
+    get size() {
+      return demoProps().size;
+    },
+    get staticColor() {
+      return demoProps().staticColor || undefined;
+    },
+    get labelPosition() {
+      return demoProps().labelPosition;
+    },
   });
 
   return hc(

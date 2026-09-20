@@ -1,5 +1,5 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { ButtonGroup as SolidSpectrumButtonGroup } from "@proyecto-viviana/solid-spectrum/ButtonGroup";
@@ -43,14 +43,20 @@ function SolidSpectrumIllustratedMessageDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
-  const renderedMessage = createMemo(() =>
-    hc(SolidSpectrumIllustratedMessage, {
+  const withActions = createMemo(() => demoProps().withActions);
+  const actionGroup = hc(SolidSpectrumButtonGroup, {}, [
+    h(SolidSpectrumButton, { variant: "secondary" }, "Import"),
+    h(SolidSpectrumButton, { variant: "accent" }, "Upload"),
+  ]);
+  const renderedMessage = hc(
+    SolidSpectrumIllustratedMessage,
+    {
       "data-comparison-control-root": "illustratedmessage",
       get "data-comparison-control-props"() {
         return serializeIllustratedMessageDemoProps(demoProps());
@@ -66,41 +72,23 @@ function SolidSpectrumIllustratedMessageDemo() {
       get orientation() {
         return demoProps().orientation;
       },
-      get children() {
-        const children: Array<ReturnType<typeof h> | ReturnType<typeof hc>> = [
-          h(SolidIllustratedMessageIllustration, { slot: "illustration" }),
-          h(SolidSpectrumHeading, {}, "Create your first asset"),
-          h(SolidSpectrumContent, {}, "Upload or import a file to begin."),
-          h(
-            "span",
-            {
-              id: "illustratedmessage-route-description",
-              hidden: true,
-            },
-            "Illustrated empty-state guidance.",
-          ),
-          h(
-            "span",
-            {
-              id: "illustratedmessage-route-details",
-              hidden: true,
-            },
-            "The comparison route covers illustration, heading, content, and actions.",
-          ),
-        ];
-
-        if (demoProps().withActions) {
-          children.push(
-            hc(SolidSpectrumButtonGroup, {}, [
-              h(SolidSpectrumButton, { variant: "secondary" }, "Import"),
-              h(SolidSpectrumButton, { variant: "accent" }, "Upload"),
-            ]),
-          );
-        }
-
-        return children;
-      },
-    }),
+    },
+    [
+      h(SolidIllustratedMessageIllustration, { slot: "illustration" }),
+      h(SolidSpectrumHeading, {}, "Create your first asset"),
+      h(SolidSpectrumContent, {}, "Upload or import a file to begin."),
+      h(
+        "span",
+        { id: "illustratedmessage-route-description", hidden: true },
+        "Illustrated empty-state guidance.",
+      ),
+      h(
+        "span",
+        { id: "illustratedmessage-route-details", hidden: true },
+        "The comparison route covers illustration, heading, content, and actions.",
+      ),
+      () => (withActions() ? actionGroup : null),
+    ],
   );
 
   return hc(

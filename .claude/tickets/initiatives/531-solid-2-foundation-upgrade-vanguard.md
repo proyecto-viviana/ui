@@ -165,6 +165,11 @@ history:
       at: 2026-09-20,
       note: "#543 applies the existing hydrate no-discovery policy to Vitest's actual __vitest_vm__ client environment. A cold unchanged-source app control passes4/61 while reproducing exactly three upstream Parcel JSX scan errors; repaired cold root SSR29/78, app SSR1/8, root hydrate27/98 and app hydrate4/61 pass sequentially, one worker, with resolved noDiscovery:true/include:[], no optimizer directory and zero scan/parse diagnostics. #543/#531, remaining app/web, build/attribution and #139/#194/#537 release gates stay open; no acceptance or waiver is inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543's externally accepted presentation leaves and released action/basic controls return 30 existing teardowns across 28 named fixtures without merging owner boundaries. Census falls65/62 to35/34; shared real-control CSR passes72/72 with exact removal, disposal/remount, live semantics and rendered interaction/focus identity; scoped checks and root typecheck pass. Actual SSR/hydration, remaining lifecycle/config/warnings, broader app/web, four-layer builds, attribution, packaging and #139/#194/#537 release gates remain open; no child/foundation/release acceptance or waiver is inferred",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)
