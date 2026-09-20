@@ -1,8 +1,10 @@
 # @proyecto-viviana/ui
 
-The Viviana design system for Solid: styled, accessible components on the same
-headless foundation as `@proyecto-viviana/solid-spectrum`, with Viviana's own
-tokens and type.
+Styled, accessible components for Solid 2: the Viviana design system.
+
+Buttons, text fields, pickers, menus, tabs, calendars, color controls, and list
+and tree views. The keyboard, screen-reader, and internationalization behavior
+is ported from Adobe's React Aria. The tokens and the type are Viviana's own.
 
 This is the package to start with. Reach for a lower one only when you need to
 build behavior yourself.
@@ -75,11 +77,30 @@ declare nothing and our layers sort last, so a `bg-red-500` on one of our
 components does nothing; put our layers first and Tailwind's Preflight strips
 our components back to bare.
 
+## Server rendering
+
+The package ships compiled DOM output for a plain `import`, and preserved JSX
+under the `solid` export condition, which your bundler compiles for the server.
+A server that loads the DOM build cannot render it. With Vite, keep the family
+inside the bundle:
+
+```ts
+import { defineConfig } from "vite";
+import solid from "vite-plugin-solid";
+
+export default defineConfig({
+  plugins: [solid({ ssr: true })],
+  ssr: { noExternal: [/@proyecto-viviana\/.*/] },
+});
+```
+
+The project's own docs site server-renders with the same `noExternal` line.
+
 ## Authoring `style()`
 
-Using the published components needs no macro plugin — their styles are
-generated at package build time. You need the macro only if your app writes
-its own `style()` calls:
+Using the published components needs no macro plugin. Their styles are
+generated when the package is built. You need the macro only if your app
+writes its own `style()` calls:
 
 ```ts
 import { style } from "@proyecto-viviana/ui/style" with { type: "macro" };
@@ -127,9 +148,9 @@ same foundation.
 
 ## Status
 
-Published and in active development. Expect APIs, package boundaries, and
-component behavior to keep tightening. An export is a floor, not proof that a
-component matches upstream.
+Published, and changing. APIs, package boundaries, and component behavior
+are still tightening. An export is a floor, not proof that a component matches
+upstream.
 
 The package ships ESM, preserved-JSX `solid` exports, and TypeScript
 declarations. `sideEffects` is `false`.
