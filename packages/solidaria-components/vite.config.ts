@@ -43,8 +43,8 @@ const entry: Record<string, string> = { index: "src/index.ts" };
 }
 
 // Standard Solid-library JSX-preserve layout: JSX-preserved `solid` entry (consumer compiles per-env,
-// SSR-safe) + a pre-compiled `default` fallback (unplugin-solid, Vite+'s
-// Rolldown-native Solid plugin). No separate SSR bundle.
+// SSR-safe) + a pre-compiled `default` fallback (@solidjs/vite-plugin). No
+// separate SSR bundle.
 export default defineConfig({
   pack: [
     // JSX preserved -> dist/<name>.jsx  (resolved via the `solid` condition)
