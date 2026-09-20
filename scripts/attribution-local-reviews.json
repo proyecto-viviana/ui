@@ -72,7 +72,7 @@
   {
     "localPath": "packages/solid-spectrum/src/button/spectrum-context.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "2c8dccb93471ca68b3a475893a3d036418a68a7969e18b738aa3f6927b7dd7b6"
+    "contentSha256": "1c3d0a31ebfc7f278c93a1dbe6dc265b351150e10ec77229f0f313a2b94c1be9"
   },
   {
     "localPath": "packages/solid-spectrum/src/button/text-child.ts",
@@ -122,7 +122,7 @@
   {
     "localPath": "packages/solid-spectrum/src/color/ColorEditor.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "b8b5e6d920beb2bff8b270b452fdd26a4d4073e0d820d15083bd1c9430f2e73f"
+    "contentSha256": "de2f97955176e3ef0d55bb07c624a8d6103244646d929f3b7d4c425c23936822"
   },
   {
     "localPath": "packages/solid-spectrum/src/ColorArea.ts",
@@ -232,7 +232,7 @@
   {
     "localPath": "packages/solid-spectrum/src/filetrigger/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "d8987a03814efd36c7f6ef36b4c4197475f0e93006ab69b18caf08cc4363ae30"
+    "contentSha256": "e5855f1cbcd0651a3a56b2be7023cadef30bb2993e49dcd0aee47095443e1623"
   },
   {
     "localPath": "packages/solid-spectrum/src/Footer.ts",
@@ -267,12 +267,12 @@
   {
     "localPath": "packages/solid-spectrum/src/icon/icons/GitHubIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "8bdc7e78ea3400fa429e51eb0d1c610d99d0b1c05ab9155034af6bed69bc3752"
+    "contentSha256": "4f6c74e1c831add549bc50c949abb58eab3a67c6d0039815ffa61cff2c176c8c"
   },
   {
     "localPath": "packages/solid-spectrum/src/icon/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "084929e657325314840917d0c0fd2ac50a68e53cfa7b2725a4262234eecb9a2c"
+    "contentSha256": "bb699c6b3df733d84bc0422bd1b0338ca34965fec585bccf64973b8c1f1998de"
   },
   {
     "localPath": "packages/solid-spectrum/src/IllustratedMessage.ts",
@@ -312,7 +312,7 @@
   {
     "localPath": "packages/solid-spectrum/src/landmark/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "371fea4453e4f391a5cbdfeab3ea87cdd8ffa0d94cd9699573b357bb750677de"
+    "contentSha256": "a9c51566934d17e725393b79b1503f5815c10789b4a0344ac542555828c72937"
   },
   {
     "localPath": "packages/solid-spectrum/src/layout/index.tsx",
@@ -437,7 +437,7 @@
   {
     "localPath": "packages/solid-spectrum/src/shared-element/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "cca6d3529b0b791318a1337ef3998fb1e9cbf5e15fc76cc264761ffa839dadd9"
+    "contentSha256": "eb751186916766cdf64af574d9676382ea4e0523957da9e6f160f30ba528d8a2"
   },
   {
     "localPath": "packages/solid-spectrum/src/Skeleton.ts",
@@ -462,7 +462,7 @@
   {
     "localPath": "packages/solid-spectrum/src/story-utils/ErrorBoundary.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "6502ffa9ad74892c705a9144170c5a9941d72d7b3f8adb70a63c15682caf9cf6"
+    "contentSha256": "f59e87225b1bed186b060b744dae0028782565a42ffa7f99063dd9b277d0fbd0"
   },
   {
     "localPath": "packages/solid-spectrum/src/story-utils/generatePowerset.ts",
@@ -482,7 +482,7 @@
   {
     "localPath": "packages/solid-spectrum/src/switch/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "c177a2ca14833dd19158d03321db15b8c246c64ad4199cfc540fd858764a9f15"
+    "contentSha256": "97a380af7979867499968c32a462bdcd815c408dcac9d25fd1482fc87ccf86fa"
   },
   {
     "localPath": "packages/solid-spectrum/src/TableView.ts",
@@ -557,17 +557,17 @@
   {
     "localPath": "packages/solid-spectrum/src/view/Content.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "8283f2df16151e1c9125e537ed081d14a456b77197b4f05ca916bdc0b741e71e"
+    "contentSha256": "3075573919889b1437270eda98c8d17283c5e3d0c9c5a8b4b9daf8a0e51fc7ff"
   },
   {
     "localPath": "packages/solid-spectrum/src/view/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "8b744846633e2c136cdc942dd122436fd9a04729b098517d4967a12d5479abac"
+    "contentSha256": "970b4fb3fb605ff420ad2f7ba6a9b6bc8c15fae7c536ef5d70a222d3ea44b523"
   },
   {
     "localPath": "packages/solid-spectrum/src/well/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "0879d1c52ad35cddb1e49bf217bcaab936ca9206efb695ea46375aaf5cfe1085"
+    "contentSha256": "baac2184c56f93650d5aa2ae1c68fad92ab3296456750d74c92b279683b38cc4"
   },
   {
     "localPath": "packages/solid-stately/src/autocomplete/index.ts",
@@ -717,17 +717,17 @@
   {
     "localPath": "packages/solid-stately/src/utils/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "9c1cd58a415c7adff6be923a76d794bf5d4cbc6f9ef8b3504b4c5638261026c6"
+    "contentSha256": "38bcab71c3421349f780240a87d1c48864f1b75c9e1a79101df8f1ea40534b2d"
   },
   {
     "localPath": "packages/solid-stately/src/utils/reactivity.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "5a37c73dde75716d5d76457b5d297302c1894ff8cd21a5a61cad962c1253791c"
+    "contentSha256": "eb1e8ea0f573f7827e4d68d730b36e19133555649bdee7efa23516351161990c"
   },
   {
     "localPath": "packages/solidaria-components/src/Alert.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "a87c1a7bf89675fbf516f58a16a066b92b29d5352bf308fdf08ca0b691fb0485"
+    "contentSha256": "c691556bcb12ecc50f211cbb1013675afabcbb045c44532135b423876e22ce3e"
   },
   {
     "localPath": "packages/solidaria-components/src/contexts.ts",
@@ -747,7 +747,7 @@
   {
     "localPath": "packages/solidaria-components/src/Icon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "8cbfabe1562ebed2c9b9ab9b8a112cb8aeebc572a71c1f206e7dbf203872ff53"
+    "contentSha256": "458bfcff0b27bc441ee387f82335df3c030d7f415c079f68a32aea0f33e73fa2"
   },
   {
     "localPath": "packages/solidaria-components/src/index.ts",
@@ -757,7 +757,7 @@
   {
     "localPath": "packages/solidaria-components/src/Landmark.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "5bea630e465aabcebc86e37e5b2ee3d92c116f83e14e64009868020043875dda"
+    "contentSha256": "134b39f52150a117b608d2755b87ba79b6b1b49e4fbb4e986971aa0b73f18897"
   },
   {
     "localPath": "packages/solidaria/src/actiongroup/index.ts",
@@ -812,7 +812,7 @@
   {
     "localPath": "packages/solidaria/src/disclosure/createDisclosureGroup.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "cfe572a90b56e86c0ff13f2a5085947e749cef54a23b5b1ef68070bdbb1bd30d"
+    "contentSha256": "a6f614f7b416ed570a0b381a398ec481530b1da2ffc2031c489c18ef6b32ac3a"
   },
   {
     "localPath": "packages/solidaria/src/disclosure/index.ts",
@@ -827,17 +827,17 @@
   {
     "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "946665f414032e50467a8c9be798f66536443a07adca0509ff1c40719084eadb"
+    "contentSha256": "0902c1e3583be98543cdd05fed9bc05d6c4cbf97505d36c373621588f3ae96bd"
   },
   {
     "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "2149a29038d28dc185d47e5ff153b0430d8dda209f831a0a4c8fcd74701d4ccb"
+    "contentSha256": "28f99697d88fdf8be6906ec85a83ae0355e9defc3e137aab427bb0c413cca0ce"
   },
   {
     "localPath": "packages/solidaria/src/focus/createVirtualFocus.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "e0d9cea735e666303e0b49de53958f25c1d4904de0bd494747dca0507bb2d07e"
+    "contentSha256": "620dd511270939087f86c968f92d7c40ff67eb089fc09e0a1a31f193bcbb6574"
   },
   {
     "localPath": "packages/solidaria/src/focus/index.ts",
@@ -867,7 +867,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "5066ed49252552b7f9553ea336e950a328dd450283a16d9885f5675f81a42a2f"
+    "contentSha256": "915f4ecb7fabf5840851bd8ceba9040966f5ebaee2f5180b06be208b2b6a822f"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
@@ -1027,7 +1027,7 @@
   {
     "localPath": "packages/solidaria/src/utils/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "cc34a1b518561be34e74eedf48c7fceafc75dc720a38410a1e7cebe8fd6b3917"
+    "contentSha256": "692e251798caacb6f1cf53ad7fd63f32bfc67d54e6906d65e1cfb0d8878fe71d"
   },
   {
     "localPath": "packages/solidaria/src/utils/reactivity.ts",
@@ -1042,12 +1042,12 @@
   {
     "localPath": "packages/viviana-ui/src/color/ColorEditor.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "adb89806ca8928e19e3c521c0c2ea2d770be898b9c46dec5c9741578ee781d5a"
+    "contentSha256": "7f0dc3868d7d85a0f06a895819e497c19f06c66576fba8550ec3d6362508ccd2"
   },
   {
     "localPath": "packages/viviana-ui/src/field/suffix.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "d0685112cb5134d02f7798c8642da93107c0e6fcd8621d74bd9c0a654c60e94d"
+    "contentSha256": "c9c6ddb0c6d4788c5c006ec1ec5fa2c4188e07d47b01b0ccf25479667114b3f3"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/index.ts",
@@ -1057,172 +1057,172 @@
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChartIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "481d0ecf78a01b6013fb35bd6d70f9018e9b323ce09151ea7fdcff422a67e425"
+    "contentSha256": "a7f913447f6da05a15bff95789ddedc6fa15c7c41c4fcdb6ef11830edebe5a78"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCheckIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "669e665055bbc5eba7e73e24a40f882149c103cc3309c8ca1e12a041a3f5d5d6"
+    "contentSha256": "7a9dd86be26ea2f4004f31cd4d3e54ba9ee2323c75acc055817ff9e014ce8b02"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChevronDownIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "9e4a5a20c5a34763f0f972e43a7ea828eac62f5242d2ebb327d59d7e60bc0e88"
+    "contentSha256": "c5ef4ce7c1b9674d6173c53036d6b07c15e0fc2fabd6883ef494d864160efd53"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChevronRightIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "75f27eef2ca329d04da0e8d93c521e7c9ef226cf7ba9e8d74fb764e4bb550325"
+    "contentSha256": "20f95f937b824ffde5aa976811098f3e04ee44dedc2fa632b7437281a05833e5"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelClockIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "b55784d12a5a2081a35f2f9b2737293978874d96279f6d66fecfd4632127febc"
+    "contentSha256": "6a6cd4219cda5fdc2d3b7fb701a997ed62f1a46a5ef82a567594255cb7fabac5"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCodeIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "cbc87bebdfdf4feacc3ee0ee02c4a531fe13768a37632ee969e0ad5d287348c8"
+    "contentSha256": "1106bd1bbda4308ba952628cebc3cbed19396f1c429663cddb7060a3db6840c1"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCommunityIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "7d5559b4cc2360fdb235ed30b1c3a6bb3c73962a895adceff62f8b9bf426c5d2"
+    "contentSha256": "52d03831a3ad5f361f8c84bee7d444b314dfe7af3e8f7d0fb987c2b0d4f4d6d9"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCubeIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "b45905ac12c789debd095e5f2fe157044c5d045a126ecbd2fdabcc28116dad8a"
+    "contentSha256": "51d261ddd2fa021b34f6b4cc2d37a7b779f99146379d39294009148e2793453e"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelFlameIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "3aee7ba16c01eacd9f32415af29b396277509abe560da5a62bd322e232fbedbb"
+    "contentSha256": "1d7e7738378de13a53978226718be5b3e77f48192d2733199dd4d37b306f2b3b"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelHomeIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "ead106275acea86e874c04558608423e6e3abc46d01cf4a25024848239f4688f"
+    "contentSha256": "fab320fc0fa2156bce17e9853b35c2c70be648fd490fbba666eb5a31a93951b8"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelLayoutIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "c5436adc581c71b27bfe8c39c1cbce2f7d273cd70529d25bcb20074e838aa73f"
+    "contentSha256": "50deb32a020e8e8d9bf4060c9a02538eef446056cd8b21341b49bc7ee0cce757"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelMapIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "f9a94a0f83f65164b96873dde8bdd2d63602ca88c5df27bc5d7f1675e956049e"
+    "contentSha256": "90de34fd4d43f16f67844ddadefefca959ac7ea76d6528229ac5710005bd7941"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelMessageIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "39fccee8a06c734f4ae294ac701e33554271c5883193a037d76af227b2895ca3"
+    "contentSha256": "4a116cc82e7576caf5b99d5eb6b247e36ec0e9a845663943923d4b7beda47ac4"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavCommunityIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "31784918a8086b6b44611d3a565aeb951767e09a3aff004e1097f1db93b189b7"
+    "contentSha256": "2f821d4474cdee96ed19f9547cbc2f1acaa367c3861baebc21bc4885273f4b8c"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavExploreIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "c19d6332949edc9698bd5afd88f06a5bb3608be8918c790f289ae295193354d2"
+    "contentSha256": "82512828500ddba317e199352b027de77184bfb3566b5052a2ad9726d3832214"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavLiveIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "354c5db91e3e50ef0363144f8ebd1ca1debc2badc0f770b2c405b1eebc739f6f"
+    "contentSha256": "d57e08fd88269b474e011af640cf49a6ed11c4cab52dfbe9e2c5e7fa945eb1b7"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavPathwaysIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "fa43986e6bafa750d61da63fbe8ce9444abfb460757fdf6c315b3394d6c1b54a"
+    "contentSha256": "d3256e478b9c0047a0c51ff90b7bf187fff0e028d5eeb95ef6e009a87652f35a"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavPlaygroundIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "6e7341ade5e2e59851c790d766dc54ba15f9edcca3f32c6d1e8f011c5277f5ea"
+    "contentSha256": "2cb95c4d08f37904a8a6b161025222cb2670a700c18809b795307c4ef51dbd61"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavProjectsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "3abf3ddaa7cca2158aeacca412871a3afd4fa871d2502cd6a3d6cc3672455c80"
+    "contentSha256": "859640f0a9834b4784f70d6cc31d5ceefe3eab9b73d5cbd28f309e2856486e6b"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavReferenceIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "256bd103850eb099488f5b288eb4cdf531042b955333d7f43884f6d6c999877c"
+    "contentSha256": "83ad33b798888d9fb42854418a38b5ee426ad97ef3e7c77aa5d8fef6afce689c"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavSettingsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "062d2342939236fdf46317f9e44f5e8929a67429b9e6487aea55721abf88de06"
+    "contentSha256": "41309cf6cc8eea7aa0f87405085939c47ad2f71275599a12e10a6276999fb2d8"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavTopicsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "b52710a6258c271beb604298789d0624c522949a3f34c09a1af7f19ad42ec028"
+    "contentSha256": "e021f6c0383688fe542ed54bcb7375e7e9a8bc007493e38fc4b9fe72bce62637"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNotificationIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "b6ddfb697c9ccf008d2ef533f2afd0ac3762ecae7e164211783e0924f960ba82"
+    "contentSha256": "f9e9a659595c5f042a436aaffc64ca2e318651aaf3871306d6a712b9966016e5"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPathwaysIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "44c9f3a658740ec29ece6b32ca7ab0d3ce116a00231d1c0eab12b596f230981a"
+    "contentSha256": "e111e9a23012036aced181e84a3f47f15a329ba57c49ba0b290b0ab84ebceff3"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPlayIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "392b1eacc437f9a777b38d9bd9b18484507da101f33c071c49775082b9a5df71"
+    "contentSha256": "f04b47c2fd0bdfa37da5e5016d71f8ce5f3235ef2d87050838e6b0b6449305d0"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPlusIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "259936de474d6056f6a9dc38e7411602ce8f376313af5daaeee5e8890be6d304"
+    "contentSha256": "fdc3b6c584cc6ce1e55bff151237722ba0c3fe418de6845c3bed6929d2f2d62d"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelProjectsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "857e7bfea8f9d4ea1ccebde0a0cae930c5c2196aec77bc2cb25b461a9bfe6040"
+    "contentSha256": "c502a54f139031b1e0a1a8e687b161f1a5a9ee5d41119b24c0c50d89c467f8bf"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelReferenceIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "e5ba28d7e26487a21361d3e4dadd2bc752a03ae5aac40914d77cefc34acfa4e4"
+    "contentSha256": "a0b7d90eafb12d285a4c8a4e4b3d41fc5686f405a77caf1e309c472c5bf11883"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSearchIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "572f17bba1e694df87846c52b3e361112cd10168fcf66b11d90ff237f5c52b0d"
+    "contentSha256": "01859b280db2647dd57aee72eb7df6082a0ffc6cb81a2634fd3536d7f88bfaf0"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSettingsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "86779738a334f3f5bf3290c1f5c4cb942d830b4487fa180c54e45668ca2755f9"
+    "contentSha256": "5313295a6d51c2f76fc47dbd187589a58237fab9240f296397a7c4fcf50f823a"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSparkleIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "864bac744f0e21aecdbbcccba61a78ca97315a9f1dbc03af25e75c45495a71c6"
+    "contentSha256": "8b81b76a0c3a808f1a2203cb7de252301cdbee15fafaa2cc52e1047b78bfc342"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelTopicsIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "57c4aff65caefe72b5364d91772f6a03baf71e294fe03edf1e1142ec2e4f6306"
+    "contentSha256": "6cc294295a25898fff2f7bae034bb4cf78063b52571571efbfb86bfb0281978c"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelUserIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "8c0951154a6d95180408a4a1ccfd2668bf4688cd525c47e5c2933b3f51a6c79c"
+    "contentSha256": "1ddaedda4a129295530b0b62c93203eb722e12b82fd19088f626091d96153f1a"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelZapIcon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "a4a798e808e5c53eda47fd3a89a591563272eb46d7a11341f1b05ca2b018b5bf"
+    "contentSha256": "a5cc1ec48eb8c018f40e244d7b63c71ca42591faf1ed905ad46ed9e94d803646"
   },
   {
     "localPath": "packages/viviana-ui/src/index.ts",
@@ -1232,12 +1232,12 @@
   {
     "localPath": "packages/viviana-ui/src/landmark/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "81ffd78b1aa3cc92a3ad61053fb910b10e5173e927dd99582b9d8874af04e7a1"
+    "contentSha256": "de2e4d98b50cea6531818d8c205fcc35cf773411e0ac90b6a17e257d40209522"
   },
   {
     "localPath": "packages/viviana-ui/src/story-utils/ErrorBoundary.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "99255dcbd8c72c07e7e2e3a955f998215b5581bcabf8229e4d4fffbe5810a0d0"
+    "contentSha256": "b32e31d0171f876b931a3d972cea4295f7e6fd62dd667528b0a083222e3516a1"
   },
   {
     "localPath": "packages/viviana-ui/src/style/glasselated-ramps.ts",
@@ -1252,7 +1252,7 @@
   {
     "localPath": "packages/viviana-ui/src/switch/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "c177a2ca14833dd19158d03321db15b8c246c64ad4199cfc540fd858764a9f15"
+    "contentSha256": "97a380af7979867499968c32a462bdcd815c408dcac9d25fd1482fc87ccf86fa"
   },
   {
     "localPath": "packages/viviana-ui/src/text/type-roles.ts",
@@ -1267,6 +1267,6 @@
   {
     "localPath": "packages/viviana-ui/src/well/index.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "e646c92476edeb5df1d403a3170df598e5e54bdff4cd65e621d85bd7bdc394e8"
+    "contentSha256": "8e88cc8476863664895364342855abcf013473a0ff31d705eb5be0495028c554"
   }
 ]
