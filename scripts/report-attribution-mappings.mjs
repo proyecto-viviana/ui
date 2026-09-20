@@ -750,7 +750,10 @@ function generatedSources(relativeWithinPackage, content) {
       (match) => match[1],
     );
     const sources = [wrapper];
-    const expectedInputs = [];
+    // The generator reads the S2 wrapper for its `style()` size map and records
+    // it as a generator input, repo-relative (`react-spectrum/packages/...`).
+    // Leaving it out of the expected set made every ui-icon unresolvable.
+    const expectedInputs = [slash(path.join("react-spectrum", wrapper.relativePath))];
     let verified = imports.length > 0;
     for (const asset of imports) {
       const upstream = fileAt(`packages/@react-spectrum/s2/ui-icons/${asset}`);

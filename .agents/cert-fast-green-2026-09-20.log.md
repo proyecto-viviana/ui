@@ -75,6 +75,27 @@ identically. Header text and port line untouched.
 
 After the slice: exact-source header contracts satisfied 472, mismatch 0.
 
+## Slice 3 — the 11 generated ui-icons
+
+Not an output problem: `node scripts/generate-solid-spectrum-icons.mjs --check`
+(`guard:generated-icons`) exits 0, so the 11 files are exactly what the
+generator writes. The report's manifest was wrong.
+
+`generate-solid-spectrum-icons.mjs` builds a ui-icon from two kinds of input
+and records both as `// Generator input:` lines: the S2 wrapper
+`react-spectrum/packages/@react-spectrum/s2/ui-icons/<Name>.tsx`, read by
+`readS2UiIconSizeStyle` for its `style()` size map, and each size's shipped
+`dist/private/S2_<Name>Size*.{mjs,cjs}` (or the vendored SVG fallback).
+`generatedSources` in `report-attribution-mappings.mjs` put the wrapper in
+`sources` but never in `expectedInputPaths`, so `sameGeneratorInputSet` saw one
+unexpected actual input on every ui-icon and marked all 11
+`generated-unresolved` — a manifest that could never be satisfied, not drift.
+
+Added the wrapper to the expected set, repo-relative in the form the generator
+emits. All 11 move to `generated-exact` (they carry the wrapper's Adobe header),
+the "files that need special attention" list is empty, and mappings still
+requiring review drop 103 → 30. No generated output and no icon source changed.
+
 ## Green
 
 `vp run guard:attribution-headers` → exit 0.
@@ -87,11 +108,9 @@ PASS: 75 composite headers preserve every distinct upstream block and exact sour
 PASS: 254 reviewed local files match their recorded content.
 ```
 
-The 11 `generated-unresolved` ui-icons print under "files that need special
-attention" but are not one of this guard's five contracts — they never held the
-exit code. Step 4 of the brief is taken up next on its own terms.
+`node scripts/generate-solid-spectrum-icons.mjs --check` → exit 0.
 
 ## Now
 
-The guard is green. Remaining: the 11 `generated-unresolved` ui-icons
-(brief step 4), which the attribution guard reports but does not gate.
+The brief's goal is met. Queue item 1 remains: the detached whole-suite run, then
+`ci:release-readiness`.
