@@ -26,13 +26,7 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 
 ## Commands
 
-| do      | run            |
-| ------- | -------------- |
-| install | `vp install`   |
-| check   | `vp run check` |
-| test    | `vp run test`  |
-| build   | `vp run build` |
-| lint    | `vp lint`      |
+`vp install`; `vp run check`, `vp run test`, `vp run build`; `vp lint`.
 
 ## Local rules
 
@@ -49,11 +43,6 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - Behavior research uses the MCP servers in `.claude/current/tooling.md`.
 - `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
   untracked; they are local tool state.
-- One editing session per git, with the owner's 2026-09-20 exception for
-  campaign #544: one extra writer in `.claude/worktrees/public-face`, owning
-  only `README.md`, `CONTRIBUTING.md`, `CREDITS.md`, `packages/*/README.md`,
-  and page content under `apps/web/src/**` and `apps/comparison/src/**`. The
-  main writer keeps everything else, heavy builds and browser proof stay
-  serialized, and the conductor alone integrates into `main`. It ends when
-  #548, #549 and #550 close; the wording is in the hub
-  [`AGENTS.md`](../AGENTS.md).
+- One editing session per git. Campaign #544 has one extra writer in
+  `.claude/worktrees/public-face`; the grant names its files and its end
+  condition, and it lives in the hub [`AGENTS.md`](../AGENTS.md).
