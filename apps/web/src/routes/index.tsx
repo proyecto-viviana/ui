@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
     seo({
       title: "Proyecto Viviana",
       description:
-        "An open Solid UI stack: one shared headless foundation, two published styled libraries, and experimental Geist and Kumo Button studies.",
+        "Accessible components for Solid 2: one headless foundation ported from React Aria, two styled libraries on npm, and Geist and Kumo button studies.",
       path: "/",
     }),
   component: LandingPage,
@@ -96,7 +96,7 @@ function ArchitectureMap() {
         <p>
           State, accessibility, keyboard behavior, and composition live in the lower packages. Each
           styled sibling owns its public API, theme, and release. You can use one without installing
-          the other three.
+          any other.
         </p>
       </div>
       <div class="pv-architecture__map" aria-label="Proyecto Viviana package layers">
@@ -144,8 +144,8 @@ function SpecimenDeck() {
         <SectionLabel>Interactive specimen</SectionLabel>
         <h2 id="specimen-deck-title">One reactive state. Four visual skins.</h2>
         <p>
-          Switch between design systems in real time. Shared reactive Solid signals (counter and
-          input) persist uninterrupted across library boundaries.
+          Switch skins while the page runs. The counter and the input are plain Solid signals, so
+          their values survive the switch.
         </p>
       </div>
 
@@ -306,14 +306,14 @@ function LandingPage(): JSX.Element {
 
       <main id="main-content" class="pv-wrap pv-wrap--narrow pv-landing-main">
         <section class="pv-hero pv-landing-hero">
-          <PillTag>One Solid foundation · Four design systems</PillTag>
+          <PillTag>One headless foundation · Two libraries · Two studies</PillTag>
           <h1>
             A Solid UI stack, <span>out in the open</span>.
           </h1>
           <p>
-            Proyecto Viviana ports established design systems to Solid. Published packages run in
-            production on npm today. Every claim of same behavior carries runnable evidence. We keep
-            clear boundaries between certified libraries and early studies.
+            Accessible components for Solid 2. The behavior is ported from Adobe’s React Aria and
+            checked against it, one component at a time. Two styled libraries are on npm. Two more
+            are one-button studies, and this page says which is which.
           </p>
           <div class="pv-landing-hero__actions">
             <CtaButton href="#libraries" tone="primary">
@@ -334,22 +334,22 @@ function LandingPage(): JSX.Element {
             <SectionLabel>Published Libraries</SectionLabel>
             <h2 id="libraries-title">Two independent styled libraries on npm.</h2>
             <p>
-              Component libraries with independent releases, dedicated documentation, and regression
-              suites.
+              Each has its own API, its own docs, and its own regression suite. Use one without the
+              other.
             </p>
           </div>
           <div class="pv-libraries pv-registers">
             <LibraryCard
               name="@proyecto-viviana/ui"
               status="Published · Glasselated theme"
-              blurb="Proyecto Viviana’s expressive component library. It has its own visual language, public API, showcase, and package release."
+              blurb="Viviana’s own design system, built on the shared headless layers. The keyboard, screen-reader, and internationalization behavior is ported from React Aria. The tokens and the type are ours."
               install="@proyecto-viviana/ui"
               links={[{ href: "/viviana-ui/docs", label: "Read docs →" }]}
             />
             <LibraryCard
               name="@proyecto-viviana/solid-spectrum"
               status="Published · Spectrum S2"
-              blurb="A component-by-component Solid port of Adobe React Spectrum S2. Same behavior is certified per component with automated regression suites."
+              blurb="Adobe’s Spectrum 2, ported to Solid one component at a time. A component counts as ported only when a regression suite shows it behaving like the React original."
               install="@proyecto-viviana/solid-spectrum"
               links={[{ href: "/solid-spectrum/docs", label: "Read docs →" }]}
             />
