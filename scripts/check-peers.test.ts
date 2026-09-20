@@ -4,6 +4,7 @@
  * Fixtures only — not the live workspace.
  */
 import { describe, expect, it } from "vite-plus/test";
+// @ts-expect-error — plain-JS guard, no types
 import { collectUnmetPeers, diffExpectedPeers, peerKey } from "./check-peers.mjs";
 
 const REPORT = {

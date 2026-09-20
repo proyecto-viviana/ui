@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
+// prettier-ignore
 // @ts-expect-error — plain-JS guard, no types
-import {
-  countCasesByFile,
-  diffCaseFloor,
-  parseListingStdout,
-} from "./check-certified-case-floor.mjs";
+import { countCasesByFile, diffCaseFloor, parseListingStdout } from "./check-certified-case-floor.mjs";
 
 const report = {
   suites: [
