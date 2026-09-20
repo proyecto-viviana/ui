@@ -1,0 +1,10 @@
+[1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+No test files found, exiting with code 1
+
+filter: packages/solidaria-test-utils
+include: packages/**/test/**/*.test.{ts,tsx}, apps/comparison/src/data/**/*.test.ts, apps/comparison/src/worker.test.ts, scripts/**/*.test.ts
+exclude:  **/node_modules/**, **/dist/**, **/*.{ssr,hydrate}.test.{ts,tsx}
+

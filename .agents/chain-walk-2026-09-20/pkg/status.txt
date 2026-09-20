@@ -1,0 +1,127 @@
+=== solid-stately start 13:21:23 avail=11311MB
+solid-stately EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    
+     Test Files  37 passed (37)
+          Tests  924 passed (924)
+       Start at  13:21:24
+       Duration  4.33s (transform 1.06s, setup 2.15s, import 1.19s, tests 1.65s, environment 1.70s)
+    
+=== solidaria start 13:21:28 avail=11153MB
+solidaria EXIT=0
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    Not implemented: navigation to another Document
+    Not implemented: navigation to another Document
+    Not implemented: navigation to another Document
+    
+     Test Files  168 passed (168)
+          Tests  4212 passed | 6 skipped (4218)
+       Start at  13:21:29
+       Duration  51.94s (transform 8.62s, setup 9.47s, import 36.53s, tests 48.22s, environment 2.18s)
+    
+=== solidaria-components start 13:22:21 avail=11361MB
+solidaria-components EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    Not implemented: navigation to another Document
+    Not implemented: navigation to another Document
+    
+     Test Files  76 passed (76)
+          Tests  2450 passed | 6 skipped (2456)
+       Start at  13:22:22
+       Duration  41.06s (transform 8.41s, setup 4.31s, import 29.98s, tests 42.16s, environment 1.85s)
+    
+=== solidaria-test-utils start 13:23:03 avail=11387MB
+solidaria-test-utils EXIT=1
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    No test files found, exiting with code 1
+    
+    filter: packages/solidaria-test-utils
+    include: packages/**/test/**/*.test.{ts,tsx}, apps/comparison/src/data/**/*.test.ts, apps/comparison/src/worker.test.ts, scripts/**/*.test.ts
+    exclude:  **/node_modules/**, **/dist/**, **/*.{ssr,hydrate}.test.{ts,tsx}
+    
+=== solid-spectrum start 13:23:04 avail=11312MB
+solid-spectrum EXIT=1
+        591|   });
+        592| });
+    
+    ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+    
+    
+      Snapshots  2 failed
+     Test Files  1 failed | 83 passed (84)
+          Tests  2 failed | 1116 passed | 1 expected fail (1119)
+       Start at  13:23:04
+       Duration  69.43s (transform 14.39s, setup 5.77s, import 78.53s, tests 46.92s, environment 2.07s)
+    
+=== solid-spectrum-test-utils start 13:24:14 avail=11897MB
+solid-spectrum-test-utils EXIT=1
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    No test files found, exiting with code 1
+    
+    filter: packages/solid-spectrum-test-utils
+    include: packages/**/test/**/*.test.{ts,tsx}, apps/comparison/src/data/**/*.test.ts, apps/comparison/src/worker.test.ts, scripts/**/*.test.ts
+    exclude:  **/node_modules/**, **/dist/**, **/*.{ssr,hydrate}.test.{ts,tsx}
+    
+=== viviana-ui start 13:24:16 avail=11832MB
+viviana-ui EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    
+     Test Files  32 passed (32)
+          Tests  212 passed (212)
+       Start at  13:24:16
+       Duration  19.74s (transform 16.95s, setup 1.89s, import 29.73s, tests 3.57s, environment 2.15s)
+    
+=== kumo start 13:24:36 avail=11693MB
+kumo EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    
+     Test Files  1 passed (1)
+          Tests  23 passed (23)
+       Start at  13:24:37
+       Duration  5.34s (transform 3.10s, setup 141ms, import 3.90s, tests 502ms, environment 619ms)
+    
+=== geist start 13:24:42 avail=11512MB
+geist EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    
+     Test Files  1 passed (1)
+          Tests  20 passed (20)
+       Start at  13:24:43
+       Duration  5.18s (transform 3.11s, setup 151ms, import 3.90s, tests 446ms, environment 529ms)
+    
+=== scripts start 13:24:48
+scripts EXIT=0
+    [1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+    
+     RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+    
+    
+     Test Files  2 passed (2)
+          Tests  14 passed (14)
+       Start at  13:24:49
+       Duration  933ms (transform 165ms, setup 293ms, import 60ms, tests 15ms, environment 1.13s)
+    
+WALK DONE 13:24:50

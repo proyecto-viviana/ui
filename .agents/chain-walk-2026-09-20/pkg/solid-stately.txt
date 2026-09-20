@@ -1,0 +1,10 @@
+[1m[2mnote:[0m[0m You are running [94m`vp test`[39m as a Vite+ built-in command. If you meant to run the test npm script, use [94m`vpr test`[39m instead.
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+
+ Test Files  37 passed (37)
+      Tests  924 passed (924)
+   Start at  13:21:24
+   Duration  4.33s (transform 1.06s, setup 2.15s, import 1.19s, tests 1.65s, environment 1.70s)
+
