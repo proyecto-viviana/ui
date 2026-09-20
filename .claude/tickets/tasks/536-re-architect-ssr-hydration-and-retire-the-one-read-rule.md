@@ -76,6 +76,11 @@ history:
       at: 2026-09-19,
       note: "public OverlayContainer body/inherited/explicit route proof exposes a lazy prop memo first read inside a child-forbidden tracked callback. Bounded createModal.tsx repair moves only mount validation into createEffect's owned compute phase, retaining the SSR guard. Fresh complete SSR 69/69 then hydrate 77/77 and owning 29/29 pass with one worker. Outer identity, generated IDs, modal ARIA and close/reopen/disposal are preserved. Tooltip routes, stale guidance, real streaming and all initiative/release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "public Tooltip controlled/default-open generated/explicit-ID and standalone routes expose four missing hydrated description links. TriggerWrapper's tracked callback first reads snapshot-null refs; split createEffect preserves initial dependency tracking and existing DOM/listener cleanup. Five focused routes and owning 25/25 pass; fresh complete SSR 74/74 then hydrate 82/82 pass with one worker. SSR portal guard and real render-prop replacement semantics remain. Stale guidance, actual streaming, sibling/build/attribution and release gates remain open",
+    }
 ---
 
 ## Cause
@@ -330,6 +335,41 @@ one worker. Owning overlays passes 29/29. Receipt and exact command ledger:
 Tooltip public-route proof, stale guidance/comments, actual unresolved-shell/
 late-tail streaming and final complete lanes remain. Private ModalContent's
 normal public SSR guard remains justified; no task or release closure inferred.
+
+## 2026-09-19 public Tooltip routes
+
+Five real routes cover controlled/default-open triggers with generated/explicit
+IDs and standalone controlled Tooltip. The existing TooltipContent server guard
+is retained: SSR suppresses portal children and callbacks while preserving the
+outer trigger, wrapper and following generated-ID field. Hydration adopts those
+exact nodes/ref/ID before exercising description linkage, Escape dismissal,
+keyboard reopen, unrelated versus ancestor scroll and complete root cleanup.
+
+Four old-source trigger routes fail because the actual button never receives
+aria-describedby, although the tooltip exists and positioning sees that same
+button. Temporary probes confirm handleRef sees it but createTrackedEffect first
+reads snapshot-null; no set/removeAttribute call occurs. Installed signals rc.9
+documents the legacy callback's inability to see an earlier staged write before
+its initial dependency read. The narrow repair uses createEffect's owned compute
+to snapshot refs and trigger props, leaving imperative description/listener work
+and cleanup in its callback. Fresh real SSR proves allocation parity. No Button,
+dependency, duplicate-version or portal-guard diagnosis is inferred.
+
+New test assumptions were corrected at their owning layers: positive-arity
+render props can create replacement bodies as exit values change, so each real
+body has an instance token and must be disposed exactly once; exactly one is
+live while open. A blur after ancestor-scroll dismissal still forwards a close
+request under the existing non-deduplicating overlay state contract. Tests assert
+the exact callback sequence per operation and inertness after disposal. No
+existing behavior expectation was weakened or render-prop source changed.
+
+Fresh complete SSR passes 74/74 (27 files), then hydrate 82/82 (26 files), one
+worker; existing ordinary Tooltip tests pass 25/25. Source and test reviewers
+accept this bounded slice. Receipt/ledger:
+`.agents/UI-EXECUTION-536-TOOLTIP-2026-09-19.md`.
+The zero-geometry deferred-ref path is not newly certified here; no blanket
+Tooltip lifecycle claim. Stale guidance/comments, actual unresolved-shell/late-tail
+streaming and final full lanes still remain before task or initiative closure.
 
 ## Done when
 

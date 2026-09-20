@@ -95,6 +95,11 @@ history:
       at: 2026-09-19,
       note: "#536 public OverlayContainer route proof diagnoses a compiler-generated lazy mount prop read inside a child-forbidden callback. Minimal owned-compute validation repair retains the SSR portal guard and behavior. Fresh complete SSR 69/69 then hydrate 77/77 and owning 29/29 pass with one worker. Tooltip routes, real streaming, stale guidance, sibling/build/attribution requirements and #139/#194/#537 same-revision release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 public Tooltip route coverage repairs four missing hydrated description links by moving TriggerWrapper ref/state reads into createEffect compute, retaining the SSR guard and original behavior. Fresh complete SSR 74/74 then hydrate 82/82 and owning 25/25 pass with one worker. Genuine streaming, stale guidance, every sibling/build/attribution requirement and #139/#194/#537 live 2177-case same-revision zero-waiver release gates remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

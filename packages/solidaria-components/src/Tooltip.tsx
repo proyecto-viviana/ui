@@ -19,7 +19,16 @@
  * Port of react-aria-components/src/Tooltip.tsx
  */
 
-import { createContext, useContext, createMemo, createSignal, createEffect, onCleanup, Show, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  useContext,
+  createMemo,
+  createSignal,
+  createEffect,
+  onCleanup,
+  Show,
+  createTrackedEffect,
+} from "solid-js";
 import type { ParentComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
@@ -218,9 +227,7 @@ export const TooltipTrigger: ParentComponent<TooltipTriggerComponentProps> = (pr
 
   return (
     <TooltipTriggerStateContext value={state}>
-      <TooltipTriggerContext value={context}>
-        {processChildren()}
-      </TooltipTriggerContext>
+      <TooltipTriggerContext value={context}>{processChildren()}</TooltipTriggerContext>
     </TooltipTriggerStateContext>
   );
 };
@@ -269,66 +276,68 @@ const TriggerWrapper: ParentComponent<{
     return wrapperProps as JSX.HTMLAttributes<HTMLSpanElement>;
   };
 
-  createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
-
-    const element = triggerElement();
-    if (!element) {
-      return;
-    }
-
-    const triggerProps = props.triggerProps as Record<string, unknown>;
-    const describedBy = triggerProps["aria-describedby"] as string | undefined;
-    if (describedBy) {
-      element.setAttribute("aria-describedby", describedBy);
-    } else {
-      element.removeAttribute("aria-describedby");
-    }
-
-    const wrapper = wrapperElement();
-    const targets = Array.from(new Set([element, wrapper].filter(Boolean))) as HTMLElement[];
-    const listeners: Array<[HTMLElement, string, EventListener]> = [];
-    const eventProps = [
-      ["onFocus", "focus"],
-      ["onBlur", "blur"],
-      ["onPointerEnter", "pointerenter"],
-      ["onPointerLeave", "pointerleave"],
-      ["onPointerOver", "pointerover"],
-      ["onPointerOut", "pointerout"],
-      ["onMouseEnter", "mouseenter"],
-      ["onMouseLeave", "mouseleave"],
-      ["onTouchStart", "touchstart"],
-      ["onPointerDown", "pointerdown"],
-      ["onKeyDown", "keydown"],
-    ] as const;
-
-    for (const [propName, eventName] of eventProps) {
-      let handler = triggerProps[propName];
-      if (!handler && propName === "onPointerEnter") {
-        handler = triggerProps.onMouseEnter;
-      } else if (!handler && propName === "onPointerLeave") {
-        handler = triggerProps.onMouseLeave;
+  // Read refs and trigger state in the compute phase. A tracked callback can
+  // miss refs written earlier in the same hydration flush before its first read.
+  createEffect(
+    () => ({
+      element: triggerElement(),
+      wrapper: wrapperElement(),
+      triggerProps: { ...props.triggerProps } as Record<string, unknown>,
+    }),
+    ({ element, wrapper, triggerProps }) => {
+      if (!element) {
+        return;
       }
-      if (typeof handler === "function") {
-        const listener = handler as EventListener;
-        for (const target of targets) {
-          target.addEventListener(eventName, listener);
-          listeners.push([target, eventName, listener]);
-        }
-      }
-    }
 
-    _s2Cleanups.push(() => {
-      for (const [target, eventName, listener] of listeners) {
-        target.removeEventListener(eventName, listener);
-      }
-      if (describedBy && element.getAttribute("aria-describedby") === describedBy) {
+      const describedBy = triggerProps["aria-describedby"] as string | undefined;
+      if (describedBy) {
+        element.setAttribute("aria-describedby", describedBy);
+      } else {
         element.removeAttribute("aria-describedby");
       }
-    });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+      const targets = Array.from(new Set([element, wrapper].filter(Boolean))) as HTMLElement[];
+      const listeners: Array<[HTMLElement, string, EventListener]> = [];
+      const eventProps = [
+        ["onFocus", "focus"],
+        ["onBlur", "blur"],
+        ["onPointerEnter", "pointerenter"],
+        ["onPointerLeave", "pointerleave"],
+        ["onPointerOver", "pointerover"],
+        ["onPointerOut", "pointerout"],
+        ["onMouseEnter", "mouseenter"],
+        ["onMouseLeave", "mouseleave"],
+        ["onTouchStart", "touchstart"],
+        ["onPointerDown", "pointerdown"],
+        ["onKeyDown", "keydown"],
+      ] as const;
+
+      for (const [propName, eventName] of eventProps) {
+        let handler = triggerProps[propName];
+        if (!handler && propName === "onPointerEnter") {
+          handler = triggerProps.onMouseEnter;
+        } else if (!handler && propName === "onPointerLeave") {
+          handler = triggerProps.onMouseLeave;
+        }
+        if (typeof handler === "function") {
+          const listener = handler as EventListener;
+          for (const target of targets) {
+            target.addEventListener(eventName, listener);
+            listeners.push([target, eventName, listener]);
+          }
+        }
+      }
+
+      return () => {
+        for (const [target, eventName, listener] of listeners) {
+          target.removeEventListener(eventName, listener);
+        }
+        if (describedBy && element.getAttribute("aria-describedby") === describedBy) {
+          element.removeAttribute("aria-describedby");
+        }
+      };
+    },
+  );
 
   // We wrap in a span with display:contents to not affect layout.
   // However, display:contents makes getBoundingClientRect return zeros,
@@ -407,15 +416,17 @@ export function Tooltip(props: TooltipProps): JSX.Element {
   const context = useContext(TooltipTriggerContext);
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     context?.setTooltipId(props.id);
     _s2Cleanups.push(() => {
       context?.setTooltipId(undefined);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const localState = createTooltipTriggerState({
     get isOpen() {
@@ -459,7 +470,7 @@ return () => { for (const c of _s2Cleanups) c(); };
 
   // When exiting, wait for CSS animations to finish, then set state to closed
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (exitState() !== "exiting") return;
     const el = tooltipEl();
@@ -483,9 +494,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       canceled = true;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const shouldRender = () => isOpen() || exitState() === "exiting";
   const isExiting = () => exitState() === "exiting";
@@ -557,7 +570,7 @@ function TooltipContent(
   const [isEntering, setIsEntering] = createSignal(true);
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (!isEntering()) return;
     if (!tooltipRef || !("getAnimations" in tooltipRef)) {
@@ -586,9 +599,11 @@ const _s2Cleanups: Array<() => void> = [];
     _s2Cleanups.push(() => {
       canceled = true;
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const values = createMemo<TooltipRenderProps>(() => ({
     isEntering: isEntering(),
@@ -692,7 +707,7 @@ return () => { for (const c of _s2Cleanups) c(); };
   // Set up positioning and scroll-close effects. Positioning retries while the
   // trigger ref resolves, and pending rAF/setTimeout IDs are canceled on cleanup.
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     // Track positioning inputs synchronously so updates from controlled route
     // props reschedule measurement even though layout reads happen in rAF.
@@ -743,9 +758,11 @@ const _s2Cleanups: Array<() => void> = [];
       window.removeEventListener("scroll", closeOnScroll, true);
       window.removeEventListener("resize", updatePosition);
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   const domProps = filterDOMProps(props, { global: true });
   const tooltipId = () => props.contextTooltipProps.id ?? (domProps as { id?: string }).id;
