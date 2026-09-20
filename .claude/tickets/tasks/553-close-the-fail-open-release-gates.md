@@ -41,6 +41,11 @@ history:
       at: 2026-09-20,
       note: "slice 8 done: guard:package-sourcemaps runs in ci:release-readiness immediately after build. It passed on the built tree (generated 1:13 maps to scripts/fixtures/style-macro-sourcemap.ts:3:13; JSX-preserve transform keeps its map, build rejects SOURCEMAP_BROKEN, PACK_PASS selects one pack pass per process) but was reachable from no chain, while tooling.md claimed it held the pack-pass contract. The order is now asserted in scripts/test-ci-guard-contracts.mjs alongside the generated-icon ordering: unwired it exits 1 with 'release readiness must run guard:package-sourcemaps after building packages', wired it exits 0. tooling.md says where it runs",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 9 done: ci:release-readiness discovers the apps' unit tests instead of naming two directories. test:run was `vp test run packages scripts`, so every unit test an app owns sat outside the chain; it is now `vp test run` with no filter, plus the three app configs the root config cannot see (comparison SSR, comparison hydrate, web) and the journeys-driver config. test:comparison-data is gone — the root config already discovers apps/comparison/src/data/**. Held by an assertion beside the existing ordering contract in scripts/test-ci-guard-contracts.mjs: unfiltered it exits 0, filtered it exits 1 with 'test:run must discover tests from the config'. Discovery proof is `vp test list --filesOnly` = 345 files (.agents/chain-walk-2026-09-20/discovery-files.txt), exactly the per-package walk (323) + scripts (8) + apps/comparison (14); scripts 8/51, apps/comparison 14/99, SSR 1/8, hydrate 4/175, drivers 1/5 all green here. The single whole-suite run is unverified locally and says so in the log: --maxWorkers=2 died twice with 'Worker exited unexpectedly' and --maxWorkers=1 outran a 30-minute cap, a fourth runs detached. That disagreement between the whole-suite run and the per-file runs is ticketed as #556, with the two pre-existing regression.test.tsx snapshot failures under Left red",
+    }
 ---
 
 ## Scope

@@ -175,7 +175,67 @@ Repair: `vp test run packages/solid-spectrum/test/regression.test.tsx -u` —
 | `test:web` | 0 | 9 files, 48 tests |
 | `test:comparison-data` | 0 | 1 file, 12 tests |
 
-Slice P is done. Nothing from it goes to `## Left red`.
+Slice P is done. Nothing from it goes to `## Slice 9 — the chain discovers the apps' unit tests
+
+`ci:release-readiness` ran `vp test run packages scripts`: two directory
+filters, so every unit test an app owns was outside the chain. The planted
+defect is the omission itself, and the case that holds it joins the existing
+ordering contract in `scripts/test-ci-guard-contracts.mjs` rather than starting
+a second copy.
+
+    $ node scripts/test-ci-guard-contracts.mjs      # before
+    Error: test:run must discover tests from the config, not filter them to named directories
+    EXIT=1
+
+Repaired: `test:run` is `vp test run` with no filter, and the three app configs
+that the root config cannot see are named in the chain
+(`test:comparison-ssr`, `test:comparison-hydrate`, `test:web`,
+`comparison:test:journeys-driver`). `test:comparison-data` is gone — the root
+config already discovers `apps/comparison/src/data/**`.
+
+    $ node scripts/test-ci-guard-contracts.mjs      # after
+    PASS: release readiness runs every app unit suite by discovery.
+    EXIT=0
+
+### What the new discovery covers
+
+`vp test list --filesOnly` under the repaired `test:run`, captured at
+`.agents/chain-walk-2026-09-20/discovery-files.txt`, is 345 files:
+
+    $ vp test list --filesOnly | grep -E '\.test\.(ts|tsx)$' | wc -l
+    345
+         14 apps/comparison
+          1 packages/geist
+          1 packages/kumo
+         84 packages/solid-spectrum
+         37 packages/solid-stately
+         92 packages/solidaria
+         76 packages/solidaria-components
+         32 packages/viviana-ui
+          8 scripts
+
+That set is exactly the per-package walk plus `scripts` plus the apps' files.
+The walk in `.agents/chain-walk-2026-09-20/pkg/` filters by path substring, so
+its `packages/solidaria` row is solidaria (92) and solidaria-components (76)
+together: 37 + 168 + 84 + 32 + 1 + 1 = 323 package files, + 8 `scripts` + 14
+`apps/comparison` = 345. Green in that walk: solid-stately 37/924,
+solidaria + components 168 files / 4,212 passed, viviana-ui 32/212, kumo 1/23,
+geist 1/20; solid-spectrum 83 of 84 files green, the one red carried below.
+Run here for this slice: `scripts` 8 files / 51 cases green (the walk predates
+the four guard tests this task added), `apps/comparison` under the root config
+14 files / 99 cases green, and the three app configs 1/8 SSR, 4/175 hydrate,
+1/5 journeys-driver, all green.
+
+**The single whole-suite `vp test run` is unverified locally.** Three attempts:
+`--maxWorkers=2` died twice with `Error: Worker exited unexpectedly`, and
+`--maxWorkers=1` outran a 30-minute cap. A fourth is running detached to
+`.agents/chain-walk-2026-09-20/whole-suite.out.txt`; its result is recorded
+below when it lands. The file set above and the per-package walk are what this
+slice proves; the one-process run is not.
+
+Commits `06cb5702` (the rewiring) and this log.
+
+## Left red`.
 
 ## Slice 0 — the peers allowlist, and both audits every run
 
@@ -702,3 +762,24 @@ Every budgeted entry gained four modules or so since the baseline was frozen.
 `--write-baseline` would clear it and that is exactly the papering-over this
 task forbids: the ceilings are the gate. Finding which import widened the graph
 is a port question, not a gate question, and belongs to its own ticket.
+
+**`packages/solid-spectrum/test/regression.test.tsx`, two snapshots** (found by
+the per-package walk, not caused by this task; now inside the chain because
+`test:run` no longer filters, though it was inside it before too):
+
+    FAIL packages/solid-spectrum/test/regression.test.tsx > Regression: Select > renders trigger and snapshot
+    Error: Snapshot `Regression: Select > renders trigger and snapshot 1` mismatched
+    FAIL packages/solid-spectrum/test/regression.test.tsx > Regression: Tabs > renders tablist, tabs, click → panel changes, and snapshot
+    Error: Snapshot `Regression: Tabs > renders tablist, tabs, click → panel changes, and snapshot 1` mismatched
+     Test Files  1 failed | 83 passed (84)
+          Tests  2 failed | 1116 passed | 1 expected fail (1119)
+
+Both are rendered-markup snapshots from before the Solid 2 port. Updating them
+is a port decision with an owner in the RC cohort, not a gate repair.
+
+**The suite's result depends on how it is run** — ticketed as
+[#556](../.claude/tickets/tasks/556-unit-suite-is-order-and-resource-dependent.md),
+found in slice 9 and deliberately not fixed here. Under one `vp test run` over
+all 345 files, `--maxWorkers=2` dies with `Error: Worker exited unexpectedly`
+and `ListView.test.tsx` reports 9 of 11 red; the same file is 11/11 alone and
+green in the per-package walk.
