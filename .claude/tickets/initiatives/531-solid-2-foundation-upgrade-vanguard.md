@@ -135,6 +135,11 @@ history:
       at: 2026-09-20,
       note: "owner's incremental app-testing request adds bounded child #543: private comparison Solid 2 renderer and app lifecycle/loading migration without dependency changes. Fresh paired adapter SSR 8/8 and client 26/26, comparison build 91 pages, and settled dev Button/D12 identity and mouse/Enter proof pass. Viewer strict warnings, restart parity and full route coverage remain; main web/TanStack compatibility is separate. No child/foundation/release acceptance or waiver is inferred; #139/#194/#537 and live 2177-case same-revision zero-waiver requirements remain intact",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543's separately named product extension makes I18n context sharing runtime-owned. Real-runtime generation and no-sharing controls fail before correction; fresh full SSR 78/78 then hydrate 98/98 and locale 71/71 pass. Controlled same-process Vite restart changes the runtime factory while preserving exact D12 nodes/keys and mouse/Enter actions without diagnostics. App paired 8/26 passes but retains scan diagnostics; app type/lifecycle/warning debt and web/TanStack compatibility remain. No child/foundation/release closure, held-task authority or waiver; all build/attribution and #139/#194/#537 live 2177-case same-revision requirements stay intact",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

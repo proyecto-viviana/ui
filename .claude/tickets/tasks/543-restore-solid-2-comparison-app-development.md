@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "bounded runtime-owned I18n registry repair separates real Solid runtime generations while preserving same-runtime module sharing. Old-source and no-sharing negative controls fail; fresh full SSR 78/78 then hydrate 98/98 pass. Same-process Vite restart changes the actual runtime factory but preserves D12 keys, exact nodes and mouse/Enter actions with no diagnostics. App paired proof remains 8 SSR/26 client; app type/lifecycle/strict-warning debt, broader integration coverage and separate web/TanStack compatibility keep acceptance open",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "private buffered-SSR adapter now passes fresh paired 8 SSR and 26 client tests, including island replay, original node/slot identity, async payloads, visible falsy failures and three app panels; comparison build passes all 91 pages. Settled dev browser passes D12 identity and both Button mouse/Enter actions. Viewer strict warnings, automatic-restart key drift, remaining route/lifecycle coverage and separate web/TanStack compatibility keep acceptance open",
     }
   - {
@@ -67,6 +72,22 @@ in the already-named panel tests. Preserve the Provider, empty pending content,
 coverage/visual/API/supporting-layer sections, visible load failure, and owner
 disposal. Prove pending/resolved/rejected/disposed behavior and rerun the build.
 No product package or dependency change is authorized by this extension.
+
+### 2026-09-20 runtime-owned I18n context extension
+
+Under the owner's autonomous foundation/app-repair instruction, name
+`packages/solidaria/src/i18n/locale.tsx` and
+`packages/solidaria/test/i18n.ssr.test.tsx` for the demonstrated stale-context
+mechanism. The context registry must share one context among module graphs
+using the same Solid factory, but never reuse a callable from a prior runtime
+generation. Preserve locale/direction propagation, nested providers, owner
+allocation and all existing public APIs. Use the actual installed runtime and
+product module in a failing-before/passing-after owning regression, then check
+real D12 node identity before and after a controlled in-process dev restart.
+This is a separately justified product extension, not authority to change
+other product paths or claim all restart causes resolved. Keep the five #534
+Hover paths separate. Record proof in this ticket, initiative #531 and
+`.agents/UI-EXECUTION-543-I18N-2026-09-20.md`; regenerate current views only.
 
 ## Done when
 
@@ -134,6 +155,41 @@ roots, live streamed chunk arrival, a CSR-only parent, and navigation lifecycle
 remain outside this bounded proof. The focused adapter tests do not replace
 the existing route/interaction, complete foundation or release gates. No claim
 that all app pages or published packages are ready follows from the build.
+
+### 2026-09-20 I18n restart mechanism proved and repaired
+
+The separately named product extension now keys the shared registry by the
+actual `createContext` factory in a `WeakMap`. Contexts remain shared among
+product module graphs on one runtime, but cannot retain another generation's
+owner state. Legacy callable cache entries are replaced; no claim is made that
+already-mounted mixed pre-fix/post-fix consumers migrate seamlessly.
+
+- The final three owning regressions use the same installed real server runtime
+  loaded as distinct module generations and the actual locale product module.
+  Old source fails 2/3 (locale `fr-FR` becomes `en-US`, child key `s0300` becomes
+  `s03`, following key `s04` becomes `s05`). A no-sharing negative control fails
+  3/3. Restored final source passes all three in the fresh complete SSR lane.
+- Existing locale tests pass 71/71, preserving nested provider, direction and
+  default-locale behavior. `vp run build:solidaria` passes before browser proof
+  so the actual app consumes the rebuilt package, not a test-only source alias.
+- A controlled actual Vite restart in one process changes the imported Solid
+  factory identity. Before/after D12 retains button key `s00001l1`, wrapper key
+  `s0000800000200020`, the original connected button/wrapper nodes and exactly
+  one mouse plus one Enter action, with no browser diagnostics. The probe warms
+  optimizer readiness before installing identity sentinels. This closes the
+  demonstrated stale-context mechanism, not every possible HMR/restart cause.
+- Fresh complete SSR passes 78/78 (29 files), then hydration 98/98 (27 files),
+  one worker. This full hydrate run has no dependency-scan diagnostic. Fresh
+  app paired SSR 8/8 and client 26/26 also pass; the latter still logs the
+  default-HTML dependency scan's three JSX parse errors despite exit zero.
+  Toolchain diagnostic debt therefore remains, not silently waived.
+
+Receipt: `.agents/UI-EXECUTION-543-I18N-2026-09-20.md`; exact commands, negative
+controls and browser logs: `/tmp/ui-execution-543-i18n-result.md`. Root typecheck
+does not replace the previously failed app-specific 40-error check. The next
+bounded app slice is honest hyperscript/fixture type and lifecycle repair with
+owning regression coverage; it must not hide failures with casts or suppress
+strict warnings. All earlier broader coverage and web-app limits remain.
 
 ## Relationship
 

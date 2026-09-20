@@ -21,7 +21,14 @@
  */
 
 import { useContextOptional } from "../utils/owner";
-import { createContext, createEffect, createMemo, createSignal, onCleanup, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  createTrackedEffect,
+} from "solid-js";
 import type { Accessor, Context, ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isRTL } from "./utils";
@@ -80,19 +87,28 @@ function updateLocale(): void {
   }
 }
 
-// Duplicate module graphs each mint a createContext identity. Share one
-// I18nContext via a well-known symbol so Provider and field hooks see the
-// same locale (same pattern as the default-locale window key above).
+// Share a context across module graphs only when they use the same runtime.
+// Solid 2 contexts are callable providers which retain their runtime's owner
+// state; a dev-server restart must not reuse a prior runtime's provider.
 const i18nContextSymbol = Symbol.for("solidaria.i18n.context");
 
 type I18nContextValue = Accessor<Locale> | null;
 
 function getI18nContext(): Context<I18nContextValue> {
-  const registry = globalThis as unknown as Record<symbol, Context<I18nContextValue> | undefined>;
-  let context = registry[i18nContextSymbol];
+  const registry = globalThis as unknown as Record<
+    symbol,
+    WeakMap<typeof createContext, Context<I18nContextValue>> | undefined
+  >;
+  let contexts = registry[i18nContextSymbol];
+  // Also replace the legacy single-context cache during an in-process upgrade.
+  if (!(contexts instanceof WeakMap)) {
+    contexts = new WeakMap();
+    registry[i18nContextSymbol] = contexts;
+  }
+  let context = contexts.get(createContext);
   if (!context) {
     context = createContext<I18nContextValue>(null);
-    registry[i18nContextSymbol] = context;
+    contexts.set(createContext, context);
   }
   return context;
 }
@@ -117,7 +133,7 @@ export function createDefaultLocale(): Accessor<Locale> {
   const [locale, setLocale] = createSignal<Locale>(currentLocale);
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     if (typeof window === "undefined") {
       return;
@@ -135,9 +151,11 @@ const _s2Cleanups: Array<() => void> = [];
         window.removeEventListener("languagechange", updateLocale);
       }
     });
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   return locale;
 }
