@@ -212,10 +212,10 @@ function SpecimenDeck() {
             <Show when={activeTheme() === "viviana"}>
               <div class="pv-specimen-deck__panel">
                 <div class="pv-specimen-deck__row">
-                  <VivianaButton variant="primary" onClick={() => setCount((c) => c + 1)}>
+                  <VivianaButton variant="primary" onPress={() => setCount((c) => c + 1)}>
                     Increment ({count()})
                   </VivianaButton>
-                  <VivianaButton variant="accent" onClick={() => setCount(0)}>
+                  <VivianaButton variant="accent" onPress={() => setCount(0)}>
                     Reset
                   </VivianaButton>
                   <VivianaBadge count={count()} variant="success" />
