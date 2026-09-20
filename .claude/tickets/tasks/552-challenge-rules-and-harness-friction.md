@@ -73,6 +73,42 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
 12. **`engine list --kind` help names three kinds;** `agy` is the fourth and
     works.
 
+### Added while the 2026-09-20 audit ran
+
+13. **A ticket edit makes two generated board views stale,** so
+    `docs:generate` has to ride in the same commit. Pure mechanical coupling;
+    generate in the pre-commit hook instead. _(this repository)_
+14. **`vp run check` on a dirty tree does not prove HEAD.** Two dirty files
+    hid a format failure. The CI-parity check needs a clean tree, or a
+    worktree it can check without stashing. _(this repository)_
+15. **The one-writer rule's real cause is the shared index and a pre-commit
+    hook that stashes unstaged tracked changes,** not the work itself.
+    Untracked files under `.agents/` are safe — the formatter ignores
+    `.agents/**` and lint-staged leaves untracked files alone — so read-only
+    lenses and out-of-tree drafters can run beside a writer. Worktrees with
+    disjoint paths are the sanctioned escape (the VisualMode exception);
+    propose the same for ui docs work. _(hub)_
+16. **Claude Code's `bashEditDiff` credits a concurrent session's file change
+    to whichever Bash call was running.** A read-only auditor's pane showed
+    "Updated apps/web/package.json" that it never wrote. Cosmetic, but it
+    reads as a rule breach; verify through the transcript's `tool_use`, not
+    the pane. _(harness)_
+17. **The attribution local-review contract hashes raw bytes of 254 files,**
+    so any formatter or codemod run turns `guard:attribution-headers` red
+    with zero licence signal — it did, on the Solid 2 codemod, for 63 files.
+    Hash a normalised form (whitespace and import lines stripped), or key the
+    review on "no Adobe header and no upstream counterpart" instead of bytes.
+    _(this repository)_
+18. **An AGY worker cannot be launched unattended.** The CLI has `--sandbox`
+    and `--dangerously-skip-permissions`; the harness exposes neither
+    (`os/packages/providers/src/engine/driver.ts` `agentArgs`). Grok launches
+    always-approve and Codex has sandbox and approval flags, so AGY alone is
+    unusable unattended — lens 4 had to be run headless from a shell.
+    Proposal: one public `--unattended` start flag for agy, mapping to
+    `--dangerously-skip-permissions`, refused unless the task file is under
+    60 lines — the owner's "small tasks only" rule made mechanical. Extends
+    item 10. _(harness)_
+
 ## Done when
 
 The campaign ends with each item fixed, ticketed where it belongs, or rejected
