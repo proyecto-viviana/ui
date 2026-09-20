@@ -1073,4 +1073,39 @@ describe("FocusScope", () => {
       expect(document.activeElement).toBe(input2);
     });
   });
+
+  // ============================================
+  // TOP LAYER
+  // ============================================
+
+  describe("top layer", () => {
+    it("should let focus move into a top-layer element outside the scope", () => {
+      // `createToastRegion` marks its region `data-solidaria-top-layer`; a
+      // contained scope must treat that as inside, the way upstream treats
+      // `data-react-aria-top-layer`.
+      const topLayer = document.createElement("div");
+      topLayer.setAttribute("data-solidaria-top-layer", "true");
+      const toastButton = document.createElement("button");
+      toastButton.textContent = "Undo";
+      topLayer.appendChild(toastButton);
+      document.body.appendChild(topLayer);
+
+      try {
+        render(() => (
+          <FocusScope contain>
+            <input data-testid="top-layer-input" />
+          </FocusScope>
+        ));
+
+        const input = screen.getByTestId("top-layer-input");
+        input.focus();
+        expect(document.activeElement).toBe(input);
+
+        toastButton.focus();
+        expect(document.activeElement).toBe(toastButton);
+      } finally {
+        topLayer.remove();
+      }
+    });
+  });
 });

@@ -36,3 +36,50 @@ Green: `vp test run packages/solidaria-components/test/Modal.test.tsx` → 24/24
 `vp test run packages/solidaria/test/createPreventScroll.test.tsx packages/solidaria-components/test/Dialog.test.tsx`
 → 36/36.
 Changeset `.changeset/modal-prevent-scroll.md`.
+
+## 2 — FocusScope top-layer attribute and isElementInChildOfActiveScope
+
+Upstream read: `react-spectrum/packages/react-aria/src/overlays/useOverlay.ts`
+imports `isElementInChildOfActiveScope` straight from `../focus/FocusScope` and
+asks it before closing on blur (lines 148-161); `FocusScope.tsx` keeps a
+module-level `activeScope`, set from three places — `useAutoFocus`,
+`useFocusContainment`'s focusin, and the `useRestoreFocus` /
+`useActiveScopeTracker` pair — and gated by `isAncestorScope`, so focus moving
+into a child scope makes the child active while moving out to an ancestor does
+not.
+
+Two defects, one cause each:
+
+- `isElementInChildScope` queried `[data-react-aria-top-layer]`. Nothing in this
+  repo sets that name: `createToastRegion` sets `data-solidaria-top-layer`, and
+  `createInteractOutside`, `ariaHideOutside` and the Toast tests all agree on it.
+  FocusScope was the lone outlier, so a contained scope dragged focus back out of
+  a toast.
+- We had no `activeScope` at all, so `isElementInChildOfActiveScope` could not be
+  exported — it had to be ported with its three assignment sites. Kept private,
+  as upstream does (`/** @private */`, absent from the barrel); `createOverlay`
+  imports it directly.
+
+Red tests:
+
+- `FocusScope.test.tsx` → "should let focus move into a top-layer element
+  outside the scope": a contained scope, a `data-solidaria-top-layer` div in the
+  body. On the old source containment pulls focus back to the scope's input —
+  `expected <input> to be <button>`.
+- `overlays.test.tsx` → "does not close on blur when focus moves into a child
+  focus scope": a dialog scope holding the overlay plus a sibling child scope
+  standing in for a portaled menu. On the old source `onClose` is called once;
+  with the fix the blur handler returns early. The handlers are driven directly,
+  the way the escape tests drive `onKeyDown`, because a real focus move would
+  also run the document-level `focusin` listener that item 3 removes.
+
+Fix: module-level `activeScope` + `isAncestorScope` + `isElementInAnyScope` in
+`FocusScope.tsx`, assigned in the auto-focus callback, in containment's focusin,
+and in a new tracker effect covering the two non-contained cases; the top-layer
+selector renamed to the attribute the repo sets; `createOverlay`'s
+`onBlurWithin` now returns early on `isElementInChildOfActiveScope`.
+
+Green: `vp test run` over `FocusScope`, `FocusScopeOwnerDocument`, `overlays`,
+`createFocusWithin`, `createDialog`, `createPopover`, `createMenu`,
+`createToast`, `focus` and `focusSafely` → 228/228.
+Changeset `.changeset/focus-scope-active-scope.md`.

@@ -20,6 +20,7 @@ import {
   UNSAFE_PortalProvider,
   useModalProvider,
 } from "../src/overlays";
+import { FocusScope } from "../src/focus/FocusScope";
 
 // ============================================
 // createOverlayTriggerState tests
@@ -332,6 +333,63 @@ describe("createOverlay", () => {
     } as unknown as KeyboardEvent);
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("does not close on blur when focus moves into a child focus scope", () => {
+    // Upstream `useOverlay` asks `isElementInChildOfActiveScope` before closing:
+    // a menu opened from inside a dialog renders in its own scope outside the
+    // overlay's DOM, and blur runs before focus, so the active scope is still
+    // the dialog's.
+    const onClose = vi.fn();
+    let overlayRef: HTMLDivElement | undefined;
+    let overlayPropsRef: ReturnType<typeof createOverlay>["overlayProps"] | undefined;
+
+    render(() => {
+      const { overlayProps } = createOverlay(
+        { isOpen: true, onClose, shouldCloseOnBlur: true },
+        () => overlayRef ?? null,
+      );
+      overlayPropsRef = overlayProps;
+
+      return (
+        <FocusScope>
+          <div ref={(el) => (overlayRef = el)} {...overlayProps} data-testid="overlay">
+            <button data-testid="dialog-button">Open menu</button>
+          </div>
+          <FocusScope>
+            <button data-testid="menu-item">Cut</button>
+          </FocusScope>
+        </FocusScope>
+      );
+    });
+
+    flush();
+
+    const dialogButton = screen.getByTestId("dialog-button");
+    const menuItem = screen.getByTestId("menu-item");
+
+    dialogButton.focus();
+
+    // Drive the focus-within handlers the way the escape tests drive onKeyDown:
+    // a real focus move would also run the document-level focusin listener,
+    // which is #555 item 3.
+    const overlay = screen.getByTestId("overlay");
+    const focusEvent = (target: Element, relatedTarget: Element | null) =>
+      ({
+        currentTarget: overlay,
+        target,
+        relatedTarget,
+        composedPath: () => [target, overlay],
+        stopPropagation() {},
+      }) as unknown as FocusEvent;
+
+    const onFocus = overlayPropsRef?.onFocus as ((e: FocusEvent) => void) | undefined;
+    const onBlur = overlayPropsRef?.onBlur as ((e: FocusEvent) => void) | undefined;
+
+    onFocus?.(focusEvent(dialogButton, null));
+    onBlur?.(focusEvent(dialogButton, menuItem));
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
 

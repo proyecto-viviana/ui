@@ -383,6 +383,25 @@ class FocusScopeTree {
 const focusScopeTree = new FocusScopeTree();
 
 /**
+ * The scope that currently holds focus. Mirrors @react-aria/focus's
+ * module-level `activeScope`: focus moving into a child scope makes the child
+ * active, moving out to an ancestor does not.
+ */
+let activeScope: ScopeRef = null;
+
+/** Whether `ancestor` is above `scope` in the focus-scope tree. */
+function isAncestorScope(ancestor: ScopeRef, scope: ScopeRef): boolean {
+  let parent = focusScopeTree.getTreeNode(scope)?.parent;
+  while (parent) {
+    if (parent.scopeRef === ancestor) {
+      return true;
+    }
+    parent = parent.parent;
+  }
+  return false;
+}
+
+/**
  * Whether the element is inside `scope` or any of its descendant scopes.
  *
  * `isElementInScope`'s `node.contains` already covers descendant scopes that
@@ -391,8 +410,10 @@ const focusScopeTree = new FocusScopeTree();
  * counts as "inside". Mirrors @react-aria/focus's `isElementInChildScope`.
  */
 function isElementInChildScope(element: Element, scope: ScopeRef = null): boolean {
-  // Always allow focus to move into a top-layer element (e.g. toasts).
-  if (element instanceof Element && element.closest("[data-react-aria-top-layer]")) {
+  // Always allow focus to move into a top-layer element (e.g. toasts). The
+  // attribute is the one `createToastRegion` sets; upstream's name is
+  // `data-react-aria-top-layer`.
+  if (element instanceof Element && element.closest("[data-solidaria-top-layer]")) {
     return true;
   }
 
@@ -403,6 +424,21 @@ function isElementInChildScope(element: Element, scope: ScopeRef = null): boolea
   }
 
   return false;
+}
+
+/** Whether the element is inside any registered focus scope. */
+function isElementInAnyScope(element: Element): boolean {
+  return isElementInChildScope(element);
+}
+
+/**
+ * Whether the element is inside the active scope or any of its descendant
+ * scopes. `createOverlay` uses it to leave an overlay open when focus moves
+ * into a child scope (a menu inside a dialog). Mirrors @react-aria/focus's
+ * `isElementInChildOfActiveScope`.
+ */
+export function isElementInChildOfActiveScope(element: Element): boolean {
+  return isElementInChildScope(element, activeScope);
 }
 
 /**
@@ -652,6 +688,8 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         cancelAutoFocus = undefined;
         const currentScope = scopeElements();
         if (currentScope.length === 0) return;
+        // Upstream `useAutoFocus` makes the auto-focused scope active first.
+        activeScope = scopeElements;
         const activeElement = getActiveElement(doc);
         if (!isElementInScope(activeElement, currentScope)) {
           focusFirstInScope(currentScope);
@@ -662,6 +700,53 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   onOwnedCleanup(() => {
     cancelAutoFocus?.();
   });
+
+  // Track the active scope when containment does not already do it. Upstream
+  // splits this between `useRestoreFocus` (restore without contain: a scope
+  // only becomes active, never inactive) and `useActiveScopeTracker` (neither:
+  // focus leaving every scope clears the active scope).
+  createEffect(
+    () => {
+      const contain = !!props.contain;
+      const restore = !!props.restoreFocus;
+      const scope = scopeElements();
+      return { contain, restore, scope };
+    },
+    ({ contain, restore, scope }) => {
+      if (contain || scope.length === 0) return;
+
+      const doc = getOwnerDocument(scope[0]);
+      const onFocus = (e: FocusEvent) => {
+        const target = e.target as Element;
+        if (restore) {
+          if (
+            (!activeScope || isAncestorScope(activeScope, scopeElements)) &&
+            isElementInScope(getActiveElement(doc), scopeElements())
+          ) {
+            activeScope = scopeElements;
+          }
+          return;
+        }
+
+        if (isElementInScope(target, scopeElements())) {
+          activeScope = scopeElements;
+        } else if (!isElementInAnyScope(target)) {
+          activeScope = null;
+        }
+      };
+
+      doc.addEventListener("focusin", onFocus, false);
+      for (const element of scope) {
+        element.addEventListener("focusin", onFocus, false);
+      }
+      return () => {
+        doc.removeEventListener("focusin", onFocus, false);
+        for (const element of scope) {
+          element.removeEventListener("focusin", onFocus, false);
+        }
+      };
+    },
+  );
 
   // Focus containment. Split createEffect so reading JSX `contain` (a compiler
   // memo getter) does not create a primitive inside createTrackedEffect.
@@ -710,6 +795,11 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         const target = e.target as Element;
 
         if (isElementInScope(target, scope)) {
+          // Focusing into a child of the active scope makes the child active;
+          // moving out to an ancestor does not (upstream `useFocusContainment`).
+          if (!activeScope || isAncestorScope(activeScope, scopeElements)) {
+            activeScope = scopeElements;
+          }
           focusedNode = target;
         } else if (isElementInChildScope(target, scopeElements)) {
           // Focus moved into a descendant scope — e.g. a menu opened from inside

@@ -21,6 +21,9 @@ import { createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createInteractOutside } from "./createInteractOutside";
 import { createFocusWithin } from "../interactions/createFocusWithin";
+// Direct import, like upstream: `isElementInChildOfActiveScope` is private to
+// the focus module and not part of the package barrel.
+import { isElementInChildOfActiveScope } from "../focus/FocusScope";
 import { getOwnerDocument, nodeContains, followRef } from "../utils";
 
 export interface AriaOverlayProps {
@@ -174,7 +177,11 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
       // Do not close if relatedTarget is null, which means focus is lost to the body.
       // That can happen when switching tabs, or due to a browser bug.
       // Clicking on the body to close the overlay should already be handled by createInteractOutside.
-      if (!e.relatedTarget) {
+      //
+      // If focus is moving into a child focus scope (e.g. a menu inside a
+      // dialog), do not close the outer overlay. Blur runs before focus, so the
+      // active scope is still the outer overlay's.
+      if (!e.relatedTarget || isElementInChildOfActiveScope(e.relatedTarget as Element)) {
         return;
       }
 
