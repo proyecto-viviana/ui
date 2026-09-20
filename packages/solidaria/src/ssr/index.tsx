@@ -88,11 +88,14 @@ export const canUseDOM = !isServer;
  * ```
  */
 export function createId(defaultId?: string): string {
+  // Generate first, choose second, like upstream `useId`: `createUniqueId` is
+  // order-dependent in both of its branches, so returning early on `defaultId`
+  // would shift every later id in the same render or hydration pass.
+  const ctx = useContextOptional(SSRContext);
+  const uniqueId = createUniqueId();
   if (defaultId) {
     return defaultId;
   }
-  const ctx = useContextOptional(SSRContext);
-  const uniqueId = createUniqueId();
   return ctx?.prefix ? `solidaria-${ctx.prefix}-${uniqueId}` : `solidaria-${uniqueId}`;
 }
 

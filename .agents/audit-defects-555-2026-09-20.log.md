@@ -125,12 +125,20 @@ the fix: 37/37. Then `vp test run` over `FocusScope`, `FocusScopeOwnerDocument`,
 `Dialog`, `DialogTriggerDebug`, `Menu`, `Modal`, `Popover`, `Select`, `ComboBox`,
 `Tooltip` in `solidaria-components` → 446/446.
 
+Commits: `d77c494b` (item 1, unmount cleanup, changeset
+`.changeset/focus-scope-active-scope-unmount.md`) and `7fe157ed` (items 2 and 3,
+mount activation and re-parent, changeset
+`.changeset/focus-scope-active-scope-mount.md`). Both accepted on review as 1:1
+with upstream; pushed with `a419e426..7fe157ed`.
+
 ### Two corrections to the standing brief (conductor, measured)
 
 - earlyoom has killed nothing since 13:19; every kill today was 12:21-12:53,
   collateral of a Rust build that also killed rustc. It fires only when mem
   available <= 6% **and** swap free <= 25%. The handoff's "wait if swap free <
   30%" rule was gating for no reason: gate on `free -m` **mem available**.
+- Memory is not a constraint: 8335 MB available, no earlyoom activity since
+  13:19. Stop gating on swap entirely.
 - The detached whole-suite run is healthy (88 minutes, 101% CPU, RSS sawtoothing
   2.1-3.1 GB against a 4288 MB heap ceiling). Do not bound worker counts in any
   vitest config — #556 item 3 forbids the ceiling fix, and the premise that
@@ -226,3 +234,36 @@ Proof: `vp test run` over `createDialog`, `createPopover`,
 `solid-spectrum` Dialog — 148 passed; then ContextualHelpTrigger, Popover,
 Menu, ActionMenu, Button (`solid-spectrum`), Dialog, Button (`viviana-ui`) —
 199 passed.
+
+## 7 — createId returned the default id without generating one
+
+Upstream read: `react-spectrum/packages/react-aria/src/utils/useId.ts` — `useId`
+always calls `useSSRSafeId()` and only then chooses between it and the passed
+id. Ours returned early on `defaultId` in both twins
+(`packages/solid-stately/src/ssr/index.ts:49-54`,
+`packages/solidaria/src/ssr/index.tsx:90-97`), so the generator was never
+called.
+
+Why it matters here and not only upstream: Solid 2's `createUniqueId` is
+`sharedConfig.hydrating ? sharedConfig.getNextContextId() : \`cl-${counter++}\``
+(`solid-js/dist/solid.js:1159`). Both branches are order-dependent, so a
+component that takes an `id` prop silently shifts every id generated after it in
+the same render or hydration pass — the classic hydration-mismatch shape.
+
+Red test (both twins): `createId()`, `createId("given-id")`, `createId()`, then
+assert the counter advanced by 2 across the three calls. Measured red,
+`expected 1 to be 2`, in `packages/solidaria/test/ssr.test.tsx` and the new
+`packages/solid-stately/test/ssr.test.ts` (solid-stately had no `ssr` test file;
+the second test in it pins the `defaultId` return that the fix must keep).
+
+Fix: hoist `createUniqueId()` — and in solidaria's twin the
+`useContextOptional(SSRContext)` read with it, so the context read keeps the
+same order too — above the `defaultId` branch. The returned value is unchanged;
+only the call order is.
+
+Green: `vp test run packages/solidaria/test/ssr.test.tsx
+packages/solid-stately/test/ssr.test.ts` → 29/29;
+`createDialog` + `Dialog` → 59/59; `packages/solid-spectrum/test/regression.test.tsx`
+(the only suite that asserts generated id text) → 50/50. The `*.ssr`/`*.hydrate`
+suites are excluded from this vitest project and were not run.
+Changeset `.changeset/create-id-generate-first.md`.

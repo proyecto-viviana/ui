@@ -71,6 +71,25 @@ describe("createId", () => {
     });
   });
 
+  it("consumes an id even when a default id is given", () => {
+    // Upstream `useId` always calls `useSSRSafeId` and only then picks the
+    // default (`useId.ts:33-46`). Solid 2's `createUniqueId` is order-dependent
+    // in both branches (`cl-${counter++}`, or `getNextContextId()` while
+    // hydrating), so an early return on `defaultId` shifts every later id in
+    // the same render or hydration pass.
+    createRoot((dispose) => {
+      const counterOf = (id: string) => Number(id.slice(id.lastIndexOf("-") + 1));
+
+      const first = createId();
+      createId("given-id");
+      const third = createId();
+
+      expect(counterOf(third) - counterOf(first)).toBe(2);
+
+      dispose();
+    });
+  });
+
   it("should generate different IDs on each call", () => {
     createRoot((dispose) => {
       const ids = new Set<string>();

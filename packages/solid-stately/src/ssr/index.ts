@@ -47,10 +47,14 @@ export function createIsSSR(): boolean {
  * @param defaultId - Optional default ID to use instead of generating one.
  */
 export function createId(defaultId?: string): string {
+  // Generate first, choose second, like upstream `useId`: `createUniqueId` is
+  // order-dependent in both of its branches, so returning early on `defaultId`
+  // would shift every later id in the same render or hydration pass.
+  const uniqueId = createUniqueId();
   if (defaultId) {
     return defaultId;
   }
-  return `solid-stately-${createUniqueId()}`;
+  return `solid-stately-${uniqueId}`;
 }
 
 /**
