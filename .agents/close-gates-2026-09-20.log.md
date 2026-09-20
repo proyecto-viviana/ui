@@ -227,6 +227,20 @@ the four guard tests this task added), `apps/comparison` under the root config
 below when it lands. The file set above and the per-package walk are what this
 slice proves; the one-process run is not.
 
+**Result of the fourth attempt: it did not produce one.** Launched
+14:50:30 with `avail=11171MB`, it ran 101 minutes and ended
+`EXIT=143 at 2026-09-20T16:32:07-03:00` — SIGTERM, with `Terminated` as its last
+line and no test counts printed. earlyoom did not do it: its log has no kill
+today after 13:19, and at 16:19 it measured `mem avail: 8664 of 14382 MiB
+(60.24%), swap free: 1012 of 4096 MiB (24.71%)`, which does not meet its
+`avail <= 6% AND swap free <= 25%` condition. What sent the signal is not
+established; the only thing running beside it was a targeted
+`vp test run packages/solidaria/test/openLink.test.ts`, started 16:32:05, and
+four earlier targeted runs in the same session did not disturb it. So the
+single-process whole-suite run is still unverified locally after four attempts,
+which is more evidence for [#556](../.claude/tickets/tasks/556-unit-suite-is-order-and-resource-dependent.md),
+not against it.
+
 Commits `06cb5702` (the rewiring) and this log.
 
 ## Slice 10 — four tests that assert nothing
