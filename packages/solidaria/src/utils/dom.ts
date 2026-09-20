@@ -87,6 +87,7 @@
  */
 
 import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
+import { isTestEnv } from "./env";
 import { focusWithoutScrolling } from "./focus";
 import { isFirefox, isIPad, isMac, isWebKit } from "./platform";
 
@@ -614,7 +615,7 @@ export function openLink(
   // support keyboard events.
   // https://github.com/WebKit/WebKit/blob/c03d0ac6e6db178f90923a0a63080b5ca210d25f/Source/WebCore/html/HTMLAnchorElement.cpp#L184
   const event =
-    isWebKit() && isMac() && !isIPad() && process.env.NODE_ENV !== "test"
+    isWebKit() && isMac() && !isIPad() && !isTestEnv()
       ? // keyIdentifier is a non-standard property, but it's what WebKit expects.
         (new KeyboardEvent("keydown", {
           keyIdentifier: "Enter",

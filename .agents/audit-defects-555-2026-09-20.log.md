@@ -657,3 +657,54 @@ Verified: `vp run test:ssr` 30 files / 79 tests; `vp run test:hydrate` 28 / 99;
 `vp run test:comparison-ssr` 1 / 8; `vp run test:comparison-hydrate` 4 / 175;
 `vp run typecheck` exit 0. Changeset
 `create-labels-id-from-hook-body.md`, patch on `@proyecto-viviana/solidaria`.
+
+## 10 — build could not emit solidaria's declarations
+
+Reproduced on the old source, in the package the leg stopped at:
+
+```
+~/packages/solidaria$ tsc -p tsconfig.build.json
+src/utils/dom.ts(617,43): error TS2591: Cannot find name 'process'.
+```
+
+`dom.ts:617` now calls `isTestEnv()` from `src/utils/env.ts` — the helper whose
+header says it exists to keep `process.env` out of source that browsers and the
+declaration build compile, and which had no callers anywhere in `packages/*/src`
+until now. The upstream comment and the WebKit source link above the expression
+are unchanged; only the fourth conjunct moved. `env.ts` imports nothing, so the
+`dom.ts` ↔ `focus.ts` cycle #558 records is not widened.
+
+Green, same command: `tsc -p tsconfig.build.json` exit 0. Then the whole leg,
+which had never been walked past its second package: `vp run build` EXIT=0,
+1m18s, 39 tasks, ending with `guard:package-artifacts — PASS: 1053 manifest
+target(s) exist across 7 public packages; 974 mapped attribution header
+reference(s) cover 537 attributed source file(s); all vp pack packages use
+vite.config.ts.` No second red of this kind or any other; the only non-error
+diagnostic is the pre-existing `[CONFIGURATION_FIELD_CONFLICT] compilerOptions.jsx
+… overridden by jsx from transform`. Log: `.agents/chain-walk-2026-09-20/leg-build.out.txt`.
+
+The brief's question — do the `process.env` sites in
+`solid-spectrum/src/style/{runtime,style-macro,spectrum-theme}.ts` and their
+`viviana-ui` twins survive their own build config? They do, and **not** because
+the config differs. All three `tsconfig.build.json` files extend the root
+`../../tsconfig.json` and none adds `types: ["node"]`, so all three emit under
+the same Node-free lib as solidaria. Those six files survive because not one of
+them names `process` bare: each reads it through the same build-safe cast,
+
+```ts
+const env: Record<string, string | undefined> =
+  (globalThis as typeof globalThis & { process?: … }).process?.env ?? {};
+```
+
+and the full green build above compiled all six. So `dom.ts:617` was the only
+site of its kind, which is what the brief wanted known before anyone writes a
+guard — one example is not a pattern, and no guard is added here.
+
+Worth a ticket rather than a fix in this item: those six casts are six copies of
+what `env.ts` already does once, and `env.ts` is solidaria-private. That is the
+"never the third copy" rule with five extra copies, and it is the shape a guard
+should be written against once the helper is shared.
+
+Verified: `vp run build` exit 0 end to end; `vp run test:run` 351 files, 6697
+passed, 1 expected fail, 6 skipped; `vp run typecheck` exit 0. Changeset
+`open-link-is-test-env.md`, patch on `@proyecto-viviana/solidaria`.
