@@ -24,6 +24,13 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     pool: "vmThreads",
+    // #556 item 2: over the whole discovered set the VM workers take the main
+    // process to ~10 GiB and earlyoom kills it. Vitest 4's default ceiling is
+    // `1 / maxWorkers` of total memory *per worker* (~1 GB each here), which in
+    // aggregate is the whole box; this recycles a worker much sooner. It is a
+    // memory ceiling, not a worker-count ceiling — parallelism is untouched, so
+    // it is not the fail-open #556 item 3 forbids.
+    vmMemoryLimit: "400MB",
     setupFiles: ["./vitest.setup.ts"],
     include: [
       "packages/**/test/**/*.test.{ts,tsx}",

@@ -1,0 +1,7 @@
+label=limit512 start 2026-09-20T16:48:01-03:00
+ DEPRECATED  `test.poolOptions` was removed in Vitest 4. All previous `poolOptions` are now top-level options. Please, refer to the migration guide: https://vitest.dev/guide/migration#pool-rework
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+WATCHDOG killed at 6108MB
+EXIT=137 at 2026-09-20T16:48:37-03:00

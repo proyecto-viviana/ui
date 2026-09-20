@@ -1,0 +1,13 @@
+label=baseline start 2026-09-20T16:50:30-03:00
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  76 passed (76)
+      Tests  2452 passed | 6 skipped (2458)
+   Start at  16:50:30
+   Duration  26.09s (transform 58.06s, setup 16.87s, import 165.45s, tests 160.82s, environment 26.20s)
+
+EXIT=0 at 2026-09-20T16:50:57-03:00

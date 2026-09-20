@@ -1,0 +1,13 @@
+label=vm400-hi start 2026-09-20T16:49:47-03:00
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+
+ Test Files  76 passed (76)
+      Tests  2452 passed | 6 skipped (2458)
+   Start at  16:49:47
+   Duration  33.95s (transform 69.13s, setup 21.15s, import 201.38s, tests 230.94s, environment 32.78s)
+
+EXIT=0 at 2026-09-20T16:50:22-03:00

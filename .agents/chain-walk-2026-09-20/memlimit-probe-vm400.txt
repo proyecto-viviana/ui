@@ -1,0 +1,6 @@
+label=vm400 start 2026-09-20T16:49:11-03:00
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+WATCHDOG killed at 6161MB
+EXIT=137 at 2026-09-20T16:49:33-03:00

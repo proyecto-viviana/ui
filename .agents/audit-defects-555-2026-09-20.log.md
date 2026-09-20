@@ -137,12 +137,22 @@ with upstream; pushed with `a419e426..7fe157ed`.
   collateral of a Rust build that also killed rustc. It fires only when mem
   available <= 6% **and** swap free <= 25%. The handoff's "wait if swap free <
   30%" rule was gating for no reason: gate on `free -m` **mem available**.
-- Memory is not a constraint: 8335 MB available, no earlyoom activity since
-  13:19. Stop gating on swap entirely.
-- The detached whole-suite run is healthy (88 minutes, 101% CPU, RSS sawtoothing
-  2.1-3.1 GB against a 4288 MB heap ceiling). Do not bound worker counts in any
-  vitest config — #556 item 3 forbids the ceiling fix, and the premise that
-  default parallelism kills workers is not currently true.
+- ~~Memory is not a constraint: 8335 MB available, no earlyoom activity since
+  13:19. Stop gating on swap entirely.~~ **Corrected by the conductor at 16:45,
+  measured.** Memory is decisively the constraint for the whole-suite run. That
+  8335 MB reading was taken at rest *after* the process had already died, which
+  is the wrong measurement: `free -m` at rest says nothing about a run, only the
+  RSS curve during it does. earlyoom SIGTERMed the vitest **main** process twice
+  today (16:35:44, VmRSS 10229 MiB; 16:37:23, VmRSS 10350 MiB, with mem
+  available 5.79% and swap free 2.72%), and its `--avoid` list shields `claude`,
+  so vitest is always the victim. Under `pool=vmThreads` the main process climbs
+  monotonically to ~10.2 GiB in about 90 seconds. Gate heavy steps on the RSS
+  curve of the run, not on swap and not on `free -m` at rest.
+- The detached whole-suite run is **not** healthy; the fourth attempt died the
+  same way after 101 minutes. Still do not bound worker counts in any vitest
+  config — #556 item 3 forbids that ceiling. The ceiling that is allowed is on
+  memory: `test.poolOptions.vmThreads.memoryLimit`, which recycles a VM worker
+  without touching parallelism.
 
 ## 3a — createOverlay's lastVisibleOverlay, and the preventDefault
 
@@ -354,3 +364,45 @@ Neighbours green: `Wave4Components`, `Dialog`, `ActionBar`,
 `IllustratedMessage` 73/73.
 
 Changeset `.changeset/buttongroup-children-overflow.md`.
+
+## #556 items 1 and 2 — the whole-suite death is the pool's memory ceiling
+
+Measured A/B, same machine, same tree, same watchdog (kill the vitest process
+at 9000 MB, cap the run at 25 minutes), only `vitest.config.ts` differing.
+
+| run | ceiling | result | peak RSS |
+| --- | --- | --- | --- |
+| `memlimit-vm400` | `test.vmMemoryLimit: "400MB"` | 350 files, 6689 passed, 1 expected fail, 6 skipped, 73s, EXIT=0 | 7634 MB |
+| `memlimit-control` | none (Vitest default) | killed by the watchdog after about a minute | 10033 MB |
+
+Why the default is the problem: under `pool: "vmThreads"` the workers are worker
+threads, so their memory is the main process's RSS — which is why earlyoom
+SIGTERMs the main process and never a worker. Vitest 4 resolves the ceiling as
+`1 / maxWorkers` of total memory **per worker** (`getWorkerMemoryLimit`,
+`cli-api` 2358-2361), about 1 GB each on 16 cores, so in aggregate the ceiling
+is the whole box and RSS climbs monotonically until earlyoom acts.
+
+Two corrections to the conductor's brief, both measured here:
+
+- `test.poolOptions.vmThreads.memoryLimit` does not exist in Vitest 4. The
+  runner prints `` `test.poolOptions` was removed in Vitest 4 `` and ignores it;
+  the option is top-level `test.vmMemoryLimit`. My first attempt used the
+  `poolOptions` spelling and climbed to 7.2 GB in 60 seconds, as expected.
+- The ceiling does nothing on a single package (76 files: 6724 MB with it, 6785
+  MB without). It only bites over a set long enough for a worker to accumulate.
+  So a package-sized probe cannot prove or disprove it; the whole-set run can.
+
+Item 3 is respected: this is a ceiling on memory, not on worker count. No
+`maxWorkers`, no `fileParallelism`, no chain split, nothing skipped — 350 of 350
+files ran, which is 2 more than the `pool=threads` run discovered.
+
+Item 1 falls out of the same finding: `ListView.test.tsx` is 11/11 in the green
+whole-suite run above, so its 9-of-11 redness travelled with the memory
+exhaustion, not with file order. Receipts:
+`.agents/chain-walk-2026-09-20/memlimit-vm400.{out,rss}.txt`,
+`memlimit-control.{out,rss}.txt`, `memlimit-probe-*.txt`, `run-memlimit.sh`,
+`run-memlimit-probe.sh`.
+
+Also in this commit: the "memory is not a constraint" line under "Two
+corrections to the standing brief" is struck and replaced with the conductor's
+16:45 measurement, which this A/B confirms.

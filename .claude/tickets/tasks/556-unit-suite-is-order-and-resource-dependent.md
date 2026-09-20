@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "found while closing #553 slice 9, not caused by it. Under one `vp test run` over all 345 discovered files the run dies with `Error: Worker exited unexpectedly` at --maxWorkers=2 (twice, once right after the scripts guards, which each spawn a child node), and packages/solid-spectrum/test/ListView.test.tsx reports 9 of 11 cases red. The same file is 11/11 green on its own, and green in the per-package walk in .agents/chain-walk-2026-09-20/pkg/. A suite whose answer changes with the worker count answers about the machine, not about the tree",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: 'items 1 and 2 answered, measured A/B. It is memory, at the pool level. earlyoom SIGTERMs the vitest MAIN process (16:35:44 VmRSS 10229 MiB; 16:37:23 VmRSS 10350 MiB) because vmThreads worker threads share the main process RSS and Vitest 4''s default ceiling is `1 / maxWorkers` of total memory PER worker (~1 GB x 15 here), i.e. the whole box. `test.vmMemoryLimit: "400MB"` in vitest.config.ts recycles a worker sooner: one `vitest run` over the discovered set is 350 files / 6689 passed / 1 expected fail / 6 skipped in 73s, peak RSS 7634 MB, no kill (.agents/chain-walk-2026-09-20/memlimit-vm400.{out,rss}.txt). The control, the same command with the ceiling removed, hit 10033 MB in about a minute and was killed (memlimit-control.{out,rss}.txt). ListView is 11/11 in that green whole-suite run, so item 1''s redness travelled with the memory exhaustion, not with file order. Note for item 3: this is a ceiling on memory, not on worker count - parallelism is untouched and nothing is skipped. `test.poolOptions` no longer exists in Vitest 4 (it warns and is ignored), which is why the option is top-level',
+    }
 ---
 
 ## Scope
