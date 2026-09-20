@@ -4,6 +4,7 @@ import {
   ListLayout,
   GridLayout,
   WaterfallLayout,
+  type WaterfallLayoutOptions,
   ListBox,
   ListBoxOption,
 } from "@proyecto-viviana/solidaria-components";
@@ -209,7 +210,7 @@ function VirtualizerPage() {
   </ListBox>
 </Virtualizer>`}
       >
-        <Virtualizer
+        <Virtualizer<WaterfallLayoutOptions>
           layout={WaterfallLayout}
           layoutOptions={{ minColumnWidth: 200, gap: 8, rowHeight: 120 }}
         >
