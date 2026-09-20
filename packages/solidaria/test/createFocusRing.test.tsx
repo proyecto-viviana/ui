@@ -8,6 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createFocusRing } from "../src/interactions/createFocusRing";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import { flush, type Component } from "solid-js";
 
 // Test component that uses createFocusRing
@@ -40,6 +41,10 @@ const Example: Component<ExampleProps> = (props) => {
 describe("createFocusRing", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // Interaction modality is module-global and outlives a case: a pointer
+    // interaction in one test decides whether the next test's focus shows a
+    // ring. Start every case from the keyboard modality a fresh module has.
+    setInteractionModality("keyboard");
   });
 
   afterEach(() => {
@@ -344,17 +349,18 @@ describe("createFocusRing", () => {
 
   describe("autoFocus behavior", () => {
     it("should set isFocusVisible to true initially when autoFocus is true and focused", () => {
-      // autoFocus affects the initial modality state
-      // but isFocusVisible is only true when also focused
-      let result: ReturnType<typeof createFocusRing> | undefined;
+      render(() => <Example autoFocus />);
 
-      render(() => {
-        result = createFocusRing({ autoFocus: true });
-        return <div />;
-      });
+      const el = screen.getByTestId("example");
 
-      // Without actual focus, isFocusVisible is false because of the isFocused && isFocusVisible logic
-      // The autoFocus flag just initializes the modality hint
+      // autoFocus seeds the modality hint, but isFocusVisible is
+      // `isFocused() && flag` — an unfocused element never shows the ring.
+      expect(el.dataset.focusVisible).toBe("false");
+
+      el.focus();
+
+      expect(el.dataset.focused).toBe("true");
+      expect(el.dataset.focusVisible).toBe("true");
     });
 
     it("should set isFocusVisible to false initially when autoFocus is false", () => {

@@ -235,6 +235,64 @@ slice proves; the one-process run is not.
 
 Commits `06cb5702` (the rewiring) and this log.
 
+## Slice 10 — four tests that assert nothing
+
+Each of the four rendered something, fired an event, and ended on a comment.
+They ran under `test:run` and counted as passes, so the behaviours they name
+were unheld. Each now asserts what its title promises.
+
+- `createFormValidation.test.tsx:122` — hoists the state, dispatches the
+  cancelable `invalid` event the browser fires (`fireEvent.invalid` is not
+  cancelable), and asserts `defaultPrevented` plus the committed
+  `displayValidation()` and its `["Required"]`.
+- `createFormValidation.test.tsx:229` — asserts the change handler commits:
+  not displaying before, displaying `["Required"]` after.
+- `createFocusRing.test.tsx:346` — asserts the memo's gate (autoFocus alone,
+  unfocused, shows no ring) and then the ring on focus.
+- `Toast.test.tsx:340` (solidaria-components) — subscribes and asserts that on
+  the global queue `close()` marks the toast `exiting` and keeps it, and only
+  `remove()` drops it. That is what `hasExitAnimation: true` buys, and the
+  title's claim.
+
+Red first, with the behaviours planted out of the three sources
+(`createFormValidation`'s `e.preventDefault()` and its `onChange` commit,
+`createFocusRing`'s `isFocused() && flag` memo, `globalToastQueue`'s
+`hasExitAnimation`):
+
+    $ vp test run <the three files> --maxWorkers=1     # defects planted
+       × global queue should have hasExitAnimation enabled
+       × should set isFocusVisible to true initially when autoFocus is true and focused
+       × should commit validation on invalid event
+       × should commit validation on change event
+       (+ 4 more focus-ring cases the memo gate holds)
+     Test Files  3 failed (3)
+          Tests  8 failed | 59 passed (67)
+    EXIT=1
+
+Sources restored (`git checkout --`), same command:
+
+     Test Files  3 passed (3)
+          Tests  67 passed (67)
+    EXIT=0
+
+Two of the four were order-dependent, and the fix is in the test, not the
+assertion. `createFocusRing.test.tsx` inherited whatever interaction modality
+the previous case left — a pointer interaction there makes the next case's
+focus show no ring — so its `beforeEach` now starts each case from the keyboard
+modality a fresh module has; all 24 cases green. The Toast case shares the
+process-wide `globalToastQueue`, which earlier cases leave nine toasts in, so
+it asserts on its own key rather than on the queue's length. Both are the same
+family as [#556](../.claude/tickets/tasks/556-unit-suite-is-order-and-resource-dependent.md).
+
+Upstream parity checked for the focus ring: `useFocusRing.ts:44,60` seeds
+`autoFocus || isFocusVisible()` and re-samples the modality on every focus
+change, exactly as the port does — the resample is not our divergence.
+
+Tests only, so no changeset.
+
+    $ vp check          pass: All 4334 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3166 files
+
 ## Left red`.
 
 ## Slice 0 — the peers allowlist, and both audits every run

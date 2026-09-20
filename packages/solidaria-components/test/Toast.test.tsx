@@ -338,14 +338,23 @@ describe("Toast", () => {
 
   describe("exit animation lifecycle", () => {
     it("global queue should have hasExitAnimation enabled", () => {
-      // The global queue should use exit animations so consumers can style exit transitions
+      const callback = vi.fn();
+      const unsubscribe = globalToastQueue.subscribe(callback);
+
       const key = globalToastQueue.add({ title: "Test" });
       globalToastQueue.close(key);
-      // With hasExitAnimation: true, close() marks as exiting instead of removing.
-      // Since we're in JSDOM (no getAnimations), the Toast component would call
-      // remove() immediately in its effect. But at the queue level, close sets 'exiting'.
-      // Clean up any remaining toast
+
+      // hasExitAnimation is what lets a consumer style the exit: close() marks
+      // the toast exiting and keeps it in the queue, and only remove() drops it.
+      // Earlier cases leave their own toasts here, so assert on this key.
+      const closed = callback.mock.calls[callback.mock.calls.length - 1][0];
+      expect(closed.find((toast) => toast.key === key)?.animation).toBe("exiting");
+
       globalToastQueue.remove(key);
+
+      const removed = callback.mock.calls[callback.mock.calls.length - 1][0];
+      expect(removed.some((toast) => toast.key === key)).toBe(false);
+      unsubscribe();
     });
 
     it("ToastState should expose remove method", () => {

@@ -120,10 +120,12 @@ describe("createFormValidation", () => {
 
   describe("invalid event handling", () => {
     it("should commit validation on invalid event", () => {
+      let validationState!: FormValidationState;
+
       const TestComponent = () => {
         let inputRef: HTMLInputElement | undefined;
 
-        const validationState = createFormValidationState({
+        validationState = createFormValidationState({
           value: "",
           validate: () => "Required",
           validationBehavior: "native",
@@ -142,11 +144,18 @@ describe("createFormValidation", () => {
       const { getByTestId } = render(() => <TestComponent />);
       const input = getByTestId("input") as HTMLInputElement;
 
-      // Trigger invalid event
-      fireEvent.invalid(input);
+      // Native behaviour holds the error back until something commits it.
+      expect(validationState.displayValidation().isInvalid).toBe(false);
 
-      // The invalid event should be prevented from showing browser UI
-      // (we can't easily test preventDefault here, but we can verify it runs)
+      // `fireEvent.invalid` dispatches a non-cancelable event, so dispatch the
+      // cancelable one the browser fires: the handler must swallow it, or the
+      // native bubble shows on top of the field's own error message.
+      const event = new Event("invalid", { bubbles: false, cancelable: true });
+      input.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(validationState.displayValidation().isInvalid).toBe(true);
+      expect(validationState.displayValidation().validationErrors).toEqual(["Required"]);
     });
 
     it("focuses the input when requestSubmit uses a form attribute set after mount", () => {
@@ -227,11 +236,13 @@ describe("createFormValidation", () => {
 
   describe("change event handling", () => {
     it("should commit validation on change event", async () => {
+      let validationState!: FormValidationState;
+
       const TestComponent = () => {
         let inputRef: HTMLInputElement | undefined;
         const [value, setValue] = createSignal("");
 
-        const validationState = createFormValidationState({
+        validationState = createFormValidationState({
           get value() {
             return value();
           },
@@ -254,10 +265,14 @@ describe("createFormValidation", () => {
       const { getByTestId } = render(() => <TestComponent />);
       const input = getByTestId("input") as HTMLInputElement;
 
-      // Trigger change event
+      expect(validationState.displayValidation().isInvalid).toBe(false);
+
+      // A change commits whatever realtime validation currently says; the
+      // control's own `onInput` never ran, so the value is still empty.
       fireEvent.change(input, { target: { value: "test" } });
 
-      // Validation should be committed
+      expect(validationState.displayValidation().isInvalid).toBe(true);
+      expect(validationState.displayValidation().validationErrors).toEqual(["Required"]);
     });
   });
 
