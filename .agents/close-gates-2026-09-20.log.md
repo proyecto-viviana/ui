@@ -5,21 +5,15 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 9 in progress — `ci:release-readiness` discovers the apps' unit tests.
-Scripts are rewired (`test:run` filter dropped, the two app configs and the
-journeys-driver config added to the chain, `test:comparison-data` gone, commit
-`06cb5702`) and the app suites all run green on their own: 14 files/99 cases
-under the root config, 1/8 SSR, 4/175 hydrate, 1/5 drivers. Left to do: one
-whole-suite `vp test run` under the new discovery. It is 377 package test files
-plus scripts and the apps' data tests, and this box will not finish it quickly:
-`--maxWorkers=2` died twice with "Worker exited unexpectedly" (the second time
-after the scripts guards, which each spawn a child node), and `--maxWorkers=1`
-ran out of a 30-minute cap. Third attempt running at `--maxWorkers=1` with a
-90-minute cap. `scripts` alone is green (8 files / 51 cases), and
-`packages/solid-spectrum/test/ListView.test.tsx` — the one file the timed-out
-run reported, 9 of 11 red — is green on its own (11/11), so those failures are
-order- or resource-dependent, not the file's own. Slices P, 0, 1, 2, 3, 4, 5, 6,
-7 and 8 are closed. Third writer; brief
+Slices P and 0 through 11 are closed: every slice the brief names, plus the
+conductor's slice 11 (a gate never reuses a Playwright server). Slice 9 is
+closed on a file-set proof rather than a whole-suite run — `vp test list` under
+the new discovery names 345 files, exactly the per-package walk plus `scripts`
+plus the apps' — and a fourth whole-suite `vp test run --maxWorkers=1` runs
+detached into `.agents/chain-walk-2026-09-20/whole-suite.out.txt` (started
+14:50). That single run is unverified locally; its result belongs in the slice 9
+section when it lands. The suite's order and resource dependence is ticketed as
+#556, not fixed here. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
