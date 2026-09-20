@@ -59,6 +59,19 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
    learnable only from source.
 9. **`ELIGIBILITY.md` is forty rows of "yes".** A table where every row
    agrees tells a reader nothing. List only the exceptions.
+10. **An AGY worker cannot work unattended, and the harness cannot see it.**
+    AGY asks permission for each shell command; `audit-claims` stopped on its
+    first `ls`. `engine list` and `engine probe` both report `idle` and
+    `promptable: true` while the pane shows a permission menu, so a conductor
+    believes the task finished or never began. `start-flags.ts` has approval
+    flags for Codex only. Two changes: detect the menu and report `blocked`;
+    and give the owner one place to pre-approve a read-only command set for
+    AGY workers, since a conductor must not answer another agent's prompt.
+11. **`engine start` prints the whole task text twice** in its JSON reply. A
+    two-kilobyte brief costs the conductor four on every launch. Echo the
+    delivery id and a hash.
+12. **`engine list --kind` help names three kinds;** `agy` is the fourth and
+    works.
 
 ## Done when
 
