@@ -9,6 +9,11 @@ history:
   - {
       state: in-progress,
       at: 2026-09-20,
+      note: "bounded app type/keyed-fixture repair removes the reproduced 40 app-check errors without masking callable boundaries. Actual helper/fixture regressions pass19/19, owning Tabs/Geist74/74, fresh complete SSR78/78 then hydrate98/98 and app paired8/45. Separately named fixes preserve Geist's existing JSX prefix slot and keep four tablist ARIA outputs reactive. Browser proof covers Checkbox, both Tabs frameworks and German RangeCalendar; React reference key diagnostic is corrected without suppressing errors. Strict warnings, remaining fixture lifecycles, broader integration/web and all foundation/release gates remain open; no acceptance waiver",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
       note: "bounded runtime-owned I18n registry repair separates real Solid runtime generations while preserving same-runtime module sharing. Old-source and no-sharing negative controls fail; fresh full SSR 78/78 then hydrate 98/98 pass. Same-process Vite restart changes the actual runtime factory but preserves D12 keys, exact nodes and mouse/Enter actions with no diagnostics. App paired proof remains 8 SSR/26 client; app type/lifecycle/strict-warning debt, broader integration coverage and separate web/TanStack compatibility keep acceptance open",
     }
   - {
@@ -25,6 +30,11 @@ history:
       state: in-progress,
       at: 2026-09-19,
       note: "owner requested usable apps for incremental component testing; installed Astro Solid 7.0.2 still uses Solid 1 compiler/runtime APIs. Bounded comparison integration repair begins without dependency changes; web/TanStack compatibility remains separate",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "owner requested planning and documentation for a fresh session before the reviewed type/keyed slice was staged or committed. Final build/types, site7/7, router1/1, direct docs and reviewed parent38/38 pass; preserve all diagnostics and five separate #534 files. Recorded the next eight common-form lifecycle paths and remaining app coverage without implementing them or declaring acceptance",
     }
 ---
 
@@ -88,6 +98,73 @@ This is a separately justified product extension, not authority to change
 other product paths or claim all restart causes resolved. Keep the five #534
 Hover paths separate. Record proof in this ticket, initiative #531 and
 `.agents/UI-EXECUTION-543-I18N-2026-09-20.md`; regenerate current views only.
+
+### 2026-09-20 app type and keyed-fixture extension
+
+Fresh app `astro check` reproduces 40 errors. Under the owner's autonomous
+app-repair instruction, name these paths under
+`apps/comparison/src/components/solid/`: `solid-h.ts`, `ComparisonIsland.tsx`,
+`ComponentDetailHero.tsx`, `ComponentDetailMeta.tsx`,
+`ComponentExampleControls.tsx`, `ComponentExampleFiles.tsx`,
+`ComponentExamplePreview.tsx`, `fixtures/styled-shared.tsx`,
+`fixtures/styled/{checkbox,checkboxgroup,colorswatchpicker,colorwheel,rangecalendar,segmentedcontrol,tabs}.tsx`,
+`islands/{SolidKeyboardShortcutsIsland,SolidTextEntryCallbackIsland}.tsx`, and
+`GeistButtonFixture.tsx`. Owning regression paths are
+`apps/comparison/test/solid-integration/{hyperscript,fixtures}.hydrate.test.tsx`;
+existing panel and paired integration tests remain unchanged expectations.
+
+Use honest callable return contracts, not casts masking arrays/thunks as DOM.
+Preserve reactive props, context/callbacks, real keyed remounts and exact cleanup.
+Return fixture listener cleanup from onSettled; preserve independent owner
+cleanup and all behavior expectations. Other lifecycle copies remain explicit
+#543 debt, not authority for an unbounded app rewrite. No styling change.
+
+Separately justify product paths `packages/geist/src/components/button.tsx` and
+new `packages/geist/test-utils/button-props.typecheck.ts`: native RDFa prefix
+intersects the already-existing JSX prefix slot. Omit only that native key and
+prove the existing slot, native forwarding and svgOnly accessible-name contract
+through failing-before type coverage plus owning runtime tests. No new public
+name, dependency, or first-release decision. Record this slice in #543/#531,
+generated current views and `.agents/UI-EXECUTION-543-TYPES-2026-09-20.md`.
+Preserve all five separate #534 paths. Full ticket/release acceptance stays open.
+
+The honest helper contract exposes seven additional type errors in six direct
+callers. Name `fixtures/styled/{actiongroup,gridlist,toolbar,icons,illustrations,illustratedmessage}.tsx`
+under the same app directory: materialize the three inner component returns
+and declare the other three heterogeneous child arrays truthfully. This is a
+type/callable-boundary correction only; these six fixtures' existing lifecycle
+migration remains explicit debt. Prove the app-specific check, owning helper
+tests and production build without casts or suppressed errors.
+
+The added same-key Tabs regression isolates another separately justified
+product extension: `packages/solidaria/src/tabs/createTabs.ts` and its existing
+owner `packages/solidaria/test/createTabs.test.tsx`. `createTabList` snapshots
+four returned ARIA fields despite live input getters; Spectrum and the fixture
+forward those getters correctly. Make only these output fields reactive, keep
+role/handlers and all expectations unchanged, prove failing-before hook and
+real-fixture tests, then rebuild Solidaria for actual-browser verification.
+
+Owning Geist Button proof exposes retained DOM from prior tests (15 ambiguous
+queries, while the first tests pass). Name `packages/geist/test/Button.test.tsx`
+for explicit testing-library cleanup after every test. Keep all 20 behavior
+cases and assertions, then rerun the exact combined owning command; no Button
+runtime change is justified by this test isolation failure.
+
+The combined rerun passes all 20 Geist cases but exposes the same retained-DOM
+failure in the already-named `packages/solidaria/test/createTabs.test.tsx` (36
+ambiguous queries). Testing-library auto-registers cleanup on its first module
+import, which is insufficient for both files in this runner. Register cleanup
+explicitly at the Tabs file level so both existing describes are covered;
+preserve every behavior expectation and rerun the combined owning command.
+
+Actual-browser proof identifies one separately named app-only correction:
+`apps/comparison/src/components/react/fixtures/styled/tabs.js` passes the existing
+remount key inside `jsxs` props, producing a React console error even though
+the Solid tab interactions pass. Move the same key to the JSX runtime's third
+argument, matching that file's tab/panel calls. Preserve remount semantics,
+prove both frameworks' interaction and structural remount behavior in the
+actual browser, and retain every no-error assertion. No product extension or
+strict-warning suppression follows from this diagnostic.
 
 ## Done when
 
@@ -190,6 +267,95 @@ does not replace the previously failed app-specific 40-error check. The next
 bounded app slice is honest hyperscript/fixture type and lifecycle repair with
 owning regression coverage; it must not hide failures with casts or suppress
 strict warnings. All earlier broader coverage and web-app limits remain.
+
+### 2026-09-20 honest types and keyed fixture behavior
+
+The checked tag/component `h` wrapper returns an actual callable, while `hc`
+uses its own component-thunk brand. The private keyed boundary supplies the
+required one-argument render callback and materializes its result. Seven
+fixture shells defer their children into the surrounding Provider's owner;
+the generic context sentinel failed before this repair and passes afterward.
+The initially suspected RangeCalendar locale failure was not reproduced:
+its de-DE regression already passed and remains a passing control.
+
+All seven fixtures and the shared theme hook return listener cleanup from
+`onSettled`. Shared SVG helpers use installed `merge` and live props. Tabs
+non-key controls retain the original nodes, including focus and manual keyboard
+activation; structural/default changes still remount intentionally. The hook's
+four ARIA output getters repair a separate failing-before regression. Geist's
+existing JSX prefix slot no longer intersects native RDFa's string type. Its
+accessible-name and native-forwarding contracts remain covered; runtime is
+unchanged. Explicit cleanup makes the 74 owning cases order-independent.
+
+- Actual helper/fixture tests: 19/19. Preserve the old keyed-return negative
+  control, stale-label and context failures, early test-authoring corrections,
+  and the initial 120-second fixture timeout as red/incomplete evidence.
+- Fresh complete SSR78/78 then hydration98/98, one worker; app paired SSR8/8
+  then client45/45. Both client logs retain the three default-HTML dependency
+  scan parse errors despite exit zero. This toolchain issue is not waived.
+- App-specific `astro check` changes from 40 errors to zero, across 435 files;
+  remaining hints are not errors. Root typecheck is a separate check.
+- Real dev browser proof clicks the Checkbox's visible label and presses Space
+  on its original input. Targeting its deliberately hidden input with mouse
+  first timed out; the established label target fixes the probe, not product
+  behavior. Both Solid and React Tabs support mouse/ArrowRight on original
+  nodes and intentional composition-key remounts. German RangeCalendar keeps
+  localized selected dates and supports keyboard navigation.
+- The browser initially fails its no-error assertion on React's JSX key-prop
+  diagnostic. Passing the same key as the runtime's third argument removes the
+  error without changing remount semantics. The final strengthened probe also
+  retains identity after keyboard navigation, before structural remount. All
+  three pages pass with no console/page errors, but retain respectively
+  1,353/1,553/944 strict warnings. These remain unaccepted debt, including
+  shared viewer controls; this is not a clean-console claim.
+
+Current lifecycle census still contains 73 forbidden nested registrations in
+70 fixture files. Six additional caller files in this slice have only honest
+type/materialization repairs, not completed lifecycle migration. These tests
+are CSR fixture proof, not fixture SSR or styling certification. Receipt:
+`.agents/UI-EXECUTION-543-TYPES-2026-09-20.md`; exact command/failure ledger:
+`/tmp/ui-execution-543-types-result.md`. #543 remains in-progress.
+
+## 2026-09-20 fresh-session checkpoint and next batch
+
+The owner requested planning/documentation before a fresh session. The current
+type/keyed slice remains uncommitted at HEAD
+`fd28239835394c6ac399c40924d2ca5c1e14fc05`, index empty. Final production build
+passes 91 pages; root typecheck and app check pass (0 errors, 35 hints);
+site 7/7 and client-router 1/1 pass sequentially. Scoped lint/format, direct
+no-IPC docs checks and reviewed parent audit 38/38 pass. The wrappers' sandbox
+failures and client dependency-scan diagnostics remain recorded. Do not infer
+an exact-SHA release proof from this working tree containing five separate
+#534 files. Finish its reviewed scoped commit before another source batch.
+
+Next proposed bounded source paths, not edited by this handoff: under
+`apps/comparison/src/components/solid/fixtures/styled/`, `textfield.tsx`,
+`textarea.tsx`, `searchfield.tsx`, `numberfield.tsx`, `slider.tsx`,
+`rangeslider.tsx`, `switch.tsx`, and `radiogroup.tsx`. Extend the existing
+`apps/comparison/test/solid-integration/fixtures.hydrate.test.tsx`. Each fixture
+currently has one forbidden nested cleanup registration. Return its existing
+cleanup without changing initialization, listeners, controlled/default props
+or behavior. No product change or shared-helper rewrite is presumed.
+
+Prove actual text/clear/submit and number-step behavior, both slider thumbs,
+Switch Space, RadioGroup arrows, live props/theme, retained nodes, exact
+listener removal, inert disposed owners and clean remount. Run focused actual
+fixture/helper tests, fresh app SSR then client proof, app check/build and
+real-browser interactions, existing site/router checks, root types and scoped
+docs/style checks. Any product failure needs a separately diagnosed owning
+extension and fresh full SSR then hydration. Keep all original assertions.
+
+The 73 registrations / 70 files census includes these eight and the six
+type-only caller files. Later behavior-based batches cover collections,
+overlays/pickers, dates/colors, actions/navigation and presentation/forms;
+preserve Toast's independent close-all cleanup. Re-census before each batch.
+Strict warnings require classification of live reads versus intentional
+initialization/structural snapshots, not suppression. Adapter integration
+guidance also needs reconciliation with the proved I18n restart mechanism.
+Broader navigation/async-island scope and the main web app remain unfinished.
+
+Full remaining-work plan: #87; exact evidence/working-tree ownership:
+`.agents/UI-SESSION-HANDOFF-2026-09-20.md`. #543 stays in-progress.
 
 ## Relationship
 

@@ -1,4 +1,4 @@
-import h from "@solidjs/h";
+import { h } from "./solid-h";
 import {
   getComparisonEntry,
   type ComparisonLayerId,

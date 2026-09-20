@@ -43,7 +43,9 @@ function SolidSpectrumIllustrationsDemo() {
       ...(props.ariaHidden ? { "aria-hidden": true } : {}),
       ...(props.slot ? { slot: props.slot } : {}),
     };
-    const illustrations = [h(SolidPlanIllustration, labelledIllustrationProps)];
+    const illustrations: Array<ReturnType<typeof h> | ReturnType<typeof hc>> = [
+      h(SolidPlanIllustration, labelledIllustrationProps),
+    ];
 
     if (props.showDecorative) {
       illustrations.push(

@@ -77,7 +77,7 @@ function SolidSpectrumToolbarFixture() {
     h("button", {}, "Before"),
     renderedToolbar,
     h("button", {}, "After"),
-  ]);
+  ])();
 }
 
 function SolidSpectrumToolbarDemo() {

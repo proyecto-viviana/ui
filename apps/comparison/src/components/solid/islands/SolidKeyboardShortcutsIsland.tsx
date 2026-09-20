@@ -60,7 +60,9 @@ export default function SolidKeyboardShortcutsIsland() {
     },
   });
 
-  onSettled(() => setHydrated(true));
+  onSettled(() => {
+    setHydrated(true);
+  });
 
   return (
     <main

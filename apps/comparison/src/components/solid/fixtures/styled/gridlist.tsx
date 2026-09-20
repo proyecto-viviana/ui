@@ -72,7 +72,7 @@ function SolidSpectrumGridListFixture() {
       ),
       h("button", {}, "After"),
     ],
-  );
+  )();
 }
 
 function SolidSpectrumGridListDemo() {

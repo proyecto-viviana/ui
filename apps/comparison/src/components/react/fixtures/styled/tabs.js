@@ -115,25 +115,28 @@ function ReactTabsDemo() {
       "data-comparison-control-props": serializedProps,
       "data-comparison-color-scheme": colorScheme,
       "data-comparison-selected-key": selectedKey,
-      children: jsxs(SpectrumTabs, {
-        key: renderKey,
-        "aria-label": demoProps.ariaLabel,
-        orientation: demoProps.orientation,
-        density: demoProps.density,
-        labelBehavior: demoProps.labelBehavior,
-        keyboardActivation: demoProps.keyboardActivation,
-        disabledKeys: tabsDemoDisabledKeys(demoProps),
-        isDisabled: demoProps.isDisabled,
-        onSelectionChange: (key) => {
-          dispatchComparisonCallback("tabs", "onSelectionChange", {
-            target: document.activeElement,
-            value: key,
-          });
-          setSelectedKey(String(key));
+      children: jsxs(
+        SpectrumTabs,
+        {
+          "aria-label": demoProps.ariaLabel,
+          orientation: demoProps.orientation,
+          density: demoProps.density,
+          labelBehavior: demoProps.labelBehavior,
+          keyboardActivation: demoProps.keyboardActivation,
+          disabledKeys: tabsDemoDisabledKeys(demoProps),
+          isDisabled: demoProps.isDisabled,
+          onSelectionChange: (key) => {
+            dispatchComparisonCallback("tabs", "onSelectionChange", {
+              target: document.activeElement,
+              value: key,
+            });
+            setSelectedKey(String(key));
+          },
+          ...selectionProps,
+          children: [renderReactTabList(demoProps), renderReactTabPanels(demoProps)],
         },
-        ...selectionProps,
-        children: [renderReactTabList(demoProps), renderReactTabPanels(demoProps)],
-      }),
+        renderKey,
+      ),
     }),
     colorScheme,
   );

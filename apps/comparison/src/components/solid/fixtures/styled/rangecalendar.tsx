@@ -1,7 +1,7 @@
 import h from "@solidjs/h";
-import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { createComponent } from "@solidjs/web";
-import { hc } from "../../solid-h";
+import { hc, Keyed } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { RangeCalendar as SolidSpectrumRangeCalendar } from "@proyecto-viviana/solid-spectrum/RangeCalendar";
 import { calendarCreateCalendarForDemo } from "@comparison/data/calendar-demo";
@@ -60,10 +60,10 @@ function SolidSpectrumRangeCalendarDemo() {
     window.addEventListener(rangeCalendarControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(rangeCalendarControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() => serializeRangeCalendarDemoProps(demoProps()));
@@ -84,105 +84,107 @@ function SolidSpectrumRangeCalendarDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        {
-          get "data-comparison-color-scheme"() {
-            return colorScheme();
-          },
-          get "data-comparison-locale"() {
-            return demoProps().locale;
-          },
-          get "data-comparison-calendar-system"() {
-            return demoProps().calendarSystem;
-          },
-          get "data-comparison-value"() {
-            return serializeRangeCalendarValue(value());
-          },
-          get "data-comparison-focused-value"() {
-            return focusedValue() ? String(focusedValue()) : "";
-          },
-          "data-comparison-control-root": "rangecalendar",
-          get "data-comparison-control-props"() {
-            return serializedProps();
-          },
-        },
-        [
-          createComponent(Show, {
-            get when() {
-              return renderKey();
+      () =>
+        hc(
+          "div",
+          {
+            get "data-comparison-color-scheme"() {
+              return colorScheme();
             },
-            keyed: true,
-            children: () =>
-              hc(SolidSpectrumRangeCalendar, {
-                class: "comparison-rangecalendar-root",
-                "aria-label": "Trip dates",
-                get value() {
-                  return value() ?? undefined;
-                },
-                onChange: (nextValue: ReturnType<typeof value>) => {
-                  setValue(() => nextValue);
-                },
-                get minValue() {
-                  return demoProps().constrainRange ? rangeCalendarMinValue : undefined;
-                },
-                get maxValue() {
-                  return demoProps().constrainRange ? rangeCalendarMaxValue : undefined;
-                },
-                get isDateUnavailable() {
-                  return demoProps().unavailableDates ? isRangeCalendarDateUnavailable : undefined;
-                },
-                get allowsNonContiguousRanges() {
-                  return demoProps().allowsNonContiguousRanges;
-                },
-                get isDisabled() {
-                  return demoProps().isDisabled;
-                },
-                get isReadOnly() {
-                  return demoProps().isReadOnly;
-                },
-                get isInvalid() {
-                  return demoProps().isInvalid;
-                },
-                get errorMessage() {
-                  return demoProps().errorMessage;
-                },
-                get firstDayOfWeek() {
-                  return demoProps().firstDayOfWeek || undefined;
-                },
-                get visibleMonths() {
-                  return rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
-                },
-                get pageBehavior() {
-                  return demoProps().pageBehavior || undefined;
-                },
-                get selectionAlignment() {
-                  return demoProps().selectionAlignment || undefined;
-                },
-                get createCalendar() {
-                  return calendarCreateCalendarForDemo(demoProps().calendarSystem);
-                },
-                get UNSAFE_style() {
-                  const visibleMonths = rangeCalendarVisibleMonthsFromString(
-                    demoProps().visibleMonths,
-                  );
-                  const resolvedVisibleMonths = visibleMonths ?? 1;
-                  return {
-                    "--cell-responsive-size": "32px",
-                    width: `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`,
-                    maxWidth: "100%",
-                  };
-                },
-                get focusedValue() {
-                  return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
-                },
-                onFocusChange: (nextFocusedValue: ReturnType<typeof focusedValue>) => {
-                  setFocusedValue(() => nextFocusedValue);
-                },
-              }),
-          }),
-        ],
-      ),
+            get "data-comparison-locale"() {
+              return demoProps().locale;
+            },
+            get "data-comparison-calendar-system"() {
+              return demoProps().calendarSystem;
+            },
+            get "data-comparison-value"() {
+              return serializeRangeCalendarValue(value());
+            },
+            get "data-comparison-focused-value"() {
+              return focusedValue() ? String(focusedValue()) : "";
+            },
+            "data-comparison-control-root": "rangecalendar",
+            get "data-comparison-control-props"() {
+              return serializedProps();
+            },
+          },
+          [
+            createComponent(Keyed, {
+              get when() {
+                return renderKey();
+              },
+              children: (_key: string) =>
+                hc(SolidSpectrumRangeCalendar, {
+                  class: "comparison-rangecalendar-root",
+                  "aria-label": "Trip dates",
+                  get value() {
+                    return value() ?? undefined;
+                  },
+                  onChange: (nextValue: ReturnType<typeof value>) => {
+                    setValue(() => nextValue);
+                  },
+                  get minValue() {
+                    return demoProps().constrainRange ? rangeCalendarMinValue : undefined;
+                  },
+                  get maxValue() {
+                    return demoProps().constrainRange ? rangeCalendarMaxValue : undefined;
+                  },
+                  get isDateUnavailable() {
+                    return demoProps().unavailableDates
+                      ? isRangeCalendarDateUnavailable
+                      : undefined;
+                  },
+                  get allowsNonContiguousRanges() {
+                    return demoProps().allowsNonContiguousRanges;
+                  },
+                  get isDisabled() {
+                    return demoProps().isDisabled;
+                  },
+                  get isReadOnly() {
+                    return demoProps().isReadOnly;
+                  },
+                  get isInvalid() {
+                    return demoProps().isInvalid;
+                  },
+                  get errorMessage() {
+                    return demoProps().errorMessage;
+                  },
+                  get firstDayOfWeek() {
+                    return demoProps().firstDayOfWeek || undefined;
+                  },
+                  get visibleMonths() {
+                    return rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
+                  },
+                  get pageBehavior() {
+                    return demoProps().pageBehavior || undefined;
+                  },
+                  get selectionAlignment() {
+                    return demoProps().selectionAlignment || undefined;
+                  },
+                  get createCalendar() {
+                    return calendarCreateCalendarForDemo(demoProps().calendarSystem);
+                  },
+                  get UNSAFE_style() {
+                    const visibleMonths = rangeCalendarVisibleMonthsFromString(
+                      demoProps().visibleMonths,
+                    );
+                    const resolvedVisibleMonths = visibleMonths ?? 1;
+                    return {
+                      "--cell-responsive-size": "32px",
+                      width: `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`,
+                      maxWidth: "100%",
+                    };
+                  },
+                  get focusedValue() {
+                    return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
+                  },
+                  onFocusChange: (nextFocusedValue: ReturnType<typeof focusedValue>) => {
+                    setFocusedValue(() => nextFocusedValue);
+                  },
+                })(),
+            }),
+          ],
+        ),
     ],
   );
 }

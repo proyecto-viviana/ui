@@ -1,8 +1,7 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled, Show } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { createComponent } from "@solidjs/web";
-import { hc, renderProp } from "../../solid-h";
+import { hc, Keyed, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   Tab as SolidSpectrumTab,
@@ -121,10 +120,10 @@ function SolidSpectrumTabsDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() =>
@@ -152,13 +151,27 @@ function SolidSpectrumTabsDemo() {
   const tabsProps = createMemo(() => {
     const props = demoProps();
     const next: Record<string, unknown> = {
-      "aria-label": props.ariaLabel,
-      orientation: props.orientation,
-      density: props.density,
-      labelBehavior: props.labelBehavior,
-      keyboardActivation: props.keyboardActivation,
-      disabledKeys: tabsDemoDisabledKeys(props),
-      isDisabled: props.isDisabled,
+      get "aria-label"() {
+        return demoProps().ariaLabel;
+      },
+      get orientation() {
+        return demoProps().orientation;
+      },
+      get density() {
+        return demoProps().density;
+      },
+      get labelBehavior() {
+        return demoProps().labelBehavior;
+      },
+      get keyboardActivation() {
+        return demoProps().keyboardActivation;
+      },
+      get disabledKeys() {
+        return tabsDemoDisabledKeys(demoProps());
+      },
+      get isDisabled() {
+        return demoProps().isDisabled;
+      },
       onSelectionChange: (key: string) => {
         dispatchComparisonCallback("tabs", "onSelectionChange", {
           target: document.activeElement,
@@ -190,38 +203,39 @@ function SolidSpectrumTabsDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        {
-          class: "comparison-tabs-row",
-          "data-comparison-control-root": "tabs",
-          get "data-comparison-control-props"() {
-            return serializedProps();
-          },
-          get "data-comparison-color-scheme"() {
-            return colorScheme();
-          },
-          get "data-comparison-selected-key"() {
-            return selectedKey();
-          },
-        },
-        [
-          createComponent(Show, {
-            get when() {
-              return renderKey();
+      () =>
+        hc(
+          "div",
+          {
+            class: "comparison-tabs-row",
+            "data-comparison-control-root": "tabs",
+            get "data-comparison-control-props"() {
+              return serializedProps();
             },
-            keyed: true,
-            children: ((_key: unknown) => {
-              return hc(SolidSpectrumTabs, tabsProps(), [
-                () => {
-                  const props = demoProps();
-                  return [solidTabList(props), ...solidTabPanels(props)];
-                },
-              ]) as unknown as JSX.Element;
-            }) as (key: unknown) => JSX.Element,
-          }),
-        ],
-      ),
+            get "data-comparison-color-scheme"() {
+              return colorScheme();
+            },
+            get "data-comparison-selected-key"() {
+              return selectedKey();
+            },
+          },
+          [
+            createComponent(Keyed, {
+              get when() {
+                return renderKey();
+              },
+              children: (_key: string) => {
+                // These fields are all in renderKey. Live non-key controls must
+                // update props without reconstructing the tab/panel owners.
+                const structuralProps = demoProps();
+                return hc(SolidSpectrumTabs, tabsProps(), [
+                  solidTabList(structuralProps),
+                  ...solidTabPanels(structuralProps),
+                ])();
+              },
+            }),
+          ],
+        ),
     ],
   );
 }

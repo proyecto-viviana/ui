@@ -1,8 +1,7 @@
 import h from "@solidjs/h";
-import { createMemo, createSignal, onCleanup, onSettled, Show } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { createComponent } from "@solidjs/web";
-import { hc } from "../../solid-h";
+import { hc, Keyed } from "../../solid-h";
 import { Checkbox as SolidSpectrumCheckbox } from "@proyecto-viviana/solid-spectrum/Checkbox";
 import { CheckboxGroup as SolidSpectrumCheckboxGroup } from "@proyecto-viviana/solid-spectrum/CheckboxGroup";
 import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
@@ -55,10 +54,10 @@ function SolidSpectrumCheckboxGroupDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const selectedValues = createMemo(() => value().join(","));
@@ -83,113 +82,113 @@ function SolidSpectrumCheckboxGroupDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        {
-          get "data-comparison-color-scheme"() {
-            return colorScheme();
-          },
-          get "data-comparison-selected-values"() {
-            return selectedValues();
-          },
-          "data-comparison-control-root": "checkboxgroup",
-          get "data-comparison-control-props"() {
-            return serializedProps();
-          },
-        },
-        [
-          createComponent(Show, {
-            get when() {
-              return renderKey();
+      () =>
+        hc(
+          "div",
+          {
+            get "data-comparison-color-scheme"() {
+              return colorScheme();
             },
-            keyed: true,
-            children: () =>
-              hc(
-                SolidSpectrumCheckboxGroup,
-                {
-                  get label() {
-                    return demoProps().label;
+            get "data-comparison-selected-values"() {
+              return selectedValues();
+            },
+            "data-comparison-control-root": "checkboxgroup",
+            get "data-comparison-control-props"() {
+              return serializedProps();
+            },
+          },
+          [
+            createComponent(Keyed, {
+              get when() {
+                return renderKey();
+              },
+              children: (_key: string) =>
+                hc(
+                  SolidSpectrumCheckboxGroup,
+                  {
+                    get label() {
+                      return demoProps().label;
+                    },
+                    get value() {
+                      return demoProps().valueSource === "value" ? value() : undefined;
+                    },
+                    get defaultValue() {
+                      return demoProps().valueSource === "defaultValue"
+                        ? initialCheckboxGroupDemoValue(demoProps())
+                        : undefined;
+                    },
+                    get size() {
+                      return demoProps().size;
+                    },
+                    get orientation() {
+                      return demoProps().orientation;
+                    },
+                    get labelPosition() {
+                      return demoProps().labelPosition;
+                    },
+                    get labelAlign() {
+                      return demoProps().labelAlign;
+                    },
+                    get necessityIndicator() {
+                      return demoProps().necessityIndicator;
+                    },
+                    get name() {
+                      return demoProps().name || undefined;
+                    },
+                    get form() {
+                      return demoProps().form || undefined;
+                    },
+                    get validationBehavior() {
+                      return demoProps().validationBehavior || undefined;
+                    },
+                    get description() {
+                      return demoProps().description;
+                    },
+                    get errorMessage() {
+                      return demoProps().errorMessage;
+                    },
+                    get contextualHelp() {
+                      return demoProps().withContextualHelp
+                        ? hc(SolidSpectrumContextualHelp, {}, [
+                            hc(SolidSpectrumHeading, { slot: "title" }, ["Notification help"]),
+                            hc(SolidSpectrumText, {}, [
+                              "Choose every channel that should alert you.",
+                            ]),
+                          ])
+                        : undefined;
+                    },
+                    get isEmphasized() {
+                      return demoProps().isEmphasized;
+                    },
+                    get isDisabled() {
+                      return demoProps().isDisabled;
+                    },
+                    get isReadOnly() {
+                      return demoProps().isReadOnly;
+                    },
+                    get isRequired() {
+                      return demoProps().isRequired;
+                    },
+                    get isInvalid() {
+                      return demoProps().isInvalid;
+                    },
+                    onChange: (nextValue: string[]) => {
+                      const nextSelectedValues = nextValue.map(String);
+                      setValue(nextSelectedValues);
+                      setDemoProps((current: CheckboxGroupDemoProps) =>
+                        current.valueSource === "value"
+                          ? { ...current, selectedValues: nextSelectedValues.join(",") }
+                          : current,
+                      );
+                    },
                   },
-                  get value() {
-                    return demoProps().valueSource === "value" ? value() : undefined;
-                  },
-                  get defaultValue() {
-                    return demoProps().valueSource === "defaultValue"
-                      ? initialCheckboxGroupDemoValue(demoProps())
-                      : undefined;
-                  },
-                  get size() {
-                    return demoProps().size;
-                  },
-                  get orientation() {
-                    return demoProps().orientation;
-                  },
-                  get labelPosition() {
-                    return demoProps().labelPosition;
-                  },
-                  get labelAlign() {
-                    return demoProps().labelAlign;
-                  },
-                  get necessityIndicator() {
-                    return demoProps().necessityIndicator;
-                  },
-                  get name() {
-                    return demoProps().name || undefined;
-                  },
-                  get form() {
-                    return demoProps().form || undefined;
-                  },
-                  get validationBehavior() {
-                    return demoProps().validationBehavior || undefined;
-                  },
-                  get description() {
-                    return demoProps().description;
-                  },
-                  get errorMessage() {
-                    return demoProps().errorMessage;
-                  },
-                  get contextualHelp() {
-                    return demoProps().withContextualHelp
-                      ? hc(SolidSpectrumContextualHelp, {}, [
-                          hc(SolidSpectrumHeading, { slot: "title" }, ["Notification help"]),
-                          hc(SolidSpectrumText, {}, [
-                            "Choose every channel that should alert you.",
-                          ]),
-                        ])
-                      : undefined;
-                  },
-                  get isEmphasized() {
-                    return demoProps().isEmphasized;
-                  },
-                  get isDisabled() {
-                    return demoProps().isDisabled;
-                  },
-                  get isReadOnly() {
-                    return demoProps().isReadOnly;
-                  },
-                  get isRequired() {
-                    return demoProps().isRequired;
-                  },
-                  get isInvalid() {
-                    return demoProps().isInvalid;
-                  },
-                  onChange: (nextValue: string[]) => {
-                    const nextSelectedValues = nextValue.map(String);
-                    setValue(nextSelectedValues);
-                    setDemoProps((current: CheckboxGroupDemoProps) =>
-                      current.valueSource === "value"
-                        ? { ...current, selectedValues: nextSelectedValues.join(",") }
-                        : current,
-                    );
-                  },
-                },
-                checkboxGroupItems.map((item) =>
-                  hc(SolidSpectrumCheckbox, { value: item.value }, [item.label]),
-                ),
-              ) as unknown as JSX.Element,
-          }),
-        ],
-      ),
+                  checkboxGroupItems.map((item) =>
+                    hc(SolidSpectrumCheckbox, { value: item.value }, [item.label]),
+                  ),
+                )(),
+            }),
+          ],
+        ),
     ],
   );
 }

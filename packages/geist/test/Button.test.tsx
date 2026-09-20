@@ -1,8 +1,12 @@
-import { render, screen } from "@solidjs/testing-library"; import userEvent from "@testing-library/user-event"; import { createSignal, flush } from "solid-js";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, render, screen } from "@solidjs/testing-library";
+import userEvent from "@testing-library/user-event";
+import { createSignal, flush } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { Button } from "../src/components/button";
 
 describe("Geist Button", () => {
+  afterEach(cleanup);
+
   it("uses the Geist defaults and a safe native type", () => {
     render(() => <Button>Upload</Button>);
 

@@ -3,7 +3,9 @@
  * Based on @react-spectrum/tabs tests.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test"; import { render, fireEvent, screen, waitFor } from "@solidjs/testing-library"; import { createRoot, createSignal, flush, For, Show, type Accessor } from "solid-js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
+import { cleanup, render, fireEvent, screen, waitFor } from "@solidjs/testing-library";
+import { createRoot, createSignal, flush, For, Show, type Accessor } from "solid-js";
 import {
   createTabList,
   createTab,
@@ -15,6 +17,8 @@ import {
 } from "../src/tabs";
 import { createTabListState, type TabListStateProps } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "../src/i18n";
+
+afterEach(cleanup);
 
 // Default tab items for tests
 const defaultItems = [
@@ -137,6 +141,46 @@ describe("createTabs", () => {
   });
 
   describe("renders properly", () => {
+    it("keeps tablist ARIA reactive on the original node", () => {
+      const [updated, setUpdated] = createSignal(false);
+      render(() => {
+        const state = createTabListState({
+          items: defaultItems,
+          getKey: (item) => item.key,
+          get orientation() {
+            return updated() ? "vertical" : "horizontal";
+          },
+        });
+        const { tabListProps } = createTabList(
+          {
+            get "aria-label"() {
+              return updated() ? "Updated tabs" : "Original tabs";
+            },
+            get "aria-labelledby"() {
+              return updated() ? "updated-label" : "original-label";
+            },
+            get "aria-describedby"() {
+              return updated() ? "updated-description" : "original-description";
+            },
+          },
+          state,
+        );
+        return <div {...tabListProps} />;
+      });
+      const node = screen.getByRole("tablist");
+      expect(node).toHaveAttribute("aria-label", "Original tabs");
+      expect(node).toHaveAttribute("aria-labelledby", "original-label");
+      expect(node).toHaveAttribute("aria-describedby", "original-description");
+      expect(node).toHaveAttribute("aria-orientation", "horizontal");
+      setUpdated(true);
+      flush();
+      expect(screen.getByRole("tablist")).toBe(node);
+      expect(node).toHaveAttribute("aria-label", "Updated tabs");
+      expect(node).toHaveAttribute("aria-labelledby", "updated-label");
+      expect(node).toHaveAttribute("aria-describedby", "updated-description");
+      expect(node).toHaveAttribute("aria-orientation", "vertical");
+    });
+
     it("renders tablist with correct role and orientation", () => {
       render(() => <TestTabs aria-label="Test Tabs" />);
 

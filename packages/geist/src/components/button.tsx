@@ -18,7 +18,15 @@ export type GeistButtonShape = "square" | "circle" | "rounded";
 
 type NativeButtonProps = Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
-  "children" | "class" | "classList" | "className" | "disabled" | "ref" | "style" | "type"
+  | "children"
+  | "class"
+  | "classList"
+  | "className"
+  | "disabled"
+  | "prefix"
+  | "ref"
+  | "style"
+  | "type"
 >;
 
 type ButtonBaseProps = NativeButtonProps & {

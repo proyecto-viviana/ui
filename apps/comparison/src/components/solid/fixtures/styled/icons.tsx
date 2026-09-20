@@ -40,7 +40,9 @@ function SolidSpectrumIconsDemo() {
       ...(props.ariaHidden ? { "aria-hidden": true } : {}),
       ...(props.slot ? { slot: props.slot } : {}),
     };
-    const icons = [h(SolidNewIcon, labelledIconProps)];
+    const icons: Array<ReturnType<typeof h> | ReturnType<typeof hc>> = [
+      h(SolidNewIcon, labelledIconProps),
+    ];
 
     if (props.showDecorative) {
       icons.push(

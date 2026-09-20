@@ -318,14 +318,14 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       // `manager.isFocused`). Setting it here, together with `focusedKey`,
       // avoids the previous-tab effect stealing focus back mid-gesture.
       {
-state.setFocused(true);
+        state.setFocused(true);
         state.setFocusedKey(nextKey);
         // Selection follows focus only for keyboard navigation in automatic mode
         // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
         if (keyboardActivation() === "automatic") {
           state.setSelectedKey(nextKey);
         }
-};
+      }
       // Move DOM focus in the keydown handler so it lands before keyup.
       // Solid `createEffect` is scheduled after paint; Playwright records
       // keyup in the same turn, and a non-reactive `let` tab ref can leave
@@ -360,10 +360,18 @@ state.setFocused(true);
   return {
     tabListProps: {
       role: "tablist",
-      "aria-orientation": orientation(),
-      "aria-label": props["aria-label"],
-      "aria-labelledby": props["aria-labelledby"],
-      "aria-describedby": props["aria-describedby"],
+      get "aria-orientation"() {
+        return orientation();
+      },
+      get "aria-label"() {
+        return props["aria-label"];
+      },
+      get "aria-labelledby"() {
+        return props["aria-labelledby"];
+      },
+      get "aria-describedby"() {
+        return props["aria-describedby"];
+      },
       onKeyDown: handleKeyDown,
       onFocusIn: handleFocus,
       onFocusOut: handleBlur,
@@ -471,9 +479,9 @@ export function createTab<T>(
     // setting isFocused there flushes the previous tab's focus-move effect
     // and steals a touch tap back to Overview (D4 touch-tap).
     {
-state.setFocused(true);
+      state.setFocused(true);
       state.setFocusedKey(key());
-};
+    }
   };
 
   const handleBlur = (e: FocusEvent) => {

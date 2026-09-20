@@ -1,8 +1,8 @@
-import h from "@solidjs/h";
-import { createMemo } from "solid-js";
-import { createComponent } from "@solidjs/web";
+import hyperscript from "@solidjs/h";
+import { createMemo, Show } from "solid-js";
+import { createComponent, type JSX } from "@solidjs/web";
 
-type ComponentLike = string | ((props: never) => unknown);
+type ComponentLike = string | ((props: never) => JSX.Element);
 type Props = Record<string, unknown>;
 type Child = unknown;
 type Children = readonly Child[];
@@ -12,18 +12,38 @@ type MarkedRenderProp<T> = ((item: T) => unknown) & {
 const RENDER_PROP_MARKER = "__comparisonRenderProp";
 const HC_THUNK = Symbol("comparison-hc-thunk");
 
-type HcThunk = (() => unknown) & { [HC_THUNK]?: true };
+type HcThunk = (() => JSX.Element) & { [HC_THUNK]?: true };
+
+/** The tag/component call form is callable; the array-only h overload is not. */
+export function h(component: string | ((props: never) => unknown), ...args: unknown[]) {
+  const result = hyperscript(component, ...args);
+  if (typeof result !== "function") {
+    throw new TypeError("Expected a hyperscript element thunk for a tag or component.");
+  }
+  return result;
+}
+
+/** String-keyed fixture boundary with an actual render callback, not an accessor. */
+export function Keyed(props: { when: string; children: (key: string) => JSX.Element }) {
+  return Show({
+    get when() {
+      return props.when;
+    },
+    keyed: true,
+    children: (key: string) => props.children(key),
+  });
+}
 
 /**
- * Comparison-app wrapper around `solid-js/h`.
+ * Comparison-app wrapper around `@solidjs/h`.
  *
- * Intrinsic elements delegate to `h`. Solid components do NOT: `solid-js/h`
+ * Intrinsic elements delegate to `h`. Solid components do NOT: `@solidjs/h`
  * defers component creation into thunks that dom-expressions unwraps inside a
  * shared array render effect, so the effect that CREATES sibling components is
  * the same tracked scope that READS their returned reactive accessors (e.g. a
  * `Show`-rooted TabPanel). When one accessor flips, the effect re-runs,
- * disposes every sibling it owns, and `h`'s one-shot thunks hand back the same
- * dead nodes — connected DOM whose reactivity is permanently disposed.
+ * disposes every sibling it owns, and rematerializes the element thunks,
+ * replacing sibling nodes and losing their local state and focus.
  *
  * Instead, components mirror compiled-JSX semantics: `createComponent` plus a
  * lazy `children` getter that eagerly instantiates hc component children and
@@ -38,7 +58,7 @@ export function hc(
   component: ComponentLike,
   props?: Props | null,
   children?: Children | MarkedRenderProp<any>,
-) {
+): HcThunk {
   const normalizedProps = normalizeCallbackProps(component, props);
 
   if (typeof children === "function" && children[RENDER_PROP_MARKER] !== true) {
@@ -47,12 +67,12 @@ export function hc(
 
   if (typeof component === "string") {
     if (typeof children === "function") {
-      return h(component as never, normalizedProps ?? {}, children);
+      return h(component, normalizedProps ?? {}, children);
     }
     if (children === undefined) {
-      return h(component as never, normalizedProps ?? {});
+      return h(component, normalizedProps ?? {});
     }
-    return h(component as never, normalizedProps ?? {}, [...children]);
+    return h(component, normalizedProps ?? {}, [...children]);
   }
 
   const builtProps = unwrapAccessorProps(cloneProps(normalizedProps));
@@ -69,7 +89,7 @@ export function hc(
 
   const thunk: HcThunk = () => createComponent(component as never, builtProps);
   Object.defineProperty(thunk, HC_THUNK, { value: true, enumerable: false });
-  return thunk as unknown as ReturnType<typeof h>;
+  return thunk;
 }
 
 /**

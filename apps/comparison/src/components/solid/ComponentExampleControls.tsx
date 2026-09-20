@@ -1,4 +1,4 @@
-import h from "@solidjs/h";
+import { h } from "./solid-h";
 import { createMemo, createSignal, Loading } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";

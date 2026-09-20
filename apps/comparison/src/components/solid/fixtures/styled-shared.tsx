@@ -1,5 +1,5 @@
-import h from "@solidjs/h";
-import { createSignal, merge, onCleanup, onSettled } from "solid-js";
+import { h } from "../solid-h";
+import { createSignal, merge, onSettled } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createIcon, createIllustration } from "@proyecto-viviana/solid-spectrum/Icon";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -14,17 +14,23 @@ type SolidIllustrationSvgProps = JSX.SvgSVGAttributes<SVGSVGElement> & {
 };
 
 export const SolidNewIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElement>) => {
-  const { class: className, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class"]);
   return h(
     "svg",
-    {
-      xmlns: "http://www.w3.org/2000/svg",
-      width: "20",
-      height: "20",
-      viewBox: "0 0 20 20",
-      ...rest,
-      class: className,
-    },
+    merge(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "20",
+        height: "20",
+        viewBox: "0 0 20 20",
+      },
+      rest,
+      {
+        get class() {
+          return local.class;
+        },
+      },
+    ),
     h("path", {
       d: "m18,4.25v11.5c0,1.24072-1.00928,2.25-2.25,2.25H4.25c-1.24072,0-2.25-1.00928-2.25-2.25V4.25c0-1.24072,1.00928-2.25,2.25-2.25h11.5c1.24072,0,2.25,1.00928,2.25,2.25Zm-1.5,0c0-.41357-.33643-.75-.75-.75H4.25c-.41357,0-.75.33643-.75.75v11.5c0,.41357.33643.75.75.75h11.5c.41357,0,.75-.33643.75-.75V4.25Z",
       fill: "var(--iconPrimary, #222)",
@@ -33,19 +39,25 @@ export const SolidNewIcon = createIcon((props: JSX.SvgSVGAttributes<SVGSVGElemen
       d: "m13.76318,10c0,.42139-.3418.76318-.76318.76318h-2.23682v2.23682c0,.42139-.3418.76318-.76318.76318s-.76318-.3418-.76318-.76318v-2.23682h-2.23682c-.42139,0-.76318-.3418-.76318-.76318s.3418-.76318.76318-.76318h2.23682v-2.23682c0-.42139.3418-.76318.76318-.76318s.76318.3418.76318.76318v2.23682h2.23682c.42139,0,.76318.3418.76318.76318Z",
       fill: "var(--iconPrimary, #222)",
     }),
-  )() as JSX.Element;
+  )();
 });
 
 export const SolidPlanIllustration = createIllustration((props: SolidIllustrationSvgProps) => {
-  const { class: className, size: _size, ...rest } = props;
+  const [local, rest] = splitProps(props, ["class", "size"]);
   return h(
     "svg",
-    {
-      xmlns: "http://www.w3.org/2000/svg",
-      viewBox: "0 0 48 48",
-      ...rest,
-      class: className,
-    },
+    merge(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        viewBox: "0 0 48 48",
+      },
+      rest,
+      {
+        get class() {
+          return local.class;
+        },
+      },
+    ),
     [
       h("rect", {
         x: "6",
@@ -73,14 +85,14 @@ export const SolidPlanIllustration = createIllustration((props: SolidIllustratio
         fill: "var(--iconPrimary, #222)",
       }),
     ],
-  )() as JSX.Element;
+  )();
 });
 
 export const SolidDropZoneIllustration = createIllustration((props: SolidIllustrationSvgProps) => {
   const [local, rest] = splitProps(props, ["class", "size"]);
   return h(
     "svg",
-    mergeProps(
+    merge(
       {
         xmlns: "http://www.w3.org/2000/svg",
         viewBox: "0 0 48 48",
@@ -108,7 +120,7 @@ export const SolidDropZoneIllustration = createIllustration((props: SolidIllustr
         opacity: "0.18",
       }),
     ],
-  )() as JSX.Element;
+  )();
 });
 
 export const SolidIllustratedMessageIllustration = createIllustration(
@@ -116,7 +128,7 @@ export const SolidIllustratedMessageIllustration = createIllustration(
     const [local, rest] = splitProps(props, ["class", "size"]);
     return h(
       "svg",
-      mergeProps(
+      merge(
         {
           xmlns: "http://www.w3.org/2000/svg",
           viewBox: "0 0 48 48",
@@ -147,7 +159,7 @@ export const SolidIllustratedMessageIllustration = createIllustration(
           fill: "var(--iconPrimary, #222)",
         }),
       ],
-    )() as JSX.Element;
+    )();
   },
 );
 
@@ -179,7 +191,7 @@ export function createComparisonResolvedThemeSignal() {
     };
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange));
+    return () => window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
   });
   return colorScheme;
 }

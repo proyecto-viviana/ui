@@ -140,6 +140,11 @@ history:
       at: 2026-09-20,
       note: "#543's separately named product extension makes I18n context sharing runtime-owned. Real-runtime generation and no-sharing controls fail before correction; fresh full SSR 78/78 then hydrate 98/98 and locale 71/71 pass. Controlled same-process Vite restart changes the runtime factory while preserving exact D12 nodes/keys and mouse/Enter actions without diagnostics. App paired 8/26 passes but retains scan diagnostics; app type/lifecycle/warning debt and web/TanStack compatibility remain. No child/foundation/release closure, held-task authority or waiver; all build/attribution and #139/#194/#537 live 2177-case same-revision requirements stay intact",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "#543 honest callable/keyed-fixture repair removes the reproduced40 app-check errors; helper/fixture19/19, owning Tabs/Geist74/74, fresh SSR78/78 then hydrate98/98 and app8/45 pass. Independently named Geist prefix typing and four reactive tablist ARIA outputs preserve existing contracts. Actual Checkbox, Solid/React Tabs and German RangeCalendar interaction/identity proof passes after correcting React's key argument; strict warnings and73 lifecycle registrations in70 files remain, as do web/TanStack and diagnostic debt. No child/foundation/release closure or held-task authority; all build/attribution and #139/#194/#537 live2177 same-revision zero-waiver gates remain",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

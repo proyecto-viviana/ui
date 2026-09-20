@@ -1,7 +1,7 @@
 import h from "@solidjs/h";
-import { Show, createMemo, createSignal, onCleanup, onSettled } from "solid-js";
+import { createMemo, createSignal, onSettled } from "solid-js";
 import { createComponent } from "@solidjs/web";
-import { hc } from "../../solid-h";
+import { hc, Keyed } from "../../solid-h";
 import { ColorSwatch as SolidSpectrumColorSwatch } from "@proyecto-viviana/solid-spectrum/ColorSwatch";
 import { ColorSwatchPicker as SolidSpectrumColorSwatchPicker } from "@proyecto-viviana/solid-spectrum/ColorSwatchPicker";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -58,10 +58,10 @@ function SolidSpectrumColorSwatchPickerDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const serializedProps = createMemo(() => serializeColorSwatchPickerDemoProps(demoProps()));
@@ -92,91 +92,93 @@ function SolidSpectrumColorSwatchPickerDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        {
-          "data-comparison-control-root": "colorswatchpicker",
-          get "data-comparison-color-scheme"() {
-            return colorScheme();
-          },
-          get "data-comparison-control-props"() {
-            return serializedProps();
-          },
-          get "data-comparison-value"() {
-            return value();
-          },
-        },
-        [
-          // Boundary buttons flank the picker so the certified D5 walk enters the grid via
-          // a real Tab keypress (the faithful roving entry) instead of a synthetic
-          // container `.focus()`: the latter navigates `focusedKey` but does not pull DOM
-          // focus onto the selected swatch in Solid (createFocusWithin's onFocus is
-          // non-bubbling), so it diverges from React's synchronous delegate. They sit
-          // outside the `role="listbox"` roving scope.
-          h("button", {}, "Before"),
-          createComponent(Show, {
-            get when() {
-              return renderKey();
+      () =>
+        hc(
+          "div",
+          {
+            "data-comparison-control-root": "colorswatchpicker",
+            get "data-comparison-color-scheme"() {
+              return colorScheme();
             },
-            keyed: true,
-            children: () =>
-              hc(
-                SolidSpectrumColorSwatchPicker,
-                {
-                  get value() {
-                    return demoProps().valueSource === "value" ? demoProps().value : undefined;
+            get "data-comparison-control-props"() {
+              return serializedProps();
+            },
+            get "data-comparison-value"() {
+              return value();
+            },
+          },
+          [
+            // Boundary buttons flank the picker so the certified D5 walk enters the grid via
+            // a real Tab keypress (the faithful roving entry) instead of a synthetic
+            // container `.focus()`: the latter navigates `focusedKey` but does not pull DOM
+            // focus onto the selected swatch in Solid (createFocusWithin's onFocus is
+            // non-bubbling), so it diverges from React's synchronous delegate. They sit
+            // outside the `role="listbox"` roving scope.
+            h("button", {}, "Before"),
+            createComponent(Keyed, {
+              get when() {
+                return renderKey();
+              },
+              children: (_key: string) =>
+                hc(
+                  SolidSpectrumColorSwatchPicker,
+                  {
+                    get value() {
+                      return demoProps().valueSource === "value" ? demoProps().value : undefined;
+                    },
+                    get defaultValue() {
+                      return demoProps().valueSource === "defaultValue"
+                        ? demoProps().defaultValue
+                        : undefined;
+                    },
+                    get density() {
+                      return demoProps().density;
+                    },
+                    get size() {
+                      return demoProps().size;
+                    },
+                    get rounding() {
+                      return demoProps().rounding;
+                    },
+                    get "aria-label"() {
+                      return demoProps().ariaLabel || undefined;
+                    },
+                    get "aria-labelledby"() {
+                      return demoProps().ariaLabelledBy || undefined;
+                    },
+                    get "aria-describedby"() {
+                      return demoProps().ariaDescribedBy || undefined;
+                    },
+                    get "aria-details"() {
+                      return demoProps().ariaDetails || undefined;
+                    },
+                    get id() {
+                      return demoProps().id || undefined;
+                    },
+                    get slot() {
+                      return demoProps().slot || undefined;
+                    },
+                    onChange: (nextValue: ReturnType<typeof parseSolidSpectrumColor>) => {
+                      const nextString = solidColorSwatchPickerToCssString(nextValue);
+                      setValue(nextString);
+                      setDemoProps((current: ColorSwatchPickerDemoProps) =>
+                        current.valueSource === "value"
+                          ? { ...current, value: nextString }
+                          : current,
+                      );
+                    },
                   },
-                  get defaultValue() {
-                    return demoProps().valueSource === "defaultValue"
-                      ? demoProps().defaultValue
-                      : undefined;
-                  },
-                  get density() {
-                    return demoProps().density;
-                  },
-                  get size() {
-                    return demoProps().size;
-                  },
-                  get rounding() {
-                    return demoProps().rounding;
-                  },
-                  get "aria-label"() {
-                    return demoProps().ariaLabel || undefined;
-                  },
-                  get "aria-labelledby"() {
-                    return demoProps().ariaLabelledBy || undefined;
-                  },
-                  get "aria-describedby"() {
-                    return demoProps().ariaDescribedBy || undefined;
-                  },
-                  get "aria-details"() {
-                    return demoProps().ariaDetails || undefined;
-                  },
-                  get id() {
-                    return demoProps().id || undefined;
-                  },
-                  get slot() {
-                    return demoProps().slot || undefined;
-                  },
-                  onChange: (nextValue: ReturnType<typeof parseSolidSpectrumColor>) => {
-                    const nextString = solidColorSwatchPickerToCssString(nextValue);
-                    setValue(nextString);
-                    setDemoProps((current: ColorSwatchPickerDemoProps) =>
-                      current.valueSource === "value" ? { ...current, value: nextString } : current,
-                    );
-                  },
-                },
-                colorSwatchPickerPalette.map((item) =>
-                  hc(SolidSpectrumColorSwatch, {
-                    color: item.color,
-                    colorName: item.colorName,
-                  }),
-                ),
-              ),
-          }),
-          h("button", {}, "After"),
-        ],
-      ),
+                  colorSwatchPickerPalette.map((item) =>
+                    hc(SolidSpectrumColorSwatch, {
+                      color: item.color,
+                      colorName: item.colorName,
+                    }),
+                  ),
+                )(),
+            }),
+            h("button", {}, "After"),
+          ],
+        ),
     ],
   );
 }

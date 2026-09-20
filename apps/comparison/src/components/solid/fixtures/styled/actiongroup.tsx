@@ -66,7 +66,7 @@ function SolidSpectrumActionGroupFixture() {
       }),
       h("button", {}, "After"),
     ],
-  );
+  )();
 }
 
 function SolidSpectrumActionGroupDemo() {

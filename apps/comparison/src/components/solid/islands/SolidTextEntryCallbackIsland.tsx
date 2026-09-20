@@ -57,7 +57,9 @@ export default function SolidTextEntryCallbackIsland() {
   const controlledArea = createCallbackState();
   const uncontrolledArea = createCallbackState();
 
-  onSettled(() => setHydrated(true));
+  onSettled(() => {
+    setHydrated(true);
+  });
 
   return (
     <SolidSpectrumProvider colorScheme="light" background="base">

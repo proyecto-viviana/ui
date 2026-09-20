@@ -67,7 +67,7 @@ function SolidSpectrumIllustratedMessageDemo() {
         return demoProps().orientation;
       },
       get children() {
-        const children = [
+        const children: Array<ReturnType<typeof h> | ReturnType<typeof hc>> = [
           h(SolidIllustratedMessageIllustration, { slot: "illustration" }),
           h(SolidSpectrumHeading, {}, "Create your first asset"),
           h(SolidSpectrumContent, {}, "Upload or import a file to begin."),

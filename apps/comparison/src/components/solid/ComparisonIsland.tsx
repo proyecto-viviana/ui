@@ -1,4 +1,4 @@
-import h from "@solidjs/h";
+import { h } from "./solid-h";
 import { createEffect, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import {
   Button as HeadlessButton,

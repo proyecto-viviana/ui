@@ -1,4 +1,4 @@
-import h from "@solidjs/h";
+import { h } from "./solid-h";
 import { createMemo, createSignal, Loading, onCleanup, onSettled } from "solid-js";
 import { createComponent } from "@solidjs/web";
 import {
@@ -31,7 +31,7 @@ export default function ComponentExampleFiles(props: ComponentExampleFilesProps)
     () =>
       createComponent(Loading, {
         get children() {
-          return ExampleFilesBody({ entry, controlGroup: controlGroup() });
+          return ExampleFilesBody({ entry, controlGroup: controlGroup() })();
         },
       }),
   ])();

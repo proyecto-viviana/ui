@@ -131,12 +131,35 @@ history:
       at: 2026-09-19,
       note: "coordination only: #542's authorized cleanup yields owning ordinary 171/171 and fresh complete SSR 48/48 then hydration 56/56. Preserve #251/#257/#252/#256 owner gates, successor #245 and skip #254. No packaging before #139 or replacement for #194/#537 acceptance, and no held-task authority is inferred",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "fresh-session coordination only: current 122-child frontmatter snapshot and #87 execution-plan pointers supersede historical rollups as current inventory. Preserve #251/#257/#252/#256 owner gates, successor #245 and skip #254; thematic groups are not a new total order. No closure, held-task authorization or publication acceptance",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,
 security, accessibility gate integrity, testing, packaging, and docs. This is
 not a per-component parity re-run. It covers what existing gates do not
 systematically cover, plus the integrity of those gates.
+
+## 2026-09-20 fresh-session coordination
+
+The owner requested an organized remaining-work plan before a fresh session.
+Use [#87's dated execution plan](../tasks/87-close-every-remaining-audit-item-in-order.md)
+for the foundation-first sequence and unchanged older census. The complete
+[board snapshot](../../../.agents/UI-REMAINING-INVENTORY-2026-09-20.md) is evidence,
+not another dispatch queue. Current frontmatter yields 122 direct children:
+60 open, 7 in-progress, 30 merged, 22 verified and 3 parked. Historical rollups,
+Git/push instructions and counts below describe their original dates, not this
+session. Merged is not verified; parked is not newly admitted.
+
+This initiative's thematic list is not an order. Preserve owner gates on
+#251/#257/#252/#256, successor #245, and skip #254. Do not infer authority for
+held tasks from the app/foundation work or local green tests. #139 remains a
+prerequisite for packaging; #194 for full #537 evidence. Last confirmed live
+certified discovery is 2,177, with the same-revision zero-waiver bar intact.
+No task closure, source extension or publication acceptance occurs here.
 
 ## Reviewer handoff (2026-09-01)
 

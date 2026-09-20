@@ -1,8 +1,7 @@
 import h from "@solidjs/h";
-import { createEffect, createMemo, createSignal, onCleanup, onSettled, Show, createTrackedEffect } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { createMemo, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import { createComponent } from "@solidjs/web";
-import { hc } from "../../solid-h";
+import { hc, Keyed } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   SegmentedControl as SolidSpectrumSegmentedControl,
@@ -61,10 +60,10 @@ function SolidSpectrumSegmentedControlDemo() {
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
-    onCleanup(() => {
+    return () => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    });
+    };
   });
 
   const renderKey = createMemo(() =>
@@ -90,68 +89,69 @@ function SolidSpectrumSegmentedControlDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        {
-          get "data-comparison-color-scheme"() {
-            return colorScheme();
-          },
-          get "data-comparison-selected-key"() {
-            return selectedKey();
-          },
-        },
-        [
-          createComponent(Show, {
-            get when() {
-              return renderKey();
+      () =>
+        hc(
+          "div",
+          {
+            get "data-comparison-color-scheme"() {
+              return colorScheme();
             },
-            keyed: true,
-            children: () =>
-              hc(
-                SolidSpectrumSegmentedControl,
-                {
-                  "aria-label": "View mode",
-                  "data-comparison-control-root": "segmentedcontrol",
-                  ref: (element: HTMLElement) => {
-                    segmentedControlRoot = element;
-                  },
-                  "data-comparison-control-props": serializeSegmentedControlDemoProps(demoProps()),
-                  isJustified: demoProps().isJustified,
-                  isDisabled: demoProps().isDisabled,
-                  get selectedKey() {
-                    return demoProps().selectionSource === "selectedKey" ? selectedKey() : null;
-                  },
-                  get defaultSelectedKey() {
-                    return demoProps().selectionSource === "defaultSelectedKey"
-                      ? demoProps().defaultSelectedKey
-                      : undefined;
-                  },
-                  onSelectionChange: (key: string | number) =>
-                    setSelectedKey(String(key) as SegmentedControlKey),
-                },
-                segmentedControlItems.map((item) =>
-                  hc(
-                    SolidSpectrumSegmentedControlItem,
-                    {
-                      id: item.id,
-                      get isDisabled() {
-                        return demoProps().disabledKey === item.id;
-                      },
-                      get "aria-label"() {
-                        return demoProps().iconPlacement === "only" ? item.label : undefined;
-                      },
+            get "data-comparison-selected-key"() {
+              return selectedKey();
+            },
+          },
+          [
+            createComponent(Keyed, {
+              get when() {
+                return renderKey();
+              },
+              children: (_key: string) =>
+                hc(
+                  SolidSpectrumSegmentedControl,
+                  {
+                    "aria-label": "View mode",
+                    "data-comparison-control-root": "segmentedcontrol",
+                    ref: (element: HTMLElement) => {
+                      segmentedControlRoot = element;
                     },
-                    solidSingleButtonFamilyChildren(
-                      item.label,
-                      () => demoProps().iconPlacement,
-                      () => s2ToggleButtonText,
+                    "data-comparison-control-props":
+                      serializeSegmentedControlDemoProps(demoProps()),
+                    isJustified: demoProps().isJustified,
+                    isDisabled: demoProps().isDisabled,
+                    get selectedKey() {
+                      return demoProps().selectionSource === "selectedKey" ? selectedKey() : null;
+                    },
+                    get defaultSelectedKey() {
+                      return demoProps().selectionSource === "defaultSelectedKey"
+                        ? demoProps().defaultSelectedKey
+                        : undefined;
+                    },
+                    onSelectionChange: (key: string | number) =>
+                      setSelectedKey(String(key) as SegmentedControlKey),
+                  },
+                  segmentedControlItems.map((item) =>
+                    hc(
+                      SolidSpectrumSegmentedControlItem,
+                      {
+                        id: item.id,
+                        get isDisabled() {
+                          return demoProps().disabledKey === item.id;
+                        },
+                        get "aria-label"() {
+                          return demoProps().iconPlacement === "only" ? item.label : undefined;
+                        },
+                      },
+                      solidSingleButtonFamilyChildren(
+                        item.label,
+                        () => demoProps().iconPlacement,
+                        () => s2ToggleButtonText,
+                      ),
                     ),
                   ),
-                ),
-              ) as unknown as JSX.Element,
-          }),
-        ],
-      ),
+                )(),
+            }),
+          ],
+        ),
     ],
   );
 }
