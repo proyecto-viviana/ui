@@ -145,6 +145,11 @@ history:
       at: 2026-09-20,
       note: "#543 honest callable/keyed-fixture repair removes the reproduced40 app-check errors; helper/fixture19/19, owning Tabs/Geist74/74, fresh SSR78/78 then hydrate98/98 and app8/45 pass. Independently named Geist prefix typing and four reactive tablist ARIA outputs preserve existing contracts. Actual Checkbox, Solid/React Tabs and German RangeCalendar interaction/identity proof passes after correcting React's key argument; strict warnings and73 lifecycle registrations in70 files remain, as do web/TanStack and diagnostic debt. No child/foundation/release closure or held-task authority; all build/attribution and #139/#194/#537 live2177 same-revision zero-waiver gates remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "independent own-scope review verifies child #542 through committed endpoint 7b370277 and its durable receipt: fresh SSR49/49, hydrate57/57 and owning214/214 retain exact server-node identity and behavior proof. #531 remains in-progress; #533/#534/#535/#536/#537/#543, four-layer builds, attribution, #139 packaging safety and #194/#537 same-revision certified and release gates remain unchanged",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

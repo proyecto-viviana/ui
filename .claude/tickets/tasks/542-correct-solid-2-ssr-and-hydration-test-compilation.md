@@ -4,7 +4,7 @@ type: task
 title: "Correct Solid 2 SSR and hydration test compilation"
 created: 2026-09-19
 parent: 531
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -70,6 +70,11 @@ history:
       state: merged,
       at: 2026-09-19,
       note: "final autonomous continuation retains all identity/behavior expectations and adds successful post-hydration DatePicker/PreviewTrigger opening proof with root-before-portal teardown. Baseline-controlled ordinary stalls exposed missing explicit cleanup in Spectrum Picker; adding it preserves all queries and makes the original eight-file owning command pass 214/214. Fresh complete SSR 49/49 (27.59s) then hydration 57/57 (12.86s) pass sequentially with one worker. Read-only source/test reviews find no blockers; final static/docs and source identity are in the execution receipt. #536 and #531 remain open to their full acceptance requirements",
+    }
+  - {
+      state: verified,
+      at: 2026-09-20,
+      note: "independent own-scope acceptance verifies the committed repair through 7b370277. The final durable receipt records fresh single-worker SSR49/49, hydrate57/57 and owning214/214 with all migrated server-node identity and behavior assertions retained; typecheck, documentation-current checks and source/test review are accepted. Earlier incomplete identity runs remain historical. This verifies #542 only: #531 stays in-progress and no sibling, build, attribution, certification or release gate is inferred",
     }
 ---
 
