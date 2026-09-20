@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "audit lens 2 (.agents/audit-2026-09-20/lens2-gates.md) found the gate chain cannot tell a good tree from a bad one: a certified spec that fails to load is green, a deleted spec is green, and guard:release-prerequisites inspects no shipping package. Conductor reproduced every row in .agents/audit-2026-09-20/VERIFIED.md",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 0 done: guard:dependency-security is now scripts/check-dependency-security.mjs — a ratcheting peers allowlist (scripts/check-peers.mjs + expected-unmet-peers.json, 17 TanStack entries, unit test on both failure paths) plus both audits, each run whatever the one before returned. The first run the audits had had since the Solid 2 port found a moderate prod advisory, devalue <5.9.1 via astro (GHSA-9rgm-9g3h-6x36); fixed with a pnpm-workspace override to ^5.9.1, in the same block as the ws/undici/svgo security overrides. Guard exit 0",
+    }
 ---
 
 ## Scope

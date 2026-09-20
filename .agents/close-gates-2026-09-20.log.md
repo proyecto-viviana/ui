@@ -220,3 +220,40 @@ peers: 17 unmet peers, all of them expected and explained.          EXIT=0
 Both planted cases are held by a committed unit test, `scripts/check-peers.test.ts`
 (6 cases, green): an unmet peer the list does not name, a listed entry that no
 longer occurs, and a widened range counting as both at once.
+
+### What the audits found the moment they were allowed to run
+
+`vp run guard:dependency-security`, the first run either audit has had on this
+tree since the Solid 2 port — output in
+`.agents/chain-walk-2026-09-20/dependency-security.txt`:
+
+```
+peers: 17 unmet peers, all of them expected and explained.
+=== audit (high)       → 2 vulnerabilities found, 2 moderate       (passes: high floor)
+=== audit (prod, low)  → moderate: devalue <5.9.1, DoS via malformed input
+                         GHSA-9rgm-9g3h-6x36
+                         apps__comparison>@astrojs/react>devalue
+                         apps__comparison>astro>devalue
+                         1 vulnerabilities found
+guard:dependency-security failed: audit (prod, low)               EXIT=1
+```
+
+That is the slice paying for itself on its first run: a moderate production
+advisory that the `&&` chain had been hiding behind the red peers check.
+
+Repaired the same way the block above it already repairs `ws`, `undici`,
+`js-yaml`, `sharp` and `svgo` — a transitive security override in
+`pnpm-workspace.yaml`, `devalue: "^5.9.1"`, no new dependency and no major
+bump. `vp install` resolved `devalue@5.9.4`; `+4 -2` packages, exit 0.
+
+After (`.agents/chain-walk-2026-09-20/dependency-security-after.txt`):
+
+```
+peers: 17 unmet peers, all of them expected and explained.
+=== audit (high)       → 1 vulnerabilities found, 1 moderate       (dev-only, under the high floor)
+=== audit (prod, low)  → No known vulnerabilities found
+guard:dependency-security: peers allowlist and both audits passed. EXIT=0
+```
+
+Slice 0 commit: see below. No changeset: `scripts/**`, the root manifest and
+`pnpm-workspace.yaml` are not a published package's `src` or manifest.

@@ -129,7 +129,7 @@
     "guard:attribution": "node scripts/check-package-attribution.mjs",
     "guard:attribution-headers": "node scripts/report-attribution-mappings.mjs --check-headers",
     "guard:release-prerequisites": "node scripts/check-release-prerequisites.mjs",
-    "guard:dependency-security": "vp exec pnpm peers check && vp pm audit -- --audit-level=high && vp pm audit -- --prod --audit-level=low",
+    "guard:dependency-security": "node scripts/check-dependency-security.mjs",
     "docs:generate": "vp exec tsx scripts/generate-work-views.ts --write",
     "docs:check": "vp exec tsx scripts/check-docs-current.ts",
     "changeset": "vp exec changeset",

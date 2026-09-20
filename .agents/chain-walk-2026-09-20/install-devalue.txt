@@ -1,0 +1,21 @@
+Scope: all 12 workspace projects
+? Verifying lockfile against supply-chain policies (897 entries)...
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 32, reused 30, downloaded 0, added 0
+Progress: resolved 47, reused 47, downloaded 0, added 0
+Progress: resolved 52, reused 50, downloaded 0, added 0
+Progress: resolved 54, reused 54, downloaded 0, added 0
+Progress: resolved 55, reused 54, downloaded 0, added 0
+Progress: resolved 262, reused 246, downloaded 1, added 0
+✓ Lockfile passes supply-chain policies (897 entries in 7.2s)
+Progress: resolved 313, reused 288, downloaded 1, added 0
+Progress: resolved 580, reused 428, downloaded 1, added 0
+Progress: resolved 780, reused 584, downloaded 1, added 0
+Progress: resolved 846, reused 641, downloaded 1, added 0
+Progress: resolved 875, reused 647, downloaded 1, added 0
+Packages: +4 -2
+++++--
+Progress: resolved 897, reused 654, downloaded 1, added 1, done
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+Done in 14.3s using pnpm v11.22.0

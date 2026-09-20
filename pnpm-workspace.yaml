@@ -17,6 +17,7 @@ overrides:
   js-yaml: "^4.3.2"
   sharp: "^0.35.4"
   svgo: "^4.1.0"
+  devalue: "^5.9.1"
   read-yaml-file: "2.1.0"
   esbuild: "^0.28.2"
   "@babel/core": "^7.29.6"
