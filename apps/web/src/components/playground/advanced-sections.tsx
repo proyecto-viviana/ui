@@ -1,4 +1,4 @@
-import { createSignal, For, Show, Suspense, lazy } from "solid-js";
+import { createSignal, For, Show, Loading, lazy } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -1042,7 +1042,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
       {/* NEW COMPONENTS (Phases 8-11) */}
       {/* ============================================ */}
       <Show when={hasVisibleDataColorSections()}>
-        <Suspense
+        <Loading
           fallback={
             <Well style={{ "grid-column": "1 / -1" }}>
               <Text styles={typeRoles.meta}>Loading data/color sections...</Text>
@@ -1050,7 +1050,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
           }
         >
           <PlaygroundDataColorSections visibleSections={props.visibleSections} />
-        </Suspense>
+        </Loading>
       </Show>
     </>
   );

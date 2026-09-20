@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Suspense, Errored } from "solid-js";
+import { Loading, Errored } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-router";
@@ -119,7 +119,7 @@ function RootDocument(props: { children: JSX.Element }) {
             return <ErrorFallback error={error} reset={reset} />;
           }}
         >
-          <Suspense>{props.children}</Suspense>
+          <Loading>{props.children}</Loading>
         </Errored>
         <Scripts />
       </body>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, JSX, onMount, Show, For, Suspense, lazy } from "solid-js";
+import { createSignal, JSX, onMount, Show, For, Loading, lazy } from "solid-js";
 import {
   Button,
   Badge,
@@ -1281,7 +1281,7 @@ function Playground() {
             </Section>
 
             <Show when={hasVisibleAdvancedSections()}>
-              <Suspense
+              <Loading
                 fallback={
                   <div
                     class={typeRoles.meta}
@@ -1301,7 +1301,7 @@ function Playground() {
                   visibleSections={visibleSections}
                   onLastAction={setLastAction}
                 />
-              </Suspense>
+              </Loading>
             </Show>
           </Grid>
         </main>
