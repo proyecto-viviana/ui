@@ -111,7 +111,7 @@ function Panel(props: {
 }) {
   return (
     <section
-      class={{ "pv-gallery__wide": props.wide }}
+      class={{ "pv-gallery__wide": props.wide ?? false }}
       style={{
         padding: "16px",
         background: props.chrome.surface,
