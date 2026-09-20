@@ -613,7 +613,21 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
   onSettled(() => {
     focusScopeTree.addTreeNode(scopeElements, parentScopeRef, nodeToRestore ?? undefined);
   });
+
   onOwnedCleanup(() => {
+    // Hand the active scope back to the parent before the node goes, like
+    // upstream's unmount cleanup (`FocusScope.tsx:182-190`). `removeTreeNode`
+    // re-parents this node's children, so a dead `activeScope` could never be
+    // an ancestor again: every later scope that activates through `contain` or
+    // `restoreFocus` alone would be locked out, and `isElementInChildScope`
+    // would walk from the root and call every scope on the page active.
+    const parentScope = focusScopeTree.getTreeNode(scopeElements)?.parent?.scopeRef ?? null;
+    if (
+      (scopeElements === activeScope || isAncestorScope(scopeElements, activeScope)) &&
+      (!parentScope || focusScopeTree.getTreeNode(parentScope))
+    ) {
+      activeScope = parentScope;
+    }
     focusScopeTree.removeTreeNode(scopeElements);
   });
 

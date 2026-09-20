@@ -6,7 +6,11 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { FocusScope, useFocusManager } from "../src/focus/FocusScope";
+import {
+  FocusScope,
+  isElementInChildOfActiveScope,
+  useFocusManager,
+} from "../src/focus/FocusScope";
 import { preventFocus } from "../src/utils/focus";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import { createSignal, flush, type Component, Show } from "solid-js";
@@ -1071,6 +1075,57 @@ describe("FocusScope", () => {
 
       input2.focus();
       expect(document.activeElement).toBe(input2);
+    });
+  });
+
+  // ============================================
+  // ACTIVE SCOPE LIFETIME
+  // ============================================
+
+  describe("active scope lifetime", () => {
+    it("hands the active scope back to the parent when the active scope unmounts", () => {
+      // Upstream's unmount cleanup (`FocusScope.tsx:182-190`) re-points
+      // `activeScope` at the parent before removing the node. Without it the
+      // module keeps a dead scope active: `removeTreeNode` deletes the node and
+      // re-parents its children, so nothing is ever a descendant of it again,
+      // and every later scope that becomes active through `contain` or
+      // `restoreFocus` alone is locked out.
+      const first = render(() => (
+        <FocusScope contain autoFocus>
+          <input data-testid="lifetime-input1" />
+        </FocusScope>
+      ));
+
+      vi.runAllTimers();
+      const input1 = screen.getByTestId("lifetime-input1");
+      expect(document.activeElement).toBe(input1);
+      expect(isElementInChildOfActiveScope(input1)).toBe(true);
+
+      first.unmount();
+      vi.runAllTimers();
+
+      render(() => (
+        <>
+          <FocusScope contain>
+            <input data-testid="lifetime-input2" />
+          </FocusScope>
+          <FocusScope>
+            <input data-testid="lifetime-input3" />
+          </FocusScope>
+        </>
+      ));
+
+      const input2 = screen.getByTestId("lifetime-input2");
+      const input3 = screen.getByTestId("lifetime-input3");
+      input2.focus();
+      expect(document.activeElement).toBe(input2);
+
+      // The second scope is now the active one, so its sibling is outside the
+      // active scope. While a dead scope stays active, `isElementInChildScope`
+      // finds no node for it and walks the whole tree from the root, which
+      // answers true for every scope on the page.
+      expect(isElementInChildOfActiveScope(input2)).toBe(true);
+      expect(isElementInChildOfActiveScope(input3)).toBe(false);
     });
   });
 
