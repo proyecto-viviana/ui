@@ -4,7 +4,7 @@ type: task
 title: "Close the fail-open release gates the audit found"
 created: 2026-09-20
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -55,6 +55,11 @@ history:
       state: open,
       at: 2026-09-20,
       note: "slice 11 done (added by the conductor in .agents/CONDUCTOR-PENDING-2026-09-20b.md): a gate never reuses a server. Both apps/** Playwright configs had reuseExistingServer: !process.env.CI and none of the 33 scripts that run playwright test set CI, so every browser gate on a developer machine could grade a preview server left on the port by an older build. The switch is VIVIANA_GATE=1, not CI=1, because these configs also hang .env.local loading, two retries and the blob reporter off CI — a local gate under CI=1 would lose this machine's Chromium arguments and retry twice; CI stays in the expression for the hosted run. Proved on a throwaway fixture with a stale server on 4399 serving ok while the config's own server would have served broken: without the switch 1 passed, exit 0 against a server it did not start; with it, exit 1, 'http://127.0.0.1:4399/ is already used'. New guard:gate-server-reuse was red on the tree as found with 35 problems (both configs, all 33 scripts) and green after, 7 cases in scripts/check-gate-server-reuse.test.ts, wired into ci:release-readiness beside guard:workflow-pins and asserted in scripts/test-ci-guard-contracts.mjs (unwired exit 1, wired exit 0). tooling.md records the switch",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "all twelve slices are landed; closed by the conductor reconciling the board to the tree. Slices 1-3 are missing from the history above because they were committed against #194, whose Relationship line this ticket names: `e327ae9d` a certified shard explains its own exit, `38dc24ea` the case floor, `afa80ec3` the skipped and flaky ceilings, each with its own note in #194. The two entries under `## Left red` were re-checked rather than assumed. The `regression.test.tsx` snapshots are green: repaired in `f19041dc` under #545, and the whole-chain walk at `3f220fb6` reads `test:run` 6,698 passed, 1 expected fail, 6 skipped, none failed. `guard:entry-import-budget` is still red and has got worse since the 12:20 measurement recorded in the log: against the 18:24 build it reads 26/26/30/24/20 modules on the five budgeted entries (ceilings 21/21/28/23/19) and 155 root-barrel importers against a ceiling of 154, the new one being `packages/solidaria-components/src/RouterProvider.tsx`, which takes `openLink` from the root barrel instead of the declared `./utils` subpath. That arrived in `e6384f37` under #555, which the conductor reviewed and pushed, so the drift is this campaign's and not a found condition. Ticketed as #565; it is a blocking step in Certification Gates, so it holds the RC once those workflows come back on",
     }
 ---
 
