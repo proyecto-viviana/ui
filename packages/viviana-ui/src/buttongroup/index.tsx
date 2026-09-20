@@ -93,6 +93,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     props.ref as RefLike<HTMLDivElement>,
   );
   let resizeObserver: ResizeObserver | undefined;
+  let mutationObserver: MutationObserver | undefined;
   let measurementFrame = 0;
 
   const effectiveOrientation = () =>
@@ -158,12 +159,27 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
         }
       }
     }
+
+    // Upstream puts `children` in the dependencies of its overflow measurement
+    // (`ButtonGroup.tsx:157`). A width-constrained group keeps its own border
+    // box when a child is added, removed or relabelled, so no ResizeObserver
+    // fires; the rendered DOM is what changed. Same shape as the breadcrumbs
+    // overflow observer (`../breadcrumbs/index.tsx`).
+    if (typeof MutationObserver !== "undefined" && groupElement) {
+      mutationObserver = new MutationObserver(scheduleOverflowCheck);
+      mutationObserver.observe(groupElement, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+
     scheduleOverflowCheck();
   });
 
   // Do not read `local.children` here: mergeProps children getters instantiate
   // JSX (Show/Button) and that is PRIMITIVE_IN_FORBIDDEN_SCOPE inside a tracked
-  // effect. Child size changes are picked up by observing the group element.
+  // effect. Child changes arrive through the MutationObserver above instead.
   createEffect(
     () => {
       orientation();
@@ -181,6 +197,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
       cancelAnimationFrame(measurementFrame);
     }
     resizeObserver?.disconnect();
+    mutationObserver?.disconnect();
   });
 
   const contextValue = {

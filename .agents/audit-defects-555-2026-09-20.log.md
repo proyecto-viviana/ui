@@ -319,3 +319,38 @@ overload. Fixed in `083f3936`; the only errors left are the three pre-existing
 Green: `openLink` 4/4, `RouterProvider` 6/6, `createComboBox` + `RouterProvider`
 53/53, `createPress` + `createSelectableItem` 107/107, `FocusScope` 37/37.
 Changeset `.changeset/open-link-dispatch.md`.
+
+## Item 5 — ButtonGroup loses overflow re-measurement when its children change
+
+Fixed in both twins, `packages/solid-spectrum/src/buttongroup/index.tsx` and
+`packages/viviana-ui/src/buttongroup/index.tsx` (byte-identical before and
+after), in one commit.
+
+**Why the literal ticket wording was not followed.** The ticket says to regain
+the `children` dependency in the tracked effect. The tree forbids it, and the
+tree is right: line 164 already carries the comment saying `local.children` must
+not be read there, because `mergeProps` children getters instantiate JSX and
+that is `PRIMITIVE_IN_FORBIDDEN_SCOPE` inside a tracked effect. Upstream's
+intent is what matters — S2 `ButtonGroup.tsx:157` lists `children` in
+`checkForOverflow`'s dependencies and re-measures in a layout effect, and
+observes only the parent (line 175). The hole in ours is that a width-
+constrained group keeps its own border box when a child is added, removed or
+relabelled, so neither observed box resizes and nothing re-measures. The
+Solid-native way to say "children changed" is to watch the rendered DOM: a
+`MutationObserver` on the group with `childList`, `subtree` and `characterData`
+calling `scheduleOverflowCheck`, created beside the `ResizeObserver` in the same
+`onSettled` and disconnected in the same `onCleanup`. That is the shape
+`packages/solid-spectrum/src/breadcrumbs/index.tsx` already uses for overflow
+measurement; no new dependency. The group and its parent are still observed for
+resize, which is a superset of upstream.
+
+Red test, the new `ButtonGroup.test.tsx` in each package's `test/` (jsdom
+reports every box as zero, so `offsetLeft`/`offsetWidth` are read from data
+attributes for the file's lifetime, and each assertion waits two animation
+frames so it cannot race the pending measurement): adding a child to a
+width-constrained group, and relabelling a child so it no longer fits, both left
+the group horizontal. Red 2/2 in each package before the fix, green 4/4 after.
+Neighbours green: `Wave4Components`, `Dialog`, `ActionBar`,
+`IllustratedMessage` 73/73.
+
+Changeset `.changeset/buttongroup-children-overflow.md`.
