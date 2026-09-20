@@ -125,8 +125,7 @@ export function DocsPanel(props: {
                       return (
                         <li>
                           <button
-                            class="doc-link"
-                            class={{ active: props.openPath === entry.path }}
+                            class={["doc-link", { active: props.openPath === entry.path }]}
                             title={entry.path}
                             onClick={() => props.onOpenDoc(entry.path)}
                           >

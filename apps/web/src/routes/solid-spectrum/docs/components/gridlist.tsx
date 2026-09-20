@@ -111,8 +111,7 @@ function GridListPage() {
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
                   <div
-                    class="hd-row hd-row--split"
-                    class={{ "hd-row--selected": renderProps.isSelected }}
+                    class={["hd-row hd-row--split", { "hd-row--selected": renderProps.isSelected }]}
                   >
                     <div>
                       <div class={typeRoles.label}>{item.title}</div>
@@ -176,7 +175,7 @@ function GridListPage() {
             {(item) => (
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
-                  <div class="hd-row" class={{ "hd-row--selected": renderProps.isSelected }}>
+                  <div class={["hd-row", { "hd-row--selected": renderProps.isSelected }]}>
                     <span class={`${typeRoles.terminal} hd-row__gutter`}>
                       {statusIcon[item.status]}
                     </span>
