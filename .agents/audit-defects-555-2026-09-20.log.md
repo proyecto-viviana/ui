@@ -602,3 +602,58 @@ property and the attribute.
 Verified: `vp run test packages/solidaria` 169 files, 4232 passed, 6 skipped;
 `vp run typecheck` exit 0. Changeset `prevent-scroll-csp-nonce.md`, patch on
 `@proyecto-viviana/solidaria`.
+
+## 9 — createId crashed the hydration pass (regression from item 7)
+
+Reproduced first, one file at a time:
+`vp test run --config vitest.hydrate.config.ts packages/solid-spectrum/test/TextField.hydrate.test.tsx`
+→ `getNextContextId cannot be used under non-hydrating context`, thrown from
+`createId` (`ssr/index.tsx:95`) via `createLabels` via `get fieldProps`.
+
+The guard is an owner check (`solid.dev.js:69-74`), and the value it would
+return is `getNextChildId(getOwner())` — an id derived from the owner's position
+in the tree. So a `createId` reached from a lazy prop getter is wrong twice
+over: it can run with no owner at all (the crash), and when an owner does exist
+it consumes a child id of whatever owner happened to be current when a consumer
+read the prop. Upstream has neither problem because `useLabels` *is* a hook and
+its `useId(props.id)` runs once, in the component body.
+
+Took candidate 1 from the brief, hoisting rather than reverting item 7.
+`createLabels.ts:50` now reads `props.id ?? createId()`: the id comes from the
+caller's hook body, which is where upstream consumes one. Every caller in the
+repository already generates it there and passes it — `createLabel.ts:107`
+(`id()`), `createDateSegment.ts:446` (`segmentId`), `createGridListSection.ts:40`
+(`rowGroupId`, whose comment already relied on the short-circuit item 7
+removed), `createComboBox.ts:824` and `:853` (`buttonId`, `listBoxId`). The
+fallback is kept for a caller with no id, and the comment says such a caller
+must call `createLabels` from a hook body. `createId` itself is untouched, so
+item 7 stands and its ordering guarantee now holds where it is meaningful.
+
+Evidence for the choice, not just the crash: with the fix applied but the SSR
+artifact still the one item 7's code wrote, the two tests failed with
+`Hydration key miss … 60000020002A18000002062` against a server node keyed
+`…2063` — one id apart. The lazy call was consuming a hydration id on both
+sides; the server's and the client's simply stopped agreeing about when.
+
+Regression coverage, the part item 7 owed — `createId` under a real hydration
+pass, not a bare `createRoot`:
+`packages/solidaria/test/fixtures/createIdLabels.tsx` renders two `createLabel`
+fields in a row, `createIdLabels.ssr.test.tsx` writes
+`output/create-id-labels-ssr.html`, and `createIdLabels.hydrate.test.tsx`
+hydrates it and asserts both inputs are the same nodes the server sent, with the
+same ids and `aria-labelledby`, and the labels still `for` them. Ran red with
+the fix reverted **and the SSR artifact regenerated from the same reverted
+source**, so the red is the defect and not a stale artifact:
+`Hydration key miss for "8"`, server node `<p _hk="6">`, second field unclaimed.
+
+The hang is the crash's: `vp run test:hydrate` now terminates in 13s, 28 files,
+99 tests, all passing. Reverted, the same command still hangs — I stopped it at
+5m00s with 8 files reporting failures and no exit. So there is no second defect
+to ticket, but the shape is worth knowing: a throw inside the hydration walk
+wedges the run rather than failing it, which is why 25 files had no verdict.
+
+Verified: `vp run test:ssr` 30 files / 79 tests; `vp run test:hydrate` 28 / 99;
+`vp run test:run` 351 files, 6697 passed, 1 expected fail, 6 skipped;
+`vp run test:comparison-ssr` 1 / 8; `vp run test:comparison-hydrate` 4 / 175;
+`vp run typecheck` exit 0. Changeset
+`create-labels-id-from-hook-body.md`, patch on `@proyecto-viviana/solidaria`.
