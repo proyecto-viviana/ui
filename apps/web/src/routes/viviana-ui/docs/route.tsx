@@ -450,7 +450,7 @@ function DocsLayout() {
                     <div style={{ "margin-top": "8px" }}>
                       <button
                         onClick={() => toggleSection(item.section)}
-                        aria-expanded={isExpanded()}
+                        aria-expanded={isExpanded() ? "true" : "false"}
                         style={{
                           display: "flex",
                           "align-items": "center",
