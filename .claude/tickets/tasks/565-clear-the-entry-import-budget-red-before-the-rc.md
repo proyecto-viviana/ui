@@ -4,7 +4,7 @@ type: task
 title: "Clear the entry-import-budget red before the release candidate"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "importer half closed in db115926: `RouterProvider.tsx` narrowed to `@proyecto-viviana/solidaria/utils`, inventory back to 154/154. Ceiling half measured rather than reasoned, with the guard's own traversal behind a new `--print-modules` flag. The prescribed build at the freeze commit 2d6bb3bd does not run: its root manifest carries `unplugin-solid@^2.0.0`, dropped in 377b559c today, and it is gone from `node_modules`; rather than reinstall a removed dependency I packed 2d6bb3bd in a detached worktree with the four affected vite configs' JSX plugin swapped for the installed `@solidjs/vite-plugin`, and packed 163f4377 (the Solid 2 port) unmodified as a control. Measured with the same walker: freeze 23/23/30/25/21, port commit 25/25/29/24/20, HEAD 26/26/30/24/20, ceilings 21/21/28/23/19. So four of the five entries are over a ceiling that today's bundler alone would not reproduce at the frozen source, and only the two Providers widened from imports (+3 each). Every added module is named in `scripts/entry-import-budget.json`'s new per-entry `why`. Ceilings raised by hand to the measured 26/26/30/24/20 (22/22/22/19/14 solidaria); `--write-baseline` was refused by the harness as a CI bypass, and the hand edit carries the reasons the flag cannot. `vp run guard:entry-import-budget` EXIT=0 on the fresh build. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "reviewed and pushed by the conductor, db115926 and 4bff4c57. Verified here at 4bff4c57: `vp run guard:entry-import-budget` EXIT=0, `entry import budget OK.`, `root-barrel importers: 154 (ceiling 154)`, and no `entries now under their ceiling` line - so the five ceilings sit exactly on the measured graph with no headroom, which is the difference between a ceiling and a shrug. `openLink` confirmed on the narrowed subpath in all three artefacts, not just source: `src/utils/index.ts:44`, the re-export in `dist/utils/index.js`, and `dist/utils/index.d.ts`. `guard:publish-drift` EXIT=0; `scripts/entry-import-budget.json` is a repository file in no package's `files`, so it owes no changeset. What was corroborated independently is the narrative behind the raises, not the rebuild: `utils/refs.ts` and `utils/owner.ts` are both absent from the tree at 2d6bb3bd; the freeze-era provider took `mergeProps`/`splitProps` from `solid-js` (`provider/index.tsx:17-24`) where it now takes them from `@proyecto-viviana/solidaria/utils:28`; and the `FocusScope` import into `createOverlay.ts` landed in `d0f095a1` under #555. What was not re-run here is the three detached-worktree builds themselves - the freeze figure 23/23/30/25/21 is the writer's single measurement, and it is the load-bearing claim under four of the five raises, so it is #566's to re-measure rather than something this ticket should be read as having confirmed twice",
     }
 ---
 
