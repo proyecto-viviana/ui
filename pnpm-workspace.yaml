@@ -100,3 +100,14 @@ fetchRetryFactor: 10
 fetchRetryMintimeout: 10000
 fetchRetryMaxtimeout: 60000
 fetchTimeout: 120000
+# `@solidjs/web@2.0.0-rc.9` (2026-09-18) renamed `parseServerFunctionUrl` to
+# `parseServerFunctionActionUrl`, and `serverFunctionUrl(id)` to
+# `serverFunctionActionUrl(id)` — `serverFunctionUrl` now takes a server
+# function reference, not an id. `@tanstack/solid-start@2.0.0-rc.8` is the
+# newest rc and was built against rc.8, so it still imports the old names in
+# `dist/esm/server-functions-handler.js`; that one file is the whole patch.
+# The key is the exact version, so pnpm refuses the install the day TanStack
+# moves: the patch cannot outlive its reason. See
+# `.agents/green-main-2026-09-20.decision-solid-start-patch.md`.
+patchedDependencies:
+  "@tanstack/solid-start@2.0.0-rc.8": patches/@tanstack__solid-start@2.0.0-rc.8.patch

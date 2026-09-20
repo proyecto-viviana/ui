@@ -27,6 +27,9 @@ overrides:
   '@babel/core': ^7.29.6
   '@tsdown/css': 0.22.14
 
+patchedDependencies:
+  '@tanstack/solid-start@2.0.0-rc.8': 79132034195b7e6f6c2bc132995a54c893a68a740cf29ebc0081ef3c2a7ae1ed
+
 importers:
 
   .:
@@ -218,7 +221,7 @@ importers:
         version: 2.0.0-rc.8(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(solid-js@2.0.0-rc.9)
       '@tanstack/solid-start':
         specifier: 2.0.0-rc.8
-        version: 2.0.0-rc.8(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.60.2)(solid-js@2.0.0-rc.9)(supports-color@10.2.2)(vite-plugin-solid@2.11.14(@testing-library/jest-dom@6.9.1)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(solid-js@2.0.0-rc.9)(supports-color@10.2.2))
+        version: 2.0.0-rc.8(patch_hash=79132034195b7e6f6c2bc132995a54c893a68a740cf29ebc0081ef3c2a7ae1ed)(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.60.2)(solid-js@2.0.0-rc.9)(supports-color@10.2.2)(vite-plugin-solid@2.11.14(@testing-library/jest-dom@6.9.1)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(solid-js@2.0.0-rc.9)(supports-color@10.2.2))
       solid-icons:
         specifier: ^1.2.0
         version: 1.2.0(solid-js@2.0.0-rc.9)
@@ -6713,7 +6716,7 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/solid-start@2.0.0-rc.8(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.60.2)(solid-js@2.0.0-rc.9)(supports-color@10.2.2)(vite-plugin-solid@2.11.14(@testing-library/jest-dom@6.9.1)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(solid-js@2.0.0-rc.9)(supports-color@10.2.2))':
+  '@tanstack/solid-start@2.0.0-rc.8(patch_hash=79132034195b7e6f6c2bc132995a54c893a68a740cf29ebc0081ef3c2a7ae1ed)(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.60.2)(solid-js@2.0.0-rc.9)(supports-color@10.2.2)(vite-plugin-solid@2.11.14(@testing-library/jest-dom@6.9.1)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(solid-js@2.0.0-rc.9)(supports-color@10.2.2))':
     dependencies:
       '@solidjs/web': 2.0.0-rc.9(solid-js@2.0.0-rc.9)
       '@tanstack/solid-router': 2.0.0-rc.8(@solidjs/web@2.0.0-rc.9(solid-js@2.0.0-rc.9))(solid-js@2.0.0-rc.9)
