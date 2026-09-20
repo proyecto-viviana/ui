@@ -89,6 +89,11 @@ advisory and say why in the workflow itself. The three evidence workflows fire
 on pull requests **and on push to `main`** — work here lands direct to main, so a
 PR-only gate never fires.
 
+`Changesets Check` stays `pull_request`-only, and stays correct there: on a
+direct push to `main` the changeset is already in the tree beside the change it
+describes, so the push path is held by `guard:publish-drift` instead, which fails
+any unreleased `src` or manifest change no pending changeset publishes.
+
 ## GitHub automation
 
 `Release` no longer races the evidence workflows on every push. A successful

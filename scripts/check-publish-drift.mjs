@@ -22,8 +22,9 @@
  *
  * The question is decided from git alone, with no network and no build: a
  * package's last release is the last commit touching its CHANGELOG.md, so any
- * `src/` change after that point is unreleased. Only `src/` counts — `files` is
- * `["dist", "src"]` and `dist` is generated, so tests and docs cannot drift.
+ * `src/` or `package.json` change after that point is unreleased. Only what the
+ * tarball carries counts — `files` is `["dist", "src"]` and `dist` is generated
+ * from `src` — so tests and docs cannot drift, but the manifest can.
  */
 
 import { execFileSync } from "node:child_process";
@@ -51,10 +52,19 @@ function lastReleaseCommit(dir) {
   return git(["log", "--format=%H", "-1", "--", changelog]) || null;
 }
 
-function unreleasedSourceFiles(dir, since) {
-  const src = `${PACKAGES_DIR}/${dir}/src`;
+/**
+ * What a consumer receives: `src` (`files` is `["dist", "src"]`, and `dist` is
+ * generated from `src`) and the manifest itself. The manifest counts because it
+ * is the package's contract — a new `exports` subpath, a widened peer range, a
+ * changed `main` — and it drifts the same way source does: the published
+ * tarball keeps the old contract under a version consumers already resolve.
+ * `changeset version` writes the version bump and CHANGELOG.md in one commit,
+ * which is the boundary this diff starts after, so a bump is never drift.
+ */
+function unreleasedPublishedFiles(dir, since) {
+  const paths = [`${PACKAGES_DIR}/${dir}/src`, `${PACKAGES_DIR}/${dir}/package.json`];
   const range = since ? `${since}..HEAD` : "HEAD";
-  const out = git(["diff", "--name-only", range, "--", src]);
+  const out = git(["diff", "--name-only", range, "--", ...paths]);
   return out ? out.split("\n").filter(Boolean) : [];
 }
 
@@ -72,18 +82,20 @@ const drifted = [];
 
 for (const pkg of releasablePackages()) {
   const since = lastReleaseCommit(pkg.dir);
-  const changed = unreleasedSourceFiles(pkg.dir, since);
+  const changed = unreleasedPublishedFiles(pkg.dir, since);
   if (changed.length === 0) continue;
   if (pending.has(pkg.name)) continue;
   drifted.push({ ...pkg, since, changed });
 }
 
 if (drifted.length === 0) {
-  console.log("No publish drift: every package with unreleased source changes has a changeset.");
+  console.log(
+    "No publish drift: every package with unreleased source or manifest changes has a changeset.",
+  );
   process.exit(0);
 }
 
-console.error("Unreleased source changes with no changeset to publish them:\n");
+console.error("Unreleased source or manifest changes with no changeset to publish them:\n");
 for (const pkg of drifted) {
   const boundary = pkg.since ? `since ${pkg.since.slice(0, 8)}` : "never released";
   console.error(`  ${pkg.name}@${pkg.version} — ${pkg.changed.length} changed file(s) ${boundary}`);

@@ -5,8 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 5 — `guard:publish-drift` diffs the package manifest, not only `src`.
-Slices P, 0, 1, 2, 3 and 4 are closed. Third writer; brief
+Slice 6 — pin npm exactly in `release.yml`.
+Slices P, 0, 1, 2, 3, 4 and 5 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -494,3 +494,56 @@ satisfaction claimed with blank evidence). `node scripts/test-ci-guard-contracts
 exit 0 — it caught two regressions first: a fixture with no
 `.changeset/config.json`, and a `0.0.0` workspace version being counted as a
 candidate. `vp lint` and `vp check` exit 0. No changeset: scripts publish nothing.
+
+Slice 4 commit: `76bd2b06`.
+
+## Slice 5 — publish drift sees the manifest
+
+A package's contract is its `package.json`: a new `exports` subpath, a widened
+peer range, a changed `main` reaches consumers the same way source does. The
+guard diffed only `packages/<dir>/src`, so every one of those shipped unnoticed.
+
+Every real package has a pending changeset today, so the drift path cannot fire
+in-tree. Red-first ran on a throwaway git fixture (`$SCRATCHPAD/driftfix`):
+`packages/a` released at 1.0.0 (manifest, `src/index.ts`, `CHANGELOG.md`),
+then a commit adding `"./extra": "./src/extra.ts"` to its manifest.
+
+Before, the gate passed the planted defect:
+
+    $ node scripts/check-publish-drift.mjs
+    No publish drift: every package with unreleased source changes has a changeset.
+    DRIFT EXIT=0
+
+After the repair (`unreleasedSourceFiles` → `unreleasedPublishedFiles`, diffing
+`packages/<dir>/src` **and** `packages/<dir>/package.json`):
+
+    $ node scripts/check-publish-drift.mjs
+    Unreleased source or manifest changes with no changeset to publish them:
+      @scope/a@1.0.0 — 1 changed file(s) since 9e46ce21
+        packages/a/package.json
+    DRIFT EXIT=1
+
+    # same tree, with a changeset naming @scope/a
+    WITH CHANGESET EXIT=0
+    # this repository
+    REPO EXIT=0
+
+The changeset boundary is unchanged and is why a version bump is never drift:
+`changeset version` writes the bump and `CHANGELOG.md` in one commit, and the
+diff starts after it.
+
+`scripts/check-publish-drift.test.ts` builds that same fixture: nothing
+unreleased passes, the planted `exports` subpath fails and names
+`packages/a/package.json`, a changeset clears it, and an unreleased `src` change
+still fails. 4 cases green.
+
+`.claude/current/release-policy.md` now records why `Changesets Check` stays
+`pull_request`-only — the changeset lands in the tree beside the change on a
+direct push, and this guard holds the push path.
+
+    $ vp check          pass: All 4330 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3163 files
+    $ node scripts/test-ci-guard-contracts.mjs   all PASS
+    $ vp run guard:publish-drift                 exit 0
+
+Commit `PENDING`.

@@ -21,6 +21,11 @@ history:
       at: 2026-09-20,
       note: "slice 4 done: guard:release-prerequisites enumerates its subjects from the tree. It read a hand-written list that named one ignored package and none of the five shipping ones, so it printed PASS while inspecting nothing releasable. Candidate derivation and the pending-changeset scan are now one helper, scripts/release-candidates.mjs, shared with check-publish-drift.mjs (they were two copies that disagreed). A candidate with no entry fails; proved by removing @proyecto-viviana/ui from the list. Recorded re-runnable evidence for all five: npm view <pkg> name version dist-tags --json, and npm view <pkg>@<version> dist.attestations --json showing SLSA provenance on every published tarball. Held by 7 cases in scripts/release-candidates.test.ts; test-ci-guard-contracts.mjs exit 0",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 5 done: guard:publish-drift diffs each package's manifest as well as its src. A package's contract is its package.json — a new exports subpath, a widened peer range, a changed main ships to consumers exactly the way source does, and the guard was blind to all of it. Proved on a throwaway git fixture: a commit adding an exports subpath to packages/a/package.json printed 'No publish drift' and exit 0 before, and after the repair fails with packages/a/package.json named, exit 0 again once a changeset names the package. Held by 4 cases in scripts/check-publish-drift.test.ts. release-policy.md now records why Changesets Check stays pull_request-only: this guard holds the push path",
+    }
 ---
 
 ## Scope
