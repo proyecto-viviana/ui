@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { basename, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 import type { CertifiedFailure, CertifiedWaiver, WaiverProblem } from "./certified-waivers";
 
@@ -392,6 +392,57 @@ export function readCertifiedSummaryFile(path: string): CertifiedSummary | null 
   const raw = JSON.parse(readFileSync(path, "utf8")) as CertifiedSummary;
   // A summary written before the run-status field existed keeps `null`, which is itself a problem.
   return { ...raw, runStatus: raw.runStatus ?? null, errors: raw.errors ?? [] };
+}
+
+/** The skipped and flaky ceilings the merge holds the whole suite to. */
+export interface CertifiedRunBudgets {
+  skippedCeiling: number;
+  flakyBudget: number;
+}
+
+export interface RunBudgetProblem {
+  kind: "over-skipped" | "over-flaky";
+  detail: string;
+}
+
+/**
+ * A skip and a retry-pass are both green in every count we print, so a suite can
+ * quietly stop running and stay green. The ceilings live beside the case floor,
+ * in `e2e/certified-case-floor.json`: one file, one line each for the owner.
+ */
+export function loadCertifiedRunBudgets(comparisonRoot: string): CertifiedRunBudgets {
+  const path = join(comparisonRoot, "e2e", "certified-case-floor.json");
+  const raw = JSON.parse(readFileSync(path, "utf8")) as Partial<CertifiedRunBudgets>;
+  if (typeof raw.skippedCeiling !== "number" || typeof raw.flakyBudget !== "number") {
+    throw new Error(`${path} must carry numeric skippedCeiling and flakyBudget`);
+  }
+  return { skippedCeiling: raw.skippedCeiling, flakyBudget: raw.flakyBudget };
+}
+
+export function checkRunBudgets(
+  totals: CertifiedSummaryTotals,
+  budgets: CertifiedRunBudgets,
+): RunBudgetProblem[] {
+  const problems: RunBudgetProblem[] = [];
+  if (totals.skipped > budgets.skippedCeiling) {
+    problems.push({
+      kind: "over-skipped",
+      detail:
+        `${totals.skipped} skipped cases, ceiling ${budgets.skippedCeiling} — every skip must be a ` +
+        `registered knownDivergence. Fix the case, or register it and raise the ceiling in ` +
+        `e2e/certified-case-floor.json.`,
+    });
+  }
+  if (totals.flaky > budgets.flakyBudget) {
+    problems.push({
+      kind: "over-flaky",
+      detail:
+        `${totals.flaky} cases passed only on a retry, budget ${budgets.flakyBudget} — a retry-pass ` +
+        `is a failure the report rounds off. Fix it, or raise the budget in ` +
+        `e2e/certified-case-floor.json and say why.`,
+    });
+  }
+  return problems;
 }
 
 export function relativeSpecFile(comparisonRoot: string, file: string): string {

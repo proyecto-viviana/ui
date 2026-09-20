@@ -94,7 +94,12 @@ export function readCertifiedListing() {
   return parseListingStdout(stdout);
 }
 
-export function formatCaseFloor(counts, revision) {
+/**
+ * The same file also carries the merge's skipped and flaky ceilings, which no
+ * listing can derive — `--write` copies them across untouched rather than
+ * dropping them and taking the gate with them.
+ */
+export function formatCaseFloor(counts, revision, existing = {}) {
   const files = Object.fromEntries(
     Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)),
   );
@@ -103,6 +108,9 @@ export function formatCaseFloor(counts, revision) {
     {
       $comment:
         "Cases each certified spec file must still discover. Shrink-only: a drop or a missing file fails guard:certified-case-floor. Raise it with `node scripts/check-certified-case-floor.mjs --write`.",
+      $budgets: existing.$budgets,
+      skippedCeiling: existing.skippedCeiling,
+      flakyBudget: existing.flakyBudget,
       revision,
       total,
       files,
@@ -137,7 +145,10 @@ export function checkCertifiedCaseFloor({ write = false } = {}) {
       console.error("refusing to write a floor from a listing that carries errors.");
       return 1;
     }
-    writeFileSync(FLOOR_PATH, formatCaseFloor(counts, currentRevision()));
+    writeFileSync(
+      FLOOR_PATH,
+      formatCaseFloor(counts, currentRevision(), JSON.parse(readFileSync(FLOOR_PATH, "utf8"))),
+    );
     console.log(`certified case floor: wrote ${Object.keys(counts).length} files, ${total} cases.`);
     return 0;
   }

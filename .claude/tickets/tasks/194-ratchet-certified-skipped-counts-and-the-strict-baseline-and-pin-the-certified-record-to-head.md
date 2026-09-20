@@ -37,6 +37,11 @@ history:
       at: 2026-09-20,
       note: "slice 2 done: a committed floor on discovered cases per certified spec file. apps/comparison/e2e/certified-case-floor.json records 73 files and 2177 cases at e327ae9d; guard:certified-case-floor discovers with playwright test --list --reporter=json (no browser, no web server, ~2s), fails on a file whose count drops or that discovers nothing, and on a listing error, and ratchets up with --write. Proved by moving actionbar.certified.spec.ts aside: --list still exits 0 reporting 2173 tests, the guard exits 1 naming the missing spec. Wired into ci:release-readiness and the comparison-build job; held by 10 cases in scripts/check-certified-case-floor.test.ts",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "slice 3 done: skipped and flaky ceilings. The fixme inventory now counts every site - every knownDivergences block in a spec, not only the first, and every trigger-level knownDivergence - proved by planting a knownDivergence on datefield's spin-up announce trigger: the count stayed at 4 and the postcard validated, and after the repair counts 5 and fails. merge-certified-reports now fails above skippedCeiling (4) and flakyBudget (0), both committed in apps/comparison/e2e/certified-case-floor.json beside the case floor; a shard summary with 40 skipped and 7 flaky merged green before and exits 1 now. Held by 9 cases in apps/comparison/src/data/certified-run-budgets.test.ts, one of which pins the ceiling to the inventory count",
+    }
 ---
 
 ## Cause

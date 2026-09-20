@@ -12,9 +12,11 @@ import { basename, join } from "node:path";
 import {
   applyWaiverCounts,
   CERTIFIED_SUMMARY_FILENAME,
+  checkRunBudgets,
   checkShardOutcomes,
   formatCertifiedSummaryMarkdown,
   mergeCertifiedSummaries,
+  loadCertifiedRunBudgets,
   readCertifiedSummaryFile,
   type CertifiedSummary,
 } from "./certified-summary";
@@ -121,6 +123,11 @@ if (stepSummary) {
 
 console.log(markdown);
 
+const budgetProblems = checkRunBudgets(
+  finalSummary.totals,
+  loadCertifiedRunBudgets(comparisonRoot),
+);
+
 const blobDir = join(comparisonRoot, "blob-reports-merged");
 mkdirSync(blobDir, { recursive: true });
 for (const zip of walkBlobZips(shardsDir)) {
@@ -136,6 +143,22 @@ if (walkBlobZips(blobDir).length > 0) {
   if (mergedReports.status !== 0 && mergedReports.status != null) {
     console.error("playwright merge-reports failed");
     process.exit(mergedReports.status);
+  }
+}
+
+if (budgetProblems.length > 0) {
+  console.error(
+    `Certified run over budget:\n${budgetProblems
+      .map((problem) => `- ${problem.kind}: ${problem.detail}`)
+      .join("\n")}`,
+  );
+  if (stepSummary) {
+    appendFileSync(
+      stepSummary,
+      `\n### Certified run over budget\n\n${budgetProblems
+        .map((problem) => `- ${problem.kind}: ${problem.detail}`)
+        .join("\n")}\n`,
+    );
   }
 }
 
@@ -157,6 +180,7 @@ if (shardProblems.length > 0) {
 
 if (
   shardProblems.length > 0 ||
+  budgetProblems.length > 0 ||
   waiverGateFails({ ...evaluation, problems: finalSummary.waiverProblems })
 ) {
   process.exit(1);

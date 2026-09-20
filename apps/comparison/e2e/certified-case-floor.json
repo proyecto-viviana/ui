@@ -1,5 +1,8 @@
 {
   "$comment": "Cases each certified spec file must still discover. Shrink-only: a drop or a missing file fails guard:certified-case-floor. Raise it with `node scripts/check-certified-case-floor.mjs --write`.",
+  "$budgets": "skippedCeiling: every skipped case must be a registered knownDivergence (see acceptance-inventory). flakyBudget: a case that passes only on a retry is a failure the report rounds off. merge-certified-reports fails above either.",
+  "skippedCeiling": 4,
+  "flakyBudget": 0,
   "revision": "e327ae9d9985073361c84982d85c79fa79ed8313",
   "total": 2177,
   "files": {

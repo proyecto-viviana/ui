@@ -5,8 +5,9 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 3 — skipped and flaky ceilings in the merge. Slices P, 0, 1 and 2 are
-closed. Third writer; brief `.agents/close-gates-2026-09-20.resume.task.md`.
+Slice 4 — `guard:release-prerequisites` enumerates from the tree. Slices P, 0,
+1, 2 and 3 are closed. Third writer; brief
+`.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
 
@@ -386,3 +387,61 @@ Wired into `guard:certified-case-floor`, into `ci:release-readiness` after
 `certification-gates.yml`. `node scripts/test-ci-guard-contracts.mjs` exits 0.
 `scripts/check-certified-case-floor.test.ts` is 10 cases green; `vp check` and
 `vp lint` exit 0. No changeset: scripts and workflows publish nothing.
+
+Slice 2 commit: `38dc24ea`.
+
+## Slice 3 — skipped and flaky ceilings in the merge
+
+Two fail-opens, one slice.
+
+**The inventory misses driver-level fixme sites.** `test.fixme` is registered in
+two shapes: a `knownDivergences` block in a driver config, and a
+`knownDivergence` string on a motion or announcement trigger. The inventory read
+the first shape only, and only the first block in a file. Planted defect: a
+`knownDivergence` on the `spin-up` announce trigger of
+`datefield.certified.spec.ts`, which marks a real case `test.fixme`.
+
+    fixme sites: 4
+    postcard problems: []
+
+Five sites in the tree, four counted, and `validateCertifiedSuiteEvidence`
+happy with a postcard recording four skips. With the repair:
+
+    fixme sites: 5
+    postcard problems: [ 'skipped=4 does not match 5 registered known divergences' ]
+
+Defect removed: back to 4 sites, no problems.
+`extractKnownDivergenceKeys` is now `extractCertifiedFixmeSites`: every
+`knownDivergences` block (the regex is global), plus every trigger-level
+`knownDivergence`, named by the nearest `id` above it.
+
+**The merge accepts any number of skips and retry-passes.** A skip and a
+retry-pass are both green in every count the report prints, so a suite can stop
+running and stay green. Planted defect: a shard summary recording 2100 passed,
+40 skipped, 7 flaky.
+
+    CERTIFIED_SHARD_TOTAL=1 pnpm exec tsx apps/comparison/scripts/merge-certified-reports.ts <shards>
+    Totals: **2100 passed**, **0 failed**, **40 skipped**, **0 waived**, **7 flaky**.
+    MERGE EXIT=0
+
+After:
+
+    - over-skipped: 40 skipped cases, ceiling 4 — every skip must be a
+      registered knownDivergence. …
+    - over-flaky: 7 cases passed only on a retry, budget 0 — a retry-pass is a
+      failure the report rounds off. …
+    MERGE EXIT=1
+
+The same summary at 4 skipped and 0 flaky: `MERGE EXIT=0`.
+
+The ceilings are `skippedCeiling: 4` and `flakyBudget: 0` in
+`apps/comparison/e2e/certified-case-floor.json` — the slice-2 baseline, so the
+owner changes one line in one file. `--write` copies them across untouched; a
+listing cannot derive them. A test holds `skippedCeiling` to the number of
+registered fixme sites, so the ceiling and the inventory cannot drift apart
+silently.
+
+`apps/comparison/src/data/certified-run-budgets.test.ts` is 9 cases green; with
+the shard-outcome and acceptance-schema suites, 30 green. `comparison:typecheck`
+0 errors, `vp lint`, `vp check` and `guard:certified-case-floor` exit 0. No
+changeset: `apps/comparison` publishes nothing.

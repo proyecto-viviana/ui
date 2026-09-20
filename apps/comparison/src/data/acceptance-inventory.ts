@@ -269,27 +269,57 @@ export function unresolvedVisualStatePointers(roots: {
   return missing;
 }
 
-function extractKnownDivergenceKeys(source: string): { caseId: string; reason: string }[] {
-  const block = /knownDivergences:\s*\{([\s\S]*?)\n\s*\}/.exec(source);
-  if (block == null) {
-    return [];
+/**
+ * Every `test.fixme` site a certified spec registers, in both shapes the
+ * drivers read.
+ *
+ * `knownDivergences: { "<case id>": "<reason>" }` marks one case; a driver
+ * config carries at most one such block, but a spec configures several drivers,
+ * so a spec carries several blocks. `knownDivergence: "<reason>"` on a motion
+ * or announcement trigger marks that trigger for every case the driver runs.
+ * Reading only the first block of the first shape — which is what this did —
+ * left a spec free to add fixme sites the skipped-count gate never saw.
+ */
+export function extractCertifiedFixmeSites(source: string): { caseId: string; reason: string }[] {
+  const entries: { caseId: string; reason: string }[] = [];
+
+  const blockRe = /knownDivergences:\s*\{([\s\S]*?)\n\s*\}/g;
+  let block: RegExpExecArray | null;
+  while ((block = blockRe.exec(source)) != null) {
+    const body = block[1];
+    const keyRe = /(?:^|\n)\s*(?:\/\/[^\n]*\n\s*)*(["']?)([A-Za-z0-9_ ·-]+)\1\s*:/g;
+    let match: RegExpExecArray | null;
+    while ((match = keyRe.exec(body)) != null) {
+      const caseId = match[2].trim();
+      if (caseId === "knownDivergences") {
+        continue;
+      }
+      const after = body.slice(match.index + match[0].length);
+      entries.push({ caseId, reason: firstStringLiteral(after) });
+    }
   }
 
-  const entries: { caseId: string; reason: string }[] = [];
-  const keyRe = /(?:^|\n)\s*(?:\/\/[^\n]*\n\s*)*(["']?)([A-Za-z0-9_ ·-]+)\1\s*:/g;
-  let match: RegExpExecArray | null;
-  while ((match = keyRe.exec(block[1])) != null) {
-    const caseId = match[2].trim();
-    if (caseId === "knownDivergences") {
-      continue;
-    }
-    const after = block[1].slice(match.index + match[0].length);
-    const reasonMatch = /"((?:\\.|[^"\\])*)"/.exec(after);
-    const reason = reasonMatch ? reasonMatch[1].replace(/\\n/g, " ").replace(/\s+/g, " ") : "";
-    entries.push({ caseId, reason });
+  const triggerRe = /knownDivergence:\s*/g;
+  let trigger: RegExpExecArray | null;
+  while ((trigger = triggerRe.exec(source)) != null) {
+    const reason = firstStringLiteral(source.slice(trigger.index + trigger[0].length));
+    entries.push({ caseId: enclosingTriggerId(source, trigger.index), reason });
   }
 
   return entries;
+}
+
+function firstStringLiteral(after: string): string {
+  const match = /"((?:\\.|[^"\\])*)"/.exec(after);
+  return match ? match[1].replace(/\\n/g, " ").replace(/\s+/g, " ") : "";
+}
+
+/** A trigger declares its `id` beside `knownDivergence`; the nearest one above it names the site. */
+function enclosingTriggerId(source: string, at: number): string {
+  const before = source.slice(0, at);
+  const ids = [...before.matchAll(/\bid:\s*["']([^"']+)["']/g)];
+  const last = ids.at(-1);
+  return last ? `· ${last[1]}` : "· trigger";
 }
 
 export function inventoryCertifiedObligations(certifiedDir: string): {
@@ -306,7 +336,7 @@ export function inventoryCertifiedObligations(certifiedDir: string): {
 
     const spec = path.join(certifiedDir, name);
     const source = readFileSync(spec, "utf8");
-    for (const entry of extractKnownDivergenceKeys(source)) {
+    for (const entry of extractCertifiedFixmeSites(source)) {
       expectedFixmes.push({ spec: name, caseId: entry.caseId, reason: entry.reason });
     }
 
