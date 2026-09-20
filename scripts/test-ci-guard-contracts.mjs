@@ -135,6 +135,15 @@ try {
   }
   console.log("PASS: release readiness runs every app unit suite by discovery.");
 
+  // Every browser gate builds the tree it grades. `reuseExistingServer` makes
+  // an interactive run cheap and a gate a lie: a stale preview server answers
+  // every request and the specs never touch the build under test.
+  assert(
+    releaseReadiness.includes("vp run guard:gate-server-reuse"),
+    "release readiness must run guard:gate-server-reuse; a gate that reuses a server grades nothing",
+  );
+  console.log("PASS: release readiness holds the no-reuse contract for the browser gates.");
+
   const changesetsWorkflow = readFileSync(
     path.join(ROOT, ".github", "workflows", "changesets-check.yml"),
     "utf8",

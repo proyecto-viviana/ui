@@ -32,7 +32,9 @@ export default defineConfig({
   webServer: {
     command: "vp build && vp preview --port 4000",
     url: "http://localhost:4000/solid-spectrum/playground",
-    reuseExistingServer: !process.env.CI,
+    // A gate never reuses: a stale server from an older build answers
+    // every request and the run grades a tree nobody built.
+    reuseExistingServer: !process.env.CI && !process.env.VIVIANA_GATE,
     timeout: 180000,
   },
 });

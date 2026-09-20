@@ -293,6 +293,68 @@ Tests only, so no changeset.
     $ vp check          pass: All 4334 files are correctly formatted
     $ vp lint           pass: Found no warnings or lint errors in 3166 files
 
+## Slice 11 — a gate never reuses a server
+
+Added by the conductor after the audit (`.agents/CONDUCTOR-PENDING-2026-09-20b.md`).
+`reuseExistingServer` is what makes an interactive run cheap and a gate a
+guess: a preview server left on the port from an older build answers every
+request, the specs pass, and nothing in the run touched the tree being graded.
+Both `apps/**` Playwright configs had `reuseExistingServer: !process.env.CI`,
+and not one of the 33 scripts that run `playwright test` set `CI` — so every
+browser gate on this machine could grade a stale server.
+
+The switch is `VIVIANA_GATE=1`, not `CI=1`, and that is deliberate: these
+configs also hang `.env.local` loading, two retries and the blob reporter off
+`CI`, so a local gate run under `CI=1` would lose this machine's Chromium
+arguments and silently retry twice — a different run from the one CI makes.
+`CI` stays in the expression for the hosted run:
+`reuseExistingServer: !process.env.CI && !process.env.VIVIANA_GATE`.
+`VIVIANA_*` is the convention already in the tree (`VIVIANA_PACK_PASS`,
+`VIVIANA_CONSUMER_DIR`), so this is not a third switch.
+
+The planted defect the brief names — a stale server on the port serving an old
+build — run on a throwaway fixture under `apps/web` (a stale `python3 -m
+http.server` on 4399 serving `ok`, a config whose own webServer would have
+served `broken`, a spec asserting `ok`):
+
+    $ vp exec playwright test --config .gate-proof/gate.config.ts
+      1 passed (470ms)
+    REUSE_EXIT=0                      # green, against a server it did not start
+
+    $ VIVIANA_GATE=1 vp exec playwright test --config .gate-proof/gate.config.ts
+    Error: http://127.0.0.1:4399/ is already used, make sure that nothing is
+    running on the port/url or set reuseExistingServer:true in config.webServer.
+    GATE_EXIT=1
+
+Fixture and its server removed after the run.
+
+New `guard:gate-server-reuse` (`scripts/check-gate-server-reuse.mjs`) holds
+both halves — the configs' expression and the scripts' switch — and was red on
+the tree as found, 35 problems: both configs and all 33 scripts.
+
+    $ node scripts/check-gate-server-reuse.mjs      # before
+    A gate could reuse a server it did not start:
+      apps/comparison/playwright.config.ts:79: reuseExistingServer ignores VIVIANA_GATE …
+      apps/web/playwright.config.ts:35: reuseExistingServer ignores VIVIANA_GATE …
+      package.json: script test:e2e runs playwright test without VIVIANA_GATE=1 …
+      (+ 32 more)
+    EXIT=1
+
+    $ node scripts/check-gate-server-reuse.mjs      # after
+    gate server reuse: 2 Playwright configs and 3 manifests all set VIVIANA_GATE.
+    EXIT=0
+
+Held by 7 cases in `scripts/check-gate-server-reuse.test.ts` (7 passed), and
+wired into `ci:release-readiness` beside `guard:workflow-pins`, with the wiring
+itself asserted in `scripts/test-ci-guard-contracts.mjs`: unwired it exits 1
+with "release readiness must run guard:gate-server-reuse; a gate that reuses a
+server grades nothing", wired it exits 0. `tooling.md` records the switch.
+
+Scripts and configs only, so no changeset.
+
+    $ vp check          pass: All 4336 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3168 files
+
 ## Left red`.
 
 ## Slice 0 — the peers allowlist, and both audits every run

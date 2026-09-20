@@ -76,7 +76,9 @@ export default defineConfig({
     ? {
         command: `vp run comparison:preview --host ${host} --port ${port}`,
         url: `${baseURL}/components/dialog/`,
-        reuseExistingServer: !process.env.CI,
+        // A gate never reuses: a stale server from an older build answers
+        // every request and the run grades a tree nobody built.
+        reuseExistingServer: !process.env.CI && !process.env.VIVIANA_GATE,
         timeout: 120000,
         cwd: new URL("../..", import.meta.url).pathname,
       }

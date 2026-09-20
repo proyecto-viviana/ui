@@ -51,6 +51,11 @@ history:
       at: 2026-09-20,
       note: "slice 10 done: the four tests that assert nothing now assert what their titles promise. createFormValidation's invalid-event case dispatches the cancelable invalid event a browser fires (fireEvent.invalid is not cancelable) and asserts defaultPrevented plus the committed displayValidation ['Required']; its change case asserts not-displaying before, displaying after; createFocusRing's autoFocus case asserts the memo's isFocused() gate (autoFocus alone shows no ring) and the ring on focus; Toast's global-queue case subscribes and asserts close() marks the toast exiting and keeps it while remove() drops it, which is what hasExitAnimation buys. Red first with the four behaviours planted out of the three sources: 8 failed | 59 passed (67), all four named; sources restored, 67 passed (67). Two were order-dependent and the fix stayed in the test: createFocusRing inherited the module-global interaction modality an earlier case left, so its beforeEach now sets keyboard (the resample matches upstream useFocusRing.ts:44,60 and is not our divergence), and the Toast case asserts on its own key because earlier cases leave nine toasts in the shared globalToastQueue — same family as #556. Tests only, no changeset; vp check and vp lint clean",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 11 done (added by the conductor in .agents/CONDUCTOR-PENDING-2026-09-20b.md): a gate never reuses a server. Both apps/** Playwright configs had reuseExistingServer: !process.env.CI and none of the 33 scripts that run playwright test set CI, so every browser gate on a developer machine could grade a preview server left on the port by an older build. The switch is VIVIANA_GATE=1, not CI=1, because these configs also hang .env.local loading, two retries and the blob reporter off CI — a local gate under CI=1 would lose this machine's Chromium arguments and retry twice; CI stays in the expression for the hosted run. Proved on a throwaway fixture with a stale server on 4399 serving ok while the config's own server would have served broken: without the switch 1 passed, exit 0 against a server it did not start; with it, exit 1, 'http://127.0.0.1:4399/ is already used'. New guard:gate-server-reuse was red on the tree as found with 35 problems (both configs, all 33 scripts) and green after, 7 cases in scripts/check-gate-server-reuse.test.ts, wired into ci:release-readiness beside guard:workflow-pins and asserted in scripts/test-ci-guard-contracts.mjs (unwired exit 1, wired exit 0). tooling.md records the switch",
+    }
 ---
 
 ## Scope
@@ -72,6 +77,9 @@ Turn each fail-open gate into a fail-closed one, in the order
 9. `guard:package-sourcemaps` wired after `build`, or its claim corrected.
 10. `ci:release-readiness` discovers the apps' unit tests.
 11. The four tests that assert nothing get the assertion their title promises.
+12. A gate never reuses a server: every `apps/**` Playwright config and
+    every script that runs Playwright refuse a server the run did not
+    start (added 2026-09-20, `.agents/CONDUCTOR-PENDING-2026-09-20b.md`).
 
 Every slice is red first: plant the defect, show the gate passing on it,
 repair, show it failing, and keep the planted case as a test.

@@ -177,6 +177,14 @@ The comparison app uses `astro build`, but its Playwright server uses foreground
 `vp preview`. Astro 7 automatically backgrounds preview when it detects an
 agent, which makes Playwright treat the server command as terminated.
 
+Every script that runs `playwright test` sets `VIVIANA_GATE=1`, and both
+Playwright configs read it: `reuseExistingServer: !process.env.CI &&
+!process.env.VIVIANA_GATE`. A gate builds the tree it grades, so it never
+attaches to a preview server already on the port — a stale one from an older
+build answers every request and the specs pass without touching the build under
+test. An interactive `playwright test` still reuses. `guard:gate-server-reuse`
+holds both halves and runs in `ci:release-readiness`.
+
 ## Host note
 
 Chromium Playwright may need to run outside the sandbox on this host when the
