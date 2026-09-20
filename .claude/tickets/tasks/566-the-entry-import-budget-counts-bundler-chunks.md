@@ -4,12 +4,17 @@ type: task
 title: "The entry import budget counts bundler chunks, so the bundler can move it"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found while measuring #565. The frozen source of 2d6bb3bd, rebuilt with the installed toolchain, measures 23/23/30/25/21 against the ceilings 21/21/28/23/19 that were written from that same source - so four of the five entries were over before a single import changed. The difference is chunking: this build emits no `_chunk/web.js`, `_chunk/focus.js` or `_chunk/createInteractionModality.js`, and splits `_chunk/mergeProps.js` out where the old one folded it in",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "owner decision: of the three options under `## Work`, the unit becomes source reachability. The second (a chunk-free number measured beside the chunks) and the third (documenting the ceilings as toolchain-bound) are closed. Reason recorded so it is not re-argued: a ceiling the bundler can move is the fail-open class #553 closed, and the first thing anyone does with a ceiling that moved on its own is raise it. Briefed in `.agents/CONDUCTOR-PENDING-2026-09-20d.md`, which names the two traps - every `exports` condition in this repo points into `dist/`, so the dist-to-src mapping is the guard's own and an entry that will not resolve must fail rather than skip (the `unbuilt` lesson at `check-entry-import-budget.ts:253`); and type-only imports, which `dist/` excludes by erasure and source does not, must not be counted or the number stops meaning what a consumer pays for. Conditional authorisation carried in the brief: if the guard no longer needs a build and runs under ten seconds, add it as a leg of `ci:release-readiness`, which is the 19-leg chain it is absent from and the reason the nineteen-green walk at 3f220fb6 did not see it red",
     }
 ---
 

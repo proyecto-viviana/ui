@@ -67,6 +67,16 @@ The receipt is already in `.agents/chain-walk-2026-09-20/pool-threads.out.txt`;
 what is owed is that it is cited from the tree rather than from a merged
 ticket's history note.
 
+One datum to carry in with it, so whoever writes the note does not repeat #556's
+framing: under `vmThreads` with #556's `vmMemoryLimit` in place, the suite is
+not fragile any more. `.agents/chain-walk-2026-09-20/leg-test-run.out.txt`,
+18:10, is **351 test files passed, 6697 passed / 1 expected fail / 6 skipped in
+60.82s** — the whole `test:run` leg, a wider scope than the built-in `vp test`'s
+345 files. The two detached `--maxWorkers=1` attempts that never finished ended
+`EXIT=143`, terminated at a cap rather than on a worker crash. So the sentence
+the note should leave behind is that the worker deaths were a condition, since
+fixed, and not a standing property of the pool.
+
 ## Relationship
 
 Child of #544. Left open by #556 when it merged; #556 has the memory
