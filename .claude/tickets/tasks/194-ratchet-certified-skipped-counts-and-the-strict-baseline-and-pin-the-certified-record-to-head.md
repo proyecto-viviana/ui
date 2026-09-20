@@ -22,6 +22,11 @@ history:
       at: 2026-09-05,
       note: "HEAD subset 308/25/4/337, complete false. Product: #111 virtual pointer, #381 pending ActionButton name. Leftovers #480 Toast open (harness), #481 Overlay Escape (harness), #482 Calendar D5 trail. D3 still fail-closed. Postcard stays 0f1e1198.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "report-merger parse blocker fixed: 163f4377 dropped the import opener at merge-certified-reports.ts line 12, so the Certification Gates merge step died in esbuild after all eight shards passed, and vp check could not start. Restored byte-exact; the script now parses and reaches its own no-summaries guard. Found behind it: vp check reports 374 unformatted files, which CI also listed; handled as its own mechanical commit. Evidence-integrity work here stays open",
+    }
 ---
 
 ## Cause
