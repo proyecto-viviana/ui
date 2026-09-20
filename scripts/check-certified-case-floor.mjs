@@ -77,17 +77,29 @@ export function loadCaseFloor(path = FLOOR_PATH) {
   return JSON.parse(readFileSync(path, "utf8")).files ?? {};
 }
 
-/** pnpm prefixes its own banner ("Scope: all N workspace projects") to stdout, so the report starts at the first brace. */
+/**
+ * A package manager may prefix its own banner to stdout — bare `pnpm` printed
+ * "Scope: all N workspace projects", and `vp exec` prints nothing at all — so
+ * the report starts at the first brace either way.
+ */
 export function parseListingStdout(stdout) {
   const start = stdout.indexOf("{");
   if (start < 0) throw new Error(`playwright --list printed no JSON report:\n${stdout}`);
   return JSON.parse(stdout.slice(start));
 }
 
-/** `--list` exits 0 with the report on stdout; a spec that fails to load lands in `errors`. */
+/**
+ * `--list` exits 0 with the report on stdout; a spec that fails to load lands in `errors`.
+ *
+ * Driven through `vp`, like the sibling guard in `check-peers.mjs`. Bare `pnpm`
+ * runs its own deps-status check first and, when that check disagrees with the
+ * install `vp` made, tries to purge `node_modules` and aborts for want of a TTY
+ * (#564) — a verdict that depends on `node_modules/.pnpm-workspace-state-v1.json`
+ * rather than on anything the tree holds.
+ */
 export function readCertifiedListing() {
   const stdout = execFileSync(
-    "pnpm",
+    "vp",
     ["exec", "playwright", "test", "e2e/certified", "--list", "--reporter=json"],
     { cwd: COMPARISON_ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
   );

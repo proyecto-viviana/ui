@@ -78,10 +78,14 @@ describe("diffCaseFloor", () => {
 });
 
 describe("parseListingStdout", () => {
-  it("skips the pnpm banner that precedes the report", () => {
+  it("skips a package-manager banner that precedes the report", () => {
     expect(parseListingStdout('Scope: all 12 workspace projects\n{"suites":[]}\n')).toEqual({
       suites: [],
     });
+  });
+
+  it("reads a report with no banner at all, which is what `vp exec` prints", () => {
+    expect(parseListingStdout('{"suites":[]}\n')).toEqual({ suites: [] });
   });
 
   it("throws when nothing on stdout is a report", () => {
