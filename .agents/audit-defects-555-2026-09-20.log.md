@@ -565,3 +565,40 @@ Proved by hashing each at `8db7c298~1`: both match their current content
 exactly and neither matches the recorded hash, so they were already red on
 `origin/main` before this ticket. `guard:attribution-headers` is therefore red
 on main for a reason this ticket did not cause; conductor's to route.
+
+## Item 8.5 — the CSP nonce
+
+Mirrored upstream into `packages/solidaria/src/utils/`, names unchanged:
+`getMetaValue.ts` (`meta[name=…], meta[property=…]`, `meta.nonce` over
+`meta.content` for `csp-nonce`, then `__webpack_nonce__`) and `getNonce.ts`
+(the `WeakMap<Document, string>` cache plus `resetNonceCache()`, exported for
+testing only). Both reuse `getOwnerDocument` / `getOwnerWindow` from
+`utils/dom.ts`; no new dependency. Neither is re-exported from
+`packages/solidaria/src/utils/index.ts` — a mirror is not a public name, and
+minting one is owner-steered.
+
+Call site is `createPreventScroll.ts`, inside `preventScrollMobileSafari()`,
+before `style.textContent`, exactly as RAC `usePreventScroll.ts:139-142`.
+
+Proof, `packages/solidaria/test/createPreventScroll.test.tsx`, new describe
+`createPreventScroll csp nonce`. The branch is gated on `isIOS() && isWebKit()`,
+so the three cases fake `navigator.platform` and `navigator.userAgent` the way
+`createMove.test.tsx:228-258` does, and take the injected `<style>` by diffing
+`document.head`'s styles across the render rather than by position.
+
+- with `<meta name="csp-nonce" content="nonce-from-meta">`: the style carries
+  the nonce, and unmount removes it.
+- without the meta: `style.nonce` is empty and there is no `nonce` attribute.
+- the cache: `getNonce()` still answers after the meta is removed, and answers
+  `undefined` once `resetNonceCache()` runs. Asserted on the returned string,
+  not on the element — `instanceof ownerWindow.HTMLMetaElement` is
+  cross-realm-sensitive and our two pools differ there.
+
+Ran red before green: with the four `getNonce()` lines removed the first case
+fails `expected '' to be 'nonce-from-meta'`; restored, 6 passed. jsdom reflects
+the `nonce` IDL attribute, which is why the empty case asserts both the
+property and the attribute.
+
+Verified: `vp run test packages/solidaria` 169 files, 4232 passed, 6 skipped;
+`vp run typecheck` exit 0. Changeset `prevent-scroll-csp-nonce.md`, patch on
+`@proyecto-viviana/solidaria`.

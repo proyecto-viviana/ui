@@ -29,6 +29,7 @@ import {
   willOpenKeyboard,
 } from "../utils";
 import { addEvent, setStyle } from "../utils/dom";
+import { getNonce } from "../utils/getNonce";
 
 export interface PreventScrollOptions {
   /** Whether the scroll lock is disabled. */
@@ -158,6 +159,13 @@ function preventScrollMobileSafari(): () => void {
   // the window instead.
   // This must be applied before the touchstart event as of iOS 26, so inject it as a <style> element.
   const style = document.createElement("style");
+  // RAC usePreventScroll.ts:139-142 — a CSP-restricted page blocks an
+  // unlabelled inline <style>, and this one carries the overscroll containment
+  // the touch handlers below depend on.
+  const nonce = getNonce();
+  if (nonce) {
+    style.nonce = nonce;
+  }
   style.textContent = `
 @layer {
   * {

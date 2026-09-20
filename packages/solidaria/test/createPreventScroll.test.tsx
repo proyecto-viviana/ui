@@ -15,9 +15,10 @@
  * plus kebab-case setStyle / Reflect focus-restore coverage from RAC 1.21.0.
  */
 
-import { describe, it, expect, afterEach, vi } from "vite-plus/test";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createPreventScroll } from "../src/overlays/createPreventScroll";
+import { getNonce, resetNonceCache } from "../src/utils/getNonce";
 
 function Example(props: { isDisabled?: boolean }) {
   createPreventScroll({ isDisabled: props.isDisabled });
@@ -80,5 +81,85 @@ describe("createPreventScroll", () => {
 
     result.unmount();
     setProperty.mockRestore();
+  });
+});
+
+// Port of RAC usePreventScroll.ts:139-142 — the mobile Safari branch injects a
+// <style> element, which a Content-Security-Policy page blocks unless it carries
+// the page's nonce. The branch is gated on isIOS() && isWebKit(), so these fake
+// the platform the way createMove.test.tsx does.
+describe("createPreventScroll csp nonce", () => {
+  const IPHONE_UA =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+
+  let platformGetter: ReturnType<typeof vi.spyOn> | undefined;
+  let userAgentGetter: ReturnType<typeof vi.spyOn> | undefined;
+
+  beforeEach(() => {
+    resetNonceCache();
+    platformGetter = vi.spyOn(window.navigator, "platform", "get");
+    platformGetter.mockReturnValue("iPhone");
+    userAgentGetter = vi.spyOn(window.navigator, "userAgent", "get");
+    userAgentGetter.mockReturnValue(IPHONE_UA);
+  });
+
+  afterEach(() => {
+    cleanup();
+    for (const meta of document.head.querySelectorAll('meta[name="csp-nonce"]')) {
+      meta.remove();
+    }
+    platformGetter?.mockRestore();
+    userAgentGetter?.mockRestore();
+    resetNonceCache();
+    document.documentElement.style.removeProperty("overflow");
+  });
+
+  function addNonceMeta(value: string) {
+    const meta = document.createElement("meta");
+    meta.setAttribute("name", "csp-nonce");
+    meta.setAttribute("content", value);
+    document.head.appendChild(meta);
+  }
+
+  function renderAndTakeInjectedStyle() {
+    const before = new Set(document.head.querySelectorAll("style"));
+    const result = render(() => <Example />);
+    const style = [...document.head.querySelectorAll("style")].find((el) => !before.has(el));
+    return { result, style };
+  }
+
+  it("labels the injected style element with the document's csp-nonce", () => {
+    addNonceMeta("nonce-from-meta");
+
+    const { result, style } = renderAndTakeInjectedStyle();
+
+    expect(style).toBeDefined();
+    expect(style!.textContent).toContain("overscroll-behavior: contain");
+    expect(style!.nonce).toBe("nonce-from-meta");
+
+    result.unmount();
+    expect(document.head.contains(style!)).toBe(false);
+  });
+
+  it("sets no nonce when the document declares none", () => {
+    const { result, style } = renderAndTakeInjectedStyle();
+
+    expect(style).toBeDefined();
+    expect(style!.textContent).toContain("overscroll-behavior: contain");
+    expect(style!.nonce || null).toBeNull();
+    expect(style!.getAttribute("nonce")).toBeNull();
+
+    result.unmount();
+  });
+
+  it("caches per document until resetNonceCache, and reads the string not the element", () => {
+    addNonceMeta("nonce-from-meta");
+    expect(getNonce()).toBe("nonce-from-meta");
+
+    document.head.querySelector('meta[name="csp-nonce"]')!.remove();
+    expect(getNonce()).toBe("nonce-from-meta");
+
+    resetNonceCache();
+    expect(getNonce()).toBeUndefined();
   });
 });
