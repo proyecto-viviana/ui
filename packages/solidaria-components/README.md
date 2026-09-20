@@ -1,40 +1,39 @@
 # @proyecto-viviana/solidaria-components
 
-SolidJS port of React Aria Components: unstyled, accessible components built on
-`@proyecto-viviana/solidaria` and `@proyecto-viviana/solid-stately`.
+A Solid port of Adobe's React Aria Components: accessible components with no
+styling. Each one ships the markup, the ARIA, and the interaction; you supply
+every class.
 
-This package is still part of a parity port. Do not treat export coverage as a
-production readiness guarantee.
+Use this when you want to own the look completely. If you want components that
+already look like something, use a styled sibling instead.
 
 ## Install
 
+Requires **Solid 2**. `solid-js` and `@solidjs/web` are peer dependencies, at
+`>=2.0.0-rc.9 <3`.
+
 ```bash
-npm install @proyecto-viviana/solidaria-components solid-js
+npm install @proyecto-viviana/solidaria-components@rc solid-js@next @solidjs/web@next
 ```
 
-## Usage
+The release candidate is on the `rc` tag. The `latest` tag is the Solid 1
+line.
+
+## Example
+
+Style with classes, data attributes, or a render-prop child. Render-prop
+fields are plain booleans, not accessors — read `isPressed`, do not call it.
 
 ```tsx
 import { Button } from "@proyecto-viviana/solidaria-components";
 
-export function SaveButton() {
-  return <Button onPress={() => save()}>Save</Button>;
-}
-```
-
-Components are headless. Style them with classes, data attributes, and render
-props.
-
-```tsx
-import { Button } from "@proyecto-viviana/solidaria-components";
-
-export function ToolbarButton() {
+export function SaveButton(props: { onSave: () => void }) {
   return (
-    <Button class="button">
-      {({ isPressed, isFocusVisible }) => (
+    <Button class="button" onPress={props.onSave}>
+      {(render) => (
         <span
-          data-pressed={isPressed() || undefined}
-          data-focus-visible={isFocusVisible() || undefined}
+          data-pressed={render.isPressed || undefined}
+          data-focus-visible={render.isFocusVisible || undefined}
         >
           Save
         </span>
@@ -44,25 +43,49 @@ export function ToolbarButton() {
 }
 ```
 
-## Current Parity Evidence
+## In the chain
 
-Do not copy guard counts into this file. `guard:rac-export-gap` allows only
-ticketed pending RAC names (`scripts/rac-export-gap-pending.json`). Unlisted
-missing names fail. Extra Solid exports are local API; document intentional
-additions in changesets.
+```text
+solid-stately
+      ↓
+solidaria
+      ↓
+solidaria-components   ← you are here
+      ↓
+solid-spectrum · @proyecto-viviana/ui · kumo · geist
+```
 
-The barrel in [`src/index.ts`](src/index.ts) is the source of truth for the
-current public surface. This README intentionally does not duplicate the full
-export list.
+It depends on `@proyecto-viviana/solidaria` and
+`@proyecto-viviana/solid-stately`. Every styled package in the family is built
+on this one.
 
-## Verification
+## Status
+
+Published, and part of a port that is not finished. An export is a floor, not
+proof that a component matches upstream.
+[`src/index.ts`](src/index.ts) is the only source of truth for the public
+surface — this file does not list exports, and no README carries a count.
+
+## Evidence
 
 ```bash
 vp run guard:rac-parity
 vp run guard:rac-export-gap
 vp run --filter @proyecto-viviana/solidaria-components build
-vp test run packages
+vp run test:run
 ```
 
-When changing behavior, add focused tests under `test/` that use semantic
-queries and user-like interactions rather than implementation markers alone.
+`guard:rac-export-gap` allows only the ticketed pending upstream names in
+`scripts/rac-export-gap-pending.json`; an unlisted missing name fails. Extra
+Solid exports are our own API and are declared in a changeset. What "ported"
+means here is [the evidence bar](https://github.com/proyecto-viviana/ui/blob/main/.claude/current/certification.md).
+
+## Links
+
+- Documentation: <https://ui.proyectoviviana.org>
+- Repository: <https://github.com/proyecto-viviana/ui>
+
+## License
+
+MIT AND Apache-2.0. Our work is MIT; the port of Adobe's React Aria Components
+keeps Apache-2.0. Both licenses and the project `NOTICE` ship in this package.

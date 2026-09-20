@@ -1,27 +1,57 @@
 # Viviana UI
 
-Viviana UI is Proyecto Viviana's open-source UI experiment for Solid. It includes
-a shared headless foundation and four styled component libraries.
+A family of Solid libraries: one headless foundation, ported from Adobe's
+React Stately, React Aria, and React Aria Components, and four styled
+libraries built on it. The foundation gives you state, ARIA, keyboard, focus,
+and internationalization with no styling; each styled library adds one look.
+If you know React Aria, you know the shape of this — the hooks are
+`createButton` instead of `useButton`, and they return accessors instead of
+values.
 
-The foundation is an unofficial port project for Adobe's React Stately, React
-Aria, and React Aria Components. `solid-spectrum` also experiments with React
-Spectrum S2 parity. The project is not affiliated with Adobe or Cloudflare.
+Not affiliated with Adobe, Cloudflare, or Vercel.
 
-| Package                | npm                                      | Role                                                              |
-| ---------------------- | ---------------------------------------- | ----------------------------------------------------------------- |
-| `viviana-ui`           | `@proyecto-viviana/ui`                   | Viviana design-system package and client-facing entry point.      |
-| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Styled Solid experiment based on React Spectrum S2.               |
-| `kumo`                 | `@proyecto-viviana/kumo`                 | Experimental Kumo-shaped styled components for Solid.             |
-| `geist`                | `@proyecto-viviana/geist`                | Experimental Geist-shaped styled components for Solid.            |
-| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Headless Solid experiment based on React Aria Components.         |
-| `solidaria`            | `@proyecto-viviana/solidaria`            | Experimental Solid ARIA, keyboard, focus, press, and hover hooks. |
-| `solid-stately`        | `@proyecto-viviana/solid-stately`        | Experimental Solid state primitives based on React Stately.       |
+## The chain
+
+```text
+solid-stately          state: collections, selection, dates, validation
+      ↓
+solidaria              behavior: ARIA, press, focus, keyboard, i18n
+      ↓
+solidaria-components   headless components, no styling
+      ↓
+      ├─ solid-spectrum          Spectrum 2 look
+      ├─ @proyecto-viviana/ui    the Viviana design system
+      ├─ kumo                    Cloudflare Kumo look (experiment)
+      └─ geist                   Vercel Geist look (experiment)
+```
+
+Each layer depends only on the ones above it. A styled library never
+reimplements press, focus, or keyboard behavior — it themes and composes.
+
+## Which package do I want
+
+| I want | Install |
+| --- | --- |
+| A design system to build an app with, styled out of the box | `@proyecto-viviana/ui` |
+| Adobe Spectrum 2 components in Solid | `@proyecto-viviana/solid-spectrum` |
+| Unstyled accessible components I style myself | `@proyecto-viviana/solidaria-components` |
+| Hooks to build my own components on | `@proyecto-viviana/solidaria` |
+| State primitives only, no DOM | `@proyecto-viviana/solid-stately` |
+| The Kumo or Geist look | not published yet — see Status |
+
+Start with `@proyecto-viviana/ui`. Reach lower only when you need to.
 
 ## Install
 
+Every package requires **Solid 2**. Both `solid-js` and `@solidjs/web` are
+peer dependencies, at `>=2.0.0-rc.9 <3`.
+
 ```bash
-npm install @proyecto-viviana/ui solid-js
+npm install @proyecto-viviana/ui@rc solid-js@next @solidjs/web@next
 ```
+
+The release candidate is on the `rc` tag, at `-rc` versions. The `latest`
+tag still points at the Solid 1 line.
 
 ```tsx
 import { Provider, Button } from "@proyecto-viviana/ui";
@@ -39,40 +69,70 @@ export function App() {
 }
 ```
 
-Components do not inject CSS. Import `components.css` once at the app entry; it
-already includes the font faces, theme tokens, and generated component rules.
-See [`packages/viviana-ui/README.md`](packages/viviana-ui/README.md) for the
-separate-file alternative, deep imports, and the Vite macro helper.
+## Styling
+
+Components never inject CSS. Every styled package ships its rules as a CSS
+entry point you import once, at your app entry, before your own stylesheets:
+
+```ts
+import "@proyecto-viviana/ui/components.css";
+```
+
+`components.css` is `font-faces.css` + `theme.css` + `styles.css`. Import
+those three separately if your app loads its own fonts. `font-faces.css`
+opens with an `@import`, and CSS drops an `@import` that any rule precedes —
+so load it first or the fonts silently fall back.
+
+`solid-spectrum` delivers its styles the same way. Its rules are generated
+from Adobe's tokens by the style macro, never handwritten:
+[ADR 0001](docs/adr/0001-s2-styling-source-of-truth.md).
 
 ## Status
 
-Treat all parity claims as unproved until the component evidence says otherwise.
-This project is active, experimental, and incomplete. APIs and package boundaries
-can change.
+Active, experimental, and incomplete. APIs and package boundaries change.
 
-The lower packages are available directly for lower-level Solid ports and
-experiments, but most apps should start with `@proyecto-viviana/ui`.
+| Package | npm | State |
+| --- | --- | --- |
+| `@proyecto-viviana/ui` | `next` | Published. The client-facing entry point. |
+| `@proyecto-viviana/solid-spectrum` | `next` | Published. Spectrum 2 parity is in progress. |
+| `@proyecto-viviana/solidaria-components` | `next` | Published. |
+| `@proyecto-viviana/solidaria` | `next` | Published. |
+| `@proyecto-viviana/solid-stately` | `next` | Published. |
+| `@proyecto-viviana/kumo` | not published | One Button. The npm name holds a reserved `0.0.0-bootstrap.0` that is not this code. |
+| `@proyecto-viviana/geist` | not published | One Button. The npm name is not registered. |
 
-The Kumo package is a separate styled library. Its first Button slice is not a
-complete Kumo port. The Geist package is the same kind of experiment: a Button
-slice shaped by public Geist docs, not a port of `@vercel/geistcn`.
+**An export is a floor, not proof.** A name in the barrel says nothing about
+whether the component matches upstream. What "ported" means here, and what
+evidence a component has to carry before it counts, is
+[the evidence bar](.claude/current/certification.md). Treat every parity claim
+as unproved until that evidence says otherwise.
+
+## Links
+
+- Documentation and component pages: <https://ui.proyectoviviana.org>
+- The React-vs-Solid parity harness runs locally: `vp run comparison:dev`
+- Repository: <https://github.com/proyecto-viviana/ui>
 
 ## Development
 
 ```bash
 vp install
-vp run dev              # apps/web playground
-vp run comparison:dev   # apps/comparison parity harness
-vp run check            # format + lint + typecheck
+vp run dev              # apps/web, the docs and playground app
+vp run comparison:dev   # apps/comparison, the parity harness
+vp run check            # format, lint, typecheck
+vp run test:run         # package suites
 ```
+
+[CONTRIBUTING.md](CONTRIBUTING.md) has the rest: how a port is certified, the
+changeset rule, and the upstream pins.
 
 ## Repo layout
 
 ```text
-packages/                Shared foundations, styled libraries, and private test utilities
-apps/web                 playground app
-apps/comparison          React-vs-Solid parity verification harness
-docs/adr/                architecture decision records (ADR 0001 = S2 styling boundary)
+packages/        the seven public packages, plus private test utilities
+apps/web         the docs and playground app
+apps/comparison  the React-vs-Solid parity harness
+docs/adr/        architecture decision records
 ```
 
 ## License & attribution
