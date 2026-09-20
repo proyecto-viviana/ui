@@ -5,7 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice P — the @tanstack/solid-start patch.
+Slice P — the chain steps after `build`. Resumed after the previous worker
+died at 12:33; brief `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
 
@@ -74,3 +75,17 @@ URL=http://localhost:4173
 GET / -> 200
 ```
 
+### Chain state
+
+Steps of `ci:release-readiness` after `build`, one at a time, memory checked
+before each (`free -m`, `available` over 3000 MB) and vitest held to
+`--maxWorkers=2`.
+
+| step | exit | first failure |
+| --- | --- | --- |
+| `typecheck:apps` | pending | |
+| `test:run` | pending | |
+| `test:ssr` | pending | |
+| `test:hydrate` | pending | |
+| `test:web` | pending | |
+| `test:comparison-data` | pending | |
