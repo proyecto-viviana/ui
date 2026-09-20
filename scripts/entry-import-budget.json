@@ -1,41 +1,41 @@
 {
-  "description": "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory. Entries listed here have been narrowed off the root barrel and must stay narrow; the inventory holds the line for everything that has not been narrowed yet. A ceiling is raised only with the import that raised it named in the entry's `why`; see #565.",
-  "unit": "Distinct dist modules reachable from an entry's `exports` target by static import/export specifiers, workspace packages resolved through their own `exports` maps.",
+  "description": "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory. Entries listed here have been narrowed off the root barrel and must stay narrow; the inventory holds the line for everything that has not been narrowed yet. A ceiling is raised only with the import that raised it named in the entry's `why`; see #565. The ceilings were re-measured once under #566 when the unit changed from dist chunks to source modules, and the numbers are not comparable across that change.",
+  "unit": "Distinct source modules reachable from the source file an entry's `exports` target is emitted from, following static import/export specifiers, with workspace bare specifiers resolved through the imported package's own `exports` map and mapped back to `src/`. Type-only imports and build-time macro imports are not counted: neither reaches a consumer. Nothing here is tree-shaken, so a subpath barrel costs every module it re-exports \u2014 the number is what the entry's imports reach, and only an import can move it.",
   "entries": [
     {
       "package": "@proyecto-viviana/ui",
       "entry": "./Provider",
-      "maxModules": 26,
-      "maxSolidariaModules": 22,
-      "why": "Raised for the Solid 2 port (#531) plus one upstream-parity edge (#555, d0f095a1). Named imports: src/provider/index.tsx `import { mergeProps, splitProps } from \"@proyecto-viviana/solidaria/utils\"` (Solid 2 dropped both from solid-js), which reaches dist/utils/index.js, _chunk/filterDOMProps.js and _chunk/mergeProps.js; solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"`, the two files the port added, which reach _chunk/refs.js and _chunk/owner.js; and solidaria/src/overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"`, which upstream's useOverlay also reads, reaching _chunk/FocusScope.js."
+      "maxModules": 53,
+      "maxSolidariaModules": 47,
+      "why": "53 source modules, 47 of them solidaria. Three subpath barrels named in src/provider/index.tsx dominate: `@proyecto-viviana/solidaria/utils` (25 modules), `@proyecto-viviana/solidaria/i18n` (10) and `@proyecto-viviana/solidaria/overlays` (8). focus/FocusScope.tsx arrives through overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"` (#555, d0f095a1); upstream's useOverlay reads the same private helper out of @react-aria/focus, so it stays. utils/refs.ts and utils/owner.ts are the two files the Solid 2 port (#531) added, and utils/mergeProps.ts is solidaria's shim for the export Solid 2 dropped; all three are reached both through the barrel and directly, mergeProps.ts from `import { assignRef } from \"./refs\"` and `import { domAttrs } from \"./domAttrs\"`. The remainder is the provider's own 5 modules, solidaria's ssr and interactions entry points, and solid-stately's flags module, reached from solidaria/src/utils/dom.ts. Nothing here is tree-shaken: a subpath barrel costs every module it re-exports, which is why these numbers are roughly double the dist-chunk ceilings they replace. That is the unit doing its job \u2014 a barrel import is exactly the cost this guard exists to hold."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./Provider",
-      "maxModules": 26,
-      "maxSolidariaModules": 22,
-      "why": "Same five modules and the same named imports as @proyecto-viviana/ui ./Provider; the two providers are the same port of Provider.tsx."
+      "maxModules": 52,
+      "maxSolidariaModules": 47,
+      "why": "52 source modules, 47 of them solidaria \u2014 the same three barrels from src/provider/index.tsx (utils 25, i18n 10, overlays 8) as @proyecto-viviana/ui ./Provider, which is the same port of Provider.tsx; it differs only in its own 4 modules against ui's 5. focus/FocusScope.tsx arrives through overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"` (#555, d0f095a1); upstream's useOverlay reads the same private helper out of @react-aria/focus, so it stays. utils/refs.ts and utils/owner.ts are the two files the Solid 2 port (#531) added, and utils/mergeProps.ts is solidaria's shim for the export Solid 2 dropped; all three are reached both through the barrel and directly, mergeProps.ts from `import { assignRef } from \"./refs\"` and `import { domAttrs } from \"./domAttrs\"`. Nothing here is tree-shaken: a subpath barrel costs every module it re-exports, which is why these numbers are roughly double the dist-chunk ceilings they replace. That is the unit doing its job \u2014 a barrel import is exactly the cost this guard exists to hold."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ButtonGroup",
-      "maxModules": 30,
-      "maxSolidariaModules": 22,
-      "why": "Net zero against the frozen source rebuilt with today's toolchain (30 then, 30 now); the ceiling of 28 was measured under the Solid 1 chunking, which emitted _chunk/web.js, _chunk/focus.js and _chunk/createInteractionModality.js this build no longer has. New modules: _chunk/refs.js and _chunk/owner.js, from solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"`, the two files the Solid 2 port (#531) added; _chunk/FocusScope.js, from solidaria/src/overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"` (#555, d0f095a1), which upstream's useOverlay also reads; and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
+      "maxModules": 57,
+      "maxSolidariaModules": 47,
+      "why": "57 source modules, 47 of them solidaria. Its own 9 modules \u2014 buttongroup/index.tsx, the button contexts and styles it composes, and the provider it re-exports \u2014 sit on top of the same three barrels the Provider entry names: `@proyecto-viviana/solidaria/utils` (25), `/i18n` (10) and `/overlays` (8), the last through src/provider/index.tsx. focus/FocusScope.tsx arrives through overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"` (#555, d0f095a1); upstream's useOverlay reads the same private helper out of @react-aria/focus, so it stays. utils/refs.ts and utils/owner.ts are the two files the Solid 2 port (#531) added, and utils/mergeProps.ts is solidaria's shim for the export Solid 2 dropped; all three are reached both through the barrel and directly, mergeProps.ts from `import { assignRef } from \"./refs\"` and `import { domAttrs } from \"./domAttrs\"`. Nothing here is tree-shaken: a subpath barrel costs every module it re-exports, which is why these numbers are roughly double the dist-chunk ceilings they replace. That is the unit doing its job \u2014 a barrel import is exactly the cost this guard exists to hold."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressBar",
-      "maxModules": 24,
-      "maxSolidariaModules": 19,
-      "why": "One module below the frozen source rebuilt with today's toolchain (25 then, 24 now). New modules: _chunk/refs.js and _chunk/owner.js, from the two files the Solid 2 port (#531) added \u2014 solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"` \u2014 and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
+      "maxModules": 44,
+      "maxSolidariaModules": 38,
+      "why": "44 source modules, 38 of them solidaria. `@proyecto-viviana/solidaria/utils` (22) and `/i18n` (10) from src/progress-bar/index.tsx, plus `@proyecto-viviana/solidaria/progress`, whose createProgressBar.ts reaches label/createLabel.ts and, through `import { mergeProps } from \"../utils/mergeProps\"`, solidaria's shim. No overlays and no FocusScope: this entry does not go through the provider. utils/refs.ts and utils/owner.ts are the two files the Solid 2 port (#531) added, and utils/mergeProps.ts is solidaria's shim for the export Solid 2 dropped; all three are reached both through the barrel and directly, mergeProps.ts from `import { assignRef } from \"./refs\"` and `import { domAttrs } from \"./domAttrs\"`. Nothing here is tree-shaken: a subpath barrel costs every module it re-exports, which is why these numbers are roughly double the dist-chunk ceilings they replace. That is the unit doing its job \u2014 a barrel import is exactly the cost this guard exists to hold."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressCircle",
-      "maxModules": 20,
-      "maxSolidariaModules": 14,
-      "why": "One module below the frozen source rebuilt with today's toolchain (21 then, 20 now). New modules: _chunk/refs.js and _chunk/owner.js, from the two files the Solid 2 port (#531) added \u2014 solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"` \u2014 and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
+      "maxModules": 35,
+      "maxSolidariaModules": 28,
+      "why": "35 source modules, 28 of them solidaria, the smallest of the five. `@proyecto-viviana/solidaria/utils` (22) from src/progress/ProgressCircle.tsx, plus `@proyecto-viviana/solidaria/progress` reaching label/createLabel.ts and utils/mergeProps.ts, and its own 6 modules. No i18n, no overlays: it neither formats a value nor goes through the provider. utils/refs.ts and utils/owner.ts are the two files the Solid 2 port (#531) added, and utils/mergeProps.ts is solidaria's shim for the export Solid 2 dropped; all three are reached both through the barrel and directly, mergeProps.ts from `import { assignRef } from \"./refs\"` and `import { domAttrs } from \"./domAttrs\"`. Nothing here is tree-shaken: a subpath barrel costs every module it re-exports, which is why these numbers are roughly double the dist-chunk ceilings they replace. That is the unit doing its job \u2014 a barrel import is exactly the cost this guard exists to hold."
     }
   ],
   "rootBarrelInventory": {

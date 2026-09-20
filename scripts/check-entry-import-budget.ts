@@ -11,12 +11,25 @@
  *
  * The guard has two halves:
  *
- * 1. A per-entry ceiling, measured against built `dist/`. Starting at each
- *    budgeted entry's `exports` target, it follows static `import`/`export …
- *    from` specifiers, resolving workspace bare specifiers through the
- *    imported package's own `exports` map, and counts the distinct modules
- *    reached. Re-adding a root-barrel import to a budgeted entry's graph puts
- *    it back over its ceiling.
+ * 1. A per-entry ceiling, measured against `src/`. Starting at each budgeted
+ *    entry's `exports` target, mapped back to the source file it is emitted
+ *    from, it follows static `import`/`export … from` specifiers, resolving
+ *    workspace bare specifiers through the imported package's own `exports`
+ *    map, and counts the distinct source modules reached. Re-adding a
+ *    root-barrel import to a budgeted entry's graph puts it back over its
+ *    ceiling.
+ *
+ *    It counted emitted `dist/` chunks until #566. A chunk is rolldown's unit,
+ *    not a consumer's: the bundler folds a single-importer module into its
+ *    caller and splits it out again when the module gains imports of its own,
+ *    so a ceiling moved when the bundler or the JSX plugin moved and the first
+ *    answer to a ceiling that moved on its own is to raise it. Source
+ *    reachability answers the question the guard is asking — what does
+ *    importing this entry pull in — and nothing else can move it.
+ *
+ *    Type-only imports and build-time macro imports are excluded: neither
+ *    survives into what a consumer loads, and `dist/` excluded both by
+ *    construction. See `specifiersOf`.
  * 2. A frozen inventory of the source files that still import the solidaria
  *    root barrel. It may only shrink. This half needs no build, and it covers
  *    the entries that have no ceiling yet.
@@ -79,17 +92,71 @@ function manifestOf(dir: string): Record<string, unknown> {
   return cached!;
 }
 
-function exportTarget(dir: string, subpath: string): string | null {
+const SOURCE_EXTENSIONS = [".ts", ".tsx"];
+
+// A directory import and an extensionless file import are the same specifier in
+// TypeScript, so both shapes are tried for every resolution in this file.
+function sourceFileAt(base: string): string | null {
+  for (const extension of SOURCE_EXTENSIONS) {
+    if (existsSync(base + extension)) return base + extension;
+  }
+  for (const extension of SOURCE_EXTENSIONS) {
+    const candidate = path.join(base, `index${extension}`);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+// Every `exports` condition in this repository points into `dist/`; there is no
+// source condition to lean on. So the mapping back is mechanical: strip the
+// `dist/` prefix and the emitted extension, and look for that path under `src/`
+// as a file or a directory with an index. It is the one place the guard turns a
+// published target into a source file — both the budgeted entries and the
+// workspace bare specifiers go through here.
+function sourceOfTarget(dir: string, target: string): string | null {
+  const emitted = target
+    .replace(/^\.\//, "")
+    .replace(/^dist\//, "")
+    .replace(/\.d\.ts$/, "")
+    .replace(/\.(js|jsx|mjs)$/, "");
+  return sourceFileAt(path.join(ROOT, dir, "src", emitted));
+}
+
+// The published targets of a subpath, in the order the source mapping should
+// try them. `types` is tsc's output and mirrors `src/` one file to one file;
+// the runtime condition is the bundler's, and a bundler may rename an entry —
+// solid-stately emits `src/flags/flags.ts` as `dist/private/flags/flags.js`,
+// and only its `types` condition still spells the source path. So try the
+// declaration first and the runtime target second. `solid` points at the same
+// graph as `import` in .jsx form, so either maps back to the same module.
+function publishedTargets(dir: string, subpath: string): string[] {
   const exports = manifestOf(dir).exports as Record<string, unknown> | undefined;
   const condition = exports?.[subpath];
-  const target =
-    typeof condition === "string"
-      ? condition
-      : ((condition as Record<string, string> | undefined)?.import ??
-        (condition as Record<string, string> | undefined)?.default);
-  // The `import` condition is what a bundler takes; `solid` points at the same
-  // graph in .jsx form, so either measures the same module count.
-  return typeof target === "string" ? path.join(ROOT, dir, target.replace(/^\.\//, "")) : null;
+  if (typeof condition === "string") return [condition];
+  const conditions = condition as Record<string, string> | undefined;
+  return [conditions?.types, conditions?.import, conditions?.default].filter(
+    (target): target is string => typeof target === "string",
+  );
+}
+
+// What the manifest publishes, for error messages.
+function publishedTarget(dir: string, subpath: string): string | null {
+  const targets = publishedTargets(dir, subpath);
+  return targets.length > 0 ? targets.at(-1)! : null;
+}
+
+function exportTarget(dir: string, subpath: string): string | null {
+  for (const target of publishedTargets(dir, subpath)) {
+    const source = sourceOfTarget(dir, target);
+    if (source) return source;
+  }
+  return null;
+}
+
+function isWorkspaceSpecifier(specifier: string): boolean {
+  return Object.keys(WORKSPACE).some(
+    (name) => specifier === name || specifier.startsWith(`${name}/`),
+  );
 }
 
 function resolveWorkspace(specifier: string): string | null {
@@ -102,29 +169,78 @@ function resolveWorkspace(specifier: string): string | null {
 }
 
 // An import clause never contains a `;`, so bounding the match on one keeps a
-// missing `from` from swallowing the rest of the file.
-const FROM_SPECIFIER = /^\s*(?:import|export)\b[^;]*?\bfrom\s*["']([^"']+)["']/gm;
-const SIDE_EFFECT_SPECIFIER = /^\s*import\s*["']([^"']+)["']/gm;
+// missing `from` from swallowing the rest of the file. Group 1 is the clause
+// between the keyword and `from`, group 2 the specifier, group 3 whatever
+// trails it on the same line — the import attribute, when there is one.
+const FROM_SPECIFIER = /^\s*(?:import|export)\b([^;]*?)\bfrom\s*["']([^"']+)["']([^;\n]*)/gm;
+const SIDE_EFFECT_SPECIFIER = /^\s*import\s*["']([^"']+)["']([^;\n]*)/gm;
+
+// What a consumer pays for is what survives into the module it loads, which is
+// the sentence the ceiling exists to keep true. Two kinds of specifier do not
+// survive, and `dist/` excluded both by construction — the first by erasure,
+// the second because the macro runs at build time and is replaced by its
+// result. Counting either against a source graph would measure something no
+// consumer loads.
+//
+// Erased: `import type … from`, `export type … from`, and a clause whose every
+// brace binding is `type`-qualified. An unmarked binding that happens to name a
+// type is indistinguishable from a value without a type checker, so it counts;
+// the number is a ceiling on what a consumer may pay, and that errs upward.
+function isTypeOnly(clause: string): boolean {
+  if (/^\s*type\b/.test(clause)) return true;
+  const open = clause.indexOf("{");
+  if (open === -1) return false;
+  // A default or namespace binding sits outside the braces and is a value.
+  if (clause.slice(0, open).replace(/[\s,]/g, "").length > 0) return false;
+  const bindings = clause
+    .slice(open + 1, clause.lastIndexOf("}"))
+    .split(",")
+    .map((binding) => binding.trim())
+    .filter(Boolean);
+  return bindings.length > 0 && bindings.every((binding) => /^type\b/.test(binding));
+}
+
+// Build-time: `… from "../style" with { type: "macro" }`. The style macro is
+// evaluated during the build and emits CSS; none of its module graph reaches
+// the consumer.
+function isMacroImport(attributes: string): boolean {
+  return /\bwith\s*\{[^}]*\btype\s*:\s*["']macro["']/.test(attributes);
+}
 
 function specifiersOf(code: string): string[] {
   const found = new Set<string>();
-  for (const match of code.matchAll(FROM_SPECIFIER)) found.add(match[1]!);
-  for (const match of code.matchAll(SIDE_EFFECT_SPECIFIER)) found.add(match[1]!);
+  for (const match of code.matchAll(FROM_SPECIFIER)) {
+    if (isTypeOnly(match[1]!) || isMacroImport(match[3]!)) continue;
+    found.add(match[2]!);
+  }
+  for (const match of code.matchAll(SIDE_EFFECT_SPECIFIER)) {
+    if (isMacroImport(match[2]!)) continue;
+    found.add(match[1]!);
+  }
   return [...found];
 }
 
+// A specifier that names a file this guard does not walk — a JSON translation
+// bundle, a stylesheet, an asset. `dist/` never counted these either: the old
+// traversal took `.js` siblings only.
+const NON_SOURCE_SPECIFIER = /\.(json|css|svg|png|jpe?g|webp|woff2?|txt|md)$/;
+
 function resolveRelative(from: string, specifier: string): string | null {
-  const base = path.resolve(path.dirname(from), specifier);
-  for (const candidate of [base, `${base}.js`, path.join(base, "index.js")]) {
-    if (candidate.endsWith(".js") && existsSync(candidate)) return candidate;
-  }
-  return null;
+  // TypeScript lets a source specifier carry the emitted extension
+  // (`./createHiddenSelect.jsx`); the file on disk is the `.tsx` beside it.
+  const withoutEmittedExtension = specifier.replace(/\.(js|jsx)$/, "");
+  return sourceFileAt(path.resolve(path.dirname(from), withoutEmittedExtension));
 }
 
 // `reachedFrom` records the module and specifier that first pulled each file
 // in, which is what names the import behind a ceiling. It is written on every
 // traversal and read only by `--print-modules`.
 const reachedFrom = new Map<string, { parent: string; specifier: string }>();
+
+// A specifier that names a workspace module and resolves to nothing is the same
+// hole as an entry that will not resolve: it silently removes everything behind
+// it from the count. Collected per traversal and reported as a failure.
+const unresolvedSpecifiers: string[] = [];
 
 function reachableModules(entryFile: string): Set<string> {
   const seen = new Set<string>();
@@ -134,10 +250,18 @@ function reachableModules(entryFile: string): Set<string> {
     if (seen.has(file) || !existsSync(file)) continue;
     seen.add(file);
     for (const specifier of specifiersOf(readFileSync(file, "utf8"))) {
-      const target = specifier.startsWith(".")
+      const relativeSpecifier = specifier.startsWith(".");
+      // A bare specifier outside the workspace is a real dependency, out of
+      // scope for this budget; only workspace ones are expected to resolve.
+      if (!relativeSpecifier && !isWorkspaceSpecifier(specifier)) continue;
+      const target = relativeSpecifier
         ? resolveRelative(file, specifier)
         : resolveWorkspace(specifier);
-      if (!target) continue;
+      if (!target) {
+        if (!NON_SOURCE_SPECIFIER.test(specifier))
+          unresolvedSpecifiers.push(`${relative(file)} "${specifier}"`);
+        continue;
+      }
       if (!reachedFrom.has(target)) reachedFrom.set(target, { parent: file, specifier });
       queue.push(target);
     }
@@ -148,17 +272,19 @@ function reachableModules(entryFile: string): Set<string> {
 function measure(entry: { package: string; entry: string }) {
   const dir = WORKSPACE[entry.package];
   if (!dir) throw new Error(`${entry.package} is not a workspace package.`);
+  if (publishedTargets(dir, entry.entry).length === 0)
+    throw new Error(`${entry.package} does not export ${entry.entry}.`);
   const entryFile = exportTarget(dir, entry.entry);
-  if (!entryFile) throw new Error(`${entry.package} does not export ${entry.entry}.`);
-  if (!existsSync(entryFile)) return null; // not built
+  if (!entryFile) return null; // the published target maps to no source file
   reachedFrom.clear();
+  unresolvedSpecifiers.length = 0;
   const modules = reachableModules(entryFile);
   let solidaria = 0;
   for (const file of modules) {
     if (path.relative(ROOT, file).split(path.sep).slice(0, 2).join("/") === WORKSPACE[ROOT_BARREL])
       solidaria++;
   }
-  return { total: modules.size, solidaria, modules };
+  return { total: modules.size, solidaria, modules, unresolved: [...unresolvedSpecifiers] };
 }
 
 function relative(file: string): string {
@@ -186,7 +312,14 @@ if (WRITE_BASELINE) {
     : null;
   const entries = (existing?.entries ?? []).map((entry) => {
     const measured = measure(entry);
-    if (!measured) throw new Error(`${entry.package} ${entry.entry} is not built.`);
+    if (!measured)
+      throw new Error(
+        `${entry.package} ${entry.entry} resolves to no source file; fix the exports map before re-freezing.`,
+      );
+    if (measured.unresolved.length > 0)
+      throw new Error(
+        `${entry.package} ${entry.entry} has unresolved specifiers; fix them before re-freezing:\n  ${measured.unresolved.join("\n  ")}`,
+      );
     return { ...entry, maxModules: measured.total, maxSolidariaModules: measured.solidaria };
   });
   const budget: Budget = {
@@ -195,7 +328,7 @@ if (WRITE_BASELINE) {
       "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory.",
     unit:
       existing?.unit ??
-      "Distinct dist modules reachable from an entry's `exports` target by static import/export specifiers, workspace packages resolved through their own `exports` maps.",
+      "Distinct source modules reachable from the source file an entry's `exports` target is emitted from, by static import/export specifiers, workspace packages resolved through their own `exports` maps. Type-only and build-time macro imports are not counted; neither reaches a consumer.",
     entries,
     rootBarrelInventory: {
       description: `Frozen inventory of source files importing the ${ROOT_BARREL} root barrel. Removing entries is allowed; adding one fails.`,
@@ -224,9 +357,10 @@ if (PRINT_MODULES) {
     const measured = measure(entry);
     console.log(`\n${entry.package} ${entry.entry}`);
     if (!measured) {
-      console.log("  not built");
+      console.log("  does not resolve to a source file");
       continue;
     }
+    for (const line of measured.unresolved) console.log(`  unresolved: ${line}`);
     console.log(
       `  ${measured.total} modules (${measured.solidaria} solidaria), ceiling ${entry.maxModules}/${entry.maxSolidariaModules}`,
     );
@@ -244,18 +378,22 @@ const failures: string[] = [];
 const improvements: string[] = [];
 let measuredEntries = 0;
 
-const unbuilt: string[] = [];
+const unresolvedEntries: string[] = [];
 
 for (const entry of budget.entries) {
   const measured = measure(entry);
   const label = `${entry.package} ${entry.entry}`;
-  // An entry with no built file is the ceiling nobody measured. Skipping it
-  // meant a renamed `exports` target, a package dropped from the build, or a
-  // half-built tree read as a pass on every entry it silently removed.
+  // An entry that resolves to nothing is the ceiling nobody measured. Skipping
+  // it meant a renamed `exports` target or a moved source file read as a pass
+  // on everything it silently removed. It was a half-built `dist/` before #566
+  // and it is an unmappable target now; the hole is the same, so it fails.
   if (!measured) {
-    unbuilt.push(label);
+    unresolvedEntries.push(
+      `${label} (exports ${publishedTarget(WORKSPACE[entry.package]!, entry.entry)})`,
+    );
     continue;
   }
+  for (const line of measured.unresolved) unresolvedEntries.push(`${label}: ${line}`);
   measuredEntries++;
   if (measured.total > entry.maxModules)
     failures.push(`${label}: ${measured.total} modules, ceiling ${entry.maxModules}`);
@@ -269,19 +407,16 @@ for (const entry of budget.entries) {
     );
 }
 
-if (measuredEntries === 0) {
+if (unresolvedEntries.length > 0) {
   console.error(
-    `No budgeted entry resolved to a built file — build the packages first (vp run build).`,
+    `\nentry import budget FAILED: ${unresolvedEntries.length} budgeted target(s) resolve to no source file:`,
   );
-  process.exit(1);
-}
-
-if (unbuilt.length > 0) {
-  console.error(`\nentry import budget FAILED: ${unbuilt.length} budgeted entry(ies) not built:`);
-  for (const label of unbuilt) console.error(`  ${label}`);
+  for (const label of unresolvedEntries) console.error(`  ${label}`);
   console.error(
-    `\nBuild the packages (vp run build). If an entry is gone for good, drop its line\n` +
-      `from scripts/entry-import-budget.json in the commit that removes it.`,
+    `\nAn unresolvable target removes everything behind it from the count, so it fails\n` +
+      `rather than skipping. Fix the exports map or the specifier. If an entry is gone\n` +
+      `for good, drop its line from scripts/entry-import-budget.json in the commit that\n` +
+      `removes it.`,
   );
   process.exit(1);
 }

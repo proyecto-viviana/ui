@@ -1042,3 +1042,103 @@ Both runs read the `vp run build` of this HEAD (EXIT=0, 1m22s); no source
 changed between them, only `scripts/entry-import-budget.json`. The worktree is
 removed. Changeset: none owed — the budget file and the guard ship in no
 package.
+
+## #566 — the budget's unit
+
+The owner picked the first of the ticket's three: the unit becomes source
+reachability. The other two are closed and I have not argued them.
+
+### What changed in the guard
+
+Only the ceiling half. The root-barrel inventory already read source and is
+untouched.
+
+- `sourceOfTarget()` is the one place a published target becomes a source file,
+  and both the budgeted entries and the workspace bare specifiers go through it.
+  Strip `dist/` and the emitted extension, look under `src/` for that path as a
+  file or a directory with an index.
+- It tries the `types` condition before the runtime one. That is not tidiness:
+  `solid-stately` emits `src/flags/flags.ts` as `dist/private/flags/flags.js`,
+  and only its `types` condition — tsc's output, which mirrors `src/` one file
+  to one file — still spells the source path. Without that order the guard fails
+  on three specifiers into that module.
+- `resolveRelative()` now strips a trailing `.js`/`.jsx` from a specifier.
+  `solidaria/src/select/index.ts` writes `export type … from
+  "./createHiddenSelect.jsx"`, which is the emitted name of a `.tsx` on disk.
+
+### Type-only and macro imports
+
+Two kinds of specifier do not reach a consumer, and `dist/` excluded both by
+construction — the first by erasure, the second because the macro runs at build
+time and is replaced by its result. `specifiersOf()` now splits each statement
+into clause, specifier and trailing attribute and drops both.
+
+Type-only is `import type … from`, `export type … from`, and a clause whose
+every brace binding is `type`-qualified with no default or namespace binding
+outside the braces. An unmarked binding that happens to name a type counts: that
+needs a type checker, and a ceiling should err upward. Macro is
+`… with { type: "macro" }`.
+
+Proved by flipping each predicate to `false` and re-measuring:
+
+    exclusion         ui ./Prov  s2 ./Prov  ButtonGrp  ProgBar  ProgCircle
+    as shipped            53         52         57        44        35
+    type-only counted    155        153        468        49        40
+    macro counted         60         58         63        49        40
+
+468 against 57 on ButtonGroup is the whole correctness hinge: counting erased
+type edges would have measured something no consumer loads.
+
+### An unresolvable entry fails
+
+Pointed `solid-spectrum`'s `./ProgressCircle` export at
+`./dist/progress/ProgressCircleRenamed.{js,jsx,d.ts}`, which no source file
+backs:
+
+    entry import budget FAILED: 1 budgeted target(s) resolve to no source file:
+      @proyecto-viviana/solid-spectrum ./ProgressCircle (exports ./dist/progress/ProgressCircleRenamed.js)
+    EXIT=1
+
+Reverted with `git checkout --`. The same failure covers a workspace specifier
+inside the graph that resolves to nothing, which is the same hole one level
+down. Non-source specifiers — `.json` translation bundles, stylesheets, assets —
+are skipped by name, as the dist walk skipped them by taking `.js` siblings only.
+
+### The numbers, and why they roughly doubled
+
+    entry              dist chunks (#565)   source modules (#566)
+    ui ./Provider              26                   53
+    s2 ./Provider              26                   52
+    ./ButtonGroup              30                   57
+    ./ProgressBar              24                   44
+    ./ProgressCircle           20                   35
+
+Two reasons, both wanted. A chunk folds several modules together, and source
+reachability does not tree-shake, so a subpath barrel now costs every module it
+re-exports: `@proyecto-viviana/solidaria/utils` alone is 25 of the Providers' 53
+and 22 of ProgressCircle's 35. That is the cost this guard exists to hold, and
+it is a number only an import can move.
+
+Re-frozen once with `--write-baseline`, which is the right tool here because the
+unit changed rather than the graph. The five `why` fields were rewritten by hand
+afterwards: the imports #565 named survive the change, only their filenames do
+not, so `_chunk/refs.js` is now `utils/refs.ts` and `_chunk/FocusScope.js` is
+`focus/FocusScope.tsx`, reached from the same `createOverlay.ts` import. `unit`
+and `description` in the JSON and the script's header comment all say source
+modules now.
+
+### It no longer needs a build, so it is a release-readiness leg
+
+Proved rather than reasoned: a detached worktree of `e0ccb27e` with
+`node_modules` symlinked and no `dist/` anywhere (`find packages -maxdepth 2
+-name dist -type d` → 0) measures the same 53/52/57/44/35 in **0.251s**. Through
+`vp run` on this checkout it is 0.595s.
+
+So the conditional authorisation applies. `guard:entry-import-budget` is now a
+leg of `ci:release-readiness`, inserted after `guard:source-artifacts` and before
+`vp run build` — with the other source-only guards, failing fast. That chain was
+the 19 legs the nineteen-green walk at `3f220fb6` read, and this guard's absence
+from it is why that walk did not see the red #565 cleared.
+
+`vp run check`, `vp run typecheck` and `guard:publish-drift` are green; no
+package `src` changed, so no changeset is owed.
