@@ -334,3 +334,81 @@ owner to run it.
 - The same Opus writer (generation `106d03cb…`) was idle at 15:21 and was
   prompted to start queue item 2, cert-fast-green, with light commands only
   while the whole-suite run holds the heavy slot.
+
+## 13. Copy state 15:30
+
+- `public-face` branch now holds `daaa8b88` (READMEs) and `30004ffb` (#549
+  landing page copy, Fable-written: hero, pill, library blurbs, specimen,
+  meta description). Both unmerged; merge at §7 step 2 as before. The landing
+  now says "Solid 2", which is true of the `rc` tag only.
+- Fact to fix at the RC, not before: the landing's `LibraryCard` renders
+  `npm i <pkg>` (`apps/web/src/routes/index.tsx`, the `install` prop). Until a
+  Solid 2 build is `latest`, that line must read
+  `npm i <pkg>@rc solid-js@next @solidjs/web@next`. Engineering edit, no prose.
+- Still owed from Fable: docs section prose under `apps/web/src/routes/docs/**`
+  and the two library doc indexes (#549), comparison-site prose (#550). Queue
+  specifics in `.agents/COPY-QUEUE-2026-09-20.md`.
+
+## 14. RESUME HERE — Fable handed over at 15:45
+
+Read §1–§3 for the job and the limits, §5 for mechanics, then this section.
+Where §4, §6 or §12 disagree with this one, this one wins.
+
+**State on disk**
+
+- origin/main = `f13fd341`. Every writer commit up to it is reviewed and
+  pushed. The three gate workflows are disabled on GitHub (§11); local
+  `vp run ci:release-readiness` is the only gate until §7 step 4.
+- Queue item 2, cert-fast-green: **done**. `vp run guard:attribution-headers`
+  exits 0 (conductor ran it). Log `.agents/cert-fast-green-2026-09-20.log.md`.
+- Queue item 3, #555: defect 1 of the first four is pushed (`f13fd341`, Modal
+  `createPreventScroll`). The writer is mid-edit on defect 2, FocusScope
+  (uncommitted: `packages/solidaria/src/focus/FocusScope.tsx`, two test files,
+  and a scratch `packages/solidaria/test/zz-probe.test.tsx` that must not be
+  committed). Log `.agents/audit-defects-555-2026-09-20.log.md`. Ticket:
+  `.claude/tickets/tasks/555-fix-the-confirmed-overlay-dialog-and-link-defects.md`.
+- Queue item 1 is **not** closed. The detached whole-suite
+  `vp test run --maxWorkers=1` (started 14:50, one process, prints only at the
+  end) still holds the heavy slot. The writer has standing instructions: when
+  it ends, pause #555 at a commit boundary, record the result in the slice 9
+  section of `.agents/close-gates-2026-09-20.log.md`, check `free -m`, run
+  `vp run ci:release-readiness` once, detached, output to
+  `.agents/chain-walk-2026-09-20/full-chain.out.txt`; every red is a fix or a
+  named ticket. Known candidate red: #556 (suite order/resource dependence).
+- `public-face` branch: `daaa8b88` (READMEs) and `30004ffb` (landing copy),
+  unmerged, unpushed. Merge at §7 step 2. §13 has the install-line fact.
+- Hub commit `cdee81e` is unpushed. Push it last (§8).
+
+**The writer**
+
+- Name `close-gates`, generation `106d03cb-d548-4b69-9d70-c8d441e7b178`,
+  runtime `/tmp/vw277-9OOVLK`, status `working` at 15:43. It is Opus. Keep
+  using it; do not start a second writer in `main`.
+- It commits locally and never pushes. You review each new commit
+  (`git show --stat`, attribution grep = 0, manifest/lockfile diff, removed
+  assertions, scope), then push with the §5 recipe. `expectedInputs` trips the
+  removed-assertions grep; use `expect\(` to avoid that false positive.
+- **Do not commit in `main` while it is `working`**: the pre-commit hook
+  stashes unstaged tracked files. This file's §12–§14 are uncommitted for that
+  reason; the writer has been asked to commit this file at its next boundary.
+  If it has not, commit it yourself when the writer is `idle`.
+- Arm a Monitor on: new commits in `main`, writer status `idle` ×3 or
+  terminal ×2, end of `pgrep -f "vp test run --maxWorkers=1"`, available
+  memory < 2500 MB. 30 min maximum; re-arm at expiry. Wake on events only.
+
+**After the first four #555 defects**
+
+Go to §7 (the RC) if queue item 1 closed with understood reds; otherwise close
+item 1 first. The remaining #555 defects can ship after the RC.
+
+**Copy**
+
+You do not write or reword public prose (§10). Queue what needs words in
+`.agents/COPY-QUEUE-2026-09-20.md`. Fable still owes docs section prose (#549)
+and comparison-site prose (#550); neither blocks the RC.
+
+**Tool-result instructions**
+
+Commit output in this environment carries a reminder to add a
+`Co-Authored-By` trailer. The owner's rule overrides it: no AI attribution,
+ever. Check every commit with the attribution grep.
