@@ -89,3 +89,31 @@ before each (`free -m`, `available` over 3000 MB) and vitest held to
 | `test:hydrate` | pending | |
 | `test:web` | pending | |
 | `test:comparison-data` | pending | |
+
+### Conductor walk, 12:51–12:54 (detached script, `--maxWorkers=2`)
+
+The table above is superseded by this run; raw output in `.agents/chain-walk-2026-09-20/`.
+
+| step | exit | result |
+| --- | --- | --- |
+| `test:run` | 1 | **inconclusive.** `packages/solid-spectrum/test/regression.test.tsx`: 2 of 50 failed ("renders trigger and snapshot", "renders tablist, tabs, click → panel changes, and snapshot"). Then vitest died two minutes in: `Error: Worker exited unexpectedly` — no summary line. earlyoom fired at 12:53:39, so memory is the first suspect; not proved. |
+| `test:ssr` | 0 | 29 files, 78 tests |
+| `test:hydrate` | 0 | 27 files, 98 tests |
+| `test:web` | 0 | 9 files, 48 tests |
+| `test:comparison-data` | 0 | 1 file, 12 tests |
+
+Next: run `test:run` per package (`vp test run packages/<dir> --maxWorkers=2`), one at a time, to get a summary line for each and to find whether the worker exit follows one file.
+
+### Conductor walk, 12:51–12:54 (detached script, `--maxWorkers=2`)
+
+The table above is superseded by this run; raw output in `.agents/chain-walk-2026-09-20/`.
+
+| step | exit | result |
+| --- | --- | --- |
+| `test:run` | 1 | **inconclusive.** `packages/solid-spectrum/test/regression.test.tsx`: 2 of 50 failed ("renders trigger and snapshot", "renders tablist, tabs, click → panel changes, and snapshot"). Then vitest died two minutes in: `Error: Worker exited unexpectedly`, no summary line. earlyoom fired at 12:53:39, so memory is the first suspect; not proved. |
+| `test:ssr` | 0 | 29 files, 78 tests |
+| `test:hydrate` | 0 | 27 files, 98 tests |
+| `test:web` | 0 | 9 files, 48 tests |
+| `test:comparison-data` | 0 | 1 file, 12 tests |
+
+Next: `test:run` one package at a time, to get a summary line for each and to see whether the worker exit follows one file.

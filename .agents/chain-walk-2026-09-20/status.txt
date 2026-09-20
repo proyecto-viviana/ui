@@ -1,0 +1,11 @@
+12:51:53 START test-run
+12:54:03 DONE test-run exit=1 | 
+12:54:03 START test-ssr
+12:54:25 DONE test-ssr exit=0 |  Test Files 29 passed (29)  Tests 78 passed (78) 
+12:54:25 START test-hydrate
+12:54:43 DONE test-hydrate exit=0 |  Test Files 27 passed (27)  Tests 98 passed (98) 
+12:54:43 START test-web
+12:54:44 DONE test-web exit=0 |  Test Files 9 passed (9)  Tests 48 passed (48) 
+12:54:44 START test-comparison-data
+12:54:46 DONE test-comparison-data exit=0 |  Test Files 1 passed (1)  Tests 12 passed (12) 
+12:54:46 ALL-DONE
