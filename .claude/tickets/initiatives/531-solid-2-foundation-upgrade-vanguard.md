@@ -125,6 +125,11 @@ history:
       at: 2026-09-19,
       note: "#534 native Press proof retains eventPathContains after a decisive detached-target negative control, restores exact upstream propagation expectations and proves global/pending-click disposal cleanup. A combined-worker Button fixture leak is repaired by owning test cleanup only, with 56-failure removal control. Final affected ordinary 235/235 and fresh complete SSR 75/75 then hydrate 98/98 pass, one worker; no lasting product changes. Native Hover, Menu drag/item-keyboard/modality, virtual-focus handoff and final owning audit remain; all sibling/build/attribution and release gates stay open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "native Hover boundary/lifecycle slice repairs two reproduced failures: original-owner target loss and false exit between children. Owning 28/28 and affected 287/287 pass; fresh SSR 75/75 then hydrate 98/98, one worker. A later order-dependent Pressable fixture leak is repaired by owning test cleanup, without changing assertions. Native disable/disposal/shared-listener proof and a decisive cleanup negative control pass review. Separate 50 ms versus 500 ms touch timing audit, Menu/virtual-focus/final owning proof and all sibling/build/attribution/release requirements remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

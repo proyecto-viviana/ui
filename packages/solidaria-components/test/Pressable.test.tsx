@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, fireEvent } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
+import { cleanup, render, fireEvent } from "@solidjs/testing-library";
 import { Pressable } from "../src/Pressable";
+
+afterEach(cleanup);
 
 describe("Pressable", () => {
   it("renders its child element", () => {

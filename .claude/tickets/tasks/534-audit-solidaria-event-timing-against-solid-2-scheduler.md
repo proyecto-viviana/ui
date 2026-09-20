@@ -26,6 +26,11 @@ history:
       at: 2026-09-19,
       note: "#534 native Press proof retains eventPathContains after a decisive detached-target negative control, restores exact upstream propagation expectations and proves global/pending-click disposal cleanup. A combined-worker Button fixture leak is repaired by owning test cleanup only, with 56-failure removal control. Final affected ordinary 235/235 and fresh complete SSR 75/75 then hydrate 98/98 pass, one worker; no lasting product changes. Native Hover, Menu drag/item-keyboard/modality, virtual-focus handoff and final owning audit remain; all sibling/build/attribution and release gates stay open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "native Hover boundary/lifecycle slice repairs two reproduced failures: original-owner target loss and false exit between children. Owning 28/28 and affected 287/287 pass; fresh SSR 75/75 then hydrate 98/98, one worker. A later order-dependent Pressable fixture leak is repaired by owning test cleanup, without changing assertions. Native disable/disposal/shared-listener proof and a decisive cleanup negative control pass review. Separate 50 ms versus 500 ms touch timing audit, Menu/virtual-focus/final owning proof and all sibling/build/attribution/release requirements remain open",
+    }
 ---
 
 ## Cause
@@ -112,6 +117,38 @@ Fresh complete lanes and remaining checks are recorded in
 Native Hover owner lifecycle, full Menu drag/item-keyboard/modality sequences,
 virtual-focus handoff cancellation and final all-owning interaction proof remain
 open. This slice does not complete #534 or the initiative/release requirements.
+
+## 2026-09-19 native Hover boundary and lifecycle slice
+
+Native regression proof exposes two failures in createHover: after child removal,
+outside pointerover reported the outside body as hoverend.target; child-to-child
+pointerout ended hover even though the pointer remained inside the owner. The
+bounded source repair retains state.target for outside recovery and checks
+relatedTarget containment for native pointerout. Pinned useHover preserves the
+original owner; React's enter/leave normalization excludes internal transitions.
+No scheduler, callback-order, touch-duration or disposal-policy change is needed.
+
+The initially-disabled proof now dispatches real native events and includes an
+enabled control, replacing absent optional mouse-handler calls. Native disable
+inside hover-start preserves start/change(true)/end/change(false), avoids a second
+terminal event and can restart. Disposal checks exact capture-listener identity
+and no callbacks after unmount; two owners share touch suppression until final
+disposal. Feature mocks restore only after owner cleanup. Existing helper unit
+coverage remains. Baseline 2/28 failed, 26 passed; corrected owning 28/28 and six
+affected suites 287/287 pass. Fresh complete SSR 75/75 then hydration 98/98 pass,
+one worker. A restored rerun exposed an order-dependent Pressable fixture leak
+into Button (1/287 failed); test-only named extension to Pressable.test.tsx adds
+file-level cleanup without changing any assertions. A decisive cleanup negative
+control also fails on leaked post-disposal hoverend despite recorded removal
+calls, then is restored. Final corrected proof and exact commands:
+`.agents/UI-EXECUTION-534-HOVER-2026-09-19.md`.
+
+Separate review debt remains: local emulated-mouse suppression is 50 ms versus
+pinned upstream 500 ms; existing 100 ms recovery expectations are unchanged in
+this slice and do not certify timing parity. Audit this explicitly alongside
+Menu drag/item-keyboard/modality, virtual-focus handoff and final owning proof.
+Attribution still reports the same 64 mismatches; no hashes are refreshed or
+waived. This slice does not complete #534, #531 or release acceptance.
 
 ## Done when
 

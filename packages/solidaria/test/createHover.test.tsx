@@ -5,7 +5,10 @@
  * Verifies that touch events don't trigger hover (mouse-only behavior).
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library"; import { createHover, type HoverEvent, type HoverProps } from "../src/interactions/createHover"; import type { Component } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createHover, type HoverEvent, type HoverProps } from "../src/interactions/createHover";
+import type { Component } from "solid-js";
 import { createSignal, flush } from "solid-js";
 
 const originalPointerEvent = typeof PointerEvent !== "undefined" ? PointerEvent : undefined;
@@ -125,34 +128,6 @@ describe("createHover", () => {
   });
 
   // ============================================
-  // DISABLED STATE
-  // ============================================
-
-  it("does not handle hover events if disabled", () => {
-    const events: any[] = [];
-    const addEvent = (e: any) => events.push(e);
-
-    let hoverPropsRef: HoverProps | undefined;
-    render(() => (
-      <Example
-        isDisabled
-        onHoverStart={addEvent}
-        onHoverEnd={addEvent}
-        onHoverChange={(isHovering) => addEvent({ type: "hoverchange", isHovering })}
-        exposeHoverProps={(props) => {
-          hoverPropsRef = props;
-        }}
-      />
-    ));
-
-    const el = screen.getByTestId("test-element");
-    triggerMouseEnter(hoverPropsRef!, el);
-    triggerMouseLeave(hoverPropsRef!, el);
-
-    expect(events).toEqual([]);
-  });
-
-  // ============================================
   // POINTER EVENTS
   // ============================================
 
@@ -162,7 +137,224 @@ describe("createHover", () => {
     });
 
     afterEach(() => {
+      cleanup();
       restorePointerEvents();
+    });
+
+    it("ignores native hover while disabled and works after enabling", () => {
+      const events: Array<HoverEvent | boolean> = [];
+      const [isDisabled, setIsDisabled] = createSignal(true);
+      render(() => (
+        <Example
+          isDisabled={isDisabled()}
+          onHoverStart={(event) => events.push(event)}
+          onHoverEnd={(event) => events.push(event)}
+          onHoverChange={(hovered) => events.push(hovered)}
+        />
+      ));
+      const el = screen.getByTestId("test-element");
+      el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      expect(events).toEqual([]);
+      expect(el.textContent).toBe("test");
+
+      setIsDisabled(false);
+      flush();
+      el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      expect(el.textContent).toBe("test-hovered");
+      el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      expect(events).toEqual([
+        { type: "hoverstart", target: el, pointerType: "mouse" },
+        true,
+        { type: "hoverend", target: el, pointerType: "mouse" },
+        false,
+      ]);
+      expect(el.textContent).toBe("test");
+    });
+
+    it("ends once when disabled inside native hover start and can restart", () => {
+      const events: Array<HoverEvent | boolean> = [];
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      let disableOnStart = true;
+      render(() => (
+        <Example
+          isDisabled={isDisabled()}
+          onHoverStart={(event) => {
+            events.push(event);
+            if (disableOnStart) setIsDisabled(true);
+          }}
+          onHoverEnd={(event) => events.push(event)}
+          onHoverChange={(hovered) => events.push(hovered)}
+        />
+      ));
+      const el = screen.getByTestId("test-element");
+      const cycle = [
+        { type: "hoverstart", target: el, pointerType: "mouse" },
+        true,
+        { type: "hoverend", target: el, pointerType: "mouse" },
+        false,
+      ];
+      el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      expect(events).toEqual(cycle);
+      expect(el.textContent).toBe("test");
+      el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      document.body.dispatchEvent(
+        new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+      );
+      expect(events).toEqual(cycle);
+
+      disableOnStart = false;
+      setIsDisabled(false);
+      flush();
+      el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+      expect(el.textContent).toBe("test-hovered");
+      el.dispatchEvent(new PointerEvent("pointerout", { bubbles: true, pointerType: "mouse" }));
+      expect(events).toEqual([...cycle, ...cycle]);
+      expect(el.textContent).toBe("test");
+    });
+
+    it("keeps native hover active while moving between children", () => {
+      const events: Array<HoverEvent | boolean> = [];
+      const Test = () => {
+        const { hoverProps, isHovered } = createHover({
+          onHoverStart: (event) => events.push(event),
+          onHoverEnd: (event) => events.push(event),
+          onHoverChange: (hovered) => events.push(hovered),
+        });
+        return (
+          <div {...hoverProps} data-testid="owner" data-hovered={isHovered() ? "true" : "false"}>
+            <span data-testid="first">first</span>
+            <span data-testid="second">second</span>
+          </div>
+        );
+      };
+      render(() => <Test />);
+      const owner = screen.getByTestId("owner");
+      const first = screen.getByTestId("first");
+      const second = screen.getByTestId("second");
+      first.dispatchEvent(
+        new PointerEvent("pointerover", {
+          bubbles: true,
+          pointerType: "mouse",
+          relatedTarget: document.body,
+        }),
+      );
+      const start = [{ type: "hoverstart", target: owner, pointerType: "mouse" }, true];
+      expect(events).toEqual(start);
+      first.dispatchEvent(
+        new PointerEvent("pointerout", {
+          bubbles: true,
+          pointerType: "mouse",
+          relatedTarget: second,
+        }),
+      );
+      expect(events).toEqual(start);
+      expect(owner).toHaveAttribute("data-hovered", "true");
+      second.dispatchEvent(
+        new PointerEvent("pointerover", {
+          bubbles: true,
+          pointerType: "mouse",
+          relatedTarget: first,
+        }),
+      );
+      expect(events).toEqual(start);
+      second.dispatchEvent(
+        new PointerEvent("pointerout", {
+          bubbles: true,
+          pointerType: "mouse",
+          relatedTarget: document.body,
+        }),
+      );
+      expect(events).toEqual([
+        ...start,
+        { type: "hoverend", target: owner, pointerType: "mouse" },
+        false,
+      ]);
+      expect(owner).toHaveAttribute("data-hovered", "false");
+    });
+
+    it("removes its exact outside listener on owner disposal without terminal callbacks", () => {
+      const add = vi.spyOn(document, "addEventListener");
+      const remove = vi.spyOn(document, "removeEventListener");
+      const events: Array<HoverEvent | boolean> = [];
+      try {
+        const { unmount } = render(() => (
+          <Example
+            onHoverStart={(event) => events.push(event)}
+            onHoverEnd={(event) => events.push(event)}
+            onHoverChange={(hovered) => events.push(hovered)}
+          />
+        ));
+        const el = screen.getByTestId("test-element");
+        el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        const registrations = add.mock.calls.filter(
+          ([type, , options]) =>
+            type === "pointerover" && typeof options === "object" && options.capture,
+        );
+        expect(registrations).toHaveLength(1);
+        const registration = registrations[0]!;
+        expect(events).toEqual([{ type: "hoverstart", target: el, pointerType: "mouse" }, true]);
+        expect(remove.mock.calls).not.toContainEqual(registration);
+        unmount();
+        expect(el.isConnected).toBe(false);
+        expect(
+          remove.mock.calls.filter(
+            (call) =>
+              call[0] === registration[0] &&
+              call[1] === registration[1] &&
+              call[2] === registration[2],
+          ),
+        ).toHaveLength(1);
+        document.body.dispatchEvent(
+          new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+        );
+        expect(events).toEqual([{ type: "hoverstart", target: el, pointerType: "mouse" }, true]);
+      } finally {
+        cleanup();
+        add.mockRestore();
+        remove.mockRestore();
+      }
+    });
+
+    it("shares touch suppression until the final native hover owner is disposed", () => {
+      const add = vi.spyOn(document, "addEventListener");
+      const remove = vi.spyOn(document, "removeEventListener");
+      const onHoverStart = vi.fn();
+      try {
+        const first = render(() => <Example />);
+        const second = render(() => <Example onHoverStart={onHoverStart} />);
+        const registrations = add.mock.calls.filter(([type]) => type === "pointerup");
+        expect(registrations).toHaveLength(1);
+        const registration = registrations[0]!;
+        first.unmount();
+        expect(remove.mock.calls).not.toContainEqual(registration);
+        const el = second.container.querySelector('[data-testid="test-element"]')!;
+        document.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch" }));
+        el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        expect(onHoverStart).not.toHaveBeenCalled();
+        expect(el.textContent).toBe("test");
+        vi.runAllTimers();
+        el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+        expect(onHoverStart).toHaveBeenCalledExactlyOnceWith({
+          type: "hoverstart",
+          target: el,
+          pointerType: "mouse",
+        });
+        expect(el.textContent).toBe("test-hovered");
+        second.unmount();
+        expect(
+          remove.mock.calls.filter(
+            (call) =>
+              call[0] === registration[0] &&
+              call[1] === registration[1] &&
+              call[2] === registration[2],
+          ),
+        ).toHaveLength(1);
+      } finally {
+        cleanup();
+        add.mockRestore();
+        remove.mockRestore();
+      }
     });
 
     it("should fire hover events based on pointer events", () => {
@@ -430,7 +622,6 @@ describe("createHover", () => {
     it("should trigger onHoverEnd after an element is removed", () => {
       const events: any[] = [];
       const addEvent = (e: any) => events.push(e);
-      let hoverPropsRef: HoverProps | undefined;
 
       const Test: Component = () => {
         const [show, setShow] = createSignal(true);
@@ -439,7 +630,6 @@ describe("createHover", () => {
           onHoverEnd: addEvent,
           onHoverChange: (isHovering) => addEvent({ type: "hoverchange", isHovering }),
         });
-        hoverPropsRef = hoverProps;
 
         return (
           <div {...hoverProps} data-testid="test" data-hovered={isHovered() ? "true" : undefined}>
@@ -451,21 +641,25 @@ describe("createHover", () => {
       render(() => <Test />);
 
       const el = screen.getByTestId("test");
-      triggerPointerOver(hoverPropsRef!, el, "mouse");
+      el.dispatchEvent(new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
       expect(el).toHaveAttribute("data-hovered", "true");
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      button.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       expect(screen.queryByRole("button")).toBeNull();
 
       // Pointerover on a new target should end hover
-      fireEvent.pointerOver(document.body, { pointerType: "mouse" });
+      document.body.dispatchEvent(
+        new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+      );
       expect(el).not.toHaveAttribute("data-hovered");
 
-      expect(events).toContainEqual(
-        expect.objectContaining({ type: "hoverend", pointerType: "mouse" }),
-      );
-      expect(events).toContainEqual({ type: "hoverchange", isHovering: false });
+      expect(events).toEqual([
+        { type: "hoverstart", target: el, pointerType: "mouse" },
+        { type: "hoverchange", isHovering: true },
+        { type: "hoverend", target: el, pointerType: "mouse" },
+        { type: "hoverchange", isHovering: false },
+      ]);
     });
   });
 
@@ -479,6 +673,7 @@ describe("createHover", () => {
     });
 
     afterEach(() => {
+      cleanup();
       restorePointerEvents();
     });
 

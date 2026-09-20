@@ -134,13 +134,15 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
 
   // Setup global touch events
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const cleanup = setupGlobalTouchEvents();
     _s2Cleanups.push(cleanup);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   // Reset hover when disabled
   createEffect(
@@ -176,7 +178,7 @@ return () => { for (const c of _s2Cleanups) c(); };
           state.target &&
           !nodeContains(state.target, event.target as Element)
         ) {
-          triggerHoverEnd(event.target as Element, event.pointerType as "mouse" | "pen");
+          triggerHoverEnd(state.target, event.pointerType as "mouse" | "pen");
         }
       },
       { capture: true },
@@ -254,7 +256,11 @@ return () => { for (const c of _s2Cleanups) c(); };
           },
           onPointerOut: (e: PointerEvent) => {
             const p = getProps();
-            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+            if (
+              !p.isDisabled &&
+              (e.currentTarget as Element).contains(e.target as Element) &&
+              !nodeContains(e.currentTarget as Element, e.relatedTarget as Node | null)
+            ) {
               triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
             }
           },
