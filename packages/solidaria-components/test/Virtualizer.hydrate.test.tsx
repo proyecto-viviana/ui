@@ -4,12 +4,11 @@
  * 1. The client measures a real viewport while the server measured none. If the
  *    scroll view's layout-time measurement (RAC `useScrollView` layout effect)
  *    widens the visible range while Solid is still hydrating, the newly mounted
- *    rows try to claim server nodes that do not exist and Solid aborts the whole
- *    tree with "Hydration Mismatch". The range must only grow once hydration has
- *    finished claiming the server window.
- * 2. Element option children must be read exactly once: every read of a compiled
- *    element child consumes a hydration key, so probing `typeof children` before
- *    rendering it leaves the server one key ahead of the client.
+ *    rows try to claim server nodes that do not exist. The range must only grow
+ *    once hydration has finished claiming the server window.
+ * 2. Element option children must preserve shared classification/insertion and
+ *    exact DOM adoption. This protects the real nested-child regression, not a
+ *    universal rule that every getter read consumes one hydration key.
  */
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";

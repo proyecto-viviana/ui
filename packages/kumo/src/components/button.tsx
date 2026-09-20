@@ -214,9 +214,9 @@ export function Button(props: ButtonProps): JSX.Element {
     ) : local.icon ? (
       <Icon value={local.icon} />
     ) : null;
-  // One tracked read of the children getter. Reading it per use creates the
-  // child DOM once per read and desynchronizes hydration keys; an untracked
-  // setup-time read freezes a direct signal child such as `{label()}`.
+  // Share one tracked child value between classification and insertion.
+  // Re-evaluation can construct children; keep reactive inputs live rather
+  // than capturing an untracked setup-time snapshot.
   const labelContent = createMemo(() => local.children);
   const label = () =>
     labelContent() == null ? null : <span class="pv-kumo-Button__label">{labelContent()}</span>;

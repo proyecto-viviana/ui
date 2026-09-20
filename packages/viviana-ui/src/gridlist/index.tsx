@@ -1150,9 +1150,9 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   // Build the framed wrapper only on the branch that actually returns it. A `const framed = (<div/>)`
   // is evaluated eagerly even when the function goes on to return `collection` instead — and under
-  // hydration that eager evaluation calls getNextElement for a wrapper div the server never
-  // rendered, which throws a Hydration Mismatch and aborts hydration for the entire route.
-  // Constructing it lazily inside the branch keeps SSR and client element walks in lockstep.
+  // hydration that unused wrapper may try to claim a node absent from the server output
+  // or move already-adopted children into detached DOM. Lazy construction keeps the selected
+  // initial structure consistent without relying on a flat hydration-key counter.
   if (local.label || local.description || local.renderActionBar) {
     return (
       <div class={listViewWrapper({}, mergedStyles())} style={mergedUnsafeStyle()}>
@@ -1293,9 +1293,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() => {
-        // Read `local.children` once — a repeated props-children read re-instantiates child
-        // components on the server only, desynchronizing Solid's hydration keys and aborting
-        // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+        // Share the authored-child value for classification and insertion here.
+        // Keep evaluation under this owner; repeated construction is not a
+        // universal getter-read rule or a global hydration-counter model.
         const rawChildren = local.children;
         return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
       });

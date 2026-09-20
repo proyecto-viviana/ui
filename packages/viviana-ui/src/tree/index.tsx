@@ -14,7 +14,16 @@
 
 // Port of packages/@react-spectrum/s2/src/TreeView.tsx.
 
-import { children as resolveChildren, createContext, createEffect, createMemo, createSignal, onCleanup, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Tree as HeadlessTree,
@@ -897,7 +906,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   // the wrapper is `display: contents`, so layout is untouched.
   // (A Tree hydration abort that once looked like a return-shape problem was
   // actually a repeated `local.children` read in ResolvedItemContent /
-  // TreeItemContent — see the read-once comments there.)
+  // TreeItemContent — see the shared-evaluation comments there.)
   const collection = () => (
     <InternalTreeViewContext value={treeContext()}>
       <div hidden inert aria-hidden="true" style={{ display: "none" }}>
@@ -1045,9 +1054,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() => {
-        // Read `local.children` once — a repeated props-children read re-instantiates child
-        // components on the server only, desynchronizing Solid's hydration keys and aborting
-        // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+        // Share the authored-child value for classification and insertion here.
+        // Keep evaluation under this owner; repeated construction is not a
+        // universal getter-read rule or a global hydration-counter model.
         const rawChildren = local.children;
         return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
       });
@@ -1157,9 +1166,9 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
     <HeadlessTreeItemContent {...headlessProps}>
       {(renderProps: HeadlessTreeItemContentRenderProps) => {
         const content = () => {
-          // Read `local.children` once — a repeated props-children read re-instantiates child
-          // components on the server only, desynchronizing Solid's hydration keys and aborting
-          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          // Share the authored-child value for classification and insertion here.
+          // Keep evaluation under this owner; repeated construction is not a
+          // universal getter-read rule or a global hydration-counter model.
           const rawChildren = local.children;
           return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
         };
@@ -1210,9 +1219,9 @@ export function TreeExpandButton(
         data-rsp-slot="expand-button"
       >
         {(() => {
-          // Read `local.children` once — a repeated props-children read re-instantiates child
-          // components on the server only, desynchronizing Solid's hydration keys and aborting
-          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          // Share the authored-child value for classification and insertion here.
+          // Keep evaluation under this owner; repeated construction is not a
+          // universal getter-read rule or a global hydration-counter model.
           const rawChildren = local.children;
           return typeof rawChildren === "function"
             ? rawChildren(renderState())

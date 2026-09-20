@@ -58,9 +58,9 @@ export function VirtualizedListBoxFixture() {
 }
 
 /**
- * Element option children (a tile with two spans), as a grid demo renders. Each
- * read of a compiled element child consumes a hydration key, so the option must
- * read its children exactly once for the server and client keys to agree.
+ * Element option children (a tile with two spans), as a grid demo renders.
+ * Exercises shared evaluation for classification/insertion and adoption of the
+ * actual child DOM, rather than only a primitive-label path.
  */
 export function ElementChildrenListBoxFixture() {
   return (

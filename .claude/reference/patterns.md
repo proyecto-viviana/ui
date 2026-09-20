@@ -293,30 +293,34 @@ const value = useContext(Ctx); // Same API
 
 The `renderProps` object contains reactive values like `isSelected`, `isHovered`, etc.
 
-## JSX.Element Props Cause Hydration Errors (IMPORTANT)
+## JSX-Valued Props and Evaluation Ownership
 
-In SolidJS SSR, passing `JSX.Element` directly as a prop value causes "template2 is not a function" hydration errors.
+JSX-valued props are not inherently incompatible with SSR. Their evaluation
+point matters: a contextual child must run under its provider, and server/client
+initial structure must agree. Historical `template2 is not a function` failures
+are not evidence for banning all JSX-valued props under Solid 2.
 
 ### The Problem
 
 ```typescript
-// ❌ BAD - causes hydration mismatch
+// A JSX-valued prop: validate the component's actual consumption path.
 interface ChipProps {
   icon?: JSX.Element;
 }
 
-// Usage that breaks SSR:
+// This signature alone does not establish a hydration defect:
 <Chip icon={<span>★</span>} />
 ```
 
-The JSX is evaluated during SSR differently than during client hydration, causing a mismatch.
+Do not eagerly read this prop outside the owner where its content belongs.
 
 ### The Solution
 
-Use a render function pattern instead:
+An existing render-function API can make deferred evaluation explicit. It is
+not a reason to change a public JSX-valued API without an owning regression:
 
 ```typescript
-// ✅ GOOD - SSR-safe
+// Explicit deferred-content API; still requires paired SSR/hydration proof.
 interface ChipProps {
   icon?: string | (() => JSX.Element);
 }
@@ -346,7 +350,7 @@ function Chip(props: ChipProps) {
 
 ### Where This Applies
 
-Any component prop that accepts JSX for custom rendering:
+Review the evaluation point of custom content, including:
 
 - Icons in Chip, Menu, ListBox components
 - Custom content in TimelineItem
@@ -379,7 +383,7 @@ export function NumberFieldInput(props: NumberFieldInputProps) {
 
 ### Rules
 
-1. **Include `'children'` in the split list** when the component accesses `props.children`, so children don't leak into `domProps`. `splitProps` does not evaluate children; a getter read does. Splitting `children` is fine. Reading the getter twice is not (see Hydration-Key Parity).
+1. **Include `'children'` in the split list** when the component accesses `props.children`, so children don't leak into `domProps`. `splitProps` does not evaluate children; a getter read can. Share a child value where classification and insertion must use the same result, under the intended owner (see Hydration-Key Parity).
 2. **Spread `{...domProps}` first** on the DOM element — ARIA/behavior props should come after so they can override
 3. **Extend the interface** with DOM attributes so TypeScript accepts them:
    ```typescript
@@ -399,10 +403,9 @@ All sub-components in `solidaria-components` that render a DOM element and use `
 
 ## SolidJS Children and Context Propagation (CRITICAL)
 
-In SolidJS, children are **lazily evaluated** - they're only evaluated when
-they're actually rendered. This has critical implications for context
-propagation. `splitProps` does **not** evaluate children; accessing the getter
-does.
+JSX children are commonly exposed through lazy getters. Evaluating a getter can
+construct them before insertion, which matters for context propagation.
+`splitProps` does not evaluate children; accessing the getter can.
 
 ### The Problem
 
@@ -458,10 +461,11 @@ export function ModalOverlay(props: ModalOverlayProps) {
 
 ## `children()` snapshots mixed text (CRITICAL)
 
-Solid's `children()` helper (often imported as `resolveChildren`) memos the
-_resolved_ child nodes. A mixed-text child such as `count: {n()}` becomes a
-text-node snapshot. Rendering that snapshot after hydration keeps the server
-value; the signal can update and the label will not.
+Solid's `children()` helper (often imported as `resolveChildren`) resolves
+children for inspection. Repository regressions found mixed-text children such
+as `count: {n()}` becoming snapshots when consumed through these adapters:
+the signal updated but the hydrated label did not. Do not assume every use of
+`children()` loses reactivity; test the actual wrapper and consumption path.
 
 This is the class #135 hit on Button, that #168 still has on ActionButton,
 ToggleButton, LinkButton, Badge, Radio, SegmentedControl, and TagGroup, and
@@ -475,15 +479,16 @@ exports stay on a frozen baseline until #168 / #169 remove them.
 
 Use it to _probe structure_: `.toArray()`, `.length`, or a `typeof` check on a
 static child tree (Focusable/Pressable inspecting a single element, Breadcrumbs
-counting static items). Do not then render the resolved snapshot as the visible
-content if that content may contain reactive text or a child whose output
-changes.
+counting static items). If the adapter materializes a snapshot for inspection,
+do not assume it remains live when inserted as visible content. Prove updates
+and adoption at the owning wrapper.
 
-### When it is wrong
+### Snapshot regressions to protect
 
-Any rendered content that may contain reactive text (`count: {n()}`) or a child
-component whose output changes. That includes styled wrappers that resolve
-children only to decide a text-only `<span>` / `<Text>` wrap.
+Exercise rendered reactive text (`count: {n()}`) and child components whose
+output changes, including styled wrappers that resolve children to choose a
+text-only `<span>` / `<Text>` wrap. The regression is a snapshot that loses those
+updates, not the presence of `children()` by itself.
 
 ### The adapter
 
@@ -497,38 +502,45 @@ return textChild() !== undefined ? <span>{textChild()}</span> : content();
 Rendering `{local.children}` / `{props.children}` directly is also correct when
 you do not need to probe.
 
-### The one-read rule
+### Share a value without freezing it
 
-`props.children` is a getter. Read it **once** before probing `typeof`:
+When classifying and inserting authored children, use the same value for both
+operations within that evaluation:
 
 ```tsx
-const raw = local.children; // single read → server and client emit the same count
+const raw = local.children; // evaluate under the intended owner
 const isRenderProp = typeof raw === "function" && raw.length > 0;
 ```
 
-A second read on the server re-instantiates nested components and desyncs
-hydration keys. #184 is the Form+TextField cost of instantiating children a
-different number of times on server vs client. See Hydration-Key Parity below.
+This repository's helpers distinguish positive-arity render props from
+zero-argument accessors; that is an API convention, not a universal Solid rule.
+Repeated evaluation can instantiate additional children. #184 records the
+Form+TextField regression that motivated sharing the result. It does not prove
+that every getter read allocates a key, or that client getters are universally
+memoized. Keep tracked evaluation for reactive inputs and defer contextual
+children until their provider exists; a setup-time snapshot is not a general fix.
 
 ### Hydration
 
-If the server and client instantiate children a different number of times —
-`children()` on one side, a memoized getter on the other, or two getter reads
-on the server only — Solid's per-render hydration-key counter drifts and the
-mismatch aborts interactivity for the whole route.
+Validate compatible owner allocation, initial state and rendered structure with
+fresh paired SSR/hydration. Require original node adoption and subsequent
+behavior, not merely an absence of exceptions. See Hydration-Key Parity below.
 
 ---
 
 ## SSR-Compatible Styled Components Pattern (IMPORTANT)
 
-Styled UI components that wrap headless components must avoid inline render functions to prevent SSR hydration mismatches.
+Styled wrappers may use their headless component's supported render-prop API.
+The callback must be evaluated under the intended owner, with compatible
+initial structure and reactive values on server and client.
 
 ### The Problem
 
-Inline arrow functions as `children` create new function identities between server and client renders:
+An inline render function is not itself a hydration defect. Function identity
+does not need to match across server and client processes:
 
 ```typescript
-// ❌ BAD - Creates new function on every render
+// Valid API shape; validate owner placement and initial output.
 <HeadlessSelect>
   {(renderProps) => (
     <>
@@ -541,17 +553,22 @@ Inline arrow functions as `children` create new function identities between serv
 
 ### The Solution
 
-Use CSS data attributes for conditional styling and render children directly:
+When only styling depends on state, existing data attributes can avoid an
+unnecessary render callback. They are an option, not a replacement for callbacks
+that provide required content or behavior:
 
 ```typescript
-// ✅ GOOD - No render functions, uses data attributes
-<HeadlessSelect class={getClassName}>
+// Alternative for styling-only state.
+<HeadlessSelect class="group">
   {children}
-  <Icon class="transition-transform data-open:rotate-180" />
+  <Icon class="transition-transform group-data-open:rotate-180" />
 </HeadlessSelect>
 ```
 
-Tailwind's `data-*` variants (`data-open:`, `data-selected:`, `data-focused:`) provide SSR-safe conditional styling.
+Tailwind's `data-*` variants (`data-open:`, `data-selected:`, `data-focused:`)
+can style attributes already provided by the headless component.
+Descendants do not inherit those attributes: target the attribute-bearing
+element itself or use an explicit ancestor/group selector, as above.
 
 ### Pattern for Styled Components
 
@@ -566,11 +583,9 @@ export function StyledComponent(props) {
 
   return (
     <HeadlessComponent {...headlessProps} class={getClassName}>
-      {/* Render children directly - no arrow functions */}
+      {/* Preserve lazy child evaluation under the headless owner. */}
       {local.children}
-      {/* Use data attributes for conditional styling */}
-      <Icon class="data-open:rotate-180" />
-      <Indicator class="hidden data-selected:block" />
+      {/* Descendant styling needs a selector for the state-bearing ancestor. */}
     </HeadlessComponent>
   )
 }
@@ -578,53 +593,52 @@ export function StyledComponent(props) {
 
 ---
 
-## Hydration-Key Parity: Read `props.children` Once, Build Conditional JSX Lazily (CRITICAL)
+## Hydration-Key Parity: Owners, Initial State and Lazy Construction (CRITICAL)
 
-Solid assigns every SSR node a **hydration key** from a single per-render counter
-(`sharedConfig.getNextContextId()`), advanced once for every DOM element
-(`getNextElement`), every `createComponent`, and every `createUniqueId`. Client
-hydration replays the **exact same walk** and expects the keys in the exact same
-order. If the server advances the counter a different number of times than the
-client — even by one — the client eventually asks for a key the server never
-emitted and Solid throws a **Hydration Mismatch**
-(`Unable to find DOM nodes for hydration key: <k>`). Critically, that single
-mismatch **aborts hydration for the entire route**, not just the offending
-subtree: the whole page renders but silently loses all interactivity.
+The installed Solid 2 rc.9 runtime uses owner-scoped hierarchical IDs, not one
+global render counter. `sharedConfig.getNextContextId()` obtains the next child
+ID of the current owner. Component owners are transparent; memos, computed
+initializers, effects and `onSettled` registrations can affect owner allocation.
+Server effects can reserve owners even when browser callbacks do not execute.
+Do not skip a real registration only on the server or pad counters to hide a
+mismatch. Literal signals and computed initializers have different allocation
+semantics; inspect the installed implementation before generalizing.
 
-Two authoring patterns desync the counter. Both are easy to write and neither
-fails SSR _or_ client render in isolation — only the paired hydrate run catches
-them. A third — `children()` flattening mixed text into a snapshot — is named
-in `children()` snapshots mixed text above (#135 / #168 / #169); it can also
-advance keys a different number of times on server vs client when the snapshot
-and a live getter instantiate children differently (#184).
+Hydration needs compatible owner allocation, initial state and rendered
+structure. Marker-based hydration does not remove these requirements. Missing
+keys can throw or warn and create detached nodes; tag mismatches can warn. The
+failure is not universally a whole-route abort, and no exception does not prove
+successful adoption. Paired tests must reject diagnostics and verify node
+identity and behavior.
+
+The patterns below have caused repository regressions. They are reasons to
+preserve justified child sharing and lazy construction, not a universal rule
+about how many times any getter may be read.
 
 ### Bug class 1 — reading a props-children getter more than once
 
-`props.children` is a getter. **On the server, every access re-instantiates any
-component the JSX holds** (each read re-runs `createComponent` for a nested
-`<Text>`, icon, etc.), so N reads emit N instances and advance the counter N
-times. **On the client the same getter is memoized after the first read**, so N
-reads yield 1 instance. Read children twice on the server (a common shape: one
-read to _probe_ whether it's a render-prop function, a second to use the value)
-and the server emits one extra element than the client — mismatch.
+An authored children getter can construct components when evaluated. Probing
+one evaluation and inserting another may use distinct child instances or owners.
+Whether that diverges across SSR/hydration depends on the compiled getter and
+its consumers; client getters are not universally memoized after their first
+read. Share the result when classification and insertion must refer to the same
+children, without moving evaluation outside their provider or freezing updates.
 
 ```tsx
-// ❌ BAD - two reads of local.children; server double-instantiates a <Text> child
+// Avoid separate evaluations for classification and insertion.
 function hasRenderChildren() {
-  return typeof local.children === "function" && local.children.length > 0; // read #1
+  return typeof local.children === "function" && local.children.length > 0;
 }
 function ResolvedTabContent() {
-  const value = hasRenderChildren()
-    ? (local.children as Fn)(renderProps) // read #2 (server re-instantiates <Text>)
-    : local.children; // ...or here
+  const value = hasRenderChildren() ? (local.children as Fn)(renderProps) : local.children;
   return typeof value === "string" ? <span>{value}</span> : value;
 }
 ```
 
 ```tsx
-// ✅ GOOD - read local.children EXACTLY ONCE, then branch on the captured value
+// Share one value within the intended evaluation/owner.
 function ResolvedTabContent() {
-  const rawChildren = local.children; // single read → server & client emit the same count
+  const rawChildren = local.children;
   const isRenderProp =
     typeof rawChildren === "function" &&
     (rawChildren as (...a: unknown[]) => JSX.Element).length > 0;
@@ -636,20 +650,21 @@ function ResolvedTabContent() {
 }
 ```
 
-This is why the solid-refresh section above insists on
-`const children = local.children;` — it is not only about context scope; a single
-read is what keeps the hydration-key count equal on both sides.
+For reactive inputs, an owned memo can share one result per tracked evaluation.
+Do not turn this local capture into a universal setup-time snapshot. Keep lazy
+provider boundaries and existing stable render-prop lifetime semantics.
 
 ### Bug class 2 — eagerly-built conditional JSX that only one branch returns
 
-A `const framed = (<div>…</div>)` is evaluated **eagerly**, the moment the line
-runs — even if the function goes on to `return collection` instead. Under
-hydration that eager evaluation still calls `getNextElement` for a wrapper the
-server (which took the other branch) never rendered → the client walks one DOM
-node ahead of the server → mismatch.
+A `const framed = (<div>…</div>)` is evaluated eagerly, even if the function
+returns `collection` instead. An unused wrapper can claim nodes absent from the
+server output, or move already-adopted collection nodes into detached DOM. Build
+only the selected initial structure. The Tree regression also protects against
+moving a shared collection into an unused wrapper; strings on the server do not
+move nodes the way client DOM construction does.
 
 ```tsx
-// ❌ BAD - `framed` is built even when we return `collection`; its <div> steals a key
+// ❌ BAD - constructs an unused wrapper that may claim or move live nodes.
 const framed = (
   <div class={wrapper()}>
     {label}
@@ -676,25 +691,20 @@ return collection;
 
 ### Diagnosing a mismatch
 
-Instrument the allocator and diff the SSR vs client allocation order — the first
-index where the two sequences diverge names the exact call site:
-
-```ts
-import { sharedConfig } from "solid-js"; // NOTE: core, NOT "solid-js/web" (undefined there)
-
-const seq: string[] = [];
-const orig = sharedConfig.getNextContextId;
-sharedConfig.getNextContextId = function () {
-  const id = orig.call(this);
-  seq.push(id + " <- " + new Error().stack?.split("\n")[2]?.trim());
-  return id;
-};
-// run renderToString for the SSR trace, hydrate for the client trace, then diff seq.
-```
-
-The runner swallows `console.log`; `writeFileSync` the sequence to a scratch file
-and compare. A matching prefix that diverges at index K, where the server has one
-extra `_$ssrElement <- <ChildComponent>` allocation, is the double-read fingerprint.
+1. Generate fresh SSR output with `vitest.ssr.config.ts`, then hydrate that
+   fixture with `vitest.hydrate.config.ts` and the fail-closed `hydrateOverSsr`
+   helper. Both compiler halves must retain hydratable output in test mode.
+2. Capture server ID strings and original DOM nodes before hydration. Assert
+   generated ID equality, exact node/ref adoption and subsequent interactions.
+   Put a generated-ID sibling in the same owner after a suspect hook or branch
+   to expose allocation differences that a nested child alone can hide.
+3. Preserve exact missing-key, tag-mismatch and unclaimed-node diagnostics.
+   Inspect the relevant installed compiler/runtime and actual authored-child
+   evaluation path. If temporary instrumentation is needed, restore it in
+   `finally`; a flat allocator call count cannot establish owner-tree parity.
+4. Prove genuine streaming separately: observe an unresolved shell, deliver
+   the later fragment and assert its adoption, updates and cleanup. Completed
+   `renderToString` output or an already-complete stream is not that proof.
 
 ### Where This Applies
 
@@ -704,12 +714,12 @@ that may be a render-prop **or** hold a nested component (`<Text>`, an icon):
 - `viviana-ui` `Tab` / `TabPanel` (`src/tabs/index.tsx`) — `ResolvedTabContent`,
   `TabPanel.renderedChildren`
 - `viviana-ui` `GridListItem`/`ListViewItem` and `GridList` (`src/gridlist/index.tsx`)
-  — `ResolvedItemContent` (read-once) **and** the framed `label`/`description`/
+  — `ResolvedItemContent` (shared evaluation) **and** the framed `label`/`description`/
   `renderActionBar` wrapper (lazy branch)
 - Guard with paired SSR + hydrate regressions
   (`test/Collections.ssr.test.tsx`, `test/Collections.hydrate.test.tsx`): a
-  fixture whose child is a real `<Text>` (not a raw string) is what exposes the
-  double-instantiation; a plain-string fixture will not.
+  fixture with a real `<Text>` child exercises component ownership that a plain
+  string does not.
 
 ---
 
@@ -950,56 +960,22 @@ const setupMouseDownHandler = (el: HTMLUListElement) => {
 
 ## solid-refresh HMR and Context Propagation (IMPORTANT)
 
-When using `solid-refresh` (Vite's HMR for SolidJS), component functions get wrapped in `createMemo`. This can cause context lookup issues.
+Historical refresh investigations exposed child-evaluation ownership mistakes.
+Do not generalize an old wrapper transform to the installed plugin: inspect the
+actual emitted wrapper when diagnosing development-only behavior. Paired SSR/
+hydrate tests disable refresh instrumentation; they do not certify HMR.
 
-### The Problem
-
-```typescript
-// ❌ BAD - useContext evaluated in solid-refresh memo wrapper
-function Radio(props: RadioProps) {
-  const state = useContext(RadioGroupStateContext);  // Called in memo BEFORE Provider renders
-  if (!state) {
-    throw new Error('Radio must be used within a RadioGroup');
-  }
-  return <RadioImpl state={state} {...props} />;
-}
-```
-
-With `solid-refresh`, the component becomes roughly:
-
-```typescript
-const Radio = createMemo(() => {
-  const state = useContext(RadioGroupStateContext); // Evaluated too early!
-  // ...
-});
-```
-
-### The Solution
-
-Use `createMemo` + `Show` to defer context lookup:
-
-```typescript
-// ✅ GOOD - Context lookup deferred via Show's callback
-function Radio(props: RadioProps) {
-  const getState = createMemo(() => useContext(RadioGroupStateContext));
-
-  return (
-    <Show when={getState()} fallback={null} keyed>
-      {(state) => <RadioImpl radioProps={props} state={state} />}
-    </Show>
-  );
-}
-```
-
-Key points:
-
-1. Wrap `useContext` in `createMemo` - this makes the context access reactive
-2. Use `Show` with a callback `{(state) => ...}` - the callback runs AFTER the parent Provider renders
-3. Use `fallback={null}` instead of throwing - HMR may temporarily have missing context
+In rc.9, `useContext` reads context from the current owner. Wrapping that read
+in a memo does not create a missing provider ancestor or make a static context
+lookup reactive. `Show` is not a scheduling guarantee that a provider will
+appear. Preserve required missing-context errors; do not replace them with a
+silent null fallback to hide an ownership defect.
 
 ### For Parent Components
 
-Also ensure parent components use `local.children` directly, not `renderProps.renderChildren()`:
+Keep contextual children lazy until they are evaluated under the provider.
+Direct children and supported render-prop helpers can both satisfy this; inspect
+the helper's owner/evaluation behavior instead of banning it by name:
 
 ```typescript
 // ✅ GOOD - Children rendered directly in context scope

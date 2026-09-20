@@ -16,7 +16,17 @@
 
 // Port of packages/@react-spectrum/s2/src/ComboBox.tsx.
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
@@ -663,13 +673,15 @@ function ComboBoxFieldGroup(props: {
   // the text input so ArrowDown/type/Enter do not flip it.
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
     _s2Cleanups.push(cleanup);
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
   const isFocusVisible = () => isFocused() && isFocusVisibleModality();
 
   // Upstream FieldGroup renders a RAC `<Group>`, whose own `useHover` drives the
@@ -1310,9 +1322,9 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     );
   };
   const ComboBoxOptionContents = (contentProps: { renderProps: ComboBoxOptionRenderProps }) => {
-    // One tracked read of the children getter. Reading it per use creates the
-    // child DOM once per read and desynchronizes hydration keys; an untracked
-    // setup-time read freezes a direct signal child such as `{label()}`.
+    // Share one tracked child value between classification and insertion.
+    // Re-evaluation can construct children; keep reactive inputs live rather
+    // than capturing an untracked setup-time snapshot.
     const content = createMemo(() => local.children);
     const checkClassName = createMemo(() => checkClass(contentProps.renderProps));
     return (

@@ -14,7 +14,18 @@
 
 // Port of packages/@react-spectrum/s2/src/Tabs.tsx.
 
-import { createContext, createEffect, createMemo, createSignal, createUniqueId, For, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  For,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
@@ -1124,7 +1135,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
   });
 
   createTrackedEffect(() => {
-const _s2Cleanups: Array<() => void> = [];
+    const _s2Cleanups: Array<() => void> = [];
 
     const wrapper = wrapperRef();
     queueOverflowUpdate();
@@ -1144,9 +1155,11 @@ const _s2Cleanups: Array<() => void> = [];
     window.addEventListener("resize", queueOverflowUpdate);
     _s2Cleanups.push(() => observer.disconnect());
     _s2Cleanups.push(() => window.removeEventListener("resize", queueOverflowUpdate));
-  
-return () => { for (const c of _s2Cleanups) c(); };
-});
+
+    return () => {
+      for (const c of _s2Cleanups) c();
+    };
+  });
 
   createTrackedEffect(() => {
     const fonts = typeof document === "undefined" ? undefined : document.fonts;
@@ -1309,11 +1322,9 @@ export function Tab(props: TabProps): JSX.Element {
 
   function TabContent(renderProps: TabRenderProps): JSX.Element {
     function ResolvedTabContent(): JSX.Element {
-      // Read `local.children` exactly once. On the server every access to a props-children
-      // getter re-instantiates any component it holds (e.g. <Text>), whereas the client
-      // memoizes after the first read. Reading twice (a render-prop probe plus the value) makes
-      // the server emit one extra element than the client, desynchronizing Solid's hydration-key
-      // counter and aborting hydration for the entire route. One read keeps both sides equal.
+      // Classify and insert the same authored-child value under this owner.
+      // Separate evaluations can construct additional children; this capture
+      // preserves the regression contract without assuming a global key counter.
       const rawChildren = local.children;
       const isRenderProp =
         typeof rawChildren === "function" &&
@@ -1507,9 +1518,8 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
     return isSelected();
   };
   const renderedChildren = () => {
-    // Read `local.children` once per evaluation — see the note in Tab's ResolvedTabContent:
-    // a repeated props-children read re-instantiates child components on the server only and
-    // breaks hydration-key parity.
+    // Share one child value within this evaluation, as in ResolvedTabContent.
+    // Keep reactive evaluation here rather than taking a setup-time snapshot.
     const rawChildren = local.children;
     return typeof rawChildren === "function"
       ? (rawChildren as (renderProps: TabPanelRenderProps) => JSX.Element)(activeRenderProps())

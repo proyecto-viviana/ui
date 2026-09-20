@@ -5,9 +5,9 @@
  * collection is fully populated before markup is emitted, so state-dependent descendants — the
  * selected Tab's SelectionIndicator, a ListViewItem's selection/focus affordances — are present
  * in the output. If the client's first render resolves that state differently, it walks a
- * different number of nodes and every hydration key after the divergence is off by one, which
- * aborts hydration for the whole route (Solid sets sharedConfig.done and throws up through the
- * tree; a router catches it and only console.warns, so the page silently ships dead).
+ * different structure and may fail to adopt those nodes. The historical route
+ * failure motivates paired hydration proof; rc.9 owner-scoped allocation and
+ * warning/throw paths do not imply one global counter or a universal route abort.
  *
  * These fixtures mirror the two shapes that actually broke the akade design-handoff-v2 route:
  * a horizontal Tabs with defaultSelectedKey, and a ListView with descriptions.

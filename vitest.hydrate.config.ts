@@ -11,10 +11,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // the hydration-walk wrappers needed by `hydrate()` over SSR markup. This is the
 // client half of the dual-compilation that reproduces SSR hydration mismatches.
 export default defineConfig({
-  // hot:false strips the solid-refresh HMR wrapper — it is dev-only (absent in
-  // the workerd/browser prod build), and it desyncs createUniqueId's hydration
-  // slot vs the server. Keeping it would make this harness test a dev artifact,
-  // not the real prod SSR→hydrate path.
+  // Disable refresh wrappers for the paired SSR/client compilation. Test the
+  // authored owner structure, without development-only HMR instrumentation.
   plugins: [
     ...solidPlugin({
       ssr: true,
@@ -37,11 +35,9 @@ export default defineConfig({
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
     include: ["packages/**/test/**/*.hydrate.test.{ts,tsx}"],
-    // solid-js core and @solidjs/web MUST be one module instance: web's
-    // hydrate() sets sharedConfig.context, and core's createUniqueId reads it.
-    // If vitest loads them as two instances, createUniqueId sees a null context
-    // forever → drifts every hydration key after it. Inlining both through the
-    // single transform pipeline guarantees one shared sharedConfig.
+    // Keep core/web hydration state in the same transform pipeline. In rc.9,
+    // client createUniqueId reads sharedConfig.hydrating and the current owner;
+    // sharedConfig.context is not its client hydration-state signal.
     server: {
       deps: {
         inline: ["solid-js", "@solidjs/web"],
@@ -50,8 +46,7 @@ export default defineConfig({
   },
   resolve: {
     conditions: ["development", "browser"],
-    // Single solid-js instance so the trace patches the same sharedConfig the
-    // web build calls (otherwise the helper grabs a second copy).
+    // Resolve core/web consistently with the shared hydration runtime.
     dedupe: ["solid-js", "@solidjs/web"],
     alias: {
       "@proyecto-viviana/solid-stately/private/flags/flags": resolve(

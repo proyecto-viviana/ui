@@ -244,18 +244,16 @@ export interface OptionContentProps {
 }
 
 /**
- * Renders an option's children with exactly one read of `props.children`,
+ * Memoizes `props.render()` so classification and insertion share its result,
  * wrapping a primitive (string/number) label in `<span {...labelProps}>` so the
  * option's `aria-labelledby` has a target. Internal to the option components
  * (ListBox, ComboBox, Select); mount it *inside* the option's `TextContext`
  * provider so `<Text>` children resolve their slots.
  *
- * Every read of a compiled element child evaluates its template and consumes a
- * hydration key — on the server (`ssrHydrationKey`) and on the client
- * (`getNextElement`) alike. Probing `typeof props.children` and then rendering
- * it spends several keys per option: the server emits only the last read, and
- * the client throws "Hydration Mismatch" on the first, taking the whole tree
- * with it. One tracked memo keeps both sides on the same key.
+ * The tracked memo preserves updates while avoiding separate render calls for
+ * the primitive check and insertion. Re-evaluation can construct children, so
+ * keep this sharing and provider ownership; it is not a universal restriction
+ * on getter reads or a promise that the callback runs only once forever.
  */
 export function OptionContent(props: OptionContentProps): JSX.Element {
   const content = createMemo(() => props.render());

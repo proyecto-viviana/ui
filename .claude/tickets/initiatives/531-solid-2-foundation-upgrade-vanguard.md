@@ -100,6 +100,11 @@ history:
       at: 2026-09-19,
       note: "#536 public Tooltip route coverage repairs four missing hydrated description links by moving TriggerWrapper ref/state reads into createEffect compute, retaining the SSR guard and original behavior. Fresh complete SSR 74/74 then hydrate 82/82 and owning 25/25 pass with one worker. Genuine streaming, stale guidance, every sibling/build/attribution requirement and #139/#194/#537 live 2177-case same-revision zero-waiver release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 live hydration guidance and owning comments now describe rc.9 owner allocation and retain justified reactive/provider child sharing. No runtime/assertion changes; structural AST equivalence passes 21/21 code paths. Fresh complete SSR 74/74 then hydrate 82/82 pass with one worker. Genuine streaming and all remaining child/build/attribution and #139/#194/#537 same-revision zero-waiver release requirements remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

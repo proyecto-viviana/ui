@@ -4,9 +4,9 @@
  * Hydration half of the Picker hydration regression (#54).
  * Reads the server markup produced by Picker.ssr.test.tsx (run that first),
  * injects it into a container, then hydrates the DOM-compiled Picker over it —
- * exactly the production flow (workerd SSR HTML → browser hydrate). A
- * "Hydration Mismatch" / getNextElement desync would surface here as a thrown
- * error or a console.error; both are asserted absent.
+ * the paired SSR → client adoption path in jsdom, not a production-browser
+ * certificate. The helper rejects throws, missing-key/tag/unclaimed-node
+ * diagnostics, and the test asserts the original button is adopted.
  *
  * This is the guard for the root-cause fix: the overlay content (the popover
  * ListBox) is gated behind `useIsHydrated()`, and its children are read lazily

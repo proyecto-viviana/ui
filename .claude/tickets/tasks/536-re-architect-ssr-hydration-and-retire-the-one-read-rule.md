@@ -81,6 +81,11 @@ history:
       at: 2026-09-19,
       note: "public Tooltip controlled/default-open generated/explicit-ID and standalone routes expose four missing hydrated description links. TriggerWrapper's tracked callback first reads snapshot-null refs; split createEffect preserves initial dependency tracking and existing DOM/listener cleanup. Five focused routes and owning 25/25 pass; fresh complete SSR 74/74 then hydrate 82/82 pass with one worker. SSR portal guard and real render-prop replacement semantics remain. Stale guidance, actual streaming, sibling/build/attribution and release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "bounded guidance reconciliation replaces obsolete global-counter, universal One-Read and render-prop prohibition claims with installed rc.9 owner/structure/adoption contracts. Semantic caches, reactive evaluation and all assertions remain; structural AST equivalence passes 21/21 code paths. Fresh complete SSR 74/74 then hydration 82/82 pass with one worker. Genuine unresolved-shell streaming, final full proof and all sibling/build/attribution/release gates remain open",
+    }
 ---
 
 ## Cause
@@ -370,6 +375,29 @@ accept this bounded slice. Receipt/ledger:
 The zero-geometry deferred-ref path is not newly certified here; no blanket
 Tooltip lifecycle claim. Stale guidance/comments, actual unresolved-shell/late-tail
 streaming and final full lanes still remain before task or initiative closure.
+
+## 2026-09-19 hydration guidance reconciliation
+
+The live patterns reference, hydration config rationale and twenty owning
+source/test comment sites now describe rc.9 owner-scoped allocation rather
+than a flat counter or universal One-Read rule. Authored-child sharing, tracked
+updates, provider laziness, primitive-label semantics and historical regressions
+remain intact. Inline render props and JSX-valued props are not categorically
+unsafe; missing-key paths may throw or warn and create detached nodes, so proof
+requires adoption and behavior. The guide no longer recommends masking missing
+context with a memo/Show/null fallback or treating an allocator trace as proof.
+
+No executable source or assertion changed: a structural TypeScript AST comparison
+of all 21 TypeScript/TSX paths passes, excluding comments and formatting trivia.
+Focused formatting also wraps pre-existing long imports and cleanup indentation.
+Fresh complete SSR passes 74/74, followed by hydration 82/82, with one worker.
+Independent review corrected snapshot and coverage overclaims without altering
+the owning tests. Receipt: `.agents/UI-EXECUTION-536-GUIDANCE-2026-09-19.md`.
+
+Actual unresolved-shell/late-tail streaming and final complete lanes still remain.
+This documents justified retained caches, not blanket retirement or full #536
+acceptance. Sibling/build, attribution and same-revision release requirements
+remain unchanged.
 
 ## Done when
 

@@ -16,7 +16,15 @@
 
 // Port of packages/@react-spectrum/s2/src/Picker.tsx.
 
-import { createContext, createMemo, createSignal, createUniqueId, merge, Show, useContext } from "solid-js";
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createUniqueId,
+  merge,
+  Show,
+  useContext,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Select as HeadlessSelect,
@@ -1253,9 +1261,9 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     );
   };
   const PickerItemContents = (contentProps: { renderProps: SelectOptionRenderProps }) => {
-    // One tracked read of the children getter. Reading it per use creates the
-    // child DOM once per read and desynchronizes hydration keys; an untracked
-    // setup-time read freezes a direct signal child such as `{label()}`.
+    // Share one tracked child value between classification and insertion.
+    // Re-evaluation can construct children; keep reactive inputs live rather
+    // than capturing an untracked setup-time snapshot.
     const content = createMemo(() => local.children);
     const checkClassName = createMemo(() => pickerCheckmark({ ...contentProps.renderProps, size }));
     return (

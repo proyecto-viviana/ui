@@ -4,7 +4,7 @@
  * Hydrates over TagGroup's own SSR markup and asserts Solid reports no "Hydration Mismatch".
  * On the client `HTMLElement` DOES exist, so `isRenderedTag` takes the real `instanceof` branch;
  * if the server and client ever disagreed on whether an item was "already a Tag", the wrap/no-wrap
- * decision would differ between renders and desync every hydration key after it. See
+ * decision would produce a different initial structure and jeopardize adoption. See
  * TagGroup.ssr.test.tsx for the mechanism.
  */
 import { afterEach, describe, expect, it } from "vite-plus/test";

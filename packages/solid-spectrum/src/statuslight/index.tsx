@@ -189,9 +189,9 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
   const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
     .process?.env?.NODE_ENV;
 
-  // One tracked read of the children getter. Reading it per use creates the
-  // child DOM once per read and desynchronizes hydration keys; an untracked
-  // setup-time read freezes a direct signal child such as `{label()}`.
+  // Share one tracked child value between classification and insertion.
+  // Re-evaluation can construct children; keep reactive inputs live rather
+  // than capturing an untracked setup-time snapshot.
   const content = createMemo(() => local.children);
   if (!content() && !local["aria-label"] && nodeEnv !== "production") {
     console.warn("If no children are provided, an aria-label must be specified");

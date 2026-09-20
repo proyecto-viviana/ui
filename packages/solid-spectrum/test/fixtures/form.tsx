@@ -2,8 +2,8 @@
  * Shared fixtures for Form SSR/hydration regression.
  *
  * Mirrors the effect-latam profile/foros pattern: Spectrum Form wrapping
- * TextField / Button (and a plain submit button). A hydration mismatch here
- * blanks the whole route — Solid aborts the tree on the first desync.
+ * TextField / Button (and a plain submit button). Paired tests protect node
+ * adoption and expected markup after the historical route-level hydration failure.
  */
 import type { JSX } from "@solidjs/web";
 import { Provider } from "../../src/provider";

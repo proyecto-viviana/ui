@@ -13,7 +13,17 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/TreeView.tsx
 
 // Port of packages/@react-spectrum/s2/src/TreeView.tsx.
-import { children as resolveChildren, createContext, createEffect, createMemo, createSignal, onCleanup, Show, useContext, createTrackedEffect } from "solid-js";
+import {
+  children as resolveChildren,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  Show,
+  useContext,
+  createTrackedEffect,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Tree as HeadlessTree,
@@ -1127,9 +1137,9 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
     <HeadlessTreeItemContent {...headlessProps}>
       {(renderProps: HeadlessTreeItemContentRenderProps) => {
         const content = () => {
-          // Read `local.children` once — a repeated props-children read re-instantiates child
-          // components on the server only, desynchronizing Solid's hydration keys and aborting
-          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          // Share the authored-child value for classification and insertion here.
+          // Keep evaluation under this owner; repeated construction is not a
+          // universal getter-read rule or a global hydration-counter model.
           const rawChildren = local.children;
           return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
         };
