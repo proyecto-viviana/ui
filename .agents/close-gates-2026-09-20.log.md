@@ -83,7 +83,7 @@ before each (`free -m`, `available` over 3000 MB) and vitest held to
 
 | step | exit | first failure |
 | --- | --- | --- |
-| `typecheck:apps` | pending | |
+| `typecheck:apps` | 0 | — (435 files, 0 errors, 35 deprecation hints) |
 | `test:run` | pending | |
 | `test:ssr` | pending | |
 | `test:hydrate` | pending | |
