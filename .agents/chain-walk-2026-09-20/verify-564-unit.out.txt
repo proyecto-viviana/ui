@@ -1,0 +1,11 @@
+$ vp test scripts/check-certified-case-floor.test.ts ⊘ cache disabled
+
+ RUN  v4.1.11 /home/emoporemilio/projects/viviana-hub/ui
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  18:21:17
+   Duration  762ms (transform 83ms, setup 136ms, import 21ms, tests 6ms, environment 463ms)
+
+
