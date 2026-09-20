@@ -87,6 +87,8 @@
  */
 
 import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
+import { focusWithoutScrolling } from "./focus";
+import { isFirefox, isIPad, isMac, isWebKit } from "./platform";
 
 /**
  * Gets the owner document of an element, or the global document.
@@ -565,30 +567,75 @@ export function shouldPreventDefaultUp(target: Element): boolean {
   return true;
 }
 
+/** The modifier keys `openLink` carries onto the click it synthesizes. */
+export interface LinkModifiers {
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+}
+
 /**
- * Opens a link, supporting both same-window and new-window navigation.
- * Used for keyboard activation of links with Space key (which doesn't natively open links).
+ * Opens a link by dispatching the click the browser would have produced, so the
+ * link's own `target`, `rel`, `download` and any router listening for clicks all
+ * still apply. Used for keyboard activation of links, and for elements that act
+ * as links without being one.
+ *
+ * 1:1 with `openLink` in @react-aria/utils: it never navigates itself.
  */
-export function openLink(target: HTMLAnchorElement, event: Event, allowOpener = false): void {
-  const { href, target: linkTarget, rel } = target;
-  (openLink as { isOpening?: boolean }).isOpening = true;
+export function openLink(
+  target: HTMLAnchorElement,
+  modifiers: LinkModifiers,
+  setOpening = true,
+): void {
+  let { metaKey, ctrlKey } = modifiers;
+  const { altKey, shiftKey } = modifiers;
 
-  // Handle modifier keys for open-in-new-tab behavior
-  const keyEvent = event as KeyboardEvent;
-  const shouldOpenInNewTab =
-    linkTarget === "_blank" ||
-    keyEvent?.metaKey ||
-    keyEvent?.ctrlKey ||
-    keyEvent?.shiftKey ||
-    keyEvent?.altKey;
-
-  if (shouldOpenInNewTab) {
-    const features = !allowOpener && rel?.includes("noopener") ? "noopener" : undefined;
-    window.open(href, linkTarget || "_blank", features);
-  } else {
-    window.location.href = href;
+  // Firefox does not recognize keyboard events as a user action by default, and
+  // the popup blocker will prevent links with target="_blank" from opening.
+  // However, it does allow the event if the Command/Control key is held, which
+  // opens the link in a background tab. This seems like the best we can do.
+  // See https://bugzilla.mozilla.org/show_bug.cgi?id=257870 and
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=746640.
+  if (
+    !isWebKit() &&
+    isFirefox() &&
+    (window as Window & { event?: Event }).event?.type?.startsWith("key") &&
+    target.target === "_blank"
+  ) {
+    if (isMac()) {
+      metaKey = true;
+    } else {
+      ctrlKey = true;
+    }
   }
 
+  // WebKit does not support firing click events with modifier keys, but does
+  // support keyboard events.
+  // https://github.com/WebKit/WebKit/blob/c03d0ac6e6db178f90923a0a63080b5ca210d25f/Source/WebCore/html/HTMLAnchorElement.cpp#L184
+  const event =
+    isWebKit() && isMac() && !isIPad() && process.env.NODE_ENV !== "test"
+      ? // keyIdentifier is a non-standard property, but it's what WebKit expects.
+        (new KeyboardEvent("keydown", {
+          keyIdentifier: "Enter",
+          metaKey,
+          ctrlKey,
+          altKey,
+          shiftKey,
+        } as KeyboardEventInit) as Event)
+      : new MouseEvent("click", {
+          metaKey,
+          ctrlKey,
+          altKey,
+          shiftKey,
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+        });
+
+  (openLink as { isOpening?: boolean }).isOpening = setOpening;
+  focusWithoutScrolling(target);
+  target.dispatchEvent(event);
   (openLink as { isOpening?: boolean }).isOpening = false;
 }
 

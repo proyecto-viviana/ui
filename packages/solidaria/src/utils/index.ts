@@ -42,6 +42,7 @@ export {
   shouldPreventDefaultKeyboard,
   shouldPreventDefaultUp,
   openLink,
+  type LinkModifiers,
   isScrollable,
   getScrollParent,
   getScrollParents,

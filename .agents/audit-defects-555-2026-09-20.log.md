@@ -267,3 +267,55 @@ packages/solid-stately/test/ssr.test.ts` → 29/29;
 (the only suite that asserts generated id text) → 50/50. The `*.ssr`/`*.hydrate`
 suites are excluded from this vitest project and were not run.
 Changeset `.changeset/create-id-generate-first.md`.
+
+## 6 — openLink navigated instead of dispatching the click
+
+Upstream read: `react-spectrum/packages/react-aria/src/utils/openLink.tsx:106-144`.
+`openLink` never navigates. It builds a `MouseEvent("click")` carrying the four
+modifier keys with `detail: 1`, `bubbles` and `cancelable` (a `KeyboardEvent`
+instead on WebKit + Mac outside iPad, and outside tests), sets its `isOpening`
+latch, calls `focusWithoutScrolling(target)`, dispatches on the link, and clears
+the latch. The Firefox branch forces the meta/control key when a keyboard event
+opens a `target="_blank"` link, because Firefox's popup blocker otherwise eats
+it.
+
+Ours (`packages/solidaria/src/utils/dom.ts:572-593`) set `window.location.href`
+or called `window.open` itself. Everything downstream of the click was lost: a
+`RouterProvider` listening for clicks never saw one, `preventDefault` could not
+work, and `rel`/`download`/`ping` were re-derived by hand instead of being the
+link's own. `createInteractionModality` reads the `isOpening` latch, which the
+old version set around a synchronous navigation that never dispatched anything.
+
+Signature also diverged: upstream `(target, modifiers, setOpening = true)`
+taking a modifiers object; ours `(target, event, allowOpener)`. Ported to
+upstream's. The call sites already passed an event, which satisfies the
+modifiers shape structurally, so only the two `as unknown as Event` casts in
+`createSelectableItem.ts` had to go. `allowOpener` had no caller.
+
+Red test, the new `packages/solidaria/test/openLink.test.ts`: 4 cases (a click
+is dispatched with `detail: 1`, modifiers are carried, the link is focused and
+`isOpening` is true during the dispatch, `setOpening: false` leaves the latch
+alone). All four measured red against the old implementation — `expected [] to
+have a length of 1`, `expected null to be <a …>`, `expected undefined to be
+true`. Green after: 4/4.
+
+**Two copies, one kept.** `packages/solidaria-components/src/RouterProvider.tsx`
+held a second `openLink` (the faithful dispatch, minus the latch, the focus call
+and the platform branches). Canonical is solidaria's: the press and selection
+hooks call it, and `createInteractionModality` reads its latch — a second module
+with its own latch would mean the modality code and the router disagreeing about
+whether a link is opening. `RouterProvider` now imports it and re-exports the
+name it already published, so nothing downstream breaks; a new test in
+`RouterProvider.test.tsx` asserts the two exports are the same function and that
+it dispatches. `openLink` and `LinkModifiers` are now exported from solidaria's
+root for that import.
+
+Typecheck: `vp exec tsc --noEmit -p tsconfig.typecheck.json` also surfaced two
+errors in `FocusScope.tsx` from `d0f095a1` — `"focusin"` is not in TypeScript's
+`ElementEventMap`, so the per-element listeners needed the `EventListener`
+overload. Fixed in `083f3936`; the only errors left are the three pre-existing
+`scripts/*.test.ts` ones.
+
+Green: `openLink` 4/4, `RouterProvider` 6/6, `createComboBox` + `RouterProvider`
+53/53, `createPress` + `createSelectableItem` 107/107, `FocusScope` 37/37.
+Changeset `.changeset/open-link-dispatch.md`.

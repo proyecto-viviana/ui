@@ -283,7 +283,7 @@ export function createSelectableItem<T>(
       if (linkBehavior() === "selection") {
         const el = ref();
         if (el instanceof HTMLAnchorElement) {
-          openLink(el, e as unknown as Event);
+          openLink(el, e);
         }
         // Restore the prior selection so select/combobox close cleanly.
         const sel = manager.selectedKeys();
@@ -309,7 +309,7 @@ export function createSelectableItem<T>(
     if (hasLinkAction()) {
       const el = ref();
       if (el instanceof HTMLAnchorElement) {
-        openLink(el, e as unknown as Event);
+        openLink(el, e);
       }
     }
   };

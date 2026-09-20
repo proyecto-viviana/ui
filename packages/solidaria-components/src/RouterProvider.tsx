@@ -22,6 +22,7 @@
  */
 
 import { createContext, useContext } from "solid-js";
+import { openLink } from "@proyecto-viviana/solidaria";
 import type { JSX } from "@solidjs/web";
 
 export interface RouterClickModifiers {
@@ -109,18 +110,11 @@ export function shouldClientNavigate(
   );
 }
 
-export function openLink(target: HTMLAnchorElement, modifiers: RouterClickModifiers): void {
-  const event = new MouseEvent("click", {
-    metaKey: modifiers.metaKey,
-    ctrlKey: modifiers.ctrlKey,
-    altKey: modifiers.altKey,
-    shiftKey: modifiers.shiftKey,
-    detail: 1,
-    bubbles: true,
-    cancelable: true,
-  });
-  target.dispatchEvent(event);
-}
+// One implementation only: `openLink` lives in `@proyecto-viviana/solidaria`,
+// where the press and selection hooks already call it and where its `isOpening`
+// latch is read. This module re-exports it because it is part of this package's
+// public surface, as upstream keeps both in `openLink.tsx`.
+export { openLink };
 
 function getSyntheticLink(target: Element, open: (link: HTMLAnchorElement) => void): void {
   if (target instanceof HTMLAnchorElement) {

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render } from "@solidjs/testing-library";
-import { RouterProvider, RouterContext, useRouter } from "../src/RouterProvider";
+import { RouterProvider, RouterContext, useRouter, openLink } from "../src/RouterProvider";
+import { openLink as solidariaOpenLink } from "@proyecto-viviana/solidaria";
 
 describe("RouterProvider", () => {
   it("renders children", () => {
@@ -78,5 +79,23 @@ describe("RouterProvider", () => {
     render(() => <Consumer />);
 
     expect(routerValue!.isNative).toBe(true);
+  });
+
+  it("re-exports solidaria's openLink rather than keeping a second copy", () => {
+    expect(openLink).toBe(solidariaOpenLink);
+
+    const link = document.createElement("a");
+    link.href = "https://example.com/target";
+    document.body.append(link);
+    const clicks: MouseEvent[] = [];
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      clicks.push(e as MouseEvent);
+    });
+
+    openLink(link, { metaKey: false, ctrlKey: false, altKey: false, shiftKey: false });
+
+    expect(clicks).toHaveLength(1);
+    link.remove();
   });
 });
