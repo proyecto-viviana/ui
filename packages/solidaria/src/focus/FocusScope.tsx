@@ -17,7 +17,15 @@
  * Ported from packages/react-aria/src/focus/FocusScope.tsx.
  */
 
-import { getOwnerDocument, isFocusable, isTabbable, getFocusableTreeWalker, getActiveElement, useContextOptional, onOwnedCleanup } from "../utils";
+import {
+  getOwnerDocument,
+  isFocusable,
+  isTabbable,
+  getFocusableTreeWalker,
+  getActiveElement,
+  useContextOptional,
+  onOwnedCleanup,
+} from "../utils";
 import { createContext, createEffect, createSignal, onSettled } from "solid-js";
 import type { Accessor, ParentComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -405,10 +413,8 @@ function isElementInChildScope(element: Element, scope: ScopeRef = null): boolea
  * to user events.
  */
 export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
-  if (isServer) {
-    return <>{props.children}</>;
-  }
-
+  // Keep the provider, sentinels and lifecycle owners symmetric during SSR.
+  // Server effects reserve their slots without running browser callbacks.
   const [startEl, setStartEl] = createSignal<HTMLSpanElement | null>(null, { ownedWrite: true });
   const [endEl, setEndEl] = createSignal<HTMLSpanElement | null>(null, { ownedWrite: true });
   const [scopeElements, setScopeElements] = createSignal<Element[]>([], { ownedWrite: true });
@@ -437,7 +443,7 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     return element;
   };
 
-  if (props.restoreFocus) {
+  if (props.restoreFocus && !isServer) {
     nodeToRestore = getRestorableElement(getActiveElement(document), document);
   }
 
@@ -666,111 +672,111 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       return { contain, scope };
     },
     ({ contain, scope }) => {
-    if (!contain) return;
+      if (!contain) return;
 
-    if (scope.length === 0) return;
+      if (scope.length === 0) return;
 
-    const doc = getOwnerDocument(scope[0]);
-    let focusedNode: Element | null = null;
+      const doc = getOwnerDocument(scope[0]);
+      let focusedNode: Element | null = null;
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Tab" || e.altKey || e.ctrlKey || e.metaKey) {
-        return;
-      }
-
-      const scope = scopeElements();
-      const activeElement = getActiveElement(doc);
-      if (!isElementInScope(activeElement, scope)) {
-        return;
-      }
-
-      const elements = getFocusableElements(scope, true);
-      if (elements.length === 0) return;
-
-      const firstElement = elements[0];
-      const lastElement = elements[elements.length - 1];
-
-      if (e.shiftKey && activeElement === firstElement) {
-        e.preventDefault();
-        focusSafely(lastElement);
-      } else if (!e.shiftKey && activeElement === lastElement) {
-        e.preventDefault();
-        focusSafely(firstElement);
-      }
-    };
-
-    const onFocusIn = (e: FocusEvent) => {
-      const scope = scopeElements();
-      const target = e.target as Element;
-
-      if (isElementInScope(target, scope)) {
-        focusedNode = target;
-      } else if (isElementInChildScope(target, scopeElements)) {
-        // Focus moved into a descendant scope — e.g. a menu opened from inside
-        // this modal popover, rendered in a portal outside this scope's DOM
-        // subtree. Track it but don't pull focus back, which would tear the
-        // nested overlay down.
-        focusedNode = target;
-      } else if (target === doc.body || target === doc.documentElement) {
-        // `element.blur()` sends focus to body and may fire focusin there.
-        // RAC restores that path from focusout + rAF (`onBlur`), not from
-        // this focusin. Pulling back synchronously would beat a following
-        // pointermove (certified hover after the focus-visible reset) and
-        // keep a stale keyboard ring.
-        return;
-      } else if (focusedNode) {
-        // Focus escaped the scope, bring it back
-        focusSafely(focusedNode as HTMLElement);
-      } else {
-        // No previous focus, focus first element
-        focusManager.focusFirst();
-      }
-    };
-
-    let restoreRaf: number | null = null;
-
-    const onFocusOut = (e: FocusEvent) => {
-      const target = e.target as Element;
-      if (!isElementInScope(target, scopeElements())) return;
-
-      // Focus left an element inside the scope. Wait a frame (like upstream's
-      // onBlur) so a synchronous refocus elsewhere can settle; if focus ended
-      // up outside every scope (e.g. blur() to body), pull it back.
-      const win = doc.defaultView ?? window;
-      if (restoreRaf != null) win.cancelAnimationFrame(restoreRaf);
-      restoreRaf = win.requestAnimationFrame(() => {
-        restoreRaf = null;
-        const scope = scopeElements();
-        const activeElement = getActiveElement(doc);
-        if (
-          activeElement &&
-          (isElementInScope(activeElement, scope) ||
-            isElementInChildScope(activeElement, scopeElements))
-        ) {
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key !== "Tab" || e.altKey || e.ctrlKey || e.metaKey) {
           return;
         }
 
-        if (doc.body.contains(target)) {
+        const scope = scopeElements();
+        const activeElement = getActiveElement(doc);
+        if (!isElementInScope(activeElement, scope)) {
+          return;
+        }
+
+        const elements = getFocusableElements(scope, true);
+        if (elements.length === 0) return;
+
+        const firstElement = elements[0];
+        const lastElement = elements[elements.length - 1];
+
+        if (e.shiftKey && activeElement === firstElement) {
+          e.preventDefault();
+          focusSafely(lastElement);
+        } else if (!e.shiftKey && activeElement === lastElement) {
+          e.preventDefault();
+          focusSafely(firstElement);
+        }
+      };
+
+      const onFocusIn = (e: FocusEvent) => {
+        const scope = scopeElements();
+        const target = e.target as Element;
+
+        if (isElementInScope(target, scope)) {
           focusedNode = target;
-          focusSafely(target as HTMLElement);
+        } else if (isElementInChildScope(target, scopeElements)) {
+          // Focus moved into a descendant scope — e.g. a menu opened from inside
+          // this modal popover, rendered in a portal outside this scope's DOM
+          // subtree. Track it but don't pull focus back, which would tear the
+          // nested overlay down.
+          focusedNode = target;
+        } else if (target === doc.body || target === doc.documentElement) {
+          // `element.blur()` sends focus to body and may fire focusin there.
+          // RAC restores that path from focusout + rAF (`onBlur`), not from
+          // this focusin. Pulling back synchronously would beat a following
+          // pointermove (certified hover after the focus-visible reset) and
+          // keep a stale keyboard ring.
+          return;
+        } else if (focusedNode) {
+          // Focus escaped the scope, bring it back
+          focusSafely(focusedNode as HTMLElement);
         } else {
+          // No previous focus, focus first element
           focusManager.focusFirst();
         }
-      });
-    };
+      };
 
-    doc.addEventListener("keydown", onKeyDown, true);
-    doc.addEventListener("focusin", onFocusIn, true);
-    doc.addEventListener("focusout", onFocusOut, true);
+      let restoreRaf: number | null = null;
 
-    return () => {
-      doc.removeEventListener("keydown", onKeyDown, true);
-      doc.removeEventListener("focusin", onFocusIn, true);
-      doc.removeEventListener("focusout", onFocusOut, true);
-      if (restoreRaf != null) {
-        (doc.defaultView ?? window).cancelAnimationFrame(restoreRaf);
-      }
-    };
+      const onFocusOut = (e: FocusEvent) => {
+        const target = e.target as Element;
+        if (!isElementInScope(target, scopeElements())) return;
+
+        // Focus left an element inside the scope. Wait a frame (like upstream's
+        // onBlur) so a synchronous refocus elsewhere can settle; if focus ended
+        // up outside every scope (e.g. blur() to body), pull it back.
+        const win = doc.defaultView ?? window;
+        if (restoreRaf != null) win.cancelAnimationFrame(restoreRaf);
+        restoreRaf = win.requestAnimationFrame(() => {
+          restoreRaf = null;
+          const scope = scopeElements();
+          const activeElement = getActiveElement(doc);
+          if (
+            activeElement &&
+            (isElementInScope(activeElement, scope) ||
+              isElementInChildScope(activeElement, scopeElements))
+          ) {
+            return;
+          }
+
+          if (doc.body.contains(target)) {
+            focusedNode = target;
+            focusSafely(target as HTMLElement);
+          } else {
+            focusManager.focusFirst();
+          }
+        });
+      };
+
+      doc.addEventListener("keydown", onKeyDown, true);
+      doc.addEventListener("focusin", onFocusIn, true);
+      doc.addEventListener("focusout", onFocusOut, true);
+
+      return () => {
+        doc.removeEventListener("keydown", onKeyDown, true);
+        doc.removeEventListener("focusin", onFocusIn, true);
+        doc.removeEventListener("focusout", onFocusOut, true);
+        if (restoreRaf != null) {
+          (doc.defaultView ?? window).cancelAnimationFrame(restoreRaf);
+        }
+      };
     },
   );
 

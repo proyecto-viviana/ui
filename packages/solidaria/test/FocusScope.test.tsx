@@ -4,7 +4,12 @@
  * Tests for focus containment, restoration, and auto-focus behavior.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"; import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library"; import { FocusScope, useFocusManager } from "../src/focus/FocusScope"; import { preventFocus } from "../src/utils/focus"; import { setInteractionModality } from "../src/interactions/createInteractionModality"; import { createSignal, flush, type Component, Show } from "solid-js";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { FocusScope, useFocusManager } from "../src/focus/FocusScope";
+import { preventFocus } from "../src/utils/focus";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
+import { createSignal, flush, type Component, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // setupUser is consolidated in solidaria-test-utils.
@@ -959,17 +964,95 @@ describe("FocusScope", () => {
     });
 
     it("should clean up event listeners on unmount", () => {
+      setInteractionModality("keyboard");
+      const outside = document.createElement("button");
+      document.body.appendChild(outside);
+      const addListener = vi.spyOn(document, "addEventListener");
+      const removeListener = vi.spyOn(document, "removeEventListener");
       const { unmount } = render(() => (
         <FocusScope contain>
           <input data-testid="cleanup-input1" />
+          <input data-testid="cleanup-input2" />
         </FocusScope>
       ));
+      const first = screen.getByTestId("cleanup-input1");
+      const last = screen.getByTestId("cleanup-input2");
+      try {
+        first.focus();
+        const before = new KeyboardEvent("keydown", {
+          key: "Tab",
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        first.dispatchEvent(before);
+        expect(before.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(last);
+        const listeners = addListener.mock.calls.filter(
+          ([type, , capture]) =>
+            ["keydown", "focusin", "focusout"].includes(type) && capture === true,
+        );
+        for (const type of ["keydown", "focusin", "focusout"]) {
+          expect(listeners.some(([event]) => event === type)).toBe(true);
+        }
+        unmount();
+        for (const [type, listener, capture] of listeners) {
+          expect(removeListener).toHaveBeenCalledWith(type, listener, capture);
+        }
+        // Reconnect retained targets: disconnected DOM must not mask a leaked
+        // document listener's still-live scope closure.
+        document.body.append(first, last);
+        first.focus();
+        const after = new KeyboardEvent("keydown", {
+          key: "Tab",
+          shiftKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        first.dispatchEvent(after);
+        expect(after.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(first);
+        outside.focus();
+        vi.runAllTimers();
+        expect(document.activeElement).toBe(outside);
+      } finally {
+        unmount();
+        addListener.mockRestore();
+        removeListener.mockRestore();
+        first.remove();
+        last.remove();
+        outside.remove();
+      }
+    });
 
-      unmount();
-      vi.runAllTimers();
-
-      // Should not throw errors after unmount
-      expect(true).toBe(true);
+    it("cancels queued autofocus when its owner is disposed", () => {
+      setInteractionModality("keyboard");
+      const outside = document.createElement("button");
+      document.body.appendChild(outside);
+      outside.focus();
+      const { unmount } = render(() => (
+        <FocusScope autoFocus>
+          <button data-testid="disposed-autofocus">Target</button>
+        </FocusScope>
+      ));
+      const target = screen.getByTestId("disposed-autofocus");
+      const focused = vi.fn();
+      target.addEventListener("focus", focused);
+      try {
+        expect(document.activeElement).toBe(outside);
+        expect(vi.getTimerCount()).toBeGreaterThan(0);
+        unmount();
+        document.body.appendChild(target);
+        expect(target.isConnected).toBe(true);
+        vi.runAllTimers();
+        expect(document.activeElement).toBe(outside);
+        expect(focused).not.toHaveBeenCalled();
+      } finally {
+        unmount();
+        target.removeEventListener("focus", focused);
+        target.remove();
+        outside.remove();
+      }
     });
 
     it("should work without contain or restoreFocus", () => {

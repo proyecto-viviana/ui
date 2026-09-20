@@ -85,6 +85,11 @@ history:
       at: 2026-09-19,
       note: "#536 focus lifecycle parity now repairs two baseline hydration-key failures through symmetric real onSettled registration, preserving inert SSR and client timing. Fresh complete SSR 63/63 then hydrate 71/71 pass with one worker; VirtualFocus remains an unchanged passing allocation control. FocusScope, portal routes, real streaming, stale guidance, #534 delayed-cancellation debt and every sibling/build/attribution/release requirement remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 FocusScope now renders symmetric context and sentinels with browser capture guarded. Three failing old-source SSR cases are corrected; fresh complete SSR 66/66 then hydrate 74/74 and owning 47/47 pass with one worker, preserving containment/restoration and cancellation. Public portal routes, real streaming, stale guidance, all sibling/build/attribution requirements and #139/#194/#537 same-revision release gates remain open",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

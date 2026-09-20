@@ -8,13 +8,16 @@ import { setInteractionModality } from "../src/interactions/createInteractionMod
 import { clearAutoFocusQueue } from "../src/focus/createAutoFocus";
 import { clearFocusStack, type FocusRestoreResult } from "../src/focus/createFocusRestore";
 import type { FocusHookProbe } from "./fixtures/hydrationHooks";
+import type { FocusManager } from "../src/focus/FocusScope";
 import {
   browserFunction,
   fallbackFunction,
   focusHookCases,
   FocusHookFixture,
+  FocusScopeFixture,
   hookCases,
   HydrationHookFixture,
+  scopeModes,
 } from "./fixtures/hydrationHooks";
 
 afterEach(() => {
@@ -121,6 +124,136 @@ describe("focus hook owner hydration parity", () => {
           expect(container.querySelector("[data-focus-hook]")).toBe(node);
         }
       }
+    });
+  }
+});
+
+describe("FocusScope hydration structure and behavior", () => {
+  // Autofocus runs after a paint frame and its following timer; restoration
+  // may also wait a frame. Keep the real-timer hydration barrier independent.
+  const afterPaint = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+
+  for (const mode of scopeModes) {
+    it(`adopts the ${mode} scope and preserves its focus contract`, async () => {
+      setInteractionModality("keyboard");
+      const trigger = document.createElement("button");
+      const outside = document.createElement("button");
+      document.body.append(trigger, outside);
+      let manager: FocusManager | undefined;
+      let id = "";
+      let serverId = "";
+      let adopted: HTMLInputElement | undefined;
+      let reveal!: (visible: boolean) => void;
+      let add!: (visible: boolean) => void;
+      const selectors = [
+        "[data-focus-scope-start]",
+        "[data-scope-label]",
+        "[data-scope-first]",
+        "[data-scope-disabled]",
+        "[data-scope-last]",
+        "[data-focus-scope-end]",
+      ];
+      let nodes: HTMLElement[] = [];
+      const html = readFileSync(
+        resolve(import.meta.dirname, `../../../output/focus-scope-${mode}-ssr.html`),
+        "utf8",
+      );
+      const container = await hydrateOverSsr(
+        html,
+        () => (
+          <FocusScopeFixture
+            mode={mode}
+            manager={(value) => {
+              manager = value;
+            }}
+            id={(value) => {
+              id = value;
+            }}
+            ref={(node) => {
+              adopted = node;
+            }}
+            reveal={(setter) => {
+              reveal = setter;
+            }}
+            add={(setter) => {
+              add = setter;
+            }}
+          />
+        ),
+        {
+          beforeHydrate(container) {
+            nodes = selectors.map((selector) => {
+              const node = container.querySelector<HTMLElement>(selector);
+              expect(node).not.toBeNull();
+              return node!;
+            });
+            serverId = nodes[2].id;
+            expect(serverId).not.toBe("");
+            trigger.focus();
+            expect(document.activeElement).toBe(trigger);
+          },
+        },
+      );
+      const [start, label, first, disabled, last, end] = nodes;
+      const assertAdopted = () => {
+        for (let i = 0; i < selectors.length; i++) {
+          expect(container.querySelector(selectors[i])).toBe(nodes[i]);
+        }
+        expect(adopted).toBe(first);
+        expect(id).toBe(serverId);
+        expect(first.id).toBe(serverId);
+        expect(label).toHaveAttribute("for", serverId);
+        expect(start).toHaveAttribute("hidden");
+        expect(end).toHaveAttribute("hidden");
+        expect(disabled).toBeDisabled();
+      };
+      assertAdopted();
+      expect(manager).toBeDefined();
+      await afterPaint();
+      flush();
+      expect(document.activeElement).toBe(mode === "enabled" ? first : trigger);
+      expect(manager!.focusFirst()).toBe(first);
+      expect(document.activeElement).toBe(first);
+      expect(manager!.focusNext()).toBe(last);
+      expect(document.activeElement).toBe(last);
+
+      const forward = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+      last.dispatchEvent(forward);
+      flush();
+      expect(forward.defaultPrevented).toBe(mode === "enabled");
+      expect(document.activeElement).toBe(mode === "enabled" ? first : last);
+      first.focus();
+      const reverse = new KeyboardEvent("keydown", {
+        key: "Tab",
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      first.dispatchEvent(reverse);
+      flush();
+      expect(reverse.defaultPrevented).toBe(mode === "enabled");
+      expect(document.activeElement).toBe(mode === "enabled" ? last : first);
+
+      add(true);
+      flush();
+      // MutationObserver re-collects the new direct sibling between sentinels.
+      await Promise.resolve();
+      flush();
+      const extra = container.querySelector<HTMLElement>("[data-scope-extra]");
+      expect(extra).not.toBeNull();
+      expect(manager!.focusLast()).toBe(extra);
+      expect(document.activeElement).toBe(extra);
+      assertAdopted();
+
+      reveal(false);
+      flush();
+      for (const node of [...nodes, extra!]) expect(node.isConnected).toBe(false);
+      await afterPaint();
+      expect(document.activeElement).toBe(mode === "enabled" ? trigger : document.body);
+      outside.focus();
+      await afterPaint();
+      expect(document.activeElement).toBe(outside);
     });
   }
 });

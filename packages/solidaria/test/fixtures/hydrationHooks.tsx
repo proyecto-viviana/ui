@@ -12,6 +12,7 @@ import {
 import { createAutoFocus, type AutoFocusResult } from "../../src/focus/createAutoFocus";
 import { createFocusRestore, type FocusRestoreResult } from "../../src/focus/createFocusRestore";
 import { createVirtualFocus, type VirtualFocusResult } from "../../src/focus/createVirtualFocus";
+import { FocusScope, useFocusManager, type FocusManager } from "../../src/focus/FocusScope";
 
 export const hookCases = [
   "focus-visible",
@@ -169,5 +170,55 @@ export function FocusHookFixture(props: FocusHookProbe) {
       <span id="item-disabled">Disabled</span>
       <span id="item-three">Three</span>
     </div>
+  );
+}
+
+export const scopeModes = ["default", "enabled", "disabled"] as const;
+
+interface ScopeProbe {
+  mode: (typeof scopeModes)[number];
+  manager?: (manager: FocusManager | undefined) => void;
+  id?: (id: string) => void;
+  ref?: (node: HTMLInputElement) => void;
+  reveal?: (set: (visible: boolean) => void) => void;
+  add?: (set: (visible: boolean) => void) => void;
+}
+
+function ScopeChild(props: ScopeProbe) {
+  const manager = useFocusManager();
+  const id = createUniqueId();
+  props.manager?.(manager);
+  props.id?.(id);
+  return (
+    <>
+      <label for={id} data-scope-label>
+        Scope field
+      </label>
+      <input id={id} data-scope-first ref={props.ref} />
+      <button disabled data-scope-disabled>
+        Disabled
+      </button>
+      <button data-scope-last>Last</button>
+    </>
+  );
+}
+
+export function FocusScopeFixture(props: ScopeProbe) {
+  const [visible, setVisible] = createSignal(true);
+  const [extra, setExtra] = createSignal(false);
+  props.reveal?.(setVisible);
+  props.add?.(setExtra);
+  const flag = props.mode === "default" ? undefined : props.mode === "enabled";
+  return (
+    <section data-scope-fixture={props.mode}>
+      <Show when={visible()}>
+        <FocusScope contain={flag} autoFocus={flag} restoreFocus={flag}>
+          <ScopeChild {...props} />
+          <Show when={extra()}>
+            <button data-scope-extra>Added later</button>
+          </Show>
+        </FocusScope>
+      </Show>
+    </section>
   );
 }

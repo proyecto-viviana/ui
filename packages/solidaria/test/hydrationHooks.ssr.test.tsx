@@ -6,8 +6,10 @@ import {
   fallbackFunction,
   focusHookCases,
   FocusHookFixture,
+  FocusScopeFixture,
   hookCases,
   HydrationHookFixture,
+  scopeModes,
 } from "./fixtures/hydrationHooks";
 import { getAutoFocusQueueLength } from "../src/focus/createAutoFocus";
 import { getFocusStackLength } from "../src/focus/createFocusRestore";
@@ -101,6 +103,53 @@ describe("focus hook owner SSR parity", () => {
       const output = resolve(import.meta.dirname, "../../../output");
       mkdirSync(output, { recursive: true });
       writeFileSync(resolve(output, `hook-${kind}-ssr.html`), html, "utf8");
+    });
+  }
+});
+
+describe("FocusScope SSR structure and context", () => {
+  for (const mode of scopeModes) {
+    it(`serializes ${mode} scope sentinels and an inert descendant manager`, () => {
+      const managers: boolean[] = [];
+      const calls: unknown[] = [];
+      const refs: Element[] = [];
+      let id = "";
+      const html = renderToString(() => (
+        <FocusScopeFixture
+          mode={mode}
+          manager={(manager) => {
+            managers.push(!!manager);
+            if (manager) {
+              calls.push(
+                manager.focusFirst(),
+                manager.focusLast(),
+                manager.focusNext(),
+                manager.focusPrevious(),
+              );
+            }
+          }}
+          id={(value) => {
+            id = value;
+          }}
+          ref={(node) => refs.push(node)}
+        />
+      ));
+      expect(managers).toEqual([true]);
+      expect(calls).toEqual([null, null, null, null]);
+      expect(refs).toEqual([]);
+      expect(id).not.toBe("");
+      expect(html).toContain(`for="${id}"`);
+      expect(html).toContain(`id="${id}"`);
+      expect(html.match(/data-focus-scope-start/g)).toHaveLength(1);
+      expect(html.match(/data-focus-scope-end/g)).toHaveLength(1);
+      expect(html).toMatch(/<span[^>]*data-focus-scope-start[^>]*hidden/);
+      expect(html).toMatch(/<span[^>]*data-focus-scope-end[^>]*hidden/);
+      expect(html.indexOf("data-focus-scope-start")).toBeLessThan(html.indexOf("data-scope-first"));
+      expect(html.indexOf("data-scope-last")).toBeLessThan(html.indexOf("data-focus-scope-end"));
+      expect(html).toMatch(/\s_hk=/);
+      const output = resolve(import.meta.dirname, "../../../output");
+      mkdirSync(output, { recursive: true });
+      writeFileSync(resolve(output, `focus-scope-${mode}-ssr.html`), html, "utf8");
     });
   }
 });

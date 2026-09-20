@@ -66,6 +66,11 @@ history:
       at: 2026-09-19,
       note: "bounded focus lifecycle slice proves and repairs createAutoFocus/createFocusRestore SSR owner omissions by registering their unchanged onSettled callbacks symmetrically; VirtualFocus passes unchanged as an allocation control. Old-source hydration fails exactly two key-2/key-1 cases; fresh complete SSR 63/63 then hydration 71/71 pass with one worker. FocusScope structure, portal routes, stale guidance and genuine streaming remain; already-dequeued delayed autofocus cancellation is explicitly recorded under #534, not claimed fixed",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "bounded FocusScope slice repairs the SSR-only bare-child return with symmetric provider/sentinels and a guarded document capture. Three old-source SSR cases lack the manager; corrected complete SSR 66/66 then hydrate 74/74 and owning 47/47 pass with one worker. Exact adoption, containment, restoration, dynamic collection and meaningful cleanup are covered, including a failing cancellation-removal control. Public portal routes, stale guidance and genuine streaming remain; no task or release closure inferred",
+    }
 ---
 
 ## Cause
@@ -261,6 +266,34 @@ and repair under #534. This slice neither changes nor claims coverage of it.
 FocusScope structural/context symmetry, public portal-route reachability,
 stale guidance/comments, actual shell-first streaming and final complete lanes
 remain before #536 can close. All #531 and release gates remain intact.
+
+## 2026-09-19 FocusScope structure and context
+
+This bounded slice supersedes the pending public FocusScope entry. The old
+server-only bare-children return omitted both the provider and two hidden
+sentinels. Three real SSR fixtures (default, enabled and disabled options) fail
+against that source because descendant useFocusManager receives no manager.
+The repair retains the same provider, sentinels and lifecycle registrations on
+both sides, guarding only setup-time document capture. Installed server effects
+reserve owners without running browser callbacks; null refs keep their compute
+functions inert. Existing client lifecycle timing and methods are unchanged.
+
+SSR proves inert manager methods, no ref callbacks, generated IDs and sentinel
+order. Hydration adopts all six original nodes and the input ref, compares the
+immutable server ID, and exercises autofocus, disabled-item skipping, forward
+and reverse Tab containment, dynamic sibling collection, restoration and close.
+Owning cleanup coverage now checks exact listener removal and behavior with
+reconnected targets instead of a vacuous assertion. A queued-autofocus disposal
+regression fails when cancellation is temporarily removed; the implementation
+was restored before final proof. This is FocusScope's existing frame cleanup,
+not #534's separate already-dequeued delayed-winner timer debt.
+
+Fresh complete SSR passes 66/66 (26 files), then hydration 74/74 (25 files),
+one worker; owning FocusScope/owner-document/FocusManagement passes 47/47.
+Receipt and exact ledger: `.agents/UI-EXECUTION-536-SCOPE-2026-09-19.md`.
+Public portal routes, stale guidance/comments, genuine unresolved-shell/late-tail
+streaming and final complete lanes remain. Nested/portaled FocusScope hydration
+is not claimed by these standalone fixtures. No initiative or release gate closes.
 
 ## Done when
 
