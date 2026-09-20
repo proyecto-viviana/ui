@@ -19,6 +19,7 @@ true of this repository.
 
 1. [`.claude/current/README.md`](./.claude/current/README.md) — live-docs index.
 2. [`.claude/tickets/`](./.claude/tickets/) — the board.
+3. `gh run list --branch main --limit 4` — a red main is the first task.
 
 See: [what a ported component must pass](./.claude/current/certification.md) and
 [the per-component runner](./apps/comparison/COMPONENT_PLAYBOOK.md).
