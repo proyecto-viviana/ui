@@ -2656,6 +2656,59 @@ describe("Virtualizer", () => {
       vi.unstubAllGlobals();
     });
 
+    it("releases item observers and pending frames on unmount", () => {
+      const observers: Array<{ disconnect: ReturnType<typeof vi.fn> }> = [];
+      class TestResizeObserver {
+        constructor() {
+          observers.push(this);
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+      }
+      vi.stubGlobal("ResizeObserver", TestResizeObserver);
+      let nextFrame = 0;
+      const pending = new Set<number>();
+      vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => {
+        pending.add(++nextFrame);
+        return nextFrame;
+      });
+      vi.spyOn(window, "cancelAnimationFrame").mockImplementation((frame) => {
+        pending.delete(frame);
+      });
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(48);
+      vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(200);
+
+      const { unmount } = render(() => (
+        <Virtualizer
+          layout={ListLayout}
+          layoutOptions={{ estimatedRowHeight: 32, padding: 8 }}
+          shouldObserveItemSize
+        >
+          <ListBox
+            aria-label="Released size list"
+            items={[{ id: "a", label: "A" }]}
+            getKey={(item) => item.id}
+            style={{ height: "80px", overflow: "auto" }}
+          >
+            {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+          </ListBox>
+        </Virtualizer>
+      ));
+
+      expect(observers.length).toBeGreaterThan(0);
+      expect(nextFrame).toBeGreaterThan(0);
+
+      unmount();
+
+      expect(observers.filter((observer) => observer.disconnect.mock.calls.length === 0)).toEqual(
+        [],
+      );
+      expect([...pending]).toEqual([]);
+
+      vi.unstubAllGlobals();
+    });
+
     it("does not report size 0 for a hidden virtualizer item", async () => {
       vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
         cb(0);

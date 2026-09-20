@@ -1050,7 +1050,11 @@ export function VirtualizerItem(props: {
         }
         _s2Cleanups.push(() => resizeObserver.disconnect());
       }
-      return;
+      // A tracked effect's cleanup is its return value; a bare return here
+      // would strand the frame and the observer registered above.
+      return () => {
+        for (const c of _s2Cleanups) c();
+      };
     }
 
     const readBox = () => {
