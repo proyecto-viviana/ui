@@ -70,17 +70,20 @@ interface QueuedFocus {
   preventScroll: boolean;
   onFocus?: (element: HTMLElement) => void;
   onSkip?: () => void;
+  timeout?: ReturnType<typeof setTimeout>;
 }
 
 // Global queue for managing auto-focus requests
 let autoFocusQueue: QueuedFocus[] = [];
+// Requests remain owned after dequeue until their delayed work finishes.
+const pendingAutoFocus = new Set<QueuedFocus>();
 let processingTimeout: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * Process the auto-focus queue and focus the highest priority element.
  */
 function processAutoFocusQueue(): void {
-  if (processingTimeout) {
+  if (processingTimeout !== null) {
     clearTimeout(processingTimeout);
     processingTimeout = null;
   }
@@ -97,51 +100,69 @@ function processAutoFocusQueue(): void {
   // Clear the queue
   autoFocusQueue = [];
 
-  // Notify losers
-  for (const loser of losers) {
-    loser.onSkip?.();
-  }
-
-  // Focus the winner
-  const element = winner.ref();
-  if (!element) {
-    winner.onSkip?.();
-    return;
-  }
-
-  // Check if we should focus
-  const activeElement = document.activeElement;
-  const shouldFocus =
-    winner.force ||
-    !activeElement ||
-    activeElement === document.body ||
-    activeElement === document.documentElement;
-
-  if (!shouldFocus) {
-    winner.onSkip?.();
-    return;
-  }
-
-  // Apply focus with optional delay
-  if (winner.delay > 0) {
-    setTimeout(() => {
-      const el = winner.ref();
-      if (el && document.body.contains(el)) {
-        if (winner.preventScroll) {
-          focusSafely(el);
-        } else {
-          el.focus();
-        }
-        winner.onFocus?.(el);
-      }
-    }, winner.delay);
-  } else {
-    if (winner.preventScroll) {
-      focusSafely(element);
-    } else {
-      element.focus();
+  try {
+    // Callbacks can cancel another request, dispose its owner, or clear all.
+    for (const loser of losers) {
+      if (!pendingAutoFocus.has(loser)) continue;
+      removeRequest(loser);
+      loser.onSkip?.();
     }
-    winner.onFocus?.(element);
+
+    if (!pendingAutoFocus.has(winner)) return;
+    const element = winner.ref();
+    if (!pendingAutoFocus.has(winner)) return;
+    if (!element) {
+      removeRequest(winner);
+      winner.onSkip?.();
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    const shouldFocus =
+      winner.force ||
+      !activeElement ||
+      activeElement === document.body ||
+      activeElement === document.documentElement;
+
+    if (!shouldFocus) {
+      removeRequest(winner);
+      winner.onSkip?.();
+      return;
+    }
+
+    if (winner.delay > 0) {
+      winner.timeout = setTimeout(() => {
+        if (!pendingAutoFocus.has(winner)) return;
+        try {
+          const el = winner.ref();
+          if (!pendingAutoFocus.has(winner)) return;
+          removeRequest(winner);
+          if (el && document.body.contains(el)) {
+            if (winner.preventScroll) {
+              focusSafely(el);
+            } else {
+              el.focus();
+            }
+            winner.onFocus?.(el);
+          }
+        } finally {
+          removeRequest(winner);
+        }
+      }, winner.delay);
+    } else {
+      removeRequest(winner);
+      if (winner.preventScroll) {
+        focusSafely(element);
+      } else {
+        element.focus();
+      }
+      winner.onFocus?.(element);
+    }
+  } catch (error) {
+    // Do not retain a detached batch if a consumer callback throws. Requests
+    // queued reentrantly belong to their next batch and remain independent.
+    for (const item of [winner, ...losers]) removeRequest(item);
+    throw error;
   }
 }
 
@@ -149,6 +170,7 @@ function processAutoFocusQueue(): void {
  * Queue an element for auto-focus.
  */
 function queueAutoFocus(item: QueuedFocus): void {
+  pendingAutoFocus.add(item);
   autoFocusQueue.push(item);
 
   // Schedule processing on next frame to allow all components to register
@@ -158,10 +180,15 @@ function queueAutoFocus(item: QueuedFocus): void {
 }
 
 /**
- * Remove an item from the auto-focus queue.
+ * Cancel this request in the queue, processing batch, or delayed phase.
  */
-function removeFromQueue(ref: () => HTMLElement | null | undefined): void {
-  autoFocusQueue = autoFocusQueue.filter((item) => item.ref !== ref);
+function removeRequest(item: QueuedFocus): void {
+  pendingAutoFocus.delete(item);
+  autoFocusQueue = autoFocusQueue.filter((queued) => queued !== item);
+  if (item.timeout !== undefined) {
+    clearTimeout(item.timeout);
+    item.timeout = undefined;
+  }
 }
 
 /**
@@ -234,21 +261,14 @@ export function createAutoFocus(
   } = options;
 
   let canceled = false;
+  const request: QueuedFocus = { ref, priority, delay, force, preventScroll, onFocus, onSkip };
 
   // Register on both sides to preserve the following owner IDs. The server
   // reserves this lifecycle slot without executing the browser callback.
   onSettled(() => {
     if (!isEnabled || canceled) return;
 
-    queueAutoFocus({
-      ref,
-      priority,
-      delay,
-      force,
-      preventScroll,
-      onFocus,
-      onSkip,
-    });
+    queueAutoFocus(request);
   });
 
   // During SSR, keep the public methods inert and skip browser cleanup.
@@ -259,9 +279,10 @@ export function createAutoFocus(
     };
   }
 
-  // Remove from queue on cleanup
+  // Stop pending automatic work even after the queue has handed it off.
   onOwnedCleanup(() => {
-    removeFromQueue(ref);
+    canceled = true;
+    removeRequest(request);
   });
 
   const focus = (): void => {
@@ -280,7 +301,7 @@ export function createAutoFocus(
 
   const cancel = (): void => {
     canceled = true;
-    removeFromQueue(ref);
+    removeRequest(request);
   };
 
   return {
@@ -294,11 +315,11 @@ export function createAutoFocus(
  * Useful for testing or when navigating away.
  */
 export function clearAutoFocusQueue(): void {
-  if (processingTimeout) {
+  if (processingTimeout !== null) {
     clearTimeout(processingTimeout);
     processingTimeout = null;
   }
-  autoFocusQueue = [];
+  for (const item of pendingAutoFocus) removeRequest(item);
 }
 
 /**

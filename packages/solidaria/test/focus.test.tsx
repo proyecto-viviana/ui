@@ -756,6 +756,215 @@ describe("createAutoFocus", () => {
       }
     });
   }
+  describe("delayed request lifecycle", () => {
+    let disposers: Array<() => void>;
+    let elements: HTMLButtonElement[];
+    let trigger: HTMLButtonElement;
+
+    function button() {
+      const element = document.createElement("button");
+      document.body.append(element);
+      elements.push(element);
+      return element;
+    }
+
+    function request(ref: () => HTMLElement, options: Parameters<typeof createAutoFocus>[1] = {}) {
+      const onFocus = vi.fn();
+      const onSkip = vi.fn();
+      let dispose = () => {};
+      const api = createRoot((cleanup) => {
+        dispose = cleanup;
+        disposers.push(cleanup);
+        return createAutoFocus(ref, { force: true, delay: 100, onFocus, onSkip, ...options });
+      });
+      return { ...api, dispose, onFocus, onSkip };
+    }
+
+    beforeEach(() => {
+      setInteractionModality("keyboard");
+      vi.useFakeTimers();
+      disposers = [];
+      elements = [];
+      trigger = button();
+      trigger.focus();
+    });
+
+    afterEach(() => {
+      disposers.forEach((dispose) => dispose());
+      clearAutoFocusQueue();
+      vi.clearAllTimers();
+      vi.useRealTimers();
+      elements.forEach((element) => element.remove());
+    });
+
+    function dequeue() {
+      flush();
+      expect(getAutoFocusQueueLength()).toBe(1);
+      vi.advanceTimersByTime(0);
+      expect(getAutoFocusQueueLength()).toBe(0);
+      expect(document.activeElement).toBe(trigger);
+    }
+
+    for (const action of ["cancel", "dispose", "clear"] as const) {
+      it(`cancels an already-dequeued delayed winner on ${action}`, () => {
+        const target = button();
+        const api = request(() => target);
+        dequeue();
+        expect(vi.getTimerCount()).toBe(1);
+        if (action === "clear") clearAutoFocusQueue();
+        else api[action]();
+        expect(vi.getTimerCount()).toBe(0);
+        expect(target.isConnected).toBe(true);
+        vi.advanceTimersByTime(101);
+        expect(document.activeElement).toBe(trigger);
+        expect(api.onFocus).not.toHaveBeenCalled();
+        expect(api.onSkip).not.toHaveBeenCalled();
+        if (action !== "clear") {
+          api.focus();
+          expect(document.activeElement).toBe(trigger);
+          expect(api.onFocus).not.toHaveBeenCalled();
+        }
+      });
+    }
+
+    it("focuses a live delayed winner exactly once after its full delay", () => {
+      const target = button();
+      const api = request(() => target);
+      dequeue();
+      vi.advanceTimersByTime(99);
+      expect(document.activeElement).toBe(trigger);
+      expect(api.onFocus).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(document.activeElement).toBe(target);
+      expect(api.onFocus).toHaveBeenCalledExactlyOnceWith(target);
+      expect(api.onSkip).not.toHaveBeenCalled();
+      trigger.focus();
+      vi.advanceTimersByTime(100);
+      expect(document.activeElement).toBe(trigger);
+      expect(api.onFocus).toHaveBeenCalledTimes(1);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("clears delayed winners from separate batches without disabling manual focus", () => {
+      const first = button();
+      const second = button();
+      const firstApi = request(() => first);
+      dequeue();
+      const secondApi = request(() => second);
+      dequeue();
+      expect(vi.getTimerCount()).toBe(2);
+      clearAutoFocusQueue();
+      expect(vi.getTimerCount()).toBe(0);
+      vi.advanceTimersByTime(101);
+      expect(document.activeElement).toBe(trigger);
+      for (const api of [firstApi, secondApi]) {
+        expect(api.onFocus).not.toHaveBeenCalled();
+        expect(api.onSkip).not.toHaveBeenCalled();
+      }
+      firstApi.focus();
+      expect(document.activeElement).toBe(first);
+      expect(firstApi.onFocus).toHaveBeenCalledExactlyOnceWith(first);
+    });
+
+    for (const stage of ["queued", "delayed"] as const) {
+      it(`cancels only its own ${stage} request when hooks share a ref`, () => {
+        const target = button();
+        const ref = () => target;
+        const first = request(ref);
+        if (stage === "delayed") dequeue();
+        const second = request(ref);
+        flush();
+        first.cancel();
+        expect(getAutoFocusQueueLength()).toBe(1);
+        vi.advanceTimersByTime(0);
+        expect(getAutoFocusQueueLength()).toBe(0);
+        vi.advanceTimersByTime(100);
+        expect(document.activeElement).toBe(target);
+        expect(first.onFocus).not.toHaveBeenCalled();
+        expect(first.onSkip).not.toHaveBeenCalled();
+        expect(second.onFocus).toHaveBeenCalledExactlyOnceWith(target);
+        expect(second.onSkip).not.toHaveBeenCalled();
+      });
+    }
+
+    for (const action of ["cancel", "dispose", "clear"] as const) {
+      it(`honors ${action} reentrantly from a losing request's skip callback`, () => {
+        const target = button();
+        const winner = request(() => target, { priority: 10 });
+        const onSkip = vi.fn(() => {
+          if (action === "clear") clearAutoFocusQueue();
+          else winner[action]();
+        });
+        const losingTarget = button();
+        request(() => losingTarget, { onSkip });
+        flush();
+        expect(getAutoFocusQueueLength()).toBe(2);
+        vi.advanceTimersByTime(0);
+        expect(onSkip).toHaveBeenCalledTimes(1);
+        expect(target.isConnected).toBe(true);
+        vi.advanceTimersByTime(101);
+        expect(document.activeElement).toBe(trigger);
+        expect(winner.onFocus).not.toHaveBeenCalled();
+        expect(winner.onSkip).not.toHaveBeenCalled();
+      });
+    }
+
+    it("suppresses later skip callbacks when an earlier loser clears the active batch", () => {
+      const target = button();
+      const winner = request(() => target, { priority: 10 });
+      const onSkip = vi.fn(clearAutoFocusQueue);
+      request(() => target, { priority: 5, onSkip });
+      const last = request(() => target);
+      flush();
+      expect(getAutoFocusQueueLength()).toBe(3);
+      vi.advanceTimersByTime(0);
+      vi.advanceTimersByTime(101);
+      expect(onSkip).toHaveBeenCalledTimes(1);
+      expect(last.onSkip).not.toHaveBeenCalled();
+      expect(last.onFocus).not.toHaveBeenCalled();
+      expect(winner.onFocus).not.toHaveBeenCalled();
+      expect(winner.onSkip).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(trigger);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("preserves a reentrantly queued next batch when a skip callback throws", () => {
+      const target = button();
+      const nextTarget = button();
+      const failure = new Error("skip failed");
+      const winner = request(() => target, { priority: 10 });
+      let next!: ReturnType<typeof request>;
+      const onSkip = vi.fn(() => {
+        next = request(() => nextTarget);
+        flush();
+        throw failure;
+      });
+      request(() => target, { priority: 5, onSkip });
+      const last = request(() => target);
+      flush();
+      expect(getAutoFocusQueueLength()).toBe(3);
+      let caught: unknown;
+      try {
+        vi.advanceTimersByTime(0);
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBe(failure);
+      expect(onSkip).toHaveBeenCalledTimes(1);
+      expect(last.onSkip).not.toHaveBeenCalled();
+      expect(getAutoFocusQueueLength()).toBe(1);
+      expect(document.activeElement).toBe(trigger);
+      vi.advanceTimersByTime(101);
+      expect(document.activeElement).toBe(nextTarget);
+      expect(next.onFocus).toHaveBeenCalledExactlyOnceWith(nextTarget);
+      expect(next.onSkip).not.toHaveBeenCalled();
+      expect(winner.onFocus).not.toHaveBeenCalled();
+      expect(winner.onSkip).not.toHaveBeenCalled();
+      expect(last.onFocus).not.toHaveBeenCalled();
+      expect(getAutoFocusQueueLength()).toBe(0);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+  });
 });
 
 describe("auto-focus queue utilities", () => {
