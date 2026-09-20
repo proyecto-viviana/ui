@@ -253,3 +253,84 @@ this task: verify the finding against the packages' `exports` maps and a real
 SSR build (`apps/web` is one), then state the requirement once in each
 package README's install section, with the exact config, only if verified.
 A claim is a debt: the README sentence ships with the proof named in the log.
+
+## 10. Added 14:10 — the owner's rule on public copy
+
+Owner, 2026-09-20: **Fable writes the public-facing copy, not Opus.** That
+covers the READMEs, `CONTRIBUTING.md`, the docs-site landing and page prose
+(#549), and the comparison-site prose (#550).
+
+What this changes for you:
+
+- Do not write or reword public prose, and do not brief a worker to. You and
+  your workers may still fix facts in it: a dead link, a wrong version or tag,
+  an import that does not resolve, a claim a check disproves. Say which check.
+- Done by Fable on `public-face` (`daaa8b88`): the root `README.md` and
+  `packages/viviana-ui/README.md` are rewritten, and both now carry a "Server
+  rendering" section. That closes §9: the `exports` maps have `solid` →
+  preserved JSX and `import` → DOM-compiled output (`template(` is in
+  `packages/solidaria-components/dist/*.js`), and `apps/web/vite.config.ts`
+  server-renders with `ssr.noExternal: [/@proyecto-viviana\/.*/]`. Skip the §9
+  worker. The other five package READMEs keep their landed text; their
+  openings were read and are accurate.
+- The status table in the root README says npm tag `rc`. That is true only
+  once the RC publishes, which is why `public-face` merges at §7 step 2 and
+  not before.
+- Copy still owed, for Fable: the docs-site landing and section prose (#549)
+  and the comparison-site prose (#550). When you reach those items, do the
+  engineering half (headers, guard, build, deploy) and leave the prose as it
+  is. Write what needs words into `.agents/COPY-QUEUE-2026-09-20.md`: the
+  file, the line, what is wrong with it, and any fact the copy must carry.
+  The owner brings that list to a Fable session.
+
+## 11. Added 14:25 — failure emails from main
+
+Owner, 2026-09-20: tired of a failure email per push. Release Readiness,
+Certification Gates and Site Gate all run on every push to `main` and all three
+are red until queue items 1 and 2 land, so each push costs him three emails.
+
+- **Stop pushing every commit.** Writers' commits stay local and reviewed;
+  push to `main` only when `vp run ci:release-readiness` exits 0 locally, or
+  once at the end of your session so nothing is stranded. Local commits are
+  the safety net against quota, not the remote.
+- The conductor tried `gh workflow disable` on the three and the permission
+  classifier refused it. Do not retry. If the owner disables them himself,
+  they must be **re-enabled before §7 step 4**: Release is triggered by
+  Certification Gates completing on `main`, and the Version Packages PR needs
+  all three. Check with `gh workflow list --all`.
+
+**14:35 — the owner disabled the three himself** (`release-readiness.yml`,
+`certification-gates.yml`, `site-gate.yml`; verified with
+`gh workflow list --all`). So pushing no longer sends mail: go back to pushing
+each reviewed range, which keeps the remote current. The local
+`vp run ci:release-readiness` is now the only gate, so treat its exit code as
+CI. **Before §7 step 4, re-enable all three** (`gh workflow enable <file>`),
+push, and wait for them to go green on `main`; Release cannot fire while
+Certification Gates is disabled. If the classifier refuses the enable, ask the
+owner to run it.
+
+## 12. State 15:25 — supersedes the matching lines of §4 and §6
+
+- origin/main = `26edd4dc`. Every reviewed writer commit is pushed.
+- **Queue item 1, close-gates: every slice is closed** (P, 0–11; log
+  `.agents/close-gates-2026-09-20.log.md`). Not yet done: the item's own bar,
+  `vp run ci:release-readiness` exit 0 locally. A detached whole-suite
+  `vp test run --maxWorkers=1` has held the heavy slot since 14:50
+  (`.agents/chain-walk-2026-09-20/whole-suite.out.txt`); when it ends, record
+  its result in the log's slice 9 section, then run the full chain once,
+  detached, output to a file.
+- The chain grew. Read its order from `package.json`, not from §4: it now has
+  `guard:workflow-pins`, `guard:certified-case-floor`,
+  `guard:package-sourcemaps`, `guard:gate-server-reuse`, and `test:run`
+  discovers every test (345 files).
+- New ticket #556: the unit suite is order- and resource-dependent (workers die
+  at `--maxWorkers=2` in one process; `ListView.test.tsx` red only in the full
+  run). Not fixed. If the chain's `test:run` is red only for this, that is a
+  named ticket, and the RC decision is the owner's.
+- New internal env var `VIVIANA_GATE=1` (gate scripts set it; Playwright
+  configs refuse to reuse a server under it). Owner may rename.
+- The three gate workflows are disabled on GitHub (§11). Re-enable before §7
+  step 4.
+- The same Opus writer (generation `106d03cb…`) was idle at 15:21 and was
+  prompted to start queue item 2, cert-fast-green, with light commands only
+  while the whole-suite run holds the heavy slot.
