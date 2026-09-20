@@ -33,6 +33,7 @@ import type { JSX } from "@solidjs/web";
 import { Portal, isServer } from "@solidjs/web";
 import {
   createInteractOutside,
+  createPreventScroll,
   ariaHideOutside,
   FocusScope,
   useUNSAFE_PortalContext,
@@ -487,23 +488,14 @@ function ModalContent(props: ModalProps): JSX.Element {
     }
   };
 
-  // Prevent scroll when modal is open
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
-
-    if (!isOpen()) return;
-
-    const html = document.documentElement;
-    const prevOverflow = html.style.overflow;
-    html.style.overflow = "hidden";
-
-    _s2Cleanups.push(() => {
-      html.style.overflow = prevOverflow;
-    });
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
+  // Prevent scroll when modal is open. Upstream `useModalOverlay.ts:65-67`
+  // calls `usePreventScroll`, which is refcounted across every holder and
+  // handles the scrollbar gutter and mobile Safari; a one-off
+  // `overflow: hidden` here joined none of that.
+  createPreventScroll({
+    get isDisabled() {
+      return !isOpen();
+    },
   });
 
   // Click outside to close (if dismissable)

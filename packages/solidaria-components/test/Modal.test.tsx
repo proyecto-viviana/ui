@@ -12,9 +12,10 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
-import { flush } from "solid-js";
+import { createRoot, flush } from "solid-js";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { createPreventScroll } from "@proyecto-viviana/solidaria";
 
 // setupUser is consolidated in solidaria-test-utils.
 
@@ -390,6 +391,42 @@ describe("Modal", () => {
       ));
 
       expect(receivedProps?.isExiting).toBe(true);
+    });
+  });
+  // ============================================
+  // SCROLL LOCK
+  // ============================================
+
+  describe("scroll lock", () => {
+    afterEach(() => {
+      document.documentElement.style.removeProperty("overflow");
+    });
+
+    it("should keep the page locked while open when another scroll lock releases", () => {
+      // Upstream useModalOverlay calls usePreventScroll, so every open modal is
+      // one holder of a single refcounted document lock. A one-off
+      // `overflow: hidden` does not join that count, so an unrelated holder
+      // releasing restores scrolling under an open modal.
+      let releaseOtherLock!: () => void;
+      createRoot((dispose) => {
+        releaseOtherLock = dispose;
+        createPreventScroll();
+      });
+      flush();
+      expect(document.documentElement.style.overflow).toBe("hidden");
+
+      render(() => (
+        <Modal isOpen>
+          <div>Modal Content</div>
+        </Modal>
+      ));
+      flush();
+      expect(document.documentElement.style.overflow).toBe("hidden");
+
+      releaseOtherLock();
+      flush();
+
+      expect(document.documentElement.style.overflow).toBe("hidden");
     });
   });
 });
