@@ -391,6 +391,102 @@ describe("createOverlay", () => {
 
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it("does not prevent the default action of an interaction outside", () => {
+    // Upstream `useOverlay` only calls `stopPropagation`. Preventing the default
+    // too means the click that dismisses an overlay cannot focus or activate
+    // what it landed on.
+    const onClose = vi.fn();
+    let overlayRef: HTMLDivElement | undefined;
+
+    render(() => {
+      const { overlayProps } = createOverlay(
+        { isOpen: true, onClose, isDismissable: true },
+        () => overlayRef ?? null,
+      );
+
+      return (
+        <div>
+          <div ref={(el) => (overlayRef = el)} {...overlayProps} data-testid="overlay">
+            Overlay content
+          </div>
+          <button data-testid="outside">Outside</button>
+        </div>
+      );
+    });
+
+    flush();
+
+    const outside = screen.getByTestId("outside");
+    const down = new PointerEvent("pointerdown", { bubbles: true, cancelable: true, button: 0 });
+    outside.dispatchEvent(down);
+    const up = new PointerEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    outside.dispatchEvent(up);
+
+    expect(down.defaultPrevented).toBe(false);
+    expect(up.defaultPrevented).toBe(false);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("closes only the overlay that was topmost when the interaction started", () => {
+    // Upstream records the topmost overlay on pointer down in
+    // `lastVisibleOverlay` and hides on pointer up only if it is still the same
+    // overlay: one click that closes a menu must not also close the dialog the
+    // menu opened from.
+    const onCloseDialog = vi.fn();
+    const onCloseMenu = vi.fn();
+    const [menuOpen, setMenuOpen] = createSignal(true);
+    let dialogRef: HTMLDivElement | undefined;
+    let menuRef: HTMLDivElement | undefined;
+
+    render(() => {
+      const { overlayProps: dialogProps } = createOverlay(
+        { isOpen: true, onClose: onCloseDialog, isDismissable: true },
+        () => dialogRef ?? null,
+      );
+      const { overlayProps: menuProps } = createOverlay(
+        {
+          get isOpen() {
+            return menuOpen();
+          },
+          onClose: onCloseMenu,
+          isDismissable: true,
+        },
+        () => menuRef ?? null,
+      );
+
+      return (
+        <div>
+          <div ref={(el) => (dialogRef = el)} {...dialogProps} data-testid="dialog">
+            Dialog content
+          </div>
+          <Show when={menuOpen()}>
+            <div ref={(el) => (menuRef = el)} {...menuProps} data-testid="menu">
+              Menu content
+            </div>
+          </Show>
+          <button data-testid="outside">Outside</button>
+        </div>
+      );
+    });
+
+    flush();
+
+    const outside = screen.getByTestId("outside");
+    outside.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, cancelable: true, button: 0 }),
+    );
+
+    // The menu closes on pointer down, leaving the dialog topmost.
+    setMenuOpen(false);
+    flush();
+
+    outside.dispatchEvent(
+      new PointerEvent("click", { bubbles: true, cancelable: true, button: 0 }),
+    );
+
+    expect(onCloseDialog).not.toHaveBeenCalled();
+  });
 });
 
 // ============================================

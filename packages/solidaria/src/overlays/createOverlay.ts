@@ -76,6 +76,11 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
   const isKeyboardDismissDisabled = () => props.isKeyboardDismissDisabled ?? false;
   const shouldCloseOnInteractOutside = () => props.shouldCloseOnInteractOutside;
 
+  // The overlay that was topmost when the current outside interaction started.
+  // Upstream keeps it in a ref so one click that closes a menu does not also
+  // close the dialog the menu was opened from.
+  let lastVisibleOverlay: (() => Element | null) | undefined;
+
   // Add the overlay ref to the stack of visible overlays on mount, and remove on unmount.
   createEffect(
     () => isOpen(),
@@ -110,10 +115,13 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
   };
 
   const onInteractOutsideStart = (e: PointerEvent) => {
+    const topMostOverlay = visibleOverlays[visibleOverlays.length - 1];
+    lastVisibleOverlay = topMostOverlay;
     if (allowsCloseOnOutside(e.target)) {
-      if (visibleOverlays[visibleOverlays.length - 1] === ref) {
+      if (topMostOverlay === ref) {
+        // Only propagation. Preventing the default too would stop the click
+        // from focusing or activating whatever it landed on.
         e.stopPropagation();
-        e.preventDefault();
       }
     }
   };
@@ -122,10 +130,12 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
     if (allowsCloseOnOutside(e.target)) {
       if (visibleOverlays[visibleOverlays.length - 1] === ref) {
         e.stopPropagation();
-        e.preventDefault();
       }
-      onHide();
+      if (lastVisibleOverlay === ref) {
+        onHide();
+      }
     }
+    lastVisibleOverlay = undefined;
   };
 
   // Handle clicking outside the overlay to close it.

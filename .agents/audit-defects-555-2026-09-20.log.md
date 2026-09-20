@@ -83,3 +83,33 @@ Green: `vp test run` over `FocusScope`, `FocusScopeOwnerDocument`, `overlays`,
 `createFocusWithin`, `createDialog`, `createPopover`, `createMenu`,
 `createToast`, `focus` and `focusSafely` → 228/228.
 Changeset `.changeset/focus-scope-active-scope.md`.
+
+## 3a — createOverlay's lastVisibleOverlay, and the preventDefault
+
+Upstream read: `useOverlay.ts:78-126`. `lastVisibleOverlay` is a ref holding the
+overlay that was topmost when the pointer went down; pointer up hides only when
+it still is the same overlay. Neither handler calls `preventDefault` — only
+`stopPropagation`.
+
+Two defects:
+
+- We had no `lastVisibleOverlay`, so both handlers asked only "am I topmost
+  now". One click that closes a menu, leaving the dialog under it topmost,
+  closed the dialog too.
+- Both handlers called `e.preventDefault()`, so the click that dismissed an
+  overlay could not focus or activate whatever it landed on.
+
+Red tests, `overlays.test.tsx`:
+
+- "does not prevent the default action of an interaction outside" — a dispatched
+  `pointerdown` comes back `defaultPrevented: true` on the old source.
+- "closes only the overlay that was topmost when the interaction started" — a
+  dialog and a menu, the menu closing between pointer down and click; on the old
+  source the dialog's `onClose` is called once.
+
+Fix: record the topmost overlay in `onInteractOutsideStart`, hide only when
+`lastVisibleOverlay === ref`, clear it after the interaction, and drop both
+`preventDefault` calls.
+
+Green: `vp test run packages/solidaria/test/overlays.test.tsx packages/solidaria-components/test/Popover.test.tsx`
+→ 76/76. Changeset `.changeset/overlay-last-visible.md`.
