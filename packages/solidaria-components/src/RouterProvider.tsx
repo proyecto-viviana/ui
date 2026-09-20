@@ -22,7 +22,7 @@
  */
 
 import { createContext, useContext } from "solid-js";
-import { openLink } from "@proyecto-viviana/solidaria";
+import { openLink } from "@proyecto-viviana/solidaria/utils";
 import type { JSX } from "@solidjs/web";
 
 export interface RouterClickModifiers {

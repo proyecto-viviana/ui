@@ -911,3 +911,41 @@ found in slice 9 and deliberately not fixed here. Under one `vp test run` over
 all 345 files, `--maxWorkers=2` dies with `Error: Worker exited unexpectedly`
 and `ListView.test.tsx` reports 9 of 11 red; the same file is 11/11 alone and
 green in the per-package walk.
+
+## #565 — the entry import budget
+
+Brief `.agents/CONDUCTOR-PENDING-2026-09-20c.md`, ticket
+`.claude/tickets/tasks/565-clear-the-entry-import-budget-red-before-the-rc.md`,
+worked from `c52c87ef`. Two failures share one printout; they are two.
+
+### The importer, which is ours
+
+`packages/solidaria-components/src/RouterProvider.tsx:25` now reads
+`import { openLink } from "@proyecto-viviana/solidaria/utils"`. `openLink` is
+declared in `packages/solidaria/src/utils/dom.ts:587`, `src/utils/index.ts:44`
+exports it, and `./utils` is already a published subpath — so the root-barrel
+import bought nothing. It arrived in `e6384f37` under #555, a commit worked from
+this seat and pushed from the conductor's: our drift, not a found condition.
+
+Measured after the change, no build needed for this half:
+
+    - root-barrel importers: 154 (ceiling 154)
+
+`guard:publish-drift` run rather than guessed: `No publish drift: every package
+with unreleased source or manifest changes has a changeset.` — exit 0.
+`solidaria-components` already carries an unreleased changeset
+(`open-link-dispatch.md`, from the same commit that added this import), so the
+narrowing owes no new one.
+
+### Reading the five ceilings out of the guard's own traversal
+
+The guard builds the per-entry module list already and then throws it away, so
+`scripts/check-entry-import-budget.ts` grew a `--print-modules` mode: the same
+`reachableModules` walk, reporting instead of checking, exit 0. It also records
+`reachedFrom` — the module and specifier that first pulled each file in — so the
+output names the import behind every module rather than leaving it to be
+inferred:
+
+    packages/solidaria/dist/_chunk/env.js  <- packages/solidaria/dist/utils/index.js "../_chunk/env.js"
+
+That is one walker, not a second one; nothing about the measurement changed.

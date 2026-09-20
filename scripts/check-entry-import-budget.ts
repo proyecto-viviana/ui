@@ -30,6 +30,10 @@ import path from "node:path";
 const ROOT = process.cwd();
 const BUDGET_PATH = path.join(ROOT, "scripts", "entry-import-budget.json");
 const WRITE_BASELINE = process.argv.includes("--write-baseline");
+// Reporting mode: print each budgeted entry's module list, taken from the same
+// traversal the ceiling is measured with, so a drift can be diffed rather than
+// reasoned about. Reports and exits 0; it checks nothing.
+const PRINT_MODULES = process.argv.includes("--print-modules");
 
 // Workspace package name → directory. A specifier that resolves here is a
 // module the consumer pays for; anything else (solid-js, a real dependency) is
@@ -117,6 +121,11 @@ function resolveRelative(from: string, specifier: string): string | null {
   return null;
 }
 
+// `reachedFrom` records the module and specifier that first pulled each file
+// in, which is what names the import behind a ceiling. It is written on every
+// traversal and read only by `--print-modules`.
+const reachedFrom = new Map<string, { parent: string; specifier: string }>();
+
 function reachableModules(entryFile: string): Set<string> {
   const seen = new Set<string>();
   const queue = [entryFile];
@@ -128,7 +137,9 @@ function reachableModules(entryFile: string): Set<string> {
       const target = specifier.startsWith(".")
         ? resolveRelative(file, specifier)
         : resolveWorkspace(specifier);
-      if (target) queue.push(target);
+      if (!target) continue;
+      if (!reachedFrom.has(target)) reachedFrom.set(target, { parent: file, specifier });
+      queue.push(target);
     }
   }
   return seen;
@@ -140,13 +151,18 @@ function measure(entry: { package: string; entry: string }) {
   const entryFile = exportTarget(dir, entry.entry);
   if (!entryFile) throw new Error(`${entry.package} does not export ${entry.entry}.`);
   if (!existsSync(entryFile)) return null; // not built
+  reachedFrom.clear();
   const modules = reachableModules(entryFile);
   let solidaria = 0;
   for (const file of modules) {
     if (path.relative(ROOT, file).split(path.sep).slice(0, 2).join("/") === WORKSPACE[ROOT_BARREL])
       solidaria++;
   }
-  return { total: modules.size, solidaria };
+  return { total: modules.size, solidaria, modules };
+}
+
+function relative(file: string): string {
+  return path.relative(ROOT, file).split(path.sep).join("/");
 }
 
 function sourceFiles(directory: string): string[] {
@@ -202,6 +218,28 @@ if (!existsSync(BUDGET_PATH)) {
 }
 
 const budget: Budget = JSON.parse(readFileSync(BUDGET_PATH, "utf8"));
+
+if (PRINT_MODULES) {
+  for (const entry of budget.entries) {
+    const measured = measure(entry);
+    console.log(`\n${entry.package} ${entry.entry}`);
+    if (!measured) {
+      console.log("  not built");
+      continue;
+    }
+    console.log(
+      `  ${measured.total} modules (${measured.solidaria} solidaria), ceiling ${entry.maxModules}/${entry.maxSolidariaModules}`,
+    );
+    for (const file of [...measured.modules].map(relative).sort()) {
+      const source = reachedFrom.get(path.join(ROOT, file));
+      console.log(
+        source ? `    ${file}  <- ${relative(source.parent)} "${source.specifier}"` : `    ${file}`,
+      );
+    }
+  }
+  process.exit(0);
+}
+
 const failures: string[] = [];
 const improvements: string[] = [];
 let measuredEntries = 0;
