@@ -431,6 +431,11 @@ jobs:
       - name: D13 journey driver unit tests
         run: pnpm run comparison:test:journeys-driver
 
+      # Discovery only (`playwright test --list`, no browser, no web server):
+      # the certified shards report what they ran, never what went missing.
+      - name: guard certified case floor
+        run: pnpm run guard:certified-case-floor
+
       - name: build packages
         run: pnpm run build
 

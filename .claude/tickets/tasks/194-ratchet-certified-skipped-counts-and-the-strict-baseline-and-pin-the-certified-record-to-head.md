@@ -32,6 +32,11 @@ history:
       at: 2026-09-20,
       note: "slice 1 of .agents/close-gates-2026-09-20.task.md done: a certified shard must now explain its own exit. The reporter gained onError (each load-time error with its file) and records Playwright's FullResult status; merge-certified-reports fails on any shard load error, on a non-pass status the summary does not explain, and on a summary carrying no status at all. Proved with a spec that throws at import: the merge passed it before (exit 0, all zeros) and fails it now, naming the file. Held by 10 cases in apps/comparison/src/data/certified-shard-outcomes.test.ts",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "slice 2 done: a committed floor on discovered cases per certified spec file. apps/comparison/e2e/certified-case-floor.json records 73 files and 2177 cases at e327ae9d; guard:certified-case-floor discovers with playwright test --list --reporter=json (no browser, no web server, ~2s), fails on a file whose count drops or that discovers nothing, and on a listing error, and ratchets up with --write. Proved by moving actionbar.certified.spec.ts aside: --list still exits 0 reporting 2173 tests, the guard exits 1 naming the missing spec. Wired into ci:release-readiness and the comparison-build job; held by 10 cases in scripts/check-certified-case-floor.test.ts",
+    }
 ---
 
 ## Cause

@@ -5,9 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 2 — a committed floor on discovered cases per certified spec file.
-Slices P, 0 and 1 are closed. Third writer; brief
-`.agents/close-gates-2026-09-20.resume.task.md`.
+Slice 3 — skipped and flaky ceilings in the merge. Slices P, 0, 1 and 2 are
+closed. Third writer; brief `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
 
@@ -255,7 +254,7 @@ peers: 17 unmet peers, all of them expected and explained.
 guard:dependency-security: peers allowlist and both audits passed. EXIT=0
 ```
 
-Slice 0 commit: see below. No changeset: `scripts/**`, the root manifest and
+Slice 0 commit: `f813032d`. No changeset: `scripts/**`, the root manifest and
 `pnpm-workspace.yaml` are not a published package's `src` or manifest.
 
 ## Slice 1 — a certified shard must explain its own exit
@@ -334,3 +333,56 @@ merge fields. `vp run test:run` already discovers it —
 The planted defect is removed; `git status` shows no change to
 `accordion.certified.spec.ts`. `vp check` and `comparison:typecheck` exit 0.
 No changeset: `apps/comparison` publishes nothing.
+
+Slice 1 commit: `e327ae9d`.
+
+## Slice 2 — a committed floor on discovered cases per certified spec file
+
+The shards report what they ran. Nothing reports what went missing: a certified
+spec that is deleted, renamed or excluded takes its cases with it and every gate
+stays green, because no gate knows how many cases there were supposed to be.
+
+Planted defect: one certified spec moved aside.
+
+    mv apps/comparison/e2e/certified/actionbar.certified.spec.ts /tmp/…
+
+Before, the only discovery we had is blind to it:
+
+    pnpm exec playwright test e2e/certified --list   # cwd apps/comparison
+    Total: 2173 tests in 16 files
+    LIST EXIT=0
+
+After, with `scripts/check-certified-case-floor.mjs` and the baseline it writes:
+
+    node scripts/check-certified-case-floor.mjs
+    certified spec gone: certified/actionbar.certified.spec.ts discovered 4
+      cases and now discovers none — restore it, or lower the floor with
+      `node scripts/check-certified-case-floor.mjs --write` and say why.
+    FLOOR EXIT=1
+
+Defect removed:
+
+    node scripts/check-certified-case-floor.mjs
+    certified case floor: 73 files, 2177 cases, none below the floor.
+    FLOOR EXIT=0
+
+The floor is `apps/comparison/e2e/certified-case-floor.json`: 73 files, 2177
+cases, pinned to `e327ae9d`. It shrinks only. A drop in a file's count and a
+baselined file that discovers nothing both fail; growth passes and prints the
+`--write` line to ratchet. Discovery is `playwright test --list --reporter=json`
+— no browser, no web server, about two seconds — and a spec that fails to load
+lands in the report's `errors`, which the guard fails on and refuses to write a
+baseline from. Cases are attributed to the top-level suite's file, so a case
+declared in a shared driver counts against the spec that pulls the driver in,
+not against the driver.
+
+One defect found while wiring it: `pnpm exec` prefixes "Scope: all 12 workspace
+projects" to stdout, so `JSON.parse` of the raw output throws. The report now
+starts at the first brace, with a test for both the banner and stdout that
+carries no report at all.
+
+Wired into `guard:certified-case-floor`, into `ci:release-readiness` after
+`guard:dependency-security`, and into the fast `comparison-build` job of
+`certification-gates.yml`. `node scripts/test-ci-guard-contracts.mjs` exits 0.
+`scripts/check-certified-case-floor.test.ts` is 10 cases green; `vp check` and
+`vp lint` exit 0. No changeset: scripts and workflows publish nothing.
