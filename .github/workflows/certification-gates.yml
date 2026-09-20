@@ -220,6 +220,10 @@ jobs:
         id: guard_jsx_ref_dead_code
         run: pnpm run guard:jsx-ref-dead-code
 
+      - name: guard s2-cleanups
+        id: guard_s2_cleanups
+        run: pnpm run guard:s2-cleanups
+
       - name: guard upstream-test-parity
         id: guard_upstream_test_parity
         run: pnpm run guard:upstream-test-parity
@@ -318,6 +322,7 @@ jobs:
           O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_JSX_REF_DEAD_CODE: ${{ steps.guard_jsx_ref_dead_code.outcome }}
+          O_GUARD_S2_CLEANUPS: ${{ steps.guard_s2_cleanups.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
@@ -375,6 +380,7 @@ jobs:
             echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:jsx-ref-dead-code\` | $(icon "$O_GUARD_JSX_REF_DEAD_CODE") |"
+            echo "| \`guard:s2-cleanups\` | $(icon "$O_GUARD_S2_CLEANUPS") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"

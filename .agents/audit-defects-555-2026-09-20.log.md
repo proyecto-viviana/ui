@@ -512,3 +512,40 @@ green, and — since #556 is merged and the ceiling holds — the whole discover
 set, 350 files / 6689 passed / 1 expected fail / 6 skipped in 70s.
 
 Tooling and dead code only; no published behaviour changes, so no changeset.
+
+## Item 8.4 — the `_s2Cleanups` guard
+
+The brief was right that the fix has landed and the guard has not: `rg
+_s2Cleanups scripts` was empty, and `Virtualizer.tsx:1055` already returns the
+runner.
+
+`scripts/check-s2-cleanups-strand.ts`, wired as `guard:s2-cleanups` next to
+`guard:jsx-ref-dead-code` in `package.json` and in
+`.github/workflows/certification-gates.yml` (step, outcome env, summary row).
+
+**The rule is a state machine, not a span.** The brief's wording — a `return`
+between the first `.push` and the runner — reads as one span per body, and the
+real Virtualizer body would fail it: that effect fills and runs the array
+*twice*, once in the `info != null` branch (push 1042/1051, runner 1056) and
+once after it (push 1075, runner 1078), so the first runner sits inside the
+"span" of the second branch's pushes. So the guard walks each body's statements
+in source order: a `_s2Cleanups.push(...)` arms it, a `return` whose expression
+mentions `_s2Cleanups` is the runner and disarms it, and any other `return`
+taken while armed is a stranded cleanup. Returns inside nested functions are
+skipped — they are other calls, not a path out of the effect. AST, not braces,
+so a `return` inside a string or a comment cannot trip it.
+
+Proof, both directions:
+
+- Green on the tree: `guard:s2-cleanups — PASS: 58 _s2Cleanups bodies, no
+  stranded cleanup.` EXIT=0. That is the zero the brief predicted.
+- Red on the shape: re-introduced the bare return at `Virtualizer.tsx:1055`,
+  ran the guard, EXIT=1 with `Virtualizer.tsx:1055 returns without running
+  _s2Cleanups, stranding the cleanup pushed at line 1042`, then reverted and
+  re-ran green.
+- `scripts/check-s2-cleanups-strand.test.ts`, 5 cases: the stranded shape is
+  flagged at the right line, the `if (!node) return` that precedes every push is
+  not, a body with one runner per branch is clean, returns in nested functions
+  are ignored, and the real `Virtualizer.tsx` reads clean.
+
+Tooling only; no changeset.

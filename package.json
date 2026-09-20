@@ -111,6 +111,7 @@
     "guard:s2-intl-catalog": "vp exec tsx scripts/check-s2-intl-catalog.ts",
     "guard:package-sourcemaps": "node scripts/check-package-macro-sourcemaps.mjs",
     "guard:jsx-ref-dead-code": "vp exec tsx scripts/check-jsx-ref-dead-code.ts",
+    "guard:s2-cleanups": "vp exec tsx scripts/check-s2-cleanups-strand.ts",
     "guard:source-artifacts": "node scripts/check-source-artifacts.mjs",
     "guard:package-artifacts": "node scripts/check-package-artifacts.mjs",
     "guard:comparison-atom-css": "node scripts/check-comparison-atom-css.mjs",
