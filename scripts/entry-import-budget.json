@@ -1,36 +1,41 @@
 {
-  "description": "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory. Entries listed here have been narrowed off the root barrel and must stay narrow; the inventory holds the line for everything that has not been narrowed yet.",
+  "description": "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory. Entries listed here have been narrowed off the root barrel and must stay narrow; the inventory holds the line for everything that has not been narrowed yet. A ceiling is raised only with the import that raised it named in the entry's `why`; see #565.",
   "unit": "Distinct dist modules reachable from an entry's `exports` target by static import/export specifiers, workspace packages resolved through their own `exports` maps.",
   "entries": [
     {
       "package": "@proyecto-viviana/ui",
       "entry": "./Provider",
-      "maxModules": 21,
-      "maxSolidariaModules": 17
+      "maxModules": 26,
+      "maxSolidariaModules": 22,
+      "why": "Raised for the Solid 2 port (#531) plus one upstream-parity edge (#555, d0f095a1). Named imports: src/provider/index.tsx `import { mergeProps, splitProps } from \"@proyecto-viviana/solidaria/utils\"` (Solid 2 dropped both from solid-js), which reaches dist/utils/index.js, _chunk/filterDOMProps.js and _chunk/mergeProps.js; solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"`, the two files the port added, which reach _chunk/refs.js and _chunk/owner.js; and solidaria/src/overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"`, which upstream's useOverlay also reads, reaching _chunk/FocusScope.js."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./Provider",
-      "maxModules": 21,
-      "maxSolidariaModules": 17
+      "maxModules": 26,
+      "maxSolidariaModules": 22,
+      "why": "Same five modules and the same named imports as @proyecto-viviana/ui ./Provider; the two providers are the same port of Provider.tsx."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ButtonGroup",
-      "maxModules": 28,
-      "maxSolidariaModules": 20
+      "maxModules": 30,
+      "maxSolidariaModules": 22,
+      "why": "Net zero against the frozen source rebuilt with today's toolchain (30 then, 30 now); the ceiling of 28 was measured under the Solid 1 chunking, which emitted _chunk/web.js, _chunk/focus.js and _chunk/createInteractionModality.js this build no longer has. New modules: _chunk/refs.js and _chunk/owner.js, from solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"`, the two files the Solid 2 port (#531) added; _chunk/FocusScope.js, from solidaria/src/overlays/createOverlay.ts `import { isElementInChildOfActiveScope } from \"../focus/FocusScope\"` (#555, d0f095a1), which upstream's useOverlay also reads; and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressBar",
-      "maxModules": 23,
-      "maxSolidariaModules": 18
+      "maxModules": 24,
+      "maxSolidariaModules": 19,
+      "why": "One module below the frozen source rebuilt with today's toolchain (25 then, 24 now). New modules: _chunk/refs.js and _chunk/owner.js, from the two files the Solid 2 port (#531) added \u2014 solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"` \u2014 and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
     },
     {
       "package": "@proyecto-viviana/solid-spectrum",
       "entry": "./ProgressCircle",
-      "maxModules": 19,
-      "maxSolidariaModules": 13
+      "maxModules": 20,
+      "maxSolidariaModules": 14,
+      "why": "One module below the frozen source rebuilt with today's toolchain (21 then, 20 now). New modules: _chunk/refs.js and _chunk/owner.js, from the two files the Solid 2 port (#531) added \u2014 solidaria/src/utils/mergeProps.ts `import { assignRef } from \"./refs\"` and solidaria/src/ssr/index.tsx `import { useContextOptional } from \"../utils/owner\"` \u2014 and _chunk/mergeProps.js. _chunk/mergeProps.js is not a new import: solidaria/src/progress/createProgressBar.ts:27 `import { mergeProps } from \"../utils/mergeProps\"` predates the freeze. It became its own chunk because the port gave mergeProps.ts imports of its own (`./refs`, `./domAttrs`), so it is no longer folded into its caller's chunk."
     }
   ],
   "rootBarrelInventory": {

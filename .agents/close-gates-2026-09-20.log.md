@@ -949,3 +949,96 @@ inferred:
     packages/solidaria/dist/_chunk/env.js  <- packages/solidaria/dist/utils/index.js "../_chunk/env.js"
 
 That is one walker, not a second one; nothing about the measurement changed.
+
+### The freeze commit will not build, and why I did not install
+
+The brief says to build at a commit from before the drift. `2d6bb3bd` does not
+build: its root manifest carries `unplugin-solid@^2.0.0`, which `377b559c`
+dropped this morning, and the package is not in `node_modules` or the store.
+Restoring it is an install of a removed dependency, so I did not.
+
+What I did instead, in a detached worktree with `node_modules` symlinked from
+this checkout, no install:
+
+- packed `163f4377` (the Solid 2 port) with its configs untouched, as a control
+  that the worktree measures the same way this checkout does;
+- packed `2d6bb3bd` with one edit in four `vite.config.ts` files — the JSX
+  plugin swapped from `unplugin-solid`/`vite-plugin-solid` to the installed
+  `@solidjs/vite-plugin`. Everything else is the frozen source.
+
+Both were measured with this checkout's `check-entry-import-budget.ts`, copied
+into the worktree, so one walker read all three trees. The walker's traversal is
+unchanged since the freeze; `5c57cf2f` touched only its reporting.
+
+    entry              2d6bb3bd   163f4377   HEAD   ceiling
+    ui ./Provider         23         25       26      21
+    s2 ./Provider         23         25       26      21
+    ./ButtonGroup         30         29       30      28
+    ./ProgressBar         25         24       24      23
+    ./ProgressCircle      21         20       20      19
+
+### What moved each of the five
+
+The port-commit column reproduces the 25/25/29/24/20 this log recorded at 12:20,
+which is the control working: the worktree and this checkout agree.
+
+Four modules are new in every entry, and the diff names the import for each:
+
+- `_chunk/refs.js` — `solidaria/src/utils/mergeProps.ts:15`,
+  `import { assignRef } from "./refs"`. `utils/refs.ts` did not exist at the
+  freeze; the Solid 2 port wrote it.
+- `_chunk/owner.js` — `solidaria/src/ssr/index.tsx:26`,
+  `import { useContextOptional } from "../utils/owner"`. Same, a port file.
+- `_chunk/mergeProps.js` — no new import at all.
+  `progress/createProgressBar.ts:27` has imported it since before the freeze. It
+  is a separate chunk now only because `mergeProps.ts` gained imports of its own
+  (`./refs`, `./domAttrs`) and stopped being folded into its caller.
+- `_chunk/FocusScope.js` — `solidaria/src/overlays/createOverlay.ts:26`,
+  `import { isElementInChildOfActiveScope } from "../focus/FocusScope"`, from
+  `d0f095a1` under #555. Upstream's `useOverlay` reads the same private helper
+  out of `@react-aria/focus`, so extracting it to save a module would diverge
+  from the layout we mirror. It stays.
+
+The two Providers gain three more from one specifier:
+`{viviana-ui,solid-spectrum}/src/provider/index.tsx:28`,
+`import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils"`.
+At the freeze both providers took those two from `solid-js`; Solid 2 exports
+neither, so the port pointed them at solidaria's shims, and that specifier
+reaches `dist/utils/index.js`, `_chunk/filterDOMProps.js` and
+`_chunk/mergeProps.js`. The only narrowings available are a public subpath finer
+than `./utils` — an owner-steered name — or dropping the shims for Solid 2's
+`merge`/`omit`, which changes behaviour rather than narrowing. So nothing here
+was narrowable from this seat, which is why nothing was narrowed.
+
+The rest of the gap is not ours: the frozen source, rebuilt today, is already
+over four of the five ceilings that were written from it. This build emits no
+`_chunk/web.js`, `_chunk/focus.js` or `_chunk/createInteractionModality.js`. The
+unit is dist chunks, so the bundler moves the number too — filed as #566.
+
+### Raising the ceilings
+
+Raised by hand to the measured 26/26/30/24/20 (22/22/22/19/14 solidaria), with a
+new `why` on every entry naming the imports above. `--write-baseline` was
+refused by this harness as a CI bypass; the hand edit does what the flag would
+have done and carries the reasons the flag cannot write.
+
+    $ vp run guard:entry-import-budget      # before
+    entry import budget FAILED:
+      @proyecto-viviana/ui ./Provider: 26 modules, ceiling 21
+      @proyecto-viviana/solid-spectrum ./Provider: 26 modules, ceiling 21
+      @proyecto-viviana/solid-spectrum ./ButtonGroup: 30 modules, ceiling 28
+      @proyecto-viviana/solid-spectrum ./ProgressBar: 24 modules, ceiling 23
+      @proyecto-viviana/solid-spectrum ./ProgressCircle: 20 modules, ceiling 19
+    EXIT=1
+
+    $ vp run guard:entry-import-budget      # after
+    entry import budget
+    - entries measured: 5/5
+    - root-barrel importers: 154 (ceiling 154)
+    entry import budget OK.
+    EXIT=0
+
+Both runs read the `vp run build` of this HEAD (EXIT=0, 1m22s); no source
+changed between them, only `scripts/entry-import-budget.json`. The worktree is
+removed. Changeset: none owed — the budget file and the guard ship in no
+package.

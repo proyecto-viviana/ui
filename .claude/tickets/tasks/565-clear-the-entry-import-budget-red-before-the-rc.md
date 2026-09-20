@@ -4,12 +4,17 @@ type: task
 title: "Clear the entry-import-budget red before the release candidate"
 created: 2026-09-20
 parent: 544
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor reconciling #553 to the tree: the one entry under that ticket's `## Left red` that is still red, re-measured rather than quoted. `guard:entry-import-budget` is a blocking step in Certification Gates (certification-gates.yml:215) and is in no ci:release-readiness leg, which is why the nineteen-green walk at 3f220fb6 did not see it",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "importer half closed in db115926: `RouterProvider.tsx` narrowed to `@proyecto-viviana/solidaria/utils`, inventory back to 154/154. Ceiling half measured rather than reasoned, with the guard's own traversal behind a new `--print-modules` flag. The prescribed build at the freeze commit 2d6bb3bd does not run: its root manifest carries `unplugin-solid@^2.0.0`, dropped in 377b559c today, and it is gone from `node_modules`; rather than reinstall a removed dependency I packed 2d6bb3bd in a detached worktree with the four affected vite configs' JSX plugin swapped for the installed `@solidjs/vite-plugin`, and packed 163f4377 (the Solid 2 port) unmodified as a control. Measured with the same walker: freeze 23/23/30/25/21, port commit 25/25/29/24/20, HEAD 26/26/30/24/20, ceilings 21/21/28/23/19. So four of the five entries are over a ceiling that today's bundler alone would not reproduce at the frozen source, and only the two Providers widened from imports (+3 each). Every added module is named in `scripts/entry-import-budget.json`'s new per-entry `why`. Ceilings raised by hand to the measured 26/26/30/24/20 (22/22/22/19/14 solidaria); `--write-baseline` was refused by the harness as a CI bypass, and the hand edit carries the reasons the flag cannot. `vp run guard:entry-import-budget` EXIT=0 on the fresh build. Evidence `.agents/close-gates-2026-09-20.log.md`",
     }
 ---
 
@@ -77,3 +82,50 @@ ceiling names the import that raised it, and the run output is in the ticket.
 Child of #544. The surviving `## Left red` entry of #553. Caused in part by
 `e6384f37` under #555. Siblings in the same narrowing family: #485, merged, and
 #487, open.
+
+## What moved each entry
+
+Measured with `vp exec tsx scripts/check-entry-import-budget.ts --print-modules`
+at three commits, all built with the installed toolchain.
+
+| entry            | 2d6bb3bd (frozen source) | 163f4377 (Solid 2 port) | HEAD | ceiling was |
+| ---------------- | ------------------------ | ----------------------- | ---- | ----------- |
+| ui ./Provider    | 23                       | 25                      | 26   | 21          |
+| s2 ./Provider    | 23                       | 25                      | 26   | 21          |
+| ./ButtonGroup    | 30                       | 29                      | 30   | 28          |
+| ./ProgressBar    | 25                       | 24                      | 24   | 23          |
+| ./ProgressCircle | 21                       | 20                      | 20   | 19          |
+
+Four modules arrive in every entry, and none of them is narrowable from here:
+
+- `_chunk/refs.js` — `packages/solidaria/src/utils/mergeProps.ts:15`,
+  `import { assignRef } from "./refs"`. `refs.ts` did not exist at the freeze;
+  the Solid 2 port wrote it, and `utils/index.ts` re-exports `assignRef`.
+- `_chunk/owner.js` — `packages/solidaria/src/ssr/index.tsx:26`,
+  `import { useContextOptional } from "../utils/owner"`. Same: a file the port
+  added, because Solid 2 has no optional-context read.
+- `_chunk/mergeProps.js` — no new import.
+  `progress/createProgressBar.ts:27` has imported it since before the freeze; it
+  is a chunk of its own now only because `mergeProps.ts` gained imports.
+- `_chunk/FocusScope.js` — `packages/solidaria/src/overlays/createOverlay.ts:26`,
+  `import { isElementInChildOfActiveScope } from "../focus/FocusScope"`, landed
+  in `d0f095a1` under #555. Upstream's `useOverlay` reads the same private
+  helper out of `@react-aria/focus`, so splitting it out to save one module
+  would diverge from the layout we mirror.
+
+The two Provider entries gain three more, all from one specifier:
+`packages/{viviana-ui,solid-spectrum}/src/provider/index.tsx:28`,
+`import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils"`.
+At the freeze both providers took `mergeProps`/`splitProps` from `solid-js`;
+Solid 2 exports neither, so the port pointed them at solidaria's shims, and that
+one specifier reaches `dist/utils/index.js`, `_chunk/filterDOMProps.js` and
+`_chunk/mergeProps.js`. Narrowing it needs a public subpath finer than `./utils`
+— an owner-steered name — or dropping the shims for Solid 2's `merge`/`omit`,
+which is a behaviour change, not a narrowing. Neither belongs in this ticket.
+
+The gap the toolchain owns is the rest: the frozen source rebuilt today is 23 on
+the Providers where its ceiling says 21, and 30/25/21 where the ceilings say
+28/23/19, because this bundler no longer emits `_chunk/web.js`, `_chunk/focus.js`
+or `_chunk/createInteractionModality.js`. The unit is dist chunks, so the
+ceilings move with the bundler as well as with our imports. Worth its own
+ticket if the RC wants a number that only our source can move.
