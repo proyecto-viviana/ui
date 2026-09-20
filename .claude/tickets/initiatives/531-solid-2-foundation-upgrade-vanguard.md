@@ -110,6 +110,11 @@ history:
       at: 2026-09-19,
       note: "#536 genuine shell-first renderToStream coverage now proves exact late-node adoption, context/render props/reactivity/disposal and bounded pending-failure recovery without product changes. Focused hydrate 31/31; fresh complete SSR 75/75 then hydrate 98/98 pass, one worker. Helper and test review accept the bounded classic-inline scope. Final child acceptance review, #533/#534/#535, every build/attribution requirement and #139/#194/#537 live 2177-case same-revision zero-waiver release gates remain open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-19,
+      note: "#536 final independent closure review accepts its harness, conditional/render-prop/real-streaming and explicit workaround dispositions through pushed 5cef9209; fresh complete SSR75/75 then hydrate98/98. Child moves to merged, not verified. #533/#534/#535, every build/attribution requirement, #139 packaging safety and #194/#537 live2177-case same-revision zero-waiver release gates remain unchanged; delayed-autofocus cancellation is next bounded #534 work",
+    }
 ---
 
 Upgrade the shared foundation (`solid-stately`, `solidaria`, `solidaria-components`)

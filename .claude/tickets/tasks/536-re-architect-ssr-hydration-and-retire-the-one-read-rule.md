@@ -4,7 +4,7 @@ type: task
 title: "Re-architect SSR hydration and retire the One-Read Rule"
 created: 2026-09-13
 parent: 531
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -90,6 +90,11 @@ history:
       state: in-progress,
       at: 2026-09-19,
       note: "real renderToStream proof now emits an unresolved Loading shell before resolving data, then hydrates the exact late template nodes under Provider/render-prop/Show updates and disposal. Bounded helper waits for rc.9 completion and isolates script/runtime descriptors; missing-tail, honest late-tag and falsy pending errors prove same-ID recovery. Focused hydrate 31/31; fresh complete SSR 75/75 then hydrate 98/98, one worker. Final task inventory/acceptance reconciliation and all sibling/build/attribution/release requirements remain open; no product source or dependency changed",
+    }
+  - {
+      state: merged,
+      at: 2026-09-19,
+      note: "final independent own-scope review accepts source through 5cef9209: all three Work items and complete SSR75/75 then hydrate98/98 are satisfied. Explicit final dispositions supersede historical pending inventory; semantic caches, allocation-neutral and public-route portal guards, and TagGroup's runtime-supported serialized adapter remain justified. This reconciliation closes #536 as merged, not verified; #531 siblings/builds/attribution and all certified/release gates remain open",
     }
 ---
 
@@ -436,8 +441,45 @@ Independent helper/test reviews accept the bounded scope. Focused hydration
 passes 31/31; fresh complete SSR passes 75/75 (28 files), then hydration 98/98
 (27 files), one worker. Receipt and exact command ledger:
 `.agents/UI-EXECUTION-536-STREAMING-2026-09-19.md`.
-Final inventory/acceptance reconciliation remains before closing this task;
-all initiative sibling/build/attribution and exact-revision release gates remain.
+The final inventory reconciliation below supersedes this slice's pending
+acceptance note; initiative and exact-revision release gates remain separate.
+
+## 2026-09-19 final inventory and own-scope acceptance
+
+Independent source, helper, fixture, test and final closure reviews accept the
+work through `5cef92094571cea9c95059a86001aede0be78913`, pushed to main with a
+clean checkout. This final disposition supersedes the initial inventory's
+pending rows and earlier remaining-acceptance paragraphs, retaining their
+historical evidence:
+
+- Harness/compiler and strict adoption/error detection are delivered by #542
+  and the subsequent streaming helper controls. The final complete lanes pass
+  SSR 75/75 then hydration 98/98 with one worker, without key desynchronization
+  or reported context leaks. Exact late-node adoption and same-fragment-ID
+  recovery are checked; this is not a claim of arbitrary private-state reset.
+- ElementTag's obsolete static-tag workaround is removed. Legacy hydration
+  state guards, hook/focus owner omissions, FocusScope structure, public modal
+  and Tooltip binding defects are repaired with owning negative controls and
+  symmetric SSR/hydration proof. VirtualFocus and client-only portal guards
+  remain intentionally, supported by the public-route tests.
+- Authored-child/render-prop caches, lazy Provider children, registration
+  snapshots, real ID/prefix and keyed collection contracts remain semantic
+  requirements, not obsolete counter workarounds. Guidance now describes
+  owner allocation rather than a universal One-Read restriction.
+- Viviana TagGroup's serialized `{t}` inspection remains a representation
+  adapter: installed `@solidjs/web/dist/server.js` still returns `{t}` from
+  `ssr`. Existing owning SSR/hydrate tests prove prebuilt tags are not wrapped
+  again and preserve the exact three server row nodes. No retirement is
+  justified; this supersedes its initial unqualified coverage-debt entry.
+- Slot rewrites remain #535/#168/#169, accessor migration #533, scheduler and
+  delayed-autofocus cancellation #534, and other probe-then-render behavior
+  #441. They are not unfulfilled counter-workaround removal in this task.
+
+All three Work items and this task's Done when now have source/local evidence.
+Closure is `merged`, not automatically `verified`; no package or initiative
+release-readiness claim follows. #531 stays in-progress with every sibling,
+build, attribution and live 2,177-case certified requirement intact. Receipt:
+`.agents/UI-EXECUTION-536-CLOSURE-2026-09-19.md`.
 
 ## Done when
 
