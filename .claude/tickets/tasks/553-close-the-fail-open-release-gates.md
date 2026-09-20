@@ -31,6 +31,11 @@ history:
       at: 2026-09-20,
       note: "slice 6 done: npm is pinned exactly in release.yml, 11.19.1 (npm view npm@11 version, 2026-09-20). Every uses: in the workflow set is pinned to a commit SHA because a tag is mutable; npm install -g npm@^11.5.1 was the one exception, letting the registry choose which npm ran in the job that holds contents: write, pull-requests: write and the publish token — fourteen minors past the reviewed version. New guard:workflow-pins (scripts/check-workflow-pins.mjs) holds both rules and ran red on the range before the pin, green after; wired into ci:release-readiness. 7 cases in scripts/check-workflow-pins.test.ts",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "slice 7 done: guard:entry-import-budget fails a budgeted entry that is not built. It skipped one silently and only failed when every entry was unbuilt, so a renamed exports target, a package dropped from the build, or a half-built tree read as a pass on each entry it removed. Proved on the real dist: with packages/viviana-ui/dist/Provider.js moved aside the guard printed 'entries measured: 1/2' and exit 0, and after the repair exit 1 naming @proyecto-viviana/ui ./Provider as not built. 3 cases in scripts/check-entry-import-budget.test.ts. Separately, the guard is red on main for its own reason and stays red, unfixed here: 5/5 entries over their module ceilings (ui ./Provider 25 vs 21, solid-spectrum ./Provider 25 vs 21, ./ButtonGroup 29 vs 28, ./ProgressBar 24 vs 23, ./ProgressCircle 20 vs 19) against a 12:20 build. Raising the ceilings would be papering over it; recorded under Left red",
+    }
 ---
 
 ## Scope

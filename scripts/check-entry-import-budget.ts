@@ -206,11 +206,19 @@ const failures: string[] = [];
 const improvements: string[] = [];
 let measuredEntries = 0;
 
+const unbuilt: string[] = [];
+
 for (const entry of budget.entries) {
   const measured = measure(entry);
-  if (!measured) continue;
-  measuredEntries++;
   const label = `${entry.package} ${entry.entry}`;
+  // An entry with no built file is the ceiling nobody measured. Skipping it
+  // meant a renamed `exports` target, a package dropped from the build, or a
+  // half-built tree read as a pass on every entry it silently removed.
+  if (!measured) {
+    unbuilt.push(label);
+    continue;
+  }
+  measuredEntries++;
   if (measured.total > entry.maxModules)
     failures.push(`${label}: ${measured.total} modules, ceiling ${entry.maxModules}`);
   else if (measured.solidaria > entry.maxSolidariaModules)
@@ -226,6 +234,16 @@ for (const entry of budget.entries) {
 if (measuredEntries === 0) {
   console.error(
     `No budgeted entry resolved to a built file — build the packages first (vp run build).`,
+  );
+  process.exit(1);
+}
+
+if (unbuilt.length > 0) {
+  console.error(`\nentry import budget FAILED: ${unbuilt.length} budgeted entry(ies) not built:`);
+  for (const label of unbuilt) console.error(`  ${label}`);
+  console.error(
+    `\nBuild the packages (vp run build). If an entry is gone for good, drop its line\n` +
+      `from scripts/entry-import-budget.json in the commit that removes it.`,
   );
   process.exit(1);
 }

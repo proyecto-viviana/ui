@@ -5,8 +5,8 @@ Brief: `.agents/close-gates-2026-09-20.task.md`.
 
 ## Now
 
-Slice 7 — `guard:entry-import-budget` fails on an unbuilt budgeted entry.
-Slices P, 0, 1, 2, 3, 4, 5 and 6 are closed. Third writer; brief
+Slice 8 — `guard:package-sourcemaps` after a build: wire it, or correct the claim.
+Slices P, 0, 1, 2, 3, 4, 5, 6 and 7 are closed. Third writer; brief
 `.agents/close-gates-2026-09-20.resume.task.md`.
 
 ## Slice L — land the conductor's notes
@@ -587,4 +587,71 @@ tag, SHA, local action, and this repository's own workflows).
     $ vp lint           pass: Found no warnings or lint errors in 3165 files
     $ node scripts/test-ci-guard-contracts.mjs   all PASS
 
+Commit `9305a49a`.
+
+## Slice 7 — an unbuilt entry is a ceiling nobody measured
+
+`measure()` returns null for an entry whose `exports` target has no built file,
+and the loop did `continue`. Only an entirely unbuilt tree failed. So a renamed
+`exports` target, a package dropped from the build, or a half-built tree passed
+on every entry it silently removed.
+
+Planted on the real `dist/`: `packages/viviana-ui/dist/Provider.js` moved aside,
+with a two-entry budget (the `ui` entry plus one built entry whose ceiling was
+raised so only the missing entry could fail).
+
+    $ node --experimental-strip-types scripts/check-entry-import-budget.ts
+    entry import budget
+    - entries measured: 1/2
+    - root-barrel importers: 154 (ceiling 154)
+    - entries now under their ceiling (lower it with --write-baseline):
+        @proyecto-viviana/solid-spectrum ./ProgressCircle: 20 modules (14 solidaria), ceiling 99/99
+    entry import budget OK.
+    BEFORE EXIT=0
+
+After the repair, the same tree:
+
+    entry import budget FAILED: 1 budgeted entry(ies) not built:
+      @proyecto-viviana/ui ./Provider
+
+    Build the packages (vp run build). If an entry is gone for good, drop its line
+    from scripts/entry-import-budget.json in the commit that removes it.
+    AFTER EXIT=1
+
+The `No budgeted entry resolved to a built file` message is kept for the
+all-unbuilt case, which is a different mistake and deserves its own sentence.
+The built file and the real budget were restored; `git diff` on
+`scripts/entry-import-budget.json` is empty.
+
+`scripts/check-entry-import-budget.test.ts` runs the guard against a fixture
+workspace: all built and under ceiling passes, one unbuilt entry fails by name,
+nothing built says to build first. 3 cases green.
+
+    $ vp check          pass: All 4333 files are correctly formatted
+    $ vp lint           pass: Found no warnings or lint errors in 3166 files
+    $ node scripts/test-ci-guard-contracts.mjs   all PASS
+
 Commit `PENDING`.
+
+## Left red
+
+**`guard:entry-import-budget` ceilings, all five entries** (found in slice 7,
+not caused by it; blocking step in Certification Gates). Against the 12:20
+build of `dist/`:
+
+    $ node --experimental-strip-types scripts/check-entry-import-budget.ts
+    entry import budget
+    - entries measured: 5/5
+    - root-barrel importers: 154 (ceiling 154)
+
+    entry import budget FAILED:
+      @proyecto-viviana/ui ./Provider: 25 modules, ceiling 21
+      @proyecto-viviana/solid-spectrum ./Provider: 25 modules, ceiling 21
+      @proyecto-viviana/solid-spectrum ./ButtonGroup: 29 modules, ceiling 28
+      @proyecto-viviana/solid-spectrum ./ProgressBar: 24 modules, ceiling 23
+      @proyecto-viviana/solid-spectrum ./ProgressCircle: 20 modules, ceiling 19
+
+Every budgeted entry gained four modules or so since the baseline was frozen.
+`--write-baseline` would clear it and that is exactly the papering-over this
+task forbids: the ceilings are the gate. Finding which import widened the graph
+is a port question, not a gate question, and belongs to its own ticket.
