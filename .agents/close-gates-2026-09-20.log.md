@@ -1733,3 +1733,66 @@ Order of work: `VIVIANA_GATE=1 vp run build` first (the gate builds the tree it
 grades and refuses to reuse a preview server), then the single test the ticket
 names — `toast` D1 `neutral · dark` — and its diff image, before anything is
 grouped.
+
+### Step 1 — `toast` D1 `neutral · dark`, reproduced, and it is not a pixel diff
+
+`VIVIANA_GATE=1 vp run build` EXIT=0 (39 tasks, 0/39 cache hit), then
+
+    npx playwright test certified/toast -g "D1 state matrix.*Toast.*neutral.*dark"
+
+EXIT=1, reproduced on the first attempt with
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` set, so it is not the
+host note's paint starvation. Two notes for whoever runs this next: the file
+filter is `certified/toast`, not the path printed in the receipt, and this
+sandbox redirects the Playwright browser cache, so runs need
+`PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/ms-playwright` or the launch fails with
+"Executable doesn't exist".
+
+The ticket asks to look at the diff image. **There is no diff image.** The test
+never reaches a screenshot: it dies in `beforePanel`, at
+`toast.certified.spec.ts:104`, on
+
+    await expect(page.getByRole("alertdialog")).toBeVisible();   // element(s) not found
+
+`openToast` had already got past its own preconditions — the stage reported
+`data-comparison-toast-is-active="true"`, the variant trigger was visible, and
+Enter was delivered. So this is a D1 row failing for a reason D1 does not
+measure, and reading the driver name would have sent the reader to the state
+matrix.
+
+A direct probe against a preview build (both stacks, same page, same controls
+event) isolates it to one side:
+
+| side  | `[role="alertdialog"]` | `.solidaria-ToastRegion` | `[data-solidaria-top-layer]` | region `Notifications` |
+| ----- | ---------------------: | -----------------------: | ---------------------------: | ---------------------: |
+| react |                      1 |                        — |                            — |                 present |
+| solid |                      0 |                        0 |                            0 |                  absent |
+
+React queues and paints a toast. Solid paints **nothing at all** — not an
+empty region, not a portal node. Clicking the trigger twice and waiting two
+seconds changes nothing, and neither a console message nor a page error is
+emitted. So the Solid toast surface is missing, not mis-styled, and every
+`toast` and `toast-icon` row in the receipt (37 of the 169) runs the same
+`openToast` in `beforePanel` — D1, D3, D6 and D7 alike. That is one cause
+covering 37 rows if a run confirms it, which is step 2's job, not this
+paragraph's.
+
+Where it goes next, as hypotheses and labelled as such: `ToastRegion` gates its
+whole output on `<Show when={isHydrated() && hasToasts()}>`
+(`packages/solidaria-components/src/Toast.tsx:380`), so either the hydration
+gate never opens or the region's `visibleToasts()` never sees the queued toast.
+The hydration half is the less likely one — Popover rides the same gate and its
+`light` rows pass in the receipt — but neither half is proved yet, and nothing
+goes into a commit message until one is.
+
+This is very likely the same defect as **#576**, which found the playground
+Toast region missing its `Notifications` landmark. The probe above is that
+landmark absent on a second surface. The hand-over asked whoever takes either
+ticket to read the other; they should be treated as one defect until a run
+separates them.
+
+The demo fixture that queues the toast is
+`apps/comparison/src/components/solid/fixtures/styled/toast.tsx`, which is
+inside the public-face worktree's fence. It is not the suspect — it calls
+`ToastQueue[variant]` on the published entry and the React side of the same
+file works — but if a fix ever needs to touch it, it needs the conductor first.
