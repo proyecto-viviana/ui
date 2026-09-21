@@ -80,13 +80,15 @@ function ErrorFallback(props: { error: Error; reset: () => void }) {
   return (
     <div data-testid="route-error-boundary" style={{ padding: "2rem", "text-align": "center" }}>
       <h2 style={{ color: "#ef4444", "margin-bottom": "1rem" }}>Something went wrong</h2>
-      <p style={{ color: "#9ca3af", "margin-bottom": "1rem" }}>{props.error.message}</p>
+      <p style={{ color: "var(--text-secondary)", "margin-bottom": "1rem" }}>
+        {props.error.message}
+      </p>
       <button
         onClick={props.reset}
         style={{
           padding: "0.5rem 1rem",
-          background: "#3b82f6",
-          color: "white",
+          background: "var(--interactive-fill)",
+          color: "var(--text-on-accent)",
           border: "none",
           "border-radius": "0.375rem",
           cursor: "pointer",

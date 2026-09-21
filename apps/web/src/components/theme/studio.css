@@ -22,6 +22,9 @@
      `--interactive-fill` is the register's AA-safe text-on-blue pairing in both
      schemes; the brighter accent remains available for marks, rims and glows. */
   --pv-accent-solid: var(--interactive-fill);
+  /* Blue as INK reads `--text-link`, never the fill above: the fill is verified
+     under white (4.63:1 dark) and drops to 3.28:1 as text on a raised dark
+     surface (#586). `--text-link` holds 6.2:1 on those surfaces in both schemes. */
   --pv-accent-solid-hover: color-mix(in srgb, var(--interactive-fill) 88%, black);
   --pv-accent-tint: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   --pv-accent-tint-strong: color-mix(in srgb, var(--accent-primary) 20%, transparent);
@@ -275,7 +278,7 @@
   padding: 2px 8px;
   border-radius: var(--pv-radius-pill, 9999px);
   background: var(--surface-raised, rgba(255, 255, 255, 0.06));
-  color: var(--pv-accent-solid, #3b82f6);
+  color: var(--text-link);
   border: 1px solid var(--border-default);
   white-space: nowrap;
 }
@@ -599,7 +602,7 @@
 .pv-landing-closing__mark {
   font-size: 1.75rem;
   line-height: 1;
-  color: var(--pv-accent-solid, #3b82f6);
+  color: var(--text-link);
 }
 .pv-landing-closing h2 {
   font-family: var(--font-display, inherit);
@@ -634,7 +637,7 @@
   max-width: 42rem;
 }
 .pv-hero h1 span {
-  background: linear-gradient(135deg, var(--pv-accent-solid, #3b82f6), #a855f7);
+  background: linear-gradient(135deg, var(--text-link), #a855f7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

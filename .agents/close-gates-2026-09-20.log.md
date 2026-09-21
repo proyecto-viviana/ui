@@ -2219,3 +2219,15 @@ seven. Merged.
   `certified/datepicker certified/daterangepicker`: 114 passed.
 - Mutation, spread restored and rebuilt: D3 11 / 11, the same eleven.
 - solid-spectrum units 85 files / 1125 passed; typecheck clean.
+
+## 2026-09-21 — #586 accent-as-ink and the error boundary, slice
+
+- Ink reads the existing `--text-link` (6.24:1 dark on #202630, 6.25:1 light);
+  the boundary reads `--text-secondary` and `--interactive-fill` /
+  `--text-on-accent`. `studio.css`, `routes/__root.tsx`.
+- Targeted contrast, dists rebuilt: `/`, `/admin`, `/showcase/inputs`,
+  `/showcase/parity`, `/solid-spectrum/docs/components/combobox`: 5 passed.
+- Mutation: fill as badge ink fails `/` at 3.28 dark; `#9ca3af` fails combobox
+  at 2.34 light; `#3b82f6`/white fails combobox at 3.67 both schemes.
+- `/docs/components/tree` passes alone; its crash was memory pressure.
+- Full 174 still owed: the harness stopped it at 24/174 for machine memory.

@@ -4,12 +4,17 @@ type: task
 title: "The accent fill is used as ink and fails AA on the landing page, and the error boundary that catches the dead routes fails AA too"
 created: 2026-09-21
 parent: 544
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-21,
       note: "found by the conductor running `vp run a11y:contrast` locally on `eb75ee0e` — the third of the five `ci:site` legs, and the second of them to come back red. The run reached 170 of 174 routes before the harness stopped it for machine memory; six routes had already failed and the tally was complete enough to trace every one to a token. Filed as one ticket because both halves are `apps/web` colour and both block the same gate, but they are two independent causes and the Work section keeps them apart",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "both fixes landed; the closing full 174 run is still owed. Half one: the three ink readers in studio.css (register-card badge, closing mark, hero gradient start) read the existing `--text-link`, 6.24:1 on #202630 dark and 6.25:1 on white light, so no new token name was minted; `interactive-fill` and the fill/ring readers of `--pv-accent-solid` are untouched. Half two: ErrorFallback message reads `--text-secondary`, the button `--interactive-fill` under `--text-on-accent`. Targeted runs, dists rebuilt, VIVIANA_GATE=1 RUN_AXE=1: `/`, `/admin`, `/showcase/inputs`, `/showcase/parity` and `/solid-spectrum/docs/components/combobox` 5 passed. Only combobox still throws, so it alone exercises the boundary. Mutation: badge ink back on the fill fails `/` with 8x [dark] #0a6fef on #202630 = 3.28; message back to #9ca3af fails combobox [light] 2.34; button back to #3b82f6/white fails combobox 3.67 in both schemes. `/docs/components/tree` passes alone with 9 GB free, so the crash reads as memory pressure, not a renderer bug; not split. The full run was started and stopped by the harness at 24/174 for low machine memory; it needs a machine with headroom",
     }
 ---
 
