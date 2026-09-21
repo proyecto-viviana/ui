@@ -21,6 +21,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-certified-b/F1`, medium, partly: the same truth as `ci-truth/main-red-head-unpushed` above, measured again over the sixteen commits written after round 1's range closed. None of them is on `origin/main` - `git merge-base --is-ancestor` is false for all sixteen against `96376e9a` - so every pass count in their messages and receipts is an unreplayed local claim. Main's three newest Certification Gates runs are failures, the latest 35560076342 at `96376e9a`, 2026-09-21T04:11:59Z, and `gh workflow list --all` still reports Site Gate and Release Readiness `disabled_manually` while #586 names Site Gate as its blocker. The skeptic refuted the finding's gate-lies framing: the scheme defines merged as landed in a sha, not as gated, #586 is in-progress and says its run is owed, and the owner disabled the workflows - so the survivor is exactly this ticket's scope. Closing the red and pushing is what turns sixteen unverified claims into one run id",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "the defect reproduced live while landing round 2, and it has a named cause now rather than an inferred one. `503e50a0` ran `vp run docs:generate` as its last edit and `vp run docs:check` exited 0 in the working tree; the pre-commit hook then ran `vp check --fix` over the seventeen staged files, reformatted one of them (`.claude/tickets/tasks/603-...md`, one line, YAML flow-scalar quoting), and committed that reformatted content. `vp run docs:check` on the committed tree exited 1 with both views stale, and `a9ab33ee` restamped them. So the ordering hole is not only human - a hook that mutates staged files after the generator has run reproduces it every time, and the writer cannot avoid it by being careful. Two shapes fit this ticket's `make it mechanically impossible`: run the generator from inside the hook, after `vp check --fix` and before the commit object is written, or have `docs:generate` stamp from the staged index rather than from the working tree. Verified: the formatter touched exactly one file, `git diff beb8e9ee 503e50a0 -- .claude/tickets/`, and only a note whose text contained a double quote",
+    }
 ---
 
 ## Scope
