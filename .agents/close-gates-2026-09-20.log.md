@@ -1685,3 +1685,24 @@ anything this repository can fix, and the nine mis-attributed rows are stable â€
 they reproduce identically every run, so they distort the reading and not the
 drift detection. Written before the heavy step, as the protocol asks.
 
+### What the re-bless wrote
+
+`vp run build` EXIT=0 (39 tasks), then
+`vp exec tsx scripts/check-upstream-test-parity.ts --write-baseline --allow-growth 573`
+EXIT=0 and `vp run guard:upstream-test-parity` EXIT=0. Only
+`scripts/upstream-test-parity-baseline.json` moved, 87 insertions and 11
+deletions; the guard script is untouched and no test file was edited.
+
+The floor is now suspects 187, coverageGaps 43, upstreamOnly 16 â€” the two
+shrinking counts are the ratchet tightening, which it is allowed to do in either
+direction as long as it only shrinks. `growthLog` takes its sixth entry:
+ticket 573, 30 added suspects, 0 gaps, 0 unmatched suites, so the added facts sit
+in the file that names them rather than in a commit subject. Dated `2026-09-21`
+because `:701` stamps `new Date().toISOString()`, which is UTC and past midnight
+there; the work is 2026-09-20 local, and it is worth knowing before someone
+tries to match that date to a commit.
+
+The nine oracle artifacts are in the baseline under this ticket and are not
+settled by being there. They are waiting on the conductor's new ticket for
+filename attribution; when a fact carries its source file, those rows should
+leave the baseline rather than be re-blessed again.
