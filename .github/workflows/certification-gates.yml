@@ -18,6 +18,9 @@ name: Certification Gates
 #               reason is written next to each one. Promoting one of these
 #               means closing its ticket first, not deleting its comment.
 #
+# `guard:upstream-freshness` is the only advisory gate left: the certified
+# shards were advisory by accident, not by decision, and now conclude red (#589).
+#
 # Trigger: PRs AND push-to-main. Work on this repo lands direct-to-main, so a
 # PR-only ladder structurally never fires (`ci-main-gate-wiring`).
 
@@ -32,8 +35,13 @@ permissions:
   contents: read
 
 concurrency:
+  # A push to `main` must end in a verdict. Work lands direct-to-main here, so
+  # `cancel-in-progress: true` cancelled a half-hour suite on every push: 54 of
+  # the last 200 main runs concluded `cancelled`, neither a green nor a recorded
+  # red, and `check-release-evidence.mjs` treats a cancelled run at the release
+  # sha as a hard block (#589). Every other ref still cancels its superseded run.
   group: certification-gates-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   certification-gates:
@@ -402,7 +410,8 @@ jobs:
             echo "| --- | --- |"
             echo "| \`comparison floors: pair budgets\` | Floor — six-slug default-state pair-diff with mismatch budgets. Not certified D3. |"
             echo "| \`comparison floors: contracts\` | Floor — styled-contract + Button-family fixtures. Not consumed-prop certification. |"
-            echo "| \`certified\` / \`certified report\` | Recertification bar. Sharded \`comparison:test:certified\`. Blocking. Waivers in \`apps/comparison/e2e/certified-waivers.json\`. |"
+            echo "| \`certified (N/8)\` | Recertification bar, sharded. Blocking: a shard whose slice fails concludes ❌, and the other seven still run. |"
+            echo "| \`certified report\` | The merged verdict over all eight shards, red ones included. Blocking. Waivers in \`apps/comparison/e2e/certified-waivers.json\`. |"
             echo ""
             echo "_\`typecheck\` still has a baselined 59-file \`@ts-nocheck\` blind spot across the public packages; the budget forbids additions and the burn-down ticket owns removals._"
             echo ""
@@ -644,9 +653,13 @@ jobs:
           name: comparison-dist-${{ github.run_id }}
           path: .
 
+      # A shard that exits 1 concludes red. It used to carry
+      # `continue-on-error: true`, so all eight shard jobs rendered green over
+      # an 88-failure suite and the exit code lived in the annotations alone
+      # (#589). `fail-fast: false` above keeps the other seven running, the
+      # upload below runs on a red shard, and `certified report` still merges
+      # them into the one blocking verdict.
       - name: certified shard
-        id: certified_shard
-        continue-on-error: true
         working-directory: apps/comparison
         run: pnpm exec playwright test e2e/certified --shard=${{ matrix.shard }}/8 --workers=2
 
@@ -664,7 +677,10 @@ jobs:
   certified-report:
     name: certified report
     needs: [comparison-build, certified]
-    if: ${{ always() && needs.comparison-build.result == 'success' }}
+    # The blocking verdict. It must merge red shards — that is the case it
+    # exists for — so it cannot depend on the shards succeeding; `!cancelled()`
+    # rather than `always()` so a cancelled run publishes no verdict at all.
+    if: ${{ !cancelled() && needs.comparison-build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

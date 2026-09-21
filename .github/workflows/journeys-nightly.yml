@@ -14,8 +14,10 @@ permissions:
   contents: read
 
 concurrency:
+  # The nightly's own ref is `refs/heads/main`, so a scheduled run is never
+  # cancelled by a later dispatch; a dispatch from another ref still supersedes (#589).
   group: journeys-nightly
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   journey-fuzz:

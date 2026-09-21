@@ -56,6 +56,28 @@ function json(file, value) {
   writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+// A workflow is a map of jobs, and the same step text repeats across them:
+// `run: pnpm run build` is a step of `certification-gates` AND of
+// `comparison-build`. An ordering assertion built from whole-file `indexOf`
+// offsets therefore compares steps that may live in different jobs, and
+// re-anchors silently on the other job when one of them is deleted (#589).
+// Every workflow-shape assertion below reads one job's own block.
+function jobBlock(workflow, job) {
+  const start = workflow.indexOf(`\n  ${job}:\n`);
+  assert(start >= 0, `the workflow has no \`${job}\` job`);
+  const body = workflow.slice(start + 1);
+  const next = body.search(/\n {2}[A-Za-z0-9_-]+:\n/);
+  return next >= 0 ? body.slice(0, next + 1) : body;
+}
+
+function stepBlock(jobText, stepName) {
+  const start = jobText.indexOf(`- name: ${stepName}\n`);
+  assert(start >= 0, `the job has no \`${stepName}\` step`);
+  const body = jobText.slice(start);
+  const next = body.slice(1).search(/\n {6}- name: /);
+  return next >= 0 ? body.slice(0, next + 1) : body;
+}
+
 async function listen(server) {
   await new Promise((resolve, reject) => {
     server.once("error", reject);
@@ -158,12 +180,46 @@ try {
   );
   console.log("PASS: Changesets Check preserves complete release history.");
 
+  // A push to `main` must end in a verdict. Work lands direct-to-main here, so
+  // `cancel-in-progress: true` erased half of it: 54 of the last 200 main runs
+  // of Certification Gates are `cancelled` — neither a green nor a recorded
+  // red — and `check-release-evidence.mjs` treats a cancelled run at the
+  // release sha as a hard block (#589). Superseding still cancels everywhere
+  // else, which is what a ref-keyed group is for.
+  const workflowsDir = path.join(ROOT, ".github", "workflows");
+  const mainExempt = "${{ github.ref != 'refs/heads/main' }}";
+  let concurrencyGroups = 0;
+  for (const file of readdirSync(workflowsDir).sort()) {
+    if (!/\.ya?ml$/.test(file)) continue;
+    const text = readFileSync(path.join(workflowsDir, file), "utf8");
+    const cancel = /^ *cancel-in-progress: *(.+?) *$/m.exec(text);
+    if (!cancel) continue;
+    concurrencyGroups += 1;
+    assert(
+      cancel[1] === "false" || cancel[1] === mainExempt,
+      `${file}: a push to main must end in a verdict — cancel-in-progress must be \`false\` or \`${mainExempt}\`, found \`${cancel[1]}\``,
+    );
+    const group = /^ *group: *(.+?) *$/m.exec(text)?.[1] ?? "";
+    assert(
+      !group.includes("github.ref") || cancel[1] === mainExempt,
+      `${file}: a ref-keyed concurrency group must still cancel superseded runs on every ref but main — found \`${cancel[1]}\``,
+    );
+  }
+  assert(
+    concurrencyGroups >= 5,
+    `expected the concurrency contract to cover the workflows that declare a group, checked only ${concurrencyGroups}`,
+  );
+  console.log(
+    `PASS: ${concurrencyGroups} workflow concurrency groups leave a push to main uncancelled.`,
+  );
+
   const certificationWorkflow = readFileSync(
     path.join(ROOT, ".github", "workflows", "certification-gates.yml"),
     "utf8",
   );
-  const packageBuild = certificationWorkflow.indexOf("run: pnpm run build\n");
-  const jsxDeoptGuard = certificationWorkflow.indexOf("run: pnpm run guard:jsx-deopt-size\n");
+  const gatesJob = jobBlock(certificationWorkflow, "certification-gates");
+  const packageBuild = gatesJob.indexOf("run: pnpm run build\n");
+  const jsxDeoptGuard = gatesJob.indexOf("run: pnpm run guard:jsx-deopt-size\n");
   assert(
     packageBuild >= 0 && jsxDeoptGuard >= 0 && packageBuild < jsxDeoptGuard,
     "Certification Gates must build package artifacts before measuring JSX deopt size",
@@ -176,9 +232,7 @@ try {
   // "entries measured: 5/5", exit 0. Running it after the build spends a
   // twelve-minute walk to learn a number that was available at checkout, so
   // both chains put it first.
-  const entryImportBudget = certificationWorkflow.indexOf(
-    "run: pnpm run guard:entry-import-budget\n",
-  );
+  const entryImportBudget = gatesJob.indexOf("run: pnpm run guard:entry-import-budget\n");
   assert(
     packageBuild >= 0 && entryImportBudget >= 0 && entryImportBudget < packageBuild,
     "Certification Gates must measure the entry import budget before building packages",
@@ -190,13 +244,52 @@ try {
   );
   console.log("PASS: both chains measure the entry import budget before the build.");
 
+  // A shard that exits 1 must render red. `continue-on-error` on the shard step
+  // concluded all eight shard jobs `success` over an 88-failure suite, with the
+  // exit code visible only in the annotations (#589). The blocking verdict is
+  // still the merged report, so the matrix must not fail-fast, the blob reports
+  // must upload from a failed shard, and the report job must run on a red one.
+  const certifiedJob = jobBlock(certificationWorkflow, "certified");
+  // Keys, not prose: the job comments name both of these.
+  const certifiedKeys = certifiedJob.split("\n").filter((line) => !/^\s*#/.test(line));
+  assert(
+    !certifiedKeys.some((line) => /^ *continue-on-error:/.test(line)),
+    "a certified shard that exits 1 must conclude red: `continue-on-error` makes eight failing shard jobs render green",
+  );
+  assert(
+    certifiedKeys.some((line) => /^ *fail-fast: *false *$/.test(line)),
+    "the certified matrix must keep `fail-fast: false`, or the first red shard cancels the other seven and the report loses their evidence",
+  );
+  const shardUpload = stepBlock(certifiedJob, "Upload certified shard reports");
+  assert(
+    /^ *if: *(?:\$\{\{ *)?(?:always\(\)|!cancelled\(\))/m.test(shardUpload),
+    "a red certified shard must still upload its blob report, or the merged report cannot count the failures that made it red",
+  );
+  const certifiedReportJob = jobBlock(certificationWorkflow, "certified-report");
+  const reportCondition = /^ {4}if: *(.+?) *$/m.exec(certifiedReportJob)?.[1] ?? "";
+  assert(
+    reportCondition.includes("!cancelled()"),
+    `the certified report must run when a shard is red and not when the run was cancelled (\`!cancelled()\`), found \`${reportCondition}\``,
+  );
+  // Either YAML spelling of the list, so a legal reformat is not a false red.
+  const needsFlow = /^ {4}needs: *\[(.+?)\] *$/m.exec(certifiedReportJob)?.[1];
+  const needsBlock = /^ {4}needs: *\n((?: {4,6}- .+\n)+)/m.exec(certifiedReportJob)?.[1];
+  const reportNeeds = (needsFlow?.split(",") ?? needsBlock?.match(/- .+/g) ?? []).map((entry) =>
+    entry.replace(/^- /, "").trim(),
+  );
+  assert(
+    reportNeeds.includes("certified") && reportNeeds.includes("comparison-build"),
+    `the certified report must wait for every shard before merging, found needs \`${reportNeeds.join(", ") || "none"}\``,
+  );
+  console.log("PASS: a failing certified shard renders red and still reaches the merged report.");
+
   // release-readiness runs test:run on a plain checkout: the gitignored
   // ./react-spectrum oracle is absent there, so an oracle-backed check placed
   // in `packages/*/test` or `scripts/**/*.test.*` fails with ENOENT instead of
   // proving anything (2026-09-02: intl-catalog.test.tsx). Oracle-backed
   // evidence is a guard in Certification Gates, after the oracle materializes.
-  const oracleAcquire = certificationWorkflow.indexOf("check-upstream-oracle.mjs --acquire");
-  const intlCatalogGuard = certificationWorkflow.indexOf("run: pnpm run guard:s2-intl-catalog\n");
+  const oracleAcquire = gatesJob.indexOf("check-upstream-oracle.mjs --acquire");
+  const intlCatalogGuard = gatesJob.indexOf("run: pnpm run guard:s2-intl-catalog\n");
   assert(
     oracleAcquire >= 0 && intlCatalogGuard >= 0 && oracleAcquire < intlCatalogGuard,
     "Certification Gates must materialize the upstream oracle before guard:s2-intl-catalog",

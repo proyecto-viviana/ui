@@ -26,7 +26,11 @@ history:
 ## The defect
 
 `vp run a11y:contrast` fails six routes. Thirty instances, four distinct colour
-pairs, and all four trace to two declarations.
+pairs, and all four trace to two declarations. The tally is a reading of 170 of
+174 routes — the run was stopped for machine memory before the last four, so it
+is a floor on the instance count, not a complete sweep (#589). `a11y:contrast`
+is the third of `a11y:check`'s four legs, and `a11y:check` is `ci:site`'s
+second.
 
     16  [dark]  #0a6fef on #202630 = 3.28  (needs 4.5)
     12  [both]  #ffffff on #3b82f6 = 3.67  (needs 4.5)
