@@ -1065,10 +1065,10 @@ export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
       disabled={isDisabled()}
       data-disabled={dataAttr(isDisabled())}
       data-open={dataAttr(context.overlayState.isOpen)}
-      attr:data-hovered={isHovered() ? "true" : undefined}
-      attr:data-focused={isFocused() ? "true" : undefined}
-      attr:data-focus-visible={isFocusVisible() ? "true" : undefined}
-      attr:data-pressed={context.pickerAria.isButtonPressed() ? "true" : undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-pressed={dataAttr(context.pickerAria.isButtonPressed())}
     >
       {getChildren()}
     </button>
@@ -1143,10 +1143,10 @@ export function DateRangePickerButton(props: DateRangePickerButtonProps): JSX.El
       disabled={isDisabled()}
       data-disabled={dataAttr(isDisabled())}
       data-open={dataAttr(context.overlayState.isOpen)}
-      attr:data-hovered={isHovered() ? "true" : undefined}
-      attr:data-focused={isFocused() ? "true" : undefined}
-      attr:data-focus-visible={isFocusVisible() ? "true" : undefined}
-      attr:data-pressed={context.pickerAria.isButtonPressed() ? "true" : undefined}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      data-pressed={dataAttr(context.pickerAria.isButtonPressed())}
     >
       {getChildren()}
     </button>

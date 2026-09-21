@@ -93,6 +93,23 @@ describe("DateRangePicker", () => {
 
   // ===== Rendering =====
 
+  it("writes plain data-* names on the trigger, never an attr: namespace (#581)", async () => {
+    render(() => <TestDateRangePicker />);
+    await waitForHydration();
+
+    const trigger = document.querySelector(".solidaria-DateRangePickerButton") as HTMLElement;
+    trigger.focus();
+
+    await waitFor(() => {
+      expect(trigger).toHaveAttribute("data-focused", "true");
+    });
+
+    const namespaced = Array.from(trigger.attributes)
+      .map((attribute) => attribute.name)
+      .filter((name) => name.startsWith("attr:"));
+    expect(namespaced).toEqual([]);
+  });
+
   it("renders and opens content via trigger button", async () => {
     render(() => <TestDateRangePicker />);
 

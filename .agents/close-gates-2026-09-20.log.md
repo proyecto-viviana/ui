@@ -1994,3 +1994,41 @@ exists; they are not counted here.
 
 Duplication discharged by ticket, not by gesture: **#580**, the two toast
 modules at 1162 and 1248 lines differing on 118 after whitespace folding.
+
+## #581 — the `attr:` namespace on both date picker buttons, 44 certified rows
+
+The conductor's census named the cause from CI; this seat proved it locally and
+fixed it. Eight props in `packages/solidaria-components/src/DatePicker.tsx`
+(`:1068-1071`, `:1146-1149`) were `attr:data-focused={isFocused() ? "true" :
+undefined}`. They now read `data-focused={dataAttr(isFocused())}`, which is what
+the other 34 `data-hovered` sites in this package already write, and `dataAttr`
+was already imported and used two lines above each block. `grep -rn 'attr:'
+packages/*/src/ apps/*/src/` returns nothing.
+
+Runs, each after `VIVIANA_GATE=1 vp run comparison:build` — the stale-`dist`
+hazard from #578 applies here too, `vp run build` does not rebuild
+`apps/comparison`:
+
+- `certified/datepicker certified/daterangepicker` — **110 passed, 4 failed**.
+  The 4 are exactly `D2 motion — DatePicker motion › open · open-enter`, its
+  reduced twin, and the two DateRangePicker equivalents. So all 44 rows the
+  census attributes to this defect are green.
+- Mutation check, rebuilt both ways: with the eight lines reverted,
+  `certified/datepicker.certified -g "D1 state matrix"` is **4 passed, 6
+  failed**; with them restored, the same slice is **10 passed, 0 failed**.
+- `packages/solidaria-components/test/{DatePicker,DateRangePicker}.test.tsx` —
+  **72 passed**, including one new guard per suite asserting the trigger carries
+  `data-focused` and no attribute name beginning `attr:`. Guards mutation-checked
+  the #578 way: put the eight lines back to `attr:` and exactly 2 of 72 fail,
+  both of them the new tests.
+- `vp run typecheck` — clean.
+
+The motion pairs do not ride along, and they are not a keyframe value.
+`packages/solid-spectrum/src/popover/index.tsx:118-130` and
+`@react-spectrum/s2@1.7.0/src/Popover.tsx:123-132` are the same table to the
+digit: `top` enters at `4`, `bottom` at `-4`. Ours records `0px -4px` and
+React's `0px 4px`, so the two sides disagree about which placement the popover
+is in at capture, not about what that placement animates to. Filed as **#582**
+rather than folded in here.
+
+Standing: 169 → 132 after #578's first cause, → **88** after this.

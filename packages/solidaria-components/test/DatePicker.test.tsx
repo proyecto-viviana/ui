@@ -73,6 +73,29 @@ describe("DatePicker", () => {
   // RENDERING
   // ============================================
 
+  // ============================================
+  // TRIGGER STATE ATTRIBUTES
+  // ============================================
+
+  describe("trigger state attributes", () => {
+    it("writes plain data-* names on the trigger, never an attr: namespace (#581)", async () => {
+      render(() => <TestDatePicker />);
+      await waitForDatePickerHydration();
+
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+
+      await waitFor(() => {
+        expect(trigger).toHaveAttribute("data-focused", "true");
+      });
+
+      const namespaced = Array.from(trigger.attributes)
+        .map((attribute) => attribute.name)
+        .filter((name) => name.startsWith("attr:"));
+      expect(namespaced).toEqual([]);
+    });
+  });
+
   describe("rendering", () => {
     it("should render with default class", async () => {
       render(() => <TestDatePicker />);
