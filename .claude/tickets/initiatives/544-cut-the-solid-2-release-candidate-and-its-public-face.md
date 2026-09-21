@@ -35,6 +35,11 @@ history:
       at: 2026-09-21,
       note: "correction to the note above and to the S0-f bullet, which is edited in place: 'all three carried both defects' is wrong. `git show 45714230:packages/viviana-ui/src/button/Button.tsx | grep -n 'useFormProps\\|defaultProps'` prints `:43` import, `:61` `useProviderProps(useFormProps(runtimeProps))`, `:72` `defaultProps`, `:78` `useFormProps(mergeProps(defaultProps, ...))`, so Button already read the Form and carried only the size defect - its merged-in `size: 'M'` left the Form nothing to fill. The same grep on `ActionButton.tsx` and `LinkButton.tsx` prints `defaultProps` with no `useFormProps`, so those two carried both, as did the stale `ToggleButton.tsx` copy that Scope 1 fixed by taking the spectrum bytes. This is also why #606's pre-fix run was 10 failed | 1 passed rather than 11 failed. No stage, order or exit code changes. Raised by #606's review; the rest of that review's badge finding was checked against the pin and rejected, see #606's fourth note",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the S2-a bullet is extended in place, raised by #591's review round and not a correction of anything false. 'Space navigated twice' was scoped to `linkBehavior: 'selection'` and stayed silent on the other two. The `, false` at `createPress.ts:810` is on the shared keyup path, so under `'override'` and `'action'` the same Space went from navigating once to navigating zero times, Enter unchanged, measured in this seat by counting clicks that survive `defaultPrevented` against `43b5aabf`'s `createPress.ts` and again at HEAD. That is upstream's split (`useSelectableItem.mjs:45,104,307-313`) and `'override'` is `createListBox.ts:164-166`'s default under `selectionBehavior: 'toggle'`, so it reaches most consumers; the changeset now says it and two new test cases pin it. No stage, order or exit code changes",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -215,10 +220,14 @@ published.
   opened links with `isOpening: true`, re-entered on click, and de-duplicated
   by a shared flag; all three now read as upstream does. Of the three findings
   the audit filed together, the first was observable after all — Space on a
-  role-overridden `<a href>` in a selectable collection navigated twice — and
-  the third, the element-plus-timeout key, was a second real defect; only the
-  click re-entry guard is parity with no test that can tell it apart, as the
-  skeptic said. Each half is attributed by mutation in #591's merged note.
+  role-overridden `<a href>` in a `linkBehavior: "selection"` collection
+  navigated twice — and the third, the element-plus-timeout key, was a second
+  real defect; only the click re-entry guard is parity with no test that can
+  tell it apart, as the skeptic said. Each half is attributed by mutation in
+  #591's merged note. Its review round found the first fix also reaches
+  `"override"` and `"action"`, where Space now navigates zero times and Enter
+  navigates — upstream's own split, disclosed in the changeset and pinned by a
+  case each.
 - **S2-b #592**, medium. Link items bypass the router at four call sites; a
   pre-existing parity gap, not a regression from this campaign.
 - **S2-c #593**, medium. `FocusScope` restores focus without asking which scope

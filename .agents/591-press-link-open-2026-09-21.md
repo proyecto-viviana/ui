@@ -159,3 +159,57 @@ Not fixed here, and not this ticket's: `createSelectableItem.ts:286,312` call
 `openLink` directly instead of going through a router, which is #592 — a
 pre-existing parity gap seen from the router's side, deliberately separate.
 Nothing in this commit makes it better or worse.
+
+## 9. Review round — the fix reaches every `linkBehavior`, not one
+
+Added 2026-09-21 in the same seat, after a review of the landed work. One
+problem was raised and it holds, so it was fixed rather than argued.
+
+The `, false` at `createPress.ts:810` is on the keyup link path, which every
+`linkBehavior` shares. Section 3's test, the Done-when and the changeset all
+scoped the claim to `linkBehavior: "selection"`. Measured here by counting the
+clicks that survive `defaultPrevented` on a capture-phase document listener —
+the same instrument as section 3 — with `git show
+43b5aabf:packages/solidaria/src/interactions/createPress.ts` restored over the
+fixed file and then restored back from a scratchpad copy:
+
+| config | pre-fix `43b5aabf` | HEAD `0666ab92` |
+| --- | --- | --- |
+| `'selection'` + Space | 2 clicks / 2 opened | 2 / 1 |
+| `'override'` + Space | 1 / 1 | 1 / 0 |
+| `'action'` + Space | 1 / 1 | 1 / 0 |
+| `'selection'`, `'override'`, `'action'` + Enter | 1 / 1 each | 1 / 1 each |
+
+So Space stopped navigating outright under `'override'` and `'action'`. That is
+not a defect — upstream splits the two keys the same way, read in the installed
+pin before it was pinned here: `useSelectableItem.mjs:45` returns early from
+`onSelect` for `'override'`, `:104` excludes `isLinkOverride` from
+`allowsSelection`, `:307-311` is the only `isActionKey` gate on the press path
+and `:311-313` defines that key as Enter alone; `usePress.mjs:320` is the
+`false` itself. The gap was disclosure and coverage, and `'override'` is what
+`createListBox.ts:164-166` hands every listbox whose `selectionBehavior` is
+`'toggle'`, so it is the configuration most consumers are in.
+
+Both are closed. `.changeset/press-link-open-parity.md` gains a paragraph
+naming `'override'` and `'action'`, saying Space no longer navigates there and
+telling a consumer to bind Enter. `createSelectableItem.test.tsx` gains two
+cases that pin the split rather than leaving it a side effect of the
+`'selection'` one: `'override'` Space `{total: 1, opened: 0, selected: false}`
+against Enter `{1, 1, false}`, and `'action'` Space `{1, 0, selected: true}`
+against Enter `{1, 1, false}`. `selected` is new on all three cases and is what
+tells "the key did nothing" from "the key selected" — it also records that
+pre-fix, `'action'` + Space both selected and navigated. The listener plumbing
+moved into one `activate()` helper instead of a third copy of it, and
+`renderLinkItem` now returns its state.
+
+Red-to-green for the new cases, pre-fix source under the final test file:
+`vp test run packages/solidaria/test/createSelectableItem.test.tsx
+--maxWorkers=2` is `3 failed | 17 passed (20)` EXIT=1, failing all three
+link-activation cases; with the fixed source restored, `20 passed` EXIT=0.
+
+No source changed this round, so no new changeset is owed and the existing
+patch on `@proyecto-viviana/solidaria` still covers the commit. No residue and
+no new ticket: the finding lives entirely inside this ticket's own call path.
+#544's S2-a bullet carried the same partial claim and is extended in place with
+a dated note of its own; this ticket's `## Done when` gains the other two
+behaviors.

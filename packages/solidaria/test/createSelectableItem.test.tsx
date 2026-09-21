@@ -16,6 +16,7 @@ import { createListState, type ListState, type ListStateProps } from "../../soli
 import {
   createSelectableItem,
   type CreateSelectableItemOptions,
+  type LinkBehavior,
   type SelectableItemAria,
 } from "../src/selection/createSelectableItem";
 
@@ -102,8 +103,9 @@ function renderLinkItem(
   stateProps: Partial<ListStateProps<Item>>,
 ) {
   let el!: HTMLAnchorElement;
+  let state!: ListState<Item>;
   render(() => {
-    const state = createListState<Item>({
+    state = createListState<Item>({
       items,
       getKey: (item) => item.key,
       ...stateProps,
@@ -122,6 +124,9 @@ function renderLinkItem(
   return {
     get el() {
       return el;
+    },
+    get state() {
+      return state;
     },
   };
 }
@@ -383,32 +388,77 @@ describe("createSelectableItem — link activation", () => {
     vi.useRealTimers();
   });
 
+  /**
+   * Counts navigations rather than handler calls. A capture-phase document
+   * listener sees every click the item dispatches; the ones that survive
+   * `preventDefault` are the ones the browser would follow, so `opened` is the
+   * navigation count and `total` is how many clicks the path produced.
+   * `selected` is there to tell "the key did nothing" from "the key selected".
+   */
+  function activate(linkBehavior: LinkBehavior, key: string) {
+    const clicks: MouseEvent[] = [];
+    const record = (e: Event) => clicks.push(e as MouseEvent);
+    document.addEventListener("click", record, true);
+    try {
+      const { el, state } = renderLinkItem(
+        { key: "a", href: "#target", isLink: true, linkBehavior },
+        { selectionMode: "multiple" },
+      );
+
+      el.focus();
+      fireEvent.keyDown(el, { key });
+      fireEvent.keyUp(el, { key });
+
+      return {
+        total: clicks.length,
+        opened: clicks.filter((e) => !e.defaultPrevented).length,
+        selected: state.isSelected("a"),
+      };
+    } finally {
+      document.removeEventListener("click", record, true);
+      // Two activations in one test each get their own item.
+      cleanup();
+    }
+  }
+
   it("navigates exactly once when Space activates a role-overridden link", () => {
     // Both halves of the upstream mechanism have to agree. `openLink` sets its
     // `isOpening` flag while it dispatches (openLink.mjs:80-83), and the item's
     // own click guard reads it (useSelectableItem.mjs:254) to decide whether the
     // click is the one *it* asked for. `usePress` therefore passes `false` for
-    // its own link click (usePress.mjs:320) so the guard suppresses it. Counting
-    // clicks that survive `preventDefault` counts navigations: a click the guard
-    // cancels is one the browser never follows.
-    const clicks: MouseEvent[] = [];
-    const record = (e: Event) => clicks.push(e as MouseEvent);
-    document.addEventListener("click", record, true);
-    try {
-      const { el } = renderLinkItem(
-        { key: "a", href: "#target", isLink: true, linkBehavior: "selection" },
-        { selectionMode: "multiple" },
-      );
+    // its own link click (usePress.mjs:320) so the guard suppresses it.
+    //
+    // Two clicks are dispatched — the item's own, from `onSelect`'s `openLink`,
+    // and createPress's link path — and exactly one survives. `onSelect` puts
+    // the previous selection back before it returns (`useSelectableItem.mjs:43`,
+    // ours `:288-291`), so a `'selection'` link navigates without selecting.
+    expect(activate("selection", " ")).toEqual({ total: 2, opened: 1, selected: false });
+  });
 
-      el.focus();
-      fireEvent.keyDown(el, { key: " " });
-      fireEvent.keyUp(el, { key: " " });
+  it("navigates on Enter and not on Space under linkBehavior 'override'", () => {
+    // The consequence of the same `false` outside `linkBehavior: 'selection'`,
+    // pinned because it is a behaviour change in its own right and not a side
+    // effect of the test above. `'override'` is what a listbox defaults to
+    // whenever `selectionBehavior` is `'toggle'` (`createListBox.ts:164-166`),
+    // so it is the configuration most consumers get.
+    //
+    // Space produces no navigation: an `'override'` link is not selectable
+    // (`allowsSelection` excludes `isLinkOverride`, `useSelectableItem.mjs:104`,
+    // ours `:230`), `onSelect` returns early for it (`:45`, ours `:294`), and
+    // `onPress` never reaches `performAction` because `isActionKey` is
+    // Enter-only (`:307-311`, ours `:185`). The one click is createPress's, and
+    // the item's own guard cancels it. Enter is the navigation key here, and
+    // react-aria 3.52.0 splits the two keys the same way.
+    expect(activate("override", " ")).toEqual({ total: 1, opened: 0, selected: false });
+    expect(activate("override", "Enter")).toEqual({ total: 1, opened: 1, selected: false });
+  });
 
-      // Two clicks are dispatched — the item's own, and createPress's link path.
-      expect(clicks).toHaveLength(2);
-      expect(clicks.filter((e) => !e.defaultPrevented)).toHaveLength(1);
-    } finally {
-      document.removeEventListener("click", record, true);
-    }
+  it("navigates on Enter and selects on Space under linkBehavior 'action'", () => {
+    // Same split under the `createSelectableItem` default, `'action'`
+    // (`useSelectableItem.mjs:31`, ours `:202`), where the item *is* selectable:
+    // Space reaches `selectItem` through `onSelect` and opens nothing, Enter
+    // runs `performAction`'s `openLink`.
+    expect(activate("action", " ")).toEqual({ total: 1, opened: 0, selected: true });
+    expect(activate("action", "Enter")).toEqual({ total: 1, opened: 1, selected: false });
   });
 });
