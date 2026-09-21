@@ -134,13 +134,16 @@ function SolidSpectrumBreadcrumbsDemo() {
         ),
       ),
     );
-  const renderedBreadcrumbs = createComponent(Keyed, {
-    get when() {
-      return breadcrumbsStructure();
-    },
-    children: (structure) =>
-      structure.startsWith("standard:") ? directChildBreadcrumbs()() : itemBreadcrumbs()(),
-  });
+  // A thunk, so Keyed runs under the Provider's owner (see popover.tsx): the
+  // collapsed menu portals and reads its theme from context.
+  const renderedBreadcrumbs = () =>
+    createComponent(Keyed, {
+      get when() {
+        return breadcrumbsStructure();
+      },
+      children: (structure) =>
+        structure.startsWith("standard:") ? directChildBreadcrumbs()() : itemBreadcrumbs()(),
+    });
 
   return hc(
     SolidSpectrumProvider,

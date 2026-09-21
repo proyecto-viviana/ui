@@ -174,15 +174,19 @@ function SolidSpectrumPopoverDemo() {
       [popoverContent],
     ),
   ];
-  const routedPopoverContent = createComponent(Keyed, {
-    get when() {
-      return triggerMode();
-    },
-    children: (mode) =>
-      mode === "dialogTrigger"
-        ? dialogTriggerContent()()
-        : customAnchorContent().map((child) => child()),
-  });
+  // A thunk, so Keyed and the Popover it builds run under the Provider's owner:
+  // the portaled surface reads its colour scheme from useTheme(), and created
+  // here it would read the default "light dark" instead of the Provider's.
+  const routedPopoverContent = () =>
+    createComponent(Keyed, {
+      get when() {
+        return triggerMode();
+      },
+      children: (mode) =>
+        mode === "dialogTrigger"
+          ? dialogTriggerContent()()
+          : customAnchorContent().map((child) => child()),
+    });
 
   return hc(
     SolidSpectrumProvider,

@@ -2100,3 +2100,21 @@ The media branch the ticket says to delete was added by `1af6eb71` to close
 reduced motion; actionbutton's D2 reduced already has per-stack contracts, the
 toggle specs do not. Either reverse #484 or extend the split to the two toggle
 specs. Not edited; decision recorded in ticket 583.
+
+## popover-surface — the fixture built the popover outside its Provider
+
+The census's cause (set the colour scheme on the portal root) was already
+done: `solid-spectrum` Popover spreads `setColorScheme()` from `useTheme()`, as
+upstream reads `ColorSchemeContext`. The live dark case carried the
+`"light dark"` variant, so `useTheme()` returned the default. `e4c3b26b`
+turned the fixture's routed content from a thunk into an eager
+`createComponent(Keyed, …)` in the demo scope, which runs outside the
+`SolidSpectrumProvider` owner; only the portaled surface can tell. Made it a
+thunk again, and the same in `breadcrumbs.tsx`, whose collapsed menu portals.
+The existing fix this repeats is the `hc()` thunk pattern the other fixtures
+use.
+
+- Defect in, same build otherwise: `certified/popover.certified` 13 failed /
+  14 passed (D1 6 dark, D3 6 dark, D7 placement-top dark).
+- Fixed: 27 / 0. With breadcrumbs: 29 passed, 1 skipped; the skip is the
+  July `knownDivergence` on D6 `overflow`, not new.
