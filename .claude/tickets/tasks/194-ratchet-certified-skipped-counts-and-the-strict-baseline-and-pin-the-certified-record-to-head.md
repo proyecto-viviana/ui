@@ -52,6 +52,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-guards/r2-guards-4`, low, partly: slice 4's only-shrinks is a fixed ceiling, not a ratchet. `staleBaselineSlugs` fires only when a listed gap is absent, and the growth pin in `apps/comparison/src/data/parity-strict-baseline.test.ts` compares against `frozenBacklog`, a literal array of nine slugs that never shrinks when the JSON does - so a gap that closes, has its entry deleted, and later regresses can be re-baselined for the same slug and section with both checks green. Contained today, which is why it is low: `apps/comparison/scripts/parity-strict-baseline.json` holds all nine slugs in all three sections, 27 of 27, so no slack exists to remove and the pin can only refuse a tenth slug, and re-adding means editing a constant whose comment forbids it. Note the auditor cites `apps/comparison/src/data/parity-strict-baseline.json`, which does not exist; the JSON is under `scripts/`. Fix: record a per-section count (or the section's committed contents) in a frozen snapshot and fail when a section exceeds it, so deleting an entry lowers the ceiling permanently. Until then the workflow comment should say the baseline is capped at #85's nine, not that it only shrinks",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the waiver record this ticket landed gained a field, so `## Landed` is corrected in place: an entry is `{ pattern, ticket, expires, ticketStatus }`, and the merged verdict reads that recorded state instead of resolving the ticket out of `.claude/tickets` on every run. #574's review found that read: the board is outside `certifiedSuiteCoveredPathspecs`, so one commit editing `status:` flipped the merger's exit code while the postcard still said current. The board read now lives in `comparison:guard:certified-waiver-tickets`, outside the certified job. Nothing else here moves - the file is still `[]` and the pin still waits on a full run",
+    }
 ---
 
 ## Cause
@@ -97,9 +102,11 @@ steps as the recertification bar. A sharded `certified` job runs
 `playwright merge-reports`, one HTML artifact, component × driver summary).
 The recorded suite is therefore the revision CI just ran, not a hand-copied
 SHA. Tracked waivers live in `apps/comparison/e2e/certified-waivers.json`
-(`{ pattern, ticket, expires }`); matching failures become "waived (ticket)"
-and do not fail `certified report`. A waiver whose ticket is
-verified/merged/closed, or whose `expires` date has passed, fails the job.
+(`{ pattern, ticket, expires, ticketStatus }` since #574); matching failures
+become "waived (ticket)" and do not fail `certified report`. A waiver whose
+recorded `ticketStatus` is verified/merged/closed, or whose `expires` date has
+passed, fails the job. The run reads that field, never the board — #574 moved
+the board read into `comparison:guard:certified-waiver-tickets`, outside it.
 The file is empty on purpose — the orchestrator seeds #240 if that pin
 waiver is wanted. Local `comparison:test:certified` writes the same
 `test-results/certified-summary.json` the parity report reads.

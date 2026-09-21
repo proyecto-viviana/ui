@@ -33,8 +33,6 @@ import {
   defaultWaiversPath,
   evaluateCertifiedWaivers,
   loadCertifiedWaivers,
-  readTicketStatus,
-  repoRootFromComparison,
 } from "../../scripts/certified-waivers";
 
 interface RecordedTest {
@@ -116,12 +114,10 @@ export default class CertifiedSummaryReporter implements Reporter {
 
     const waiversPath = defaultWaiversPath(comparisonRoot);
     const loaded = loadCertifiedWaivers(waiversPath);
-    const repoRoot = repoRootFromComparison(comparisonRoot);
     const evaluation = evaluateCertifiedWaivers({
       waivers: loaded.waivers,
       failures,
       now: new Date(),
-      ticketStatus: (ticketId) => readTicketStatus(repoRoot, ticketId).status,
     });
 
     const draft: CertifiedSummary = {

@@ -25,7 +25,6 @@ import {
   defaultWaiversPath,
   evaluateCertifiedWaivers,
   loadCertifiedWaivers,
-  readTicketStatus,
   repoRootFromComparison,
   waiverGateFails,
 } from "./certified-waivers";
@@ -99,7 +98,6 @@ const evaluation = evaluateCertifiedWaivers({
     return all.findIndex((candidate) => `${candidate.file}\0${candidate.title}` === key) === index;
   }),
   now: new Date(),
-  ticketStatus: (ticketId) => readTicketStatus(repoRoot, ticketId).status,
 });
 
 const finalSummary: CertifiedSummary = applyWaiverCounts(

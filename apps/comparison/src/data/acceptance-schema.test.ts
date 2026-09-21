@@ -176,6 +176,7 @@ describe("acceptance inventory", () => {
       hasCommit: () => true,
       isAncestor: () => true,
       changedCoveredPaths: () => [],
+      dirtyCoveredPaths: () => [],
       ...over,
     });
     const head = "a".repeat(40);
@@ -198,6 +199,12 @@ describe("acceptance inventory", () => {
       current: false,
       reason: "4 certified path(s) changed since it: packages/a/src/x.ts, b, c, and 1 more",
     });
+    expect(currency(probe({ dirtyCoveredPaths: () => ["apps/comparison/e2e/x.spec.ts"] }))).toEqual(
+      {
+        current: false,
+        reason: "1 certified path(s) are uncommitted: apps/comparison/e2e/x.spec.ts",
+      },
+    );
     expect(
       lastHeadCertifiedSubsetRun == null || lastHeadCertifiedSubsetRun.complete === false,
     ).toBe(true);

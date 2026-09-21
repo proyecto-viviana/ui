@@ -55,7 +55,15 @@ export const certifiedSuiteCoveredPathspecs = [
   // playbook, changeset, ADR and README here is `*.md`.
   ":(top,exclude,glob)**/*.md",
   // The board and the receipts: tickets, plans, logs, command output and
-  // one-off probes, written after a run and never read by one.
+  // one-off probes, written after a run and never read by one. That claim was
+  // false when this line was written: the merged verdict resolved each waiver's
+  // ticket state out of `.claude/tickets/**/<id>-*.md`, so a single commit
+  // editing `status:` could flip the merger's exit code while the diff below
+  // listed nothing. The state is a field of the covered
+  // `apps/comparison/e2e/certified-waivers.json` now, held to the board by
+  // `comparison:guard:certified-waiver-tickets` outside the run, and the
+  // `keeps the board out of the certified verdict` case of
+  // `certified-waivers.test.ts` fails if a board read comes back. #574.
   ":(top,exclude,glob).claude/**",
   ":(top,exclude,glob).agents/**",
   // The docs site. The certified run builds `packages/*` and `apps/comparison`
@@ -67,14 +75,28 @@ export interface PostcardGitProbe {
   hasCommit(revision: string): boolean;
   isAncestor(revision: string, head: string): boolean;
   changedCoveredPaths(revision: string, head: string): string[];
+  /**
+   * Covered paths the working tree holds and no commit does — modified, staged
+   * or untracked. A commit-to-commit diff cannot see them, and the suite runs
+   * the working tree, not HEAD.
+   */
+  dirtyCoveredPaths(): string[];
 }
 
 export type PostcardCurrency = { current: true } | { current: false; reason: string };
 
+function sampled(kind: string, paths: string[]): string {
+  const sample = paths.slice(0, 3).join(", ");
+  const more = paths.length > 3 ? `, and ${paths.length - 3} more` : "";
+  return `${paths.length} certified path(s) ${kind}: ${sample}${more}`;
+}
+
 /**
- * The postcard is current when its revision is HEAD or an ancestor of it and
- * no covered path changed in between. Ticket #574: equality with HEAD could
- * never hold, since recording the SHA is itself a commit.
+ * The postcard is current when its revision is HEAD or an ancestor of it, no
+ * covered path changed in between, and no covered path is uncommitted. Ticket
+ * #574: equality with HEAD could never hold, since recording the SHA is itself
+ * a commit; and a rule that asked only about commits passed a working tree the
+ * recorded run never saw, which is the local answer that decides a re-pin.
  */
 export function certifiedSuitePostcardCurrency(
   evidence: CertifiedSuiteEvidence,
@@ -97,12 +119,11 @@ export function certifiedSuitePostcardCurrency(
   }
   const changed = git.changedCoveredPaths(evidence.revision, head);
   if (changed.length > 0) {
-    const sample = changed.slice(0, 3).join(", ");
-    const more = changed.length > 3 ? `, and ${changed.length - 3} more` : "";
-    return {
-      current: false,
-      reason: `${changed.length} certified path(s) changed since it: ${sample}${more}`,
-    };
+    return { current: false, reason: sampled("changed since it", changed) };
+  }
+  const dirty = git.dirtyCoveredPaths();
+  if (dirty.length > 0) {
+    return { current: false, reason: sampled("are uncommitted", dirty) };
   }
   return { current: true };
 }

@@ -462,6 +462,15 @@ jobs:
       - name: certified waiver unit tests
         run: pnpm run comparison:test:certified-waivers
 
+      # The certified verdict waives on the ticket state recorded in
+      # `e2e/certified-waivers.json`, never on `.claude/tickets` — a board file
+      # is outside `certifiedSuiteCoveredPathspecs`, so a run that read one
+      # could change its exit code behind a postcard that still said current
+      # (#574). This step is where the recorded field is held to the board, and
+      # it is outside the certified job on purpose.
+      - name: guard certified waiver tickets
+        run: pnpm run comparison:guard:certified-waiver-tickets
+
       - name: D13 journey driver unit tests
         run: pnpm run comparison:test:journeys-driver
 

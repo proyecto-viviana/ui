@@ -90,15 +90,57 @@ describe("certified postcard currency against a real repository", () => {
   });
 
   // The reviewed exclusions, one file per line of the pathspec list. Each is a
-  // path no step of the certified run reads.
+  // path no step of the certified run reads. The ticket row is the one the
+  // certified verdict used to read: `merge-certified-reports.ts` resolved a
+  // waiver's ticket state out of `.claude/tickets/**/<id>-*.md`, so a board
+  // edit could flip the merger's exit code behind a postcard that still said
+  // current. The state is a field of `certified-waivers.json` now, and
+  // `certified waivers` below holds the merger to it (#574).
   it.each([
     ["prose", "packages/p/README.md"],
     ["prose", "docs/a.md"],
     ["the board", ".claude/tickets/milestones/.gitkeep"],
+    ["a ticket", ".claude/tickets/tasks/999-x.md"],
     ["a receipt", ".agents/chain-walk/report.out.txt"],
     ["the docs site", "apps/web/src/routes/index.tsx"],
   ])("stays current when %s changes (%s)", (_class, path) => {
     commit({ [path]: "2" });
+    expect(currency(recorded)).toEqual({ current: true });
+  });
+
+  // A committed-only rule reads the same on a tree that is not the tree the
+  // suite would run. Uncommitted work is the local case, and the local run is
+  // how the ladder is walked and how a re-pin is decided (#574).
+  it("fails while a covered path is modified and uncommitted", () => {
+    writeFileSync(join(root, "packages/p/src/a.ts"), "2");
+    expect(currency(recorded)).toEqual({
+      current: false,
+      reason: "1 certified path(s) are uncommitted: packages/p/src/a.ts",
+    });
+  });
+
+  it("fails while a covered path is staged but uncommitted", () => {
+    writeFileSync(join(root, "apps/comparison/e2e/a.spec.ts"), "2");
+    git(root, "add", "apps/comparison/e2e/a.spec.ts");
+    expect(currency(recorded)).toEqual({
+      current: false,
+      reason: "1 certified path(s) are uncommitted: apps/comparison/e2e/a.spec.ts",
+    });
+  });
+
+  it("fails while a covered path is untracked", () => {
+    mkdirSync(join(root, "apps/comparison/scripts"), { recursive: true });
+    writeFileSync(join(root, "apps/comparison/scripts/new-gate.ts"), "1");
+    expect(currency(recorded)).toEqual({
+      current: false,
+      reason: "1 certified path(s) are uncommitted: apps/comparison/scripts/new-gate.ts",
+    });
+  });
+
+  it("stays current while only an excluded path is uncommitted", () => {
+    writeFileSync(join(root, "docs/a.md"), "2");
+    mkdirSync(join(root, ".claude/tickets/tasks"), { recursive: true });
+    writeFileSync(join(root, ".claude/tickets/tasks/999-x.md"), "1");
     expect(currency(recorded)).toEqual({ current: true });
   });
 

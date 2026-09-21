@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +15,7 @@ import {
   evaluateCertifiedWaivers,
   loadCertifiedWaivers,
   parseWaiverEntries,
+  reconcileWaiverTickets,
   utcDateStamp,
   waiverGateFails,
   type CertifiedFailure,
@@ -39,6 +40,7 @@ function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
     pattern: "combobox\\.certified.*D3",
     ticket: 240,
     expires: "2026-12-31",
+    ticketStatus: "in-progress",
     ...overrides,
   };
 }
@@ -50,30 +52,43 @@ describe("certified waivers", () => {
     expect(loaded.waivers).toEqual([]);
   });
 
-  it("rejects a waiver file that is not an array of pattern/ticket/expires", () => {
-    expect(parseWaiverEntries({ pattern: "x", ticket: 1, expires: "2026-12-31" }).problems).toEqual(
-      [
-        expect.objectContaining({
-          kind: "invalid-entry",
-          detail: expect.stringContaining("must be an array"),
-        }),
-      ],
-    );
+  it("rejects a waiver file that is not an array of pattern/ticket/expires/ticketStatus", () => {
+    expect(parseWaiverEntries(waiver()).problems).toEqual([
+      expect.objectContaining({
+        kind: "invalid-entry",
+        detail: expect.stringContaining("must be an array"),
+      }),
+    ]);
+    expect(parseWaiverEntries([waiver({ pattern: "" })]).problems).toEqual([
+      expect.objectContaining({ kind: "invalid-entry" }),
+    ]);
     expect(
-      parseWaiverEntries([{ pattern: "", ticket: 1, expires: "2026-12-31" }]).problems,
+      parseWaiverEntries([{ ...waiver(), ticket: "240" as unknown as number }]).problems,
     ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
-    expect(
-      parseWaiverEntries([{ pattern: "D3", ticket: "240", expires: "2026-12-31" }]).problems,
-    ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
-    expect(
-      parseWaiverEntries([{ pattern: "D3", ticket: 1, expires: "12-31-2026" }]).problems,
-    ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
+    expect(parseWaiverEntries([waiver({ expires: "12-31-2026" })]).problems).toEqual([
+      expect.objectContaining({ kind: "invalid-entry" }),
+    ]);
+  });
+
+  // The recorded state is what the merged verdict waives on, so an entry
+  // without it is not a waiver (#574).
+  it("rejects a waiver that records no ticket state", () => {
+    const { ticketStatus: _dropped, ...withoutStatus } = waiver();
+    expect(parseWaiverEntries([withoutStatus]).problems).toEqual([
+      expect.objectContaining({
+        kind: "invalid-entry",
+        detail: expect.stringContaining("ticketStatus"),
+      }),
+    ]);
+    expect(parseWaiverEntries([waiver({ ticketStatus: "" })]).problems).toEqual([
+      expect.objectContaining({ kind: "invalid-entry" }),
+    ]);
   });
 
   it("rejects a pattern that is not a regular expression", () => {
-    expect(
-      parseWaiverEntries([{ pattern: "(", ticket: 1, expires: "2026-12-31" }]).problems,
-    ).toEqual([expect.objectContaining({ kind: "invalid-pattern" })]);
+    expect(parseWaiverEntries([waiver({ pattern: "(" })]).problems).toEqual([
+      expect.objectContaining({ kind: "invalid-pattern" }),
+    ]);
   });
 
   it("turns a matching failure into waived (ticket) and does not fail the gate", () => {
@@ -81,7 +96,6 @@ describe("certified waivers", () => {
       waivers: [waiver()],
       failures: [failure()],
       now,
-      ticketStatus: () => "in-progress",
     });
 
     expect(evaluation.unwaived).toEqual([]);
@@ -100,7 +114,6 @@ describe("certified waivers", () => {
       waivers: [waiver()],
       failures: [failure(), unmatched],
       now,
-      ticketStatus: () => "in-progress",
     });
 
     expect(evaluation.unwaived).toEqual([unmatched]);
@@ -112,7 +125,6 @@ describe("certified waivers", () => {
       waivers: [waiver({ expires: "2026-09-01" })],
       failures: [failure()],
       now,
-      ticketStatus: () => "open",
     });
 
     expect(evaluation.problems).toEqual([
@@ -127,13 +139,12 @@ describe("certified waivers", () => {
     expect(utcDateStamp(now)).toBe("2026-09-02");
   });
 
-  it("fails the job when the waiver ticket is verified or merged", () => {
+  it("fails the job when the waiver records a verified, merged or closed ticket", () => {
     for (const status of ["verified", "merged", "closed"] as const) {
       const evaluation = evaluateCertifiedWaivers({
-        waivers: [waiver()],
-        failures: [],
+        waivers: [waiver({ ticketStatus: status })],
+        failures: [failure()],
         now,
-        ticketStatus: () => status,
       });
       expect(evaluation.problems).toEqual([
         expect.objectContaining({
@@ -141,33 +152,67 @@ describe("certified waivers", () => {
           detail: `waiver ticket #240 is ${status}; remove the waiver`,
         }),
       ]);
+      // A closed ticket stops waiving, like an expired date: the failure is the
+      // job's again, not just a problem beside it.
+      expect(evaluation.waived).toEqual([]);
+      expect(evaluation.unwaived).toEqual([failure()]);
       expect(waiverGateFails(evaluation)).toBe(true);
     }
   });
 
-  it("fails the job when the waiver ticket is missing from the board", () => {
-    const evaluation = evaluateCertifiedWaivers({
-      waivers: [waiver()],
-      failures: [failure()],
-      now,
-      ticketStatus: () => null,
-    });
-    expect(evaluation.problems).toEqual([expect.objectContaining({ kind: "ticket-missing" })]);
-    expect(waiverGateFails(evaluation)).toBe(true);
+  // #574. `certifiedSuiteCoveredPathspecs` excludes `.claude/**`, so a verdict
+  // that resolved the ticket state out of the board could change without the
+  // postcard seeing it: one commit editing `status:` in a ticket file flips the
+  // merger's exit code while `git diff` over the covered paths lists nothing.
+  // The state is a field of the covered waiver file now, and the board is
+  // reconciled against it outside the run.
+  it("keeps the board out of the certified verdict", () => {
+    for (const relative of [
+      "../../scripts/merge-certified-reports.ts",
+      "../../e2e/reporters/certified-summary.ts",
+    ]) {
+      const source = readFileSync(join(here, relative), "utf8");
+      expect({ relative, reads: /readTicketStatus|\.claude\//.test(source) }).toEqual({
+        relative,
+        reads: false,
+      });
+    }
+  });
+
+  it("reconciles a recorded ticket state that the board has moved past", () => {
+    expect(
+      reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => "in-progress" }),
+    ).toEqual([]);
+    expect(reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => "closed" })).toEqual([
+      expect.objectContaining({
+        kind: "ticket-stale",
+        detail: "waiver ticket #240 records in-progress; the board says closed",
+      }),
+    ]);
+  });
+
+  it("reconciles a waiver ticket that is missing from the board", () => {
+    expect(reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => null })).toEqual([
+      expect.objectContaining({
+        kind: "ticket-missing",
+        detail: "waiver ticket #240 is not on the board",
+      }),
+    ]);
   });
 
   it("reads a tracked waiver file from disk", () => {
     const dir = mkdtempSync(join(tmpdir(), "certified-waivers-"));
     const path = join(dir, "certified-waivers.json");
-    writeFileSync(
-      path,
-      `${JSON.stringify([waiver({ pattern: "picker", ticket: 99, expires: "2026-10-01" })], null, 2)}\n`,
-    );
+    const tracked = waiver({
+      pattern: "picker",
+      ticket: 99,
+      expires: "2026-10-01",
+      ticketStatus: "next",
+    });
+    writeFileSync(path, `${JSON.stringify([tracked], null, 2)}\n`);
     const loaded = loadCertifiedWaivers(path);
     expect(loaded.problems).toEqual([]);
-    expect(loaded.waivers).toEqual([
-      waiver({ pattern: "picker", ticket: 99, expires: "2026-10-01" }),
-    ]);
+    expect(loaded.waivers).toEqual([tracked]);
   });
 
   it("resolves the comparison root from nested modules so waivers are not e2e/e2e", () => {

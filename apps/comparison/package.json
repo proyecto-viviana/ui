@@ -14,6 +14,7 @@
     "report:parity": "tsx scripts/report-component-parity.ts",
     "report:parity:strict": "tsx scripts/report-component-parity.ts --strict",
     "report:acceptance": "tsx scripts/report-component-parity.ts --strict-full",
+    "guard:certified-waiver-tickets": "tsx scripts/check-certified-waiver-tickets.ts",
     "guard:fixture-registry-split": "tsx scripts/fixture-registry-split.ts",
     "guard:demo-control-split": "tsx scripts/demo-control-split.ts",
     "guard:chrome-css-coalesce": "node scripts/chrome-css-coalesce.mjs",

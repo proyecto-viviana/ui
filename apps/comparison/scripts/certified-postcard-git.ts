@@ -24,5 +24,14 @@ export function gitPostcardProbe(cwd: string): PostcardGitProbe {
       git(["diff", "--name-only", revision, head, "--", ...certifiedSuiteCoveredPathspecs])
         .split("\n")
         .filter(Boolean),
+    // `-uall` names each untracked file rather than collapsing a new directory
+    // to `dir/`, so the pathspecs decide it and the reason names the file. A
+    // porcelain line is `XY <path>`, and a rename carries `old -> new`.
+    dirtyCoveredPaths: () =>
+      git(["status", "--porcelain", "-uall", "--", ...certifiedSuiteCoveredPathspecs])
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => line.slice(3).split(" -> ").at(-1) ?? "")
+        .filter(Boolean),
   };
 }

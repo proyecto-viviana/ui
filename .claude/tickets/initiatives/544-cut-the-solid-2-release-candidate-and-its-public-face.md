@@ -160,10 +160,15 @@ stop is unexecuted, so the repository has no verdict on most of its own gates.
 **What makes `certified report` exit 0**, since the release condition rests on
 it. `merge-certified-reports.ts` exits 1 when a shard cannot explain its exit,
 when a budget is over, or when `waiverGateFails`, which is true while any
-failure is unwaived (`apps/comparison/scripts/certified-waivers.ts:269-271`).
+failure is unwaived (`apps/comparison/scripts/certified-waivers.ts:282-284`).
 So exactly two mechanisms reach green: fix the failure, or waive it in
-`apps/comparison/e2e/certified-waivers.json` — `[]` at HEAD — with a board
-ticket that is still open and a future `expires`, both enforced by that script.
+`apps/comparison/e2e/certified-waivers.json` — `[]` at HEAD — with a future
+`expires` and the ticket's board state recorded in the entry itself
+(`ticketStatus`, and not one of verified/merged/closed), both enforced by that
+script. The run never reads the board: `comparison:guard:certified-waiver-tickets`
+holds the recorded state to `.claude/tickets` outside the certified job, because
+a board file is outside `certifiedSuiteCoveredPathspecs` and a verdict that read
+one could move without the postcard seeing it (#574).
 `certification-debt.md` is neither: no workflow, script or `package.json` entry
 reads it (grepped at HEAD). So the owner decision above that certified failures
 may ship as named debt is carried out as a waiver **per named failure** plus its

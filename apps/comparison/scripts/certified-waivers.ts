@@ -9,6 +9,17 @@ export interface CertifiedWaiver {
   pattern: string;
   ticket: number;
   expires: string;
+  /**
+   * The waiver ticket's board state, copied into this file when the waiver is
+   * written or renewed. The certified verdict reads this field and never
+   * `.claude/tickets/**` (#574): the board is outside
+   * `certifiedSuiteCoveredPathspecs`, so a run that resolved the state from it
+   * could change its own exit code under a postcard that still said current —
+   * one commit editing `status:` in a ticket, and `git diff` over the covered
+   * paths lists nothing. `guard:certified-waiver-tickets` holds this field to
+   * the board through `reconcileWaiverTickets`, outside the certified run.
+   */
+  ticketStatus: string;
 }
 
 export interface CertifiedFailure {
@@ -22,6 +33,7 @@ export type WaiverProblemKind =
   | "expired"
   | "ticket-closed"
   | "ticket-missing"
+  | "ticket-stale"
   | "invalid-pattern"
   | "invalid-entry";
 
@@ -91,6 +103,7 @@ export function parseWaiverEntries(raw: unknown): {
     const pattern = record.pattern;
     const ticket = record.ticket;
     const expires = record.expires;
+    const ticketStatus = record.ticketStatus;
     if (typeof pattern !== "string" || pattern.length === 0) {
       problems.push({
         kind: "invalid-entry",
@@ -115,7 +128,15 @@ export function parseWaiverEntries(raw: unknown): {
       });
       return;
     }
-    const waiver: CertifiedWaiver = { pattern, ticket, expires };
+    if (typeof ticketStatus !== "string" || ticketStatus.length === 0) {
+      problems.push({
+        kind: "invalid-entry",
+        waiver: null,
+        detail: `waivers[${index}].ticketStatus must be the ticket's board state, as a non-empty string`,
+      });
+      return;
+    }
+    const waiver: CertifiedWaiver = { pattern, ticket, expires, ticketStatus };
     try {
       new RegExp(pattern);
     } catch (error) {
@@ -176,6 +197,11 @@ export function utcDateStamp(now: Date): string {
   return now.toISOString().slice(0, 10);
 }
 
+/**
+ * Reads a ticket's state off the board. This is the board read the certified
+ * run no longer does: only `guard:certified-waiver-tickets` calls it, through
+ * `reconcileWaiverTickets` (#574).
+ */
 export function readTicketStatus(
   repoRoot: string,
   ticketId: number,
@@ -201,20 +227,18 @@ export function failureHaystack(failure: CertifiedFailure): string {
   return `${failure.file} ${failure.title}`;
 }
 
+/**
+ * The waiver half of the certified verdict. Every input is the waiver file,
+ * which `certifiedSuiteCoveredPathspecs` covers, so nothing this decides can
+ * move without the postcard seeing it (#574).
+ */
 export function evaluateCertifiedWaivers(options: {
   waivers: CertifiedWaiver[];
   failures: readonly CertifiedFailure[];
   now: Date;
-  ticketStatus: (ticketId: number) => string | null;
 }): WaiverEvaluation {
   const problems: WaiverProblem[] = [];
   const today = utcDateStamp(options.now);
-
-  const statuses = new Map<number, string | null>();
-  const statusOf = (ticketId: number): string | null => {
-    if (!statuses.has(ticketId)) statuses.set(ticketId, options.ticketStatus(ticketId));
-    return statuses.get(ticketId) ?? null;
-  };
 
   for (const waiver of options.waivers) {
     if (waiver.expires < today) {
@@ -226,29 +250,18 @@ export function evaluateCertifiedWaivers(options: {
       continue;
     }
 
-    const status = statusOf(waiver.ticket);
-    if (status == null) {
-      problems.push({
-        kind: "ticket-missing",
-        waiver,
-        detail: `waiver ticket #${waiver.ticket} is not on the board`,
-      });
-      continue;
-    }
-    if (CLOSED_TICKET_STATES.has(status)) {
+    if (CLOSED_TICKET_STATES.has(waiver.ticketStatus)) {
       problems.push({
         kind: "ticket-closed",
         waiver,
-        detail: `waiver ticket #${waiver.ticket} is ${status}; remove the waiver`,
+        detail: `waiver ticket #${waiver.ticket} is ${waiver.ticketStatus}; remove the waiver`,
       });
     }
   }
 
-  const active = options.waivers.filter((waiver) => {
-    if (waiver.expires < today) return false;
-    const status = statusOf(waiver.ticket);
-    return status != null && !CLOSED_TICKET_STATES.has(status);
-  });
+  const active = options.waivers.filter(
+    (waiver) => waiver.expires >= today && !CLOSED_TICKET_STATES.has(waiver.ticketStatus),
+  );
 
   const waived: WaiverEvaluation["waived"] = [];
   const unwaived: CertifiedFailure[] = [];
@@ -268,4 +281,37 @@ export function evaluateCertifiedWaivers(options: {
 
 export function waiverGateFails(evaluation: WaiverEvaluation): boolean {
   return evaluation.problems.length > 0 || evaluation.unwaived.length > 0;
+}
+
+/**
+ * Holds each waiver's recorded `ticketStatus` to the board. This is the read
+ * `evaluateCertifiedWaivers` used to do inline, moved out of the certified run
+ * and into `guard:certified-waiver-tickets`, which is not what the postcard
+ * speaks for (#574). A recorded state the board has moved past is a defect
+ * here, not a green run there.
+ */
+export function reconcileWaiverTickets(options: {
+  waivers: readonly CertifiedWaiver[];
+  ticketStatus: (ticketId: number) => string | null;
+}): WaiverProblem[] {
+  const problems: WaiverProblem[] = [];
+  for (const waiver of options.waivers) {
+    const status = options.ticketStatus(waiver.ticket);
+    if (status == null) {
+      problems.push({
+        kind: "ticket-missing",
+        waiver,
+        detail: `waiver ticket #${waiver.ticket} is not on the board`,
+      });
+      continue;
+    }
+    if (status !== waiver.ticketStatus) {
+      problems.push({
+        kind: "ticket-stale",
+        waiver,
+        detail: `waiver ticket #${waiver.ticket} records ${waiver.ticketStatus}; the board says ${status}`,
+      });
+    }
+  }
+  return problems;
 }
