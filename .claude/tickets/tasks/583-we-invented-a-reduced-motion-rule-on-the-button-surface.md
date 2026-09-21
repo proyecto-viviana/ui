@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "graded by the conductor from shard 8 of Certification Gates run 35556441049 while grading the 132. Two rows, one cause, and the cause is a divergence we wrote ourselves rather than anything Solid forced. Filed separately from #582 because that one is a placement question in the popover and this one is two style declarations in the button family",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "not started, handed back: the scope contradicts a recorded ruling. The two reduced-motion branches (s2-button-styles.ts:56-59, s2-action-button-styles.ts:111-114) were added on purpose by 1af6eb71, closing #484, where the owner delegated the call on 2026-09-07 that React Spectrum is not the ceiling for reduced motion. That commit split D2 reduced into per-stack contracts, react recording upstream's retained transition and solid asserting none (actionbutton.certified.spec.ts:71-87); the togglebutton and togglebuttongroup specs never got the split, so they still demand pair equality. Neither this ticket, the brief nor the census names #484. Two ways out, and choosing is not mine: reverse #484 and delete the branch as scoped here, or keep #484 and give the two toggle specs the same per-stack reduced contract, which touches spec files only",
+    }
 ---
 
 ## The defect

@@ -2092,3 +2092,11 @@ does not, and D5 depends on it), React's dialog focusin/focusout before the
 option on keyboard open, and overlay mid-entry opacity (the #582 family).
 Ticket stays in-progress. The comparison dist was last built from the
 mutated source; rebuild before the next certified run.
+
+## #583 — handed back, conflicts with #484
+
+The media branch the ticket says to delete was added by `1af6eb71` to close
+#484, whose owner-delegated ruling is that upstream is not the ceiling for
+reduced motion; actionbutton's D2 reduced already has per-stack contracts, the
+toggle specs do not. Either reverse #484 or extend the split to the two toggle
+specs. Not edited; decision recorded in ticket 583.
