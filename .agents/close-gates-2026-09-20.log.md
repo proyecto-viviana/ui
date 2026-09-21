@@ -1142,3 +1142,52 @@ from it is why that walk did not see the red #565 cleared.
 
 `vp run check`, `vp run typecheck` and `guard:publish-drift` are green; no
 package `src` changed, so no changeset is owed.
+
+## #567 — two drifted local-review hashes
+
+`guard:attribution-headers` was red on `main` at `4d882ff1`:
+`Reviewed local source: mismatch: 2, satisfied: 252`, both in
+`packages/solidaria/src/index.ts` and `packages/solidaria/src/utils/index.ts`.
+
+### What was read before anything was re-pinned
+
+The pinned hashes were checked against the content they were pinned to, not
+just against today's file:
+
+    packages/solidaria/src/index.ts
+      pinned  915f4ecb…  = sha256 of the file at e6384f37^
+      now     f6faae18…
+    packages/solidaria/src/utils/index.ts
+      pinned  692e2517…  = sha256 of the file at e6384f37^
+      now     9e644b51…
+
+The pinned hash reproduces the parent of `e6384f37` exactly, which is what makes
+`git diff e6384f37^ HEAD` on those two paths the *whole* delta since the review
+rather than one commit's worth of it. That delta is four added lines:
+
+    src/index.ts        + two comment lines and
+                        + export { openLink, type LinkModifiers } from "./utils";
+    src/utils/index.ts  + type LinkModifiers,
+
+Both files are barrels: their content is a list of this repository's own module
+names. The added lines re-export a symbol already declared in `utils/dom.ts` and
+a type alias beside it; no upstream-derived text entered either file, and
+neither file grew anything but a name it already owned. The recorded
+classification `local-module-surface` still holds, so this is a re-attestation of
+the same review, not a new one.
+
+### Re-attested
+
+Both `contentSha256` values in `scripts/attribution-local-reviews.json` replaced
+by hand with the measured hashes above, the shape `d1de1207` used for
+`createFocusRestore` under #555 item 8.3. `vp run guard:attribution-headers`
+EXIT=0: `254 reviewed local files match their recorded content`, mismatches 0,
+and the other four attribution contracts (474 exact headers, 12 headerless, 75
+composite, 75 composite headers) unchanged.
+
+`guard:publish-drift` EXIT=0 — the reviews file is a repository script, in no
+package's `files`, so no changeset is owed.
+
+Not touched, and worth someone's ticket: the root-barrel re-export this added is
+the one #565 narrowed `RouterProvider.tsx` off, so `src/index.ts:713` may now
+have no consumer. Removing it would move a hash again and is not this ticket.

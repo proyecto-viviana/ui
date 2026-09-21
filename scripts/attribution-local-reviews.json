@@ -867,7 +867,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "915f4ecb7fabf5840851bd8ceba9040966f5ebaee2f5180b06be208b2b6a822f"
+    "contentSha256": "f6faae18247cbde13c4555ae9c64c61dc102b88996611713ae0fee5b30dc0858"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
@@ -1027,7 +1027,7 @@
   {
     "localPath": "packages/solidaria/src/utils/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "692e251798caacb6f1cf53ad7fd63f32bfc67d54e6906d65e1cfb0d8878fe71d"
+    "contentSha256": "9e644b51332c15a244d7cfa8a971109cc416845ecc36ad6110c64f8b20109afd"
   },
   {
     "localPath": "packages/solidaria/src/utils/reactivity.ts",
