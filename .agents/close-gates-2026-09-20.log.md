@@ -1853,3 +1853,60 @@ receiving the toast, or `visibleToasts()` never re-reading, or the portal never
 attaching. Unproven; next run decides between them. Note that every
 `solid-spectrum` Toast unit test renders with `portal={false}`, so the portal
 path the browser actually takes is the one with no coverage.
+
+### Correction — the comparison Solid fixture is mine, not the public-face writer's
+
+I logged in step 1 that `apps/comparison/src/components/solid/fixtures/styled/toast.tsx`
+sits inside the public-face grant. It does not. The conductor read the grant
+back to me: hub `AGENTS.md:65-70` gives that writer `README.md`,
+`CONTRIBUTING.md`, `CREDITS.md`, `packages/*/README.md` and **page content**
+under `apps/web/src/**` and `apps/comparison/src/**`, and closes with "the main
+writer keeps everything else". A certified-harness fixture is machinery, not
+page content, so it is mine, as is `registry.ts` and anything else under those
+two trees that is not user-visible prose. The blocker was not real and should
+not have been written down. It changes nothing about where the fix belongs.
+
+### Step 2 — the toast cause, proven: the view transition never calls its callback
+
+`packages/solid-spectrum/src/toast/index.tsx:327` installs a `wrapUpdate` on the
+global queue, so every queue notification fans out to subscribers inside
+`startViewTransition`. That function, at **line 317**, reads:
+
+```ts
+const viewTransition = doc.startViewTransition(() => fn);
+```
+
+The callback **returns** `fn` instead of calling it. A returned function is not
+a thenable, so the transition resolves immediately and the update callback never
+runs: `createToastState`'s subscriber is never invoked, `visibleToasts()` stays
+empty, and the `<Show when={isHydrated() && hasToasts()}>` at
+`solidaria-components/src/Toast.tsx:379` never opens. Nothing renders — which is
+exactly what both probes saw.
+
+It is proved by A/B on the same page and the same build, with no rebuild and no
+source change, by deleting `document.startViewTransition` in an init script so
+`startViewTransition` takes its own `else` branch and calls `fn()` directly:
+
+| `document.startViewTransition` | `[role=region]` | `[role=alertdialog]` | `[data-solidaria-top-layer]` |
+| ------------------------------ | --------------: | -------------------: | ---------------------------: |
+| present (`function`)           | none            | 0                    | 0                            |
+| deleted (`undefined`)          | `"Notifications"` | 1                  | 1                            |
+
+That also settles why every Toast unit test is green — `vp test run packages/solid-spectrum/test/Toast.test.tsx`,
+EXIT=0, 39 passed. jsdom has no View Transitions API, so the suite only ever
+exercises the `else` branch. The browser takes the branch nothing covers.
+
+**One defect, four witnesses.** The certified rows for `toast` (25) and
+`toast-icon` (12) and the two `a11y:smoke` failures of #576 are one cause seen
+from four places, not two defects. The witness I proved is the comparison
+Solid toast stage in a real Chromium; the other three are re-runs, not
+arithmetic, and they stay ungraded until those runs exist.
+
+It is also not host-specific. The WSL compositor note explains a stalled
+animation, not a callback that is never called; this fails wherever the View
+Transitions API exists, which includes GitHub's runners.
+
+Two consequences beyond the region: `ToastContainer`'s expand and collapse go
+through the same `startViewTransition`, so they are dead in a browser too, and
+every certified driver for this component is blocked behind `beforePanel`, which
+is why the whole 37 rows fall together.
