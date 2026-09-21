@@ -1,0 +1,12 @@
+$ vp exec tsx scripts/check-dnd-keyboard-parity.ts ⊘ cache disabled
+DnD keyboard-walk guard (pinned oracle)
+- oracle: react-spectrum/packages/react-aria/src/dnd/useDroppableCollection.ts
+- oracle: react-spectrum/packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts
+✓ packages/solidaria/src/dnd/createDroppableCollection.ts + packages/solidaria/src/dnd/DropTargetKeyboardNavigation.ts: keyboard walk matches pinned useDroppableCollection + DropTargetKeyboardNavigation
+✓ packages/solidaria/src/dnd/createDroppableCollection.ts: declares oracle DroppableCollectionOptions (keyboardDelegate, onKeyDown)
+✓ packages/solidaria-components/src/ListBox.tsx: passes keyboardDelegate into useDroppableCollection options
+✓ packages/solidaria-components/src/Menu.tsx: passes keyboardDelegate into useDroppableCollection options
+✓ packages/solidaria-components/src/GridList.tsx: passes keyboardDelegate with horizontal key delegates required by the oracle walk
+✓ packages/solidaria-components/src/Table.tsx: passes keyboardDelegate with horizontal key delegates required by the oracle walk
+✓ packages/solidaria-components/src/Tree.tsx: passes keyboardDelegate into useDroppableCollection options
+

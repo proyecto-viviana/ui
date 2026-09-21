@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/check-outbound-links.ts ⊘ cache disabled
+OK: outbound repository links all resolve to proyecto-viviana/ui.
+

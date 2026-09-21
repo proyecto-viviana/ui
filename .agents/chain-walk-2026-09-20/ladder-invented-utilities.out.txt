@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/check-invented-utilities.ts ⊘ cache disabled
+OK: no invented utility tokens in library source (scanned 3 src trees).
+

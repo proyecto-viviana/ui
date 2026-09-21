@@ -1,0 +1,6 @@
+$ vp exec tsx scripts/extract-api-reference.ts --check ⊘ cache disabled
+DRIFT apps/web/src/routes/docs/components/colorarea.tsx no longer matches source — run `vp run api:extract`.
+DRIFT apps/web/src/routes/docs/components/combobox.tsx no longer matches source — run `vp run api:extract`.
+DRIFT apps/web/src/routes/docs/components/icon.tsx no longer matches source — run `vp run api:extract`.
+checked 84 reference pages
+

@@ -1,0 +1,81 @@
+$ vp exec tsx scripts/check-rac-export-gap.ts ⊘ cache disabled
+RAC full export-gap guard (barrel name presence)
+- RAC index: react-spectrum/packages/react-aria-components/exports/index.ts
+- solidaria index: packages/solidaria-components/src/index.ts
+- pending file: scripts/rac-export-gap-pending.json
+
+RAC named value exports: 295
+  of which sibling re-exports (react-aria / react-stately): 35
+solidaria-components named value exports: 442
+export missing (unlisted): 0
+export missing (pending, open ticket): 8
+export extra (Solid-only, reported, non-blocking): 156
+
+Pending (ticketed, open):
+  - NavigationTree  (#228)
+  - NavigationTreeContext  (#228)
+  - NavigationTreeHeader  (#228)
+  - NavigationTreeItem  (#228)
+  - NavigationTreeItemContent  (#228)
+  - NavigationTreeItemStateContext  (#228)
+  - NavigationTreeSection  (#228)
+  - TokenFieldValue  (#118)
+
+export missing (unlisted):
+  - (none)
+
+export extra in solidaria-components:
+  - ActionBar
+  - ActionBarClearButton
+  - ActionBarContainer
+  - ActionBarContext
+  - ActionBarSelectionCount
+  - ActionGroup
+  - ActionGroupContext
+  - ActionGroupStateContext
+  - Alert
+  - AlertContext
+  - AlertDismissButton
+  - AutocompleteCollectionContext
+  - BreadcrumbItem
+  - BreadcrumbItemContext
+  - CalendarButton
+  - ColorAreaGradient
+  - ColorAreaThumb
+  - ColorEditor
+  - ColorFieldInput
+  - ColorSliderLabel
+  - ColorSliderOutput
+  - ColorSliderThumb
+  - ColorSliderTrack
+  - ColorWheelThumb
+  - ComboBoxButton
+  - ComboBoxDescription
+  - ComboBoxErrorMessage
+  - ComboBoxInput
+  - ComboBoxItem
+  - ComboBoxLabel
+  - ComboBoxListBox
+  - ComboBoxOption
+  - ComboBoxTag
+  - ComboBoxTagGroup
+  - ContextualHelpTrigger
+  - DateFieldDescription
+  - DateFieldErrorMessage
+  - DateFieldLabel
+  - DatePickerButton
+  - DatePickerContent
+  - DatePickerDescription
+  - DatePickerErrorMessage
+  - DatePickerLabel
+  - DateRangePickerButton
+  - DateRangePickerContent
+  - DateRangePickerDescription
+  - DateRangePickerErrorMessage
+  - DateRangePickerLabel
+  - DefaultToast
+  - DialogHeading
+  - ... (106 more)
+
+FAIL: setInteractionModality is listed as pending on #231 (status: merged) — ticket closed, export still missing.
+

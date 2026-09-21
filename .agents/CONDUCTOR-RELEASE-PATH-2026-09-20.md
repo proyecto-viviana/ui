@@ -46,6 +46,34 @@ Two mechanisms, and they run at the same time without competing for memory:
 Known red before the walk: `guard api-reference` at `certification-gates.yml:193`
 (#559), confirmed locally, 81 of 84 pages drifted.
 
+### What the walk found, 2026-09-20 evening
+
+Fourteen cheap pre-build gates, about a second each, receipts one file per gate
+in `.agents/chain-walk-2026-09-20/`. Ten green: `rac-parity`,
+`dnd-keyboard-parity`, `virtualizer-keyboard-parity`, `spectrum-tokens-pin`,
+`style-macro-parity`, `s2-intl-catalog`, `source-artifacts`,
+`invented-utilities`, `docs-routes`, `outbound-links`. Four red, each now a
+ticket:
+
+| step | gate               | red                                            | ticket |
+| ---: | ------------------ | ---------------------------------------------- | ------ |
+|  121 | `rac-export-gap`   | `setInteractionModality` pending on merged #231 | #569   |
+|  160 | `layer-boundary`   | 10 baselined-identical paths diverged           | #570   |
+|  169 | `idiomatic-solid`  | a baselined site was fixed, entry left          | #571   |
+|  185 | `examples-purity`  | allowlist has no `@solidjs/web`                 | #571   |
+|  193 | `api-reference`    | 81 pages drifted                                | #559   |
+
+The walk changes the order of this whole plan. #559 is step 193; the ladder
+stops at **121**, seventy-two steps earlier. Closing #559 alone would have
+turned no CI walk green, and each of #569, #570, #571 would have cost a separate
+34-minute push to discover. That is the argument for walking locally rather than
+letting CI reveal one red per push.
+
+Not covered by the walk: everything after the build — `jsx-deopt-size`,
+`entry-import-budget`, `jsx-ref-dead-code`, `s2-cleanups`,
+`upstream-test-parity`, `docs:check`, comparison parity strict, axe full. Those
+need a build and are the expensive half; expect a second red list from them.
+
 ## Stage 2 — clear the reds, in ladder order
 
 One ticket each, the writer implements, this seat reviews against a re-run and

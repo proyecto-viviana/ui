@@ -1,0 +1,49 @@
+$ vp exec tsx scripts/check-idiomatic-solid.ts ⊘ cache disabled
+Idiomatic-Solid check — reactive `props` must not be destructured
+                  — `children()` must not snapshot rendered content
+                  — styled `solid-js` mergeProps must not layer events
+- scanned 1750 hand-written Solid files (9 reviewed-benign destructure(s) allowlisted)
+
+guard:idiomatic-solid — FAIL: 1 reactive-props destructure(s) found.
+In SolidJS this freezes the prop at call time (the body runs once). Read
+`props.x` directly, or use splitProps/mergeProps for a forwarded rest.
+
+  packages/solidaria/src/overlays/createInteractOutside.ts:55: const { onInteractOutside, onInteractOutsideStart } = props
+
+If a site is genuinely benign (destructuring a stable reference whose
+fields are read reactively afterward), add it to ALLOWLIST with a reason.
+- frozen children-snapshot baseline: 30 sites
+  packages/solidaria-components/src/Focusable.tsx:55 resolved (#192)
+  packages/solidaria-components/src/Pressable.tsx:64 resolved (#192)
+  packages/solid-spectrum/src/badge/index.tsx:327 resolvedChildren (#168)
+  packages/solid-spectrum/src/button/ActionButton.tsx:328 resolvedChildren (#168)
+  packages/solid-spectrum/src/button/LinkButton.tsx:171 resolvedChildren (#168)
+  packages/solid-spectrum/src/button/ToggleButton.tsx:308 resolvedChildren (#168)
+  packages/solid-spectrum/src/gridlist/index.tsx:1043 resolved (#192)
+  packages/solid-spectrum/src/gridlist/index.tsx:1211 resolvedChildren (#192)
+  packages/solid-spectrum/src/overlays/OpenTransition.tsx:89 resolved (#192)
+  packages/solid-spectrum/src/radio/index.tsx:626 resolvedChildren (#168)
+  packages/solid-spectrum/src/segmentedcontrol/index.tsx:370 resolvedChildren (#168)
+  packages/solid-spectrum/src/selectboxgroup/index.tsx:456 resolved (#169)
+  packages/solid-spectrum/src/selectboxgroup/index.tsx:625 resolvedChildren (#169)
+  packages/solid-spectrum/src/tag-group/index.tsx:673 resolved (#168)
+  packages/solid-spectrum/src/tree/index.tsx:852 resolved (#192)
+  packages/solid-spectrum/src/tree/index.tsx:1011 resolvedChildren (#192)
+  packages/viviana-ui/src/badge/index.tsx:482 resolvedChildren (#168)
+  packages/viviana-ui/src/button/ActionButton.tsx:329 resolvedChildren (#168)
+  packages/viviana-ui/src/button/LinkButton.tsx:160 resolvedChildren (#168)
+  packages/viviana-ui/src/button/ToggleButton.tsx:308 resolvedChildren (#168)
+  packages/viviana-ui/src/gridlist/index.tsx:1054 resolved (#192)
+  packages/viviana-ui/src/gridlist/index.tsx:1233 resolvedChildren (#192)
+  packages/viviana-ui/src/overlays/OpenTransition.tsx:89 resolved (#192)
+  packages/viviana-ui/src/radio/index.tsx:636 resolvedChildren (#168)
+  packages/viviana-ui/src/segmentedcontrol/index.tsx:394 resolvedChildren (#168)
+  packages/viviana-ui/src/selectboxgroup/index.tsx:471 resolved (#169)
+  packages/viviana-ui/src/selectboxgroup/index.tsx:640 resolvedChildren (#169)
+  packages/viviana-ui/src/tag-group/index.tsx:760 resolved (#168)
+  packages/viviana-ui/src/tree/index.tsx:853 resolved (#192)
+  packages/viviana-ui/src/tree/index.tsx:1026 resolvedChildren (#192)
+
+guard:idiomatic-solid — FAIL: 1 baselined site(s) no longer render a children() snapshot (fixed) — remove them from the baseline:
+  packages/viviana-ui/src/gridlist/index.tsx resolved#0 (#192)
+

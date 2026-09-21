@@ -1,0 +1,3 @@
+$ node scripts/check-source-artifacts.mjs ⊘ cache disabled
+guard:source-artifacts — PASS: only 2 intentional ambient declaration(s) exist in public-package source.
+

@@ -1,0 +1,11 @@
+$ vp exec tsx scripts/check-spectrum-tokens-pin.ts ⊘ cache disabled
+Spectrum tokens pin check
+- solid-spectrum declares @adobe/spectrum-tokens@14.15.0 (exact) ✓
+- solid-spectrum installed 14.15.0 matches ✓
+- viviana-ui declares @adobe/spectrum-tokens@14.15.0 (exact) ✓
+- viviana-ui installed 14.15.0 matches ✓
+- solid-spectrum matches pinned S2 devDependency 14.15.0 ✓
+- viviana-ui matches pinned S2 devDependency 14.15.0 ✓
+
+✓ spectrum-tokens matches the pinned upstream S2 on both styled packages.
+

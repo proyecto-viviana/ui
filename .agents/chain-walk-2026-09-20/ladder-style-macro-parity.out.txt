@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/check-style-macro-parity.ts ⊘ cache disabled
+guard:style-macro-parity — PASS: all 20 corpus entries emit byte-identical CSS + class atoms as the pinned upstream S2 macro (react-spectrum/packages/@react-spectrum/s2/style/spectrum-theme.ts).
+

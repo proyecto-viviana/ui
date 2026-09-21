@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/check-s2-intl-catalog.ts ⊘ cache disabled
+guard:s2-intl-catalog — PASS: 34 pinned locales × 2 ports (68 catalogs, JSON and s2IntlStrings) equal the pinned S2 catalog.
+

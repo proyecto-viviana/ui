@@ -1,0 +1,10 @@
+$ vp exec tsx scripts/check-examples-purity.ts ⊘ cache disabled
+Examples purity check failed:
+- apps/web/src/routes/examples/explore-empty.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+- apps/web/src/routes/examples/explore.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+- apps/web/src/components/examples/AppShell.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+- apps/web/src/components/examples/ExamplesShell.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+- apps/web/src/components/examples/Placeholder.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+- apps/web/src/components/examples/ThemeToggle.tsx: imports "@solidjs/web", which is not on the examples allowlist.
+The examples compose from @proyecto-viviana/ui only. A missing capability is a library gap to report, not something to patch in the app.
+

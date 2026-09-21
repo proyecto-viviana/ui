@@ -1,0 +1,12 @@
+$ vp exec tsx scripts/check-virtualizer-keyboard-parity.ts ⊘ cache disabled
+Virtualizer keyboard-walk guard (pinned oracle)
+- oracle: react-spectrum/packages/react-aria/src/dnd/useDroppableCollection.ts
+- oracle: react-spectrum/packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts
+✓ packages/solidaria-components/src/Virtualizer.tsx: keyboard navigation scan is primary-then-opposite, matching oracle PageDown fallback
+✓ packages/solidaria-components/src/Virtualizer.tsx: page navigation scan is primary-then-opposite, matching oracle PageDown fallback
+✓ packages/solidaria-components/src/Tree.tsx: tree keyboard walk keeps oracle nested descent, parent climb, and last-child previous
+✓ packages/solidaria-components/src/ListDropTargetDelegate.ts: list drop-target keyboard cycle still walks before → on → after from the oracle contract
+✓ packages/solidaria-components/test/Virtualizer.test.tsx: regression tests name opposite-direction fallback for keyboard + page delegates
+✓ packages/solidaria-components/test/Virtualizer.test.tsx: regression tests name tree branch-boundary wrapping edge cases
+✓ packages/solidaria-components/test/Virtualizer.test.tsx: regression tests name grid boundary wrapping edge cases
+

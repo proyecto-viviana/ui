@@ -1,0 +1,35 @@
+$ vp exec tsx scripts/check-rac-parity.ts ⊘ cache disabled
+RAC tracked-export presence check (name match, not behavior)
+- RAC index: react-spectrum/packages/react-aria-components/exports/index.ts
+- solidaria index: packages/solidaria-components/src/index.ts
+
+Tracked symbols in solidaria-components:
+  - Section  (export present)
+  - ListBoxSection  (export present)
+  - GridListSection  (export present)
+  - MenuSection  (export present)
+  - Header  (export present)
+  - Group  (export present)
+  - CollectionRendererContext  (export present)
+  - ToggleButton  (export present)
+  - Keyboard  (export present)
+  - Form  (export present)
+  - FieldError  (export present)
+  - ToggleButtonGroup  (export present)
+  - FileTrigger  (export present)
+  - DropZone  (export present)
+  - SharedElementTransition  (export present)
+  - Virtualizer  (export present)
+  - TreeHeader  (export present)
+  - TreeSection  (export present)
+
+Tracked symbols export missing in solidaria-components:
+  - (none)
+
+RAC sibling re-exports (react-aria / react-stately): 35  |  export present: 33  |  export missing: 2
+Sibling re-exports export missing (see guard:rac-export-gap + pending file):
+  - TokenFieldValue  (export missing)
+  - setInteractionModality  (export missing)
+
+PASS: every tracked symbol is export present on solidaria-components.
+
