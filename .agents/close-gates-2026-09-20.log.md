@@ -1363,3 +1363,80 @@ A new named export on a published package. `@proyecto-viviana/solidaria-componen
 patch, `.changeset/solidaria-components-set-interaction-modality.md`;
 `vp run guard:publish-drift` EXIT=0. `vp run check` green;
 `scripts/check-rac-export-gap.test.ts` 6/6.
+
+## #570 — ten paths diverged, nine of them on purpose
+
+Step 160. All ten diffs read in full (`.agents/layer-boundary-570/diffs.txt`,
+392 lines), and for each one the history of *both* copies since the baseline's
+2026-08-07, which is what separates a register decision from a lost edit.
+
+### The classification, one line of evidence each
+
+Nine have a viviana-ui-only commit and no spectrum counterpart — the register
+being itself:
+
+| path                              | commit     | what diverged                                                                 |
+| --------------------------------- | ---------- | ----------------------------------------------------------------------------- |
+| `breadcrumbs/index.tsx`           | `c7cc7bad` | aria-hidden ChevronIcon separator → a `/` span; `useLocale` goes with it       |
+| `image/index.tsx`                 | `8a527ddf` | additive `isPixelated` prop + one `css()` class for `image-rendering`          |
+| `menu/ContextualHelpTrigger.tsx`  | `866a47fe` | sixteen `light-dark()` hexes → register tokens, same `css()` block             |
+| `notificationbadge/index.tsx`     | `358f3232` | style ramp re-valued to the pixel face at the S rung                           |
+| `provider/index.tsx`              | `c2832595` | +3 lines re-exporting `createThemeTransition`                                  |
+| `skeleton/index.tsx`              | `f9116a92` | gradient sweep → dithered pseudo-element behind an 8px Bayer mask              |
+| `style/index.ts`                  | `fa98aadf` | `"orange"` leaves the status union                                             |
+| `textfield/s2-textarea-styles.ts` | `c66f938a` | placeholder ink → `--terminal-dim`                                             |
+| `view/index.tsx`                  | `a01c40dd` | +3 lines re-exporting `SceneBackdrop`                                          |
+
+None of the nine touches behaviour. Two are purely additive re-exports; five are
+style-macro arguments or `css()` values; `breadcrumbs` swaps a presentational
+glyph (`useLocale` was there only to point the chevron, and a slash has no
+direction); `style/index.ts` narrows a public union. Collection, focus, keyboard
+and validation logic is S2's in every one, so none is the third category.
+
+The tenth is the opposite, and the read is what found it.
+`color/ColorSwatchPicker.tsx` has the *spectrum-only* commit `95ce8ad3`,
+"colorswatchpicker: apply live size and rounding to child swatches" — 8 lines of
+source and a 29-line test, landed on solid-spectrum and never on viviana-ui. The
+diff is exactly that fix, inverted: viviana-ui still passes
+`size: size(), rounding: rounding()` into the swatch context where spectrum
+passes getters, so a viviana-ui ColorSwatchPicker freezes both at creation. A
+one-sided edit, and a live reactivity bug in a published package. Re-synced by
+copying spectrum's file (now byte-identical), with a `@proyecto-viviana/ui`
+patch changeset. `95ce8ad3`'s test sits in `packages/solid-spectrum/test`; there
+is no viviana-ui twin, and porting it is ticket #1's dual-copy problem, not this
+commit's.
+
+Two notes absorbed as the ticket asked: `switch/index.tsx` back to `identical`,
+`test-utils/index.ts` dropped from the baseline (no longer shared). Counts
+restated by hand: 608 shared, 524 identical, 84 diverged.
+
+### Where the reason lives, and why there
+
+Not `--write-baseline` — it re-blesses the whole inventory and would have
+absorbed the two notes, the nine forks and the one real bug in one silent write.
+Every edit here is by hand.
+
+The reason goes **in the baseline, beside the list it explains**, as a
+`reasons` map keyed by path, because that is the only place a reader who fails
+the guard is already looking. A commit message is not that place: #573 is what
+happens when the reason lives in the commit — the other ratchet moved 5/17 under
+"fmt drift" and nobody can now say what it meant. A ticket is not that place
+either; tickets close.
+
+Recording it is not enough on its own, so the tool that moves the ratchet now
+refuses to move it silently. Two rules, both proved by running them:
+
+- `--write-baseline` exits 1 rather than re-blessing any path that moved
+  identical → diverged with no reason. Proved by appending a line to
+  `packages/viviana-ui/src/Button.ts` and running it: `Refusing to re-bless 1
+  path(s) … - Button.ts`, EXIT=1, baseline untouched; reverted.
+- the guard exits 1 on a reason naming a path that is not baselined as diverged,
+  or an empty one, so a reason cannot outlive the fork it explains. Proved by
+  adding `switch/index.tsx` to `reasons`: EXIT=1, `1 recorded divergence
+  reason(s) name a path that is not baselined as diverged`; reverted.
+
+The 75 paths frozen before today carry no reason and are not required to; the
+interface comment says so, and the rule binds every move after 2026-09-20.
+
+`vp run guard:layer-boundary` EXIT=0: 0 new forks, 0 unbaselined dual paths,
+524 identical + 84 diverged. `tsc --noEmit` EXIT=0, `guard:publish-drift` EXIT=0.

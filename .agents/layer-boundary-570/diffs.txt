@@ -1,0 +1,392 @@
+========== breadcrumbs/index.tsx
+--- packages/solid-spectrum/src/breadcrumbs/index.tsx	2026-09-19 17:09:25.312539454 -0300
++++ packages/viviana-ui/src/breadcrumbs/index.tsx	2026-09-19 16:42:16.676877403 -0300
+@@ -60,6 +60,7 @@
+ import {
+   breadcrumbStyles,
+   chevronStyles,
++  separatorStyles,
+   currentStyles,
+   wrapperStyles,
+   type S2BreadcrumbsSize,
+@@ -785,7 +786,6 @@
+  */
+ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
+   const context = useContext(InternalBreadcrumbsContext) ?? defaultInternalBreadcrumbsContext;
+-  const locale = useLocale();
+   const providerProps = useProviderProps(props) as BreadcrumbProps & ProviderInheritedProps;
+   const [flags] = splitProps(providerProps, [
+     "isQuiet",
+@@ -874,7 +874,9 @@
+         children={renderChildren}
+       />
+       <Show when={context.showSeparator() && !isCurrent()}>
+-        <ChevronIcon size="M" class={chevronStyles({ direction: locale().direction })} />
++        <span aria-hidden="true" data-rsp-slot="separator" class={separatorStyles}>
++          {"/"}
++        </span>
+       </Show>
+     </span>
+   );
+========== color/ColorSwatchPicker.tsx
+--- packages/solid-spectrum/src/color/ColorSwatchPicker.tsx	2026-09-19 01:02:47.364143406 -0300
++++ packages/viviana-ui/src/color/ColorSwatchPicker.tsx	2026-09-19 01:02:47.416143398 -0300
+@@ -285,12 +285,8 @@
+       <InternalColorSwatchContext
+         value={{
+           useWrapper,
+-          get size() {
+-            return size();
+-          },
+-          get rounding() {
+-            return rounding();
+-          },
++          size: size(),
++          rounding: rounding(),
+         }}
+       >
+         {local.children}
+========== image/index.tsx
+--- packages/solid-spectrum/src/image/index.tsx	2026-09-20 11:31:50.892498353 -0300
++++ packages/viviana-ui/src/image/index.tsx	2026-09-20 11:31:51.048498304 -0300
+@@ -17,6 +17,7 @@
+ import { mergeProps } from "@proyecto-viviana/solidaria/utils";
+ import type { StyleString } from "../style";
+ import { style } from "../style" with { type: "macro" };
++import { css } from "../style/style-macro" with { type: "macro" };
+ import { mergeStyles } from "../style/runtime";
+ import type { UnsafeClassName } from "../s2-internal/style-utils";
+ import {
+@@ -60,6 +61,16 @@
+   referrerPolicy?: JSX.ImgHTMLAttributes<HTMLImageElement>["referrerpolicy"];
+   width?: number;
+   height?: number;
++  /**
++   * Local addition — no S2 counterpart. Renders the bitmap with nearest-neighbour
++   * scaling (`image-rendering: pixelated`) instead of the browser's smoothing, so
++   * the register's low-resolution pixel thumbs stay crisp blocks when they are
++   * scaled up rather than turning into a blur. It is a rendering mode of the
++   * element, not a design token, so it has no place on the style ramp and is
++   * carried as a boolean here.
++   * @default false
++   */
++  isPixelated?: boolean;
+   styles?: StyleString | (() => StyleString | undefined);
+   renderError?: () => JSX.Element;
+   group?: ImageGroup;
+@@ -129,6 +140,15 @@
+   transitionDuration: 500,
+ });
+ 
++/* `image-rendering` has no property on the S2 style ramp (style/spectrum-theme.ts),
++ * and it is not a design decision that a token could carry — it is how the raster is
++ * resampled. The css() escape hatch is the sanctioned route for exactly this
++ * (docs/adr/0001-s2-styling-source-of-truth.md), and it still compiles into the
++ * package's shipped styles.css. */
++const pixelatedStyle = css(`
++  image-rendering: pixelated;
++`);
++
+ const pictureStyles = style({
+   objectFit: "inherit",
+   objectPosition: "inherit",
+@@ -253,6 +273,7 @@
+     "referrerPolicy",
+     "width",
+     "height",
++    "isPixelated",
+     "styles",
+     "renderError",
+     "group",
+@@ -410,10 +431,15 @@
+       itemprop={local.itemProp}
+       onLoad={handleLoad}
+       onError={handleError}
+-      class={imageStyles({
+-        isRevealed: revealed(),
+-        isTransitioning: transitioning(),
+-      })}
++      class={[
++        imageStyles({
++          isRevealed: revealed(),
++          isTransitioning: transitioning(),
++        }),
++        local.isPixelated ? pixelatedStyle : undefined,
++      ]
++        .filter(Boolean)
++        .join(" ")}
+       {...({ fetchpriority: local.fetchPriority } as Record<string, string | undefined>)}
+     />
+   );
+========== menu/ContextualHelpTrigger.tsx
+--- packages/solid-spectrum/src/menu/ContextualHelpTrigger.tsx	2026-09-19 00:54:20.556248677 -0300
++++ packages/viviana-ui/src/menu/ContextualHelpTrigger.tsx	2026-09-19 00:54:20.860248609 -0300
+@@ -27,30 +27,40 @@
+ // :focus-visible states the single-element style() macro can't express. Styling
+ // therefore flows through the css() macro escape hatch, which ships real CSS in
+ // the package bundle (same asset pipeline as style()) and supports this nesting.
+-// Values mirror the S2 neutral palette (fixed light-dark pairs, scheme-aware via
+-// the Provider's color-scheme).
++//
++// Every value is a register token from viviana-tokens.css. It used to be sixteen
++// `light-dark()` hex literals mirroring the S2 neutral palette — an entire second
++// palette living in one component, which is precisely how a register drifts: nothing
++// here moved when the tokens were re-cut, so this popover kept painting the old grey
++// chrome next to Popover's glass. The tokens are already scheme-aware (the file
++// redeclares them under the dark selector), so the `light-dark()` wrappers go too.
++//
++// Ink is named as `--slate-900` rather than as the `--text-primary` role it backs:
++// `guard:invented-utilities` matches `text-primary` as one of the pre-S2 Tailwind
++// utilities it exists to keep out, and cannot tell the register's real token from that
++// dead vocabulary. Same value, both schemes.
+ const triggerStyles = css(`
+   & .solidaria-ContextualHelpTrigger-trigger {
+     display: flex;
+     align-items: center;
+-    padding-block: 8px;
+-    padding-inline: 16px;
++    padding-block: 6px;
++    padding-inline: 10px;
+     cursor: pointer;
+     background: transparent;
+     border: 0;
+-    color: light-dark(#222, #e6e6e6);
+-    border-radius: 8px;
++    color: var(--slate-900);
++    border-radius: 6px;
+     outline: none;
+   }
+   & .solidaria-ContextualHelpTrigger-trigger:hover {
+-    background: light-dark(#0000000d, #ffffff12);
++    background: var(--row-hover);
+   }
+   & .solidaria-ContextualHelpTrigger-trigger:focus-visible {
+-    outline: 2px solid light-dark(#4b75ff, #4069fd);
++    outline: 2px solid var(--border-focus);
+     outline-offset: -2px;
+   }
+   & .solidaria-ContextualHelpTrigger-trigger[data-unavailable] {
+-    color: light-dark(#8f8f8f, #7c7c7c);
++    color: var(--text-tertiary);
+   }
+   & .solidaria-ContextualHelpTrigger-trigger[data-disabled] {
+     opacity: 0.5;
+@@ -60,11 +70,12 @@
+     margin-top: 4px;
+     padding: 16px;
+     min-width: 200px;
+-    background: light-dark(#fff, #222);
+-    border: 1px solid light-dark(#d5d5d5, #3d3d3d);
++    background: var(--surface-float);
++    backdrop-filter: var(--blur-clear);
++    border: 1px solid var(--track);
+     border-radius: 8px;
+-    box-shadow: 0 4px 12px light-dark(#00000014, #0000003d), 0 2px 6px light-dark(#0000000f, #00000030);
+-    color: light-dark(#222, #e6e6e6);
++    box-shadow: var(--shadow-float), var(--edge-glass);
++    color: var(--slate-900);
+     outline: none;
+   }
+ `);
+========== notificationbadge/index.tsx
+--- packages/solid-spectrum/src/notificationbadge/index.tsx	2026-09-19 01:02:47.372143405 -0300
++++ packages/viviana-ui/src/notificationbadge/index.tsx	2026-09-19 01:02:47.420143397 -0300
+@@ -74,39 +74,59 @@
+       isDisabled: "none",
+     },
+     font: "ui",
++    /* The register sets a notification count in the PIXEL face, not the UI face: the
++     * count on the icon-rail bell is `--font-display` 10px/700 (TerminalGlassLab.tsx
++     * §01). It is the one numeral in the chrome that is meant to read as a stamp
++     * rather than as text, which is exactly the role `fontFamily: "display"` carries
++     * in this package. Declared after `font: "ui"` so it overrides only the family
++     * and weight that shorthand established. */
++    fontFamily: "display",
++    fontWeight: "bold",
+     color: {
+-      default: "white",
++      /* Fuchsia is the register's ASK colour, and a notification count is an ask —
++       * DECISIONS lists NotificationBadge as the one non-`create` surface that keeps
++       * it (it counts as *notification*, not a second CTA). Ink is the create pair's
++       * own ink so the contrast holds in both schemes without a per-scheme value here. */
++      default: "create-ink",
+       isStaticColor: "auto",
+       forcedColors: "ButtonText",
+     },
+     fontSize: {
+       size: {
+-        S: "ui-xs",
++        /* 10px flat at S, the rung the handoff draws. The other three keep the shared
++         * ui ramp rather than acquiring three invented px values. */
++        S: "[10px]",
+         M: "ui-xs",
+         L: "ui-sm",
+         XL: "ui",
+       },
+     },
+-    borderStyle: {
+-      forcedColors: "solid",
+-    },
+-    borderWidth: {
+-      forcedColors: "[1px]",
+-    },
++    /* The badge rim is not a forced-colors-only affordance any more: the register
++     * draws a 1px `--accent-create-border` around the fuchsia stamp so it separates
++     * from whatever icon it overlaps. `boxSizing: border-box` keeps that rim inside
++     * the 17px box below instead of growing it to 19px. */
++    boxSizing: "border-box",
++    borderStyle: "solid",
++    borderWidth: "[1px]",
+     borderColor: {
++      default: "create-border",
++      isStaticColor: "transparent-overlay-1000",
+       forcedColors: "ButtonBorder",
+     },
+     justifyContent: "center",
+     alignItems: "center",
+     backgroundColor: {
+-      default: "accent",
++      default: "create-bg",
+       isStaticColor: "transparent-overlay-1000",
+       forcedColors: "ButtonFace",
+     },
+     height: {
+       size: {
++        /* 17px, the handoff's own badge box (§01 icon rail). 12px was Spectrum's S
++         * rung and could not hold a 10px pixel numeral with a 1px rim. Only the drawn
++         * rung moves; the indicator-only dot stays 8px. */
+         S: {
+-          default: 12,
++          default: "[17px]",
+           isIndicatorOnly: 8,
+         },
+         M: {
+@@ -127,6 +147,18 @@
+       isIndicatorOnly: "square",
+       isSingleDigit: "square",
+     },
++    /* A single-digit badge is square by `aspectRatio` below, but a 10px numeral in a
++     * 17px box is narrower than it is tall at the double-digit rung too — the register
++     * draws `min-width: 17px` so "1" and "12" sit in the same footprint. Only the drawn
++     * S rung takes it; the rest stay on `aspectRatio` alone. */
++    minWidth: {
++      size: {
++        S: {
++          default: "[17px]",
++          isIndicatorOnly: 0,
++        },
++      },
++    },
+     width: "max",
+     paddingX: {
+       isDoubleDigit: "edge-to-text",
+========== provider/index.tsx
+--- packages/solid-spectrum/src/provider/index.tsx	2026-09-19 06:31:50.268526126 -0300
++++ packages/viviana-ui/src/provider/index.tsx	2026-09-19 06:31:50.272526125 -0300
+@@ -307,3 +307,6 @@
+     </ProviderContext>
+   );
+ }
++
++export { createThemeTransition } from "./theme-transition";
++export type { ThemeTransitionOptions } from "./theme-transition";
+========== skeleton/index.tsx
+--- packages/solid-spectrum/src/skeleton/index.tsx	2026-09-20 11:31:51.792498073 -0300
++++ packages/viviana-ui/src/skeleton/index.tsx	2026-09-20 11:31:51.492498166 -0300
+@@ -27,6 +27,7 @@
+ import type { JSX } from "@solidjs/web";
+ import { createLeafComponent } from "@proyecto-viviana/solidaria-components";
+ import { css } from "../style/style-macro" with { type: "macro" };
++import { skSweep } from "../style/motion" with { type: "macro" };
+ import type { StyleString } from "../style";
+ import { style } from "../style" with { type: "macro" };
+ import { color } from "../style/spectrum-theme" with { type: "macro" };
+@@ -58,15 +59,39 @@
+   return createIsSkeleton();
+ }
+ 
++/* The register's loading state is a "dither shimmer", not a grey gradient sweep:
++ * a diagonal light band crossing the block, seen only through an 8px Bayer mask,
++ * so it reads as pixels lighting up in the same grammar as the theme wipe. Port
++ * of the handoff's `.sk` (glasselated.css). The sheen colour is a token because
++ * it has to invert per scheme; the sweep is a CSS animation on the pseudo-element
++ * (a pseudo cannot be reached by the Web Animations calls this module exposes),
++ * gated by the reduced-motion media condition rather than a runtime check so a
++ * server render and its hydration agree. */
+ export const loadingStyle = css(
+   `
+-  background-image: linear-gradient(to right, ${color("gray-100")} 33%, light-dark(${color(
+-    "gray-25",
+-  )}, ${color("gray-300")}), ${color("gray-100")} 66%);
+-  background-size: 300%;
++  position: relative;
++  overflow: hidden;
++  background: var(--surface-inset);
+   * {
+     visibility: hidden;
+   }
++  &::after {
++    content: "";
++    position: absolute;
++    inset: 0;
++    pointer-events: none;
++    background: linear-gradient(100deg, transparent 34%, var(--sk-sheen) 50%, transparent 66%);
++    background-size: 240% 100%;
++    animation: ${skSweep()} 1.5s linear infinite;
++    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='8'%20height='8'%3E%3Cg%20fill='%23fff'%3E%3Crect%20width='4'%20height='4'/%3E%3Crect%20x='4'%20y='4'%20width='4'%20height='4'%20fill-opacity='0.85'/%3E%3Crect%20x='4'%20width='4'%20height='4'%20fill-opacity='0.35'/%3E%3Crect%20y='4'%20width='4'%20height='4'%20fill-opacity='0.55'/%3E%3C/g%3E%3C/svg%3E");
++    mask-size: 8px 8px;
++    mask-repeat: repeat;
++  }
++  @media (prefers-reduced-motion: reduce) {
++    &::after {
++      animation: none;
++    }
++  }
+ `,
+   "L",
+ );
+@@ -106,6 +131,10 @@
+   return matches;
+ }
+ 
++/* Kept for the components that already hold this ref (Image, Icon) and for any
++ * consumer animating its own gradient. The skeleton's own shimmer moved into
++ * `loadingStyle`'s pseudo-element when the register re-valued it, and a pseudo
++ * cannot be driven from here. */
+ export function useLoadingAnimation(
+   isAnimating: MaybeAccessor<boolean>,
+ ): (element: Element | null) => void {
+========== style/index.ts
+--- packages/solid-spectrum/src/style/index.ts	2026-09-19 00:53:17.528261927 -0300
++++ packages/viviana-ui/src/style/index.ts	2026-09-19 00:53:17.644261902 -0300
+@@ -109,7 +109,6 @@
+     | "notice"
+     | "gray"
+     | "red"
+-    | "orange"
+     | "yellow"
+     | "chartreuse"
+     | "celery"
+========== textfield/s2-textarea-styles.ts
+--- packages/solid-spectrum/src/textfield/s2-textarea-styles.ts	2026-08-21 23:26:19.000000000 -0300
++++ packages/viviana-ui/src/textfield/s2-textarea-styles.ts	2026-09-09 02:36:01.000000000 -0300
+@@ -33,7 +33,8 @@
+   color: {
+     default: "inherit",
+     "::placeholder": {
+-      default: "gray-600",
++      /* Register dim ink: placeholder copy is the well's quietest text. */
++      default: "[var(--terminal-dim)]",
+       forcedColors: "GrayText",
+     },
+   },
+========== view/index.tsx
+--- packages/solid-spectrum/src/view/index.tsx	2026-09-19 00:54:20.580248671 -0300
++++ packages/viviana-ui/src/view/index.tsx	2026-09-19 00:54:20.888248602 -0300
+@@ -22,3 +22,6 @@
+   ViewFooter as Footer,
+ } from "./Content";
+ export type { ContentProps, ViewHeaderProps, ViewFooterProps } from "./Content";
++
++export { SceneBackdrop } from "./SceneBackdrop";
++export type { SceneBackdropProps } from "./SceneBackdrop";

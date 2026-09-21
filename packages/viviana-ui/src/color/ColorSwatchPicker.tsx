@@ -285,8 +285,12 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       <InternalColorSwatchContext
         value={{
           useWrapper,
-          size: size(),
-          rounding: rounding(),
+          get size() {
+            return size();
+          },
+          get rounding() {
+            return rounding();
+          },
         }}
       >
         {local.children}

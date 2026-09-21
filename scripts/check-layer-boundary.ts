@@ -44,6 +44,14 @@ interface Baseline {
   counts: { shared: number; identical: number; diverged: number };
   identical: string[];
   diverged: string[];
+  /**
+   * Why a diverged path diverged, keyed by path. A ratchet that can move with no
+   * recorded reason becomes unreadable the first time it moves (#573), so the
+   * reason lives beside the list it explains rather than in the commit that moved
+   * it. Paths frozen before 2026-09-20 predate the rule and carry none; every
+   * move after it does, and `--write-baseline` refuses to make one without it.
+   */
+  reasons?: Record<string, string>;
 }
 
 function walkRelHashes(srcRoot: string): Map<string, string> {
@@ -93,7 +101,13 @@ function inventory() {
   };
 }
 
-function buildBaseline(inv: ReturnType<typeof inventory>): Baseline {
+function buildBaseline(
+  inv: ReturnType<typeof inventory>,
+  reasons: Record<string, string>,
+): Baseline {
+  const kept = Object.fromEntries(
+    Object.entries(reasons).filter(([p]) => inv.diverged.includes(p)),
+  );
   return {
     version: 1,
     generated: new Date().toISOString().slice(0, 10),
@@ -110,6 +124,7 @@ function buildBaseline(inv: ReturnType<typeof inventory>): Baseline {
     },
     identical: inv.identical,
     diverged: inv.diverged,
+    ...(Object.keys(kept).length > 0 ? { reasons: kept } : {}),
   };
 }
 
@@ -126,7 +141,25 @@ console.log(`- ui-only:       ${inv.uiOnly.length}`);
 console.log("");
 
 if (writeBaseline) {
-  const next = buildBaseline(inv);
+  const previous: Baseline | null = existsSync(BASELINE_PATH)
+    ? (JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Baseline)
+    : null;
+  const carriedReasons = previous?.reasons ?? {};
+  const unexplained = (previous?.identical ?? [])
+    .filter((p) => inv.diverged.includes(p))
+    .filter((p) => !carriedReasons[p])
+    .sort();
+  if (unexplained.length > 0) {
+    console.error(
+      `Refusing to re-bless ${unexplained.length} path(s) that moved identical → diverged with no recorded reason:`,
+    );
+    for (const p of unexplained) console.error(`  - ${p}`);
+    console.error(
+      '  Add each to "reasons" in the baseline first — what diverged and which commit did it — then re-run.',
+    );
+    process.exit(1);
+  }
+  const next = buildBaseline(inv, carriedReasons);
   writeFileSync(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`);
   console.log(`Wrote baseline → ${path.relative(ROOT, BASELINE_PATH)}`);
   console.log(
@@ -190,6 +223,23 @@ if (newForks.length > 0) {
   for (const p of newForks) console.log(`  - ${p}`);
   console.log(
     "  solid-spectrum owns S2 behavior; viviana-ui should wrap/compose/theme, not fork. See ticket #1.",
+  );
+  console.log("");
+}
+
+const recordedReasons = baseline.reasons ?? {};
+const strayReasons = Object.keys(recordedReasons)
+  .filter((p) => !baseDiverged.has(p) || !recordedReasons[p]?.trim())
+  .sort();
+
+if (strayReasons.length > 0) {
+  failed = true;
+  console.log(
+    `FAIL: ${strayReasons.length} recorded divergence reason(s) name a path that is not baselined as diverged, or are empty:`,
+  );
+  for (const p of strayReasons) console.log(`  - ${p}`);
+  console.log(
+    "  A reason outlives its path only by being wrong; delete it when the path re-syncs.",
   );
   console.log("");
 }
