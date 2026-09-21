@@ -15,6 +15,11 @@ history:
       at: 2026-09-21,
       note: "the 2026-09-21 round-1 adversarial audit landed, receipt `.agents/audit-2026-09-21/round-1-results.md`, owners in `.agents/audit-2026-09-21/OWNERS.md`. 76 findings, every one owned: 15 new tickets #587-#601, 15 existing tickets annotated, 3 findings already settled by commits that landed after the audit range closed (`13080aa0`, `495582e9` twice). The audit's standing result is that the Ordered work list above no longer describes the path, because the ladder stops before most of it: `docs:check` is the earliest blocking red, at `certification-gates.yml:235` at HEAD `65254a8c`, and Certification Gates has had no successful run since 2026-08-31. The replacement is the section `Path to the RC after the 2026-09-21 audit` at the end of this file",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "round 2 of the same audit landed, receipt `.agents/audit-2026-09-21/round-2-results.md`, owners appended to `.agents/audit-2026-09-21/OWNERS.md`. Range `4acbc9e4..65254a8c`, the sixteen commits written after round 1's range closed; 3 Opus auditors, every finding at medium or above challenged by a skeptic. 15 findings: 0 critical, 3 high, 4 medium, 8 low. Every one owned - 2 new tickets, **#602** at stage S2-g and **#603** at stage S2-h, both added to the path above; 9 existing tickets annotated (#574, #578, #584, #588, #582, #576, #586, #194, #139); 3 lows added to #601 as items 8-10. The path is unchanged in shape: S0-b is still the earliest blocking red and none of the sixteen commits has ever been seen by CI - `git merge-base --is-ancestor` is false for all sixteen against `origin/main` `96376e9a`, whose own Certification Gates run 35560076342 failed. Two merged tickets carry a dated note instead of a status move, #576 and #582, because the scheme runs forward only; #582's live residue is #603",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -92,7 +97,8 @@ Confirmed audit findings are fixed or ticketed.
 
 Siblings #443 (the `latest` train), #531 (Solid 2 foundation), #136 (audit),
 #26 (comparison site). The scheme forbids an initiative parent. Children:
-#547, #548, #549, and the fifteen the 2026-09-21 audit opened, #587-#601.
+#547, #548, #549, and the seventeen the 2026-09-21 audit opened — #587-#601
+from round 1, #602 and #603 from round 2.
 #545 sits under #531, #546 and #551 under #136, #550 under #26.
 
 ## Path to the RC after the 2026-09-21 audit
@@ -141,6 +147,14 @@ published.
   1.21.0, and the real gap is at `Button.tsx:483`.
 - **S2-f #596**, medium. `createId` throws without an owner and one call site
   was bypassed rather than fixed.
+- **S2-g #602**, high, from round 2. `ActionButton` passes its own
+  `isDisabled` after the spread, so the `useFormProps` proxy `7e93d238` adopted
+  is bypassed and `<Form isDisabled>` does not disable it. One line and one
+  test case; its siblings already read through the proxy.
+- **S2-h #603**, medium, from round 2. The DatePicker popover's enter: #582's
+  fix is right and nothing can tell it from the implementation it reverses, and
+  the entering seam still reports entering before it is placed. A
+  discriminating test, then match RAC or name the deviation.
 
 **S3 — stop the ratchets outrunning their receipts. #597**, high, with #579 as
 its prerequisite in fact: nine of the thirty facts absorbed into the parity
@@ -164,8 +178,8 @@ an owner action, recorded on #568.
 
 **Then #547**, the publish itself.
 
-Off the path: **#601**, the seven low residues the stages do not claim. Nothing
-in it gates a gate.
+Off the path: **#601**, the low residues the stages do not claim — seven from
+round 1, three more from round 2. Nothing in it gates a gate.
 
 **The release condition, in one sentence.** At one sha: the twenty-leg chain
 green locally with its exit codes recorded, and Certification Gates, Release

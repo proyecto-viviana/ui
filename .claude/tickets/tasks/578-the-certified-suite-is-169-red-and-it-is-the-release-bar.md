@@ -26,6 +26,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Three findings land here. `578-census/toast-browser-branch-stub-sync`: the new toast tests stub `startViewTransition` synchronously, so the branch they claim to cover is not exercised the way a browser runs it. `578-census/attr-namespace-unguarded`: nothing stops the `attr:` namespace from returning - the fix that closed #581 is two per-component assertions, not a guard. `board-truth/581-merged-below-its-bar`: #581 is merged although its Done-when demands zero failures and four remain; two of the four are #584's. The census this ticket owns is the place those rows are accounted for.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-guards/r2-guards-3`, high, confirmed: the census commit `65254a8c` is stale on arrival. It reports CI run 35558449632, head `eb75ee0e`, created 2026-09-21T03:42:53Z and finished 04:06:14Z, but was committed at 13:46:11Z with 18 commits in between (`git rev-list --count eb75ee0e..65254a8c`), and it is written in the present tense - where every row now belongs, the largest untracked block left, this table is the whole distance - so a reader takes it for current state. It is not: at `65254a8c` the form block it calls never ticketed was fixed by `7e93d238` at 06:18:18Z, the calendar block it calls ungraded by `6e43c436` at 07:11:38Z, and the three it closes with as ticketed and cheap are #585 merged, #584 in-progress and #583 open because `a32e6bab` handed it back over #484's owner ruling. The finding's own times mix local and UTC and the gap is three hours wider than it reads; the UTC figures here were re-measured with `TZ=UTC git log --date=format-local`. Fix: re-head the table as a snapshot of run 35558449632 at `eb75ee0e`, add a landed-since column naming `495582e9`, `413b2f23`, `f8e5833e`, `7e93d238`, `6e43c436` and `6ad3d12d`, move #583 out of cheap into owner-blocked, and let the next Certification Gates run on the pushed tip supply the roster instead of re-deriving it by hand",
+    }
 ---
 
 ## Why this is filed above the remaining gate reds

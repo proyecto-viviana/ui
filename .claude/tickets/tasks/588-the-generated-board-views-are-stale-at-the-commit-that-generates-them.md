@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "the step number in the audit is already out of date and the ticket records the current one instead. `docs:check` was `certification-gates.yml:231` at `96376e9a`, which is what CI runs 35556441049, 35558449632 and 35560076342 all failed at; at HEAD it is **:235**, moved by `7ec2a732` (#194) and `13080aa0` (#574), the only two post-audit commits touching the workflow. Both numbers are in this ticket on purpose: the ladder table has been wrong twice for the same reason, that somebody wrote a line number down and the file moved under it",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-certified-b/F1`, medium, partly: the same truth as `ci-truth/main-red-head-unpushed` above, measured again over the sixteen commits written after round 1's range closed. None of them is on `origin/main` - `git merge-base --is-ancestor` is false for all sixteen against `96376e9a` - so every pass count in their messages and receipts is an unreplayed local claim. Main's three newest Certification Gates runs are failures, the latest 35560076342 at `96376e9a`, 2026-09-21T04:11:59Z, and `gh workflow list --all` still reports Site Gate and Release Readiness `disabled_manually` while #586 names Site Gate as its blocker. The skeptic refuted the finding's gate-lies framing: the scheme defines merged as landed in a sha, not as gated, #586 is in-progress and says its run is owed, and the owner disabled the workflows - so the survivor is exactly this ticket's scope. Closing the red and pushing is what turns sixteen unverified claims into one run id",
+    }
 ---
 
 ## Scope

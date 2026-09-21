@@ -188,3 +188,96 @@ and so creates no dist-tag that silently stops tracking. Owner decides.
    back. Each carries a dated note saying plainly what is unmet and which
    ticket owns the residue. That is a gap in the scheme, not in the board, and
    it is worth one hub-level question later.
+
+# Round-2 audit, 2026-09-21 — every finding and who owns it
+
+Source: [`round-2-results.md`](./round-2-results.md), transcribed from the
+fleet's artifact with two factual corrections named at the top of it. 15
+findings survived the skeptics over the range `4acbc9e4..65254a8c` (16
+commits) — the work written after round 1's range closed. 0 critical, 3 high,
+4 medium, 8 low. Same rule as above: every finding has a row, every row names a
+ticket, and where a skeptic narrowed a finding the row carries the **narrowed**
+claim.
+
+## What was true when this block was written
+
+Every number below comes from a command run while writing it, on 2026-09-21.
+
+| fact | value |
+| --- | --- |
+| HEAD | `fa0686da` |
+| `origin/main` | `96376e9a`, 18 commits behind HEAD |
+| commits in the round-2 range on `origin/main` | **0 of 16** — `git merge-base --is-ancestor` false for each |
+| newest Certification Gates run on `main` | 35560076342 at `96376e9a`, **failure**, 2026-09-21T04:11:59Z |
+| the run the `65254a8c` census reports | 35558449632 at `eb75ee0e`, created 03:42:53Z, finished 04:06:14Z, **failure** |
+| commits between that run's head and the census | **18** (`git rev-list --count eb75ee0e..65254a8c`) |
+| census commit time, true UTC | 2026-09-21T13:46:11Z (`TZ=UTC git log --date=format-local`) |
+| Release Readiness / Site Gate | both still `disabled_manually` |
+| highest ticket number before this block | 601 |
+
+## The new stages
+
+| stage | ticket | why it is where it is |
+| --- | --- | --- |
+| S2-g | #602 | a published button ignores `<Form isDisabled>`; one line, one test case, no dependency on any other stage |
+| S2-h | #603 | #582's fix is indistinguishable from the code it reverses, and the enter seam it touches is still not RAC's |
+
+Both sit inside S2, the confirmed source defects, because both are behaviour in
+published packages and land before anything is published. Neither blocks the
+other, and neither blocks S0 or S1.
+
+## High
+
+| finding | severity / verdict | owner | new or existing | action |
+| --- | --- | --- | --- | --- |
+| `r2-certified-a/r2a-1` | high / confirmed | #602 | new | end ActionButton's `isDisabled` on the `useFormProps` proxy and add the `<Form isDisabled>` case the commit's `it.each` never had |
+| `r2-guards/r2-guards-1` | high / partly | #574 | existing | the covered-path set omits the runner, the merger, the waiver logic and the pinned oracle; latent, not live, because the postcard is already 2577 paths stale — widen or invert before the next pin |
+| `r2-guards/r2-guards-3` | high / confirmed | #578 | existing | the census is stale on arrival by 18 commits; re-head it as a snapshot of run 35558449632 at `eb75ee0e` and move #583 out of "cheap" into owner-blocked |
+
+## Medium
+
+| finding | severity / verdict | owner | new or existing | action |
+| --- | --- | --- | --- | --- |
+| `r2-certified-a/r2a-5` | medium / confirmed | #584 | existing | the trigger emits no `data-pressed` where RAC's carries it while the popover is open — the other direction of the same defect, inside this ticket's Done-when |
+| `r2-certified-b/F1` | medium / partly | #588 | existing | the "gate lies" framing is refuted (merged means landed; the owner disabled the workflows); the survivor is that none of the sixteen has been seen by CI |
+| `r2-certified-b/F2` | medium / partly | #603 | new | #582 is merged, so the residue moves: a test that fails on `6ad3d12d^`, and the record of why the 2026-09-02 certification was wrong |
+| `r2-guards/r2-guards-2` | medium / partly | #574 | existing | coverage gap, not fake proof — write the uncovered-but-decisive case first, watch it fail, then widen |
+
+## Low
+
+| finding | severity / verdict | owner | new or existing | action |
+| --- | --- | --- | --- | --- |
+| `r2-certified-a/r2a-4` | low / partly | #584 | existing | remove the invented `data-*` at `createSelect`, not only at the component; the shipped value is `"true"`, not `""`, and #254 already gates the trigger's `data-open` |
+| `r2-certified-a/r2a-6` | low / not challenged | #601 | existing | item 8 — an exported oracle policy constant nothing imports; the real filter is the journey allowlist |
+| `r2-certified-b/F3` | low / partly | #603 | new | "as upstream" is half true; gate entering on a resolved placement, or name the deviation instead of claiming parity |
+| `r2-certified-b/F4` | low / partly | #576 | existing | merged with its Done-when's DOM evidence never recorded; paste the step-1 output or say the candidate rests on the mutation |
+| `r2-certified-b/F6` | low / not challenged | #586 | existing | the dark hero gradient is a visual edit axe cannot measure; the new `ErrorFallback` `h2` is the one hardcoded colour in the file it touched |
+| `r2-guards/r2-guards-4` | low / partly | #194 | existing | "only shrinks" is a fixed ceiling — record a per-section count so deleting an entry lowers it; the finding's JSON path is wrong, it is under `scripts/` |
+| `r2-guards/r2-guards-5` | low / partly | #601 | existing | item 9, residue of merged #139 — containment is anchored on a `tmpdir()` read from the same environment as the override; constrain the victim, not only the location |
+| `r2-guards/r2-guards-6` | low / not challenged | #601 | existing | item 10, residue of merged #139 — a fresh `mkdtemp` stage per run with no cleanup, one copy of seven packed packages each time |
+
+## Deviations from the brief this block was written against
+
+1. **No status moved, again.** Two merged tickets have a Done-when the audit
+   shows unmet — #576 (no DOM print) and #582 (no discriminating test). The
+   scheme runs forward only, so each carries a dated note saying what is unmet,
+   and #582's live residue is #603. Same gap as round 1's deviation 5, and the
+   second instance of it in one day, which strengthens the hub-level question.
+2. **Two findings were corrected while transcribing**, not carried verbatim:
+   `r2-guards-4` cites a JSON path that does not exist, and `r2-guards-3` mixes
+   local and UTC times in a finding whose whole point is a time gap. Both
+   corrections are at the top of the results file with the command that
+   establishes them. Round 1's file was copied byte for byte; this one was not,
+   and says so.
+3. **Three lows went to #601 rather than to new tickets**, for the reason round
+   1 gave: one sweep row beats three board rows. That makes #601 ten items, and
+   its title loses its count so the next sweep needs no rename.
+4. **`r2-guards-1` is filed as latent.** It is a high by mechanism — the gate's
+   own runner can change without invalidating the postcard — but no postcard is
+   currently pinned and the certified shards rerun on every push, so it is owed
+   before the next pin, not before #574 closes. The row says so rather than
+   promoting it to a stage.
+5. **No finding in this round was executed.** The fleet ran no build and no
+   test, so every `needs-run` is still owed and every pass count in the sixteen
+   commits' messages remains unverified. The results file's "Not covered"
+   section names the commands.
