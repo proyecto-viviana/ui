@@ -34,7 +34,11 @@
  *    root barrel. It may only shrink. This half needs no build, and it covers
  *    the entries that have no ceiling yet.
  *
- * Regenerate both with `--write-baseline` after an intentional change.
+ * Regenerate both with `--write-baseline` after an intentional change. It
+ * writes every number in the file, including each entry's `measuredAt`, and
+ * refuses to carry an entry's `why` forward once the counts that sentence
+ * states disagree with what it just measured: a ceiling and the derivation
+ * beside it move together or not at all.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -72,6 +76,13 @@ type BudgetEntry = {
   entry: string;
   maxModules: number;
   maxSolidariaModules: number;
+  // The day the two ceilings above were measured. Written by
+  // `--write-baseline`, never by hand — it is the run's own signature.
+  measuredAt?: string;
+  // Prose: what the ceiling is made of and which import moved it last. It
+  // opens with the counts it explains, and `--write-baseline` checks that
+  // opening against the measurement rather than preserving it blindly.
+  why?: string;
 };
 
 type Budget = {
@@ -306,7 +317,17 @@ const rootBarrelImporters = SOURCE_TREES.flatMap((tree) => sourceFiles(path.join
   .map((file) => path.relative(ROOT, file).split(path.sep).join("/"))
   .sort();
 
+// The opening of an entry's `why`: "53 source modules, 47 of them solidaria".
+// Every number in this file is rewritten by the run below, and a sentence
+// quoting those numbers that is carried forward unchanged states a ceiling
+// that no longer exists — which is how these entries were re-frozen twice
+// behind prose written for an earlier measurement (#565, #566, #587). So the
+// opening is checked against the measurement, and a disagreement stops the
+// rewrite instead of publishing a derivation the run has just disproved.
+const WHY_COUNTS = /^(\d+) source modules, (\d+) of them solidaria/;
+
 if (WRITE_BASELINE) {
+  const measuredAt = new Date().toISOString().slice(0, 10);
   const existing: Budget | null = existsSync(BUDGET_PATH)
     ? JSON.parse(readFileSync(BUDGET_PATH, "utf8"))
     : null;
@@ -320,12 +341,27 @@ if (WRITE_BASELINE) {
       throw new Error(
         `${entry.package} ${entry.entry} has unresolved specifiers; fix them before re-freezing:\n  ${measured.unresolved.join("\n  ")}`,
       );
-    return { ...entry, maxModules: measured.total, maxSolidariaModules: measured.solidaria };
+    const stated = entry.why?.match(WHY_COUNTS);
+    if (
+      stated &&
+      (Number(stated[1]) !== measured.total || Number(stated[2]) !== measured.solidaria)
+    )
+      throw new Error(
+        `${entry.package} ${entry.entry}: \`why\` states ${stated[1]} source modules, ` +
+          `${stated[2]} of them solidaria; this run measured ${measured.total} and ${measured.solidaria}. ` +
+          `Rewrite \`why\` with the new counts and the import that moved them, then re-freeze.`,
+      );
+    return {
+      ...entry,
+      maxModules: measured.total,
+      maxSolidariaModules: measured.solidaria,
+      measuredAt,
+    };
   });
   const budget: Budget = {
     description:
       existing?.description ??
-      "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory.",
+      "Per-entry module ceilings for the published packages, plus the frozen solidaria root-barrel inventory. Every number here, and each entry's `measuredAt`, is written by `--write-baseline`; `why` is hand-written prose that must open with the counts that run measured.",
     unit:
       existing?.unit ??
       "Distinct source modules reachable from the source file an entry's `exports` target is emitted from, by static import/export specifiers, workspace packages resolved through their own `exports` maps. Type-only and build-time macro imports are not counted; neither reaches a consumer.",

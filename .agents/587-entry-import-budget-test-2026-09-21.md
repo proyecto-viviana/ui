@@ -104,12 +104,94 @@ order is now pinned by the same assertion instead of resting on a commit message
 
 Five of five exactly at the ceiling, so the re-derivation #587 asked for is a
 no-op: the numbers in `scripts/entry-import-budget.json` are the numbers a run at
-this revision produces. The command, the five readings and the dist-free run are
-recorded in the JSON's `description`, which `--write-baseline` preserves.
+this revision produces.
+
+> Corrected later the same day, in the review round below. This section first
+> said the command and the five readings were "recorded in the JSON's
+> `description`, which `--write-baseline` preserves" — which is the defect, not
+> the feature. The numbers are written by the run now; no reading is spelled out
+> in prose that a rewrite would carry forward.
+
+## 7. The review round, and what it found (same day, `10684229` reviewed)
+
+Three problems, all of them real.
+
+**The derivation rotted by design.** `--write-baseline` rewrites every number
+and copies `description` and `why` forward verbatim, so the five readings §6
+wrote into `description` would have survived the first legitimate ceiling
+change — `guards-b/entry-budget-refrozen-twice`, rebuilt by the fix for it. So
+the numbers became the script's to write:
+
+- each entry carries a `measuredAt`, written by the run that set its ceiling;
+- `description` states no measurement at all;
+- `--write-baseline` refuses a `why` whose opening counts ("53 source modules,
+  47 of them solidaria") disagree with what it just measured, and writes
+  nothing when it refuses.
+
+Red before green, against the guard at `10684229`:
+
+    vp test run scripts/check-entry-import-budget.test.ts   exit 1 — 2 failed | 6 passed
+
+The pre-fix `--write-baseline` exits **0** there while it rewrites a 9/9 ceiling
+to 3/1 under a `why` that still claims 5/2. After the fix, 8 passed, exit 0, and
+the refusal reads:
+
+    @proyecto-viviana/ui ./Provider: `why` states 5 source modules, 2 of them
+    solidaria; this run measured 3 and 1. Rewrite `why` with the new counts and
+    the import that moved them, then re-freeze.
+
+Re-frozen with the fixed script — `vp run guard:entry-import-budget -- --write-baseline`,
+exit 0, "Wrote 5 entry ceiling(s) and a 154-file root-barrel inventory". No
+ceiling moved: the only content the diff adds is five `"measuredAt": "2026-09-21"`
+lines.
+
+**Three failure branches had no test**, including the one the guard exists for.
+Added, each with a fixture that violates only it:
+
+| new case | fixture | asserted |
+| --- | --- | --- |
+| solidaria ceiling | ui `./Provider` reaches `solidaria/i18n` + `solidaria/overlays`: 3 total against 3, 2 solidaria against 1 | exit 1, `@proyecto-viviana/ui ./Provider: 2 solidaria modules, ceiling 1`, and never the total message |
+| root-barrel addition | `packages/viviana-ui/src/barrel.ts` exporting from the bare specifier, reachable from no entry | exit 1, `root-barrel importers: 1 (ceiling 0)`, `1 new file(s) import the @proyecto-viviana/solidaria root barrel` |
+| dead workspace specifier | a resolving entry importing `@proyecto-viviana/solidaria/missing` | exit 1, the entry and specifier named, and never `entry import budget OK.` |
+
+The total ceiling is checked first as an `if`/`else if`, so the over-budget case
+never reaches the solidaria branch — it needed its own fixture. Each case was
+proved to bind its branch by mutation, with the guard copied to the scratch
+directory and that one branch removed:
+
+| mutation | result |
+| --- | --- |
+| solidaria ceiling branch deleted | 1 failed, 7 passed (8), exit 1 — the solidaria case |
+| root-barrel addition never pushed | 1 failed, 7 passed (8), exit 1 — the root-barrel case |
+| per-entry unresolved report deleted | 1 failed, 7 passed (8), exit 1 — the dead-specifier case |
+
+    vp test run scripts --maxWorkers=2     exit 0 — 12 files, 80 passed (75 before)
+    vp run guard:entry-import-budget       exit 0 — 5/5 entries, 154 importers against 154
+
+**Certification Gates is not disabled.** The claim below was written without
+running the command. It was run this time:
+
+    gh api repos/:owner/:repo/actions/workflows
+      Certification Gates   active          .github/workflows/certification-gates.yml
+      Changesets Check      active
+      Journey Fuzz Nightly  active
+      Release               active
+      Release Readiness     disabled_manually
+      Site Gate             disabled_manually
+
+    gh run list --workflow=certification-gates.yml
+      five push-to-main runs today; latest 35560076342, 2026-09-21T04:11:59Z
+
+So §5's reorder and the changed assertion in `scripts/test-ci-guard-contracts.mjs`
+are not parked in a disabled workflow: they land in a live blocking ladder on the
+next push to main, the assertion as the `CI guard failure contracts` step
+(`certification-gates.yml:100-101`, no `continue-on-error`). The residual risk is
+"untested on a runner", not "unobserved".
 
 ## What this receipt does not prove
 
-No CI run. Certification Gates and Release Readiness are both
-`disabled_manually`, and this seat does not push, so the reordered workflow has
-never executed. `vp run build` was not run either: nothing in this ticket needs
+No CI run: this seat does not push. Certification Gates is active and blocking
+and will execute the reordered step on the next push — today's runs are red at
+`docs:check`, the generated-view staleness #588 owns, before the ladder reaches
+either change. `vp run build` was not run either: nothing in this ticket needs
 one, which is the point.
