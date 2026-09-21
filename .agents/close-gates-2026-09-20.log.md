@@ -1677,3 +1677,11 @@ which file each fact came from and does not carry it into the fact, so
 `switch|aria|aria-checked` cannot say that its source file never renders a
 Switch. A fact that carried its file would make a mis-pairing visible in the
 output instead of in a reader's head.
+### Re-blessed on the conductor's answer
+
+The stop was answered: none of the thirty is a defect in our tests, so holding
+the gate red holds it on the oracle's filename attribution rather than on
+anything this repository can fix, and the nine mis-attributed rows are stable —
+they reproduce identically every run, so they distort the reading and not the
+drift detection. Written before the heavy step, as the protocol asks.
+
