@@ -25,6 +25,11 @@ history:
       at: 2026-09-21,
       note: "the path was reviewed and five gaps in it were fixed in place, all in the `Path to the RC` section, none of them a new finding about the tree. Four tickets that carried audit findings had no stage and now have one: **#574** at S0-d, the parity step at `certification-gates.yml:244` that S0-b's landing makes the frontier - measured at HEAD `2599623e`, `0f1e1198` is an ancestor and 2577 covered paths changed since it; **#578** at S0-e, the `certified report` job, whose `Merge certified reports` step at `:691` has no `continue-on-error` while the eight shards at `:646` do, and which failed run 35560076342 at `96376e9a` with 2085 passed / 88 failed / 4 skipped / 0 waived / 1 flaky; **#579** at S3-a with #597 at S3-b; and **#568** at the new S5, whose deliverable is the two `gh workflow enable` commands plus the ladder-row correction. The path now also says which mechanism makes `certified report` exit 0 - fix or a `certified-waivers.json` waiver with an open ticket and a future expiry, since `certification-debt.md` is read by no workflow or script - and carries the lens 4a/4b re-proof as a named obligation of #548 and #549 before #547 publishes, #546 staying `merged` because the scheme runs forward only",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "a new stage **S0-f #606** was added to the path, and S0-b is no longer the earliest blocking red. Measured at HEAD `45714230`: `guard layer-boundary` is `certification-gates.yml:183`, step 24 of the `gates` ladder, ahead of S0-b's `docs:check` at `:257`; `vp run guard:layer-boundary` exits 1 there with one new fork, `button/ToggleButton.tsx`, which is what stopped run 35623988073 at `e8bacb9d`. Cause is `7e93d238`, a fix written to the solid-spectrum side of a frozen byte-identical dual path only, then `45714230` on the same side again. #606 restores identity, ports the same two Form fixes into the three viviana-ui buttons baselined as diverged forks - all three carried both defects - and is `merged` in this checkout with the guard at exit 0. Second occurrence of #570's class; #606 proposes, and does not build, one `&& vp run guard:layer-boundary` clause in `ci:release-readiness`, the chain a writer runs and the only place the guard is missing",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -131,11 +136,11 @@ stop is unexecuted, so the repository has no verdict on most of its own gates.
   the release chain and its own unit test is red, so the chain cannot be walked
   whole until it passes. Also fixes its position: it reads `dist/` and runs
   before `build`.
-- **S0-b #588**, high, and the one that truncates the ladder. The generated
+- **S0-b #588**, high, and the ladder's stop once S0-f is green. The generated
   board views are stale at the commit that generates them, `docs:check` exits
-  1, and it is `certification-gates.yml:235` at HEAD `2599623e`. Includes the
-  reproducibility of `docs:generate`. The ladder-row correction it exposes is
-  #568's, at S5.
+  1, and it is `certification-gates.yml:235` at HEAD `2599623e`, `:257` at HEAD
+  `45714230`. Includes the reproducibility of `docs:generate`. The ladder-row
+  correction it exposes is #568's, at S5.
 - **S0-c #589**, medium. CI reports verdicts it does not hold: the eight
   certified shards are `continue-on-error`, `cancel-in-progress` erases a
   verdict rather than deferring it, and one contrast leg is mislabelled.
@@ -156,6 +161,16 @@ stop is unexecuted, so the repository has no verdict on most of its own gates.
 4 skipped, 0 waived, 1 flaky` at `96376e9a` and exited 1. It supplies the
   revision S0-d's pin needs, so S0-d's rule lands first and S0-e's run is
   recorded under it.
+- **S0-f #606**, `merged` in this checkout and lettered last because it was
+  found last, though it sits earliest on the ladder: `guard layer-boundary` at
+  `certification-gates.yml:183` is step 24, ahead of S0-b's `docs:check` at
+  `:257`, and it stopped run 35623988073 at `e8bacb9d` before S0-b's step ever
+  ran. One frozen byte-identical dual path forked — `7e93d238` edited
+  `packages/solid-spectrum/src/button/ToggleButton.tsx` and left its viviana-ui
+  copy behind — so the guard reported one new fork and exited 1. Fixed by
+  restoring identity and porting the same two Form fixes into the three
+  viviana-ui buttons that are baselined as diverged forks, which carried both
+  defects; `vp run guard:layer-boundary` exits 0 at `45714230`'s successor.
 
 **What makes `certified report` exit 0**, since the release condition rests on
 it. `merge-certified-reports.ts` exits 1 when a shard cannot explain its exit,

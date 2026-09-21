@@ -27,6 +27,7 @@ import {
 import { createStringFormatter, mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import { fontRelative, space, style } from "../style" with { type: "macro" };
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
+import { useFormProps } from "../form";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
@@ -133,9 +134,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   ]);
   const contextProps = getSlottedContextProps(useActionButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useActionButtonGroupContext(), undefined);
-  const defaultProps: Partial<ActionButtonProps> = {
-    size: "M",
-  };
   const groupProps: Partial<ActionButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;
@@ -150,9 +148,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     get isQuiet() {
       return groupContext?.isQuiet;
     },
-    get isDisabled() {
-      return groupContext?.isDisabled;
-    },
     get density() {
       return groupContext?.density;
     },
@@ -164,12 +159,9 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps<ActionButtonLayeredProps>(
-    defaultProps,
-    flags,
-    contextProps ?? {},
-    runtimeProps,
-    groupProps,
+  // As Button: the Form fills what the layers leave unset; defaults are read-time.
+  const merged = useFormProps(
+    mergeProps<ActionButtonLayeredProps>(flags, contextProps ?? {}, runtimeProps, groupProps),
   );
   const [local, headlessProps] = splitProps(merged, [
     "size",
@@ -190,11 +182,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "isJustified",
   ] as const);
 
-  const isDisabled = () =>
-    runtimeProps.isDisabled ??
-    groupContext?.isDisabled ??
-    (contextProps as { isDisabled?: boolean } | null | undefined)?.isDisabled ??
-    flags.isDisabled;
+  // Upstream ends the chain on the Form proxy and keeps the group last:
+  // `isDisabled={props.isDisabled ?? isDisabled}` after `useFormProps`
+  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:334,358`). `headlessProps`
+  // is that proxy — own prop, context, provider, then the Form, with a Skeleton
+  // over all of them — so the group stays out of the merge for this one key,
+  // unlike size/staticColor/isQuiet, which upstream lets the group win.
+  const isDisabled = () => headlessProps.isDisabled ?? groupContext?.isDisabled;
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const menuTriggerContext = useContext(MenuTriggerContext);
@@ -385,7 +379,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         return currentSize === "XS" ? undefined : currentSize;
       },
       get isDisabled() {
-        return !!headlessProps.isDisabled;
+        // Upstream reads the RACButton render prop here, i.e. the same resolved
+        // `props.isDisabled ?? ctx.isDisabled` the element gets
+        // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:436,432`), so the
+        // group greys the badge too. The proxy alone no longer sees the group.
+        return !!isDisabled();
       },
       styles: () =>
         style({
