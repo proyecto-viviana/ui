@@ -279,8 +279,20 @@ so taking it before #573, #574, #575 and #576 would be choosing the interesting
 work over the blocking work — the exact triage error the paragraph above warns
 about.
 
+#579 is the same kind of residue and is also **not** on the RC path. It comes
+out of #573: the parity oracle decides which component a fact belongs to from
+the test file's basename alone (`canon`, `check-upstream-test-parity.ts:409-418`),
+so `packages/viviana-ui/test/Switch.test.tsx` — which renders `TabSwitch` and
+`SegmentedControl` and no `Switch` — files its whole vocabulary under `switch`.
+Nine of #573's twelve added ROLE rows are that. #573 closes its gate anyway,
+through `--allow-growth 573`, which is why this is residue rather than a
+blocker.
+
 #568 is the one that should not be deferred past this stage. If the two ladders
-keep no stated relationship, the next campaign rediscovers all of this.
+keep no stated relationship, the next campaign rediscovers all of this. Its
+second measurement, added 2026-09-20 late, is the one that bears on stage 4:
+of the five workflows that could hold release safety, one executes and it is
+red.
 
 ## Stage 3 — the obligations #547 already carries
 
@@ -310,6 +322,32 @@ their tickets said, and those findings are in the tickets, not here.
   rather than a blocker, and the one item in this list this seat expects to
   argue about before assuming.
 
+### The audit's last open row, closed 2026-09-20 late
+
+`.agents/audit-2026-09-20/VERIFIED.md` had one row left saying "conductor
+deciding": whether `Changesets Check` should stop being `pull_request`-only.
+Decided **no**, and the reasoning is written there. Two things came out of
+deciding it that belong on this path.
+
+First, a correction this seat owes. The same audit row above it says
+`guard:release-prerequisites` "inspects no shipping package", and this seat
+re-ran the guard, saw `SKIP: @proyecto-viviana/kumo@0.0.0 … / release
+prerequisites — PASS`, and repeated the claim. That was wrong. `76bd2b06`
+(#553, 2026-09-20 13:57) had already widened the config to all five candidates
+and made the guard read its subjects from the tree; `releasablePackages()`
+returns exactly the five this release ships, every one is listed with dated
+registry evidence, and the entry loop checks every one. The guard prints
+nothing on success, and one printed SKIP line was read as the whole output.
+The guard is sound and stays in `changeset:publish`, which stage 4 runs.
+
+Second, a fact stage 4 depends on. `guard:publish-drift` is the control
+`release-policy.md:92-95` names as what makes the `pull_request` trigger safe,
+and its only push-path invocation is `release.yml:75` — inside a workflow whose
+`if:` requires a successful `Certification Gates`. The last eight `Release`
+runs concluded `skipped`. So that guard has not executed on any commit of this
+campaign, and stage 4 must run it locally rather than assume CI did. The
+measurement of all five workflows is in #568.
+
 ## Stage 4 — the release flow, on one revision
 
 In order, all on the same commit, from #547:
@@ -334,6 +372,38 @@ In order, all on the same commit, from #547:
    `npm dist-tag add <pkg>@<version> next` per package. **Not** `--tag next`:
    passing `--tag` in pre mode is a hard error, `publish.mjs:61-63`. Never move
    `latest`; it cannot move by accident here, and #547 records why.
+
+### Stage 4 has a precondition nobody has named: two workflows are off
+
+If the publish runs through `release.yml`, it runs `guard:release-evidence`
+first (`release.yml:55`), and that guard requires a **successful run of all
+three** evidence workflows for the exact release SHA —
+`scripts/check-release-evidence.mjs:10-12`:
+
+```
+["certification-gates.yml", "Certification Gates"],
+["release-readiness.yml",   "Release Readiness"],
+["site-gate.yml",           "Site Gate"],
+```
+
+`Release Readiness` and `Site Gate` are both `disabled_manually` (`gh workflow
+list --all`, 2026-09-20 late). A disabled workflow produces no run, the guard
+reports it `absent`, and it polls to its timeout rather than passing — it fails
+closed, which is correct and which also means **the release cannot publish
+until both are switched back on and green on the release commit**.
+
+They were switched off on 2026-09-20 at 16:30 after failing, not after being
+fixed, so re-enabling them is not a toggle: it is stage 3 work that has not been
+scoped, and whatever they return is a new red list on top of #578's. Both last
+ran at `f813032d`, which is before every ladder closure since — so their last
+known answer is stale as well as red, and nobody currently knows what they
+return at HEAD. This seat does not flip them: it is an owner-visible action and
+the owner turned them off. It is named here so stage 4 does not discover it at
+the last step.
+
+The alternative is `workflow_dispatch`, which `release.yml:29` allows and which
+takes the same exact-SHA check — so it is not a way around this, only a way
+around waiting for `workflow_run`.
 
 Standing owner authority covers push, the `next` publish and the docs deploy.
 It does not cover moving `latest`, a new public name, a branch or a PR, or any

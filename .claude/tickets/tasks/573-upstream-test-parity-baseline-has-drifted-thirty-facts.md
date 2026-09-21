@@ -4,7 +4,7 @@ type: task
 title: "The upstream-test-parity baseline has drifted 30 facts behind the pin, and its last move was labelled fmt"
 created: 2026-09-20
 parent: 544
-status: next
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: next,
       at: 2026-09-20,
       note: "handed to the close-gates writer after #572 merged (`40ac9573`), as the earliest remaining red; the ladder now walks to step 227. One correction to this ticket's own prose, made in this commit: it calls 227 'the last red on the ladder', which was true when filed and is not now - the heavy gates behind it have since been walked, and 239 is #574 and 251 is #575 and #576. Two things for whoever takes it. First, bucket 3 is the reason this is not a fifteen-minute re-bless, and the order in the Work section is not a suggestion: a `tabs|role|textbox` row is either our test asserting another component's role, which is a defect this guard was built to find, or the extractor attributing a fact to the wrong component, which is a defect in the guard - and those two have different fixes, so name which one each row is before deciding anything. Second, this is the fourth ratchet in two days that stopped describing the tree, and it is the one that failed *silently* rather than loudly: `a741273a` moved it under a label that hides the move. The class now has a ticket of its own, #577; do not widen this guard here, but if you see what would have let it report its own staleness, write the sentence into #577 rather than losing it. Heavy: needs `vp run build` first, so `free -m`, one command at a time, output to a file",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "closed in two commits, and the writer's stop between them was the work. `34064bae` classified the thirty without touching the baseline and stopped, per the hand-over's own condition: none of the twelve added ROLE rows is our test asserting a role the component should not have - three are broader coverage of a real upstream shape (S2 Icon `role=img`, ComboBox and Picker heading `role=presentation`), and nine are a role owned by a fixture element or a composed child. `2b444a89` then re-blessed through `--allow-growth 573`. The conductor verified the load-bearing claim independently rather than reading it: `packages/viviana-ui/test/Switch.test.tsx` imports only `TabSwitch` and `SegmentedControl` and renders `<Switch` zero times, so `switch|aria|aria-checked` really is one component's vocabulary filed under another's name. Reviewed by re-running: `vp run guard:upstream-test-parity` EXIT=0, `suspects 187 → 187 (Δ0), coverageGaps 43 → 43 (Δ0), upstreamOnly 16 → 16 (Δ0)`; `growthLog` takes its sixth entry, ticket 573, 30 added suspects / 0 gaps / 0 unmatched, with `switch|aria|aria-checked` in it by name - so the baseline points at this ticket instead of burying the facts, which is the thing `a741273a` did not do. The nine oracle artifacts are recorded, not settled: #579 owns the filename attribution that produced them, and they should leave the baseline when a fact carries its source file rather than be re-blessed a second time. The conductor's call to re-bless rather than hold the gate is on the record here: nothing in our tests was wrong, so holding step 227 red would have been holding it on somebody else's defect",
     }
 ---
 

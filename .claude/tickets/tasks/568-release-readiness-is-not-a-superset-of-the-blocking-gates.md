@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "found by the conductor after #567. #565 recorded `guard:entry-import-budget` as absent from every ci:release-readiness leg, which is why the nineteen-green walk at 3f220fb6 did not see it red, and #566 fixed that one by wiring it in. This ticket is the measurement that says it was never one gate: 28 of the 36 blocking steps in certification-gates.yml have no leg in the chain",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "second measurement, from the workflow side rather than the script side, taken by the conductor while settling the last open row of the #546 audit. Of the five workflows that could hold release safety on the push path, exactly one executes today and it is red - see 'What actually runs' below. `gh run list --workflow=changesets-check.yml` puts its most recent run at 2026-09-04, seventeen days before this campaign's first commit. This does not change the Work section; it raises the stakes on choosing, and it is the evidence for the sentence in 'Why it matters now' that a workflow nobody has enabled is a gate in name only",
+    }
 ---
 
 ## Scope
@@ -61,6 +66,36 @@ switched back on seven hours later (#567).
 
 It also bears directly on #547. If the release candidate's evidence is "the
 chain is green", that sentence currently covers 8 of 36 blocking gates.
+
+## What actually runs
+
+The section above counts scripts. This counts workflows, measured 2026-09-20
+late with `gh workflow list --all` and `gh run list --workflow=<file>`:
+
+| workflow              | state               | last run on a campaign commit                                                  |
+| --------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| `Certification Gates` | active              | running, red at one step (`guard upstream-test-parity`)                        |
+| `Changesets Check`    | active              | **none** — last run 2026-09-04, `pull_request` only and nothing here opens PRs |
+| `Release Readiness`   | `disabled_manually` | 2026-09-20 16:30, failure, then switched off                                   |
+| `Site Gate`           | `disabled_manually` | 2026-09-20 16:30, failure, then switched off                                   |
+| `Release`             | active              | 8 consecutive `skipped` — its `if:` needs a successful `Certification Gates`   |
+
+One of five executes, and it is red. Two were switched off after failing rather
+than after being fixed. One has not fired since before the campaign began. The
+fifth is gated on the first.
+
+This is also how `guard:publish-drift` came to be dormant. It is named in
+`release-policy.md:92-95` as the control that makes `Changesets Check` safe to
+leave `pull_request`-only, and its only push-path invocation is `release.yml:75`
+— inside the workflow that has concluded `skipped` eight times running. The
+design is sound; nothing has run it. The audit row that asked whether the
+`Changesets Check` trigger should move was decided **no** on those grounds, in
+`.agents/audit-2026-09-20/VERIFIED.md`.
+
+The workflow file's own header already states the principle this ticket is
+about: "Work on this repo lands direct-to-main, so a PR-only ladder structurally
+never fires (`ci-main-gate-wiring`)." It was written for `Certification Gates`
+and never applied to the other four.
 
 ## Work
 
