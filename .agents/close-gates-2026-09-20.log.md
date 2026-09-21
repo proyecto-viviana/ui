@@ -1796,3 +1796,60 @@ The demo fixture that queues the toast is
 inside the public-face worktree's fence. It is not the suspect — it calls
 `ToastQueue[variant]` on the published entry and the React side of the same
 file works — but if a fix ever needs to touch it, it needs the conductor first.
+
+### Step 2, batch 1 — three proven causes outside the overlay family
+
+`certified/form certified/tabs certified/togglebutton certified/togglebuttongroup`,
+same command shape as step 1, `BATCH1_EXIT=1`, 15 failed of 221, output kept at
+`/tmp/578-batch1.out`. The 15 match the receipt's rows for those four
+components exactly. Three causes, each read off the run rather than inferred:
+
+- **`form`, 12 rows, one cause.** The Solid form's second grid row is frozen at
+  `32px` at every size while React scales it. React reports
+  `grid-template-rows: "64px 24px"` / `height: 108px` at `size-s`,
+  `"100px 40px"` / `172px` at `size-l`, `"118px 48px"` / `206px` at `size-xl`;
+  Solid reports `… 32px` with heights `116 / 164 / 190`. That is why `size-m`
+  passes and s/l/xl fail: 32px is the correct value at `size-m` only, so the
+  frozen row coincides there. The six D3 rows in this component are the same
+  defect seen as a height delta (`Expected: <= 0, Received: 16`), not a separate
+  pixel-diff cause.
+- **`togglebutton` and `togglebuttongroup` D2 (reduced), 2 rows, one cause.**
+  React records two hover transitions — `background-color` and `color`, both
+  `150ms cubic-bezier(0.45, 0, 0.4, 1)`. Solid records `[]`.
+- **`tabs` D4, 1 row, one cause.** At the moment the keydown is logged the
+  roving `tabindex` is swapped relative to React: React has Overview `-1` and
+  Parity `0`, Solid has Overview `0` and Parity `-1`.
+
+None of the three is an overlay and none is a screenshot-only artefact, which
+settles the ticket's own warning: there are at least three families here.
+
+### Step 2, #576 candidate 2 — ruled out. The region is absent, not renamed
+
+The conductor asked for `[role=region]` alone rather than the class and data
+attributes my step-1 probe used, because a renamed-but-present landmark would
+hide from both. Same preview build, same page, one click on the Solid trigger,
+then a dump of every `[role="region"]` and every `[role="alertdialog"]` on the
+page with their names:
+
+| side  | `[role=region]` | `[role=alertdialog]` | `<ol>` | body children |
+| ----- | --------------: | -------------------: | -----: | ------------: |
+| solid | 0               | 0                    | 0      | 6             |
+| react | 1, `aria-label="Notifications"`, `data-react-aria-top-layer` | 1 | 1 | 7 |
+
+The only toast-classed nodes on the Solid side before and after the click are
+the two `comparison-toast-stage` wrappers, which are the comparison harness's
+own. So this is #576 candidate 1 or 3 — nothing renders — and **not** candidate
+2. The accessible name has not moved, so nothing here argues for changing the
+library's name or the test's expectation, and no upstream S2 name needs to be
+quoted.
+
+Where that leaves the cause: `ToastRegion` is gated on
+`isHydrated() && hasToasts()` (`packages/solidaria-components/src/Toast.tsx:379`).
+`useIsHydrated()` is the same gate `Popover` and `Modal` use, and both pass in
+the same runs, so the hydration half is unlikely. `globalToastQueue` is
+constructed with no `wrapUpdate`, so `notify` fans out synchronously — there is
+no view-transition deferral to blame on this host. That leaves the queue never
+receiving the toast, or `visibleToasts()` never re-reading, or the portal never
+attaching. Unproven; next run decides between them. Note that every
+`solid-spectrum` Toast unit test renders with `portal={false}`, so the portal
+path the browser actually takes is the one with no coverage.
