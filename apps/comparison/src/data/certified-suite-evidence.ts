@@ -30,17 +30,37 @@ export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
 };
 
 /**
- * What the certified suite exercises, as git pathspecs: a change here can move
- * a certified result, a change anywhere else (`.claude`, `.agents`, `docs`,
- * `scripts`, `.github`, READMEs) cannot. This file is excluded, or the commit
- * that records a run would invalidate the run it records. Ticket #574.
+ * What can move a certified verdict, as git pathspecs. The run is much wider
+ * than the components it certifies: `comparison:test:certified` builds the six
+ * workspace packages and the comparison app, resolves the pinned React oracle
+ * from `apps/comparison/package.json` and `pnpm-lock.yaml`, runs `e2e/certified`
+ * under `apps/comparison/playwright.config.ts`, and only becomes a verdict
+ * through `apps/comparison/scripts/**` (the shard check, the merger, the
+ * waivers, the budgets), `scripts/check-certified-case-floor.mjs` and the shard
+ * matrix in `.github/workflows/certification-gates.yml`.
+ *
+ * Naming those by hand is how the first version of this rule came to cover
+ * component source and fixtures only, and a postcard survived the commit that
+ * repaired the merger (#574, audit finding `r2-guards-1`). So the rule fails
+ * closed: everything is covered, a new directory invalidates by default, and a
+ * path leaves the set only on a reviewed line below. Ticket #574.
  */
 export const certifiedSuiteCoveredPathspecs = [
-  ":(glob)packages/*/src/**",
-  ":(glob)apps/comparison/src/**",
-  ":(glob)apps/comparison/e2e/**",
-  ":(exclude)apps/comparison/src/data/certified-suite-evidence.ts",
-  ":(exclude,glob)**/README*",
+  // The whole tree, minus the four lines under it.
+  ":(top,glob)**",
+  // The postcard itself, or the commit that records a run would invalidate the
+  // run it records — the unsatisfiable gate this ticket opened on.
+  ":(top,exclude)apps/comparison/src/data/certified-suite-evidence.ts",
+  // Prose. No step of the run reads markdown, and every ticket, receipt,
+  // playbook, changeset, ADR and README here is `*.md`.
+  ":(top,exclude,glob)**/*.md",
+  // The board and the receipts: tickets, plans, logs, command output and
+  // one-off probes, written after a run and never read by one.
+  ":(top,exclude,glob).claude/**",
+  ":(top,exclude,glob).agents/**",
+  // The docs site. The certified run builds `packages/*` and `apps/comparison`
+  // and serves the comparison preview; it never builds or loads `apps/web`.
+  ":(top,exclude,glob)apps/web/**",
 ] as const;
 
 export interface PostcardGitProbe {

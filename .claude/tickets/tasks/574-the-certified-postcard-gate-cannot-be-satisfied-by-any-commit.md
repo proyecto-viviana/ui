@@ -41,6 +41,11 @@ history:
       at: 2026-09-21,
       note: "placed at stage S0-d of #544's path, which had scheduled no ticket for this step. Two corrections come with the placement. The step number is dropped from the title and the body: it was 239 at `96376e9a`, it is `certification-gates.yml:244` at HEAD `2599623e` after `13080aa0` and `7ec2a732` shifted the file, and the notes above keep the number they were read at. And the gate's state is re-measured: `git merge-base --is-ancestor 0f1e1198 HEAD` exits 0 and `git diff --name-only` over `certifiedSuiteCoveredPathspecs` lists **2577** files, so the currency rule fails for the honest reason and the step blocks. Nothing here clears it - the pin needs a fresh full certified run, which is #578 at S0-e - so what is owed before that pin is the `r2-guards/r2-guards-1` widening and the `r2-guards/r2-guards-2` test, or the pin is recorded under a rule that cannot see the runner, the merger or the pinned oracle",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the covered-path set now fails closed, which answers round-2 finding `r2-guards-1`. `certifiedSuiteCoveredPathspecs` was component source and fixtures; it is now the whole tree (`:(top,glob)**`) minus five reviewed lines, each carrying why it cannot decide - the postcard file itself (the witness, unchanged), `**/*.md` (no step of the run reads markdown, and every ticket, receipt, playbook, changeset, ADR and README here is md), `.claude/**` and `.agents/**` (board and receipts, written after a run and never read by one), and `apps/web/**` (the run builds `packages/*` and `apps/comparison` and serves the comparison preview; it never builds web). Everything the finding named is inside the set by default now - `apps/comparison/scripts/**`, `playwright.config.ts`, `astro.config.mjs`, `apps/comparison/package.json`, `pnpm-lock.yaml`, `packages/*/package.json` and their vite configs, `apps/comparison/vendor/**`, `scripts/check-certified-case-floor.mjs`, `.github/workflows/certification-gates.yml` - and so is any directory added later. Two corrections the tree made to the brief. The waiver list `apps/comparison/e2e/certified-waivers.json` was already covered by `apps/comparison/e2e/**`, so it is the one decisive row that was green before the widening: 9 of 10, not 10. And `:(top,glob)**` is explicitness, not behaviour - measured in a scratch repo, git implies all paths when a pathspec list is exclusions only, so dropping that line changes nothing. Tests, all in the real-git temp repo of `certified-postcard-git.test.ts`: a decisive table of 10 (merger, shard check, waiver list, case floor, playwright config, astro config, the oracle pin, the lockfile, a package build config, the workflow), each asserting its file is named in the stale reason, and an exclusion table of 5. `vp test run apps/comparison/src/data/certified-postcard-git.test.ts --maxWorkers=2` on the old list EXIT=1, 9 failed / 9 passed; on the new one EXIT=0, 19 passed, and 30 passed with `acceptance-schema.test.ts` beside it. Mutation, restoring from a scratchpad copy each time: drop the postcard exclusion and only the record-the-run case fails; drop `**/*.md` and only the two prose rows fail; drop `.claude/**`, `.agents/**` or `apps/web/**` and only that row fails. Real history: `git diff --name-only 9e0df73c^ 9e0df73c` over the new list names `apps/comparison/scripts/merge-certified-reports.ts` where the old list gave 0 - the finding's own example - and 9 of the last 20 commits still change 0 covered paths (`56c0751c`, `f8c59204`, `503e50a0`), so the rule stays satisfiable. Not re-pinned, deliberately: `vp run comparison:report:parity:strict` EXIT=1 today with the postcard the sole always-blocking gap, 3197 covered paths changed since `0f1e1198`, the sample now naming `.github/workflows/certification-gates.yml` rather than a `.gitkeep`. The pin needs a real full certified run, which is #578 at S0-e, so this stays in-progress and step `certification-gates.yml:244` stays red",
+    }
 ---
 
 ## Scope
@@ -123,6 +128,15 @@ Covered, because these are what the suite exercises: `packages/*/src/**`,
 `apps/comparison/src/**` and `apps/comparison/e2e/**`. Not covered, because a
 change there cannot alter a certified result: `.claude/**`, `.agents/**`,
 `docs/**`, `scripts/**`, `.github/**`, and every `README`.
+
+> **Superseded 2026-09-21 by the round-2 finding `r2-guards-1`, for this
+> paragraph only; shape 1 itself stands.** That list held only what the suite
+> _exercises_, and left out everything that turns a run into a verdict — the
+> merger, the shard check, the waivers, the runner's config, the pinned oracle,
+> the lockfile and the workflow that shards the job, three of which sit under
+> the `scripts/**` and `.github/**` this paragraph calls harmless. The rule now
+> fails closed: the whole tree is covered, and a path leaves only on a reviewed
+> line in `certifiedSuiteCoveredPathspecs`. See the history note of that date.
 
 **And one exclusion that is the whole reason the first attempt failed:**
 `apps/comparison/src/data/certified-suite-evidence.ts` is itself not a covered
