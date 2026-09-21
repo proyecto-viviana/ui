@@ -66,15 +66,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Deliberately placed here rather than in the certification gates: it
-      # simulates a publish and dirties the tree, which is safe on a fresh
-      # release checkout and not somewhere a contributor wants it. A package
-      # whose source moved without a changeset
-      # keeps its published version, so npm serves a stale tarball under a
-      # version consumers already resolve. That is invisible in-repo and only
-      # breaks off-workspace, which is how ui@0.6.0 shipped importing a symbol
-      # its pinned solidaria-components tarball did not have. Failing here stops
-      # the release instead of shipping the skew.
+      # A git diff plus one read of the registry. It simulates no publish,
+      # builds nothing and writes nothing, so the tree is as clean after this
+      # step as before it — the comment that stood here justified the step's
+      # placement with a publish simulation the script has never done (#598).
+      # For each publishable package it asks the registry what it serves under
+      # the release tag, then diffs `src` and `package.json` against the commit
+      # that set that version. Two failures: source no changeset will ever
+      # publish, and a version bump the registry never received with work
+      # stacked on top of it. Both are invisible in-repo — apps/web and
+      # `pack:local-chain` build against current source — and break only
+      # off-workspace, which is how ui@0.6.0 shipped importing a symbol its
+      # pinned solidaria-components tarball did not have.
+      #
+      # It runs here, immediately before the publish it guards, because the
+      # registry is half of the comparison: an answer taken on a pull request
+      # hours ago describes a registry state that has since moved.
       - name: guard publish-drift
         run: pnpm run guard:publish-drift
 

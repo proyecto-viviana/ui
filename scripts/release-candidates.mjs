@@ -9,6 +9,10 @@
  * that named one ignored package and none of the five real candidates. A guard
  * that reads its own subjects from a list can only ever check the packages
  * somebody remembered. It reads them from the tree now, through here.
+ *
+ * The live registry read lives here for the same reason: two guards ask the
+ * registry what it serves, and a second copy of the URL, the env variable and
+ * the error shape is how the two answers drift apart (#598).
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -42,22 +46,92 @@ export function releasablePackages(root = ".") {
     .filter((pkg) => pkg && !pkg.private && !ignored.has(pkg.name));
 }
 
-/** Package names named in the frontmatter of every pending changeset. */
-export function pendingChangesetPackages(root = ".") {
+/**
+ * Every pending changeset, by its changeset id and the packages it names.
+ *
+ * The id matters in prerelease mode: `.changeset/pre.json` lists the changesets
+ * a prerelease bump has already consumed, and those files stay in the directory
+ * until `pre exit`. A guard that counts files sees them as still pending
+ * forever (#598).
+ */
+export function pendingChangesets(root = ".") {
   const dir = join(root, CHANGESET_DIR);
-  if (!existsSync(dir)) return new Set();
+  if (!existsSync(dir)) return [];
 
-  const named = new Set();
+  const found = [];
   for (const file of readdirSync(dir)) {
     if (!file.endsWith(".md") || file === "README.md") continue;
     const frontmatter = readFileSync(join(dir, file), "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
     if (!frontmatter) continue;
+    const names = new Set();
     for (const line of frontmatter[1].split("\n")) {
       const match = line.match(
         /^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/,
       );
-      if (match) named.add(match[1]);
+      if (match) names.add(match[1]);
     }
+    found.push({ id: file.replace(/\.md$/, ""), names });
+  }
+  return found;
+}
+
+/** Package names named in the frontmatter of every pending changeset. */
+export function pendingChangesetPackages(root = ".") {
+  const named = new Set();
+  for (const changeset of pendingChangesets(root)) {
+    for (const name of changeset.names) named.add(name);
   }
   return named;
+}
+
+/** The prerelease this tree is in, or null. Written by `changeset pre enter`. */
+export function preRelease(root = ".") {
+  const file = join(root, CHANGESET_DIR, "pre.json");
+  if (!existsSync(file)) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+  if (parsed?.mode !== "pre" || typeof parsed.tag !== "string") return null;
+  return { tag: parsed.tag, consumed: new Set(parsed.changesets ?? []) };
+}
+
+/**
+ * The registry a publish from this tree would reach.
+ *
+ * `npm_config_registry` is npm's own variable — the one `changeset publish`
+ * itself obeys — so the guards measure against the registry they would publish
+ * to, and the contract tests can hand them a registry they control.
+ */
+export const registry = (process.env.npm_config_registry ?? "https://registry.npmjs.org").replace(
+  /\/+$/,
+  "",
+);
+
+const packuments = new Map();
+
+/** One live registry read per package name, shared by every guard in the process. */
+export function packument(name) {
+  if (!packuments.has(name)) packuments.set(name, fetchPackument(name));
+  return packuments.get(name);
+}
+
+async function fetchPackument(name) {
+  const url = `${registry}/${name.replace("/", "%2f")}`;
+  try {
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      return {
+        ok: false,
+        url,
+        status: response.status,
+        why: `${url} → ${response.status} ${response.statusText}`,
+      };
+    }
+    return { ok: true, url, status: response.status, body: await response.json() };
+  } catch (error) {
+    return { ok: false, url, status: 0, why: `${url} → ${error.message}` };
+  }
 }

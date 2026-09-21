@@ -29,14 +29,10 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { pendingChangesetPackages, releasablePackages } from "./release-candidates.mjs";
+import { packument, pendingChangesetPackages, releasablePackages } from "./release-candidates.mjs";
 
 const root = process.cwd();
 const configPath = path.join(root, "scripts", "release-prerequisites.json");
-const registry = (process.env.npm_config_registry ?? "https://registry.npmjs.org").replace(
-  /\/+$/,
-  "",
-);
 const PROVENANCE_PREDICATE = "https://slsa.dev/provenance/v1";
 const ATTESTATION_FIELDS = ["by", "at", "why", "says"];
 
@@ -68,26 +64,9 @@ function readJson(file, description) {
   }
 }
 
-/** One live read per package, shared by that package's prerequisites. */
-const packuments = new Map();
-
-function packument(name) {
-  if (!packuments.has(name)) packuments.set(name, fetchPackument(name));
-  return packuments.get(name);
-}
-
-async function fetchPackument(name) {
-  const url = `${registry}/${name.replace("/", "%2f")}`;
-  try {
-    const response = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!response.ok) {
-      return { ok: false, url, why: `${url} → ${response.status} ${response.statusText}` };
-    }
-    return { ok: true, url, body: await response.json() };
-  } catch (error) {
-    return { ok: false, url, why: `${url} → ${error.message}` };
-  }
-}
+// One live read per package, shared by that package's prerequisites — and, in
+// the same process, by `check-publish-drift.mjs`. Both live in
+// `release-candidates.mjs` (#598).
 
 const verifiers = {
   /** The name exists on the registry we publish to, and serves a `latest`. */

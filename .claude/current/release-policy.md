@@ -98,6 +98,16 @@ direct push to `main` the changeset is already in the tree beside the change it
 describes, so the push path is held by `guard:publish-drift` instead, which fails
 any unreleased `src` or manifest change no pending changeset publishes.
 
+That guard takes its boundary from the registry, not from the tree's account of
+itself (#598). It reads what each publishable package is served under the
+release tag — the prerelease tag while `.changeset/pre.json` says `pre`, and an
+unreadable registry is refused rather than passed — and fails a version the
+registry never received once a changeset or a source change is stacked on top
+of it. A bump with nothing stacked on it is the commit the release job publishes
+from, and passes. A pending changeset excuses unreleased source, because the
+next bump carries it; it never excuses an unpublished bump, which is what it is
+queued on top of.
+
 ## GitHub automation
 
 `Release` no longer races the evidence workflows on every push. A successful
