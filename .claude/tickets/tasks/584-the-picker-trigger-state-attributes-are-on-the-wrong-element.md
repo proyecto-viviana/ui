@@ -4,12 +4,17 @@ type: task
 title: "The picker trigger's state attributes are on the wrong element, and half of them serialise to an empty string"
 created: 2026-09-21
 parent: 544
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-21,
       note: "graded by the conductor from shard 5 of Certification Gates run 35556441049. Two D13 rows, one file, and that file already contains the correct idiom forty lines below the wrong one. Not folded into #497: that one is the combobox checkmark accent and this is Select's data attributes",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: 'attribute slice landed in Select.tsx; D13 not yet green, three more causes named below. Root data-* go through dataAttr. The trigger drops data-open (createSelect''s triggerProps stamp it too, stripped in cleanTriggerProps) and takes data-focused from its own createFocusRing, as RAC''s trigger Button does; the state-level isFocused stays on the root. The option''s data-focus-visible now comes from its own ring (RAC useOption), not the trigger''s, which blurs once the option takes focus. After VIVIANA_GATE=1 vp run comparison:build, certified/picker.certified is 60 passed / 2 failed, both D13 rows, and neither fails on dom any more: open-arrow step 0 fails on focus, keyboard-only step 1 on events. Mutation: with the trigger half and the option ring put back, -g D13 fails both journeys at dom again (open-arrow step 0, keyboard-only step 1). Serialisation half: with root data-open back to a raw boolean the unit suite reads data-open="" and fails 1 of 88. The new option-ring unit guard fails 1 of 89 with the old source restored. Select.test.tsx 89 passed; Select+ComboBox+solid-spectrum picker 217 passed; vp run typecheck clean. Menu, DatePicker, ComboBox and ActionBar carry no raw-boolean data-* emitters',
     }
 ---
 
@@ -78,3 +83,31 @@ Child of #544. One of the fourteen components in
 `.agents/certified-169-census-2026-09-21.md`. Sibling of #585, which is the
 same component's list box and a different cause; sibling of #497, which is the
 combobox checkmark and neither of these.
+
+## Remaining, 2026-09-21
+
+The attribute slice is proved; D13 still fails for three more reasons:
+
+1. **Pointer-open focus, open-arrow step 0 `focus`.** After a real click React's
+   active element is the selected option; ours is the popover dialog, because
+   `SelectListBox` skips `focusSafely` on a non-keyboard open (`77f0de27`).
+   Taking that skip out makes D13 match and breaks D5/D10 `arrow-roving`, where
+   React keeps the dialog. The reason is upstream: D5 opens with `clickLocator`,
+   whose scripted `el.click()` (detail 0) switches react-aria's modality to
+   `virtual`, so `focusSafely` defers and gives way to the dialog. Ours ignores
+   that click: `handleClickEvent` in
+   `packages/solidaria/src/interactions/createInteractionModality.ts:114`
+   returns on `!e.isTrusted`, which `useFocusVisible.mjs` in react-aria 3.52.0
+   does not do (`61b7b7f4`). Fixing it changes global modality for every
+   certified spec that opens through `clickLocator`, which is beyond this file.
+2. **Keyboard-open focus order, keyboard-only step 1 `events`.** React emits
+   `focusin`/`focusout` on the dialog before the option takes focus; ours
+   focuses the option directly.
+3. **Overlay motion.** With cause 1 removed, open-arrow step 0 then fails on
+   `overlay`: our popover observed mid-entry (opacity 0.41, dy 34) where React
+   reads 1 and 36. Same family as #582.
+
+`createSelect`'s triggerProps still emit invented `data-open`,
+`data-disabled` and `data-focus-visible` as raw booleans, and
+`packages/solidaria/test/createSelect.test.tsx:96` pins `data-open`.
+`SelectTrigger` strips or overrides all three; the hook itself is left alone.

@@ -774,13 +774,13 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": isFocusVisibleWithin() || undefined,
-      "data-open": isOpen() || undefined,
-      "data-disabled": resolveDisabled() || undefined,
-      "data-required": ariaProps.isRequired || undefined,
-      "data-invalid": isInvalid() || undefined,
-      "data-hovered": isHovered() || undefined,
+      "data-focused": dataAttr(isFocused()),
+      "data-focus-visible": dataAttr(isFocusVisibleWithin()),
+      "data-open": dataAttr(isOpen()),
+      "data-disabled": dataAttr(resolveDisabled()),
+      "data-required": dataAttr(ariaProps.isRequired),
+      "data-invalid": dataAttr(isInvalid()),
+      "data-hovered": dataAttr(isHovered()),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
   const RootContent = () => {
     const textSlots = {
@@ -867,7 +867,11 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   if (!context) {
     throw new Error("SelectTrigger must be used within a Select");
   }
-  const { isOpen, isFocused, isFocusVisible, isPressed, state } = context;
+  const { isOpen, isFocusVisible, isPressed, state } = context;
+  // RAC renders the trigger as a Button with its own focus ring, so its
+  // data-focused follows the button and clears once the listbox takes focus.
+  // The Select's own isFocused (state-level) stays on the root.
+  const { isFocused, focusProps: triggerFocusProps } = createFocusRing();
   let triggerRef: HTMLButtonElement | undefined;
   const setTriggerRef = (el: HTMLButtonElement) => {
     triggerRef = el;
@@ -909,12 +913,15 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   );
 
   const cleanTriggerProps = () => {
+    // createSelect also stamps data-open on the trigger; react-aria's useSelect
+    // does not, and RAC renders data-open on the Select root only.
     const {
       ref: _ref1,
       "aria-disabled": _ariaDisabled,
+      "data-open": _dataOpen,
       ...rest
     } = context.triggerProps as Record<string, unknown>;
-    return rest;
+    return mergeProps(rest, triggerFocusProps as Record<string, unknown>);
   };
   const cleanHoverProps = () => {
     const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
@@ -941,7 +948,6 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       aria-describedby={triggerAriaProps()["aria-describedby"] as string | undefined}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-open={dataAttr(isOpen())}
       data-focused={dataAttr(isFocused())}
       data-focus-visible={dataAttr(isFocusVisible())}
       data-hovered={dataAttr(isHovered())}
@@ -1392,7 +1398,9 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     () => ref(),
   );
   const isOptionFocusVisible = () =>
-    optionAria.isFocused() && (selectContext?.isFocusVisible() ?? optionAria.isFocusVisible());
+    // RAC useOption: the option's own ring, not the trigger's, which blurs
+    // once the option takes focus.
+    optionAria.isFocusVisible();
 
   const renderValues = createMemo<SelectOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),

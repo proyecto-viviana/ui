@@ -2078,3 +2078,17 @@ Virtualizer, so rows sat in flow, edge to edge, with no ListLayout inset.
   D3 6, D8 1, D9 6, D10 2); restored 26 / 0.
 - Unit twin guard in `Select.test.tsx`: defect back, 1 of 87 fails, the new
   one. Select + ComboBox + Picker suites 216 passed; typecheck clean.
+
+## #584 — picker trigger attributes, slice landed, D13 still red
+
+Root `data-*` through `dataAttr`; trigger drops `data-open`, takes
+`data-focused` from its own ring; option `data-focus-visible` from its own
+ring (RAC `useOption`). `certified/picker` 60/2, both D13, now failing at
+open-arrow step 0 `focus` and keyboard-only step 1 `events` instead of `dom`.
+Mutations: trigger+option halves back → both D13 at `dom`; raw boolean on root
+`data-open` → unit reads `""`. Three causes left, in ticket 584: pointer-open
+focus is our `createInteractionModality` ignoring untrusted clicks (upstream
+does not, and D5 depends on it), React's dialog focusin/focusout before the
+option on keyboard open, and overlay mid-entry opacity (the #582 family).
+Ticket stays in-progress. The comparison dist was last built from the
+mutated source; rebuild before the next certified run.

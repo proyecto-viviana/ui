@@ -1117,7 +1117,32 @@ describe("Select", () => {
       const trigger = screen.getByRole("button");
       await user.click(trigger);
 
-      expect(trigger).toHaveAttribute("data-open");
+      // RAC renders data-open on the Select root only, as "true" (#584).
+      const root = document.querySelector(".solidaria-Select");
+      expect(root).toHaveAttribute("data-open", "true");
+      expect(trigger).not.toHaveAttribute("data-open");
+    });
+
+    it('writes root state as "true" and releases the trigger\'s data-focused on open (#584)', async () => {
+      render(() => <TestSelect />);
+
+      const trigger = screen.getByRole("button");
+      await user.click(trigger);
+      await waitFor(() => expect(screen.getByRole("listbox")).toBeInTheDocument());
+
+      const root = document.querySelector(".solidaria-Select")!;
+      expect(root).toHaveAttribute("data-focused", "true");
+      await waitFor(() => expect(document.activeElement).not.toBe(trigger));
+      expect(trigger).not.toHaveAttribute("data-focused");
+    });
+
+    it("keyboard-opened option draws its own focus ring once the trigger blurs (#584)", async () => {
+      render(() => <TestSelect />);
+
+      await user.tab();
+      await user.keyboard("{ArrowDown}");
+      await waitFor(() => expect(document.activeElement?.getAttribute("role")).toBe("option"));
+      expect(document.activeElement).toHaveAttribute("data-focus-visible", "true");
     });
 
     it("should support controlled isOpen", () => {
