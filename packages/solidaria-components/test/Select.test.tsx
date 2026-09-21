@@ -32,6 +32,7 @@ import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-te
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Dialog } from "../src/Dialog";
 import { Text } from "../src/Text";
+import { Virtualizer } from "../src/Virtualizer";
 
 // Setup userEvent
 const user = setupUser();
@@ -87,6 +88,37 @@ describe("Select", () => {
 
       const select = document.querySelector(".solidaria-Select");
       expect(select).toBeInTheDocument();
+    });
+
+    it("wraps virtualized options in CollectionRoot and VirtualizerItem (#585)", () => {
+      // Twin of the ComboBox guard. Without the wrapping the rows stack in flow
+      // and ListLayout's padding never reaches them: S2 Picker list 16px short.
+      render(() => (
+        <Select<TestItem>
+          aria-label="Virtualized Select"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          isOpen
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <Virtualizer layout={{}} layoutOptions={{ itemSize: 20 }}>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Virtualizer>
+        </Select>
+      ));
+
+      const listbox = screen.getByRole("listbox");
+      expect(listbox.querySelector(':scope > [role="option"]')).toBeNull();
+      const content = listbox.firstElementChild as HTMLElement;
+      expect(content.getAttribute("role")).toBe("presentation");
+      const option = screen.getByRole("option", { name: "Cat" });
+      expect(option.parentElement?.getAttribute("role")).toBe("presentation");
+      expect(option.parentElement).not.toBe(content);
     });
 
     it("should render trigger with default class", () => {

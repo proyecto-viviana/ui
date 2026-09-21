@@ -81,8 +81,9 @@ import {
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
 import { ListBoxLoadMoreItem } from "./ListBox";
+import { VirtualizerItem } from "./Virtualizer";
 import { TextContext } from "./Text";
-import { useCollectionRenderer } from "./Collection";
+import { useCollectionRenderer, useCollectionRoot } from "./Collection";
 import { racIntlStrings } from "./intl";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -1080,6 +1081,14 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   });
 
   let listBoxRef: HTMLDivElement | undefined;
+  const [listBoxEl, setListBoxEl] = createSignal<HTMLDivElement | null>(null, {
+    ownedWrite: true,
+  });
+  // RAC Picker's list is a ListBox under Virtualizer, so CollectionRoot wraps
+  // every row in VirtualizerItem and ListLayout insets it (`padding: 8`). Same
+  // wiring as ComboBoxListBox; without it the rows stack in flow, edge to edge.
+  const CollectionRoot = useCollectionRoot<unknown>();
+  const isVirtualized = () => parentCollectionRenderer?.isVirtualized === true;
 
   createInteractOutside({
     ref: () => rootRef() ?? listBoxRef ?? null,
@@ -1211,7 +1220,10 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     // `li[option]`/`ul[listbox]` where the React oracle sees `div`).
     <SelectListBoxInPopoverContext value={local.isInPopover === true}>
       <div
-        ref={(el) => (listBoxRef = el)}
+        ref={(el) => {
+          listBoxRef = el;
+          setListBoxEl(el);
+        }}
         {...domProps}
         {...cleanMenuProps()}
         {...cleanListBoxProps()}
@@ -1224,24 +1236,39 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
         data-layout="stack"
         data-orientation="vertical"
       >
-        {state.collection().size === 0 && local.renderEmptyState ? (
-          <div role="option" style={{ display: "contents" }} data-empty-state>
-            {local.renderEmptyState()}
-          </div>
-        ) : (
+        <CollectionRoot collection={items()} scrollRef={() => listBoxEl()}>
           <Show
             when={local.children}
             fallback={
               <For each={items()}>
-                {(node) => <SelectOption id={node.key}>{node.textValue}</SelectOption>}
+                {(node, index) => {
+                  const item = <SelectOption id={node.key}>{node.textValue}</SelectOption>;
+                  return isVirtualized() ? (
+                    <VirtualizerItem index={index()}>{item}</VirtualizerItem>
+                  ) : (
+                    item
+                  );
+                }}
               </For>
             }
           >
             <For each={items()}>
-              {(node) => (node.value != null ? local.children!(node.value) : null)}
+              {(node, index) => {
+                const child = node.value != null ? local.children!(node.value) : null;
+                return isVirtualized() ? (
+                  <VirtualizerItem index={index()}>{child}</VirtualizerItem>
+                ) : (
+                  child
+                );
+              }}
             </For>
           </Show>
-        )}
+        </CollectionRoot>
+        {state.collection().size === 0 && local.renderEmptyState ? (
+          <div role="option" style={{ display: "contents" }} data-empty-state>
+            {local.renderEmptyState()}
+          </div>
+        ) : null}
         <Show when={local.onLoadMore}>
           <ListBoxLoadMoreItem
             onLoadMore={local.onLoadMore!}

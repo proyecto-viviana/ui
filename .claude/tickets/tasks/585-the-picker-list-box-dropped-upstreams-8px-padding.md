@@ -4,12 +4,17 @@ type: task
 title: "The picker list box dropped upstream's 8px padding, and it costs 21 certified rows across five drivers"
 created: 2026-09-21
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-21,
       note: "graded by the conductor from shard 5 of Certification Gates run 35556441049. These 21 rows were disowned from #497 as a different defect and had no ticket of their own. They are the largest single-cause block left in the roster after #581's 44, and the cause is one missing style declaration",
+    }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: "cause corrected before the fix. The style block is not it: upstream Picker styles its list with ComboBox's `listbox` (`Picker.tsx:71`, `:515`), not `menu` (`:231`, exported, unused by Picker), and `listbox` has no padding and the same overflowY/overflowX split we have - so `pickerListBox` already matches upstream and is untouched. Adding `padding: 8` there was tried and measured: D3 and D8 went green but D1/D9/D10 moved to a new diff, React's listbox `padding: 0px` against ours `8px`. A live DOM probe then showed the real defect: React's rows sit in a 208x112 `role=presentation` content div, each in an absolute VirtualizerItem at `top/left: 8px`, width 192; ours were bare in-flow children of `role=listbox`, 208 wide, no content div. `SelectListBox` (`solidaria-components/src/Select.tsx`) never consumed the parent Virtualizer's CollectionRoot, so ListLayout's inset never reached a row. 76f0e267 wired this for ComboBox and Picker in its message but only ComboBoxListBox in its diff. Fix: the ComboBoxListBox wiring, copied - `useCollectionRoot`, rows in `VirtualizerItem` when virtualized, empty state outside the root. After `VIVIANA_GATE=1 vp run comparison:build`, `certified/picker.certified` is 60 passed / 2 failed, the 2 being `Picker trigger` D13 open-arrow-enter-reopen-scroll-escape and keyboard-only, which are #584 and red before this change too. Mutation check, rebuilt both ways, `-g 'Picker list'`: defect back, 5 passed / 21 failed - D1 6, D3 6, D8 1, D9 6, D10 2, this ticket's 21 to the row; restored, 26 passed / 0 failed. Unit guard added to Select.test.tsx as the twin of ComboBox.test.tsx's; with the defect back exactly 1 of 87 fails, the new test. Select + ComboBox + Picker suites 216 passed; `vp run typecheck` clean",
     }
 ---
 

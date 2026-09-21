@@ -2060,3 +2060,21 @@ row focus-visible from the page-global keyboard modality ANDed with virtual
 focus, as the field group does at `:672` — is worse, 4 passed / 23 failed with
 D1 and D3 all red again plus D6, which rules it out. Handed back rather than
 landed: it trades a proven green for a proven red.
+
+## #585 — picker list, 21 rows
+
+The brief named the wrong site. `pickerListBox` already mirrors upstream: Picker
+uses ComboBox's `listbox` style, not `menu`, and that has no padding and the
+same overflow split. Tried the brief's patch first and measured it: D3/D8 green,
+D1/D9/D10 red on a new diff (React listbox `padding: 0px`, ours `8px`) —
+reverted. A DOM probe found the cause: `SelectListBox` ignored the parent
+Virtualizer, so rows sat in flow, edge to edge, with no ListLayout inset.
+76f0e267 fixed this for ComboBox only. Copied the ComboBoxListBox wiring into
+`Select.tsx`.
+
+- `certified/picker.certified`: 60 passed / 2 failed (both `Picker trigger`
+  D13, #584, red before too).
+- Mutation, `-g "Picker list"`, rebuilt each way: defect 5 / 21 failed (D1 6,
+  D3 6, D8 1, D9 6, D10 2); restored 26 / 0.
+- Unit twin guard in `Select.test.tsx`: defect back, 1 of 87 fails, the new
+  one. Select + ComboBox + Picker suites 216 passed; typecheck clean.
