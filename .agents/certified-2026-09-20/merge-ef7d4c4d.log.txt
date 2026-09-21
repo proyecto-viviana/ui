@@ -1,0 +1,976 @@
+﻿2026-09-21T00:36:08.9492730Z Current runner version: '2.337.0'
+##[group]Runner Image Provisioner
+Hosted Compute Agent
+Version: 20260828.587
+Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+Build Date: 2026-08-28T16:44:25Z
+Worker ID: {229035a6-49c9-4012-abd5-72b174f16782}
+Azure Region: eastus
+##[endgroup]
+##[group]Operating System
+Ubuntu
+24.04.5
+LTS
+##[endgroup]
+##[group]Runner Image
+Image: ubuntu-24.04
+Version: 20260907.300.1
+Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+##[endgroup]
+##[group]GITHUB_TOKEN Permissions
+Contents: read
+Metadata: read
+##[endgroup]
+Secret source: Actions
+Cache mode: write
+Prepare workflow directory
+Prepare all required actions
+Getting action download info
+Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+Download action repository 'pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1' (SHA:b906affcce14559ad1aafd4ab0e942779e9f58b1)
+Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Download action repository 'actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+Complete job name: certified report
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+with:
+  repository: proyecto-viviana/ui
+  token: ***
+  ssh-strict: true
+  ssh-user: git
+  persist-credentials: true
+  clean: true
+  sparse-checkout-cone-mode: true
+  fetch-depth: 1
+  fetch-tags: false
+  show-progress: true
+  lfs: false
+  submodules: false
+  set-safe-directory: true
+  allow-unsafe-pr-checkout: false
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+##[endgroup]
+Syncing repository: proyecto-viviana/ui
+##[group]Getting Git version info
+Working directory is '/home/runner/work/ui/ui'
+[command]/usr/bin/git version
+git version 2.55.0
+##[endgroup]
+Temporarily overriding HOME='/home/runner/work/_temp/8591cc45-e627-48c5-aa7c-87451a62f79c' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/ui/ui
+Deleting the contents of '/home/runner/work/ui/ui'
+##[group]Initializing the repository
+[command]/usr/bin/git init /home/runner/work/ui/ui
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+Initialized empty Git repository in /home/runner/work/ui/ui/.git/
+[command]/usr/bin/git remote add origin https://github.com/proyecto-viviana/ui
+##[endgroup]
+##[group]Disabling automatic garbage collection
+[command]/usr/bin/git config --local gc.auto 0
+##[endgroup]
+##[group]Setting up auth
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+[command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+[command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+##[endgroup]
+##[group]Fetching the repository
+[command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ef7d4c4d7525eec7f4f0bafdfb7e2c066bbcc84e:refs/remotes/origin/main
+From https://github.com/proyecto-viviana/ui
+ * [new ref]         ef7d4c4d7525eec7f4f0bafdfb7e2c066bbcc84e -> origin/main
+##[endgroup]
+##[group]Determining the checkout info
+##[endgroup]
+[command]/usr/bin/git sparse-checkout disable
+[command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+##[group]Checking out the ref
+[command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Switched to a new branch 'main'
+branch 'main' set up to track 'origin/main'.
+##[endgroup]
+[command]/usr/bin/git log -1 --format=%H
+ef7d4c4d7525eec7f4f0bafdfb7e2c066bbcc84e
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+##[group]Run pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+with:
+  dest: ~/setup-pnpm
+  run_install: null
+  cache: false
+  cache_dependency_path: pnpm-lock.yaml
+  package_json_file: package.json
+  standalone: false
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+##[endgroup]
+##[group]Running self-installer...
+(node:2252) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1
++
+Progress: resolved 1, reused 0, downloaded 1, added 1, done
+
+dependencies:
++ pnpm 11.22.0 (12.5.1 is available)
+
+Done in 871ms
+##[endgroup]
+Installation Completed!
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+with:
+  node-version: 22
+  cache: pnpm
+  always-auth: false
+  check-latest: false
+  token: ***
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+  PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+##[endgroup]
+Found in cache @ /opt/hostedtoolcache/node/22.23.2/x64
+(node:2267) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+##[group]Environment details
+node: v22.23.2
+npm: 10.9.8
+yarn: 1.22.22
+##[endgroup]
+[command]/home/runner/setup-pnpm/node_modules/.bin/pnpm store path --silent
+/home/runner/setup-pnpm/node_modules/.bin/store/v11
+Cache hit for: node-cache-Linux-x64-pnpm-5f41f8645ba9619ad719f6fbd11c4facc787b093cd21314d4261c3b820415649
+(node:2267) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Received 226492416 of 255738764 (88.6%), 215.8 MBs/sec
+Received 255738764 of 255738764 (100.0%), 213.6 MBs/sec
+Cache Size: ~244 MB (255738764 B)
+[command]/usr/bin/tar -xf /home/runner/work/_temp/3a4a1dcf-051f-45a6-a029-a3ec2e5fdd40/cache.tzst -P -C /home/runner/work/ui/ui --use-compress-program unzstd
+Cache restored successfully
+Cache restored from key: node-cache-Linux-x64-pnpm-5f41f8645ba9619ad719f6fbd11c4facc787b093cd21314d4261c3b820415649
+##[group]Run pnpm install --frozen-lockfile
+[36;1mpnpm install --frozen-lockfile[0m
+shell: /usr/bin/bash -e {0}
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+  PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+##[endgroup]
+Scope: all 12 workspace projects
+? Verifying lockfile against supply-chain policies (897 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +648
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 648, reused 232, downloaded 0, added 0
+Progress: resolved 648, reused 632, downloaded 0, added 0
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/runner/setup-pnpm/node_modules/.bin/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 648, reused 648, downloaded 0, added 39
+Progress: resolved 648, reused 648, downloaded 0, added 490
+Progress: resolved 648, reused 648, downloaded 0, added 648, done
+✓ Lockfile passes supply-chain policies (897 entries in 6.5s)
+.../node_modules/@swc/core postinstall$ node postinstall.js
+.../node_modules/@swc/core postinstall: Done
+
+dependencies:
++ gzip-size 7.0.0
+
+devDependencies:
++ @changesets/changelog-github 1.0.0
++ @changesets/cli 3.0.1
++ @solidjs/diagnostics 2.0.0-rc.9
++ @solidjs/h 2.0.0-rc.9
++ @solidjs/testing-library 1.0.0-beta.3
++ @solidjs/vite-plugin 3.0.0-next.44
++ @solidjs/web 2.0.0-rc.9
++ @testing-library/jest-dom 6.9.1
++ @testing-library/user-event 14.6.5
++ @tsdown/css 0.22.14
++ @types/node 26.2.0
++ axe-core 4.13.0
++ jsdom 29.1.1
++ rimraf 6.1.3
++ solid-js 2.0.0-rc.9
++ tsx 4.23.12
++ typescript 6.0.3
++ unplugin-parcel-macros 0.2.0
++ vite <- @voidzero-dev/vite-plus-core 0.2.9
++ vite-plus 0.2.9
++ wrangler 4.124.0
+
+Done in 10.7s using pnpm v11.22.0
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+##[group]Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+with:
+  pattern: certified-shard-*
+  path: certified-shards
+  merge-multiple: false
+  repository: proyecto-viviana/ui
+  run-id: 35546816816
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+  PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+##[endgroup]
+(node:2354) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Found 10 artifact(s)
+Filtering artifacts by pattern 'certified-shard-*'
+Preparing to download the following artifacts:
+- certified-shard-5 (ID: 10617790433, Size: 112122007, Expected Digest: sha256:4776df522da47e98e4aec0de6d54ea6e3c61e174dae18c7571e86eaedc3728df)
+- certified-shard-2 (ID: 10617465871, Size: 63503369, Expected Digest: sha256:6493071698fc2cb504a8f19d232d2e7c2e99500467fb78d6e4cf400028d403b3)
+- certified-shard-8 (ID: 10617311634, Size: 139961763, Expected Digest: sha256:cf02356d69248bfbd676910025fe8290a33e51a9d3f0a021587c51d59583faad)
+- certified-shard-1 (ID: 10617305451, Size: 12167280, Expected Digest: sha256:4bb9c7793a80e1b0d30601eade7d4204e93fd27d260bf84bc3bb53b3926ecf36)
+- certified-shard-7 (ID: 10617195473, Size: 4030000, Expected Digest: sha256:f6ea3bff88819daed13bc0ff2744e6e65fffffddcbaafd66fe93c85b91ec553a)
+- certified-shard-3 (ID: 10616967720, Size: 152959356, Expected Digest: sha256:7cf113f4c30dab44074ca24a63bfa11cfc2c74adb1c16b5b068d5d3720d2714c)
+- certified-shard-4 (ID: 10616844856, Size: 20327490, Expected Digest: sha256:83d155fc6cea39ca23c699a14c64f350e2acf7940064e4c285cfdffc9aae1562)
+- certified-shard-6 (ID: 10615864987, Size: 11344479, Expected Digest: sha256:75a866a4e5fd41c977dc7ee0938d8cbf477907ab14ba4e8a3a38fc8d1b313e83)
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-5ea34fd3-5ab1-51ea-881b-a3174c5ac2de/artifacts/5a8358294ccf16e716f812232160907f2dffd2fcb45c0e20526030615b8cc15f.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-5
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-700cfd8d-c4ed-5ed9-8c5f-65c151f33630/artifacts/229e4970a4f9a08a14b1344ebf88d2311de8ae32727010b3ceea9c7b92bfa7ee.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-8
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-03d01952-1dcb-5947-af1a-5ade311d8587/artifacts/b08c4b444acd764a094485b08ed4d91613e8a8132c09cc8940d01e99b70dac53.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-4
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-797751e1-dcd7-586a-bc9a-c96c0fb37a0b/artifacts/9ff6dc9959f378e2a6bffdeb84b78794bf9a96456553af01490fc1a362495a88.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-2
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-276b7bab-39ba-5aaa-aee0-7b7aed8428b5/artifacts/a53bbb18eb4398af56e4c67859eedbcb071e055508cae6e1adcc93848b9cfde7.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-1
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-9655c483-a325-569a-b15a-d417ab29aadb/artifacts/346f3f7baac3c8f817fc6a4b2b77b050e9c9356473a5bcb56c2c2d9c4a9eb86d.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-7
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-6d5048fa-e5dd-59be-afaf-b7a9befba27d/artifacts/cd2f78c6a6c810add1a3b2e84c53cb325597d926a59cd34a9f6261e8f3adae9d.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-3
+Redirecting to blob download url: https://productionresultssa1.blob.core.windows.net/actions-results/de23703a-1fa7-4ed2-8654-a0d9d054538d/workflow-job-run-d2150426-0ae6-51a1-9bba-adc3e169f6e7/artifacts/d596f61a468e56b5e393b6cbf3bf2b1e915c62ccdf3425ed10509616a181c502.zip
+Starting download of artifact to: /home/runner/work/ui/ui/certified-shards/certified-shard-6
+(node:2354) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+SHA256 digest of downloaded artifact is f6ea3bff88819daed13bc0ff2744e6e65fffffddcbaafd66fe93c85b91ec553a
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 75a866a4e5fd41c977dc7ee0938d8cbf477907ab14ba4e8a3a38fc8d1b313e83
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 4bb9c7793a80e1b0d30601eade7d4204e93fd27d260bf84bc3bb53b3926ecf36
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 83d155fc6cea39ca23c699a14c64f350e2acf7940064e4c285cfdffc9aae1562
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 6493071698fc2cb504a8f19d232d2e7c2e99500467fb78d6e4cf400028d403b3
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 4776df522da47e98e4aec0de6d54ea6e3c61e174dae18c7571e86eaedc3728df
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is cf02356d69248bfbd676910025fe8290a33e51a9d3f0a021587c51d59583faad
+Artifact download completed successfully.
+SHA256 digest of downloaded artifact is 7cf113f4c30dab44074ca24a63bfa11cfc2c74adb1c16b5b068d5d3720d2714c
+Artifact download completed successfully.
+Total of 8 artifact(s) downloaded
+Download artifact has finished successfully
+##[group]Run pnpm exec tsx apps/comparison/scripts/merge-certified-reports.ts certified-shards
+[36;1mpnpm exec tsx apps/comparison/scripts/merge-certified-reports.ts certified-shards[0m
+shell: /usr/bin/bash -e {0}
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+  PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+##[endgroup]
+## Certified suite — component × driver
+
+This is the recertification bar. Pair and contract jobs in this workflow are **floors**, not acceptance.
+
+Revision: `ef7d4c4d7525eec7f4f0bafdfb7e2c066bbcc84e`.
+
+Run status: `failed`.
+
+Totals: **2004 passed**, **169 failed**, **4 skipped**, **0 waived**, **0 flaky**.
+
+| Component | Driver | Passed | Failed | Skipped | Waived |
+| --- | --- | ---: | ---: | ---: | ---: |
+| accordion | D5 | 1 | 0 | 0 | 0 |
+| accordion | D6 | 2 | 0 | 0 | 0 |
+| actionbar | D5 | 1 | 0 | 0 | 0 |
+| actionbar | D6 | 3 | 0 | 0 | 0 |
+| actionbutton | D1 | 10 | 0 | 0 | 0 |
+| actionbutton | D2 | 2 | 0 | 0 | 0 |
+| actionbutton | D3 | 10 | 0 | 0 | 0 |
+| actionbutton | D4 | 12 | 0 | 0 | 0 |
+| actionbutton | D5 | 1 | 0 | 0 | 0 |
+| actionbutton | D6 | 3 | 0 | 0 | 0 |
+| actionbutton | D7 | 6 | 0 | 0 | 0 |
+| actionbutton | D8 | 4 | 0 | 0 | 0 |
+| actiongroup | D5 | 1 | 0 | 0 | 0 |
+| actiongroup | D6 | 4 | 0 | 0 | 0 |
+| actiongroup | D10 | 1 | 0 | 0 | 0 |
+| actiongroup-vertical | D5 | 1 | 0 | 0 | 0 |
+| actionmenu-list | D1 | 6 | 0 | 0 | 0 |
+| actionmenu-list | D3 | 6 | 0 | 0 | 0 |
+| actionmenu-list | D5 | 1 | 0 | 0 | 0 |
+| actionmenu-list | D6 | 1 | 0 | 0 | 0 |
+| actionmenu-list | D7 | 2 | 0 | 0 | 0 |
+| actionmenu-motion | D2 | 2 | 0 | 0 | 0 |
+| actionmenu-trigger | D1 | 8 | 0 | 0 | 0 |
+| actionmenu-trigger | D3 | 8 | 0 | 0 | 0 |
+| alertdialog-ax-tree | D6 | 1 | 0 | 0 | 0 |
+| alertdialog-heading-variant-icon | D1 | 4 | 0 | 0 | 0 |
+| alertdialog-heading-variant-icon | D3 | 4 | 0 | 0 | 0 |
+| autocomplete | D5 | 3 | 0 | 0 | 0 |
+| autocomplete | D6 | 1 | 0 | 0 | 0 |
+| avatar | D1 | 10 | 0 | 0 | 0 |
+| avatar | D3 | 10 | 0 | 0 | 0 |
+| avatar | D6 | 2 | 0 | 0 | 0 |
+| badge | D1 | 16 | 0 | 0 | 0 |
+| badge | D3 | 16 | 0 | 0 | 0 |
+| badge | D6 | 2 | 0 | 0 | 0 |
+| badge | D7 | 10 | 0 | 0 | 0 |
+| breadcrumbs | D5 | 1 | 0 | 0 | 0 |
+| breadcrumbs | D6 | 1 | 0 | 1 | 0 |
+| button | D1 | 10 | 0 | 0 | 0 |
+| button | D2 | 2 | 0 | 0 | 0 |
+| button | D3 | 10 | 0 | 0 | 0 |
+| button | D4 | 8 | 0 | 0 | 0 |
+| button | D5 | 1 | 0 | 0 | 0 |
+| button | D6 | 2 | 0 | 0 | 0 |
+| button | D7 | 6 | 0 | 0 | 0 |
+| button | D8 | 3 | 0 | 0 | 0 |
+| button | D12 | 1 | 0 | 0 | 0 |
+| calendar | D1 | 12 | 0 | 0 | 0 |
+| calendar | D3 | 6 | 6 | 0 | 0 |
+| calendar | D5 | 1 | 0 | 0 | 0 |
+| calendar | D6 | 1 | 0 | 0 | 0 |
+| calendar | D7 | 6 | 0 | 0 | 0 |
+| calendar | D8 | 2 | 0 | 0 | 0 |
+| calendar | D9 | 12 | 0 | 0 | 0 |
+| calendar | D10 | 1 | 0 | 0 | 0 |
+| checkbox | D1 | 18 | 0 | 0 | 0 |
+| checkbox | D3 | 18 | 0 | 0 | 0 |
+| checkbox | D4 | 6 | 0 | 0 | 0 |
+| checkbox | D5 | 1 | 0 | 0 | 0 |
+| checkbox | D6 | 5 | 0 | 0 | 0 |
+| checkbox | D7 | 4 | 0 | 0 | 0 |
+| checkbox | D8 | 3 | 0 | 0 | 0 |
+| checkbox-native-validity | D14 | 5 | 0 | 0 | 0 |
+| checkboxgroup | D1 | 18 | 0 | 0 | 0 |
+| checkboxgroup | D3 | 18 | 0 | 0 | 0 |
+| checkboxgroup | D5 | 1 | 0 | 0 | 0 |
+| checkboxgroup | D6 | 2 | 0 | 0 | 0 |
+| checkboxgroup | D7 | 4 | 0 | 0 | 0 |
+| colorarea | D1 | 8 | 0 | 0 | 0 |
+| colorarea | D3 | 8 | 0 | 0 | 0 |
+| colorarea | D5 | 1 | 0 | 0 | 0 |
+| colorarea | D6 | 1 | 0 | 0 | 0 |
+| colorfield | D1 | 14 | 0 | 0 | 0 |
+| colorfield | D3 | 14 | 0 | 0 | 0 |
+| colorfield | D5 | 1 | 0 | 0 | 0 |
+| colorfield | D6 | 1 | 0 | 0 | 0 |
+| colorfield | D7 | 4 | 0 | 0 | 0 |
+| colorslider | D1 | 12 | 0 | 0 | 0 |
+| colorslider | D3 | 12 | 0 | 0 | 0 |
+| colorslider | D5 | 1 | 0 | 0 | 0 |
+| colorslider | D6 | 3 | 0 | 0 | 0 |
+| colorswatch | D1 | 14 | 0 | 0 | 0 |
+| colorswatch | D3 | 14 | 0 | 0 | 0 |
+| colorswatch | D6 | 3 | 0 | 0 | 0 |
+| colorswatchpicker | D1 | 12 | 0 | 0 | 0 |
+| colorswatchpicker | D3 | 12 | 0 | 0 | 0 |
+| colorswatchpicker | D5 | 1 | 0 | 0 | 0 |
+| colorswatchpicker | D6 | 3 | 0 | 0 | 0 |
+| colorwheel | D1 | 8 | 0 | 0 | 0 |
+| colorwheel | D3 | 8 | 0 | 0 | 0 |
+| colorwheel | D5 | 1 | 0 | 0 | 0 |
+| colorwheel | D6 | 1 | 0 | 0 | 0 |
+| combobox-field | D1 | 8 | 0 | 0 | 0 |
+| combobox-field | D3 | 8 | 0 | 0 | 0 |
+| combobox-field | D5 | 1 | 0 | 0 | 0 |
+| combobox-field | D6 | 1 | 0 | 0 | 0 |
+| combobox-field | D7 | 2 | 0 | 0 | 0 |
+| combobox-field | D8 | 1 | 0 | 0 | 0 |
+| combobox-field | D9 | 8 | 0 | 0 | 0 |
+| combobox-field | D10 | 3 | 0 | 0 | 0 |
+| combobox-field | D13 | 4 | 0 | 0 | 0 |
+| combobox-list | D1 | 0 | 6 | 0 | 0 |
+| combobox-list | D3 | 0 | 6 | 0 | 0 |
+| combobox-list | D5 | 1 | 0 | 0 | 0 |
+| combobox-list | D6 | 1 | 0 | 0 | 0 |
+| combobox-list | D7 | 0 | 2 | 0 | 0 |
+| combobox-list | D8 | 1 | 0 | 0 | 0 |
+| combobox-list | D9 | 0 | 6 | 0 | 0 |
+| combobox-list | D10 | 1 | 2 | 0 | 0 |
+| combobox-motion | D2 | 2 | 0 | 0 | 0 |
+| combobox-native-validity | D14 | 3 | 0 | 0 | 0 |
+| contextualhelp-content | D1 | 2 | 0 | 0 | 0 |
+| contextualhelp-content | D3 | 2 | 0 | 0 | 0 |
+| contextualhelp-content | D6 | 1 | 0 | 0 | 0 |
+| contextualhelp-content | D7 | 2 | 0 | 0 | 0 |
+| contextualhelp-trigger | D1 | 8 | 0 | 0 | 0 |
+| contextualhelp-trigger | D3 | 8 | 0 | 0 | 0 |
+| datefield | D1 | 10 | 0 | 0 | 0 |
+| datefield | D3 | 10 | 0 | 0 | 0 |
+| datefield | D5 | 5 | 0 | 0 | 0 |
+| datefield | D6 | 20 | 0 | 0 | 0 |
+| datefield | D7 | 6 | 0 | 0 | 0 |
+| datefield | D8 | 1 | 0 | 0 | 0 |
+| datefield | D9 | 10 | 0 | 0 | 0 |
+| datefield | D10 | 7 | 0 | 0 | 0 |
+| datepicker | D1 | 4 | 6 | 0 | 0 |
+| datepicker | D3 | 4 | 6 | 0 | 0 |
+| datepicker | D5 | 3 | 0 | 0 | 0 |
+| datepicker | D6 | 5 | 0 | 0 | 0 |
+| datepicker | D7 | 2 | 4 | 0 | 0 |
+| datepicker | D8 | 1 | 0 | 0 | 0 |
+| datepicker | D9 | 4 | 6 | 0 | 0 |
+| datepicker | D10 | 5 | 0 | 0 | 0 |
+| datepicker-motion | D2 | 0 | 2 | 0 | 0 |
+| datepicker-popover | D5 | 1 | 0 | 0 | 0 |
+| datepicker-popover | D6 | 1 | 0 | 0 | 0 |
+| datepicker-trigger | D4 | 1 | 0 | 0 | 0 |
+| datepicker-value-change | D4 | 2 | 0 | 0 | 0 |
+| daterangepicker | D1 | 4 | 6 | 0 | 0 |
+| daterangepicker | D3 | 4 | 6 | 0 | 0 |
+| daterangepicker | D5 | 3 | 0 | 0 | 0 |
+| daterangepicker | D6 | 5 | 0 | 0 | 0 |
+| daterangepicker | D7 | 2 | 4 | 0 | 0 |
+| daterangepicker | D8 | 1 | 0 | 0 | 0 |
+| daterangepicker | D9 | 4 | 6 | 0 | 0 |
+| daterangepicker | D10 | 5 | 0 | 0 | 0 |
+| daterangepicker-motion | D2 | 0 | 2 | 0 | 0 |
+| daterangepicker-popover | D5 | 1 | 0 | 0 | 0 |
+| daterangepicker-popover | D6 | 1 | 0 | 0 | 0 |
+| daterangepicker-trigger | D4 | 1 | 0 | 0 | 0 |
+| daterangepicker-value-change | D4 | 2 | 0 | 0 | 0 |
+| dialog-close-button | D1 | 2 | 0 | 0 | 0 |
+| dialog-close-button | D3 | 2 | 0 | 0 | 0 |
+| dialog-close-button | D4 | 2 | 0 | 0 | 0 |
+| dialog-close-button | D5 | 1 | 0 | 0 | 0 |
+| dialog-motion | D2 | 2 | 0 | 0 | 0 |
+| dialog-surface | D1 | 2 | 0 | 0 | 0 |
+| dialog-surface | D3 | 2 | 0 | 0 | 0 |
+| dialog-surface | D6 | 1 | 0 | 0 | 0 |
+| dialog-surface | D7 | 2 | 0 | 0 | 0 |
+| dialog-surface | D8 | 1 | 0 | 0 | 0 |
+| dialog-trigger | D4 | 1 | 0 | 0 | 0 |
+| disclosure | D5 | 1 | 0 | 0 | 0 |
+| disclosure | D6 | 4 | 0 | 0 | 0 |
+| divider | D1 | 14 | 0 | 0 | 0 |
+| divider | D3 | 14 | 0 | 0 | 0 |
+| divider | D6 | 2 | 0 | 0 | 0 |
+| dropzone | D1 | 6 | 0 | 0 | 0 |
+| dropzone | D3 | 6 | 0 | 0 | 0 |
+| dropzone | D6 | 1 | 0 | 0 | 0 |
+| dropzone | D7 | 6 | 0 | 0 | 0 |
+| dropzone-drop-target | D1 | 4 | 0 | 0 | 0 |
+| dropzone-drop-target | D3 | 4 | 0 | 0 | 0 |
+| dropzone-focus-visible | D1 | 2 | 0 | 0 | 0 |
+| dropzone-focus-visible | D3 | 2 | 0 | 0 | 0 |
+| fielderror | D1 | 12 | 0 | 0 | 0 |
+| fielderror | D3 | 12 | 0 | 0 | 0 |
+| fielderror | D6 | 2 | 0 | 0 | 0 |
+| fielderror | D7 | 4 | 0 | 0 | 0 |
+| form | D1 | 14 | 6 | 0 | 0 |
+| form | D3 | 14 | 6 | 0 | 0 |
+| form | D7 | 4 | 0 | 0 | 0 |
+| form-native-validity | D14 | 6 | 0 | 0 | 0 |
+| gridlist | D5 | 2 | 0 | 0 | 0 |
+| gridlist | D6 | 2 | 0 | 0 | 0 |
+| gridlist-horizontal | D5 | 1 | 0 | 0 | 0 |
+| gridlist-horizontal | D6 | 1 | 0 | 0 | 0 |
+| gridlist-horizontal | D10 | 3 | 0 | 0 | 0 |
+| icon | D1 | 4 | 0 | 0 | 0 |
+| icon | D3 | 4 | 0 | 0 | 0 |
+| icon | D6 | 2 | 0 | 0 | 0 |
+| illustration | D1 | 6 | 0 | 0 | 0 |
+| illustration | D3 | 6 | 0 | 0 | 0 |
+| illustration | D6 | 2 | 0 | 0 | 0 |
+| labeledvalue | D1 | 16 | 0 | 0 | 0 |
+| labeledvalue | D3 | 16 | 0 | 0 | 0 |
+| labeledvalue | D7 | 2 | 0 | 0 | 0 |
+| link | D1 | 12 | 0 | 0 | 0 |
+| link | D2 | 2 | 0 | 0 | 0 |
+| link | D3 | 12 | 0 | 0 | 0 |
+| link | D4 | 4 | 0 | 0 | 0 |
+| link | D5 | 1 | 0 | 0 | 0 |
+| link | D6 | 2 | 0 | 0 | 0 |
+| link | D7 | 6 | 0 | 0 | 0 |
+| link | D8 | 2 | 0 | 0 | 0 |
+| listbox | D5 | 2 | 0 | 0 | 0 |
+| listbox | D6 | 1 | 0 | 0 | 0 |
+| listbox-drag-and-drop | D6 | 1 | 0 | 0 | 0 |
+| listbox-drag-and-drop | D-reorder | 2 | 0 | 0 | 0 |
+| listview | D1 | 12 | 0 | 0 | 0 |
+| listview | D3 | 12 | 0 | 0 | 0 |
+| listview | D7 | 6 | 0 | 0 | 0 |
+| listview | D8 | 2 | 0 | 0 | 0 |
+| menu-list | D1 | 6 | 0 | 0 | 0 |
+| menu-list | D3 | 6 | 0 | 0 | 0 |
+| menu-list | D5 | 1 | 0 | 0 | 0 |
+| menu-list | D6 | 1 | 0 | 0 | 0 |
+| menu-list | D7 | 2 | 0 | 0 | 0 |
+| menu-motion | D2 | 2 | 0 | 0 | 0 |
+| meter | D1 | 20 | 0 | 0 | 0 |
+| meter | D3 | 20 | 0 | 0 | 0 |
+| meter | D6 | 3 | 0 | 0 | 0 |
+| meter | D7 | 6 | 0 | 0 | 0 |
+| meter | D12 | 1 | 0 | 0 | 0 |
+| modal-backdrop | D1 | 2 | 0 | 0 | 0 |
+| modal-box-sizes | D1 | 8 | 0 | 0 | 0 |
+| modal-box-sizes | D3 | 8 | 0 | 0 | 0 |
+| numberfield | D1 | 16 | 0 | 0 | 0 |
+| numberfield | D3 | 16 | 0 | 0 | 0 |
+| numberfield | D5 | 1 | 0 | 0 | 0 |
+| numberfield | D6 | 1 | 0 | 0 | 0 |
+| numberfield | D7 | 4 | 0 | 0 | 0 |
+| numberfield-native-validity | D14 | 9 | 0 | 0 | 0 |
+| picker-list | D1 | 0 | 6 | 0 | 0 |
+| picker-list | D3 | 0 | 6 | 0 | 0 |
+| picker-list | D5 | 1 | 0 | 0 | 0 |
+| picker-list | D6 | 1 | 0 | 0 | 0 |
+| picker-list | D7 | 2 | 0 | 0 | 0 |
+| picker-list | D8 | 0 | 1 | 0 | 0 |
+| picker-list | D9 | 0 | 6 | 0 | 0 |
+| picker-list | D10 | 1 | 2 | 0 | 0 |
+| picker-motion | D2 | 2 | 0 | 0 | 0 |
+| picker-trigger | D1 | 8 | 0 | 0 | 0 |
+| picker-trigger | D3 | 8 | 0 | 0 | 0 |
+| picker-trigger | D5 | 1 | 0 | 0 | 0 |
+| picker-trigger | D6 | 1 | 0 | 0 | 0 |
+| picker-trigger | D7 | 2 | 0 | 0 | 0 |
+| picker-trigger | D8 | 1 | 0 | 0 | 0 |
+| picker-trigger | D9 | 8 | 0 | 0 | 0 |
+| picker-trigger | D10 | 3 | 0 | 0 | 0 |
+| picker-trigger | D13 | 0 | 2 | 0 | 0 |
+| popover-surface | D1 | 6 | 6 | 0 | 0 |
+| popover-surface | D3 | 6 | 6 | 0 | 0 |
+| popover-surface | D6 | 1 | 0 | 0 | 0 |
+| popover-surface | D7 | 1 | 1 | 0 | 0 |
+| progressbar | D1 | 18 | 0 | 0 | 0 |
+| progressbar | D3 | 18 | 0 | 0 | 0 |
+| progressbar | D6 | 5 | 0 | 0 | 0 |
+| progressbar | D7 | 6 | 0 | 0 | 0 |
+| progresscircle | D1 | 12 | 0 | 0 | 0 |
+| progresscircle | D3 | 12 | 0 | 0 | 0 |
+| progresscircle | D6 | 3 | 0 | 0 | 0 |
+| radiogroup | D1 | 18 | 0 | 0 | 0 |
+| radiogroup | D3 | 18 | 0 | 0 | 0 |
+| radiogroup | D5 | 1 | 0 | 0 | 0 |
+| radiogroup | D6 | 2 | 0 | 0 | 0 |
+| radiogroup | D7 | 4 | 0 | 0 | 0 |
+| radiogroup-native-validity | D14 | 6 | 0 | 0 | 0 |
+| rangecalendar | D1 | 10 | 0 | 0 | 0 |
+| rangecalendar | D3 | 5 | 5 | 0 | 0 |
+| rangecalendar | D5 | 1 | 0 | 0 | 0 |
+| rangecalendar | D6 | 1 | 0 | 0 | 0 |
+| rangecalendar | D7 | 4 | 0 | 0 | 0 |
+| rangecalendar | D8 | 2 | 0 | 0 | 0 |
+| rangecalendar | D9 | 10 | 0 | 0 | 0 |
+| rangecalendar | D10 | 1 | 0 | 0 | 0 |
+| rangeslider | D1 | 20 | 0 | 0 | 0 |
+| rangeslider | D3 | 20 | 0 | 0 | 0 |
+| rangeslider | D6 | 0 | 0 | 1 | 0 |
+| rangeslider | D7 | 4 | 0 | 0 | 0 |
+| searchfield | D1 | 14 | 0 | 0 | 0 |
+| searchfield | D3 | 14 | 0 | 0 | 0 |
+| searchfield | D5 | 1 | 0 | 0 | 0 |
+| searchfield | D6 | 1 | 0 | 0 | 0 |
+| searchfield | D7 | 4 | 0 | 0 | 0 |
+| searchfield-native-validity | D14 | 4 | 0 | 0 | 0 |
+| skeleton | D1 | 2 | 0 | 0 | 0 |
+| skeleton | D6 | 2 | 0 | 0 | 0 |
+| slider | D1 | 20 | 0 | 0 | 0 |
+| slider | D3 | 20 | 0 | 0 | 0 |
+| slider | D6 | 0 | 0 | 1 | 0 |
+| slider | D7 | 4 | 0 | 0 | 0 |
+| statuslight | D1 | 18 | 0 | 0 | 0 |
+| statuslight | D3 | 18 | 0 | 0 | 0 |
+| statuslight | D6 | 2 | 0 | 0 | 0 |
+| statuslight | D7 | 6 | 0 | 0 | 0 |
+| steplist | D5 | 1 | 0 | 0 | 0 |
+| steplist | D6 | 4 | 0 | 0 | 0 |
+| steplist-progress | D5 | 1 | 0 | 0 | 0 |
+| switch | D1 | 16 | 0 | 0 | 0 |
+| switch | D3 | 16 | 0 | 0 | 0 |
+| switch | D4 | 6 | 0 | 0 | 0 |
+| switch | D5 | 1 | 0 | 0 | 0 |
+| switch | D6 | 3 | 0 | 0 | 0 |
+| switch | D7 | 4 | 0 | 0 | 0 |
+| switch | D8 | 3 | 0 | 0 | 0 |
+| tableview | D6 | 4 | 0 | 1 | 0 |
+| tabs | D1 | 6 | 0 | 0 | 0 |
+| tabs | D2 | 2 | 0 | 0 | 0 |
+| tabs | D3 | 6 | 0 | 0 | 0 |
+| tabs | D4 | 2 | 1 | 0 | 0 |
+| tabs | D5 | 1 | 0 | 0 | 0 |
+| tabs | D6 | 1 | 0 | 0 | 0 |
+| tabs | D7 | 2 | 0 | 0 | 0 |
+| tabs | D8 | 2 | 0 | 0 | 0 |
+| taggroup | D1 | 14 | 0 | 0 | 0 |
+| taggroup | D3 | 14 | 0 | 0 | 0 |
+| taggroup | D7 | 6 | 0 | 0 | 0 |
+| taggroup | D8 | 2 | 0 | 0 | 0 |
+| taggroup-behavior | D5 | 2 | 0 | 0 | 0 |
+| taggroup-behavior | D6 | 3 | 0 | 0 | 0 |
+| taggroup-behavior | D10 | 4 | 0 | 0 | 0 |
+| text-entry-callback-contract | D12 | 4 | 0 | 0 | 0 |
+| textarea | D1 | 14 | 0 | 0 | 0 |
+| textarea | D3 | 14 | 0 | 0 | 0 |
+| textarea | D5 | 1 | 0 | 0 | 0 |
+| textarea | D6 | 2 | 0 | 0 | 0 |
+| textarea | D7 | 4 | 0 | 0 | 0 |
+| textfield | D1 | 14 | 0 | 0 | 0 |
+| textfield | D3 | 14 | 0 | 0 | 0 |
+| textfield | D5 | 1 | 0 | 0 | 0 |
+| textfield | D6 | 2 | 0 | 0 | 0 |
+| textfield | D7 | 4 | 0 | 0 | 0 |
+| textfield-native-validity | D14 | 6 | 0 | 0 | 0 |
+| timefield | D1 | 10 | 0 | 0 | 0 |
+| timefield | D3 | 10 | 0 | 0 | 0 |
+| timefield | D5 | 5 | 0 | 0 | 0 |
+| timefield | D6 | 20 | 0 | 0 | 0 |
+| timefield | D7 | 6 | 0 | 0 | 0 |
+| timefield | D8 | 1 | 0 | 0 | 0 |
+| timefield | D9 | 10 | 0 | 0 | 0 |
+| timefield | D10 | 7 | 0 | 0 | 0 |
+| toast | D1 | 0 | 8 | 0 | 0 |
+| toast | D3 | 0 | 8 | 0 | 0 |
+| toast | D6 | 0 | 1 | 0 | 0 |
+| toast | D7 | 0 | 8 | 0 | 0 |
+| toast-icon | D1 | 0 | 6 | 0 | 0 |
+| toast-icon | D3 | 0 | 6 | 0 | 0 |
+| togglebutton | D1 | 18 | 0 | 0 | 0 |
+| togglebutton | D2 | 1 | 1 | 0 | 0 |
+| togglebutton | D3 | 18 | 0 | 0 | 0 |
+| togglebutton | D4 | 8 | 0 | 0 | 0 |
+| togglebutton | D5 | 1 | 0 | 0 | 0 |
+| togglebutton | D6 | 3 | 0 | 0 | 0 |
+| togglebutton | D7 | 6 | 0 | 0 | 0 |
+| togglebutton | D8 | 4 | 0 | 0 | 0 |
+| togglebutton | D9 | 18 | 0 | 0 | 0 |
+| togglebutton | D10 | 6 | 0 | 0 | 0 |
+| togglebuttongroup | D1 | 20 | 0 | 0 | 0 |
+| togglebuttongroup | D2 | 1 | 1 | 0 | 0 |
+| togglebuttongroup | D3 | 20 | 0 | 0 | 0 |
+| togglebuttongroup | D4 | 12 | 0 | 0 | 0 |
+| togglebuttongroup | D5 | 2 | 0 | 0 | 0 |
+| togglebuttongroup | D6 | 3 | 0 | 0 | 0 |
+| togglebuttongroup | D7 | 6 | 0 | 0 | 0 |
+| togglebuttongroup | D8 | 5 | 0 | 0 | 0 |
+| toolbar | D5 | 1 | 0 | 0 | 0 |
+| toolbar | D6 | 3 | 0 | 0 | 0 |
+| toolbar | D10 | 3 | 0 | 0 | 0 |
+| toolbar-vertical | D5 | 1 | 0 | 0 | 0 |
+| tooltip-surface | D1 | 8 | 0 | 0 | 0 |
+| tooltip-surface | D3 | 8 | 0 | 0 | 0 |
+| tooltip-surface | D6 | 1 | 0 | 0 | 0 |
+| tooltip-surface | D7 | 2 | 0 | 0 | 0 |
+| tooltip-trigger-timing | D11 | 1 | 0 | 0 | 0 |
+| treeview | D5 | 3 | 0 | 0 | 0 |
+| treeview | D6 | 5 | 0 | 0 | 0 |
+| virtualizer | D-scroll | 2 | 0 | 0 | 0 |
+
+### Unwaived failures
+
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › default · dark
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › selected · dark
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › unavailable · dark
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › invalid · dark
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › multimonth · dark
+- `calendar` D3 — chromium › certified/calendar.certified.spec.ts › D3 pixel diff — Calendar › disabled · dark
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-s · dark
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-s · light
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-m · dark
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-m · light
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-l · dark
+- `combobox-list` D1 — chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-l · light
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-s · dark
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-s · light
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-m · dark
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-m · light
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-l · dark
+- `combobox-list` D3 — chromium › certified/combobox.certified.spec.ts › D3 pixel diff — ComboBox list › size-l · light
+- `combobox-list` D7 — chromium › certified/combobox.certified.spec.ts › D7 contrast — ComboBox list › size-m · dark
+- `combobox-list` D7 — chromium › certified/combobox.certified.spec.ts › D7 contrast — ComboBox list › size-m · light
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-s · dark
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-s · light
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-m · dark
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-m · light
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-l · dark
+- `combobox-list` D9 — chromium › certified/combobox.certified.spec.ts › D9 forced colors — ComboBox list › size-l · light
+- `combobox-list` D10 — chromium › certified/combobox.certified.spec.ts › D10 RTL state matrix — ComboBox list › size-m-rtl · dark
+- `combobox-list` D10 — chromium › certified/combobox.certified.spec.ts › D10 RTL state matrix — ComboBox list › size-m-rtl · light
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › placeholder · dark
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › placeholder · light
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › value · dark
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › value · light
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › invalid · dark
+- `datepicker` D1 — chromium › certified/datepicker.certified.spec.ts › D1 state matrix — DatePicker › invalid · light
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › placeholder · dark
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › placeholder · light
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › placeholder · dark
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › value · dark
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › placeholder · light
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › value · light
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › value · dark
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › invalid · dark
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › value · light
+- `daterangepicker` D1 — chromium › certified/daterangepicker.certified.spec.ts › D1 state matrix — DateRangePicker › invalid · light
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › invalid · dark
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › placeholder · dark
+- `datepicker` D3 — chromium › certified/datepicker.certified.spec.ts › D3 pixel diff — DatePicker › invalid · light
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › placeholder · light
+- `datepicker` D7 — chromium › certified/datepicker.certified.spec.ts › D7 contrast — DatePicker › value · dark
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › value · dark
+- `datepicker` D7 — chromium › certified/datepicker.certified.spec.ts › D7 contrast — DatePicker › value · light
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › value · light
+- `datepicker` D7 — chromium › certified/datepicker.certified.spec.ts › D7 contrast — DatePicker › invalid · dark
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › invalid · dark
+- `datepicker` D7 — chromium › certified/datepicker.certified.spec.ts › D7 contrast — DatePicker › invalid · light
+- `daterangepicker` D3 — chromium › certified/daterangepicker.certified.spec.ts › D3 pixel diff — DateRangePicker › invalid · light
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › placeholder · dark
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › placeholder · light
+- `daterangepicker` D7 — chromium › certified/daterangepicker.certified.spec.ts › D7 contrast — DateRangePicker › value · dark
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › value · dark
+- `daterangepicker` D7 — chromium › certified/daterangepicker.certified.spec.ts › D7 contrast — DateRangePicker › value · light
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › value · light
+- `daterangepicker` D7 — chromium › certified/daterangepicker.certified.spec.ts › D7 contrast — DateRangePicker › invalid · dark
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › invalid · dark
+- `daterangepicker` D7 — chromium › certified/daterangepicker.certified.spec.ts › D7 contrast — DateRangePicker › invalid · light
+- `datepicker` D9 — chromium › certified/datepicker.certified.spec.ts › D9 forced colors — DatePicker › invalid · light
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › placeholder · dark
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › placeholder · light
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › value · dark
+- `datepicker-motion` D2 — chromium › certified/datepicker.certified.spec.ts › D2 motion — DatePicker motion › open · open-enter
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › value · light
+- `datepicker-motion` D2 — chromium › certified/datepicker.certified.spec.ts › D2 motion (reduced) — DatePicker motion › open · open-enter
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › invalid · dark
+- `daterangepicker` D9 — chromium › certified/daterangepicker.certified.spec.ts › D9 forced colors — DateRangePicker › invalid · light
+- `daterangepicker-motion` D2 — chromium › certified/daterangepicker.certified.spec.ts › D2 motion — DateRangePicker motion › open · open-enter
+- `daterangepicker-motion` D2 — chromium › certified/daterangepicker.certified.spec.ts › D2 motion (reduced) — DateRangePicker motion › open · open-enter
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-s · dark
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-s · light
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-l · dark
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-l · light
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-xl · dark
+- `form` D1 — chromium › certified/form.certified.spec.ts › D1 state matrix — Form › size-xl · light
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-s · dark
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-s · light
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-l · dark
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-l · light
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-xl · dark
+- `form` D3 — chromium › certified/form.certified.spec.ts › D3 pixel diff — Form › size-xl · light
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › placement-top · dark
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › placement-bottom · dark
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › placement-left · dark
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › placement-right · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-s · dark
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › size-m · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-s · light
+- `popover-surface` D1 — chromium › certified/popover.certified.spec.ts › D1 state matrix — Popover surface › size-l · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-m · dark
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › placement-top · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-m · light
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › placement-bottom · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-l · dark
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › placement-left · dark
+- `picker-list` D1 — chromium › certified/picker.certified.spec.ts › D1 state matrix — Picker list › size-l · light
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › placement-right · dark
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-s · dark
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › size-m · dark
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-s · light
+- `popover-surface` D3 — chromium › certified/popover.certified.spec.ts › D3 pixel diff — Popover surface › size-l · dark
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-m · dark
+- `popover-surface` D7 — chromium › certified/popover.certified.spec.ts › D7 contrast — Popover surface › placement-top · dark
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-m · light
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-l · dark
+- `picker-list` D3 — chromium › certified/picker.certified.spec.ts › D3 pixel diff — Picker list › size-l · light
+- `picker-list` D8 — chromium › certified/picker.certified.spec.ts › D8 target size — Picker list › size-m
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-s · dark
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-s · light
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-m · dark
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-m · light
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-l · dark
+- `picker-list` D9 — chromium › certified/picker.certified.spec.ts › D9 forced colors — Picker list › size-l · light
+- `picker-list` D10 — chromium › certified/picker.certified.spec.ts › D10 RTL state matrix — Picker list › size-m-rtl · dark
+- `picker-list` D10 — chromium › certified/picker.certified.spec.ts › D10 RTL state matrix — Picker list › size-m-rtl · light
+- `picker-trigger` D13 — chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — open-arrow-enter-reopen-scroll-escape
+- `picker-trigger` D13 — chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only
+- `rangecalendar` D3 — chromium › certified/rangecalendar.certified.spec.ts › D3 pixel diff — RangeCalendar › default · dark
+- `rangecalendar` D3 — chromium › certified/rangecalendar.certified.spec.ts › D3 pixel diff — RangeCalendar › unavailable · dark
+- `rangecalendar` D3 — chromium › certified/rangecalendar.certified.spec.ts › D3 pixel diff — RangeCalendar › invalid · dark
+- `rangecalendar` D3 — chromium › certified/rangecalendar.certified.spec.ts › D3 pixel diff — RangeCalendar › multimonth · dark
+- `rangecalendar` D3 — chromium › certified/rangecalendar.certified.spec.ts › D3 pixel diff — RangeCalendar › disabled · dark
+- `tabs` D4 — chromium › certified/tabs.certified.spec.ts › D4 event sequence — Tabs › horizontal-regular · arrow-next-from-selected
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › neutral · dark
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › neutral · light
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › positive · dark
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › positive · light
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › negative · dark
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › negative · light
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › info · dark
+- `toast` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast › info · light
+- `togglebutton` D2 — chromium › certified/togglebutton.certified.spec.ts › D2 motion (reduced) — ToggleButton › default · hover-transition
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › neutral · dark
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › neutral · light
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › positive · dark
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › positive · light
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › negative · dark
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › negative · light
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › info · dark
+- `toast` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast › info · light
+- `toast` D6 — chromium › certified/toast.certified.spec.ts › D6 AX tree — Toast › neutral
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › neutral · dark
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › neutral · light
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › positive · dark
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › positive · light
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › negative · dark
+- `togglebuttongroup` D2 — chromium › certified/togglebuttongroup.certified.spec.ts › D2 motion (reduced) — ToggleButtonGroup › default · hover-transition
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › negative · light
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › info · dark
+- `toast` D7 — chromium › certified/toast.certified.spec.ts › D7 contrast — Toast › info · light
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › positive · dark
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › positive · light
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › negative · dark
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › negative · light
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › info · dark
+- `toast-icon` D1 — chromium › certified/toast.certified.spec.ts › D1 state matrix — Toast icon › info · light
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › positive · dark
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › positive · light
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › negative · dark
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › negative · light
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › info · dark
+- `toast-icon` D3 — chromium › certified/toast.certified.spec.ts › D3 pixel diff — Toast icon › info · light
+
+merging reports from /home/runner/work/ui/ui/apps/comparison/blob-reports-merged
+extracting: blob-reports-merged/report-badae33-1.zip
+extracting: blob-reports-merged/report-badae33-2.zip
+extracting: blob-reports-merged/report-badae33-3.zip
+extracting: blob-reports-merged/report-badae33-4.zip
+extracting: blob-reports-merged/report-badae33-5.zip
+extracting: blob-reports-merged/report-badae33-6.zip
+extracting: blob-reports-merged/report-badae33-7.zip
+extracting: blob-reports-merged/report-badae33-8.zip
+merging events
+processing test events
+building final report
+finished building report
+##[error]Process completed with exit code 1.
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+with:
+  name: certified-html-35546816816
+  if-no-files-found: ignore
+  path: apps/comparison/playwright-report
+apps/comparison/test-results/certified-summary.json
+apps/comparison/test-results/certified-summary.md
+
+  compression-level: 6
+  overwrite: false
+  include-hidden-files: false
+env:
+  CERTIFIED_SHARD_TOTAL: 8
+  PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+##[endgroup]
+(node:2458) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Multiple search paths detected. Calculating the least common ancestor of all paths
+The least common ancestor is /home/runner/work/ui/ui/apps/comparison. This will be the root directory of the artifact
+With the provided path, there will be 444 files uploaded
+Artifact name is valid!
+Root directory input is valid!
+Beginning upload of artifact content to blob storage
+(node:2458) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Uploaded bytes 8388608
+Uploaded bytes 16777216
+Uploaded bytes 25165824
+Uploaded bytes 33554432
+Uploaded bytes 41943040
+Uploaded bytes 50331648
+Uploaded bytes 58720256
+Uploaded bytes 67108864
+Uploaded bytes 75497472
+Uploaded bytes 83886080
+Uploaded bytes 92274688
+Uploaded bytes 100663296
+Uploaded bytes 109051904
+Uploaded bytes 117440512
+Uploaded bytes 125829120
+Uploaded bytes 134217728
+Uploaded bytes 142606336
+Uploaded bytes 150994944
+Uploaded bytes 159383552
+Uploaded bytes 167772160
+Uploaded bytes 176160768
+Uploaded bytes 184549376
+Uploaded bytes 192937984
+Uploaded bytes 201326592
+Uploaded bytes 209715200
+Uploaded bytes 218103808
+Uploaded bytes 226492416
+Uploaded bytes 234881024
+Uploaded bytes 243269632
+Uploaded bytes 251658240
+Uploaded bytes 260046848
+Uploaded bytes 268435456
+Uploaded bytes 276824064
+Uploaded bytes 285212672
+Uploaded bytes 293601280
+Uploaded bytes 301989888
+Uploaded bytes 310378496
+Uploaded bytes 318767104
+Uploaded bytes 327155712
+Uploaded bytes 335544320
+Uploaded bytes 343932928
+Uploaded bytes 352321536
+Uploaded bytes 360710144
+Uploaded bytes 369098752
+Uploaded bytes 377487360
+Uploaded bytes 385875968
+Uploaded bytes 394264576
+Uploaded bytes 402653184
+Uploaded bytes 411041792
+Uploaded bytes 419430400
+Uploaded bytes 427819008
+Uploaded bytes 436207616
+Uploaded bytes 444596224
+Uploaded bytes 452984832
+Uploaded bytes 461373440
+Uploaded bytes 469762048
+Uploaded bytes 478150656
+Uploaded bytes 486539264
+Uploaded bytes 494927872
+Uploaded bytes 503316480
+Uploaded bytes 511705088
+Uploaded bytes 512307991
+Finished uploading artifact content to blob storage!
+SHA256 digest of uploaded artifact zip is 4ef74af0721e23a130c255f2027c27195d40b8482fdf76cbaa17eaad250cd968
+Finalizing artifact upload
+Artifact certified-html-35546816816.zip successfully finalized. Artifact ID 10617710840
+Artifact certified-html-35546816816 has been successfully uploaded! Final size is 512307991 bytes. Artifact ID is 10617710840
+Artifact download URL: https://github.com/proyecto-viviana/ui/actions/runs/35546816816/artifacts/10617710840
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Post job cleanup.
+Pruning is unnecessary.
+Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Post job cleanup.
+[command]/usr/bin/git version
+git version 2.55.0
+Temporarily overriding HOME='/home/runner/work/_temp/84649a52-ee88-4e54-b50a-ff03d3206e92' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/ui/ui
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+[command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Cleaning up orphan processes
+##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02, pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

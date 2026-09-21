@@ -7,6 +7,11 @@ parent: 136
 status: open
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "re-verified at `1d7551cb` by the conductor, pulled into #544 because stage 4 of the release path runs `pack:local-chain` and this is that script. Still live, and wider than this ticket says: three env-driven paths, not one - `VIVIANA_PACK_OUT` (pack-local-chain.mjs:9, consume-pack-smoke.mjs:19), `VIVIANA_PACK_STAGE` (:11) and `VIVIANA_CONSUMER_DIR` (consume-pack-smoke.mjs:20) - feeding three `rmSync(..., { recursive: true, force: true })` at pack-local-chain.mjs:119-120 and consume-pack-smoke.mjs:108. `force: true` means a wrong path does not even error on the way out. Checked for an existing containment helper before proposing one: `grep -rnE 'startsWith\\((repoRoot|tmpRoot|allowed)|relative\\(.*\\)\\.startsWith' scripts/` returns nothing, so there is none to reuse, but `mkdtempSync(join(tmpdir(), \"prefix-\"))` is already the idiom at six sites in this same directory and is the answer. Also: the defaults are the literal string `/tmp`, which the hub standing rule tells agents not to write big files to, and five package tarballs are big",
+    }
 ---
 
 ## Cause
@@ -19,10 +24,37 @@ Defaults are under `/tmp`.
 
 Refuse resolved paths outside an allowed temp prefix.
 
+The prefix check is the ticket's own framing and it is the weaker of two
+answers. Prefer the one the repository already uses: a directory the script
+**creates itself** with `mkdtempSync(join(tmpdir(), "viviana-ui-packs-"))` is a
+directory it is entitled to delete, and the question "is this path mine?"
+stops needing to be asked. That idiom is live at six sites in `scripts/`
+(`test-ci-guard-contracts.mjs:21`, `extract-api-reference.test.ts:22`,
+`check-entry-import-budget.test.ts:56`, `check-publish-drift.test.ts:32`,
+`release-candidates.test.ts:15`, `generate-solid-spectrum-icons.mjs:458`).
+
+The env overrides still have to work — stage 4 of the release path needs to
+point a clean off-workspace consumer at a known directory — so an override that
+is supplied must be checked rather than trusted. Refuse when the resolved path
+is not under `tmpdir()`, is `tmpdir()` itself, or contains the repo root. Do
+not check the string: resolve, then compare, or a `..` walks straight through.
+
+Drop the literal `/tmp` defaults for `tmpdir()` while here. The hub rule says
+agents do not write big files to `/tmp`, and a packed chain of five packages is
+big.
+
 ## Done when
 
-Setting `VIVIANA_PACK_OUT` to the repo root cannot delete the tree.
+Setting `VIVIANA_PACK_OUT` to the repo root cannot delete the tree — and the
+same holds for `VIVIANA_PACK_STAGE` and `VIVIANA_CONSUMER_DIR`, which this
+ticket originally missed and which reach the same `rmSync`. A test per variable,
+asserting the refusal rather than the absence of damage.
 
 ## Relationship
 
 F-SEC-005. Local tooling, not a deployed surface.
+
+Pulled into #544's stage 3 on 2026-09-20: stage 4 runs `pack:local-chain` into a
+clean consumer, so this is the script the release is about to depend on and it
+is ordered before that step, not after it. Parent #136 still owns the audit it
+came from.

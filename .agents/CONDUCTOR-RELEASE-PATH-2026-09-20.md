@@ -212,6 +212,39 @@ from, and it is a large difference: those jobs are the certified suite itself �
 run of anyway. They are also the expensive ones, which is the argument for
 running them on GitHub's runners rather than here.
 
+### The surprise arrived, 2026-09-20 late — and this section was wrong
+
+Two corrections, both found by reading CI rather than by running anything.
+
+**`Certification Gates` is active, and has been.** This seat carried "the gate
+workflows are disabled" as background and never checked it. `gh workflow list
+--all` says `Certification Gates active`; the two disabled ones are
+`Release Readiness` and `Site Gate`. The workflow has been running on every
+`main` push, including all four of this session's. Most runs are **cancelled by
+the next push** — four of the last six — which is why nobody had seen one
+finish, and it is a good argument for not pushing again while a run matters.
+
+**Those four jobs are not unwalked.** Run `35546816816` at `ef7d4c4d` got all
+eight certified shards through. Results:
+
+| job                       | conclusion                            |
+| ------------------------- | ------------------------------------- |
+| comparison evidence build | success                               |
+| comparison floors: pair budgets | success                         |
+| comparison floors: contracts    | success                         |
+| certified, 8 shards       | all success                           |
+| certified report          | **failure**, at `Merge certified reports` |
+
+Three of the four are green, so the risk this section was worried about is
+smaller than feared in three places and much larger in the fourth:
+`Totals: 2004 passed, 169 failed, 4 skipped, 0 waived, 0 flaky`, against a
+recorded postcard of 2170 passed and **zero** failed. That is #578, and it is
+now the largest item between here and the release.
+
+The merge step failing is not a defect. It is #194's slice 1 doing its job: a
+run status the summary does not explain used to merge green as zeros and now
+exits 1. The gate that made this visible was built four days ago.
+
 ### Ladder state at `40ac9573`
 
 | step | gate                   | ticket | state                                  |
@@ -251,14 +284,24 @@ keep no stated relationship, the next campaign rediscovers all of this.
 
 ## Stage 3 — the obligations #547 already carries
 
-Its history names these, and each is checked here before the release flow starts:
+Its history names these, and each is checked here before the release flow starts.
+All four were checked on 2026-09-20; two of them turned out to be bigger than
+their tickets said, and those findings are in the tickets, not here.
 
+- **#578**, the certified suite 169 red — not in #547's original list because
+  nobody had seen a completed run. It is first now. Everything below it is
+  cheaper than it, and #547's "recorded, not waived" is exactly this.
 - **#139**, refuse `rmSync` outside a temp prefix in the pack script. This one is
-  ordered first for a reason: stage 4 runs `pack:local-chain`, which is the
-  script in question.
+  ordered first among the rest for a reason: stage 4 runs `pack:local-chain`,
+  which is the script in question. Re-verified live at `1d7551cb`, and wider
+  than filed — three env-driven paths reach three `rmSync(..., force: true)`,
+  not one. The ticket now names the fix the repository already uses six times.
 - **#194**, certified skipped counts ratcheted and the certified record pinned to
   HEAD. #547 asks for a certified run "recorded, not waived"; that record is
-  currently pinned to `0f1e1198` and stale.
+  still pinned to `0f1e1198` (2026-08-21) and cannot move until #578 is done,
+  because HEAD does not pass. Slices 1–3 are landed and slice 1 is what made
+  #578 visible at all. `certifiedSuitePostcardIsCurrent` exists but nothing
+  fails on staleness yet, which is the rest of this ticket.
 - **#546**, the adversarial audit of the migration and the gates. Its critical
   findings are what #555, #565, #566 and #567 came out of; what remains of it is
   the question of whether it is done, not whether it is needed.
