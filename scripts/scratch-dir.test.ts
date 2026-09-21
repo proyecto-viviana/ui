@@ -11,6 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
+// @ts-expect-error — plain-JS helper, no types
 import { scratchDir } from "./scratch-dir.mjs";
 
 const repoRoot = resolve(import.meta.dirname, "..");
