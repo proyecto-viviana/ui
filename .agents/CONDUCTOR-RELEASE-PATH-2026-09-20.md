@@ -255,13 +255,21 @@ exits 1. The gate that made this visible was built four days ago.
 |  185 | `examples-purity`      | #571   | merged, same commit                    |
 |  193 | `api-reference`        | #559   | merged — re-checked here, 84 pages, 0  |
 |  219 | `jsx-ref-dead-code`    | #572   | merged, `40ac9573`                     |
-|  227 | `upstream-test-parity` | #573   | **next red, unstarted**                |
-|  239 | `comparison-parity`    | #574   | open, decision recorded                |
+|  227 | `upstream-test-parity` | #573   | merged, `2b444a89` — **confirmed in CI** |
+|  239 | `comparison-parity`    | #574   | **next red**, confirmed in CI          |
 |  251 | `a11y:smoke`           | #575, #576 | open, two defects                  |
 
-So six of the nine are closed and the walk now reaches **227**. Four of those
-six were records that had stopped describing the tree rather than defects in it,
-which is what #577 is for.
+Seven of the nine are closed. Five of those seven were records that had stopped
+describing the tree rather than defects in it, which is what #577 is for.
+
+CI confirmed the 227 closure rather than only the local re-run. Run
+35554086311 at `1a98e250` is the first revision carrying all of #570, #571,
+#572 and #573; its `gates` job walked past `upstream-test-parity` and failed at
+**step 38, `comparison parity (strict)`** — which is #574. The step numbering
+differs from the ladder's because the ladder counts by the workflow file and
+the run counts by executed step, but the gate is the same one. Two gate reds
+remain, 239 and 251, and both are behind #578 in priority rather than ahead of
+it.
 
 ## Stage 2 — clear the reds, in ladder order
 
@@ -393,13 +401,38 @@ closed, which is correct and which also means **the release cannot publish
 until both are switched back on and green on the release commit**.
 
 They were switched off on 2026-09-20 at 16:30 after failing, not after being
-fixed, so re-enabling them is not a toggle: it is stage 3 work that has not been
-scoped, and whatever they return is a new red list on top of #578's. Both last
-ran at `f813032d`, which is before every ladder closure since — so their last
-known answer is stale as well as red, and nobody currently knows what they
-return at HEAD. This seat does not flip them: it is an owner-visible action and
-the owner turned them off. It is named here so stage 4 does not discover it at
-the last step.
+fixed. Both last ran at `f813032d`, which is before every ladder closure since,
+so their last known answer is stale as well as red.
+
+**Corrected 2026-09-20 late, after reading both job logs rather than reasoning
+from the fact that they failed.** The paragraph above used to end by calling
+re-enabling them "unscoped stage 3 work". It is not. Both died on exactly one
+line, and it is the same line in both:
+
+```
+scripts/check-peers.test.ts(7,63): error TS7016: Could not find a declaration
+file for module './check-peers.mjs'
+```
+
+`Release Readiness` 35522923242 reached it through `vp run check`; `Site Gate`
+35522923210 reached it the same way, through its own first leg. `29f2b2f9` at
+16:38 put `// @ts-expect-error — plain-JS guard, no types` on that line, and it
+is an ancestor of HEAD. So the fix landed eight minutes after the workflows were
+switched off, and nobody switched them back on.
+
+That does not make their result at HEAD known — neither has run since
+`f813032d`, so what they report on a current revision is a new measurement, and
+it may well be red for reasons the Solid 2 port introduced. It does mean the
+blocker is a toggle after all:
+
+```
+gh workflow enable release-readiness.yml
+gh workflow enable site-gate.yml
+```
+
+This seat attempted exactly that and was refused; it stays an owner action. The
+two commands are the whole of it, and the next push then produces the first
+honest reading of both since the campaign began.
 
 The alternative is `workflow_dispatch`, which `release.yml:29` allows and which
 takes the same exact-SHA check — so it is not a way around this, only a way
