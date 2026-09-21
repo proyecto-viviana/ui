@@ -26,6 +26,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings land here and one row needs correcting. `test-integrity/main-red-and-release-unsatisfiable`, high, confirmed: `scripts/check-release-evidence.mjs:10-12` requires a successful run of all three of `certification-gates.yml`, `release-readiness.yml` and `site-gate.yml` at the exact release sha; two of the three are `disabled_manually`, a disabled workflow produces no run, and the guard fails closed - so the RC's own release condition is unsatisfiable today, and the two `gh workflow enable` commands are an owner action. `guards-b/553-guards-run-nowhere`, medium, confirmed: four of the twelve fail-open gates #553 closed have a disabled workflow as their only CI caller, so closing them changed nothing that runs. And the table row that names the earliest ladder red is wrong - measured here, `docs:check` is `certification-gates.yml:235` at HEAD `65254a8c` and was `:231` at `96376e9a`, where CI runs 35556441049, 35558449632 and 35560076342 all stopped; `comparison parity (strict)` and `axe full audit` have not executed since `1a98e250`. #588 owns the red; this ticket owns the row.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "placed at stage S5 of #544's path, before Site and before #547, where it had been only a footnote under two other stages. The deliverable is stated there in two parts: the owner action `gh workflow enable release-readiness.yml` and `gh workflow enable site-gate.yml`, and the writer's ladder-row correction. Re-checked here: `gh workflow list --all` still reports `Release Readiness` and `Site Gate` as `disabled_manually` while `Certification Gates`, `Changesets Check`, `Journey Fuzz Nightly` and `Release` are active, and `scripts/check-release-evidence.mjs:9-13` still requires a successful run of all three of `certification-gates.yml`, `release-readiness.yml` and `site-gate.yml` at the release sha.",
+    }
 ---
 
 ## Scope

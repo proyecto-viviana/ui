@@ -1,7 +1,7 @@
 ---
 id: 574
 type: task
-title: "The certified-postcard gate cannot be satisfied by any commit, so step 239 is red forever"
+title: "The certified-postcard gate cannot be satisfied by any commit, so comparison parity (strict) is red forever"
 created: 2026-09-20
 parent: 544
 status: in-progress
@@ -36,11 +36,17 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`. Two findings, both on the rule this ticket landed. `r2-guards/r2-guards-1`, high: `certifiedSuiteCoveredPathspecs` (`apps/comparison/src/data/certified-suite-evidence.ts:38-44`) covers component source and fixtures only, so everything that turns a certified run into a verdict is invisible to the postcard - `apps/comparison/scripts/**` (the merger whose exit code is the gate, the waiver logic, the budgets), `playwright.config.ts`, `apps/comparison/package.json` and the lockfile that pin the upstream oracle, `apps/comparison/vendor/**` (174 files) and `packages/*/package.json`. Measured: `git ls-files apps/comparison/scripts` is 17 files, none matched, and `git diff --name-only 9e0df73c^ 9e0df73c` over the pathspecs lists 0 files although `9e0df73c` repaired `merge-certified-reports.ts`. Latent rather than live - the postcard is already 2577 covered-paths stale at `65254a8c` and the certified shards rerun on every push - so it is owed before the next pin, not before this ticket closes. Fix: widen the list, or better invert it to cover-everything-minus-a-reviewed-allowlist (`.claude`, `.agents`, docs, `**/*.md`, the evidence file) so a new directory defaults to invalidating rather than to invisible. `r2-guards/r2-guards-2`, medium: the two new tests never write a file that is uncovered-but-decisive - the real-git fixture writes only `packages/p/src`, `e2e`, `docs`, `.agents`, a README and the evidence file, and `acceptance-schema.test.ts` stubs `changedCoveredPaths`, so the pathspec list is exercised by no test. A coverage gap, not fake proof; the skeptic refuted the harder reading that the `current: true` case pins the hole open, since the paths it commits are the intended exclusions. Write the widening test first: commit `apps/comparison/scripts/merge-certified-reports.ts` and `apps/comparison/package.json` into the fixture repo and assert not-current, watch it fail on today's code, then widen",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "placed at stage S0-d of #544's path, which had scheduled no ticket for this step. Two corrections come with the placement. The step number is dropped from the title and the body: it was 239 at `96376e9a`, it is `certification-gates.yml:244` at HEAD `2599623e` after `13080aa0` and `7ec2a732` shifted the file, and the notes above keep the number they were read at. And the gate's state is re-measured: `git merge-base --is-ancestor 0f1e1198 HEAD` exits 0 and `git diff --name-only` over `certifiedSuiteCoveredPathspecs` lists **2577** files, so the currency rule fails for the honest reason and the step blocks. Nothing here clears it - the pin needs a fresh full certified run, which is #578 at S0-e - so what is owed before that pin is the `r2-guards/r2-guards-1` widening and the `r2-guards/r2-guards-2` test, or the pin is recorded under a rule that cannot see the runner, the merger or the pinned oracle",
+    }
 ---
 
 ## Scope
 
-Step 239 of `.github/workflows/certification-gates.yml` runs
+The `comparison parity (strict)` step of
+`.github/workflows/certification-gates.yml` runs
 `comparison:report:parity:strict`. It is red, and it will stay red on every
 commit that can ever exist, because the currency rule is self-defeating:
 
@@ -126,7 +132,7 @@ witness this gate has been missing, and it is one line.
 
 Degrade loudly, not quietly. `actions/checkout` in this workflow sets no
 `fetch-depth`, so CI clones at depth 1 and neither the ancestry test nor the
-path diff can run there. Add `fetch-depth: 0` to the job that runs step 239,
+path diff can run there. Add `fetch-depth: 0` to the job that runs that step,
 and when the recorded revision is not in the object graph (`git cat-file -e`),
 **fail** with a message naming `fetch-depth` — do not pass. A gate that goes
 quiet in a shallow clone is a gate that is off in CI and green in review, which
@@ -140,7 +146,7 @@ blocking set, is the honest description of today's behaviour and is exactly
 what should not be written down as an intention.
 
 What this buys, and it is the point rather than a side effect: any commit that
-touches a package source turns step 239 red until the certified suite is re-run
+touches a package source turns that step red until the certified suite is re-run
 and its postcard committed. That is the recertification bar doing its job. The
 current postcard names `0f1e1198` from 2026-08-21, so the first run of the new
 rule will be red, and closing it needs a full certified run — that run is #547's
@@ -148,8 +154,8 @@ obligation and #194's, not an extra cost this ticket invents.
 
 ## Relationship
 
-Child of #544, and a blocker for it: step 239 is on the RC ladder, so the ladder
-cannot walk to the end until this is answered. It is the reason the release path
+Child of #544, stage S0-d, and a blocker for it: that step is on the RC ladder,
+so the ladder cannot walk to the end until this is answered. It is the reason the release path
 gained a stage-3 entry rather than leaving #194 as background work.
 
 Bears directly on #194, which is in-progress and owns the certified ratchet;

@@ -31,6 +31,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-guards/r2-guards-3`, high, confirmed: the census commit `65254a8c` is stale on arrival. It reports CI run 35558449632, head `eb75ee0e`, created 2026-09-21T03:42:53Z and finished 04:06:14Z, but was committed at 13:46:11Z with 18 commits in between (`git rev-list --count eb75ee0e..65254a8c`), and it is written in the present tense - where every row now belongs, the largest untracked block left, this table is the whole distance - so a reader takes it for current state. It is not: at `65254a8c` the form block it calls never ticketed was fixed by `7e93d238` at 06:18:18Z, the calendar block it calls ungraded by `6e43c436` at 07:11:38Z, and the three it closes with as ticketed and cheap are #585 merged, #584 in-progress and #583 open because `a32e6bab` handed it back over #484's owner ruling. The finding's own times mix local and UTC and the gap is three hours wider than it reads; the UTC figures here were re-measured with `TZ=UTC git log --date=format-local`. Fix: re-head the table as a snapshot of run 35558449632 at `eb75ee0e`, add a landed-since column naming `495582e9`, `413b2f23`, `f8e5833e`, `7e93d238`, `6e43c436` and `6ad3d12d`, move #583 out of cheap into owner-blocked, and let the next Certification Gates run on the pushed tip supply the roster instead of re-deriving it by hand",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "placed at stage S0-e of #544's path, which had named this ticket only in a history note although the job it owns is blocking. Re-measured at the last run, 35560076342 at `96376e9a`: the `certified report` job failed, its `Merge certified reports` step reported `Run status: failed`, `2085 passed, 88 failed, 4 skipped, 0 waived, 1 flaky`, and exited 1. The step carries no `continue-on-error` (`certification-gates.yml:691`) while the eight shards do (`:646`), and the job's own summary row calls it Blocking (`:402`), so the release condition cannot be met without it. The path now states what makes the job exit 0, because `certification-debt.md` on its own does not: `merge-certified-reports.ts` exits 1 while `waiverGateFails` is true, which it is while any failure is unwaived (`apps/comparison/scripts/certified-waivers.ts:269-271`), and no workflow, script or `package.json` entry reads the debt file. So a named-debt failure ships as a `certified-waivers.json` entry - `[]` today - with an open board ticket and a future `expires`, plus its debt entry; the owner decision on #544 authorises the debt, the waiver is what the gate reads. Work item 3 is still the default: fix by cause, waive only what an owner call names as deliberate. This ticket also supplies the revision #574's postcard pin needs, so S0-d's widened rule lands first",
+    }
 ---
 
 ## Why this is filed above the remaining gate reds
@@ -133,6 +138,6 @@ Bears on #576, which found the playground Toast region missing its
 Whoever takes either ticket should read the other first; if they are one defect,
 #576 is its cheapest reproduction and should be fixed first.
 
-Not a duplicate of #574 (comparison parity strict, step 239) or #575/#576
-(`a11y:smoke`, step 251): those are the `gates` job, this is the `certified`
+Not a duplicate of #574 (`comparison parity (strict)`) or #575/#576
+(`a11y:smoke`): those are steps of the `gates` job, this is the `certified`
 job, and the two ladders' relationship is #568's subject.

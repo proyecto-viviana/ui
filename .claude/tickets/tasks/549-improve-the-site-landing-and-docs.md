@@ -17,6 +17,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings. `apps-web/ci-never-rendered-a-web-page`, medium, confirmed: no CI run in this campaign has rendered a single `apps/web` route, because Site Gate is the only thing that does and it is `disabled_manually` - which also means this ticket's Done-when, Site Gate green plus a clean-dir walk, re-proves no claim row today. `apps-web/icon-page-claims-every-prop`, low: the icon reference page asserts completeness while documenting 3 of its interface's props. Also owed here as a fact-fix under #546's lens 4: `apps/web/src/routes/solid-spectrum/docs/index.tsx:106-109`, the getting-started snippet, is missing its `createSignal` import. The landing page's install line is #600.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "#544's path now names the lens 4 re-proof as this ticket's obligation alongside #548's, at the Site stage and before #547 publishes. #546 is `merged` with lens 4 unproved and its status is not walked back, so the rows it handed over are re-proved here: every lens 4a/4b claim this ticket's pages carry is re-proved row by row, not by a gate result - Site Gate proves no claim row even once S5 enables it.",
+    }
 ---
 
 ## Scope

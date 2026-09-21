@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. This ticket is now #597's blocker in fact rather than in spirit. #597 owns `ratchets/parity-rebless-outruns-receipt`: `2b444a89` grew the baseline by 30 facts claiming all thirty were classified, and its own receipt `34064bae` had concluded the opposite - 14 were classified, 7 literally and 7 by the `role|form` group, and 16 were never examined. Nine of the thirty are the mis-pairing this ticket names, so fixing the attribution rule here is what makes #597's re-measurement mean anything; absorbing them instead widened the allowlist around a known-bogus pair. The `wrong-shape bug` line in `2b444a89`'s message is about roles only, `check-upstream-test-parity.ts:25`.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "placed at stage S3-a of #544's path, with #597 as S3-b. The path had named #597 alone and called this ticket its prerequisite in fact without scheduling it, so a reader working the stages in order met an unscheduled blocker at S3. No new measurement; the ordering is the one both tickets already argue for.",
+    }
 ---
 
 ## Scope

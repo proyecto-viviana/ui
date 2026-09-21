@@ -20,6 +20,11 @@ history:
       at: 2026-09-21,
       note: "round 2 of the same audit landed, receipt `.agents/audit-2026-09-21/round-2-results.md`, owners appended to `.agents/audit-2026-09-21/OWNERS.md`. Range `4acbc9e4..65254a8c`, the sixteen commits written after round 1's range closed; 3 Opus auditors, every finding at medium or above challenged by a skeptic. 15 findings: 0 critical, 3 high, 4 medium, 8 low. Every one owned - 2 new tickets, **#602** at stage S2-g and **#603** at stage S2-h, both added to the path above; 9 existing tickets annotated (#574, #578, #584, #588, #582, #576, #586, #194, #139); 3 lows added to #601 as items 8-10. The path is unchanged in shape: S0-b is still the earliest blocking red and none of the sixteen commits has ever been seen by CI - `git merge-base --is-ancestor` is false for all sixteen against `origin/main` `96376e9a`, whose own Certification Gates run 35560076342 failed. Two merged tickets carry a dated note instead of a status move, #576 and #582, because the scheme runs forward only; #582's live residue is #603",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the path was reviewed and five gaps in it were fixed in place, all in the `Path to the RC` section, none of them a new finding about the tree. Four tickets that carried audit findings had no stage and now have one: **#574** at S0-d, the parity step at `certification-gates.yml:244` that S0-b's landing makes the frontier - measured at HEAD `2599623e`, `0f1e1198` is an ancestor and 2577 covered paths changed since it; **#578** at S0-e, the `certified report` job, whose `Merge certified reports` step at `:691` has no `continue-on-error` while the eight shards at `:646` do, and which failed run 35560076342 at `96376e9a` with 2085 passed / 88 failed / 4 skipped / 0 waived / 1 flaky; **#579** at S3-a with #597 at S3-b; and **#568** at the new S5, whose deliverable is the two `gh workflow enable` commands plus the ladder-row correction. The path now also says which mechanism makes `certified report` exit 0 - fix or a `certified-waivers.json` waiver with an open ticket and a future expiry, since `certification-debt.md` is read by no workflow or script - and carries the lens 4a/4b re-proof as a named obligation of #548 and #549 before #547 publishes, #546 staying `merged` because the scheme runs forward only",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -109,21 +114,63 @@ what, not by severity. Each one is finished when its tickets are, and the next
 one is worth starting only then, because until S1 nothing here can be measured
 whole.
 
-**S0 — make the ladder reach its own end.** Today it does not: the first
-blocking red is `docs:check`, and everything after it is unexecuted, so the
-repository has no verdict on most of its own gates.
+Revised the same day after a review of this path: every ticket carrying a high
+or confirmed finding now has a stage — #574 at S0-d, #578 at S0-e, #579 at
+S3-a, #568 at the new S5 — and the mechanism that clears each blocking job is
+named rather than assumed.
+
+**S0 — make Certification Gates reach a verdict.** Two of its jobs are
+blocking and both are red at the last run, 35560076342 at `96376e9a`: the
+`gates` ladder stops at `docs:check` and the `certified report` job fails at
+`Merge certified reports`, which carries no `continue-on-error`
+(`certification-gates.yml:691`) although the eight shards do (`:646`), and
+whose summary row calls the job Blocking (`:402`). Everything after either
+stop is unexecuted, so the repository has no verdict on most of its own gates.
 
 - **S0-a #587**, critical. `guard:entry-import-budget` is the twentieth leg of
   the release chain and its own unit test is red, so the chain cannot be walked
   whole until it passes. Also fixes its position: it reads `dist/` and runs
   before `build`.
-- **S0-b #588**, high, and the one that truncates everything. The generated
+- **S0-b #588**, high, and the one that truncates the ladder. The generated
   board views are stale at the commit that generates them, `docs:check` exits
-  1, and it is `certification-gates.yml:235` at HEAD. Includes the ladder-row
-  correction on #568 and the reproducibility of `docs:generate`.
+  1, and it is `certification-gates.yml:235` at HEAD `2599623e`. Includes the
+  reproducibility of `docs:generate`. The ladder-row correction it exposes is
+  #568's, at S5.
 - **S0-c #589**, medium. CI reports verdicts it does not hold: the eight
   certified shards are `continue-on-error`, `cancel-in-progress` erases a
   verdict rather than deferring it, and one contrast leg is mislabelled.
+- **S0-d #574**, high (round-2 `r2-guards/r2-guards-1`), `in-progress`, and the
+  next stop once S0-b lands: `comparison parity (strict)` at
+  `certification-gates.yml:244`, no `continue-on-error`. Measured at HEAD
+  `2599623e`: the postcard revision `0f1e1198` is an ancestor
+  (`git merge-base --is-ancestor` exits 0) and 2577 covered paths have changed
+  since it, so the currency rule fails and the step blocks. This ticket cannot
+  clear it alone — the step goes green only when
+  `lastFullCertifiedSuiteRun` (`apps/comparison/src/data/certified-suite-evidence.ts:21-31`)
+  is re-pinned to a revision with a fresh full certified run, which is S0-e's to
+  supply. What #574 owes before that pin is the covered-path widening and the
+  uncovered-but-decisive test, so the pin is not recorded under a rule that
+  cannot see the runner, the merger or the pinned oracle.
+- **S0-e #578**, `in-progress`, the certified job and the other blocking red.
+  Its merge step reported `Run status: failed`, `2085 passed, 88 failed,
+4 skipped, 0 waived, 1 flaky` at `96376e9a` and exited 1. It supplies the
+  revision S0-d's pin needs, so S0-d's rule lands first and S0-e's run is
+  recorded under it.
+
+**What makes `certified report` exit 0**, since the release condition rests on
+it. `merge-certified-reports.ts` exits 1 when a shard cannot explain its exit,
+when a budget is over, or when `waiverGateFails`, which is true while any
+failure is unwaived (`apps/comparison/scripts/certified-waivers.ts:269-271`).
+So exactly two mechanisms reach green: fix the failure, or waive it in
+`apps/comparison/e2e/certified-waivers.json` — `[]` at HEAD — with a board
+ticket that is still open and a future `expires`, both enforced by that script.
+`certification-debt.md` is neither: no workflow, script or `package.json` entry
+reads it (grepped at HEAD). So the owner decision above that certified failures
+may ship as named debt is carried out as a waiver **per named failure** plus its
+debt entry, never as the debt entry alone. The conductor's default is #578's own
+order — fix by cause first, and waive only what an owner call names as a
+deliberate Solid 2 divergence. Today 88 failures are the roster and 0 are
+waived, so nothing is being waived by default.
 
 **S1 — walk the chain as twenty legs. #590**, high, blocked by #587. Retires
 "nineteen of nineteen green": the chain grew a twentieth leg on 2026-09-20 and
@@ -156,10 +203,14 @@ published.
   the entering seam still reports entering before it is placed. A
   discriminating test, then match RAC or name the deviation.
 
-**S3 — stop the ratchets outrunning their receipts. #597**, high, with #579 as
-its prerequisite in fact: nine of the thirty facts absorbed into the parity
-baseline are the mis-pairing #579 names, so re-measuring before the attribution
-rule is fixed measures the same bug again.
+**S3 — stop the ratchets outrunning their receipts.** Two tickets in order,
+because the second measures with the first's instrument.
+
+- **S3-a #579**, `open`. The upstream-test-parity oracle attributes every fact
+  by filename, so a component's vocabulary is filed under another's name.
+- **S3-b #597**, high, `open`, blocked by S3-a in fact: nine of the thirty facts
+  absorbed into the parity baseline are the mis-pairing #579 names, so
+  re-measuring before the attribution rule is fixed measures the same bug again.
 
 **S4 — the publish path. #598** (medium): `guard:publish-drift` measures from a
 bump that was never published and skips every package with a pending changeset.
@@ -167,22 +218,54 @@ bump that was never published and skips every package with a pending changeset.
 attestation. Both are about the route to npm being checkable rather than
 attested.
 
+**S5 — enable the two workflows the release condition names. #568**, `open`,
+carrying `test-integrity/main-red-and-release-unsatisfiable` (high) and
+`guards-b/553-guards-run-nowhere` (medium). Its deliverable is two parts. The
+owner action, which this seat may not take:
+
+```
+gh workflow enable release-readiness.yml
+gh workflow enable site-gate.yml
+```
+
+`gh workflow list --all` still reports both `disabled_manually`, and
+`scripts/check-release-evidence.mjs:9-13` requires a successful run of
+`certification-gates.yml`, `release-readiness.yml` and `site-gate.yml` at the
+exact release sha, so the release condition is unmeetable until both are on.
+The writer's part is the ladder-row correction S0-b exposes — the earliest
+blocking step is `:235`, and the rows that still say otherwise are named on
+#588's Work item 3 — plus this ticket's own question of what the chain is for.
+Before Site, because Site Gate renders no route while it is off, and before
+#547, which cites all three runs.
+
 **Site — #545, #549.** Unblocked by S0-b only in the sense that a red ladder
 hides their evidence; the real gate is that Site Gate is `disabled_manually`,
-so no CI run in this campaign has rendered an `apps/web` route. Enabling it is
-an owner action, recorded on #568.
+so no CI run in this campaign has rendered an `apps/web` route. That enable is
+S5's.
 
 **Public face — #548, #550, #600.** #548 and #550 fix facts in copy Fable owns.
 #600 is the install tag, and it is blocked on an owner call: `rc` alone, or
 `rc` plus a hand-moved `next`. The conductor's default is `rc` alone.
 
-**Then #547**, the publish itself.
+One prerequisite of #547 rides here, from `board-truth/546-lens4-unproved`
+(high, confirmed). #546 is `merged` with lens 4 unproved by design; it handed
+`lens4a-site-claims.md`, `lens4b-site-examples.md` and `lens4c-links.md` to
+#548 and #549. The status is not walked back — the scheme's lifecycle runs
+forward only, OWNERS deviation 5 — so the re-proof is a named obligation of the
+consumers instead: **#548 re-proves every lens 4a/4b row it publishes and #549
+every row it fixes in `apps/web`, and neither is done while a row it consumes
+is unproved.** #549's Done-when leans on Site Gate, which proves no claim row,
+so the re-proof is row-by-row work, not a gate result.
+
+**Then #547**, the publish itself, after S5's three runs are green at one sha
+and the lens 4a/4b rows are re-proved.
 
 Off the path: **#601**, the low residues the stages do not claim — seven from
 round 1, three more from round 2. Nothing in it gates a gate.
 
 **The release condition, in one sentence.** At one sha: the twenty-leg chain
-green locally with its exit codes recorded, and Certification Gates, Release
-Readiness and Site Gate each with a successful run at that same sha — which
-needs the two disabled workflows enabled first, an owner action — and only then
-publish.
+green locally with its exit codes recorded, and Certification Gates — both its
+`gates` ladder and its blocking `certified report` job, which is S0's whole
+subject — Release Readiness and Site Gate each with a successful run at that
+same sha, which S5 makes possible by enabling the two disabled workflows, and
+only then publish.

@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Four fact-level findings on the copy this ticket owns; under the 2026-09-20 owner rule the words are Fable's, so these are facts to fix, not prose to rewrite. `public-face/contributing-names-a-disabled-gate`: CONTRIBUTING tells contributors the release gate runs on every PR and every push to main, and Release Readiness is `disabled_manually`. `public-face/sideeffects-false-is-wrong`: `packages/viviana-ui/README.md:156` says `sideEffects` is `false`; the manifest says `[*.css]`, and so do solid-spectrum, kumo and geist - only solidaria, solidaria-components and solid-stately are `false`. The error is seeded in `.agents/drafts-548/claims.md:46`, marked PROVEN, so correct the claim row too or the next rewrite repeats it. `public-face/each-package-two-builds`: false for solid-stately. `public-face/a11y-evidence-overstated`, and the skeptic cut this one down hard - `every route` and `a different package` are both wrong, because `a11y:contrast` runs color-contrast over ALL_ROUTES in both themes and `a11y:smoke` includes `viviana-ui-docs.spec.ts`, and `a11y:axe:aa` does set `AXE_INCLUDE_CONTRAST=1`. What survives: no leg is AA-on-every-route, and `PLAYGROUND_TARGET_SIZE_EXEMPTIONS` selectors are excluded. State what the commands cover. The install-tag half of this ticket's findings is #600.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "#544's path now names the lens 4 re-proof as this ticket's obligation, at the Public-face stage and before #547 publishes. `board-truth/546-lens4-unproved` is high and confirmed: #546 is `merged` saying `Lens 4 is not re-proved here by design` and hands `lens4a-site-claims.md` and `lens4b-site-examples.md` to this ticket and #549. The status is not walked back - the scheme runs forward only - so the obligation is carried here: every lens 4a/4b row this ticket's copy publishes is re-proved before it publishes, and a row that is not re-proved keeps this ticket open.",
+    }
 ---
 
 ## Scope
