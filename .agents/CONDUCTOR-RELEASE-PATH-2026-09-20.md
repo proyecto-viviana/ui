@@ -212,6 +212,24 @@ from, and it is a large difference: those jobs are the certified suite itself �
 run of anyway. They are also the expensive ones, which is the argument for
 running them on GitHub's runners rather than here.
 
+### Ladder state at `40ac9573`
+
+| step | gate                   | ticket | state                                  |
+| ---: | ---------------------- | ------ | -------------------------------------- |
+|  121 | `rac-export-gap`       | #569   | merged                                 |
+|  160 | `layer-boundary`       | #570   | merged                                 |
+|  169 | `idiomatic-solid`      | #571   | merged, `2ca4c94d`                     |
+|  185 | `examples-purity`      | #571   | merged, same commit                    |
+|  193 | `api-reference`        | #559   | merged — re-checked here, 84 pages, 0  |
+|  219 | `jsx-ref-dead-code`    | #572   | merged, `40ac9573`                     |
+|  227 | `upstream-test-parity` | #573   | **next red, unstarted**                |
+|  239 | `comparison-parity`    | #574   | open, decision recorded                |
+|  251 | `a11y:smoke`           | #575, #576 | open, two defects                  |
+
+So six of the nine are closed and the walk now reaches **227**. Four of those
+six were records that had stopped describing the tree rather than defects in it,
+which is what #577 is for.
+
 ## Stage 2 — clear the reds, in ladder order
 
 One ticket each, the writer implements, this seat reviews against a re-run and
@@ -221,6 +239,12 @@ failure nobody has seen, and the later ones are the expensive ones.
 The audit residue already filed, to be triaged by whether it blocks a gate
 rather than by how interesting it is: #554, #557, #558, #559, #560, #561, #562,
 #563, #568.
+
+#577 is residue of this stage rather than the audit's, and is the one item here
+deliberately **not** on the RC path: the four gates that provoked it are green,
+so taking it before #573, #574, #575 and #576 would be choosing the interesting
+work over the blocking work — the exact triage error the paragraph above warns
+about.
 
 #568 is the one that should not be deferred past this stage. If the two ladders
 keep no stated relationship, the next campaign rediscovers all of this.
@@ -247,16 +271,26 @@ Its history names these, and each is checked here before the release flow starts
 
 In order, all on the same commit, from #547:
 
-1. Changesets prerelease mode, tag `rc`.
+1. Changesets prerelease mode, tag `rc` — then `npm dist-tag add … next` as a
+   separate step, because one Changesets `tag` field drives both the version
+   suffix and the dist-tag and no single command produces `-rc.N` on `next`.
+   Decided on #547 with the three source lines that prove it, and the step is
+   owed a guard rather than a runbook sentence.
 2. One changeset per package, stating the Solid 2 requirement and the
-   `@solidjs/web` peer in the consumer's words.
+   `@solidjs/web` peer in the consumer's words. **Already written:**
+   `.changeset/solid-2-rc.md` names all five as `minor` and states the
+   `jsxImportSource` and `[...solid({ ssr: true })]` requirements. 50 changesets
+   pending in total, covering every in-scope package.
 3. `vp run pr:check`, `vp run release:prepare`, and a certified run whose result
    is recorded.
 4. `vp run guard:publish-drift` and `pack:local-chain` into a clean off-workspace
    Solid 2 consumer, which builds and renders with SSR from the packed copies.
    This is the step that catches what the workspace hides: `ui@0.6.0` shipped
    broken past every in-repo check.
-5. Publish `--tag next`. Never move `latest`.
+5. `changeset publish`, which lands the packages on `rc`, then
+   `npm dist-tag add <pkg>@<version> next` per package. **Not** `--tag next`:
+   passing `--tag` in pre mode is a hard error, `publish.mjs:61-63`. Never move
+   `latest`; it cannot move by accident here, and #547 records why.
 
 Standing owner authority covers push, the `next` publish and the docs deploy.
 It does not cover moving `latest`, a new public name, a branch or a PR, or any
