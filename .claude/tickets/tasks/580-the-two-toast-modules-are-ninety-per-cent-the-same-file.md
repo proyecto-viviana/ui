@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "filed by the close-gates writer while fixing #578's first cause, to discharge the standing rule that two copies are either extracted or ticketed. `grep -rn '=> fn)' packages/*/src/` returned exactly two lines - `packages/solid-spectrum/src/toast/index.tsx:317` and `packages/viviana-ui/src/toast/index.tsx:320` - character for character, and the same one-character-class defect had to be repaired in both, with a regression test written twice. Not extracted in that commit because the duplication is the whole module, not the helper: the two files are 1162 and 1248 lines and differ on 118 lines after whitespace folding, and `startViewTransition` closes over each package's own `ensureToastAnimationStyles` and `globalReduceMotion`. Lifting twenty lines while a thousand stay doubled is the gesture, not the fix",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "seam checked by the close-gates writer; blocked on an approval. Neither seam in Work step 1 is open to a writer. Moving down into `solidaria-components` puts S2's styled behaviour there (keyframe injection, the view-transition wrapper, reduce-motion classes), and upstream RAC has none of it: the headless chain mirrors RAC, and styled packages theme and compose. A shared module both packages import needs one of two things. One is a new workspace package, a name, which is owner-steered before it exists. The other is `@proyecto-viviana/ui` depending on `@proyecto-viviana/solid-spectrum`, a new dependency, which needs explicit approval. Today both depend only on stately, solidaria and solidaria-components. Recommendation: a `private: true` internal workspace package holding the behavioural half, listed as a devDependency of both and inlined by each package's `vp pack`. Nothing new reaches npm and no public name exists, but it is still a new package and a new devDependency, so it needs the owner's yes. The duplication measured today: 118 differing lines after whitespace folding, as filed. Not started",
+    }
 ---
 
 ## What is duplicated
