@@ -1604,3 +1604,76 @@ manifest targets. `vp run guard:jsx-ref-dead-code` EXIT=0: 12 reviewed-safe
 direct refs and 6 emitted behavior fixtures retained — 5 markers now, the
 `closest(...alertdialog)` one among them.
 `vp test run packages/solidaria-components/test/Dialog.test.tsx` EXIT=0, 33/33.
+
+## #573 — bucket 3 first, and bucket 3 says stop
+
+Step 227. No baseline moved, no `--allow-growth` run, no heavy command needed:
+`vp run guard:upstream-test-parity` reads source and the vendored oracle and
+takes 0.8s, so the packages built for #572 were never a dependency of it. The
+thirty added facts are listed by the check run itself
+(`scripts/check-upstream-test-parity.ts:729-751` prints them on failure), so the
+`--write-baseline` refusal path was not needed to enumerate them and was not
+run.
+
+Twelve of the thirty are ROLE rows. Classified one at a time, each against the
+source on both sides, before anything was written.
+
+### The seven `role|form` rows are one cause
+
+`checkbox`, `combobox`, `numberfield`, `radiogroup`, `searchfield`, `select`,
+`textfield` — all seven in `packages/solidaria-components/test/`, all the same
+idiom: a `<form aria-label="… form">` wrapper fetched with
+`getByRole("form", { name: … })` purely as a handle to call `requestSubmit()` or
+`reset()`. Seven commits, all dated 2026-09-04, all one campaign — `51c9a10f`,
+`74d42826`, `9156bc6a`, `49b825eb`, `61f82d72`, `e1ed9cd0`, `7ad95617` — porting
+native form validation and reset onto the field components.
+
+Upstream asserts the same behaviour and reaches the form a different way:
+`react-aria-components/test/Checkbox.test.js:386`, `checkbox.form.requestSubmit()`
+— the DOM property off the input, which queries no role at all. So the divergence
+is in how the test grips the form, not in what either side claims the component
+is. One fact about our test idiom, recorded once; not seven facts about seven
+components.
+
+### The other five ROLE rows, yes/no each
+
+| fact                          | our test asserts the wrong thing? | what it actually is                                                                                            |
+| ----------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `tabs\|role\|textbox`         | no                                | a bare `<textarea aria-label="Synopsis">` fixture inside a `TabPanel`, `viviana-ui/test/Tabs.test.tsx:30`         |
+| `searchfield\|role\|dialog`   | no                                | `ContextualHelp`'s popover, composed into the field, `solid-spectrum/test/SearchField.test.tsx:281`              |
+| `checkbox\|role\|img`         | no                                | the `(required)` asterisk; S2 `Icon.tsx:134,205` sets `role="img"` with a label, ours at `spectrum-icon.tsx:277` |
+| `combobox\|role\|presentation`| no                                | the section heading; mirrors S2 `ComboBox.tsx:781` exactly                                                       |
+| `select\|role\|presentation`  | no                                | the same heading; mirrors S2 `Picker.tsx:497` exactly                                                            |
+
+Zero of the twelve is our test asserting a role the component should not have.
+Three are broader coverage of a shape upstream really does render and its own
+tests never assert. Nine are a role that belongs to something else in the render
+— a fixture element, or a composed child owned by another component.
+
+### Which makes this a finding about the guard
+
+The extractor takes every `getByRole(…)` in a test file and attributes it to the
+component the **file name** names (`RX.role`, `:336-339`; keys from the filename
+via `ALIASES`, `:120`). A test file's vocabulary is therefore everything it
+renders, not what the component under test is. Nine of twelve ROLE rows are that,
+and the stall is not confined to the role bucket: `tabs|aria|aria-hidden` is
+`<span aria-hidden="true">icon</span>` scaffolding at
+`solid-spectrum/test/Tabs.test.tsx:495`.
+
+The clearest case is not in bucket 3 at all. `switch|aria|aria-checked` comes
+from `packages/viviana-ui/test/Switch.test.tsx`, which imports `TabSwitch` and
+`SegmentedControl` and does not render a `Switch` anywhere — it is a segmented
+control that renders radios. The oracle pairs that file against upstream's
+`Switch` tests on the strength of its name, so one component's whole vocabulary
+is filed under another's. That is not drift the baseline should absorb.
+
+So, per the hand-over's own condition — "if most of bucket 3 turns out to be the
+second kind, stop and tell me" — stopped here. The baseline is untouched
+(`sha256` unchanged), nothing was re-blessed, and no test file was edited,
+because bucket 3 proved none of them wrong.
+
+What the guard could have reported itself, for #577 rather than here: it knows
+which file each fact came from and does not carry it into the fact, so
+`switch|aria|aria-checked` cannot say that its source file never renders a
+Switch. A fact that carried its file would make a mis-pairing visible in the
+output instead of in a reader's head.
