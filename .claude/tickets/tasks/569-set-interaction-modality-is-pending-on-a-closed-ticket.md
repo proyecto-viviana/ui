@@ -4,12 +4,17 @@ type: task
 title: "setInteractionModality is pending on a merged ticket, so guard:rac-export-gap is red"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor's local ladder walk of 2026-09-20 evening, the second red after #567. `vp run guard:rac-export-gap` EXIT=1 in 1s: `setInteractionModality is listed as pending on #231 (status: merged) - ticket closed, export still missing`. It is step 121 of certification-gates.yml, so it is where the CI walk stops next, seventy-two steps before the api-reference red of #559. Evidence `.agents/chain-walk-2026-09-20/ladder-rac-export-gap.out.txt`",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #559 merged, and taken ahead of #570 and #571 because it is the earliest red on the ladder: step 121, where the CI walk stops next. No brief file - the ticket names the shape to follow (the four sibling re-exports at lines 1001-1011), both traps (the barrel is attribution-reviewed, and a new named export owes a changeset) and the two commands that close it. The one judgement it leaves open is where in the barrel the export belongs; read what is around it and say why",
     }
 ---
 
