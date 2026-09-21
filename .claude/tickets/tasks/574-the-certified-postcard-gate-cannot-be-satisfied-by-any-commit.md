@@ -4,7 +4,7 @@ type: task
 title: "The certified-postcard gate cannot be satisfied by any commit, so step 239 is red forever"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-20,
       note: "shape decided by the conductor and written into the ticket as `The decision`: ancestry plus coverage, with `apps/comparison/src/data/certified-suite-evidence.ts` excluded from the covered set - that exclusion is the witness the gate never had, since without it the commit that records a run invalidates the run it records, which is equality's bug in a new spelling. Two constraints found while deciding, both cheap to miss. `actions/checkout` in `certification-gates.yml` sets no `fetch-depth` (lines 47, 420, 474), so CI clones at depth 1 and neither `merge-base --is-ancestor` nor a `revision..HEAD` path diff can run; the job that runs step 239 needs `fetch-depth: 0`, and a revision missing from the object graph must fail with a message naming it rather than degrade to a pass. And the postcard file has exactly three readers - itself, `acceptance-schema.test.ts` and `report-component-parity.ts` - so the blast radius of changing the rule is three files. Not yet handed to the writer: ladder order puts #572 (219) and #573 (227) first",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "unblocked, queued behind #578. Both ladder predecessors this ticket was held for have closed - #572 at 219 and #573 at 227 (`2b444a89`) - and CI confirms the ladder has walked past them: `Certification Gates` run 35554086311 at `1a98e250` failed at executed step 38, which is step 239, `comparison parity (strict)`. That is this ticket, reached for the first time, and it is now the first red step of the `gates` job rather than a prediction. It stays behind #578 only because #578 is the `certified` job and the evidence #547 asks for; nothing else blocks it. The shape is already decided in the entry above and in `The decision` - ancestry plus coverage, excluding `apps/comparison/src/data/certified-suite-evidence.ts` from the covered set - so the writer taking this implements a decision rather than making one. Two constraints carry forward and are easy to lose: the job needs `fetch-depth: 0` (checkout is depth 1 at lines 47, 420, 474, so neither `merge-base --is-ancestor` nor a `revision..HEAD` diff can run), and a revision missing from the object graph must fail naming it, never degrade to a pass. Note the ordering coupling with #194 and #578: this gate decides what re-pinning the postcard means, and #578 decides which revision is worth pinning, so fixing this one first is correct - it makes the pin expressible, and #578 then supplies the revision",
     }
 ---
 
