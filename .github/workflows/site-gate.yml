@@ -17,8 +17,10 @@ permissions:
   contents: read
 
 concurrency:
-  # A push to main runs to a verdict; every other ref cancels its predecessor (#589).
-  group: site-gate-${{ github.ref }}
+  # A push to main runs to a verdict: its group is keyed by sha, so no later
+  # push can cancel it in progress or displace it from the group's one pending
+  # slot. Every other ref keeps one group and cancels its predecessor (#589).
+  group: site-gate-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:

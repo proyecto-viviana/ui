@@ -8,7 +8,9 @@ permissions:
   contents: read
 
 concurrency:
-  # A push to main runs to a verdict; every other ref cancels its predecessor (#589).
+  # `pull_request` only, so this never runs on a push to main; each PR ref keeps
+  # one group and cancels its superseded run. The main-exempt expression is kept
+  # so adding a push trigger cannot make main cancellable by accident (#589).
   group: changesets-check-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 

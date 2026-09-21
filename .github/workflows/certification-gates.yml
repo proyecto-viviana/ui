@@ -19,7 +19,8 @@ name: Certification Gates
 #               means closing its ticket first, not deleting its comment.
 #
 # `guard:upstream-freshness` is the only advisory gate left: the certified
-# shards were advisory by accident, not by decision, and now conclude red (#589).
+# shards were advisory by accident, not by decision, and now conclude red unless
+# every failure they saw is waived in `certified-waivers.json` (#589).
 #
 # Trigger: PRs AND push-to-main. Work on this repo lands direct-to-main, so a
 # PR-only ladder structurally never fires (`ci-main-gate-wiring`).
@@ -39,8 +40,18 @@ concurrency:
   # `cancel-in-progress: true` cancelled a half-hour suite on every push: 54 of
   # the last 200 main runs concluded `cancelled`, neither a green nor a recorded
   # red, and `check-release-evidence.mjs` treats a cancelled run at the release
-  # sha as a hard block (#589). Every other ref still cancels its superseded run.
-  group: certification-gates-${{ github.ref }}
+  # sha as a hard block (#589).
+  #
+  # Not cancelling the running one is only half of it: a group holds at most one
+  # *pending* run, and "any existing pending job or workflow in the same
+  # concurrency group will be canceled" when a newer one queues, whatever
+  # `cancel-in-progress` says (GitHub workflow syntax, `concurrency`). A run
+  # here takes ~26 min and pushes land ~11 min apart, so one shared main group
+  # would still lose the middle push. So main keys the group by sha — the shape
+  # `release.yml` already uses — and no main run can displace or queue behind
+  # another. Every other ref keeps one group and still cancels its superseded
+  # run.
+  group: certification-gates-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -410,7 +421,7 @@ jobs:
             echo "| --- | --- |"
             echo "| \`comparison floors: pair budgets\` | Floor — six-slug default-state pair-diff with mismatch budgets. Not certified D3. |"
             echo "| \`comparison floors: contracts\` | Floor — styled-contract + Button-family fixtures. Not consumed-prop certification. |"
-            echo "| \`certified (N/8)\` | Recertification bar, sharded. Blocking: a shard whose slice fails concludes ❌, and the other seven still run. |"
+            echo "| \`certified (N/8)\` | Recertification bar, sharded. Blocking: a shard with an unwaived failure concludes ❌, and the other seven still run. |"
             echo "| \`certified report\` | The merged verdict over all eight shards, red ones included. Blocking. Waivers in \`apps/comparison/e2e/certified-waivers.json\`. |"
             echo ""
             echo "_\`typecheck\` still has a baselined 59-file \`@ts-nocheck\` blind spot across the public packages; the budget forbids additions and the burn-down ticket owns removals._"
@@ -653,15 +664,28 @@ jobs:
           name: comparison-dist-${{ github.run_id }}
           path: .
 
-      # A shard that exits 1 concludes red. It used to carry
+      # A shard whose slice really failed concludes red. It used to carry
       # `continue-on-error: true`, so all eight shard jobs rendered green over
       # an 88-failure suite and the exit code lived in the annotations alone
       # (#589). `fail-fast: false` above keeps the other seven running, the
       # upload below runs on a red shard, and `certified report` still merges
       # them into the one blocking verdict.
+      #
+      # Playwright's exit code is not waiver-aware, so it is not the verdict on
+      # its own: a failure waived in `e2e/certified-waivers.json` exits 1 too,
+      # and `check-release-evidence.mjs` reads the run conclusion rather than
+      # the merged report — a waiver would block publishing instead of
+      # permitting it. `check-certified-shard.ts` turns the exit code into the
+      # verdict this shard's own summary supports, and stays red for a missing
+      # summary, a load error or a stale waiver.
       - name: certified shard
         working-directory: apps/comparison
-        run: pnpm exec playwright test e2e/certified --shard=${{ matrix.shard }}/8 --workers=2
+        run: |
+          set +e
+          pnpm exec playwright test e2e/certified --shard=${{ matrix.shard }}/8 --workers=2
+          code=$?
+          set -e
+          pnpm exec tsx scripts/check-certified-shard.ts --shard ${{ matrix.shard }} --exit-code "$code"
 
       - name: Upload certified shard reports
         if: always()

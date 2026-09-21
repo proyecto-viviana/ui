@@ -4,10 +4,11 @@
  * Fails when a certified spec file discovers fewer cases than the committed
  * floor, or disappears from the suite altogether.
  *
- * The certified shards report what they ran, never what they should have run,
- * and the shard job is `continue-on-error`. So deleting a spec, renaming it out
- * of `testMatch`, or wrapping a describe in a condition that never fires makes
- * the suite smaller and every gate greener. This guard reads the same discovery
+ * The certified shards report what they ran, never what they should have run.
+ * So deleting a spec, renaming it out of `testMatch`, or wrapping a describe in
+ * a condition that never fires makes the suite smaller and every gate greener —
+ * a red shard now concludes red (#589), but a case that no longer exists fails
+ * nothing at all. This guard reads the same discovery
  * Playwright uses — `playwright test e2e/certified --list --reporter=json`, no
  * browser and no web server, about two seconds — and compares the per-file case
  * count against `apps/comparison/e2e/certified-case-floor.json`.

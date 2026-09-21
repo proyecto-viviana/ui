@@ -241,6 +241,75 @@ export function checkShardOutcomes(summaries: readonly CertifiedSummary[]): Shar
   return problems;
 }
 
+/** What a certified shard job should conclude, and the sentence that says why. */
+export interface CertifiedShardVerdict {
+  red: boolean;
+  reason: string;
+}
+
+/**
+ * The verdict a certified shard job concludes with (#589).
+ *
+ * Playwright's own exit code is not waiver-aware: a failure waived in
+ * `e2e/certified-waivers.json` still exits 1. Handing that code straight to the
+ * job would make a fully waived suite conclude the run `failure`, and
+ * `scripts/check-release-evidence.mjs` reads the run conclusion, not the merged
+ * report — so a waiver would block publishing instead of permitting it. The
+ * shard therefore exits through this gate, which downgrades exit 1 to green
+ * only when the shard's own summary explains the exit that way: a `failed` run
+ * whose every failure is waived, with no load error and no waiver problem.
+ * Everything else stays red, including a shard that wrote no summary at all.
+ */
+export function certifiedShardVerdict(
+  summary: CertifiedSummary | null,
+  exitCode: number,
+): CertifiedShardVerdict {
+  if (exitCode === 0) return { red: false, reason: "the shard exited 0" };
+  if (summary == null) {
+    return { red: true, reason: `the shard exited ${exitCode} and wrote no summary` };
+  }
+  const shard = shardLabel(summary);
+  const problems = checkShardOutcomes([summary]);
+  if (problems.length > 0) {
+    return {
+      red: true,
+      reason: `${shard} does not explain its own exit: ${problems
+        .map((problem) => `${problem.kind}: ${problem.detail}`)
+        .join("; ")}`,
+    };
+  }
+  if (summary.runStatus !== "failed") {
+    return {
+      red: true,
+      reason: `${shard} exited ${exitCode} with run status ${summary.runStatus ?? "none"}`,
+    };
+  }
+  if (summary.waiverProblems.length > 0) {
+    return {
+      red: true,
+      reason: `${shard} carries ${summary.waiverProblems.length} waiver problem(s): ${summary.waiverProblems
+        .map((problem) => `${problem.kind}: ${problem.detail}`)
+        .join("; ")}`,
+    };
+  }
+  if (summary.unwaived.length > 0) {
+    return {
+      red: true,
+      reason: `${shard} has ${summary.unwaived.length} unwaived failure(s)`,
+    };
+  }
+  if (summary.waived.length === 0) {
+    return {
+      red: true,
+      reason: `${shard} exited ${exitCode} but names no failure to waive: ${summary.totals.failed} failed, none waived and none unwaived`,
+    };
+  }
+  return {
+    red: false,
+    reason: `${shard} failed only on ${summary.waived.length} waived case(s); the merged report holds the verdict`,
+  };
+}
+
 function uniqueProblems(problems: readonly WaiverProblem[]): WaiverProblem[] {
   const seen = new Set<string>();
   const result: WaiverProblem[] = [];

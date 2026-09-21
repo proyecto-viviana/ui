@@ -84,8 +84,12 @@ waiver and do not substitute for the certification playbook.
 
 A fourth workflow, `Certification Gates`, runs the guard/parity ladder. Its
 blocking steps include pinned-upstream preflight, the monotonic `@ts-nocheck`
-budget, baselined parity hard edges, and the certified suite. Two checks remain
-advisory and say why in the workflow itself. The three evidence workflows fire
+budget, baselined parity hard edges, and the certified suite. One check remains
+advisory and says why in the workflow itself: `guard:upstream-freshness`, red
+when Adobe ships past our pin, which is news about upstream and not a defect in
+this branch. The certified shards were advisory by accident until #589; a shard
+now concludes red unless every failure it saw is waived in
+`apps/comparison/e2e/certified-waivers.json`. The three evidence workflows fire
 on pull requests **and on push to `main`** — work here lands direct to main, so a
 PR-only gate never fires.
 

@@ -70,6 +70,72 @@ function jobBlock(workflow, job) {
   return next >= 0 ? body.slice(0, next + 1) : body;
 }
 
+// `concurrency:` is legal on the workflow AND on any job, so one file can hold
+// several blocks. Reading the file's first `cancel-in-progress` and pairing it
+// with the file's first `group` checks one block against another block's key
+// and walks past every later one, which is exactly the drift this contract
+// exists to catch (#589). Each block is read whole, on its own.
+function concurrencyBlocks(workflow) {
+  const lines = workflow.split("\n");
+  const blocks = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const header = /^( *)concurrency:(.*)$/.exec(lines[index]);
+    if (!header) continue;
+    const indent = header[1].length;
+    const inline = header[2].trim();
+    if (inline.length > 0) {
+      // The scalar spelling is a group with the default `cancel-in-progress: false`.
+      blocks.push({ line: index + 1, group: inline, cancel: "false" });
+      continue;
+    }
+    let group = "";
+    let cancel = "false";
+    for (let child = index + 1; child < lines.length; child += 1) {
+      const line = lines[child];
+      if (line.trim() === "") continue;
+      if (line.search(/\S/) <= indent) break;
+      if (/^\s*#/.test(line)) continue;
+      const groupMatch = /^\s*group: *(.+?) *$/.exec(line);
+      if (groupMatch) group = groupMatch[1];
+      const cancelMatch = /^\s*cancel-in-progress: *(.+?) *$/.exec(line);
+      if (cancelMatch) cancel = cancelMatch[1];
+    }
+    blocks.push({ line: index + 1, group, cancel });
+  }
+  return blocks;
+}
+
+function triggersPushToMain(workflow) {
+  const lines = workflow.split("\n");
+  const start = lines.findIndex((line) => /^on:\s*$/.test(line));
+  if (start < 0) return false;
+  const triggers = [];
+  for (let index = start + 1; index < lines.length; index += 1) {
+    if (lines[index].trim() === "") continue;
+    if (lines[index].search(/\S/) === 0) break;
+    triggers.push(lines[index]);
+  }
+  const pushAt = triggers.findIndex((line) => /^ {2}push:/.test(line));
+  if (pushAt < 0) return false;
+  const pushBody = [];
+  for (let index = pushAt + 1; index < triggers.length; index += 1) {
+    if (/^ {2}\S/.test(triggers[index])) break;
+    pushBody.push(triggers[index]);
+  }
+  const branchesAt = pushBody.findIndex((line) => /^ {4}branches:/.test(line));
+  // `push:` with no branch filter fires on main too.
+  if (branchesAt < 0) return true;
+  const flow = /^ {4}branches: *\[(.*)\] *$/.exec(pushBody[branchesAt])?.[1];
+  const entries = [];
+  if (flow != null) entries.push(...flow.split(","));
+  else
+    for (let index = branchesAt + 1; index < pushBody.length; index += 1) {
+      if (!/^ {6}- /.test(pushBody[index])) break;
+      entries.push(pushBody[index].replace(/^ {6}- */, ""));
+    }
+  return entries.map((entry) => entry.trim().replace(/^["']|["']$/g, "")).includes("main");
+}
+
 function stepBlock(jobText, stepName) {
   const start = jobText.indexOf(`- name: ${stepName}\n`);
   assert(start >= 0, `the job has no \`${stepName}\` step`);
@@ -184,33 +250,52 @@ try {
   // `cancel-in-progress: true` erased half of it: 54 of the last 200 main runs
   // of Certification Gates are `cancelled` — neither a green nor a recorded
   // red — and `check-release-evidence.mjs` treats a cancelled run at the
-  // release sha as a hard block (#589). Superseding still cancels everywhere
-  // else, which is what a ref-keyed group is for.
+  // release sha as a hard block (#589).
+  //
+  // `cancel-in-progress: false` alone does not buy that verdict: a group holds
+  // one *pending* run and "any existing pending job or workflow in the same
+  // concurrency group will be canceled" when a newer one queues (GitHub
+  // workflow syntax, `concurrency`). A run here outlasts the gap between
+  // pushes, so a workflow that fires on a push to main must key its group by
+  // sha there. Everywhere else the group stays per ref and still supersedes.
   const workflowsDir = path.join(ROOT, ".github", "workflows");
   const mainExempt = "${{ github.ref != 'refs/heads/main' }}";
-  let concurrencyGroups = 0;
+  const shaKeyedOnMain = /github\.ref *== *'refs\/heads\/main' *&& *github\.sha/;
+  let declaredBlocks = 0;
+  let mainShaGroups = 0;
   for (const file of readdirSync(workflowsDir).sort()) {
     if (!/\.ya?ml$/.test(file)) continue;
     const text = readFileSync(path.join(workflowsDir, file), "utf8");
-    const cancel = /^ *cancel-in-progress: *(.+?) *$/m.exec(text);
-    if (!cancel) continue;
-    concurrencyGroups += 1;
-    assert(
-      cancel[1] === "false" || cancel[1] === mainExempt,
-      `${file}: a push to main must end in a verdict — cancel-in-progress must be \`false\` or \`${mainExempt}\`, found \`${cancel[1]}\``,
-    );
-    const group = /^ *group: *(.+?) *$/m.exec(text)?.[1] ?? "";
-    assert(
-      !group.includes("github.ref") || cancel[1] === mainExempt,
-      `${file}: a ref-keyed concurrency group must still cancel superseded runs on every ref but main — found \`${cancel[1]}\``,
-    );
+    const pushesToMain = triggersPushToMain(text);
+    for (const block of concurrencyBlocks(text)) {
+      declaredBlocks += 1;
+      const where = `${file}:${block.line}`;
+      assert(
+        block.cancel === "false" || block.cancel === mainExempt,
+        `${where}: a push to main must end in a verdict — cancel-in-progress must be \`false\` or \`${mainExempt}\`, found \`${block.cancel}\``,
+      );
+      assert(
+        !block.group.includes("github.ref") || block.cancel === mainExempt,
+        `${where}: a ref-keyed concurrency group must still cancel superseded runs on every ref but main — found \`${block.cancel}\``,
+      );
+      if (!pushesToMain) continue;
+      assert(
+        shaKeyedOnMain.test(block.group),
+        `${where}: this workflow runs on a push to main, so its concurrency group must be keyed by sha there — one group per main ref leaves a single pending slot that the next push cancels, whatever cancel-in-progress says — found group \`${block.group}\``,
+      );
+      mainShaGroups += 1;
+    }
   }
   assert(
-    concurrencyGroups >= 5,
-    `expected the concurrency contract to cover the workflows that declare a group, checked only ${concurrencyGroups}`,
+    declaredBlocks >= 6,
+    `expected the concurrency contract to cover every declared group, checked only ${declaredBlocks}`,
+  );
+  assert(
+    mainShaGroups >= 3,
+    `expected the three push-to-main workflows to key their groups by sha, found ${mainShaGroups}`,
   );
   console.log(
-    `PASS: ${concurrencyGroups} workflow concurrency groups leave a push to main uncancelled.`,
+    `PASS: ${declaredBlocks} workflow concurrency blocks let a push to main reach a verdict (${mainShaGroups} keyed by sha on main).`,
   );
 
   const certificationWorkflow = readFileSync(
@@ -259,6 +344,16 @@ try {
   assert(
     certifiedKeys.some((line) => /^ *fail-fast: *false *$/.test(line)),
     "the certified matrix must keep `fail-fast: false`, or the first red shard cancels the other seven and the report loses their evidence",
+  );
+  // ...and a shard that fails only on waived cases must not. Playwright's exit
+  // code knows nothing about `certified-waivers.json`, so without this gate a
+  // fully waived suite concludes the run `failure` and blocks the release that
+  // the waiver exists to permit — `check-release-evidence.mjs` reads the run
+  // conclusion, not the merged report (#589).
+  const shardStep = stepBlock(certifiedJob, "certified shard");
+  assert(
+    shardStep.includes("check-certified-shard.ts") && shardStep.includes("--exit-code"),
+    "the certified shard must exit through `check-certified-shard.ts --exit-code`, or a waived failure renders the whole run red",
   );
   const shardUpload = stepBlock(certifiedJob, "Upload certified shard reports");
   assert(
