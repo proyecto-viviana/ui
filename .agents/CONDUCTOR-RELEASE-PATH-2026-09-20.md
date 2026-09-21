@@ -108,51 +108,109 @@ It is also the gate standing between the owner's decision on #547 (record
 certified evidence by running Certification Gates in CI) and its being carried
 out: the recording mechanism rejects every recording.
 
-### Step 251, and why it was not run
+### Step 251, and the two owner calls that were already answered
 
-Axe full was left unrun on purpose, not for lack of a slot. Its Playwright
-config starts the server with `vp build && vp preview --port 4000`
-(`apps/web/playwright.config.ts:33`), and all three legs of `a11y:full` are
-`--filter @proyecto-viviana/web`. So 251 is exactly as green as `build:web`,
-and `build:web` does not complete. From `.agents/green-main-2026-09-20.log.md`,
-"Left red":
+Written first as "251 cannot run and two owner calls stand in the way", and
+that was wrong in this seat's own direction — it read
+`.agents/green-main-2026-09-20.log.md` as the state of the tree instead of
+checking the tree. Corrected here in the same session, which is what the rule
+asks for.
 
-```
-[MISSING_EXPORT] "parseServerFunctionUrl" is not exported by
-  @solidjs/web@2.0.0-rc.9/server-functions/dist/server.js
-  ← @tanstack/solid-start@2.0.0-rc.8/server-functions-handler.js
-```
+The reasoning that holds: all three legs of `a11y:full` are
+`--filter @proyecto-viviana/web`, and `apps/web/playwright.config.ts:33` starts
+its server with `vp build && vp preview --port 4000`. So step 251 is exactly as
+green as `build:web`. What was wrong was the second half — that `build:web`
+fails. It does not:
 
-`@solidjs/web` rc.9 renamed it to `parseServerFunctionActionUrl`;
-`@tanstack/solid-start` rc.8 still imports the old name while declaring a peer
-range that admits rc.9; and `npm view @tanstack/solid-start versions` ends at
-rc.8, so there is nothing to bump to. This is a break between two upstream
-packages, not a defect in this repository, and it is the whole of what remains
-of #545 — whose earlier slices did land, in `dd634d36` and after, though the
-ticket still reads `next`.
+- `vp run build:web` EXIT=0, `✓ built in 4.40s`, receipt
+  `.agents/chain-walk-2026-09-20/ladder-build-web-after-patch.out.txt`.
+- The `parseServerFunctionUrl` break was closed by `1df7af51` under #545 itself,
+  by the patch this seat would have recommended: `patches/@tanstack__solid-start@2.0.0-rc.8.patch`
+  rewrites the three call sites in one dist file, wired through
+  `pnpm-workspace.yaml` `patchedDependencies` and keyed to the exact version so
+  the install fails the day TanStack moves. Reasoning in
+  `.agents/green-main-2026-09-20.decision-solid-start-patch.md`; the owner
+  confirmed it, and it is named in the writer's own task.
+- The peers question is answered too, and not by the `allowAny` silencing this
+  seat argued against: `ca1a0d82` (#532) added `solid-js` and `@solidjs/web` to
+  `peerDependencyRules.allowedVersions`, which is the ratcheting form.
 
-### Two owner calls, and they are the real gate
+So there are no unanswered owner calls on the path. Step 251 ran under
+`VIVIANA_GATE=1`, which is what turns off Playwright's server reuse and makes
+the local run the gate's run.
 
-Both were named by the previous seat and neither has been answered. They are
-what stands between here and a ladder that walks to the end:
+### What step 251 actually returned
 
-1. **The `parseServerFunctionUrl` break.** Either pin `@solidjs/web` back to an
-   rc that still exports the name — a repo-wide framework downgrade, with
-   `solid-js@2.0.0-rc.9` pinned alongside it — or patch the upstream import.
-   My recommendation is the patch: it is a rename, not a behaviour change, its
-   blast radius is one file in one app's dependency, it is reversible, and it
-   does not touch a single published package. The downgrade would reach back
-   into #531's port of all seven.
-2. **`pnpm peers check`.** It cannot go clean by bumping; every unmet member is
-   a transitive of the rc.8 line itself. Adding `solid-js` to `allowAny` would
-   silence the check rather than satisfy it, and would hide a Solid 1
-   dependency we introduced ourselves — which is precisely what it caught
-   before. Recommendation: leave it unsilenced and name it as RC debt.
+EXIT=1, and the shape of it is better than the count. Two of the three legs are
+clean — playground axe 10/10, comparison axe 81/81 — so the ported site has no
+axe violation anywhere. The third, `a11y:smoke`, is 7 failed / 67 passed, and
+the seven are **two defects, not seven**:
 
-So the red list for the RC is eight tickets — #559, #569 and #570 merged; #571,
-#572, #573, #574 open; plus #545, which is blocked upstream rather than by us.
-Of those, #574 and #545 are the two that clearing cannot reach: one needs a
-design decision here, the other an owner call on someone else's package.
+- Five are one shell in one scheme. Every failure is the `+ Create` floor in
+  `apps/web/e2e/examples.spec.ts:205`, the failing set is exactly the five
+  registry entries whose `fuchsiaFill` is `+ Create`, and each one passes in
+  `[dark]` and fails in `[light]`. #575, which also says what must not happen:
+  the helper compares two computed colour strings for equality, so "make it
+  pass" has a wrong answer that looks like success.
+- Two are the playground's toast region never appearing. #576.
+
+Receipt `.agents/chain-walk-2026-09-20/ladder-axe-full.out.txt`.
+
+The red list for the RC is nine tickets: #559, #569 and #570 merged, #571 green
+and committing; #572, #573, #574, #575, #576 open. #545 is not among them — most
+of it shipped in `dd634d36` and after, the patch closed the rest, and its record
+is corrected on the ticket. Of the nine, #574 is still the only one that
+clearing cannot reach: its gate has no passing witness, so it needs a design
+decision rather than a fix. That decision is now taken and written into #574:
+ancestry plus coverage, with the postcard's own file excluded from the covered
+set, and `fetch-depth: 0` on the job that runs step 239 because the workflow
+checks out at depth 1 today.
+
+### The `gates` job is now fully accounted for
+
+Written first as "three steps are unwalked", and that count was itself
+incomplete — it was made from the walk's own receipts rather than from the
+workflow. Read against the file, the `gates` job has 41 named steps: seven of
+setup, then **31 blocking gates**, then `guard:upstream-freshness`, then two
+`if: always()` reporting steps. Every one of the 31 now has either a green
+receipt or a ticket. The four that were missing from the list, and what closed
+them:
+
+| step | gate                        | result |
+| ---: | --------------------------- | ------ |
+|   86 | `typecheck`, the whole repo, not the `typecheck:apps` leg | EXIT=0 |
+|   90 | `guard:ts-nocheck-budget`   | EXIT=0, 59 against a ceiling of 59, nothing new or moved |
+|   97 | `test:ci-guard-contracts`   | EXIT=0, every negative fixture still exits non-zero |
+|  266 | `guard:upstream-freshness`  | `continue-on-error: true` — advisory by construction, never blocking |
+
+Receipts `ladder-typecheck-full.out.txt`, `ladder-ts-nocheck-budget.out.txt`,
+`ladder-ci-guard-contracts.out.txt`. `vp check` (103), `test:ssr` (107) and
+`test:hydrate` (111) were already green in the writer's own chain-state table —
+0 / 0 / 0, 29 files 78 tests and 27 files 98 tests — so they were walked, just
+not by this seat.
+
+That the ts-nocheck budget sits exactly **at** its ceiling is worth one line:
+it passes and it has no headroom, so the first `@ts-nocheck` any Solid 2 repair
+adds to a public package turns step 90 red. Nothing to do about it now; it is
+the kind of thing that costs a 34-minute CI walk to learn the hard way.
+
+### What the walk has still not covered
+
+"The ladder" above means the `gates` job. The workflow has more jobs, and this
+seat has walked none of them:
+
+| workflow line | job's work                                                        |
+| ------------: | ----------------------------------------------------------------- |
+|       432–452 | certified waiver units, D13 journey driver, `guard:certified-case-floor`, `comparison:build`, `guard:comparison-atom-css` |
+|      486, 549 | the pair and contract Playwright suites — floors, per #195 / #196  |
+|      622, 678 | the certified suite in shards, then `merge-certified-reports`      |
+
+So "nine tickets" is the red list of the `gates` job, which is now complete, and
+not of the workflow, which is not. The difference is where a surprise would come
+from, and it is a large difference: those jobs are the certified suite itself —
+#194's and #547's obligation, and the thing #574's new rule will demand a fresh
+run of anyway. They are also the expensive ones, which is the argument for
+running them on GitHub's runners rather than here.
 
 ## Stage 2 — clear the reds, in ladder order
 

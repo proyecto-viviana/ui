@@ -1,0 +1,3 @@
+$ vp exec tsc --noEmit -p tsconfig.typecheck.json ⊘ cache disabled
+
+EXIT=0

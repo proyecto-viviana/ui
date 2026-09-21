@@ -1,0 +1,9 @@
+$ node scripts/check-ts-nocheck-budget.mjs ⊘ cache disabled
+@ts-nocheck budget
+- current: 59
+- ceiling: 59
+- removed from baseline: 0
+- new or moved directives: 0
+PASS: no new public-package @ts-nocheck blind spots were introduced.
+
+EXIT=0

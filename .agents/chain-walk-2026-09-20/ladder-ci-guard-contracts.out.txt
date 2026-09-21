@@ -1,0 +1,35 @@
+$ node scripts/test-ci-guard-contracts.mjs ⊘ cache disabled
+PASS: release readiness checks both generated icon trees without writing them.
+PASS: release readiness proves the pack-pass sourcemap contract after the build.
+PASS: release readiness runs every app unit suite by discovery.
+PASS: release readiness holds the no-reuse contract for the browser gates.
+PASS: Changesets Check preserves complete release history.
+PASS: Certification builds package evidence before JSX size checks.
+PASS: Certification builds package evidence before the entry import budget.
+PASS: 396 test:run suites are oracle-free; guard:s2-intl-catalog runs after the oracle materializes.
+PASS: missing upstream oracle exits non-zero.
+PASS: new @ts-nocheck directive exits non-zero.
+PASS: generated declaration in public-package source exits non-zero.
+PASS: missing package export artifact exits non-zero.
+PASS: package artifacts preserve mapped attribution headers after printing.
+PASS: source maps restore attribution for transformed runtime chunks.
+PASS: declaration-only attribution survives package builds.
+PASS: attributed source without a mapped build output exits non-zero.
+PASS: changed package NOTICE exits non-zero.
+PASS: package attribution inventory uses shared source-marker parsing.
+PASS: attribution mappings preserve evidence and review boundaries.
+PASS: reviewed local source rejects content drift.
+PASS: reviewed composite mappings reject source-set drift.
+PASS: reviewed headerless mappings reject unsupported Adobe headers.
+PASS: exact-source header contracts are enforced and written safely.
+PASS: attribution mapping report requires the pinned upstream tree.
+PASS: unpublished 0.0.0 package does not require release registration.
+PASS: pending changesets cannot version a 0.0.0 package.
+PASS: ignored 0.0.0 package stays skipped even if leftover changesets name it.
+PASS: unregistered Kumo release candidate exits non-zero.
+PASS: evidenced Kumo release prerequisites exit zero.
+PASS: failed same-SHA release evidence exits non-zero.
+PASS: absent same-SHA release evidence exits non-zero.
+PASS: complete same-SHA release evidence exits zero.
+
+EXIT=0

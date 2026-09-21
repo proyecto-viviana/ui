@@ -1,0 +1,2044 @@
+$ VIVIANA_GATE=1 RUN_AXE=1 AXE_INCLUDE_CONTRAST=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts --reporter=line ⊘ cache disabled
+[WebServer] [PLUGIN_TIMINGS] Your build spent 91% of 4.9s inside plugin hooks (4.5s).
+[WebServer] Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+[WebServer]   - tanstack-router:code-splitter:compile-reference-file transform (33%, 1.6s, 184 calls)
+[WebServer] Those rows are 33% of the build; the rest of the 91% is below.
+[WebServer] Not measurable — 2 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+[WebServer]   - tanstack-start-core:import-protection resolveId (5573 calls)
+[WebServer]   - unplugin-macros transform (1110 calls)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer] 
+
+[WebServer] [PLUGIN_TIMINGS] Your build spent 91% of 4.2s inside plugin hooks (3.8s).
+[WebServer] Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+[WebServer]   - vite-plugin-cloudflare:additional-modules resolveId (37%, 1.6s, 4 calls)
+[WebServer]   - tanstack-router:code-splitter:compile-reference-file transform (33%, 1.4s, 184 calls)
+[WebServer] Those rows are 71% of the build; the rest of the 91% is below.
+[WebServer] Not measurable — 4 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+[WebServer]   - tanstack-start-core:import-protection resolveId (5393 calls)
+[WebServer]   - unplugin-macros transform (1184 calls)
+[WebServer]   - vite-plugin-cloudflare:nodejs-compat resolveId (6 calls)
+[WebServer]   … and 1 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer] 
+
+
+Running 10 tests using 1 worker
+
+[1/10] [chromium] › e2e/playground-axe.spec.ts:133:5 › Playground accessibility (axe scan) › [dark] WCAG 2.1 AA — zero violations
+[2/10] [chromium] › e2e/playground-axe.spec.ts:147:5 › Playground accessibility (axe scan) › [dark] WCAG 2.2 AA — zero violations
+[3/10] [chromium] › e2e/playground-axe.spec.ts:166:5 › Playground accessibility (axe scan) › [dark] best-practices — zero violations
+[4/10] [chromium] › e2e/playground-axe.spec.ts:181:5 › Playground accessibility (axe scan) › [dark] WCAG 2.1 AAA — enhanced contrast report
+[chromium] › e2e/playground-axe.spec.ts:181:5 › Playground accessibility (axe scan) › [dark] WCAG 2.1 AAA — enhanced contrast report
+[dark] WCAG AAA report: 86 enhanced-contrast findings
+
+[5/10] [chromium] › e2e/playground-axe.spec.ts:214:5 › Playground accessibility (axe scan) › [dark] experimental rules — upstream focus semantics report
+[chromium] › e2e/playground-axe.spec.ts:214:5 › Playground accessibility (axe scan) › [dark] experimental rules — upstream focus semantics report
+[dark] experimental report: 22 exact-upstream focus-semantics findings
+
+[6/10] [chromium] › e2e/playground-axe.spec.ts:133:5 › Playground accessibility (axe scan) › [light] WCAG 2.1 AA — zero violations
+[7/10] [chromium] › e2e/playground-axe.spec.ts:147:5 › Playground accessibility (axe scan) › [light] WCAG 2.2 AA — zero violations
+[8/10] [chromium] › e2e/playground-axe.spec.ts:166:5 › Playground accessibility (axe scan) › [light] best-practices — zero violations
+[9/10] [chromium] › e2e/playground-axe.spec.ts:181:5 › Playground accessibility (axe scan) › [light] WCAG 2.1 AAA — enhanced contrast report
+[chromium] › e2e/playground-axe.spec.ts:181:5 › Playground accessibility (axe scan) › [light] WCAG 2.1 AAA — enhanced contrast report
+[light] WCAG AAA report: 87 enhanced-contrast findings
+
+[10/10] [chromium] › e2e/playground-axe.spec.ts:214:5 › Playground accessibility (axe scan) › [light] experimental rules — upstream focus semantics report
+[chromium] › e2e/playground-axe.spec.ts:214:5 › Playground accessibility (axe scan) › [light] experimental rules — upstream focus semantics report
+[light] experimental report: 22 exact-upstream focus-semantics findings
+
+  10 passed (1.4m)
+
+~/packages/solid-stately$ rm -rf dist ⊘ cache disabled
+
+~/packages/solid-stately$ vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/flags/flags.ts
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/index.js                    435.97 kB │ gzip:  84.70 kB
+ℹ dist/private/flags/flags.js        1.10 kB │ gzip:   0.64 kB
+ℹ dist/index.js.map                944.87 kB │ gzip: 183.42 kB
+ℹ dist/private/flags/flags.js.map    1.28 kB │ gzip:   0.73 kB
+ℹ 4 files, total: 1.38 MB
+✔ Build complete in 139ms
+
+~/packages/solid-stately$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solid-stately$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solid-stately$ node ../../scripts/write-package-declaration-attribution.mjs . ⊘ cache disabled
+write-package-declaration-attribution — wrote 0 runtime and 5 declaration attribution banner(s) in .
+
+~/packages/solidaria$ rm -rf dist ⊘ cache disabled
+
+~/packages/solidaria$ vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/actiongroup/index.ts, src/autocomplete/index.ts, src/breadcrumbs/index.ts, src/button/index.ts, src/calendar/index.ts, src/checkbox/index.ts, src/collections/index.ts, src/color/index.ts, src/combobox/index.ts, src/datepicker/index.ts, src/dialog/index.ts, src/disclosure/index.ts, src/dnd/index.ts, src/focus/index.ts, src/form/index.ts, src/grid/index.ts, src/gridlist/index.ts, src/i18n/index.ts, src/interactions/index.ts, src/label/index.ts, src/landmark/index.ts, src/link/index.ts, src/listbox/index.ts, src/live-announcer/index.ts, src/menu/index.ts, src/meter/index.ts, src/numberfield/index.ts, src/overlays/index.ts, src/popover/index.ts, src/progress/index.ts, src/radio/index.ts, src/searchfield/index.ts, src/select/index.ts, src/selection/index.ts, src/separator/index.ts, src/slider/index.ts, src/spinbutton/index.ts, src/ssr/index.tsx, src/steplist/index.ts, src/switch/index.ts, src/table/index.ts, src/tabs/index.ts, src/tag/index.ts, src/textfield/index.ts, src/toast/index.ts, src/toggle/index.ts, src/tokenfield/index.ts, src/toolbar/index.ts, src/tooltip/index.ts, src/tree/index.ts, src/utils/index.ts, src/virtualizer/index.ts, src/visually-hidden/index.ts
+ℹ tsconfig: tsconfig.json
+ℹ entry: src/index.ts, src/actiongroup/index.ts, src/autocomplete/index.ts, src/breadcrumbs/index.ts, src/button/index.ts, src/calendar/index.ts, src/checkbox/index.ts, src/collections/index.ts, src/color/index.ts, src/combobox/index.ts, src/datepicker/index.ts, src/dialog/index.ts, src/disclosure/index.ts, src/dnd/index.ts, src/focus/index.ts, src/form/index.ts, src/grid/index.ts, src/gridlist/index.ts, src/i18n/index.ts, src/interactions/index.ts, src/label/index.ts, src/landmark/index.ts, src/link/index.ts, src/listbox/index.ts, src/live-announcer/index.ts, src/menu/index.ts, src/meter/index.ts, src/numberfield/index.ts, src/overlays/index.ts, src/popover/index.ts, src/progress/index.ts, src/radio/index.ts, src/searchfield/index.ts, src/select/index.ts, src/selection/index.ts, src/separator/index.ts, src/slider/index.ts, src/spinbutton/index.ts, src/ssr/index.tsx, src/steplist/index.ts, src/switch/index.ts, src/table/index.ts, src/tabs/index.ts, src/tag/index.ts, src/textfield/index.ts, src/toast/index.ts, src/toggle/index.ts, src/tokenfield/index.ts, src/toolbar/index.ts, src/tooltip/index.ts, src/tree/index.ts, src/utils/index.ts, src/virtualizer/index.ts, src/visually-hidden/index.ts
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/index.jsx                                       14.67 kB │ gzip:  3.34 kB
+ℹ dist/ssr/index.jsx                                    9.02 kB │ gzip:  3.27 kB
+ℹ dist/collections/index.jsx                            6.46 kB │ gzip:  2.09 kB
+ℹ dist/utils/index.jsx                                  3.12 kB │ gzip:  1.05 kB
+ℹ dist/dnd/index.jsx                                    2.02 kB │ gzip:  0.59 kB
+ℹ dist/interactions/index.jsx                           1.45 kB │ gzip:  0.39 kB
+ℹ dist/selection/index.jsx                              0.86 kB │ gzip:  0.31 kB
+ℹ dist/focus/index.jsx                                  0.84 kB │ gzip:  0.28 kB
+ℹ dist/overlays/index.jsx                               0.82 kB │ gzip:  0.29 kB
+ℹ dist/i18n/index.jsx                                   0.75 kB │ gzip:  0.27 kB
+ℹ dist/table/index.jsx                                  0.53 kB │ gzip:  0.20 kB
+ℹ dist/datepicker/index.jsx                             0.46 kB │ gzip:  0.21 kB
+ℹ dist/calendar/index.jsx                               0.40 kB │ gzip:  0.16 kB
+ℹ dist/gridlist/index.jsx                               0.29 kB │ gzip:  0.15 kB
+ℹ dist/checkbox/index.jsx                               0.29 kB │ gzip:  0.14 kB
+ℹ dist/tokenfield/index.jsx                             0.28 kB │ gzip:  0.16 kB
+ℹ dist/radio/index.jsx                                  0.26 kB │ gzip:  0.14 kB
+ℹ dist/color/index.jsx                                  0.26 kB │ gzip:  0.14 kB
+ℹ dist/button/index.jsx                                 0.25 kB │ gzip:  0.13 kB
+ℹ dist/label/index.jsx                                  0.24 kB │ gzip:  0.11 kB
+ℹ dist/grid/index.jsx                                   0.23 kB │ gzip:  0.14 kB
+ℹ dist/autocomplete/index.jsx                           0.23 kB │ gzip:  0.14 kB
+ℹ dist/tooltip/index.jsx                                0.22 kB │ gzip:  0.13 kB
+ℹ dist/tree/index.jsx                                   0.21 kB │ gzip:  0.14 kB
+ℹ dist/virtualizer/index.jsx                            0.21 kB │ gzip:  0.14 kB
+ℹ dist/form/index.jsx                                   0.20 kB │ gzip:  0.11 kB
+ℹ dist/select/index.jsx                                 0.20 kB │ gzip:  0.12 kB
+ℹ dist/live-announcer/index.jsx                         0.19 kB │ gzip:  0.12 kB
+ℹ dist/menu/index.jsx                                   0.19 kB │ gzip:  0.13 kB
+ℹ dist/spinbutton/index.jsx                             0.19 kB │ gzip:  0.13 kB
+ℹ dist/popover/index.jsx                                0.18 kB │ gzip:  0.12 kB
+ℹ dist/toggle/index.jsx                                 0.18 kB │ gzip:  0.13 kB
+ℹ dist/visually-hidden/index.jsx                        0.16 kB │ gzip:  0.11 kB
+ℹ dist/listbox/index.jsx                                0.16 kB │ gzip:  0.12 kB
+ℹ dist/tag/index.jsx                                    0.15 kB │ gzip:  0.11 kB
+ℹ dist/actiongroup/index.jsx                            0.15 kB │ gzip:  0.10 kB
+ℹ dist/breadcrumbs/index.jsx                            0.15 kB │ gzip:  0.10 kB
+ℹ dist/tabs/index.jsx                                   0.15 kB │ gzip:  0.11 kB
+ℹ dist/disclosure/index.jsx                             0.15 kB │ gzip:  0.10 kB
+ℹ dist/landmark/index.jsx                               0.15 kB │ gzip:  0.11 kB
+ℹ dist/combobox/index.jsx                               0.13 kB │ gzip:  0.11 kB
+ℹ dist/toast/index.jsx                                  0.12 kB │ gzip:  0.10 kB
+ℹ dist/steplist/index.jsx                               0.12 kB │ gzip:  0.10 kB
+ℹ dist/progress/index.jsx                               0.10 kB │ gzip:  0.09 kB
+ℹ dist/numberfield/index.jsx                            0.10 kB │ gzip:  0.09 kB
+ℹ dist/searchfield/index.jsx                            0.10 kB │ gzip:  0.09 kB
+ℹ dist/separator/index.jsx                              0.09 kB │ gzip:  0.09 kB
+ℹ dist/textfield/index.jsx                              0.09 kB │ gzip:  0.09 kB
+ℹ dist/toolbar/index.jsx                                0.09 kB │ gzip:  0.08 kB
+ℹ dist/dialog/index.jsx                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/slider/index.jsx                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/switch/index.jsx                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/meter/index.jsx                                  0.08 kB │ gzip:  0.08 kB
+ℹ dist/link/index.jsx                                   0.08 kB │ gzip:  0.08 kB
+ℹ dist/_chunk/dnd.jsx.map                             144.81 kB │ gzip: 30.84 kB
+ℹ dist/_chunk/dnd.jsx                                 137.94 kB │ gzip: 26.09 kB
+ℹ dist/_chunk/datepicker.jsx.map                      136.32 kB │ gzip: 27.22 kB
+ℹ dist/_chunk/calendar.jsx.map                        110.22 kB │ gzip: 20.77 kB
+ℹ dist/_chunk/color.jsx.map                           107.16 kB │ gzip: 19.26 kB
+ℹ dist/_chunk/combobox.jsx.map                        106.32 kB │ gzip: 17.90 kB
+ℹ dist/_chunk/table.jsx.map                           100.11 kB │ gzip: 20.11 kB
+ℹ dist/_chunk/dom.jsx.map                              84.34 kB │ gzip: 20.68 kB
+ℹ dist/_chunk/menu.jsx.map                             70.73 kB │ gzip: 17.86 kB
+ℹ dist/_chunk/createSelectableList.jsx.map             67.78 kB │ gzip: 15.68 kB
+ℹ dist/_chunk/datepicker.jsx                           65.59 kB │ gzip: 13.73 kB
+ℹ dist/_chunk/popover.jsx.map                          64.74 kB │ gzip: 15.28 kB
+ℹ dist/_chunk/table.jsx                                59.84 kB │ gzip: 13.71 kB
+ℹ dist/_chunk/color.jsx                                55.87 kB │ gzip: 10.59 kB
+ℹ dist/_chunk/utils.jsx.map                            54.13 kB │ gzip: 14.64 kB
+ℹ dist/_chunk/DragManager.jsx.map                      49.87 kB │ gzip: 12.60 kB
+ℹ dist/_chunk/calendar.jsx                             49.77 kB │ gzip:  9.45 kB
+ℹ dist/_chunk/combobox.jsx                             49.65 kB │ gzip:  8.92 kB
+ℹ dist/_chunk/FocusScope.jsx.map                       48.40 kB │ gzip: 12.73 kB
+ℹ dist/_chunk/dom.jsx                                  47.62 kB │ gzip: 10.74 kB
+ℹ dist/_chunk/createPress.jsx.map                      47.56 kB │ gzip: 11.37 kB
+ℹ dist/_chunk/tree.jsx.map                             47.40 kB │ gzip: 11.23 kB
+ℹ dist/_chunk/grid.jsx.map                             44.86 kB │ gzip:  7.86 kB
+ℹ dist/_chunk/tokenfield.jsx.map                       44.37 kB │ gzip: 11.55 kB
+ℹ dist/_chunk/gridlist.jsx.map                         40.89 kB │ gzip: 10.31 kB
+ℹ dist/_chunk/select.jsx.map                           40.86 kB │ gzip: 10.14 kB
+ℹ dist/_chunk/createOverlay.jsx.map                    40.15 kB │ gzip: 11.06 kB
+ℹ dist/_chunk/tooltip.jsx.map                          39.86 kB │ gzip: 10.20 kB
+ℹ dist/_chunk/tag.jsx.map                              38.80 kB │ gzip:  9.51 kB
+ℹ dist/_chunk/createSelectableItem.jsx.map             36.52 kB │ gzip: 10.40 kB
+ℹ dist/_chunk/focus.jsx.map                            33.43 kB │ gzip:  8.78 kB
+ℹ dist/_chunk/radio.jsx.map                            32.07 kB │ gzip:  8.19 kB
+ℹ dist/_chunk/tabs.jsx.map                             31.78 kB │ gzip:  8.90 kB
+ℹ dist/_chunk/numberfield.jsx.map                      31.67 kB │ gzip:  8.41 kB
+ℹ dist/_chunk/createSelectableList.jsx                 31.12 kB │ gzip:  7.01 kB
+ℹ dist/_chunk/popover.jsx                              30.76 kB │ gzip:  6.94 kB
+ℹ dist/_chunk/menu.jsx                                 30.36 kB │ gzip:  8.30 kB
+ℹ dist/_chunk/utils.jsx                                30.03 kB │ gzip:  8.05 kB
+ℹ dist/_chunk/createStringFormatter.jsx.map            27.16 kB │ gzip:  6.91 kB
+ℹ dist/_chunk/listbox.jsx.map                          25.58 kB │ gzip:  6.72 kB
+ℹ dist/_chunk/DragManager.jsx                          24.53 kB │ gzip:  6.23 kB
+ℹ dist/_chunk/autocomplete.jsx.map                     24.33 kB │ gzip:  7.46 kB
+ℹ dist/_chunk/ariaHideOutside.jsx.map                  23.82 kB │ gzip:  6.56 kB
+ℹ dist/_chunk/FocusScope.jsx                           21.85 kB │ gzip:  5.64 kB
+ℹ dist/_chunk/grid.jsx                                 21.51 kB │ gzip:  3.90 kB
+ℹ dist/_chunk/searchfield.jsx.map                      21.20 kB │ gzip:  4.49 kB
+ℹ dist/_chunk/tree.jsx                                 20.94 kB │ gzip:  5.59 kB
+ℹ dist/_chunk/checkbox.jsx.map                         20.78 kB │ gzip:  4.99 kB
+ℹ dist/_chunk/tokenfield.jsx                           20.54 kB │ gzip:  5.20 kB
+ℹ dist/_chunk/createPress.jsx                          20.47 kB │ gzip:  4.69 kB
+ℹ dist/_chunk/tooltip.jsx                              19.72 kB │ gzip:  5.91 kB
+ℹ dist/_chunk/gridlist.jsx                             19.14 kB │ gzip:  4.67 kB
+ℹ dist/_chunk/overlays.jsx.map                         18.89 kB │ gzip:  4.99 kB
+ℹ dist/_chunk/createOverlay.jsx                        18.00 kB │ gzip:  4.56 kB
+ℹ dist/_chunk/button.jsx.map                           17.78 kB │ gzip:  4.51 kB
+ℹ dist/_chunk/tag.jsx                                  17.48 kB │ gzip:  5.18 kB
+ℹ dist/_chunk/slider.jsx.map                           17.36 kB │ gzip:  4.42 kB
+ℹ dist/_chunk/toast.jsx.map                            17.14 kB │ gzip:  4.77 kB
+ℹ dist/_chunk/select.jsx                               17.05 kB │ gzip:  4.40 kB
+ℹ dist/_chunk/interactions.jsx.map                     16.71 kB │ gzip:  4.41 kB
+ℹ dist/_chunk/createToggle.jsx.map                     16.68 kB │ gzip:  4.60 kB
+ℹ dist/_chunk/focus.jsx                                16.39 kB │ gzip:  4.54 kB
+ℹ dist/_chunk/toolbar.jsx.map                          16.30 kB │ gzip:  4.47 kB
+ℹ dist/_chunk/createSelectableItem.jsx                 15.52 kB │ gzip:  4.75 kB
+ℹ dist/_chunk/createKeyboard.jsx.map                   15.26 kB │ gzip:  4.38 kB
+ℹ dist/_chunk/textfield.jsx.map                        14.94 kB │ gzip:  4.46 kB
+ℹ dist/_chunk/mergeProps.jsx.map                       14.79 kB │ gzip:  4.83 kB
+ℹ dist/_chunk/createLandmark.jsx.map                   14.74 kB │ gzip:  4.74 kB
+ℹ dist/_chunk/spinbutton.jsx.map                       14.37 kB │ gzip:  3.63 kB
+ℹ dist/_chunk/virtualizer.jsx.map                      14.31 kB │ gzip:  4.40 kB
+ℹ dist/_chunk/createStringFormatter.jsx                13.70 kB │ gzip:  3.86 kB
+ℹ dist/ssr/index.jsx.map                               13.49 kB │ gzip:  4.70 kB
+ℹ dist/_chunk/intl.jsx                                 13.31 kB │ gzip:  3.78 kB
+ℹ dist/_chunk/numberfield.jsx                          13.13 kB │ gzip:  3.55 kB
+ℹ dist/_chunk/radio.jsx                                13.13 kB │ gzip:  3.45 kB
+ℹ dist/_chunk/createCollectionRowInteraction.jsx.map   12.55 kB │ gzip:  3.59 kB
+ℹ dist/collections/index.jsx.map                       12.47 kB │ gzip:  3.61 kB
+ℹ dist/_chunk/disclosure.jsx.map                       12.44 kB │ gzip:  3.81 kB
+ℹ dist/_chunk/actiongroup.jsx.map                      12.30 kB │ gzip:  4.20 kB
+ℹ dist/_chunk/i18n.jsx.map                             12.29 kB │ gzip:  2.91 kB
+ℹ dist/_chunk/createTypeSelect.jsx.map                 12.23 kB │ gzip:  4.62 kB
+ℹ dist/_chunk/tabs.jsx                                 12.09 kB │ gzip:  3.34 kB
+ℹ dist/_chunk/createHover.jsx.map                      11.90 kB │ gzip:  3.48 kB
+ℹ dist/_chunk/ariaHideOutside.jsx                      11.90 kB │ gzip:  3.33 kB
+ℹ dist/_chunk/locale.jsx.map                           11.50 kB │ gzip:  3.94 kB
+ℹ dist/_chunk/announce.jsx.map                         11.38 kB │ gzip:  3.80 kB
+ℹ dist/_chunk/createFormValidation.jsx.map             11.01 kB │ gzip:  3.86 kB
+ℹ dist/_chunk/listbox.jsx                              10.43 kB │ gzip:  2.78 kB
+ℹ dist/_chunk/createFocusWithin.jsx.map                10.18 kB │ gzip:  3.41 kB
+ℹ dist/_chunk/checkbox.jsx                              9.98 kB │ gzip:  2.37 kB
+ℹ dist/_chunk/link.jsx.map                              9.68 kB │ gzip:  2.95 kB
+ℹ dist/_chunk/button.jsx                                9.56 kB │ gzip:  2.39 kB
+ℹ dist/_chunk/toast.jsx                                 9.45 kB │ gzip:  2.71 kB
+ℹ dist/_chunk/intl.jsx.map                              8.97 kB │ gzip:  1.59 kB
+ℹ dist/_chunk/autocomplete.jsx                          8.97 kB │ gzip:  2.88 kB
+ℹ dist/_chunk/i18n.jsx                                  8.94 kB │ gzip:  2.19 kB
+ℹ dist/_chunk/breadcrumbs.jsx.map                       8.85 kB │ gzip:  2.68 kB
+ℹ dist/_chunk/interactions.jsx                          8.57 kB │ gzip:  2.32 kB
+ℹ dist/_chunk/slider.jsx                                8.48 kB │ gzip:  2.35 kB
+ℹ dist/_chunk/createLongPress.jsx.map                   8.47 kB │ gzip:  2.97 kB
+ℹ dist/_chunk/createFocus.jsx.map                       8.27 kB │ gzip:  2.94 kB
+ℹ dist/_chunk/mergeProps.jsx                            7.96 kB │ gzip:  2.84 kB
+ℹ dist/_chunk/searchfield.jsx                           7.78 kB │ gzip:  2.53 kB
+ℹ dist/_chunk/toolbar.jsx                               7.71 kB │ gzip:  2.27 kB
+ℹ dist/_chunk/createKeyboard.jsx                        7.55 kB │ gzip:  2.32 kB
+ℹ dist/_chunk/virtualizer.jsx                           7.50 kB │ gzip:  2.35 kB
+ℹ dist/_chunk/dialog.jsx.map                            7.05 kB │ gzip:  2.79 kB
+ℹ dist/_chunk/createFocusable.jsx.map                   7.02 kB │ gzip:  2.62 kB
+ℹ dist/_chunk/overlays.jsx                              7.01 kB │ gzip:  2.78 kB
+ℹ dist/_chunk/announce.jsx                              6.91 kB │ gzip:  2.52 kB
+ℹ dist/_chunk/createProgressBar.jsx.map                 6.86 kB │ gzip:  2.42 kB
+ℹ dist/_chunk/createLandmark.jsx                        6.55 kB │ gzip:  2.40 kB
+ℹ dist/_chunk/disclosure.jsx                            6.50 kB │ gzip:  2.14 kB
+ℹ dist/_chunk/createCollectionRowInteraction.jsx        6.37 kB │ gzip:  1.94 kB
+ℹ dist/_chunk/createToggle.jsx                          6.35 kB │ gzip:  2.02 kB
+ℹ dist/_chunk/locale.jsx                                6.34 kB │ gzip:  2.21 kB
+ℹ dist/_chunk/textfield.jsx                             6.02 kB │ gzip:  2.04 kB
+ℹ dist/_chunk/createField.jsx.map                       5.92 kB │ gzip:  2.17 kB
+ℹ dist/_chunk/actiongroup.jsx                           5.86 kB │ gzip:  2.13 kB
+ℹ dist/_chunk/createVisuallyHidden.jsx.map              5.71 kB │ gzip:  2.28 kB
+ℹ dist/_chunk/spinbutton.jsx                            5.42 kB │ gzip:  2.06 kB
+ℹ dist/_chunk/createHover.jsx                           5.38 kB │ gzip:  1.73 kB
+ℹ dist/_chunk/createFormValidation.jsx                  5.31 kB │ gzip:  1.98 kB
+ℹ dist/_chunk/createLabel.jsx.map                       5.00 kB │ gzip:  1.94 kB
+ℹ dist/_chunk/steplist.jsx.map                          4.96 kB │ gzip:  1.80 kB
+ℹ dist/_chunk/createFocusWithin.jsx                     4.80 kB │ gzip:  1.62 kB
+ℹ dist/_chunk/filterDOMProps.jsx.map                    4.79 kB │ gzip:  1.84 kB
+ℹ dist/_chunk/createTypeSelect.jsx                      4.63 kB │ gzip:  1.93 kB
+ℹ dist/_chunk/selection.jsx.map                         4.28 kB │ gzip:  2.00 kB
+ℹ dist/_chunk/createOverlayTrigger.jsx.map              4.24 kB │ gzip:  1.80 kB
+ℹ dist/_chunk/createFocus.jsx                           4.16 kB │ gzip:  1.55 kB
+ℹ dist/_chunk/createFocusRing.jsx.map                   4.13 kB │ gzip:  1.54 kB
+ℹ dist/_chunk/breadcrumbs.jsx                           4.05 kB │ gzip:  1.32 kB
+ℹ dist/_chunk/switch.jsx.map                            4.04 kB │ gzip:  1.53 kB
+ℹ dist/_chunk/createFocusable.jsx                       3.91 kB │ gzip:  1.61 kB
+ℹ dist/_chunk/createLongPress.jsx                       3.81 kB │ gzip:  1.53 kB
+ℹ dist/_chunk/createLabels.jsx.map                      3.73 kB │ gzip:  1.75 kB
+ℹ dist/_chunk/separator.jsx.map                         3.67 kB │ gzip:  1.49 kB
+ℹ dist/_chunk/createVisuallyHidden.jsx                  3.42 kB │ gzip:  1.50 kB
+ℹ dist/_chunk/meter.jsx.map                             3.37 kB │ gzip:  1.39 kB
+ℹ dist/_chunk/dialog.jsx                                3.35 kB │ gzip:  1.43 kB
+ℹ dist/_chunk/link.jsx                                  3.33 kB │ gzip:  1.25 kB
+ℹ dist/_chunk/createProgressBar.jsx                     3.32 kB │ gzip:  1.32 kB
+ℹ dist/_chunk/createCollator.jsx.map                    3.07 kB │ gzip:  1.36 kB
+ℹ dist/_chunk/virtualFocus.jsx.map                      3.07 kB │ gzip:  1.20 kB
+ℹ dist/_chunk/createFormReset.jsx.map                   3.07 kB │ gzip:  1.48 kB
+ℹ dist/_chunk/filterDOMProps.jsx                        2.86 kB │ gzip:  1.22 kB
+ℹ dist/_chunk/steplist.jsx                              2.43 kB │ gzip:  1.01 kB
+ℹ dist/_chunk/refs.jsx.map                              2.39 kB │ gzip:  1.16 kB
+ℹ dist/_chunk/createCollator.jsx                        2.37 kB │ gzip:  1.13 kB
+ℹ dist/_chunk/selection.jsx                             2.26 kB │ gzip:  1.15 kB
+ℹ dist/_chunk/createLabel.jsx                           2.25 kB │ gzip:  1.04 kB
+ℹ dist/_chunk/virtualFocus.jsx                          2.24 kB │ gzip:  0.89 kB
+ℹ dist/_chunk/createField.jsx                           2.22 kB │ gzip:  0.97 kB
+ℹ dist/_chunk/env.jsx.map                               2.15 kB │ gzip:  0.87 kB
+ℹ dist/_chunk/createOverlayTrigger.jsx                  2.14 kB │ gzip:  1.04 kB
+ℹ dist/_chunk/createFocusRing.jsx                       2.08 kB │ gzip:  0.79 kB
+ℹ dist/_chunk/createFormReset.jsx                       1.76 kB │ gzip:  0.93 kB
+ℹ dist/_chunk/createLabels.jsx                          1.74 kB │ gzip:  0.88 kB
+ℹ dist/_chunk/constants.jsx.map                         1.72 kB │ gzip:  0.90 kB
+ℹ dist/_chunk/switch.jsx                                1.68 kB │ gzip:  0.85 kB
+ℹ dist/_chunk/meter.jsx                                 1.64 kB │ gzip:  0.82 kB
+ℹ dist/_chunk/separator.jsx                             1.60 kB │ gzip:  0.84 kB
+ℹ dist/_chunk/constants.jsx                             1.59 kB │ gzip:  0.85 kB
+ℹ dist/_chunk/reactivity.jsx.map                        1.44 kB │ gzip:  0.63 kB
+ℹ dist/_chunk/refs.jsx                                  1.20 kB │ gzip:  0.67 kB
+ℹ dist/_chunk/owner.jsx.map                             1.12 kB │ gzip:  0.64 kB
+ℹ dist/_chunk/env.jsx                                   0.87 kB │ gzip:  0.38 kB
+ℹ dist/_chunk/owner.jsx                                 0.81 kB │ gzip:  0.47 kB
+ℹ dist/_chunk/reactivity.jsx                            0.55 kB │ gzip:  0.30 kB
+ℹ 224 files, total: 3.56 MB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+✔ Build complete in 629ms
+ℹ dist/index.js                                       14.59 kB │ gzip:  3.33 kB
+ℹ dist/ssr/index.js                                    9.10 kB │ gzip:  3.29 kB
+ℹ dist/collections/index.js                            6.46 kB │ gzip:  2.09 kB
+ℹ dist/utils/index.js                                  3.11 kB │ gzip:  1.05 kB
+ℹ dist/dnd/index.js                                    2.02 kB │ gzip:  0.58 kB
+ℹ dist/interactions/index.js                           1.44 kB │ gzip:  0.39 kB
+ℹ dist/selection/index.js                              0.86 kB │ gzip:  0.31 kB
+ℹ dist/focus/index.js                                  0.83 kB │ gzip:  0.28 kB
+ℹ dist/overlays/index.js                               0.82 kB │ gzip:  0.29 kB
+ℹ dist/i18n/index.js                                   0.75 kB │ gzip:  0.26 kB
+ℹ dist/table/index.js                                  0.52 kB │ gzip:  0.20 kB
+ℹ dist/datepicker/index.js                             0.46 kB │ gzip:  0.21 kB
+ℹ dist/calendar/index.js                               0.40 kB │ gzip:  0.16 kB
+ℹ dist/gridlist/index.js                               0.29 kB │ gzip:  0.15 kB
+ℹ dist/checkbox/index.js                               0.29 kB │ gzip:  0.13 kB
+ℹ dist/tokenfield/index.js                             0.28 kB │ gzip:  0.16 kB
+ℹ dist/radio/index.js                                  0.26 kB │ gzip:  0.14 kB
+ℹ dist/color/index.js                                  0.26 kB │ gzip:  0.14 kB
+ℹ dist/button/index.js                                 0.24 kB │ gzip:  0.13 kB
+ℹ dist/label/index.js                                  0.24 kB │ gzip:  0.11 kB
+ℹ dist/grid/index.js                                   0.23 kB │ gzip:  0.14 kB
+ℹ dist/autocomplete/index.js                           0.23 kB │ gzip:  0.14 kB
+ℹ dist/tooltip/index.js                                0.22 kB │ gzip:  0.13 kB
+ℹ dist/tree/index.js                                   0.21 kB │ gzip:  0.13 kB
+ℹ dist/virtualizer/index.js                            0.21 kB │ gzip:  0.14 kB
+ℹ dist/form/index.js                                   0.20 kB │ gzip:  0.11 kB
+ℹ dist/select/index.js                                 0.20 kB │ gzip:  0.12 kB
+ℹ dist/live-announcer/index.js                         0.19 kB │ gzip:  0.12 kB
+ℹ dist/menu/index.js                                   0.19 kB │ gzip:  0.13 kB
+ℹ dist/spinbutton/index.js                             0.19 kB │ gzip:  0.13 kB
+ℹ dist/popover/index.js                                0.18 kB │ gzip:  0.12 kB
+ℹ dist/toggle/index.js                                 0.18 kB │ gzip:  0.13 kB
+ℹ dist/visually-hidden/index.js                        0.16 kB │ gzip:  0.11 kB
+ℹ dist/listbox/index.js                                0.15 kB │ gzip:  0.12 kB
+ℹ dist/tag/index.js                                    0.15 kB │ gzip:  0.11 kB
+ℹ dist/actiongroup/index.js                            0.15 kB │ gzip:  0.10 kB
+ℹ dist/breadcrumbs/index.js                            0.15 kB │ gzip:  0.10 kB
+ℹ dist/tabs/index.js                                   0.15 kB │ gzip:  0.11 kB
+ℹ dist/disclosure/index.js                             0.14 kB │ gzip:  0.10 kB
+ℹ dist/landmark/index.js                               0.14 kB │ gzip:  0.11 kB
+ℹ dist/combobox/index.js                               0.13 kB │ gzip:  0.11 kB
+ℹ dist/toast/index.js                                  0.12 kB │ gzip:  0.09 kB
+ℹ dist/steplist/index.js                               0.12 kB │ gzip:  0.10 kB
+ℹ dist/progress/index.js                               0.10 kB │ gzip:  0.09 kB
+ℹ dist/numberfield/index.js                            0.10 kB │ gzip:  0.09 kB
+ℹ dist/searchfield/index.js                            0.10 kB │ gzip:  0.09 kB
+ℹ dist/separator/index.js                              0.09 kB │ gzip:  0.09 kB
+ℹ dist/textfield/index.js                              0.09 kB │ gzip:  0.09 kB
+ℹ dist/toolbar/index.js                                0.09 kB │ gzip:  0.08 kB
+ℹ dist/dialog/index.js                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/slider/index.js                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/switch/index.js                                 0.08 kB │ gzip:  0.08 kB
+ℹ dist/meter/index.js                                  0.08 kB │ gzip:  0.08 kB
+ℹ dist/link/index.js                                   0.08 kB │ gzip:  0.08 kB
+ℹ dist/_chunk/dnd.js.map                             144.81 kB │ gzip: 30.84 kB
+ℹ dist/_chunk/dnd.js                                 137.94 kB │ gzip: 26.09 kB
+ℹ dist/_chunk/datepicker.js.map                      136.31 kB │ gzip: 27.22 kB
+ℹ dist/_chunk/calendar.js.map                        110.22 kB │ gzip: 20.77 kB
+ℹ dist/_chunk/color.js.map                           107.16 kB │ gzip: 19.26 kB
+ℹ dist/_chunk/combobox.js.map                        106.32 kB │ gzip: 17.90 kB
+ℹ dist/_chunk/table.js.map                           100.10 kB │ gzip: 20.11 kB
+ℹ dist/_chunk/dom.js.map                              84.34 kB │ gzip: 20.67 kB
+ℹ dist/_chunk/menu.js.map                             70.73 kB │ gzip: 17.86 kB
+ℹ dist/_chunk/createSelectableList.js.map             67.78 kB │ gzip: 15.68 kB
+ℹ dist/_chunk/datepicker.js                           65.57 kB │ gzip: 13.73 kB
+ℹ dist/_chunk/popover.js.map                          64.73 kB │ gzip: 15.28 kB
+ℹ dist/_chunk/table.js                                59.83 kB │ gzip: 13.70 kB
+ℹ dist/_chunk/color.js                                55.86 kB │ gzip: 10.59 kB
+ℹ dist/_chunk/utils.js.map                            54.13 kB │ gzip: 14.64 kB
+ℹ dist/_chunk/DragManager.js.map                      49.87 kB │ gzip: 12.60 kB
+ℹ dist/_chunk/calendar.js                             49.76 kB │ gzip:  9.45 kB
+ℹ dist/_chunk/combobox.js                             49.63 kB │ gzip:  8.92 kB
+ℹ dist/_chunk/FocusScope.js.map                       49.00 kB │ gzip: 12.94 kB
+ℹ dist/_chunk/dom.js                                  47.62 kB │ gzip: 10.73 kB
+ℹ dist/_chunk/createPress.js.map                      47.56 kB │ gzip: 11.36 kB
+ℹ dist/_chunk/tree.js.map                             47.40 kB │ gzip: 11.23 kB
+ℹ dist/_chunk/select.js.map                           47.06 kB │ gzip: 10.68 kB
+ℹ dist/_chunk/grid.js.map                             44.86 kB │ gzip:  7.86 kB
+ℹ dist/_chunk/tokenfield.js.map                       44.37 kB │ gzip: 11.55 kB
+ℹ dist/_chunk/gridlist.js.map                         40.89 kB │ gzip: 10.31 kB
+ℹ dist/_chunk/createOverlay.js.map                    40.15 kB │ gzip: 11.06 kB
+ℹ dist/_chunk/tooltip.js.map                          39.85 kB │ gzip: 10.20 kB
+ℹ dist/_chunk/tag.js.map                              38.80 kB │ gzip:  9.51 kB
+ℹ dist/_chunk/createSelectableItem.js.map             36.52 kB │ gzip: 10.40 kB
+ℹ dist/_chunk/focus.js.map                            33.43 kB │ gzip:  8.78 kB
+ℹ dist/_chunk/radio.js.map                            32.06 kB │ gzip:  8.19 kB
+ℹ dist/_chunk/tabs.js.map                             31.78 kB │ gzip:  8.90 kB
+ℹ dist/_chunk/numberfield.js.map                      31.66 kB │ gzip:  8.41 kB
+ℹ dist/_chunk/createSelectableList.js                 31.10 kB │ gzip:  7.01 kB
+ℹ dist/_chunk/popover.js                              30.75 kB │ gzip:  6.94 kB
+ℹ dist/_chunk/menu.js                                 30.34 kB │ gzip:  8.30 kB
+ℹ dist/_chunk/utils.js                                30.02 kB │ gzip:  8.05 kB
+ℹ dist/_chunk/createStringFormatter.js.map            27.16 kB │ gzip:  6.91 kB
+ℹ dist/_chunk/listbox.js.map                          25.58 kB │ gzip:  6.72 kB
+ℹ dist/_chunk/DragManager.js                          24.53 kB │ gzip:  6.22 kB
+ℹ dist/_chunk/autocomplete.js.map                     24.33 kB │ gzip:  7.45 kB
+ℹ dist/_chunk/ariaHideOutside.js.map                  23.82 kB │ gzip:  6.56 kB
+ℹ dist/_chunk/FocusScope.js                           22.29 kB │ gzip:  5.75 kB
+ℹ dist/_chunk/grid.js                                 21.51 kB │ gzip:  3.90 kB
+ℹ dist/_chunk/searchfield.js.map                      21.20 kB │ gzip:  4.49 kB
+ℹ dist/_chunk/tree.js                                 20.93 kB │ gzip:  5.58 kB
+ℹ dist/_chunk/checkbox.js.map                         20.78 kB │ gzip:  4.99 kB
+ℹ dist/_chunk/tokenfield.js                           20.53 kB │ gzip:  5.19 kB
+ℹ dist/_chunk/createPress.js                          20.46 kB │ gzip:  4.69 kB
+ℹ dist/_chunk/overlays.js.map                         19.93 kB │ gzip:  5.19 kB
+ℹ dist/_chunk/tooltip.js                              19.71 kB │ gzip:  5.91 kB
+ℹ dist/_chunk/gridlist.js                             19.13 kB │ gzip:  4.66 kB
+ℹ dist/_chunk/select.js                               18.69 kB │ gzip:  4.81 kB
+ℹ dist/_chunk/createOverlay.js                        18.00 kB │ gzip:  4.56 kB
+ℹ dist/_chunk/button.js.map                           17.78 kB │ gzip:  4.50 kB
+ℹ dist/_chunk/tag.js                                  17.47 kB │ gzip:  5.17 kB
+ℹ dist/_chunk/slider.js.map                           17.36 kB │ gzip:  4.42 kB
+ℹ dist/_chunk/toast.js.map                            17.14 kB │ gzip:  4.77 kB
+ℹ dist/_chunk/interactions.js.map                     16.89 kB │ gzip:  4.43 kB
+ℹ dist/_chunk/createToggle.js.map                     16.68 kB │ gzip:  4.60 kB
+ℹ dist/_chunk/focus.js                                16.38 kB │ gzip:  4.54 kB
+ℹ dist/_chunk/toolbar.js.map                          16.30 kB │ gzip:  4.47 kB
+ℹ dist/_chunk/createSelectableItem.js                 15.51 kB │ gzip:  4.74 kB
+ℹ dist/_chunk/createKeyboard.js.map                   15.26 kB │ gzip:  4.38 kB
+ℹ dist/_chunk/textfield.js.map                        14.94 kB │ gzip:  4.46 kB
+ℹ dist/_chunk/mergeProps.js.map                       14.79 kB │ gzip:  4.82 kB
+ℹ dist/_chunk/createLandmark.js.map                   14.74 kB │ gzip:  4.74 kB
+ℹ dist/_chunk/spinbutton.js.map                       14.37 kB │ gzip:  3.63 kB
+ℹ dist/_chunk/virtualizer.js.map                      14.31 kB │ gzip:  4.40 kB
+ℹ dist/_chunk/createStringFormatter.js                13.70 kB │ gzip:  3.85 kB
+ℹ dist/ssr/index.js.map                               13.59 kB │ gzip:  4.74 kB
+ℹ dist/_chunk/intl.js                                 13.31 kB │ gzip:  3.78 kB
+ℹ dist/_chunk/numberfield.js                          13.12 kB │ gzip:  3.55 kB
+ℹ dist/_chunk/radio.js                                13.11 kB │ gzip:  3.45 kB
+ℹ dist/_chunk/createCollectionRowInteraction.js.map   12.55 kB │ gzip:  3.59 kB
+ℹ dist/collections/index.js.map                       12.47 kB │ gzip:  3.61 kB
+ℹ dist/_chunk/disclosure.js.map                       12.44 kB │ gzip:  3.80 kB
+ℹ dist/_chunk/actiongroup.js.map                      12.30 kB │ gzip:  4.20 kB
+ℹ dist/_chunk/i18n.js.map                             12.29 kB │ gzip:  2.91 kB
+ℹ dist/_chunk/createTypeSelect.js.map                 12.23 kB │ gzip:  4.62 kB
+ℹ dist/_chunk/tabs.js                                 12.08 kB │ gzip:  3.33 kB
+ℹ dist/_chunk/createHover.js.map                      11.90 kB │ gzip:  3.48 kB
+ℹ dist/_chunk/ariaHideOutside.js                      11.89 kB │ gzip:  3.33 kB
+ℹ dist/_chunk/locale.js.map                           11.61 kB │ gzip:  3.98 kB
+ℹ dist/_chunk/announce.js.map                         11.38 kB │ gzip:  3.80 kB
+ℹ dist/_chunk/createFormValidation.js.map             11.01 kB │ gzip:  3.86 kB
+ℹ dist/_chunk/listbox.js                              10.42 kB │ gzip:  2.78 kB
+ℹ dist/_chunk/createFocusWithin.js.map                10.18 kB │ gzip:  3.41 kB
+ℹ dist/_chunk/checkbox.js                              9.97 kB │ gzip:  2.37 kB
+ℹ dist/_chunk/link.js.map                              9.68 kB │ gzip:  2.95 kB
+ℹ dist/_chunk/button.js                                9.56 kB │ gzip:  2.38 kB
+ℹ dist/_chunk/toast.js                                 9.45 kB │ gzip:  2.71 kB
+ℹ dist/_chunk/intl.js.map                              8.97 kB │ gzip:  1.59 kB
+ℹ dist/_chunk/autocomplete.js                          8.96 kB │ gzip:  2.87 kB
+ℹ dist/_chunk/i18n.js                                  8.94 kB │ gzip:  2.19 kB
+ℹ dist/_chunk/breadcrumbs.js.map                       8.85 kB │ gzip:  2.68 kB
+ℹ dist/_chunk/interactions.js                          8.64 kB │ gzip:  2.34 kB
+ℹ dist/_chunk/slider.js                                8.47 kB │ gzip:  2.35 kB
+ℹ dist/_chunk/createLongPress.js.map                   8.47 kB │ gzip:  2.97 kB
+ℹ dist/_chunk/createFocus.js.map                       8.27 kB │ gzip:  2.94 kB
+ℹ dist/_chunk/mergeProps.js                            7.96 kB │ gzip:  2.84 kB
+ℹ dist/_chunk/searchfield.js                           7.77 kB │ gzip:  2.53 kB
+ℹ dist/_chunk/toolbar.js                               7.71 kB │ gzip:  2.26 kB
+ℹ dist/_chunk/createKeyboard.js                        7.55 kB │ gzip:  2.31 kB
+ℹ dist/_chunk/virtualizer.js                           7.50 kB │ gzip:  2.34 kB
+ℹ dist/_chunk/overlays.js                              7.48 kB │ gzip:  2.92 kB
+ℹ dist/_chunk/dialog.js.map                            7.05 kB │ gzip:  2.79 kB
+ℹ dist/_chunk/createFocusable.js.map                   7.02 kB │ gzip:  2.62 kB
+ℹ dist/_chunk/announce.js                              6.91 kB │ gzip:  2.52 kB
+ℹ dist/_chunk/createProgressBar.js.map                 6.86 kB │ gzip:  2.42 kB
+ℹ dist/_chunk/createLandmark.js                        6.55 kB │ gzip:  2.39 kB
+ℹ dist/_chunk/disclosure.js                            6.49 kB │ gzip:  2.14 kB
+ℹ dist/_chunk/locale.js                                6.43 kB │ gzip:  2.22 kB
+ℹ dist/_chunk/createCollectionRowInteraction.js        6.37 kB │ gzip:  1.93 kB
+ℹ dist/_chunk/createToggle.js                          6.34 kB │ gzip:  2.01 kB
+ℹ dist/_chunk/textfield.js                             6.01 kB │ gzip:  2.03 kB
+ℹ dist/_chunk/createField.js.map                       5.92 kB │ gzip:  2.17 kB
+ℹ dist/_chunk/actiongroup.js                           5.85 kB │ gzip:  2.12 kB
+ℹ dist/_chunk/createVisuallyHidden.js.map              5.70 kB │ gzip:  2.28 kB
+ℹ dist/_chunk/spinbutton.js                            5.42 kB │ gzip:  2.06 kB
+ℹ dist/_chunk/createHover.js                           5.38 kB │ gzip:  1.72 kB
+ℹ dist/_chunk/createFormValidation.js                  5.31 kB │ gzip:  1.97 kB
+ℹ dist/_chunk/createLabel.js.map                       4.99 kB │ gzip:  1.94 kB
+ℹ dist/_chunk/steplist.js.map                          4.96 kB │ gzip:  1.80 kB
+ℹ dist/_chunk/createFocusWithin.js                     4.80 kB │ gzip:  1.62 kB
+ℹ dist/_chunk/filterDOMProps.js.map                    4.79 kB │ gzip:  1.84 kB
+ℹ dist/_chunk/createTypeSelect.js                      4.63 kB │ gzip:  1.93 kB
+ℹ dist/_chunk/selection.js.map                         4.28 kB │ gzip:  2.00 kB
+ℹ dist/_chunk/createOverlayTrigger.js.map              4.24 kB │ gzip:  1.80 kB
+ℹ dist/_chunk/createFocus.js                           4.16 kB │ gzip:  1.55 kB
+ℹ dist/_chunk/createFocusRing.js.map                   4.13 kB │ gzip:  1.54 kB
+ℹ dist/_chunk/breadcrumbs.js                           4.04 kB │ gzip:  1.31 kB
+ℹ dist/_chunk/switch.js.map                            4.04 kB │ gzip:  1.53 kB
+ℹ dist/_chunk/createFocusable.js                       3.90 kB │ gzip:  1.60 kB
+ℹ dist/_chunk/createLongPress.js                       3.80 kB │ gzip:  1.53 kB
+ℹ dist/_chunk/createLabels.js.map                      3.73 kB │ gzip:  1.75 kB
+ℹ dist/_chunk/separator.js.map                         3.67 kB │ gzip:  1.49 kB
+ℹ dist/_chunk/createVisuallyHidden.js                  3.42 kB │ gzip:  1.49 kB
+ℹ dist/_chunk/meter.js.map                             3.37 kB │ gzip:  1.39 kB
+ℹ dist/_chunk/dialog.js                                3.35 kB │ gzip:  1.43 kB
+ℹ dist/_chunk/link.js                                  3.33 kB │ gzip:  1.25 kB
+ℹ dist/_chunk/createProgressBar.js                     3.31 kB │ gzip:  1.32 kB
+ℹ dist/_chunk/createCollator.js.map                    3.07 kB │ gzip:  1.36 kB
+ℹ dist/_chunk/virtualFocus.js.map                      3.07 kB │ gzip:  1.20 kB
+ℹ dist/_chunk/createFormReset.js.map                   3.07 kB │ gzip:  1.48 kB
+ℹ dist/_chunk/filterDOMProps.js                        2.86 kB │ gzip:  1.22 kB
+ℹ dist/_chunk/steplist.js                              2.43 kB │ gzip:  1.01 kB
+ℹ dist/_chunk/refs.js.map                              2.39 kB │ gzip:  1.15 kB
+ℹ dist/_chunk/createCollator.js                        2.37 kB │ gzip:  1.12 kB
+ℹ dist/_chunk/selection.js                             2.26 kB │ gzip:  1.14 kB
+ℹ dist/_chunk/createLabel.js                           2.24 kB │ gzip:  1.04 kB
+ℹ dist/_chunk/virtualFocus.js                          2.24 kB │ gzip:  0.89 kB
+ℹ dist/_chunk/createField.js                           2.21 kB │ gzip:  0.97 kB
+ℹ dist/_chunk/env.js.map                               2.15 kB │ gzip:  0.87 kB
+ℹ dist/_chunk/createOverlayTrigger.js                  2.14 kB │ gzip:  1.04 kB
+ℹ dist/_chunk/createFocusRing.js                       2.07 kB │ gzip:  0.79 kB
+ℹ dist/_chunk/createFormReset.js                       1.76 kB │ gzip:  0.93 kB
+ℹ dist/_chunk/createLabels.js                          1.74 kB │ gzip:  0.88 kB
+ℹ dist/_chunk/constants.js.map                         1.72 kB │ gzip:  0.90 kB
+ℹ dist/_chunk/switch.js                                1.68 kB │ gzip:  0.85 kB
+ℹ dist/_chunk/meter.js                                 1.64 kB │ gzip:  0.82 kB
+ℹ dist/_chunk/separator.js                             1.60 kB │ gzip:  0.84 kB
+ℹ dist/_chunk/constants.js                             1.59 kB │ gzip:  0.85 kB
+ℹ dist/_chunk/reactivity.js.map                        1.43 kB │ gzip:  0.63 kB
+ℹ dist/_chunk/refs.js                                  1.20 kB │ gzip:  0.67 kB
+ℹ dist/_chunk/owner.js.map                             1.12 kB │ gzip:  0.63 kB
+ℹ dist/_chunk/env.js                                   0.86 kB │ gzip:  0.38 kB
+ℹ dist/_chunk/owner.js                                 0.81 kB │ gzip:  0.47 kB
+ℹ dist/_chunk/reactivity.js                            0.55 kB │ gzip:  0.30 kB
+ℹ 224 files, total: 3.57 MB
+✔ Build complete in 736ms
+
+~/packages/solidaria$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solidaria$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solidaria$ node ../../scripts/write-package-declaration-attribution.mjs . ⊘ cache disabled
+write-package-declaration-attribution — wrote 0 runtime and 8 declaration attribution banner(s) in .
+
+~/packages/solidaria-components$ rm -rf dist ⊘ cache disabled
+
+~/packages/solidaria-components$ vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/utils.tsx, src/ElementTag.tsx, src/VisuallyHidden.tsx, src/Button.tsx, src/Switch.tsx, src/ToggleButton.tsx, src/ToggleButtonGroup.tsx, src/Checkbox.tsx, src/RadioGroup.tsx, src/TextField.tsx, src/TokenField.tsx, src/Text.tsx, src/Link.tsx, src/Keyboard.tsx, src/Form.tsx, src/FieldError.tsx, src/FileTrigger.tsx, src/PreviewTrigger.tsx, src/DropZone.tsx, src/SharedElementTransition.tsx, src/virtualizer/Layout.ts, src/Virtualizer.tsx, src/ProgressBar.tsx, src/Separator.tsx, src/Toolbar.tsx, src/Autocomplete.tsx, src/ListBox.tsx, src/Menu.tsx, src/Select.tsx, src/Tabs.tsx, src/SelectionIndicator.tsx, src/Collection.tsx, src/DragAndDrop.tsx, src/useDragAndDrop.ts, src/Breadcrumbs.tsx, src/NumberField.tsx, src/SearchField.tsx, src/Slider.tsx, src/Tooltip.tsx, src/ComboBox.tsx, src/Dialog.tsx, src/Modal.tsx, src/Popover.tsx, src/Toast.tsx, src/Disclosure.tsx, src/Meter.tsx, src/TagGroup.tsx, src/Calendar.tsx, src/CalendarPicker.tsx, src/RangeCalendar.tsx, src/DateField.tsx, src/TimeField.tsx, src/DatePicker.tsx, src/Table.tsx, src/GridList.tsx, src/Tree.tsx, src/Color.tsx, src/ContextualHelpTrigger.tsx, src/ColorEditor.tsx, src/StepList.tsx, src/Landmark.tsx, src/ActionBar.tsx, src/ActionGroup.tsx, src/Alert.tsx, src/Icon.tsx, src/Focusable.tsx, src/Pressable.tsx, src/RouterProvider.tsx
+ℹ tsconfig: tsconfig.json
+ℹ entry: src/index.ts, src/utils.tsx, src/ElementTag.tsx, src/VisuallyHidden.tsx, src/Button.tsx, src/Switch.tsx, src/ToggleButton.tsx, src/ToggleButtonGroup.tsx, src/Checkbox.tsx, src/RadioGroup.tsx, src/TextField.tsx, src/TokenField.tsx, src/Text.tsx, src/Link.tsx, src/Keyboard.tsx, src/Form.tsx, src/FieldError.tsx, src/FileTrigger.tsx, src/PreviewTrigger.tsx, src/DropZone.tsx, src/SharedElementTransition.tsx, src/virtualizer/Layout.ts, src/Virtualizer.tsx, src/ProgressBar.tsx, src/Separator.tsx, src/Toolbar.tsx, src/Autocomplete.tsx, src/ListBox.tsx, src/Menu.tsx, src/Select.tsx, src/Tabs.tsx, src/SelectionIndicator.tsx, src/Collection.tsx, src/DragAndDrop.tsx, src/useDragAndDrop.ts, src/Breadcrumbs.tsx, src/NumberField.tsx, src/SearchField.tsx, src/Slider.tsx, src/Tooltip.tsx, src/ComboBox.tsx, src/Dialog.tsx, src/Modal.tsx, src/Popover.tsx, src/Toast.tsx, src/Disclosure.tsx, src/Meter.tsx, src/TagGroup.tsx, src/Calendar.tsx, src/CalendarPicker.tsx, src/RangeCalendar.tsx, src/DateField.tsx, src/TimeField.tsx, src/DatePicker.tsx, src/Table.tsx, src/GridList.tsx, src/Tree.tsx, src/Color.tsx, src/ContextualHelpTrigger.tsx, src/ColorEditor.tsx, src/StepList.tsx, src/Landmark.tsx, src/ActionBar.tsx, src/ActionGroup.tsx, src/Alert.tsx, src/Icon.tsx, src/Focusable.tsx, src/Pressable.tsx, src/RouterProvider.tsx
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/Table.jsx                         51.18 kB │ gzip: 10.81 kB
+ℹ dist/Color.jsx                         49.29 kB │ gzip:  7.93 kB
+ℹ dist/Tree.jsx                          48.10 kB │ gzip: 10.81 kB
+ℹ dist/Menu.jsx                          42.35 kB │ gzip:  9.30 kB
+ℹ dist/ListBox.jsx                       32.60 kB │ gzip:  7.88 kB
+ℹ dist/Select.jsx                        30.90 kB │ gzip:  7.32 kB
+ℹ dist/ComboBox.jsx                      29.47 kB │ gzip:  6.96 kB
+ℹ dist/RadioGroup.jsx                    25.95 kB │ gzip:  5.60 kB
+ℹ dist/GridList.jsx                      24.62 kB │ gzip:  6.25 kB
+ℹ dist/Checkbox.jsx                      23.73 kB │ gzip:  4.78 kB
+ℹ dist/Popover.jsx                       18.09 kB │ gzip:  5.01 kB
+ℹ dist/index.jsx                         17.84 kB │ gzip:  3.24 kB
+ℹ dist/Tooltip.jsx                       17.67 kB │ gzip:  4.84 kB
+ℹ dist/SearchField.jsx                   17.01 kB │ gzip:  4.09 kB
+ℹ dist/NumberField.jsx                   15.81 kB │ gzip:  3.26 kB
+ℹ dist/Toast.jsx                         15.20 kB │ gzip:  4.53 kB
+ℹ dist/Tabs.jsx                          13.63 kB │ gzip:  3.73 kB
+ℹ dist/Switch.jsx                        13.53 kB │ gzip:  3.24 kB
+ℹ dist/RangeCalendar.jsx                 13.46 kB │ gzip:  3.51 kB
+ℹ dist/Button.jsx                        13.28 kB │ gzip:  3.92 kB
+ℹ dist/Calendar.jsx                      13.14 kB │ gzip:  3.46 kB
+ℹ dist/Slider.jsx                        12.61 kB │ gzip:  3.10 kB
+ℹ dist/TextField.jsx                     12.32 kB │ gzip:  3.32 kB
+ℹ dist/Modal.jsx                         12.18 kB │ gzip:  3.47 kB
+ℹ dist/utils.jsx                         12.05 kB │ gzip:  4.40 kB
+ℹ dist/TagGroup.jsx                       9.87 kB │ gzip:  3.02 kB
+ℹ dist/Disclosure.jsx                     9.55 kB │ gzip:  2.52 kB
+ℹ dist/Breadcrumbs.jsx                    8.79 kB │ gzip:  2.69 kB
+ℹ dist/DragAndDrop.jsx                    7.96 kB │ gzip:  2.61 kB
+ℹ dist/Dialog.jsx                         7.58 kB │ gzip:  2.46 kB
+ℹ dist/Collection.jsx                     7.34 kB │ gzip:  2.25 kB
+ℹ dist/TokenField.jsx                     7.01 kB │ gzip:  2.16 kB
+ℹ dist/TimeField.jsx                      6.75 kB │ gzip:  2.25 kB
+ℹ dist/SharedElementTransition.jsx        6.14 kB │ gzip:  2.27 kB
+ℹ dist/Link.jsx                           6.13 kB │ gzip:  2.05 kB
+ℹ dist/DropZone.jsx                       5.99 kB │ gzip:  2.19 kB
+ℹ dist/StepList.jsx                       5.96 kB │ gzip:  1.94 kB
+ℹ dist/ActionBar.jsx                      5.41 kB │ gzip:  1.96 kB
+ℹ dist/ActionGroup.jsx                    5.18 kB │ gzip:  1.83 kB
+ℹ dist/virtualizer/Layout.jsx             4.78 kB │ gzip:  1.47 kB
+ℹ dist/ColorEditor.jsx                    4.75 kB │ gzip:  1.41 kB
+ℹ dist/ContextualHelpTrigger.jsx          4.52 kB │ gzip:  1.80 kB
+ℹ dist/Autocomplete.jsx                   4.38 kB │ gzip:  1.53 kB
+ℹ dist/Meter.jsx                          4.35 kB │ gzip:  1.69 kB
+ℹ dist/ToggleButton.jsx                   4.13 kB │ gzip:  1.60 kB
+ℹ dist/RouterProvider.jsx                 4.08 kB │ gzip:  1.64 kB
+ℹ dist/ProgressBar.jsx                    4.03 kB │ gzip:  1.56 kB
+ℹ dist/ToggleButtonGroup.jsx              3.79 kB │ gzip:  1.40 kB
+ℹ dist/PreviewTrigger.jsx                 3.74 kB │ gzip:  1.38 kB
+ℹ dist/Landmark.jsx                       3.55 kB │ gzip:  1.40 kB
+ℹ dist/Toolbar.jsx                        3.50 kB │ gzip:  1.45 kB
+ℹ dist/Form.jsx                           3.39 kB │ gzip:  1.52 kB
+ℹ dist/Pressable.jsx                      3.27 kB │ gzip:  1.39 kB
+ℹ dist/Focusable.jsx                      3.25 kB │ gzip:  1.38 kB
+ℹ dist/Separator.jsx                      3.25 kB │ gzip:  1.34 kB
+ℹ dist/SelectionIndicator.jsx             2.81 kB │ gzip:  1.17 kB
+ℹ dist/Alert.jsx                          2.79 kB │ gzip:  1.15 kB
+ℹ dist/Icon.jsx                           2.73 kB │ gzip:  1.07 kB
+ℹ dist/FieldError.jsx                     2.69 kB │ gzip:  1.18 kB
+ℹ dist/CalendarPicker.jsx                 2.68 kB │ gzip:  1.03 kB
+ℹ dist/FileTrigger.jsx                    2.25 kB │ gzip:  1.12 kB
+ℹ dist/Text.jsx                           2.17 kB │ gzip:  1.14 kB
+ℹ dist/VisuallyHidden.jsx                 1.60 kB │ gzip:  0.84 kB
+ℹ dist/Keyboard.jsx                       1.43 kB │ gzip:  0.79 kB
+ℹ dist/DatePicker.jsx                     1.11 kB │ gzip:  0.30 kB
+ℹ dist/ElementTag.jsx                     0.67 kB │ gzip:  0.42 kB
+ℹ dist/Virtualizer.jsx                    0.43 kB │ gzip:  0.20 kB
+ℹ dist/DateField.jsx                      0.41 kB │ gzip:  0.18 kB
+ℹ dist/useDragAndDrop.jsx                 0.09 kB │ gzip:  0.08 kB
+ℹ dist/Table.jsx.map                    119.68 kB │ gzip: 26.36 kB
+ℹ dist/Color.jsx.map                    110.73 kB │ gzip: 17.69 kB
+ℹ dist/Tree.jsx.map                     100.75 kB │ gzip: 23.10 kB
+ℹ dist/Menu.jsx.map                      92.05 kB │ gzip: 20.60 kB
+ℹ dist/Virtualizer2.jsx.map              87.69 kB │ gzip: 18.72 kB
+ℹ dist/Select.jsx.map                    71.91 kB │ gzip: 17.37 kB
+ℹ dist/ListBox.jsx.map                   71.01 kB │ gzip: 17.14 kB
+ℹ dist/ComboBox.jsx.map                  70.04 kB │ gzip: 16.15 kB
+ℹ dist/DatePicker2.jsx.map               68.84 kB │ gzip: 14.82 kB
+ℹ dist/RadioGroup.jsx.map                60.15 kB │ gzip: 12.57 kB
+ℹ dist/Checkbox.jsx.map                  53.30 kB │ gzip: 10.37 kB
+ℹ dist/GridList.jsx.map                  52.41 kB │ gzip: 12.96 kB
+ℹ dist/Popover.jsx.map                   45.32 kB │ gzip: 13.13 kB
+ℹ dist/Virtualizer2.jsx                  41.91 kB │ gzip:  8.60 kB
+ℹ dist/Tooltip.jsx.map                   38.31 kB │ gzip: 10.09 kB
+ℹ dist/SearchField.jsx.map               37.20 kB │ gzip:  8.57 kB
+ℹ dist/useDragAndDrop2.jsx.map           34.76 kB │ gzip:  7.95 kB
+ℹ dist/DateField2.jsx.map                34.59 kB │ gzip:  9.46 kB
+ℹ dist/Toast.jsx.map                     34.24 kB │ gzip:  9.37 kB
+ℹ dist/NumberField.jsx.map               33.60 kB │ gzip:  6.65 kB
+ℹ dist/Tabs.jsx.map                      30.33 kB │ gzip:  7.57 kB
+ℹ dist/RangeCalendar.jsx.map             30.26 kB │ gzip:  7.34 kB
+ℹ dist/Button.jsx.map                    30.23 kB │ gzip:  8.72 kB
+ℹ dist/Calendar.jsx.map                  30.20 kB │ gzip:  7.26 kB
+ℹ dist/Switch.jsx.map                    29.46 kB │ gzip:  6.79 kB
+ℹ dist/Modal.jsx.map                     29.15 kB │ gzip:  8.60 kB
+ℹ dist/Slider.jsx.map                    28.13 kB │ gzip:  5.94 kB
+ℹ dist/DatePicker2.jsx                   27.90 kB │ gzip:  5.90 kB
+ℹ dist/TextField.jsx.map                 26.73 kB │ gzip:  6.97 kB
+ℹ dist/utils.jsx.map                     26.20 kB │ gzip:  8.80 kB
+ℹ dist/TagGroup.jsx.map                  22.71 kB │ gzip:  6.27 kB
+ℹ dist/Disclosure.jsx.map                21.79 kB │ gzip:  5.46 kB
+ℹ dist/Breadcrumbs.jsx.map               19.83 kB │ gzip:  5.80 kB
+ℹ dist/Collection.jsx.map                18.12 kB │ gzip:  4.79 kB
+ℹ dist/DragAndDrop.jsx.map               17.54 kB │ gzip:  5.30 kB
+ℹ dist/Dialog.jsx.map                    16.51 kB │ gzip:  5.12 kB
+ℹ dist/useDragAndDrop2.jsx               15.85 kB │ gzip:  3.81 kB
+ℹ dist/SharedElementTransition.jsx.map   15.60 kB │ gzip:  5.49 kB
+ℹ dist/TokenField.jsx.map                15.41 kB │ gzip:  4.04 kB
+ℹ dist/TimeField.jsx.map                 14.72 kB │ gzip:  4.43 kB
+ℹ dist/DateField2.jsx                    13.66 kB │ gzip:  4.04 kB
+ℹ dist/StepList.jsx.map                  12.64 kB │ gzip:  3.70 kB
+ℹ dist/Link.jsx.map                      12.09 kB │ gzip:  3.53 kB
+ℹ dist/ActionGroup.jsx.map               11.76 kB │ gzip:  3.66 kB
+ℹ dist/ActionBar.jsx.map                 11.39 kB │ gzip:  3.91 kB
+ℹ dist/DropZone.jsx.map                  10.66 kB │ gzip:  3.50 kB
+ℹ dist/virtualizer/Layout.jsx.map         9.62 kB │ gzip:  2.65 kB
+ℹ dist/ColorEditor.jsx.map                9.56 kB │ gzip:  2.73 kB
+ℹ dist/RouterProvider.jsx.map             9.01 kB │ gzip:  3.18 kB
+ℹ dist/intl.jsx.map                       8.81 kB │ gzip:  1.59 kB
+ℹ dist/ContextualHelpTrigger.jsx.map      8.62 kB │ gzip:  3.17 kB
+ℹ dist/ToggleButton.jsx.map               7.86 kB │ gzip:  2.72 kB
+ℹ dist/Form.jsx.map                       7.79 kB │ gzip:  3.08 kB
+ℹ dist/Meter.jsx.map                      7.71 kB │ gzip:  2.69 kB
+ℹ dist/PreviewTrigger.jsx.map             7.47 kB │ gzip:  2.51 kB
+ℹ dist/ProgressBar.jsx.map                7.32 kB │ gzip:  2.50 kB
+ℹ dist/Autocomplete.jsx.map               7.20 kB │ gzip:  2.45 kB
+ℹ dist/ToggleButtonGroup.jsx.map          6.75 kB │ gzip:  2.30 kB
+ℹ dist/Landmark.jsx.map                   6.51 kB │ gzip:  2.31 kB
+ℹ dist/Toolbar.jsx.map                    6.47 kB │ gzip:  2.37 kB
+ℹ dist/Alert.jsx.map                      6.04 kB │ gzip:  2.18 kB
+ℹ dist/intl.jsx                           6.02 kB │ gzip:  2.04 kB
+ℹ dist/Pressable.jsx.map                  5.87 kB │ gzip:  2.24 kB
+ℹ dist/Separator.jsx.map                  5.85 kB │ gzip:  2.18 kB
+ℹ dist/Focusable.jsx.map                  5.78 kB │ gzip:  2.21 kB
+ℹ dist/Icon.jsx.map                       5.43 kB │ gzip:  1.89 kB
+ℹ dist/SelectionIndicator.jsx.map         5.21 kB │ gzip:  1.91 kB
+ℹ dist/FieldError.jsx.map                 5.17 kB │ gzip:  2.00 kB
+ℹ dist/CalendarPicker.jsx.map             4.27 kB │ gzip:  1.43 kB
+ℹ dist/FileTrigger.jsx.map                4.14 kB │ gzip:  1.84 kB
+ℹ dist/Label.jsx.map                      3.49 kB │ gzip:  1.60 kB
+ℹ dist/Text.jsx.map                       3.21 kB │ gzip:  1.62 kB
+ℹ dist/VisuallyHidden.jsx.map             3.20 kB │ gzip:  1.51 kB
+ℹ dist/contexts.jsx.map                   3.04 kB │ gzip:  0.96 kB
+ℹ dist/Label.jsx                          2.02 kB │ gzip:  1.03 kB
+ℹ dist/Keyboard.jsx.map                   1.98 kB │ gzip:  1.04 kB
+ℹ dist/ElementTag.jsx.map                 1.25 kB │ gzip:  0.69 kB
+ℹ dist/contexts.jsx                       1.15 kB │ gzip:  0.44 kB
+ℹ 147 files, total: 2.74 MB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+✔ Build complete in 397ms
+ℹ dist/Table.js                         58.40 kB │ gzip: 12.13 kB
+ℹ dist/Color.js                         56.97 kB │ gzip:  9.25 kB
+ℹ dist/Tree.js                          54.65 kB │ gzip: 12.00 kB
+ℹ dist/Menu.js                          48.23 kB │ gzip: 10.29 kB
+ℹ dist/ListBox.js                       40.40 kB │ gzip:  9.06 kB
+ℹ dist/Select.js                        36.77 kB │ gzip:  8.30 kB
+ℹ dist/ComboBox.js                      36.41 kB │ gzip:  8.27 kB
+ℹ dist/RadioGroup.js                    30.77 kB │ gzip:  6.50 kB
+ℹ dist/GridList.js                      28.76 kB │ gzip:  7.07 kB
+ℹ dist/Checkbox.js                      28.32 kB │ gzip:  5.73 kB
+ℹ dist/Popover.js                       21.71 kB │ gzip:  5.71 kB
+ℹ dist/SearchField.js                   19.06 kB │ gzip:  4.50 kB
+ℹ dist/RangeCalendar.js                 18.83 kB │ gzip:  4.50 kB
+ℹ dist/Tooltip.js                       18.83 kB │ gzip:  5.05 kB
+ℹ dist/Calendar.js                      18.71 kB │ gzip:  4.57 kB
+ℹ dist/Toast.js                         18.47 kB │ gzip:  5.19 kB
+ℹ dist/NumberField.js                   17.97 kB │ gzip:  3.62 kB
+ℹ dist/index.js                         17.77 kB │ gzip:  3.24 kB
+ℹ dist/Tabs.js                          17.26 kB │ gzip:  4.56 kB
+ℹ dist/Switch.js                        16.79 kB │ gzip:  3.91 kB
+ℹ dist/Slider.js                        15.18 kB │ gzip:  3.66 kB
+ℹ dist/Modal.js                         14.02 kB │ gzip:  3.85 kB
+ℹ dist/Button.js                        13.78 kB │ gzip:  4.08 kB
+ℹ dist/TextField.js                     13.17 kB │ gzip:  3.52 kB
+ℹ dist/utils.js                         12.54 kB │ gzip:  4.54 kB
+ℹ dist/TagGroup.js                      12.30 kB │ gzip:  3.51 kB
+ℹ dist/Disclosure.js                    11.36 kB │ gzip:  2.89 kB
+ℹ dist/Dialog.js                        10.82 kB │ gzip:  2.89 kB
+ℹ dist/Breadcrumbs.js                    9.98 kB │ gzip:  2.96 kB
+ℹ dist/TokenField.js                     8.92 kB │ gzip:  2.57 kB
+ℹ dist/DragAndDrop.js                    8.41 kB │ gzip:  2.77 kB
+ℹ dist/TimeField.js                      8.36 kB │ gzip:  2.67 kB
+ℹ dist/Collection.js                     8.29 kB │ gzip:  2.45 kB
+ℹ dist/StepList.js                       7.09 kB │ gzip:  2.26 kB
+ℹ dist/DropZone.js                       7.04 kB │ gzip:  2.50 kB
+ℹ dist/ColorEditor.js                    7.02 kB │ gzip:  1.98 kB
+ℹ dist/ActionBar.js                      6.84 kB │ gzip:  2.34 kB
+ℹ dist/SharedElementTransition.js        6.67 kB │ gzip:  2.42 kB
+ℹ dist/Link.js                           6.32 kB │ gzip:  2.08 kB
+ℹ dist/ActionGroup.js                    6.12 kB │ gzip:  2.04 kB
+ℹ dist/ContextualHelpTrigger.js          5.54 kB │ gzip:  2.14 kB
+ℹ dist/virtualizer/Layout.js             4.78 kB │ gzip:  1.47 kB
+ℹ dist/Meter.js                          4.77 kB │ gzip:  1.83 kB
+ℹ dist/ToggleButton.js                   4.69 kB │ gzip:  1.75 kB
+ℹ dist/Autocomplete.js                   4.56 kB │ gzip:  1.56 kB
+ℹ dist/ProgressBar.js                    4.42 kB │ gzip:  1.70 kB
+ℹ dist/ToggleButtonGroup.js              4.26 kB │ gzip:  1.53 kB
+ℹ dist/RouterProvider.js                 4.16 kB │ gzip:  1.66 kB
+ℹ dist/PreviewTrigger.js                 3.96 kB │ gzip:  1.42 kB
+ℹ dist/Toolbar.js                        3.91 kB │ gzip:  1.60 kB
+ℹ dist/Form.js                           3.86 kB │ gzip:  1.66 kB
+ℹ dist/Landmark.js                       3.77 kB │ gzip:  1.42 kB
+ℹ dist/Icon.js                           3.53 kB │ gzip:  1.25 kB
+ℹ dist/Separator.js                      3.44 kB │ gzip:  1.38 kB
+ℹ dist/SelectionIndicator.js             3.40 kB │ gzip:  1.34 kB
+ℹ dist/Alert.js                          3.39 kB │ gzip:  1.35 kB
+ℹ dist/Pressable.js                      3.31 kB │ gzip:  1.40 kB
+ℹ dist/Focusable.js                      3.29 kB │ gzip:  1.39 kB
+ℹ dist/FieldError.js                     3.07 kB │ gzip:  1.24 kB
+ℹ dist/FileTrigger.js                    2.86 kB │ gzip:  1.29 kB
+ℹ dist/CalendarPicker.js                 2.68 kB │ gzip:  1.03 kB
+ℹ dist/Text.js                           2.36 kB │ gzip:  1.20 kB
+ℹ dist/VisuallyHidden.js                 1.71 kB │ gzip:  0.87 kB
+ℹ dist/Keyboard.js                       1.68 kB │ gzip:  0.91 kB
+ℹ dist/DatePicker.js                     1.11 kB │ gzip:  0.30 kB
+ℹ dist/ElementTag.js                     0.69 kB │ gzip:  0.43 kB
+ℹ dist/Virtualizer.js                    0.43 kB │ gzip:  0.20 kB
+ℹ dist/DateField.js                      0.41 kB │ gzip:  0.18 kB
+ℹ dist/useDragAndDrop.js                 0.09 kB │ gzip:  0.08 kB
+ℹ dist/ListBox.js.map                  185.02 kB │ gzip: 22.68 kB
+ℹ dist/Table.js.map                    153.02 kB │ gzip: 31.04 kB
+ℹ dist/Menu.js.map                     151.63 kB │ gzip: 25.02 kB
+ℹ dist/Tree.js.map                     150.38 kB │ gzip: 26.62 kB
+ℹ dist/Color.js.map                    133.32 kB │ gzip: 20.59 kB
+ℹ dist/DatePicker2.js.map              110.47 kB │ gzip: 18.30 kB
+ℹ dist/Select.js.map                    95.90 kB │ gzip: 20.57 kB
+ℹ dist/ComboBox.js.map                  95.38 kB │ gzip: 19.73 kB
+ℹ dist/Virtualizer2.js.map              91.36 kB │ gzip: 19.40 kB
+ℹ dist/GridList.js.map                  81.27 kB │ gzip: 14.87 kB
+ℹ dist/RadioGroup.js.map                75.89 kB │ gzip: 14.31 kB
+ℹ dist/Checkbox.js.map                  64.61 kB │ gzip: 11.76 kB
+ℹ dist/Popover.js.map                   60.32 kB │ gzip: 15.09 kB
+ℹ dist/RangeCalendar.js.map             51.95 kB │ gzip:  8.60 kB
+ℹ dist/DateField2.js.map                49.99 kB │ gzip: 10.44 kB
+ℹ dist/Calendar.js.map                  47.56 kB │ gzip:  8.60 kB
+ℹ dist/Toast.js.map                     45.62 kB │ gzip: 10.36 kB
+ℹ dist/SearchField.js.map               44.35 kB │ gzip:  9.14 kB
+ℹ dist/Virtualizer2.js                  43.03 kB │ gzip:  8.96 kB
+ℹ dist/Tooltip.js.map                   42.06 kB │ gzip: 10.46 kB
+ℹ dist/Tabs.js.map                      40.16 kB │ gzip:  8.58 kB
+ℹ dist/NumberField.js.map               40.13 kB │ gzip:  7.14 kB
+ℹ dist/Modal.js.map                     37.43 kB │ gzip:  9.17 kB
+ℹ dist/Switch.js.map                    37.11 kB │ gzip:  7.49 kB
+ℹ dist/useDragAndDrop2.js.map           34.76 kB │ gzip:  7.95 kB
+ℹ dist/DatePicker2.js                   34.31 kB │ gzip:  6.83 kB
+ℹ dist/Slider.js.map                    32.87 kB │ gzip:  6.55 kB
+ℹ dist/TagGroup.js.map                  32.65 kB │ gzip:  7.04 kB
+ℹ dist/Button.js.map                    31.00 kB │ gzip:  8.88 kB
+ℹ dist/TextField.js.map                 29.48 kB │ gzip:  7.22 kB
+ℹ dist/Disclosure.js.map                28.32 kB │ gzip:  5.97 kB
+ℹ dist/Breadcrumbs.js.map               26.67 kB │ gzip:  6.21 kB
+ℹ dist/utils.js.map                     26.61 kB │ gzip:  8.97 kB
+ℹ dist/TimeField.js.map                 24.42 kB │ gzip:  4.92 kB
+ℹ dist/Dialog.js.map                    23.95 kB │ gzip:  5.61 kB
+ℹ dist/ColorEditor.js.map               23.42 kB │ gzip:  3.48 kB
+ℹ dist/TokenField.js.map                21.58 kB │ gzip:  4.52 kB
+ℹ dist/Collection.js.map                20.61 kB │ gzip:  5.03 kB
+ℹ dist/DragAndDrop.js.map               18.20 kB │ gzip:  5.44 kB
+ℹ dist/StepList.js.map                  17.81 kB │ gzip:  4.06 kB
+ℹ dist/DateField2.js                    16.76 kB │ gzip:  4.71 kB
+ℹ dist/ActionGroup.js.map               16.73 kB │ gzip:  3.99 kB
+ℹ dist/SharedElementTransition.js.map   16.68 kB │ gzip:  5.63 kB
+ℹ dist/useDragAndDrop2.js               15.85 kB │ gzip:  3.81 kB
+ℹ dist/ActionBar.js.map                 13.93 kB │ gzip:  4.29 kB
+ℹ dist/Link.js.map                      13.84 kB │ gzip:  3.61 kB
+ℹ dist/DropZone.js.map                  12.79 kB │ gzip:  3.75 kB
+ℹ dist/ContextualHelpTrigger.js.map     11.88 kB │ gzip:  3.48 kB
+ℹ dist/virtualizer/Layout.js.map         9.62 kB │ gzip:  2.65 kB
+ℹ dist/PreviewTrigger.js.map             9.37 kB │ gzip:  2.60 kB
+ℹ dist/RouterProvider.js.map             9.11 kB │ gzip:  3.21 kB
+ℹ dist/intl.js.map                       8.81 kB │ gzip:  1.59 kB
+ℹ dist/ToggleButton.js.map               8.80 kB │ gzip:  2.82 kB
+ℹ dist/Form.js.map                       8.75 kB │ gzip:  3.22 kB
+ℹ dist/Meter.js.map                      8.30 kB │ gzip:  2.81 kB
+ℹ dist/ToggleButtonGroup.js.map          8.17 kB │ gzip:  2.46 kB
+ℹ dist/Autocomplete.js.map               7.97 kB │ gzip:  2.52 kB
+ℹ dist/ProgressBar.js.map                7.71 kB │ gzip:  2.60 kB
+ℹ dist/Icon.js.map                       7.61 kB │ gzip:  2.06 kB
+ℹ dist/Alert.js.map                      7.56 kB │ gzip:  2.37 kB
+ℹ dist/Toolbar.js.map                    7.30 kB │ gzip:  2.49 kB
+ℹ dist/Landmark.js.map                   6.91 kB │ gzip:  2.38 kB
+ℹ dist/SelectionIndicator.js.map         6.44 kB │ gzip:  2.08 kB
+ℹ dist/Separator.js.map                  6.29 kB │ gzip:  2.25 kB
+ℹ dist/FieldError.js.map                 6.25 kB │ gzip:  2.15 kB
+ℹ dist/intl.js                           6.02 kB │ gzip:  2.04 kB
+ℹ dist/Pressable.js.map                  5.86 kB │ gzip:  2.24 kB
+ℹ dist/Focusable.js.map                  5.78 kB │ gzip:  2.21 kB
+ℹ dist/FileTrigger.js.map                4.56 kB │ gzip:  1.98 kB
+ℹ dist/CalendarPicker.js.map             4.27 kB │ gzip:  1.43 kB
+ℹ dist/Label.js.map                      3.79 kB │ gzip:  1.64 kB
+ℹ dist/Text.js.map                       3.63 kB │ gzip:  1.69 kB
+ℹ dist/VisuallyHidden.js.map             3.32 kB │ gzip:  1.54 kB
+ℹ dist/contexts.js.map                   3.04 kB │ gzip:  0.96 kB
+ℹ dist/Label.js                          2.19 kB │ gzip:  1.05 kB
+ℹ dist/Keyboard.js.map                   2.19 kB │ gzip:  1.11 kB
+ℹ dist/ElementTag.js.map                 1.28 kB │ gzip:  0.71 kB
+ℹ dist/contexts.js                       1.15 kB │ gzip:  0.44 kB
+ℹ 147 files, total: 3.54 MB
+✔ Build complete in 445ms
+
+~/packages/solidaria-components$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solidaria-components$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solidaria-components$ node ../../scripts/write-package-declaration-attribution.mjs . ⊘ cache disabled
+write-package-declaration-attribution — wrote 0 runtime and 0 declaration attribution banner(s) in .
+
+~/packages/kumo$ rm -rf dist ⊘ cache disabled
+
+~/packages/kumo$ vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/components/button.tsx
+ℹ tsconfig: tsconfig.json
+ℹ entry: src/index.ts, src/components/button.tsx
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/components/button.jsx   0.06 kB │ gzip: 0.07 kB
+ℹ dist/index.jsx               0.06 kB │ gzip: 0.07 kB
+ℹ dist/button.jsx.map         14.84 kB │ gzip: 5.08 kB
+ℹ dist/button.jsx              5.04 kB │ gzip: 2.00 kB
+ℹ 4 files, total: 20.01 kB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+✔ Build complete in 63ms
+ℹ dist/components/button.js   0.06 kB │ gzip: 0.07 kB
+ℹ dist/index.js               0.06 kB │ gzip: 0.07 kB
+ℹ dist/button.js.map         17.99 kB │ gzip: 5.40 kB
+ℹ dist/button.js              6.53 kB │ gzip: 2.42 kB
+ℹ 4 files, total: 24.64 kB
+✔ Build complete in 72ms
+
+~/packages/kumo$ mkdir -p dist ⊘ cache disabled
+
+~/packages/kumo$ cp src/styles.css dist/styles.css ⊘ cache disabled
+
+~/packages/kumo$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/kumo$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/geist$ rm -rf dist ⊘ cache disabled
+
+~/packages/geist$ vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/components/button.tsx
+ℹ tsconfig: tsconfig.json
+ℹ entry: src/index.ts, src/components/button.tsx
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/components/button.jsx   0.06 kB │ gzip: 0.07 kB
+ℹ dist/index.jsx               0.06 kB │ gzip: 0.07 kB
+ℹ dist/button.jsx.map         10.39 kB │ gzip: 3.67 kB
+ℹ dist/button.jsx              3.23 kB │ gzip: 1.32 kB
+ℹ 4 files, total: 13.74 kB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+✔ Build complete in 62ms
+ℹ dist/components/button.js   0.06 kB │ gzip: 0.07 kB
+ℹ dist/index.js               0.06 kB │ gzip: 0.07 kB
+ℹ dist/button.js.map         12.61 kB │ gzip: 3.98 kB
+ℹ dist/button.js              4.64 kB │ gzip: 1.66 kB
+ℹ 4 files, total: 17.37 kB
+✔ Build complete in 71ms
+
+~/packages/geist$ mkdir -p dist ⊘ cache disabled
+
+~/packages/geist$ cp src/styles.css dist/styles.css ⊘ cache disabled
+
+~/packages/geist$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/geist$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solid-spectrum$ NODE_ENV=production PACK_PASS=dom vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/ActionButton.ts, src/Button.ts, src/CenterBaseline.ts, src/ContrastIcon.ts, src/FileTrigger.ts, src/LightenIcon.ts, src/LinkButton.ts, src/Picker.ts, src/Provider.ts, src/SearchField.ts, src/SegmentedControl.ts, src/Switch.ts, src/TextArea.ts, src/TextField.ts, src/ActionMenu.ts, src/Breadcrumbs.ts, src/Calendar.ts, src/ColorArea.ts, src/ColorField.ts, src/ColorSlider.ts, src/ColorSwatch.ts, src/ColorSwatchPicker.ts, src/ColorWheel.ts, src/disclosure-export.ts, src/Card.ts, src/CardView.ts, src/ListView.ts, src/TreeView.ts, src/RangeCalendar.ts, src/Menu.ts, src/Tabs.ts, src/GitHubIcon.ts, src/Accordion.ts, src/ActionBar.ts, src/ActionButtonGroup.ts, src/ActionGroup.ts, src/AlertDialog.ts, src/Avatar.ts, src/AvatarGroup.ts, src/Badge.ts, src/ButtonGroup.ts, src/Checkbox.ts, src/CheckboxGroup.ts, src/CloseIcon.ts, src/ComboBox.ts, src/Content.ts, src/ContextualHelp.ts, src/DateField.ts, src/DatePicker.ts, src/DateRangePicker.ts, src/Dialog.ts, src/Divider.ts, src/DropZone.ts, src/Footer.ts, src/Form.ts, src/Heading.ts, src/Icon.ts, src/IllustratedMessage.ts, src/Image.ts, src/ImageCoordinator.ts, src/InlineAlert.ts, src/Keyboard.ts, src/LabeledValue.ts, src/Link.ts, src/MenuHamburgerIcon.ts, src/Meter.ts, src/NumberField.ts, src/Popover.ts, src/ProgressBar.ts, src/ProgressCircle.ts, src/RadioGroup.ts, src/RangeSlider.ts, src/SearchIcon.ts, src/SelectBoxGroup.ts, src/Skeleton.ts, src/Slider.ts, src/StatusLight.ts, src/StepList.ts, src/TableView.ts, src/TagGroup.ts, src/Text.ts, src/TimeField.ts, src/Toast.ts, src/ToggleButton.ts, src/ToggleButtonGroup.ts, src/Toolbar.ts, src/Tooltip.ts, src/style/index.ts, src/style/runtime.ts, src/provider/index.tsx, src/accordion/index.tsx, src/actionbar/index.tsx, src/actiongroup/index.tsx, src/button/ActionButton.tsx, src/actionbuttongroup/index.tsx, src/button/index.ts, src/button/LinkButton.tsx, src/buttongroup/index.tsx, src/button/ToggleButton.tsx, src/togglebuttongroup/index.tsx, src/pressScale.ts, src/menu/ActionMenu.tsx, src/menu/index.tsx, src/avatar/index.tsx, src/badge/index.tsx, src/breadcrumbs/index.tsx, src/calendar/index.tsx, src/calendar/DateField.tsx, src/calendar/DatePicker.tsx, src/calendar/DateRangePicker.tsx, src/calendar/RangeCalendar.tsx, src/calendar/TimeField.tsx, src/card/index.tsx, src/cardview/index.tsx, src/checkbox/index.tsx, src/color/index.tsx, src/color/ColorSwatchPicker.tsx, src/combobox/index.tsx, src/contextualhelp/index.tsx, src/dialog/index.tsx, src/disclosure/index.tsx, src/divider/index.tsx, src/separator/index.tsx, src/dropzone/index.tsx, src/filetrigger/index.tsx, src/form/index.tsx, src/icon/center-baseline.tsx, src/icon/s2wf-icons/BellIcon.tsx, src/icon/s2wf-icons/CloseIcon.tsx, src/icon/s2wf-icons/ContrastIcon.tsx, src/icon/s2wf-icons/LightenIcon.tsx, src/icon/s2wf-icons/LinkIcon.tsx, src/icon/s2wf-icons/MenuHamburgerIcon.tsx, src/icon/s2wf-icons/SearchIcon.tsx, src/illustratedmessage/index.tsx, src/image/index.tsx, src/inlinealert/index.tsx, src/labeledvalue/index.tsx, src/link/index.tsx, src/layout/index.tsx, src/listbox/index.tsx, src/list/index.tsx, src/meter/index.tsx, src/numberfield/index.tsx, src/picker/index.tsx, src/popover/index.tsx, src/notificationbadge/index.tsx, src/progress-bar/index.tsx, src/progress/ProgressCircle.tsx, src/radio/index.tsx, src/searchfield/index.tsx, src/segmentedcontrol/index.tsx, src/selectboxgroup/index.tsx, src/select/index.tsx, src/skeleton/index.tsx, src/text/index.tsx, src/slider/index.tsx, src/statuslight/index.tsx, src/steplist/index.tsx, src/switch/index.tsx, src/table/index.tsx, src/tag-group/index.tsx, src/textfield/index.tsx, src/toast/index.tsx, src/toolbar/index.tsx, src/tooltip/index.tsx, src/tree/index.tsx
+ℹ target: esnext
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ Cleaning 2034 files
+ℹ dist/style/index.js                                                                        986.34 kB │ gzip: 193.79 kB
+ℹ dist/combobox/index.js                                                                      52.08 kB │ gzip:   9.57 kB
+ℹ dist/picker/index.js                                                                        47.11 kB │ gzip:   8.65 kB
+ℹ dist/tree/index.js                                                                          42.24 kB │ gzip:   8.60 kB
+ℹ dist/calendar/DateRangePicker.js                                                            37.10 kB │ gzip:   6.73 kB
+ℹ dist/checkbox/index.js                                                                      36.86 kB │ gzip:   6.27 kB
+ℹ dist/tag-group/index.js                                                                     34.77 kB │ gzip:   6.05 kB
+ℹ dist/calendar/DatePicker.js                                                                 34.70 kB │ gzip:   6.65 kB
+ℹ dist/card/index.js                                                                          29.85 kB │ gzip:   6.27 kB
+ℹ dist/radio/index.js                                                                         27.36 kB │ gzip:   5.17 kB
+ℹ dist/calendar/TimeField.js                                                                  26.22 kB │ gzip:   5.29 kB
+ℹ dist/calendar/DateField.js                                                                  26.15 kB │ gzip:   5.29 kB
+ℹ dist/searchfield/index.js                                                                   22.43 kB │ gzip:   4.88 kB
+ℹ dist/disclosure/index.js                                                                    21.90 kB │ gzip:   5.43 kB
+ℹ dist/calendar/index.js                                                                      19.79 kB │ gzip:   5.10 kB
+ℹ dist/selectboxgroup/index.js                                                                16.89 kB │ gzip:   4.17 kB
+ℹ dist/select/index.js                                                                        16.87 kB │ gzip:   3.08 kB
+ℹ dist/progress-bar/index.js                                                                  16.43 kB │ gzip:   3.66 kB
+ℹ dist/actionbar/index.js                                                                     15.86 kB │ gzip:   4.30 kB
+ℹ dist/listbox/index.js                                                                       15.23 kB │ gzip:   3.08 kB
+ℹ dist/meter/index.js                                                                         14.32 kB │ gzip:   3.13 kB
+ℹ dist/illustratedmessage/index.js                                                            13.77 kB │ gzip:   2.75 kB
+ℹ dist/badge/index.js                                                                         13.42 kB │ gzip:   3.15 kB
+ℹ dist/segmentedcontrol/index.js                                                              12.87 kB │ gzip:   3.44 kB
+ℹ dist/labeledvalue/index.js                                                                  12.51 kB │ gzip:   2.71 kB
+ℹ dist/index.js                                                                               12.48 kB │ gzip:   2.74 kB
+ℹ dist/steplist/index.js                                                                      11.96 kB │ gzip:   3.18 kB
+ℹ dist/avatar/index.js                                                                        11.93 kB │ gzip:   3.00 kB
+ℹ dist/cardview/index.js                                                                      11.70 kB │ gzip:   3.38 kB
+ℹ dist/image/index.js                                                                         11.03 kB │ gzip:   3.46 kB
+ℹ dist/popover/index.js                                                                       11.02 kB │ gzip:   3.40 kB
+ℹ dist/button/ToggleButton.js                                                                 10.68 kB │ gzip:   3.11 kB
+ℹ dist/inlinealert/index.js                                                                    9.73 kB │ gzip:   2.65 kB
+ℹ dist/statuslight/index.js                                                                    8.97 kB │ gzip:   2.55 kB
+ℹ dist/tooltip/index.js                                                                        8.23 kB │ gzip:   2.65 kB
+ℹ dist/progress/ProgressCircle.js                                                              7.63 kB │ gzip:   2.67 kB
+ℹ dist/provider/index.js                                                                       7.36 kB │ gzip:   2.18 kB
+ℹ dist/notificationbadge/index.js                                                              6.20 kB │ gzip:   2.20 kB
+ℹ dist/dropzone/index.js                                                                       6.03 kB │ gzip:   2.23 kB
+ℹ dist/skeleton/index.js                                                                       5.99 kB │ gzip:   2.05 kB
+ℹ dist/buttongroup/index.js                                                                    5.40 kB │ gzip:   1.99 kB
+ℹ dist/link/index.js                                                                           5.26 kB │ gzip:   1.96 kB
+ℹ dist/actiongroup/index.js                                                                    4.79 kB │ gzip:   1.49 kB
+ℹ dist/divider/index.js                                                                        4.61 kB │ gzip:   1.77 kB
+ℹ dist/togglebuttongroup/index.js                                                              4.56 kB │ gzip:   1.54 kB
+ℹ dist/actionbuttongroup/index.js                                                              3.74 kB │ gzip:   1.40 kB
+ℹ dist/separator/index.js                                                                      2.90 kB │ gzip:   1.23 kB
+ℹ dist/style/runtime.js                                                                        2.69 kB │ gzip:   1.27 kB
+ℹ dist/accordion/index.js                                                                      2.59 kB │ gzip:   1.03 kB
+ℹ dist/icon/s2wf-icons/LightenIcon.js                                                          2.09 kB │ gzip:   0.92 kB
+ℹ dist/icon/center-baseline.js                                                                 1.92 kB │ gzip:   1.00 kB
+ℹ dist/pressScale.js                                                                           1.68 kB │ gzip:   0.88 kB
+ℹ dist/icon/s2wf-icons/LinkIcon.js                                                             1.67 kB │ gzip:   0.93 kB
+ℹ dist/icon/s2wf-icons/BellIcon.js                                                             1.59 kB │ gzip:   0.94 kB
+ℹ dist/toolbar/index.js                                                                        1.54 kB │ gzip:   0.88 kB
+ℹ dist/GitHubIcon.js                                                                           1.46 kB │ gzip:   0.83 kB
+ℹ dist/icon/s2wf-icons/ContrastIcon.js                                                         1.31 kB │ gzip:   0.72 kB
+ℹ dist/icon/s2wf-icons/MenuHamburgerIcon.js                                                    1.22 kB │ gzip:   0.64 kB
+ℹ dist/icon/s2wf-icons/CloseIcon.js                                                            1.18 kB │ gzip:   0.68 kB
+ℹ dist/icon/s2wf-icons/SearchIcon.js                                                           1.17 kB │ gzip:   0.72 kB
+ℹ dist/filetrigger/index.js                                                                    1.02 kB │ gzip:   0.52 kB
+ℹ dist/color/index.js                                                                          0.82 kB │ gzip:   0.27 kB
+ℹ dist/Button.js                                                                               0.80 kB │ gzip:   0.24 kB
+ℹ dist/button/index.js                                                                         0.80 kB │ gzip:   0.24 kB
+ℹ dist/menu/index.js                                                                           0.68 kB │ gzip:   0.27 kB
+ℹ dist/dialog/index.js                                                                         0.66 kB │ gzip:   0.27 kB
+ℹ dist/Dialog.js                                                                               0.65 kB │ gzip:   0.26 kB
+ℹ dist/table/index.js                                                                          0.60 kB │ gzip:   0.25 kB
+ℹ dist/TableView.js                                                                            0.60 kB │ gzip:   0.25 kB
+ℹ dist/ActionMenu.js                                                                           0.59 kB │ gzip:   0.25 kB
+ℹ dist/Accordion.js                                                                            0.56 kB │ gzip:   0.16 kB
+ℹ dist/CardView.js                                                                             0.56 kB │ gzip:   0.22 kB
+ℹ dist/Menu.js                                                                                 0.55 kB │ gzip:   0.24 kB
+ℹ dist/ComboBox.js                                                                             0.52 kB │ gzip:   0.18 kB
+ℹ dist/toast/index.js                                                                          0.50 kB │ gzip:   0.23 kB
+ℹ dist/Toast.js                                                                                0.50 kB │ gzip:   0.23 kB
+ℹ dist/TreeView.js                                                                             0.47 kB │ gzip:   0.18 kB
+ℹ dist/Skeleton.js                                                                             0.45 kB │ gzip:   0.16 kB
+ℹ dist/text/index.js                                                                           0.39 kB │ gzip:   0.18 kB
+ℹ dist/form/index.js                                                                           0.38 kB │ gzip:   0.23 kB
+ℹ dist/Form.js                                                                                 0.38 kB │ gzip:   0.23 kB
+ℹ dist/Card.js                                                                                 0.37 kB │ gzip:   0.18 kB
+ℹ dist/ColorSwatchPicker.js                                                                    0.34 kB │ gzip:   0.17 kB
+ℹ dist/list/index.js                                                                           0.30 kB │ gzip:   0.15 kB
+ℹ dist/ListView.js                                                                             0.30 kB │ gzip:   0.15 kB
+ℹ dist/disclosure-export.js                                                                    0.29 kB │ gzip:   0.12 kB
+ℹ dist/Tabs.js                                                                                 0.27 kB │ gzip:   0.16 kB
+ℹ dist/Provider.js                                                                             0.22 kB │ gzip:   0.11 kB
+ℹ dist/breadcrumbs/index.js                                                                    0.21 kB │ gzip:   0.12 kB
+ℹ dist/textfield/index.js                                                                      0.21 kB │ gzip:   0.13 kB
+ℹ dist/TextField.js                                                                            0.21 kB │ gzip:   0.12 kB
+ℹ dist/color/ColorSwatchPicker.js                                                              0.21 kB │ gzip:   0.12 kB
+ℹ dist/Icon.js                                                                                 0.21 kB │ gzip:   0.13 kB
+ℹ dist/ActionBar.js                                                                            0.20 kB │ gzip:   0.10 kB
+ℹ dist/Image.js                                                                                0.20 kB │ gzip:   0.11 kB
+ℹ dist/ImageCoordinator.js                                                                     0.20 kB │ gzip:   0.11 kB
+ℹ dist/contextualhelp/index.js                                                                 0.20 kB │ gzip:   0.12 kB
+ℹ dist/Breadcrumbs.js                                                                          0.20 kB │ gzip:   0.12 kB
+ℹ dist/ContextualHelp.js                                                                       0.20 kB │ gzip:   0.11 kB
+ℹ dist/ColorSlider.js                                                                          0.19 kB │ gzip:   0.13 kB
+ℹ dist/ColorSwatch.js                                                                          0.19 kB │ gzip:   0.13 kB
+ℹ dist/ColorWheel.js                                                                           0.19 kB │ gzip:   0.13 kB
+ℹ dist/SegmentedControl.js                                                                     0.19 kB │ gzip:   0.09 kB
+ℹ dist/ColorArea.js                                                                            0.18 kB │ gzip:   0.13 kB
+ℹ dist/slider/index.js                                                                         0.18 kB │ gzip:   0.11 kB
+ℹ dist/Slider.js                                                                               0.18 kB │ gzip:   0.11 kB
+ℹ dist/Checkbox.js                                                                             0.18 kB │ gzip:   0.09 kB
+ℹ dist/CheckboxGroup.js                                                                        0.18 kB │ gzip:   0.09 kB
+ℹ dist/switch/index.js                                                                         0.17 kB │ gzip:   0.12 kB
+ℹ dist/Switch.js                                                                               0.17 kB │ gzip:   0.11 kB
+ℹ dist/Avatar.js                                                                               0.16 kB │ gzip:   0.09 kB
+ℹ dist/AvatarGroup.js                                                                          0.16 kB │ gzip:   0.09 kB
+ℹ dist/Picker.js                                                                               0.16 kB │ gzip:   0.09 kB
+ℹ dist/Popover.js                                                                              0.16 kB │ gzip:   0.09 kB
+ℹ dist/SelectBoxGroup.js                                                                       0.15 kB │ gzip:   0.09 kB
+ℹ dist/layout/index.js                                                                         0.15 kB │ gzip:   0.13 kB
+ℹ dist/IllustratedMessage.js                                                                   0.15 kB │ gzip:   0.09 kB
+ℹ dist/RadioGroup.js                                                                           0.15 kB │ gzip:   0.09 kB
+ℹ dist/ColorField.js                                                                           0.15 kB │ gzip:   0.11 kB
+ℹ dist/DateRangePicker.js                                                                      0.14 kB │ gzip:   0.09 kB
+ℹ dist/calendar/RangeCalendar.js                                                               0.14 kB │ gzip:   0.10 kB
+ℹ dist/RangeCalendar.js                                                                        0.14 kB │ gzip:   0.10 kB
+ℹ dist/MenuHamburgerIcon.js                                                                    0.14 kB │ gzip:   0.10 kB
+ℹ dist/ProgressCircle.js                                                                       0.14 kB │ gzip:   0.08 kB
+ℹ dist/numberfield/index.js                                                                    0.13 kB │ gzip:   0.10 kB
+ℹ dist/NumberField.js                                                                          0.13 kB │ gzip:   0.10 kB
+ℹ dist/Tooltip.js                                                                              0.13 kB │ gzip:   0.09 kB
+ℹ dist/menu/ActionMenu.js                                                                      0.13 kB │ gzip:   0.10 kB
+ℹ dist/RangeSlider.js                                                                          0.12 kB │ gzip:   0.10 kB
+ℹ dist/ProgressBar.js                                                                          0.12 kB │ gzip:   0.09 kB
+ℹ dist/InlineAlert.js                                                                          0.12 kB │ gzip:   0.09 kB
+ℹ dist/SearchField.js                                                                          0.12 kB │ gzip:   0.09 kB
+ℹ dist/StatusLight.js                                                                          0.12 kB │ gzip:   0.09 kB
+ℹ dist/ContrastIcon.js                                                                         0.12 kB │ gzip:   0.10 kB
+ℹ dist/DatePicker.js                                                                           0.12 kB │ gzip:   0.08 kB
+ℹ dist/TagGroup.js                                                                             0.11 kB │ gzip:   0.08 kB
+ℹ dist/LightenIcon.js                                                                          0.11 kB │ gzip:   0.09 kB
+ℹ dist/DateField.js                                                                            0.11 kB │ gzip:   0.08 kB
+ℹ dist/TimeField.js                                                                            0.11 kB │ gzip:   0.08 kB
+ℹ dist/Keyboard.js                                                                             0.11 kB │ gzip:   0.09 kB
+ℹ dist/SearchIcon.js                                                                           0.11 kB │ gzip:   0.09 kB
+ℹ dist/Content.js                                                                              0.11 kB │ gzip:   0.09 kB
+ℹ dist/Heading.js                                                                              0.11 kB │ gzip:   0.09 kB
+ℹ dist/CloseIcon.js                                                                            0.10 kB │ gzip:   0.09 kB
+ℹ dist/Calendar.js                                                                             0.10 kB │ gzip:   0.08 kB
+ℹ dist/DropZone.js                                                                             0.10 kB │ gzip:   0.08 kB
+ℹ dist/Footer.js                                                                               0.10 kB │ gzip:   0.09 kB
+ℹ dist/Divider.js                                                                              0.10 kB │ gzip:   0.08 kB
+ℹ dist/ActionButtonGroup.js                                                                    0.10 kB │ gzip:   0.08 kB
+ℹ dist/ToggleButtonGroup.js                                                                    0.10 kB │ gzip:   0.08 kB
+ℹ dist/Text.js                                                                                 0.09 kB │ gzip:   0.09 kB
+ℹ dist/StepList.js                                                                             0.09 kB │ gzip:   0.08 kB
+ℹ dist/Badge.js                                                                                0.09 kB │ gzip:   0.07 kB
+ℹ dist/Meter.js                                                                                0.09 kB │ gzip:   0.07 kB
+ℹ dist/button/ActionButton.js                                                                  0.09 kB │ gzip:   0.08 kB
+ℹ dist/ActionButton.js                                                                         0.09 kB │ gzip:   0.08 kB
+ℹ dist/CenterBaseline.js                                                                       0.09 kB │ gzip:   0.08 kB
+ℹ dist/Link.js                                                                                 0.08 kB │ gzip:   0.08 kB
+ℹ dist/ToggleButton.js                                                                         0.08 kB │ gzip:   0.07 kB
+ℹ dist/button/LinkButton.js                                                                    0.08 kB │ gzip:   0.08 kB
+ℹ dist/LabeledValue.js                                                                         0.08 kB │ gzip:   0.08 kB
+ℹ dist/LinkButton.js                                                                           0.08 kB │ gzip:   0.08 kB
+ℹ dist/AlertDialog.js                                                                          0.08 kB │ gzip:   0.08 kB
+ℹ dist/ActionGroup.js                                                                          0.08 kB │ gzip:   0.07 kB
+ℹ dist/ButtonGroup.js                                                                          0.08 kB │ gzip:   0.07 kB
+ℹ dist/FileTrigger.js                                                                          0.08 kB │ gzip:   0.08 kB
+ℹ dist/TextArea.js                                                                             0.08 kB │ gzip:   0.08 kB
+ℹ dist/Toolbar.js                                                                              0.07 kB │ gzip:   0.07 kB
+ℹ dist/style/index.js.map                                                                    197.52 kB │ gzip:  40.46 kB
+ℹ dist/_chunk/table.js.map                                                                    94.15 kB │ gzip:  22.82 kB
+ℹ dist/_chunk/intl.js                                                                         76.61 kB │ gzip:  18.19 kB
+ℹ dist/_chunk/color.js.map                                                                    73.16 kB │ gzip:  15.49 kB
+ℹ dist/_chunk/slider.js.map                                                                   69.90 kB │ gzip:  14.14 kB
+ℹ dist/styles.css                                                                             68.51 kB │ gzip:  16.18 kB
+ℹ dist/_chunk/breadcrumbs.js.map                                                              67.42 kB │ gzip:  14.57 kB
+ℹ dist/_chunk/Tabs.js.map                                                                     64.08 kB │ gzip:  15.40 kB
+ℹ dist/combobox/index.js.map                                                                  61.75 kB │ gzip:  16.23 kB
+ℹ dist/_chunk/slider.js                                                                       61.56 kB │ gzip:  10.90 kB
+ℹ dist/_chunk/table.js                                                                        59.74 kB │ gzip:  12.31 kB
+ℹ dist/picker/index.js.map                                                                    59.55 kB │ gzip:  15.56 kB
+ℹ dist/_chunk/dialog.js.map                                                                   58.26 kB │ gzip:  13.19 kB
+ℹ dist/_chunk/color.js                                                                        57.51 kB │ gzip:  10.13 kB
+ℹ dist/tree/index.js.map                                                                      57.25 kB │ gzip:  14.22 kB
+ℹ dist/_chunk/list.js.map                                                                     56.72 kB │ gzip:  14.32 kB
+ℹ dist/_chunk/menu.js.map                                                                     54.48 kB │ gzip:  13.06 kB
+ℹ dist/_chunk/toast.js.map                                                                    51.00 kB │ gzip:  14.04 kB
+ℹ dist/_chunk/list.js                                                                         44.06 kB │ gzip:   8.19 kB
+ℹ dist/checkbox/index.js.map                                                                  41.92 kB │ gzip:  10.79 kB
+ℹ dist/_chunk/textfield.js.map                                                                41.56 kB │ gzip:   8.40 kB
+ℹ dist/_chunk/RangeCalendar.js.map                                                            41.38 kB │ gzip:  10.24 kB
+ℹ dist/_chunk/textfield.js                                                                    39.65 kB │ gzip:   5.72 kB
+ℹ dist/card/index.js.map                                                                      39.31 kB │ gzip:   9.77 kB
+ℹ dist/_chunk/Tabs.js                                                                         38.89 kB │ gzip:   8.51 kB
+ℹ dist/calendar/DateRangePicker.js.map                                                        36.24 kB │ gzip:   9.71 kB
+ℹ dist/_chunk/dialog.js                                                                       36.02 kB │ gzip:   6.88 kB
+ℹ dist/tag-group/index.js.map                                                                 35.09 kB │ gzip:   9.96 kB
+ℹ dist/_chunk/ActionButton.js.map                                                             34.05 kB │ gzip:   8.09 kB
+ℹ dist/disclosure/index.js.map                                                                33.75 kB │ gzip:   8.54 kB
+ℹ dist/calendar/DatePicker.js.map                                                             32.92 kB │ gzip:   9.86 kB
+ℹ dist/_chunk/toast.js                                                                        32.54 kB │ gzip:   8.74 kB
+ℹ dist/_chunk/breadcrumbs.js                                                                  31.80 kB │ gzip:   7.53 kB
+ℹ dist/_chunk/numberfield.js.map                                                              31.46 kB │ gzip:   8.10 kB
+ℹ dist/_chunk/menu.js                                                                         30.23 kB │ gzip:   7.09 kB
+ℹ dist/calendar/index.js.map                                                                  29.89 kB │ gzip:   8.53 kB
+ℹ dist/radio/index.js.map                                                                     29.15 kB │ gzip:   7.80 kB
+ℹ dist/_chunk/numberfield.js                                                                  28.95 kB │ gzip:   5.83 kB
+ℹ dist/_chunk/ActionMenu.js.map                                                               28.86 kB │ gzip:   7.88 kB
+ℹ dist/_chunk/RangeCalendar.js                                                                28.40 kB │ gzip:   6.43 kB
+ℹ dist/actionbar/index.js.map                                                                 26.67 kB │ gzip:   8.01 kB
+ℹ dist/selectboxgroup/index.js.map                                                            26.13 kB │ gzip:   7.05 kB
+ℹ dist/_chunk/button.js.map                                                                   26.10 kB │ gzip:   6.32 kB
+ℹ dist/calendar/DateField.js.map                                                              25.91 kB │ gzip:   7.81 kB
+ℹ dist/calendar/TimeField.js.map                                                              25.51 kB │ gzip:   7.65 kB
+ℹ dist/searchfield/index.js.map                                                               23.05 kB │ gzip:   6.79 kB
+ℹ dist/_chunk/text.js.map                                                                     22.47 kB │ gzip:   3.51 kB
+ℹ dist/_chunk/form.js.map                                                                     22.40 kB │ gzip:   6.43 kB
+ℹ dist/_chunk/LinkButton.js.map                                                               22.11 kB │ gzip:   5.41 kB
+ℹ dist/_chunk/switch.js.map                                                                   21.83 kB │ gzip:   6.91 kB
+ℹ dist/_chunk/LinkButton.js                                                                   20.81 kB │ gzip:   4.16 kB
+ℹ dist/_chunk/contextualhelp.js.map                                                           20.64 kB │ gzip:   6.12 kB
+ℹ dist/image/index.js.map                                                                     20.41 kB │ gzip:   6.23 kB
+ℹ dist/_chunk/ActionButton.js                                                                 19.92 kB │ gzip:   4.88 kB
+ℹ dist/button/ToggleButton.js.map                                                             18.21 kB │ gzip:   5.24 kB
+ℹ dist/cardview/index.js.map                                                                  17.41 kB │ gzip:   5.34 kB
+ℹ dist/_chunk/switch.js                                                                       17.37 kB │ gzip:   4.08 kB
+ℹ dist/segmentedcontrol/index.js.map                                                          17.13 kB │ gzip:   5.38 kB
+ℹ dist/progress-bar/index.js.map                                                              17.12 kB │ gzip:   5.26 kB
+ℹ dist/select/index.js.map                                                                    17.07 kB │ gzip:   4.61 kB
+ℹ dist/_chunk/s2-menu-styles.js                                                               17.07 kB │ gzip:   2.42 kB
+ℹ dist/_chunk/button.js                                                                       16.92 kB │ gzip:   3.76 kB
+ℹ dist/popover/index.js.map                                                                   15.76 kB │ gzip:   5.30 kB
+ℹ dist/_chunk/ColorSwatchPicker.js.map                                                        15.60 kB │ gzip:   4.33 kB
+ℹ dist/_chunk/s2-action-button-styles.js.map                                                  15.05 kB │ gzip:   3.39 kB
+ℹ dist/steplist/index.js.map                                                                  14.71 kB │ gzip:   4.98 kB
+ℹ dist/_chunk/ActionMenu.js                                                                   14.35 kB │ gzip:   4.18 kB
+ℹ dist/_chunk/form.js                                                                         14.31 kB │ gzip:   3.66 kB
+ℹ dist/listbox/index.js.map                                                                   14.22 kB │ gzip:   4.38 kB
+ℹ dist/_chunk/s2-action-button-styles.js                                                      14.18 kB │ gzip:   2.64 kB
+ℹ dist/badge/index.js.map                                                                     13.91 kB │ gzip:   4.25 kB
+ℹ dist/avatar/index.js.map                                                                    13.44 kB │ gzip:   4.24 kB
+ℹ dist/meter/index.js.map                                                                     13.37 kB │ gzip:   4.29 kB
+ℹ dist/provider/index.js.map                                                                  12.80 kB │ gzip:   3.98 kB
+ℹ dist/inlinealert/index.js.map                                                               12.57 kB │ gzip:   3.83 kB
+ℹ dist/_chunk/layout.js.map                                                                   12.57 kB │ gzip:   3.34 kB
+ℹ dist/illustratedmessage/index.js.map                                                        12.14 kB │ gzip:   3.63 kB
+ℹ dist/_chunk/spectrum-icon.js.map                                                            12.06 kB │ gzip:   3.79 kB
+ℹ dist/progress/ProgressCircle.js.map                                                         11.89 kB │ gzip:   3.79 kB
+ℹ dist/_chunk/intl.js.map                                                                     11.76 kB │ gzip:   1.99 kB
+ℹ dist/skeleton/index.js.map                                                                  10.97 kB │ gzip:   3.62 kB
+ℹ dist/tooltip/index.js.map                                                                   10.90 kB │ gzip:   3.81 kB
+ℹ dist/_chunk/Cross.js.map                                                                    10.81 kB │ gzip:   2.09 kB
+ℹ dist/_chunk/s2-menu-styles.js.map                                                           10.58 kB │ gzip:   3.07 kB
+ℹ dist/buttongroup/index.js.map                                                               10.39 kB │ gzip:   3.64 kB
+ℹ dist/_chunk/contextualhelp.js                                                               10.20 kB │ gzip:   3.08 kB
+ℹ dist/_chunk/text.js                                                                         10.02 kB │ gzip:   2.05 kB
+ℹ dist/_chunk/ColorSwatchPicker.js                                                             9.98 kB │ gzip:   2.71 kB
+ℹ dist/statuslight/index.js.map                                                                9.64 kB │ gzip:   3.52 kB
+ℹ dist/_chunk/Chevron.js.map                                                                   9.49 kB │ gzip:   2.05 kB
+ℹ dist/labeledvalue/index.js.map                                                               9.43 kB │ gzip:   3.27 kB
+ℹ dist/_chunk/Checkmark.js.map                                                                 9.40 kB │ gzip:   2.00 kB
+ℹ dist/togglebuttongroup/index.js.map                                                          9.26 kB │ gzip:   2.81 kB
+ℹ dist/notificationbadge/index.js.map                                                          9.12 kB │ gzip:   3.19 kB
+ℹ dist/dropzone/index.js.map                                                                   8.74 kB │ gzip:   3.25 kB
+ℹ dist/actiongroup/index.js.map                                                                8.35 kB │ gzip:   2.94 kB
+ℹ dist/link/index.js.map                                                                       8.06 kB │ gzip:   2.93 kB
+ℹ dist/actionbuttongroup/index.js.map                                                          7.69 kB │ gzip:   2.57 kB
+ℹ dist/_chunk/Dash.js.map                                                                      7.34 kB │ gzip:   1.53 kB
+ℹ dist/_chunk/Cross.js                                                                         7.30 kB │ gzip:   1.58 kB
+ℹ dist/style/runtime.js.map                                                                    6.94 kB │ gzip:   2.77 kB
+ℹ dist/_chunk/macro-d06622c66ece4a108f592b475f258c2fab14ec4dfc8e545eed938413b5bdd328.js.map    6.70 kB │ gzip:   1.55 kB
+ℹ dist/divider/index.js.map                                                                    6.55 kB │ gzip:   2.43 kB
+ℹ dist/_chunk/spectrum-icon.js                                                                 6.35 kB │ gzip:   1.87 kB
+ℹ dist/_chunk/Chevron.js                                                                       6.33 kB │ gzip:   1.57 kB
+ℹ dist/_chunk/Asterisk.js.map                                                                  6.21 kB │ gzip:   1.97 kB
+ℹ dist/_chunk/Checkmark.js                                                                     6.19 kB │ gzip:   1.50 kB
+ℹ dist/_chunk/prefix.js.map                                                                    5.88 kB │ gzip:   2.44 kB
+ℹ dist/_chunk/macro-d2704bd5d9b60d26ff1e50aa3db378885d30e50caf8dc7b31cfaf5dd36a09d85.js.map    5.86 kB │ gzip:   2.42 kB
+ℹ dist/_chunk/macro-d2704bd5d9b60d26ff1e50aa3db378885d30e50caf8dc7b31cfaf5dd36a09d85.js        5.83 kB │ gzip:   1.75 kB
+ℹ dist/_chunk/layout.js                                                                        5.50 kB │ gzip:   1.81 kB
+ℹ dist/_chunk/macro-a69c266b9d542cb044e5056d0d0b98cf3af004a4a2b034eb8244a8c8e2ccbec5.js.map    5.48 kB │ gzip:   1.14 kB
+ℹ dist/accordion/index.js.map                                                                  4.92 kB │ gzip:   1.57 kB
+ℹ dist/_chunk/Dash.js                                                                          4.66 kB │ gzip:   1.08 kB
+ℹ dist/separator/index.js.map                                                                  4.42 kB │ gzip:   1.95 kB
+ℹ dist/_chunk/macro-d06622c66ece4a108f592b475f258c2fab14ec4dfc8e545eed938413b5bdd328.js        4.27 kB │ gzip:   1.12 kB
+ℹ dist/_chunk/Asterisk.js                                                                      4.26 kB │ gzip:   1.51 kB
+ℹ dist/icon/s2wf-icons/LightenIcon.js.map                                                      4.24 kB │ gzip:   1.18 kB
+ℹ dist/_chunk/spectrum-context.js.map                                                          3.97 kB │ gzip:   1.54 kB
+ℹ dist/_chunk/prefix.js                                                                        3.93 kB │ gzip:   1.75 kB
+ℹ dist/_chunk/AlertTriangleIcon.js.map                                                         3.48 kB │ gzip:   1.21 kB
+ℹ dist/_chunk/AlertDiamondIcon.js.map                                                          3.47 kB │ gzip:   1.17 kB
+ℹ dist/icon/s2wf-icons/LinkIcon.js.map                                                         3.40 kB │ gzip:   1.19 kB
+ℹ dist/icon/s2wf-icons/BellIcon.js.map                                                         3.24 kB │ gzip:   1.20 kB
+ℹ dist/pressScale.js.map                                                                       3.23 kB │ gzip:   1.44 kB
+ℹ dist/_chunk/InfoCircleIcon.js.map                                                            3.10 kB │ gzip:   1.07 kB
+ℹ dist/_chunk/CheckmarkCircleIcon.js.map                                                       3.00 kB │ gzip:   1.05 kB
+ℹ dist/_chunk/context.js.map                                                                   2.93 kB │ gzip:   0.97 kB
+ℹ dist/icon/center-baseline.js.map                                                             2.90 kB │ gzip:   1.35 kB
+ℹ dist/_chunk/createMediaQuery.js.map                                                          2.90 kB │ gzip:   1.40 kB
+ℹ dist/icon/s2wf-icons/ContrastIcon.js.map                                                     2.75 kB │ gzip:   0.97 kB
+ℹ dist/GitHubIcon.js.map                                                                       2.71 kB │ gzip:   0.96 kB
+ℹ dist/icon/s2wf-icons/MenuHamburgerIcon.js.map                                                2.47 kB │ gzip:   0.89 kB
+ℹ dist/icon/s2wf-icons/CloseIcon.js.map                                                        2.43 kB │ gzip:   0.92 kB
+ℹ dist/icon/s2wf-icons/SearchIcon.js.map                                                       2.40 kB │ gzip:   0.97 kB
+ℹ dist/_chunk/macro-a69c266b9d542cb044e5056d0d0b98cf3af004a4a2b034eb8244a8c8e2ccbec5.js        2.11 kB │ gzip:   0.84 kB
+ℹ dist/toolbar/index.js.map                                                                    2.02 kB │ gzip:   1.04 kB
+ℹ dist/_chunk/createMediaQuery.js                                                              1.95 kB │ gzip:   0.98 kB
+ℹ dist/_chunk/spectrum-context.js                                                              1.89 kB │ gzip:   0.77 kB
+ℹ dist/_chunk/context.js                                                                       1.75 kB │ gzip:   0.71 kB
+ℹ dist/filetrigger/index.js.map                                                                1.70 kB │ gzip:   0.73 kB
+ℹ dist/_chunk/AlertTriangleIcon.js                                                             1.66 kB │ gzip:   0.93 kB
+ℹ dist/_chunk/AlertDiamondIcon.js                                                              1.65 kB │ gzip:   0.89 kB
+ℹ dist/_chunk/macro-7088e41e136e55cd7d071bd085739c1c5e25b5eab90b5370f6cef278fda98399.js.map    1.63 kB │ gzip:   0.86 kB
+ℹ dist/_chunk/InfoCircleIcon.js                                                                1.47 kB │ gzip:   0.80 kB
+ℹ dist/_chunk/CheckmarkCircleIcon.js                                                           1.42 kB │ gzip:   0.78 kB
+ℹ dist/_chunk/text-child.js.map                                                                0.72 kB │ gzip:   0.43 kB
+ℹ dist/_chunk/text-child.js                                                                    0.32 kB │ gzip:   0.21 kB
+ℹ dist/_chunk/macro-7088e41e136e55cd7d071bd085739c1c5e25b5eab90b5370f6cef278fda98399.js        0.32 kB │ gzip:   0.24 kB
+ℹ 317 files, total: 4.94 MB
+✔ Build complete in 2971ms
+
+~/packages/solid-spectrum$ NODE_ENV=production PACK_PASS=jsx vp pack ⊘ cache disabled
+ℹ entry: src/index.ts, src/ActionButton.ts, src/Button.ts, src/CenterBaseline.ts, src/ContrastIcon.ts, src/FileTrigger.ts, src/LightenIcon.ts, src/LinkButton.ts, src/Picker.ts, src/Provider.ts, src/SearchField.ts, src/SegmentedControl.ts, src/Switch.ts, src/TextArea.ts, src/TextField.ts, src/ActionMenu.ts, src/Breadcrumbs.ts, src/Calendar.ts, src/ColorArea.ts, src/ColorField.ts, src/ColorSlider.ts, src/ColorSwatch.ts, src/ColorSwatchPicker.ts, src/ColorWheel.ts, src/disclosure-export.ts, src/Card.ts, src/CardView.ts, src/ListView.ts, src/TreeView.ts, src/RangeCalendar.ts, src/Menu.ts, src/Tabs.ts, src/GitHubIcon.ts, src/Accordion.ts, src/ActionBar.ts, src/ActionButtonGroup.ts, src/ActionGroup.ts, src/AlertDialog.ts, src/Avatar.ts, src/AvatarGroup.ts, src/Badge.ts, src/ButtonGroup.ts, src/Checkbox.ts, src/CheckboxGroup.ts, src/CloseIcon.ts, src/ComboBox.ts, src/Content.ts, src/ContextualHelp.ts, src/DateField.ts, src/DatePicker.ts, src/DateRangePicker.ts, src/Dialog.ts, src/Divider.ts, src/DropZone.ts, src/Footer.ts, src/Form.ts, src/Heading.ts, src/Icon.ts, src/IllustratedMessage.ts, src/Image.ts, src/ImageCoordinator.ts, src/InlineAlert.ts, src/Keyboard.ts, src/LabeledValue.ts, src/Link.ts, src/MenuHamburgerIcon.ts, src/Meter.ts, src/NumberField.ts, src/Popover.ts, src/ProgressBar.ts, src/ProgressCircle.ts, src/RadioGroup.ts, src/RangeSlider.ts, src/SearchIcon.ts, src/SelectBoxGroup.ts, src/Skeleton.ts, src/Slider.ts, src/StatusLight.ts, src/StepList.ts, src/TableView.ts, src/TagGroup.ts, src/Text.ts, src/TimeField.ts, src/Toast.ts, src/ToggleButton.ts, src/ToggleButtonGroup.ts, src/Toolbar.ts, src/Tooltip.ts, src/provider/index.tsx, src/accordion/index.tsx, src/actionbar/index.tsx, src/actiongroup/index.tsx, src/button/ActionButton.tsx, src/actionbuttongroup/index.tsx, src/button/index.ts, src/button/LinkButton.tsx, src/buttongroup/index.tsx, src/button/ToggleButton.tsx, src/togglebuttongroup/index.tsx, src/pressScale.ts, src/menu/ActionMenu.tsx, src/menu/index.tsx, src/avatar/index.tsx, src/badge/index.tsx, src/breadcrumbs/index.tsx, src/calendar/index.tsx, src/calendar/DateField.tsx, src/calendar/DatePicker.tsx, src/calendar/DateRangePicker.tsx, src/calendar/RangeCalendar.tsx, src/calendar/TimeField.tsx, src/card/index.tsx, src/cardview/index.tsx, src/checkbox/index.tsx, src/color/index.tsx, src/color/ColorSwatchPicker.tsx, src/combobox/index.tsx, src/contextualhelp/index.tsx, src/dialog/index.tsx, src/disclosure/index.tsx, src/divider/index.tsx, src/separator/index.tsx, src/dropzone/index.tsx, src/filetrigger/index.tsx, src/form/index.tsx, src/icon/center-baseline.tsx, src/icon/s2wf-icons/BellIcon.tsx, src/icon/s2wf-icons/CloseIcon.tsx, src/icon/s2wf-icons/ContrastIcon.tsx, src/icon/s2wf-icons/LightenIcon.tsx, src/icon/s2wf-icons/LinkIcon.tsx, src/icon/s2wf-icons/MenuHamburgerIcon.tsx, src/icon/s2wf-icons/SearchIcon.tsx, src/illustratedmessage/index.tsx, src/image/index.tsx, src/inlinealert/index.tsx, src/labeledvalue/index.tsx, src/link/index.tsx, src/layout/index.tsx, src/listbox/index.tsx, src/list/index.tsx, src/meter/index.tsx, src/numberfield/index.tsx, src/picker/index.tsx, src/popover/index.tsx, src/notificationbadge/index.tsx, src/progress-bar/index.tsx, src/progress/ProgressCircle.tsx, src/radio/index.tsx, src/searchfield/index.tsx, src/segmentedcontrol/index.tsx, src/selectboxgroup/index.tsx, src/select/index.tsx, src/skeleton/index.tsx, src/text/index.tsx, src/slider/index.tsx, src/statuslight/index.tsx, src/steplist/index.tsx, src/switch/index.tsx, src/table/index.tsx, src/tag-group/index.tsx, src/textfield/index.tsx, src/toast/index.tsx, src/toolbar/index.tsx, src/tooltip/index.tsx, src/tree/index.tsx
+ℹ target: esnext
+ℹ tsconfig: tsconfig.json
+ℹ Build start
+ℹ dist/combobox/index.jsx                         45.46 kB │ gzip:  8.58 kB
+ℹ dist/picker/index.jsx                           40.47 kB │ gzip:  7.55 kB
+ℹ dist/tree/index.jsx                             35.30 kB │ gzip:  7.41 kB
+ℹ dist/calendar/DateRangePicker.jsx               31.45 kB │ gzip:  5.68 kB
+ℹ dist/checkbox/index.jsx                         30.92 kB │ gzip:  5.25 kB
+ℹ dist/calendar/DatePicker.jsx                    30.06 kB │ gzip:  5.79 kB
+ℹ dist/tag-group/index.jsx                        29.92 kB │ gzip:  5.14 kB
+ℹ dist/card/index.jsx                             25.30 kB │ gzip:  5.44 kB
+ℹ dist/radio/index.jsx                            23.15 kB │ gzip:  4.33 kB
+ℹ dist/calendar/DateField.jsx                     21.93 kB │ gzip:  4.43 kB
+ℹ dist/calendar/TimeField.jsx                     21.91 kB │ gzip:  4.43 kB
+ℹ dist/disclosure/index.jsx                       19.09 kB │ gzip:  4.80 kB
+ℹ dist/searchfield/index.jsx                      18.81 kB │ gzip:  4.06 kB
+ℹ dist/calendar/index.jsx                         16.95 kB │ gzip:  4.48 kB
+ℹ dist/selectboxgroup/index.jsx                   15.89 kB │ gzip:  3.96 kB
+ℹ dist/select/index.jsx                           14.96 kB │ gzip:  2.67 kB
+ℹ dist/actionbar/index.jsx                        14.59 kB │ gzip:  4.04 kB
+ℹ dist/progress-bar/index.jsx                     14.26 kB │ gzip:  3.09 kB
+ℹ dist/listbox/index.jsx                          12.82 kB │ gzip:  2.55 kB
+ℹ dist/meter/index.jsx                            12.59 kB │ gzip:  2.72 kB
+ℹ dist/index.jsx                                  12.57 kB │ gzip:  2.74 kB
+ℹ dist/badge/index.jsx                            12.55 kB │ gzip:  2.94 kB
+ℹ dist/illustratedmessage/index.jsx               12.07 kB │ gzip:  2.40 kB
+ℹ dist/segmentedcontrol/index.jsx                 11.94 kB │ gzip:  3.23 kB
+ℹ dist/labeledvalue/index.jsx                     11.30 kB │ gzip:  2.35 kB
+ℹ dist/steplist/index.jsx                         10.37 kB │ gzip:  2.67 kB
+ℹ dist/cardview/index.jsx                         10.32 kB │ gzip:  3.06 kB
+ℹ dist/avatar/index.jsx                           10.20 kB │ gzip:  2.51 kB
+ℹ dist/popover/index.jsx                           9.51 kB │ gzip:  2.96 kB
+ℹ dist/button/ToggleButton.jsx                     9.49 kB │ gzip:  2.83 kB
+ℹ dist/inlinealert/index.jsx                       9.00 kB │ gzip:  2.47 kB
+ℹ dist/image/index.jsx                             8.90 kB │ gzip:  2.91 kB
+ℹ dist/statuslight/index.jsx                       7.96 kB │ gzip:  2.20 kB
+ℹ dist/tooltip/index.jsx                           7.44 kB │ gzip:  2.36 kB
+ℹ dist/progress/ProgressCircle.jsx                 6.56 kB │ gzip:  2.24 kB
+ℹ dist/provider/index.jsx                          6.36 kB │ gzip:  1.98 kB
+ℹ dist/notificationbadge/index.jsx                 5.71 kB │ gzip:  2.01 kB
+ℹ dist/skeleton/index.jsx                          5.45 kB │ gzip:  1.92 kB
+ℹ dist/dropzone/index.jsx                          5.42 kB │ gzip:  1.98 kB
+ℹ dist/link/index.jsx                              5.14 kB │ gzip:  1.94 kB
+ℹ dist/buttongroup/index.jsx                       4.99 kB │ gzip:  1.84 kB
+ℹ dist/actiongroup/index.jsx                       4.31 kB │ gzip:  1.29 kB
+ℹ dist/togglebuttongroup/index.jsx                 4.29 kB │ gzip:  1.51 kB
+ℹ dist/divider/index.jsx                           4.28 kB │ gzip:  1.67 kB
+ℹ dist/actionbuttongroup/index.jsx                 3.43 kB │ gzip:  1.37 kB
+ℹ dist/separator/index.jsx                         2.75 kB │ gzip:  1.19 kB
+ℹ dist/accordion/index.jsx                         2.48 kB │ gzip:  1.01 kB
+ℹ dist/icon/s2wf-icons/LightenIcon.jsx             1.84 kB │ gzip:  0.79 kB
+ℹ dist/pressScale.jsx                              1.68 kB │ gzip:  0.88 kB
+ℹ dist/toolbar/index.jsx                           1.49 kB │ gzip:  0.86 kB
+ℹ dist/icon/s2wf-icons/LinkIcon.jsx                1.42 kB │ gzip:  0.80 kB
+ℹ dist/icon/center-baseline.jsx                    1.41 kB │ gzip:  0.78 kB
+ℹ dist/icon/s2wf-icons/BellIcon.jsx                1.34 kB │ gzip:  0.80 kB
+ℹ dist/icon/s2wf-icons/ContrastIcon.jsx            1.07 kB │ gzip:  0.59 kB
+ℹ dist/GitHubIcon.jsx                              1.04 kB │ gzip:  0.61 kB
+ℹ dist/icon/s2wf-icons/MenuHamburgerIcon.jsx       0.97 kB │ gzip:  0.52 kB
+ℹ dist/icon/s2wf-icons/CloseIcon.jsx               0.93 kB │ gzip:  0.55 kB
+ℹ dist/icon/s2wf-icons/SearchIcon.jsx              0.92 kB │ gzip:  0.59 kB
+ℹ dist/color/index.jsx                             0.82 kB │ gzip:  0.27 kB
+ℹ dist/Button.jsx                                  0.81 kB │ gzip:  0.24 kB
+ℹ dist/button/index.jsx                            0.81 kB │ gzip:  0.24 kB
+ℹ dist/menu/index.jsx                              0.68 kB │ gzip:  0.27 kB
+ℹ dist/dialog/index.jsx                            0.66 kB │ gzip:  0.27 kB
+ℹ dist/Dialog.jsx                                  0.66 kB │ gzip:  0.27 kB
+ℹ dist/table/index.jsx                             0.60 kB │ gzip:  0.25 kB
+ℹ dist/TableView.jsx                               0.60 kB │ gzip:  0.25 kB
+ℹ dist/ActionMenu.jsx                              0.59 kB │ gzip:  0.25 kB
+ℹ dist/filetrigger/index.jsx                       0.59 kB │ gzip:  0.34 kB
+ℹ dist/CardView.jsx                                0.57 kB │ gzip:  0.22 kB
+ℹ dist/Accordion.jsx                               0.57 kB │ gzip:  0.16 kB
+ℹ dist/Menu.jsx                                    0.55 kB │ gzip:  0.25 kB
+ℹ dist/ComboBox.jsx                                0.52 kB │ gzip:  0.18 kB
+ℹ dist/toast/index.jsx                             0.50 kB │ gzip:  0.23 kB
+ℹ dist/Toast.jsx                                   0.50 kB │ gzip:  0.23 kB
+ℹ dist/TreeView.jsx                                0.47 kB │ gzip:  0.18 kB
+ℹ dist/Skeleton.jsx                                0.45 kB │ gzip:  0.16 kB
+ℹ dist/text/index.jsx                              0.39 kB │ gzip:  0.18 kB
+ℹ dist/Card.jsx                                    0.37 kB │ gzip:  0.18 kB
+ℹ dist/ColorSwatchPicker.jsx                       0.34 kB │ gzip:  0.17 kB
+ℹ dist/form/index.jsx                              0.32 kB │ gzip:  0.17 kB
+ℹ dist/Form.jsx                                    0.32 kB │ gzip:  0.17 kB
+ℹ dist/list/index.jsx                              0.30 kB │ gzip:  0.15 kB
+ℹ dist/ListView.jsx                                0.30 kB │ gzip:  0.15 kB
+ℹ dist/disclosure-export.jsx                       0.29 kB │ gzip:  0.12 kB
+ℹ dist/Tabs.jsx                                    0.27 kB │ gzip:  0.16 kB
+ℹ dist/Provider.jsx                                0.22 kB │ gzip:  0.11 kB
+ℹ dist/breadcrumbs/index.jsx                       0.21 kB │ gzip:  0.13 kB
+ℹ dist/textfield/index.jsx                         0.21 kB │ gzip:  0.13 kB
+ℹ dist/TextField.jsx                               0.21 kB │ gzip:  0.13 kB
+ℹ dist/color/ColorSwatchPicker.jsx                 0.21 kB │ gzip:  0.12 kB
+ℹ dist/Icon.jsx                                    0.21 kB │ gzip:  0.13 kB
+ℹ dist/ActionBar.jsx                               0.20 kB │ gzip:  0.10 kB
+ℹ dist/Image.jsx                                   0.20 kB │ gzip:  0.11 kB
+ℹ dist/ImageCoordinator.jsx                        0.20 kB │ gzip:  0.11 kB
+ℹ dist/contextualhelp/index.jsx                    0.20 kB │ gzip:  0.12 kB
+ℹ dist/Breadcrumbs.jsx                             0.20 kB │ gzip:  0.12 kB
+ℹ dist/ContextualHelp.jsx                          0.20 kB │ gzip:  0.12 kB
+ℹ dist/ColorSlider.jsx                             0.19 kB │ gzip:  0.13 kB
+ℹ dist/ColorSwatch.jsx                             0.19 kB │ gzip:  0.13 kB
+ℹ dist/ColorWheel.jsx                              0.19 kB │ gzip:  0.13 kB
+ℹ dist/SegmentedControl.jsx                        0.19 kB │ gzip:  0.10 kB
+ℹ dist/ColorArea.jsx                               0.19 kB │ gzip:  0.13 kB
+ℹ dist/slider/index.jsx                            0.18 kB │ gzip:  0.11 kB
+ℹ dist/Slider.jsx                                  0.18 kB │ gzip:  0.11 kB
+ℹ dist/Checkbox.jsx                                0.18 kB │ gzip:  0.09 kB
+ℹ dist/CheckboxGroup.jsx                           0.18 kB │ gzip:  0.09 kB
+ℹ dist/switch/index.jsx                            0.17 kB │ gzip:  0.12 kB
+ℹ dist/Switch.jsx                                  0.17 kB │ gzip:  0.12 kB
+ℹ dist/Avatar.jsx                                  0.16 kB │ gzip:  0.09 kB
+ℹ dist/AvatarGroup.jsx                             0.16 kB │ gzip:  0.09 kB
+ℹ dist/Picker.jsx                                  0.16 kB │ gzip:  0.09 kB
+ℹ dist/Popover.jsx                                 0.16 kB │ gzip:  0.09 kB
+ℹ dist/SelectBoxGroup.jsx                          0.16 kB │ gzip:  0.09 kB
+ℹ dist/layout/index.jsx                            0.15 kB │ gzip:  0.13 kB
+ℹ dist/IllustratedMessage.jsx                      0.15 kB │ gzip:  0.09 kB
+ℹ dist/RadioGroup.jsx                              0.15 kB │ gzip:  0.09 kB
+ℹ dist/ColorField.jsx                              0.15 kB │ gzip:  0.11 kB
+ℹ dist/DateRangePicker.jsx                         0.14 kB │ gzip:  0.09 kB
+ℹ dist/calendar/RangeCalendar.jsx                  0.14 kB │ gzip:  0.10 kB
+ℹ dist/RangeCalendar.jsx                           0.14 kB │ gzip:  0.10 kB
+ℹ dist/MenuHamburgerIcon.jsx                       0.14 kB │ gzip:  0.10 kB
+ℹ dist/ProgressCircle.jsx                          0.14 kB │ gzip:  0.08 kB
+ℹ dist/numberfield/index.jsx                       0.13 kB │ gzip:  0.10 kB
+ℹ dist/NumberField.jsx                             0.13 kB │ gzip:  0.10 kB
+ℹ dist/Tooltip.jsx                                 0.13 kB │ gzip:  0.09 kB
+ℹ dist/menu/ActionMenu.jsx                         0.13 kB │ gzip:  0.10 kB
+ℹ dist/RangeSlider.jsx                             0.13 kB │ gzip:  0.10 kB
+ℹ dist/ProgressBar.jsx                             0.12 kB │ gzip:  0.09 kB
+ℹ dist/InlineAlert.jsx                             0.12 kB │ gzip:  0.09 kB
+ℹ dist/SearchField.jsx                             0.12 kB │ gzip:  0.09 kB
+ℹ dist/StatusLight.jsx                             0.12 kB │ gzip:  0.09 kB
+ℹ dist/ContrastIcon.jsx                            0.12 kB │ gzip:  0.10 kB
+ℹ dist/DatePicker.jsx                              0.12 kB │ gzip:  0.08 kB
+ℹ dist/TagGroup.jsx                                0.12 kB │ gzip:  0.09 kB
+ℹ dist/LightenIcon.jsx                             0.11 kB │ gzip:  0.10 kB
+ℹ dist/DateField.jsx                               0.11 kB │ gzip:  0.08 kB
+ℹ dist/TimeField.jsx                               0.11 kB │ gzip:  0.08 kB
+ℹ dist/Keyboard.jsx                                0.11 kB │ gzip:  0.09 kB
+ℹ dist/SearchIcon.jsx                              0.11 kB │ gzip:  0.09 kB
+ℹ dist/Content.jsx                                 0.11 kB │ gzip:  0.09 kB
+ℹ dist/Heading.jsx                                 0.11 kB │ gzip:  0.09 kB
+ℹ dist/CloseIcon.jsx                               0.10 kB │ gzip:  0.09 kB
+ℹ dist/Calendar.jsx                                0.10 kB │ gzip:  0.08 kB
+ℹ dist/DropZone.jsx                                0.10 kB │ gzip:  0.09 kB
+ℹ dist/Footer.jsx                                  0.10 kB │ gzip:  0.09 kB
+ℹ dist/Divider.jsx                                 0.10 kB │ gzip:  0.08 kB
+ℹ dist/ActionButtonGroup.jsx                       0.10 kB │ gzip:  0.09 kB
+ℹ dist/ToggleButtonGroup.jsx                       0.10 kB │ gzip:  0.09 kB
+ℹ dist/Text.jsx                                    0.10 kB │ gzip:  0.09 kB
+ℹ dist/StepList.jsx                                0.09 kB │ gzip:  0.08 kB
+ℹ dist/Badge.jsx                                   0.09 kB │ gzip:  0.08 kB
+ℹ dist/Meter.jsx                                   0.09 kB │ gzip:  0.08 kB
+ℹ dist/button/ActionButton.jsx                     0.09 kB │ gzip:  0.08 kB
+ℹ dist/ActionButton.jsx                            0.09 kB │ gzip:  0.08 kB
+ℹ dist/CenterBaseline.jsx                          0.09 kB │ gzip:  0.08 kB
+ℹ dist/Link.jsx                                    0.08 kB │ gzip:  0.08 kB
+ℹ dist/ToggleButton.jsx                            0.08 kB │ gzip:  0.07 kB
+ℹ dist/button/LinkButton.jsx                       0.08 kB │ gzip:  0.08 kB
+ℹ dist/LabeledValue.jsx                            0.08 kB │ gzip:  0.08 kB
+ℹ dist/LinkButton.jsx                              0.08 kB │ gzip:  0.08 kB
+ℹ dist/AlertDialog.jsx                             0.08 kB │ gzip:  0.08 kB
+ℹ dist/ActionGroup.jsx                             0.08 kB │ gzip:  0.08 kB
+ℹ dist/ButtonGroup.jsx                             0.08 kB │ gzip:  0.08 kB
+ℹ dist/FileTrigger.jsx                             0.08 kB │ gzip:  0.08 kB
+ℹ dist/TextArea.jsx                                0.08 kB │ gzip:  0.08 kB
+ℹ dist/Toolbar.jsx                                 0.07 kB │ gzip:  0.07 kB
+ℹ dist/_chunk/table.jsx.map                       88.76 kB │ gzip: 21.46 kB
+ℹ dist/_chunk/intl.jsx                            76.61 kB │ gzip: 18.19 kB
+ℹ dist/_chunk/color.jsx.map                       69.36 kB │ gzip: 14.52 kB
+ℹ dist/_chunk/slider.jsx.map                      64.96 kB │ gzip: 12.99 kB
+ℹ dist/_chunk/Tabs.jsx.map                        60.79 kB │ gzip: 14.40 kB
+ℹ dist/combobox/index.jsx.map                     58.98 kB │ gzip: 15.29 kB
+ℹ dist/picker/index.jsx.map                       56.71 kB │ gzip: 14.59 kB
+ℹ dist/_chunk/dialog.jsx.map                      55.14 kB │ gzip: 12.46 kB
+ℹ dist/_chunk/list.jsx.map                        53.78 kB │ gzip: 13.47 kB
+ℹ dist/tree/index.jsx.map                         53.52 kB │ gzip: 13.14 kB
+ℹ dist/_chunk/slider.jsx                          53.32 kB │ gzip:  7.52 kB
+ℹ dist/_chunk/menu.jsx.map                        51.46 kB │ gzip: 12.37 kB
+ℹ dist/_chunk/color.jsx                           50.00 kB │ gzip:  8.83 kB
+ℹ dist/_chunk/table.jsx                           49.85 kB │ gzip: 10.86 kB
+ℹ dist/_chunk/toast.jsx.map                       48.06 kB │ gzip: 13.33 kB
+ℹ dist/_chunk/breadcrumbs.jsx.map                 46.24 kB │ gzip: 12.33 kB
+ℹ dist/checkbox/index.jsx.map                     38.94 kB │ gzip: 10.00 kB
+ℹ dist/_chunk/textfield.jsx.map                   38.72 kB │ gzip:  7.82 kB
+ℹ dist/_chunk/RangeCalendar.jsx.map               38.33 kB │ gzip:  9.65 kB
+ℹ dist/_chunk/list.jsx                            37.88 kB │ gzip:  7.21 kB
+ℹ dist/card/index.jsx.map                         36.99 kB │ gzip:  9.01 kB
+ℹ dist/_chunk/textfield.jsx                       33.78 kB │ gzip:  4.86 kB
+ℹ dist/calendar/DateRangePicker.jsx.map           33.57 kB │ gzip:  9.10 kB
+ℹ dist/_chunk/Tabs.jsx                            33.37 kB │ gzip:  7.41 kB
+ℹ dist/tag-group/index.jsx.map                    32.35 kB │ gzip:  9.23 kB
+ℹ dist/disclosure/index.jsx.map                   32.13 kB │ gzip:  7.99 kB
+ℹ dist/_chunk/ActionButton.jsx.map                31.43 kB │ gzip:  7.69 kB
+ℹ dist/calendar/DatePicker.jsx.map                31.06 kB │ gzip:  9.29 kB
+ℹ dist/_chunk/dialog.jsx                          29.50 kB │ gzip:  6.01 kB
+ℹ dist/_chunk/numberfield.jsx.map                 29.41 kB │ gzip:  7.66 kB
+ℹ dist/_chunk/breadcrumbs.jsx                     28.71 kB │ gzip:  6.93 kB
+ℹ dist/calendar/index.jsx.map                     28.55 kB │ gzip:  8.08 kB
+ℹ dist/_chunk/toast.jsx                           27.69 kB │ gzip:  7.74 kB
+ℹ dist/radio/index.jsx.map                        27.14 kB │ gzip:  7.21 kB
+ℹ dist/_chunk/ActionMenu.jsx.map                  26.59 kB │ gzip:  7.52 kB
+ℹ dist/actionbar/index.jsx.map                    26.19 kB │ gzip:  7.86 kB
+ℹ dist/selectboxgroup/index.jsx.map               25.61 kB │ gzip:  6.89 kB
+ℹ dist/_chunk/button.jsx.map                      25.25 kB │ gzip:  6.03 kB
+ℹ dist/_chunk/RangeCalendar.jsx                   24.62 kB │ gzip:  5.63 kB
+ℹ dist/_chunk/numberfield.jsx                     24.03 kB │ gzip:  5.03 kB
+ℹ dist/calendar/DateField.jsx.map                 23.96 kB │ gzip:  7.24 kB
+ℹ dist/calendar/TimeField.jsx.map                 23.55 kB │ gzip:  7.09 kB
+ℹ dist/_chunk/menu.jsx                            23.49 kB │ gzip:  6.11 kB
+ℹ dist/_chunk/LinkButton.jsx.map                  21.74 kB │ gzip:  5.27 kB
+ℹ dist/searchfield/index.jsx.map                  21.37 kB │ gzip:  6.31 kB
+ℹ dist/_chunk/form.jsx.map                        21.06 kB │ gzip:  6.04 kB
+ℹ dist/_chunk/switch.jsx.map                      20.35 kB │ gzip:  6.56 kB
+ℹ dist/_chunk/LinkButton.jsx                      19.71 kB │ gzip:  3.90 kB
+ℹ dist/_chunk/text.jsx.map                        19.20 kB │ gzip:  3.11 kB
+ℹ dist/image/index.jsx.map                        19.12 kB │ gzip:  5.87 kB
+ℹ dist/_chunk/contextualhelp.jsx.map              18.57 kB │ gzip:  5.84 kB
+ℹ dist/button/ToggleButton.jsx.map                17.88 kB │ gzip:  5.11 kB
+ℹ dist/_chunk/ActionButton.jsx                    17.07 kB │ gzip:  4.25 kB
+ℹ dist/_chunk/s2-menu-styles.jsx                  16.98 kB │ gzip:  2.41 kB
+ℹ dist/cardview/index.jsx.map                     16.73 kB │ gzip:  5.16 kB
+ℹ dist/segmentedcontrol/index.jsx.map             16.66 kB │ gzip:  5.22 kB
+ℹ dist/select/index.jsx.map                       16.32 kB │ gzip:  4.37 kB
+ℹ dist/progress-bar/index.jsx.map                 16.04 kB │ gzip:  4.92 kB
+ℹ dist/_chunk/switch.jsx                          15.81 kB │ gzip:  3.67 kB
+ℹ dist/_chunk/ColorSwatchPicker.jsx.map           15.44 kB │ gzip:  4.27 kB
+ℹ dist/_chunk/button.jsx                          15.05 kB │ gzip:  3.38 kB
+ℹ dist/_chunk/s2-action-button-styles.jsx.map     15.05 kB │ gzip:  3.39 kB
+ℹ dist/popover/index.jsx.map                      14.97 kB │ gzip:  5.03 kB
+ℹ dist/_chunk/s2-action-button-styles.jsx         14.10 kB │ gzip:  2.63 kB
+ℹ dist/steplist/index.jsx.map                     13.88 kB │ gzip:  4.72 kB
+ℹ dist/badge/index.jsx.map                        13.66 kB │ gzip:  4.15 kB
+ℹ dist/listbox/index.jsx.map                      13.14 kB │ gzip:  4.03 kB
+ℹ dist/meter/index.jsx.map                        12.51 kB │ gzip:  4.01 kB
+ℹ dist/avatar/index.jsx.map                       12.50 kB │ gzip:  3.92 kB
+ℹ dist/provider/index.jsx.map                     12.42 kB │ gzip:  3.86 kB
+ℹ dist/inlinealert/index.jsx.map                  12.20 kB │ gzip:  3.70 kB
+ℹ dist/_chunk/layout.jsx.map                      12.11 kB │ gzip:  3.25 kB
+ℹ dist/_chunk/ActionMenu.jsx                      11.91 kB │ gzip:  3.78 kB
+ℹ dist/_chunk/intl.jsx.map                        11.76 kB │ gzip:  2.00 kB
+ℹ dist/_chunk/spectrum-icon.jsx.map               11.68 kB │ gzip:  3.69 kB
+ℹ dist/_chunk/form.jsx                            11.56 kB │ gzip:  3.04 kB
+ℹ dist/illustratedmessage/index.jsx.map           11.54 kB │ gzip:  3.41 kB
+ℹ dist/progress/ProgressCircle.jsx.map            11.39 kB │ gzip:  3.63 kB
+ℹ dist/skeleton/index.jsx.map                     10.73 kB │ gzip:  3.50 kB
+ℹ dist/_chunk/s2-menu-styles.jsx.map              10.58 kB │ gzip:  3.07 kB
+ℹ dist/tooltip/index.jsx.map                      10.55 kB │ gzip:  3.71 kB
+ℹ dist/buttongroup/index.jsx.map                  10.24 kB │ gzip:  3.59 kB
+ℹ dist/_chunk/Cross.jsx.map                       10.07 kB │ gzip:  2.04 kB
+ℹ dist/_chunk/ColorSwatchPicker.jsx                9.67 kB │ gzip:  2.63 kB
+ℹ dist/statuslight/index.jsx.map                   9.19 kB │ gzip:  3.36 kB
+ℹ dist/labeledvalue/index.jsx.map                  8.92 kB │ gzip:  3.08 kB
+ℹ dist/notificationbadge/index.jsx.map             8.87 kB │ gzip:  3.09 kB
+ℹ dist/_chunk/Chevron.jsx.map                      8.85 kB │ gzip:  2.01 kB
+ℹ dist/_chunk/Checkmark.jsx.map                    8.77 kB │ gzip:  1.95 kB
+ℹ dist/_chunk/contextualhelp.jsx                   8.75 kB │ gzip:  2.77 kB
+ℹ dist/togglebuttongroup/index.jsx.map             8.51 kB │ gzip:  2.70 kB
+ℹ dist/dropzone/index.jsx.map                      8.42 kB │ gzip:  3.12 kB
+ℹ dist/actiongroup/index.jsx.map                   8.12 kB │ gzip:  2.83 kB
+ℹ dist/link/index.jsx.map                          8.04 kB │ gzip:  2.93 kB
+ℹ dist/_chunk/text.jsx                             7.78 kB │ gzip:  1.69 kB
+ℹ dist/_chunk/runtime.jsx.map                      6.95 kB │ gzip:  2.77 kB
+ℹ dist/actionbuttongroup/index.jsx.map             6.94 kB │ gzip:  2.47 kB
+ℹ dist/_chunk/Dash.jsx.map                         6.80 kB │ gzip:  1.50 kB
+ℹ dist/divider/index.jsx.map                       6.36 kB │ gzip:  2.35 kB
+ℹ dist/_chunk/CornerTriangle.jsx.map               6.21 kB │ gzip:  1.45 kB
+ℹ dist/_chunk/Asterisk.jsx.map                     5.86 kB │ gzip:  1.93 kB
+ℹ dist/_chunk/prefix.jsx.map                       5.82 kB │ gzip:  2.41 kB
+ℹ dist/_chunk/spectrum-icon.jsx                    5.80 kB │ gzip:  1.79 kB
+ℹ dist/_chunk/Cross.jsx                            5.60 kB │ gzip:  1.33 kB
+ℹ dist/_chunk/HelpText.jsx.map                     5.60 kB │ gzip:  2.30 kB
+ℹ dist/_chunk/HelpText.jsx                         5.47 kB │ gzip:  1.63 kB
+ℹ dist/_chunk/layout.jsx                           4.98 kB │ gzip:  1.67 kB
+ℹ dist/_chunk/Chevron.jsx                          4.85 kB │ gzip:  1.34 kB
+ℹ dist/accordion/index.jsx.map                     4.71 kB │ gzip:  1.52 kB
+ℹ dist/_chunk/Checkmark.jsx                        4.71 kB │ gzip:  1.27 kB
+ℹ dist/separator/index.jsx.map                     4.35 kB │ gzip:  1.91 kB
+ℹ dist/_chunk/spectrum-context.jsx.map             3.97 kB │ gzip:  1.54 kB
+ℹ dist/_chunk/prefix.jsx                           3.76 kB │ gzip:  1.71 kB
+ℹ dist/_chunk/CalendarIcon.jsx.map                 3.47 kB │ gzip:  1.03 kB
+ℹ dist/_chunk/Asterisk.jsx                         3.44 kB │ gzip:  1.32 kB
+ℹ dist/_chunk/Dash.jsx                             3.40 kB │ gzip:  0.86 kB
+ℹ dist/pressScale.jsx.map                          3.23 kB │ gzip:  1.45 kB
+ℹ dist/_chunk/CornerTriangle.jsx                   3.18 kB │ gzip:  0.87 kB
+ℹ dist/_chunk/context.jsx.map                      2.93 kB │ gzip:  0.97 kB
+ℹ dist/_chunk/createMediaQuery.jsx.map             2.90 kB │ gzip:  1.41 kB
+ℹ dist/_chunk/runtime.jsx                          2.70 kB │ gzip:  1.28 kB
+ℹ dist/icon/center-baseline.jsx.map                2.61 kB │ gzip:  1.25 kB
+ℹ dist/icon/s2wf-icons/LightenIcon.jsx.map         2.58 kB │ gzip:  1.11 kB
+ℹ dist/_chunk/AlertTriangleIcon.jsx.map            2.25 kB │ gzip:  1.16 kB
+ℹ dist/_chunk/AlertDiamondIcon.jsx.map             2.24 kB │ gzip:  1.11 kB
+ℹ dist/icon/s2wf-icons/LinkIcon.jsx.map            2.14 kB │ gzip:  1.13 kB
+ℹ dist/icon/s2wf-icons/BellIcon.jsx.map            2.06 kB │ gzip:  1.14 kB
+ℹ dist/_chunk/InfoCircleIcon.jsx.map               2.05 kB │ gzip:  1.02 kB
+ℹ dist/_chunk/CheckmarkCircleIcon.jsx.map          2.02 kB │ gzip:  1.00 kB
+ℹ dist/toolbar/index.jsx.map                       1.99 kB │ gzip:  1.03 kB
+ℹ dist/_chunk/createMediaQuery.jsx                 1.95 kB │ gzip:  0.99 kB
+ℹ dist/_chunk/CalendarIcon.jsx                     1.89 kB │ gzip:  0.66 kB
+ℹ dist/_chunk/spectrum-context.jsx                 1.89 kB │ gzip:  0.77 kB
+ℹ dist/icon/s2wf-icons/ContrastIcon.jsx.map        1.86 kB │ gzip:  0.92 kB
+ℹ dist/_chunk/context.jsx                          1.75 kB │ gzip:  0.71 kB
+ℹ dist/icon/s2wf-icons/MenuHamburgerIcon.jsx.map   1.72 kB │ gzip:  0.83 kB
+ℹ dist/icon/s2wf-icons/CloseIcon.jsx.map           1.66 kB │ gzip:  0.86 kB
+ℹ dist/icon/s2wf-icons/SearchIcon.jsx.map          1.65 kB │ gzip:  0.91 kB
+ℹ dist/_chunk/progress-circle-animation.jsx.map    1.59 kB │ gzip:  0.81 kB
+ℹ dist/GitHubIcon.jsx.map                          1.47 kB │ gzip:  0.85 kB
+ℹ dist/_chunk/AlertTriangleIcon.jsx                1.41 kB │ gzip:  0.79 kB
+ℹ dist/_chunk/AlertDiamondIcon.jsx                 1.41 kB │ gzip:  0.75 kB
+ℹ dist/filetrigger/index.jsx.map                   1.24 kB │ gzip:  0.62 kB
+ℹ dist/_chunk/InfoCircleIcon.jsx                   1.22 kB │ gzip:  0.66 kB
+ℹ dist/_chunk/CheckmarkCircleIcon.jsx              1.17 kB │ gzip:  0.64 kB
+ℹ dist/_chunk/text-child.jsx.map                   0.72 kB │ gzip:  0.43 kB
+ℹ dist/_chunk/text-child.jsx                       0.32 kB │ gzip:  0.21 kB
+ℹ dist/_chunk/progress-circle-animation.jsx        0.27 kB │ gzip:  0.20 kB
+ℹ 314 files, total: 3.34 MB
+[33m[CONFIGURATION_FIELD_CONFLICT] [0m`compilerOptions.jsx` from `tsconfig.json` is overridden by `jsx` from `transform` which has higher priority. Please make sure this is what you expected.
+
+✔ Build complete in 1464ms
+
+~/packages/solid-spectrum$ rm -f tsconfig.build.tsbuildinfo ⊘ cache disabled
+
+~/packages/solid-spectrum$ tsc -p tsconfig.build.json ⊘ cache disabled
+
+~/packages/solid-spectrum$ node ../../scripts/write-package-declaration-attribution.mjs . ⊘ cache disabled
+write-package-declaration-attribution — wrote 2 runtime and 11 declaration attribution banner(s) in .
+
+~/apps/comparison$ astro build ⊘ cache disabled
+22:34:07 [types] Generated 91ms
+22:34:07 [build] output: "static"
+22:34:07 [build] mode: "static"
+22:34:07 [build] directory: /home/emoporemilio/projects/viviana-hub/ui/apps/comparison/dist/
+22:34:07 [build] Collecting build info...
+22:34:07 [build] ✓ Completed in 169ms.
+22:34:07 [build] Building static entrypoints...
+22:34:11 [vite] ✓ built in 3.48s
+22:34:20 [vite] ✓ built in 9.58s
+22:34:21 [build] Rearranging server assets...
+
+ generating static routes 
+22:34:21   ├─ /404.html (+24ms) 
+22:34:21   ├─ /astro-smoke/index.html (+129ms) 
+22:34:21   ├─ /components/accordion/index.html (+118ms) 
+22:34:21   ├─ /components/actionbar/index.html (+9ms) 
+22:34:21   ├─ /components/actionbutton/index.html (+22ms) 
+22:34:21   ├─ /components/actionbuttongroup/index.html (+9ms) 
+22:34:21   ├─ /components/actiongroup/index.html (+5ms) 
+22:34:21   ├─ /components/actionmenu/index.html (+8ms) 
+22:34:21   ├─ /components/autocomplete/index.html (+6ms) 
+22:34:21   ├─ /components/avatar/index.html (+7ms) 
+22:34:21   ├─ /components/avatargroup/index.html (+7ms) 
+22:34:21   ├─ /components/badge/index.html (+8ms) 
+22:34:21   ├─ /components/breadcrumbs/index.html (+17ms) 
+22:34:21   ├─ /components/button/index.html (+21ms) 
+22:34:21   ├─ /components/buttongroup/index.html (+8ms) 
+22:34:21   ├─ /components/calendar/index.html (+112ms) 
+22:34:21   ├─ /components/card/index.html (+27ms) 
+22:34:21   ├─ /components/cardview/index.html (+48ms) 
+22:34:21   ├─ /components/checkbox/index.html (+12ms) 
+22:34:21   ├─ /components/checkboxgroup/index.html (+14ms) 
+22:34:21   ├─ /components/colorarea/index.html (+50ms) 
+22:34:21   ├─ /components/colorfield/index.html (+12ms) 
+22:34:21   ├─ /components/colorslider/index.html (+8ms) 
+22:34:21   ├─ /components/colorswatch/index.html (+9ms) 
+22:34:21   ├─ /components/colorswatchpicker/index.html (+9ms) 
+22:34:21   ├─ /components/colorwheel/index.html (+8ms) 
+22:34:21   ├─ /components/combobox/index.html (+33ms) 
+22:34:21   ├─ /components/contextualhelp/index.html (+7ms) 
+22:34:21   ├─ /components/datefield/index.html (+12ms) 
+22:34:21   ├─ /components/datepicker/index.html (+14ms) 
+22:34:21   ├─ /components/daterangepicker/index.html (+19ms) 
+22:34:21   ├─ /components/dialog/index.html (+24ms) 
+22:34:21   ├─ /components/disclosure/index.html (+11ms) 
+22:34:21   ├─ /components/divider/index.html (+6ms) 
+22:34:21   ├─ /components/dnd-listbox/index.html (+5ms) 
+22:34:21   ├─ /components/dropzone/index.html (+7ms) 
+22:34:21   ├─ /components/form/index.html (+19ms) 
+22:34:22   ├─ /components/gridlist/index.html (+5ms) 
+22:34:22   ├─ /components/image/index.html (+12ms) 
+22:34:22   ├─ /components/inlinealert/index.html (+9ms) 
+22:34:22   ├─ /components/link/index.html (+7ms) 
+22:34:22   ├─ /components/linkbutton/index.html (+7ms) 
+22:34:22   ├─ /components/listbox/index.html (+4ms) 
+22:34:22   ├─ /components/listview/index.html (+48ms) 
+22:34:22   ├─ /components/menu/index.html (+23ms) 
+22:34:22   ├─ /components/meter/index.html (+6ms) 
+22:34:22   ├─ /components/numberfield/index.html (+9ms) 
+22:34:22   ├─ /components/picker/index.html (+22ms) 
+22:34:22   ├─ /components/popover/index.html (+11ms) 
+22:34:22   ├─ /components/progressbar/index.html (+10ms) 
+22:34:22   ├─ /components/progresscircle/index.html (+6ms) 
+22:34:22   ├─ /components/provider/index.html (+8ms) 
+22:34:22   ├─ /components/radiogroup/index.html (+12ms) 
+22:34:22   ├─ /components/rangecalendar/index.html (+26ms) 
+22:34:22   ├─ /components/rangeslider/index.html (+10ms) 
+22:34:22   ├─ /components/searchfield/index.html (+10ms) 
+22:34:22   ├─ /components/segmentedcontrol/index.html (+9ms) 
+22:34:22   ├─ /components/selectboxgroup/index.html (+12ms) 
+22:34:22   ├─ /components/skeleton/index.html (+6ms) 
+22:34:22   ├─ /components/slider/index.html (+8ms) 
+22:34:22   ├─ /components/statuslight/index.html (+5ms) 
+22:34:22   ├─ /components/steplist/index.html (+4ms) 
+22:34:22   ├─ /components/switch/index.html (+8ms) 
+22:34:22   ├─ /components/tableview/index.html (+65ms) 
+22:34:22   ├─ /components/tabs/index.html (+16ms) 
+22:34:22   ├─ /components/taggroup/index.html (+18ms) 
+22:34:22   ├─ /components/textfield/index.html (+9ms) 
+22:34:22   ├─ /components/timefield/index.html (+12ms) 
+22:34:22   ├─ /components/togglebutton/index.html (+8ms) 
+22:34:22   ├─ /components/togglebuttongroup/index.html (+8ms) 
+22:34:22   ├─ /components/toolbar/index.html (+4ms) 
+22:34:22   ├─ /components/tooltip/index.html (+8ms) 
+22:34:22   ├─ /components/treeview/index.html (+23ms) 
+22:34:22   ├─ /components/virtualizer/index.html (+5ms) 
+22:34:22   ├─ /components/icons/index.html (+5ms) 
+22:34:22   ├─ /components/illustratedmessage/index.html (+4ms) 
+22:34:22   ├─ /components/illustrations/index.html (+5ms) 
+22:34:22   ├─ /components/labeledvalue/index.html (+4ms) 
+22:34:22   ├─ /components/textarea/index.html (+4ms) 
+22:34:22   ├─ /components/toast/index.html (+5ms) 
+22:34:22   ├─ /coverage/index.html (+7ms) 
+22:34:22   ├─ /d12/button/index.html (+41ms) 
+22:34:22   ├─ /d12/meter/index.html (+15ms) 
+22:34:22   ├─ /d12/text-entry-callback/index.html (+26ms) 
+22:34:22   ├─ /experiments/geist-button/solid/index.html (+175ms) 
+22:34:22   ├─ /experiments/geist-button/index.html (+3ms) 
+22:34:22   ├─ /experiments/kumo-button/react/index.html (+1.60s) 
+22:34:24   ├─ /experiments/kumo-button/solid/index.html (+130ms) 
+22:34:24   ├─ /experiments/kumo-button/index.html (+2ms) 
+22:34:24   ├─ /keyboard-shortcuts/index.html (+4ms) 
+22:34:24   ├─ /index.html (+3ms) 
+22:34:24 ✓ Completed in 3.50s.
+
+22:34:24 [build] ✓ Completed in 16.80s.
+22:34:24 [build] 91 page(s) built in 17.00s
+22:34:24 [build] Complete!
+
+~/apps/comparison$ playwright test e2e/comparison-axe.spec.ts --reporter=line ⊘ cache disabled
+
+Running 81 tests using 1 worker
+
+[1/81] [chromium] › e2e/comparison-axe.spec.ts:215:3 › comparison app axe coverage › discovers live comparison routes for axe coverage
+[2/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Accordion route has no full-page or panel-scoped axe violations
+[3/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ActionBar route has no full-page or panel-scoped axe violations
+[4/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ActionButton route has no full-page or panel-scoped axe violations
+[5/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ActionButtonGroup route has no full-page or panel-scoped axe violations
+[6/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ActionGroup route has no full-page or panel-scoped axe violations
+[7/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ActionMenu route has no full-page or panel-scoped axe violations
+[8/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Autocomplete route has no full-page or panel-scoped axe violations
+[9/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Avatar route has no full-page or panel-scoped axe violations
+[10/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › AvatarGroup route has no full-page or panel-scoped axe violations
+[11/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Badge route has no full-page or panel-scoped axe violations
+[12/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Breadcrumbs route has no full-page or panel-scoped axe violations
+[13/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Button route has no full-page or panel-scoped axe violations
+[14/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ButtonGroup route has no full-page or panel-scoped axe violations
+[15/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Calendar route has no full-page or panel-scoped axe violations
+[16/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Card route has no full-page or panel-scoped axe violations
+[17/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › CardView route has no full-page or panel-scoped axe violations
+[18/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Checkbox route has no full-page or panel-scoped axe violations
+[19/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › CheckboxGroup route has no full-page or panel-scoped axe violations
+[20/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorArea route has no full-page or panel-scoped axe violations
+[21/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorField route has no full-page or panel-scoped axe violations
+[22/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorSlider route has no full-page or panel-scoped axe violations
+[23/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorSwatch route has no full-page or panel-scoped axe violations
+[24/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorSwatchPicker route has no full-page or panel-scoped axe violations
+[25/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ColorWheel route has no full-page or panel-scoped axe violations
+[26/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ComboBox route has no full-page or panel-scoped axe violations
+[27/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ContextualHelp route has no full-page or panel-scoped axe violations
+[28/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › DateField route has no full-page or panel-scoped axe violations
+[29/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › DatePicker route has no full-page or panel-scoped axe violations
+[30/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › DateRangePicker route has no full-page or panel-scoped axe violations
+[31/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Dialog route has no full-page or panel-scoped axe violations
+[32/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Disclosure route has no full-page or panel-scoped axe violations
+[33/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Divider route has no full-page or panel-scoped axe violations
+[34/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › DropZone route has no full-page or panel-scoped axe violations
+[35/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Form route has no full-page or panel-scoped axe violations
+[36/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › GridList route has no full-page or panel-scoped axe violations
+[37/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Icons route has no full-page or panel-scoped axe violations
+[38/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › IllustratedMessage route has no full-page or panel-scoped axe violations
+[39/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Illustrations route has no full-page or panel-scoped axe violations
+[40/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Image route has no full-page or panel-scoped axe violations
+[41/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › InlineAlert route has no full-page or panel-scoped axe violations
+[42/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › LabeledValue route has no full-page or panel-scoped axe violations
+[43/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Link route has no full-page or panel-scoped axe violations
+[44/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › LinkButton route has no full-page or panel-scoped axe violations
+[45/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ListBox route has no full-page or panel-scoped axe violations
+[46/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ListBox drag and drop route has no full-page or panel-scoped axe violations
+[47/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ListView route has no full-page or panel-scoped axe violations
+[48/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Menu route has no full-page or panel-scoped axe violations
+[49/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Meter route has no full-page or panel-scoped axe violations
+[50/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › NumberField route has no full-page or panel-scoped axe violations
+[51/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Picker route has no full-page or panel-scoped axe violations
+[52/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Popover route has no full-page or panel-scoped axe violations
+[53/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ProgressBar route has no full-page or panel-scoped axe violations
+[54/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ProgressCircle route has no full-page or panel-scoped axe violations
+[55/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Provider route has no full-page or panel-scoped axe violations
+[56/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › RadioGroup route has no full-page or panel-scoped axe violations
+[57/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › RangeCalendar route has no full-page or panel-scoped axe violations
+[58/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › RangeSlider route has no full-page or panel-scoped axe violations
+[59/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › SearchField route has no full-page or panel-scoped axe violations
+[60/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › SegmentedControl route has no full-page or panel-scoped axe violations
+[61/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › SelectBoxGroup route has no full-page or panel-scoped axe violations
+[62/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Skeleton route has no full-page or panel-scoped axe violations
+[63/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Slider route has no full-page or panel-scoped axe violations
+[64/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › StatusLight route has no full-page or panel-scoped axe violations
+[65/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › StepList route has no full-page or panel-scoped axe violations
+[66/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Switch route has no full-page or panel-scoped axe violations
+[67/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TableView route has no full-page or panel-scoped axe violations
+[68/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Tabs route has no full-page or panel-scoped axe violations
+[69/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TagGroup route has no full-page or panel-scoped axe violations
+[70/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TextArea route has no full-page or panel-scoped axe violations
+[71/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TextField route has no full-page or panel-scoped axe violations
+[72/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TimeField route has no full-page or panel-scoped axe violations
+[73/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Toast route has no full-page or panel-scoped axe violations
+[74/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ToggleButton route has no full-page or panel-scoped axe violations
+[75/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › ToggleButtonGroup route has no full-page or panel-scoped axe violations
+[76/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Toolbar route has no full-page or panel-scoped axe violations
+[77/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Tooltip route has no full-page or panel-scoped axe violations
+[78/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › TreeView route has no full-page or panel-scoped axe violations
+[79/81] [chromium] › e2e/comparison-axe.spec.ts:220:5 › comparison app axe coverage › Virtualizer route has no full-page or panel-scoped axe violations
+[80/81] [chromium] › e2e/comparison-axe.spec.ts:228:5 › comparison app axe coverage › TimeField deterministic route has no full-page or panel-scoped axe violations
+[81/81] [chromium] › e2e/comparison-axe.spec.ts:236:5 › comparison app axe coverage › harness UA floor marks trampolines and does not min-size ActionGroup item hosts
+  81 passed (3.5m)
+
+$ VIVIANA_GATE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/docs-menu.spec.ts e2e/playground-components.spec.ts e2e/calendar-regression.spec.ts e2e/menu-focus.spec.ts e2e/viviana-ui-docs.spec.ts e2e/theme-wipe.spec.ts e2e/showcase-topbar.spec.ts e2e/examples.spec.ts --reporter=line ⊘ cache disabled
+[WebServer] [PLUGIN_TIMINGS] Your build spent 87% of 4.8s inside plugin hooks (4.2s).
+[WebServer] Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+[WebServer]   - tanstack-router:code-splitter:compile-reference-file transform (33%, 1.6s, 184 calls)
+[WebServer] Those rows are 33% of the build; the rest of the 87% is below.
+[WebServer] Not measurable — 2 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+[WebServer]   - tanstack-start-core:import-protection resolveId (5573 calls)
+[WebServer]   - unplugin-macros transform (1110 calls)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer] 
+
+[WebServer] [PLUGIN_TIMINGS] Your build spent 85% of 4.4s inside plugin hooks (3.7s).
+[WebServer] Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+[WebServer]   - vite-plugin-cloudflare:additional-modules resolveId (35%, 1.6s, 4 calls)
+[WebServer]   - tanstack-router:code-splitter:compile-reference-file transform (31%, 1.4s, 184 calls)
+[WebServer] Those rows are 66% of the build; the rest of the 85% is below.
+[WebServer] Not measurable — 5 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+[WebServer]   - tanstack-start-core:import-protection resolveId (5393 calls)
+[WebServer]   - unplugin-macros transform (1184 calls)
+[WebServer]   - vite-plugin-cloudflare:nodejs-compat resolveId (6 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer] 
+
+
+Running 74 tests using 8 workers
+
+[1/74] [chromium] › e2e/calendar-regression.spec.ts:197:3 › Playground Calendar Regression › time field section exposes labeled segmented field and keyboard segment navigation
+[2/74] [chromium] › e2e/calendar-regression.spec.ts:253:3 › Playground Calendar Regression › date range picker section exposes labeled range fields and keyboard-open behavior
+[3/74] [chromium] › e2e/calendar-regression.spec.ts:180:3 › Playground Calendar Regression › date field section exposes labeled segmented field
+[4/74] [chromium] › e2e/calendar-regression.spec.ts:76:3 › Playground Calendar Regression › calendar toggle renders calendar section and grid cells
+[5/74] [chromium] › e2e/calendar-regression.spec.ts:94:3 › Playground Calendar Regression › calendar section chip is idempotent and hide-all clears rendered sections
+[6/74] [chromium] › e2e/calendar-regression.spec.ts:157:3 › Playground Calendar Regression › range calendar selection updates summary text
+[7/74] [chromium] › e2e/calendar-regression.spec.ts:224:3 › Playground Calendar Regression › date picker section exposes labeled segmented field and opens calendar popup
+[8/74] [chromium] › e2e/calendar-regression.spec.ts:116:3 › Playground Calendar Regression › show all surfaces both calendar and range calendar sections
+[9/74] [chromium] › e2e/docs-menu.spec.ts:54:3 › Docs Menu › renders docs sidebar navigation links
+[10/74] [chromium] › e2e/docs-menu.spec.ts:69:3 › Docs Menu › navigates from getting started to a component page
+[11/74] [chromium] › e2e/docs-menu.spec.ts:84:3 › Docs Menu › keeps current docs route after refresh
+[12/74] [chromium] › e2e/docs-menu.spec.ts:104:3 › Docs Menu › navigates component and hook pages from sidebar
+[13/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/landing renders clean
+[14/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/landing renders clean
+[15/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/home renders clean
+[16/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/home renders clean
+[17/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/explore renders clean
+[18/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore renders clean
+[19/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/explore-empty renders clean
+[20/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore-empty renders clean
+[21/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/lesson renders clean
+[22/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/lesson renders clean
+[23/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/theater renders clean
+  1) [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore renders clean ─────────────
+
+    Error: /examples/explore lost its filled "+ Create" ask
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      203 |       // otherwise a shell that stopped rendering the CTA would pass the cap.
+      204 |       if (example.fuchsiaFill === "+ Create") {
+    > 205 |         expect(filled.length, `${path} lost its filled "+ Create" ask`).toBe(1);
+          |                                                                         ^
+      206 |       }
+      207 |
+      208 |       const small = await undersizedTargets(page);
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/examples.spec.ts:205:73
+
+    Error Context: test-results/examples--light-examples-explore-renders-clean-chromium/error-context.md
+
+
+[24/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/live renders clean
+[25/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/theater renders clean
+  2) [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore-empty renders clean ───────
+
+    Error: /examples/explore-empty lost its filled "+ Create" ask
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      203 |       // otherwise a shell that stopped rendering the CTA would pass the cap.
+      204 |       if (example.fuchsiaFill === "+ Create") {
+    > 205 |         expect(filled.length, `${path} lost its filled "+ Create" ask`).toBe(1);
+          |                                                                         ^
+      206 |       }
+      207 |
+      208 |       const small = await undersizedTargets(page);
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/examples.spec.ts:205:73
+
+    Error Context: test-results/examples--light-examples-explore-empty-renders-clean-chromium/error-context.md
+
+
+[26/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/profile renders clean
+  3) [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/lesson renders clean ──────────────
+
+    Error: /examples/lesson lost its filled "+ Create" ask
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      203 |       // otherwise a shell that stopped rendering the CTA would pass the cap.
+      204 |       if (example.fuchsiaFill === "+ Create") {
+    > 205 |         expect(filled.length, `${path} lost its filled "+ Create" ask`).toBe(1);
+          |                                                                         ^
+      206 |       }
+      207 |
+      208 |       const small = await undersizedTargets(page);
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/examples.spec.ts:205:73
+
+    Error Context: test-results/examples--light-examples-lesson-renders-clean-chromium/error-context.md
+
+
+[27/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/live renders clean
+[28/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/profile renders clean
+[29/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/settings renders clean
+[30/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/settings renders clean
+[31/74] [chromium] › e2e/examples.spec.ts:179:5 › [dark] /examples/playground renders clean
+[32/74] [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/playground renders clean
+[33/74] [chromium] › e2e/menu-focus.spec.ts:20:3 › Menu roving focus › trigger arrows enter at the first and last items and Escape restores focus
+[34/74] [chromium] › e2e/menu-focus.spec.ts:45:3 › Menu roving focus › arrow/Home/End move real DOM focus to the focused menu item
+  4) [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/profile renders clean ─────────────
+
+    Error: /examples/profile lost its filled "+ Create" ask
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      203 |       // otherwise a shell that stopped rendering the CTA would pass the cap.
+      204 |       if (example.fuchsiaFill === "+ Create") {
+    > 205 |         expect(filled.length, `${path} lost its filled "+ Create" ask`).toBe(1);
+          |                                                                         ^
+      206 |       }
+      207 |
+      208 |       const small = await undersizedTargets(page);
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/examples.spec.ts:205:73
+
+    Error Context: test-results/examples--light-examples-profile-renders-clean-chromium/error-context.md
+
+
+[35/74] [chromium] › e2e/playground-components.spec.ts:60:3 › Playground Page › loads without hydration errors
+[36/74] [chromium] › e2e/playground-components.spec.ts:70:3 › Playground Page › show all / hide all section controls are deterministic
+[37/74] [chromium] › e2e/playground-components.spec.ts:90:3 › Playground Page › switch section toggle updates aria-checked
+[38/74] [chromium] › e2e/playground-components.spec.ts:107:3 › Playground Page › styled tabs keep tab-to-panel ARIA linkage valid
+[39/74] [chromium] › e2e/playground-components.spec.ts:140:3 › Playground Page › styled tabs arrow keys move focus to the next tab
+  5) [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/playground renders clean ──────────
+
+    Error: /examples/playground lost its filled "+ Create" ask
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      203 |       // otherwise a shell that stopped rendering the CTA would pass the cap.
+      204 |       if (example.fuchsiaFill === "+ Create") {
+    > 205 |         expect(filled.length, `${path} lost its filled "+ Create" ask`).toBe(1);
+          |                                                                         ^
+      206 |       }
+      207 |
+      208 |       const small = await undersizedTargets(page);
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/examples.spec.ts:205:73
+
+    Error Context: test-results/examples--light-examples-playground-renders-clean-chromium/error-context.md
+
+
+[40/74] [chromium] › e2e/playground-components.spec.ts:160:3 › Playground Page › styled breadcrumbs expose current item semantics
+[41/74] [chromium] › e2e/playground-components.spec.ts:182:3 › Playground Page › taggroup section exposes labeled grid keyboard navigation
+[42/74] [chromium] › e2e/playground-components.spec.ts:208:3 › Playground Page › actiongroup section exposes role + keyboard behavior
+[43/74] [chromium] › e2e/playground-components.spec.ts:225:3 › Playground Page › toolbar section keeps arrow-key navigation working
+[44/74] [chromium] › e2e/playground-components.spec.ts:255:3 › Playground Page › actionbar section supports keyboard navigation and escape clear
+[45/74] [chromium] › e2e/playground-components.spec.ts:290:3 › Playground Page › menu section opens and exposes menuitems
+[46/74] [chromium] › e2e/playground-components.spec.ts:306:3 › Playground Page › table section exposes tabbable grid and keyboard row selection
+[47/74] [chromium] › e2e/playground-components.spec.ts:328:3 › Playground Page › gridlist section supports keyboard selection from focused grid
+[48/74] [chromium] › e2e/playground-components.spec.ts:353:3 › Playground Page › tree section supports keyboard selection from focused treegrid
+[49/74] [chromium] › e2e/playground-components.spec.ts:378:3 › Playground Page › tree section expands and collapses nested branches from expand buttons
+[50/74] [chromium] › e2e/playground-components.spec.ts:400:3 › Playground Page › calendar section supports month navigation and updates selection text
+[51/74] [chromium] › e2e/playground-components.spec.ts:434:3 › Playground Page › inline alert section exposes an alert role per variant
+[52/74] [chromium] › e2e/playground-components.spec.ts:444:3 › Playground Page › dropzone section exposes drop target semantics and handles drop callbacks
+[53/74] [chromium] › e2e/playground-components.spec.ts:470:3 › Playground Page › filetrigger section forwards file selection and keeps disabled trigger inert
+[54/74] [chromium] › e2e/playground-components.spec.ts:489:3 › Playground Page › disclosure section supports keyboard toggle on headless disclosure
+[55/74] [chromium] › e2e/playground-components.spec.ts:504:3 › Playground Page › disclosure accordion section keeps single-expand behavior
+[56/74] [chromium] › e2e/playground-components.spec.ts:521:3 › Playground Page › contextualhelp section opens dialog with trigger linkage and closes on Escape
+[57/74] [chromium] › e2e/playground-components.spec.ts:561:3 › Playground Page › contextualhelp section closes on outside interaction
+[58/74] [chromium] › e2e/playground-components.spec.ts:583:3 › Playground Page › toast section renders notification region and toasts from trigger buttons
+[59/74] [chromium] › e2e/playground-components.spec.ts:614:3 › Playground Page › toast section links title/description ids and supports dismiss
+[60/74] [chromium] › e2e/playground-components.spec.ts:647:3 › Playground Page › tooltip section opens with role=tooltip and stays open on non-press keys
+[61/74] [chromium] › e2e/playground-components.spec.ts:669:3 › Playground Page › tooltip section closes on Escape
+[62/74] [chromium] › e2e/playground-components.spec.ts:690:3 › Playground Page › popover section opens with dialog semantics and closes on Escape
+[63/74] [chromium] › e2e/playground-components.spec.ts:709:3 › Playground Page › popover section closes on outside interaction
+[64/74] [chromium] › e2e/playground-components.spec.ts:745:3 › Playground Page › dialog section opens with modal semantics and closes on Escape
+[65/74] [chromium] › e2e/playground-components.spec.ts:760:3 › Playground Page › alertdialog section exposes alertdialog role and action buttons
+[66/74] [chromium] › e2e/showcase-topbar.spec.ts:97:3 › showcase topbar overflow › 1280 /showcase does not clip the panel strip
+[67/74] [chromium] › e2e/showcase-topbar.spec.ts:125:3 › showcase topbar overflow › 820 /showcase keeps the select and hides the strip
+[68/74] [chromium] › e2e/viviana-ui-docs.spec.ts:21:3 › Viviana UI docs entry › header viviana-ui opens /viviana-ui/docs, not /showcase
+[69/74] [chromium] › e2e/viviana-ui-docs.spec.ts:34:3 › Viviana UI docs entry › landing CTA reads Read docs → and opens /viviana-ui/docs
+[70/74] [chromium] › e2e/viviana-ui-docs.spec.ts:46:3 › Viviana UI docs entry › showcase brand Viviana UI opens /viviana-ui/docs
+[71/74] [chromium] › e2e/viviana-ui-docs.spec.ts:56:3 › Viviana UI docs entry › docs sidebar lists Getting Started, Installation, Button, hooks, Playground, and API
+[72/74] [chromium] › e2e/theme-wipe.spec.ts:40:3 › theme transition › Header toggle dissolves a snapshot and flips the one scheme attribute
+  6) [chromium] › e2e/playground-components.spec.ts:583:3 › Playground Page › toast section renders notification region and toasts from trigger buttons 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: 'Notifications' }).first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Notifications' }).first()
+
+
+      590 |
+      591 |     const region = page.getByRole("region", { name: "Notifications" }).first();
+    > 592 |     await expect(region).toBeVisible();
+          |                          ^
+      593 |
+      594 |     // The first toast shows on its own. Wait for it to render before queuing the
+      595 |     // next so both register (one click per animation frame, as a user would).
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/playground-components.spec.ts:592:26
+
+    Error Context: test-results/playground-components-Play-74761-toasts-from-trigger-buttons-chromium/error-context.md
+
+
+[73/74] [chromium] › e2e/theme-wipe.spec.ts:58:3 › theme transition › the overlay is a frozen copy of the old page, not a flat fill
+  7) [chromium] › e2e/playground-components.spec.ts:614:3 › Playground Page › toast section links title/description ids and supports dismiss 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('alertdialog').filter({ hasText: 'Custom Toast' }).first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('alertdialog').filter({ hasText: 'Custom Toast' }).first()
+
+
+      619 |
+      620 |     const toast = page.getByRole("alertdialog").filter({ hasText: "Custom Toast" }).first();
+    > 621 |     await expect(toast).toBeVisible();
+          |                         ^
+      622 |     await expect(toast).toContainText(
+      623 |       "This toast has both title and description with a longer timeout.",
+      624 |     );
+        at /home/emoporemilio/projects/viviana-hub/ui/apps/web/e2e/playground-components.spec.ts:621:25
+
+    Error Context: test-results/playground-components-Play-38c67-on-ids-and-supports-dismiss-chromium/error-context.md
+
+
+[74/74] [chromium] › e2e/theme-wipe.spec.ts:91:3 › theme transition › prefers-reduced-motion skips the snapshot and still flips the scheme
+  7 failed
+    [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore renders clean ──────────────
+    [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/explore-empty renders clean ────────
+    [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/lesson renders clean ───────────────
+    [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/profile renders clean ──────────────
+    [chromium] › e2e/examples.spec.ts:179:5 › [light] /examples/playground renders clean ───────────
+    [chromium] › e2e/playground-components.spec.ts:583:3 › Playground Page › toast section renders notification region and toasts from trigger buttons 
+    [chromium] › e2e/playground-components.spec.ts:614:3 › Playground Page › toast section links title/description ids and supports dismiss 
+  67 passed (1.2m)
+
+---
+vp run: 0/36 cache hit (0%), 1 failed. (Run `vp run --last-details` for full details)
+EXIT=1

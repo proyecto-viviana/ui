@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "found by the conductor running step 239 of the ladder, `vp run comparison:report:parity:strict`, EXIT=1. The sole blocking gap is `Recorded full certified suite evidence is invalid: 1` - every other always-blocking section printed `[pass]`, and the two `[gap]` control/validation sections are inside the frozen baseline, so `structuralBlockingGaps` is exactly this one. It is not staleness that a re-run fixes: `certifiedSuitePostcardIsCurrent` is `headSha === evidence.revision` (`apps/comparison/src/data/certified-suite-evidence.ts:36`), `evidence.revision` is a hand-edited string literal in that committed source file (`:22`), and nothing writes it - no workflow references it and the only script that reads it is the report itself. Updating the literal creates the commit that falsifies it. Evidence `.agents/chain-walk-2026-09-20/ladder-comparison-parity-strict.out.txt`",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "shape decided by the conductor and written into the ticket as `The decision`: ancestry plus coverage, with `apps/comparison/src/data/certified-suite-evidence.ts` excluded from the covered set - that exclusion is the witness the gate never had, since without it the commit that records a run invalidates the run it records, which is equality's bug in a new spelling. Two constraints found while deciding, both cheap to miss. `actions/checkout` in `certification-gates.yml` sets no `fetch-depth` (lines 47, 420, 474), so CI clones at depth 1 and neither `merge-base --is-ancestor` nor a `revision..HEAD` path diff can run; the job that runs step 239 needs `fetch-depth: 0`, and a revision missing from the object graph must fail with a message naming it rather than degrade to a pass. And the postcard file has exactly three readers - itself, `acceptance-schema.test.ts` and `report-component-parity.ts` - so the blast radius of changing the rule is three files. Not yet handed to the writer: ladder order puts #572 (219) and #573 (227) first",
+    }
 ---
 
 ## Scope
@@ -76,6 +81,50 @@ Whichever lands, fix the comment at `:13-20` in the same commit, and re-check
 records which shape was taken and why. The bar is specific: name the commit that
 passes, and show that a commit which _should_ fail — one touching a covered path
 with a postcard from before it — still does.
+
+## The decision, taken by the conductor on 2026-09-20
+
+Shape 1, ancestry plus coverage. The ticket left three open; this is the one to
+implement, and the other two are recorded here as rejected so nobody re-opens
+the question at implementation time.
+
+The postcard is current when both hold:
+
+1. `evidence.revision` is HEAD or an ancestor of it, and
+2. no path the certified suite covers changed in `evidence.revision..HEAD`.
+
+Covered, because these are what the suite exercises: `packages/*/src/**`,
+`apps/comparison/src/**` and `apps/comparison/e2e/**`. Not covered, because a
+change there cannot alter a certified result: `.claude/**`, `.agents/**`,
+`docs/**`, `scripts/**`, `.github/**`, and every `README`.
+
+**And one exclusion that is the whole reason the first attempt failed:**
+`apps/comparison/src/data/certified-suite-evidence.ts` is itself not a covered
+path. Without that line the rule is unsatisfiable exactly as equality was — the
+commit that records a run would invalidate the run it records. That is the
+witness this gate has been missing, and it is one line.
+
+Degrade loudly, not quietly. `actions/checkout` in this workflow sets no
+`fetch-depth`, so CI clones at depth 1 and neither the ancestry test nor the
+path diff can run there. Add `fetch-depth: 0` to the job that runs step 239,
+and when the recorded revision is not in the object graph (`git cat-file -e`),
+**fail** with a message naming `fetch-depth` — do not pass. A gate that goes
+quiet in a shallow clone is a gate that is off in CI and green in review, which
+is worse than the bug this ticket is about.
+
+Why not the other two. Shape 2, the CI artifact, was the closest fit to the
+owner's #547 decision, but it moves the record out of review: nobody sees the
+postcard change in a diff, and locally the report can only say "unknown", which
+is the quiet degradation above made permanent. Shape 3, dropping it from the
+blocking set, is the honest description of today's behaviour and is exactly
+what should not be written down as an intention.
+
+What this buys, and it is the point rather than a side effect: any commit that
+touches a package source turns step 239 red until the certified suite is re-run
+and its postcard committed. That is the recertification bar doing its job. The
+current postcard names `0f1e1198` from 2026-08-21, so the first run of the new
+rule will be red, and closing it needs a full certified run — that run is #547's
+obligation and #194's, not an extra cost this ticket invents.
 
 ## Relationship
 
