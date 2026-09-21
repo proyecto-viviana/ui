@@ -4,7 +4,7 @@ type: task
 title: "setInteractionModality is pending on a merged ticket, so guard:rac-export-gap is red"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "shipped, not re-pointed. One re-export from `@proyecto-viviana/solidaria`, placed between `parseColor, FormValidationContext` and `UNSTABLE_ToastQueue` because that is exactly where RAC puts it (`exports/index.ts:289`, between 288 and 290), so the barrel keeps reading in upstream order; no alias, since RAC exports the name unchanged. Pending entry deleted: `guard:rac-export-gap` EXIT=0 with 8 pending left, all on the open #228 and #118. The attribution pin `d4a4a439\u2026` reproduces the file at HEAD exactly, so nothing had drifted before this edit and the delta since the review is the one added line - a barrel of this repository's own module names, naming this repository's own function in `solidaria/src/interactions/createInteractionModality.ts`; only the name is upstream's, which is what a parity barrel is. `local-module-surface` holds, re-pinned by hand to `b16cb58b\u2026` after formatting, in the same commit. `guard:attribution-headers` EXIT=0 254/254, `guard:publish-drift` EXIT=0 with a solidaria-components patch changeset, `vp run check` green, the guard's own test 6/6. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "reviewed by re-running every claim rather than reading them. `vp run guard:rac-export-gap` EXIT=0, 8 pending left and all on the open #228 and #118; `vp run guard:attribution-headers` EXIT=0 with 253 reviewed-local; `vp run guard:publish-drift` EXIT=0 over 48 changesets. The new pin was recomputed independently, not trusted: `sha256sum packages/solidaria-components/src/index.ts` is `b16cb58b9248cf9…` byte for byte, so the recorded hash is the literal file and the re-attestation is the same review re-pinned, exactly as the note says. The placement claim was checked against the upstream the guard itself reads, `react-spectrum/packages/react-aria-components/exports/index.ts`: line 288 is `parseColor, getColorChannels`, 289 is `setInteractionModality` from `react-aria/useFocusVisible`, 290 is `ToastQueue as UNSTABLE_ToastQueue`, and our barrel carries that run at 1013/1015/1017 from `@proyecto-viviana/solidaria` - the layer that answers to `useFocusVisible`, so both the order and the source layer mirror upstream. Step 121 of the ladder is now green and the walk moves to step 160, #570",
     }
 ---
 

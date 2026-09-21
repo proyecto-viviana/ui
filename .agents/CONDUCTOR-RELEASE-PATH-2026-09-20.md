@@ -69,10 +69,30 @@ turned no CI walk green, and each of #569, #570, #571 would have cost a separate
 34-minute push to discover. That is the argument for walking locally rather than
 letting CI reveal one red per push.
 
-Not covered by the walk: everything after the build — `jsx-deopt-size`,
-`entry-import-budget`, `jsx-ref-dead-code`, `s2-cleanups`,
-`upstream-test-parity`, `docs:check`, comparison parity strict, axe full. Those
-need a build and are the expensive half; expect a second red list from them.
+### The post-build half, walked the same evening
+
+`vp run build` green, then the five gates behind it that nothing had ever run —
+`ci:release-readiness` reaches none of them, which is #568's point. Three green:
+`jsx-deopt-size`, `entry-import-budget`, `s2-cleanups`. Two red, both now
+ticketed:
+
+| step | gate                   | red                                            | ticket |
+| ---: | ---------------------- | ---------------------------------------------- | ------ |
+|  219 | `jsx-ref-dead-code`    | asserts a `setAttribute` removed in `70a8d478` | #572   |
+|  227 | `upstream-test-parity` | baseline +30 suspects behind the pin           | #573   |
+
+Neither is a build defect, which is worth stating because both messages read
+like one. #572 says "package transform dropped" about a line the refactor
+deleted; #573's ratchet was last moved by a regen labelled "fmt drift". Both are
+records that stopped tracking the tree — the failure mode the standing rule
+"the tree beats the document" names.
+
+Still unrun: `docs:check`, comparison parity strict (239) and axe full (251).
+The last two need the comparison app and a preview server and are the expensive
+pair; expect a third red list from them.
+
+So the full red list for the RC is seven tickets — #559 and #569 merged, #570,
+#571, #572, #573 open, plus whatever 239 and 251 add.
 
 ## Stage 2 — clear the reds, in ladder order
 

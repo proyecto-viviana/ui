@@ -1,0 +1,6 @@
+$ vp exec tsx scripts/check-entry-import-budget.ts ⊘ cache disabled
+entry import budget
+- entries measured: 5/5
+- root-barrel importers: 154 (ceiling 154)
+entry import budget OK.
+

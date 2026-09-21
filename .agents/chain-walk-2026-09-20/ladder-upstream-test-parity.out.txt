@@ -1,0 +1,323 @@
+$ vp exec tsx scripts/check-upstream-test-parity.ts ⊘ cache disabled
+Upstream test-parity oracle
+- pinned release: @react-spectrum/s2@1.7.0 (s2 1.7.0, rac 1.21.0)
+- vendored tree:  s2 1.7.0, rac 1.21.0
+- matched components: 49  |  ours-without-upstream: 145  |  upstream-without-ours: 16
+
+══ RANKED SUSPECTS — our tests assert a shape upstream never asserts (37) ══
+   18 have a ROLE divergence (the high-signal "wrong shape" bucket); the rest are aria/key-only (usually broader coverage).
+
+● select  [score 50]
+  ours:     packages/solid-spectrum/test/Picker.test.tsx, packages/solid-spectrum/test/Select.test.tsx, packages/solidaria-components/test/Select.test.tsx, packages/viviana-ui/test/Picker.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Select.test.js, react-spectrum/packages/@react-spectrum/s2/test/Picker.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/Picker.test.tsx
+  ROLES  we-only {alert, form, presentation, progressbar}   ‖   upstream-only {—}
+  ARIA   we-only {aria-controls, aria-disabled, aria-haspopup}   ‖   upstream-only {aria-expanded}
+  KEYS   we-only {arrowdown, arrowup, enter, escape}
+  names  we-only: 0, accordion, animal, animal form, animals, api, api section docs section, australian capital territory, docs section, docs section section help (+12)
+
+● combobox  [score 46]
+  ours:     packages/solid-spectrum/test/ComboBox.test.tsx, packages/solidaria-components/test/ComboBox.test.tsx, packages/viviana-ui/test/ComboBox.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/ComboBox.browser.test.tsx, react-spectrum/packages/react-aria-components/test/ComboBox.test.js, react-spectrum/packages/@react-spectrum/s2/test/Combobox.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/Combobox.test.tsx
+  ROLES  we-only {alert, form, presentation}   ‖   upstream-only {—}
+  ARIA   we-only {aria-activedescendant, aria-controls, aria-disabled, aria-haspopup, aria-invalid, aria-setsize}   ‖   upstream-only {—}
+  KEYS   we-only {arrowup, backspace, end, escape}
+  names  we-only: after, apple, banana, before, cherry, combobox value, context fruit, date, dismiss, elderberry (+14)
+
+● searchfield  [score 37]
+  ours:     packages/solid-spectrum/test/SearchField.test.tsx, packages/solidaria-components/test/SearchField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/SearchField.test.js, react-spectrum/packages/@react-spectrum/s2/test/SearchField.test.tsx
+  ROLES  we-only {dialog, form, textbox}   ‖   upstream-only {—}
+  ARIA   we-only {aria-expanded, aria-hidden, aria-invalid}   ‖   upstream-only {aria-labelledby}
+  KEYS   we-only {enter}
+  names  we-only: clear search, context search, find, query, search, search form, search help, search items, suche zurücksetzen, test search
+
+● breadcrumbs  [score 32]
+  ours:     packages/solid-spectrum/test/Breadcrumbs.test.tsx, packages/solidaria-components/test/Breadcrumbs.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Breadcrumbs.test.js
+  ROLES  we-only {button, menu, menuitem}   ‖   upstream-only {—}
+  ARIA   we-only {aria-labelledby}   ‖   upstream-only {—}
+  names  we-only: breadcrumb navigation, collection breadcrumbs, current item test, disabled breadcrumbs, files, large breadcrumbs, legacy large breadcrumbs, more items, overflow breadcrumbs, render prop breadcrumbs (+2)
+
+● checkbox  [score 32]
+  ours:     packages/solid-spectrum/test/Checkbox.test.tsx, packages/solidaria-components/test/Checkbox.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Checkbox.test.js, react-spectrum/packages/react-aria-components/test/CheckboxGroup.test.js, react-spectrum/packages/@react-spectrum/s2/test/CheckboxGroup.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/CheckboxGroup.test.tsx
+  ROLES  we-only {button, form, img}   ‖   upstream-only {—}
+  ARIA   we-only {aria-required}   ‖   upstream-only {aria-disabled}
+  names  we-only: (required), agree, channels, context checkbox, context notifications, custom label, notification channels\s*\(required\), notifications\s*\(required\), options, reset form (+4)
+
+● disclosure  [score 30]
+  ours:     packages/solid-spectrum/test/Disclosure.test.tsx, packages/solidaria-components/test/Disclosure.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Disclosure.test.js
+  ROLES  we-only {group, region}   ‖   upstream-only {—}
+  ARIA   we-only {aria-controls, aria-expanded, aria-hidden, aria-labelledby, aria-level}   ‖   upstream-only {—}
+  names  we-only: billing, details, details panel, item, item 1, item 2, more actions, section one, section two, show more (+2)
+
+● table  [score 29]
+  ours:     packages/solid-spectrum/test/Table.test.tsx, packages/solidaria-components/test/Table.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Table.test.js, react-spectrum/packages/@react-spectrum/s2/test/EditableTableView.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/TableView.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/TableView.test.tsx
+  ROLES  we-only {presentation}   ‖   upstream-only {dialog, tab, textbox}
+  ARIA   we-only {aria-checked, aria-colcount, aria-expanded, aria-level, aria-multiselectable, aria-orientation, aria-posinset, aria-rowcount, aria-setsize}   ‖   upstream-only {aria-colindex, aria-describedby}
+  KEYS   we-only {tab}
+  names  we-only: agree, alice, blastoise, bob, carol, charizard, doc 1, documents, electric, file 1 (+21)
+
+● tabs  [score 26]
+  ours:     packages/solid-spectrum/test/Tabs.test.tsx, packages/solidaria-components/test/Tabs.test.tsx, packages/viviana-ui/test/Tabs.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Tabs.browser.test.tsx, react-spectrum/packages/react-aria-components/test/Tabs.test.js, react-spectrum/packages/@react-spectrum/s2/test/Tabs.test.tsx
+  ROLES  we-only {listbox, textbox}   ‖   upstream-only {menuitem, tooltip}
+  ARIA   we-only {aria-controls, aria-hidden}   ‖   upstream-only {aria-describedby, aria-details}
+  KEYS   we-only {end, home}
+  names  we-only: after tabs, before tabs, controlled sections, dialog button, disabled sections, draft, dynamic sections, first, first|overflow tabs, focus sections (+16)
+
+● switch  [score 24]
+  ours:     packages/solid-spectrum/test/Switch.test.tsx, packages/solidaria-components/test/Switch.test.tsx, packages/viviana-ui/test/Switch.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Switch.test.js
+  ROLES  we-only {radio, radiogroup}   ‖   upstream-only {—}
+  ARIA   we-only {aria-checked, aria-labelledby}   ‖   upstream-only {aria-invalid}
+  names  we-only: board, custom label, enable feature, enable notifications, grid, layout, list, test, test switch, toggle (+1)
+
+● button  [score 20]
+  ours:     packages/solid-spectrum/test/Button.test.tsx, packages/solidaria-components/test/Button.test.tsx, packages/viviana-ui/test/Button.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Button.test.js
+  ROLES  we-only {progressbar}   ‖   upstream-only {—}
+  ARIA   we-only {aria-describedby, aria-details, aria-expanded, aria-labelledby, aria-pressed}   ‖   upstream-only {—}
+  names  we-only: close, close dialog, close menu, dismiss, open menu, previous, save, save file, test
+
+● numberfield  [score 20]
+  ours:     packages/solid-spectrum/test/NumberField.test.tsx, packages/solidaria-components/test/NumberField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/NumberField.test.js, react-spectrum/packages/@react-spectrum/s2/test/NumberField.test.tsx
+  ROLES  we-only {form}   ‖   upstream-only {—}
+  ARIA   we-only {aria-roledescription, aria-valuemax, aria-valuemin, aria-valuenow}   ‖   upstream-only {—}
+  KEYS   we-only {pagedown, pageup}
+  names  we-only: amount, count, quantity, quantity form, test number
+
+● textfield  [score 20]
+  ours:     packages/solid-spectrum/test/TextField.test.tsx, packages/solidaria-components/test/TextField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/TextField.test.js, react-spectrum/packages/@react-spectrum/s2/test/TextField.test.tsx
+  ROLES  we-only {button, form}   ‖   upstream-only {presentation}
+  names  we-only: custom label, description, email, name, password, phone, probe form, project form, project name, reset form (+3)
+
+● timefield  [score 20]
+  ours:     packages/solid-spectrum/test/TimeField.test.tsx, packages/solidaria-components/test/TimeField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/TimeField.test.js
+  ROLES  we-only {button}   ‖   upstream-only {—}
+  ARIA   we-only {aria-disabled, aria-invalid, aria-readonly, aria-valuenow}   ‖   upstream-only {—}
+  KEYS   we-only {arrowdown, arrowright}
+  names  we-only: meeting time, meeting time time help, starttime, test time, time
+
+● form  [score 16]
+  ours:     packages/solid-spectrum/test/Form.test.tsx, packages/solidaria-components/test/Form.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Form.test.js
+  ROLES  we-only {form}   ‖   upstream-only {—}
+  ARIA   we-only {aria-details, aria-invalid, aria-label}   ‖   upstream-only {—}
+  names  we-only: aria field form, aria form, callback form, live descendant form, live form, native form, object form, override form, project form, project name (+5)
+
+● popover  [score 15]
+  ours:     packages/solid-spectrum/test/Popover.test.tsx, packages/solidaria-components/test/Popover.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Popover.test.js
+  ROLES  we-only {textbox}   ‖   upstream-only {—}
+  ARIA   we-only {aria-expanded, aria-haspopup}   ‖   upstream-only {—}
+  KEYS   we-only {escape}
+  names  we-only: feedback, focus test, focused field, open, open feedback, quick audit note, rejeter
+
+● slider  [score 14]
+  ours:     packages/solid-spectrum/test/Slider.test.tsx, packages/solidaria-components/test/Slider.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Slider.test.js
+  ROLES  we-only {—}   ‖   upstream-only {group, status}
+  ARIA   we-only {aria-disabled, aria-valuemax, aria-valuemin, aria-valuenow, aria-valuetext}   ‖   upstream-only {aria-labelledby}
+  KEYS   we-only {arrowdown, arrowup, end, home}
+  names  we-only: context volume, test slider, vertical slider
+
+● tree  [score 14]
+  ours:     packages/solid-spectrum/test/Tree.test.tsx, packages/solidaria-components/test/Tree.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/AriaTree.test-util.tsx, react-spectrum/packages/react-aria-components/test/Tree.browser.test.tsx, react-spectrum/packages/react-aria-components/test/Tree.test.tsx, react-spectrum/packages/react-aria-components/test/Treeble.test.js, react-spectrum/packages/@react-spectrum/s2/test/TreeView.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/TreeView.test.tsx
+  ROLES  we-only {progressbar}   ‖   upstream-only {menu, textbox}
+  ARIA   we-only {aria-disabled, aria-hidden}   ‖   upstream-only {aria-colindex}
+  names  we-only: ^item 3$, ^project, ^select, alpha, api reference, archive, before, birds, bravo, budget (+16)
+
+● menu  [score 13]
+  ours:     packages/solid-spectrum/test/Menu.test.tsx, packages/solidaria-components/test/Menu.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/AriaMenu.test-util.tsx, react-spectrum/packages/react-aria-components/test/Menu.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/Menu.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/Menu.test.tsx
+  ROLES  we-only {presentation}   ‖   upstream-only {textbox}
+  KEYS   we-only {arrowleft, end, home}
+  names  we-only: archive, bold, copy, delete, edit, format, ham, italic, layer mode, left (+13)
+
+● calendar  [score 11]
+  ours:     packages/solid-spectrum/test/Calendar.test.tsx, packages/solidaria-components/test/Calendar.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Calendar.test.js
+  ROLES  we-only {—}   ‖   upstream-only {listbox, option}
+  ARIA   we-only {aria-disabled, aria-hidden}   ‖   upstream-only {aria-details, aria-labelledby}
+  KEYS   we-only {arrowdown, arrowup, end, home, pagedown, pageup, tab}
+  names  we-only: 15 février 2025 sélectionné, date de rendez-vous, event date, event date, february 2025, event date, february to march 2025, february 10, 2025, february 12, 2025, february 20, 2025, last available date, february 28, 2025, february 3, 2025 (+12)
+
+● radiogroup  [score 11]
+  ours:     packages/solidaria-components/test/RadioGroup.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/RadioGroup.test.js, react-spectrum/packages/@react-spectrum/s2/test/RadioGroup.browser.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/RadioGroup.test.tsx
+  ROLES  we-only {form}   ‖   upstream-only {—}
+  KEYS   we-only {arrowup}
+  names  we-only: after, close, options, plan, plan form, test, test options, trigger
+
+● rangecalendar  [score 11]
+  ours:     packages/solid-spectrum/test/RangeCalendar.test.tsx, packages/solidaria-components/test/RangeCalendar.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/RangeCalendar.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {option}
+  ARIA   we-only {aria-describedby, aria-disabled, aria-hidden, aria-live}   ‖   upstream-only {—}
+  KEYS   we-only {arrowright, enter, escape}
+  names  we-only: 15 juin 2024, constrained range calendar, dates du voyage, february 10, 2025, february 12, 2025, february 20, 2025, last available date, february 28, 2025, february 3, 2025, february 3, 2025, first available date, february 4, 2025 (+14)
+
+● colorfield  [score 10]
+  ours:     packages/solid-spectrum/test/ColorField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/ColorField.test.js, react-spectrum/packages/@react-spectrum/s2/test/ColorField.test.tsx
+  ARIA   we-only {aria-invalid, aria-valuemax, aria-valuemin, aria-valuenow}   ‖   upstream-only {aria-required}
+  KEYS   we-only {pagedown, pageup}
+  names  we-only: color, red
+
+● listbox  [score 10]
+  ours:     packages/solid-spectrum/test/ListBox.test.tsx, packages/solidaria-components/test/ListBox.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/ListBox.browser.test.tsx, react-spectrum/packages/react-aria-components/test/ListBox.test.js
+  ARIA   we-only {aria-activedescendant, aria-hidden, aria-live, aria-multiselectable}   ‖   upstream-only {aria-posinset, aria-setsize}
+  KEYS   we-only {arrowleft, arrowright}
+  names  we-only: admin, apple, banana, felines, insert between read and write, mammals group, permissions, read, update, veggies (+1)
+
+● togglebutton  [score 10]
+  ours:     packages/solid-spectrum/test/ToggleButton.test.tsx, packages/solid-spectrum/test/ToggleButtonGroup.test.tsx, packages/solidaria-components/test/ToggleButton.test.tsx, packages/solidaria-components/test/ToggleButtonGroup.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/ToggleButton.test.js, react-spectrum/packages/react-aria-components/test/ToggleButtonGroup.test.js, react-spectrum/packages/@react-spectrum/s2/test/ToggleButtonGroup.test.tsx
+  ARIA   we-only {aria-controls, aria-describedby, aria-details, aria-expanded, aria-haspopup}   ‖   upstream-only {aria-disabled, aria-orientation}
+  names  we-only: a, b, bold, close, first, formatting, italic, left, pin, pinned columns (+5)
+
+● datepicker  [score 9]
+  ours:     packages/solid-spectrum/test/DatePicker.test.tsx, packages/solidaria-components/test/DatePicker.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/DatePicker.test.js
+  ROLES  we-only {—}   ‖   upstream-only {group}
+  ARIA   we-only {aria-haspopup, aria-hidden, aria-required, aria-valuenow}   ‖   upstream-only {aria-selected}
+  KEYS   we-only {escape}
+  names  we-only: appointment date help, choose date, date, date picker, day, duedate, friday, february 21, 2025, hour, minute, monday, february 10, 2025 (+5)
+
+● colorswatchpicker  [score 8]
+  ours:     packages/solid-spectrum/test/ColorSwatchPicker.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/ColorSwatchPicker.test.js
+  ARIA   we-only {aria-describedby, aria-details, aria-hidden}   ‖   upstream-only {aria-labelledby}
+  KEYS   we-only {pagedown, pageup}
+  names  we-only: color swatches, context palette, initial label, palette
+
+● separator  [score 8]
+  ours:     packages/solid-spectrum/test/Separator.test.tsx, packages/solidaria-components/test/Separator.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Separator.test.js
+  ARIA   we-only {aria-describedby, aria-details, aria-labelledby, aria-orientation}   ‖   upstream-only {—}
+  names  we-only: divider, section, section divider
+
+● toast  [score 7]
+  ours:     packages/solid-spectrum/test/Toast.test.tsx, packages/solidaria-components/test/Toast.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Toast.test.js, react-spectrum/packages/@react-spectrum/s2/test/Toast.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {alert}
+  ARIA   we-only {aria-atomic, aria-hidden, aria-live}   ‖   upstream-only {aria-modal}
+  KEYS   we-only {escape}
+  names  we-only: borrar todo, clear all, collapse, contraer, descartar, dismiss, hello, mostrar todo, notifications, show all (+1)
+
+● link  [score 6]
+  ours:     packages/solid-spectrum/test/Link.test.tsx, packages/solidaria-components/test/Link.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Link.test.js
+  ARIA   we-only {aria-current, aria-describedby, aria-details}   ‖   upstream-only {—}
+  names  we-only: billing, black, callback ref, default, download report, go home, inline, object ref, open docs, primary (+3)
+
+● dialog  [score 5]
+  ours:     packages/solid-spectrum/test/Dialog.test.tsx, packages/solidaria-components/test/Dialog.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Dialog.browser.test.tsx, react-spectrum/packages/react-aria-components/test/Dialog.test.js, react-spectrum/packages/@react-spectrum/s2/test/AlertDialog.test.tsx, react-spectrum/packages/@react-spectrum/s2/test/StandardDialog.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {gridcell, group, menuitem}
+  ARIA   we-only {aria-controls, aria-level}   ‖   upstream-only {—}
+  KEYS   we-only {escape}
+  names  we-only: action review, alert, alert review, archive, cancel, close, close contained, close dialog, close now, composed settings (+22)
+
+● datefield  [score 4]
+  ours:     packages/solid-spectrum/test/DateField.test.tsx, packages/solidaria-components/test/DateField.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/DateField.test.js
+  ARIA   we-only {aria-valuenow}   ‖   upstream-only {—}
+  KEYS   we-only {arrowdown, arrowleft}
+  names  we-only: appointmentdate, birth date date help, date, test date field
+
+● taggroup  [score 4]
+  ours:     packages/solid-spectrum/test/TagGroup.test.tsx, packages/solidaria-components/test/TagGroup.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/TagGroup.test.js, react-spectrum/packages/@react-spectrum/s2/test/TagGroup.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {tooltip}
+  ARIA   we-only {—}   ‖   upstream-only {aria-describedby, aria-selected}
+  KEYS   we-only {end, escape, home, tab}
+  names  we-only: add tag, after, before, gaming, landscape, news, night, portrait, shopping, topics (+1)
+
+● toolbar  [score 4]
+  ours:     packages/solid-spectrum/test/Toolbar.test.tsx, packages/solidaria-components/test/Toolbar.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Toolbar.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {checkbox, link, textbox}
+  ARIA   we-only {aria-orientation}   ‖   upstream-only {—}
+  KEYS   we-only {end, home}
+  names  we-only: copy
+
+● daterangepicker  [score 3]
+  ours:     packages/solid-spectrum/test/DateRangePicker.test.tsx, packages/solidaria-components/test/DateRangePicker.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/DateRangePicker.test.js, react-spectrum/packages/@react-spectrum/s2/test/DateRangePicker.browser.test.tsx
+  ARIA   we-only {aria-valuenow}   ‖   upstream-only {aria-expanded, aria-selected}
+  KEYS   we-only {escape}
+  names  we-only: date range, day, day, start date, end date, hour, month, month, end date, month, start date, range, start date (+1)
+
+● image  [score 2]
+  ours:     packages/solid-spectrum/test/Image.test.tsx
+  upstream: react-spectrum/packages/@react-spectrum/s2/test/Image.test.tsx
+  ARIA   we-only {aria-label}   ‖   upstream-only {—}
+  names  we-only: callback ref, context, first, hidden, missing preview, object ref, preview, second
+
+● modal  [score 1]
+  ours:     packages/solidaria-components/test/Modal.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/Modal.browser.test.tsx
+  ROLES  we-only {—}   ‖   upstream-only {button, dialog}
+  KEYS   we-only {escape}
+
+● previewtrigger  [score 1]
+  ours:     packages/solidaria-components/test/PreviewTrigger.test.tsx
+  upstream: react-spectrum/packages/react-aria-components/test/PreviewTrigger.test.js
+  KEYS   we-only {tab}
+
+══ COVERAGE GAPS — clean on suspects; upstream asserts shapes we don't (7) ══
+  autocomplete     roles: button, dialog, group, menu, menuitem, separator, textbox  |  aria: aria-disabled, aria-haspopup, aria-labelledby, aria-selected  |  keys: arrowdown, arrowleft, arrowright, arrowup, backspace, end, enter, escape, home, space
+  gridlist         roles: combobox, textbox  |  aria: aria-rowindex  |  keys: end, escape, tab
+  selectboxgroup   roles: button  |  aria: aria-hidden, aria-labelledby, aria-selected  |  keys: arrowdown
+  colorswatch      roles: img  |  aria: aria-label, aria-labelledby, aria-roledescription
+  tooltip          roles: button  |  aria: aria-hidden, aria-label
+  filetrigger      roles: link
+  dropzone         aria: aria-labelledby  |  keys: enter, escape
+
+══ UNMATCHED ══
+  ours, no upstream oracle (bespoke / S2-only / internal): accordion, actionbar, actionbutton, actiongroup, actionmenu, alert, avatar, avatargroup, badge, buttonfamilycontext, buttons.geometry, calendarpicker, cardview, chipsstatus.register, collection, color, coloreditor, comparison-solid-h, contextualhelptrigger, createactiongroup, createautocomplete, createbreadcrumbs, createbutton, createcheckboxgroup, createcombobox, createdatepicker, createdatepickergroup, createdaterangepicker, createdatesegment, createdescription, createdialog, createdisclosure, createdraggablecollection, createdroppablecollection, createdroppablecollection.ondropactivate, createfocus, createfocusring, createfocusvisible, createfocuswithin, createformreset, createformvalidation, creategrid, creategridlist, createhiddenselect, createhover, createinteractoutside, createkeyboard, createlandmark, createlink, createlistbox, createlongpress, createmenu, createmeter, createmove, createnumberfield, createoverlayposition, createpopover, createpress, createpreventscroll, createprogressbar, createradiogroup, createscrollintoviewonfocus, createsearchfield, createselect, createselectableitem, createselectablelist, createseparator, createslider, createstringformatter, createswitch, createtable, createtablerow, createtabs, createtaggroup, createtextfield, createtoast, createtogglebuttongroup, createtoolbar, createtooltip, createtypeselect, createvisuallyhidden, dialogtriggerdebug, divider, draganddrop, editablecell, fields.register, focus, focusable, focusmanagement, focussafely, focusscope, focusscopeownerdocument, formfielderror, formfieldwrappers, helptext, hudframe, hydrationhooks, i18n, icon, illustratedmessage, inlinealert, intl-catalogs, intl-strings, keyboard, landmark, listdroptargetdelegate, navigation.register, notificationbadge, opentransition, overlays, pixelmeter, pressable, preventfocus, progresscircle, progresscircle.motion, providerparity, radio, rangeslider, refs, regression, routerprovider, scenebackdrop, searchautocomplete, segmentedcontrol, selection.register, selectionindicator, selectitem, sharedelementtransition, skeleton, ssr, statuslight, steplist, surfaces.register, tabsfixturerepro, terminallog, test-utils, text, textarea, treedroptargetdelegate, usedraganddrop, utils, virtualizer, visuallyhidden, wave4components, wave5_6_layoutstory
+  upstream, no port-level test of ours:                    actionbuttongroup, coachmark, colorarea, colorpicker, colorslider, colorwheel, customdialog, group, hiddendateinput, labeledvalue, navigationtree, shadowdomfocus, sidenav, tokenfield, tokenfield.composition, virtualizedmenu
+
+count delta vs baseline: suspects 157 → 187 (Δ+30), coverageGaps 47 → 43 (Δ-4), upstreamOnly 18 → 16 (Δ-2)
+
+New suspect facts:
+  - checkbox|role|form
+  - checkbox|role|img
+  - colorfield|key|pagedown
+  - colorfield|key|pageup
+  - colorswatchpicker|key|pagedown
+  - colorswatchpicker|key|pageup
+  - combobox|key|end
+  - combobox|role|form
+  - combobox|role|presentation
+  - datepicker|aria|aria-valuenow
+  - dialog|aria|aria-controls
+  - form|aria|aria-invalid
+  - numberfield|key|pagedown
+  - numberfield|key|pageup
+  - numberfield|role|form
+  - previewtrigger|key|tab
+  - radiogroup|role|form
+  - rangecalendar|key|enter
+  - searchfield|aria|aria-expanded
+  - searchfield|role|dialog
+  - searchfield|role|form
+  - select|role|form
+  - select|role|presentation
+  - switch|aria|aria-checked
+  - table|aria|aria-multiselectable
+  - tabs|aria|aria-hidden
+  - tabs|role|textbox
+  - taggroup|key|escape
+  - taggroup|key|tab
+  - textfield|role|form
+

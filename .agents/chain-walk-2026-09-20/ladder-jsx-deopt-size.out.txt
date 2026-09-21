@@ -1,0 +1,4 @@
+$ vp exec tsx scripts/check-jsx-deopt-size.ts ⊘ cache disabled
+jsx deopt-size guard OK: 631 .jsx scanned, all under 500.0 KB (excl. 0 tracked).
+Largest non-exempt: 137.9 KB  packages/solidaria/dist/_chunk/dnd.jsx
+

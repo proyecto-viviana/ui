@@ -1,0 +1,242 @@
+$ vp exec tsx scripts/check-jsx-ref-dead-code.ts ⊘ cache disabled
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: packages/solidaria-components/src/Dialog.tsx package transform dropped /setAttribute\(["']aria-labelledby["'],\s*trigger\.id\)/
+    at <anonymous> (/home/emoporemilio/projects/viviana-hub/ui/scripts/check-jsx-ref-dead-code.ts:234:12) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'import { Match, Switch, createContext, createMemo, createSignal, createTrackedEffect, createUniqueId, useContext } from "solid-js";\n' +
+    'import { createDialog, createOverlayTrigger, focusSafely, useIsHidden } from "@proyecto-viviana/solidaria";\n' +
+    'import { createOverlayTriggerState } from "@proyecto-viviana/solid-stately";\n' +
+    'import { DialogTriggerContext, DialogTriggerContext as DialogTriggerContext$1, useDialogTrigger, useOverlayTriggerState } from "./contexts";\n' +
+    'import { OverlayContext } from "./Popover";\n' +
+    'import { ButtonContext } from "./Button";\n' +
+    'import { TextContext } from "./Text";\n' +
+    'import { splitProps } from "@proyecto-viviana/solidaria/utils";\n' +
+    'import { DEFAULT_SLOT, Provider, filterDOMProps, useRenderProps } from "./utils";\n' +
+    '//#region packages/solidaria-components/src/Dialog.tsx\n' +
+    '/**\n' +
+    '* Dialog component for solidaria-components\n' +
+    '*\n' +
+    '* A headless dialog component that combines ARIA hooks.\n' +
+    '* Port of react-aria-components Dialog.\n' +
+    '*/\n' +
+    'const DialogContext = createContext(null);\n' +
+    '/**\n' +
+    '* A DialogTrigger opens a dialog when a trigger element is pressed.\n' +
+    '* Children should include a trigger element (e.g. Button) and the dialog content.\n' +
+    '*/\n' +
+    'function DialogTrigger(props) {\n' +
+    '\tconst [local] = splitProps(props, [\n' +
+    '\t\t"isOpen",\n' +
+    '\t\t"defaultOpen",\n' +
+    '\t\t"onOpenChange"\n' +
+    '\t]);\n' +
+    '\tconst state = createOverlayTriggerState({\n' +
+    '\t\tget isOpen() {\n' +
+    '\t\t\treturn local.isOpen;\n' +
+    '\t\t},\n' +
+    '\t\tget defaultOpen() {\n' +
+    '\t\t\treturn local.defaultOpen;\n' +
+    '\t\t},\n' +
+    '\t\tonOpenChange: local.onOpenChange\n' +
+    '\t});\n' +
+    '\tconst [triggerRef, setTriggerElement] = createSignal(null);\n' +
+    '\tconst triggerId = createUniqueId();\n' +
+    '\tconst triggerAria = createOverlayTrigger({ type: "dialog" }, state, triggerRef);\n' +
+    '\tconst restoreFocusToTrigger = () => {\n' +
+    '\t\tconst trigger = triggerRef();\n' +
+    '\t\tif (!trigger?.isConnected) return;\n' +
+    '\t\tconst win = trigger.ownerDocument.defaultView ?? window;\n' +
+    '\t\twin.requestAnimationFrame(() => {\n' +
+    '\t\t\twin.requestAnimationFrame(() => {\n' +
+    '\t\t\t\tif (trigger.isConnected && !state.isOpen()) focusSafely(trigger);\n' +
+    '\t\t\t});\n' +
+    '\t\t});\n' +
+    '\t};\n' +
+    '\tconst stateWithFocusRestore = {\n' +
+    '\t\tisOpen: state.isOpen,\n' +
+    '\t\tsetOpen: (isOpen) => {\n' +
+    '\t\t\tstate.setOpen(isOpen);\n' +
+    '\t\t\tif (!isOpen) restoreFocusToTrigger();\n' +
+    '\t\t},\n' +
+    '\t\topen: state.open,\n' +
+    '\t\tclose: () => {\n' +
+    '\t\t\tstate.close();\n' +
+    '\t\t\trestoreFocusToTrigger();\n' +
+    '\t\t},\n' +
+    '\t\ttoggle: () => {\n' +
+    '\t\t\tconst wasOpen = state.isOpen();\n' +
+    '\t\t\tstate.toggle();\n' +
+    '\t\t\tif (wasOpen) restoreFocusToTrigger();\n' +
+    '\t\t},\n' +
+    '\t\tpoint: state.point,\n' +
+    '\t\tsetPoint: state.setPoint\n' +
+    '\t};\n' +
+    '\tconst setTriggerRef = (el) => {\n' +
+    '\t\tif (!el) return;\n' +
+    '\t\tif (!triggerRef()) setTriggerElement(el);\n' +
+    '\t};\n' +
+    '\tconst contextValue = createMemo(() => ({\n' +
+    '\t\tstate: stateWithFocusRestore,\n' +
+    '\t\ttriggerRef,\n' +
+    '\t\tsetTriggerRef,\n' +
+    '\t\ttriggerId,\n' +
+    '\t\ttriggerProps: triggerAria.triggerProps,\n' +
+    '\t\toverlayProps: triggerAria.overlayProps\n' +
+    '\t}));\n' +
+    '\tif (useIsHidden()()) return null;\n' +
+    '\treturn <DialogTriggerContext$1 value={contextValue()}>{props.children}</DialogTriggerContext$1>;\n' +
+    '}\n' +
+    '/**\n' +
+    '* A dialog is an overlay shown above other content in an application.\n' +
+    '*/\n' +
+    'function Dialog(props) {\n' +
+    '\tconst [local, ariaProps, rest] = splitProps(props, [\n' +
+    '\t\t"class",\n' +
+    '\t\t"style",\n' +
+    '\t\t"slot",\n' +
+    '\t\t"onClose"\n' +
+    '\t], [\n' +
+    '\t\t"role",\n' +
+    '\t\t"aria-label",\n' +
+    '\t\t"aria-labelledby",\n' +
+    '\t\t"aria-describedby"\n' +
+    '\t]);\n' +
+    '\tlet dialogRef;\n' +
+    '\tconst setDialogRef = (element) => {\n' +
+    '\t\tdialogRef = element;\n' +
+    '\t};\n' +
+    '\tconst triggerContext = useContext(DialogTriggerContext$1);\n' +
+    '\tconst { dialogProps, titleProps, contentProps } = createDialog({\n' +
+    '\t\tget role() {\n' +
+    '\t\t\treturn ariaProps.role;\n' +
+    '\t\t},\n' +
+    '\t\tget "aria-label"() {\n' +
+    '\t\t\treturn ariaProps["aria-label"];\n' +
+    '\t\t},\n' +
+    '\t\tget "aria-labelledby"() {\n' +
+    '\t\t\treturn ariaProps["aria-labelledby"];\n' +
+    '\t\t},\n' +
+    '\t\tget "aria-describedby"() {\n' +
+    '\t\t\treturn ariaProps["aria-describedby"];\n' +
+    '\t\t}\n' +
+    '\t}, () => dialogRef);\n' +
+    '\tconst titleId = () => titleProps()?.id;\n' +
+    '\tconst overlayState = useOverlayTriggerState();\n' +
+    '\tconst overlayFocus = useContext(OverlayContext);\n' +
+    '\tconst close = () => {\n' +
+    '\t\tlocal.onClose?.();\n' +
+    '\t\tif (overlayState) {\n' +
+    '\t\t\toverlayState.close();\n' +
+    '\t\t\treturn;\n' +
+    '\t\t}\n' +
+    '\t\ttriggerContext?.state.close();\n' +
+    '\t};\n' +
+    '\tconst ariaLabelledBy = () => {\n' +
+    '\t\tconst p = dialogProps();\n' +
+    '\t\tif (p["aria-labelledby"]) return p["aria-labelledby"];\n' +
+    '\t\tif (p["aria-label"]) return;\n' +
+    '\t\treturn triggerContext?.triggerRef()?.id ?? triggerContext?.triggerId;\n' +
+    '\t};\n' +
+    '\tcreateTrackedEffect(() => {\n' +
+    '\t\toverlayFocus?.setContain(true);\n' +
+    '\t});\n' +
+    '\tconst renderValues = createMemo(() => ({ close }));\n' +
+    '\tconst renderProps = useRenderProps({\n' +
+    '\t\tget children() {\n' +
+    '\t\t\treturn props.children;\n' +
+    '\t\t},\n' +
+    '\t\tclass: local.class,\n' +
+    '\t\tstyle: local.style,\n' +
+    '\t\tdefaultClassName: "solidaria-Dialog"\n' +
+    '\t}, renderValues);\n' +
+    '\tconst domProps = createMemo(() => filterDOMProps(rest, { global: true }));\n' +
+    '\treturn <DialogContext value={{\n' +
+    '\t\tclose,\n' +
+    '\t\ttitleId: titleId()\n' +
+    '\t}}>\n' +
+    '      <section {...triggerContext?.overlayProps} {...dialogProps()} {...domProps()} aria-labelledby={ariaLabelledBy()} ref={setDialogRef} class={renderProps.class()} style={renderProps.style()} slot={local.slot}>\n' +
+    '        <Provider values={[[TextContext, { slots: {\n' +
+    '\t\t[DEFAULT_SLOT]: {},\n' +
+    '\t\tget description() {\n' +
+    '\t\t\treturn contentProps();\n' +
+    '\t\t}\n' +
+    '\t} }], [ButtonContext, { slots: {\n' +
+    '\t\t[DEFAULT_SLOT]: {},\n' +
+    '\t\tclose: { onPress: () => close() }\n' +
+    '\t} }]]}>\n' +
+    '          {renderProps.renderChildren()}\n' +
+    '        </Provider>\n' +
+    '      </section>\n' +
+    '    </DialogContext>;\n' +
+    '}\n' +
+    '/**\n' +
+    '* Heading element for dialog title.\n' +
+    '* When rendered inside a Dialog, automatically gets the titleProps.\n' +
+    '*/\n' +
+    'function Heading(props) {\n' +
+    '\tconst dialogContext = useContext(DialogContext);\n' +
+    '\tconst level = () => props.level ?? 2;\n' +
+    '\tconst id = () => dialogContext?.titleId;\n' +
+    '\tlet headingRef;\n' +
+    '\tconst setHeadingRef = (element) => {\n' +
+    '\t\theadingRef = element;\n' +
+    '\t};\n' +
+    '\tcreateTrackedEffect(() => {\n' +
+    '\t\tconst el = headingRef;\n' +
+    '\t\tif (!el) return;\n' +
+    '\t\tconst contextId = id();\n' +
+    '\t\tif (contextId) {\n' +
+    '\t\t\tel.id = contextId;\n' +
+    '\t\t\treturn;\n' +
+    '\t\t}\n' +
+    '\t\tif (!el.id) {\n' +
+    '\t\t\tconst labelledBy = el.closest("[role=\\"dialog\\"],[role=\\"alertdialog\\"]")?.getAttribute("aria-labelledby");\n' +
+    '\t\t\tif (labelledBy && !el.ownerDocument.getElementById(labelledBy)) el.id = labelledBy;\n' +
+    '\t\t}\n' +
+    '\t});\n' +
+    '\treturn <Switch>\n' +
+    '      <Match when={level() === 1}>\n' +
+    '        <h1 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h1>\n' +
+    '      </Match>\n' +
+    '      <Match when={level() === 2}>\n' +
+    '        <h2 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h2>\n' +
+    '      </Match>\n' +
+    '      <Match when={level() === 3}>\n' +
+    '        <h3 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h3>\n' +
+    '      </Match>\n' +
+    '      <Match when={level() === 4}>\n' +
+    '        <h4 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h4>\n' +
+    '      </Match>\n' +
+    '      <Match when={level() === 5}>\n' +
+    '        <h5 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h5>\n' +
+    '      </Match>\n' +
+    '      <Match when={level() === 6}>\n' +
+    '        <h6 ref={setHeadingRef} id={id()} class={props.class}>\n' +
+    '          {props.children}\n' +
+    '        </h6>\n' +
+    '      </Match>\n' +
+    '    </Switch>;\n' +
+    '}\n' +
+    '//#endregion\n' +
+    'export { Dialog, DialogContext, Heading as DialogHeading, Heading, DialogTrigger, DialogTriggerContext, useDialogTrigger };\n',
+  expected: /setAttribute\(["']aria-labelledby["'],\s*trigger\.id\)/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+
