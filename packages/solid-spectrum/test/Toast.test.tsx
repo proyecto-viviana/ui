@@ -34,6 +34,47 @@ describe("Toast (solid-spectrum)", () => {
     cleanup();
   });
 
+  describe("view transitions", () => {
+    it("runs the queue update inside the transition callback (#578)", () => {
+      // jsdom has no View Transitions API, so every other test in this file
+      // takes startViewTransition's synchronous fallback. Install a faithful
+      // stub - one that invokes the callback and resolves - so the browser
+      // path is covered too. Returning the mutation instead of calling it left
+      // the region unrendered in every real browser while this suite stayed
+      // green.
+      const calls: Array<() => unknown> = [];
+      Object.defineProperty(document, "startViewTransition", {
+        configurable: true,
+        writable: true,
+        value: (callback: () => unknown) => {
+          calls.push(callback);
+          callback();
+          return {
+            ready: Promise.resolve(),
+            finished: Promise.resolve(),
+            updateCallbackDone: Promise.resolve(),
+            skipTransition: () => {},
+          };
+        },
+      });
+
+      try {
+        render(() => (
+          <ToastProvider useGlobalQueue>
+            <ToastRegion portal={false} />
+          </ToastProvider>
+        ));
+
+        addToast({ title: "Through a transition", type: "info" });
+
+        expect(calls.length).toBeGreaterThan(0);
+        expect(screen.getByRole("region", { name: "Notifications" })).toBeInTheDocument();
+      } finally {
+        delete (document as { startViewTransition?: unknown }).startViewTransition;
+      }
+    });
+  });
+
   describe("ToastProvider + ToastRegion", () => {
     it("renders region when toasts are present", () => {
       render(() => (

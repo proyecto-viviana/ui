@@ -27,6 +27,7 @@ import {
   createContext,
   createEffect,
   createSignal,
+  flush,
   For,
   onCleanup,
   onSettled,
@@ -314,7 +315,13 @@ function startViewTransition(fn: () => void, type: string): void {
       doc.documentElement.classList.add("reduceMotion");
     }
 
-    const viewTransition = doc.startViewTransition(() => fn);
+    // Mirrors upstream S2's `document.startViewTransition(() => flushSync(fn))`
+    // (@react-spectrum/s2 1.7.0, dist/private/Toast.mjs:69). `flush(fn)` is
+    // Solid 2's flushSync: it runs the mutation and drains the queue before the
+    // callback returns, which is when the browser snapshots. This was ported as
+    // `() => fn`, which returns the mutation instead of running it, so nothing
+    // rendered in any real browser (#578).
+    const viewTransition = doc.startViewTransition(() => flush(fn));
     void viewTransition.ready.catch(() => {});
     void viewTransition.finished.finally(() => {
       doc.documentElement.classList.remove(type, "reduceMotion");

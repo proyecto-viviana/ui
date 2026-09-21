@@ -1944,3 +1944,53 @@ module is duplicated, not just this helper, and `startViewTransition` closes
 over each package's own `ensureToastAnimationStyles` and `globalReduceMotion`.
 Lifting twenty lines while a thousand stay doubled would be the gesture, not the
 fix. Ticket filed for the module.
+
+### Step 3, cause 1 — the parity shape, and the run that closes 37 rows
+
+Two corrections to what I first wrote, both the conductor's, both taken.
+
+The repair is not my hand-rolled `fn(); try { flush() }`. Upstream answers it
+exactly — `@react-spectrum/s2` 1.7.0, `dist/private/Toast.mjs:69`:
+
+```js
+let viewTransition = document.startViewTransition(() => flushSync(fn));
+```
+
+so the provenance of the defect is exact: `() => flushSync(fn)` was ported as
+`() => fn`, the wrapper dropped and the call with it. Solid 2 has the same
+primitive — `flush<T>(fn: () => T): T`, the second overload in
+`@solidjs/signals` 2.0.0-rc.9 `dist/types/core/scheduler.d.ts:338`, re-exported
+from `solid-js`, so no new dependency. Both copies now read
+`doc.startViewTransition(() => flush(fn))`, which mirrors upstream line for line
+rather than inventing a Solid-flavoured variant, and forecloses the stale-frame
+failure my version would have left: the landmark appears, the transition
+captures the old frame, and it reads as a second defect.
+
+And the first re-run graded a tree nobody built. `vp run build` (EXIT=0) does
+**not** rebuild `apps/comparison`; its `dist/_astro/toast.*.js` was still
+22:34 while the build finished after 23:50, and the certified run was 37 failed
+against the old bundle. `vp run comparison:build` is the one that matters
+(EXIT=0, 91 pages), after which the bundle reads
+`startViewTransition(()=>n(e))` — the fix, minified — rather than the old
+`()=>e`. Worth remembering next to the standing note that `vp run build` does
+not rebuild `apps/web` either: the same is true of the comparison app, and a
+gate that only previews will happily serve a stale `dist`.
+
+The run, on the rebuilt tree:
+
+```
+cd apps/comparison && PLAYWRIGHT_BROWSERS_PATH=… VIVIANA_GATE=1 \
+  COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer npx playwright test certified/toast
+→ EXIT=0.  Totals: 37 passed, 0 failed, 0 skipped, 0 waived, 0 flaky  (2.3m)
+```
+
+37 of 37, which is every `toast` and `toast-icon` row on the receipt: 25 + 12.
+Two of the four witnesses are now proved — the comparison Solid stage and the
+certified suite. #576's two `a11y:smoke` failures remain ungraded until that run
+exists; they are not counted here.
+
+**169 → 132.** Unit side re-run on the final shape: EXIT=0, 41 passed, and
+`vp run typecheck` EXIT=0.
+
+Duplication discharged by ticket, not by gesture: **#580**, the two toast
+modules at 1162 and 1248 lines differing on 118 after whitespace folding.
