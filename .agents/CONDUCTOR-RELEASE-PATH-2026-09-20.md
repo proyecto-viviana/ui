@@ -87,12 +87,72 @@ deleted; #573's ratchet was last moved by a regen labelled "fmt drift". Both are
 records that stopped tracking the tree — the failure mode the standing rule
 "the tree beats the document" names.
 
-Still unrun: `docs:check`, comparison parity strict (239) and axe full (251).
-The last two need the comparison app and a preview server and are the expensive
-pair; expect a third red list from them.
+### Step 239, and the gate that no commit can pass
 
-So the full red list for the RC is seven tickets — #559 and #569 merged, #570,
-#571, #572, #573 open, plus whatever 239 and 251 add.
+Comparison parity strict turned out not to need a browser at all — it is a
+`tsx` script over the catalogue — so it ran the same evening. EXIT=1, and its
+**only** blocking gap is the certified-suite postcard. Every other
+always-blocking section is `[pass]`; the two `[gap]` control and validation
+sections are inside the frozen baseline.
+
+That one gap is not staleness. `certifiedSuitePostcardIsCurrent` is
+`headSha === evidence.revision`; `evidence.revision` is a hand-edited literal in
+committed source; nothing regenerates it. Writing the current SHA into it is
+itself a commit, so the literal always names HEAD's parent. **The gate's pass
+condition has no witness.** #574.
+
+This changes the shape of the goal. The ladder cannot walk to the end on any
+revision until 239's rule is replaced, so #574 is a blocker for the RC in the
+strongest sense — not "a red to clear" but "a red that clearing cannot reach".
+It is also the gate standing between the owner's decision on #547 (record
+certified evidence by running Certification Gates in CI) and its being carried
+out: the recording mechanism rejects every recording.
+
+### Step 251, and why it was not run
+
+Axe full was left unrun on purpose, not for lack of a slot. Its Playwright
+config starts the server with `vp build && vp preview --port 4000`
+(`apps/web/playwright.config.ts:33`), and all three legs of `a11y:full` are
+`--filter @proyecto-viviana/web`. So 251 is exactly as green as `build:web`,
+and `build:web` does not complete. From `.agents/green-main-2026-09-20.log.md`,
+"Left red":
+
+```
+[MISSING_EXPORT] "parseServerFunctionUrl" is not exported by
+  @solidjs/web@2.0.0-rc.9/server-functions/dist/server.js
+  ← @tanstack/solid-start@2.0.0-rc.8/server-functions-handler.js
+```
+
+`@solidjs/web` rc.9 renamed it to `parseServerFunctionActionUrl`;
+`@tanstack/solid-start` rc.8 still imports the old name while declaring a peer
+range that admits rc.9; and `npm view @tanstack/solid-start versions` ends at
+rc.8, so there is nothing to bump to. This is a break between two upstream
+packages, not a defect in this repository, and it is the whole of what remains
+of #545 — whose earlier slices did land, in `dd634d36` and after, though the
+ticket still reads `next`.
+
+### Two owner calls, and they are the real gate
+
+Both were named by the previous seat and neither has been answered. They are
+what stands between here and a ladder that walks to the end:
+
+1. **The `parseServerFunctionUrl` break.** Either pin `@solidjs/web` back to an
+   rc that still exports the name — a repo-wide framework downgrade, with
+   `solid-js@2.0.0-rc.9` pinned alongside it — or patch the upstream import.
+   My recommendation is the patch: it is a rename, not a behaviour change, its
+   blast radius is one file in one app's dependency, it is reversible, and it
+   does not touch a single published package. The downgrade would reach back
+   into #531's port of all seven.
+2. **`pnpm peers check`.** It cannot go clean by bumping; every unmet member is
+   a transitive of the rc.8 line itself. Adding `solid-js` to `allowAny` would
+   silence the check rather than satisfy it, and would hide a Solid 1
+   dependency we introduced ourselves — which is precisely what it caught
+   before. Recommendation: leave it unsilenced and name it as RC debt.
+
+So the red list for the RC is eight tickets — #559, #569 and #570 merged; #571,
+#572, #573, #574 open; plus #545, which is blocked upstream rather than by us.
+Of those, #574 and #545 are the two that clearing cannot reach: one needs a
+design decision here, the other an owner call on someone else's package.
 
 ## Stage 2 — clear the reds, in ladder order
 

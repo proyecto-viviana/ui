@@ -1,0 +1,110 @@
+~/apps/comparison$ tsx scripts/report-component-parity.ts --strict ⊘ cache disabled
+Comparison component catalogue and acceptance inventory
+The frozen strict gate checks catalogue drift. Full strict also requires complete gates and resolved runnable evidence.
+Official S2 catalogue entries: 78
+Comparison manifest entries: 78
+Sidebar official entries: 78
+Official entries with modeled controls: 69
+Official entries with validation notes: 69
+Official entries with visual-state-matrix labels (not resolved spec runs): 69
+Validation notes with ten canonical complete gates: 15 / 67
+Unresolved visual-state spec pointers: 0
+Current visual-state evidence: resolved=11 legacy=339 missing=0 invalid=0
+Components meeting the full acceptance model: 0 / 78
+Certified expected fixmes: 4; deferred comments: 70
+STALE certified-suite postcard (not this HEAD; ticket #194). Do not treat these counts as live. Postcard revision=0f1e1198963c46eb3294744475e269a7c0041eb6 run=32485238975 job=96780157126 completed=2026-08-21T13:45:39Z passed=2170 failed=0 skipped=4 total=2174. Current HEAD=8969b87a0f4459979223d51edc8fef89c69ac665.
+HEAD certified-suite subset (not a postcard; complete=false): revision=d15a86fff09308728aa67887654aa57f7eb1ec8a completed=2026-09-05T06:55:52.200Z scope=D5+D6+D8+D14 certified (303) plus Button D1/D3/D4/D7 (34). Not the full certified suite. passed=308 failed=25 skipped=4 total=337. Partial HEAD recording. D3 fail-closes when CDP Page.captureScreenshot never returns a compositor frame (not a skip or postcard). Full comparison:test:certified was not run. Postcard remains 0f1e1198. Do not version from these counts.
+LOCAL PLAYWRIGHT OUTPUT is a subset, not the recertification bar. Ticket #194. Do not treat this table as a HEAD postcard.
+
+## Certified suite — component × driver
+
+This is the recertification bar. Pair and contract jobs in this workflow are **floors**, not acceptance.
+
+Revision: `e327ae9d9985073361c84982d85c79fa79ed8313`.
+
+Run status: `passed`.
+
+Totals: **2100 passed**, **0 failed**, **4 skipped**, **0 waived**, **0 flaky**.
+
+| Component | Driver | Passed | Failed | Skipped | Waived |
+| --- | --- | ---: | ---: | ---: | ---: |
+| button | D1 | 2100 | 0 | 4 | 0 |
+Docs pages ported: 72 / 64 vendored
+
+Note: React Spectrum S2 documents this route as `Icons`; the comparison slug is `icons`.
+
+[pass] Official catalogue entries missing from comparison manifest
+[pass] Comparison manifest entries outside official S2 catalogue
+[pass] Official entries missing from sidebar navigation
+[pass] Sidebar navigation entries duplicated
+[pass] Sidebar navigation entries outside official S2 catalogue
+[gap] Official entries missing modeled control groups: 9
+- ActionGroup (actiongroup)
+- Autocomplete (autocomplete)
+- GridList (gridlist)
+- LabeledValue (labeledvalue)
+- ListBox (listbox)
+- ListBox drag and drop (dnd-listbox)
+- StepList (steplist)
+- Toolbar (toolbar)
+- Virtualizer (virtualizer)
+[pass] Official entries with gap control groups
+[pass] Official entries with modeled but empty control groups
+[pass] Live React styled entries missing React fixtures
+[pass] Live Solid styled entries missing Solid fixtures
+[gap] Official entries missing validation-note coverage: 9
+- ActionGroup (actiongroup) - expected one of actiongroup-validation-notes.md
+- Autocomplete (autocomplete) - expected one of autocomplete-validation-notes.md
+- GridList (gridlist) - expected one of gridlist-validation-notes.md
+- LabeledValue (labeledvalue) - expected one of labeledvalue-validation-notes.md
+- ListBox (listbox) - expected one of listbox-validation-notes.md
+- ListBox drag and drop (dnd-listbox) - expected one of dnd-listbox-validation-notes.md
+- StepList (steplist) - expected one of steplist-validation-notes.md
+- Toolbar (toolbar) - expected one of toolbar-validation-notes.md
+- Virtualizer (virtualizer) - expected one of virtualizer-validation-notes.md
+[gap] Official entries without visual-state-matrix labels: 9
+- ActionGroup (actiongroup)
+- Autocomplete (autocomplete)
+- GridList (gridlist)
+- LabeledValue (labeledvalue)
+- ListBox (listbox)
+- ListBox drag and drop (dnd-listbox)
+- StepList (steplist)
+- Toolbar (toolbar)
+- Virtualizer (virtualizer)
+[pass] Visual-state-matrix spec pointers that do not resolve
+[pass] Structured visual evidence pointers that do not resolve to runnable test titles
+[gap] Recorded full certified suite evidence is invalid: 1
+- Last full certified suite evidence (certified-suite) - postcard revision 0f1e1198963c46eb3294744475e269a7c0041eb6 (2026-08-21T13:45:39Z, 2170 passed / 0 failed / 4 skipped) is not HEAD 8969b87a0f4459979223d51edc8fef89c69ac665. Ticket #194. Do not treat those counts as live certified truth.
+
+[gap] Current visual states with legacy file-only evidence: 339
+- Run the acceptance report with --slug=<component> for state-level details.
+[pass] Current visual states missing structured evidence
+[gap] Components that do not meet the full acceptance model: 78
+- Run the acceptance report with --slug=<component> for state-level details.
+
+[pass] Docs pages not yet ported (upstream MDX vendored)
+[pass] Docs pages drifting from upstream section structure
+[pass] Docs pages with ToC / anchor / parity integrity problems
+
+Gate-outcome inventory (canonical outcomes: complete/partial/not-started)
+Notes: 67
+Ten-row current-gate tables: 22
+Nine-gate tables (pre-known-defect): 8
+Missing Gate Outcome Summary: 36
+Outcome kinds: complete=177 partial=21 not-started=10 unnormalized=91 missing-row=0
+Noncanonical source text: accepted=30 covered=10 done=36 passing=15
+Components with every current gate complete: 15 (file presence is not complete)
+
+Certified suite obligations (A-005)
+Expected fixmes (knownDivergence): 4
+- breadcrumbs.certified.spec.ts · overflow
+- rangeslider.certified.spec.ts · default
+- slider.certified.spec.ts · default
+- tableview.certified.spec.ts · sorted
+Unregistered/deferred comment lines: 70
+STALE postcard run (not this HEAD; ticket #194): 2170 passed, 0 failed, 4 skipped (0f1e1198963c46eb3294744475e269a7c0041eb6 @ 2026-08-21T13:45:39Z). Current HEAD=8969b87a0f4459979223d51edc8fef89c69ac665.
+
+Strict baseline active (1): frozen backlog gaps do not fail; new gaps do.
+[pass] No new catalogue gaps outside the frozen baseline
+

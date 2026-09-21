@@ -1,0 +1,18 @@
+$ vp exec tsx scripts/check-layer-boundary.ts ⊘ cache disabled
+Layer boundary guard (solid-spectrum ↔ viviana-ui)
+- spectrum: packages/solid-spectrum/src (664 files)
+- ui:       packages/viviana-ui/src (656 files)
+- shared:   608 (identical 524, diverged 84)
+- spectrum-only: 56
+- ui-only:       48
+
+Against baseline:
+- still identical (frozen dual copies): 524
+- still diverged (frozen forks):        84
+- re-synced diverged → identical:       0
+- lifted (no longer dual-path):         0
+- NEW forks (identical → diverged):     0
+- unbaselined dual paths:               0
+
+PASS: no new Spectrum forks into viviana-ui; no unbaselined dual paths. Frozen backlog remains: 524 identical copies + 84 diverged (ticket #1).
+

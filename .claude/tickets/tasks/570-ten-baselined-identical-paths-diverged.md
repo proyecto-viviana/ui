@@ -4,7 +4,7 @@ type: task
 title: "Ten baselined-identical paths diverged between solid-spectrum and viviana-ui, so guard:layer-boundary is red"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "all ten diffs read, and the history of both copies with them, which is what told them apart. Nine have a viviana-ui-only commit and no spectrum counterpart - `c7cc7bad`, `8a527ddf`, `866a47fe`, `358f3232`, `c2832595`, `f9116a92`, `fa98aadf`, `c66f938a`, `a01c40dd` - and none touches behaviour: two are additive re-exports, five are style-macro or `css()` values, breadcrumbs swaps a presentational glyph, `style/index.ts` narrows a union. None is the third category. The tenth is the reverse and the read is what found it: `color/ColorSwatchPicker.tsx` carries the *spectrum-only* `95ce8ad3`, so viviana-ui still passes `size: size(), rounding: rounding()` where spectrum passes getters - the live reactivity fix never crossed, a one-sided edit and a real bug in a published package. Re-synced byte-for-byte with a `@proyecto-viviana/ui` patch changeset. Notes absorbed: `switch/index.tsx` back to identical, `test-utils/index.ts` dropped. Counts restated by hand to 608/524/84; `--write-baseline` never run as the fix. The reason lives in the baseline as a `reasons` map keyed by path, and the tool now refuses to move the ratchet without one: `--write-baseline` exits 1 on an unexplained identical\u2192diverged move (proved on `Button.ts`), and the guard exits 1 on a reason whose path is not diverged (proved on `switch/index.tsx`). EXIT=0, `tsc --noEmit` EXIT=0, `guard:publish-drift` EXIT=0. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "reviewed by re-running and by testing the new refusal rather than reading it. `vp run guard:layer-boundary` EXIT=0: 0 new forks, 0 lifted, 0 unbaselined, frozen backlog 524 identical + 84 diverged. The one behaviour change checks out and is the find of the ticket - `git show --stat 95ce8ad3` touched `packages/solid-spectrum/src/color/ColorSwatchPicker.tsx` and its test and nothing else, so the live size and rounding fix never reached the viviana-ui copy, which went on freezing both at creation; `diff -q` on the two copies now reports them identical, and the re-sync carries a changeset. The refusal was proved, not accepted: appending one comment line to `packages/viviana-ui/src/ActionButton.ts` and running `--write-baseline` exits 1 with `Refusing to re-bless 1 path(s) that moved identical -> diverged with no recorded reason`, and the probe was reverted. That mechanism is more than the ticket asked for - it was left open as a judgement and came back as a rule the tool enforces, with #573 cited in the comment that explains why. Step 160 is green and the walk moves to step 169, #571",
     }
 ---
 
