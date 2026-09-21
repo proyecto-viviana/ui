@@ -160,25 +160,47 @@ exactly one automated caller: `certification-gates.yml:185`. It is **not** in
 `guard:entry-import-budget` → `build` → `guard:package-sourcemaps` →
 `typecheck:apps` → `test:run` → `test:ssr` → `test:hydrate` →
 `test:comparison-ssr` → `test:comparison-hydrate` → `test:web` →
-`comparison:test:journeys-driver`. It is not in `vp run check`. There is no
-`.husky/` and no lefthook config, so no hook runs it either.
+`comparison:test:journeys-driver`. It is not in `vp run check`.
 
 **This contradicts the brief**, which says the guard runs in CI and in
 `ci:release-readiness`. The tree wins and the disagreement is recorded on the
 ticket rather than worked around.
 
-Proposed, not built: one `&&` clause adding `vp run guard:layer-boundary` to
-`ci:release-readiness` beside `guard:source-artifacts`, its neighbour on the
-gates ladder. Measured cost:
+### 8a. Correction, same day, from this ticket's own commit
+
+The first version of this section also said the repository has no hook. That was
+wrong, and `09779c89` printed the proof while committing it: `vp staged` ran
+`vp check --fix` over the eleven staged files. Re-measured afterwards —
+`core.hooksPath` is `.vite-hooks/_`, `.vite-hooks/pre-commit` is tracked and
+contains `vp staged`, and `vite.config.ts:62-63` maps
+`*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,md,yml,yaml}` to `vp check --fix`. The
+guard survived that formatter: `vp run guard:layer-boundary` at `09779c89`
+exits 0, 524 identical / 84 diverged / 0 new forks.
+
+So the hook is where the smallest answer belongs, since it already fires on
+exactly the commits that can fork a dual path. Proposed, not built: a second
+`staged` entry in `vite.config.ts`, a glob over
+`packages/{solid-spectrum,viviana-ui}/src/**` mapped to
+`vp run guard:layer-boundary`. `vp staged` appends the staged paths to the
+command, which is safe here:
 
 ```
+$ grep -n argv scripts/check-layer-boundary.ts
+33:const writeBaseline = process.argv.includes("--write-baseline");
+34:const reportOnly = process.argv.includes("--report");
+$ vp exec tsx scripts/check-layer-boundary.ts packages/viviana-ui/src/button/Button.tsx packages/solid-spectrum/src/button/ToggleButton.tsx
+PASS: ... 524 identical copies + 84 diverged
+EXIT=0
 $ /usr/bin/time -f "REAL %e s" vp run guard:layer-boundary
 REAL 0.50 s
 ```
 
-Rejected: a pre-commit hook (new infrastructure, so not the smallest answer) and
-folding it into `vp run check` (wrong cadence for a dual-tree inventory).
-Editing the release chain is outside this ticket's write paths.
+Complement if a second net is wanted: one `&&` clause adding
+`vp run guard:layer-boundary` to `ci:release-readiness` beside
+`guard:source-artifacts`, its neighbour on the gates ladder. Rejected: folding
+it into `vp run check`, the wrong cadence for a dual-tree inventory. Both are
+proposals; `vite.config.ts` and the release chain are outside this ticket's
+write paths.
 
 ## 9. What this receipt does not prove
 

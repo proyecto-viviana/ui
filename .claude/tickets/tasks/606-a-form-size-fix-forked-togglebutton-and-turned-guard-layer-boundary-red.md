@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "identity restored and all three diverged twins had the two defects, so all four were fixed in viviana-ui. Commit `#606: ...`, receipt `.agents/606-togglebutton-fork-2026-09-21.md`. Scope 1: every import the new ToggleButton code needs exists on the viviana-ui side with the same meaning, checked before the copy - `useFormProps` is exported from `packages/viviana-ui/src/form/index.tsx:86` and the only differences between the two `form/index.tsx` files are a comment and the `FieldContextualHelp` re-export, so the function is byte-identical; `MenuTriggerContext` is already imported in the viviana-ui copy and comes from the shared `@proyecto-viviana/solidaria-components`. So the copy was taken whole, `diff -q` reports the two identical, and the baseline was not touched. Scope 2, established by test and not by reading: a new `packages/viviana-ui/test/Form.buttons.test.tsx` mirrors solid-spectrum's five Form cases onto this register's twins and is 10 failed | 1 passed (11) EXIT=1 on the pre-fix source - only `disables Button through the Form and the Skeleton` passed, which is the control, because viviana-ui's Button already called `useFormProps`. The four component fixes are the same bytes solid-spectrum carries where the file is shared logic, and nothing register-specific crossed: viviana-ui's Button keeps `fontRelative(16)` and has no genai/premium gradient, which are its own baselined divergences. Button dropped `defaultProps` from the merge (it already wrapped in `useFormProps`, but a merged-in `size: 'M'` left nothing for the Form to fill); LinkButton and ActionButton gained the `useFormProps` wrapper and dropped `defaultProps`; ActionButton's `isDisabled` accessor became `headlessProps.isDisabled ?? groupContext?.isDisabled`, `isDisabled` came off `groupProps`, and `notificationBadgeContextValue.isDisabled` became `!!isDisabled()`. Read-time defaults were already present in all three (`local.size ?? 'M'`), so nothing had to be added for them. After: 11 passed EXIT=0. Two mutations of the fixed tree, each restored from a scratchpad copy, each EXIT=1 and each isolating exactly one assertion: the badge back on `!!headlessProps.isDisabled` fails only the NotificationBadge case, and the group getter back inside `groupProps` fails only the ActionButtonGroup case. Scope 3: `vp run guard:layer-boundary` EXIT=0, 524 identical + 84 diverged, 0 new forks, 0 unbaselined. Other exit codes, all 0: `vp run typecheck`; `vp lint`; `vp check` over the five changed files; `vp test run packages/viviana-ui/test/` 35 files / 226 passed; `vp run test:ssr` 30 files / 79 passed; `vp run test:hydrate` 28 files / 99 passed. Scope 4: `packages/viviana-ui` publishes as `@proyecto-viviana/ui` and its published source changed, so `.changeset/viviana-ui-button-family-form-props.md`, patch; `packages/solid-spectrum` was not touched and owes nothing new, its two changesets from `7e93d238` and #602 already stand. Disagreement with the brief, recorded rather than followed: the brief says the guard runs in CI and in `ci:release-readiness`, and it does not - the whole repo has exactly one caller, `certification-gates.yml:185`, and `ci:release-readiness` in `package.json` chains `check`, nine other guards, `build` and six test suites without it. There is no hook either, no husky and no lefthook. Scope 5's proposal is in the section below. Residue, not fixed here: viviana-ui's ActionButton carries #605's badge-size shape as well (`get size()` off the group-resolved `size()` with an `M` floor), since the two ActionButtons are the same code on that getter; #605 is written against solid-spectrum only and should fix both twins in one pass. `merged` and not `verified`: this seat does not push, so no CI run id backs any of these counts",
     }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: "correction to the note above and to section 8 of the receipt, caught by this ticket's own commit `09779c89` printing the hook it denied. The claim 'there is no hook either, no husky and no lefthook' is wrong: `core.hooksPath` is `.vite-hooks/_`, the tracked `.vite-hooks/pre-commit` runs `vp staged`, and `vite.config.ts:62-63` maps `*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,md,yml,yaml}` to `vp check --fix`, which ran over the eleven staged files of that commit. Only the absence from `ci:release-readiness` and from `vp run check` still stands, both re-grepped. So Scope 5's proposal changed and the section below is rewritten: the smallest answer is a second `staged` entry in `vite.config.ts` over `packages/{solid-spectrum,viviana-ui}/src/**` running `vp run guard:layer-boundary`, since the hook already fires on exactly the commits that can fork a dual path. Checked before proposing it, because `vp staged` appends the staged paths to the command: `scripts/check-layer-boundary.ts:33-34` reads only `--write-baseline` and `--report` from `process.argv`, and running the script with two file paths appended exits 0 with the same 524/84/0 inventory. The `ci:release-readiness` clause stays as a complement. Still proposals, still not built. The commit also confirms the guard survives `vp check --fix`: `vp run guard:layer-boundary` at `09779c89` exits 0, so the hook's formatter did not re-fork the restored copy",
+    }
 ---
 
 ## Scope
@@ -55,24 +60,34 @@ and in a dated `.agents/` receipt.
 Measured, not read. `guard:layer-boundary` has exactly one automated caller in
 the repository: `.github/workflows/certification-gates.yml:185`. It is not in
 `ci:release-readiness`, which is the one chain `AGENTS.md` and the release notes
-tell a writer to run before handing work over; it is not in `vp run check`; and
-there is no `.husky/` or `lefthook` config, so no hook runs it either. A writer
-who edits one side of a frozen dual path therefore gets a green local run, a
-green review, and a red main — which is exactly what happened to `7e93d238`,
-and to the ten paths of #570 before it.
+tell a writer to run before handing work over, and it is not in `vp run check`.
+A writer who edits one side of a frozen dual path therefore gets a green local
+run, a green review, and a red main — which is exactly what happened to
+`7e93d238`, and to the ten paths of #570 before it.
 
-The smallest mechanical answer is one `&&` clause: add
-`vp run guard:layer-boundary` to the `ci:release-readiness` chain in
-`package.json`, next to `guard:source-artifacts`, which is its neighbour in the
-gates ladder too. It costs 0.50 s measured here, it needs no new script and no
-new infrastructure, and it puts the guard in the chain a writer already runs.
-Rejected alternatives: a pre-commit hook (the repo has no hook infrastructure,
-so this is a new mechanism rather than the smallest one), and folding the guard
-into `vp run check` (a formatter/typechecker chain run constantly during
-editing; a dual-tree inventory is the wrong category and the wrong cadence).
+**The repository does have a pre-commit hook**, which this ticket's own commit
+proved by running it. `core.hooksPath` is `.vite-hooks/_`, the tracked
+`.vite-hooks/pre-commit` is `vp staged`, and `vite.config.ts:62-63` maps
+`*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc,css,md,yml,yaml}` to `vp check --fix`. So
+the mechanism that would have caught this already exists and already fires on
+exactly the commits that can cause the fault; it is only missing an entry.
 
-This is a proposal. It is not implemented here, because editing the release
-chain is not in this ticket's write paths.
+Smallest mechanical answer, therefore: a second `staged` entry in
+`vite.config.ts`, a glob over `packages/{solid-spectrum,viviana-ui}/src/**`
+mapped to `vp run guard:layer-boundary`. It is one line, it fires only when a
+file in one of the two trees is staged, it costs 0.50 s measured here, and it
+tells the writer at the moment of the mistake instead of on main. `vp staged`
+appends the staged paths to the command, which is safe: `check-layer-boundary.ts`
+reads only `--write-baseline` and `--report` from `process.argv` (`:33-34`), and
+running it with two file paths appended exits 0 with the same whole-tree
+inventory. Complement, not a substitute, if a second net is wanted: one
+`&& vp run guard:layer-boundary` clause in `ci:release-readiness`, beside
+`guard:source-artifacts`, its neighbour on the gates ladder. Rejected: folding
+the guard into `vp run check`, which runs constantly during editing — a
+dual-tree inventory is the wrong cadence there.
+
+Both are proposals. Neither is implemented here: `vite.config.ts` and the
+release chain are outside this ticket's write paths.
 
 ## Relationship
 
