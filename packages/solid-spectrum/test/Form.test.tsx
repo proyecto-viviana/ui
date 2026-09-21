@@ -9,6 +9,10 @@ import {
   Button,
   Form,
   LinkButton,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  NotificationBadge,
   NumberField,
   Skeleton,
   TextField,
@@ -287,6 +291,89 @@ describe("Form (solid-spectrum)", () => {
     expect(screen.getByRole("button", { name: "grouped" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "opted out of the group" })).not.toBeDisabled();
     expect(screen.getByRole("button", { name: "grouped in a form" })).toBeDisabled();
+  });
+
+  // ToggleButton is the one button that still hands the element a flag after the
+  // proxy spread: `menuTriggerButtonProps()` carried the MenuTrigger's
+  // `isDisabled`, which `MenuTrigger` publishes as a concrete boolean
+  // (`packages/solidaria-components/src/Menu.tsx:417`), so a present `false`
+  // shadowed the Form and the Skeleton. Upstream's MenuTrigger never sets the
+  // flag on the trigger at all — RAC spreads only `menuTriggerProps` through a
+  // `PressResponder` (`react-aria-components@1.21.0` `Menu`) — so ours stays the
+  // last resort, below the group, the button's own prop and the proxy.
+  it("keeps the MenuTrigger's isDisabled below the Form and the Skeleton", () => {
+    render(() => (
+      <>
+        <Form isDisabled>
+          <MenuTrigger>
+            <ToggleButton>in a form</ToggleButton>
+            <Menu aria-label="Form actions">
+              <MenuItem id="a">A</MenuItem>
+            </Menu>
+          </MenuTrigger>
+        </Form>
+        <Skeleton isLoading>
+          <MenuTrigger>
+            <ToggleButton isDisabled={false}>in a skeleton</ToggleButton>
+            <Menu aria-label="Skeleton actions">
+              <MenuItem id="a">A</MenuItem>
+            </Menu>
+          </MenuTrigger>
+        </Skeleton>
+        <MenuTrigger isDisabled>
+          <ToggleButton>under a disabled trigger</ToggleButton>
+          <Menu aria-label="Disabled actions">
+            <MenuItem id="a">A</MenuItem>
+          </Menu>
+        </MenuTrigger>
+        <MenuTrigger>
+          <ToggleButton>under a plain trigger</ToggleButton>
+          <Menu aria-label="Plain actions">
+            <MenuItem id="a">A</MenuItem>
+          </Menu>
+        </MenuTrigger>
+      </>
+    ));
+
+    const trigger = (text: string) => screen.getByText(text).closest("button")!;
+
+    expect(trigger("in a form")).toBeDisabled();
+    expect(trigger("in a skeleton")).toBeDisabled();
+    expect(trigger("under a disabled trigger")).toBeDisabled();
+    expect(trigger("under a plain trigger")).not.toBeDisabled();
+  });
+
+  // Upstream hands NotificationBadgeContext the RACButton render prop, which is
+  // the resolved `props.isDisabled ?? ctx.isDisabled`
+  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:358,436,432`), so the group
+  // greys the badge as well as the button. Reading the proxy alone misses it.
+  it("gives ActionButton's NotificationBadge the resolved isDisabled", () => {
+    render(() => (
+      <>
+        <ActionButton isDisabled>
+          <NotificationBadge value={5} data-testid="own-badge" />
+        </ActionButton>
+        <ActionButton>
+          <NotificationBadge value={5} data-testid="enabled-badge" />
+        </ActionButton>
+        <ActionButtonGroup isDisabled>
+          <ActionButton>
+            <NotificationBadge value={5} data-testid="grouped-badge" />
+          </ActionButton>
+        </ActionButtonGroup>
+        <Form isDisabled>
+          <ActionButton>
+            <NotificationBadge value={5} data-testid="form-badge" />
+          </ActionButton>
+        </Form>
+      </>
+    ));
+
+    const cls = (testId: string) => screen.getByTestId(testId).className;
+
+    expect(cls("own-badge")).not.toBe(cls("enabled-badge"));
+    expect(cls("grouped-badge")).toBe(cls("own-badge"));
+    expect(cls("form-badge")).toBe(cls("own-badge"));
   });
 
   it("lets local form-aware child props override form context outside Skeleton", () => {

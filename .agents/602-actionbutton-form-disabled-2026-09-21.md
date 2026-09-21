@@ -113,10 +113,19 @@ the restored file is 22 passed, exit 0.
 Other `useFormProps` consumers were grepped for a flag passed to the element
 after the spread: `radio/index.tsx:535,537` and `checkbox/index.tsx:900,902`
 pass `headlessProps.isDisabled` / `headlessProps.isRequired` — the proxy, so
-they are correct by construction. Nothing else hand-resolves a Form flag.
+they are correct by construction. ~~Nothing else hand-resolves a Form flag.~~
 `color/index.tsx:1669-1692` passes `props.isDisabled` down to the fields
 `ColorPicker` composes, but `ColorPicker` is not a `useFormProps` consumer and
 S2 1.7.0 ships no `ColorPicker.tsx` to mirror, so it is out of this sweep.
+
+**Corrected 2026-09-21 by §8.** That struck sentence was false, and so was the
+`Button`/`ToggleButton`/`LinkButton` row of §3's table as a verdict on the
+whole component: the instrument was the new `it.each`, which never pairs a
+button with a `MenuTrigger`. ToggleButton hand-resolves the flag inside
+`menuTriggerButtonProps()` and spreads it after `headlessProps`, which is the
+same defect, and the grep missed it because the flag is a getter inside a
+merged object rather than a JSX attribute. The sweep was redone over the JSX
+spreads themselves; §8 has it.
 
 ## 7. Other exit codes
 
@@ -128,8 +137,121 @@ S2 1.7.0 ships no `ColorPicker.tsx` to mirror, so it is out of this sweep.
     vp test run packages/solid-spectrum/test/Wave4Components.test.tsx  exit 0 — 31 passed
     vp test run packages/solid-spectrum/test/ActionBar.test.tsx        exit 0 — 26 passed
 
+## 8. What the review found, measured (second commit)
+
+A review of `1a036710` raised two problems. Both were reproduced before
+anything was written, with a scratch test file deleted afterwards.
+
+### 8a. ToggleButton has the same defect — confirmed, partly
+
+`ToggleButton.tsx:259-273` builds `menuTriggerButtonProps()` with a
+`get isDisabled()` that reads `menuTriggerContext.isDisabled?.()`, and
+`:393-395` spreads it after `{...headlessProps}`. `MenuTrigger` publishes the
+flag as a concrete boolean (`solidaria-components/src/Menu.tsx:417`,
+`isDisabled: () => Boolean(stateProps.isDisabled)`), so outside an explicitly
+disabled trigger it is a present `false` that shadows the proxy. Measured on
+`1a036710`, with `MenuTrigger`/`Menu` around the button:
+
+| case | before | after |
+| --- | --- | --- |
+| `<Form isDisabled>` + `MenuTrigger` + `ToggleButton` | not disabled | disabled |
+| `<Skeleton isLoading>` + `MenuTrigger` + `ToggleButton isDisabled={false}` | not disabled | disabled |
+| `<MenuTrigger isDisabled>` + `ToggleButton` | disabled | disabled |
+| `<MenuTrigger>` + `ToggleButton` | not disabled | not disabled |
+
+**The review's `<ToggleButtonGroup isDisabled>` case is wrong and was left
+alone.** A `MenuTrigger`'d `ToggleButton` inside a disabled
+`ToggleButtonGroup` renders `disabled` and `data-disabled="true"` on
+`1a036710` — the headless group disables its items through the group's own
+state, not through this prop — so that row is green before and after.
+
+The fix mirrors ActionButton's: the flag leaves `menuTriggerButtonProps()` and
+is resolved once, after the spreads, as
+`headlessProps.isDisabled ?? menuTriggerContext?.isDisabled?.()`.
+`headlessProps` already carries ToggleButton's own group-first order
+(`ToggleButton.tsx:154-155`, which is upstream's `ToggleButton.tsx:90`). The
+MenuTrigger flag is demoted from "always wins" to "last resort", which is
+strictly toward upstream: RAC's `MenuTrigger` (`react-aria-components@1.21.0`)
+spreads only `menuTriggerProps` through a `PressResponder` and never sets
+`isDisabled` on the trigger at all. The one behaviour this changes beyond the
+table is `<MenuTrigger isDisabled><ToggleButton isDisabled={false}>`, which now
+opts out — upstream's does too.
+
+### 8b. NotificationBadge lost the group — confirmed, a regression of `1a036710`
+
+`ActionButton.tsx:374-380` feeds `NotificationBadgeContext` with
+`!!headlessProps.isDisabled`. That was right until `1a036710` took `isDisabled`
+off `groupProps`; after it, the proxy no longer sees `ActionButtonGroup`, so
+`<ActionButtonGroup isDisabled><ActionButton><NotificationBadge/>` rendered a
+disabled button with an enabled badge (different `notificationBadge()` atom,
+measured). Upstream reads the RACButton render prop here — the resolved
+`props.isDisabled ?? ctx.isDisabled` — at
+`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:436` (`{({isDisabled}) => (`,
+shadowing the ctx destructuring at `:347`) and `:432`. So the getter now reads
+`!!isDisabled()`, the same accessor the element gets.
+
+### 8c. Red first, then green
+
+    vp test run packages/solid-spectrum/test/Form.test.tsx --maxWorkers=2
+
+| run | result |
+| --- | --- |
+| the two new cases on `1a036710`'s source | exit 1 — **2 failed** \| 22 passed (24) |
+| after both fixes | exit 0 — 24 passed (24) |
+
+### 8d. Each new assertion binds its own branch
+
+Mutated in the tree one at a time, restored from a scratchpad copy of the
+fixed file. Same command each time; every run exit 1.
+
+| mutation | the one assertion that fails |
+| --- | --- |
+| ToggleButton reverted to `1a036710` (flag inside `menuTriggerButtonProps()`, no explicit prop) | `trigger("in a form")` |
+| `menuTriggerContext?.isDisabled?.() ?? headlessProps.isDisabled` (trigger first) | `trigger("in a form")` |
+| `runtimeProps.isDisabled ?? headlessProps.isDisabled ?? menuTriggerContext?.…` | `trigger("in a skeleton")` (plus ToggleButton's row of the existing Skeleton `it.each`) |
+| `headlessProps.isDisabled` alone (no trigger fallback) | `trigger("under a disabled trigger")` |
+| badge reverted to `!!headlessProps.isDisabled` | `cls("grouped-badge")` |
+| badge on `!!groupContext?.isDisabled` | `cls("own-badge")` vs `cls("enabled-badge")` |
+| badge on `!!(groupContext?.isDisabled ?? runtimeProps.isDisabled)` | `cls("form-badge")` |
+
+`trigger("under a plain trigger")` is a control, not a bound branch: no
+mutation of this chain isolates it. It exists so a future "just default it to
+the trigger" fix cannot pass.
+
+### 8e. The sweep, redone over the spreads
+
+Every `useFormProps` consumer in `packages/solid-spectrum/src` (17 files) was
+listed and each JSX spread in it counted. Only `ActionButton.tsx:477-478` and
+`ToggleButton.tsx:394-395` put two spreads on one element; every other
+consumer spreads the proxy once per element and can shadow nothing. That is
+the measurement §6 claimed and did not take.
+
+### 8f. Exit codes for the second commit
+
+    vp run typecheck                                                        exit 0
+    vp check ToggleButton.tsx ActionButton.tsx Form.test.tsx                exit 0 — 3 formatted, 3 lint-clean
+    vp test run packages/solid-spectrum/test/ToggleButton.test.tsx          exit 0 — 2 passed
+    vp test run packages/solid-spectrum/test/ToggleButtonGroup.test.tsx     exit 0 — 5 passed
+    vp test run packages/solid-spectrum/test/ActionMenu.test.tsx            exit 0 — 34 passed
+    vp test run packages/solid-spectrum/test/Menu.test.tsx                  exit 0 — 32 passed
+    vp test run packages/solid-spectrum/test/NotificationBadge.test.tsx     exit 0 — 6 passed
+    vp test run packages/solid-spectrum/test/ButtonFamilyContext.test.tsx   exit 0 — 14 passed
+    vp test run packages/solid-spectrum/test/ActionButton.test.tsx          exit 0 — 3 passed
+    vp test run packages/solid-spectrum/test/ActionBar.test.tsx             exit 0 — 26 passed
+
 ## What this receipt does not prove
 
 No push and no CI run, so the certified comparison suite has not seen this; the
 counts above are local. `packages/solid-spectrum` is published, so the change
 carries `.changeset/actionbutton-form-disabled.md`.
+
+Residue found while reading §8b's line and filed as #605: the same
+`NotificationBadgeContext` object feeds the badge `size()`, the group-resolved
+size defaulted to `"M"`, while upstream feeds the raw `props.size`
+(`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:431`), which the group never
+touches (`ActionButtonGroup.tsx:130` provides only
+`ActionButtonGroupContext`). Read from source, **not measured**: a badge inside
+an ActionButton also carries the context's positioning `styles`, so its atom
+string differs from a bare badge's whatever the size, and the class comparison
+that settled §8b cannot settle this. Pre-existing, unrelated to this ticket's
+chain, and not touched here.

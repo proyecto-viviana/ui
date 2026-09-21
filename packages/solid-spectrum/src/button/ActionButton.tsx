@@ -374,7 +374,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         return currentSize === "XS" ? undefined : currentSize;
       },
       get isDisabled() {
-        return !!headlessProps.isDisabled;
+        // Upstream reads the RACButton render prop here, i.e. the same resolved
+        // `props.isDisabled ?? ctx.isDisabled` the element gets
+        // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:436,432`), so the
+        // group greys the badge too. The proxy alone no longer sees the group.
+        return !!isDisabled();
       },
       styles: () =>
         style({
