@@ -48,6 +48,10 @@ jobs:
       # release gates run independently, so query Actions by the exact candidate
       # SHA and wait for all three. A green sibling run for another revision is
       # not release evidence.
+      #
+      # This step is the early exit, not the gate: `changeset:publish` runs the
+      # same guard itself, so the local route is held to the same evidence
+      # (#599). Deleting this step would only make the refusal later.
       - name: Require same-SHA release evidence
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,3 +92,8 @@ jobs:
           publish: pnpm run changeset:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # `changeset:publish` re-reads the same-SHA evidence before it builds
+          # or publishes, so it needs the candidate SHA by name here too: the
+          # `workflow_run` default of `github.sha` is the default branch head,
+          # not the revision this run is releasing (#599).
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}

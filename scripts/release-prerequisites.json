@@ -4,15 +4,15 @@
       "name": "@proyecto-viviana/kumo",
       "manifest": "packages/kumo/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-04 public read: npm view @proyecto-viviana/kumo name version time dist-tags deprecated --json \u2192 name=@proyecto-viviana/kumo version=0.0.0-bootstrap.0 time.created=2026-09-04T02:14:43.024Z time.modified=2026-09-04T02:26:27.063Z time[0.0.0-bootstrap.0]=2026-09-04T02:14:43.291Z dist-tags.latest=0.0.0-bootstrap.0 dist-tags.bootstrap=0.0.0-bootstrap.0 deprecated=\"Name reservation only. Use >=0.1.0.\" public https://www.npmjs.com/package/@proyecto-viviana/kumo"
-        },
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
         {
           "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-04T02:23Z owner-captured (2FA-gated, not re-run): npm trust list @proyecto-viviana/kumo \u2192 type: github, id: b211877d-f6ae-4e99-81c9-671a5482a729, file: release.yml, repository: proyecto-viviana/ui, permissions: publish, stage publish. First OIDC publish from release.yml is the independent confirmation."
+          "attested": {
+            "by": "repository owner",
+            "at": "2026-09-04",
+            "why": "npm's trusted publisher settings are 2FA-gated and have no public read, and the reserved 0.0.0-bootstrap.0 publish predates trusted publishing, so there is no provenance on the tarball to re-derive it from",
+            "says": "npm trust list @proyecto-viviana/kumo -> type: github, file: release.yml, repository: proyecto-viviana/ui, permissions: publish. The first OIDC publish from release.yml is the independent confirmation, and from that release npm-provenance replaces this entry"
+          }
         }
       ]
     },
@@ -20,80 +20,40 @@
       "name": "@proyecto-viviana/solid-spectrum",
       "manifest": "packages/solid-spectrum/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solid-spectrum name version dist-tags --json \u2192 name=@proyecto-viviana/solid-spectrum version=0.6.4 dist-tags.latest=0.6.4"
-        },
-        {
-          "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solid-spectrum@0.6.4 dist.attestations --json \u2192 provenance.predicateType=https://slsa.dev/provenance/v1, url=https://registry.npmjs.org/-/npm/v1/attestations/@proyecto-viviana%2fsolid-spectrum@0.6.4. SLSA provenance on the published tarball is the registry's own record that the publish came from the workflow over OIDC, not from a token on a laptop."
-        }
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
+        { "id": "trusted-publisher-registered", "verify": { "kind": "npm-provenance" } }
       ]
     },
     {
       "name": "@proyecto-viviana/solid-stately",
       "manifest": "packages/solid-stately/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solid-stately name version dist-tags --json \u2192 name=@proyecto-viviana/solid-stately version=0.5.1 dist-tags.latest=0.5.1"
-        },
-        {
-          "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solid-stately@0.5.1 dist.attestations --json \u2192 provenance.predicateType=https://slsa.dev/provenance/v1, url=https://registry.npmjs.org/-/npm/v1/attestations/@proyecto-viviana%2fsolid-stately@0.5.1. SLSA provenance on the published tarball is the registry's own record that the publish came from the workflow over OIDC, not from a token on a laptop."
-        }
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
+        { "id": "trusted-publisher-registered", "verify": { "kind": "npm-provenance" } }
       ]
     },
     {
       "name": "@proyecto-viviana/solidaria",
       "manifest": "packages/solidaria/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solidaria name version dist-tags --json \u2192 name=@proyecto-viviana/solidaria version=0.4.3 dist-tags.latest=0.4.3"
-        },
-        {
-          "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solidaria@0.4.3 dist.attestations --json \u2192 provenance.predicateType=https://slsa.dev/provenance/v1, url=https://registry.npmjs.org/-/npm/v1/attestations/@proyecto-viviana%2fsolidaria@0.4.3. SLSA provenance on the published tarball is the registry's own record that the publish came from the workflow over OIDC, not from a token on a laptop."
-        }
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
+        { "id": "trusted-publisher-registered", "verify": { "kind": "npm-provenance" } }
       ]
     },
     {
       "name": "@proyecto-viviana/solidaria-components",
       "manifest": "packages/solidaria-components/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solidaria-components name version dist-tags --json \u2192 name=@proyecto-viviana/solidaria-components version=0.5.1 dist-tags.latest=0.5.1"
-        },
-        {
-          "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/solidaria-components@0.5.1 dist.attestations --json \u2192 provenance.predicateType=https://slsa.dev/provenance/v1, url=https://registry.npmjs.org/-/npm/v1/attestations/@proyecto-viviana%2fsolidaria-components@0.5.1. SLSA provenance on the published tarball is the registry's own record that the publish came from the workflow over OIDC, not from a token on a laptop."
-        }
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
+        { "id": "trusted-publisher-registered", "verify": { "kind": "npm-provenance" } }
       ]
     },
     {
       "name": "@proyecto-viviana/ui",
       "manifest": "packages/viviana-ui/package.json",
       "prerequisites": [
-        {
-          "id": "npm-package-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/ui name version dist-tags --json \u2192 name=@proyecto-viviana/ui version=0.6.3 dist-tags.latest=0.6.3"
-        },
-        {
-          "id": "trusted-publisher-registered",
-          "satisfied": true,
-          "evidence": "2026-09-20 public read, re-runnable: npm view @proyecto-viviana/ui@0.6.3 dist.attestations --json \u2192 provenance.predicateType=https://slsa.dev/provenance/v1, url=https://registry.npmjs.org/-/npm/v1/attestations/@proyecto-viviana%2fui@0.6.3. SLSA provenance on the published tarball is the registry's own record that the publish came from the workflow over OIDC, not from a token on a laptop."
-        }
+        { "id": "npm-package-registered", "verify": { "kind": "npm-registered" } },
+        { "id": "trusted-publisher-registered", "verify": { "kind": "npm-provenance" } }
       ]
     }
   ]

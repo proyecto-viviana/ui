@@ -1374,129 +1374,272 @@ try {
   );
   console.log("PASS: attribution mapping report requires the pinned upstream tree.");
 
-  const unpublishedPrerequisiteFixture = path.join(fixtureRoot, "unpublished-prerequisite");
-  json(path.join(unpublishedPrerequisiteFixture, "packages", "kumo", "package.json"), {
-    name: "@proyecto-viviana/kumo",
-    version: "0.0.0",
+  // `npm_config_registry` is npm's own variable, and the prerequisite guard
+  // re-derives its registry rows through it (#599), so these contracts hand it
+  // a registry they control. The modes are the three registry answers that
+  // decide a release: the name is not there, the published tarball carries no
+  // provenance, or it does.
+  //
+  // These runs go through `run`, not `runSync`: `spawnSync` blocks this
+  // process's event loop, so the server below would never answer and the
+  // guard's read would hang to its timeout instead of reading the status.
+  let registryMode = "unregistered";
+  const registryServer = createServer((request, response) => {
+    const name = decodeURIComponent(request.url ?? "").replace(/^\//, "");
+    if (registryMode === "unregistered") {
+      response.writeHead(404, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ error: "Not found" }));
+      return;
+    }
+    const attestations =
+      registryMode === "provenance"
+        ? {
+            url: `https://registry.test/-/npm/v1/attestations/${name}@0.1.0`,
+            provenance: { predicateType: "https://slsa.dev/provenance/v1" },
+          }
+        : undefined;
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(
+      JSON.stringify({
+        name,
+        "dist-tags": { latest: "0.1.0" },
+        versions: { "0.1.0": { name, version: "0.1.0", dist: { attestations } } },
+      }),
+    );
   });
-  json(path.join(unpublishedPrerequisiteFixture, "scripts", "release-prerequisites.json"), {
-    packages: [
-      {
-        name: "@proyecto-viviana/kumo",
-        manifest: "packages/kumo/package.json",
-        prerequisites: [
-          { id: "npm-package-registered", satisfied: false, evidence: null },
-          { id: "trusted-publisher-registered", satisfied: false, evidence: null },
-        ],
-      },
-    ],
-  });
-  const unpublishedPrerequisites = runSync(
-    "check-release-prerequisites.mjs",
-    unpublishedPrerequisiteFixture,
-  );
-  assert(
-    unpublishedPrerequisites.status === 0,
-    "unpublished 0.0.0 package was incorrectly treated as a release candidate",
-  );
-  console.log("PASS: unpublished 0.0.0 package does not require release registration.");
+  const registryUrl = await listen(registryServer);
+  const registryEnv = { npm_config_registry: registryUrl };
 
-  mkdirSync(path.join(unpublishedPrerequisiteFixture, ".changeset"), { recursive: true });
-  writeFileSync(
-    path.join(unpublishedPrerequisiteFixture, ".changeset", "kumo-bomb.md"),
-    '---\n"@proyecto-viviana/kumo": minor\n---\n\nFake first Kumo release.\n',
-  );
-  json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
-    ignore: [],
-  });
-  const pendingZeroVersion = runSync(
-    "check-release-prerequisites.mjs",
-    unpublishedPrerequisiteFixture,
-  );
-  assert(
-    pendingZeroVersion.status !== 0 &&
-      combined(pendingZeroVersion).includes("@proyecto-viviana/kumo@0.0.0") &&
-      combined(pendingZeroVersion).includes("pending changesets"),
-    "pending changesets on a 0.0.0 package were treated as a publishable release",
-  );
-  console.log("PASS: pending changesets cannot version a 0.0.0 package.");
+  try {
+    const unpublishedPrerequisiteFixture = path.join(fixtureRoot, "unpublished-prerequisite");
+    const kumoManifestPath = path.join(
+      unpublishedPrerequisiteFixture,
+      "packages",
+      "kumo",
+      "package.json",
+    );
+    const kumoPrerequisitesPath = path.join(
+      unpublishedPrerequisiteFixture,
+      "scripts",
+      "release-prerequisites.json",
+    );
+    const rederivedKumo = (prerequisites) => ({
+      packages: [
+        { name: "@proyecto-viviana/kumo", manifest: "packages/kumo/package.json", prerequisites },
+      ],
+    });
+    const verifiedPrerequisites = [
+      { id: "npm-package-registered", verify: { kind: "npm-registered" } },
+      { id: "trusted-publisher-registered", verify: { kind: "npm-provenance" } },
+    ];
 
-  json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
-    ignore: ["@proyecto-viviana/kumo"],
-  });
-  const ignoredZeroVersion = runSync(
-    "check-release-prerequisites.mjs",
-    unpublishedPrerequisiteFixture,
-  );
-  assert(
-    ignoredZeroVersion.status === 0 &&
-      combined(ignoredZeroVersion).includes("SKIP: @proyecto-viviana/kumo@0.0.0"),
-    "ignored 0.0.0 package with leftover changeset names did not skip",
-  );
-  console.log("PASS: ignored 0.0.0 package stays skipped even if leftover changesets name it.");
+    json(kumoManifestPath, { name: "@proyecto-viviana/kumo", version: "0.0.0" });
+    json(kumoPrerequisitesPath, rederivedKumo(verifiedPrerequisites));
+    const unpublishedPrerequisites = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      unpublishedPrerequisites.status === 0,
+      "unpublished 0.0.0 package was incorrectly treated as a release candidate",
+    );
+    console.log("PASS: unpublished 0.0.0 package does not require release registration.");
 
-  const kumoManifestPath = path.join(
-    unpublishedPrerequisiteFixture,
-    "packages",
-    "kumo",
-    "package.json",
-  );
-  json(kumoManifestPath, { name: "@proyecto-viviana/kumo", version: "0.1.0" });
-  const blockedPrerequisites = runSync(
-    "check-release-prerequisites.mjs",
-    unpublishedPrerequisiteFixture,
-  );
-  assert(blockedPrerequisites.status !== 0, "unregistered Kumo release candidate passed");
-  assert(
-    combined(blockedPrerequisites).includes("trusted-publisher-registered"),
-    "release prerequisite failure did not identify the missing trusted publisher",
-  );
-  console.log("PASS: unregistered Kumo release candidate exits non-zero.");
+    mkdirSync(path.join(unpublishedPrerequisiteFixture, ".changeset"), { recursive: true });
+    writeFileSync(
+      path.join(unpublishedPrerequisiteFixture, ".changeset", "kumo-bomb.md"),
+      '---\n"@proyecto-viviana/kumo": minor\n---\n\nFake first Kumo release.\n',
+    );
+    json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
+      ignore: [],
+    });
+    const pendingZeroVersion = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      pendingZeroVersion.status !== 0 &&
+        combined(pendingZeroVersion).includes("@proyecto-viviana/kumo@0.0.0") &&
+        combined(pendingZeroVersion).includes("pending changesets"),
+      "pending changesets on a 0.0.0 package were treated as a publishable release",
+    );
+    console.log("PASS: pending changesets cannot version a 0.0.0 package.");
 
-  json(path.join(unpublishedPrerequisiteFixture, "scripts", "release-prerequisites.json"), {
-    packages: [
-      {
-        name: "@proyecto-viviana/kumo",
-        manifest: "packages/kumo/package.json",
-        prerequisites: [
-          {
-            id: "npm-package-registered",
-            satisfied: true,
-            evidence: "https://www.npmjs.com/package/@proyecto-viviana/kumo",
-          },
-          {
-            id: "trusted-publisher-registered",
-            satisfied: true,
-            evidence: "npm settings checked 2026-08-19 by repository owner",
-          },
-        ],
-      },
-    ],
+    json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
+      ignore: ["@proyecto-viviana/kumo"],
+    });
+    const ignoredZeroVersion = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      ignoredZeroVersion.status === 0 &&
+        combined(ignoredZeroVersion).includes("SKIP: @proyecto-viviana/kumo@0.0.0"),
+      "ignored 0.0.0 package with leftover changeset names did not skip",
+    );
+    console.log("PASS: ignored 0.0.0 package stays skipped even if leftover changesets name it.");
+
+    json(kumoManifestPath, { name: "@proyecto-viviana/kumo", version: "0.1.0" });
+    const unregisteredPrerequisites = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      unregisteredPrerequisites.status !== 0 &&
+        combined(unregisteredPrerequisites).includes(
+          "npm-package-registered could not be re-derived",
+        ) &&
+        combined(unregisteredPrerequisites).includes("404"),
+      "a release candidate the registry does not serve passed its own registry row",
+    );
+    console.log("PASS: an unregistered release candidate fails on the live read, not on a claim.");
+
+    registryMode = "no-provenance";
+    const unattestedPrerequisites = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      unattestedPrerequisites.status !== 0 &&
+        combined(unattestedPrerequisites).includes(
+          "trusted-publisher-registered could not be re-derived",
+        ) &&
+        combined(unattestedPrerequisites).includes("provenance=absent"),
+      "a published tarball with no provenance passed the trusted-publisher row",
+    );
+    console.log("PASS: no provenance on the published tarball fails the trusted-publisher row.");
+
+    registryMode = "provenance";
+    const rederivedPrerequisites = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      rederivedPrerequisites.status === 0 &&
+        combined(rederivedPrerequisites).includes(
+          "VERIFIED: @proyecto-viviana/kumo@0.1.0 npm-package-registered",
+        ) &&
+        combined(rederivedPrerequisites).includes(
+          "VERIFIED: @proyecto-viviana/kumo@0.1.0 trusted-publisher-registered",
+        ),
+      "re-derived release prerequisites did not pass on a registry that answers for them",
+    );
+    console.log("PASS: re-derived release prerequisites exit zero and print what was read.");
+
+    // The shape #599 found: `satisfied: true` plus a sentence nobody parses.
+    // It passed with the whole gate ladder red, so it is refused by name —
+    // one entry cannot quietly go back to it.
+    json(
+      kumoPrerequisitesPath,
+      rederivedKumo([
+        {
+          id: "npm-package-registered",
+          satisfied: true,
+          evidence: "https://www.npmjs.com/package/@proyecto-viviana/kumo",
+        },
+        {
+          id: "trusted-publisher-registered",
+          satisfied: true,
+          evidence: "npm settings checked 2026-08-19 by repository owner",
+        },
+      ]),
+    );
+    const handWrittenPrerequisites = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      handWrittenPrerequisites.status !== 0 &&
+        combined(handWrittenPrerequisites).includes("still carries satisfied/evidence"),
+      "a hand-written satisfied/evidence pair still passed as release evidence",
+    );
+    console.log("PASS: satisfied=true plus a sentence is refused as release evidence.");
+
+    const attestation = {
+      by: "repository owner",
+      at: "2026-09-04",
+      why: "npm's trusted publisher settings are 2FA-gated and have no public read",
+      says: "npm trust list -> type: github, file: release.yml, repository: proyecto-viviana/ui",
+    };
+    json(
+      kumoPrerequisitesPath,
+      rederivedKumo([
+        verifiedPrerequisites[0],
+        { id: "trusted-publisher-registered", attested: { ...attestation, at: "" } },
+      ]),
+    );
+    const undatedAttestation = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      undatedAttestation.status !== 0 &&
+        combined(undatedAttestation).includes("is an attestation missing at"),
+      "an attestation with no date passed as release evidence",
+    );
+    console.log("PASS: an attestation with no owner and date is refused.");
+
+    json(
+      kumoPrerequisitesPath,
+      rederivedKumo([
+        verifiedPrerequisites[0],
+        { id: "trusted-publisher-registered", attested: attestation },
+      ]),
+    );
+    const datedAttestation = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      datedAttestation.status === 0 &&
+        combined(datedAttestation).includes(
+          "ATTESTED: @proyecto-viviana/kumo@0.1.0 trusted-publisher-registered",
+        ) &&
+        combined(datedAttestation).includes("repository owner, 2026-09-04"),
+      "a dated, owned attestation did not pass, or did not print as an attestation",
+    );
+    console.log("PASS: what cannot be re-derived passes only as a dated, owned attestation.");
+  } finally {
+    registryServer.close();
+  }
+
+  // A sha the API can answer for, and a second one that is not it. The
+  // contract below is that green for the second is never evidence for the
+  // first.
+  const releaseSha = "0123456789abcdef0123456789abcdef01234567";
+  const otherSha = "89abcdef0123456789abcdef0123456789abcdef";
+  const releaseRun = (id, conclusion, headSha = releaseSha) => ({
+    id,
+    status: "completed",
+    conclusion,
+    head_sha: headSha,
+    head_branch: "main",
   });
-  const satisfiedPrerequisites = runSync(
-    "check-release-prerequisites.mjs",
-    unpublishedPrerequisiteFixture,
-  );
-  assert(satisfiedPrerequisites.status === 0, "satisfied release prerequisites did not pass");
-  console.log("PASS: evidenced Kumo release prerequisites exit zero.");
 
   let releaseMode = "failed";
   const server = createServer((request, response) => {
     const workflow = request.url?.match(/actions\/workflows\/([^/]+)\/runs/)?.[1];
-    const conclusion =
-      workflow === "site-gate.yml" && releaseMode === "failed" ? "failure" : "success";
+    const redFor = (name, conclusion) =>
+      workflow === name ? [releaseRun(1, conclusion)] : [releaseRun(1, "success")];
     const workflowRuns =
-      releaseMode === "absent"
-        ? []
-        : [
-            {
-              id: 1,
-              status: "completed",
-              conclusion,
-              head_sha: "release-sha",
-              head_branch: "main",
-            },
-          ];
+      {
+        failed: redFor("site-gate.yml", "failure"),
+        cancelled: redFor("release-readiness.yml", "cancelled"),
+        skipped: redFor("release-readiness.yml", "skipped"),
+        "other-sha": [releaseRun(1, "success", otherSha)],
+        absent: [],
+        "cancelled-rerun": [releaseRun(1, "success"), releaseRun(2, "cancelled")],
+        success: [releaseRun(1, "success")],
+      }[releaseMode] ?? [];
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ workflow_runs: workflowRuns }));
   });
@@ -1505,7 +1648,7 @@ try {
     GITHUB_API_URL: githubApiUrl,
     GITHUB_REPOSITORY: "example/project",
     GITHUB_TOKEN: "fixture-token",
-    RELEASE_SHA: "release-sha",
+    RELEASE_SHA: releaseSha,
     RELEASE_EVIDENCE_POLL_MS: "1",
     RELEASE_EVIDENCE_TIMEOUT_MS: "20",
   };
@@ -1514,24 +1657,101 @@ try {
     const failedEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
     assert(failedEvidence.status !== 0, "failed same-SHA evidence unexpectedly passed");
     assert(
-      combined(failedEvidence).includes("Site Gate concluded failure"),
-      "release evidence failure did not identify Site Gate",
+      combined(failedEvidence).includes(`FAIL: Site Gate has no successful run at ${releaseSha}`),
+      "release evidence failure did not name the workflow without a successful run",
     );
-    console.log("PASS: failed same-SHA release evidence exits non-zero.");
+    console.log("PASS: failed same-SHA release evidence exits non-zero, naming the workflow.");
+
+    releaseMode = "cancelled";
+    const cancelledEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      cancelledEvidence.status !== 0 &&
+        combined(cancelledEvidence).includes(
+          `FAIL: Release Readiness has no successful run at ${releaseSha}`,
+        ) &&
+        combined(cancelledEvidence).includes("concluded cancelled"),
+      "a cancelled run was read as release evidence",
+    );
+    console.log("PASS: a cancelled conclusion is not release evidence.");
+
+    releaseMode = "skipped";
+    const skippedEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      skippedEvidence.status !== 0 &&
+        combined(skippedEvidence).includes(
+          `FAIL: Release Readiness has no successful run at ${releaseSha}`,
+        ) &&
+        combined(skippedEvidence).includes("concluded skipped"),
+      "a skipped run was read as release evidence",
+    );
+    console.log("PASS: a skipped conclusion is not release evidence.");
+
+    releaseMode = "other-sha";
+    const otherShaEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      otherShaEvidence.status !== 0 &&
+        combined(otherShaEvidence).includes(
+          `FAIL: Certification Gates has no successful run at ${releaseSha}`,
+        ) &&
+        combined(otherShaEvidence).includes("no run at this SHA"),
+      "three green runs for another revision passed as evidence for this one",
+    );
+    console.log("PASS: a green run for another revision is not evidence for this SHA.");
 
     releaseMode = "absent";
     const absentEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
-    assert(absentEvidence.status !== 0, "absent same-SHA evidence unexpectedly passed");
     assert(
-      combined(absentEvidence).includes("timed out waiting for complete same-SHA evidence"),
-      "release evidence timeout did not identify absent evidence",
+      absentEvidence.status !== 0 &&
+        combined(absentEvidence).includes(
+          `FAIL: Site Gate has no successful run at ${releaseSha}`,
+        ) &&
+        combined(absentEvidence).includes("timed out"),
+      "absent same-SHA evidence did not refuse and name the workflows it waited for",
     );
-    console.log("PASS: absent same-SHA release evidence exits non-zero.");
+    console.log("PASS: a workflow with no run at all is refused by name.");
+
+    releaseMode = "cancelled-rerun";
+    const rerunEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      rerunEvidence.status === 0,
+      "a cancelled re-run retracted the success the same tree already took",
+    );
+    console.log("PASS: a later cancelled re-run does not retract the success at that SHA.");
 
     releaseMode = "success";
     const successfulEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
     assert(successfulEvidence.status === 0, "complete same-SHA release evidence did not pass");
     console.log("PASS: complete same-SHA release evidence exits zero.");
+
+    // The local route reaches `changeset publish` through this one script, so
+    // the evidence read has to be inside it, before the build it would
+    // otherwise spend half an hour on (#599).
+    const publishScript = rootManifest.scripts?.["changeset:publish"] ?? "";
+    assert(
+      publishScript.includes("guard:release-evidence"),
+      "changeset:publish does not read same-SHA release evidence, so the local publish route reaches npm without the gate ladder",
+    );
+    assert(
+      publishScript.indexOf("guard:release-evidence") < publishScript.indexOf("vp run build") &&
+        publishScript.indexOf("guard:release-evidence") <
+          publishScript.indexOf("changeset publish"),
+      "changeset:publish reads release evidence only after it has built or published",
+    );
+    console.log("PASS: the local publish route reads the same same-SHA evidence CI does.");
+
+    const releaseWorkflow = readFileSync(
+      path.join(ROOT, ".github", "workflows", "release.yml"),
+      "utf8",
+    );
+    const publishStep = stepBlock(
+      jobBlock(releaseWorkflow, "release"),
+      "Create release PR or publish packages",
+    );
+    assert(
+      publishStep.includes("RELEASE_SHA:"),
+      "the publish step does not name the candidate SHA, so the guard inside changeset:publish would fall back to the default branch head",
+    );
+    console.log("PASS: the publish step names the candidate SHA for the guard inside it.");
   } finally {
     server.close();
   }

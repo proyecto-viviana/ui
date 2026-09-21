@@ -1,5 +1,25 @@
 #!/usr/bin/env node
 
+/**
+ * What must be true of the registry before a package may be published.
+ *
+ * Until #599 an entry passed on `"satisfied": true` plus any non-empty
+ * `evidence` string. The string was never parsed and never re-run, so twelve
+ * hand-written sentences were the whole gate: the guard passed with the gate
+ * ladder red and would have passed with the registry rows false. A stored
+ * claim is not evidence.
+ *
+ * Now every prerequisite is either
+ *   - `verify`: re-derived here, from a live read of the registry, on every
+ *     run; or
+ *   - `attested`: something with no public read (npm's 2FA-gated settings),
+ *     carried as an attestation that names who said it and when, and prints as
+ *     one.
+ *
+ * A read that cannot be taken is a failure, not a pass: a gate nobody could
+ * check is not a gate that was checked.
+ */
+
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -7,6 +27,12 @@ import { pendingChangesetPackages, releasablePackages } from "./release-candidat
 
 const root = process.cwd();
 const configPath = path.join(root, "scripts", "release-prerequisites.json");
+const registry = (process.env.npm_config_registry ?? "https://registry.npmjs.org").replace(
+  /\/+$/,
+  "",
+);
+const PROVENANCE_PREDICATE = "https://slsa.dev/provenance/v1";
+const ATTESTATION_FIELDS = ["by", "at", "why", "says"];
 
 function fail(message) {
   console.error(`release prerequisites — FAIL: ${message}`);
@@ -20,6 +46,135 @@ function readJson(file, description) {
     fail(`${description} is unreadable or invalid JSON (${file}): ${error.message}`);
     return null;
   }
+}
+
+/** One live read per package, shared by that package's prerequisites. */
+const packuments = new Map();
+
+function packument(name) {
+  if (!packuments.has(name)) packuments.set(name, fetchPackument(name));
+  return packuments.get(name);
+}
+
+async function fetchPackument(name) {
+  const url = `${registry}/${name.replace("/", "%2f")}`;
+  try {
+    const response = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      return { ok: false, url, why: `${url} → ${response.status} ${response.statusText}` };
+    }
+    return { ok: true, url, body: await response.json() };
+  } catch (error) {
+    return { ok: false, url, why: `${url} → ${error.message}` };
+  }
+}
+
+const verifiers = {
+  /** The name exists on the registry we publish to, and serves a `latest`. */
+  async "npm-registered"(name) {
+    const read = await packument(name);
+    if (!read.ok) return { ok: false, detail: read.why };
+    const latest = read.body?.["dist-tags"]?.latest;
+    if (read.body?.name !== name) {
+      return { ok: false, detail: `${read.url} → name=${read.body?.name ?? "absent"}` };
+    }
+    if (typeof latest !== "string" || latest.length === 0) {
+      return { ok: false, detail: `${read.url} → no dist-tags.latest` };
+    }
+    return { ok: true, detail: `${read.url} → name=${name} dist-tags.latest=${latest}` };
+  },
+
+  /**
+   * The published tarball carries SLSA provenance.
+   *
+   * This is the registry's own record that the publish came from the workflow
+   * over OIDC rather than from a token on a laptop, and unlike npm's trusted
+   * publisher settings it is a public read anyone can re-take.
+   */
+  async "npm-provenance"(name) {
+    const read = await packument(name);
+    if (!read.ok) return { ok: false, detail: read.why };
+    const latest = read.body?.["dist-tags"]?.latest;
+    const attestations = read.body?.versions?.[latest]?.dist?.attestations;
+    const predicate = attestations?.provenance?.predicateType;
+    if (predicate !== PROVENANCE_PREDICATE) {
+      return {
+        ok: false,
+        detail: `${read.url} → ${name}@${latest ?? "?"} dist.attestations.provenance=${
+          predicate ?? "absent"
+        }, expected ${PROVENANCE_PREDICATE}`,
+      };
+    }
+    return {
+      ok: true,
+      detail: `${read.url} → ${name}@${latest} provenance=${predicate}, attestations=${attestations.url}`,
+    };
+  },
+};
+
+async function checkPrerequisite(entry, version, prerequisite) {
+  const id = prerequisite?.id ?? "unnamed-prerequisite";
+  const subject = `${entry.name}@${version}`;
+
+  if (!prerequisite || typeof prerequisite.id !== "string") {
+    fail(`${subject} has a prerequisite with no id`);
+    return;
+  }
+
+  // The shape that made the gate a formality is refused by name, so it cannot
+  // come back one entry at a time (#599).
+  if ("satisfied" in prerequisite || "evidence" in prerequisite) {
+    fail(
+      `${subject} ${id} still carries satisfied/evidence. A stored sentence is a claim, not ` +
+        "evidence: give it a `verify` block this guard re-runs, or an `attested` block naming " +
+        "who attested it and when (#599).",
+    );
+    return;
+  }
+
+  const hasVerify = prerequisite.verify != null;
+  const hasAttested = prerequisite.attested != null;
+  if (hasVerify === hasAttested) {
+    fail(`${subject} ${id} must define exactly one of verify or attested`);
+    return;
+  }
+
+  if (hasAttested) {
+    const missing = ATTESTATION_FIELDS.filter(
+      (field) =>
+        typeof prerequisite.attested[field] !== "string" ||
+        prerequisite.attested[field].trim().length === 0,
+    );
+    if (missing.length > 0) {
+      fail(`${subject} ${id} is an attestation missing ${missing.join(", ")}`);
+      return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(prerequisite.attested.at)) {
+      fail(`${subject} ${id} attestation date must be YYYY-MM-DD, not ${prerequisite.attested.at}`);
+      return;
+    }
+    console.log(
+      `ATTESTED: ${subject} ${id} — ${prerequisite.attested.by}, ${prerequisite.attested.at}: ` +
+        `${prerequisite.attested.why} (${prerequisite.attested.says})`,
+    );
+    return;
+  }
+
+  const verifier = verifiers[prerequisite.verify.kind];
+  if (!verifier) {
+    fail(
+      `${subject} ${id} names verify kind ${prerequisite.verify.kind ?? "none"}; known kinds are ` +
+        Object.keys(verifiers).join(", "),
+    );
+    return;
+  }
+
+  const result = await verifier(entry.name);
+  if (!result.ok) {
+    fail(`${subject} ${id} could not be re-derived: ${result.detail}`);
+    return;
+  }
+  console.log(`VERIFIED: ${subject} ${id} — ${result.detail}`);
 }
 
 const config = readJson(configPath, "release prerequisite configuration");
@@ -94,15 +249,7 @@ for (const entry of config.packages) {
   }
 
   for (const prerequisite of entry.prerequisites) {
-    const id = prerequisite?.id ?? "unnamed-prerequisite";
-    const hasEvidence =
-      typeof prerequisite?.evidence === "string" && prerequisite.evidence.trim().length > 0;
-    if (prerequisite?.satisfied !== true || !hasEvidence) {
-      fail(
-        `${entry.name}@${manifest.version} requires ${id}; set satisfied=true and record ` +
-          "independently verifiable evidence before release",
-      );
-    }
+    await checkPrerequisite(entry, manifest.version, prerequisite);
   }
 }
 
