@@ -19,7 +19,8 @@ import {
   splitSpecString,
 } from "./acceptance-schema";
 import {
-  certifiedSuitePostcardIsCurrent,
+  certifiedSuitePostcardCurrency,
+  type PostcardGitProbe,
   lastFullCertifiedSuiteRun,
   lastHeadCertifiedSubsetRun,
   validateCertifiedSuiteEvidence,
@@ -170,15 +171,33 @@ describe("acceptance inventory", () => {
     ).toContain("passed, failed, and skipped counts must add up to total");
   });
 
-  it("does not treat the 2026-08-21 certified-suite postcard as this HEAD", () => {
+  it("holds the postcard current only through ancestry plus unchanged covered paths", () => {
+    const probe = (over: Partial<PostcardGitProbe> = {}): PostcardGitProbe => ({
+      hasCommit: () => true,
+      isAncestor: () => true,
+      changedCoveredPaths: () => [],
+      ...over,
+    });
+    const head = "a".repeat(40);
+    const currency = (git: PostcardGitProbe, at: string | null = head) =>
+      certifiedSuitePostcardCurrency(lastFullCertifiedSuiteRun, at, git);
+
+    expect(currency(probe())).toEqual({ current: true });
+    expect(currency(probe(), null)).toEqual({ current: false, reason: "HEAD is unknown" });
+    expect(currency(probe({ hasCommit: () => false }))).toMatchObject({
+      current: false,
+      reason: expect.stringContaining("fetch-depth: 0"),
+    });
+    expect(currency(probe({ isAncestor: () => false }))).toMatchObject({
+      current: false,
+      reason: expect.stringContaining("not an ancestor of HEAD"),
+    });
     expect(
-      certifiedSuitePostcardIsCurrent(
-        lastFullCertifiedSuiteRun,
-        "0f1e1198963c46eb3294744475e269a7c0041eb6",
-      ),
-    ).toBe(true);
-    expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, "a".repeat(40))).toBe(false);
-    expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, null)).toBe(false);
+      currency(probe({ changedCoveredPaths: () => ["packages/a/src/x.ts", "b", "c", "d"] })),
+    ).toEqual({
+      current: false,
+      reason: "4 certified path(s) changed since it: packages/a/src/x.ts, b, c, and 1 more",
+    });
     expect(
       lastHeadCertifiedSubsetRun == null || lastHeadCertifiedSubsetRun.complete === false,
     ).toBe(true);

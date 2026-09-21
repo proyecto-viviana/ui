@@ -45,6 +45,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Step 239 tests the certified postcard's ancestry and diffs covered paths
+          # since it (#574); a depth-1 clone cannot, and the report fails closed.
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4

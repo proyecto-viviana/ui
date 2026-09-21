@@ -17,12 +17,13 @@ import {
   unresolvedVisualStatePointers,
 } from "../src/data/acceptance-inventory";
 import {
-  certifiedSuitePostcardIsCurrent,
+  certifiedSuitePostcardCurrency,
   lastFullCertifiedSuiteRun,
   lastHeadCertifiedSubsetRun,
   validateCertifiedSuiteEvidence,
 } from "../src/data/certified-suite-evidence";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
+import { gitPostcardProbe } from "./certified-postcard-git";
 import { formatCertifiedSummaryMarkdown, readCertifiedSummaryFile } from "./certified-summary";
 import { parseParityReportOptions } from "./report-component-parity-options";
 
@@ -412,10 +413,15 @@ const certifiedSuiteProblems = validateCertifiedSuiteEvidence(
   certifiedObligations.expectedFixmes.length,
 );
 const certifiedSuiteHead = currentHeadSha();
-const certifiedSuitePostcardCurrent = certifiedSuitePostcardIsCurrent(
+const certifiedSuitePostcard = certifiedSuitePostcardCurrency(
   lastFullCertifiedSuiteRun,
   certifiedSuiteHead,
+  gitPostcardProbe(repoRoot),
 );
+const certifiedSuitePostcardCurrent = certifiedSuitePostcard.current;
+const certifiedSuitePostcardReason = certifiedSuitePostcard.current
+  ? ""
+  : certifiedSuitePostcard.reason;
 const unresolvedPointerGaps: Gap[] = unresolvedPointers.map((pointer) => ({
   slug: pointer.slug,
   title: titleForSlug(pointer.slug),
@@ -457,7 +463,7 @@ const certifiedSuiteEvidenceGaps: Gap[] = [
           detail:
             `postcard revision ${lastFullCertifiedSuiteRun.revision} (${lastFullCertifiedSuiteRun.completedAt}, ` +
             `${lastFullCertifiedSuiteRun.passed} passed / ${lastFullCertifiedSuiteRun.failed} failed / ${lastFullCertifiedSuiteRun.skipped} skipped) ` +
-            `is not HEAD ${certifiedSuiteHead ?? "(unknown)"}. Ticket #194. Do not treat those counts as live certified truth.`,
+            `does not speak for HEAD ${certifiedSuiteHead ?? "(unknown)"}: ${certifiedSuitePostcardReason}. Tickets #194, #574. Do not treat those counts as live certified truth.`,
         },
       ]),
 ];
@@ -654,7 +660,7 @@ console.log(
 );
 const postcardLine = certifiedSuitePostcardCurrent
   ? `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`
-  : `STALE certified-suite postcard (not this HEAD; ticket #194). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
+  : `STALE certified-suite postcard (${certifiedSuitePostcardReason}; ticket #574). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
 console.log(postcardLine);
 if (lastHeadCertifiedSubsetRun == null) {
   console.log(
@@ -763,7 +769,7 @@ console.log(`Unregistered/deferred comment lines: ${certifiedObligations.deferre
 console.log(
   certifiedSuitePostcardCurrent
     ? `Recorded full run: ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision}).`
-    : `STALE postcard run (not this HEAD; ticket #194): ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision} @ ${lastFullCertifiedSuiteRun.completedAt}). Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`,
+    : `STALE postcard run (${certifiedSuitePostcardReason}; ticket #574): ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision} @ ${lastFullCertifiedSuiteRun.completedAt}). Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`,
 );
 
 if (strict) {

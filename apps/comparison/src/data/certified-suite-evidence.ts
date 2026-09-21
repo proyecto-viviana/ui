@@ -12,11 +12,11 @@ export interface CertifiedSuiteEvidence {
 /**
  * Postcard from the last complete certified suite run that was recorded against
  * an exact checked revision. This is NOT live truth. Ticket #194. The recorded
- * SHA is `0f1e1198` (2026-08-21, 2170 passed / 0 failed / 4 skipped). HEAD has
- * moved hundreds of commits since. `validateCertifiedSuiteEvidence` checks
- * arithmetic and skipped-count against the registered `knownDivergences`
- * inventory; it does not check `revision === HEAD`. Report printers must label
- * this as a stale postcard whenever HEAD differs.
+ * SHA is `0f1e1198` (2026-08-21, 2170 passed / 0 failed / 4 skipped).
+ * `validateCertifiedSuiteEvidence` checks arithmetic and skipped-count against
+ * the registered `knownDivergences` inventory; `certifiedSuitePostcardCurrency`
+ * decides whether the run still speaks for HEAD, and the report blocks when it
+ * does not.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
   revision: "0f1e1198963c46eb3294744475e269a7c0041eb6",
@@ -29,11 +29,62 @@ export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
   skipped: 4,
 };
 
-export function certifiedSuitePostcardIsCurrent(
+/**
+ * What the certified suite exercises, as git pathspecs: a change here can move
+ * a certified result, a change anywhere else (`.claude`, `.agents`, `docs`,
+ * `scripts`, `.github`, READMEs) cannot. This file is excluded, or the commit
+ * that records a run would invalidate the run it records. Ticket #574.
+ */
+export const certifiedSuiteCoveredPathspecs = [
+  ":(glob)packages/*/src/**",
+  ":(glob)apps/comparison/src/**",
+  ":(glob)apps/comparison/e2e/**",
+  ":(exclude)apps/comparison/src/data/certified-suite-evidence.ts",
+  ":(exclude,glob)**/README*",
+] as const;
+
+export interface PostcardGitProbe {
+  hasCommit(revision: string): boolean;
+  isAncestor(revision: string, head: string): boolean;
+  changedCoveredPaths(revision: string, head: string): string[];
+}
+
+export type PostcardCurrency = { current: true } | { current: false; reason: string };
+
+/**
+ * The postcard is current when its revision is HEAD or an ancestor of it and
+ * no covered path changed in between. Ticket #574: equality with HEAD could
+ * never hold, since recording the SHA is itself a commit.
+ */
+export function certifiedSuitePostcardCurrency(
   evidence: CertifiedSuiteEvidence,
-  headSha: string | null,
-): boolean {
-  return headSha != null && headSha === evidence.revision;
+  head: string | null,
+  git: PostcardGitProbe,
+): PostcardCurrency {
+  if (head == null) return { current: false, reason: "HEAD is unknown" };
+  if (!git.hasCommit(evidence.revision)) {
+    // A shallow clone lands here. Failing is the point: passing would switch
+    // the gate off exactly where it runs.
+    return {
+      current: false,
+      reason:
+        `revision ${evidence.revision} is not in this clone; ` +
+        "check out with fetch-depth: 0 so its ancestry can be tested",
+    };
+  }
+  if (!git.isAncestor(evidence.revision, head)) {
+    return { current: false, reason: `revision ${evidence.revision} is not an ancestor of HEAD` };
+  }
+  const changed = git.changedCoveredPaths(evidence.revision, head);
+  if (changed.length > 0) {
+    const sample = changed.slice(0, 3).join(", ");
+    const more = changed.length > 3 ? `, and ${changed.length - 3} more` : "";
+    return {
+      current: false,
+      reason: `${changed.length} certified path(s) changed since it: ${sample}${more}`,
+    };
+  }
+  return { current: true };
 }
 
 export function validateCertifiedSuiteEvidence(

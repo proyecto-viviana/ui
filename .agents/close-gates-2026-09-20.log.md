@@ -2145,3 +2145,21 @@ repository, symlinks followed. The unset stage is `mkdtempSync`; no literal
 `/tmp` left. `scripts/scratch-dir.test.ts` 8 / 0; old scripts back, the three
 per-variable tests fail. A default `pack-local-chain` run still packs all
 seven. Merged.
+
+## 2026-09-21 — #574 postcard currency: ancestry plus coverage
+
+- Shape 1, as the conductor decided. `certifiedSuitePostcardCurrency` replaces
+  equality. It is current only when the revision is in the clone, is an ancestor
+  of HEAD, and no covered path has changed since. The evidence file itself is
+  excluded, and that exclusion is the witness.
+- Covered: `packages/*/src/**`, `apps/comparison/src/**`,
+  `apps/comparison/e2e/**`. READMEs are excluded. The `certification-gates`
+  checkout at :47 now has `fetch-depth: 0`.
+- Tests: 15 passed, including a real temp git repo test. Mutations: drop the
+  exclusion and 1 fails, the witness test; restore equality and 4 fail.
+- `comparison:report:parity:strict` still exits 1, with the postcard as its sole
+  gap: 2575 covered paths changed since `0f1e1198`. Closing it needs a fresh full
+  certified run (#547/#194). The ticket is in-progress, not merged.
+- Also `d6b2f2fd`: the typecheck error TS7016 in my own `scripts/scratch-dir.test.ts`
+  (from `80c429ec`) is fixed with the siblings' `@ts-expect-error` idiom.
+  `vp run typecheck` is clean.
