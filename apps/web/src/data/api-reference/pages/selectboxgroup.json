@@ -183,7 +183,7 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The label for the listbox.",
           "origin": "solidaria"
@@ -438,7 +438,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The contents of the SelectBox.",
           "origin": "viviana-ui"
@@ -473,9 +473,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -505,14 +505,14 @@
         },
         {
           "name": "onHoverStart",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover starts.",
           "origin": "solidaria"
         },
         {
           "name": "onHoverEnd",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover ends.",
           "origin": "solidaria"

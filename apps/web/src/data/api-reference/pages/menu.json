@@ -74,16 +74,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "The children of the component. A function may be provided to render each item.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -226,7 +226,7 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The label for the menu.",
           "origin": "solidaria"
@@ -382,16 +382,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ButtonRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ButtonRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the component. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -838,16 +838,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: MenuItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: MenuItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the item. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1006,16 +1006,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Section contents, usually Header + Group/items.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1212,9 +1212,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1250,9 +1250,9 @@
           "name": "trigger",
           "type": "MenuTriggerType",
           "values": [
-            "'contextMenu'",
             "'press'",
-            "'longPress'"
+            "'longPress'",
+            "'contextMenu'"
           ],
           "required": false,
           "description": "How the menu is triggered.",
@@ -1339,9 +1339,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         }
       ]

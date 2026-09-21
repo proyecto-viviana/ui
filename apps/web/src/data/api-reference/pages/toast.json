@@ -79,7 +79,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ToastRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ToastRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the component - can be JSX or render function.",
           "origin": "solidaria-components"

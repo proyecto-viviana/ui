@@ -69,9 +69,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -384,9 +384,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -455,16 +455,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectOptionRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: SelectOptionRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the option. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -501,14 +501,14 @@
         },
         {
           "name": "onHoverStart",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover starts.",
           "origin": "solidaria"
         },
         {
           "name": "onHoverEnd",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover ends.",
           "origin": "solidaria"
@@ -626,16 +626,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectTriggerRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: SelectTriggerRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the trigger. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -661,16 +661,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectValueRenderProps<T>) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: SelectValueRenderProps<T>) => JSX.Element)",
           "required": false,
           "description": "The children of the value. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

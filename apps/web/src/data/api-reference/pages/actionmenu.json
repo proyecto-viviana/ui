@@ -11,14 +11,14 @@
       "props": [
         {
           "name": "items",
-          "type": "import(\"@proyecto-viviana/solidaria-components\").CollectionEntry<T>[]",
+          "type": "CollectionEntry<T>[]",
           "required": false,
           "description": "Item objects in the collection.",
           "origin": "viviana-ui"
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "The contents of the collection.",
           "origin": "viviana-ui"

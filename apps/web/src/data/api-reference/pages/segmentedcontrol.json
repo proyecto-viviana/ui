@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The content to display in the segmented control.",
           "origin": "viviana-ui"
@@ -128,7 +128,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The content to display in the segmented control item.",
           "origin": "viviana-ui"
@@ -163,9 +163,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

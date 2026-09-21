@@ -52,21 +52,21 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Label text for the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description text shown below the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Error message shown when invalid.",
           "origin": "viviana-ui"
@@ -117,16 +117,16 @@
         },
         {
           "name": "prefix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered before the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

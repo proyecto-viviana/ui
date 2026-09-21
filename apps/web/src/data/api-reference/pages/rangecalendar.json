@@ -98,14 +98,14 @@
         },
         {
           "name": "validationState",
-          "type": "import(\"@proyecto-viviana/solid-stately\").ValidationState | import(\"solid-js\").Accessor<import(\"@proyecto-viviana/solid-stately\").ValidationState | undefined>",
+          "type": "ValidationState | Accessor<ValidationState | undefined>",
           "required": false,
           "description": "Validation state for backward-compatible Solid Stately callers.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The error message to display when the range calendar is invalid.",
           "origin": "viviana-ui"

@@ -66,21 +66,21 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Label text for the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description text shown below the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Error message shown when invalid.",
           "origin": "viviana-ui"
@@ -120,21 +120,21 @@
         },
         {
           "name": "contextualHelp",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "A contextual help element to place next to the label.",
           "origin": "viviana-ui"
         },
         {
           "name": "prefix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered before the input in place of the built-in search magnifier, e.g. the register's `/` slash-command glyph.",
           "origin": "viviana-ui"
         },
         {
           "name": "suffix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered after the input, e.g. a key hint.",
           "origin": "viviana-ui"
@@ -159,38 +159,6 @@
           "required": false,
           "description": "Ref for the search field root element.",
           "origin": "viviana-ui"
-        },
-        {
-          "name": "autoCapitalize",
-          "type": "\"none\" | \"off\" | \"on\" | \"sentences\" | \"words\" | \"characters\"",
-          "values": [
-            "'none'",
-            "'off'",
-            "'on'",
-            "'sentences'",
-            "'words'",
-            "'characters'"
-          ],
-          "required": false,
-          "description": "Controls whether and how text input is automatically capitalized.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "inputMode",
-          "type": "\"none\" | \"text\" | \"tel\" | \"url\" | \"email\" | \"numeric\" | \"decimal\" | \"search\"",
-          "values": [
-            "'none'",
-            "'text'",
-            "'tel'",
-            "'url'",
-            "'email'",
-            "'numeric'",
-            "'decimal'",
-            "'search'"
-          ],
-          "required": false,
-          "description": "The input mode hint for virtual keyboards.",
-          "origin": "solidaria"
         },
         {
           "name": "id",
@@ -491,17 +459,18 @@
           "origin": "solidaria"
         },
         {
-          "name": "maxLength",
-          "type": "number",
+          "name": "autoCapitalize",
+          "type": "\"none\" | \"on\" | \"off\" | \"sentences\" | \"words\" | \"characters\"",
+          "values": [
+            "'none'",
+            "'on'",
+            "'off'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
           "required": false,
-          "description": "The maximum number of characters supported by the input.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "minLength",
-          "type": "number",
-          "required": false,
-          "description": "The minimum number of characters required by the input.",
+          "description": "Controls whether and how text input is automatically capitalized.",
           "origin": "solidaria"
         },
         {
@@ -510,6 +479,23 @@
           "required": false,
           "description": "Handler called when the field is cleared.",
           "origin": "solidaria-components"
+        },
+        {
+          "name": "inputMode",
+          "type": "\"none\" | \"text\" | \"search\" | \"url\" | \"tel\" | \"email\" | \"numeric\" | \"decimal\"",
+          "values": [
+            "'none'",
+            "'text'",
+            "'search'",
+            "'url'",
+            "'tel'",
+            "'email'",
+            "'numeric'",
+            "'decimal'"
+          ],
+          "required": false,
+          "description": "The input mode hint for virtual keyboards.",
+          "origin": "solidaria"
         },
         {
           "name": "enterKeyHint",
@@ -525,6 +511,20 @@
           ],
           "required": false,
           "description": "Hint for the enter key action on virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of characters supported by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "minLength",
+          "type": "number",
+          "required": false,
+          "description": "The minimum number of characters required by the input.",
           "origin": "solidaria"
         },
         {

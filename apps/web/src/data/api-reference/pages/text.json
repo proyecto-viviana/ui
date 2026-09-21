@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -124,7 +124,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -237,7 +237,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -350,7 +350,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -470,7 +470,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -583,7 +583,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"

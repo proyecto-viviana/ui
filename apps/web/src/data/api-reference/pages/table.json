@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | (() => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | (() => JSX.Element)",
           "required": false,
           "description": "Children components (TableHeader, TableBody).",
           "origin": "viviana-ui"
@@ -94,14 +94,14 @@
         },
         {
           "name": "title",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Title for the table. Prefer aria-label/aria-labelledby for new code.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description for the table.",
           "origin": "viviana-ui"
@@ -223,9 +223,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -518,16 +518,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the cell.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -620,16 +620,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableColumnRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableColumnRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the column.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -804,16 +804,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the cell.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -881,16 +881,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Children (should contain a Table).",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -958,16 +958,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
           "required": false,
           "description": "The children of the row (usually TableCell components).",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1120,9 +1120,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1244,16 +1244,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableCellRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the cell.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1346,16 +1346,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableColumnRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableColumnRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the column.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1459,16 +1459,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "The children, or a render function when `items` is provided.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1508,16 +1508,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The children (usually TableColumn components).",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1571,16 +1571,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
           "required": false,
           "description": "The children of the row (usually TableCell components).",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1705,7 +1705,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | (() => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | (() => JSX.Element)",
           "required": false,
           "description": "Children components (TableHeader, TableBody).",
           "origin": "viviana-ui"
@@ -1788,14 +1788,14 @@
         },
         {
           "name": "title",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Title for the table. Prefer aria-label/aria-labelledby for new code.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description for the table.",
           "origin": "viviana-ui"
@@ -1917,9 +1917,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

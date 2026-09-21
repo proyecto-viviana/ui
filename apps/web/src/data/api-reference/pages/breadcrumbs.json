@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "The children of the Breadcrumbs.",
           "origin": "viviana-ui"
@@ -90,9 +90,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -164,7 +164,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: BreadcrumbItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: BreadcrumbItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the breadcrumb item.",
           "origin": "viviana-ui"
@@ -206,9 +206,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -457,7 +457,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: BreadcrumbItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: BreadcrumbItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the breadcrumb item.",
           "origin": "viviana-ui"
@@ -499,9 +499,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

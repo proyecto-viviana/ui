@@ -71,8 +71,9 @@
         },
         {
           "name": "referrerPolicy",
-          "type": "JSX.HTMLReferrerPolicy",
+          "type": "false | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
           "values": [
+            "false",
             "'no-referrer'",
             "'no-referrer-when-downgrade'",
             "'origin'",
@@ -177,7 +178,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"

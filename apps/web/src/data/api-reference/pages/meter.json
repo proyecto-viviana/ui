@@ -35,7 +35,7 @@
         },
         {
           "name": "valueLabel",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The content to display as the value's label (e.g. \"75 GB\").",
           "origin": "viviana-ui"
@@ -87,7 +87,7 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The label to display above the meter.",
           "origin": "viviana-ui"
@@ -251,7 +251,7 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The meter's visible label, and its accessible name. `ring` centres it.",
           "origin": "viviana-ui"

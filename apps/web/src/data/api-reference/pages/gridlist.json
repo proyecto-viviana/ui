@@ -177,14 +177,14 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy label helper. Prefer aria-label or aria-labelledby.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy description helper.",
           "origin": "viviana-ui"
@@ -420,7 +420,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: GridListItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: GridListItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "The contents of the item.",
           "origin": "viviana-ui"
@@ -505,7 +505,7 @@
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Optional description text. Prefer `<Text slot=\"description\">`.",
           "origin": "viviana-ui"
@@ -568,9 +568,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

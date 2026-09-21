@@ -71,7 +71,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Content centered inside the ring — the register composes a headline count over the pixel ring (TerminalGlassLab.tsx:640-662: \"3/5\" over \"FOCUS\"). Purely visual; the accessible value stays on the progressbar attributes.",
           "origin": "viviana-ui"

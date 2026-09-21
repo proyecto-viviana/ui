@@ -66,21 +66,21 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Label text for the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description text shown below the input.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Error message shown when invalid.",
           "origin": "viviana-ui"
@@ -120,14 +120,14 @@
         },
         {
           "name": "prefix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered before the input, e.g. a unit or protocol.",
           "origin": "viviana-ui"
         },
         {
           "name": "suffix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered after the input, e.g. a unit or key hint.",
           "origin": "viviana-ui"
@@ -146,42 +146,10 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "autoCapitalize",
-          "type": "\"none\" | \"off\" | \"on\" | \"sentences\" | \"words\" | \"characters\"",
-          "values": [
-            "'none'",
-            "'off'",
-            "'on'",
-            "'sentences'",
-            "'words'",
-            "'characters'"
-          ],
-          "required": false,
-          "description": "Controls whether and how text input is automatically capitalized.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "inputMode",
-          "type": "\"none\" | \"text\" | \"tel\" | \"url\" | \"email\" | \"numeric\" | \"decimal\" | \"search\"",
-          "values": [
-            "'none'",
-            "'text'",
-            "'tel'",
-            "'url'",
-            "'email'",
-            "'numeric'",
-            "'decimal'",
-            "'search'"
-          ],
-          "required": false,
-          "description": "The input mode hint for virtual keyboards.",
-          "origin": "solidaria"
         },
         {
           "name": "id",
@@ -482,17 +450,35 @@
           "origin": "solidaria"
         },
         {
-          "name": "maxLength",
-          "type": "number",
+          "name": "autoCapitalize",
+          "type": "\"none\" | \"on\" | \"off\" | \"sentences\" | \"words\" | \"characters\"",
+          "values": [
+            "'none'",
+            "'on'",
+            "'off'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
           "required": false,
-          "description": "The maximum number of characters supported by the input.",
+          "description": "Controls whether and how text input is automatically capitalized.",
           "origin": "solidaria"
         },
         {
-          "name": "minLength",
-          "type": "number",
+          "name": "inputMode",
+          "type": "\"none\" | \"text\" | \"search\" | \"url\" | \"tel\" | \"email\" | \"numeric\" | \"decimal\"",
+          "values": [
+            "'none'",
+            "'text'",
+            "'search'",
+            "'url'",
+            "'tel'",
+            "'email'",
+            "'numeric'",
+            "'decimal'"
+          ],
           "required": false,
-          "description": "The minimum number of characters required by the input.",
+          "description": "The input mode hint for virtual keyboards.",
           "origin": "solidaria"
         },
         {
@@ -509,6 +495,20 @@
           ],
           "required": false,
           "description": "Hint for the enter key action on virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of characters supported by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "minLength",
+          "type": "number",
+          "required": false,
+          "description": "The minimum number of characters required by the input.",
           "origin": "solidaria"
         },
         {
@@ -617,21 +617,21 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Label text for the textarea.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description text shown below the textarea.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Error message shown when invalid.",
           "origin": "viviana-ui"
@@ -671,42 +671,10 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "autoCapitalize",
-          "type": "\"none\" | \"off\" | \"on\" | \"sentences\" | \"words\" | \"characters\"",
-          "values": [
-            "'none'",
-            "'off'",
-            "'on'",
-            "'sentences'",
-            "'words'",
-            "'characters'"
-          ],
-          "required": false,
-          "description": "Controls whether and how text input is automatically capitalized.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "inputMode",
-          "type": "\"none\" | \"text\" | \"tel\" | \"url\" | \"email\" | \"numeric\" | \"decimal\" | \"search\"",
-          "values": [
-            "'none'",
-            "'text'",
-            "'tel'",
-            "'url'",
-            "'email'",
-            "'numeric'",
-            "'decimal'",
-            "'search'"
-          ],
-          "required": false,
-          "description": "The input mode hint for virtual keyboards.",
-          "origin": "solidaria"
         },
         {
           "name": "id",
@@ -993,17 +961,35 @@
           "origin": "solidaria"
         },
         {
-          "name": "maxLength",
-          "type": "number",
+          "name": "autoCapitalize",
+          "type": "\"none\" | \"on\" | \"off\" | \"sentences\" | \"words\" | \"characters\"",
+          "values": [
+            "'none'",
+            "'on'",
+            "'off'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
           "required": false,
-          "description": "The maximum number of characters supported by the input.",
+          "description": "Controls whether and how text input is automatically capitalized.",
           "origin": "solidaria"
         },
         {
-          "name": "minLength",
-          "type": "number",
+          "name": "inputMode",
+          "type": "\"none\" | \"text\" | \"search\" | \"url\" | \"tel\" | \"email\" | \"numeric\" | \"decimal\"",
+          "values": [
+            "'none'",
+            "'text'",
+            "'search'",
+            "'url'",
+            "'tel'",
+            "'email'",
+            "'numeric'",
+            "'decimal'"
+          ],
           "required": false,
-          "description": "The minimum number of characters required by the input.",
+          "description": "The input mode hint for virtual keyboards.",
           "origin": "solidaria"
         },
         {
@@ -1020,6 +1006,20 @@
           ],
           "required": false,
           "description": "Hint for the enter key action on virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of characters supported by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "minLength",
+          "type": "number",
+          "required": false,
+          "description": "The minimum number of characters required by the input.",
           "origin": "solidaria"
         },
         {

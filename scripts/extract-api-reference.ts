@@ -213,6 +213,34 @@ function literalValues(type: ts.Type, checker: ts.TypeChecker): string[] | undef
   return values.length > 1 ? values : undefined;
 }
 
+/**
+ * What a prop's type reads as on the page.
+ *
+ * `checker.typeToString` qualifies every type it cannot reach by name from the
+ * site with `import("…")`, and the path it prints is the path from that file
+ * to the declaration. For a type the checker resolved inside `node_modules`
+ * that is this checkout's layout rather than a fact about the type:
+ * `import("../node_modules/solid-js/types/types").RenderedElement` on a shipped
+ * page. It reads as nonsense and it makes the committed data depend on where
+ * the repository sits on disk, so the guard cannot mean what it claims.
+ *
+ * `ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope` drops the path, but it
+ * prints the alias it reaches rather than the one the checker resolved:
+ * `import("@proyecto-viviana/solid-stately").SegmentType` becomes
+ * `DateSegmentType`, and in these docs that name is already taken by a different
+ * type — `solidaria-components` exports `DateSegmentType` as the segment
+ * *object* (`DateField.tsx:69`), where `SegmentType` is the union of segment
+ * kinds. So the qualification comes off here instead, and the name the checker
+ * reached is the name the page prints. Nothing a path could vary is left.
+ */
+export function renderType(rendered: string, site: string): string {
+  const unqualified = rendered.replace(/import\("(?:[^"\\]|\\.)*"\)\./g, "");
+  if (unqualified.includes('import("')) {
+    throw new Error(`Type rendering keeps an import path at ${site}: ${unqualified}`);
+  }
+  return unqualified;
+}
+
 function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
   const packageDir = path.join(REPO_ROOT, register.dir);
   const configPath = ts.findConfigFile(packageDir, ts.sys.fileExists, "tsconfig.json");
@@ -266,7 +294,10 @@ function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
       const values = literalValues(display, checker);
       props.push({
         name: member.getName(),
-        type: checker.typeToString(display, site, ts.TypeFormatFlags.NoTruncation),
+        type: renderType(
+          checker.typeToString(display, site, ts.TypeFormatFlags.NoTruncation),
+          `${name}.${member.getName()}`,
+        ),
         ...(values ? { values } : {}),
         required,
         ...(defaultTag ? { default: ts.displayPartsToString(defaultTag.text).trim() } : {}),

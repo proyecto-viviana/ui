@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The tabs and panels to render.",
           "origin": "viviana-ui"
@@ -204,7 +204,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TabRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TabRenderProps) => JSX.Element)",
           "required": false,
           "description": "The tab contents.",
           "origin": "viviana-ui"
@@ -285,14 +285,14 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "Static tabs or a render function for collection items.",
           "origin": "viviana-ui"
         },
         {
           "name": "trailing",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Content parked flush right inside the tab strip — the register's readout (a count, a status, a keyboard hint). Rendered as a sibling of the `role=\"tablist\"` element, never inside it, so it cannot violate `aria-required-children`. Decorative by default; give it its own accessible text if it carries meaning. Local addition — no S2 counterpart.",
           "origin": "viviana-ui"
@@ -402,7 +402,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TabPanelRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TabPanelRenderProps) => JSX.Element)",
           "required": false,
           "description": "The panel contents.",
           "origin": "viviana-ui"
@@ -525,7 +525,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The grouped tab panels.",
           "origin": "solidaria-components"

@@ -18,7 +18,7 @@
         },
         {
           "name": "value",
-          "type": "string | number | boolean | Node | JSX.ArrayElement | (string & {}) | readonly string[]",
+          "type": "string | number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | readonly string[]",
           "required": false,
           "description": "The value to display. Numbers and string lists are formatted for the current locale.",
           "origin": "viviana-ui"

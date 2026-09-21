@@ -10,38 +10,10 @@
       "source": "packages/viviana-ui/src/icon/spectrum-icon.tsx",
       "props": [
         {
-          "name": "slot",
-          "type": "string",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
           "name": "styles",
           "type": "StyleString",
           "required": false,
           "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "class",
-          "type": "string",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "style",
-          "type": "string | JSX.CSSProperties",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "aria-label",
-          "type": "string",
-          "required": false,
-          "description": "Defines a string value that labels the current element.",
           "origin": "viviana-ui"
         },
         {
@@ -54,7 +26,7 @@
             "'false'"
           ],
           "required": false,
-          "description": "Indicates whether the element is exposed to an accessibility API.",
+          "description": "",
           "origin": "viviana-ui"
         },
         {
@@ -130,38 +102,10 @@
           "origin": "viviana-ui"
         },
         {
-          "name": "slot",
-          "type": "string",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
           "name": "styles",
           "type": "StyleString",
           "required": false,
           "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "class",
-          "type": "string",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "style",
-          "type": "string | JSX.CSSProperties",
-          "required": false,
-          "description": "",
-          "origin": "viviana-ui"
-        },
-        {
-          "name": "aria-label",
-          "type": "string",
-          "required": false,
-          "description": "Defines a string value that labels the current element.",
           "origin": "viviana-ui"
         },
         {
@@ -174,7 +118,7 @@
             "'false'"
           ],
           "required": false,
-          "description": "Indicates whether the element is exposed to an accessibility API.",
+          "description": "",
           "origin": "viviana-ui"
         },
         {

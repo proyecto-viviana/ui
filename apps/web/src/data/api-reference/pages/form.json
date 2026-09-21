@@ -39,24 +39,9 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: FormRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: FormRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the component.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "autoCapitalize",
-          "type": "JSX.HTMLAutocapitalize",
-          "values": [
-            "'none'",
-            "'off'",
-            "'on'",
-            "'sentences'",
-            "'words'",
-            "'characters'"
-          ],
-          "required": false,
-          "description": "Browser auto-capitalization hint. React-style alias for Solid's `autocapitalize`.",
           "origin": "solidaria-components"
         },
         {
@@ -72,10 +57,11 @@
         },
         {
           "name": "autoComplete",
-          "type": "\"off\" | \"on\"",
+          "type": "false | \"on\" | \"off\"",
           "values": [
-            "'off'",
-            "'on'"
+            "false",
+            "'on'",
+            "'off'"
           ],
           "required": false,
           "description": "Browser autocomplete behavior. React-style alias for Solid's `autocomplete`.",
@@ -96,9 +82,26 @@
           "origin": "solidaria-components"
         },
         {
-          "name": "encType",
-          "type": "JSX.HTMLFormEncType",
+          "name": "autoCapitalize",
+          "type": "false | \"none\" | \"on\" | \"off\" | \"sentences\" | \"words\" | \"characters\"",
           "values": [
+            "false",
+            "'none'",
+            "'on'",
+            "'off'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
+          "required": false,
+          "description": "Browser auto-capitalization hint. React-style alias for Solid's `autocapitalize`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "encType",
+          "type": "false | \"application/x-www-form-urlencoded\" | \"multipart/form-data\" | \"text/plain\"",
+          "values": [
+            "false",
             "'application/x-www-form-urlencoded'",
             "'multipart/form-data'",
             "'text/plain'"

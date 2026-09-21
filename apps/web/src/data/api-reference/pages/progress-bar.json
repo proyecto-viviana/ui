@@ -61,7 +61,7 @@
         },
         {
           "name": "valueLabel",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The content to display as the value's label, e.g. \"1 of 4\".",
           "origin": "viviana-ui"
@@ -100,7 +100,7 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The label to display above or beside the progress bar.",
           "origin": "viviana-ui"

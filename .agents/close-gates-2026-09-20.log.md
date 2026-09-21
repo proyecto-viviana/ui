@@ -1191,3 +1191,120 @@ package's `files`, so no changeset is owed.
 Not touched, and worth someone's ticket: the root-barrel re-export this added is
 the one #565 narrowed `RouterProvider.tsx` off, so `src/index.ts:713` may now
 have no consumer. Removing it would move a hash again and is not this ticket.
+
+## #559 — the API reference renders a checkout path
+
+### The lever, chosen from the probe rather than from the ticket's candidate
+
+`.agents/chain-walk-2026-09-20/probe-typeflags-{viviana-ui,spectrum}.txt` read in
+full. `UseAliasDefinedOutsideCurrentScope` unqualifies all 18 distinct renderings
+in each register, and on 17 of them it prints exactly the name the checker
+reached. On the eighteenth it does not:
+
+    NoTruncation           : import("@proyecto-viviana/solid-stately").SegmentType
+    +UseAliasDefinedOutside: DateSegmentType
+
+That rename is not cosmetic here. `solid-stately` declares `DateSegmentType` as
+the union of segment kinds (`calendar/createDateFieldState.ts:66`) and exports it
+twice — once under that name, once as `SegmentType` (`datepicker/index.ts:16`).
+`solidaria-components` separately exports `DateSegmentType` as the segment
+*object*: `DateField.tsx:69` imports `DateSegment as DateSegmentType` and
+`index.ts:698` re-exports it. So the flag would print, on a published page, a
+name that in these same docs already means a different type.
+
+So the qualification comes off here instead of widening the flags, which is the
+ticket's stated alternative: `renderType()` in `scripts/extract-api-reference.ts`
+strips `import("…").` and keeps the name the checker reached. It throws rather
+than emits if any `import("` survives — a rendering we cannot unqualify is a
+rendering we do not know is path-independent, and it should stop the extractor
+rather than reach a page.
+
+### The reproducibility proof
+
+`scripts/extract-api-reference.test.ts`, three cases, in `test:run` via the
+`scripts/**/*.test.ts` include. The load-bearing one builds the same source
+twice, at two temporary roots and at two depths below them, and renders the prop
+the way `extractRegister` renders every prop:
+
+    depth 0: import("../../shared/thing").Thing
+    depth 3: import("../../../../../shared/thing").Thing
+
+Different bytes from identical source — that is the defect, reproduced from
+nothing but layout. Both render to `Thing` through `renderType`, and the test
+asserts the raw pair differs *and* the rendered pair does not, so it fails if the
+strip is removed rather than passing vacuously.
+
+### What the fix changes, and what the RC bump changes
+
+Measured rather than assumed, by importing `buildOutputs()` from both the old
+script (`git show HEAD:`) and the new one in one process and diffing the 170
+outputs in memory: identical key set, **67 files differing only in `"type"`
+strings, 0 differing anywhere else**. So every prop that appears, disappears or
+changes count between the committed pages and the regenerated ones is the Solid 2
+RC bump, not the rendering change.
+
+### Regenerated, once
+
+`vp run api:extract` — `wrote 84 reference pages`, 7.0s (it is far lighter than
+the ticket's estimate; `free -m` showed 9.8 GB available before and the run never
+became a memory question). 80 files changed: 78 page JSONs plus
+`pages.json` and `exports.json`. `grep -rn 'import(' apps/web/src/data/api-reference` → 0,
+`grep -rn node_modules` → 0, where the committed data previously carried
+`import("../node_modules/solid-js/types/types").RenderedElement` on every
+`children` prop of a collection component. A representative row:
+
+    - "type": "number | boolean | Node | JSX.ArrayElement | (string & {})"
+    + "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement"
+
+The after-probe, `.agents/api-reference-559/probe-render-after.ts`, walks both
+registers the way the conductor's probe did and reports what survives
+`renderType` (`.agents/api-reference-559/probe-render-after.txt`):
+
+    packages/viviana-ui    : 11770 scanned, 26 qualified before, 0 with a path after
+    packages/solid-spectrum:  8848 scanned, 20 qualified before, 0 with a path after
+
+The before-counts reproduce the conductor's 26 and 20 exactly.
+
+### Handed back: three route files I must not edit
+
+`api:extract` also rewrote the SEO prop count in three
+`apps/web/src/routes/docs/components/*.tsx`, which belong to the `public-face`
+worktree. That hunk is reverted with `git checkout --` and is **not** in this
+commit:
+
+| file            | committed | extraction says |
+| --------------- | --------- | --------------- |
+| `colorarea.tsx` | 20        | 22              |
+| `combobox.tsx`  | 116       | 123             |
+| `icon.tsx`      | 20        | 12              |
+
+All three are RC drift by the measurement above, not the rendering fix
+(`icon` loses `slot`, `class`, `style`, `aria-label` and four more; they are now
+declared outside our `packages/`, so `declaringPackage()` no longer keeps them).
+So `vp run guard:api-reference` is EXIT=1 with exactly those three `DRIFT` lines
+and nothing else, over `checked 84 reference pages`
+(`.agents/api-reference-559/guard-after.out.txt`). The other 81 pages are green.
+
+### On "two checkout paths", honestly
+
+Run: a detached worktree of `b840b763` at a scratch path with `node_modules`
+symlinked, hashing `buildOutputs()` rather than writing. New script, both paths:
+`3545b4a4…`, 170 files, identical. But the old script also produces one hash from
+both paths, `7c1c37ef…` — because the leaked path is *relative*
+(`../node_modules/…`), so moving the checkout does not move it. The checkout-path
+axis alone does not discriminate, and it would have been a test that passes on the
+defect. What discriminates is **layout**, which is what the printer actually
+prints, and that is the axis the committed test uses: same source, two depths,
+`import("../../shared/thing").Thing` against
+`import("../../../../../shared/thing").Thing`. I am recording the whole-repo run
+as a confirmation, not as the proof.
+
+### Also found, not fixed, and not #559's
+
+`vp test run scripts/` is 3 failed / 64 passed: all three in
+`scripts/check-entry-import-budget.test.ts`, and they are my #566 fallout. The
+fixture writes `dist/Provider.js` with no `src/` twin and asserts the dist-era
+strings `not built` and `build the packages first`; #566 replaced both the unit
+and that message with `resolve to no source file`. Red on `main` at `b840b763`
+independently of this ticket, and inside `test:run`, so it is on the ladder.
+Named here rather than fixed, per one-ticket scope.

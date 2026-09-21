@@ -56,7 +56,7 @@
         },
         {
           "name": "contextualHelp",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "A ContextualHelp element to place next to the label.",
           "origin": "viviana-ui"
@@ -101,9 +101,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -299,7 +299,7 @@
         },
         {
           "name": "isDateUnavailable",
-          "type": "((date: unknown) => boolean) & ((date: import(\"@internationalized/date\").DateValue) => boolean)",
+          "type": "((date: unknown) => boolean) & ((date: DateValue) => boolean)",
           "required": false,
           "description": "Whether a date is unavailable.",
           "origin": "solidaria"
@@ -317,7 +317,7 @@
         },
         {
           "name": "selectionAlignment",
-          "type": "import(\"@proyecto-viviana/solid-stately\").CalendarSelectionAlignment",
+          "type": "CalendarSelectionAlignment",
           "values": [
             "'start'",
             "'end'",
@@ -414,7 +414,7 @@
         },
         {
           "name": "placeholderValue",
-          "type": "import(\"@internationalized/date\").DateValue",
+          "type": "DateValue",
           "required": false,
           "description": "The placeholder value. The placeholder date (determines segment structure).",
           "origin": "solidaria"

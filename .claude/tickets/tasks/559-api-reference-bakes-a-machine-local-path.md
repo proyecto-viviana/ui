@@ -4,7 +4,7 @@ type: task
 title: "The API reference extractor renders a machine-local node_modules path, and 81 of 84 pages have drifted"
 created: 2026-09-20
 parent: 544
-status: next
+status: in-progress
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: next,
       at: 2026-09-20,
       note: "handed to the close-gates writer after #567 merged, as the next known red on the ladder and the only residue item that is also a defect in a published artifact. No brief file: the ticket already names the lever, the trap in it (the flag changes a rendering's name, not only its qualification) and the proof. One coordination point the writer cannot resolve alone - `api:extract` rewrites prop counts in three `apps/web/src/routes/docs/components/*.tsx` SEO lines, which belong to the public-face worktree; it stops at that hunk and hands it here. Ordered under the release path, `.agents/CONDUCTOR-RELEASE-PATH-2026-09-20.md` stage 2",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "the flag was rejected on the probe's own evidence and the display name is resolved here instead: `renderType()` strips the `import(\"\u2026\").` qualifier the printer emits and throws if one survives, so the path can never reach a page unnoticed. `UseAliasDefinedOutsideCurrentScope` would have renamed `import(\"@proyecto-viviana/solid-stately\").SegmentType` to `DateSegmentType`, and `DateSegmentType` already names a different type in these same docs. The proof is layout, not checkout path: a fixture renders one type from two nesting depths, `import(\"../../shared/thing\").Thing` against `import(\"../../../../../shared/thing\").Thing`, and both `renderType` to `Thing` - the whole-repo two-path run does not discriminate, because the leaked path is relative and the old script hashes the same from both paths too. Regenerated once: 80 files, zero `import(` and zero `node_modules` left. Importing `buildOutputs()` from the old and new scripts in one process shows 67 files differing only in `\"type\"` strings and 0 elsewhere, so the prop-count moves are the RC bump. Handed to the conductor, reverted here: `colorarea.tsx` 20\u219222, `combobox.tsx` 116\u2192123, `icon.tsx` 20\u219212 - `guard:api-reference` is EXIT=1 on exactly those three and green on the other 81. Evidence `.agents/close-gates-2026-09-20.log.md`",
     }
 ---
 
@@ -112,3 +117,40 @@ the 28 blocking gates the chain does not run (#568).
 
 Found under #555 item 8.2; the log entry is in
 `.agents/audit-defects-555-2026-09-20.log.md`.
+
+## What landed
+
+`renderType(rendered, site)` in `scripts/extract-api-reference.ts`, applied to
+every prop rendering. It removes the `import("…").` qualifier the printer emits
+and throws if any `import("` survives — a bare `typeof import("solid-js")` has no
+name to reach, so it fails the extraction loudly instead of shipping a path.
+
+The flag is not used. The probe's own output rules it out: it prints the alias
+reached rather than the target, so `import("@proyecto-viviana/solid-stately").SegmentType`
+becomes `DateSegmentType` — a name that in these docs already means
+solidaria-components' segment object, not solid-stately's union of segment kinds.
+Renaming a type inside a published reference to another type's real name is worse
+than an ugly path.
+
+## The proof, and what it is not
+
+`scripts/extract-api-reference.test.ts`: the same source is compiled at two
+nesting depths, so the printer's relative path differs (`../../shared/thing`
+against `../../../../../shared/thing`) while the type is the same, and both
+render to `Thing`. Names reached are kept (`RenderedElement`, `SegmentType`,
+`((e: HoverEvent) => void) | undefined`), and the unnameable case throws.
+
+The ticket asked for byte-identical extraction from two checkout paths. That was
+run — a detached worktree at a scratch path, both hashing `3545b4a4…` over 170
+outputs — but it is a confirmation, not the proof: the **old** script also hashes
+one value from both paths (`7c1c37ef…`), because the leaked path is relative. A
+test on that axis would have passed on the defect. Layout is the axis the printer
+actually varies with.
+
+## The handed-off hunk
+
+`api:extract` rewrites the prop count in three SEO lines under
+`apps/web/src/routes/docs/components/`, which are the public-face worktree's:
+`colorarea.tsx` 20→22, `combobox.tsx` 116→123, `icon.tsx` 20→12. Reverted here
+and left to the conductor. Until they land, `vp run guard:api-reference` is
+EXIT=1 on those three lines alone.

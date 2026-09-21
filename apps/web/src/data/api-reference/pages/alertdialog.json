@@ -25,7 +25,7 @@
         },
         {
           "name": "trigger",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The trigger element that opens the dialog.",
           "origin": "viviana-ui"
@@ -35,10 +35,10 @@
           "type": "AlertDialogVariant",
           "values": [
             "'warning'",
+            "'error'",
             "'confirmation'",
             "'information'",
-            "'destructive'",
-            "'error'"
+            "'destructive'"
           ],
           "required": false,
           "default": "'confirmation'",

@@ -1,0 +1,7 @@
+$ vp exec tsx scripts/extract-api-reference.ts ⊘ cache disabled
+wrote 84 reference pages
+
+
+real	0m7.025s
+user	0m10.808s
+sys	0m1.331s

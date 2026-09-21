@@ -55,21 +55,21 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The label for the combobox.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Description text for assistive technology and form help.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Error message text for assistive technology and validation feedback.",
           "origin": "viviana-ui"
@@ -120,14 +120,14 @@
         },
         {
           "name": "contextualHelp",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
         },
         {
           "name": "prefix",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "An icon or text rendered before the input.",
           "origin": "viviana-ui"
@@ -173,8 +173,30 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "loadingState",
+          "type": "LoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "The current loading state of the ComboBox. Determines whether or not the progress circle should be shown.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Handler that is called when more items should be loaded.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -441,6 +463,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "allowsCustomValue",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow custom values that don't match any item.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "defaultItems",
           "type": "T[]",
           "required": false,
@@ -494,17 +527,6 @@
           "type": "FilterFn",
           "required": false,
           "description": "The filter function to use for filtering items.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "allowsCustomValue",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether to allow custom values that don't match any item.",
           "origin": "solidaria-components"
         },
         {
@@ -564,16 +586,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxButtonRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ComboBoxButtonRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the button.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -599,16 +621,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxInputRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ComboBoxInputRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the input.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         }
       ]
@@ -627,16 +649,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the option. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -673,14 +695,14 @@
         },
         {
           "name": "onHoverStart",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover starts.",
           "origin": "solidaria"
         },
         {
           "name": "onHoverEnd",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover ends.",
           "origin": "solidaria"
@@ -805,9 +827,48 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the listbox is empty. RAC ListBox `renderEmptyState`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether additional items are currently loading.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Called when the load more sentinel becomes visible.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderLoadMore",
+          "type": "() => JSX.Element | undefined",
+          "required": false,
+          "description": "Content to display in the load more sentinel row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreClass",
+          "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "CSS class for the load more sentinel row.",
           "origin": "solidaria-components"
         }
       ]
@@ -826,16 +887,16 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
           "required": false,
           "description": "The children of the option. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -872,14 +933,14 @@
         },
         {
           "name": "onHoverStart",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover starts.",
           "origin": "solidaria"
         },
         {
           "name": "onHoverEnd",
-          "type": "(e: import(\"..\").HoverEvent) => void",
+          "type": "(e: HoverEvent) => void",
           "required": false,
           "description": "Handler called when hover ends.",
           "origin": "solidaria"
@@ -990,16 +1051,16 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Section contents, usually Header + Group/items.",
           "origin": "solidaria-components"
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {

@@ -32,9 +32,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -176,6 +176,20 @@
           "type": "string",
           "required": false,
           "description": "Name for the hidden Y-axis range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputXRef",
+          "type": "Accessor<HTMLInputElement | null | undefined>",
+          "required": false,
+          "description": "A ref to the input that represents the x axis of the color area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputYRef",
+          "type": "Accessor<HTMLInputElement | null | undefined>",
+          "required": false,
+          "description": "A ref to the input that represents the y axis of the color area.",
           "origin": "solidaria"
         }
       ]

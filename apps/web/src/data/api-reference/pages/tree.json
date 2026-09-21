@@ -101,14 +101,14 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy label helper. Prefer aria-label or aria-labelledby.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy description helper.",
           "origin": "viviana-ui"
@@ -341,7 +341,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((props: { isExpanded: boolean; }) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((props: { isExpanded: boolean; }) => JSX.Element)",
           "required": false,
           "description": "Children to render inside the button.",
           "origin": "solidaria-components"
@@ -362,7 +362,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TreeItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "TreeViewItem content. Text-only children are wrapped in the S2 label slot.",
           "origin": "viviana-ui"
@@ -451,14 +451,14 @@
         },
         {
           "name": "routerOptions",
-          "type": "import(\"@proyecto-viviana/solidaria-components\").RouterOptions",
+          "type": "RouterOptions",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Optional description text. Prefer `<Text slot=\"description\">`.",
           "origin": "viviana-ui"
@@ -507,9 +507,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -556,7 +556,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TreeItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "",
           "origin": "solidaria-components"
@@ -610,7 +610,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
@@ -728,14 +728,14 @@
         },
         {
           "name": "label",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy label helper. Prefer aria-label or aria-labelledby.",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Legacy description helper.",
           "origin": "viviana-ui"
@@ -961,7 +961,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TreeItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "TreeViewItem content. Text-only children are wrapped in the S2 label slot.",
           "origin": "viviana-ui"
@@ -1050,14 +1050,14 @@
         },
         {
           "name": "routerOptions",
-          "type": "import(\"@proyecto-viviana/solidaria-components\").RouterOptions",
+          "type": "RouterOptions",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
         },
         {
           "name": "description",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "Optional description text. Prefer `<Text slot=\"description\">`.",
           "origin": "viviana-ui"
@@ -1106,9 +1106,9 @@
         },
         {
           "name": "slot",
-          "type": "string",
+          "type": "string | false",
           "required": false,
-          "description": "A slot name for the component.",
+          "description": "A slot name for the component. HTML `slot` may be `false` to omit.",
           "origin": "solidaria-components"
         },
         {
@@ -1155,7 +1155,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((renderProps: TreeItemRenderProps) => JSX.Element)",
           "required": false,
           "description": "",
           "origin": "solidaria-components"
@@ -1209,7 +1209,7 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "",
           "origin": "viviana-ui"

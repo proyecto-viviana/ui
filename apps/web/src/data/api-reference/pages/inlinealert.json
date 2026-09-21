@@ -11,7 +11,7 @@
       "props": [
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
           "description": "The contents of the InlineAlert.",
           "origin": "viviana-ui"
@@ -59,7 +59,7 @@
         },
         {
           "name": "styles",
-          "type": "import(\"../s2-internal/style-utils\").StylesProp | (() => StyleString | undefined)",
+          "type": "StylesProp | (() => StyleString | undefined)",
           "required": false,
           "description": "Spectrum-defined styles, returned by the `style()` macro.",
           "origin": "viviana-ui"
