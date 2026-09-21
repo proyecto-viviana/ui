@@ -4,12 +4,17 @@ type: task
 title: "The upstream-test-parity baseline has drifted 30 facts behind the pin, and its last move was labelled fmt"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor walking the post-build half of the ladder on 2026-09-20 evening. `vp run guard:upstream-test-parity` EXIT=1: `count delta vs baseline: suspects 157 → 187 (Δ+30), coverageGaps 47 → 43 (Δ-4), upstreamOnly 18 → 16 (Δ-2)`; against the pin at s2 1.7.0 / rac 1.21.0 it matches 49, has 145 of ours with no upstream pair and 16 upstream with no pair of ours, and ranks 37 suspects of which 18 are ROLE divergences. Step 227 of certification-gates.yml. Two things make it more than a re-bless: seven of the thirty new facts are the identical `role|form` fact on checkbox, combobox, numberfield, radiogroup, searchfield, select and textfield - one cause, not seven - and the baseline's last content change, `a741273a`, is `5 insertions, 17 deletions` even under `git show -w` inside a commit whose subject calls it `fmt drift in tickets and the parity baseline`. Evidence `.agents/chain-walk-2026-09-20/ladder-upstream-test-parity.out.txt`",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #572 merged (`40ac9573`), as the earliest remaining red; the ladder now walks to step 227. One correction to this ticket's own prose, made in this commit: it calls 227 'the last red on the ladder', which was true when filed and is not now - the heavy gates behind it have since been walked, and 239 is #574 and 251 is #575 and #576. Two things for whoever takes it. First, bucket 3 is the reason this is not a fifteen-minute re-bless, and the order in the Work section is not a suggestion: a `tabs|role|textbox` row is either our test asserting another component's role, which is a defect this guard was built to find, or the extractor attributing a fact to the wrong component, which is a defect in the guard - and those two have different fixes, so name which one each row is before deciding anything. Second, this is the fourth ratchet in two days that stopped describing the tree, and it is the one that failed *silently* rather than loudly: `a741273a` moved it under a label that hides the move. The class now has a ticket of its own, #577; do not widen this guard here, but if you see what would have let it report its own staleness, write the sentence into #577 rather than losing it. Heavy: needs `vp run build` first, so `free -m`, one command at a time, output to a file",
     }
 ---
 
@@ -87,8 +92,10 @@ message that names the change.
 ## Relationship
 
 Child of #544, and stage 2 of `.agents/CONDUCTOR-RELEASE-PATH-2026-09-20.md`.
-Step 227 of `.github/workflows/certification-gates.yml` — the last red on the
-ladder, behind #570 (160), #571 (169, 185) and #572 (219).
+Step 227 of `.github/workflows/certification-gates.yml` — the earliest remaining
+red, behind #570 (160), #571 (169, 185) and #572 (219), all merged. Not the last
+one: the heavy gates named at the foot of this section have since been walked,
+and they are #574 at 239 and #575 with #576 at 251.
 
 Not owned elsewhere, checked before filing: #220 is in-progress but closed its
 own regen; #23 is verified; #204 is parked. #568 owns the reason this went
