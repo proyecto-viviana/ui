@@ -4,12 +4,17 @@ type: task
 title: "The API reference extractor renders a machine-local node_modules path, and 81 of 84 pages have drifted"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: 'found by the #555 item 8.2 writer while looking for the proof that a doc-comment fix reaches the emitted page. It does not - solidaria is not an extracted register - but `vp run guard:api-reference` is red: 81 of 84 pages drifted. The writer ran `api:extract` once to read the diff and reverted all of it rather than re-bless, which is right: regenerating today bakes an absolute-ish `import("../node_modules/solid-js/types/types").RenderedElement` into shipped docs data. Conductor confirmed the red independently (`.agents/chain-walk-2026-09-20/guard-api-reference.out.txt`, EXIT=1, `checked 84 reference pages`, committed data clean) and probed the renderer',
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #567 merged, as the next known red on the ladder and the only residue item that is also a defect in a published artifact. No brief file: the ticket already names the lever, the trap in it (the flag changes a rendering's name, not only its qualification) and the proof. One coordination point the writer cannot resolve alone - `api:extract` rewrites prop counts in three `apps/web/src/routes/docs/components/*.tsx` SEO lines, which belong to the public-face worktree; it stops at that hunk and hands it here. Ordered under the release path, `.agents/CONDUCTOR-RELEASE-PATH-2026-09-20.md` stage 2",
     }
 ---
 
@@ -98,10 +103,12 @@ into `node_modules`, and extraction is proved path-independent.
 ## Relationship
 
 Child of #544, and a blocker for it: `guard:api-reference` is a step in
-`.github/workflows/certification-gates.yml:195`. That workflow is
-`disabled_manually` right now, so this is not red in CI today — which is exactly
-why it needs a ticket rather than a discovery at re-enable time. It is not in
-`ci:release-readiness`, so it does not block queue item 1's chain walk.
+`.github/workflows/certification-gates.yml:193`. The workflow was
+`disabled_manually` when this was written and was re-enabled the same evening on
+the owner's decision, so this **is** red in CI now — the first walk stopped
+earlier, at `guard attribution-headers` (#567), thirteen steps short of it. It is
+not in `ci:release-readiness`, which is why the chain walk never saw it: one of
+the 28 blocking gates the chain does not run (#568).
 
 Found under #555 item 8.2; the log entry is in
 `.agents/audit-defects-555-2026-09-20.log.md`.

@@ -4,7 +4,7 @@ type: task
 title: "Two reviewed-local attribution hashes drifted, so guard:attribution-headers is red on main"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "re-attested, and the diff was read against the content the hashes were pinned to rather than against today's file. Both pinned hashes reproduce the two files exactly at `e6384f37^` (915f4ecb\u2026 and 692e2517\u2026), which is what makes `git diff e6384f37^ HEAD` on those paths the whole delta since the review and not one commit's worth of it - and that delta is the four lines under `## The diff, in full`, verbatim. Both files are barrels listing this repository's own module names; the addition re-exports `openLink`, already declared in `utils/dom.ts`, and the type alias beside it. No upstream-derived text entered either file, so the recorded classification `local-module-surface` still holds and this is the same review re-pinned, not a new one. Hashes replaced by hand to f6faae18\u2026 and 9e644b51\u2026, the shape of `d1de1207`. `vp run guard:attribution-headers` EXIT=0: `254 reviewed local files match their recorded content`, mismatch 0, and the other four contracts unchanged at 474/12/75/75. `guard:publish-drift` EXIT=0, no changeset owed. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "`5e757b51`, reviewed by the conductor. Every claim re-computed here rather than accepted: `sha256sum` of both files at HEAD equals the two new pins (f6faae18…, 9e644b51…), `git show e6384f37^:<path> | sha256sum` equals the two old pins (915f4ecb…, 692e2517…), and `git diff --stat e6384f37^ HEAD` on those two paths is 4 insertions and 0 deletions - so the delta since the review is the four quoted lines and the whole of it. `vp run guard:attribution-headers` EXIT=0, 254/254 reviewed local files, the other four contracts unchanged. The ladder's first red is closed",
     }
 ---
 
