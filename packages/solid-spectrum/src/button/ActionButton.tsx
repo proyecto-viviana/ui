@@ -374,10 +374,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         return currentSize === "XS" ? undefined : currentSize;
       },
       get isDisabled() {
-        // Upstream reads the RACButton render prop here, i.e. the same resolved
-        // `props.isDisabled ?? ctx.isDisabled` the element gets
-        // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:436,432`), so the
-        // group greys the badge too. The proxy alone no longer sees the group.
+        // Upstream hands the badge RACButton's children render prop, not the
+        // group value: `:381` is `{({isDisabled}) =>`, which shadows the `ctx`
+        // destructuring at `:348`, so the `isDisabled` passed at `:436` is the
+        // resolved `props.isDisabled ?? ctx.isDisabled`
+        // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:348,358,381,436`;
+        // `react-aria-components@1.21.0/dist/private/Button.mjs:51` coerces it).
+        // So the Form greys the badge too. The proxy alone misses the group.
         return !!isDisabled();
       },
       styles: () =>

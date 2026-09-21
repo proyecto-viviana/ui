@@ -158,10 +158,12 @@ describe("Form (viviana-ui) and the button family", () => {
     expect(trigger("under a plain trigger")).not.toBeDisabled();
   });
 
-  // Upstream hands NotificationBadgeContext the RACButton render prop, which is
-  // the resolved `props.isDisabled ?? ctx.isDisabled`
-  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:358,436,432`), so the group
-  // and the Form grey the badge as well as the button.
+  // Upstream hands NotificationBadgeContext the RACButton render prop, not the
+  // group value: `:381` is `{({isDisabled}) =>`, which shadows the `ctx`
+  // destructuring at `:348`, so `:436` passes the resolved
+  // `props.isDisabled ?? ctx.isDisabled` of `:358`
+  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:348,358,381,436`), and the
+  // group and the Form grey the badge as well as the button.
   it("gives ActionButton's NotificationBadge the resolved isDisabled", () => {
     render(() => (
       <>

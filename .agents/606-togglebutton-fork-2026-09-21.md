@@ -76,7 +76,15 @@ EXIT=1
 The one pass is `disables Button through the Form and the Skeleton` — an honest
 control, not a bound branch: viviana-ui's Button already called `useFormProps`
 (`Button.tsx:61`), so its disabled path was right before this ticket while its
-size path was not. All three twins carried **both** defects otherwise.
+size path was not. Button therefore carried **only** the size defect;
+`ActionButton` and `LinkButton` carried both, and so did the stale `ToggleButton`
+copy, which Scope 1 fixed by taking the spectrum bytes rather than by porting.
+Measured, `git show 45714230:packages/viviana-ui/src/button/<name>.tsx | grep -n
+'useFormProps\|defaultProps'`: Button prints `:43` import, `:61`
+`useProviderProps(useFormProps(runtimeProps))`, `:72` `defaultProps` and `:78`
+`useFormProps(mergeProps(defaultProps, …))`; the other three print `defaultProps`
+and no `useFormProps` at all. That split is also why 10 failed | 1 passed is the
+expected shape and not a short count.
 
 After the fix:
 
@@ -113,9 +121,15 @@ Upstream ordering, read from the installed pin and not from memory:
 `@react-spectrum/s2@1.7.0/src/ActionButton.tsx:334` is `props = useFormProps(props)`;
 `:345-347` let `ActionButtonGroupContext` win `size`, `staticColor` and
 `isQuiet` as destructuring defaults; `:358` is
-`isDisabled={props.isDisabled ?? isDisabled}`, group last; `:436` then `:432`
-hand the badge the resolved render-prop value. `react-aria-components@1.21.0`'s
-MenuTrigger never sets `isDisabled` on its trigger.
+`isDisabled={props.isDisabled ?? isDisabled}`, group last; and `:381` opens
+RACButton's children with `{({isDisabled}) =>`, which shadows the `ctx` value
+destructured at `:348`, so the `isDisabled: isDisabled` handed to
+`NotificationBadgeContext` at `:436` is that render prop and not the group value
+— `react-aria-components@1.21.0/dist/private/Button.mjs:51` is
+`isDisabled: props.isDisabled || false`, the coercion our `!!isDisabled()`
+matches. `dist/private/ActionButton.mjs:437,508` compiles to the same shadow.
+`react-aria-components@1.21.0`'s MenuTrigger never sets `isDisabled` on its
+trigger.
 
 ## 5. Each new assertion binds its own branch
 
@@ -214,3 +228,40 @@ write paths.
 - The size assertions compare generated class names between a Form-wrapped
   control and a standalone control of the known size; they do not measure
   rendered pixels.
+
+## 10. Review round, same day
+
+Two problems were raised against the landed work. One was wrong and the code
+stands; one was right and is corrected above.
+
+**Upheld: the badge getter matches the pin.** The review read
+`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:348` (`isDisabled` destructured
+out of `ctx || {}`, the `ActionButtonGroupContext` value) and concluded that
+`:436`'s `isDisabled: isDisabled` is that group value alone, so the badge should
+read `!!groupContext?.isDisabled` and neither the button's own prop nor the Form
+should grey it. It misses `:381`, which opens RACButton's children as
+`{({isDisabled}) =>` and shadows `:348` for the whole `:381-507` closure that
+`:436` sits inside; `dist/private/ActionButton.mjs:437,508` compiles to the same
+shadow. So `:436` is the render prop, which
+`react-aria-components@1.21.0/dist/private/Button.mjs:51` defines as
+`isDisabled: props.isDisabled || false` over what `:358` passed — the resolved
+`props.isDisabled ?? ctx.isDisabled`, itself downstream of `:334`'s
+`useFormProps`. `!!isDisabled()` is that value. The test binds it: applying the
+review's proposed getter to the fixed tree and running the file gives
+`1 failed | 10 passed (11)`, EXIT=1, failing only
+`expect(cls("own-badge")).not.toBe(cls("enabled-badge"))` at
+`Form.buttons.test.tsx:189` — the assertion that distinguishes upstream from the
+proposal. Restored, EXIT=0. The changeset line stands as written.
+
+The real defect behind that misreading was the citation: all four copies said
+`:436,432` and never named `:381`, so the cited lines did not support the claim
+they carried. Both `ActionButton.tsx` badge getters and both test comments now
+cite `:348,358,381,436`, and §4 above says why.
+
+**Corrected: "all three diverged twins carried both defects" was false.** §3 now
+reads Button as carrying only the size defect, with the grep that shows it, and
+names `ActionButton`/`LinkButton` (plus the stale `ToggleButton` copy) as the
+ones that carried both. The claim was also in the second ticket note, in the
+commit message of `09779c89`, and in #544's note and S0-f bullet; the two
+documents are corrected, and the commit message is immutable, so a dated ticket
+note carries the correction instead.

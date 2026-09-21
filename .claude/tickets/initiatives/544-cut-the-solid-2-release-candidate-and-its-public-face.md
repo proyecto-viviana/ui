@@ -30,6 +30,11 @@ history:
       at: 2026-09-21,
       note: "a new stage **S0-f #606** was added to the path, and S0-b is no longer the earliest blocking red. Measured at HEAD `45714230`: `guard layer-boundary` is `certification-gates.yml:183`, step 24 of the `gates` ladder, ahead of S0-b's `docs:check` at `:257`; `vp run guard:layer-boundary` exits 1 there with one new fork, `button/ToggleButton.tsx`, which is what stopped run 35623988073 at `e8bacb9d`. Cause is `7e93d238`, a fix written to the solid-spectrum side of a frozen byte-identical dual path only, then `45714230` on the same side again. #606 restores identity, ports the same two Form fixes into the three viviana-ui buttons baselined as diverged forks - all three carried both defects - and is `merged` in this checkout with the guard at exit 0. Second occurrence of #570's class; #606 proposes, and does not build, a `staged` entry in `vite.config.ts` over `packages/{solid-spectrum,viviana-ui}/src/**` so the existing `vp staged` pre-commit hook runs the guard, with the `ci:release-readiness` clause as a complement",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "correction to the note above and to the S0-f bullet, which is edited in place: 'all three carried both defects' is wrong. `git show 45714230:packages/viviana-ui/src/button/Button.tsx | grep -n 'useFormProps\\|defaultProps'` prints `:43` import, `:61` `useProviderProps(useFormProps(runtimeProps))`, `:72` `defaultProps`, `:78` `useFormProps(mergeProps(defaultProps, ...))`, so Button already read the Form and carried only the size defect - its merged-in `size: 'M'` left the Form nothing to fill. The same grep on `ActionButton.tsx` and `LinkButton.tsx` prints `defaultProps` with no `useFormProps`, so those two carried both, as did the stale `ToggleButton.tsx` copy that Scope 1 fixed by taking the spectrum bytes. This is also why #606's pre-fix run was 10 failed | 1 passed rather than 11 failed. No stage, order or exit code changes. Raised by #606's review; the rest of that review's badge finding was checked against the pin and rejected, see #606's fourth note",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -169,8 +174,12 @@ stop is unexecuted, so the repository has no verdict on most of its own gates.
   `packages/solid-spectrum/src/button/ToggleButton.tsx` and left its viviana-ui
   copy behind — so the guard reported one new fork and exited 1. Fixed by
   restoring identity and porting the same two Form fixes into the three
-  viviana-ui buttons that are baselined as diverged forks, which carried both
-  defects; `vp run guard:layer-boundary` exits 0 at `45714230`'s successor.
+  viviana-ui buttons that are baselined as diverged forks. Of those three,
+  `Button` carried only the size defect — it already wrapped in `useFormProps`
+  (`Button.tsx:61,78`) but merged `defaultProps` first, so `size: "M"` left the
+  Form nothing to fill — while `ActionButton` and `LinkButton` carried both, as
+  did the stale `ToggleButton` copy. `vp run guard:layer-boundary` exits 0 at
+  `45714230`'s successor.
 
 **What makes `certified report` exit 0**, since the release condition rests on
 it. `merge-certified-reports.ts` exits 1 when a shard cannot explain its exit,
