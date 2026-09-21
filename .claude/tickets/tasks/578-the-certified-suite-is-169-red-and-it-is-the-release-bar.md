@@ -4,12 +4,17 @@ type: task
 title: "The certified suite is 169 red on GitHub's runners, concentrated in thirteen components"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor on 2026-09-20 while checking #194's stage-3 obligation, by reading CI rather than by running anything. `Certification Gates` is **active**, not disabled, and has been running on every `main` push; almost every run is cancelled by the next push, and run 35546816816 at `ef7d4c4d` is the only recent one where all eight certified shards completed. Its merged summary: `Run status: failed`, `Totals: 2004 passed, 169 failed, 4 skipped, 0 waived, 0 flaky`, against a recorded postcard of 2170 passed / **0 failed** at `0f1e1198` (2026-08-21). The `certified report` job failed at `Merge certified reports`, which is #194 slice 1 working exactly as built - a non-pass status the summary does not explain is now a hard failure instead of a green merge of zeros. Receipts `.agents/certified-2026-09-20/merge-ef7d4c4d.log.txt` and `unwaived-failures.txt`, 169 named lines",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #573 merged (`2b444a89`), ahead of #574, #575 and #576, on this ticket's own argument: those three are steps of the `gates` job and each is smaller, while this is the `certified` job and it is the evidence #547 asks for. The hand-over asks for steps 1 and 2 only - one failure reproduced and understood, then the 169 grouped by proven cause with the ungraded remainder named as ungraded - and a report back before any fixing at scale. Four rules were given priority in the brief, in the order they are easy to break: reproduce before theorising, no waiving, one cause per commit with its re-run in the message, and never update a screenshot baseline to make a test pass. The count in this ticket is from run 35546816816 at `ef7d4c4d`; the run in flight when this was handed over was `1d7551cb`, whose gates job failed at step 36 - the gate #573 has since closed - so the first revision that can walk past step 227 is this commit",
     }
 ---
 
