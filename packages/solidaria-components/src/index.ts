@@ -1012,6 +1012,8 @@ export { SSRProvider } from "@proyecto-viviana/solidaria";
 
 export { parseColor, FormValidationContext } from "@proyecto-viviana/solid-stately";
 
+export { setInteractionModality } from "@proyecto-viviana/solidaria";
+
 export { ToastQueue as UNSTABLE_ToastQueue } from "@proyecto-viviana/solid-stately";
 
 // Data hooks (aliased to match RAC's useXxx naming)

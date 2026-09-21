@@ -1308,3 +1308,58 @@ strings `not built` and `build the packages first`; #566 replaced both the unit
 and that message with `resolve to no source file`. Red on `main` at `b840b763`
 independently of this ticket, and inside `test:run`, so it is on the ladder.
 Named here rather than fixed, per one-ticket scope.
+
+## #569 — setInteractionModality was pending on a ticket that closed
+
+Step 121, the earliest red on the gates ladder. The excuse is shipped away
+rather than re-pointed: one re-export, the pending entry deleted, the barrel's
+attribution hash re-attested in the same commit, and a changeset.
+
+### Where the line goes, and why there
+
+Upstream is the answer. `react-aria-components/exports/index.ts:289` puts
+`setInteractionModality` in its run of sibling re-exports, between
+`parseColor, getColorChannels` (280–288) and `ToastQueue as UNSTABLE_ToastQueue`
+(290). Our barrel already carries that same run in that same order —
+`SSRProvider`, then `parseColor, FormValidationContext`, then
+`UNSTABLE_ToastQueue` — so the line goes between the last two, and the barrel
+keeps reading in RAC's order. It re-exports from `@proyecto-viviana/solidaria`,
+which is where the function is (`interactions/createInteractionModality.ts:319`,
+on the solidaria barrel at `index.ts:85`), and which is the layer RAC's
+`react-aria/useFocusVisible` corresponds to. No alias: RAC exports the name
+unchanged, and so do we.
+
+`vp run guard:rac-export-gap` EXIT=0: `no unlisted RAC value exports are
+missing`, 8 ticketed pending exports, now the 7 `NavigationTree*` on the open
+#228 and `TokenFieldValue` on the open #118 — every remaining excuse owned by a
+ticket that is still open, which is the invariant the guard exists to hold.
+
+### The re-attestation, read before it was re-pinned
+
+`packages/solidaria-components/src/index.ts` is `local-module-surface`, pinned
+`d4a4a439…`. That pin reproduces the file at HEAD exactly
+(`git show HEAD:… | sha256sum` = `d4a4a439…`), so unlike #567 nothing had
+drifted before this edit and the delta since the review is one line, mine:
+
+```diff
++export { setInteractionModality } from "@proyecto-viviana/solidaria";
+```
+
+A barrel's content is a list of this repository's own module names, and the
+added name is this repository's own function — `setInteractionModality` is
+declared in `packages/solidaria/src/interactions/createInteractionModality.ts`,
+not copied from upstream; only the *name* is upstream's, which is the whole point
+of a parity barrel and is not authorship. Nothing upstream-derived entered the
+file, so `local-module-surface` still holds and this is the same review
+re-pinned, not a new one. Re-pinned by hand to `b16cb58b…` after formatting, so
+the hash is of the committed bytes.
+
+`vp run guard:attribution-headers` EXIT=0, 254/254, the other four contracts
+unchanged at 474/12/75/75.
+
+### The changeset
+
+A new named export on a published package. `@proyecto-viviana/solidaria-components`
+patch, `.changeset/solidaria-components-set-interaction-modality.md`;
+`vp run guard:publish-drift` EXIT=0. `vp run check` green;
+`scripts/check-rac-export-gap.test.ts` 6/6.

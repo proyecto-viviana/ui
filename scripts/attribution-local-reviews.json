@@ -752,7 +752,7 @@
   {
     "localPath": "packages/solidaria-components/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "d4a4a43977e343def3c1aba774a0fca67b4ce40d9cf5b05dbf512e3152219253"
+    "contentSha256": "b16cb58b9248cf9fe5254b4b41dcf5f07dadef7bd7dd506e076082f37c1f00f2"
   },
   {
     "localPath": "packages/solidaria-components/src/Landmark.tsx",
