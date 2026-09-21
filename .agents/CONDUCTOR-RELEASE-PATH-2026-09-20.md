@@ -368,8 +368,11 @@ In order, all on the same commit, from #547:
 2. One changeset per package, stating the Solid 2 requirement and the
    `@solidjs/web` peer in the consumer's words. **Already written:**
    `.changeset/solid-2-rc.md` names all five as `minor` and states the
-   `jsxImportSource` and `[...solid({ ssr: true })]` requirements. 50 changesets
-   pending in total, covering every in-scope package.
+   `jsxImportSource` and `[...solid({ ssr: true })]` requirements — re-read at
+   `7f1c63ff`, it says exactly that. **49** changesets pending, not the 50 this
+   line first claimed: `.changeset/` holds 50 `.md` files and one of them is
+   `README.md`. `.changeset/pre.json` does not exist, so prerelease mode is
+   genuinely unentered and step 1 is the true starting point.
 3. `vp run pr:check`, `vp run release:prepare`, and a certified run whose result
    is recorded.
 4. `vp run guard:publish-drift` and `pack:local-chain` into a clean off-workspace
@@ -380,6 +383,27 @@ In order, all on the same commit, from #547:
    `npm dist-tag add <pkg>@<version> next` per package. **Not** `--tag next`:
    passing `--tag` in pre mode is a hard error, `publish.mjs:61-63`. Never move
    `latest`; it cannot move by accident here, and #547 records why.
+
+### Stage 4's scripts, read rather than assumed
+
+Checked at `7f1c63ff`, because three of the steps above name scripts whose
+contents decide whether the step does what the sentence says:
+
+- `ci:changesets` = `check-changeset-required` → `check-changeset-status` →
+  `guard:publish-drift` → `guard:release-prerequisites`. So publish-drift is in
+  `pr:check` after all, through this leg — it is absent from
+  `ci:release-readiness`, which is the narrower claim #568 makes and the one
+  that is true.
+- `changeset:publish` = `guard:release-prerequisites` → `build` →
+  `changeset publish`. The publish is guarded, not bare.
+- `changeset:version` = `changeset version` → `vp install --lockfile-only
+  --no-frozen-lockfile --ignore-scripts`, so the lockfile is refreshed in the
+  same step that writes the versions.
+
+`.changeset/config.json` confirms the scope #547 states: `ignore` lists
+`@proyecto-viviana/kumo` and `@proyecto-viviana/geist` along with the four
+private workspaces, `access` is `public`, `baseBranch` is `main`. The five
+in-scope packages are exactly the ones not ignored.
 
 ### What stage 4 ships is whatever is in `main`, and that includes the READMEs
 
