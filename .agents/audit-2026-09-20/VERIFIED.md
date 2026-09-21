@@ -27,15 +27,65 @@ a row. `fixed` names the commit; `ticket` names where unfixed work lives.
 | 1 | `ButtonGroup` drops the `children` dependency, in two twins | pre `local.children` at `:161`; upstream `ButtonGroup.tsx:157` lists children in its deps | ticket #555 |
 | P | `build:web` is red on an upstream rename, not on our source | `@solidjs/web` rc.9 renamed `parseServerFunctionUrl`/`serverFunctionUrl` to `parseServerFunctionActionUrl`/`serverFunctionActionUrl`; `@tanstack/solid-start@2.0.0-rc.8` uses the old names in `dist/esm/server-functions-handler.js`. Read from both published tarballs | see `.agents/green-main-2026-09-20.decision-solid-start-patch.md` |
 
-## Not reproduced
+## The residue, settled 2026-09-21
 
-The conductor did not reproduce these; they stay claims until someone does.
+These six were listed as "not reproduced" while the campaign ran. Each now has
+an outcome, which is what #546's Done when asks for. Two were already fixed, two
+are real and already owned, one is rejected on a reading, one is informational
+and ticketed.
 
-- lens 5: the `apps/web` Worker security headers, the style-macro `new Function`
-  (informational), and the `Modal` `ariaHideOutside` non-reactive ref — which
-  the lens itself marked UNPROVEN.
-- lens 1: the `createTrackedEffect` debt (185 sites, informational) → #554;
-  the `createToastRegion` squashed header; the 12 dead imports.
+| lens | finding | reproduced by | outcome |
+| --- | --- | --- | --- |
+| 1 | `createToastRegion`'s header squashed onto one line | `grep '\* \* ' packages/*/src` → 0 matches, repo-wide; the block at `createToastRegion.ts:44-50` is expanded | fixed, `002ea401` (#555 item 8) |
+| 1 | 12 dead `createEffect` / `onCleanup` imports in eight modules | read all eight import lines; none names either binding | fixed, `8db7c298` (#555 item 8.3) |
+| 1 | `createTrackedEffect` is the reactive substrate, 185 sites | counted, informational, no repro to point at | ticket #554 |
+| 5 | `apps/web` stamps none of the comparison app's security headers | `grep` for the four header names across `apps/web` → 0; `apps/comparison/src/worker.ts:9-15` has all five and `withSecurityHeaders` applies them; `apps/web/src/server.ts` is a bare `handler.fetch` passthrough | real. #549 owns it for this campaign (`#555` scope, last line); #90 owns the contract |
+| 5 | style-macro compiles generated CSS with `new Function` | `style-macro.ts:527` and `:530`, in both twins, exactly as named | real, and faithful to Adobe. #90 already names it at `:24-27` as the CSP cost |
+| 5 | `Modal` aria-hide reads a non-reactive `modalRef` let | read `Modal.tsx:541-569` against `:320` | **rejected**, see below |
+
+### Why the `Modal` aria-hide row is rejected
+
+The reading the lens could not take is in the file. `Modal.tsx:544` does read the
+plain `let modalRef` inside a `createTrackedEffect` whose only tracked dependency
+is `isOpen()`, and assigning that let is not a signal write — so if the effect
+ran before the ref callback, it would return early and never retry. It cannot run
+first. `ModalContent` is instantiated only inside `<Show when={isHydrated() &&
+(isOpen() || combinedExiting())}>` at `:320`, and `renderProps`' `children` is a
+getter precisely so the subtree is not built before that gate (`:578-585`). So
+the body, the effect and the `<div ref={registerModalRef}>` at `:613` are all
+created in the same pass, and Solid assigns refs during element creation, before
+effects flush. `modalRef` is always set by the time `:544` reads it.
+
+What survives is a shape, not a defect: the effect is correct by the mount gate
+rather than by its own dependencies, and the signal that would make it
+self-evidently correct is two lines away (`modalEl` at `:421`, written by
+`registerModalRef` at `:449`). Worth one line if someone is in the file. Not
+worth a ticket, and not an rc blocker.
+
+### Lens 4 is not re-proved here
+
+Lens 4's three files are claim inventories against the site and the READMEs, and
+#546's Relationship routes them to #548's claim list, not to this table. Both
+tickets re-prove every row they consume — #548's Done when is "no README names a
+version, count, or capability the tree cannot prove", #549's is "the
+getting-started steps work when followed literally in a clean directory" — so
+verifying them a second time here would be the third copy.
+
+Two of lens 4b's rows were spot-checked anyway, because a broken first example is
+the cheapest possible way to lose a stranger, and both are still live:
+
+- `apps/web/src/routes/solid-spectrum/docs/index.tsx:106-109` — the
+  getting-started snippet calls `createSignal(false)` and imports only `Button`.
+  Pasted as shown it does not compile.
+- `calendar.tsx:42`, `datefield.tsx:27`, `datepicker.tsx:31` — the displayed
+  `importCode` omits `type DateValue` while the example below it writes
+  `createSignal<DateValue | null>(null)`. Each page imports the type for its own
+  use at `:4`, which is why the page builds and the snippet does not.
+  `daterangepicker.tsx:39` is the control: it shows the type import.
+
+Both are facts inside `apps/web`, so they are fact-fixes rather than copy, and
+they belong to #549 by its write paths. Named here so they do not stay buried in
+a 31 kB lens file.
 
 ## The `Changesets Check` trigger — decided 2026-09-20, keep it
 

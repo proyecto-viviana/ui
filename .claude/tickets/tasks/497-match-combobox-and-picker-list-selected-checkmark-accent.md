@@ -4,7 +4,7 @@ type: task
 title: "Match ComboBox and Picker list selected-checkmark accent"
 created: 2026-09-07
 parent: 136
-status: merged
+status: next
 history:
   - {
       state: open,
@@ -31,6 +31,11 @@ history:
       at: 2026-09-07,
       note: "ComboBox D3 exact-pair: D3 clone probe mounts on document.body and copies color/color-scheme. ComboBox option isFocusVisible := isFocused || isFocusVisible kept (D7 Pro ink; React pointer-open listboxItem still paints the selected-row ring). Checkmark still { isSelected, isFocused, size } only. Picker product untouched. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: ComboBox list D1+D3+D7+D9 20 passed; Picker list D1+D3+D7+D9 20 passed. Waivers []. git diff --check clean. Did not start #498/#499/#511. No knownDivergence.",
     }
+  - {
+      state: next,
+      at: 2026-09-21,
+      note: "reopened: regressed in combobox only. Certification Gates run 35554086311 on 1a98e250 reports the same four pairs under the same inner label `default · checkmarkSelected`, 22 combobox-list rows. b33a0a74 (2026-09-15) replaced the fix's second half with `const isFocusVisible = () => isFocused() && isFocusVisibleModality()` at packages/solid-spectrum/src/combobox/index.tsx:672, so a pointer-open drops data-focus-visible and the checkmark falls back to the default accent stop. Picker keeps both halves (picker/index.tsx:489 and :1178) and its checkmark passes. Not token drift: our spectrum-theme accent mapping is byte-identical to @react-spectrum/s2 1.7.0 and matches @adobe/spectrum-tokens 14.15.0, so #240 is not implicated. Evidence: .agents/certified-169-census-2026-09-21.md.",
+    }
 ---
 
 Certification Gates run [34155176389](https://github.com/proyecto-viviana/ui/actions/runs/34155176389) on `0d84b016`: **40** unwaived titles, one paint miss.
@@ -53,6 +58,13 @@ Find the selected-item checkmark / accent token in `solid-spectrum` listbox opti
 ## Done when
 
 Those 40 titles are green on a named certified run, or a dated `knownDivergence` names the remaining burn-down. No `.comparison-spectrum-*` component rule. `certified-waivers.json` stays `[]` unless this ticket owns a dated waiver.
+
+## Reopened scope, 2026-09-21
+
+Combobox only, 22 rows. Picker's half of the original 40 is green; picker-list's
+21 reds on run 35554086311 are a different defect — one property, `height`, 16px
+short at every size in both schemes, no accent colour anywhere in the shard — and
+they do not belong to this ticket.
 
 ## Relationship
 
