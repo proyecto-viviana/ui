@@ -32,6 +32,14 @@ const ALLOWED_IMPORTS = [
   /^@proyecto-viviana\/ui(\/[A-Za-z0-9-]+)?$/,
   /^@tanstack\/solid-router$/,
   /^solid-js(\/[a-z]+)?$/,
+  /* Solid 2 moved the DOM runtime out of `solid-js/web` into its own package, so an
+     import that was already allowed is now spelled elsewhere. Same permission, not a
+     new one. Matched exactly, unlike the `solid-js` pattern beside it: every import in
+     the screens is the bare specifier, and `@solidjs/web` also publishes
+     `./server-functions`, `./frames` and `./storage`, which are not "the framework the
+     page runs on" and should have to be argued for rather than inherited. A subpath
+     import will fail this gate, which is the point. */
+  /^@solidjs\/web$/,
   /^@\/components\/examples\//,
   /^@\/styles\//,
   /^@\/seo$/,

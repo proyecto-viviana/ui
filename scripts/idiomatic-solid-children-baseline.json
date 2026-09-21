@@ -145,13 +145,6 @@
     },
     {
       "file": "packages/viviana-ui/src/gridlist/index.tsx",
-      "ident": "resolved",
-      "ordinal": 0,
-      "line": 1054,
-      "ticket": 192
-    },
-    {
-      "file": "packages/viviana-ui/src/gridlist/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
       "line": 1233,

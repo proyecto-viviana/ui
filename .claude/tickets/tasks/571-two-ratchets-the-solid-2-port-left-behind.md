@@ -4,7 +4,7 @@ type: task
 title: "Two ratchets still describe the pre-Solid-2 tree, so idiomatic-solid and examples-purity are red"
 created: 2026-09-20
 parent: 544
-status: next
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: next,
       at: 2026-09-20,
       note: "handed to the close-gates writer after #570 merged, as the earliest remaining red: steps 169 and 185, where the ladder now stops. Three things found while handing it over, none of which changes the work. First, every one of the six failing imports is the bare specifier `@solidjs/web` - no subpath among them - so `/^@solidjs\\/web$/` is sufficient today, while the neighbouring `/^solid-js(\\/[a-z]+)?$/` invites mirroring the subpath shape; either is defensible, so say which was taken and why rather than leaving the comment to imply it was forced. Second, `scripts/check-idiomatic-solid.ts:438` does have a `--write-baseline` the ticket forbids: the edit is deleting one line by hand, and the guard's own message already names the owning ticket #192, so `git log -- packages/viviana-ui/src/gridlist/index.tsx` is where the commit that fixed the site is. Third, the split of ownership happens to fall the right way - the repair is in `scripts/`, which is this seat's, and the six files it spares are the public-face worktree's, so nothing here needs coordination. Ladder order after this: #572 at 219, #573 at 227, #574 at 239",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "both gates EXIT=0, and the diff is three files in `scripts/`, none of them published, so no changeset is owed. The baseline entry was deleted by hand with its cause named: `92ddc52b` (#542, restore Solid 2 hydration owner parity) replaced `const resolved = resolveChildren(\u2026)` with `return resolveChildren(\u2026)` in viviana-ui's gridlist, so there is no `resolved` binding at that site any more; the solid-spectrum twin at `:1043` still renders the snapshot and stays, 29 sites remain. `/^@solidjs\\/web$/` was taken as an exact match rather than mirroring the `/^solid-js(\\/[a-z]+)?$/` subpath shape beside it - every failing import is the bare specifier, and the package also publishes `./server-functions`, `./frames` and `./storage`, which are not the framework the page runs on and should be argued for rather than inherited. No `--write-baseline` in the diff, and none of the six files was edited. A third red the ticket did not name was in the same gate and is the same class: the ALLOWLIST entry for `createInteractOutside.ts` was keyed on the snippet `onInteractOutsideStart, isDisabled } = props`, which `163f4377` (#531) dissolved when it made `isDisabled` a `MaybeAccessor` and moved it into the effect's tracked function - so the entry had stopped allowlisting the site it names and the site read as new. Re-pointed at the text that is there; the source file is untouched. An earlier attempt un-destructured the source and was reverted on the conductor's scope check. What the allowlist still permits is now recorded beside it and in the log: the tracked function reads `access(props.isDisabled)` and the ref, not the two handlers, so a swapped `onInteractOutside` goes stale - pre-existing, upstream has the same shape, and worth a ticket of its own. Evidence `.agents/close-gates-2026-09-20.log.md`",
     }
 ---
 
@@ -84,3 +89,28 @@ with no `--write-baseline` in the diff.
 Child of #544, and stage 2 of `.agents/CONDUCTOR-RELEASE-PATH-2026-09-20.md`.
 Sibling of #559, #569 and #570. Same family as #566: a guard whose recorded
 number stopped describing what it measures.
+
+## What landed
+
+Three files, all in `scripts/`:
+
+- `scripts/idiomatic-solid-children-baseline.json` — the `gridlist resolved#0`
+  entry deleted by hand. Fixed by `92ddc52b` (#542).
+- `scripts/check-examples-purity.ts` — `/^@solidjs\/web$/` added to
+  `ALLOWED_IMPORTS`, exact match, with the reason for that shape in the comment.
+- `scripts/check-idiomatic-solid.ts` — the `createInteractOutside` ALLOWLIST
+  snippet re-pointed from `onInteractOutsideStart, isDisabled } = props`, which
+  `163f4377` dissolved, to the destructure that is actually there.
+
+Nothing published is touched, so no changeset is owed, and no `--write-baseline`
+appears in the diff.
+
+## Noticed, not done
+
+The allowlisted destructure is re-read on every effect run, but the effect's
+tracked function reads `access(props.isDisabled)` and the ref, not the two
+handlers — so a consumer that swaps `onInteractOutside` without touching
+`isDisabled` or the ref keeps the stale handler. Pre-existing and upstream-shaped,
+and the fix edits a published package, so it is a ticket rather than this commit:
+read `props.onInteractOutside` at the four event sites, with a
+`@proyecto-viviana/solidaria` changeset and a test that the swap is seen.

@@ -1440,3 +1440,93 @@ interface comment says so, and the rule binds every move after 2026-09-20.
 
 `vp run guard:layer-boundary` EXIT=0: 0 new forks, 0 unbaselined dual paths,
 524 identical + 84 diverged. `tsc --noEmit` EXIT=0, `guard:publish-drift` EXIT=0.
+
+## #571 — two ratchets that still described the pre-Solid-2 tree, and one of them twice
+
+Steps 169 and 185. Both gates are seconds; neither needs a build. Three edits,
+none of them in a published package, so no changeset is owed.
+
+### 1. The children baseline kept an entry for a site that was fixed
+
+`scripts/idiomatic-solid-children-baseline.json`: the single entry
+
+```json
+{ "file": "packages/viviana-ui/src/gridlist/index.tsx", "ident": "resolved", "ordinal": 0, "line": 1054, "ticket": 192 }
+```
+
+deleted by hand — no `--write-baseline` in the diff, so nothing else was
+absorbed. 29 sites remain, including the solid-spectrum twin at `:1043`, which
+still renders the snapshot and stays.
+
+The cause is named rather than assumed: `92ddc52b` ("#542: restore Solid 2
+hydration owner parity") replaced
+`const resolved = resolveChildren(() => local.children as JSX.Element)` with
+`return resolveChildren(…)` in viviana-ui's gridlist. There is no longer a
+`resolved` binding at that site, so the entry described nothing. A baseline line
+deleted without a named cause is exactly #573.
+
+### 2. `ALLOWED_IMPORTS` had no `@solidjs/web`
+
+`scripts/check-examples-purity.ts`: `/^@solidjs\/web$/` added beside
+`/^solid-js(\/[a-z]+)?$/`. Solid 2 moved the DOM runtime out of `solid-js/web`
+into its own package, so an import that was already allowed is now spelled
+elsewhere — the same permission, not a new one. Six files failed, five of them
+the `public-face` worktree's under the owner's exception; none was edited.
+
+Exact match, not the subpath shape beside it, and that is a choice rather than a
+constraint: every failing import is the bare specifier, and `@solidjs/web` also
+publishes `./server-functions`, `./frames` and `./storage`, which are not "the
+framework the page runs on". A subpath import will fail this gate, which is the
+point.
+
+### 3. The destructure allowlist entry had stopped allowlisting its own site
+
+Not in the ticket, and a live FAIL at HEAD — the conductor's own capture
+`.agents/chain-walk-2026-09-20/ladder-idiomatic-solid.out.txt` carries both FAIL
+lines, the destructure at line 7 and the gridlist site at line 47.
+
+`scripts/check-idiomatic-solid.ts:159` allowlists
+`solidaria/src/overlays/createInteractOutside.ts` by snippet, matched with
+`rel.endsWith(a.file) && code.includes(a.snippet)` (`:194`). The snippet was
+
+```
+onInteractOutsideStart, isDisabled } = props
+```
+
+which matches nothing in the source any more: `163f4377` ("#531: port the seven
+pack packages onto Solid 2 RC") made `isDisabled` a `MaybeAccessor` and moved it
+out of the destructure into the effect's tracked function as
+`access(props.isDisabled)`. So the entry had stopped allowlisting the site it
+names, and the site was being reported as new. Re-pointed at the text that is
+there, with the reason restated for the shape the port left.
+
+That is the same failure as the baseline entry above and the same failure as
+#573 — a record that stopped tracking the tree — and this one ratchet had two of
+them, at opposite ends: a baseline that outlived its site, and an allowlist that
+lost its own.
+
+`packages/solidaria/src/overlays/createInteractOutside.ts` is untouched. An
+earlier attempt fixed the source instead and was reverted on the conductor's
+scope check: editing a published package owes a changeset and its own ticket,
+and it is not what this ticket was filed on.
+
+### What the allowlist still permits
+
+Stated here rather than discovered later, and repeated beside the entry itself.
+The destructure at `:55` is re-read on every effect run, but the effect's
+tracked function reads `access(props.isDisabled)` and the ref, not the two
+handlers — so a consumer that swaps `onInteractOutside` without touching
+`isDisabled` or the ref keeps the stale handler. Pre-existing, and upstream's
+`useInteractOutside` has the same shape, so it is not fixed in this commit.
+
+It deserves a ticket. Reading `props.onInteractOutside` at event time is the
+parity-faithful Solid form rather than a divergence — React's hook body re-runs
+per render, which is the only reason the identical destructure is safe there —
+and the fix is four call sites in one file. It edits a published package, so it
+owes a `@proyecto-viviana/solidaria` changeset and a test that a swapped handler
+is re-read. Left for the conductor to file.
+
+`vp run guard:idiomatic-solid` EXIT=0: no reactive-props destructures,
+children-snapshot baseline holds over 29 sites, 9 reviewed-benign destructures
+allowlisted across 1750 scanned files. `vp run guard:examples-purity` EXIT=0:
+examples are library-pure across 2 directories.
