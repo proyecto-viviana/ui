@@ -59,6 +59,9 @@ proof that a behavior matches upstream.
 [`src/index.ts`](src/index.ts) is the only source of truth for the public
 surface.
 
+What this release candidate is known to get wrong is listed under
+[known gaps](https://github.com/proyecto-viviana/ui#known-gaps-in-this-release-candidate).
+
 ## Evidence
 
 ```bash

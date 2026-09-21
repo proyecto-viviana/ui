@@ -23,7 +23,7 @@ import {
   SiteFooter,
 } from "@/components/theme/primitives";
 import "@/components/theme/studio.css";
-import { repoPackageUrl, repoUrl } from "@/lib/site";
+import { NPM_INSTALL_TAG, repoPackageUrl, repoUrl } from "@/lib/site";
 import { seo } from "@/seo";
 import { useTheme } from "@/utils/theme";
 
@@ -70,7 +70,7 @@ function LibraryCard(props: {
             rel="noopener noreferrer"
             class={typeRoles.terminal}
           >
-            npm i {props.install}
+            npm i {props.install}@{NPM_INSTALL_TAG}
           </a>
         ) : (
           <span class="pv-register-card__unpublished">Not published to npm</span>
@@ -133,7 +133,7 @@ function SpecimenDeck() {
 
   const themeTitles: Record<ThemeKey, string> = {
     viviana: "@proyecto-viviana/ui · Glasselated design system (published)",
-    spectrum: "@proyecto-viviana/solid-spectrum · Spectrum S2 (certified)",
+    spectrum: "@proyecto-viviana/solid-spectrum · Spectrum S2 port (published)",
     geist: "@proyecto-viviana/geist · Vercel Geist study (unpublished)",
     kumo: "@proyecto-viviana/kumo · Cloudflare Kumo button study (unpublished)",
   };
@@ -335,7 +335,8 @@ function LandingPage(): JSX.Element {
             <h2 id="libraries-title">Two independent styled libraries on npm.</h2>
             <p>
               Each has its own API, its own docs, and its own regression suite. Use one without the
-              other.
+              other. Both need Solid 2, so install <code>solid-js@next</code> and{" "}
+              <code>@solidjs/web@next</code> beside them.
             </p>
           </div>
           <div class="pv-libraries pv-registers">
@@ -446,7 +447,7 @@ function LandingPage(): JSX.Element {
                     Source ↗
                   </a>
                   <a
-                    href={repoUrl("blob/main/packages/kumo/README.md#evidence-and-limits")}
+                    href={repoUrl("blob/main/packages/kumo/README.md#evidence")}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

@@ -21,15 +21,15 @@ staged files only. Generated shims under `.vite-hooks/_` stay untracked.
 
 ## Commands
 
-| do          | run                     |
-| ----------- | ----------------------- |
-| install     | `vp install`            |
-| check       | `vp run check`          |
-| test        | `vp run test`           |
-| build       | `vp run build`          |
-| lint        | `vp lint`               |
-| docs site   | `vp run dev`            |
-| comparison  | `vp run comparison:dev` |
+| do         | run                     |
+| ---------- | ----------------------- |
+| install    | `vp install`            |
+| check      | `vp run check`          |
+| test       | `vp run test`           |
+| build      | `vp run build`          |
+| lint       | `vp lint`               |
+| docs site  | `vp run dev`            |
+| comparison | `vp run comparison:dev` |
 
 `vp run check` is format, type-aware lint, and typecheck. `vp run test:run`
 runs the package suites once. Before you push something that touches a
@@ -39,8 +39,9 @@ published package, run the release gate:
 vp run ci:release-readiness
 ```
 
-That is what `release-readiness` runs in CI, on every pull request and on every
-push to `main`.
+The `release-readiness` workflow runs the same command on pull requests and on
+pushes to `main`. Run it locally first. CI is the second opinion, not the
+first.
 
 ## How a port is certified
 

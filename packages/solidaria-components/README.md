@@ -66,6 +66,9 @@ proof that a component matches upstream.
 [`src/index.ts`](src/index.ts) is the only source of truth for the public
 surface — this file does not list exports, and no README carries a count.
 
+What this release candidate is known to get wrong is listed under
+[known gaps](https://github.com/proyecto-viviana/ui#known-gaps-in-this-release-candidate).
+
 ## Evidence
 
 ```bash

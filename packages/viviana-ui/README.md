@@ -44,16 +44,16 @@ code. The root barrel is for examples and shared entry points.
 
 ## Styling
 
-Components never inject CSS. Import it once, at your app entry, before your
-own stylesheets.
+Component styling ships as CSS, not as JavaScript. Import it once, at your app
+entry, before your own stylesheets.
 
-| Subpath | Contents |
-| --- | --- |
-| `components.css` | `font-faces.css` + `theme.css` + `styles.css`. The usual import. |
-| `theme.css` | The token layer alone: it imports `viviana-tokens.css`. |
-| `styles.css` | Generated component rules, without fonts or tokens. |
-| `font-faces.css` | The Geist register: Geist Pixel, Geist, Geist Mono. |
-| `viviana-tokens.css` | The tokens themselves, to theme against directly. |
+| Subpath              | Contents                                                         |
+| -------------------- | ---------------------------------------------------------------- |
+| `components.css`     | `font-faces.css` + `theme.css` + `styles.css`. The usual import. |
+| `theme.css`          | The token layer alone: it imports `viviana-tokens.css`.          |
+| `styles.css`         | Generated component rules, without fonts or tokens.              |
+| `font-faces.css`     | The Geist register: Geist Pixel, Geist, Geist Mono.              |
+| `viviana-tokens.css` | The tokens themselves, to theme against directly.                |
 
 `font-faces.css` opens with a remote `@import`, and CSS drops an `@import` that
 any rule precedes. Load it after your own rules and the fonts silently fall
@@ -153,14 +153,18 @@ are still tightening. An export is a floor, not proof that a component matches
 upstream.
 
 The package ships ESM, preserved-JSX `solid` exports, and TypeScript
-declarations. `sideEffects` is `false`.
+declarations. `sideEffects` lists only `*.css`, so a bundler tree-shakes the
+JavaScript and keeps your stylesheet imports.
+
+What this release candidate is known to get wrong is listed under
+[known gaps](https://github.com/proyecto-viviana/ui#known-gaps-in-this-release-candidate).
 
 ## Evidence
 
 ```bash
 vp run --filter @proyecto-viviana/ui build
 vp run test:run
-vp run a11y:check        # WCAG 2.2 AA, every route, both themes
+vp run a11y:check        # contrast on every route, WCAG 2.2 AA on the playground, both themes
 ```
 
 What "ported" means here, and what evidence a component carries before it

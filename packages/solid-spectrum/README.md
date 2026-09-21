@@ -21,8 +21,8 @@ line.
 
 ## Example
 
-The CSS import is required. Components never inject their own styles, so
-without it everything renders unstyled.
+The CSS import is required. Component styling ships in that file, so without
+it everything renders unstyled.
 
 ```tsx
 import { Provider, Button } from "@proyecto-viviana/solid-spectrum";
@@ -41,9 +41,9 @@ export function App() {
 `components.css` is `font-faces.css` + `styles.css`, each also exported on its
 own subpath: the font-face declarations, and the component rules the S2 style
 macro generates. Keep whichever you import ahead of your other stylesheets.
-`font-faces.css` opens with an `@import`, and CSS drops an `@import` that any
-rule precedes, so loading it late makes the Adobe Clean fonts fall back with no
-error.
+`font-faces.css` declares Adobe Clean with `@font-face` and loads the files
+from Adobe's Typekit host, so a page that blocks that host falls back to the
+system font with no error.
 
 ## In the chain
 
@@ -73,6 +73,9 @@ the component has accepted visual parity.
 Styles are generated from tokens by the style macro. Handwritten component CSS
 and screenshot-tuned values are not how parity is reached here; the decision is
 [ADR 0001](https://github.com/proyecto-viviana/ui/blob/main/docs/adr/0001-s2-styling-source-of-truth.md).
+
+What this release candidate is known to get wrong is listed under
+[known gaps](https://github.com/proyecto-viviana/ui#known-gaps-in-this-release-candidate).
 
 ## Evidence
 
