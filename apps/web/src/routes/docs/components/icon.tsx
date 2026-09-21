@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/icon")({
     seo({
       title: "SpectrumIcon props",
       description:
-        "Every prop SpectrumIcon accepts in @proyecto-viviana/ui — 20 documented from the package's own types.",
+        "Every prop SpectrumIcon accepts in @proyecto-viviana/ui — 12 documented from the package's own types.",
       path: "/docs/components/icon",
     }),
   component: () => <ApiReference page={page} />,

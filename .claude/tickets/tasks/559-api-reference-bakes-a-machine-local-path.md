@@ -4,7 +4,7 @@ type: task
 title: "The API reference extractor renders a machine-local node_modules path, and 81 of 84 pages have drifted"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "the flag was rejected on the probe's own evidence and the display name is resolved here instead: `renderType()` strips the `import(\"\u2026\").` qualifier the printer emits and throws if one survives, so the path can never reach a page unnoticed. `UseAliasDefinedOutsideCurrentScope` would have renamed `import(\"@proyecto-viviana/solid-stately\").SegmentType` to `DateSegmentType`, and `DateSegmentType` already names a different type in these same docs. The proof is layout, not checkout path: a fixture renders one type from two nesting depths, `import(\"../../shared/thing\").Thing` against `import(\"../../../../../shared/thing\").Thing`, and both `renderType` to `Thing` - the whole-repo two-path run does not discriminate, because the leaked path is relative and the old script hashes the same from both paths too. Regenerated once: 80 files, zero `import(` and zero `node_modules` left. Importing `buildOutputs()` from the old and new scripts in one process shows 67 files differing only in `\"type\"` strings and 0 elsewhere, so the prop-count moves are the RC bump. Handed to the conductor, reverted here: `colorarea.tsx` 20\u219222, `combobox.tsx` 116\u2192123, `icon.tsx` 20\u219212 - `guard:api-reference` is EXIT=1 on exactly those three and green on the other 81. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: 'reviewed by re-running, and the handed-off hunk taken here. `vp run guard:api-reference` was EXIT=1 on exactly the three SEO lines and green on the other 81; `vp run api:extract` then rewrote all 84 pages and moved only those three files, so the committed data is idempotent under a second extraction. 0 files under `apps/web/src/data/api-reference/` contain `import(` or `node_modules`. The three numbers match the data: colorarea 22, combobox 123 (65+4+3+20+8+20+3 across seven entries), icon 12. The icon page also lost eight props, which `renderType` cannot cause - it rewrites a string or throws, it never drops a member - and the cause is in the tree: at `c49df629`, when the page was first generated, `SpectrumIconProps` declared `slot`, `class`, `style` and `aria-label` itself, and the Solid 2 port `163f4377` deleted those four redeclarations from both interfaces, 4 x 2 = 8. The three surviving props are exactly the three the interface still declares. One limit worth stating rather than hiding: stripping the qualifier maps `import("a").Foo` and `import("b").Foo` onto one `Foo`, so the rendering is no longer injective across packages - the trade this ticket chose, and better than printing another type''s real name',
     }
 ---
 
@@ -154,3 +159,15 @@ actually varies with.
 `colorarea.tsx` 20→22, `combobox.tsx` 116→123, `icon.tsx` 20→12. Reverted here
 and left to the conductor. Until they land, `vp run guard:api-reference` is
 EXIT=1 on those three lines alone.
+
+Taken in the main checkout by the conductor, for two reasons that both had to
+hold. The owner's 2026-09-20 rule reserves public-facing **words** for Fable and
+lets a worker fix a **fact** — and a prop count a guard disproves is the example
+the rule gives, not a sentence. And the `public-face` branch has not touched
+these three files: `git diff main public-face` on each is empty, so there was no
+edit to conflict with and no seat to wait for. The sentences are untouched; three
+numerals moved. Nothing is queued in `.agents/COPY-QUEUE-2026-09-20.md`, because
+nothing needs writing.
+
+If `public-face` later regenerates the reference, it will produce these same
+numbers — the write is a function of the committed data, not of who runs it.
