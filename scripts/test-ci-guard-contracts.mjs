@@ -170,14 +170,25 @@ try {
   );
   console.log("PASS: Certification builds package evidence before JSX size checks.");
 
+  // The inverse contract, since #566: the entry import budget measures the
+  // source graph behind each published entry, never the emitted chunks, so it
+  // needs no build. Proved at a dist-free `git archive` checkout (#587):
+  // "entries measured: 5/5", exit 0. Running it after the build spends a
+  // twelve-minute walk to learn a number that was available at checkout, so
+  // both chains put it first.
   const entryImportBudget = certificationWorkflow.indexOf(
     "run: pnpm run guard:entry-import-budget\n",
   );
   assert(
-    packageBuild >= 0 && entryImportBudget >= 0 && packageBuild < entryImportBudget,
-    "Certification Gates must build package artifacts before measuring the entry import budget",
+    packageBuild >= 0 && entryImportBudget >= 0 && entryImportBudget < packageBuild,
+    "Certification Gates must measure the entry import budget before building packages",
   );
-  console.log("PASS: Certification builds package evidence before the entry import budget.");
+  const entryBudgetIndex = releaseReadiness.indexOf("vp run guard:entry-import-budget");
+  assert(
+    entryBudgetIndex >= 0 && releaseBuildIndex >= 0 && entryBudgetIndex < releaseBuildIndex,
+    "release readiness must measure the entry import budget before building packages",
+  );
+  console.log("PASS: both chains measure the entry import budget before the build.");
 
   // release-readiness runs test:run on a plain checkout: the gitignored
   // ./react-spectrum oracle is absent there, so an oracle-backed check placed

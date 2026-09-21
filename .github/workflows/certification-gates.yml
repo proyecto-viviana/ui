@@ -204,10 +204,17 @@ jobs:
         id: guard_outbound_links
         run: pnpm run guard:outbound-links
 
-      # guard:jsx-deopt-size and guard:entry-import-budget measure the
-      # published package artifacts. Build them explicitly so a clean runner
-      # proves the same evidence as a local checkout with existing dist/
-      # directories.
+      # Measures the source graph behind each published entry, not the emitted
+      # chunks (#566), so it needs no build and runs before one: a ceiling
+      # regression is a number available at checkout, and paying a twelve-minute
+      # build to learn it is what #587 moved this step above.
+      - name: guard entry-import-budget
+        id: guard_entry_import_budget
+        run: pnpm run guard:entry-import-budget
+
+      # guard:jsx-deopt-size measures the published package artifacts. Build
+      # them explicitly so a clean runner proves the same evidence as a local
+      # checkout with existing dist/ directories.
       - name: build package evidence
         id: build_package_evidence
         run: pnpm run build
@@ -215,10 +222,6 @@ jobs:
       - name: guard jsx-deopt-size
         id: guard_jsx_deopt_size
         run: pnpm run guard:jsx-deopt-size
-
-      - name: guard entry-import-budget
-        id: guard_entry_import_budget
-        run: pnpm run guard:entry-import-budget
 
       - name: guard jsx-ref-dead-code
         id: guard_jsx_ref_dead_code
