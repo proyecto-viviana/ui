@@ -2032,3 +2032,31 @@ is in at capture, not about what that placement animates to. Filed as **#582**
 rather than folded in here.
 
 Standing: 169 → 132 after #578's first cause, → **88** after this.
+
+## #497 — started, proved, not landed
+
+Status: **abandoned uncommitted**, nothing in flight;
+`packages/solid-spectrum/src/combobox/index.tsx` is clean at `eb75ee0e`. The
+candidate patch is kept outside the tree.
+
+Restoring both halves of #497 in combobox — `isFocused: baseColor("accent").isFocusVisible`
+on `comboBoxCheckmark` and `isFocusVisible: renderProps.isFocused || renderProps.isFocusVisible`
+on the option — makes the whole combobox-list block green (26 passed: D1 6, D3
+6, D7 2, D9 6, D10 2, plus D5/D6/D8), and the mutation check is exact: reverted,
+the same slice is 5 passed / 22 failed, and the 22 are the census's 22 to the
+row.
+
+It also turns `combobox-field` D13 `open-arrow-enter-reopen-scroll-escape` red,
+which is green on `main`: step 0 (click trigger), mismatch `0.0504`
+(1283/25440), reproducible alone and identical across runs. Bisected, each half
+fails it on its own — the checkmark half at 50/25440 px in a 10x9 box at
+(18,46), which is the checkmark glyph and nothing else; the option half at the
+full row band.
+
+So two live-React oracles disagree about the same pointer-opened list, and the
+spec header argues D13's side (`combobox.certified.spec.ts:50-53`: a pointer
+open "must not read as focus-visible"). The reading that would reconcile them —
+row focus-visible from the page-global keyboard modality ANDed with virtual
+focus, as the field group does at `:672` — is worse, 4 passed / 23 failed with
+D1 and D3 all red again plus D6, which rules it out. Handed back rather than
+landed: it trades a proven green for a proven red.
