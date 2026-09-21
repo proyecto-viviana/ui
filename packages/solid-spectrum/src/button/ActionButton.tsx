@@ -147,9 +147,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     get isQuiet() {
       return groupContext?.isQuiet;
     },
-    get isDisabled() {
-      return groupContext?.isDisabled;
-    },
     get density() {
       return groupContext?.density;
     },
@@ -184,11 +181,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "isJustified",
   ] as const);
 
-  const isDisabled = () =>
-    runtimeProps.isDisabled ??
-    groupContext?.isDisabled ??
-    (contextProps as { isDisabled?: boolean } | null | undefined)?.isDisabled ??
-    flags.isDisabled;
+  // Upstream ends the chain on the Form proxy and keeps the group last:
+  // `isDisabled={props.isDisabled ?? isDisabled}` after `useFormProps`
+  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:334,358`). `headlessProps`
+  // is that proxy — own prop, context, provider, then the Form, with a Skeleton
+  // over all of them — so the group stays out of the merge for this one key,
+  // unlike size/staticColor/isQuiet, which upstream lets the group win.
+  const isDisabled = () => headlessProps.isDisabled ?? groupContext?.isDisabled;
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const menuTriggerContext = useContext(MenuTriggerContext);

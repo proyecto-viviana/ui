@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   ActionButton,
+  ActionButtonGroup,
   Button,
   Form,
   LinkButton,
@@ -229,6 +230,63 @@ describe("Form (solid-spectrum)", () => {
     expect(cls("xl")).not.toBe(cls("m"));
     expect(cls("inherited")).toBe(cls("xl"));
     expect(cls("local")).toBe(cls("s"));
+  });
+
+  // Upstream ends every button's isDisabled on the Form/Skeleton proxy:
+  // `props = useFormProps(props)` and then `isDisabled={props.isDisabled ?? ctx.isDisabled}`
+  // (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:334,358`; Button and
+  // LinkButton just spread the proxied props). So the Form disables all four,
+  // a local `isDisabled={false}` still opts out, and a Skeleton wins over it.
+  it.each([
+    ["Button", Button],
+    ["ActionButton", ActionButton],
+    ["ToggleButton", ToggleButton],
+    ["LinkButton", LinkButton],
+  ] as const)("disables %s through the Form and the Skeleton", (_name, Component) => {
+    const C = Component as (props: Record<string, unknown>) => ReturnType<typeof Button>;
+    render(() => (
+      <>
+        <Form isDisabled>
+          <C>inherited</C>
+          <C isDisabled={false}>opted out</C>
+        </Form>
+        <Skeleton isLoading>
+          <C isDisabled={false}>skeleton</C>
+        </Skeleton>
+      </>
+    ));
+    // A disabled button carries `disabled`; a disabled Link carries `data-disabled`.
+    const isDisabled = (text: string) => {
+      const control = screen.getByText(text).closest('button, a, [role="link"]')!;
+      return control.hasAttribute("disabled") || control.hasAttribute("data-disabled");
+    };
+
+    expect(isDisabled("inherited")).toBe(true);
+    expect(isDisabled("opted out")).toBe(false);
+    expect(isDisabled("skeleton")).toBe(true);
+  });
+
+  // Upstream's ActionButtonGroup is the last resort for isDisabled, below the
+  // button's own prop (`props.isDisabled ?? isDisabled`), while its size wins
+  // (`size = props.size || 'M'` as the ctx destructuring default).
+  it("keeps ActionButtonGroup's isDisabled below the button's own prop", () => {
+    render(() => (
+      <>
+        <ActionButtonGroup isDisabled>
+          <ActionButton>grouped</ActionButton>
+          <ActionButton isDisabled={false}>opted out of the group</ActionButton>
+        </ActionButtonGroup>
+        <Form isDisabled>
+          <ActionButtonGroup>
+            <ActionButton>grouped in a form</ActionButton>
+          </ActionButtonGroup>
+        </Form>
+      </>
+    ));
+
+    expect(screen.getByRole("button", { name: "grouped" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "opted out of the group" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "grouped in a form" })).toBeDisabled();
   });
 
   it("lets local form-aware child props override form context outside Skeleton", () => {
