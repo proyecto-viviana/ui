@@ -39,7 +39,8 @@ chain:
 - `@proyecto-viviana/ui`
 
 Use `vp run pack:local-chain` from the repo root to rebuild and pack them into
-`/tmp/viviana-ui-packs-chain`. The script stages package copies under `/tmp`,
+`viviana-ui-packs-chain` under the OS temp directory (`VIVIANA_PACK_OUT`
+overrides it). The script stages package copies in a fresh temp directory,
 rewrites staged `workspace:*` dependencies to package versions, packs the
 staged packages, and prints dependency/override snippets for the current
 consumers.
@@ -59,7 +60,8 @@ workspace dependencies still have to be part of the packed chain.
 that a real external consumer can install `@proyecto-viviana/ui` from packed
 tarballs without workspace symlinks. It then builds both targets:
 
-- Scaffolds a throwaway app under `/tmp/viviana-ui-consume-smoke`, depending on
+- Scaffolds a throwaway app in `viviana-ui-consume-smoke` under the OS temp
+  directory (`VIVIANA_CONSUMER_DIR` overrides it), depending on
   `@proyecto-viviana/ui` via a `file:` tarball, with `overrides` redirecting the
   whole closure to their `file:` tarballs (the rewritten concrete versions aren't
   on any registry).

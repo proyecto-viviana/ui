@@ -4,13 +4,18 @@ type: task
 title: "Refuse pack-script rmSync outside a temp directory prefix"
 created: 2026-09-01
 parent: 136
-status: open
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
   - {
       state: open,
       at: 2026-09-20,
       note: "re-verified at `1d7551cb` by the conductor, pulled into #544 because stage 4 of the release path runs `pack:local-chain` and this is that script. Still live, and wider than this ticket says: three env-driven paths, not one - `VIVIANA_PACK_OUT` (pack-local-chain.mjs:9, consume-pack-smoke.mjs:19), `VIVIANA_PACK_STAGE` (:11) and `VIVIANA_CONSUMER_DIR` (consume-pack-smoke.mjs:20) - feeding three `rmSync(..., { recursive: true, force: true })` at pack-local-chain.mjs:119-120 and consume-pack-smoke.mjs:108. `force: true` means a wrong path does not even error on the way out. Checked for an existing containment helper before proposing one: `grep -rnE 'startsWith\\((repoRoot|tmpRoot|allowed)|relative\\(.*\\)\\.startsWith' scripts/` returns nothing, so there is none to reuse, but `mkdtempSync(join(tmpdir(), \"prefix-\"))` is already the idiom at six sites in this same directory and is the answer. Also: the defaults are the literal string `/tmp`, which the hub standing rule tells agents not to write big files to, and five package tarballs are big",
+    }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: "new `scripts/scratch-dir.mjs`, used by both scripts for all three variables: resolve, follow symlinks on the existing part, then refuse unless strictly under the real `tmpdir()` and neither holding nor inside the repository. Unset, the stage is `mkdtempSync(join(tmpdir(), 'viviana-ui-pack-stage-'))` and the other two default under `tmpdir()`, no literal `/tmp`. `scripts/scratch-dir.test.ts` 8 passed: five on the helper (repo root, its parent, `/`, `tmpdir()` itself, a `..` walk, a repo under tmp, a symlink to the repo) and one per variable that copies the script into a throwaway repository inside a throwaway TMPDIR, points the variable at that root, and asserts the refusal message and a surviving sentinel. Mutation: both scripts put back, exactly the three per-variable tests fail. `node scripts/pack-local-chain.mjs` with defaults packs all seven into `tmpdir()`, exit 0",
     }
 ---
 

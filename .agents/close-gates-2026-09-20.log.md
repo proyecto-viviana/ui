@@ -2136,3 +2136,12 @@ read-time `?? "M"` already existed) and wrap the context merge in
 - Unit guard in `Form.test.tsx`, one case per button: defect back, exactly the
   4 new ones fail of 17. Button family + Form suites 93 passed, SSR 9, hydrate
   9; typecheck clean.
+
+## #139 — pack-script deletes refuse paths outside the temp directory
+
+One helper, `scripts/scratch-dir.mjs`, for the three env paths in both
+scripts: strictly under the real `tmpdir()`, not holding and not inside the
+repository, symlinks followed. The unset stage is `mkdtempSync`; no literal
+`/tmp` left. `scripts/scratch-dir.test.ts` 8 / 0; old scripts back, the three
+per-variable tests fail. A default `pack-local-chain` run still packs all
+seven. Merged.

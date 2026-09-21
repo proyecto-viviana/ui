@@ -13,11 +13,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { scratchDir } from "./scratch-dir.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
-const packsDir = resolve(process.env.VIVIANA_PACK_OUT ?? "/tmp/viviana-ui-packs-chain");
-const consumerDir = resolve(process.env.VIVIANA_CONSUMER_DIR ?? "/tmp/viviana-ui-consume-smoke");
+const packsDir = scratchDir("VIVIANA_PACK_OUT", "viviana-ui-packs-chain", { repoRoot });
+const consumerDir = scratchDir("VIVIANA_CONSUMER_DIR", "viviana-ui-consume-smoke", { repoRoot });
 
 // Same public package set and order as pack-local-chain.mjs.
 const packages = [

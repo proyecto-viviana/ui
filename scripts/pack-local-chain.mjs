@@ -1,15 +1,26 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { scratchDir } from "./scratch-dir.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
-const outDir = resolve(process.env.VIVIANA_PACK_OUT ?? "/tmp/viviana-ui-packs-chain");
-const stageRoot = resolve(
-  process.env.VIVIANA_PACK_STAGE ?? `/tmp/viviana-ui-pack-stage-${process.pid}`,
-);
+const outDir = scratchDir("VIVIANA_PACK_OUT", "viviana-ui-packs-chain", { repoRoot });
+// Unset, the stage is a directory this run creates, so it is ours to delete.
+const stageRoot = process.env.VIVIANA_PACK_STAGE
+  ? scratchDir("VIVIANA_PACK_STAGE", "", { repoRoot })
+  : mkdtempSync(join(tmpdir(), "viviana-ui-pack-stage-"));
 
 const packages = [
   { name: "@proyecto-viviana/solid-stately", dir: "packages/solid-stately" },
