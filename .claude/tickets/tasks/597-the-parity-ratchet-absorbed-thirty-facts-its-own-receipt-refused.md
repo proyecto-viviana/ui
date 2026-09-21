@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "the skeptic narrowed the second finding and the narrowed version is what this ticket owns. Nothing is buried: the baseline's `growthLog` records ticket 573, the date and all thirty facts verbatim, `2b444a89`'s message names the nine artifacts, and #579 files the filename mis-pairing. The same commit also shrank `coverageGaps` and `upstreamOnly`. The receipt's stated condition was 'stop and tell me', not 'never absorb'. So the survivor is narrow and real: the oracle was made green by widening the allowlist rather than by fixing the mis-pairing, and sixteen facts entered a ratchet without anybody looking at them. Also carries `components-src/stale-pin-in-audit-brief` and `solidaria-src/upstream-pin-baseline`, which are the same subject from the other side: the brief handed to the audit fleet named S2 1.5.1 / RAC 1.19.0, the tree pins **1.7.0 / 1.21.0 / react-aria 3.52.0 / react-stately 3.50.0**, and the range was in fact graded against the tree's pin, so no verdict in the receipt is invalid",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

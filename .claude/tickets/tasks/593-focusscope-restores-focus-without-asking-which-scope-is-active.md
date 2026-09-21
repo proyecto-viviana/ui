@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "opened from the 2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings: `solidaria-src/focusscope-shouldrestorefocus` (medium, confirmed) and `solidaria-src/focusin-target-retargeting` (low, confirmed). `activeScope` was ported; `shouldRestoreFocus`, its main consumer, was not. Upstream gates both restore paths on it - `FocusScope.mjs:432-439`, called at `:476` for Tab-out and `:530` for unmount - and it walks up from `activeScope`, bailing when an intervening scope carries a `nodeToRestore`. grep finds no counterpart in `packages/solidaria/src/focus/FocusScope.tsx`, and our unmount restore at `:936-1008` never reads `activeScope` at all: its condition at `:982-995` looks only at `activeElement`, `body` and `isConnected`. Upstream's Tab-out-to-`nodeToRestore` path is absent too. The failure case is unverified - no run - so the ticket names it rather than asserting it",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

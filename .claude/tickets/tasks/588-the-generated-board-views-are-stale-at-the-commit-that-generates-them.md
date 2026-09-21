@@ -4,7 +4,7 @@ type: task
 title: "The generated board views are stale at the very commit that regenerates them, and docs:check is the red that truncates the ladder"
 created: 2026-09-21
 parent: 544
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -40,6 +40,11 @@ history:
       state: merged,
       at: 2026-09-21,
       note: "bookkeeping only, no code. The run this ticket was waiting on has concluded without answering it: Certification Gates 35623988073, push, `e8bacb9d`, `certification-gates` job 106413682647 concluded `failure` at step 24 `guard layer-boundary`, and `docs:check` - step 37 - never ran, conclusion `skipped`. So this run carries no verdict on this ticket and it stays `merged`; the run whose `docs:check` step is green is still owed. Recorded because the earliest red on `main` has moved off `docs:check`: `guard layer-boundary` now truncates the ladder sixteen steps ahead of it, and that is a different ticket's problem, not this one's",
+    }
+  - {
+      state: verified,
+      at: 2026-09-21,
+      note: "`docs:check` finally ran. Certification Gates 35646778662 at `d1c5f4b3`, job 106489054009, step 37 `docs:check` `success` - the step that was `skipped` in 35623988073 - which is the recomputed `boardRevision()` compared against the committed stamp, run by CI at a pushed sha. Steps 1 through 37 all `success`, first red at 38. Read with `gh run view 35646778662 --json jobs`. `verified`",
     }
 ---
 

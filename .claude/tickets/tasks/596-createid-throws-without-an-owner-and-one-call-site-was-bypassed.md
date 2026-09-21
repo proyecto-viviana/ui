@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "opened from the 2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `solidaria-src/createid-hydration-rationale`, verdict partly - and the partly matters, so the ticket carries the narrowed claim rather than the headline. The audit called the rationale false. The skeptic showed it is not: `createUniqueId` consumes in both branches because `createOwner` shares `owner._childCount`, so an early return really does shift later ids; only the mismatch implication is weak, since the branch is symmetric on server and client. What is real is the second half. The reorder added a hard throw - `solid-js/dist/server.js:1840-1843`, `createUniqueId cannot be used outside of a reactive context`, and `dist/solid.js:45-47` for `getNextContextId` - `4bbdeff7` wedged `test:hydrate` on it, and `ef21edf4` worked around it at one call site, `createLabels.ts:50`, rather than restoring the rule. So two rules hold in one package: every call site but one uses the unconditional form, and that one does not. A grep of 71 call sites found no other getter-scoped `createId`",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

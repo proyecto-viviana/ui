@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "found while fixing #602's review, receipt `.agents/602-actionbutton-form-disabled-2026-09-21.md` under *What this receipt does not prove*. `packages/solid-spectrum/src/button/ActionButton.tsx:374-382` builds `NotificationBadgeContext` with `get size() { const currentSize = size(); return currentSize === 'XS' ? undefined : currentSize; }`, and `size()` is `local.size ?? 'M'` (`:206`) — the group-resolved size with an `M` floor. Upstream is `size: props.size === 'XS' ? undefined : props.size` (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:431`), the raw prop: `size` is a separate local from the group destructuring (`:347`), and the group publishes only `ActionButtonGroupContext` (`ActionButtonGroup.tsx:130`), which `useSpectrumContextProps` does not read. So upstream leaves the badge's own `size = 'S'` default (`NotificationBadge.tsx:132`) standing on a plain ActionButton and inside an `ActionButtonGroup size=...`, where ours passes `M` and the group's size. Read from source, not measured: a badge inside an ActionButton also carries the context's positioning `styles`, so its atom string differs from a bare badge's whatever the size — proving this needs a pair render against the upstream oracle, not a class comparison. Pre-existing, older than #602; no test covers badge size inside a button",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

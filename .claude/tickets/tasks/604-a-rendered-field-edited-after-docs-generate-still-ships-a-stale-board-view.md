@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "the residue of #588 scope item 1, split out because #588 is merged and the lifecycle is forward-only. #588 closed the respelling half of the ordering hole - the stamp now hashes the seven fields the views print, so the pre-commit formatter and any edit to `created`, `subtitle`, `app` or `history` leave it alone. The half still open is the one the hole was named for: a change to `path`, `id`, `type`, `title`, `status`, `blocked` or `parent` made after `vp run docs:generate` has run leaves both views stale inside the commit that wrote them, and the closing flip to `merged` is exactly that shape and is the commonest one on this board",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

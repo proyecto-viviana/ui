@@ -4,7 +4,7 @@ type: task
 title: "A Form-size fix forked ToggleButton and turned guard layer-boundary red on main"
 created: 2026-09-21
 parent: 544
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: merged,
       at: 2026-09-21,
       note: "review round on the landed work; two problems raised, one rejected against the pin and one real. REJECTED - the review said `notificationBadgeContextValue.isDisabled` diverges from upstream and should be `!!groupContext?.isDisabled`, reading `@react-spectrum/s2@1.7.0/src/ActionButton.tsx:348` (`isDisabled` destructured out of `ctx || {}`) as the source of `:436`'s `isDisabled: isDisabled`. It is not: `:381` opens RACButton's children as `{({isDisabled}) =>` and shadows `:348` for the whole `:381-507` closure that `:436` sits inside, and `dist/private/ActionButton.mjs:437,508` compiles to the same shadow. So `:436` is the render prop, which `react-aria-components@1.21.0/dist/private/Button.mjs:51` defines as `isDisabled: props.isDisabled || false` over what `:358` passed, downstream of `:334`'s `useFormProps`. `!!isDisabled()` is exactly that, the test asserts exactly that, and applying the proposed getter to the fixed tree gives `1 failed | 10 passed (11)` EXIT=1, failing only `expect(cls('own-badge')).not.toBe(cls('enabled-badge'))` at `Form.buttons.test.tsx:189`; restored, EXIT=0. Code, test and changeset all stand. Its one real residue was the citation: four copies said `:436,432` and never named `:381`, so the cited lines did not carry the claim. Both `ActionButton.tsx` badge getters and both Form test comments now cite `:348,358,381,436` plus the RAC coercion. The solid-spectrum pair is a comment-only edit inside this ticket's declared non-goal, taken deliberately so the fourth copy of a wrong citation does not survive its twins; no behaviour changed there and no new changeset is owed, `@proyecto-viviana/solid-spectrum` being already named by changesets in the tree. ACCEPTED - the second note's 'all three diverged twins had the two defects' is false, and this ticket's own receipt said so in the next sentence. `git show 45714230:packages/viviana-ui/src/button/Button.tsx | grep -n 'useFormProps\\|defaultProps'` prints `:43`, `:61`, `:72`, `:78`: Button already wrapped in `useFormProps` twice and carried only the size defect, its merged-in `size: 'M'` leaving the Form nothing to fill. The same grep on `ActionButton.tsx` and `LinkButton.tsx` prints `defaultProps` alone, so those two carried both, as did the stale `ToggleButton.tsx` copy. That is why the pre-fix run was 10 failed | 1 passed and not 11 failed. Receipt section 3 is corrected and its self-contradiction removed, section 4's upstream-ordering paragraph now names `:381`, a new section 10 records both findings, and #544's S0-f bullet is corrected in place with a dated note of its own. `09779c89`'s message carries the same false clause and is immutable, so this note is its remedy. Commit `#606: fix what its review found`. Exit codes this round, all run in this seat: `vp test run packages/viviana-ui/test/Form.buttons.test.tsx --maxWorkers=2` 11 passed EXIT=0; `vp test run packages/solid-spectrum/test/Form.test.tsx --maxWorkers=2` EXIT=0; `vp run guard:layer-boundary` EXIT=0, 524 identical / 84 diverged / 0 new forks; `vp run typecheck` EXIT=0; `vp lint` EXIT=0; `vp run docs:generate` then `vp run docs:check` EXIT=0. Still `merged` and not `verified`: this seat does not push, so no CI run backs any of it",
+    }
+  - {
+      state: verified,
+      at: 2026-09-21,
+      note: "the guard this ticket unforked is green in CI. Certification Gates 35646778662 at `d1c5f4b3`, job 106489054009, step 24 `guard layer-boundary` `success` - the first run to reach it since `09779c89`, `3a729734` and `43b5aabf` landed, all three ancestors of that sha. Steps 1 through 37 are all `success`; the first red is step 38 `comparison parity (strict)`, which is #574's stale postcard and not this. Read with `gh run view 35646778662 --json jobs`. `verified`",
     }
 ---
 

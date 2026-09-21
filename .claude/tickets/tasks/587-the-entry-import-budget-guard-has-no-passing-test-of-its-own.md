@@ -4,7 +4,7 @@ type: task
 title: "The entry-import-budget guard has no passing test of its own, and the only chain that would show it is disabled"
 created: 2026-09-21
 parent: 544
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: merged,
       at: 2026-09-21,
       note: "bookkeeping only, no code. The reordered step still has no runner execution behind it: Certification Gates 35623988073, push, `e8bacb9d`, `certification-gates` job 106413682647 concluded `failure` at step 24 `guard layer-boundary`, and `guard entry-import-budget` - step 31, the reordered one - was `skipped`. Its new position ahead of `build package evidence` is confirmed by the step list of that run, so the reorder itself landed as written; what is owed is a run that reaches it. Stays `merged`",
+    }
+  - {
+      state: verified,
+      at: 2026-09-21,
+      note: "the run that reaches the step. 35623988073 stopped at step 24 and skipped it; Certification Gates 35646778662 at `d1c5f4b3`, job 106489054009, runs the reordered step 31 `guard entry-import-budget` and concludes it `success`, with every step 1 through 37 `success` and the first red at 38 `comparison parity (strict)`. Read with `gh run view 35646778662 --json jobs`. `verified`",
     }
 ---
 

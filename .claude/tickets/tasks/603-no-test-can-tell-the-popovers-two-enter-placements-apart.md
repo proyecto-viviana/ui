@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: 'opened from the 2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, findings `r2-certified-b/F2` (medium) and `r2-certified-b/F3` (low), both partly confirmed. #582 is merged and the scheme has no backward transition, so the residue lives here. F2: `6ad3d12d` deletes the exact hold `6383939c` (2026-09-02, #257 #251) added to turn the same four DatePicker D2 rows green, and adds no test that can tell the two directions apart - `packages/solidaria-components/test/Popover.test.tsx:1234` renders `placement="bottom start"` where JSDOM measures every rect as 0, so `"bottom"` is both the seed and the measurement and the assertion is green under the old hold and the new pass-through. The skeptic refuted ''unproved'': #582 records a mutation (hold restored, D2 18/8, exactly those four) and `4f1c8435` (2026-09-15) centres the canvas, which explains why the opposite code was once green. What survives is that only a fixture flip discriminates, and no unit does. F3: RAC gates entering on a resolved placement (`react-aria-components@1.21.0 dist/private/Popover.mjs:100,112`) and ours reports entering while unplaced and substitutes the preferred axis (`packages/solidaria-components/src/Popover.tsx:774-776,789`), so a flipped popover can paint the bottom keyframe for a frame inside a running 200ms translate (`packages/solid-spectrum/src/popover/index.tsx:118-130,144-145`). That half predates `6ad3d12d` and is documented as a local deviation at `Popover.tsx:760-768`; the skeptic calls the painted reversal unproven because D2 pauses the first frame',
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

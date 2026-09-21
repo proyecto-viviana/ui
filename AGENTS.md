@@ -43,6 +43,8 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - Behavior research uses the MCP servers in `.claude/current/tooling.md`.
 - `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
   untracked; they are local tool state.
-- One editing session per git. Campaign #544 has one extra writer in
-  `.claude/worktrees/public-face`; the grant names its files and its end
-  condition, and it lives in the hub [`AGENTS.md`](../AGENTS.md).
+- One editing session per git. Campaign #544 adds one writer in
+  `.claude/worktrees/public-face` (files and end condition in the hub
+  [`AGENTS.md`](../AGENTS.md)) and, by the owner's word dated on #544,
+  read-only agents plus `.claude/worktrees/measure`, which runs and records
+  and commits nothing. The conductor alone integrates into `main`.

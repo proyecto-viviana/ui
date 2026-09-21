@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "two corrections the skeptic made, and the second changes the fix. First, the audit cites the wrong commit: `40ac9573` touches no source file at all - `git show --stat` is `.agents`, roadmap, status, a ticket and `check-jsx-ref-dead-code.ts` - and `70a8d478` made the change. Second, and this is the load-bearing one: **the prescribed action would diverge further from upstream, not less.** RAC 1.21.0 `private/Dialog.mjs:59` sets `overlayProps['aria-labelledby'] = triggerProps.id` unconditionally, with no element check at all; it guarantees the id lands by spreading `triggerProps` onto the PressResponder trigger. So dropping the `??` arm is a divergence. The real gap is `Button.tsx:483` assigning `el.id` imperatively in its ref instead of declaratively, which is why the id is absent from server-rendered HTML - and it is more reachable than the audit claimed, because solid-spectrum's ActionButton, ToggleButton and LinkButton never call `dialogTriggerContext.setTriggerRef`, so `triggerRef()` stays null in plain CSR with no SSR needed",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

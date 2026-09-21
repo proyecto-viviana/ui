@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`: three more stageless lows, items 8-10, and the title drops its count so the next sweep does not need a rename. Item 8 `r2-certified-a/r2a-6` is pre-existing oracle hygiene and belongs to no commit in either range. Items 9 and 10 are `r2-guards/r2-guards-5` and `r2-guards/r2-guards-6`, the two residues of #139, which is merged and so cannot carry live work; #139 carries the dated note that names them and points here. Same rule as before - one sweep row rather than three board rows, each item closable on its own",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

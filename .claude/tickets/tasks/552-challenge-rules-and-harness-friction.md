@@ -129,6 +129,13 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
     on 2026-09-20, swap sat at 4095/4096 MB, and earlyoom's swap condition was
     therefore permanently true. Proposal: root the runtime under `~/.cache/`
     and keep only sockets in `/tmp`. Cause of item 20's deaths. _(harness)_
+22. **A dated grant has nowhere legal to live.** Campaign grants belong in the
+    hub `AGENTS.md`, which is 89 counted lines against an entry-doc cap of 80
+    and so already fails `doc-shape-lint`; a repository `AGENTS.md` is a
+    repo-entry doc, where `date-in-rule` refuses the date — measured both ways
+    on `ui/AGENTS.md`, dated EXIT=1, undated EXIT=0 at 50 lines of 50. So
+    #544's measurement-worktree grant is written here undated, and dated on
+    #544. Split the hub entry doc, or let a grant carry its date. _(hub)_
 
 ## Done when
 

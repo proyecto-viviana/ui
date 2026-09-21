@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: 'opened from the 2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `555-b/press-style-not-nonced`, confirmed. Upstream nonces two injected styles. #555 item 8 scoped only `createPreventScroll`, so no claim on that ticket is false - this is the other one. `createPress.ts:128-143` appends `[data-solidaria-pressable]{touch-action:...}` with no nonce, on `document` rather than the element''s `ownerDocument`, un-layered and appended rather than prepended; upstream `usePress.mjs:583-599` uses `ownerDocument`, `getNonce(ownerDocument)`, `@layer` and `prepend`. On a page with a strict `style-src` the rule is dropped and every pressable keeps the 300ms double-tap delay the rule exists to remove. The helper is one import away in the same package. The skeptic also counted the blast radius: 8 of 9 `createElement("style")` sites across the packages are un-nonced',
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

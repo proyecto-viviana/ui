@@ -11,6 +11,11 @@ history:
       at: 2026-09-21,
       note: "opened from the 2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `555-a/openlink-router-bypass`, verdict partly. **Pre-existing, and the ticket says so first.** `git show e6384f37 -- .../selection` changed only two casts, and `createSelectableItem.ts:23-30` already documents the reason - solidaria cannot import RouterProvider. So this is a parity gap the Solid 2 work inherited, not one it introduced, and no claim in #555 is false because of it. What is true: upstream has exactly one `openLink` call site inside press handling (`usePress.mjs:320`) and routes every collection link activation through `router.open(...)` (`useSelectableItem.mjs:49,131`, `useSelectableCollection.mjs:69`). Ours calls `openLink(...)` at `createSelectableItem.ts:286,312`, `createSelectableCollection.ts:153` and `combobox/createComboBox.ts:556`. Only `Link.tsx:113`, `Table.tsx:1656,1699` and `Tree.tsx:1531` consult `useRouter()`. A consumer's `RouterProvider.navigate` is therefore never invoked for a link item; only a router with its own global click interceptor sees anything, and press-path clicks do bubble, so those routers still work",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope

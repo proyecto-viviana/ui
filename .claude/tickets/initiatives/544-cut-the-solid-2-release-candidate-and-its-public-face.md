@@ -40,6 +40,11 @@ history:
       at: 2026-09-21,
       note: "the S2-a bullet is extended in place, raised by #591's review round and not a correction of anything false. 'Space navigated twice' was scoped to `linkBehavior: 'selection'` and stayed silent on the other two. The `, false` at `createPress.ts:810` is on the shared keyup path, so under `'override'` and `'action'` the same Space went from navigating once to navigating zero times, Enter unchanged, measured in this seat by counting clicks that survive `defaultPrevented` against `43b5aabf`'s `createPress.ts` and again at HEAD. That is upstream's split (`useSelectableItem.mjs:45,104,307-313`) and `'override'` is `createListBox.ts:164-166`'s default under `selectionBehavior: 'toggle'`, so it reaches most consumers; the changeset now says it and two new test cases pin it. No stage, order or exit code changes",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the owner's soft-launch cut is recorded as the section `Soft-launch cut (owner, 2026-09-21)`, placed ahead of `Path to the RC after the 2026-09-21 audit`, which it reorders and does not delete. In: the gates green at one sha, hard crashes only, consumer breakage (#598, #599), public-face facts (#548, #549, #600) with a `known gaps in this RC` section linking every deferral. Deferred, each still ticket-owned and none closed: #592, #593, #594, #595, #596, #603, #605, #597, #579, #601, #604, each carrying its own dated line, and the non-crash certified reds. Each deferred ticket's head was read for crash shape before it was deferred and none of the eleven is one; the closest call is #596, whose title says `createId` throws - the throw is real and wedged `test:hydrate` at `4bbdeff7`, but `createLabels.ts:50` is `props.id ?? createId()`, so no shipped path reaches it today and the ticket's Done-when is one rule across two packages, not a crash. Waiving certified reds stays an owner call on a list nobody has made: `e2e/certified-waivers.json` is `[]` and the last complete certified run, 35638122333 at `45714230`, reported 2146 passed / 27 failed / 4 skipped / 0 waived / 1 flaky. Owner gates unchanged. The measurement worktree grant went into this repository's `AGENTS.md` instead of the hub's, and undated: the hub `AGENTS.md` is 89 counted lines against an entry-doc cap of 80 and `doc-shape-lint` already exits 1 on it, and `date-in-rule` forbids a date in a repo-entry doc - proved by running the lint on the dated wording first, `ui/AGENTS.md:48 [date-in-rule]` EXIT=1, then on the undated one, EXIT=0 at 50 of 50 lines. The date lives here. Both halves are logged on #552",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -120,6 +125,56 @@ Siblings #443 (the `latest` train), #531 (Solid 2 foundation), #136 (audit),
 #547, #548, #549, and the seventeen the 2026-09-21 audit opened — #587-#601
 from round 1, #602 and #603 from round 2.
 #545 sits under #531, #546 and #551 under #136, #550 under #26.
+
+## Soft-launch cut (owner, 2026-09-21)
+
+The owner asked for a smaller release sooner, verbatim:
+
+> can we reorder the priorities so we make a "soft" launch sooner? get to all
+> you say for a next release, but try to make a smaller one now. for example,
+> public face facts, site, fixing the hard crash failures. then for the next
+> release we leave the defects and such, something like that
+
+The conductor proposed the cut below and the owner answered "perfect, go",
+then added "also if we can parallelize more and better, let's do that. we can
+use one or two more grok workers or an opus one".
+
+This cut reorders **Path to the RC after the 2026-09-21 audit**, the section
+below. It deletes nothing: every stage there stands and every ticket keeps its
+owner. What changes is which of them the RC waits for.
+
+**In the RC.**
+
+- **Gates green at one sha.** The ladder itself. #606 is done and proved by
+  Certification Gates 35646778662 at `d1c5f4b3`, step 24 `guard layer-boundary`
+  green. What is left is whatever the local guard ladder and #590's twenty-leg
+  walk find red, `docs:check`, and a certified postcard re-pinned only from a
+  real full certified run — #574's open half at S0-d, which that same run
+  stopped at: step 38 `comparison parity (strict)`, a stale postcard, 3199
+  covered paths changed since `0f1e1198`.
+- **Hard crashes only.** #545, the web app on Solid 2, for the SSR failure; the
+  crash-class subset of #578's certified reds; and any build, typecheck or test
+  red #590 turns up. Which reds are crash-class is decided by the census being
+  taken now, which lands as a receipt. It is not guessed here.
+- **Consumer breakage.** #598 and #599, the route to npm.
+- **Public-face facts.** #548, #549 and #600, plus a "known gaps in this RC"
+  section that links every ticket deferred below.
+
+**Deferred to the release after the RC.** Each keeps its ticket and none is
+closed: #592, #593, #594, #595, #596, #603 and #605, the source defects; #597,
+#579, #601 and #604, the instruments and the residues; and every certified red
+the census does not call a crash.
+
+Carrying those reds as ticket-backed waivers in
+`apps/comparison/e2e/certified-waivers.json` is an owner call on a list that
+does not exist yet. The list is being prepared; nothing is waived. The file is
+`[]`, and the last complete certified run — 35638122333 at `45714230`, all
+eight shards run and merged — reported 2146 passed, 27 failed, 4 skipped,
+**0 waived**, 1 flaky.
+
+**Owner gates, unchanged by this cut.** The publish (#547) and its dist-tag;
+enabling the Release Readiness and Site Gate workflows (#568); deploys; secret
+changes; dependencies; new public names; merging `public-face`.
 
 ## Path to the RC after the 2026-09-21 audit
 

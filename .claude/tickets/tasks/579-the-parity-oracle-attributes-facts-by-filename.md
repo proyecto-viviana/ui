@@ -21,6 +21,11 @@ history:
       at: 2026-09-21,
       note: "placed at stage S3-a of #544's path, with #597 as S3-b. The path had named #597 alone and called this ticket its prerequisite in fact without scheduling it, so a reader working the stages in order met an unscheduled blocker at S3. No new measurement; the ordering is the one both tickets already argue for.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
 ---
 
 ## Scope
