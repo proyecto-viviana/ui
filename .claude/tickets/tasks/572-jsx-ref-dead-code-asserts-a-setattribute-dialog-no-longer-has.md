@@ -4,12 +4,17 @@ type: task
 title: "guard:jsx-ref-dead-code asserts a setAttribute that Dialog.tsx no longer has"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor walking the post-build half of the ladder on 2026-09-20 evening - the half nothing had ever run, because it needs `vp run build` first and `ci:release-readiness` does not reach it. `vp run guard:jsx-ref-dead-code` EXIT=1: `AssertionError: packages/solidaria-components/src/Dialog.tsx package transform dropped /setAttribute\\([\"']aria-labelledby[\"'],\\s*trigger\\.id\\)/`. The marker is stale, not the build: `grep -c setAttribute packages/solidaria-components/src/Dialog.tsx` is 0, and `git log -S` pins the removal to `70a8d478` '#555: resolve the dialog's title and content ids as slots'. Step 219 of certification-gates.yml. Evidence `.agents/chain-walk-2026-09-20/ladder-jsx-ref-dead-code.out.txt`",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #571 merged (`2ca4c94d`), as the earliest remaining red. The ladder now walks to step 219: 121, 160, 169 and 185 are green, and 193 (#559) sits between them, so this is not literally the first red - it is the first one whose ticket is ready to work, and #559 is a regeneration whose size makes it its own sitting. Three things found while handing it over. First, this is the third ratchet in two days that stopped tracking the tree, after #571's two - and unlike those, this one is the residue of a commit this seat reviewed, `70a8d478`. So the pattern is not 'old baselines rot'; it is 'a refactor moves the code and leaves the record', and it is worth one line in the log saying whether the guard could have caught its own staleness. Second, the ticket's default answer - retire the marker, because a direct test at Dialog.test.tsx:339 already asserts the outcome - is the 'never the third copy' rule and this seat endorses it; do not re-point the regex unless you can show the build dropping a declarative binding that the test survives, and if you can show that, it is a bigger finding than this ticket. Third, this gate needs `vp run build` first, so it is the heavy one: run `free -m`, one command at a time, output to a file",
     }
 ---
 
