@@ -2204,3 +2204,18 @@ seven. Merged.
 - All certified D2: 22 / 4. The four were red before: Dialog `modal-open` ×2
   (modal stays open after Escape, unticketed) and toggle reduced ×2 (#583).
 - Mutation, hold restored and rebuilt: D2 18 / 8, the extra four are #582's.
+
+## 2026-09-21 — #578 calendar/rangecalendar D3 dark, 11 rows
+
+- Every dark D3 row, light green: our shot painted light-scheme ink on the dark
+  ground. D3 screenshots a detached clone that pins `color` and `color-scheme`
+  on its frame; our calendar root reset `color-scheme` to
+  `var(--s2-color-scheme)`, which is unset outside the Provider, so the clone
+  fell back to `light dark` and the nav buttons resolved `rgb(41,41,41)`.
+  React's root inherits: upstream `calendarStyles` (S2 1.7.0) has no
+  `colorScheme()`, which S2 keeps to overlays, Provider and TableView. Ours came
+  from the May pre-parity pass, `1e0b7cb2`. Removed from both roots.
+- `certified/calendar certified/rangecalendar`: 86 passed.
+  `certified/datepicker certified/daterangepicker`: 114 passed.
+- Mutation, spread restored and rebuilt: D3 11 / 11, the same eleven.
+- solid-spectrum units 85 files / 1125 passed; typecheck clean.

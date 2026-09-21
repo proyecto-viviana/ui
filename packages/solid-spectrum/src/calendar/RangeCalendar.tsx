@@ -45,13 +45,7 @@ import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/
 import { s2IntlStrings } from "../intl";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  focusRing,
-  lightDark,
-  setColorScheme,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";
@@ -187,7 +181,6 @@ function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: st
 }
 
 const rangeCalendarRoot = style<{ isMultiMonth?: boolean }>({
-  ...setColorScheme(),
   display: "flex",
   flexDirection: "column",
   gap: 24,
