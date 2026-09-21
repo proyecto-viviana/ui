@@ -4,7 +4,7 @@ type: task
 title: "The entry import budget counts bundler chunks, so the bundler can move it"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-20,
       note: "unit changed to source reachability. `sourceOfTarget()` is the one dist-to-src mapping and serves both the entries and the workspace specifiers; it tries the `types` condition before the runtime one because tsc mirrors `src/` one file to one file while the bundler may rename an entry - solid-stately emits src/flags/flags.ts as dist/private/flags/flags.js, and without that order three specifiers into it fail to resolve. Type-only and build-time macro imports are excluded, proved by flipping each predicate to false: ButtonGroup measures 57 as shipped, 468 with type edges counted and 63 with macro imports counted. An unresolvable target fails rather than skipping, proved by pointing ./ProgressCircle at ./dist/progress/ProgressCircleRenamed.js (EXIT=1, named in the output) and reverting. Re-frozen once with --write-baseline, the five `why` fields rewritten by hand to name source modules, and `unit`/`description`/header comment updated. The guard no longer reads dist/: a worktree of e0ccb27e with no dist anywhere measures the same numbers in 0.251s, so it is now a leg of ci:release-readiness, after guard:source-artifacts and before vp run build. Evidence `.agents/close-gates-2026-09-20.log.md`",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "`a5129cb2`, reviewed by the conductor and pushed in `4d882ff1`. Re-verified here rather than accepted: `vp run guard:entry-import-budget` EXIT=0, 5/5 entries and 154/154 root-barrel importers in 0.51s, and no `existsSync` in the script touches a `dist/` path - `dist/` survives only in comments and the one `.replace(/^dist\\//, \"\")` of the mapping. Taken from the writer's evidence and not re-run here: the no-dist worktree measurement and the three exclusion flips. The `types`-condition-first resolution is the finding neither the brief nor the review anticipated; it is written into `## The resolution` so the next reader does not rediscover it",
     }
 ---
 

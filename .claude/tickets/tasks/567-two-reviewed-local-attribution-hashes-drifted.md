@@ -4,12 +4,17 @@ type: task
 title: "Two reviewed-local attribution hashes drifted, so guard:attribution-headers is red on main"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor on the first Certification Gates run after the workflow was re-enabled (run 35544700944, push at e0ccb27e). The ladder got fourteen steps deep - typecheck, ts-nocheck budget, guard failure contracts, lint, test:ssr, test:hydrate all green - and stopped here. Reproduced locally at HEAD: `node scripts/report-attribution-mappings.mjs --check-headers` EXIT=1, `Reviewed local source: mismatch: 2, satisfied: 252`",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #566 merged. No brief file: this ticket is the brief, and the one rule that matters is under `## Work` - read the diff against the reviewed content before re-pinning, and say in the ticket that you did. The gate is red on main at `4d882ff1`, so this is the first thing between here and a green ladder",
     }
 ---
 
