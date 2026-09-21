@@ -1910,3 +1910,37 @@ Two consequences beyond the region: `ToastContainer`'s expand and collapse go
 through the same `startViewTransition`, so they are dead in a browser too, and
 every certified driver for this component is blocked behind `beforePanel`, which
 is why the whole 37 rows fall together.
+
+### Step 3, cause 1 — the fix, both copies, and the coverage gap that hid it
+
+`grep -rn '=> fn)' packages/*/src/` returns exactly two lines and nothing else:
+`packages/solid-spectrum/src/toast/index.tsx:317` and
+`packages/viviana-ui/src/toast/index.tsx:320`, character for character in two
+separately published packages. Both are fixed in this commit; neither is fixed
+alone.
+
+The repair is not the naive `doc.startViewTransition(fn)`. The browser snapshots
+when the callback returns, and Solid's DOM write need not have landed by then —
+upstream reaches for `flushSync` inside that callback for exactly this reason.
+So the callback calls `fn()` and then flushes, in the `try/catch` shape
+`createToastState` already uses, since `flush` is forbidden inside effect apply.
+`fn` alone would have restored the landmark and still let the transition capture
+a stale frame, which would have read as a second defect.
+
+The coverage gap is the point: jsdom has no View Transitions API, so all 39
+existing Toast tests took the synchronous `else` branch and proved nothing about
+the branch a browser takes. Both packages now carry a regression test that
+installs a faithful `document.startViewTransition` stub — one that actually
+invokes its callback and resolves — and asserts the `Notifications` landmark.
+Verified as guards, not decoration: with the two source lines stashed,
+`vp test run packages/solid-spectrum/test/Toast.test.tsx packages/viviana-ui/test/Toast.test.tsx`
+is EXIT=1 with exactly those two tests failing, 2 failed / 39 passed; with the
+fix it is EXIT=0, 41 passed. `viviana-ui` had no Toast test file at all before
+this.
+
+Not extracted, ticketed instead. The two toast modules are 1162 and 1248 lines
+and differ on 118 lines after whitespace folding — about ninety per cent of the
+module is duplicated, not just this helper, and `startViewTransition` closes
+over each package's own `ensureToastAnimationStyles` and `globalReduceMotion`.
+Lifting twenty lines while a thousand stay doubled would be the gesture, not the
+fix. Ticket filed for the module.
