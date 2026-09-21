@@ -1,0 +1,3 @@
+$ vp exec tsx scripts/extract-api-reference.ts --check ⊘ cache disabled
+checked 84 reference pages
+
