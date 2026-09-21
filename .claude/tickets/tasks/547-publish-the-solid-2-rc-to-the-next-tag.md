@@ -12,6 +12,11 @@ history:
       at: 2026-09-20,
       note: "opened under #544, blocked on #545, #139, the #194 merger and evidence slices, and #546's critical findings. Owner decision 2026-09-20: -rc.N prereleases on next, as Solid does; consumers adopt at once; certified debt may ship if named. Standing publish authority applies only after the gates below are green on one revision",
     }
+  - {
+      state: open,
+      at: 2026-09-20,
+      note: "the conductor corrects this ticket's own npm numbers. The 'The tag' section cited `(0.5.2 / 0.5.0 / 0.6.0 / 0.7.0 / 0.7.0)` as the five published `latest` dist-tags; those are the local `packages/*/package.json` versions, confirmed by reading all five. Published `latest` is 0.5.1 / 0.4.3 / 0.5.1 / 0.6.4 / 0.6.3, per `scripts/release-prerequisites.json:26-90`, which holds five re-runnable `npm view` reads dated 2026-09-20. The argument that `latest` cannot move is unaffected - no published version is a prerelease either way - but the Done when compares `latest` before and after, and the 'before' was the wrong column. Now a two-column table so the two can never be confused again. No live npm read was taken for this: the hub rule makes a live provider read an owner-permitted action, and the repository already had the evidence. Second finding, no action yet: every local version is one minor ahead of its published `latest`, so a versioned-but-unpublished bump is already sitting in the tree and `pre enter rc` will compute the rc from it - expect the published line to step 0.6.x -> 0.8.0-rc.0 with 0.7.0 never appearing on npm. Also established while looking: there is no dist-tag guard to reuse. `release:npm` is `changeset:publish` and nothing else, and the only `dist-tag` string anywhere in `scripts/`, `package.json` or `.github/workflows/` is inside those recorded evidence lines - so the step-3 debt this ticket names is real and unowned",
+    }
 ---
 
 ## Scope
@@ -72,7 +77,29 @@ prereleases, installed with `@next` — instead of trading one away. The flow:
 `latest` cannot move by accident here: `getPublishPlan.mjs:599` only forces
 `latest` when `publishedState === "only-pre"`, which requires every published
 version to be a prerelease of this tag, and all five already have a non-pre
-`latest` (0.5.2 / 0.5.0 / 0.6.0 / 0.7.0 / 0.7.0).
+`latest`:
+
+| package                | published `latest` | local `package.json` |
+| ---------------------- | ------------------ | -------------------- |
+| `solid-stately`        | 0.5.1              | 0.5.2                |
+| `solidaria`            | 0.4.3              | 0.5.0                |
+| `solidaria-components` | 0.5.1              | 0.6.0                |
+| `solid-spectrum`       | 0.6.4              | 0.7.0                |
+| `@proyecto-viviana/ui` | 0.6.3              | 0.7.0                |
+
+The `latest` column is the repository's own recorded evidence in
+`scripts/release-prerequisites.json:26-90`, five re-runnable
+`npm view <pkg> name version dist-tags --json` reads dated 2026-09-20. The
+conclusion is unchanged — none of the five is a prerelease, so `only-pre` is
+unreachable — but the numbers are, and the distinction is load-bearing.
+
+**This paragraph first cited the local column as if it were the published one.**
+Both columns exist, they differ in every row, and this ticket's own Done when
+requires proving `latest` is unchanged across the publish. A wrong "before"
+makes that check pass while `latest` has in fact moved, so the error was in the
+one number stage 4 compares against. Read `latest` from npm at the revision, not
+from the workspace; the local column is what is about to be published, which is
+the opposite of what is being held still.
 
 ### The debt this creates, and it must not be paid by hand
 
