@@ -46,7 +46,7 @@ export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
  * path leaves the set only on a reviewed line below. Ticket #574.
  */
 export const certifiedSuiteCoveredPathspecs = [
-  // The whole tree, minus the four lines under it.
+  // The whole tree, minus the reviewed lines under it.
   ":(top,glob)**",
   // The postcard itself, or the commit that records a run would invalidate the
   // run it records — the unsatisfiable gate this ticket opened on.
