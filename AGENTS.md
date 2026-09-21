@@ -44,7 +44,7 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 - `.claude/settings.local.json`, `.claude/skills/`, and screenshots stay
   untracked; they are local tool state.
 - One editing session per git. Campaign #544 adds one writer in
-  `.claude/worktrees/public-face` (files and end condition in the hub
-  [`AGENTS.md`](../AGENTS.md)) and, by the owner's word dated on #544,
-  read-only agents plus `.claude/worktrees/measure`, which runs and records
-  and commits nothing. The conductor alone integrates into `main`.
+  `.claude/worktrees/public-face`; the hub [`AGENTS.md`](../AGENTS.md) holds
+  that grant, with its files and its end condition, and lists no other seat.
+  Work that writes nothing in this checkout runs beside it, as #544's
+  `How this runs` says. The conductor alone integrates into `main`.

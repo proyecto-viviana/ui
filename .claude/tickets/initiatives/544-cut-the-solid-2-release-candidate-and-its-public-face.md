@@ -45,6 +45,11 @@ history:
       at: 2026-09-21,
       note: "the owner's soft-launch cut is recorded as the section `Soft-launch cut (owner, 2026-09-21)`, placed ahead of `Path to the RC after the 2026-09-21 audit`, which it reorders and does not delete. In: the gates green at one sha, hard crashes only, consumer breakage (#598, #599), public-face facts (#548, #549, #600) with a `known gaps in this RC` section linking every deferral. Deferred, each still ticket-owned and none closed: #592, #593, #594, #595, #596, #603, #605, #597, #579, #601, #604, each carrying its own dated line, and the non-crash certified reds. Each deferred ticket's head was read for crash shape before it was deferred and none of the eleven is one; the closest call is #596, whose title says `createId` throws - the throw is real and wedged `test:hydrate` at `4bbdeff7`, but `createLabels.ts:50` is `props.id ?? createId()`, so no shipped path reaches it today and the ticket's Done-when is one rule across two packages, not a crash. Waiving certified reds stays an owner call on a list nobody has made: `e2e/certified-waivers.json` is `[]` and the last complete certified run, 35638122333 at `45714230`, reported 2146 passed / 27 failed / 4 skipped / 0 waived / 1 flaky. Owner gates unchanged. The measurement worktree grant went into this repository's `AGENTS.md` instead of the hub's, and undated: the hub `AGENTS.md` is 89 counted lines against an entry-doc cap of 80 and `doc-shape-lint` already exits 1 on it, and `date-in-rule` forbids a date in a repo-entry doc - proved by running the lint on the dated wording first, `ui/AGENTS.md:48 [date-in-rule]` EXIT=1, then on the undated one, EXIT=0 at 50 of 50 lines. The date lives here. Both halves are logged on #552",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "review of `b6ea736a`; three findings, all three real, all three fixed, two of them as in-place edits to this file. (1) The waiver paragraph's headline evidence was superseded before it was written. Certification Gates 35646778662 at `d1c5f4b3`, the RC's own sha, ran all eight certified shards and its `certified report` job 106494691342 completed 2026-09-21T20:02:28Z, three minutes ahead of `b6ea736a` itself at 2026-09-21T20:05:26Z. Its log, read with `gh api repos/:owner/:repo/actions/jobs/106494691342/logs`, totals 2146 passed, 27 failed, 4 skipped, 0 waived and 0 flaky, and its 27 unwaived failure lines are identical to 35638122333's, diffed line by line rather than eyeballed. The one number that moved is the one that costs an exit code: `flakyBudget` is 0 in `apps/comparison/e2e/certified-case-floor.json`, and the older run's log carries `over-flaky: 1 cases passed only on a retry, budget 0` where the newer one carries no budget line at all. The paragraph now cites the RC's own run; `0 waived` survives the swap. The note above that quoted 35638122333 is left as written, being the record of what was believed then. (2) The `Gates green at one sha` bullet now ends by naming the ladder frontier - step 38 of run 35646778662 - and by saying why it is written on this ticket and not in `status.md`, which is #588's third Done-when clause; #588 carries the rest of that finding. (3) The note above records that the measurement-worktree grant went into this repository's `AGENTS.md`; what it did not record is that no owner sentence on this ticket supports it. The two quotes here are the soft-launch cut and a remark about more workers. The clause is removed from `ui/AGENTS.md`, the hub exception is the only seat list again, and the residue is item 22 on #552",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -151,7 +156,9 @@ owner. What changes is which of them the RC waits for.
   walk find red, `docs:check`, and a certified postcard re-pinned only from a
   real full certified run — #574's open half at S0-d, which that same run
   stopped at: step 38 `comparison parity (strict)`, a stale postcard, 3199
-  covered paths changed since `0f1e1198`.
+  covered paths changed since `0f1e1198`. So the ladder frontier is step 38
+  of run 35646778662, and it is written here because `status.md` is generated
+  and work state lives only in `.claude/tickets` (#588).
 - **Hard crashes only.** #545, the web app on Solid 2, for the SSR failure; the
   crash-class subset of #578's certified reds; and any build, typecheck or test
   red #590 turns up. Which reds are crash-class is decided by the census being
@@ -168,9 +175,11 @@ the census does not call a crash.
 Carrying those reds as ticket-backed waivers in
 `apps/comparison/e2e/certified-waivers.json` is an owner call on a list that
 does not exist yet. The list is being prepared; nothing is waived. The file is
-`[]`, and the last complete certified run — 35638122333 at `45714230`, all
-eight shards run and merged — reported 2146 passed, 27 failed, 4 skipped,
-**0 waived**, 1 flaky.
+`[]`, and the last complete certified run is the RC's own: 35646778662 at
+`d1c5f4b3`, all eight shards run and merged, `certified report` job
+106494691342 — 2146 passed, 27 failed, 4 skipped, **0 waived**, 0 flaky, the
+same 27 unwaived failures as the run before it. That earlier run, 35638122333
+at `45714230`, differed in one number: 1 flaky against a `flakyBudget` of 0.
 
 **Owner gates, unchanged by this cut.** The publish (#547) and its dist-tag;
 enabling the Release Readiness and Site Gate workflows (#568); deploys; secret

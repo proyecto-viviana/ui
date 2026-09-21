@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "owner, 2026-09-20: do not take the system as it is; improve it, make it clearer, and challenge unnecessary rules as a standing side-track of the real work. Repo-local items are fixed in their own commit. Hub and harness items are proposed to the owner one at a time",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "item 22 is rewritten in place, from #544's review round. The half that was a shape complaint stands; what it did not say is that the shape pressure had already produced a false attribution. `b6ea736a` rewrote the last bullet of `ui/AGENTS.md` to grant, `by the owner's word dated on #544`, read-only agents plus `.claude/worktrees/measure` - and no owner sentence on #544 says either: the only two recorded there are the soft-launch cut and `also if we can parallelize more and better, let's do that. we can use one or two more grok workers or an opus one`, which is staffing, not a seat. The hub `AGENTS.md` campaign-#544 exception, authority 2 against a repo `AGENTS.md`'s 4, names exactly one extra seat, the `public-face` writer, and says the main writer keeps everything else - so a repo file was granting seats to itself from below. The clause is removed here and the bullet points at the hub grant instead; `wc -l ui/AGENTS.md` is 50 of a 50-line cap and `node vivianastack/scripts/audit/doc-shape-lint.mjs ui/AGENTS.md` EXIT=0 before and after. This seat cannot supply the missing grant: it may not write the hub file, and inventing an owner sentence is the thing being fixed. So the residue is the owner's, and it is item 22's last clause",
+    }
 ---
 
 ## Scope
@@ -129,13 +134,20 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
     on 2026-09-20, swap sat at 4095/4096 MB, and earlyoom's swap condition was
     therefore permanently true. Proposal: root the runtime under `~/.cache/`
     and keep only sockets in `/tmp`. Cause of item 20's deaths. _(harness)_
-22. **A dated grant has nowhere legal to live.** Campaign grants belong in the
-    hub `AGENTS.md`, which is 89 counted lines against an entry-doc cap of 80
-    and so already fails `doc-shape-lint`; a repository `AGENTS.md` is a
-    repo-entry doc, where `date-in-rule` refuses the date — measured both ways
-    on `ui/AGENTS.md`, dated EXIT=1, undated EXIT=0 at 50 lines of 50. So
-    #544's measurement-worktree grant is written here undated, and dated on
-    #544. Split the hub entry doc, or let a grant carry its date. _(hub)_
+22. **A grant has nowhere legal to live, and one got written from below.**
+    Campaign grants belong in the hub `AGENTS.md`, which is 89 counted lines
+    against an entry-doc cap of 80 and so already fails `doc-shape-lint`; a
+    repository `AGENTS.md` is a repo-entry doc capped at 50, where
+    `date-in-rule` also refuses the date — measured both ways on
+    `ui/AGENTS.md`, dated EXIT=1, undated EXIT=0 at 50 lines of 50. The
+    pressure produced the wrong answer: a measurement worktree and read-only
+    agents were written into `ui/AGENTS.md` as the owner's word, and no owner
+    sentence recorded on #544 says either — the two quotes there are the
+    soft-launch cut and a staffing remark about more workers. That clause is
+    gone; the hub exception is again the only seat list, and it names one
+    extra writer. The tree it named still runs, so the seat that exists is
+    written down nowhere. Split the hub entry doc, or let a grant carry its
+    date, and say where a seat granted mid-campaign is recorded. _(hub)_
 
 ## Done when
 
