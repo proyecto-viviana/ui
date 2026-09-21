@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type DocsPayload, collectDocs } from "../apps/web/src/app/admin/server/data";
+import { splitFrontmatter } from "../apps/web/src/app/admin/server/frontmatter";
 import {
   TICKET_DIRECTORIES,
   TICKET_STATUSES,
@@ -28,15 +29,65 @@ function ticketFiles(): string[] {
   return files;
 }
 
-function boardRevision(): string {
+export interface BoardEntry {
+  path: string;
+  content: string;
+}
+
+/** Sorts object keys recursively, so JSON.stringify is a canonical form. */
+function canonical(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    const sorted: Record<string, unknown> = {};
+    for (const key of Object.keys(record).sort()) sorted[key] = canonical(record[key]);
+    return sorted;
+  }
+  return value;
+}
+
+/**
+ * The board stamp the two generated views carry, and the only definition of it:
+ * `docs:generate` writes it and `docs:check` recomputes it through this same
+ * function. It hashes each ticket's path and its *parsed* frontmatter, not the
+ * file's bytes.
+ *
+ * #588: the pre-commit `staged` hook runs `vp check --fix` over staged ticket
+ * markdown after `docs:generate` has stamped the views, so a byte-level stamp
+ * is stale at the very commit that wrote it — `503e50a0` reproduced it and
+ * `a9ab33ee` had to restamp. Quoting, flow-versus-block mapping, folding and
+ * trailing whitespace all parse to the same YAML value, so respelling a ticket
+ * leaves this stamp alone while a real board edit moves it.
+ *
+ * The body is deliberately out of the hash. The views render frontmatter only,
+ * and a markdown formatter may rewrap prose at will, so no normalisation of a
+ * body survives it. A body-only edit therefore does not move the stamp; the
+ * stamp names the board the views were rendered from, not the ticket text.
+ */
+export function boardRevisionOf(entries: Iterable<BoardEntry>): string {
+  const records = [...entries]
+    .map((entry) => ({
+      path: entry.path,
+      frontmatter: canonical(splitFrontmatter(entry.content).data),
+    }))
+    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+
   const hash = createHash("sha256");
-  for (const file of ticketFiles()) {
-    hash.update(path.relative(root, file));
-    hash.update("\0");
-    hash.update(readFileSync(file));
+  for (const record of records) {
+    hash.update(JSON.stringify(record));
     hash.update("\0");
   }
   return `sha256:${hash.digest("hex")}`;
+}
+
+function boardRevision(): string {
+  return boardRevisionOf(
+    ticketFiles().map((file) => ({
+      path: path.relative(root, file).split(path.sep).join("/"),
+      content: readFileSync(file, "utf8"),
+    })),
+  );
 }
 
 function link(ticket: WorkTicket): string {
