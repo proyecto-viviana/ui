@@ -408,3 +408,49 @@ two are not the same defect and should not be filed together. Settling them
 needs the two attached PNGs from the run artifacts, not more log reading.
 
 Nothing in the roster is ungraded after this.
+
+## The 88, confirmed from CI, and where every row now belongs
+
+Certification Gates run **35558449632** on `eb75ee0e` — the first run after
+#581 — completed `failure` at 04:06:14Z with
+
+> Totals: **2085 passed**, **88 failed**, **4 skipped**, **0 waived**, **0 flaky**.
+
+Eighty-eight is the number this census projected, so the arithmetic of
+169 → 132 → 88 is now measured rather than predicted. The full failing set, from
+the merged report table:
+
+| block | rows | ticket |
+| --- | ---: | --- |
+| combobox-list D1 6, D3 6, D7 2, D9 6, D10 2 | 22 | #497 |
+| picker-list D1 6, D3 6, D8 1, D9 6, D10 2 | 21 | #585 |
+| popover-surface D1 6, D3 6, D7 1 | 13 | #257, in-progress |
+| form D1 6, D3 6 | 12 | **none — gap** |
+| calendar D3 6, rangecalendar D3 5 | 11 | **none — ungraded** |
+| datepicker-motion D2 2, daterangepicker-motion D2 2 | 4 | #582 |
+| picker-trigger D13 | 2 | #584 |
+| togglebutton D2 1, togglebuttongroup D2 1 | 2 | #583 |
+| tabs D4 | 1 | **none — see below** |
+|  | **88** |  |
+
+Nine blocks, and only nine. Six of them have a ticket that names their cause.
+
+Three do not, and each is a different kind of hole:
+
+- **form, 12 rows.** D1 and D3 only, six each. Graded in this census as the
+  four-file form/Button family, never ticketed. The largest untracked block
+  left.
+- **calendar D3 6 + rangecalendar D3 5, 11 rows.** Graded as far as the logs
+  allow — dark only, whole grid, invisible to D1 — and no further without the
+  attached PNGs. Section above.
+- **tabs D4, 1 row.** Graded here as roving tabindex, which is what
+  [#507](../.claude/tickets/tasks/507-keep-tabs-mouse-click-tabindex-stable.md)
+  closed on 2026-09-07. That ticket is `merged` and this row is red on
+  `eb75ee0e`, so either it regressed or the case is a different one. Whoever
+  takes it must read #507's proof before writing a new ticket — a reopen and a
+  new ticket are not the same record.
+
+Closing the three that are ticketed and cheap — #585, #584, #583 — takes the
+roster from 88 to 63. Release runs on Certification Gates' `workflow_run` with
+`if: conclusion == 'success'`, and `certified report` exits 1 while any row is
+red, so this table is the whole distance between here and a publishable run.
