@@ -2173,3 +2173,13 @@ seven. Merged.
 - Planted `button` in `missingControlGroups`: the old report passed it silently;
   the new one fails naming it, and the pin test fails 1 of 5. All 27 real entries
   still occur.
+
+## 2026-09-21 — #576 playground toast region: already fixed by `d2f94530`
+
+- Doesn't reproduce at HEAD. The walk that found it predates the toast
+  view-transition fix. apps/web consumes package **dist**, so a source-only
+  mutation proves nothing. With `() => fn` put back and solid-spectrum rebuilt,
+  the tests are 2 failed, the ticket's evidence exactly. Restored and rebuilt:
+  2 passed.
+- `a11y:smoke`: 71 / 3, and all three are #575's `examples.spec.ts:179` rows.
+- apps/web `vite.config.ts` comments corrected: dist, not source.

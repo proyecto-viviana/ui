@@ -4,12 +4,17 @@ type: task
 title: "The playground's toast region never renders, so two a11y:smoke tests fail on a missing landmark"
 created: 2026-09-20
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor running step 251 of the ladder, `VIVIANA_GATE=1 vp run a11y:full`. Legs one and two are green (playground axe 10/10, comparison axe 81/81); `a11y:smoke` is 7 failed / 67 passed, and two of the seven are these: `playground-components.spec.ts:583` and `:614`, both timing out on `getByRole('region', { name: 'Notifications' })` with `element(s) not found` after a click on the `Success Toast` trigger. Not a flake and not a timing miss - the locator finds nothing at all for the full 5s, and every other overlay test in the same file passes in the same run, including tooltip, popover, dialog and alertdialog. Evidence `.agents/chain-walk-2026-09-20/ladder-axe-full.out.txt`. The other five failures are a different cause and are #575",
+    }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: 'candidate 1, and already fixed: #578''s first cause, `d2f94530`. The global queue wraps every update in `startViewTransition`, and the port handed the browser `() => fn`, so the toast was never added and `ToastContainer` had nothing to render. The step-251 walk (`d5165521`, 22:48) predates that fix (00:04). It did not reproduce at HEAD: both tests pass. The first mutation, source only, still passed, because apps/web resolves `@proyecto-viviana/solid-spectrum` through its `exports` to the built dist, not source (apps/web''s tsconfig maps no workspace paths, and never has). Decided by putting `() => fn` back in `packages/solid-spectrum/src/toast/index.tsx` and rebuilding the dist: `playground-components.spec.ts -g Toast` is 2 failed, `element(s) not found` on `region "Notifications"`, the conductor''s exact evidence. Restored and rebuilt: 2 passed. The whole leg, `vp run a11y:smoke`: 71 passed / 3 failed, and the three are `examples.spec.ts:179` (explore-empty, lesson, playground), which are #575''s. No library change here. The apps/web `vite.config.ts` comments claimed source resolution and now say dist, with the rebuild-first consequence for a local web gate; CI builds at :213 before `a11y:full` at :258, so CI was never stale',
     }
 ---
 

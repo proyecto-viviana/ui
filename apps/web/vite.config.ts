@@ -10,7 +10,10 @@ import { sitemapPlugin } from "./src/app/seo/plugin";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Workspace packages are linked sources, not pre-built dists: keep them out of
+// Workspace packages are linked through node_modules and resolve through their
+// `exports` to the built `dist`; this app's tsconfig maps no workspace paths. A
+// web build therefore tests the last package build, not the working tree:
+// rebuild a changed package before a local web gate (#576). Keep them out of
 // the dep optimizer (both client and SSR) and bundle them into the SSR graph so
 // they share the one solid-js instance. Mirrors apps in the visualmode repo.
 const workspacePackages = [
@@ -161,10 +164,8 @@ export default defineConfig({
     exclude: workspacePackages,
   },
   plugins: [
-    // The S2 style() macro. We resolve the workspace packages to their *source*
-    // (root tsconfig `paths` + resolve.tsconfigPaths), so the `style()`/`iconStyle()`
-    // calls that solid-spectrum imports `with { type: "macro" }` are NOT the
-    // macro-expanded dist — they must be expanded here. Without this pass the
+    // The S2 style() macro, for this app's own `with { type: "macro" }` imports;
+    // the packages arrive macro-expanded in their dist. Without this pass the
     // import attribute is ignored, `style` falls back to its runtime form, and the
     // dynamic-style path calls `new Function`, which workerd SSR forbids
     // ("Code generation from strings disallowed") — the Provider's container style
