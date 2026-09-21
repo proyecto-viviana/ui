@@ -31,6 +31,7 @@ import {
   type ToggleButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
+import { useFormProps } from "../form";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
 import { space, style } from "../style" with { type: "macro" };
@@ -127,12 +128,12 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   ]);
   const contextProps = getSlottedContextProps(useToggleButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useToggleButtonGroupContext(), undefined);
-  const defaultProps: Partial<ToggleButtonProps> = {
-    size: "M",
-  };
-  const standaloneProps = contextProps
-    ? mergeAriaProps<RuntimeToggleButtonProps>(defaultProps, flags, contextProps, props)
-    : mergeAriaProps<RuntimeToggleButtonProps>(defaultProps, flags, props);
+  // As Button: the Form fills what context and props leave unset; defaults are read-time.
+  const standaloneProps = useFormProps(
+    contextProps
+      ? mergeAriaProps<RuntimeToggleButtonProps>(flags, contextProps, props)
+      : mergeAriaProps<RuntimeToggleButtonProps>(flags, props),
+  );
   const groupProps: Partial<ToggleButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;

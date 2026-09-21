@@ -30,6 +30,7 @@ import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
 import { TextContext } from "../text";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
+import { useFormProps } from "../form";
 import { pressScale } from "../pressScale";
 import { useLinkButtonContext } from "./context";
 import { s2Button, s2ButtonGradient, s2ButtonText } from "./s2-button-styles";
@@ -82,12 +83,8 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useLinkButtonContext(), props.slot);
-  const defaultProps: Partial<LinkButtonProps> = {
-    variant: "primary",
-    size: "M",
-    fillStyle: "fill",
-  };
-  const merged = mergeProps<LinkButtonProps>(defaultProps, flags, contextProps ?? {}, props);
+  // As Button: the Form fills what context and props leave unset; defaults are read-time.
+  const merged = useFormProps(mergeProps<LinkButtonProps>(flags, contextProps ?? {}, props));
   const [local, headlessProps] = splitProps(merged, [
     "variant",
     "fillStyle",

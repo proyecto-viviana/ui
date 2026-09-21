@@ -69,14 +69,10 @@ export function Button(props: ButtonProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useButtonContext(), runtimeProps.slot);
-  const defaultProps: Partial<ButtonProps> = {
-    variant: "primary",
-    size: "M",
-    fillStyle: "fill",
-  };
-
+  // Upstream: context, then the Form fills what is still unset, then the
+  // defaults at read time. A default merged in first would hide the Form's size.
   const merged = useFormProps(
-    mergeProps<RuntimeButtonProps>(defaultProps, flags, contextProps ?? {}, runtimeProps),
+    mergeProps<RuntimeButtonProps>(flags, contextProps ?? {}, runtimeProps),
   );
 
   const [local, headlessProps] = splitProps(merged, [

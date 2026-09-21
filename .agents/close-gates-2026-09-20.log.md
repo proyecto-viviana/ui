@@ -2118,3 +2118,21 @@ use.
   14 passed (D1 6 dark, D3 6 dark, D7 placement-top dark).
 - Fixed: 27 / 0. With breadcrumbs: 29 passed, 1 skipped; the skip is the
   July `knownDivergence` on D6 `overflow`, not new.
+
+## form, 12 rows — the button family never took the Form's size
+
+`Button.tsx` merged a `size: "M"` defaults literal under the props before
+`useFormProps`, so the proxy found `size` set and never consulted the Form;
+ActionButton, ToggleButton and LinkButton carried the same literal and did not
+call `useFormProps` at all. Upstream (`s2@1.7.0` Button `:414-417`, LinkButton
+`:539-543`, ActionButton `:333-334`, ToggleButton `:77-78`) applies it after
+context and defaults at destructuring. All four now drop the literal (the
+read-time `?? "M"` already existed) and wrap the context merge in
+`useFormProps`. Unticketed; the census names it untracked.
+
+- `certified/form.certified` 44 / 0. Defect back and rebuilt: 12 failed / 32
+  passed. With button, actionbutton, togglebutton, togglebuttongroup: 286 / 2,
+  the 2 being D2 reduced hover-transition on the toggle specs, #583's rows.
+- Unit guard in `Form.test.tsx`, one case per button: defect back, exactly the
+  4 new ones fail of 17. Button family + Form suites 93 passed, SSR 9, hydrate
+  9; typecheck clean.

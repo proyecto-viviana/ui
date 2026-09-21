@@ -26,6 +26,7 @@ import {
 import { createStringFormatter, mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import { space, style } from "../style" with { type: "macro" };
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
+import { useFormProps } from "../form";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
@@ -132,9 +133,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   ]);
   const contextProps = getSlottedContextProps(useActionButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useActionButtonGroupContext(), undefined);
-  const defaultProps: Partial<ActionButtonProps> = {
-    size: "M",
-  };
   const groupProps: Partial<ActionButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;
@@ -163,12 +161,9 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps<ActionButtonLayeredProps>(
-    defaultProps,
-    flags,
-    contextProps ?? {},
-    runtimeProps,
-    groupProps,
+  // As Button: the Form fills what the layers leave unset; defaults are read-time.
+  const merged = useFormProps(
+    mergeProps<ActionButtonLayeredProps>(flags, contextProps ?? {}, runtimeProps, groupProps),
   );
   const [local, headlessProps] = splitProps(merged, [
     "size",

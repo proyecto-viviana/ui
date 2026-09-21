@@ -3,7 +3,16 @@
  */
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
-import { Button, Form, NumberField, Skeleton, TextField } from "../src";
+import {
+  ActionButton,
+  Button,
+  Form,
+  LinkButton,
+  NumberField,
+  Skeleton,
+  TextField,
+  ToggleButton,
+} from "../src";
 
 describe("Form (solid-spectrum)", () => {
   it("renders an S2 styled form root", () => {
@@ -192,6 +201,34 @@ describe("Form (solid-spectrum)", () => {
     expect(input).toBeRequired();
     expect(button).toBeDisabled();
     expect(screen.getByText("(required)")).toBeInTheDocument();
+  });
+
+  // The Form's size reaches all four buttons, and a local size still wins.
+  // Upstream applies useFormProps before the size default in each of them.
+  it.each([
+    ["Button", Button],
+    ["ActionButton", ActionButton],
+    ["ToggleButton", ToggleButton],
+    ["LinkButton", LinkButton],
+  ] as const)("gives %s the Form's size", (_name, Component) => {
+    const C = Component as (props: Record<string, unknown>) => ReturnType<typeof Button>;
+    render(() => (
+      <>
+        <Form size="XL">
+          <C>inherited</C>
+          <C size="S">local</C>
+        </Form>
+        <C size="XL">xl</C>
+        <C size="S">s</C>
+        <C>m</C>
+      </>
+    ));
+    const cls = (text: string) =>
+      screen.getByText(text).closest('button, a, [role="link"]')!.className;
+
+    expect(cls("xl")).not.toBe(cls("m"));
+    expect(cls("inherited")).toBe(cls("xl"));
+    expect(cls("local")).toBe(cls("s"));
   });
 
   it("lets local form-aware child props override form context outside Skeleton", () => {
