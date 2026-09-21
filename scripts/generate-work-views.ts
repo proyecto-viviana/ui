@@ -5,13 +5,13 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type DocsPayload, collectDocs } from "../apps/web/src/app/admin/server/data";
-import { splitFrontmatter } from "../apps/web/src/app/admin/server/frontmatter";
 import {
   TICKET_DIRECTORIES,
   TICKET_STATUSES,
   type TicketStatus,
   type TicketType,
   type WorkTicket,
+  parseTicket,
 } from "../apps/web/src/app/admin/server/tickets";
 
 const root = process.cwd();
@@ -34,43 +34,58 @@ export interface BoardEntry {
   content: string;
 }
 
-/** Sorts object keys recursively, so JSON.stringify is a canonical form. */
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value === "object" && value !== null) {
-    const record = value as Record<string, unknown>;
-    const sorted: Record<string, unknown> = {};
-    for (const key of Object.keys(record).sort()) sorted[key] = canonical(record[key]);
-    return sorted;
+/**
+ * The fields the two views below actually print, and nothing else: `link()`
+ * prints the path and the id, the roadmap row prints the type, title, status
+ * and blocked flag, and both views count children by `parent`. `parseTicket()`
+ * is the one definition of how a ticket's frontmatter becomes those fields —
+ * the directory decides `type`, `done` normalises to `merged`, a non-integer
+ * `parent` is dropped — so the stamp reads them through it instead of
+ * restating its rules here.
+ */
+function renderedFieldsOf(entry: BoardEntry): unknown {
+  const { ticket } = parseTicket(entry.content, entry.path);
+  if (!ticket) {
+    // A board holding a ticket this unparsable makes `generatedWorkViews()`
+    // throw, so no view is ever stamped with this value. Hash the whole file
+    // rather than collapse every broken ticket onto one hash.
+    return { unparsed: entry.content };
   }
-  return value;
+  return {
+    id: ticket.id,
+    type: ticket.type,
+    title: ticket.title,
+    status: ticket.status,
+    blocked: ticket.blocked,
+    parent: ticket.parent,
+  };
 }
 
 /**
  * The board stamp the two generated views carry, and the only definition of it:
  * `docs:generate` writes it and `docs:check` recomputes it through this same
- * function. It hashes each ticket's path and its *parsed* frontmatter, not the
- * file's bytes.
+ * function. It hashes each ticket's path and the fields the views render from
+ * it — not the file's bytes, and not the rest of its frontmatter.
  *
- * #588: the pre-commit `staged` hook runs `vp check --fix` over staged ticket
- * markdown after `docs:generate` has stamped the views, so a byte-level stamp
- * is stale at the very commit that wrote it — `503e50a0` reproduced it and
- * `a9ab33ee` had to restamp. Quoting, flow-versus-block mapping, folding and
- * trailing whitespace all parse to the same YAML value, so respelling a ticket
- * leaves this stamp alone while a real board edit moves it.
+ * #588: a stamp is stale at the commit that wrote it whenever anything edits a
+ * ticket after `docs:generate` has run. The pre-commit `staged` hook does it
+ * mechanically — `vp check --fix` rewrites staged ticket markdown, which
+ * `503e50a0` reproduced and `a9ab33ee` had to restamp — and a writer does it by
+ * hand every time the closing history note is the commit's last edit. Hashing
+ * the rendered projection answers both: quoting, flow-versus-block mapping and
+ * trailing whitespace all parse to the same value, and `created`, `subtitle`,
+ * `app` and `history` never reach a view, so only an edit that actually changes
+ * a view can make a view stale.
  *
- * The body is deliberately out of the hash. The views render frontmatter only,
- * and a markdown formatter may rewrap prose at will, so no normalisation of a
- * body survives it. A body-only edit therefore does not move the stamp; the
- * stamp names the board the views were rendered from, not the ticket text.
+ * What that costs, stated plainly: the stamp names the board the views were
+ * rendered from, not the ticket text. A reworded history note, a corrected
+ * `created`, and any body edit all leave it alone. A status, title, parent or
+ * blocked change still moves it, so a transition written after the generator
+ * ran is still a stale view — that residue is #604, not this function.
  */
 export function boardRevisionOf(entries: Iterable<BoardEntry>): string {
   const records = [...entries]
-    .map((entry) => ({
-      path: entry.path,
-      frontmatter: canonical(splitFrontmatter(entry.content).data),
-    }))
+    .map((entry) => ({ path: entry.path, rendered: renderedFieldsOf(entry) }))
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   const hash = createHash("sha256");

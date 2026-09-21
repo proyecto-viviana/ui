@@ -2,22 +2,46 @@ import { describe, expect, it } from "vite-plus/test";
 import { boardRevisionOf } from "./generate-work-views";
 
 /**
- * #588: the board stamp has to be format-insensitive.
+ * #588: the board stamp has to move exactly when a view moves.
  *
  * `docs:generate` stamps the views from the board, and the pre-commit `staged`
  * hook then runs `vp check --fix` over the same staged ticket files, so the
- * formatter's rewrite lands *inside* the commit the generator already stamped.
- * A stamp over raw bytes is therefore stale at the very commit that wrote it
- * (`503e50a0`, restamped by `a9ab33ee`). The stamp must move when the board's
- * meaning moves and hold still when only its spelling does.
+ * formatter's rewrite lands *inside* the commit the generator already stamped
+ * (`503e50a0`, restamped by `a9ab33ee`). A writer hits the same hole by hand
+ * whenever an edit lands after the generator has run. Either way the stamp must
+ * move only when one of the fields the two views render moves — path, id, type,
+ * title, status, blocked, parent — and hold still for everything else.
  *
  * Fixtures only; the live board is never read here.
  */
 
 const PATH = ".claude/tickets/tasks/900-a-fixture-ticket.md";
 
-// The spelling a writer leaves behind: quoted title, flow-mapped history entry.
+// The spelling a writer leaves behind: single-quoted title, one-line flow map,
+// a note that escapes its double quotes, loose spacing in the body.
 const WRITTEN = `---
+id: 900
+type: task
+title: 'The generated board views are stale at the commit that generates them'
+created: 2026-09-21
+parent: 544
+status: open
+history:
+  - { state: open, at: 2026-09-21, note: "opened from the round-1 audit, receipt .agents/round-1.md; the popover renders \\"bottom start\\" and the skeptic's 'unproved' stands" }
+---
+
+## Scope
+
+One paragraph   that a markdown formatter is free to rewrap however it likes.
+`;
+
+// Verbatim output of `vp check --fix` on WRITTEN, not a guess at it: the title
+// is requoted to double, the long flow map is expanded, the note flips to
+// single quotes with \" unescaped to " and ' doubled to '', and the body's
+// spacing is normalised. That requoting is the only transformation ever
+// observed to cause this bug — `git diff beb8e9ee 503e50a0 -- .claude/tickets/`
+// is it happening to ticket 603. Every parsed value is identical.
+const FORMATTED = `---
 id: 900
 type: task
 title: "The generated board views are stale at the commit that generates them"
@@ -25,38 +49,16 @@ created: 2026-09-21
 parent: 544
 status: open
 history:
-  - { state: open, at: 2026-09-21, note: "opened from the round-1 audit, receipt .agents/round-1.md" }
----
-
-## Scope
-
-One paragraph that a markdown formatter is free to rewrap however it likes.
-`;
-
-// The same board, respelled the way \`vp check --fix\` respells it: the title
-// loses its quotes, the flow map becomes a block map, the long note folds
-// across lines (YAML folds that newline back to one space), and the body is
-// rewrapped with trailing whitespace dropped. Every parsed value is identical.
-const FORMATTED = `---
-id: 900
-type: task
-title: The generated board views are stale at the commit that generates them
-created: 2026-09-21
-parent: 544
-status: open
-history:
   - {
       state: open,
       at: 2026-09-21,
-      note: "opened from the round-1 audit, receipt
-        .agents/round-1.md",
+      note: 'opened from the round-1 audit, receipt .agents/round-1.md; the popover renders "bottom start" and the skeptic''s ''unproved'' stands',
     }
 ---
 
 ## Scope
 
-One paragraph that a markdown formatter is free to
-rewrap however it likes.
+One paragraph that a markdown formatter is free to rewrap however it likes.
 `;
 
 function stamp(content: string, path = PATH): string {
@@ -70,7 +72,7 @@ function withFrontmatter(content: string, from: string, to: string): string {
 }
 
 describe("boardRevisionOf", () => {
-  it("holds still when the formatter respells a ticket", () => {
+  it("holds still when vp check --fix respells a ticket", () => {
     expect(stamp(FORMATTED)).toBe(stamp(WRITTEN));
   });
 
@@ -86,13 +88,17 @@ describe("boardRevisionOf", () => {
     );
   });
 
-  it("moves when a history note changes", () => {
-    expect(stamp(withFrontmatter(WRITTEN, "round-1 audit", "round-2 audit"))).not.toBe(
+  it("moves when the blocked flag is set", () => {
+    expect(stamp(withFrontmatter(WRITTEN, "status: open", "blocked: true\nstatus: open"))).not.toBe(
       stamp(WRITTEN),
     );
   });
 
-  it("moves when a history entry is appended", () => {
+  it("moves when a parent changes", () => {
+    expect(stamp(withFrontmatter(WRITTEN, "parent: 544", "parent: 531"))).not.toBe(stamp(WRITTEN));
+  });
+
+  it("moves when a transition lands, because the status moves with it", () => {
     const appended = WRITTEN.replace(
       "\n---\n\n## Scope",
       "\n  - { state: next, at: 2026-09-21, note: null }\n---\n\n## Scope",
@@ -133,11 +139,36 @@ describe("boardRevisionOf", () => {
     );
   });
 
+  // The other half of the contract, and the half the formatter fix alone did
+  // not give: a frontmatter field the views never print must not move the
+  // stamp either, or "generate, then write the closing history note" stales a
+  // view that nobody changed.
+  it("holds still when only a history note changes", () => {
+    expect(stamp(withFrontmatter(WRITTEN, "round-1 audit", "round-2 audit"))).toBe(stamp(WRITTEN));
+  });
+
+  it("holds still when created, subtitle or app change", () => {
+    expect(stamp(withFrontmatter(WRITTEN, "created: 2026-09-21", "created: 2026-09-20"))).toBe(
+      stamp(WRITTEN),
+    );
+    expect(
+      stamp(withFrontmatter(WRITTEN, "status: open", "subtitle: a qualifier\nstatus: open")),
+    ).toBe(stamp(WRITTEN));
+    expect(stamp(withFrontmatter(WRITTEN, "status: open", "app: web\nstatus: open"))).toBe(
+      stamp(WRITTEN),
+    );
+  });
+
   it("ignores the body, which the views do not render and no normalisation survives", () => {
     const rewritten = WRITTEN.replace(
-      "One paragraph that a markdown formatter is free to rewrap however it likes.",
+      "One paragraph   that a markdown formatter is free to rewrap however it likes.",
       "A different paragraph entirely, with a new ## Proof section under it.",
     );
     expect(stamp(rewritten)).toBe(stamp(WRITTEN));
+  });
+
+  it("keeps unparsable tickets apart, since no view can be rendered from them", () => {
+    const broken = "no frontmatter at all\n";
+    expect(stamp(broken)).not.toBe(stamp(`${broken}and different text\n`));
   });
 });
