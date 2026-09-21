@@ -4,7 +4,7 @@ type: task
 title: "The certified suite is 169 red on GitHub's runners, concentrated in thirteen components"
 created: 2026-09-20
 parent: 544
-status: next
+status: in-progress
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: next,
       at: 2026-09-20,
       note: "handed to the close-gates writer after #573 merged (`2b444a89`), ahead of #574, #575 and #576, on this ticket's own argument: those three are steps of the `gates` job and each is smaller, while this is the `certified` job and it is the evidence #547 asks for. The hand-over asks for steps 1 and 2 only - one failure reproduced and understood, then the 169 grouped by proven cause with the ungraded remainder named as ungraded - and a report back before any fixing at scale. Four rules were given priority in the brief, in the order they are easy to break: reproduce before theorising, no waiving, one cause per commit with its re-run in the message, and never update a screenshot baseline to make a test pass. The count in this ticket is from run 35546816816 at `ef7d4c4d`; the run in flight when this was handed over was `1d7551cb`, whose gates job failed at step 36 - the gate #573 has since closed - so the first revision that can walk past step 227 is this commit",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-20,
+      note: "taken by the close-gates writer. Steps 1 and 2 only, per the hand-over: one failure reproduced against its own diff image, then the 169 graded by proven cause with the ungraded remainder named as ungraded, and a report before any fixing at scale. Local runs use `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` (`tooling.md` host note: Chrome 151 on this WSL2 host never issues a compositor frame through SwiftShader), so a local red needs that switch ruled out before it is called a real failure",
     }
 ---
 

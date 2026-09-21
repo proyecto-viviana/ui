@@ -1706,3 +1706,30 @@ The nine oracle artifacts are in the baseline under this ticket and are not
 settled by being there. They are waiting on the conductor's new ticket for
 filename attribution; when a fact carries its source file, those rows should
 leave the baseline rather than be re-blessed again.
+
+## #578 — the certified suite is 169 red, and the first question is which of them are real here
+
+Written before the first heavy command, so the next worker starts from this
+rather than from an empty tree.
+
+What the receipt is: `.agents/certified-2026-09-20/unwaived-failures.txt`, 169
+named lines from run 35546816816 at `ef7d4c4d`, eight shards, all completed.
+That is the worklist. The merged summary in `merge-ef7d4c4d.log.txt` carries the
+component × driver table the counts came from; it does not carry a single
+failure message, so nothing in either receipt says *why* any of the 169 failed.
+Every cause in this ticket has to come from a run here.
+
+The local hazard, named before it can be mistaken for a finding: this is the
+WSL2 host of `tooling.md`'s host note. Chrome for Testing 151 never issues a
+compositor frame through SwiftShader, so every browser gate needs
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`. D3 already routes
+around the worst of it — `clonedElementScreenshot` plus CDP
+`Page.captureScreenshot` instead of `locator.screenshot` — and `pixel.ts` calls
+`assertCompositorPaintAvailable()` first, so a paint-starved host fails loudly
+rather than grading a blank. A local red that does not reproduce with that
+switch set is a host artifact and is not one of the 169.
+
+Order of work: `VIVIANA_GATE=1 vp run build` first (the gate builds the tree it
+grades and refuses to reuse a preview server), then the single test the ticket
+names — `toast` D1 `neutral · dark` — and its diff image, before anything is
+grouped.
