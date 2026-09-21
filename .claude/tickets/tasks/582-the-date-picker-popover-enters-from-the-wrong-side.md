@@ -4,12 +4,17 @@ type: task
 title: "The date picker popover enters from the wrong side, and it is four certified motion rows"
 created: 2026-09-21
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-21,
       note: "graded by the close-gates writer while closing #581, because the conductor asked whether `datepicker-motion` and `daterangepicker-motion` ride along with the `attr:` fix. They do not. With all 44 D1/D3/D7/D9/D10 date rows green, `certified/datepicker certified/daterangepicker` reports 110 passed and 4 failed, and the 4 are exactly `D2 motion — DatePicker motion › open · open-enter`, its reduced-motion twin, and the two DateRangePicker equivalents. Own cause, filed rather than folded into #581",
+    }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: 'resolution, not timing, and the divergence was ours. Probed at capture on both stacks: React and Solid both measure `data-placement="top"` over the same layout box (popover top 94, triggers centred by the walk), yet our entering class used `bottom`. `solidaria-components/src/Popover.tsx` held the preferred axis for the whole enter, a local deviation added by #251/#257 when React still captured `bottom`; since the walk centres the canvas, both stacks flip to `top` and the hold rendered the unflipped keyframe. Upstream `PopoverInner` passes the measured `placement` straight through. Now the measured axis wins as soon as it exists; the preferred axis only seeds the unplaced frame. `certified/datepicker certified/daterangepicker`: 114 passed. Every certified D2 row: 22 passed / 4 failed, the four being Dialog `modal-open` and its reduced twin (modal stays open after Escape) and the ToggleButton/ToggleButtonGroup reduced rows (#583), all red before this change. Mutation: hold restored and rebuilt, D2 is 18 / 8, the extra four exactly these rows. Package units: 161 files, 3582 passed',
     }
 ---
 

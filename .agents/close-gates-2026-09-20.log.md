@@ -2192,3 +2192,15 @@ seven. Merged.
   `<html>` light. The client-rendered examples Provider mounts dark and flips.
 - Fix site `apps/web/src/utils/theme.ts`, under `apps/web/src/**`: handed to the
   conductor per the ticket. Not edited.
+
+## 2026-09-21 — #582 date picker popover enters from the flipped side
+
+- Both stacks measure `top` at capture, same box. Ours held the preferred
+  `bottom` axis for the whole enter (#251/#257 local deviation), so the entering
+  translate was `-4` where React's is `4`. Upstream passes the measured
+  placement through; now ours does, seeding the preferred axis only while
+  unplaced. `solidaria-components/src/Popover.tsx`.
+- `certified/datepicker certified/daterangepicker`: 114 passed.
+- All certified D2: 22 / 4. The four were red before: Dialog `modal-open` ×2
+  (modal stays open after Escape, unticketed) and toggle reduced ×2 (#583).
+- Mutation, hold restored and rebuilt: D2 18 / 8, the extra four are #582's.

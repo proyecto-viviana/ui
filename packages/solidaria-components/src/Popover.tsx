@@ -783,10 +783,10 @@ export function Popover(props: PopoverProps): JSX.Element {
         // RAC usePopover reports placement from useLayoutEffect before paint.
         // Until Solid's createEffect positioning lands, seed the preferred axis
         // so S2 `translateY: { placement: { bottom: { isEntering: -4 } } }` does
-        // not miss the bottom branch. Hold that axis for the whole enter so a
-        // later measured flip cannot replace the keyframe mid-transition
-        // (DatePicker D2: Solid `0px 4px` vs React `0px -4px`).
-        placement: entering ? preferred : (popoverAria.placement() ?? preferred),
+        // not miss the bottom branch. Once measured, the measured axis wins even
+        // mid-enter, as RAC's does: a flipped popover enters from its flipped
+        // side (DatePicker D2 flipped to `top`: both stacks `0px 4px`, #582).
+        placement: popoverAria.placement() ?? preferred,
         isEntering: entering,
         isExiting: isExiting(),
       };
