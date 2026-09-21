@@ -104,9 +104,18 @@ any unreleased `src` or manifest change no pending changeset publishes.
 `Certification Gates` run on `main` triggers it for that run's exact head SHA.
 Before Changesets can create/update a version PR or publish packages,
 `guard:release-evidence` requires successful `Certification Gates`, `Release
-Readiness`, and `Site Gate` runs for that same SHA. It waits for independently
-running siblings and fails closed on absent, cancelled, timed-out, or failed
-evidence. Manual dispatch remains available and has the same exact-SHA check.
+Readiness`, and `Site Gate` runs for that same SHA. A run is evidence only if it
+is this repository's own `push` or `workflow_dispatch` on `main`: a
+`pull_request` run records the PR head's ref name and can carry a fork's code,
+so it never counts (#599). The guard waits for siblings still running and fails
+closed on no run at all. A completed `failure`, `timed_out`, or `action_required`
+refuses even when another run of that workflow at the same SHA was green;
+`cancelled` and `skipped` alone do not retract a green the tree already took.
+It reads `api.github.com` only — a `GITHUB_API_URL` naming any other host is a
+refusal, not a redirect, and never receives the local `gh` credential. Run
+locally without an explicit `RELEASE_SHA`, it also refuses a dirty tree and a
+HEAD that `origin/main` does not contain. Manual dispatch remains available and
+has the same exact-SHA check.
 
 After that evidence barrier, the workflow runs in two Changesets stages. If
 unpublished changesets exist, it creates or updates the version PR. When that
@@ -131,7 +140,10 @@ ticket #447): public `@proyecto-viviana/kumo@0.0.0-bootstrap.0` on npmjs.com,
 and a GitHub Actions trusted publisher (`type: github`, `file: release.yml`,
 `repository: proyecto-viviana/ui`). `guard:release-prerequisites` runs in
 `ci:changesets` and again inside `changeset:publish`. Workspace Kumo remains
-the deliberate `0.0.0` non-candidate until the first real publish.
+the deliberate `0.0.0` non-candidate until the first real publish. Kumo's
+`trusted-publisher-registered` is the one prerequisite allowed to be attested
+instead of re-derived; the guard holds that pair by name, refuses an attestation
+on any other row, and expires one older than 90 days (#599).
 
 ## Scope
 

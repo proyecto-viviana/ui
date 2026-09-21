@@ -18,6 +18,12 @@
  *
  * A read that cannot be taken is a failure, not a pass: a gate nobody could
  * check is not a gate that was checked.
+ *
+ * `attested` is not a shape any row may take. The #599 review found that a
+ * one-line edit could downgrade any of the live-read rows to a sentence with
+ * four field names instead of two, at any date. So the pairs that may be
+ * attested are listed below, everything else must re-derive, and an attestation
+ * expires: a claim nobody has re-taken in a season is not current evidence.
  */
 
 import { readFileSync } from "node:fs";
@@ -33,6 +39,20 @@ const registry = (process.env.npm_config_registry ?? "https://registry.npmjs.org
 );
 const PROVENANCE_PREDICATE = "https://slsa.dev/provenance/v1";
 const ATTESTATION_FIELDS = ["by", "at", "why", "says"];
+
+/**
+ * The prerequisites that may be attested instead of re-derived, by name.
+ *
+ * Exactly one today: kumo's only tarball is the pre-trusted-publishing
+ * `0.0.0-bootstrap.0` reservation, so it carries no provenance to read. From
+ * kumo's first OIDC publish, `npm-provenance` replaces this row and the list
+ * goes empty.
+ */
+const ATTESTABLE = new Map([["@proyecto-viviana/kumo", new Set(["trusted-publisher-registered"])]]);
+
+/** How long an attestation stands before it has to be re-taken. */
+const ATTESTATION_MAX_AGE_DAYS = 90;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function fail(message) {
   console.error(`release prerequisites — FAIL: ${message}`);
@@ -140,6 +160,17 @@ async function checkPrerequisite(entry, version, prerequisite) {
   }
 
   if (hasAttested) {
+    if (!ATTESTABLE.get(entry.name)?.has(id)) {
+      const listed =
+        [...ATTESTABLE]
+          .flatMap(([name, ids]) => [...ids].map((each) => `${name}/${each}`))
+          .join(", ") || "none";
+      fail(
+        `${subject} ${id} may not be attested: it has a public read, so it must carry a verify ` +
+          `block this guard re-runs. Attestation is permitted for ${listed} and nothing else (#599).`,
+      );
+      return;
+    }
     const missing = ATTESTATION_FIELDS.filter(
       (field) =>
         typeof prerequisite.attested[field] !== "string" ||
@@ -153,9 +184,29 @@ async function checkPrerequisite(entry, version, prerequisite) {
       fail(`${subject} ${id} attestation date must be YYYY-MM-DD, not ${prerequisite.attested.at}`);
       return;
     }
+    const ageDays = Math.floor(
+      (Date.now() - Date.parse(`${prerequisite.attested.at}T00:00:00Z`)) / DAY_MS,
+    );
+    if (Number.isNaN(ageDays)) {
+      fail(`${subject} ${id} attestation date is not a date: ${prerequisite.attested.at}`);
+      return;
+    }
+    if (ageDays < 0) {
+      fail(`${subject} ${id} attestation is dated ${prerequisite.attested.at}, in the future`);
+      return;
+    }
+    if (ageDays > ATTESTATION_MAX_AGE_DAYS) {
+      fail(
+        `${subject} ${id} attestation was taken ${prerequisite.attested.at}, ${ageDays} days ago, ` +
+          `and attestations stand for ${ATTESTATION_MAX_AGE_DAYS} days. Re-take it and date it, ` +
+          "or replace it with a verify block.",
+      );
+      return;
+    }
     console.log(
       `ATTESTED: ${subject} ${id} — ${prerequisite.attested.by}, ${prerequisite.attested.at}: ` +
-        `${prerequisite.attested.why} (${prerequisite.attested.says})`,
+        `${prerequisite.attested.why} (${prerequisite.attested.says}) [${ageDays} days old; ` +
+        `an attestation stands for ${ATTESTATION_MAX_AGE_DAYS}]`,
     );
     return;
   }

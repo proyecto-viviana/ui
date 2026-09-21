@@ -1562,9 +1562,14 @@ try {
     );
     console.log("PASS: satisfied=true plus a sentence is refused as release evidence.");
 
+    // Dates are taken from the clock, not written down: the guard expires an
+    // attestation, so a hard-coded date would make this contract pass today and
+    // fail in a season (#599 review).
+    const daysAgo = (days) =>
+      new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const attestation = {
       by: "repository owner",
-      at: "2026-09-04",
+      at: daysAgo(17),
       why: "npm's trusted publisher settings are 2FA-gated and have no public read",
       says: "npm trust list -> type: github, file: release.yml, repository: proyecto-viviana/ui",
     };
@@ -1604,10 +1609,53 @@ try {
         combined(datedAttestation).includes(
           "ATTESTED: @proyecto-viviana/kumo@0.1.0 trusted-publisher-registered",
         ) &&
-        combined(datedAttestation).includes("repository owner, 2026-09-04"),
+        combined(datedAttestation).includes(`repository owner, ${attestation.at}`),
       "a dated, owned attestation did not pass, or did not print as an attestation",
     );
     console.log("PASS: what cannot be re-derived passes only as a dated, owned attestation.");
+
+    // `attested` is four field names where `satisfied`/`evidence` was two. If
+    // any row may take that shape, a live read is one edit away from a sentence
+    // again — so the pairs that may be attested are named, and nothing else may
+    // (#599 review).
+    json(
+      kumoPrerequisitesPath,
+      rederivedKumo([
+        { id: "npm-package-registered", attested: attestation },
+        verifiedPrerequisites[1],
+      ]),
+    );
+    const unlistedAttestation = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      unlistedAttestation.status !== 0 &&
+        combined(unlistedAttestation).includes("npm-package-registered may not be attested"),
+      "a prerequisite with a public read was downgraded to an attestation and passed",
+    );
+    console.log("PASS: only the listed prerequisite may be attested; the rest must re-derive.");
+
+    json(
+      kumoPrerequisitesPath,
+      rederivedKumo([
+        verifiedPrerequisites[0],
+        { id: "trusted-publisher-registered", attested: { ...attestation, at: daysAgo(400) } },
+      ]),
+    );
+    const staleAttestation = await run(
+      "check-release-prerequisites.mjs",
+      unpublishedPrerequisiteFixture,
+      registryEnv,
+    );
+    assert(
+      staleAttestation.status !== 0 &&
+        combined(staleAttestation).includes("400 days ago") &&
+        combined(staleAttestation).includes("attestations stand for 90 days"),
+      "an attestation nobody has re-taken in over a year still passed as current evidence",
+    );
+    console.log("PASS: an attestation expires; a stale one is refused with its age.");
   } finally {
     registryServer.close();
   }
@@ -1617,17 +1665,25 @@ try {
   // first.
   const releaseSha = "0123456789abcdef0123456789abcdef01234567";
   const otherSha = "89abcdef0123456789abcdef0123456789abcdef";
-  const releaseRun = (id, conclusion, headSha = releaseSha) => ({
+  // The rows carry the four fields the guard reads. `event` and
+  // `head_repository` are there because head_sha plus head_branch is not the
+  // whole contract: a `pull_request` run records the PR head's sha under the
+  // PR's head ref name, which can be "main", from any fork (#599 review).
+  const releaseRun = (id, conclusion, extra = {}) => ({
     id,
     status: "completed",
     conclusion,
-    head_sha: headSha,
+    head_sha: releaseSha,
     head_branch: "main",
+    event: "push",
+    head_repository: { full_name: "example/project" },
+    ...extra,
   });
 
   let releaseMode = "failed";
   const server = createServer((request, response) => {
     const workflow = request.url?.match(/actions\/workflows\/([^/]+)\/runs/)?.[1];
+    const askedSha = new URL(request.url ?? "/", "http://127.0.0.1").searchParams.get("head_sha");
     const redFor = (name, conclusion) =>
       workflow === name ? [releaseRun(1, conclusion)] : [releaseRun(1, "success")];
     const workflowRuns =
@@ -1635,9 +1691,18 @@ try {
         failed: redFor("site-gate.yml", "failure"),
         cancelled: redFor("release-readiness.yml", "cancelled"),
         skipped: redFor("release-readiness.yml", "skipped"),
-        "other-sha": [releaseRun(1, "success", otherSha)],
+        "other-sha": [releaseRun(1, "success", { head_sha: otherSha })],
         absent: [],
         "cancelled-rerun": [releaseRun(1, "success"), releaseRun(2, "cancelled")],
+        "failed-rerun":
+          workflow === "certification-gates.yml"
+            ? [releaseRun(1, "success"), releaseRun(2, "failure")]
+            : [releaseRun(1, "success")],
+        "pull-request": [releaseRun(1, "success", { event: "pull_request" })],
+        "fork-push": [
+          releaseRun(1, "success", { head_repository: { full_name: "someone-else/project" } }),
+        ],
+        "head-derived": [releaseRun(1, "success", { head_sha: askedSha })],
         success: [releaseRun(1, "success")],
       }[releaseMode] ?? [];
     response.writeHead(200, { "Content-Type": "application/json" });
@@ -1718,10 +1783,81 @@ try {
     );
     console.log("PASS: a later cancelled re-run does not retract the success at that SHA.");
 
+    // The other half of the same rule: a cancellation does not retract a green,
+    // but a failure does. Certification Gates fires on push, pull_request and
+    // workflow_dispatch, so a green push run followed by a red re-run at the
+    // same sha is an ordinary Tuesday, not bad faith (#599 review).
+    releaseMode = "failed-rerun";
+    const failedRerun = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      failedRerun.status !== 0 &&
+        combined(failedRerun).includes("Certification Gates has a completed run at") &&
+        combined(failedRerun).includes("concluded failure"),
+      "a later run that concluded failure did not retract the green at the same SHA",
+    );
+    console.log("PASS: a later failure at the same SHA retracts the green a run already took.");
+
+    releaseMode = "pull-request";
+    const pullRequestEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      pullRequestEvidence.status !== 0 &&
+        combined(pullRequestEvidence).includes(
+          `FAIL: Certification Gates has no successful run at ${releaseSha}`,
+        ) &&
+        combined(pullRequestEvidence).includes("no run at this SHA"),
+      "a pull_request run on a branch named main passed as evidence for the release SHA",
+    );
+    console.log("PASS: a pull_request run is not evidence, whatever its head branch is called.");
+
+    releaseMode = "fork-push";
+    const forkEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      forkEvidence.status !== 0 && combined(forkEvidence).includes("no run at this SHA"),
+      "a run on another repository's main passed as evidence for this repository's release SHA",
+    );
+    console.log("PASS: a run from another repository is not evidence for this one.");
+
     releaseMode = "success";
     const successfulEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
     assert(successfulEvidence.status === 0, "complete same-SHA release evidence did not pass");
     console.log("PASS: complete same-SHA release evidence exits zero.");
+
+    // Where the runs are read from is not the caller's to choose, and a
+    // stand-in host is never handed the developer's `gh` credential: one env
+    // var must not be able to both answer the question and collect a token
+    // (#599 review).
+    const redirectedApi = await run("check-release-evidence.mjs", ROOT, {
+      ...releaseEnv,
+      GITHUB_API_URL: "https://api.github.example.com",
+    });
+    assert(
+      redirectedApi.status !== 0 &&
+        combined(redirectedApi).includes("release evidence is read from api.github.com only"),
+      "a redirected API base was read as release evidence",
+    );
+    console.log("PASS: an API base that is not api.github.com is refused, not read.");
+
+    const unauthenticatedFixture = await run("check-release-evidence.mjs", ROOT, {
+      ...releaseEnv,
+      GITHUB_TOKEN: "",
+    });
+    assert(
+      unauthenticatedFixture.status !== 0 &&
+        combined(unauthenticatedFixture).includes("never handed the `gh` credential"),
+      "a stand-in API base was allowed to fall back to the local `gh` credential",
+    );
+    console.log("PASS: a stand-in API base gets no `gh` credential, it gets a refusal.");
+
+    const foreignRepository = await run("check-release-evidence.mjs", ROOT, {
+      ...releaseEnv,
+      GITHUB_API_URL: "",
+    });
+    assert(
+      foreignRepository.status !== 0 &&
+        combined(foreignRepository).includes("GITHUB_REPOSITORY names example/project"),
+      "GITHUB_REPOSITORY could name a repository this checkout does not push to",
+    );
+    console.log("PASS: GITHUB_REPOSITORY may name this checkout's repository and no other.");
 
     // The local route reaches `changeset publish` through this one script, so
     // the evidence read has to be inside it, before the build it would
@@ -1752,6 +1888,59 @@ try {
       "the publish step does not name the candidate SHA, so the guard inside changeset:publish would fall back to the default branch head",
     );
     console.log("PASS: the publish step names the candidate SHA for the guard inside it.");
+
+    // With no RELEASE_SHA the sha comes from HEAD, and then `changeset publish`
+    // ships this checkout. A green sha with uncommitted edits on top, or a
+    // local commit nothing ever ran, is the hole #599 closed wearing a hat
+    // (#599 review).
+    const headFixture = path.join(fixtureRoot, "head-derived-sha");
+    mkdirSync(headFixture, { recursive: true });
+    const fixtureGit = (...args) => spawnSync("git", args, { cwd: headFixture, encoding: "utf8" });
+    fixtureGit("init", "--quiet");
+    fixtureGit("config", "user.email", "fixture@example.com");
+    fixtureGit("config", "user.name", "Fixture");
+    writeFileSync(path.join(headFixture, "README.md"), "fixture\n");
+    fixtureGit("add", "README.md");
+    fixtureGit("commit", "--quiet", "--no-gpg-sign", "-m", "fixture");
+    const headEnv = { ...releaseEnv, RELEASE_SHA: "", GITHUB_SHA: "" };
+    releaseMode = "head-derived";
+
+    const dirtyPath = path.join(headFixture, "uncommitted.txt");
+    writeFileSync(dirtyPath, "an edit the gate never saw\n");
+    const dirtyTree = await run("check-release-evidence.mjs", headFixture, headEnv);
+    assert(
+      dirtyTree.status !== 0 && combined(dirtyTree).includes("working tree is not clean"),
+      "a dirty working tree published under the evidence of the SHA it no longer matches",
+    );
+    console.log("PASS: a HEAD-derived publish refuses a working tree the gate never saw.");
+
+    rmSync(dirtyPath);
+    const noRemoteRef = await run("check-release-evidence.mjs", headFixture, headEnv);
+    assert(
+      noRemoteRef.status !== 0 && combined(noRemoteRef).includes("no `origin/main` ref"),
+      "a checkout with nothing to compare HEAD against published anyway",
+    );
+    console.log("PASS: a HEAD-derived publish needs an origin/main to compare HEAD against.");
+
+    fixtureGit("update-ref", "refs/remotes/origin/main", "HEAD");
+    writeFileSync(path.join(headFixture, "local-only.txt"), "never pushed\n");
+    fixtureGit("add", "local-only.txt");
+    fixtureGit("commit", "--quiet", "--no-gpg-sign", "-m", "local only");
+    const unpushedHead = await run("check-release-evidence.mjs", headFixture, headEnv);
+    assert(
+      unpushedHead.status !== 0 &&
+        combined(unpushedHead).includes("HEAD is not contained in `origin/main`"),
+      "a commit that was never pushed, and so never ran anything, published anyway",
+    );
+    console.log("PASS: a HEAD-derived publish refuses a commit origin/main does not contain.");
+
+    fixtureGit("update-ref", "refs/remotes/origin/main", "HEAD");
+    const publishableHead = await run("check-release-evidence.mjs", headFixture, headEnv);
+    assert(
+      publishableHead.status === 0,
+      "a clean checkout of a pushed commit with green runs at its SHA was refused",
+    );
+    console.log("PASS: a clean checkout of a pushed, green commit still publishes.");
   } finally {
     server.close();
   }
