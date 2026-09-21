@@ -31,6 +31,11 @@ history:
       at: 2026-09-21,
       note: "a third `ci:site` leg measured, and the dead routes turn out to be hiding a second defect behind themselves. `vp run a11y:contrast` - one of the four `&&`-chained legs of `a11y:check` - is red on `eb75ee0e`: 6 routes, 30 instances, over 170 of 174 tests before the harness stopped the run for machine memory. Three of the six failing routes are `/showcase/inputs`, `/showcase/parity` and `/solid-spectrum/docs/components/combobox`, which are exactly three of this ticket's throwing routes - so what the contrast spec measured on them is not the page, it is `apps/web/src/routes/__root.tsx`'s error boundary, whose own colours are `#9ca3af` at 2.34:1 and white on `#3b82f6` at 3.67:1. Closing this ticket takes those three out of the contrast tally and leaves the boundary just as unreadable for the next thing that throws; that half is #586 and is independent of this work. The other three failures are not mine: `/` and `/admin` paint `--interactive-fill` as ink at 3.28:1, a token defect also filed as #586, and `/docs/components/tree` fails with `page.goto: Page crashed` - note the path, the route sweep covered the `/solid-spectrum/` twin and not this one, so it is a new and previously unrecorded route, and a renderer crash rather than a throw to the boundary. It may or may not be this ticket's; whoever takes #545 should check it while they have the SSR graph in hand. Full reading in `.agents/site-gate-2026-09-21.contrast.md`. The fourth leg, `a11y:smoke`, was killed before it produced output and is still unrun; it covers `theme-wipe.spec.ts` and `examples.spec.ts`, which target `/theme` and `/examples*`, both on this ticket's dead list, so it is expected red for this ticket's reason - unverified until someone runs it",
     }
+  - {
+      state: next,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `apps-web/twentytwo-dead-routes-still-open`, high, confirmed: 22 of 174 routes are dead in a production build and this ticket is still open. Narrowed by the skeptic, and the narrowing is useful - all 84 `/docs/components/*` routes pass, so the dead set is somewhere else and a component-by-component sweep is the wrong search. Name the 22 before fixing any of them.",
+    }
 ---
 
 ## Scope

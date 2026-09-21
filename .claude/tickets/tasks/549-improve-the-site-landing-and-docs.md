@@ -12,6 +12,11 @@ history:
       at: 2026-09-20,
       note: "opened under #544 for ui.proyectoviviana.org, blocked on #545: the site does not build on Solid 2 until then. Owner gave standing deploy authority for this campaign, conditional on a green Site Gate for the exact revision. Write paths: apps/web only",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings. `apps-web/ci-never-rendered-a-web-page`, medium, confirmed: no CI run in this campaign has rendered a single `apps/web` route, because Site Gate is the only thing that does and it is `disabled_manually` - which also means this ticket's Done-when, Site Gate green plus a clean-dir walk, re-proves no claim row today. `apps-web/icon-page-claims-every-prop`, low: the icon reference page asserts completeness while documenting 3 of its interface's props. Also owed here as a fact-fix under #546's lens 4: `apps/web/src/routes/solid-spectrum/docs/index.tsx:106-109`, the getting-started snippet, is missing its `createSignal` import. The landing page's install line is #600.",
+    }
 ---
 
 ## Scope

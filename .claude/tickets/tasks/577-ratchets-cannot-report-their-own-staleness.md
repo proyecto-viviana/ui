@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "raised by the close-gates writer under #572 as 'noticed, not done', and filed here rather than widened inside a ticket opened to make a gate green - which was the right call. The immediate case: `scripts/check-jsx-ref-dead-code.ts` asserts each marker against the **bundle** only, so 'this regex matches nothing anywhere' and 'the build dropped this code' produce the same message, `package transform dropped …`. It blamed a build that had done nothing, for a line `70a8d478` deleted four days earlier. Not blocking the RC: every ladder step this class touched is green as of `40ac9573`",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Six findings land here, all the same shape this ticket already names. `ratchets/rebless-refusal-gap` and `guards-a/layer-boundary-reason-bypass`: the `--write-baseline` reason requirement covers only identical to diverged, and lives only in the path the harness refuses, so a fork born diverged still needs no reason. `guards-b/layer-boundary-vanish-hole` and `board-truth/layer-boundary-nine-left-the-ratchet`: a baselined path that leaves the shared set vanishes silently, nine did so in one commit, and a diverged path's drift is never re-checked. `guards-b/570-behaviour-claim-false`: #570 re-blessed nine paths under a blanket `none of them touches behaviour` the diff contradicts. `ratchets/layer-boundary-blind-7-days`, and the skeptic refuted its headline - `check-layer-boundary.ts:59-91` does sha256-walk both trees every run and does fail on baselined-identical drift, so it is not a hand-maintained record; what is true is that `packages/viviana-ui/src/color/ColorSwatchPicker.tsx` silently lost a live-size fix for seven days because **viviana-ui has no ColorSwatchPicker test**, and `37973fa5` re-synced it. The general fix this ticket already argues for - recompute the classification from hashes on every run and fail on any row that disagrees with the tree - answers four of the six.",
+    }
 ---
 
 ## Scope

@@ -21,6 +21,11 @@ history:
       at: 2026-09-21,
       note: "eight props rewritten in the house idiom; `grep -rn 'attr:' packages/*/src/ apps/*/src/` now returns nothing. After `VIVIANA_GATE=1 vp run comparison:build`, `certified/datepicker certified/daterangepicker` reports 110 passed and 4 failed, and the 4 are exactly the D2 `open · open-enter` pair on each component - so all 44 D1/D3/D7/D9/D10 rows are green and the motion pairs do not ride along. They are graded and filed as #582: the style tables match upstream to the digit, the placement the popover resolves to does not. Mutation check, both halves rebuilt: reverted, `certified/datepicker.certified -g 'D1 state matrix'` is 4 passed / 6 failed; restored, the same slice is 10 passed / 0 failed. Unit guards added to both suites, and mutation-checked the same way - with the eight lines put back to `attr:` exactly 2 of 72 fail, both of them the new tests. `packages/solidaria-components/test/DatePicker.test.tsx` and `DateRangePicker.test.tsx` 72 passed; `vp run typecheck` clean",
     }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `board-truth/581-merged-below-its-bar`, confirmed: this ticket is merged although its own Done-when demands zero failures and four remain. The skeptic narrowed it usefully - two of the four are #584's, not this ticket's. Related, and owned by #578: `578-census/attr-namespace-unguarded`, that nothing stops the `attr:` namespace from coming back, because the fix is two per-component assertions rather than a guard. Status not moved; the scheme has no edge back from `merged`, so this note is the record.",
+    }
 ---
 
 ## The defect

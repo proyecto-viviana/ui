@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "found by the close-gates writer while classifying #573's thirty added facts, and filed here rather than widened inside #573 or folded into #577 - it is a defect in what the guard *measures*, not a record that stopped describing the tree, so it is a different family. The conductor verified the load-bearing case rather than reading it: `packages/viviana-ui/test/Switch.test.tsx` imports only `TabSwitch` and `SegmentedControl` and renders `<Switch` zero times (`grep -c '<Switch[ />]'` → 0), yet every `getByRole` in it is filed under `switch` and paired against upstream's `Switch` tests. Nine of #573's twelve added ROLE rows are this shape. Not blocking the RC: #573 closes its gate through `--allow-growth 573`, which records the thirty facts against a ticket that explains them",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. This ticket is now #597's blocker in fact rather than in spirit. #597 owns `ratchets/parity-rebless-outruns-receipt`: `2b444a89` grew the baseline by 30 facts claiming all thirty were classified, and its own receipt `34064bae` had concluded the opposite - 14 were classified, 7 literally and 7 by the `role|form` group, and 16 were never examined. Nine of the thirty are the mis-pairing this ticket names, so fixing the attribution rule here is what makes #597's re-measurement mean anything; absorbing them instead widened the allowlist around a known-bogus pair. The `wrong-shape bug` line in `2b444a89`'s message is about roles only, `check-upstream-test-parity.ts:25`.",
+    }
 ---
 
 ## Scope

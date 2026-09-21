@@ -21,6 +21,11 @@ history:
       at: 2026-09-20,
       note: "merged, not verified. Items 8.3–8.5, 9 and 10 were re-run independently by the conductor against the named tests and the `build` leg. Items 1–7 were reviewed against upstream source and their own tests, which is what let item 7 through; a `verified` transition should wait for the certified suite to run over the overlay and dialog components as a whole",
     }
+  - {
+      state: merged,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. The proof on this ticket is downgraded to unverified, and the residues are re-homed. `555-b/no-ci-leg-for-555-tests`: every test offered here as proof - `overlays.test.tsx`, `ButtonGroup.test.tsx` twice, `openLink.test.ts`, `createPreventScroll.test.tsx`, `Dialog.test.tsx` - runs in no enabled workflow, because `vp test run` appears only inside `ci:release-readiness` and Release Readiness is `disabled_manually`. #590 owns getting it a leg and recording the run id here. The headline of `555-a/overlay-child-scope-unfixed` is **refuted**: the `focusin` effect installs only when `shouldCloseOnBlur` is set, at `createPopover.ts:132`, so a child menu does not close the dialog; what survives is that the invented listener exists at all, which is #557, together with `555-b/item3-closed-as-removed-but-kept`. The rest go to #591 (`openlink-setopening`, `openlink-onclick-reentry`, `linkclicked-dedup`), #592 (`openlink-router-bypass`, pre-existing), #594 (`press-style-not-nonced`), #595 (`dialog-triggerid-dangling`) and #601 (`buttongroup-misses-attribute-changes`, `s2-cleanups-guard-counts-files`). Status not moved: the scheme has no edge back from `merged`.",
+    }
 ---
 
 ## Scope

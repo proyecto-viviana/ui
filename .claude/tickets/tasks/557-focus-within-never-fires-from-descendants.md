@@ -11,6 +11,11 @@ history:
       at: 2026-09-20,
       note: "found while deciding #555 item 3. `focusWithinProps` returns `onFocus`/`onBlur`, which in Solid bind the native, non-bubbling `focus`/`blur` events; React's synthetic pair bubbles, which is what upstream useFocusWithin relies on. Measured: a real `.focus()` on a child of the element holding focusWithinProps calls neither onFocusWithin nor onBlurWithin. createOverlay papers over it with a document-level `focusin` listener that upstream does not have; removing that listener turns Popover.test.tsx 'should close modal popovers when focus moves outside' red",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings re-homed here from #555. `555-b/item3-closed-as-removed-but-kept`, confirmed: #555 is merged claiming item 3's invented listener was not kept; it is still live, and this ticket is the one that removes its reason to exist. `555-a/overlay-child-scope-unfixed`, and the headline is **refuted** - the `focusin` effect installs only when `shouldCloseOnBlur` is set, at `createPopover.ts:132`, so no child menu closes its dialog and there is no defect to fix. What is left is exactly this ticket's subject: `createFocusWithin` never fires from a descendant, so an overlay needs a listener upstream does not have. Fixing that deletes the listener; nothing else does.",
+    }
 ---
 
 ## Scope

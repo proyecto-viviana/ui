@@ -519,3 +519,67 @@ rather than from chat. This seat reviews every commit by re-running the thing it
 claims, pushes, keeps the board and this file true, and does not implement.
 When a stage's assumption turns out wrong, it is corrected here in the same
 session — the tree beats the document.
+
+## Correction, 2026-09-21, after the round-1 audit
+
+This is a correction block, not a rewrite: everything above stands as what was
+true when it was written. Six statements in it are no longer true, and each is
+replaced here with a number measured today at HEAD `65254a8c`. Receipt:
+`.agents/audit-2026-09-21/round-1-results.md`, owners in
+`.agents/audit-2026-09-21/OWNERS.md`.
+
+**1. The earliest gate red is `docs:check`, not step 239.** The "Ladder state at
+`40ac9573`" table marks step 239, `comparison-parity`, as the **next red**. It
+is not reached. `vp run docs:check` exits 1 here — `roadmap.md` and `status.md`
+carry a board revision the tickets no longer hash to — and `docs:check` is an
+earlier blocking step: `certification-gates.yml:235` at HEAD, and `:231` at
+`origin/main` `96376e9a`, the two numbers differing only because `7ec2a732`
+(#194) and `13080aa0` (#574) inserted steps above it. The three most recent
+Certification Gates runs, 35556441049, 35558449632 and 35560076342, all stopped
+there. So `comparison parity (strict)` and everything after it — including
+`axe full audit` — have not executed since `1a98e250`. #588 owns the red; #568
+owns the table row.
+
+**2. The chain is twenty legs and has never been walked whole.** Line 31 already
+says 20, and that is right; what is wrong is any reading of "nineteen of
+nineteen green" as covering it. `a5129cb2` (#566) added
+`guard:entry-import-budget` as the twentieth leg on 2026-09-20 at 20:37:40
+-0300, and no whole-chain walk has been recorded since. The twentieth leg's own
+unit test is red, so until #587 lands the chain cannot be walked whole at all.
+#590 owns the walk.
+
+**3. `main`'s CI conclusion is failure, and has been for three weeks.** Run
+35560076342 at `96376e9a`, 2026-09-21T04:11:59Z, conclusion `failure`. The last
+successful Certification Gates run **on `main`** is 33345702215 at `a686e846`,
+2026-08-31T00:49:19Z. The workflow's last success anywhere is later but is not
+`main`: 33590680980 at `b7257bc3`, 2026-09-02T04:24:23Z, a `pull_request` run on
+`audit-2026-09-round-2`. Of the last 60 runs on `main`, 31 are failure, 29 are
+cancelled and 0 are success — #589 owns the cancellations, which erase a verdict
+rather than defer it.
+
+**4. Pending changesets: 56, not 48 and not 49.** Counted at HEAD as `.md` files
+in `.changeset/` excluding `README.md`. The near-top line says 48 and Stage 4
+says 49; both were true when written and neither is now. #547 carries the
+number.
+
+**5. Seventeen commits are unpushed.** HEAD is `65254a8c`; `origin/main` is
+`96376e9a`; `git rev-list --count origin/main..HEAD` is 17. Every CI number
+above therefore describes `96376e9a`, one revision behind the tip this document
+plans from, and no run exists for HEAD itself.
+
+**6. The peers answer is not the ratcheting form.** Line 136 calls `ca1a0d82`
+(#532) adding `solid-js` and `@solidjs/web` to
+`peerDependencyRules.allowedVersions` "the ratcheting form". What it added is
+`"*"` for both, `pnpm-workspace.yaml:95-96` — every version accepted for every
+workspace, which is the shape the guard's own docblock warns about. It is not
+blinding anything today: `expected-unmet-peers.json` still holds 17 unmet
+`solid-js` rows, all scoped to `apps/web`. Narrowing it to the pinned RC range
+is item 6 of #601.
+
+One thing above is reaffirmed rather than corrected: the section "Stage 4 has a
+precondition nobody has named: two workflows are off" is still exactly right,
+and the audit found it load-bearing in a second place. `check-release-evidence.mjs`
+requires a successful run of all three workflows at the release sha and fails
+closed, so with Release Readiness and Site Gate `disabled_manually` the RC's own
+release condition is unsatisfiable, and the two `gh workflow enable` commands
+remain an owner action. #568 carries it.

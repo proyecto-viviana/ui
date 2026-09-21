@@ -26,6 +26,11 @@ history:
       at: 2026-09-20,
       note: 'verified at 3f40e8e7, on the condition this ticket named for itself: `test:run` inside a full `ci:release-readiness` walk, in the `&&` order the script uses rather than alone. EXIT=0 in 62 seconds, 351 files passed (351), 6697 passed | 1 expected fail | 6 skipped (6704), 11.5 GB still available at the start and no kill (.agents/chain-walk-2026-09-20/leg-test-run.out.txt). The suite now runs after `build` and `typecheck:apps` in the same shift rather than on a cold box, which is the resource condition item 2 was about, and the count has grown by one file and eight tests since the merge check without changing the verdict. The deeper question stays open and is not part of this closure: `pool: "vmThreads"` traces to scaffold commit e652cb81 with no ADR, and it is tracked as #562',
     }
+  - {
+      state: verified,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `guards-b/556-verified-on-correlation`, confirmed. This ticket is `verified` on a correlation: the bisect its own scope demanded was never run, and the order-dependence it names is still present. The Done-when is unmet. The status is not moved, because the scheme's lifecycle runs forward only and offers no edge back from `verified` - `parked` and `dropped` are the side exits and neither describes this. So the record is this note: **#556 is not verified in fact**, and the bisect is owed. Whoever runs it records the result here and, if it lands work, opens a ticket for it rather than editing this one's history into a second closure.",
+    }
 ---
 
 ## Scope

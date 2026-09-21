@@ -21,6 +21,11 @@ history:
       at: 2026-09-20,
       note: "taken by the close-gates writer. Steps 1 and 2 only, per the hand-over: one failure reproduced against its own diff image, then the 169 graded by proven cause with the ungraded remainder named as ungraded, and a report before any fixing at scale. Local runs use `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` (`tooling.md` host note: Chrome 151 on this WSL2 host never issues a compositor frame through SwiftShader), so a local red needs that switch ruled out before it is called a real failure",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Three findings land here. `578-census/toast-browser-branch-stub-sync`: the new toast tests stub `startViewTransition` synchronously, so the branch they claim to cover is not exercised the way a browser runs it. `578-census/attr-namespace-unguarded`: nothing stops the `attr:` namespace from returning - the fix that closed #581 is two per-component assertions, not a guard. `board-truth/581-merged-below-its-bar`: #581 is merged although its Done-when demands zero failures and four remain; two of the four are #584's. The census this ticket owns is the place those rows are accounted for.",
+    }
 ---
 
 ## Why this is filed above the remaining gate reds
