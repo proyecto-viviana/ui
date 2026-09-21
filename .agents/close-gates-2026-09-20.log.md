@@ -2183,3 +2183,12 @@ seven. Merged.
   2 passed.
 - `a11y:smoke`: 71 / 3, and all three are #575's `examples.spec.ts:179` rows.
 - apps/web `vite.config.ts` comments corrected: dist, not source.
+
+## 2026-09-21 — #575 examples `+ Create` in light: diagnosed, boundary held
+
+- The gate is right. The button paints dark `#ff4fc3` first and transitions
+  (0.15s) to light `#d9128f`. `useTheme`'s signal starts `"dark"` and reads
+  `pv-theme` only in `onSettled`, while the pre-paint script has already set
+  `<html>` light. The client-rendered examples Provider mounts dark and flips.
+- Fix site `apps/web/src/utils/theme.ts`, under `apps/web/src/**`: handed to the
+  conductor per the ticket. Not edited.
