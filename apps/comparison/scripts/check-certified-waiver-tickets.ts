@@ -12,8 +12,17 @@
  * certified job, where reading the board decides nothing the postcard speaks
  * for. A recorded state the board has moved past fails here.
  *
- * Usage: tsx scripts/check-certified-waiver-tickets.ts
+ * Usage: tsx scripts/check-certified-waiver-tickets.ts [--waivers <path>]
+ *
+ * `--waivers` exists so the reconciliation can be driven end to end against a
+ * non-empty list. The tracked file is `[]`, so every CI run of this guard
+ * reaches no branch of `reconcileWaiverTickets` and its green line says only
+ * that the list was empty; `certified-waivers.test.ts` runs this script over a
+ * fixture holding a stale and an off-board ticket. CI passes no `--waivers` and
+ * `test-ci-guard-contracts.mjs` holds the package script to that.
  */
+
+import { resolve } from "node:path";
 
 import {
   comparisonRootFrom,
@@ -26,7 +35,32 @@ import {
 
 const comparisonRoot = comparisonRootFrom(import.meta.url);
 const repoRoot = repoRootFromComparison(comparisonRoot);
-const waiversPath = defaultWaiversPath(comparisonRoot);
+
+function waiversPathFromArgv(argv: readonly string[]): string {
+  let selected = defaultWaiversPath(comparisonRoot);
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index] as string;
+    if (argument.startsWith("--waivers=")) {
+      selected = resolve(argument.slice("--waivers=".length));
+      continue;
+    }
+    if (argument === "--waivers") {
+      const value = argv[index + 1];
+      if (value == null) {
+        console.error("--waivers needs a path");
+        process.exit(2);
+      }
+      selected = resolve(value);
+      index += 1;
+      continue;
+    }
+    console.error(`unknown argument: ${argument}`);
+    process.exit(2);
+  }
+  return selected;
+}
+
+const waiversPath = waiversPathFromArgv(process.argv.slice(2));
 const loaded = loadCertifiedWaivers(waiversPath);
 
 const problems = [

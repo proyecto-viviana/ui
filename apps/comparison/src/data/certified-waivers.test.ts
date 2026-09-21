@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -15,7 +16,9 @@ import {
   evaluateCertifiedWaivers,
   loadCertifiedWaivers,
   parseWaiverEntries,
+  readTicketStatus,
   reconcileWaiverTickets,
+  repoRootFromComparison,
   utcDateStamp,
   waiverGateFails,
   type CertifiedFailure,
@@ -248,5 +251,77 @@ describe("certified waivers", () => {
       ]),
     ).toBe("textfield-native-validity");
     expect(parseDriverId(["chromium", "D13 journeys — ComboBox", "open list"])).toBe("D13");
+  });
+});
+
+// `reconcileWaiverTickets` is unit-tested above with a stub board; nothing drove
+// the guard that runs it. The tracked `e2e/certified-waivers.json` is `[]`, so
+// every CI run of `guard:certified-waiver-tickets` iterates zero waivers and its
+// green line says only that the list was empty — a wrong path or a swallowed
+// exit code would read the same. These cases run the script itself over a
+// fixture that is not empty.
+describe("guard:certified-waiver-tickets end to end", () => {
+  const comparisonRoot = comparisonRootFrom(import.meta.url);
+  const repoRoot = repoRootFromComparison(comparisonRoot);
+  const guard = join(comparisonRoot, "scripts/check-certified-waiver-tickets.ts");
+  const tsx = join(repoRoot, "node_modules/.bin/tsx");
+
+  function run(...args: string[]) {
+    const result = spawnSync(tsx, [guard, ...args], { encoding: "utf8" });
+    expect(result.error).toBeUndefined();
+    return { status: result.status, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
+  }
+
+  function withWaivers(entries: CertifiedWaiver[], ...args: string[]) {
+    const path = join(mkdtempSync(join(tmpdir(), "certified-waiver-tickets-")), "waivers.json");
+    writeFileSync(path, `${JSON.stringify(entries, null, 2)}\n`);
+    return run("--waivers", path, ...args);
+  }
+
+  // The board state is read, never asserted: this ticket's own state moves.
+  const boardStatus = () => {
+    const recorded = readTicketStatus(repoRoot, 574).status;
+    expect(recorded).not.toBeNull();
+    return recorded as string;
+  };
+
+  it("exits 1 naming both a stale recorded state and a ticket the board never had", () => {
+    const status = boardStatus();
+    const result = withWaivers([
+      waiver({ ticket: 574, expires: "2099-12-31", ticketStatus: `not-${status}` }),
+      waiver({ ticket: 9_999_999, expires: "2099-12-31" }),
+    ]);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      `ticket-stale: waiver ticket #574 records not-${status}; the board says ${status}`,
+    );
+    expect(result.stderr).toContain("ticket-missing: waiver ticket #9999999 is not on the board");
+  });
+
+  it("exits 0 over a non-empty list whose every recorded state matches the board", () => {
+    const result = withWaivers([
+      waiver({ ticket: 574, expires: "2099-12-31", ticketStatus: boardStatus() }),
+    ]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("1 waiver(s)");
+    expect(result.stdout).toContain("agree with the board");
+  });
+
+  it("fails closed on a waiver file it cannot read", () => {
+    const result = run("--waivers", join(tmpdir(), "certified-waivers-absent-1c7f3a.json"));
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("certified waivers file is missing");
+  });
+
+  it("refuses an argument it does not understand rather than grading the default list", () => {
+    const result = run("--waiver", "typo.json");
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("unknown argument: --waiver");
+  });
+
+  it("grades the tracked list when CI passes no arguments", () => {
+    const result = run();
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain(defaultWaiversPath(comparisonRoot));
   });
 });

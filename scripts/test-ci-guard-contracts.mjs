@@ -136,6 +136,18 @@ function triggersPushToMain(workflow) {
   return entries.map((entry) => entry.trim().replace(/^["']|["']$/g, "")).includes("main");
 }
 
+// `needs:` has three legal spellings — scalar, flow list, block list — so a
+// legal reformat must not read as a dropped dependency.
+function jobNeeds(jobText) {
+  const scalar = /^ {4}needs: *([A-Za-z0-9_-]+) *$/m.exec(jobText)?.[1];
+  if (scalar) return [scalar];
+  const flow = /^ {4}needs: *\[(.+?)\] *$/m.exec(jobText)?.[1];
+  const block = /^ {4}needs: *\n((?: {4,6}- .+\n)+)/m.exec(jobText)?.[1];
+  return (flow?.split(",") ?? block?.match(/- .+/g) ?? []).map((entry) =>
+    entry.replace(/^- /, "").trim(),
+  );
+}
+
 function stepBlock(jobText, stepName) {
   const start = jobText.indexOf(`- name: ${stepName}\n`);
   assert(start >= 0, `the job has no \`${stepName}\` step`);
@@ -366,17 +378,76 @@ try {
     reportCondition.includes("!cancelled()"),
     `the certified report must run when a shard is red and not when the run was cancelled (\`!cancelled()\`), found \`${reportCondition}\``,
   );
-  // Either YAML spelling of the list, so a legal reformat is not a false red.
-  const needsFlow = /^ {4}needs: *\[(.+?)\] *$/m.exec(certifiedReportJob)?.[1];
-  const needsBlock = /^ {4}needs: *\n((?: {4,6}- .+\n)+)/m.exec(certifiedReportJob)?.[1];
-  const reportNeeds = (needsFlow?.split(",") ?? needsBlock?.match(/- .+/g) ?? []).map((entry) =>
-    entry.replace(/^- /, "").trim(),
-  );
+  const reportNeeds = jobNeeds(certifiedReportJob);
   assert(
     reportNeeds.includes("certified") && reportNeeds.includes("comparison-build"),
     `the certified report must wait for every shard before merging, found needs \`${reportNeeds.join(", ") || "none"}\``,
   );
   console.log("PASS: a failing certified shard renders red and still reaches the merged report.");
+
+  // A waiver naming a ticket the board never had, or one whose recorded state
+  // the board has moved past, waives *inside* the run: `evaluateCertifiedWaivers`
+  // takes no board callback and `merge-certified-reports.ts` emits no
+  // `ticket-missing`/`ticket-stale` — that was the deliberate trade #574 made to
+  // keep the board out of a verdict the postcard speaks for. The only detector
+  // left is this one step, so deleting or renaming it restores the pre-#574 hole
+  // with every gate still green.
+  const comparisonBuildJob = jobBlock(certificationWorkflow, "comparison-build");
+  const waiverTicketsStep = stepBlock(comparisonBuildJob, "guard certified waiver tickets");
+  assert(
+    waiverTicketsStep.includes("comparison:guard:certified-waiver-tickets"),
+    "the `guard certified waiver tickets` step must run `comparison:guard:certified-waiver-tickets`; nothing else reconciles a waiver against the board",
+  );
+  const waiverTicketsIndex = comparisonBuildJob.indexOf(
+    "run: pnpm run comparison:guard:certified-waiver-tickets\n",
+  );
+  const comparisonBuildIndex = comparisonBuildJob.indexOf("run: pnpm run build\n");
+  assert(
+    waiverTicketsIndex >= 0 &&
+      comparisonBuildIndex >= 0 &&
+      waiverTicketsIndex < comparisonBuildIndex,
+    "the board reconciliation must run before the build it gates, or an off-board waiver costs a full build before it is named",
+  );
+  const certifiedNeeds = jobNeeds(certifiedJob);
+  assert(
+    certifiedNeeds.includes("comparison-build"),
+    `the certified shards must depend on \`comparison-build\`: that dependency is what makes an off-board waiver red the whole run rather than one job, found needs \`${certifiedNeeds.join(", ") || "none"}\``,
+  );
+  // The guard grades the tracked list. A `--waivers` override in the package
+  // script would point CI at a file nobody reviews.
+  const comparisonManifest = JSON.parse(
+    readFileSync(path.join(ROOT, "apps", "comparison", "package.json"), "utf8"),
+  );
+  const waiverTicketsScript = comparisonManifest.scripts?.["guard:certified-waiver-tickets"] ?? "";
+  assert(
+    waiverTicketsScript.includes("check-certified-waiver-tickets.ts") &&
+      !waiverTicketsScript.includes("--waivers"),
+    `guard:certified-waiver-tickets must grade the tracked waiver file, found \`${waiverTicketsScript}\``,
+  );
+  console.log("PASS: an off-board or stale certified waiver is reconciled before the build.");
+
+  // The unit tests that hold the certified verdict must run in the workflow
+  // that enforces it. `certified-shard-gate.test.ts` and
+  // `certified-postcard-git.test.ts` were reachable only through root
+  // `test:run` — `ci:release-readiness`, hence `Release Readiness`, which is
+  // disabled — so a required-field break in one of them sat uncaught.
+  const certifiedUnitStep = stepBlock(comparisonBuildJob, "certified verdict unit tests");
+  assert(
+    certifiedUnitStep.includes("comparison:test:certified-waivers"),
+    "the `certified verdict unit tests` step must run `comparison:test:certified-waivers`",
+  );
+  const certifiedUnitScript = rootManifest.scripts?.["comparison:test:certified-waivers"] ?? "";
+  for (const file of [
+    "certified-waivers.test.ts",
+    "certified-shard-gate.test.ts",
+    "certified-postcard-git.test.ts",
+  ]) {
+    assert(
+      certifiedUnitScript.includes(`apps/comparison/src/data/${file}`),
+      `comparison:test:certified-waivers must run ${file}; a verdict rule held by a disabled workflow is held by nobody`,
+    );
+  }
+  console.log("PASS: Certification Gates runs every unit test that holds the certified verdict.");
 
   // release-readiness runs test:run on a plain checkout: the gitignored
   // ./react-spectrum oracle is absent there, so an oracle-backed check placed

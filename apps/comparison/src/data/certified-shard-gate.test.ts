@@ -68,7 +68,12 @@ describe("certifiedShardVerdict", () => {
         waiverProblems: [
           {
             kind: "expired",
-            waiver: { pattern: "button", ticket: 553, expires: "2026-01-01" },
+            waiver: {
+              pattern: "button",
+              ticket: 553,
+              expires: "2026-01-01",
+              ticketStatus: "in-progress",
+            },
             detail: "expired 2026-01-01",
           },
         ],

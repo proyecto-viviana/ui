@@ -459,7 +459,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: certified waiver unit tests
+      # Three files, one script (the key still says waivers): the waiver rules,
+      # which this step always ran, plus the shard verdict
+      # `certifiedShardVerdict` (#589) and the postcard currency rule (#574),
+      # which it did not. Those two were reachable only through root `test:run`
+      # — `ci:release-readiness`, so `Release Readiness`, which is
+      # `disabled_manually` — so two of the three rules this workflow enforces
+      # were held by no active job, and a required-field break sat in the
+      # shard-gate file uncaught. `test-ci-guard-contracts.mjs` pins the list.
+      - name: certified verdict unit tests
         run: pnpm run comparison:test:certified-waivers
 
       # The certified verdict waives on the ticket state recorded in
