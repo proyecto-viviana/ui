@@ -238,7 +238,8 @@ jobs:
 
       # Promoted 2026-08-07 (ticket #2): baselined the 9 known catalogue-depth
       # gaps. Ticket #85 owns that strict-parity backlog. New gaps outside
-      # apps/comparison/scripts/parity-strict-baseline.json fail the job.
+      # apps/comparison/scripts/parity-strict-baseline.json fail the job, and so
+      # does a baselined gap that no longer occurs: the baseline only shrinks (#194).
       # Use report:parity:strict --strict-full locally to see the full backlog.
       - name: comparison parity (strict)
         id: parity_strict

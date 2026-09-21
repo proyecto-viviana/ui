@@ -2163,3 +2163,13 @@ seven. Merged.
 - Also `d6b2f2fd`: the typecheck error TS7016 in my own `scripts/scratch-dir.test.ts`
   (from `80c429ec`) is fixed with the siblings' `@ts-expect-error` idiom.
   `vp run typecheck` is clean.
+
+## 2026-09-21 — #194 slice 4: the strict baseline only shrinks
+
+- `parity-strict-baseline.ts` gains `staleBaselineSlugs`. `report:parity:strict`
+  now fails on any baselined slug whose gap no longer occurs, and names the entry
+  to delete. Growth is pinned by a test that holds every section to #85's
+  frozen nine.
+- Planted `button` in `missingControlGroups`: the old report passed it silently;
+  the new one fails naming it, and the pin test fails 1 of 5. All 27 real entries
+  still occur.

@@ -42,6 +42,11 @@ history:
       at: 2026-09-20,
       note: "slice 3 done: skipped and flaky ceilings. The fixme inventory now counts every site - every knownDivergences block in a spec, not only the first, and every trigger-level knownDivergence - proved by planting a knownDivergence on datefield's spin-up announce trigger: the count stayed at 4 and the postcard validated, and after the repair counts 5 and fails. merge-certified-reports now fails above skippedCeiling (4) and flakyBudget (0), both committed in apps/comparison/e2e/certified-case-floor.json beside the case floor; a shard summary with 40 skipped and 7 flaky merged green before and exits 1 now. Held by 9 cases in apps/comparison/src/data/certified-run-budgets.test.ts, one of which pins the ceiling to the inventory count",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "slice 4 done: the strict baseline only shrinks. `apps/comparison/scripts/parity-strict-baseline.ts` owns the rule. `unbaselined` moved there, and the new `staleBaselineSlugs` names each listed slug whose gap no longer occurs. `report:parity:strict` counts those as blocking and prints each one with the instruction to delete it, following the precedent of `scripts/check-peers.mjs`'s allowlist. Growth is pinned by `apps/comparison/src/data/parity-strict-baseline.test.ts`: every section must stay a subset of #85's nine as frozen on 2026-08-07, and adding a slug means editing a constant whose comment says never to. 5 cases. Planted defect, `button` added to `missingControlGroups`: the old report printed `[pass] No new catalogue gaps outside the frozen baseline` and let it through (its exit 1 is only #574's postcard). The new one fails naming `missingControlGroups: button (Button)`, and the pin test fails 1 of 5. Today all 27 entries still occur (`[pass] Every baselined gap still occurs`). The workflow comment says so. Remaining for Done-when: the certified record against HEAD, which #574 now expresses and a fresh full certified run must supply",
+    }
 ---
 
 ## Cause

@@ -25,6 +25,12 @@ import {
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
 import { gitPostcardProbe } from "./certified-postcard-git";
 import { formatCertifiedSummaryMarkdown, readCertifiedSummaryFile } from "./certified-summary";
+import {
+  staleBaselineSlugs,
+  strictBaselineSections,
+  unbaselined,
+  type StrictBaseline,
+} from "./parity-strict-baseline";
 import { parseParityReportOptions } from "./report-component-parity-options";
 
 interface Gap {
@@ -41,26 +47,11 @@ interface Gap {
 // docs page at a time has a focused gate to run.
 const { strict, strictFull, slugFilter } = parseParityReportOptions(process.argv.slice(2));
 
-interface StrictBaseline {
-  version: number;
-  allowedBlockingGapSlugs: {
-    missingControlGroups: string[];
-    missingValidationNotes: string[];
-    noCurrentVisualEvidence: string[];
-  };
-}
-
 function loadStrictBaseline(): StrictBaseline | null {
   if (strictFull) return null;
   const baselineUrl = new URL("./parity-strict-baseline.json", import.meta.url);
   if (!existsSync(baselineUrl)) return null;
   return JSON.parse(readFileSync(fileURLToPath(baselineUrl), "utf8")) as StrictBaseline;
-}
-
-function unbaselined(gaps: readonly Gap[], allowed: readonly string[] | undefined): readonly Gap[] {
-  if (allowed == null) return gaps;
-  const allow = new Set(allowed);
-  return gaps.filter((gap) => !allow.has(gap.slug));
 }
 
 function scope<T extends { slug: string }>(gaps: readonly T[]): readonly T[] {
@@ -608,6 +599,19 @@ const baselinedDepthGaps = unbaselined(
   allowed?.noCurrentVisualEvidence,
 );
 
+const baselineSectionGaps = {
+  missingControlGroups,
+  missingValidationNotes,
+  noCurrentVisualEvidence,
+} as const;
+// Shrink-only: a baselined slug whose gap is gone must leave the baseline.
+const staleBaselineEntries = strictBaselineSections.flatMap((section) =>
+  staleBaselineSlugs(
+    baselineSectionGaps[section],
+    allowed?.[section].filter((slug) => !slugFilter || slug === slugFilter),
+  ).map((slug) => ({ section, slug })),
+);
+
 const structuralBlockingGaps = alwaysBlockingSections.reduce(
   (count, gaps) => count + scope(gaps).length,
   0,
@@ -619,6 +623,7 @@ const depthGaps = scope(noCurrentVisualEvidence).length;
 const strictFailCount =
   structuralBlockingGaps +
   baselinedNewGaps +
+  staleBaselineEntries.length +
   (strictFull ? scope(componentAcceptanceGaps).length : 0);
 
 console.log("Comparison component catalogue and acceptance inventory");
@@ -791,6 +796,16 @@ if (strict) {
       }
     } else {
       console.log("[pass] No new catalogue gaps outside the frozen baseline");
+    }
+    if (staleBaselineEntries.length > 0) {
+      console.log(
+        `[gap] Baseline entries whose gap no longer occurs (delete them from parity-strict-baseline.json): ${staleBaselineEntries.length}`,
+      );
+      for (const { section, slug } of staleBaselineEntries) {
+        console.log(`- ${section}: ${slug} (${titleForSlug(slug)})`);
+      }
+    } else {
+      console.log("[pass] Every baselined gap still occurs");
     }
   }
 
