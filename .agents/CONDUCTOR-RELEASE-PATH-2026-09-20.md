@@ -381,6 +381,46 @@ In order, all on the same commit, from #547:
    passing `--tag` in pre mode is a hard error, `publish.mjs:61-63`. Never move
    `latest`; it cannot move by accident here, and #547 records why.
 
+### What stage 4 ships is whatever is in `main`, and that includes the READMEs
+
+`packages/*/README.md` goes inside the npm tarball. So the RC does not ship the
+code and then the prose later — it ships one tree, and the README a stranger
+reads on npm is whichever one `main` holds at publish time.
+
+The rewritten ones are not in `main`. They are three commits on the
+`public-face` branch, in the worktree the #544 grant created:
+
+```
+30004ffb #549: say what the landing page offers in plain words, …
+daaa8b88 #548: rewrite the front door and the ui README, …
+a6a9e717 #548: land the package READMEs, the front door and CONTRIBUTING
+```
+
+Measured, not assumed. `git merge-tree --write-tree main public-face` exits 0
+and reports no conflicted path, so the merge is clean today against a `main`
+that is 94 commits ahead. The eleven files it touches are `README.md`,
+`CONTRIBUTING.md`, `CREDITS.md`, the seven `packages/*/README.md` (geist, kumo,
+solid-spectrum, solid-stately, solidaria, solidaria-components, viviana-ui) and
+`apps/web/src/routes/index.tsx` — every one of them inside the grant in hub
+`AGENTS.md:65-70`, nothing outside it.
+
+**Not integrated, deliberately.** #548, #549 and #550 are all still `open`, and
+`.agents/drafts-548/` in this checkout is live draft prose. Merging now would
+freeze half-finished copy into `main` and then into the tarballs, and under the
+2026-09-20 owner rule this copy is Fable's to finish, not this seat's to call
+done. So the merge waits on those tickets closing.
+
+That makes a timing coupling the owner should decide rather than discover: if
+#548 and #549 have not closed when stage 4 is otherwise ready, the RC ships the
+**old** READMEs. Both orders are defensible — an RC is a prerelease and its
+prose can be corrected in `-rc.1` — but it should be a choice. This seat's
+default, absent a word otherwise, is to publish on gate-readiness and not hold
+the RC for copy, since `next` is where consumers are told to look and the
+packages are the thing being tested.
+
+The grant itself ends when #548, #549 and #550 close, so this integration is
+also what retires the second writer seat.
+
 ### Stage 4 has a precondition nobody has named: two workflows are off
 
 If the publish runs through `release.yml`, it runs `guard:release-evidence`
