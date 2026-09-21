@@ -4,7 +4,7 @@ type: task
 title: "guard:jsx-ref-dead-code asserts a setAttribute that Dialog.tsx no longer has"
 created: 2026-09-20
 parent: 544
-status: next
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: next,
       at: 2026-09-20,
       note: "handed to the close-gates writer after #571 merged (`2ca4c94d`), as the earliest remaining red. The ladder now walks to step 219: 121, 160, 169, 185 and 193 are green. Three things found while handing it over. First, this is the third ratchet in two days that stopped tracking the tree, after #571's two - and unlike those, this one is the residue of a commit this seat reviewed, `70a8d478`. So the pattern is not 'old baselines rot'; it is 'a refactor moves the code and leaves the record', and it is worth one line in the log saying whether the guard could have caught its own staleness. Second, the ticket's default answer - retire the marker, because a direct test at Dialog.test.tsx:339 already asserts the outcome - is the 'never the third copy' rule and this seat endorses it; do not re-point the regex unless you can show the build dropping a declarative binding that the test survives, and if you can show that, it is a bigger finding than this ticket. Third, this gate needs `vp run build` first, so it is the heavy one: run `free -m`, one command at a time, output to a file",
+    }
+  - {
+      state: merged,
+      at: 2026-09-20,
+      note: "the default reading was taken - the marker is retired, not re-pointed - and the retirement was falsified rather than asserted. `70a8d478` (#555) made the labelling declarative at `Dialog.tsx:295`, `aria-labelledby={ariaLabelledBy()}`, over the fallback at `:252-261`, so the regex matched nothing and the assertion blamed a build that did nothing; `grep -c setAttribute` on the file is 0. The condition for keeping a source-text marker was checked, not waved past: removing `aria-labelledby={ariaLabelledBy()}` from `:295` and running the suite gives `Tests 1 failed | 32 passed (33)`, failing at exactly `Dialog.test.tsx:339` - the outcome test catches the loss the regex was a proxy for, so there is no hole for it to cover and it is the weaker second copy. Probe reverted, file byte-identical to HEAD. `closest(...alertdialog)` kept, live at `:361`. `vp run build` EXIT=0 then `vp run guard:jsx-ref-dead-code` EXIT=0, 12 reviewed-safe direct refs and 6 emitted behavior fixtures; `Dialog.test.tsx` 33/33. One thing noticed and not done, for the conductor: markers are asserted against the bundle only, so `matches nothing` and `the build dropped it` are indistinguishable to this guard - asserting each marker against the source file first would let it report its own staleness, which is the third instance of that class in two days. Evidence `.agents/close-gates-2026-09-20.log.md`",
     }
 ---
 
@@ -85,3 +90,24 @@ Downstream of #555, which is merged: this is residue of `70a8d478`, a marker the
 refactor should have moved in the same commit. Worth noting for #568, which owns
 the fact that `ci:release-readiness` runs 8 of 36 blocking gates — this red sat
 undiscovered because the chain never reaches step 219.
+
+## What landed
+
+One edit: `scripts/check-jsx-ref-dead-code.ts`, the Dialog entry's
+`setAttribute` marker deleted, with the reason in a comment above the entry so
+the next reader does not re-add it. `closest\([^)]*alertdialog` kept.
+
+The reading is the ticket's default, taken on the ticket's own condition. A
+source-text marker earns its place only if the build can eat the behaviour in a
+way the test misses; removing `aria-labelledby={ariaLabelledBy()}` from
+`Dialog.tsx:295` fails `Dialog.test.tsx:339` directly, so it cannot. The probe
+was reverted.
+
+## Noticed, not done
+
+This guard asserts markers against the bundled output only, so "the regex
+matches nothing" and "the build dropped it" produce the same message, which is
+why a stale marker read as a build defect. Asserting each marker against the
+source file before the bundle would separate the two, and only a marker present
+in source and missing from the bundle is the defect the guard exists to find.
+Not done here: it widens a gate inside a ticket filed to make it green.

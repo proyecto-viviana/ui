@@ -57,11 +57,17 @@ const SAFE_DIRECT_REFS = new Map<string, RegExp>([
 
 const REQUIRED_BEHAVIOR = [
   {
+    // The `setAttribute("aria-labelledby", trigger.id)` marker that stood beside
+    // this one was retired with #572, not re-pointed. `70a8d478` (#555) made the
+    // labelling declarative — `aria-labelledby={ariaLabelledBy()}` at Dialog.tsx:295
+    // — so the regex matched nothing and reported it as the build dropping code.
+    // The behaviour it stood for is asserted directly at Dialog.test.tsx:339,
+    // which reads the attribute off the rendered node and so fails for a rewrite
+    // that ate the binding. A source-text copy of coverage a behavioural test
+    // already owns is the weaker copy. The marker below has no such twin: it
+    // guards the id-adoption path at Dialog.tsx:361.
     file: "packages/solidaria-components/src/Dialog.tsx",
-    markers: [
-      /setAttribute\(["']aria-labelledby["'],\s*trigger\.id\)/,
-      /closest\([^)]*alertdialog/,
-    ],
+    markers: [/closest\([^)]*alertdialog/],
   },
   {
     file: "packages/solidaria-components/src/GridList.tsx",

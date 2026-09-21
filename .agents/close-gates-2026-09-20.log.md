@@ -1530,3 +1530,77 @@ is re-read. Left for the conductor to file.
 children-snapshot baseline holds over 29 sites, 9 reviewed-benign destructures
 allowlisted across 1750 scanned files. `vp run guard:examples-purity` EXIT=0:
 examples are library-pure across 2 directories.
+
+## #572 — a marker that outlived the mechanism it stood for
+
+Step 219, and the first gate in this sitting that needs `vp run build`. Written
+before the build runs rather than after it, so the reading is on the record
+independently of what the heavy command returns.
+
+### The reading taken: retire the marker
+
+`scripts/check-jsx-ref-dead-code.ts:62` asserts
+
+```
+/setAttribute\(["']aria-labelledby["'],\s*trigger\.id\)/
+```
+
+against the bundled `packages/solidaria-components/src/Dialog.tsx`.
+`grep -c setAttribute` on that file is 0. `70a8d478` (#555, "resolve the
+dialog's title and content ids as slots") made the labelling declarative:
+`:295` binds `aria-labelledby={ariaLabelledBy()}`, and `:252-261` is the
+fallback the deleted line used to write by hand — `p["aria-labelledby"]` wins,
+`aria-label` suppresses, otherwise `triggerContext?.triggerRef()?.id ??
+triggerContext?.triggerId`. The behaviour is present and expressed better; the
+assertion's message, `package transform dropped …`, blames a build that did
+nothing.
+
+The marker was a proxy for "the trigger's id reaches the dialog's
+`aria-labelledby`". That is asserted directly at
+`packages/solidaria-components/test/Dialog.test.tsx:339` —
+`expect(dialog).toHaveAttribute("aria-labelledby", button.id)` followed by
+`toHaveAccessibleName("Settings")`, after a real click through
+`DialogTrigger`/`Modal`/`Dialog`. That test asserts the outcome; the regex
+asserted the mechanism, and the mechanism is gone while the outcome holds. A
+source-text second copy of coverage a behavioural test already owns is the
+weaker copy — "never the third copy" — so it is retired rather than re-pointed.
+
+Not re-pointed, and the condition for re-pointing was checked rather than waved
+past: a source-text marker earns its place only if the build can eat the
+behaviour in a way the test misses. Here a JSX-ref rewrite that dropped
+`aria-labelledby={ariaLabelledBy()}` would take the attribute off the rendered
+`<section>`, and `Dialog.test.tsx:339` reads that attribute off the rendered
+node. There is no hole for the regex to cover. If there were, it would be a
+finding larger than this ticket.
+
+`/closest\([^)]*alertdialog/` is untouched. It is live at `Dialog.tsx:361`,
+inside the id-adoption path that has no declarative equivalent.
+
+### Could the guard have caught its own staleness?
+
+Yes, and cheaply. The markers are asserted against the *bundled* output only, so
+"this regex matches nothing" and "the build dropped this" are indistinguishable
+to it. Asserting each marker against the **source file** first would separate
+them: a marker that matches neither source nor bundle is stale and should say
+so, and only a marker present in source and absent from the bundle is the
+dead-code defect this guard exists to find. That is the third ratchet in two
+days that stopped tracking the tree, after #571's two, and the first one whose
+staleness the tool could have reported itself. Not done here — it widens a gate
+inside a ticket filed to make it green. Flagged for the conductor.
+
+### The retirement, falsified rather than asserted
+
+Retiring a marker is a claim that coverage does not shrink, so the claim was
+tested instead of stated. `aria-labelledby={ariaLabelledBy()}` was removed from
+`Dialog.tsx:295` — the exact loss the regex existed to detect — and the suite
+run: `Tests 1 failed | 32 passed (33)`, failing at
+`Dialog.test.tsx:339`, `expect(dialog).toHaveAttribute("aria-labelledby", button.id)`.
+Reverted; the file is byte-identical to HEAD. So the behavioural test catches
+what the source-text marker would have, at the outcome rather than the
+mechanism, and the retirement removes a duplicate and not a guard.
+
+`vp run build` EXIT=0, 39 tasks, `guard:package-artifacts` PASS over 1053
+manifest targets. `vp run guard:jsx-ref-dead-code` EXIT=0: 12 reviewed-safe
+direct refs and 6 emitted behavior fixtures retained — 5 markers now, the
+`closest(...alertdialog)` one among them.
+`vp test run packages/solidaria-components/test/Dialog.test.tsx` EXIT=0, 33/33.
