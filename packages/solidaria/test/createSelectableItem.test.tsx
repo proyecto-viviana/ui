@@ -96,6 +96,36 @@ function renderItem(
   };
 }
 
+/** Render the item onto a real `<a href>` with a collection role override. */
+function renderLinkItem(
+  options: CreateSelectableItemOptions,
+  stateProps: Partial<ListStateProps<Item>>,
+) {
+  let el!: HTMLAnchorElement;
+  render(() => {
+    const state = createListState<Item>({
+      items,
+      getKey: (item) => item.key,
+      ...stateProps,
+    });
+    const api = createSelectableItem(
+      () => options,
+      state,
+      () => el,
+    );
+    return (
+      <a ref={el} href="#target" role="option" {...api.itemProps}>
+        {options.key}
+      </a>
+    );
+  });
+  return {
+    get el() {
+      return el;
+    },
+  };
+}
+
 describe("createSelectableItem — action model", () => {
   it("a plain selectable row allows selection and has no action", () => {
     withItem({ key: "a" }, { selectionMode: "multiple", selectionBehavior: "replace" }, (api) => {
@@ -341,5 +371,44 @@ describe("createSelectableItem — press path", () => {
 
     expect(setSelectionBehavior).toHaveBeenCalledWith("toggle");
     expect(state.isSelected("a")).toBe(true);
+  });
+});
+
+describe("createSelectableItem — link activation", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.runAllTimers();
+    vi.useRealTimers();
+  });
+
+  it("navigates exactly once when Space activates a role-overridden link", () => {
+    // Both halves of the upstream mechanism have to agree. `openLink` sets its
+    // `isOpening` flag while it dispatches (openLink.mjs:80-83), and the item's
+    // own click guard reads it (useSelectableItem.mjs:254) to decide whether the
+    // click is the one *it* asked for. `usePress` therefore passes `false` for
+    // its own link click (usePress.mjs:320) so the guard suppresses it. Counting
+    // clicks that survive `preventDefault` counts navigations: a click the guard
+    // cancels is one the browser never follows.
+    const clicks: MouseEvent[] = [];
+    const record = (e: Event) => clicks.push(e as MouseEvent);
+    document.addEventListener("click", record, true);
+    try {
+      const { el } = renderLinkItem(
+        { key: "a", href: "#target", isLink: true, linkBehavior: "selection" },
+        { selectionMode: "multiple" },
+      );
+
+      el.focus();
+      fireEvent.keyDown(el, { key: " " });
+      fireEvent.keyUp(el, { key: " " });
+
+      // Two clicks are dispatched — the item's own, and createPress's link path.
+      expect(clicks).toHaveLength(2);
+      expect(clicks.filter((e) => !e.defaultPrevented)).toHaveLength(1);
+    } finally {
+      document.removeEventListener("click", record, true);
+    }
   });
 });

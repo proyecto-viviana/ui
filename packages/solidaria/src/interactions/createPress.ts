@@ -122,8 +122,13 @@ function eventPathContains(parent: EventTarget | null | undefined, event: Event)
   return false;
 }
 
-// Track which links have been programmatically clicked to avoid double activation
-const linkClickedSet = new WeakSet<HTMLElement>();
+// Marks the keyup event a link was already opened from, so several press
+// instances on one element do not each open it. Upstream keys this on the event
+// (react-aria 3.52.0 `usePress.mjs:102` `Symbol('linkClicked')`, set at `:317`)
+// rather than on the element, so the mark dies with the event rather than with a
+// timeout, and a later activation of the same link is never swallowed.
+const LINK_CLICKED = Symbol("linkClicked");
+type LinkClickedEvent = KeyboardEvent & { [LINK_CLICKED]?: boolean };
 
 // CSS for preventing double-tap zoom delay
 let pressableCSSInjected = false;
@@ -793,14 +798,16 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       e.key !== "Enter" &&
       isHTMLAnchorLink(target) &&
       wasPressed &&
-      !linkClickedSet.has(target as HTMLElement)
+      !(e as LinkClickedEvent)[LINK_CLICKED]
     ) {
-      linkClickedSet.add(target as HTMLElement);
-      openLink(target as HTMLAnchorElement, e);
-      // Clean up the marker
-      setTimeout(() => {
-        linkClickedSet.delete(target as HTMLElement);
-      }, 0);
+      // Store a hidden property on the event so we only trigger the link click
+      // once, even if there are multiple createPress instances on the element.
+      (e as LinkClickedEvent)[LINK_CLICKED] = true;
+      // `false`: this click is ours, not the consumer's, so `openLink.isOpening`
+      // must stay down and a collection item's click guard
+      // (`createSelectableItem`, upstream `useSelectableItem.mjs:254`) can
+      // suppress the navigation it did not ask for. Upstream `usePress.mjs:320`.
+      openLink(target as HTMLAnchorElement, e, false);
     }
 
     if (shouldStopPropagation && shouldStopPropagationEnd) {
@@ -816,11 +823,17 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       return;
     }
 
-    // Only process left clicks that aren't from our own event triggers.
-    // Keyboard activation (isPressed + pointerType keyboard) skips press re-entry
-    // like RAC usePress, then still stopPropagates so document click interceptors
-    // do not run. Do not preventDefault an enabled <a href>.
-    if (e.button === 0 && !pressState.isTriggeringEvent) {
+    // Only process left clicks that aren't from our own event triggers, and not
+    // the click `openLink` is dispatching right now (upstream
+    // `usePress.mjs:279`). Keyboard activation
+    // (isPressed + pointerType keyboard) skips press re-entry like RAC usePress,
+    // then still stopPropagates so document click interceptors do not run. Do
+    // not preventDefault an enabled <a href>.
+    if (
+      e.button === 0 &&
+      !pressState.isTriggeringEvent &&
+      !(openLink as { isOpening?: boolean }).isOpening
+    ) {
       if (isDisabledValue(props.isDisabled)) {
         e.preventDefault();
         return;

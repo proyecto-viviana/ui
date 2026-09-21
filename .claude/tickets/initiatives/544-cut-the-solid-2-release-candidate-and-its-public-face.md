@@ -211,8 +211,14 @@ workflow, and so has never proved #555's or #556's tests.
 of them are behaviour in published packages, so they land before anything is
 published.
 
-- **S2-a #591**, high. `createPress` opens links with `isOpening: true`,
-  re-enters on click, and de-duplicates by a shared flag.
+- **S2-a #591**, high, `merged` in this checkout 2026-09-21. `createPress`
+  opened links with `isOpening: true`, re-entered on click, and de-duplicated
+  by a shared flag; all three now read as upstream does. Of the three findings
+  the audit filed together, the first was observable after all — Space on a
+  role-overridden `<a href>` in a selectable collection navigated twice — and
+  the third, the element-plus-timeout key, was a second real defect; only the
+  click re-entry guard is parity with no test that can tell it apart, as the
+  skeptic said. Each half is attributed by mutation in #591's merged note.
 - **S2-b #592**, medium. Link items bypass the router at four call sites; a
   pre-existing parity gap, not a regression from this campaign.
 - **S2-c #593**, medium. `FocusScope` restores focus without asking which scope

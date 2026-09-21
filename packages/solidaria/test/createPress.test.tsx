@@ -8,6 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPress, type PressEvent } from "../src/interactions/createPress";
+import { mergeProps } from "../src/utils";
 import { Dynamic } from "@solidjs/web";
 import { createSignal, flush } from "solid-js";
 import type { Component } from "solid-js";
@@ -2392,6 +2393,78 @@ describe("createPress", () => {
       expect(onPress).toHaveBeenCalled();
       // Click should be called explicitly for links with role="button"
       expect(onClick).toHaveBeenCalled();
+    });
+
+    it("opens the link again on a second Space activation in the same macrotask", () => {
+      // Upstream scopes the "already opened" mark to the keyup event itself
+      // (`usePress.mjs:102` `Symbol('linkClicked')`, `:316-319` `e[LINK_CLICKED]`),
+      // so it cannot outlive that event. A mark on the element cleared from a
+      // `setTimeout(…, 0)` is time-scoped instead: while the timeout is still
+      // queued, a second, legitimate activation of the same link opens nothing.
+      const clicks: MouseEvent[] = [];
+      const record = (e: Event) => {
+        clicks.push(e as MouseEvent);
+        e.preventDefault();
+      };
+      document.addEventListener("click", record, true);
+      try {
+        render(() => <Example elementType="a" href="#target" role="button" />);
+        const el = screen.getByTestId("test-element") as HTMLAnchorElement;
+        el.focus();
+
+        fireEvent.keyDown(el, { key: " " });
+        fireEvent.keyUp(el, { key: " " });
+        expect(clicks).toHaveLength(1);
+
+        // No macrotask has run in between: this is the window in which an
+        // element-keyed mark is still set.
+        fireEvent.keyDown(el, { key: " " });
+        fireEvent.keyUp(el, { key: " " });
+        expect(clicks).toHaveLength(2);
+      } finally {
+        document.removeEventListener("click", record, true);
+      }
+    });
+
+    it("opens the link once per keyup when two press instances share the element", () => {
+      // The mark exists so that several press instances on one element do not
+      // each open the link for the same keyup (`usePress.mjs:317-318`).
+      const clicks: MouseEvent[] = [];
+      const record = (e: Event) => {
+        clicks.push(e as MouseEvent);
+        e.preventDefault();
+      };
+      document.addEventListener("click", record, true);
+      try {
+        const TwoPresses: Component = () => {
+          const first = createPress({});
+          const second = createPress({});
+          return (
+            <a
+              href="#target"
+              role="button"
+              tabIndex={0}
+              data-testid="two-presses"
+              {...(mergeProps(
+                first.pressProps as Record<string, unknown>,
+                second.pressProps as Record<string, unknown>,
+              ) as JSX.HTMLAttributes<HTMLAnchorElement>)}
+            >
+              test
+            </a>
+          );
+        };
+        render(() => <TwoPresses />);
+        const el = screen.getByTestId("two-presses") as HTMLAnchorElement;
+        el.focus();
+
+        fireEvent.keyDown(el, { key: " " });
+        fireEvent.keyUp(el, { key: " " });
+
+        expect(clicks).toHaveLength(1);
+      } finally {
+        document.removeEventListener("click", record, true);
+      }
     });
 
     it("should handle when focus moves between keydown and keyup", () => {
