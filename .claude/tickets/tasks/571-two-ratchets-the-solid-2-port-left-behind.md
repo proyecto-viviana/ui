@@ -4,12 +4,17 @@ type: task
 title: "Two ratchets still describe the pre-Solid-2 tree, so idiomatic-solid and examples-purity are red"
 created: 2026-09-20
 parent: 544
-status: open
+status: next
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "found by the conductor's local ladder walk of 2026-09-20 evening. `vp run guard:idiomatic-solid` EXIT=1 and `vp run guard:examples-purity` EXIT=1, both in about a second, steps 169 and 185 of certification-gates.yml. Filed as one ticket because they are one cause: a ratchet and an allowlist that both describe the tree before the Solid 2 port. Evidence `.agents/chain-walk-2026-09-20/ladder-idiomatic-solid.out.txt` and `ladder-examples-purity.out.txt`",
+    }
+  - {
+      state: next,
+      at: 2026-09-20,
+      note: "handed to the close-gates writer after #570 merged, as the earliest remaining red: steps 169 and 185, where the ladder now stops. Three things found while handing it over, none of which changes the work. First, every one of the six failing imports is the bare specifier `@solidjs/web` - no subpath among them - so `/^@solidjs\\/web$/` is sufficient today, while the neighbouring `/^solid-js(\\/[a-z]+)?$/` invites mirroring the subpath shape; either is defensible, so say which was taken and why rather than leaving the comment to imply it was forced. Second, `scripts/check-idiomatic-solid.ts:438` does have a `--write-baseline` the ticket forbids: the edit is deleting one line by hand, and the guard's own message already names the owning ticket #192, so `git log -- packages/viviana-ui/src/gridlist/index.tsx` is where the commit that fixed the site is. Third, the split of ownership happens to fall the right way - the repair is in `scripts/`, which is this seat's, and the six files it spares are the public-face worktree's, so nothing here needs coordination. Ladder order after this: #572 at 219, #573 at 227, #574 at 239",
     }
 ---
 
