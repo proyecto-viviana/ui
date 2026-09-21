@@ -71,10 +71,13 @@ jobs:
       # step as before it — the comment that stood here justified the step's
       # placement with a publish simulation the script has never done (#598).
       # For each publishable package it asks the registry what it serves under
-      # the release tag, then diffs `src` and `package.json` against the commit
-      # that set that version. Two failures: source no changeset will ever
-      # publish, and a version bump the registry never received with work
-      # stacked on top of it. Both are invisible in-repo — apps/web and
+      # the release tag — falling back to `latest`, since a prerelease tag has
+      # no release the first time it is entered — then diffs the files that
+      # package's own `files` publishes against the commit that set the served
+      # version. Three failures: source no changeset will ever publish, a
+      # version bump the registry never received with work stacked on top of
+      # it, and a tree behind what npm serves. All are invisible in-repo —
+      # apps/web and
       # `pack:local-chain` build against current source — and break only
       # off-workspace, which is how ui@0.6.0 shipped importing a symbol its
       # pinned solidaria-components tarball did not have.

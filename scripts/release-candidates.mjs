@@ -40,6 +40,10 @@ export function releasablePackages(root = ".") {
         manifest: `${PACKAGES_DIR}/${entry.name}/package.json`,
         name: parsed.name,
         version: parsed.version,
+        // The manifest's own account of what the tarball carries. A guard that
+        // hard-codes that list checks a package it invented: all five of ours
+        // ship LICENSE, LICENSE-APACHE-2.0 and NOTICE beside `dist` and `src`.
+        files: Array.isArray(parsed.files) ? parsed.files : null,
         private: Boolean(parsed.private),
       };
     })

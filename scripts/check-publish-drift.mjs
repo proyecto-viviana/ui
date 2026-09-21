@@ -3,15 +3,16 @@
 /**
  * Fails when what npm serves and what this tree carries have come apart.
  *
- * Two ways that happens, and until #598 this guard could only see the first:
+ * Three ways that happens, and until #598 this guard could only see the first:
  *
- *   1. Source moved with nothing to publish it. A package's `src` or manifest
- *      changed after its last version bump and no pending changeset names it,
- *      so no bump will ever carry those changes. `check-changeset-required.mjs`
- *      cannot see this: it asks "did a releasable package change, and does *a*
- *      changeset exist?" and never checks that the changeset names the package
- *      that changed. It is also `pull_request`-only, so commits landing straight
- *      on main skip it entirely.
+ *   1. Source moved with nothing to publish it. A package's published files or
+ *      manifest changed after its last version bump and no pending changeset
+ *      names it, so no bump will ever carry those changes.
+ *      `check-changeset-required.mjs` cannot see this: it asks "did a
+ *      releasable package change, and does *a* changeset exist?" and never
+ *      checks that the changeset names the package that changed. It is also
+ *      `pull_request`-only, so commits landing straight on main skip it
+ *      entirely.
  *
  *   2. A bump that was written and never published. `changeset version` writes
  *      the new version and CHANGELOG.md in one commit; the publish is a
@@ -22,6 +23,14 @@
  *      packages sat a full minor ahead of the registry with that boundary and
  *      the guard printed "No publish drift". The boundary is the registry's
  *      answer now, not the tree's claim about itself.
+ *
+ *   3. A tree behind the registry. The version this checkout carries was
+ *      published from somewhere else, or a realign hand-bumped it down — as
+ *      `main` once went 0.6.2 → 0.5.0 against a remote squash. `changeset
+ *      publish` cannot publish it (npm refuses a version it already serves) and
+ *      the source under it is not the source that shipped. Comparing versions
+ *      for equality alone, as this guard did until the #598 review, reads that
+ *      as a bump in flight and passes.
  *
  * The symptom is silent and only appears off-workspace: the package keeps its
  * published version number while its source moves on, so npm serves a stale
@@ -42,9 +51,8 @@
  * and since every releasable package had a changeset it skipped every subject
  * the guard had.
  *
- * Only what the tarball carries counts — `files` is `["dist", "src"]` and
- * `dist` is generated from `src` — so tests and docs cannot drift, but the
- * manifest can.
+ * Only what the tarball carries counts, and each manifest's own `files` says
+ * what that is.
  */
 
 import { execFileSync } from "node:child_process";
@@ -103,17 +111,123 @@ function commitThatSetVersion(dir, version) {
 }
 
 /**
- * What a consumer receives: `src` (`files` is `["dist", "src"]`, and `dist` is
- * generated from `src`) and the manifest itself. The manifest counts because it
- * is the package's contract — a new `exports` subpath, a widened peer range, a
- * changed `main` — and it drifts the same way source does: the published
- * tarball keeps the old contract under a version consumers already resolve.
+ * What a consumer receives, by the manifest's own account: every entry of
+ * `files`, plus README.md, which npm ships whatever `files` says, plus the
+ * manifest itself. The manifest counts because it is the package's contract — a
+ * new `exports` subpath, a widened peer range, a changed `main` — and it drifts
+ * the same way source does.
+ *
+ * `dist` is generated from `src` and is not in git, so naming it costs nothing;
+ * a pathspec matching no tracked file contributes no diff. A manifest with no
+ * `files` ships its whole directory minus npm's own ignores, so that directory
+ * is the honest boundary for it. Hard-coding `src` instead, as this guard did
+ * until the #598 review, made a README or NOTICE rewrite after the last bump
+ * invisible — and a package's README.md has an owner of its own in #544.
  */
-function publishedFilesChangedSince(dir, since) {
-  const paths = [`${PACKAGES_DIR}/${dir}/src`, `${PACKAGES_DIR}/${dir}/package.json`];
+function publishedPaths(pkg) {
+  const dir = `${PACKAGES_DIR}/${pkg.dir}`;
+  if (!pkg.files || pkg.files.length === 0) return [dir];
+  const entries = new Set(["package.json", "README.md", ...pkg.files]);
+  return [...entries].map((entry) => `${dir}/${entry.replace(/^\.\/+/, "").replace(/\/+$/, "")}`);
+}
+
+function publishedFilesChangedSince(pkg, since) {
   const range = since ? `${since}..HEAD` : "HEAD";
-  const out = git(["diff", "--name-only", range, "--", ...paths]);
+  const out = git(["diff", "--name-only", range, "--", ...publishedPaths(pkg)]);
   return out ? out.split("\n").filter(Boolean) : [];
+}
+
+/** A semver version, or null when it is not one. Build metadata carries no precedence. */
+function parseVersion(version) {
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(
+    typeof version === "string" ? version : "",
+  );
+  if (!match) return null;
+  return {
+    release: [Number(match[1]), Number(match[2]), Number(match[3])],
+    pre: match[4] ? match[4].split(".") : [],
+  };
+}
+
+/**
+ * Semver precedence, for two versions `parseVersion` accepted: release triple
+ * first, then a prerelease sorting below its own release, then identifier by
+ * identifier — numeric ones numerically and below alphanumeric ones, and a
+ * shorter list below a longer one that starts with it.
+ */
+function compareVersions(a, b) {
+  const left = parseVersion(a);
+  const right = parseVersion(b);
+  for (let index = 0; index < 3; index += 1) {
+    if (left.release[index] !== right.release[index]) {
+      return left.release[index] - right.release[index];
+    }
+  }
+  if (left.pre.length === 0 || right.pre.length === 0) return right.pre.length - left.pre.length;
+  for (let index = 0; index < Math.max(left.pre.length, right.pre.length); index += 1) {
+    const one = left.pre[index];
+    const other = right.pre[index];
+    if (one === undefined) return -1;
+    if (other === undefined) return 1;
+    if (one === other) continue;
+    const oneIsNumber = /^\d+$/.test(one);
+    const otherIsNumber = /^\d+$/.test(other);
+    if (oneIsNumber && otherIsNumber) return Number(one) - Number(other);
+    if (oneIsNumber !== otherIsNumber) return oneIsNumber ? -1 : 1;
+    return one < other ? -1 : 1;
+  }
+  return 0;
+}
+
+/**
+ * The published version to measure against, from the registry's answer.
+ *
+ * `dist-tags[tag]` first, then `latest`, then the highest version the packument
+ * carries. The fallbacks are the point: `changeset pre enter rc` moves the tag
+ * to one npm serves for no name that has never had a prerelease, and reading
+ * that tag alone turned the unpublished-bump check off for every package at
+ * once — on exactly the skew #598 was opened for. The rc line and the stable
+ * line are the same package; an unpublished stable bump does not stop being
+ * unpublished because a tag was renamed.
+ *
+ * "Never published" is only what the registry says in those words: a 404, or a
+ * packument whose `versions` map is empty. An answer this guard cannot use — a
+ * 200 carrying no `dist-tags` object, which is what a proxy answering
+ * 404-as-200 gives — is undecided, and undecided is refused, not passed.
+ */
+function publishedBoundary(read, tag) {
+  if (!read.ok) return { kind: "absent" };
+  const distTags = read.body?.["dist-tags"];
+  if (!distTags || typeof distTags !== "object") {
+    return {
+      kind: "unreadable",
+      why: `${read.url} → ${read.status} with no \`dist-tags\` object in the packument`,
+    };
+  }
+  for (const candidate of [tag, "latest"]) {
+    if (typeof distTags[candidate] === "string") {
+      return { kind: "version", version: distTags[candidate], tag: candidate };
+    }
+  }
+  const versions = read.body?.versions;
+  if (!versions || typeof versions !== "object") {
+    return {
+      kind: "unreadable",
+      why: `${read.url} → ${read.status} with no \`${tag}\` or \`latest\` dist-tag and no \`versions\` map`,
+    };
+  }
+  const ordered = Object.keys(versions)
+    .filter((version) => parseVersion(version))
+    .sort(compareVersions);
+  if (ordered.length > 0) {
+    return { kind: "version", version: ordered.at(-1), tag: null };
+  }
+  return Object.keys(versions).length === 0
+    ? { kind: "absent" }
+    : {
+        kind: "unreadable",
+        why: `${read.url} → ${read.status} serves no version that can be ordered as semver`,
+      };
 }
 
 // A shallow clone truncates history, so the last CHANGELOG.md commit may simply
@@ -151,9 +265,14 @@ for (const pkg of releasablePackages()) {
     continue;
   }
 
-  const published = read.ok ? read.body?.["dist-tags"]?.[tag] : undefined;
+  const boundary = publishedBoundary(read, tag);
+  if (boundary.kind === "unreadable") {
+    unreadable.push({ ...pkg, why: boundary.why });
+    continue;
+  }
+
   const bump = lastBumpCommit(pkg.dir);
-  const changed = publishedFilesChangedSince(pkg.dir, bump);
+  const changed = publishedFilesChangedSince(pkg, bump);
   const covered = pending.has(pkg.name);
 
   // (1) Changes after the bump that no changeset will publish.
@@ -164,40 +283,76 @@ for (const pkg of releasablePackages()) {
       reason: `${changed.length} changed file(s) since its last bump ${
         bump ? bump.slice(0, 8) : "(it has never been bumped)"
       }, and no pending changeset names it`,
-      files: changed,
+      changed,
     });
+  }
+
+  if (boundary.kind === "absent") {
+    unpublished.push({ ...pkg, tag });
+    continue;
+  }
+
+  const published = boundary.version;
+  const serves =
+    `the registry serves ${published} ` +
+    (boundary.tag ? `under \`${boundary.tag}\`` : "as its highest published version") +
+    (boundary.tag === tag ? "" : ` (it has no \`${tag}\` release yet)`);
+  if (published === pkg.version) continue;
+
+  // Direction decides which failure this is, so a version neither side can
+  // order is its own answer rather than a guess.
+  if (!parseVersion(published) || !parseVersion(pkg.version)) {
+    problems.push({
+      ...pkg,
+      kind: "unorderable",
+      reason: `the tree carries ${pkg.version} and ${serves}; that pair cannot be ordered as semver, so which of them is ahead is undecided`,
+      changed: [],
+    });
+    continue;
+  }
+
+  const order = compareVersions(pkg.version, published);
+  if (order === 0) continue;
+
+  // (3) The registry is ahead of this tree.
+  if (order < 0) {
+    problems.push({
+      ...pkg,
+      kind: "behind",
+      reason: `${serves}, ahead of the ${pkg.version} this tree carries — this checkout is not the tree that was released`,
+      changed: [],
+    });
+    continue;
   }
 
   // (2) A version the registry never received, with work stacked on top of it.
   // Nothing stacked means the bump is still in flight — that is the state of
   // the commit the release job publishes from, and failing it would make the
   // publish it guards impossible.
-  if (typeof published !== "string") {
-    unpublished.push({ ...pkg, tag });
-    continue;
-  }
-  if (published === pkg.version) continue;
   if (!covered && changed.length === 0) continue;
 
-  const boundary = commitThatSetVersion(pkg.dir, published);
+  const publishedTree = commitThatSetVersion(pkg.dir, published);
   problems.push({
     ...pkg,
     kind: "unpublished-bump",
     reason:
-      `the tree carries ${pkg.version}, the registry serves ${published} under \`${tag}\`, and ` +
+      `the tree carries ${pkg.version}, ${serves}, and ` +
       `${covered ? "a pending changeset is queued on top of that bump" : "its source has moved since"}`,
-    files: boundary ? publishedFilesChangedSince(pkg.dir, boundary) : [],
-    boundary,
+    changed: publishedTree ? publishedFilesChangedSince(pkg, publishedTree) : [],
+    publishedTree,
   });
 }
 
-for (const pkg of unpublished) {
-  console.log(
-    `${pkg.name}: ${registry} serves no \`${pkg.tag}\` release, so there is no published tarball to drift from.`,
-  );
-}
+// Where the registry has nothing to compare against, say so beside the verdict
+// it belongs to — inside a failure when there is one, so it cannot read as
+// reassurance in a run that exits 1.
+const notes = unpublished.map(
+  (pkg) =>
+    `${pkg.name}: ${registry} has no published version of this package, so there is nothing to drift from.`,
+);
 
 if (unreadable.length > 0) {
+  for (const note of notes) console.error(note);
   console.error(`The registry could not be read, so publish drift is undecided:\n`);
   for (const pkg of unreadable) console.error(`  ${pkg.name} — ${pkg.why}`);
   console.error("\nA publish needs this same registry. Fix the read, then run this guard again.");
@@ -205,20 +360,22 @@ if (unreadable.length > 0) {
 }
 
 if (problems.length === 0) {
+  for (const note of notes) console.log(note);
   console.log(
     `No publish drift: every package's ${tag} release matches this tree, or its unreleased changes have a changeset.`,
   );
   process.exit(0);
 }
 
+for (const note of notes) console.error(note);
 console.error(`What ${registry} serves and what this tree carries have come apart:\n`);
 for (const pkg of problems) {
   console.error(`  ${pkg.name}@${pkg.version} — ${pkg.reason}`);
-  if (pkg.boundary) {
-    console.error(`      published tree ${pkg.boundary.slice(0, 8)}; changed since:`);
+  if (pkg.publishedTree) {
+    console.error(`      published tree ${pkg.publishedTree.slice(0, 8)}; changed since:`);
   }
-  for (const file of pkg.files.slice(0, 10)) console.error(`      ${file}`);
-  if (pkg.files.length > 10) console.error(`      … and ${pkg.files.length - 10} more`);
+  for (const file of pkg.changed.slice(0, 10)) console.error(`      ${file}`);
+  if (pkg.changed.length > 10) console.error(`      … and ${pkg.changed.length - 10} more`);
   console.error("");
 }
 if (problems.some((pkg) => pkg.kind === "uncovered")) {
@@ -231,6 +388,18 @@ if (problems.some((pkg) => pkg.kind === "unpublished-bump")) {
   console.error("A version the registry never received is that same skew a step earlier:");
   console.error("`workspace:^` publishes as a range on a sibling version npm does not have, and");
   console.error("the changelog written for that version describes a tree nobody can install.");
-  console.error("Publish the bump before stacking more on it, or re-run the release for it.");
+  console.error("Publish the bump before stacking more on it, or re-run the release for it.\n");
+}
+if (problems.some((pkg) => pkg.kind === "behind")) {
+  console.error(
+    "A tree behind the registry is not the tree that was released: `changeset publish`",
+  );
+  console.error("refuses a version npm already serves, and the source under that version is not");
+  console.error("the source that shipped. Fetch the commit that was released, or bump past what");
+  console.error("the registry serves.\n");
+}
+if (problems.some((pkg) => pkg.kind === "unorderable")) {
+  console.error("A version neither side can order decides nothing: which of the tree and the");
+  console.error("registry is ahead is the whole question here. Fix the version, then run again.");
 }
 process.exit(1);

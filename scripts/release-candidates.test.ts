@@ -8,7 +8,13 @@ import { describe, expect, it } from "vite-plus/test";
 import { pendingChangesetPackages, releasablePackages } from "./release-candidates.mjs";
 
 function fixture(
-  packages: { dir: string; name: string; version: string; private?: boolean }[],
+  packages: {
+    dir: string;
+    name: string;
+    version: string;
+    private?: boolean;
+    files?: string[];
+  }[],
   ignore: string[] = [],
   changesets: string[] = [],
 ): string {
@@ -22,7 +28,12 @@ function fixture(
     mkdirSync(join(root, "packages", pkg.dir), { recursive: true });
     writeFileSync(
       join(root, "packages", pkg.dir, "package.json"),
-      JSON.stringify({ name: pkg.name, version: pkg.version, private: pkg.private }),
+      JSON.stringify({
+        name: pkg.name,
+        version: pkg.version,
+        private: pkg.private,
+        files: pkg.files,
+      }),
     );
   }
   return root;
@@ -44,8 +55,20 @@ describe("releasablePackages", () => {
         manifest: "packages/a/package.json",
         name: "@scope/a",
         version: "1.0.0",
+        files: null,
         private: false,
       },
+    ]);
+  });
+
+  // What the tarball carries is the manifest's own answer, not a list a guard
+  // remembers: `check-publish-drift.mjs` diffs these paths (#598 review).
+  it("carries each manifest's own published-file list", () => {
+    const root = fixture([
+      { dir: "a", name: "@scope/a", version: "1.0.0", files: ["dist", "src", "NOTICE"] },
+    ]);
+    expect(releasablePackages(root).map((pkg: { files: string[] | null }) => pkg.files)).toEqual([
+      ["dist", "src", "NOTICE"],
     ]);
   });
 

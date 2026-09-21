@@ -96,17 +96,23 @@ PR-only gate never fires.
 `Changesets Check` stays `pull_request`-only, and stays correct there: on a
 direct push to `main` the changeset is already in the tree beside the change it
 describes, so the push path is held by `guard:publish-drift` instead, which fails
-any unreleased `src` or manifest change no pending changeset publishes.
+any unreleased change no pending changeset publishes, over the files each
+manifest's own `files` ships plus its README.
 
 That guard takes its boundary from the registry, not from the tree's account of
 itself (#598). It reads what each publishable package is served under the
-release tag — the prerelease tag while `.changeset/pre.json` says `pre`, and an
-unreadable registry is refused rather than passed — and fails a version the
-registry never received once a changeset or a source change is stacked on top
-of it. A bump with nothing stacked on it is the commit the release job publishes
-from, and passes. A pending changeset excuses unreleased source, because the
-next bump carries it; it never excuses an unpublished bump, which is what it is
-queued on top of.
+release tag — the prerelease tag while `.changeset/pre.json` says `pre`, falling
+back to `latest` and then to the highest published version, because npm serves
+no `rc` for a name that has never had a prerelease and the rc line and the
+stable line are the same package. Only a 404 or an empty `versions` map is
+"never published"; an answer that cannot be read, including a 200 carrying no
+`dist-tags`, is refused rather than passed. Versions are compared by semver
+precedence, so both directions fail: a version the registry never received once
+a changeset or a source change is stacked on top of it, and a tree behind what
+npm serves, which is not the tree that was released. A bump with nothing stacked
+on it is the commit the release job publishes from, and passes. A pending
+changeset excuses unreleased source, because the next bump carries it; it never
+excuses an unpublished bump, which is what it is queued on top of.
 
 ## GitHub automation
 

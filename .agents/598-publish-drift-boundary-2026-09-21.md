@@ -139,3 +139,52 @@ No push from this seat, so no CI run id backs any of these numbers — `merged`,
 not `verified`. And `guard:publish-drift` now needs registry network access
 wherever it runs; in `release.yml` that is already true a step later, but the
 guard is no longer runnable offline.
+
+## 7. The review of the landed work, same day
+
+Four problems, all re-measured against the tree before anything moved, all
+real. None was refuted.
+
+1. **A missing dist-tag disabled the whole check.** Written live at HEAD,
+   `.changeset/pre.json` with `mode: pre`, `tag: rc`: pre-fix
+   `node scripts/check-publish-drift.mjs` — EXIT=0, `No publish drift`, over
+   five lines saying the registry serves no `rc` release. The registry serves
+   no `rc` for any of the five names — probed, `latest` only, 0.6.4 / 0.5.1 /
+   0.4.3 / 0.5.1 / 0.6.3. So `changeset pre enter rc`, which #544 is about to
+   run, would have switched the guard off on the exact skew it was written for.
+   Post-fix, same file in place — EXIT=1, all five named, each saying it has no
+   `rc` release yet. `pre.json` deleted after both runs, `git status
+   --porcelain` checked each time.
+2. **Equality is not an ordering.** A tree *behind* the registry passed, and
+   with a changeset stacked it was reported as an unpublished bump whose remedy
+   cannot be carried out. The 0.6.2 → 0.5.0 realign of 2026-07-23 is that
+   state. Semver precedence is hand-rolled — `parseVersion` / `compareVersions`
+   — because `semver` is a dependency this seat may not add for a guard.
+3. **The diff missed most of the tarball.** It walked `src` and
+   `package.json` under a doc comment claiming `files` is `["dist","src"]`;
+   the five manifests also ship LICENSE, LICENSE-APACHE-2.0, NOTICE and a
+   README. `git diff dc0e90cf..HEAD` over those paths returns 5 files, three of
+   them publishable READMEs. Paths now come from each manifest's own `files`,
+   plus `package.json` and `README.md`, with the whole package directory as the
+   fallback when a manifest declares none.
+4. **A 200 with no `dist-tags` was read as "never published".** Refused now.
+   Only a 404 or an empty `versions` map is never published, and the
+   "serves no release" notes print on stderr inside a failing run.
+
+Proof:
+
+- `vp test run scripts/check-publish-drift.test.ts --maxWorkers=2` — EXIT=0,
+  **20 passed**, 11 before. Against the pre-fix script — **9 failed | 11
+  passed**.
+- Live `node scripts/check-publish-drift.mjs` — EXIT=1 before and after; after,
+  `packages/solid-spectrum/README.md` is in the listing and the count is 628,
+  was 627.
+- `vp run test:ci-guard-contracts` — EXIT=0. `vp lint` — EXIT=0.
+  `vp check scripts/` — EXIT=0 after `--fix`.
+  `vp exec tsc --noEmit -p tsconfig.typecheck.json` — EXIT=0.
+  `node scripts/check-release-prerequisites.mjs` — EXIT=0.
+
+Residue: carrying `files` through `releasablePackages()` broke the exact-shape
+assertion in `scripts/release-candidates.test.ts`. Repaired there, with a case
+of its own for the new field; the file is back to the two pre-existing #607
+reds, `2 failed | 6 passed`, noted on that ticket.
