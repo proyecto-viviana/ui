@@ -244,7 +244,7 @@ describe("the certification workflow", () => {
         byKey.get("comparison floors: pair budgets / Publish floor summary"),
         mapped.plumbing,
       ),
-    ).toBe("gate");
+    ).toBe("plumbing");
   });
 
   it("names a blocking step added to comparison-build", () => {
@@ -286,6 +286,40 @@ describe("the certification workflow", () => {
       'blocking step "certification-gates / axe full audit" is now advisory; remove its entry or restore continue-on-error',
     );
     expect(problems.some((problem) => problem.includes("no longer exists"))).toBe(false);
+  });
+
+  it("names a script appended to the typecheck step that the chain does not reach", () => {
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: pnpm run typecheck && pnpm run guard:idiomatic-solid\n",
+    );
+    const problems: string[] = evaluateGateCoverage(mutated, mapped, manifest.scripts).problems;
+    expect(
+      problems.some(
+        (problem) => problem.includes("typecheck") && problem.includes("guard:idiomatic-solid"),
+      ),
+    ).toBe(true);
+  });
+
+  it("names a script prepended to the typecheck step that the chain does not reach", () => {
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: pnpm run guard:idiomatic-solid && pnpm run typecheck\n",
+    );
+    const problems: string[] = evaluateGateCoverage(mutated, mapped, manifest.scripts).problems;
+    expect(
+      problems.some(
+        (problem) => problem.includes("typecheck") && problem.includes("guard:idiomatic-solid"),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts a step that runs two scripts the release chain reaches", () => {
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: pnpm run check && pnpm run typecheck\n",
+    );
+    expect(evaluateGateCoverage(mutated, mapped, manifest.scripts).problems).toEqual([]);
   });
 });
 

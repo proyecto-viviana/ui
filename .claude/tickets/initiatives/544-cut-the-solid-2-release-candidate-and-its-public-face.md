@@ -373,7 +373,7 @@ bump that was never published and skips every package with a pending changeset.
 attestation. Both are about the route to npm being checkable rather than
 attested.
 
-**S5 — enable the two workflows the release condition names. #568**, `open`,
+**S5 — enable the two workflows the release condition names. #568**, `merged`,
 carrying `test-integrity/main-red-and-release-unsatisfiable` (high) and
 `guards-b/553-guards-run-nowhere` (medium). Its deliverable is two parts. The
 owner action, which this seat may not take:

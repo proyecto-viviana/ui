@@ -356,6 +356,7 @@ jobs:
           O_GUARD_EXAMPLES_PURITY: ${{ steps.guard_examples_purity.outcome }}
           O_GUARD_API_REFERENCE: ${{ steps.guard_api_reference.outcome }}
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
+          O_GUARD_ENTRY_IMPORT_BUDGET: ${{ steps.guard_entry_import_budget.outcome }}
           O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_JSX_REF_DEAD_CODE: ${{ steps.guard_jsx_ref_dead_code.outcome }}
@@ -415,6 +416,7 @@ jobs:
             echo "| \`guard:examples-purity\` | $(icon "$O_GUARD_EXAMPLES_PURITY") |"
             echo "| \`guard:api-reference\` | $(icon "$O_GUARD_API_REFERENCE") |"
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
+            echo "| \`guard:entry-import-budget\` | $(icon "$O_GUARD_ENTRY_IMPORT_BUDGET") |"
             echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:jsx-ref-dead-code\` | $(icon "$O_GUARD_JSX_REF_DEAD_CODE") |"

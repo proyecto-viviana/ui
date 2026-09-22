@@ -111,7 +111,7 @@ vp run guard:ts-nocheck-budget      # public-package suppression inventory may o
 
 `vp run guard:gate-coverage` prints how `ci:release-readiness` overlaps the blocking steps of Certification Gates.
 
-`ci:release-readiness runs 11 of 46 blocking gate steps locally across the six Certification Gates jobs; the other 35 run only there; 43 steps are runner plumbing (scripts/gate-coverage.json)`
+`ci:release-readiness runs 11 of 44 blocking gate steps locally across the six Certification Gates jobs; the other 33 run only there; 45 steps are runner plumbing (scripts/gate-coverage.json)`
 
 ## The acceptance gates
 

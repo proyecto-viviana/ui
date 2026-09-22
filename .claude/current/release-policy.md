@@ -95,7 +95,7 @@ PR-only gate never fires.
 
 `vp run guard:gate-coverage` prints how `ci:release-readiness` overlaps that ladder.
 
-`ci:release-readiness runs 11 of 46 blocking gate steps locally across the six Certification Gates jobs; the other 35 run only there; 43 steps are runner plumbing (scripts/gate-coverage.json)`
+`ci:release-readiness runs 11 of 44 blocking gate steps locally across the six Certification Gates jobs; the other 33 run only there; 45 steps are runner plumbing (scripts/gate-coverage.json)`
 
 `Changesets Check` stays `pull_request`-only, and stays correct there: on a
 direct push to `main` the changeset is already in the tree beside the change it

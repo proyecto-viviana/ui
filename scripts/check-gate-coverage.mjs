@@ -12,7 +12,11 @@
  * entry, an entry for a step that is gone, a blocking step that became
  * advisory, or a `leg` that is not a package script the chain reaches fails
  * this guard. So does a copy of the printed sentence that drifted in the two
- * docs this guard reads.
+ * docs this guard reads. A string `leg` must be among the `vp|pnpm|npm run`
+ * scripts named in the step's run body when that body names any, every other
+ * named script must be one `ci:release-readiness` reaches or the guard fails
+ * naming the step and the script, and a null `leg` that names a reached
+ * script fails.
  *
  * `jobBlock` is the same four-line cut as `scripts/test-ci-guard-contracts.mjs`.
  * That file runs its suite on import and exports nothing. The workflow-pin and
@@ -108,11 +112,14 @@ function usesAction(chunk) {
   return chunk.split("\n").some((line) => /^ {8}uses:/.test(line));
 }
 
-export function invokedScript(run) {
-  if (!run) return null;
-  const match = /(?:^|\s)(?:vp|pnpm|npm)\s+run\s+([A-Za-z0-9:_-]+)/.exec(run);
-  if (!match || match[1].startsWith("-")) return null;
-  return match[1];
+/** Every `vp|pnpm|npm run <script>` in a step body, in source order. */
+export function invokedScripts(run) {
+  if (!run) return [];
+  const names = [];
+  for (const match of run.matchAll(new RegExp(RUN_SOURCE, "g"))) {
+    if (!match[1].startsWith("-")) names.push(match[1]);
+  }
+  return names;
 }
 
 export function stepKey(jobName, stepName) {
@@ -156,7 +163,7 @@ export function blockingGateSteps(workflow) {
  */
 export function stepKind(step, plumbingNames) {
   if (step.uses) return "plumbing";
-  if (invokedScript(step.runBody)) return "gate";
+  if (invokedScripts(step.runBody).length > 0) return "gate";
   if (step.name && plumbingNames.includes(step.name)) return "plumbing";
   return "gate";
 }
@@ -239,25 +246,49 @@ function coverageParts(coverage, problems) {
 function gateLegProblems(step, entry, scripts, reached) {
   if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
   const problems = [];
-  const invoked = invokedScript(step.runBody);
+  const invoked = invokedScripts(step.runBody);
   const leg = entry.leg;
   const name = step.key;
-  if (invoked && typeof scripts?.[invoked] !== "string") {
-    problems.push(`blocking step "${name}" runs "${invoked}", which is not a package.json script`);
-  } else if (invoked && reached.has(invoked) && leg !== invoked) {
-    problems.push(
-      `blocking step "${name}" runs "${invoked}", which ci:release-readiness reaches, but its leg is ${leg === null ? "null" : `"${leg}"`}`,
-    );
-  } else if (invoked && !reached.has(invoked) && leg !== null) {
-    problems.push(
-      `blocking step "${name}" runs "${invoked}", which ci:release-readiness does not reach`,
-    );
-  } else if (!invoked && step.runBody === null && typeof leg === "string") {
-    problems.push(`blocking step "${name}" has no run command, so its leg must be null`);
-  } else if (!invoked && typeof leg === "string" && typeof scripts?.[leg] === "string") {
-    if (!legRunsStep(scripts[leg], step.runBody)) {
-      problems.push(`blocking step "${name}" leg "${leg}" does not run this step`);
+  if (invoked.length === 0) {
+    if (step.runBody === null && typeof leg === "string") {
+      problems.push(`blocking step "${name}" has no run command, so its leg must be null`);
+    } else if (typeof leg === "string" && typeof scripts?.[leg] === "string") {
+      if (!legRunsStep(scripts[leg], step.runBody)) {
+        problems.push(`blocking step "${name}" leg "${leg}" does not run this step`);
+      }
     }
+    return problems;
+  }
+  for (const script of invoked) {
+    if (typeof scripts?.[script] !== "string") {
+      problems.push(`blocking step "${name}" runs "${script}", which is not a package.json script`);
+    }
+  }
+  if (leg === null) {
+    for (const script of invoked) {
+      if (typeof scripts?.[script] === "string" && reached.has(script)) {
+        problems.push(
+          `blocking step "${name}" runs "${script}", which ci:release-readiness reaches, but its leg is null`,
+        );
+      }
+    }
+    return problems;
+  }
+  if (!invoked.includes(leg)) {
+    const standIn = invoked.find(
+      (script) => typeof scripts?.[script] === "string" && reached.has(script),
+    );
+    if (standIn) {
+      problems.push(
+        `blocking step "${name}" runs "${standIn}", which ci:release-readiness reaches, but its leg is "${leg}"`,
+      );
+    }
+  }
+  for (const script of invoked) {
+    if (typeof scripts?.[script] !== "string" || reached.has(script)) continue;
+    problems.push(
+      `blocking step "${name}" runs "${script}", which ci:release-readiness does not reach`,
+    );
   }
   return problems;
 }
@@ -369,9 +400,17 @@ function countCoverage(workflow, coverage, scripts) {
     }
     gates += 1;
     const leg = entries[step.key]?.leg;
-    if (typeof leg === "string" && reached.has(leg)) local += 1;
+    if (stepRunsLocally(step, leg, reached)) local += 1;
   }
   return { local, gates, plumbing };
+}
+
+/** A gate runs locally when its leg and every script its body names are on the chain. */
+function stepRunsLocally(step, leg, reached) {
+  if (typeof leg !== "string" || !reached.has(leg)) return false;
+  const invoked = invokedScripts(step.runBody);
+  if (invoked.length > 0 && !invoked.includes(leg)) return false;
+  return invoked.every((script) => reached.has(script));
 }
 
 export function findDocProblems(sentence, docs) {
