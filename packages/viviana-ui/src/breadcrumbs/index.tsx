@@ -257,7 +257,14 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
   let retryOverflowUpdateTimeout: number | undefined;
   const initialOverflowUpdateTimeouts: number[] = [];
   const measurementId = `rsp-breadcrumbs-${createUniqueId()}`;
-  const [canMeasure, setCanMeasure] = createSignal(canMeasureOverflow());
+  // Starts false on both sides, and `onSettled` below reads the environment after
+  // commit. Seeding it from `canMeasureOverflow()` read `window`, so the client's
+  // first render carried the hidden measurement copy the server cannot emit, and the
+  // copy's first `ElementTag` asked for a hydration key that does not exist (#545).
+  // Upstream S2 renders `HiddenBreadcrumbs` unconditionally and measures in a layout
+  // effect (@react-spectrum/s2 Breadcrumbs.tsx:527, :542): first render never reads
+  // the environment either way.
+  const [canMeasure, setCanMeasure] = createSignal(false);
   const [visibleTailCount, setVisibleTailCount] = createSignal(MAX_VISIBLE_ITEMS - 2);
   let cleanupOverflowObservers = () => {};
   let hasDisposedRoot = false;

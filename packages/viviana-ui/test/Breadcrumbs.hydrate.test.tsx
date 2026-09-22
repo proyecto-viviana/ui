@@ -43,4 +43,44 @@ describe("Breadcrumbs hydrates over SSR markup", () => {
     expect(container.textContent).toContain("Home");
     expect(container.textContent).toContain("Annual report");
   });
+
+  it("hydrates with no mismatch when the client can measure overflow", async () => {
+    // The case above never reaches the branch a real browser takes: `canMeasureOverflow`
+    // (src/breadcrumbs/index.tsx) returns false for a jsdom user agent, so both halves
+    // skip the hidden measurement copy. Give the client a real user agent and the copy
+    // is exactly the divergence #545 died on — the server cannot render it (no window),
+    // so if `canMeasure` starts from that read, the client's FIRST render carries a
+    // subtree the server never emitted, its first `ElementTag` asks for a hydration key
+    // that does not exist, and the whole route aborts with
+    // `Hydration Mismatch. Unable to find DOM nodes for hydration key`.
+    const ownDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "userAgent");
+    Object.defineProperty(window.navigator, "userAgent", {
+      value:
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      configurable: true,
+    });
+    try {
+      let serverList: Element | null = null;
+      const container = await hydrateOverSsr(
+        readSsr("breadcrumbs-overflow-ssr.html"),
+        () => <BreadcrumbsOverflowFixture />,
+        {
+          beforeHydrate(container) {
+            serverList = container.querySelector("ol");
+            expect(serverList).not.toBeNull();
+            // The server has no window to measure with, so it never emits the copy.
+            expect(container.querySelector("[data-rsp-breadcrumbs-measure]")).toBeNull();
+          },
+        },
+      );
+      // The server's own list, adopted rather than rebuilt.
+      expect(container.querySelector("ol")).toBe(serverList);
+      // The measurement copy arrives in a post-hydration update, which is the only
+      // point Solid allows a node the server did not render.
+      expect(container.querySelector("[data-rsp-breadcrumbs-measure]")).not.toBeNull();
+    } finally {
+      if (ownDescriptor) Object.defineProperty(window.navigator, "userAgent", ownDescriptor);
+      else Reflect.deleteProperty(window.navigator, "userAgent");
+    }
+  });
 });
