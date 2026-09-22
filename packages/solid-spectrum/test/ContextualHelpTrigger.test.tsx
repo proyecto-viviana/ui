@@ -73,6 +73,39 @@ describe("ContextualHelpTrigger (solid-spectrum)", () => {
     expect(trigger).toBeInTheDocument();
     expect(trigger.getAttribute("aria-label")).toBeNull();
   });
+
+  // The browser half of #545, which the SSR regression cannot reach: compiled
+  // for the DOM, `const helpIcon = <svg…>` at module scope is ONE element built
+  // once at module evaluation, and inserting one node in two places moves it —
+  // the second trigger on a page took the first one's icon and the first went
+  // blank. Compiled for the server the same binding is an `ssr()` string, which
+  // can be emitted any number of times, so `ContextualHelpTrigger.ssr.test.tsx`
+  // counts two `<svg` either way. Only a DOM render can tell the nodes apart.
+  it("gives each trigger on a page its own icon node", () => {
+    const { container } = render(() => (
+      <div>
+        <ContextualHelpTrigger title="First" content="one" />
+        <ContextualHelpTrigger title="Second" content="two" />
+      </div>
+    ));
+
+    const icons = container.querySelectorAll("svg");
+    expect(icons).toHaveLength(2);
+    expect(icons[0]).not.toBe(icons[1]);
+  });
+
+  it("gives each info-variant trigger its own icon node", () => {
+    const { container } = render(() => (
+      <div>
+        <ContextualHelpTrigger variant="info" title="First" content="one" />
+        <ContextualHelpTrigger variant="info" title="Second" content="two" />
+      </div>
+    ));
+
+    const icons = container.querySelectorAll("svg");
+    expect(icons).toHaveLength(2);
+    expect(icons[0]).not.toBe(icons[1]);
+  });
 });
 
 describe("ContextualHelp (solid-spectrum)", () => {

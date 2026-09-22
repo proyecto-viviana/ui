@@ -56,7 +56,13 @@ describe("ContextualHelpTrigger SSR (viviana-ui)", () => {
     expect(info).toContain("<svg");
   });
 
-  it("gives each instance its own icon markup", async () => {
+  // Server-side this counts markup, not nodes: a module-scope icon compiles to
+  // an `ssr()` string here, and a string can be emitted twice as happily as a
+  // component can. It still earns its place — it fails on the pre-fix source,
+  // because by this point the warm render above has already poisoned the module
+  // — but the browser half of the claim, that each trigger owns a distinct DOM
+  // node, is only reachable from a DOM render: `ContextualHelpTrigger.test.tsx`.
+  it("renders an icon for every instance", async () => {
     const { ContextualHelpTrigger } = await import("../src/menu/ContextualHelpTrigger");
 
     const html = renderToString(() => (

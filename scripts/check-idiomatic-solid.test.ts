@@ -156,6 +156,34 @@ const cached = (() => {
 })();
 `;
 
+/** A concise arrow body is the expression that runs — there is no block to walk. */
+const MODULE_SCOPE_CONCISE_IIFE = `
+export const icon = (() => <svg width="16" viewBox="0 0 16 16" />)();
+`;
+
+/** Callbacks these callees run before they return, so the JSX is module-scope. */
+const MODULE_SCOPE_EAGER_CALLBACKS = `
+const icons = NAMES.map((n) => <Icon name={n} />);
+const three = Array.from({ length: 3 }, () => <Icon />);
+["a", "b"].forEach((n) => {
+  registry[n] = <Icon />;
+});
+const sun = untrack(() => <Sun />);
+const pairs = Object.entries(RAMPS).flatMap(([k]) => <Swatch name={k} />);
+`;
+
+/** Real shapes on this tree: a callback taken in order to defer it, not run it. */
+const DEFERRED_CALLBACKS = `
+export const Skeleton = createLeafComponent("skeleton", () => <svg />);
+export const Field = createHideableComponent(() => {
+  const label = createMemo(() => <span />);
+  return <div>{label()}</div>;
+});
+document.addEventListener("keydown", () => {
+  overlay = <div />;
+});
+`;
+
 const CLASS_FIELDS = `
 class Widget {
   static icon = <svg />;
@@ -187,6 +215,26 @@ describe("findModuleScopeJsx", () => {
 
   it("flags a module-scope IIFE body, which runs at module evaluation", () => {
     expect(findModuleScopeJsx(MODULE_SCOPE_IIFE)).toEqual([{ line: 3, snippet: "<svg />" }]);
+  });
+
+  it("flags a concise-body IIFE, which has no block to walk into", () => {
+    expect(findModuleScopeJsx(MODULE_SCOPE_CONCISE_IIFE)).toEqual([
+      { line: 2, snippet: '<svg width="16" viewBox="0 0 16 16" />' },
+    ]);
+  });
+
+  it("flags JSX built by a callback a module-scope call runs before it returns", () => {
+    expect(findModuleScopeJsx(MODULE_SCOPE_EAGER_CALLBACKS)).toEqual([
+      { line: 2, snippet: "<Icon name={n} />" },
+      { line: 3, snippet: "<Icon />" },
+      { line: 5, snippet: "<Icon />" },
+      { line: 7, snippet: "<Sun />" },
+      { line: 8, snippet: "<Swatch name={k} />" },
+    ]);
+  });
+
+  it("passes a callback a module-scope call takes in order to defer it", () => {
+    expect(findModuleScopeJsx(DEFERRED_CALLBACKS)).toEqual([]);
   });
 
   it("flags a static class field and not an instance field", () => {

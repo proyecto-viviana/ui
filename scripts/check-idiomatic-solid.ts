@@ -56,10 +56,14 @@
  *    Parsed with the TypeScript AST, not a regex, so multi-line and
  *    parenthesised forms, arrays, object literals, ternaries and `new Map([...])`
  *    entries are all caught. Function bodies are call-time and are skipped —
- *    including default parameter values — except a module-scope IIFE, whose body
- *    does run at module evaluation. Class bodies are entered only for `static`
- *    members, which likewise run at definition time. There is no allowlist:
- *    module-scope JSX has no benign form in a package that server-renders.
+ *    including default parameter values — with two exceptions that do run at
+ *    module evaluation: a module-scope IIFE, block-bodied or concise, and a
+ *    callback handed to a module-scope call that runs it before returning
+ *    (`.map`, `Array.from`, `untrack`; the list is EAGER_CALLBACK_CALLEES, and
+ *    its blind spot is documented on `findModuleScopeJsx`). Class bodies are
+ *    entered only for `static` members, which likewise run at definition time.
+ *    There is no allowlist of *sites*: module-scope JSX has no benign form in a
+ *    package that server-renders.
  *
  * This guard scans the hand-written Solid source. It excludes:
  *   - test/spec/story files, and
@@ -475,11 +479,65 @@ function isImmediatelyInvoked(node: ts.Node): boolean {
 }
 
 /**
+ * Callees that run the callback they are handed before they return, so a
+ * callback argument of one of these, called at module scope, is evaluated at
+ * module evaluation too. An allowlist and not a denylist because that is what
+ * the tree measures: treating *every* callback argument as module scope flags
+ * three call-time sites on today's seven published src roots — the
+ * `createLeafComponent` bodies in both skeleton modules and the
+ * `createHideableComponent`/`createMemo` pair in `TokenField.tsx`. Most callees
+ * at module scope take a callback in order to defer it, not to run it.
+ *
+ * Unqualified names match any receiver (`NAMES.map`, `Object.entries(x).map`);
+ * a dotted name matches only that receiver.
+ */
+const EAGER_CALLBACK_CALLEES = new Set([
+  "every",
+  "filter",
+  "find",
+  "findLast",
+  "flatMap",
+  "forEach",
+  "map",
+  "reduce",
+  "reduceRight",
+  "some",
+  "sort",
+  "Array.from",
+  "untrack",
+]);
+
+/** `NAMES.map((n) => <Icon …/>)` — the arrow runs before the call returns. */
+function isEagerCallbackArgument(node: ts.Node): boolean {
+  const parent = node.parent;
+  if (!parent || !ts.isCallExpression(parent)) return false;
+  if (!parent.arguments.some((argument) => argument === node)) return false;
+  const callee = parent.expression;
+  if (ts.isIdentifier(callee)) return EAGER_CALLBACK_CALLEES.has(callee.text);
+  if (ts.isPropertyAccessExpression(callee)) {
+    if (EAGER_CALLBACK_CALLEES.has(callee.name.text)) return true;
+    return (
+      ts.isIdentifier(callee.expression) &&
+      EAGER_CALLBACK_CALLEES.has(`${callee.expression.text}.${callee.name.text}`)
+    );
+  }
+  return false;
+}
+
+/**
  * Find JSX that is evaluated when the module is evaluated: the outermost JSX
  * node of every module-scope expression, wherever it sits (a binding, an array,
- * an object literal, a ternary, a `new Map([...])` entry, a module-scope IIFE
- * body, a `static` class member). Function bodies and default parameter values
- * run at call time and are not returned.
+ * an object literal, a ternary, a `new Map([...])` entry, a `static` class
+ * member, the body of a module-scope IIFE — block or concise — and the body of
+ * a callback that a module-scope call in EAGER_CALLBACK_CALLEES runs before it
+ * returns). Function bodies and default parameter values run at call time and
+ * are not returned.
+ *
+ * Its one known blind spot is a callback run at module evaluation by a callee
+ * outside that allowlist: `runNow(() => <Icon />)` reads as call time here. The
+ * allowlist is what keeps the rule from flagging the component factories that
+ * make up most module-scope callbacks in these packages; widen it when a real
+ * site needs it, rather than dropping it.
  */
 export function findModuleScopeJsx(
   source: string,
@@ -505,7 +563,12 @@ export function findModuleScopeJsx(
       ts.isSetAccessor(node) ||
       ts.isConstructorDeclaration(node)
     ) {
-      if (isImmediatelyInvoked(node) && node.body) ts.forEachChild(node.body, visit);
+      // `forEachChild(body)` would skip a concise arrow body, which *is* the
+      // expression that runs: `(() => <svg />)()` has no block to walk into.
+      if (node.body && (isImmediatelyInvoked(node) || isEagerCallbackArgument(node))) {
+        if (ts.isBlock(node.body)) ts.forEachChild(node.body, visit);
+        else visit(node.body);
+      }
       return;
     }
     // Instance fields initialise per construction, not at module evaluation.
