@@ -389,7 +389,9 @@ gh workflow enable site-gate.yml
 exact release sha, so the release condition is unmeetable until both are on.
 The writer's part is the ladder-row correction S0-b exposes — the earliest
 blocking step is `:235`, and the rows that still say otherwise are named on
-#588's Work item 3 — plus this ticket's own question of what the chain is for.
+#588's Work item 3. `vp run guard:gate-coverage` states what the chain is:
+`ci:release-readiness runs 8 of 41 blocking gate steps locally; the other 33
+run only in Certification Gates (scripts/gate-coverage.json)`.
 Before Site, because Site Gate renders no route while it is off, and before
 #547, which cites all three runs.
 

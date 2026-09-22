@@ -109,6 +109,11 @@ vp run guard:s2-intl-catalog        # shipped S2 intl catalogs equal the pinned 
 vp run guard:ts-nocheck-budget      # public-package suppression inventory may only decrease
 ```
 
+`vp run guard:gate-coverage` prints how `ci:release-readiness` overlaps the
+blocking steps of Certification Gates: `ci:release-readiness runs 8 of 41
+blocking gate steps locally; the other 33 run only in Certification Gates
+(scripts/gate-coverage.json)`.
+
 ## The acceptance gates
 
 `../../apps/comparison/playbook/acceptance-gates.md` defines ten additive gates —

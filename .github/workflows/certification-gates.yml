@@ -10,9 +10,9 @@ name: Certification Gates
 #
 # So the ladder is now split by evidence, not by ambition:
 #
-#   BLOCKING  — verified green locally before promotion, and
-#               expected to stay green. If one of these goes red, main is red,
-#               which is the entire point.
+#   BLOCKING  — a red step fails the job, which is the entire point. Which of
+#               these steps `ci:release-readiness` runs is `scripts/gate-coverage.json`,
+#               and `guard:gate-coverage` fails when a blocking step is absent from it.
 #   ADVISORY  — legitimately red today (tracked), or designed to go red on
 #               someone else's schedule. `continue-on-error` stays, and the
 #               reason is written next to each one. Promoting one of these
@@ -98,8 +98,15 @@ jobs:
         run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
 
       # ---------------------------------------------------------------------
-      # BLOCKING. Each verified green locally before promotion.
+      # BLOCKING. A red step fails the job. The next step checks
+      # scripts/gate-coverage.json against this list.
       # ---------------------------------------------------------------------
+
+      # First blocking step. The release chain runs it right after
+      # guard:gate-server-reuse, which has no step in this job.
+      - name: guard gate-coverage
+        id: guard_gate_coverage
+        run: pnpm run guard:gate-coverage
 
       # Keystone gate: passes today with a tracked @ts-nocheck backlog. The
       # budget immediately below prevents that blind spot from growing while

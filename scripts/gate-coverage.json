@@ -1,0 +1,166 @@
+{
+  "Checkout": {
+    "leg": null,
+    "why": "The runner checks the repository out before ci:release-readiness starts."
+  },
+  "Setup pnpm": {
+    "leg": null,
+    "why": "The runner installs pnpm before ci:release-readiness starts."
+  },
+  "Setup Node.js": {
+    "leg": null,
+    "why": "The runner installs Node.js before ci:release-readiness starts."
+  },
+  "materialize pinned upstream oracle": {
+    "leg": null,
+    "why": "Certification Gates acquires the gitignored Adobe tree; ci:release-readiness has no acquire leg."
+  },
+  "Install dependencies": {
+    "leg": null,
+    "why": "The runner installs the frozen lockfile before ci:release-readiness starts."
+  },
+  "Cache Playwright browsers": {
+    "leg": null,
+    "why": "The runner caches Playwright browsers before ci:release-readiness starts."
+  },
+  "Install Playwright Chromium": {
+    "leg": null,
+    "why": "The runner installs Chromium before ci:release-readiness starts."
+  },
+  "guard gate-coverage": {
+    "leg": "guard:gate-coverage"
+  },
+  "typecheck": {
+    "leg": "typecheck"
+  },
+  "guard ts-nocheck budget": {
+    "leg": null,
+    "why": "guard:ts-nocheck-budget runs in Certification Gates, outside ci:release-readiness."
+  },
+  "CI guard failure contracts": {
+    "leg": null,
+    "why": "test:ci-guard-contracts runs in Certification Gates, outside ci:release-readiness."
+  },
+  "lint (vp check)": {
+    "leg": "check"
+  },
+  "test ssr": {
+    "leg": "test:ssr"
+  },
+  "test hydrate": {
+    "leg": "test:hydrate"
+  },
+  "guard attribution-headers": {
+    "leg": null,
+    "why": "guard:attribution-headers runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard rac-parity": {
+    "leg": null,
+    "why": "guard:rac-parity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard rac-export-gap": {
+    "leg": null,
+    "why": "guard:rac-export-gap runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard dnd-keyboard-parity": {
+    "leg": null,
+    "why": "guard:dnd-keyboard-parity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard virtualizer-keyboard-parity": {
+    "leg": null,
+    "why": "guard:virtualizer-keyboard-parity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard spectrum-tokens-pin": {
+    "leg": null,
+    "why": "guard:spectrum-tokens-pin runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard style-macro-parity": {
+    "leg": null,
+    "why": "guard:style-macro-parity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard s2-intl-catalog": {
+    "leg": null,
+    "why": "guard:s2-intl-catalog runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard source artifacts": {
+    "leg": "guard:source-artifacts"
+  },
+  "guard layer-boundary": {
+    "leg": null,
+    "why": "guard:layer-boundary runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard idiomatic-solid": {
+    "leg": null,
+    "why": "guard:idiomatic-solid runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard invented-utilities": {
+    "leg": null,
+    "why": "guard:invented-utilities runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard docs-routes": {
+    "leg": null,
+    "why": "guard:docs-routes runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard examples-purity": {
+    "leg": null,
+    "why": "guard:examples-purity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard api-reference": {
+    "leg": null,
+    "why": "guard:api-reference runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard outbound-links": {
+    "leg": null,
+    "why": "guard:outbound-links runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard entry-import-budget": {
+    "leg": "guard:entry-import-budget"
+  },
+  "build package evidence": {
+    "leg": "build"
+  },
+  "guard jsx-deopt-size": {
+    "leg": null,
+    "why": "guard:jsx-deopt-size runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard jsx-ref-dead-code": {
+    "leg": null,
+    "why": "guard:jsx-ref-dead-code runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard s2-cleanups": {
+    "leg": null,
+    "why": "guard:s2-cleanups runs in Certification Gates, outside ci:release-readiness."
+  },
+  "guard upstream-test-parity": {
+    "leg": null,
+    "why": "guard:upstream-test-parity runs in Certification Gates, outside ci:release-readiness."
+  },
+  "docs:check": {
+    "leg": null,
+    "why": "docs:check runs in Certification Gates, outside ci:release-readiness."
+  },
+  "comparison parity (strict)": {
+    "leg": null,
+    "why": "comparison:report:parity:strict runs in Certification Gates, outside ci:release-readiness."
+  },
+  "axe full audit": {
+    "leg": null,
+    "why": "a11y:full runs in Certification Gates, outside ci:release-readiness."
+  },
+  "Upload Playwright artifacts": {
+    "leg": null,
+    "why": "The runner uploads Playwright artifacts after the gates."
+  },
+  "Publish summary": {
+    "leg": null,
+    "why": "The runner writes the job summary after the gates."
+  },
+  "certified (${{ matrix.shard }}/8)": {
+    "leg": null,
+    "why": "The eight certified shards are one matrix job in Certification Gates, outside ci:release-readiness."
+  },
+  "certified report": {
+    "leg": null,
+    "why": "The certified report job merges those shards in Certification Gates, outside ci:release-readiness."
+  }
+}
