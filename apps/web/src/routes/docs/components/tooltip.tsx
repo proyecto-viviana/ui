@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/tooltip")({
     seo({
       title: "Tooltip props",
       description:
-        "The 42 props declared for Tooltip in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 25 props declared for Tooltip in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/tooltip",
     }),
   component: () => <ApiReference page={page} />,

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/rangeslider")({
     seo({
       title: "RangeSlider props",
       description:
-        "The 32 props declared for RangeSlider in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 32 props declared for RangeSlider in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/rangeslider",
     }),
   component: () => <ApiReference page={page} />,

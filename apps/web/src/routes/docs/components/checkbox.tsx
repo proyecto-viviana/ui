@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/checkbox")({
     seo({
       title: "Checkbox props",
       description:
-        "The 80 props declared for Checkbox in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 43 props declared for Checkbox in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/checkbox",
     }),
   component: () => <ApiReference page={page} />,

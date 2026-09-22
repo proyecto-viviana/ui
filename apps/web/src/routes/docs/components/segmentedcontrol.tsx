@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/segmentedcontrol")({
     seo({
       title: "SegmentedControl props",
       description:
-        "The 55 props declared for SegmentedControl in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 13 props declared for SegmentedControl in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/segmentedcontrol",
     }),
   component: () => <ApiReference page={page} />,

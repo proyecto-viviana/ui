@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/popover")({
     seo({
       title: "Popover props",
       description:
-        "The 49 props declared for Popover in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 36 props declared for Popover in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/popover",
     }),
   component: () => <ApiReference page={page} />,

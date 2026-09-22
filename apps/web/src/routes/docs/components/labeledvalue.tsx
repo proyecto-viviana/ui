@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/labeledvalue")({
     seo({
       title: "LabeledValue props",
       description:
-        "The 9 props declared for LabeledValue in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 9 props declared for LabeledValue in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/labeledvalue",
     }),
   component: () => <ApiReference page={page} />,

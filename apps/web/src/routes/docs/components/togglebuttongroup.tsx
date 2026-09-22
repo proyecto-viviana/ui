@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/togglebuttongroup")({
     seo({
       title: "ToggleButtonGroup props",
       description:
-        "The 17 props declared for ToggleButtonGroup in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 17 props declared for ToggleButtonGroup in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/togglebuttongroup",
     }),
   component: () => <ApiReference page={page} />,

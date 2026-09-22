@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/textfield")({
     seo({
       title: "TextField props",
       description:
-        "The 121 props declared for TextField in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 63 props declared for TextField in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/textfield",
     }),
   component: () => <ApiReference page={page} />,

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/colorfield")({
     seo({
       title: "ColorField props",
       description:
-        "The 36 props declared for ColorField in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 36 props declared for ColorField in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/colorfield",
     }),
   component: () => <ApiReference page={page} />,

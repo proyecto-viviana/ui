@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/layout")({
     seo({
       title: "Flex props",
       description:
-        "The 21 props declared for Flex in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 9 props declared for Flex in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/layout",
     }),
   component: () => <ApiReference page={page} />,

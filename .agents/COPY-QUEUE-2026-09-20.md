@@ -41,3 +41,39 @@ Action for Fable: write the root README, CONTRIBUTING and the seven package
 READMEs, using `claims.md` as the fact base and `shape.md` as a proposal to
 accept or replace. The `STALE` and `UNBACKED` rows are the ones that must not
 survive into the published words.
+
+## 2 — #549 the reference-page lede still claims completeness
+
+`apps/web/src/components/docs/ApiReference.tsx:49` renders, above every one of
+the 84 generated prop tables: "The complete prop surface of `<C>`, generated
+from the types `<pkg>` ships."
+
+It is not complete, and the page says so 30 lines later: its closing paragraph
+(`:78-81`) tells the reader that a component wrapping a DOM element also accepts
+that element's standard attributes, "which are left out here on purpose". The
+two sentences contradict each other on the same page.
+
+Proof: `apps/web/src/data/api-reference/pages/icon.json` lists three props for
+`SpectrumIconProps` — `styles`, `aria-hidden`, `UNSAFE_suppressDataSlot` — while
+`packages/viviana-ui/src/icon/spectrum-icon.tsx:42` declares
+`SpectrumIconProps extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "aria-hidden">`,
+so `class`, `style`, `id`, `slot`, `aria-label` and the event handlers are all
+accepted and none are shown. The generated `<meta name="description">` on those
+pages was corrected at its generator (`scripts/extract-api-reference.ts:446`,
+this commit); the lede a visitor actually reads was not, because it needs a
+sentence written. Round-1 finding `apps-web/icon-page-claims-every-prop` stays
+open until it lands.
+
+## 3 — #549 the docs index counts prop rows and calls them props
+
+`apps/web/src/routes/docs/index.tsx:46` reads "{84} components and {3493} props
+from `@proyecto-viviana/ui`".
+
+3,493 is every row the 84 pages render, measured over the committed data:
+187 interfaces, 3,493 rows, 433 distinct prop names, and the 84 pages' own
+components account for 2,130 of the rows. An interface pair that documents the
+same props twice is counted twice — `TableProps` and `TableViewProps` are 54
+each, `ProviderInheritedProps` repeats six of `ProviderProps`' 13. The sentence
+is not false about rows, but "props" reads as distinct props of those 84
+components, which is a different number. Fable's call which number the sentence
+should name; the data file can supply either.

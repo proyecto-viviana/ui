@@ -4,7 +4,8 @@ import { join } from "node:path";
 import ts from "typescript";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
-import { renderType } from "./extract-api-reference";
+import type { ApiPageData } from "./extract-api-reference";
+import { renderType, routeFile } from "./extract-api-reference";
 
 const roots: string[] = [];
 
@@ -101,5 +102,62 @@ describe("renderType", () => {
     expect(shallow).not.toBe(deep);
     expect(renderType(shallow, "Props.thing")).toBe(renderType(deep, "Props.thing"));
     expect(renderType(shallow, "Props.thing")).toBe("Thing");
+  });
+});
+
+/** A page the way `buildPageData` shapes one: the page's own component first. */
+function apiPage(interfaces: { component: string; props: string[] }[]): ApiPageData {
+  return {
+    slug: "icon",
+    title: interfaces[0].component,
+    packageName: "@proyecto-viviana/ui",
+    comparedWith: "@proyecto-viviana/solid-spectrum",
+    entries: interfaces.map(({ component, props }) => ({
+      name: `${component}Props`,
+      component,
+      source: `packages/viviana-ui/src/icon/${component}.tsx`,
+      props: props.map((name) => ({
+        name,
+        type: "boolean",
+        required: false,
+        description: "",
+        origin: "viviana-ui",
+      })),
+    })),
+    divergence: {},
+  };
+}
+
+/** The `<meta name="description">` the generated route file carries. */
+function descriptionOf(file: string): string {
+  const match = /description:\s*("(?:[^"\\]|\\.)*")/.exec(file);
+  if (!match) throw new Error("the generated route file carries no description");
+  return JSON.parse(match[1]) as string;
+}
+
+describe("routeFile", () => {
+  // #549: the description names the page's component, so the count has to be
+  // that component's. The page-wide sum told the icon page's reader "12 props
+  // declared for SpectrumIcon" where `SpectrumIconProps` declares three and
+  // the other nine belong to CenterBaseline and SpectrumIllustration.
+  it("counts the props of the component it names, not every interface on the page", () => {
+    const description = descriptionOf(
+      routeFile(
+        apiPage([
+          {
+            component: "SpectrumIcon",
+            props: ["styles", "aria-hidden", "UNSAFE_suppressDataSlot"],
+          },
+          { component: "CenterBaseline", props: ["id", "style", "styles", "children", "slot"] },
+          {
+            component: "SpectrumIllustration",
+            props: ["size", "styles", "aria-hidden", "UNSAFE_suppressDataSlot"],
+          },
+        ]),
+      ),
+    );
+
+    expect(description).toContain("The 3 props declared for SpectrumIcon");
+    expect(description).not.toContain("12");
   });
 });

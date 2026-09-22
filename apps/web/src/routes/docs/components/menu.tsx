@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/menu")({
     seo({
       title: "Menu props",
       description:
-        "The 152 props declared for Menu in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
+        "The 41 props declared for Menu in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
       path: "/docs/components/menu",
     }),
   component: () => <ApiReference page={page} />,
