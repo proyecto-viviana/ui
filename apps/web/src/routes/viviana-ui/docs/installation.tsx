@@ -125,11 +125,14 @@ function InstallationPage() {
 
       <SectionHeading color={colors().blue}>Install</SectionHeading>
       <p style={{ "margin-bottom": "0.75rem" }}>
-        <InlineCode>solid-js</InlineCode> is a peer dependency, so install it alongside:
+        <InlineCode>solid-js</InlineCode> and <InlineCode>@solidjs/web</InlineCode> are peer
+        dependencies. The release candidate needs Solid 2, so install the{" "}
+        <InlineCode>next</InlineCode> line of both alongside the <InlineCode>rc</InlineCode>{" "}
+        tag:
       </p>
-      <Code>{`npm install @proyecto-viviana/ui solid-js`}</Code>
+      <Code>{`npm install @proyecto-viviana/ui@rc solid-js@next @solidjs/web@next`}</Code>
       <p style={{ "margin-bottom": "0.75rem" }}>Or, for the Spectrum layer on its own:</p>
-      <Code>{`npm install @proyecto-viviana/solid-spectrum solid-js`}</Code>
+      <Code>{`npm install @proyecto-viviana/solid-spectrum@rc solid-js@next @solidjs/web@next`}</Code>
 
       <SectionHeading color={colors().blue}>Import the CSS</SectionHeading>
       <p style={{ "margin-bottom": "0.75rem", "max-width": "62ch" }}>
