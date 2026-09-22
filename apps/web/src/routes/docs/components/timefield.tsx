@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/timefield")({
     seo({
       title: "TimeField props",
       description:
-        "Every prop TimeField accepts in @proyecto-viviana/ui — 12 documented from the package's own types.",
+        "The 12 props declared for TimeField in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/timefield",
     }),
   component: () => <ApiReference page={page} />,

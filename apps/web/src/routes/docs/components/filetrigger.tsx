@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/filetrigger")({
     seo({
       title: "FileTrigger props",
       description:
-        "Every prop FileTrigger accepts in @proyecto-viviana/ui — 7 documented from the package's own types.",
+        "The 7 props declared for FileTrigger in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/filetrigger",
     }),
   component: () => <ApiReference page={page} />,

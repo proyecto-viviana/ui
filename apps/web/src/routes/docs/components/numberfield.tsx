@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/numberfield")({
     seo({
       title: "NumberField props",
       description:
-        "Every prop NumberField accepts in @proyecto-viviana/ui — 46 documented from the package's own types.",
+        "The 46 props declared for NumberField in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/numberfield",
     }),
   component: () => <ApiReference page={page} />,

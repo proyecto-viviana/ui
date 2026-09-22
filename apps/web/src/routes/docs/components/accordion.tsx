@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/accordion")({
     seo({
       title: "Accordion props",
       description:
-        "Every prop Accordion accepts in @proyecto-viviana/ui — 61 documented from the package's own types.",
+        "The 61 props declared for Accordion in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/accordion",
     }),
   component: () => <ApiReference page={page} />,

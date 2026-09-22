@@ -22,6 +22,11 @@ history:
       at: 2026-09-21,
       note: "#544's path now names the lens 4 re-proof as this ticket's obligation alongside #548's, at the Site stage and before #547 publishes. #546 is `merged` with lens 4 unproved and its status is not walked back, so the rows it handed over are re-proved here: every lens 4a/4b claim this ticket's pages carry is re-proved row by row, not by a gate result - Site Gate proves no claim row even once S5 enables it.",
     }
+  - {
+      state: open,
+      at: 2026-09-22,
+      note: "queue item (a) done: the round-1 finding `apps-web/icon-page-claims-every-prop` is fixed at its generator. `routeFile()` in `scripts/extract-api-reference.ts:446` wrote `Every prop <C> accepts in <pkg>` onto all 84 reference pages, and the extractor keeps a member only when `declaringPackage()` finds its declaration file under this workspace's `packages/` - so everything a props interface inherits through `extends JSX.*Attributes` was never listed and the sentence was false on every page with a DOM-typed base. The sentence now reads `The N props declared for <C> in <pkg> and the packages under it - inherited DOM attributes are not listed`. Proof, run at 7569d4a7 with the edit in place: `vp run guard:api-reference` exit 1, `DRIFT` on all 84 pages; `vp run api:extract` exit 0, `wrote 84 reference pages`; `vp run guard:api-reference` exit 0, `checked 84 reference pages`. The 84 regenerated descriptions measure 123-137 characters, inside `apps/web/e2e/seo.spec.ts:72-75` (>40, <=170); `scripts/extract-api-reference.test.ts` 3 passed; `vp lint` exit 0 on both changed kinds of file. Nothing but the one description line changed in each page (85 files, 85 insertions, 85 deletions). Residual, not touched: the on-page lede `ApiReference.tsx:49` says `The complete prop surface of <C>`, the same overclaim in conductor-owned copy - the page's own closing paragraph already says the element's standard attributes are left out, so the two disagree and the conductor owns the wording.",
+    }
 ---
 
 ## Scope

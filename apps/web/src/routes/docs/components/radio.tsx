@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/radio")({
     seo({
       title: "Radio props",
       description:
-        "Every prop Radio accepts in @proyecto-viviana/ui — 71 documented from the package's own types.",
+        "The 71 props declared for Radio in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/radio",
     }),
   component: () => <ApiReference page={page} />,

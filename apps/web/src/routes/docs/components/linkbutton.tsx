@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/linkbutton")({
     seo({
       title: "LinkButton props",
       description:
-        "Every prop LinkButton accepts in @proyecto-viviana/ui — 38 documented from the package's own types.",
+        "The 38 props declared for LinkButton in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/linkbutton",
     }),
   component: () => <ApiReference page={page} />,

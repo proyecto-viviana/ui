@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/statuslight")({
     seo({
       title: "StatusLight props",
       description:
-        "Every prop StatusLight accepts in @proyecto-viviana/ui — 14 documented from the package's own types.",
+        "The 14 props declared for StatusLight in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/statuslight",
     }),
   component: () => <ApiReference page={page} />,

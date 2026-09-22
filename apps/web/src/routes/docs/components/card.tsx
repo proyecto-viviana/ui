@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/card")({
     seo({
       title: "Card props",
       description:
-        "Every prop Card accepts in @proyecto-viviana/ui — 29 documented from the package's own types.",
+        "The 29 props declared for Card in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/card",
     }),
   component: () => <ApiReference page={page} />,

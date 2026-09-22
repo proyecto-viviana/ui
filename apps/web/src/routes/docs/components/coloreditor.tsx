@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/coloreditor")({
     seo({
       title: "ColorEditor props",
       description:
-        "Every prop ColorEditor accepts in @proyecto-viviana/ui — 9 documented from the package's own types.",
+        "The 9 props declared for ColorEditor in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/coloreditor",
     }),
   component: () => <ApiReference page={page} />,

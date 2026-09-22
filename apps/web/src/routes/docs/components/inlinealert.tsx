@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/inlinealert")({
     seo({
       title: "InlineAlert props",
       description:
-        "Every prop InlineAlert accepts in @proyecto-viviana/ui — 10 documented from the package's own types.",
+        "The 10 props declared for InlineAlert in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/inlinealert",
     }),
   component: () => <ApiReference page={page} />,

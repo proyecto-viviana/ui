@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/colorswatchpicker")({
     seo({
       title: "ColorSwatchPicker props",
       description:
-        "Every prop ColorSwatchPicker accepts in @proyecto-viviana/ui — 23 documented from the package's own types.",
+        "The 23 props declared for ColorSwatchPicker in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/colorswatchpicker",
     }),
   component: () => <ApiReference page={page} />,

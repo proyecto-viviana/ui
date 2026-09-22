@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/contextualhelp")({
     seo({
       title: "ContextualHelp props",
       description:
-        "Every prop ContextualHelp accepts in @proyecto-viviana/ui — 71 documented from the package's own types.",
+        "The 71 props declared for ContextualHelp in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/contextualhelp",
     }),
   component: () => <ApiReference page={page} />,

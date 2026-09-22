@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/separator")({
     seo({
       title: "Separator props",
       description:
-        "Every prop Separator accepts in @proyecto-viviana/ui — 12 documented from the package's own types.",
+        "The 12 props declared for Separator in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/separator",
     }),
   component: () => <ApiReference page={page} />,

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/dialog")({
     seo({
       title: "Dialog props",
       description:
-        "Every prop Dialog accepts in @proyecto-viviana/ui — 73 documented from the package's own types.",
+        "The 73 props declared for Dialog in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/dialog",
     }),
   component: () => <ApiReference page={page} />,

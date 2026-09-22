@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/datepicker")({
     seo({
       title: "DatePicker props",
       description:
-        "Every prop DatePicker accepts in @proyecto-viviana/ui — 53 documented from the package's own types.",
+        "The 53 props declared for DatePicker in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/datepicker",
     }),
   component: () => <ApiReference page={page} />,

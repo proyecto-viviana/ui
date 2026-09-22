@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/divider")({
     seo({
       title: "Divider props",
       description:
-        "Every prop Divider accepts in @proyecto-viviana/ui — 13 documented from the package's own types.",
+        "The 13 props declared for Divider in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/divider",
     }),
   component: () => <ApiReference page={page} />,

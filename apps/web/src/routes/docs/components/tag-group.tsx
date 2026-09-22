@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/tag-group")({
     seo({
       title: "TagGroup props",
       description:
-        "Every prop TagGroup accepts in @proyecto-viviana/ui — 51 documented from the package's own types.",
+        "The 51 props declared for TagGroup in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/tag-group",
     }),
   component: () => <ApiReference page={page} />,

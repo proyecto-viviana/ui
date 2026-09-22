@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/badge")({
     seo({
       title: "Badge props",
       description:
-        "Every prop Badge accepts in @proyecto-viviana/ui — 12 documented from the package's own types.",
+        "The 12 props declared for Badge in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/badge",
     }),
   component: () => <ApiReference page={page} />,

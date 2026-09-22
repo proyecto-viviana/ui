@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/searchfield")({
     seo({
       title: "SearchField props",
       description:
-        "Every prop SearchField accepts in @proyecto-viviana/ui — 66 documented from the package's own types.",
+        "The 66 props declared for SearchField in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/searchfield",
     }),
   component: () => <ApiReference page={page} />,

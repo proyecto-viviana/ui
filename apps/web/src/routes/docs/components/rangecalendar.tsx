@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/rangecalendar")({
     seo({
       title: "RangeCalendar props",
       description:
-        "Every prop RangeCalendar accepts in @proyecto-viviana/ui — 30 documented from the package's own types.",
+        "The 30 props declared for RangeCalendar in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/rangecalendar",
     }),
   component: () => <ApiReference page={page} />,

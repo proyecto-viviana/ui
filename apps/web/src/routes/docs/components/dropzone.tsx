@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/dropzone")({
     seo({
       title: "DropZone props",
       description:
-        "Every prop DropZone accepts in @proyecto-viviana/ui — 16 documented from the package's own types.",
+        "The 16 props declared for DropZone in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/dropzone",
     }),
   component: () => <ApiReference page={page} />,

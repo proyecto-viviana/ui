@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/progress-bar")({
     seo({
       title: "ProgressBar props",
       description:
-        "Every prop ProgressBar accepts in @proyecto-viviana/ui — 23 documented from the package's own types.",
+        "The 23 props declared for ProgressBar in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/progress-bar",
     }),
   component: () => <ApiReference page={page} />,

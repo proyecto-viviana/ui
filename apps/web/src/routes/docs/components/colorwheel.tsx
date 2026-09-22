@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/colorwheel")({
     seo({
       title: "ColorWheel props",
       description:
-        "Every prop ColorWheel accepts in @proyecto-viviana/ui — 22 documented from the package's own types.",
+        "The 22 props declared for ColorWheel in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/colorwheel",
     }),
   component: () => <ApiReference page={page} />,

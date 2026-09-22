@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/selectboxgroup")({
     seo({
       title: "SelectBoxGroup props",
       description:
-        "Every prop SelectBoxGroup accepts in @proyecto-viviana/ui — 70 documented from the package's own types.",
+        "The 70 props declared for SelectBoxGroup in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/selectboxgroup",
     }),
   component: () => <ApiReference page={page} />,

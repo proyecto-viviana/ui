@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/breadcrumbs")({
     seo({
       title: "Breadcrumbs props",
       description:
-        "Every prop Breadcrumbs accepts in @proyecto-viviana/ui — 90 documented from the package's own types.",
+        "The 90 props declared for Breadcrumbs in @proyecto-viviana/ui and the packages under it — inherited DOM attributes are not listed.",
       path: "/docs/components/breadcrumbs",
     }),
   component: () => <ApiReference page={page} />,
