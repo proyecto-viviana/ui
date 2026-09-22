@@ -341,6 +341,60 @@ try {
   );
   console.log("PASS: both chains measure the entry import budget before the build.");
 
+  // #545: two module-scope `const icon = <svg…>` bindings emptied twenty of the
+  // web app's 174 routes. Compiled for the server that JSX runs at module
+  // evaluation with no owner, so on a process that has already rendered a page
+  // the whole module throws and every route importing it serves an empty shell
+  // with HTTP 200 — no test of the component sees it. guard:idiomatic-solid
+  // carries the rule, so the gate must run the guard, the rule must be wired
+  // into the scan rather than merely exported, and the scan must cover every
+  // published package: all of them server-render at a consumer.
+  const idiomaticSolidScript = rootManifest.scripts?.["guard:idiomatic-solid"] ?? "";
+  assert(
+    idiomaticSolidScript === "vp exec tsx scripts/check-idiomatic-solid.ts",
+    `guard:idiomatic-solid must run scripts/check-idiomatic-solid.ts, found \`${idiomaticSolidScript}\``,
+  );
+  assert(
+    gatesJob.includes("run: pnpm run guard:idiomatic-solid\n"),
+    "Certification Gates must run guard:idiomatic-solid; an unwired guard grades nothing",
+  );
+  const idiomaticSolidSource = readFileSync(
+    path.join(ROOT, "scripts", "check-idiomatic-solid.ts"),
+    "utf8",
+  );
+  assert(
+    idiomaticSolidSource.includes("export function findModuleScopeJsx(") &&
+      idiomaticSolidSource.includes("for (const site of findModuleScopeJsx(text, rel))"),
+    "check-idiomatic-solid must run findModuleScopeJsx over every scanned file, not only export it",
+  );
+  assert(
+    /moduleJsxOffenders\.length > 0\)\s*\{\s*failed = true;/.test(idiomaticSolidSource),
+    "a module-scope JSX site must fail guard:idiomatic-solid, not just print",
+  );
+  const publishedSrcPackages = readdirSync(path.join(ROOT, "packages"), { withFileTypes: true })
+    .filter(
+      (entry) => entry.isDirectory() && existsSync(path.join(ROOT, "packages", entry.name, "src")),
+    )
+    .filter(
+      (entry) =>
+        !JSON.parse(readFileSync(path.join(ROOT, "packages", entry.name, "package.json"), "utf8"))
+          .private,
+    )
+    .map((entry) => entry.name);
+  assert(
+    publishedSrcPackages.length >= 7,
+    `expected the published packages to be discoverable, found ${publishedSrcPackages.length}`,
+  );
+  for (const name of publishedSrcPackages) {
+    assert(
+      idiomaticSolidSource.includes(`"packages/${name}/src"`),
+      `check-idiomatic-solid must scan packages/${name}/src — a published package's module-scope JSX takes its consumer's server down`,
+    );
+  }
+  console.log(
+    `PASS: Certification Gates runs guard:idiomatic-solid, and its module-scope JSX rule scans all ${publishedSrcPackages.length} published source roots.`,
+  );
+
   // A shard that exits 1 must render red. `continue-on-error` on the shard step
   // concluded all eight shard jobs `success` over an 88-failure suite, with the
   // exit code visible only in the annotations (#589). The blocking verdict is

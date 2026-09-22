@@ -41,13 +41,34 @@
  *    and `packages/viviana-ui/src` — not kumo, headless, tests, or generated
  *    files.
  *
+ * 4. JSX evaluated at module scope (#545). `const helpIcon = <svg…>` at the top
+ *    level of a module is not a template — it is a value built the moment the
+ *    module is evaluated. Compiled for the server it runs `ssrHydrationKey()`
+ *    with no owner; `renderToString` leaves `sharedConfig.context` set, so every
+ *    module evaluated after a server's first render throws "getNextContextId
+ *    cannot be used under non-hydrating context", the module fails to evaluate,
+ *    and every route importing anything from it serves an empty shell with HTTP
+ *    200. Two such icons took twenty of the web app's 174 routes down. Compiled
+ *    for the browser the same line is one DOM node shared by every instance, so
+ *    a second component steals the first one's node. Render it inside a
+ *    component or a function instead.
+ *
+ *    Parsed with the TypeScript AST, not a regex, so multi-line and
+ *    parenthesised forms, arrays, object literals, ternaries and `new Map([...])`
+ *    entries are all caught. Function bodies are call-time and are skipped —
+ *    including default parameter values — except a module-scope IIFE, whose body
+ *    does run at module evaluation. Class bodies are entered only for `static`
+ *    members, which likewise run at definition time. There is no allowlist:
+ *    module-scope JSX has no benign form in a package that server-renders.
+ *
  * This guard scans the hand-written Solid source. It excludes:
  *   - test/spec/story files, and
  *   - generated files (the `Auto-generated from vendored React Spectrum` icon
  *     set, ~420 files).
  * A small ALLOWLIST records reviewed-benign *destructure* exceptions (each with
  * a rationale); a genuinely new reactive-props destructure is what check 1
- * catches. Check 3 has no allowlist — convert the call to solidaria.
+ * catches. Checks 3 and 4 have no allowlist — convert the call to solidaria,
+ * move the JSX into a component.
  *
  * Exit 1 listing offenders; exit 0 when clean; exit 0 with a note when none of
  * the source roots exist (an environmental gap — never cry wolf). Run standalone
@@ -57,6 +78,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import ts from "typescript";
 
 const ROOT = process.cwd();
 const CHILDREN_BASELINE_PATH = path.join(ROOT, "scripts", "idiomatic-solid-children-baseline.json");
@@ -430,6 +452,83 @@ export function findSolidJsEventLayeringMerges(source: string): SolidJsEventLaye
   return sites;
 }
 
+export interface ModuleScopeJsxSite {
+  line: number;
+  snippet: string;
+}
+
+/** TSX for `.tsx`, JSX for `.jsx`, JS for `.js` — a `.ts` file's `<x>y` is a cast. */
+function scriptKindFor(fileName: string): ts.ScriptKind {
+  if (/\.tsx$/i.test(fileName)) return ts.ScriptKind.TSX;
+  if (/\.jsx$/i.test(fileName)) return ts.ScriptKind.JSX;
+  if (/\.js$/i.test(fileName)) return ts.ScriptKind.JS;
+  return ts.ScriptKind.TS;
+}
+
+/** `(() => …)()` / `(function () {…})()` — its body runs at module evaluation. */
+function isImmediatelyInvoked(node: ts.Node): boolean {
+  const parent = node.parent;
+  if (!parent) return false;
+  if (ts.isCallExpression(parent) && parent.expression === node) return true;
+  if (ts.isParenthesizedExpression(parent)) return isImmediatelyInvoked(parent);
+  return false;
+}
+
+/**
+ * Find JSX that is evaluated when the module is evaluated: the outermost JSX
+ * node of every module-scope expression, wherever it sits (a binding, an array,
+ * an object literal, a ternary, a `new Map([...])` entry, a module-scope IIFE
+ * body, a `static` class member). Function bodies and default parameter values
+ * run at call time and are not returned.
+ */
+export function findModuleScopeJsx(
+  source: string,
+  fileName = "component.tsx",
+): ModuleScopeJsxSite[] {
+  const sourceFile = ts.createSourceFile(
+    fileName,
+    source,
+    ts.ScriptTarget.ESNext,
+    true,
+    scriptKindFor(fileName),
+  );
+
+  const sites: ModuleScopeJsxSite[] = [];
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isFunctionDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isArrowFunction(node) ||
+      ts.isMethodDeclaration(node) ||
+      ts.isGetAccessor(node) ||
+      ts.isSetAccessor(node) ||
+      ts.isConstructorDeclaration(node)
+    ) {
+      if (isImmediatelyInvoked(node) && node.body) ts.forEachChild(node.body, visit);
+      return;
+    }
+    // Instance fields initialise per construction, not at module evaluation.
+    if (ts.isPropertyDeclaration(node)) {
+      const isStatic = node.modifiers?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
+      if (!isStatic) return;
+    }
+    if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) {
+      const start = node.getStart(sourceFile);
+      const text = source.slice(start, Math.min(node.getEnd(), start + 90)).replace(/\s+/g, " ");
+      sites.push({
+        line: sourceFile.getLineAndCharacterOfPosition(start).line + 1,
+        snippet: node.getEnd() > start + 90 ? `${text}…` : text,
+      });
+      return; // outermost JSX only — the children come with it
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  for (const statement of sourceFile.statements) visit(statement);
+  return sites;
+}
+
 function isExecutedDirectly(): boolean {
   const entry = process.argv[1];
   if (!entry) return false;
@@ -446,6 +545,7 @@ function main(): void {
   console.log("Idiomatic-Solid check — reactive `props` must not be destructured");
   console.log("                  — `children()` must not snapshot rendered content");
   console.log("                  — styled `solid-js` mergeProps must not layer events");
+  console.log("                  — JSX must not be evaluated at module scope");
 
   const roots = SRC_ROOTS.map((r) => path.join(ROOT, r)).filter(existsSync);
   if (roots.length === 0) {
@@ -465,6 +565,9 @@ function main(): void {
 
   type MergePropsOffender = { file: string; line: number; args: string };
   const mergePropsOffenders: MergePropsOffender[] = [];
+
+  type ModuleJsxOffender = ModuleScopeJsxSite & { file: string };
+  const moduleJsxOffenders: ModuleJsxOffender[] = [];
 
   for (const file of files) {
     const text = readFileSync(file, "utf8");
@@ -493,6 +596,10 @@ function main(): void {
       for (const site of findSolidJsEventLayeringMerges(text)) {
         mergePropsOffenders.push({ file: rel, ...site });
       }
+    }
+
+    for (const site of findModuleScopeJsx(text, rel)) {
+      moduleJsxOffenders.push({ file: rel, ...site });
     }
   }
 
@@ -527,6 +634,22 @@ function main(): void {
     );
     for (const o of mergePropsOffenders) {
       console.error(`  ${o.file}:${o.line}: mergeProps(${o.args})`);
+    }
+  }
+
+  if (moduleJsxOffenders.length > 0) {
+    failed = true;
+    console.error(
+      `\nguard:idiomatic-solid — FAIL: ${moduleJsxOffenders.length} JSX expression(s) evaluated at module scope.\n` +
+        "On the server this runs ssrHydrationKey() with no owner: once the process has\n" +
+        'rendered one page, evaluating the module throws "getNextContextId cannot be used\n' +
+        'under non-hydrating context" and every route importing it serves an empty shell\n' +
+        "(#545). In the browser it is one DOM node shared by every instance.\n" +
+        "Render it inside a component — `function Icon() { return <svg…/>; }` — or a\n" +
+        "function called at use site.\n",
+    );
+    for (const o of moduleJsxOffenders) {
+      console.error(`  ${o.file}:${o.line}: ${o.snippet}`);
     }
   }
 
@@ -597,7 +720,7 @@ function main(): void {
   if (failed) process.exit(1);
 
   console.log(
-    "guard:idiomatic-solid — PASS: no reactive-props destructures; children-snapshot baseline holds; styled solid-js event-layering merges absent.",
+    "guard:idiomatic-solid — PASS: no reactive-props destructures; children-snapshot baseline holds; styled solid-js event-layering merges absent; no module-scope JSX.",
   );
   process.exit(0);
 }

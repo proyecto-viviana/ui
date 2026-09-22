@@ -2,10 +2,12 @@
  * Rule #7: the children-snapshot heuristic flags a rendered `children()`
  * snapshot and ignores a structural `.toArray()` probe. The mergeProps
  * heuristic flags styled solid-js event-layering calls and ignores last-wins
- * non-event objects.
+ * non-event objects. The module-scope JSX rule flags what runs at module
+ * evaluation (#545) and nothing that runs at call time.
  */
 import { describe, expect, it } from "vite-plus/test";
 import {
+  findModuleScopeJsx,
   findRenderedChildrenSnapshots,
   findSolidJsEventLayeringMerges,
   isStyledMergePropsGuardPath,
@@ -108,6 +110,93 @@ describe("findSolidJsEventLayeringMerges", () => {
 
   it("ignores mergeProps imported from solidaria", () => {
     expect(findSolidJsEventLayeringMerges(SOLIDARIA_EVENT_MERGE)).toEqual([]);
+  });
+});
+
+/** The shape that broke twenty routes: parenthesised, multi-line, at module scope. */
+const MODULE_SCOPE_ICON = `
+const helpIcon = (
+  <svg width="16" height="16">
+    <circle cx="8" cy="8" r="7" />
+  </svg>
+);
+
+export function ContextualHelpTrigger(props: { variant?: string }) {
+  return <span>{props.variant === "info" ? helpIcon : null}</span>;
+}
+`;
+
+const MODULE_SCOPE_COLLECTIONS = `
+const icons = [<Sun />, <Moon />];
+const byName = { sun: <Sun />, moon: <Moon /> };
+const fallback = cond ? <Sun /> : <Moon />;
+`;
+
+const CALL_TIME_ONLY = `
+function Icon() {
+  return <svg />;
+}
+
+function Trigger(props: { icon?: unknown }) {
+  const fallback = <Icon />;
+  return <span>{props.icon ?? fallback}</span>;
+}
+
+function withDefault(icon = <Icon />) {
+  return icon;
+}
+
+export const Lazy = () => <Icon />;
+`;
+
+const MODULE_SCOPE_IIFE = `
+const cached = (() => {
+  const node = <svg />;
+  return node;
+})();
+`;
+
+const CLASS_FIELDS = `
+class Widget {
+  static icon = <svg />;
+  instance = <svg />;
+}
+`;
+
+describe("findModuleScopeJsx", () => {
+  it("flags a parenthesised multi-line module-scope element, not the one inside the component", () => {
+    expect(findModuleScopeJsx(MODULE_SCOPE_ICON)).toEqual([
+      { line: 3, snippet: '<svg width="16" height="16"> <circle cx="8" cy="8" r="7" /> </svg>' },
+    ]);
+  });
+
+  it("flags JSX held by a module-scope array, object, or ternary", () => {
+    expect(findModuleScopeJsx(MODULE_SCOPE_COLLECTIONS)).toEqual([
+      { line: 2, snippet: "<Sun />" },
+      { line: 2, snippet: "<Moon />" },
+      { line: 3, snippet: "<Sun />" },
+      { line: 3, snippet: "<Moon />" },
+      { line: 4, snippet: "<Sun />" },
+      { line: 4, snippet: "<Moon />" },
+    ]);
+  });
+
+  it("passes component bodies, default parameter values, and arrow components", () => {
+    expect(findModuleScopeJsx(CALL_TIME_ONLY)).toEqual([]);
+  });
+
+  it("flags a module-scope IIFE body, which runs at module evaluation", () => {
+    expect(findModuleScopeJsx(MODULE_SCOPE_IIFE)).toEqual([{ line: 3, snippet: "<svg />" }]);
+  });
+
+  it("flags a static class field and not an instance field", () => {
+    expect(findModuleScopeJsx(CLASS_FIELDS)).toEqual([{ line: 3, snippet: "<svg />" }]);
+  });
+
+  it("reads a .ts file as TypeScript, so `<T>value` stays a cast", () => {
+    expect(findModuleScopeJsx("const el = <HTMLElement>document.body;\n", "src/dom.ts")).toEqual(
+      [],
+    );
   });
 });
 

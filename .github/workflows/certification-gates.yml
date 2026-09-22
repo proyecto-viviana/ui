@@ -186,9 +186,11 @@ jobs:
 
       # Flags Solid anti-patterns that have bitten this port: destructuring a
       # component/hook's reactive `props` (freezes the value, since the body
-      # runs once), snapshot-rendered `children()`, and styled `solid-js`
-      # mergeProps calls that would drop a context event handler (#496).
-      # Excludes the generated icon set. Does not scan kumo for mergeProps.
+      # runs once), snapshot-rendered `children()`, styled `solid-js`
+      # mergeProps calls that would drop a context event handler (#496), and
+      # JSX evaluated at module scope, which throws on a warm server and empties
+      # every route that imports the module (#545). Excludes the generated icon
+      # set. Does not scan kumo for mergeProps.
       - name: guard idiomatic-solid
         id: guard_idiomatic_solid
         run: pnpm run guard:idiomatic-solid

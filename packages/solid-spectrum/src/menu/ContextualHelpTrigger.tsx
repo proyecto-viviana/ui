@@ -85,27 +85,41 @@ export interface ContextualHelpTriggerProps extends Omit<
   children?: [JSX.Element, JSX.Element];
 }
 
-const helpIcon = (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-    <path
-      d="M6.2 6.15c0-1.25 1.05-2.15 1.95-2.15.95 0 1.95.85 1.95 2.05 0 1.15-1.05 1.55-1.55 2.05-.4.4-.55.85-.55 1.45"
-      stroke="currentColor"
-      stroke-width="1.4"
-      stroke-linecap="round"
-      fill="none"
-    />
-    <circle cx="8" cy="12.15" r="0.85" fill="currentColor" />
-  </svg>
-);
+// Each icon is a component, never a module-scope `const helpIcon = <svg…>`.
+// JSX at module scope is evaluated when the module is evaluated: compiled for
+// the server that runs `ssrHydrationKey()` with no owner, which throws
+// "getNextContextId cannot be used under non-hydrating context" on any server
+// that has already rendered once, taking the whole menu module — and every page
+// importing anything from it — down with it (#545). Compiled for the browser it
+// is one DOM node shared by every trigger on the page, so a second trigger
+// steals the first one's icon. Upstream has the same shape: S2's `Menu.tsx`
+// renders `<InfoCircleIcon …/>` inside `UnavailableIconWrapper`, not at module
+// scope. `guard:idiomatic-solid` keeps it that way.
+function HelpIcon(): JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
+      <path
+        d="M6.2 6.15c0-1.25 1.05-2.15 1.95-2.15.95 0 1.95.85 1.95 2.05 0 1.15-1.05 1.55-1.55 2.05-.4.4-.55.85-.55 1.45"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        fill="none"
+      />
+      <circle cx="8" cy="12.15" r="0.85" fill="currentColor" />
+    </svg>
+  );
+}
 
-const infoIcon = (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-    <circle cx="8" cy="5.15" r="1" fill="currentColor" />
-    <rect x="7.25" y="7.15" width="1.5" height="5" rx="0.6" fill="currentColor" />
-  </svg>
-);
+function InfoIcon(): JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
+      <circle cx="8" cy="5.15" r="1" fill="currentColor" />
+      <rect x="7.25" y="7.15" width="1.5" height="5" rx="0.6" fill="currentColor" />
+    </svg>
+  );
+}
 
 /**
  * A button that opens contextual help in a popover.
@@ -133,7 +147,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
 
   const children = (): [JSX.Element, JSX.Element] => {
     if (local.children) return local.children;
-    const icon = local.variant === "info" ? infoIcon : helpIcon;
+    const icon = local.variant === "info" ? <InfoIcon /> : <HelpIcon />;
     const trigger = (
       <span style={{ display: "inline-flex", "align-items": "center", gap: "4px" }}>
         {icon}

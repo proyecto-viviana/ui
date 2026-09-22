@@ -4,7 +4,7 @@ type: task
 title: "Move the web app to the TanStack Solid 2 line"
 created: 2026-09-20
 parent: 531
-status: next
+status: in-progress
 history:
   - {
       state: next,
@@ -36,34 +36,55 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`, finding `apps-web/twentytwo-dead-routes-still-open`, high, confirmed: 22 of 174 routes are dead in a production build and this ticket is still open. Narrowed by the skeptic, and the narrowing is useful - all 84 `/docs/components/*` routes pass, so the dead set is somewhere else and a component-by-component sweep is the wrong search. Name the 22 before fixing any of them.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "the twenty blank routes are one defect, and it is fixed in this commit. Both copies of ContextualHelpTrigger bound their icons to module-scope `const helpIcon = <svg…>`. JSX at module scope is a value built when the module is evaluated: compiled for the server it runs `ssrHydrationKey()` with no owner, and `getHydrationKey()` is inert only while `sharedConfig.context` is unset - `renderToString` sets that context and never clears it. So on a process that has served one page, evaluating the module throws `getNextContextId cannot be used under non-hydrating context`, the module fails, and every route importing anything from it serves an empty shell with HTTP 200. That is why no component test saw it and why all 84 `/docs/components/*` routes passed: a cold server renders the first page fine. Fixed by rendering each icon from a component, as S2's `Menu.tsx` renders `<InfoCircleIcon>` inside `UnavailableIconWrapper`. Proof that fails first: `packages/solid-spectrum/test/ContextualHelpTrigger.ssr.test.tsx` and its viviana-ui twin warm the server with one `renderToString` and then import the module - on the pre-fix source, 3 failed | 1 passed each, at `ContextualHelpTrigger.tsx:89` and `:100`; after, 4 passed each, and `vp run test:ssr` is 32 files / 87 tests, EXIT=0. An AST sweep of every module-scope JSX expression across the seven published `packages/*/src` roots, 1750 files, found exactly these 4 sites and no other, and `guard:idiomatic-solid` now carries the rule as its fourth check, pinned in `scripts/test-ci-guard-contracts.mjs`; it fails with all four named on the pre-fix tree, EXIT=1, and passes on this one. Measured after: `vp run build` EXIT=0, `vp run build:web` EXIT=0, `vp run test:routes` 170 passed / 5 failed of 175, against 153/22 before. The five are the other two classes, and three of them were hidden behind a blank page that could not reach the console check: `get suffix` through `mergeProps` on `/showcase/inputs` and `/showcase/parity`, and `Hydration Mismatch. Unable to find DOM nodes for hydration key` on `/solid-spectrum/docs/components/breadcrumbs`, `/solid-spectrum/docs/components/combobox` and `/showcase/navigation`. Both classes are being diagnosed separately in this campaign; neither is a styling defect. Receipt `.agents/ssr-545-2026-09-21.module-scope-jsx.md`. Not merged: `test:routes` is still red, and this seat does not push, so Site Gate on the pushed revision is unread",
+    }
 ---
 
 ## Scope
 
-`apps/web` pins `@tanstack/solid-router` 1.170.29, `@tanstack/solid-start`
-1.168.46, and `@tanstack/router-core` 1.171.26. Those releases peer on
-`solid-js ^1.9.10` and import `solid-js/web`, which Solid 2 no longer exports.
-Site Gate fails with `"./web" is not exported` from `apps/web/node_modules/solid-js`.
-The app's own sources already import `@solidjs/web`.
+The framework move itself has landed: router and start are on `2.0.0-rc.8`,
+`@solidjs/web` rc.9's renamed server-function export is patched through
+`pnpm-workspace.yaml`, and `vp run build:web` passes. What is left is the site
+that build produces. `vp run test:routes` — one of the five legs of `ci:site`,
+which is the whole of Site Gate's blocking step — measured 22 of 174 routes red
+on `d1c5f4b3`, in three classes. None of them is a styling defect.
 
-1. Bump router and start to the `rc` dist-tag, `2.0.0-rc.8`. Align
-   `router-core` and any TanStack plugin to the versions that line requires.
-2. Fix what the major breaks in `apps/web`: route definitions, the locale
-   rewrite, head and meta, server entry.
-3. Add no other dependency.
+1. **Twenty routes served an empty document with HTTP 200.** Closed: both
+   copies of `ContextualHelpTrigger` built their icons at module scope, which on
+   a server that has already rendered throws
+   `getNextContextId cannot be used under non-hydrating context` and takes the
+   whole menu module — and every route importing anything from it — with it.
+   `guard:idiomatic-solid` now refuses module-scope JSX in every published
+   package.
+2. **`get suffix` through `mergeProps`** throws in the browser on
+   `/showcase/inputs` and `/showcase/parity`.
+3. **`Hydration Mismatch. Unable to find DOM nodes for hydration key`** on
+   `/solid-spectrum/docs/components/breadcrumbs`,
+   `/solid-spectrum/docs/components/combobox` and `/showcase/navigation`.
+
+Classes 2 and 3 are Solid 2 reactivity shapes and are open. Write paths:
+`apps/web` sources, and the published package source a named route proves wrong.
+Not in scope: the error boundary's own contrast and the
+`--interactive-fill`-as-ink defect, both #586.
 
 ## Done when
 
-`vp run build:web` passes. The built site serves the landing page, one docs
-page, and `/theme` with SSR and hydration and no console error. Site Gate is
-green on the pushed revision.
+`vp run test:routes` passes all 174 routes against the built site, with no
+console error. `vp run build:web` passes. Site Gate is green on the pushed
+revision.
 
 ## Proof
 
-`vp run build:web`, `vp run guard:deploy-target`, a browser pass over the three
-routes against a fresh preview, and the Site Gate run id recorded here.
+`vp run build`, `vp run build:web`, `vp run test:routes`, `vp run
+guard:deploy-target`, `vp run guard:idiomatic-solid`, the SSR regressions under
+`vp run test:ssr`, and the Site Gate run id recorded here.
 
 ## Relationship
 
 Child of #531. Blocks #549 and every docs deploy. Section 1 of
-[#87](./87-close-every-remaining-audit-item-in-order.md) names this work.
+[#87](./87-close-every-remaining-audit-item-in-order.md) names this work. The
+error boundary that painted three of these routes in the contrast tally is
+[#586](./586-the-accent-fill-is-used-as-ink-and-fails-aa-on-the-landing-page.md).
