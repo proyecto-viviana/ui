@@ -93,9 +93,9 @@ now concludes red unless every failure it saw is waived in
 on pull requests **and on push to `main`** — work here lands direct to main, so a
 PR-only gate never fires.
 
-`vp run guard:gate-coverage` prints how `ci:release-readiness` overlaps that
-ladder: `ci:release-readiness runs 8 of 41 blocking gate steps locally; the
-other 33 run only in Certification Gates (scripts/gate-coverage.json)`.
+`vp run guard:gate-coverage` prints how `ci:release-readiness` overlaps that ladder.
+
+`ci:release-readiness runs 11 of 46 blocking gate steps locally across the six Certification Gates jobs; the other 35 run only there; 43 steps are runner plumbing (scripts/gate-coverage.json)`
 
 `Changesets Check` stays `pull_request`-only, and stays correct there: on a
 direct push to `main` the changeset is already in the tree beside the change it

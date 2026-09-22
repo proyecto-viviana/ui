@@ -331,6 +331,7 @@ jobs:
       - name: Publish summary
         if: always()
         env:
+          O_GUARD_GATE_COVERAGE: ${{ steps.guard_gate_coverage.outcome }}
           O_TYPECHECK: ${{ steps.typecheck.outcome }}
           O_UPSTREAM_ORACLE: ${{ steps.upstream_oracle.outcome }}
           O_GUARD_TS_NOCHECK_BUDGET: ${{ steps.guard_ts_nocheck_budget.outcome }}
@@ -391,6 +392,7 @@ jobs:
             echo "| Gate | Result |"
             echo "| --- | --- |"
             echo "| pinned upstream oracle | $(icon "$O_UPSTREAM_ORACLE") |"
+            echo "| \`guard:gate-coverage\` | $(icon "$O_GUARD_GATE_COVERAGE") |"
             echo "| \`typecheck\` | $(icon "$O_TYPECHECK") |"
             echo "| \`guard:ts-nocheck-budget\` | $(icon "$O_GUARD_TS_NOCHECK_BUDGET") |"
             echo "| CI guard negative fixtures | $(icon "$O_CI_GUARD_CONTRACTS") |"
