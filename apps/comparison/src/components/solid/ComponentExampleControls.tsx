@@ -16,6 +16,7 @@ import {
   type ComponentControlGroup,
   type ComponentControlOption,
 } from "@comparison/data/component-controls";
+import { controlValueFromSearch } from "@comparison/data/control-value";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
@@ -124,14 +125,9 @@ function initialControlValues(defaults: Record<string, ControlValue>): ControlVa
     typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search);
   const values: ControlValues = {};
 
+  const search = params ?? new URLSearchParams();
   for (const [name, defaultValue] of Object.entries(defaults)) {
-    const hasParam = params?.has(name) ?? false;
-    values[name] =
-      typeof defaultValue === "boolean"
-        ? hasParam
-          ? params?.get(name) === "true"
-          : defaultValue
-        : (params?.get(name) ?? "") || defaultValue;
+    values[name] = controlValueFromSearch(search, name, defaultValue);
   }
 
   return values;

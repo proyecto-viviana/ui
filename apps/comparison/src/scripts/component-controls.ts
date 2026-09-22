@@ -1,4 +1,10 @@
-type ControlValue = string | boolean | number;
+import {
+  controlValueFromField,
+  controlValueFromSearch,
+  type ControlLiteral,
+} from "@comparison/data/control-value";
+
+type ControlValue = ControlLiteral;
 type ControlDefaults = Record<string, ControlValue>;
 type ControlValues = Record<string, ControlValue | undefined>;
 
@@ -36,13 +42,7 @@ function initializeForm(form: HTMLFormElement) {
   const initial: ControlValues = { ...defaults };
 
   for (const [key, defaultValue] of Object.entries(defaults)) {
-    const hasParam = params.has(key);
-    initial[key] =
-      typeof defaultValue === "boolean"
-        ? hasParam
-          ? params.get(key) === "true"
-          : defaultValue
-        : params.get(key) || defaultValue;
+    initial[key] = controlValueFromSearch(params, key, defaultValue);
   }
 
   writeControls(form, initial);
@@ -78,10 +78,10 @@ function readControls(form: HTMLFormElement, defaults: ControlDefaults): Control
     }
 
     const submittedValue = data.get(key);
-    values[key] =
-      typeof defaultValue === "boolean"
-        ? submittedValue === "on" || submittedValue === "true"
-        : String(submittedValue || defaultValue);
+    values[key] = controlValueFromField(
+      submittedValue == null ? null : String(submittedValue),
+      defaultValue,
+    );
   }
 
   return values;

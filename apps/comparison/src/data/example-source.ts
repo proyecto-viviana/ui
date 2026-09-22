@@ -1,4 +1,5 @@
 import type { ComponentControl, ComponentControlGroup } from "./component-controls";
+import { controlValueFromSearch } from "./control-value";
 
 export type ExampleSourceValue = ComponentControl["defaultValue"] | undefined;
 export type ExampleSourceValues = Record<string, ExampleSourceValue>;
@@ -22,14 +23,7 @@ export function exampleSourceValuesFromSearch(
   const values: ExampleSourceValues = {};
 
   for (const control of group.controls) {
-    const hasParam = params.has(control.name);
-
-    values[control.name] =
-      typeof control.defaultValue === "boolean"
-        ? hasParam
-          ? params.get(control.name) === "true"
-          : control.defaultValue
-        : (params.get(control.name) ?? "") || control.defaultValue;
+    values[control.name] = controlValueFromSearch(params, control.name, control.defaultValue);
   }
 
   return values;
