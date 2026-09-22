@@ -18,24 +18,25 @@ Do not start component work from this page without re-running the suite.
 Do not raise D3 / D13 thresholds. Do not revert `95d30443`. Do not change
 Meter `role="meter progressbar"`.
 
-## Where it stands, 2026-09-21
+## Where it stands, 2026-09-22
 
-Certification Gates **35668806426** at `b22a44eb`, merge job `106565094355`:
+Certification Gates **35689146611** at `d6745471`, merge job `106625669687`:
 **2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky** — the same 2177 tests
 as the two runs in `## Counts` below, which are the 2026-09-18 snapshot and are
-kept because the group map under `## Groups` is written against them.
+kept because the group map under `## Groups` is written against them. That job's
+per-component table holds **107 components**, five with a failing row and the
+other **102** green, and it is row-for-row identical to the table run
+35668806426 at `b22a44eb` wrote, which this section used to head.
 
-`b22a44eb` is not HEAD. Three of the five commits from `b22a44eb` to
-`90297632` touched what this suite runs — `8361daba` and `298f8e7c` (#608) on
-`e2e/comparison-page.ts` and `e2e/drivers/journeys-steps.ts`, which declare the
-two waived D13 rows, and `d3ccc7cc` (#545) on `ContextualHelpTrigger` in both
-published packages. HEAD has since moved seven more commits past `90297632`,
-three of which matter here: `4ac92800` (#578) on `e2e/certified-waivers.json`,
-`096776df` (#545) on the field adornments and the ComboBox formatter in both
-published packages, and `d997d01f` (#497) on the ComboBox option paint, with
-this session's follow-up to it. Treat the table below as a reading of
-`b22a44eb` until a `certified report` job at or past HEAD replaces it; #578
-owns that re-read.
+`d6745471` is not HEAD. Three commits stand between them and all three bear on
+this page: `d997d01f` and `6031691e` (#497) give the ComboBox option upstream's
+focus-visible answer, which is the defect behind the 22 rows below, and
+`cd38e04e` (#578) rewrites the waiver patterns, which is why that job reports
+`0 waived` where the same records now waive 5. Treat the table below as a
+reading of `d6745471`. What is still owed is a `certified report` job at a sha
+carrying both `cd38e04e` and #497's two; #578 owns that reading, and no seat
+here can take it — the suite needs both stacks built across eight shards and
+this checkout does not push.
 
 The 27, from that job's own `### Unwaived failures` list rather than retyped.
 Driver split: D1 6, D3 6, D9 6, D7 2, D10 2, D2 2, D13 2, D4 1.
@@ -52,8 +53,9 @@ Driver split: D1 6, D3 6, D9 6, D7 2, D10 2, D2 2, D13 2, D4 1.
 difference against the pair oracle; nothing throws, nothing fails to render.
 And none of the 39 group-A pressed-pixel rows below is in this list.
 
-Three of the five components are waived in `apps/comparison/e2e/certified-waivers.json`,
-which held `[]` until #578. Measured against the 27 failure records run
+Four of the five components are waived in
+`apps/comparison/e2e/certified-waivers.json`, which held `[]` until #578 — five
+entries under three tickets. Measured against the 27 failure records run
 35689146611 itself wrote, read out of its `certified-shard-{2,5,7,8}`
 artifacts: **5 waived, 22 unwaived**, `waiverGateFails: true`, 0 load problems.
 That run reported `0 waived` on those same records — the five patterns were
@@ -174,7 +176,8 @@ ComboBox list D8 (target size) passed. Distinct from group C.
 **Closed on this checkout, not yet on a run.** `d997d01f` (#497) gives the
 option upstream's focus-visible answer, and the same shard under the same
 command went **22 failed / 6 passed** to **26 passed** here. The head count
-above still carries these 22 because run 35668806426 predates the commit.
+above still carries these 22 because run 35689146611 at `d6745471` predates the
+commit.
 
 **What the fix leaves standing, until #612.** Ours corrects the answer in the
 styled layer, upstream gets it from the interaction modality itself, and the
