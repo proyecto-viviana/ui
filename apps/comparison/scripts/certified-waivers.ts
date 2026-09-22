@@ -4,8 +4,29 @@ import { fileURLToPath } from "node:url";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const CLOSED_TICKET_STATES = new Set(["verified", "merged", "closed"]);
+const CERTIFIED_SPEC_SUFFIX = ".certified.spec.ts";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How far past today a waiver may still stand. The owner-accepted rule is that
+ * a waiver expires "at the next release", and no release date exists anywhere
+ * in this tree, so the date on an entry cannot be checked against one. This is
+ * the mechanical stand-in the conductor chose for it: a waiver may outlive the
+ * cut by a cycle, not by a quarter. #610 owns binding it to the release itself.
+ */
+export const MAX_WAIVER_HORIZON_DAYS = 60;
 
 export interface CertifiedWaiver {
+  /**
+   * A regular expression over `failureHaystack`, which is the failing case's
+   * spec-or-driver file, a space, and its full title. Two rules, both held by
+   * `parseWaiverEntries`: it is anchored `^…$`, because a pattern that is only
+   * tail-anchored waives every case whose title ends the same way; and it names
+   * the `*.certified.spec.ts` the case belongs to, because a driver declares
+   * the same case shape for many components. One entry waives one case — the
+   * breadth test in `src/data/certified-waivers.test.ts` holds that against the
+   * suite's own listing, since nothing here reports an over-broad waiver.
+   */
   pattern: string;
   ticket: number;
   expires: string;
@@ -20,6 +41,12 @@ export interface CertifiedWaiver {
    * the board through `reconcileWaiverTickets`, outside the certified run.
    */
   ticketStatus: string;
+  /**
+   * What a user sees, and every cause behind the row. A reader deciding whether
+   * the entry may go needs it, and the ticket's `Done when` has to cover all of
+   * it, so it is required rather than decorative.
+   */
+  reason: string;
 }
 
 export interface CertifiedFailure {
@@ -31,6 +58,7 @@ export interface CertifiedFailure {
 
 export type WaiverProblemKind =
   | "expired"
+  | "expires-too-far"
   | "ticket-closed"
   | "ticket-missing"
   | "ticket-stale"
@@ -71,6 +99,21 @@ export function repoRootFromComparison(comparisonRoot: string): string {
   return join(comparisonRoot, "../..");
 }
 
+/**
+ * `^` at the head and an unescaped `$` at the tail. A trailing `\$` is a literal
+ * dollar and anchors nothing, so the backslashes before it are counted.
+ */
+export function isAnchoredPattern(pattern: string): boolean {
+  if (!pattern.startsWith("^") || !pattern.endsWith("$")) return false;
+  const trailingEscapes = /\\*$/.exec(pattern.slice(0, -1))?.[0].length ?? 0;
+  return trailingEscapes % 2 === 0;
+}
+
+/** True when the pattern spells out a certified spec file, escaped or not. */
+export function namesCertifiedSpec(pattern: string): boolean {
+  return pattern.replaceAll("\\", "").includes(CERTIFIED_SPEC_SUFFIX);
+}
+
 export function parseWaiverEntries(raw: unknown): {
   waivers: CertifiedWaiver[];
   problems: WaiverProblem[];
@@ -83,7 +126,8 @@ export function parseWaiverEntries(raw: unknown): {
         {
           kind: "invalid-entry",
           waiver: null,
-          detail: "certified-waivers.json must be an array of { pattern, ticket, expires }",
+          detail:
+            "certified-waivers.json must be an array of { pattern, ticket, expires, ticketStatus, reason }",
         },
       ],
     };
@@ -104,6 +148,7 @@ export function parseWaiverEntries(raw: unknown): {
     const ticket = record.ticket;
     const expires = record.expires;
     const ticketStatus = record.ticketStatus;
+    const reason = record.reason;
     if (typeof pattern !== "string" || pattern.length === 0) {
       problems.push({
         kind: "invalid-entry",
@@ -136,7 +181,15 @@ export function parseWaiverEntries(raw: unknown): {
       });
       return;
     }
-    const waiver: CertifiedWaiver = { pattern, ticket, expires, ticketStatus };
+    if (typeof reason !== "string" || reason.length === 0) {
+      problems.push({
+        kind: "invalid-entry",
+        waiver: null,
+        detail: `waivers[${index}].reason must say what a user sees and what causes the row, as a non-empty string`,
+      });
+      return;
+    }
+    const waiver: CertifiedWaiver = { pattern, ticket, expires, ticketStatus, reason };
     try {
       new RegExp(pattern);
     } catch (error) {
@@ -146,6 +199,22 @@ export function parseWaiverEntries(raw: unknown): {
         detail: `waivers[${index}].pattern is not a valid regular expression: ${
           error instanceof Error ? error.message : String(error)
         }`,
+      });
+      return;
+    }
+    if (!isAnchoredPattern(pattern)) {
+      problems.push({
+        kind: "invalid-pattern",
+        waiver,
+        detail: `waivers[${index}].pattern must be anchored with ^ and $ over the whole haystack (file, space, full title): an unanchored pattern waives every case it appears in`,
+      });
+      return;
+    }
+    if (!namesCertifiedSpec(pattern)) {
+      problems.push({
+        kind: "invalid-pattern",
+        waiver,
+        detail: `waivers[${index}].pattern must name the ${CERTIFIED_SPEC_SUFFIX} the case belongs to: a driver declares the same case shape for many components`,
       });
       return;
     }
@@ -197,6 +266,11 @@ export function utcDateStamp(now: Date): string {
   return now.toISOString().slice(0, 10);
 }
 
+/** The last date a waiver written today may still name. See {@link MAX_WAIVER_HORIZON_DAYS}. */
+export function waiverHorizonStamp(now: Date): string {
+  return utcDateStamp(new Date(now.getTime() + MAX_WAIVER_HORIZON_DAYS * DAY_MS));
+}
+
 /**
  * Reads a ticket's state off the board. This is the board read the certified
  * run no longer does: only `guard:certified-waiver-tickets` calls it, through
@@ -239,6 +313,7 @@ export function evaluateCertifiedWaivers(options: {
 }): WaiverEvaluation {
   const problems: WaiverProblem[] = [];
   const today = utcDateStamp(options.now);
+  const horizon = waiverHorizonStamp(options.now);
 
   for (const waiver of options.waivers) {
     if (waiver.expires < today) {
@@ -246,6 +321,15 @@ export function evaluateCertifiedWaivers(options: {
         kind: "expired",
         waiver,
         detail: `waiver for ticket #${waiver.ticket} expired on ${waiver.expires}`,
+      });
+      continue;
+    }
+
+    if (waiver.expires > horizon) {
+      problems.push({
+        kind: "expires-too-far",
+        waiver,
+        detail: `waiver for ticket #${waiver.ticket} expires on ${waiver.expires}, past ${horizon}; a waiver stands until the next release, so it may name at most ${MAX_WAIVER_HORIZON_DAYS} days`,
       });
       continue;
     }
@@ -260,7 +344,10 @@ export function evaluateCertifiedWaivers(options: {
   }
 
   const active = options.waivers.filter(
-    (waiver) => waiver.expires >= today && !CLOSED_TICKET_STATES.has(waiver.ticketStatus),
+    (waiver) =>
+      waiver.expires >= today &&
+      waiver.expires <= horizon &&
+      !CLOSED_TICKET_STATES.has(waiver.ticketStatus),
   );
 
   const waived: WaiverEvaluation["waived"] = [];

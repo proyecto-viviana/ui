@@ -203,12 +203,16 @@ Those reds are now carried as ticket-backed waivers in
 `apps/comparison/e2e/certified-waivers.json`, which held `[]` when this cut was
 written. The rule was delegated on 2026-09-21 — "can you handle all those?
 your default is fine" — and the conductor's stated default, accepted, is:
-behaviour-class reds only, one entry per ticket, expiring at the next release,
-crash-class fixed and never waived. The list, written under #578: **#584** for
-the two `picker-trigger` D13 rows, **#583** for the two D2
+behaviour-class reds only, each entry ticket-backed, expiring at the next
+release, crash-class fixed and never waived. The list, written under #578:
+**#584** for the two `picker-trigger` D13 rows, **#583** for the two D2
 `default · hover-transition` rows on `togglebutton` and `togglebuttongroup`,
-**#609** for `tabs` D4 `horizontal-regular · arrow-next-from-selected`, all
-three `expires: 2026-12-31`. That is 5 of the 27. The other 22 are one ComboBox
+**#609** for `tabs` D4 `horizontal-regular · arrow-next-from-selected`. That is
+5 of the 27. Since that ticket's review on 2026-09-22 it is **five entries, one
+per case** rather than one per ticket — a shared entry cannot disclose the
+causes of two rows, which is what the review found on #584 — and `expires` is
+`2026-10-21`, held to a 60-day horizon because no release date exists on disk;
+#610 owns binding the expiry to the release. The other 22 are one ComboBox
 list defect, #497, and they are **not** waived, so the blocking
 `certified report` job still exits 1 until it lands. The newest complete
 certified run is 35668806426 at `b22a44eb`, `certified report` job

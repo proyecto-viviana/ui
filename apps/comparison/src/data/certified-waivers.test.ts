@@ -14,6 +14,7 @@ import {
   comparisonRootFrom,
   defaultWaiversPath,
   evaluateCertifiedWaivers,
+  failureHaystack,
   loadCertifiedWaivers,
   parseWaiverEntries,
   readTicketStatus,
@@ -21,9 +22,13 @@ import {
   repoRootFromComparison,
   utcDateStamp,
   waiverGateFails,
+  waiverHorizonStamp,
   type CertifiedFailure,
   type CertifiedWaiver,
 } from "../../scripts/certified-waivers";
+// The suite's own discovery, the one `guard:certified-case-floor` runs:
+// `playwright test e2e/certified --list`, no browser and no web server.
+import { readCertifiedListing } from "../../../../scripts/check-certified-case-floor.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const now = new Date("2026-09-02T12:00:00.000Z");
@@ -40,12 +45,45 @@ function failure(overrides: Partial<CertifiedFailure> = {}): CertifiedFailure {
 
 function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
   return {
-    pattern: "combobox\\.certified.*D3",
+    pattern:
+      "^e2e/certified/combobox\\.certified\\.spec\\.ts D3 pixel diff — ComboBox › default · light$",
     ticket: 240,
-    expires: "2026-12-31",
+    expires: "2026-10-01",
     ticketStatus: "in-progress",
+    reason: "the fixture's own row; what a user sees goes here",
     ...overrides,
   };
+}
+
+interface ListedSuite {
+  title?: string;
+  specs?: Array<{ title: string; file: string }>;
+  suites?: ListedSuite[];
+}
+
+/**
+ * Every certified case Playwright discovers, shaped like the failure the
+ * reporter would build for it. `spec.file` is relative to `testDir` (`./e2e`)
+ * and a case declared by a shared driver carries the driver's own file, which
+ * is exactly what `relativeSpecFile` hands the reporter, one `e2e/` prefix on.
+ */
+function discoverCertifiedCases(): CertifiedFailure[] {
+  const report = readCertifiedListing() as { suites?: ListedSuite[] };
+  const cases: CertifiedFailure[] = [];
+  const walk = (suite: ListedSuite, titles: string[]): void => {
+    const next = suite.title ? [...titles, suite.title] : titles;
+    for (const spec of suite.specs ?? []) {
+      cases.push({
+        component: "",
+        driver: "",
+        file: `e2e/${spec.file}`,
+        title: [...next, spec.title].join(" › "),
+      });
+    }
+    for (const child of suite.suites ?? []) walk(child, next);
+  };
+  for (const suite of report.suites ?? []) walk(suite, []);
+  return cases;
 }
 
 describe("certified waivers", () => {
@@ -72,6 +110,65 @@ describe("certified waivers", () => {
       ["verified", "merged", "closed"].includes(entry.ticketStatus),
     );
     expect(closed).toEqual([]);
+    // The dates are the verdict's to judge, not the loader's: an entry that has
+    // expired, or that stands for longer than a release, is a problem only once
+    // `evaluateCertifiedWaivers` sees it, so the tracked file is put through it.
+    expect(
+      evaluateCertifiedWaivers({ waivers: loaded.waivers, failures: [], now: new Date() }).problems,
+    ).toEqual([]);
+  });
+
+  // #578's review, problem 2. The receipt claimed each pattern matched its own
+  // rows and nothing else, and nothing ran that claim. It matters because
+  // `evaluateCertifiedWaivers` has no over-broad problem kind: a pattern one
+  // segment too wide swallows a future red in silence. So every discovered case
+  // is put through the real matcher, and each entry must catch exactly one —
+  // one waiver, one case, which is also why #584's two journeys are two
+  // entries. `--list` is discovery only: no browser, no web server.
+  it("matches exactly one discovered certified case per tracked waiver", () => {
+    const root = comparisonRootFrom(import.meta.url);
+    const cases = discoverCertifiedCases();
+    const floor = JSON.parse(readFileSync(join(root, "e2e/certified-case-floor.json"), "utf8")) as {
+      total: number;
+    };
+    expect(cases.length).toBeGreaterThanOrEqual(floor.total);
+
+    const loaded = loadCertifiedWaivers(defaultWaiversPath(root));
+    expect(loaded.problems).toEqual([]);
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: loaded.waivers,
+      failures: cases,
+      now: new Date(),
+    });
+    const matched = new Map(loaded.waivers.map((entry) => [entry.pattern, 0]));
+    for (const { waiver: entry } of evaluation.waived) {
+      matched.set(entry.pattern, (matched.get(entry.pattern) ?? 0) + 1);
+    }
+    expect(Object.fromEntries(matched)).toEqual(
+      Object.fromEntries(loaded.waivers.map((entry) => [entry.pattern, 1])),
+    );
+  }, 120_000);
+
+  // Where a pattern has to start, which is not where it reads as if it should:
+  // the haystack opens with the file the case is DECLARED in — the driver's,
+  // for a driver-declared case — and the spec path is the head of the title.
+  // A pattern anchored `^certified/…spec.ts` matches nothing at all.
+  it("anchors on the declaring file, which is the driver's for a driver-declared case", () => {
+    const haystack = failureHaystack(
+      failure({
+        component: "picker",
+        driver: "D13",
+        file: "e2e/drivers/journeys.ts",
+        title:
+          "certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
+      }),
+    );
+    expect(haystack).toBe(
+      "e2e/drivers/journeys.ts certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
+    );
+    expect(/^certified\/picker\.certified\.spec\.ts .*keyboard-only$/.test(haystack)).toBe(false);
+    const tracked = loadCertifiedWaivers(join(here, "../../e2e/certified-waivers.json")).waivers;
+    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(1);
   });
 
   it("rejects a waiver file that is not an array of pattern/ticket/expires/ticketStatus", () => {
@@ -107,9 +204,59 @@ describe("certified waivers", () => {
     ]);
   });
 
+  // The recorded reason is what a reader judges the entry by, and what the
+  // ticket's `Done when` has to cover before the entry may go, so an entry
+  // without one is not a waiver.
+  it("rejects a waiver that records no reason", () => {
+    const { reason: _dropped, ...withoutReason } = waiver();
+    expect(parseWaiverEntries([withoutReason]).problems).toEqual([
+      expect.objectContaining({
+        kind: "invalid-entry",
+        detail: expect.stringContaining("reason"),
+      }),
+    ]);
+    expect(parseWaiverEntries([waiver({ reason: "" })]).problems).toEqual([
+      expect.objectContaining({ kind: "invalid-entry" }),
+    ]);
+  });
+
   it("rejects a pattern that is not a regular expression", () => {
     expect(parseWaiverEntries([waiver({ pattern: "(" })]).problems).toEqual([
       expect.objectContaining({ kind: "invalid-pattern" }),
+    ]);
+  });
+
+  // #578's review, problem 3. A tail-anchored pattern waives its case under
+  // every file and every describe that ends the same way, and the three entries
+  // #578 wrote were all tail-anchored only. A trailing `\$` is a literal dollar
+  // and anchors nothing, so it is refused too.
+  it("rejects a pattern that is not anchored at both ends", () => {
+    for (const pattern of [
+      "combobox\\.certified\\.spec\\.ts D3 pixel diff — ComboBox › default · light$",
+      "^e2e/certified/combobox\\.certified\\.spec\\.ts D3 pixel diff",
+      "^e2e/certified/combobox\\.certified\\.spec\\.ts D3 pixel diff costs 5\\$",
+    ]) {
+      expect(parseWaiverEntries([waiver({ pattern })]).problems).toEqual([
+        expect.objectContaining({
+          kind: "invalid-pattern",
+          detail: expect.stringContaining("anchored"),
+        }),
+      ]);
+    }
+    expect(parseWaiverEntries([waiver()]).problems).toEqual([]);
+  });
+
+  // A driver declares the same case shape for many components, so a pattern
+  // that names only the driver and the case id waives every component's copy.
+  it("rejects a pattern that names no certified spec file", () => {
+    expect(
+      parseWaiverEntries([waiver({ pattern: "^e2e/drivers/motion\\.ts .* · hover-transition$" })])
+        .problems,
+    ).toEqual([
+      expect.objectContaining({
+        kind: "invalid-pattern",
+        detail: expect.stringContaining("certified.spec.ts"),
+      }),
     ]);
   });
 
@@ -159,6 +306,39 @@ describe("certified waivers", () => {
     expect(evaluation.unwaived).toEqual([failure()]);
     expect(waiverGateFails(evaluation)).toBe(true);
     expect(utcDateStamp(now)).toBe("2026-09-02");
+  });
+
+  // #578's review, problem 4. The recorded rule is that a waiver expires "at
+  // the next release", and no release date exists anywhere in this tree to
+  // check a date against — #610 owns binding it to the release itself. This is
+  // the stand-in: a waiver may outlive the cut by a cycle, not by a quarter.
+  // The first three entries #578 wrote stood to 2026-12-31 under that rule.
+  it("fails the job when a waiver stands past the horizon a release bounds", () => {
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: [waiver({ expires: "2026-12-31" })],
+      failures: [failure()],
+      now,
+    });
+
+    expect(evaluation.problems).toEqual([
+      expect.objectContaining({
+        kind: "expires-too-far",
+        detail: expect.stringContaining("expires on 2026-12-31, past 2026-11-01"),
+      }),
+    ]);
+    // Like an expired date: the failure is the job's again, not a note beside it.
+    expect(evaluation.waived).toEqual([]);
+    expect(evaluation.unwaived).toEqual([failure()]);
+    expect(waiverGateFails(evaluation)).toBe(true);
+    expect(waiverHorizonStamp(now)).toBe("2026-11-01");
+    // The horizon itself is still inside.
+    expect(
+      evaluateCertifiedWaivers({
+        waivers: [waiver({ expires: waiverHorizonStamp(now) })],
+        failures: [failure()],
+        now,
+      }).problems,
+    ).toEqual([]);
   });
 
   it("fails the job when the waiver records a verified, merged or closed ticket", () => {
@@ -226,7 +406,8 @@ describe("certified waivers", () => {
     const dir = mkdtempSync(join(tmpdir(), "certified-waivers-"));
     const path = join(dir, "certified-waivers.json");
     const tracked = waiver({
-      pattern: "picker",
+      pattern:
+        "^e2e/certified/picker\\.certified\\.spec\\.ts D1 state matrix — Picker › default · light$",
       ticket: 99,
       expires: "2026-10-01",
       ticketStatus: "next",

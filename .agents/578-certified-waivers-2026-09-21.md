@@ -3,6 +3,13 @@
 2026-09-21. Base `8361daba` on `main`. Docs, tickets and one JSON file; no
 package source touched.
 
+> **Corrected 2026-09-22 by `.agents/578-review-fix-2026-09-22.md`.** Three
+> figures below are wrong or stale: the list is now **five** entries, one per
+> case, not three; `expires` is `2026-10-21`, not `2026-12-31`; and the local
+> case inventory is **2177**, not 3065 — measured from Playwright's own
+> `--list`, and equal to `certified-case-floor.json`'s `total`. The patterns
+> are also anchored at both ends now, not on the case id alone.
+
 ## What the run says
 
 Certification Gates **35668806426**, head `b22a44eb`, push event. Two jobs read

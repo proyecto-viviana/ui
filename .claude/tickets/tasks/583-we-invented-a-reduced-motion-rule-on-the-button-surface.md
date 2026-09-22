@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "not started, handed back: the scope contradicts a recorded ruling. The two reduced-motion branches (s2-button-styles.ts:56-59, s2-action-button-styles.ts:111-114) were added on purpose by 1af6eb71, closing #484, where the owner delegated the call on 2026-09-07 that React Spectrum is not the ceiling for reduced motion. That commit split D2 reduced into per-stack contracts, react recording upstream's retained transition and solid asserting none (actionbutton.certified.spec.ts:71-87); the togglebutton and togglebuttongroup specs never got the split, so they still demand pair equality. Neither this ticket, the brief nor the census names #484. Two ways out, and choosing is not mine: reverse #484 and delete the branch as scoped here, or keep #484 and give the two toggle specs the same per-stack reduced contract, which touches spec files only",
     }
+  - {
+      state: open,
+      at: 2026-09-22,
+      note: "waiver bookkeeping only; nothing about the defect or the #484 question changed. #578's review split `certified-waivers.json` one entry per case, so this ticket's two rows are now two entries - `D2 motion (reduced) — ToggleButton › default · hover-transition` and the `ToggleButtonGroup` twin - each anchored `^…$` on the whole haystack, which starts with the declaring file `e2e/drivers/motion.ts` and not with the spec path. A test in `apps/comparison/src/data/certified-waivers.test.ts` now puts every entry through Playwright's own `--list` discovery and fails unless it matches exactly one case, so widening either pattern is caught locally. `expires` moved from `2026-12-31` to `2026-10-21`: the recorded rule is that a waiver stands until the next release, no release date exists on disk, and the loader now refuses anything past a 60-day horizon; #610 owns replacing the horizon with the release",
+    }
 ---
 
 ## The defect

@@ -21,6 +21,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`. Two findings on this element, and the survey note above holds - its Menu/Link challenge was refuted, because solidaria's mergeProps coerces boolean data-* to the string true (`domAttrs.ts:62-70`) and Menu's `:1620` value is shadowed by a later spread. `r2-certified-a/r2a-5`, medium, confirmed: the trigger now carries no `data-pressed` at all, where RAC's carries it for the whole time the popover is open - `dist/private/Select.mjs:157-163` feeds the trigger Button `isPressed: state.isOpen` and `dist/private/Button.mjs:97` emits `data-pressed`. Ours computes `isPressed` into render values only (`packages/solidaria-components/src/Select.tsx:894-900`) and the button at `:932-957` emits none, and `data-pressed` is in the compared allowlist (`apps/comparison/e2e/drivers/journeys.ts:78`). A missing state attribute is the other direction of this ticket's own defect and the Done-when covers it: emit `data-pressed={dataAttr(isPressed())}`. Note the D13 evidence is weaker than the entry above reads - open-arrow step 0 already fails on focus, so the later steps, the ones where the popover is open, are never reached and cannot have been compared (`journeys.ts:238-275`). `r2-certified-a/r2a-4`, low, partly: the cure was applied at the component, not at the hook - `packages/solidaria/src/select/createSelect.ts:450-452` still invents `data-open`, `data-disabled` and `data-focus-visible`, pinned by `packages/solidaria/test/createSelect.test.tsx:98`, and solidaria is published, so any consumer spreading `triggerProps` gets attributes react-aria's `useSelect` never emits. The tail of this ticket already discloses it; this is the note that owns it. The auditor's empty-string reading is wrong - the shipped value is the string true - and #254 already names the trigger `data-open` under an owner gate, so drop the three at the hook and retire the pinning test rather than leaving the strip in `cleanTriggerProps` as the only defence",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-22,
+      note: "widened to cover every cause the two waived D13 rows carry, because #578's review found the waiver disclosing only one of them. `apps/comparison/e2e/certified-waivers.json` waives `D13 journey — open-arrow-enter-reopen-scroll-escape` and `… — keyboard-only` against this ticket, one entry per case since 2026-09-22, and a waiver comes out only when the case it names goes green - so this ticket's Done-when has to be the whole case, not the attribute slice. The causes, each already measured below or in the round-2 note: pointer-open focus (open-arrow step 0 `focus`, ours the popover dialog where React has the selected option), keyboard-open focus order (keyboard-only step 1 `events`, the dialog's `focusin`/`focusout` pair), overlay entry motion behind cause 1 (opacity 0.41, dy 34 against React's 1 and 36, same family as #582), and the trigger's missing `data-pressed`, which is in the journey's compared attribute allowlist (`journeys.ts:78`) and is latent only because both journeys stop before the open popover is compared. The Done-when below now names all four, and the two waiver reasons name them too. The `expires` moved with that review from `2026-12-31` to `2026-10-21`; #610 owns binding the date to the release itself instead of to a horizon. One measurement that bears on the rows themselves and is not re-run here: `8361daba` (#608) changed `e2e/drivers/journeys-steps.ts`, which declares these two cases, after the run the waiver was written from - so the next `certified report` at or past `90297632` is what says whether they still fail the same way",
+    }
 ---
 
 ## The defect
@@ -74,7 +79,23 @@ certified roster is not calling out.
 ## Done when
 
 `certified/picker` D13 is green on both journeys, the root carries `"true"`,
-and the trigger button carries what RAC's does and nothing more.
+and the trigger button carries what RAC's does and nothing more — which now
+means `data-pressed` present while the popover is open, since RAC's Button
+emits it and the journey compares it.
+
+Both journeys are waived under #578, one entry per case, so this Done-when is
+also the condition for removing those entries and it has to name every cause
+the rows carry, not only the attribute slice:
+
+1. Pointer-open focus — open-arrow step 0 `focus`.
+2. Keyboard-open focus order — keyboard-only step 1 `events`.
+3. Overlay entry motion, which only surfaces once 1 is fixed (#582's family;
+   if the fix belongs there, say so on both tickets rather than waiving twice).
+4. `data-pressed` on the trigger, latent until 1 and 2 stop truncating the
+   comparison.
+
+A row leaves `certified-waivers.json` when a `certified report` job shows its
+case passing, not when this ticket's body is updated.
 
 ## Proof
 
