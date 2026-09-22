@@ -9,6 +9,7 @@ import { createRoot } from "solid-js";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
 import { createListBox, createOption } from "../src/listbox";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import { isMac } from "../src/utils/platform";
 
 // Helper to create a mock keyboard event with proper currentTarget
@@ -1059,6 +1060,25 @@ describe("createOption", () => {
         state.setFocusedKey("b");
         expect(isFocusedA()).toBe(false);
         expect(isFocusedB()).toBe(true);
+        dispose();
+      });
+    });
+
+    it("becomes focus-visible on a detail-0 click without another focus change", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        state.setFocused(true);
+        state.setFocusedKey("a");
+        setInteractionModality("pointer");
+        const option = createOption({ key: "a" }, state);
+
+        expect(option.isFocusVisible()).toBe(false);
+        expect(option.optionProps["data-focus-visible"]).toBeUndefined();
+
+        document.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 }));
+
+        expect(option.isFocusVisible()).toBe(true);
+        expect(option.optionProps["data-focus-visible"]).toBe("true");
         dispose();
       });
     });

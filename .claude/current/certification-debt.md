@@ -179,17 +179,6 @@ command went **22 failed / 6 passed** to **26 passed** here. The head count
 above still carries these 22 because run 35689146611 at `d6745471` predates the
 commit.
 
-**What the fix leaves standing, until #612.** Ours corrects the answer in the
-styled layer, upstream gets it from the interaction modality itself, and the
-two part on a real mouse click: `createInteractionModality.ts:113-115` drops
-untrusted clicks where react-aria 3.52.0 does not, so a ComboBox or Picker
-option focused by a trusted click keeps the `focusRing()` outline and the
-lifted ink that upstream withholds under pointer modality. The pair oracle
-cannot see it — `clickLocator` dispatches `el.click()`, a `detail: 0` click,
-which upstream itself reads as virtual — so these rows are green and no waiver
-is owed. `data-focus-visible` still reports the uncorrected answer; #612 fixes
-the modality and deletes the styled compensation.
-
 ### C — Picker list 16px short / options 16px wide — 21
 
 Unported listbox geometry. All `picker-list`. Three options; Solid is

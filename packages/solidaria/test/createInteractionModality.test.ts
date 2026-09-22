@@ -3,10 +3,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { createRoot, createTrackedEffect, flush } from "solid-js";
 import {
   createInteractionModality,
   getInteractionModality,
+  isFocusVisible,
   setInteractionModality,
   addModalityListener,
   setupGlobalFocusListeners,
@@ -187,6 +188,60 @@ describe("createInteractionModality", () => {
       const event = new PointerEvent("pointerdown", { bubbles: true, pointerType: "pen" });
       document.dispatchEvent(event);
       expect(getInteractionModality()).toBe("pointer");
+    });
+  });
+
+  describe("click events", () => {
+    beforeEach(() => {
+      setupGlobalFocusListeners();
+    });
+
+    it("sets virtual modality on an untrusted detail-0 click", () => {
+      setInteractionModality("pointer");
+      const event = new MouseEvent("click", { bubbles: true, detail: 0 });
+      document.dispatchEvent(event);
+      expect(event.isTrusted).toBe(false);
+      expect(getInteractionModality()).toBe("virtual");
+      expect(isFocusVisible()).toBe(true);
+    });
+
+    it("keeps pointer modality for a detail-1 mouse click", () => {
+      setInteractionModality("keyboard");
+      document.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse" }),
+      );
+      expect(getInteractionModality()).toBe("pointer");
+      document.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      expect(getInteractionModality()).toBe("pointer");
+      expect(isFocusVisible()).toBe(false);
+    });
+
+    it("does not re-run an effect that reads getInteractionModality when a keydown flips modality", () => {
+      createRoot((dispose) => {
+        setInteractionModality("pointer");
+        let queries = 0;
+        let predicates = 0;
+        createTrackedEffect(() => {
+          getInteractionModality();
+          queries += 1;
+        });
+        createTrackedEffect(() => {
+          isFocusVisible();
+          predicates += 1;
+        });
+        flush();
+        expect(queries).toBe(1);
+        expect(predicates).toBe(1);
+
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+        flush();
+
+        expect(getInteractionModality()).toBe("keyboard");
+        expect(isFocusVisible()).toBe(true);
+        expect(queries).toBe(1);
+        expect(predicates).toBe(2);
+        dispose();
+      });
     });
   });
 

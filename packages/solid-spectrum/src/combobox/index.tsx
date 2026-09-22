@@ -99,7 +99,6 @@ import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
-import { optionFocusVisible } from "../utils/option-focus-visible";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
@@ -1256,13 +1255,11 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
-  // Both atoms read one value, as RAC `ListBoxItem` does. `optionFocusVisible`
-  // holds why, the pointer-modality divergence it carries, and the ticket that
-  // ends it (#612); `picker` calls the same helper.
+  // Both atoms read the option render props, as RAC `ListBoxItem` does.
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
-        ...optionFocusVisible(renderProps),
+        ...renderProps,
         size,
         isLink: isLink(),
       }),
@@ -1272,7 +1269,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       .join(" ");
   const checkClass = (renderProps: ComboBoxOptionRenderProps) =>
     comboBoxCheckmark({
-      ...optionFocusVisible(renderProps),
+      ...renderProps,
       size,
     });
   // Consume children in a nested component so the tracked read runs under the

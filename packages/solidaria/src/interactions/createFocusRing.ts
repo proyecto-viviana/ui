@@ -8,7 +8,7 @@
  * Port of @react-aria/focus useFocusRing.
  */
 
-import { createSignal, createMemo, createTrackedEffect } from "solid-js";
+import { createSignal, createMemo, createTrackedEffect, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocus } from "./createFocus";
@@ -50,7 +50,9 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
 
   const [isFocused, setIsFocused] = createSignal(false, { ownedWrite: true });
   const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(
-    autoFocus || isGlobalFocusVisible(),
+    // Snapshot. The component body is not a tracking scope; a live read warns
+    // and would not update. onFocusChange and the listener re-sample later.
+    autoFocus || untrack(isGlobalFocusVisible),
     {
       ownedWrite: true,
     },

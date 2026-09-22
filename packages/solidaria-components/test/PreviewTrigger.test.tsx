@@ -232,9 +232,10 @@ describe("PreviewTrigger hover, delay, Tab, and Escape", () => {
     await user.keyboard("{Tab}");
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "Action" }));
 
-    // fireEvent.click (not user.click) so modality stays keyboard. Otherwise
-    // restored focus is not focus-visible and onFocus would not try to reopen,
-    // making the test pass without testing ignoreFocus.
+    // fireEvent.click is a detail-0 virtual click, so restored focus stays
+    // focus-visible and onFocus tries to reopen. user.click is a mouse click
+    // (pointer modality): restored focus would not be focus-visible, and this
+    // would pass without testing ignoreFocus.
     fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
     vi.advanceTimersByTime(1000);
 

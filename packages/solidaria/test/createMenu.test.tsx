@@ -18,6 +18,7 @@ import {
   type AriaMenuTriggerProps,
 } from "../src/menu";
 import { PressEvent } from "../src/interactions/createPress";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 
 describe("createMenu", () => {
   afterEach(() => {
@@ -116,6 +117,10 @@ describe("createMenu", () => {
   });
 
   it("autoFocus true focuses the menu root after the frame-to-timer paint boundary", () => {
+    // Mouse-open. A prior detail-0 click leaves virtual modality, and
+    // focusSafely waits out transitions in that modality instead of focusing
+    // in this paint timer.
+    setInteractionModality("pointer");
     const items = [
       { key: "copy", label: "Copy" },
       { key: "paste", label: "Paste" },

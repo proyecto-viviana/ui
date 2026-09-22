@@ -20,7 +20,7 @@
  * provides focus-visible state and listeners.
  */
 
-import { createSignal, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { getEventTarget, getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
@@ -51,8 +51,34 @@ export interface InteractionModalityResult {
   modality: Accessor<Modality | null>;
 }
 
-let currentModality: Modality | null = null;
+// react-aria keeps `currentModality` in a module `let` that the same turn can
+// read (useFocusVisible.ts). Solid 2 commits a signal on the next flush, and
+// an untracked read until then returns the previous value, so a render
+// predicate that only read the let would stay stale. `currentModalityValue`
+// is that let. The signal exists only so isFocusVisible() — the render
+// predicate useOption.ts:182 re-reads — re-runs when modality changes,
+// including handleClickEvent, which does not call triggerChangeHandlers
+// (useFocusVisible.ts:105-111). getInteractionModality() returns the let and
+// does not touch the signal: upstream's imperative query is a plain variable,
+// and no effect depends on it. getPointerType() reads `currentPointerType`,
+// a separate let, and never the modality signal. Same-value writes do not
+// notify, so pointermove is quiet. ownedWrite: a DOM listener can run
+// re-entrantly inside a computation; the write records the external event.
+let currentModalityValue: Modality | null = null;
+const [currentModality, setCurrentModalitySignal] = createSignal<Modality | null>(null, {
+  ownedWrite: true,
+});
 let currentPointerType: PointerType = "keyboard";
+
+function setCurrentModality(next: Modality): void {
+  currentModalityValue = next;
+  setCurrentModalitySignal(next);
+}
+
+function readCurrentModality(): Modality | null {
+  currentModality();
+  return currentModalityValue;
+}
 const changeHandlers = new Set<Handler>();
 
 export let hasSetupGlobalListeners: Map<
@@ -95,14 +121,14 @@ function handleKeyboardEvent(e: KeyboardEvent) {
   hasEventBeforeFocus = true;
   const isOpening = (openLink as { isOpening?: boolean }).isOpening;
   if (!isOpening && isValidKey(e)) {
-    currentModality = "keyboard";
+    setCurrentModality("keyboard");
     currentPointerType = "keyboard";
     triggerChangeHandlers("keyboard", e);
   }
 }
 
 function handlePointerEvent(e: PointerEvent | MouseEvent) {
-  currentModality = "pointer";
+  setCurrentModality("pointer");
   currentPointerType = "pointerType" in e ? (e.pointerType as PointerType) : "mouse";
   if (e.type === "mousedown" || e.type === "pointerdown") {
     hasEventBeforeFocus = true;
@@ -111,14 +137,13 @@ function handlePointerEvent(e: PointerEvent | MouseEvent) {
 }
 
 function handleClickEvent(e: MouseEvent) {
-  if (!e.isTrusted) {
-    return;
-  }
-
+  // react-aria 3.52.0 useFocusVisible.ts:105-111. No isTrusted guard and no
+  // listener notification: keyboards, AT, and element.click() are virtual
+  // clicks (detail === 0).
   const isOpening = (openLink as { isOpening?: boolean }).isOpening;
   if (!isOpening && isVirtualClick(e)) {
     hasEventBeforeFocus = true;
-    currentModality = "virtual";
+    setCurrentModality("virtual");
     currentPointerType = "virtual";
   }
 }
@@ -153,7 +178,7 @@ function handleFocusEvent(e: FocusEvent) {
   // If a focus event occurs without a preceding keyboard or pointer event, switch to virtual modality.
   // This occurs, for example, when navigating a form with the next/previous buttons on iOS.
   if (!hasEventBeforeFocus && !hasBlurredWindowRecently) {
-    currentModality = "virtual";
+    setCurrentModality("virtual");
     currentPointerType = "virtual";
     triggerChangeHandlers("virtual", e);
   }
@@ -300,30 +325,34 @@ if (typeof document !== "undefined") {
 }
 
 /**
- * If true, keyboard focus is visible.
+ * If true, keyboard focus is visible. The only tracked read of modality:
+ * useOption's render predicate re-reads this on every render.
  */
 export function isFocusVisible(): boolean {
-  return currentModality !== "pointer";
+  return readCurrentModality() !== "pointer";
 }
 
 /**
  * Gets the current interaction modality.
+ * The module let, not the signal. An effect that calls this does not re-run
+ * when modality changes; upstream's query is a plain variable.
  */
 export function getInteractionModality(): Modality | null {
-  return currentModality;
+  return currentModalityValue;
 }
 
 /**
  * Sets the current interaction modality.
  */
 export function setInteractionModality(modality: Modality): void {
-  currentModality = modality;
+  setCurrentModality(modality);
   currentPointerType = modality === "pointer" ? "mouse" : modality;
   triggerChangeHandlers(modality, null);
 }
 
 /**
- * Gets the current pointer type.
+ * Gets the current pointer type. Separate from modality; this let is never
+ * the modality signal.
  */
 export function getPointerType(): PointerType {
   return currentPointerType;
@@ -402,7 +431,7 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
   // so it re-subscribes reactively (a top-level destructure would freeze it — the
   // body runs once). Mirrors upstream useFocusVisible's [isTextInput] dep.
   const [isVisible, setIsVisible] = createSignal<boolean>(
-    isServer ? false : props.autoFocus || isFocusVisible(),
+    isServer ? false : props.autoFocus || untrack(isFocusVisible),
   );
 
   // Reserve the effect owner during SSR too; its callback runs only on client.
@@ -424,7 +453,9 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
  * Tracks the current interaction modality.
  */
 export function createInteractionModality(): InteractionModalityResult {
-  const [modality, setModality] = createSignal<Modality | null>(isServer ? null : currentModality);
+  const [modality, setModality] = createSignal<Modality | null>(
+    isServer ? null : currentModalityValue,
+  );
 
   // Register the owner on both sides; only the browser subscribes to events.
   createTrackedEffect(() => {

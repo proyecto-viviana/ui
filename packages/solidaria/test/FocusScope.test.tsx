@@ -680,6 +680,13 @@ describe("FocusScope", () => {
   // ============================================
 
   describe("useFocusManager", () => {
+    beforeEach(() => {
+      // focusSafely waits out transitions while modality is virtual.
+      // A detail-0 click in another file on this worker leaves that
+      // modality, so these moves would not land before the assertion.
+      setInteractionModality("pointer");
+    });
+
     it("should provide focusNext method", () => {
       let focusManager: ReturnType<typeof useFocusManager>;
 

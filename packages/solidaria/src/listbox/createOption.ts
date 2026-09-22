@@ -20,7 +20,7 @@
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createHover, type HoverEvents } from "../interactions/createHover";
-import { createFocusRing } from "../interactions/createFocusRing";
+import { isFocusVisible } from "../interactions/createInteractionModality";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createSlotId } from "../ssr";
@@ -161,6 +161,7 @@ export function createOption<T>(
       return selectableItem.isDisabled();
     },
     onHoverStart(e) {
+      // useOption.ts:158. Hover focus only while the global modality is pointer.
       if (shouldFocusOnHover() && !isFocusVisible()) {
         state.selectionManager.setFocused(true);
         state.selectionManager.setFocusedKey(getProps().key);
@@ -175,7 +176,12 @@ export function createOption<T>(
     },
   });
 
-  const { isFocusVisible, focusProps } = createFocusRing();
+  // useOption.ts:182. selectionManager.isFocused is the boolean getter that
+  // reads the selection signal, not a function. Link behavior stays inside
+  // createSelectableItem's itemProps; useOption's separate linkProps merge
+  // has no second object here.
+  const optionIsFocusVisible = () =>
+    selectableItem.isFocused() && state.selectionManager.isFocused && isFocusVisible();
 
   // Mirror useOption: `useSlotId()` for the label and description slots so
   // `aria-labelledby` / `aria-describedby` resolve only when an element with
@@ -206,7 +212,6 @@ export function createOption<T>(
       return mergeProps(
         selectableItem.itemProps as Record<string, unknown>,
         hoverProps as Record<string, unknown>,
-        focusProps as Record<string, unknown>,
         {
           role: "option",
           id: optionId(),
@@ -222,7 +227,7 @@ export function createOption<T>(
           "aria-setsize": ariaSetSize,
           "data-selected": selectableItem.isSelected() || undefined,
           "data-focused": selectableItem.isFocused() || undefined,
-          "data-focus-visible": (selectableItem.isFocused() && isFocusVisible()) || undefined,
+          "data-focus-visible": optionIsFocusVisible() || undefined,
           "data-pressed": selectableItem.isPressed() || undefined,
           "data-disabled": selectableItem.isDisabled() || undefined,
           "data-hovered": isHovered() || undefined,
@@ -239,7 +244,7 @@ export function createOption<T>(
     },
     isSelected: selectableItem.isSelected,
     isFocused: selectableItem.isFocused,
-    isFocusVisible: () => selectableItem.isFocused() && isFocusVisible(),
+    isFocusVisible: optionIsFocusVisible,
     isPressed: selectableItem.isPressed,
     isHovered,
     isDisabled: selectableItem.isDisabled,

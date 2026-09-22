@@ -81,7 +81,6 @@ import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
-import { optionFocusVisible } from "../utils/option-focus-visible";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
@@ -482,13 +481,9 @@ const pickerCheckmark = style<{
     default: "hidden",
     isSelected: "visible",
   },
-  color: {
-    ...baseColor("accent"),
-    // Upstream types this helper `{ isSelected, isFocused, size }` and still
-    // spreads ListBoxItem render props, so `isFocusVisible` hits this atom.
-    // Pointer-open leaves Solid `isFocusVisible` false while `isFocused` is true.
-    isFocused: baseColor("accent").isFocusVisible,
-  },
+  // S2 Menu.checkmark: `color: baseColor('accent')`. The call spreads the
+  // option render props, so `isFocusVisible` hits this atom and `isFocused` does not.
+  color: baseColor("accent"),
   marginEnd: "text-to-control",
   aspectRatio: "square",
   flexShrink: 0,
@@ -1173,11 +1168,9 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     [
       local.UNSAFE_className,
       local.class,
-      // One helper, shared with `combobox`, over two hand-written copies: it
-      // carries why this remap exists and the ticket that removes it (#612).
       pickerOption(
         {
-          ...optionFocusVisible(renderProps),
+          ...renderProps,
           size,
         },
         local.styles,
@@ -1235,8 +1228,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     const content = createMemo(() => local.children);
     const checkClassName = createMemo(() =>
       pickerCheckmark({
-        isSelected: contentProps.renderProps.isSelected,
-        isFocused: contentProps.renderProps.isFocused,
+        ...contentProps.renderProps,
         size,
       }),
     );
