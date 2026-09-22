@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createFocusRing } from "../src/interactions/createFocusRing";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
-import { flush, type Component } from "solid-js";
+import { createTrackedEffect, flush, type Component } from "solid-js";
 
 // Test component that uses createFocusRing
 interface ExampleProps {
@@ -58,6 +58,32 @@ describe("createFocusRing", () => {
   // ============================================
 
   describe("basic functionality", () => {
+    it("runs a focusing effect once across a later keydown and pointerdown", () => {
+      let runs = 0;
+      const FocusOnce: Component = () => {
+        let el!: HTMLDivElement;
+        const { focusProps } = createFocusRing();
+        createTrackedEffect(() => {
+          runs += 1;
+          el.focus();
+        });
+        return <div tabIndex={0} {...focusProps} ref={el} data-testid="ring" />;
+      };
+
+      flush();
+      render(() => <FocusOnce />);
+      flush();
+      expect(runs).toBe(1);
+      expect(document.activeElement).toBe(screen.getByTestId("ring"));
+
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+      document.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse" }),
+      );
+      flush();
+      expect(runs).toBe(1);
+    });
+
     it("should track isFocused state", () => {
       render(() => <Example />);
 

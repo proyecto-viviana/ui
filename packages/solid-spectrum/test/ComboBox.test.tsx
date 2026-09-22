@@ -4,6 +4,7 @@
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
+import { setInteractionModality } from "@proyecto-viviana/solidaria";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import {
   ComboBox,
@@ -594,6 +595,8 @@ describe("ComboBox (solid-spectrum)", () => {
   it("paints a synthetic detail-0 open as focus-visible", async () => {
     const user = setupUser();
     render(() => <FruitComboBox defaultSelectedKey="2" />);
+    setInteractionModality("pointer");
+    flush();
 
     fireEvent.click(screen.getByRole("button"), { detail: 0 });
     await waitFor(() => {

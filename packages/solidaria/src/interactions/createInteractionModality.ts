@@ -52,31 +52,38 @@ export interface InteractionModalityResult {
 }
 
 // react-aria keeps `currentModality` in a module `let` that the same turn can
-// read (useFocusVisible.ts). Solid 2 commits a signal on the next flush, and
-// an untracked read until then returns the previous value, so a render
-// predicate that only read the let would stay stale. `currentModalityValue`
-// is that let. The signal exists only so isFocusVisible() — the render
-// predicate useOption.ts:182 re-reads — re-runs when modality changes,
-// including handleClickEvent, which does not call triggerChangeHandlers
-// (useFocusVisible.ts:105-111). getInteractionModality() returns the let and
-// does not touch the signal: upstream's imperative query is a plain variable,
-// and no effect depends on it. getPointerType() reads `currentPointerType`,
-// a separate let, and never the modality signal. Same-value writes do not
-// notify, so pointermove is quiet. ownedWrite: a DOM listener can run
-// re-entrantly inside a computation; the write records the external event.
+// read (useFocusVisible.ts). `currentModalityValue` is that let: every read
+// returns it. The signal is a notification counter, not a copy of the word.
+// `writeModality` updates the let. `publishModality` updates the let and bumps
+// the counter. `equals: false` so a second publish of the same word still
+// notifies: a reader that saw `pointer` through a silent move must re-run on
+// the next `keyboard`. Bump where upstream calls `triggerChangeHandlers`
+// (keyboard, pointerdown/mousedown, virtual focus, setInteractionModality)
+// and on handleClickEvent's virtual write. That click handler
+// (useFocusVisible.ts:105-111) stays silent because React re-renders after
+// the click; #612 exists because Solid must notify instead. pointermove and
+// pointerup write the let only. Listener notification stays on
+// `triggerChangeHandlers`. `ownedWrite`: a module DOM listener and
+// `setInteractionModality` can write re-entrantly from an owned scope.
+// `untrack` stops tracking; it does not exempt the write.
 let currentModalityValue: Modality | null = null;
-const [currentModality, setCurrentModalitySignal] = createSignal<Modality | null>(null, {
+const [modalityEpoch, bumpModalityEpoch] = createSignal(0, {
+  equals: false,
   ownedWrite: true,
 });
 let currentPointerType: PointerType = "keyboard";
 
-function setCurrentModality(next: Modality): void {
+function writeModality(next: Modality): void {
   currentModalityValue = next;
-  setCurrentModalitySignal(next);
+}
+
+function publishModality(next: Modality): void {
+  currentModalityValue = next;
+  bumpModalityEpoch((n) => n + 1);
 }
 
 function readCurrentModality(): Modality | null {
-  currentModality();
+  modalityEpoch();
   return currentModalityValue;
 }
 const changeHandlers = new Set<Handler>();
@@ -121,29 +128,33 @@ function handleKeyboardEvent(e: KeyboardEvent) {
   hasEventBeforeFocus = true;
   const isOpening = (openLink as { isOpening?: boolean }).isOpening;
   if (!isOpening && isValidKey(e)) {
-    setCurrentModality("keyboard");
+    publishModality("keyboard");
     currentPointerType = "keyboard";
     triggerChangeHandlers("keyboard", e);
   }
 }
 
 function handlePointerEvent(e: PointerEvent | MouseEvent) {
-  setCurrentModality("pointer");
   currentPointerType = "pointerType" in e ? (e.pointerType as PointerType) : "mouse";
+  // useFocusVisible.ts:94-101. Move and up write the let. Down is the notify.
   if (e.type === "mousedown" || e.type === "pointerdown") {
+    publishModality("pointer");
     hasEventBeforeFocus = true;
     triggerChangeHandlers("pointer", e);
+  } else {
+    writeModality("pointer");
   }
 }
 
 function handleClickEvent(e: MouseEvent) {
   // react-aria 3.52.0 useFocusVisible.ts:105-111. No isTrusted guard and no
   // listener notification: keyboards, AT, and element.click() are virtual
-  // clicks (detail === 0).
+  // clicks (detail === 0). React re-renders after the click, so that silent
+  // write is enough there. Solid must notify tracked readers instead (#612).
   const isOpening = (openLink as { isOpening?: boolean }).isOpening;
   if (!isOpening && isVirtualClick(e)) {
     hasEventBeforeFocus = true;
-    setCurrentModality("virtual");
+    publishModality("virtual");
     currentPointerType = "virtual";
   }
 }
@@ -178,7 +189,7 @@ function handleFocusEvent(e: FocusEvent) {
   // If a focus event occurs without a preceding keyboard or pointer event, switch to virtual modality.
   // This occurs, for example, when navigating a form with the next/previous buttons on iOS.
   if (!hasEventBeforeFocus && !hasBlurredWindowRecently) {
-    setCurrentModality("virtual");
+    publishModality("virtual");
     currentPointerType = "virtual";
     triggerChangeHandlers("virtual", e);
   }
@@ -345,7 +356,7 @@ export function getInteractionModality(): Modality | null {
  * Sets the current interaction modality.
  */
 export function setInteractionModality(modality: Modality): void {
-  setCurrentModality(modality);
+  publishModality(modality);
   currentPointerType = modality === "pointer" ? "mouse" : modality;
   triggerChangeHandlers(modality, null);
 }
@@ -430,8 +441,13 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
   // autoFocus seeds the initial value once; isTextInput is read inside the effect
   // so it re-subscribes reactively (a top-level destructure would freeze it — the
   // body runs once). Mirrors upstream useFocusVisible's [isTextInput] dep.
+  // The let, not isFocusVisible(). During hydration that signal can still hold
+  // an unflushed write; reading it markLateLinker's the computing owner
+  // (REACTIVE_MISSED_WAKE) and the surrounding memo re-runs, so the second
+  // span misses its hydration key. The let is the same answer, written
+  // synchronously.
   const [isVisible, setIsVisible] = createSignal<boolean>(
-    isServer ? false : props.autoFocus || untrack(isFocusVisible),
+    isServer ? false : props.autoFocus || currentModalityValue !== "pointer",
   );
 
   // Reserve the effect owner during SSR too; its callback runs only on client.

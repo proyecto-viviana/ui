@@ -1363,18 +1363,13 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
     () => ref(),
   );
 
-  // Mirror upstream `useOption` exactly (useOption.ts:172):
-  //   isFocusVisible = isFocused && selectionManager.isFocused && isFocusVisible()
-  // where `isFocusVisible()` is the GLOBAL interaction-modality singleton read as
-  // a render-time snapshot (NOT the input's focus ring, and NOT the option's own
-  // createFocusRing — the option div never receives real DOM focus under virtual
-  // focus, so its ring never lights). `optionAria.isFocused()` already folds in
-  // `selectionManager.isFocused()` (createSelectableItem.ts:239), so the upstream
-  // three-term product collapses to these two. Reading the global singleton off
-  // the `isFocused` dependency gives the same non-reactive snapshot semantics as
-  // React (mouse/hover focus → pointer modality → no ring; keyboard nav → keyboard
-  // modality → ring), which the earlier input-ring OR-branch got wrong (it lit the
-  // option ring whenever the input ring was on).
+  // useOption.ts:182, read live: the option is focused and the global modality
+  // is not pointer. This is the global modality, not the input's focus ring
+  // and not an option-local ring (the option div never receives real DOM focus
+  // under virtual focus). `optionAria.isFocused()` already includes
+  // `selectionManager.isFocused` (createSelectableItem.ts:239).
+  // `isGlobalFocusVisible()` tracks the modality counter, so this memo re-runs
+  // when that counter publishes.
   const isOptionFocusVisible = () => optionAria.isFocused() && isGlobalFocusVisible();
 
   const renderValues = createMemo<ComboBoxOptionRenderProps>(() => ({

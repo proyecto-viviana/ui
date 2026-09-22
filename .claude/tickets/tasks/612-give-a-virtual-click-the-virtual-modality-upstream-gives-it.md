@@ -26,6 +26,113 @@ history:
       at: 2026-09-22,
       note: "Supersedes the two open stops above. The isTrusted guard is gone, option-focus-visible.ts is deleted, and createOption matches useOption.ts:182 (selectionManager.isFocused is the boolean getter). handleClickEvent still does not call triggerChangeHandlers. The modality signal stays, and only isFocusVisible() reads it. getInteractionModality() returns the let currentModalityValue and does not touch the signal, so an effect that calls it does not re-run when modality flips. getPointerType() reads currentPointerType, a separate let, and never the modality signal. Select.tsx was not edited. The pin is in createInteractionModality.test.ts: a createTrackedEffect that reads getInteractionModality runs once across a keydown, and one that reads isFocusVisible re-runs. Audit of the global isFocusVisible, alias isGlobalFocusVisible, in packages/*/src. Render-time, tracked on purpose: createOption.ts optionIsFocusVisible and its data-focus-visible; ComboBox.tsx:1378 inside renderValues; Table.tsx:1970 data-focus-visible-within. Handler, not an effect body: createOption.ts:165 onHoverStart; createFocusVisibleListener in createInteractionModality.ts; createFocusRing.ts:84 onFocusChange. Initial value, already untracked: the createFocusVisible seed and createFocusRing.ts:55. Initial value, not an effect body, left alone because those files are outside the write paths: solid-spectrum DateField.tsx:372, TimeField.tsx:366, combobox/index.tsx:661, viviana-ui DateField.tsx:370, TimeField.tsx:364, combobox/index.tsx:674. No effect-body read of the global predicate sits outside the write paths. Imperative getInteractionModality reads, one-shot again with no edit: focus.ts:283 focusSafely; Select.tsx:1209; createSelectableItem.ts:321-345 through focusSafely; createTable.ts:635; createGridList.ts:427; createTree.ts:345; createCalendarCell.ts:240 inside the frame callback; createScrollIntoViewOnFocus.ts:66; createToastRegion.ts:122 and :189; createPreviewTrigger.ts:135 onHoverStart. PROOF, cwd the ui repo. vp run check exit 0. vp test run packages/solidaria --maxWorkers=2 exit 0 (169 files, 4246 passed, 6 skipped). vp test run packages/solidaria-components --maxWorkers=2 exit 0 (76 files, 2457 passed, 6 skipped). vp run guard:layer-boundary exit 0 (524 identical, 84 diverged, 0 new forks). Heavy lock w-612: cd apps/comparison && VIVIANA_GATE=1 vp run build exit 0 (0/33 cache hit, 91 pages), released. Same lock: PLAYWRIGHT_BROWSERS_PATH=/home/emoporemilio/.cache/ms-playwright vp exec playwright test e2e/certified/combobox.certified.spec.ts e2e/certified/picker.certified.spec.ts --workers=2. The runner exit is 1 because the two waived tests still fail; the certified summary is 124 passed, 0 failed, 0 skipped, 2 waived, 0 flaky. combobox-field D13 is 4 passed, including open-arrow-enter-reopen-scroll-escape. picker-list D5 size-m arrow-roving passed. picker-list D10 is 3 passed, including size-m-rtl arrow-roving. vp fmt --check and vp lint on the write paths exit 0. The two #584 waived rows raw diffs moved with this change: picker-trigger D13 open-arrow-enter step 0 now shows Solid data-focus-visible true on the option where React has none, and keyboard-only still lacks the dialog focusin/focusout pair. That is #584 evidence, not this ticket. Waiver file untouched. Followups, not fixed: createMenuItem.ts:346 samples createFocusRing and :424 returns isFocused() && that sample; useMenuItem.ts:394 is isFocused && selectionManager.isFocused && global isFocusVisible() && !isTriggerExpanded. createGridListItem and createGridCell do not call createFocusRing. createGridCell.ts:131 onFocus always setFocusedKey. useGridListItem.ts:323 and useGridCell.ts:321 skip setFocusedKey when global isFocusVisible() is true. ComboBox.tsx:1378 still re-derives isFocused() && isGlobalFocusVisible(), and the comment at 1366-1377 still calls that read a non-reactive snapshot.",
     }
+  - state: merged
+    at: 2026-09-22
+    note: >-
+      Follow-up w-612b on 3065bde5. The modality signal is a notification
+      counter, createSignal(0, { equals: false, ownedWrite: true }) at
+      createInteractionModality.ts:70. ownedWrite stays because a module DOM
+      listener and setInteractionModality can write re-entrantly from an owned
+      scope, and untrack does not exempt a write. currentModalityValue is the
+      source of truth. writeModality sets the let. publishModality sets the let
+      and bumps, including a second publish of the same word. pointermove and
+      pointerup call writeModality only (createInteractionModality.ts:144-146).
+      The counter bumps where upstream calls triggerChangeHandlers: keyboard
+      (:131), pointerdown and mousedown (:140-143), virtual focus (:192),
+      setInteractionModality (:359), plus handleClickEvent's virtual write
+      (:157). That click still does not call triggerChangeHandlers. React
+      re-renders after the click, so upstream useFocusVisible.ts:105-111 stays
+      silent; Solid must notify tracked readers instead, which is why #612
+      exists. isFocusVisible is the one tracked read (:85-87).
+      getInteractionModality and getPointerType stay untracked.
+      createFocusRing.ts:81 sets the flag from untrack(isGlobalFocusVisible)
+      because the focus event can be dispatched from an effect body. The six
+      seeds use untrack(isGlobalFocusVisible): solid-spectrum
+      DateField.tsx:374, TimeField.tsx:368, combobox/index.tsx:663, viviana-ui
+      DateField.tsx:372, TimeField.tsx:366, combobox/index.tsx:676.
+      ComboBox.tsx:1366-1372 now says the option read is the live global
+      modality, not a non-reactive snapshot. createListBox.test.tsx:1082
+      restores pointer after the detail-0 click. The brief named
+      packages/solidaria-components/test/ComboBox.test.tsx:598 for the
+      pointer-first nit. That file has no such assertion. The assertion is
+      packages/solid-spectrum/test/ComboBox.test.tsx:598, which now sets
+      pointer and flushes before the detail-0 click, so that spectrum test is
+      in the commit. createOption.ts:159-162 still passes only isDisabled to
+      createHover. useOption.ts:155-156 passes isDisabled or not
+      shouldFocusOnHover. Applying that here disables hover on ListBox, which
+      leaves shouldFocusOnHover unset so the getter is false. Spectrum
+      ListBoxOption adds a second useHover when shouldFocusOnHover is false,
+      and that lives in ListBox.tsx, which this ticket does not touch. The
+      getter was tried and reverted. Hydrate mechanism: hydrating
+      createFocusVisible reads the module modality signal while
+      setInteractionModality("pointer") is still an unflushed staged write
+      (_value null, _pendingValue pointer), so Solid serve calls markLateLinker
+      and sets REACTIVE_MISSED_WAKE (flag 4096) on the surrounding Show value
+      memo even though the read is untracked and the memo's only dependency is
+      condition; the memo re-runs and the later spans miss hydration key 32.
+      The seed now reads the let (createInteractionModality.ts:449-451). The
+      listener effect stays. Dropping it did not clear the miss, and the effect
+      reserves the SSR child id so the span stays key 32. The hydrate test and
+      the fixture were not edited. Review findings fixed: a bare move no longer
+      publishes (createInteractionModality.ts:144-146); createFocusRing
+      onFocusChange is untracked (createFocusRing.ts:81); hydration key 32
+      passes because the seed reads the let (createInteractionModality.ts:449-451).
+      Bisect, light filter "adopts focus-visible|adopts keyboard-focused", on
+      the pre-fix file, then restored: seed createFocusVisible with false, key
+      miss off (10:44, exit 0, 2 passed, 14 skipped); restore the
+      untrack(isFocusVisible) seed, key miss on (10:44, exit 1); drop
+      ownedWrite with the seed read kept, key miss on (10:45, exit 1); drop
+      createFocusVisibleListener with the effect node kept and the seed read
+      kept, key miss on (10:46, exit 1). PROOF, cwd the ui repo. 10:33 vp test
+      run --config vitest.hydrate.config.ts
+      packages/solidaria/test/hydrationHooks.hydrate.test.tsx --maxWorkers=2
+      exit 1, 1 failed, 15 passed, Hydration key miss for 32 on the
+      focus-visible case. 10:56 focused modality and focus-ring tests exit 0,
+      2 files, 5 passed, 42 skipped. 10:56 the same hydrate filter exit 0, 2
+      passed, 14 skipped, key miss off on the let seed. 10:57 vp fmt --check
+      on the write paths exit 0. 10:57 vp lint on the write paths exit 0, 0
+      warnings. 10:57 vp test run packages/solidaria --maxWorkers=2 exit 1,
+      169 files, 3 failed, 4245 passed, 6 skipped, all three in
+      ListBox.test.tsx hover (data-hovered null) from the tried getter; the
+      getter was reverted and createOption.ts matches HEAD. 11:00 vp test run
+      packages/solidaria --maxWorkers=2 exit 0, 169 files, 4248 passed, 6
+      skipped (4254). 11:00 vp test run packages/solidaria-components
+      --maxWorkers=2 exit 0, 76 files, 2457 passed, 6 skipped (2463). 11:00 vp
+      test run packages/solid-spectrum --maxWorkers=2 exit 0, 85 files, 1135
+      passed, 1 expected fail (1136). 11:00 vp test run packages/viviana-ui
+      --maxWorkers=2 exit 0, 37 files, 232 passed. 11:00 vp run check exit 0,
+      4467 files formatted, 3208 lint-clean, tsc --noEmit pass. 11:00 vp run
+      guard:layer-boundary exit 0, 524 identical, 84 diverged, 0 new forks.
+      Heavy lock owner w-612b, one command per hold. 11:04 vp run test:ssr
+      exit 0, 35 files, 93 passed, 11.92s. 11:05 vp run test:hydrate exit 0,
+      31 files, 107 passed, including hydrationHooks.hydrate.test.tsx 16
+      passed, 13.51s. 11:05 cd apps/comparison && VIVIANA_GATE=1 vp run build
+      exit 0, 0/33 cache hit, 91 pages. 11:07 from apps/comparison,
+      PLAYWRIGHT_BROWSERS_PATH=/home/emoporemilio/.cache/ms-playwright
+      VIVIANA_GATE=1 vp exec playwright test
+      e2e/certified/combobox.certified.spec.ts
+      e2e/certified/picker.certified.spec.ts
+      e2e/certified/listbox.certified.spec.ts
+      e2e/certified/tableview.certified.spec.ts --workers=2 --retries=0.
+      Runner exit 1 because the two waived tests still fail. Certified summary
+      131 passed, 0 failed, 1 skipped, 2 waived, 0 flaky, 5.6m, 134 tests.
+      combobox-field D13 is 4 passed. picker-list D5 is 1 passed (size-m
+      arrow-roving). picker-list D10 is 3 passed, including size-m-rtl.
+      listbox D5 is 2 passed and D6 is 1 passed. tableview D6 is 4 passed and
+      1 skipped (the sorted known divergence), 0 failed. The two raw failures
+      are the #584 picker-trigger D13 rows: open-arrow-enter step 0 has Solid
+      data-focus-visible true on the option where React has none, and
+      keyboard-only step 1 lacks the dialog focusin/focusout pair. Waiver file
+      untouched. Followups, not fixed: createMenuItem.ts:346 samples
+      createFocusRing and :424 returns isFocused() && that sample;
+      useMenuItem.ts:394 is isFocused && selectionManager.isFocused && global
+      isFocusVisible() && !isTriggerExpanded. createGridListItem and
+      createGridCell do not call createFocusRing. createGridCell.ts:131
+      onFocus always setFocusedKey. useGridListItem.ts:323 and
+      useGridCell.ts:321 skip setFocusedKey when global isFocusVisible() is
+      true. createOption hover stays isDisabled only until ListBox grows
+      Spectrum's second useHover for the shouldFocusOnHover false case, and
+      then the getter can match useOption.ts:155-156.
 ---
 
 ## Scope

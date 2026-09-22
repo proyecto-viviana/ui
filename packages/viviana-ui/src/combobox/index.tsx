@@ -26,6 +26,7 @@ import {
   Show,
   useContext,
   createTrackedEffect,
+  untrack,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -671,7 +672,9 @@ function ComboBoxFieldGroup(props: {
   // container (DateField FieldGroup uses the same workaround). Track the
   // group's own keyboard-modality flag; `isKeyboardFocusEvent` auto-detects
   // the text input so ArrowDown/type/Enter do not flip it.
-  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
+    untrack(isGlobalFocusVisible),
+  );
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];
 

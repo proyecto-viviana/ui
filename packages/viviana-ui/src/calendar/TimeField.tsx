@@ -25,6 +25,7 @@ import {
   Show,
   useContext,
   createTrackedEffect,
+  untrack,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -361,7 +362,9 @@ function TimeFieldContent(props: {
   // and compose focus-visible from the global interaction modality — exactly how
   // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
-  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
+    untrack(isGlobalFocusVisible),
+  );
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];
 

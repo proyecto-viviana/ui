@@ -1079,6 +1079,7 @@ describe("createOption", () => {
 
         expect(option.isFocusVisible()).toBe(true);
         expect(option.optionProps["data-focus-visible"]).toBe("true");
+        setInteractionModality("pointer");
         dispose();
       });
     });

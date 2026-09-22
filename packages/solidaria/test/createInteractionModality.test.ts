@@ -216,6 +216,84 @@ describe("createInteractionModality", () => {
       expect(isFocusVisible()).toBe(false);
     });
 
+    it("notifies a tracked isFocusVisible reader only on publish, including a same-word republish", () => {
+      createRoot((dispose) => {
+        setupGlobalFocusListeners();
+        setInteractionModality("pointer");
+        const listener = vi.fn();
+        const removeListener = addModalityListener(listener);
+        let runs = 0;
+        createTrackedEffect(() => {
+          isFocusVisible();
+          runs += 1;
+        });
+        flush();
+        expect(runs).toBe(1);
+        expect(isFocusVisible()).toBe(false);
+
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+        flush();
+        expect(runs).toBe(2);
+        expect(isFocusVisible()).toBe(true);
+
+        document.dispatchEvent(
+          new PointerEvent("pointermove", { bubbles: true, pointerType: "mouse" }),
+        );
+        flush();
+        expect(runs).toBe(2);
+        expect(getInteractionModality()).toBe("pointer");
+
+        document.dispatchEvent(
+          new PointerEvent("pointerup", { bubbles: true, pointerType: "mouse" }),
+        );
+        flush();
+        expect(runs).toBe(2);
+        expect(isFocusVisible()).toBe(false);
+
+        document.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse" }),
+        );
+        flush();
+        expect(runs).toBe(3);
+        expect(isFocusVisible()).toBe(false);
+
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+        flush();
+        expect(runs).toBe(4);
+        expect(isFocusVisible()).toBe(true);
+
+        // Silent move, then the same word again. The counter must still bump.
+        document.dispatchEvent(
+          new PointerEvent("pointermove", { bubbles: true, pointerType: "mouse" }),
+        );
+        flush();
+        expect(runs).toBe(4);
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+        flush();
+        expect(runs).toBe(5);
+        expect(isFocusVisible()).toBe(true);
+
+        listener.mockClear();
+        setInteractionModality("keyboard");
+        flush();
+        expect(runs).toBe(6);
+        expect(listener).toHaveBeenCalledWith("keyboard");
+
+        listener.mockClear();
+        const click = new MouseEvent("click", { bubbles: true, detail: 0 });
+        document.dispatchEvent(click);
+        flush();
+        expect(click.isTrusted).toBe(false);
+        expect(runs).toBe(7);
+        expect(getInteractionModality()).toBe("virtual");
+        expect(isFocusVisible()).toBe(true);
+        expect(listener).not.toHaveBeenCalled();
+
+        removeListener();
+        dispose();
+      });
+    });
+
     it("does not re-run an effect that reads getInteractionModality when a keydown flips modality", () => {
       createRoot((dispose) => {
         setInteractionModality("pointer");
