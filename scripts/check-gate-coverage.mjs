@@ -12,11 +12,11 @@
  * entry, an entry for a step that is gone, a blocking step that became
  * advisory, or a `leg` that is not a package script the chain reaches fails
  * this guard. So does a copy of the printed sentence that drifted in the two
- * docs this guard reads. A string `leg` must be among the `vp|pnpm|npm run`
- * scripts named in the step's run body when that body names any, every other
- * named script must be one `ci:release-readiness` reaches or the guard fails
- * naming the step and the script, and a null `leg` that names a reached
- * script fails.
+ * docs this guard reads. A newline separates commands like `&&`, `||` and
+ * `;` do. A string `leg` must be among the `vp|pnpm|npm run` scripts named in
+ * the step's run body when that body names any, every other named script must
+ * be one `ci:release-readiness` reaches or the guard fails naming the step and
+ * the script, and a null `leg` that names a reached script fails.
  *
  * `jobBlock` is the same four-line cut as `scripts/test-ci-guard-contracts.mjs`.
  * That file runs its suite on import and exports nothing. The workflow-pin and
@@ -42,6 +42,11 @@ const CERTIFIED_JOB = "certified";
 const CERTIFIED_SHARDS = 8;
 const CHAIN = "ci:release-readiness";
 const RUN_SOURCE = String.raw`(?:^|&&|\|\||;)\s*(?:vp|pnpm|npm)\s+run\s+([A-Za-z0-9:_-]+)`;
+const RUN_FLAGS = "gm";
+
+function matchRunScripts(text) {
+  return text.matchAll(new RegExp(RUN_SOURCE, RUN_FLAGS));
+}
 
 export const SENTENCE_DOCS = [
   ".claude/current/release-policy.md",
@@ -112,12 +117,16 @@ function usesAction(chunk) {
   return chunk.split("\n").some((line) => /^ {8}uses:/.test(line));
 }
 
-/** Every `vp|pnpm|npm run <script>` in a step body, in source order. */
+/** Every `vp|pnpm|npm run <script>` in a step body, in first-seen order. */
 export function invokedScripts(run) {
   if (!run) return [];
   const names = [];
-  for (const match of run.matchAll(new RegExp(RUN_SOURCE, "g"))) {
-    if (!match[1].startsWith("-")) names.push(match[1]);
+  const seen = new Set();
+  for (const match of matchRunScripts(run)) {
+    const name = match[1];
+    if (name.startsWith("-") || seen.has(name)) continue;
+    seen.add(name);
+    names.push(name);
   }
   return names;
 }
@@ -184,7 +193,7 @@ export function reachedScripts(scripts, entry = CHAIN) {
     const command = scripts?.[name];
     if (typeof command !== "string") continue;
     reached.add(name);
-    for (const match of command.matchAll(new RegExp(RUN_SOURCE, "g"))) {
+    for (const match of matchRunScripts(command)) {
       pending.push(match[1]);
     }
   }
@@ -400,17 +409,14 @@ function countCoverage(workflow, coverage, scripts) {
     }
     gates += 1;
     const leg = entries[step.key]?.leg;
-    if (stepRunsLocally(step, leg, reached)) local += 1;
+    if (stepRunsLocally(leg, reached)) local += 1;
   }
   return { local, gates, plumbing };
 }
 
-/** A gate runs locally when its leg and every script its body names are on the chain. */
-function stepRunsLocally(step, leg, reached) {
-  if (typeof leg !== "string" || !reached.has(leg)) return false;
-  const invoked = invokedScripts(step.runBody);
-  if (invoked.length > 0 && !invoked.includes(leg)) return false;
-  return invoked.every((script) => reached.has(script));
+// countCoverage runs only after findCoverageProblems is empty, so reached.has(leg) is the whole rule.
+function stepRunsLocally(leg, reached) {
+  return typeof leg === "string" && reached.has(leg);
 }
 
 export function findDocProblems(sentence, docs) {

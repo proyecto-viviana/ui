@@ -321,6 +321,42 @@ describe("the certification workflow", () => {
     );
     expect(evaluateGateCoverage(mutated, mapped, manifest.scripts).problems).toEqual([]);
   });
+
+  it("names a script on the next line of the typecheck step that the chain does not reach", () => {
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: |\n          pnpm run typecheck\n          pnpm run guard:idiomatic-solid\n",
+    );
+    const problems: string[] = evaluateGateCoverage(mutated, mapped, manifest.scripts).problems;
+    expect(
+      problems.some(
+        (problem) => problem.includes("typecheck") && problem.includes("guard:idiomatic-solid"),
+      ),
+    ).toBe(true);
+  });
+
+  it("counts a typecheck step whose script is below set -e", () => {
+    const clean = evaluateGateCoverage(source, mapped, manifest.scripts);
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: |\n          set -e\n          pnpm run typecheck\n",
+    );
+    const result = evaluateGateCoverage(mutated, mapped, manifest.scripts);
+    expect(result.problems).toEqual([]);
+    expect(result.sentence).toBe(clean.sentence);
+  });
+
+  it("names each duplicated script on one problem line", () => {
+    const mutated = source.replace(
+      "        run: pnpm run typecheck\n",
+      "        run: pnpm run a && pnpm run a && pnpm run b && pnpm run b\n",
+    );
+    const problems: string[] = evaluateGateCoverage(mutated, mapped, manifest.scripts).problems;
+    expect(problems).toEqual([
+      'blocking step "certification-gates / typecheck" runs "a", which is not a package.json script',
+      'blocking step "certification-gates / typecheck" runs "b", which is not a package.json script',
+    ]);
+  });
 });
 
 describe("checkGateCoverage", () => {

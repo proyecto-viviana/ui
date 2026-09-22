@@ -13,7 +13,7 @@ history:
     }
 ---
 
-`jobBlock` cut duplicated at `scripts/check-gate-coverage.mjs:52-58` and `scripts/test-ci-guard-contracts.mjs:65-71`.
+`jobBlock` cut duplicated at `scripts/check-gate-coverage.mjs:57-63` and `scripts/test-ci-guard-contracts.mjs:65-71` (`scripts/check-gate-coverage.mjs:57` and `scripts/test-ci-guard-contracts.mjs:65`). `scripts/check-gate-server-reuse.mjs` and `scripts/check-workflow-pins.mjs` do not read workflow jobs, so there is nothing to extract in one move.
 
 The plumbing allowlist is keyed by bare step name (`scripts/check-gate-coverage.mjs:167`), so a rename in any job demotes a gate.
 
@@ -31,4 +31,12 @@ The counting test (`scripts/check-gate-coverage.test.ts:196-215`) re-implements 
 
 Five of the nine allowlist names are `uses:` steps, which `stepKind` (`scripts/check-gate-coverage.mjs:165`) already classes as plumbing, so those five names are inert.
 
-`jobBlock` is still a second copy: `scripts/check-gate-coverage.mjs:52` and `scripts/test-ci-guard-contracts.mjs:65`. `scripts/check-gate-server-reuse.mjs` and `scripts/check-workflow-pins.mjs` do not read workflow jobs, so there is nothing to extract in one move.
+An env-prefixed command is invisible: `CI=1 pnpm run x` (`scripts/check-gate-coverage.mjs:44`).
+
+A `then`-guarded command is invisible: `if [ -f x ]; then pnpm run x; fi` (`scripts/check-gate-coverage.mjs:44`).
+
+A single `&` drops the second script: `pnpm run a & pnpm run b` (`scripts/check-gate-coverage.mjs:44`).
+
+A single `|` drops the second script: `pnpm run a | pnpm run b` (`scripts/check-gate-coverage.mjs:44`).
+
+`(pnpm run a); (pnpm run b)` is caught by the legRunsStep fallback (`scripts/check-gate-coverage.mjs:266`), not the run-script message.
