@@ -107,15 +107,26 @@ keep the family inside the bundle:
 
 ```ts
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
+
+const packages = [
+  "@proyecto-viviana/ui",
+  "@proyecto-viviana/solid-spectrum",
+  "@proyecto-viviana/solidaria-components",
+  "@proyecto-viviana/solidaria",
+  "@proyecto-viviana/solid-stately",
+];
 
 export default defineConfig({
   plugins: [solid({ ssr: true })],
+  optimizeDeps: { exclude: packages },
   ssr: { noExternal: [/@proyecto-viviana\/.*/] },
 });
 ```
 
-This repository's docs site server-renders with the same `noExternal` line.
+`@solidjs/vite-plugin` is the Solid 2 plugin (this repository pins
+`3.0.0-next.44`); `vite-plugin-solid` targets Solid 1. This repository's docs
+site server-renders with the same `noExternal` line.
 Two hydration defects remain in this candidate; see
 [known gaps](#known-gaps-in-this-release-candidate).
 

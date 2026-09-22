@@ -86,15 +86,26 @@ inside the bundle:
 
 ```ts
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
+
+const packages = [
+  "@proyecto-viviana/ui",
+  "@proyecto-viviana/solid-spectrum",
+  "@proyecto-viviana/solidaria-components",
+  "@proyecto-viviana/solidaria",
+  "@proyecto-viviana/solid-stately",
+];
 
 export default defineConfig({
   plugins: [solid({ ssr: true })],
+  optimizeDeps: { exclude: packages },
   ssr: { noExternal: [/@proyecto-viviana\/.*/] },
 });
 ```
 
-The project's own docs site server-renders with the same `noExternal` line.
+`@solidjs/vite-plugin` is the Solid 2 plugin (this repository pins
+`3.0.0-next.44`); `vite-plugin-solid` targets Solid 1. The project's own docs
+site server-renders with the same `noExternal` line.
 
 ## Authoring `style()`
 
@@ -110,12 +121,20 @@ For Vite, use the package helper:
 
 ```ts
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 import { vivianaMacros } from "@proyecto-viviana/ui/vite";
+
+const packages = [
+  "@proyecto-viviana/ui",
+  "@proyecto-viviana/solid-spectrum",
+  "@proyecto-viviana/solidaria-components",
+  "@proyecto-viviana/solidaria",
+  "@proyecto-viviana/solid-stately",
+];
 
 export default defineConfig({
   plugins: [vivianaMacros(), solid({ ssr: true })],
-  optimizeDeps: { exclude: ["@proyecto-viviana/ui"] },
+  optimizeDeps: { exclude: packages },
   ssr: { noExternal: [/@proyecto-viviana\/.*/] },
 });
 ```
