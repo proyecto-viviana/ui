@@ -1,5 +1,11 @@
 import type { Locator, Page } from "@playwright/test";
-import { clickLocator, focusLocator, layoutBox, scrollLocatorIntoView } from "../comparison-page";
+import {
+  clickLocator,
+  focusLocator,
+  layoutBox,
+  scrollLocatorIntoView,
+  scrollWindowTo,
+} from "../comparison-page";
 import { overlayRootLocator } from "./journeys-observe";
 import type { PanelContext, TargetResolver } from "./scenario";
 
@@ -9,6 +15,12 @@ import type { PanelContext, TargetResolver } from "./scenario";
  * Click/hover/tap scroll the target into view first (the Solid panel sits below
  * the fold). Seed journeys observe overlay tracking after `scrollPage` via
  * settle/keyboard steps, not a follow-up click.
+ *
+ * Every step that scrolls goes through a `comparison-page` scroll primitive, so
+ * it returns only once the `scroll` event it queued has been delivered (#608).
+ * A step that opens an overlay therefore never opens it into a queued document
+ * scroll, which upstream `useCloseOnScroll` would close it with — the fuzz
+ * alphabet is free to put a click straight after a `scrollPage`.
  *
  * Touch (`touchDown` / `touchUp` / `tapAt`) uses CDP `Input.dispatchTouchEvent`
  * and requires Playwright `hasTouch: true`. `registerJourneyDriver` and
@@ -295,7 +307,7 @@ export async function performStep(ctx: PanelContext, step: Step): Promise<void> 
       await page.setViewportSize({ width: step.width, height: step.height });
       return;
     case "scrollPage":
-      await page.evaluate((y) => window.scrollTo(0, y), step.y);
+      await scrollWindowTo(page, step.y);
       return;
     case "clock":
       // Requires `page.clock.install()` before navigation (journey class `timing`).

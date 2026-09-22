@@ -80,70 +80,90 @@ export async function waitForPaintSettle(page: Page, paintBudgetMs = defaultPain
   }, paintBudgetMs);
 }
 
-/** Cap for the queued `scroll` event of `scrollLocatorIntoView`. */
+/** Cap for the `scroll` event a harness scroll queues. */
 const scrollDispatchBudgetMs = 250;
 const scrollDispatchPollMs = 4;
 
 type ScrollTickWindow = Window & { __comparisonScrollTicks?: number };
 
+type ScrollRequest =
+  | { kind: "element"; block: ScrollLogicalPosition }
+  | { kind: "window"; y: number };
+
 /**
- * Playwright's `scrollIntoViewIfNeeded` waits for two compositor-stable frames.
- * WSL Chromium 151 never issues those frames through SwiftShader, so the
- * action deadlocks. DOM `scrollIntoView` does not need a frame.
+ * The page-side half of every harness scroll, shipped to the browser by
+ * `locator.evaluate`. It installs a capture `scroll` counter once, snapshots
+ * the window offset and every ancestor offset the scroll could move, scrolls,
+ * and reports the counter — or `null` when nothing moved, which means no event
+ * was queued and there is nothing to wait for.
  *
- * The DOM call is not the end of the scroll: Chromium dispatches the `scroll`
- * event at the next rendering update, a frame later. Upstream React Aria closes
- * every overlay whose trigger sits inside the scrolled tree (`useCloseOnScroll`,
- * which the port mirrors), so a helper that returned with that event queued
- * would let the next helper open an overlay INTO it — the overlay opens,
- * registers its scroll listener, and the stale event closes it again. Measured
- * on the certified tooltip walk: the canvas scroll and the `beforePanel` hover
- * are ~20 ms apart and the event lands between them, so whichever wins is the
- * machine's choice. That is the flake #608 owns.
+ * The ancestor walk is not decoration: the #608 scroll moved `<main>`, not the
+ * window (`scroll(MAIN)`), so a detector that reads only `window.scrollY` would
+ * see nothing and skip the wait in exactly the case the wait exists for.
  *
- * So this returns only once the event it queued has been delivered, and only
- * when something actually scrolled — an element already in view costs nothing.
+ * The snapshot and the scroll share one page task on purpose. A counter read in
+ * an earlier round trip could be bumped in between by somebody else's stale
+ * event, and that delivery would satisfy a wait meant for ours.
+ */
+function performScroll(element: Element, request: ScrollRequest): number | null {
+  const scrollWindow = window as ScrollTickWindow;
+  if (scrollWindow.__comparisonScrollTicks == null) {
+    scrollWindow.__comparisonScrollTicks = 0;
+    window.addEventListener(
+      "scroll",
+      () => {
+        scrollWindow.__comparisonScrollTicks = (scrollWindow.__comparisonScrollTicks ?? 0) + 1;
+      },
+      true,
+    );
+  }
+  const offsets = () => {
+    const parts = [`${window.scrollX},${window.scrollY}`];
+    for (let node: Element | null = element; node; node = node.parentElement) {
+      parts.push(`${node.scrollTop},${node.scrollLeft}`);
+    }
+    return parts.join("|");
+  };
+
+  const before = offsets();
+  if (request.kind === "window") {
+    window.scrollTo(0, request.y);
+  } else {
+    element.scrollIntoView({ block: request.block, inline: "nearest" });
+  }
+  return offsets() === before ? null : (scrollWindow.__comparisonScrollTicks ?? 0);
+}
+
+/**
+ * Hold the page until the `scroll` event the caller queued has been delivered.
+ *
+ * Chromium dispatches that event at the next rendering update, not in the task
+ * that scrolled. Upstream React Aria closes every overlay whose trigger sits
+ * inside the scrolled tree (`useCloseOnScroll`, which the port mirrors), so a
+ * scroll primitive that returned with the event queued would let the next step
+ * open an overlay INTO it — the overlay opens, registers its scroll listener,
+ * and the stale event closes it again. Measured on the certified tooltip walk:
+ * the canvas scroll and the `beforePanel` hover are ~20 ms apart and the event
+ * lands between them, so whichever wins is the machine's choice. That is the
+ * flake #608 owns, and it belongs to the page rather than to one helper: every
+ * primitive that scrolls waits here.
+ *
  * The wait is a condition, not a sleep: it polls a counter the page increments
  * from the real `scroll` event, on the Node side, which does not consume
  * Playwright's mocked clock (D11 drives hovers under a FROZEN clock, where page
  * timers and rAF never fire). The budget is `waitForPaintSettle`'s degradation
  * contract: a machine that never issues a rendering update proceeds instead of
  * deadlocking.
+ *
+ * `page.mouse.wheel` is the one scroll primitive that does not come through
+ * here. Journey wheels name the listbox, and a scroll inside the overlay does
+ * not contain the trigger, so upstream ignores it.
  */
-export async function scrollLocatorIntoView(
-  target: Locator,
-  block: ScrollLogicalPosition = "nearest",
-) {
-  const ticksBefore = await target.evaluate((element, align) => {
-    const scrollWindow = window as ScrollTickWindow;
-    if (scrollWindow.__comparisonScrollTicks == null) {
-      scrollWindow.__comparisonScrollTicks = 0;
-      window.addEventListener(
-        "scroll",
-        () => {
-          scrollWindow.__comparisonScrollTicks = (scrollWindow.__comparisonScrollTicks ?? 0) + 1;
-        },
-        true,
-      );
-    }
-    const offsets = () => {
-      const parts = [`${window.scrollX},${window.scrollY}`];
-      for (let node: Element | null = element; node; node = node.parentElement) {
-        parts.push(`${node.scrollTop},${node.scrollLeft}`);
-      }
-      return parts.join("|");
-    };
-
-    const before = offsets();
-    element.scrollIntoView({ block: align, inline: "nearest" });
-    return offsets() === before ? null : (scrollWindow.__comparisonScrollTicks ?? 0);
-  }, block);
-
+async function waitForQueuedScroll(page: Page, ticksBefore: number | null) {
   if (ticksBefore == null) {
     return;
   }
 
-  const page = target.page();
   const deadline = Date.now() + scrollDispatchBudgetMs;
   for (;;) {
     const ticks = await page.evaluate(
@@ -154,6 +174,41 @@ export async function scrollLocatorIntoView(
     }
     await page.waitForTimeout(scrollDispatchPollMs);
   }
+}
+
+/**
+ * Playwright's `scrollIntoViewIfNeeded` waits for two compositor-stable frames.
+ * WSL Chromium 151 never issues those frames through SwiftShader, so the
+ * action deadlocks. DOM `scrollIntoView` does not need a frame.
+ *
+ * Returns only once the `scroll` event it queued has been delivered, and only
+ * when something actually scrolled — an element already in view costs nothing.
+ * Every opener behind `hoverLocator`, `pressLocator`, `clickLocator`,
+ * `tapLocator` and `focusLocator` inherits that.
+ */
+export async function scrollLocatorIntoView(
+  target: Locator,
+  block: ScrollLogicalPosition = "nearest",
+) {
+  const ticksBefore = await target.evaluate(performScroll, {
+    kind: "element",
+    block,
+  } satisfies ScrollRequest);
+  await waitForQueuedScroll(target.page(), ticksBefore);
+}
+
+/**
+ * Scroll the page itself, for the D13 `scrollPage` step. The document is the
+ * scroller whose tree contains every trigger, so its event closes any overlay
+ * that is open when it lands and any overlay opened before it does — the same
+ * wait, from the same primitive, is what keeps a following click honest.
+ */
+export async function scrollWindowTo(page: Page, y: number) {
+  const ticksBefore = await page.locator(":root").evaluate(performScroll, {
+    kind: "window",
+    y,
+  } satisfies ScrollRequest);
+  await waitForQueuedScroll(page, ticksBefore);
 }
 
 /**
