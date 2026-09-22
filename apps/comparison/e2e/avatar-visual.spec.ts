@@ -15,9 +15,18 @@ const avatarDocsImageMock = `
   <path d="M13 64c3-18 35-18 38 0" fill="#f4d1b4"/>
 </svg>
 `;
-const avatarDocsImageRoutePattern = `**${avatarDemoDefaults.src}`;
-const avatarChangedSrc =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%234f46e5'/%3E%3Ccircle cx='32' cy='25' r='13' fill='%23f8fafc'/%3E%3Cpath d='M12 64c4-18 36-18 40 0' fill='%23f8fafc'/%3E%3C/svg%3E";
+const avatarChangedImageMock = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#4f46e5"/>
+  <circle cx="32" cy="25" r="13" fill="#f8fafc"/>
+  <path d="M12 64c4-18 36-18 40 0" fill="#f8fafc"/>
+</svg>
+`;
+// Same glob as avatar.certified.spec.ts (`**/fixtures/avatar/docs-avatar.png*`).
+// The trailing `*` matches the harness `?stack=` query.
+const avatarDocsImageRoutePattern = `**${avatarDemoDefaults.src}*`;
+const avatarChangedSrc = "/e2e/avatar-visual-changed.svg";
+const avatarChangedImageRoutePattern = `**${avatarChangedSrc}`;
 
 function avatarQuery(params: Record<string, string | boolean> = {}) {
   const search = new URLSearchParams();
@@ -31,15 +40,20 @@ function avatarQuery(params: Record<string, string | boolean> = {}) {
   return query ? `?${query}` : "";
 }
 
-async function mockDocsAvatarImage(page: Page) {
-  await page.unroute(avatarDocsImageRoutePattern).catch(() => undefined);
-  await page.route(avatarDocsImageRoutePattern, (route) =>
+async function routeAvatarSvg(page: Page, pattern: string, body: string) {
+  await page.unroute(pattern).catch(() => undefined);
+  await page.route(pattern, (route) =>
     route.fulfill({
       status: 200,
       contentType: "image/svg+xml",
-      body: avatarDocsImageMock,
+      body,
     }),
   );
+}
+
+async function mockDocsAvatarImage(page: Page) {
+  await routeAvatarSvg(page, avatarDocsImageRoutePattern, avatarDocsImageMock);
+  await routeAvatarSvg(page, avatarChangedImageRoutePattern, avatarChangedImageMock);
 }
 
 async function waitForAvatarImage(root: Locator) {
@@ -94,6 +108,26 @@ async function avatarContract(root: Locator) {
     const styles = window.getComputedStyle(element);
     const image = element.querySelector("img");
     const imageStyles = image ? window.getComputedStyle(image) : null;
+    // `?stack=` only separates the two fixture fetches. Drop that param and
+    // compare every other part of the URL as written.
+    const imgSrcIgnoringStack = (src: string | null) => {
+      if (src == null) {
+        return null;
+      }
+      const hashAt = src.indexOf("#");
+      const hash = hashAt === -1 ? "" : src.slice(hashAt);
+      const beforeHash = hashAt === -1 ? src : src.slice(0, hashAt);
+      const queryAt = beforeHash.indexOf("?");
+      if (queryAt === -1) {
+        return src;
+      }
+      const kept = beforeHash
+        .slice(queryAt + 1)
+        .split("&")
+        .filter((part) => part.split("=")[0] !== "stack");
+      const path = beforeHash.slice(0, queryAt);
+      return kept.length === 0 ? `${path}${hash}` : `${path}?${kept.join("&")}${hash}`;
+    };
 
     return {
       slot: element.getAttribute("slot"),
@@ -110,7 +144,7 @@ async function avatarContract(root: Locator) {
       flexGrow: styles.flexGrow,
       flexShrink: styles.flexShrink,
       imgAlt: image?.getAttribute("alt") ?? null,
-      imgSrc: image?.getAttribute("src") ?? null,
+      imgSrc: imgSrcIgnoringStack(image?.getAttribute("src") ?? null),
       imgDisplay: imageStyles?.display ?? null,
       imgWidth: imageStyles?.width ?? null,
       imgHeight: imageStyles?.height ?? null,
