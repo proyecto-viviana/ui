@@ -14,6 +14,7 @@ import {
   CERTIFIED_SUMMARY_FILENAME,
   checkRunBudgets,
   checkShardOutcomes,
+  failureKey,
   formatCertifiedSummaryMarkdown,
   mergeCertifiedSummaries,
   loadCertifiedRunBudgets,
@@ -94,8 +95,8 @@ const evaluation = evaluateCertifiedWaivers({
     ...merged.waived.map((entry) => entry.failure),
     ...merged.cells.flatMap((cell) => cell.failures),
   ].filter((failure, index, all) => {
-    const key = `${failure.file}\0${failure.title}`;
-    return all.findIndex((candidate) => `${candidate.file}\0${candidate.title}` === key) === index;
+    const key = failureKey(failure);
+    return all.findIndex((candidate) => failureKey(candidate) === key) === index;
   }),
   now: new Date(),
 });

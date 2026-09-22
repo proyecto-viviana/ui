@@ -396,6 +396,15 @@ function compareCells(left: CertifiedCell, right: CertifiedCell): number {
   );
 }
 
+/**
+ * Moves each waived failure out of its cell's `failures` and into its `waived`
+ * count. It runs twice over the same rows — once per shard in the reporter,
+ * once more in `merge-certified-reports.ts` over the merged cells — so it has
+ * to be idempotent: a cell whose failures no longer hold a waived key keeps the
+ * count a shard already gave it instead of being reset to zero. Resetting is
+ * what made the merged report print `waived 0` while listing five waived rows
+ * underneath it.
+ */
 export function applyWaiverCounts(
   summary: CertifiedSummary,
   waived: Array<{ failure: CertifiedFailure; waiver: CertifiedWaiver }>,
@@ -405,11 +414,11 @@ export function applyWaiverCounts(
   const waivedKeys = new Set(waived.map((entry) => failureKey(entry.failure)));
   const cells = summary.cells.map((cell) => {
     const cellWaived = cell.failures.filter((failure) => waivedKeys.has(failureKey(failure)));
-    if (cellWaived.length === 0) return { ...cell, waived: 0 };
+    if (cellWaived.length === 0) return { ...cell };
     return {
       ...cell,
       failed: Math.max(0, cell.failed - cellWaived.length),
-      waived: cellWaived.length,
+      waived: cell.waived + cellWaived.length,
       failures: cell.failures.filter((failure) => !waivedKeys.has(failureKey(failure))),
     };
   });

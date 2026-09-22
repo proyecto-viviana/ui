@@ -1,18 +1,26 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
 import {
+  applyWaiverCounts,
   certifiedCasesFromListing,
+  formatCertifiedSummaryMarkdown,
+  mergeCertifiedSummaries,
   parseComponentFromTitlePath,
   parseComponentSlug,
   parseDriverId,
+  type CertifiedCell,
   type CertifiedListingReport,
+  type CertifiedSummary,
+  type DriverId,
 } from "../../scripts/certified-summary";
 import {
+  CLOSED_TICKET_STATES,
+  TICKET_STATES,
   comparisonRootFrom,
   defaultWaiversPath,
   evaluateCertifiedWaivers,
@@ -109,7 +117,38 @@ const REPORTED_FAILURES: Record<string, CertifiedFailure> = {
   },
 };
 
+/**
+ * The clock the tracked-file cases grade on: the earliest date the list names,
+ * where every entry is still active whatever today is. Expiry is the certified
+ * run's to judge — `merge-certified-reports.ts` puts this same file through
+ * `evaluateCertifiedWaivers` on the real clock, and an expired entry turns that
+ * verdict red and names itself there.
+ */
+function trackedClock(waivers: readonly CertifiedWaiver[]): Date {
+  const earliest = waivers.map((entry) => entry.expires).sort()[0];
+  return earliest ? new Date(`${earliest}T00:00:00.000Z`) : now;
+}
+
 describe("certified waivers", () => {
+  // #578's review, problem 2. Nothing in this describe may read the wall clock.
+  // These cases are `certified verdict unit tests`, the FIRST step of
+  // `comparison-build`, and the eight certified shards, `certified-report` and
+  // both floor jobs all `needs: comparison-build`. A case that went red on the
+  // day the tracked list expires would skip every one of them — no certified
+  // verdict at all, and the pair and contract floors down with it — instead of
+  // the intended outcome, a red certified report whose `expired` problem names
+  // the waiver. So `Date` is pinned years past every tracked entry: a case that
+  // grades the tracked file on `new Date()` fails here, now, rather than in CI
+  // on a date.
+  const pastEveryTrackedWaiver = new Date("2099-01-01T00:00:00.000Z");
+  beforeAll(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(pastEveryTrackedWaiver);
+  });
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
   // This held the tracked file at `[]` until #578 carried the three
   // behaviour-class reds of Certification Gates 35668806426 as waivers. An
   // emptiness assertion cannot survive a list that exists, so what is held
@@ -129,16 +168,40 @@ describe("certified waivers", () => {
         ticketStatus: (ticketId) => readTicketStatus(repoRootFromComparison(root), ticketId).status,
       }),
     ).toEqual([]);
-    const closed = loaded.waivers.filter((entry) =>
-      ["verified", "merged", "closed"].includes(entry.ticketStatus),
-    );
+    const closed = loaded.waivers.filter((entry) => CLOSED_TICKET_STATES.has(entry.ticketStatus));
     expect(closed).toEqual([]);
     // The dates are the verdict's to judge, not the loader's: an entry that has
     // expired, or that stands for longer than a release, is a problem only once
-    // `evaluateCertifiedWaivers` sees it, so the tracked file is put through it.
+    // `evaluateCertifiedWaivers` sees it, so the tracked file is put through it
+    // — on the clock above, where no entry has expired yet. What that still
+    // catches is a list that cannot be renewed as one (`expires-too-far` from
+    // its own earliest date) and an entry whose ticket state ends a waiver.
     expect(
-      evaluateCertifiedWaivers({ waivers: loaded.waivers, failures: [], now: new Date() }).problems,
+      evaluateCertifiedWaivers({
+        waivers: loaded.waivers,
+        failures: [],
+        now: trackedClock(loaded.waivers),
+      }).problems,
     ).toEqual([]);
+  });
+
+  // And where expiry does turn red: the certified run, which evaluates this
+  // same file on the real clock. Graded here past every entry, the list waives
+  // nothing and every entry names itself — which is the report the day after
+  // the dates pass, with the shards and the floors still having run.
+  it("stops waiving, and names every entry, once the clock is past the list", () => {
+    const loaded = loadCertifiedWaivers(defaultWaiversPath(comparisonRootFrom(import.meta.url)));
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: loaded.waivers,
+      failures: Object.values(REPORTED_FAILURES),
+      now: new Date(),
+    });
+    expect(evaluation.problems.map((problem) => problem.kind)).toEqual(
+      loaded.waivers.map(() => "expired"),
+    );
+    expect(evaluation.waived).toEqual([]);
+    expect(evaluation.unwaived).toEqual(Object.values(REPORTED_FAILURES));
+    expect(waiverGateFails(evaluation)).toBe(true);
   });
 
   // #578's review, problem 2. The receipt claimed each pattern matched its own
@@ -161,7 +224,7 @@ describe("certified waivers", () => {
     const evaluation = evaluateCertifiedWaivers({
       waivers: loaded.waivers,
       failures: cases,
-      now: new Date(),
+      now: trackedClock(loaded.waivers),
     });
     const matched = new Map(loaded.waivers.map((entry) => [entry.pattern, 0]));
     for (const { waiver: entry } of evaluation.waived) {
@@ -209,7 +272,7 @@ describe("certified waivers", () => {
     const evaluation = evaluateCertifiedWaivers({
       waivers: loaded.waivers,
       failures: reported,
-      now: new Date(),
+      now: trackedClock(loaded.waivers),
     });
 
     expect(evaluation.problems).toEqual([]);
@@ -396,8 +459,15 @@ describe("certified waivers", () => {
     ).toEqual([]);
   });
 
-  it("fails the job when the waiver records a verified, merged or closed ticket", () => {
-    for (const status of ["verified", "merged", "closed"] as const) {
+  // #578's review, problem 1. The set is read from the source of truth rather
+  // than re-typed here, because the two used to disagree: this set held
+  // `closed`, a word the board never writes, and lacked `dropped`, the word it
+  // does write for a ticket closed without merging — so a dropped ticket kept
+  // waiving its row until the date ran out, which is the one thing
+  // `certification-debt.md` promises cannot happen.
+  it("fails the job when the waiver records a ticket state that ends a waiver", () => {
+    expect([...CLOSED_TICKET_STATES].sort()).toEqual(["dropped", "merged", "verified"]);
+    for (const status of CLOSED_TICKET_STATES) {
       const evaluation = evaluateCertifiedWaivers({
         waivers: [waiver({ ticketStatus: status })],
         failures: [failure()],
@@ -415,6 +485,65 @@ describe("certified waivers", () => {
       expect(evaluation.unwaived).toEqual([failure()]);
       expect(waiverGateFails(evaluation)).toBe(true);
     }
+    // And the states that do not end one: the defect is still wanted, only not
+    // now (`parked`), or nobody has started it (`open`, `next`, `in-progress`).
+    for (const status of TICKET_STATES.filter((state) => !CLOSED_TICKET_STATES.has(state))) {
+      const evaluation = evaluateCertifiedWaivers({
+        waivers: [waiver({ ticketStatus: status })],
+        failures: [failure()],
+        now,
+      });
+      expect({ status, problems: evaluation.problems, waived: evaluation.waived.length }).toEqual({
+        status,
+        problems: [],
+        waived: 1,
+      });
+    }
+  });
+
+  // #578's review, problem 1. `ticketStatus` used to be any non-empty string,
+  // and a state the board never emits — `closed`, a typo, a word from another
+  // tracker — matches no closing state, so it waives its row for the whole
+  // remaining horizon and `guard:certified-waiver-tickets` is the only thing
+  // left that would notice. The loader refuses it instead.
+  it("rejects a ticketStatus the board's lifecycle does not have", () => {
+    for (const status of ["closed", "done", "in progress", "Merged", "wontfix"]) {
+      expect(parseWaiverEntries([waiver({ ticketStatus: status })]).problems).toEqual([
+        expect.objectContaining({
+          kind: "invalid-entry",
+          detail: expect.stringContaining("ticketStatus must be the ticket's board state"),
+        }),
+      ]);
+    }
+    for (const status of TICKET_STATES) {
+      expect(parseWaiverEntries([waiver({ ticketStatus: status })]).problems).toEqual([]);
+    }
+  });
+
+  // The scheme's one legacy spelling: a ticket still written `status: done`
+  // parses as `merged`. Reading the raw word instead would make a waiver that
+  // correctly records `merged` look stale in the guard, and a waiver recording
+  // `done` — which the loader now refuses — look current.
+  it("reads a legacy done ticket as merged", () => {
+    const repoRoot = mkdtempSync(join(tmpdir(), "certified-waiver-board-"));
+    const board = join(repoRoot, ".claude/tickets/tasks");
+    mkdirSync(board, { recursive: true });
+    writeFileSync(
+      join(board, "240-legacy.md"),
+      "---\nid: 240\nstatus: done\n---\n\n# A ticket written before the scheme renamed the state\n",
+    );
+    writeFileSync(
+      join(board, "241-current.md"),
+      "---\nid: 241\nstatus: in-progress\n---\n\n# A ticket written after it\n",
+    );
+    expect(readTicketStatus(repoRoot, 240).status).toBe("merged");
+    expect(readTicketStatus(repoRoot, 241).status).toBe("in-progress");
+    expect(
+      reconcileWaiverTickets({
+        waivers: [waiver({ ticketStatus: "merged" })],
+        ticketStatus: (ticketId) => readTicketStatus(repoRoot, ticketId).status,
+      }),
+    ).toEqual([]);
   });
 
   // #574. `certifiedSuiteCoveredPathspecs` excludes `.claude/**`, so a verdict
@@ -440,10 +569,10 @@ describe("certified waivers", () => {
     expect(
       reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => "in-progress" }),
     ).toEqual([]);
-    expect(reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => "closed" })).toEqual([
+    expect(reconcileWaiverTickets({ waivers: [waiver()], ticketStatus: () => "merged" })).toEqual([
       expect.objectContaining({
         kind: "ticket-stale",
-        detail: "waiver ticket #240 records in-progress; the board says closed",
+        detail: "waiver ticket #240 records in-progress; the board says merged",
       }),
     ]);
   });
@@ -509,6 +638,142 @@ describe("certified waivers", () => {
   });
 });
 
+/**
+ * #578's review, problem 3. `applyWaiverCounts` runs twice over the same rows:
+ * the reporter applies it inside each shard before writing
+ * `certified-summary.json`, and `merge-certified-reports.ts` applies it again
+ * over the merged cells. It used to overwrite each cell's `waived` with the
+ * number of waived rows still sitting in that cell's `failures` — and the first
+ * pass had already moved them out — so the second pass reset every count to
+ * zero. That is a merged report printing `Totals: … 0 waived` above a
+ * `Waived failures` list with rows in it: the numbers the release bar is read
+ * off contradict the list under them.
+ */
+describe("merged certified summary waiver counts", () => {
+  function shardOf(current: number, cell: CertifiedCell): CertifiedSummary {
+    return {
+      generatedAt: "2026-09-22T00:00:00.000Z",
+      revision: "d6745471",
+      shard: { current, total: 2 },
+      runStatus: "failed",
+      errors: [],
+      totals: {
+        passed: cell.passed,
+        failed: cell.failed,
+        skipped: cell.skipped,
+        waived: cell.waived,
+        flaky: cell.flaky,
+      },
+      cells: [cell],
+      waived: [],
+      unwaived: [],
+      waiverProblems: [],
+    };
+  }
+
+  function redCell(component: string, driver: DriverId, red: CertifiedFailure): CertifiedCell {
+    return {
+      component,
+      driver,
+      passed: 3,
+      failed: 1,
+      skipped: 0,
+      waived: 0,
+      flaky: 0,
+      failures: [red],
+    };
+  }
+
+  it("keeps a shard's waived count when the merge applies the same waivers again", () => {
+    const pickerRed = REPORTED_FAILURES.pickerKeyboard;
+    const tabsRed = REPORTED_FAILURES.tabs;
+    const pickerWaiver = waiver({
+      pattern:
+        "^e2e/drivers/journeys\\.ts chromium › certified/picker\\.certified\\.spec\\.ts .* keyboard-only$",
+      ticket: 584,
+    });
+    const tabsWaiver = waiver({
+      pattern:
+        "^e2e/drivers/events\\.ts chromium › certified/tabs\\.certified\\.spec\\.ts .* arrow-next-from-selected$",
+      ticket: 583,
+    });
+    // The fixture's own patterns are ones the loader accepts, and each one
+    // matches the row it stands for: a waived count over rows no waiver reaches
+    // would prove nothing.
+    expect(parseWaiverEntries([pickerWaiver, tabsWaiver]).problems).toEqual([]);
+    expect(new RegExp(pickerWaiver.pattern).test(failureHaystack(pickerRed))).toBe(true);
+    expect(new RegExp(tabsWaiver.pattern).test(failureHaystack(tabsRed))).toBe(true);
+
+    // What the reporter writes per shard: the first pass.
+    const shards = [
+      applyWaiverCounts(
+        shardOf(1, redCell("picker-trigger", "D13", pickerRed)),
+        [{ failure: pickerRed, waiver: pickerWaiver }],
+        [],
+        [],
+      ),
+      applyWaiverCounts(
+        shardOf(2, redCell("tabs", "D4", tabsRed)),
+        [{ failure: tabsRed, waiver: tabsWaiver }],
+        [],
+        [],
+      ),
+    ];
+    for (const shard of shards) {
+      expect({ waived: shard.totals.waived, failed: shard.totals.failed }).toEqual({
+        waived: 1,
+        failed: 0,
+      });
+      expect(shard.cells[0]?.failures).toEqual([]);
+    }
+
+    // What the merger writes: the second pass, over cells the first already
+    // emptied, with the same verdict re-evaluated over the merged rows.
+    const merged = applyWaiverCounts(
+      mergeCertifiedSummaries(shards),
+      [
+        { failure: pickerRed, waiver: pickerWaiver },
+        { failure: tabsRed, waiver: tabsWaiver },
+      ],
+      [],
+      [],
+    );
+
+    expect(merged.totals).toEqual({ passed: 6, failed: 0, skipped: 0, waived: 2, flaky: 0 });
+    // The report's own consistency: the number above the list and the list.
+    expect(merged.totals.waived).toBe(merged.waived.length);
+    expect(merged.cells.map((cell) => [cell.component, cell.waived])).toEqual([
+      ["picker-trigger", 1],
+      ["tabs", 1],
+    ]);
+    expect(formatCertifiedSummaryMarkdown(merged)).toContain("**2 waived**");
+  });
+
+  // And the pass that has work to do still does it: a cell the reporter never
+  // graded — an unsharded run, or a row a shard left failed — moves from
+  // `failed` to `waived` on the pass that first sees the waiver.
+  it("moves a failure that no pass has waived yet", () => {
+    const tabsRed = REPORTED_FAILURES.tabs;
+    const applied = applyWaiverCounts(
+      shardOf(1, redCell("tabs", "D4", tabsRed)),
+      [
+        {
+          failure: tabsRed,
+          waiver: waiver({
+            pattern:
+              "^e2e/drivers/events\\.ts chromium › certified/tabs\\.certified\\.spec\\.ts .* arrow-next-from-selected$",
+            ticket: 583,
+          }),
+        },
+      ],
+      [],
+      [],
+    );
+    expect(applied.totals).toEqual({ passed: 3, failed: 0, skipped: 0, waived: 1, flaky: 0 });
+    expect(applied.cells[0]?.failures).toEqual([]);
+  });
+});
+
 // `reconcileWaiverTickets` is unit-tested above with a stub board; nothing drove
 // the guard that runs it. The tracked `e2e/certified-waivers.json` held `[]`
 // until #578, so every CI run of `guard:certified-waiver-tickets` iterated zero
@@ -543,13 +808,17 @@ describe("guard:certified-waiver-tickets end to end", () => {
 
   it("exits 1 naming both a stale recorded state and a ticket the board never had", () => {
     const status = boardStatus();
+    // A real state the board is not on: `not-<status>` is no longer a state the
+    // loader accepts, and an entry it refuses never reaches the reconciliation
+    // this case is here to drive.
+    const stale = TICKET_STATES.find((state) => state !== status) as string;
     const result = withWaivers([
-      waiver({ ticket: 574, expires: "2099-12-31", ticketStatus: `not-${status}` }),
+      waiver({ ticket: 574, expires: "2099-12-31", ticketStatus: stale }),
       waiver({ ticket: 9_999_999, expires: "2099-12-31" }),
     ]);
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(
-      `ticket-stale: waiver ticket #574 records not-${status}; the board says ${status}`,
+      `ticket-stale: waiver ticket #574 records ${stale}; the board says ${status}`,
     );
     expect(result.stderr).toContain("ticket-missing: waiver ticket #9999999 is not on the board");
   });

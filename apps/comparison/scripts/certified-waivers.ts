@@ -3,9 +3,46 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const CLOSED_TICKET_STATES = new Set(["verified", "merged", "closed"]);
 const CERTIFIED_SPEC_SUFFIX = ".certified.spec.ts";
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The board's lifecycle, and only it: `viviana-projects/spec/ticket-scheme.md`
+ * v1, which `.claude/tickets/SCHEME.md` points at. `open → next → in-progress →
+ * merged → verified`, plus the two side exits `parked` (still wanted, not now)
+ * and `dropped` (closed without merging). Legacy `done` is not in the set
+ * because `readTicketStatus` normalizes it to `merged` on the way out, as the
+ * scheme says to.
+ */
+export const TICKET_STATES = [
+  "open",
+  "next",
+  "in-progress",
+  "merged",
+  "verified",
+  "parked",
+  "dropped",
+] as const;
+
+export type TicketState = (typeof TICKET_STATES)[number];
+
+export function isTicketState(value: string): value is TicketState {
+  return (TICKET_STATES as readonly string[]).includes(value);
+}
+
+/**
+ * The states that end a waiver: the work landed (`merged`, `verified`) or the
+ * ticket was closed without it (`dropped`) — either way nobody is fixing the
+ * row any more. `parked` is not one: the defect is still wanted, only not now.
+ * `closed` used to be in this set and is a state the board never emits, while
+ * `dropped` was missing from it, so a dropped ticket kept waiving for the whole
+ * remaining horizon.
+ */
+export const CLOSED_TICKET_STATES: ReadonlySet<string> = new Set<TicketState>([
+  "merged",
+  "verified",
+  "dropped",
+]);
 
 /**
  * How far past today a waiver may still stand. The owner-accepted rule is that
@@ -36,7 +73,8 @@ export interface CertifiedWaiver {
   expires: string;
   /**
    * The waiver ticket's board state, copied into this file when the waiver is
-   * written or renewed. The certified verdict reads this field and never
+   * written or renewed, and one of {@link TICKET_STATES}. The certified verdict
+   * reads this field and never
    * `.claude/tickets/**` (#574): the board is outside
    * `certifiedSuiteCoveredPathspecs`, so a run that resolved the state from it
    * could change its own exit code under a postcard that still said current —
@@ -177,11 +215,13 @@ export function parseWaiverEntries(raw: unknown): {
       });
       return;
     }
-    if (typeof ticketStatus !== "string" || ticketStatus.length === 0) {
+    if (typeof ticketStatus !== "string" || !isTicketState(ticketStatus)) {
       problems.push({
         kind: "invalid-entry",
         waiver: null,
-        detail: `waivers[${index}].ticketStatus must be the ticket's board state, as a non-empty string`,
+        detail: `waivers[${index}].ticketStatus must be the ticket's board state, one of ${TICKET_STATES.join(
+          ", ",
+        )}: a state the board never emits matches no closing state, so it would waive until the date ran out`,
       });
       return;
     }
@@ -276,8 +316,11 @@ export function waiverHorizonStamp(now: Date): string {
 }
 
 /**
- * Reads a ticket's state off the board. This is the board read the certified
- * run no longer does: only `guard:certified-waiver-tickets` calls it, through
+ * Reads a ticket's state off the board, normalized to a {@link TicketState}:
+ * the scheme says legacy `done` parses as `merged`, and a caller that compared
+ * the raw word against a recorded `merged` would read a stale entry as current
+ * and keep waiving. This is the board read the certified run no longer does:
+ * only `guard:certified-waiver-tickets` calls it, through
  * `reconcileWaiverTickets` (#574).
  */
 export function readTicketStatus(
@@ -295,7 +338,8 @@ export function readTicketStatus(
       const source = readFileSync(path, "utf8");
       const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
       const statusMatch = match?.[1]?.match(/^status:\s*([^\s#]+)/m);
-      return { status: statusMatch?.[1] ?? null, path };
+      const recorded = statusMatch?.[1] ?? null;
+      return { status: recorded === "done" ? "merged" : recorded, path };
     }
   }
   return { status: null, path: null };
