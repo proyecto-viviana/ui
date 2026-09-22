@@ -35,7 +35,7 @@ export function Toggle(props: {
   const state = createToggleState(props);
 
   return (
-    <button aria-pressed={state.isSelected()} onClick={() => state.toggle()}>
+    <button aria-pressed={state.isSelected() ? "true" : "false"} onClick={() => state.toggle()}>
       {props.children}
     </button>
   );
