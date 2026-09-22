@@ -110,6 +110,23 @@ function writePrerequisites(root: string, packages: unknown[]): void {
   writeFileSync(join(root, "scripts", "release-prerequisites.json"), JSON.stringify({ packages }));
 }
 
+/**
+ * One case, because one question here is not asked anywhere else: the guard
+ * reads its subjects from the tree, so a package that exists and is not listed
+ * must fail. That needs a throwaway workspace, which is what this file builds.
+ *
+ * The entry *shape* is not asked here. #599 refused `satisfied`/`evidence` by
+ * name and replaced it with a re-derived `verify` block or a dated, owned
+ * `attested` one, and `scripts/test-ci-guard-contracts.mjs` drives the real
+ * script against a real registry answer for every branch of that rule: `PASS:
+ * satisfied=true plus a sentence is refused as release evidence`, `PASS: an
+ * attestation with no owner and date is refused`, `PASS: what cannot be
+ * re-derived passes only as a dated, owned attestation`, `PASS: only the listed
+ * prerequisite may be attested; the rest must re-derive`, and `PASS: an
+ * attestation expires; a stale one is refused with its age`. Two cases here
+ * asserted the abolished shape — one that it passed, one for its old message —
+ * and were deleted rather than re-blessed (#607).
+ */
 describe("check-release-prerequisites", () => {
   it("fails a publish candidate the prerequisite list forgets", () => {
     const root = fixture([{ dir: "a", name: "@scope/a", version: "1.0.0" }]);
@@ -117,31 +134,5 @@ describe("check-release-prerequisites", () => {
     const { status, output } = runGuard(root);
     expect(status).toBe(1);
     expect(output).toContain("@scope/a@1.0.0 is a publish candidate with no entry");
-  });
-
-  it("passes a candidate whose prerequisites are satisfied and evidenced", () => {
-    const root = fixture([{ dir: "a", name: "@scope/a", version: "1.0.0" }]);
-    writePrerequisites(root, [
-      {
-        name: "@scope/a",
-        manifest: "packages/a/package.json",
-        prerequisites: [{ id: "npm-package-registered", satisfied: true, evidence: "npm view …" }],
-      },
-    ]);
-    expect(runGuard(root).status).toBe(0);
-  });
-
-  it("fails a prerequisite that claims satisfaction with no evidence", () => {
-    const root = fixture([{ dir: "a", name: "@scope/a", version: "1.0.0" }]);
-    writePrerequisites(root, [
-      {
-        name: "@scope/a",
-        manifest: "packages/a/package.json",
-        prerequisites: [{ id: "npm-package-registered", satisfied: true, evidence: "  " }],
-      },
-    ]);
-    const { status, output } = runGuard(root);
-    expect(status).toBe(1);
-    expect(output).toContain("requires npm-package-registered");
   });
 });

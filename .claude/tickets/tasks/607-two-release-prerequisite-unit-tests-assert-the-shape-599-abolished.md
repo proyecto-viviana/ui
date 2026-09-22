@@ -4,7 +4,7 @@ type: task
 title: "Two release-prerequisite unit tests still assert the satisfied/evidence shape #599 abolished, so scripts/release-candidates.test.ts is red"
 created: 2026-09-21
 parent: 544
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "counts moved, the reds did not. #598's review fix carries each manifest's own `files` through `releasablePackages()`, which broke the exact-shape assertion in `takes every non-private, non-ignored package from the tree`; that case was repaired in place and a new one, `carries each manifest's own published-file list`, was added beside it. `vp test run scripts/release-candidates.test.ts --maxWorkers=2` now gives `2 failed | 6 passed` - the same two `check-release-prerequisites` cases, with the same `still carries satisfied/evidence` output. Nothing here is decided",
+    }
+  - {
+      state: merged,
+      at: 2026-09-22,
+      note: "decided as deletion, not rewrite, and landed. Why it could not wait: root `vitest.config.ts` includes `scripts/**/*.test.ts`, so these cases run in `test:run`, which runs inside `ci:release-readiness`, which is the `Release Readiness` workflow that `check-release-evidence.mjs` requires green at the release sha - two red unit tests here are a publish that cannot happen. Both asserted the shape #599 abolished by name (`satisfied: true` plus an `evidence` sentence passing, and the old `requires npm-package-registered` message), so making them green means widening `check-release-prerequisites.mjs`, which Scope 3 refuses. Deleted, and the block now carries a comment naming the harness cases that prove the rule in their place: `satisfied=true plus a sentence is refused as release evidence`, `an attestation with no owner and date is refused`, `what cannot be re-derived passes only as a dated, owned attestation`, `only the listed prerequisite may be attested; the rest must re-derive`, and `an attestation expires; a stale one is refused with its age`. The third case stays because it is the one question no other file asks - the guard reads its subjects from the tree, so a package with no entry must fail, and this file builds the throwaway workspace that shows it. Proof, run in this session: `vp test run scripts/release-candidates.test.ts --maxWorkers=2` before `2 failed | 6 passed (8)` EXIT=1, after `6 passed (6)` EXIT=0; `node scripts/test-ci-guard-contracts.mjs` EXIT=0. `merged`, not `verified`: this seat does not push, so no Release Readiness run id backs the claim that the workflow is green",
     }
 ---
 
