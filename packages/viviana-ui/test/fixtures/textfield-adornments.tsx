@@ -1,5 +1,7 @@
 /**
- * Shared fixture for the TextField adornment SSR/hydrate twin (#545 class 2).
+ * Shared fixtures for the field-adornment SSR/hydrate twin (#545 class 2),
+ * covering both components the baseline carries rows for: `TextField` and
+ * `SearchField`.
  *
  * `suffix={<Keyboard>…</Keyboard>}` is the shape `/showcase/inputs` uses, and
  * `Keyboard` reads `KeyboardContext`. A JSX prop compiles to a getter, so every
@@ -10,6 +12,7 @@
 import { children } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Keyboard } from "../../src/text/Keyboard";
+import { SearchField } from "../../src/searchfield";
 import { TextField } from "../../src/textfield";
 
 export function TextFieldAdornmentsFixture(): JSX.Element {
@@ -34,6 +37,26 @@ export function TextFieldReactiveAdornmentsFixture(props: { count: () => number 
   return (
     <TextField
       label="Ask the tutor"
+      prefix={<Keyboard>wrapped: {props.count()}</Keyboard>}
+      suffix={<>bare: {props.count()}</>}
+    />
+  );
+}
+
+/**
+ * The same two adornments on `SearchField`, whose `children()` block is the
+ * twin of TextField's (`src/searchfield/index.tsx:426`, `:427`) but whose
+ * render is not: it gates the prefix through a `<Show>` that has a fallback,
+ * the input through a second `<Show>` keyed on either adornment, and the suffix
+ * through a third, all inside a div carrying its own `isFocusWithin` signal. A
+ * `<Show>` that re-renders would re-resolve the snapshot where TextField's
+ * would not, so the two baseline rows for that file are measured here rather
+ * than argued from TextField's shape.
+ */
+export function SearchFieldReactiveAdornmentsFixture(props: { count: () => number }): JSX.Element {
+  return (
+    <SearchField
+      label="Find a tutor"
       prefix={<Keyboard>wrapped: {props.count()}</Keyboard>}
       suffix={<>bare: {props.count()}</>}
     />

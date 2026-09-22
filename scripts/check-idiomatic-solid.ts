@@ -21,10 +21,12 @@
  *    the text stays live after hydration; read once in a component body, which
  *    `createComponent` runs untracked, the insert holds a plain value and
  *    nothing re-runs it — the same fixture proves both halves, and a hydrated
- *    TextField whose `prefix` and `suffix` carry a signal updates in the
- *    claimed server nodes. The heuristic stays broad because it cannot see
- *    that difference; a site measured benign is baselined with the ticket that
- *    measured it (the four #545 field adornments).
+ *    TextField or SearchField whose `prefix` and `suffix` carry a signal
+ *    updates in the claimed server nodes. Both components are rendered there,
+ *    one baselined row per adornment, because their `<Show>` gating differs.
+ *    The heuristic stays broad because it cannot see that difference; a site
+ *    measured benign is baselined with the ticket that measured it (the four
+ *    #545 field adornments).
  *
  *    Heuristic (kept deliberately simple): a `const ident = children(() => …)` /
  *    `resolveChildren(() => …)` binding is flagged when `ident`, or a one-hop

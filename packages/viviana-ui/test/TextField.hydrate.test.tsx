@@ -1,5 +1,7 @@
 /**
- * Hydration half of the TextField adornment twin (#545 class 2).
+ * Hydration half of the field-adornment twin (#545 class 2), for both
+ * components the baseline carries `children()` rows for: `TextField` and
+ * `SearchField`.
  *
  * Reads the markup TextField.ssr.test.tsx writes (run that first) and hydrates
  * a DOM-compiled TextField over it. This is the environment that reproduced
@@ -12,9 +14,12 @@
  * `children()` rendered as JSX is what `guard:idiomatic-solid` flags as the
  * #135 freeze, so does an adornment carrying a signal still update once the
  * page is hydrated? Measured here: it does, for wrapped and for bare mixed
- * text, in the server's own claimed nodes. The freeze needs the snapshot to be
- * read untracked — the two controls show both sides, and reading each adornment
- * once in the TextField body instead of in the JSX fails `bare: 1` here.
+ * text, in the server's own claimed nodes, in each field component — SearchField
+ * gates its adornments through three `<Show>`s rather than TextField's two, so
+ * it is rendered rather than reasoned from TextField. The freeze needs the
+ * snapshot to be read untracked — the two controls show both sides, and reading
+ * each adornment once in either field's body instead of in the JSX fails
+ * `bare: 1` here.
  */
 import { createSignal, flush } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -25,6 +30,7 @@ import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import {
   ChildrenSnapshotInBodyFixture,
   ChildrenSnapshotInJsxFixture,
+  SearchFieldReactiveAdornmentsFixture,
   TextFieldAdornmentsFixture,
   TextFieldReactiveAdornmentsFixture,
 } from "./fixtures/textfield-adornments";
@@ -64,7 +70,7 @@ async function hydrateAndFlip(
   return { before, after: container.textContent ?? "" };
 }
 
-describe("viviana-ui TextField adornments hydrate over SSR markup", () => {
+describe("viviana-ui field adornments hydrate over SSR markup", () => {
   afterEach(() => {
     document.body.innerHTML = "";
   });
@@ -86,10 +92,22 @@ describe("viviana-ui TextField adornments hydrate over SSR markup", () => {
     expect(container.textContent).toContain("↵");
   });
 
-  it("keeps reactive adornment text live after hydration (#545, #611)", async () => {
+  it("keeps reactive TextField adornment text live after hydration (#545, #611)", async () => {
     const r = await hydrateAndFlip(
       "viviana-ui-textfield-reactive-adornments-ssr.html",
       TextFieldReactiveAdornmentsFixture,
+      "input, kbd",
+    );
+    expect(r.before).toContain("wrapped: 0");
+    expect(r.before).toContain("bare: 0");
+    expect(r.after).toContain("wrapped: 1");
+    expect(r.after).toContain("bare: 1");
+  });
+
+  it("keeps reactive SearchField adornment text live after hydration (#545, #611)", async () => {
+    const r = await hydrateAndFlip(
+      "viviana-ui-searchfield-reactive-adornments-ssr.html",
+      SearchFieldReactiveAdornmentsFixture,
       "input, kbd",
     );
     expect(r.before).toContain("wrapped: 0");
