@@ -1,7 +1,7 @@
 ---
 id: 578
 type: task
-title: "The certified suite is 169 red on GitHub's runners, concentrated in thirteen components"
+title: "The certified suite is 27 red on GitHub's runners, concentrated in five components"
 created: 2026-09-20
 parent: 544
 status: in-progress
@@ -41,6 +41,16 @@ history:
       at: 2026-09-21,
       note: "the roster this ticket carries is out of date and the correction is measured, not guessed. Against the 88 failures of run 35560076342 at `96376e9a`, the first complete run under the new shard shape - 35638122333 at `45714230`, all eight shards run and merged - reports `Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 1 flaky`. Its 27 unwaived failures, counted from the report job's log (job 106467836508): `combobox-list` 22 (D1 6, D3 6, D7 2, D9 6, D10 2), `picker-trigger` D13 2, `tabs` D4 1, `togglebutton` D2 1, `togglebuttongroup` D2 1 - five components, not thirteen. Run 35646778662 at `d1c5f4b3` fails the same four shards. Which of these are crash-class is the census's call and is not decided here; by the owner's soft-launch cut on #544 the crash-class subset is in the RC and the rest is deferred, and nothing is waived - `certified-waivers.json` is `[]`",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: 'the owner''s call on waivers, ~17:10, recorded here because this ticket owns the census the rule applies to. The conductor put four open calls to the owner - quoting its own message, "the dist-tag (my default is `rc` alone), re-enabling Release Readiness and Site Gate, the waiver list once the census produces it, and the publish" - and the owner answered, verbatim: "can you handle all those? your default is fine", then "also you''re the only one working on this, the previous session was superseded by yours, so you can handle everything, don''t say "oh the other session is running" or whatever". The call is therefore delegated to the conductor, and what follows is the conductor''s stated default that the owner accepted, not the owner''s own wording: waivers cover BEHAVIOUR-class certified reds only, each entry ticket-backed and expiring at the next release, CRASH-class is fixed and never waived, and the conductor writes the entries once the census is reviewed and reports the list back. Two limits follow from that and are worth writing down: a waiver is not a grade, so the grading stays in this census and nothing may be waived that the census has not graded; and the rule does not cover a row that merely passes on retry, which is why the tooltip flake became #608 and not an entry',
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: "re-headed onto the measured count and the waiver list written. The title and the tables below said 169, and the note above already corrected the body to 27 without moving the head; both now say 27, and the 169/88 tables are kept as dated snapshots because the ordering argument they carry was true when it was made. Measured again at the newest complete run, 35668806426, head `b22a44eb` (= `origin/main` at the time of writing), merge job 106565094355: `Run status: failed`, `Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky`. Same 27 as run 35638122333, and the one flaky row of that run - the certified tooltip, now #608 - did not recur. The 27, counted from that job's own `Unwaived failures` list and its per-component table: `combobox-list` 22 (D1 6, D3 6, D7 2, D9 6, D10 2), `picker-trigger` D13 2, `togglebutton` D2 1, `togglebuttongroup` D2 1, `tabs` D4 1. Five components out of the 107 in that job's own per-component table; the other 102 are green, counted from the table rather than remembered. Class, which is this ticket's call and is made here: **none of the 27 is crash-class**. Nothing throws, nothing fails to render, and every one of them is a compared-behaviour difference against the pair oracle - 22 screenshot/contrast/forced-colors/RTL rows on one ComboBox list defect, 2 Picker journey rows, 2 reduced-motion rows, 1 event-sequence row. So the RC carries no known crash from this suite. Of the 27, the 5 non-ComboBox rows are behaviour-class **and deliberate for this release** under the rule above, and they are now waived by ticket in `apps/comparison/e2e/certified-waivers.json`, which was `[]`: #584 for the two `picker-trigger` D13 rows (`open-arrow-enter-reopen-scroll-escape` and `keyboard-only`), #583 for the two D2 `default · hover-transition` rows on `togglebutton` and `togglebuttongroup`, and the new #609 for `tabs` D4 `horizontal-regular · arrow-next-from-selected`. Each entry carries the ticket's real board state (`in-progress`, `open`, `open`), `expires: 2026-12-31` standing for the next release, and a `reason` written as what a user sees rather than as a test name. The patterns are anchored on the case id with `$` and were checked against the full local case inventory (3065 cases): 2, 2 and 1 matches, nothing else - an over-broad pattern is the real hazard here, because `evaluateCertifiedWaivers` has no unused-waiver problem kind and would silently swallow a future red. Proof of the list, run at this commit: `vp run comparison:test:certified-waivers` -> 3 files, 52 passed, exit 0, and `vp run comparison:guard:certified-waiver-tickets` -> `3 waiver(s) ... agree with the board`, exit 0, both with the non-empty list. A wrong entry is refused three ways, each driven from a scratch fixture through the mechanism that owns it, since they are not the same mechanism: the guard exits 1 on an off-board ticket (`ticket-missing: waiver ticket #9999 is not on the board`) and on a recorded state the board has moved past (`ticket-stale: waiver ticket #583 records in-progress; the board says open`), while a closed ticket and a case id that matches nothing are the verdict's to refuse - `evaluateCertifiedWaivers` returns `ticket-closed: waiver ticket #609 is verified; remove the waiver` with `waived 0, unwaived 1` for each of `verified`, `merged` and `closed`, and leaves a renamed case (`arrow-next-from-last`) unwaived with the gate failing. An expired date does the same. Worth writing down because the guard alone would pass a waiver on a closed ticket whose record matches the board. **The remaining 22 are not waived and must not be**: they are one defect, the ComboBox list checkmark, owned by #497, which is still `status: next` - the writer that was to land it died before making an edit. So `waiverGateFails` stays true and the blocking `certified report` job still exits 1 at this revision; it goes green when #497 lands, not when this bookkeeping does. This is also a disagreement with the brief that produced this note, which described the ComboBox rows as fixed: the tree says otherwise and the tree wins",
+    }
 ---
 
 ## Why this is filed above the remaining gate reds
@@ -48,15 +58,45 @@ history:
 #547 asks for "a certified run whose result is recorded, not waived", and the
 owner's decision on 2026-09-20 was that the evidence comes from re-enabling
 Certification Gates and running it in CI. That has happened. The answer it
-returned is 169 failures.
+returned on 2026-09-20 was 169 failures; on 2026-09-21, after the fixes the
+history above names, it is **27**.
 
 So the gap between here and the release is not four gate tickets. It is four
 gate tickets **and this**. Every one of #573, #574, #575 and #576 is smaller
 than this ticket, and none of them is on the critical path in the way this is:
-a green `gates` job with a 169-red certified suite is not a releasable
-revision under #547's own words.
+a green `gates` job with a red certified suite is not a releasable revision
+under #547's own words.
 
-## The shape, counted from the run's own failure list
+## Where the 27 are, run 35668806426 at `b22a44eb` (2026-09-21)
+
+`Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky`, merge job 106565094355. Five components; the other 102 in that job's per-component table
+are green.
+
+| component         | driver | failures | class     | owner | in the RC                  |
+| ----------------- | ------ | -------: | --------- | ----- | -------------------------- |
+| combobox-list     | D1     |        6 | behaviour | #497  | fixed, never waived        |
+| combobox-list     | D3     |        6 | behaviour | #497  | fixed, never waived        |
+| combobox-list     | D7     |        2 | behaviour | #497  | fixed, never waived        |
+| combobox-list     | D9     |        6 | behaviour | #497  | fixed, never waived        |
+| combobox-list     | D10    |        2 | behaviour | #497  | fixed, never waived        |
+| picker-trigger    | D13    |        2 | behaviour | #584  | waived, expires 2026-12-31 |
+| togglebutton      | D2     |        1 | behaviour | #583  | waived, expires 2026-12-31 |
+| togglebuttongroup | D2     |        1 | behaviour | #583  | waived, expires 2026-12-31 |
+| tabs              | D4     |        1 | behaviour | #609  | waived, expires 2026-12-31 |
+
+No row is crash-class: nothing throws and nothing fails to render. The 22
+ComboBox rows are one defect seen through five drivers and are being fixed
+rather than waived, so the blocking `certified report` job exits 1 until #497
+lands — the three waivers cover the other five rows only.
+
+The certified tooltip row is not in this table. It passes and turns the job red
+only through `flakyBudget: 0`; it is #608, and it was green in this run.
+
+## Snapshot: the shape at 169, run 35546816816 at `ef7d4c4d` (2026-09-20)
+
+Kept because the ordering argument it carries was true when it was made, and
+because the families it names are how the 169 were worked down to 27. Every
+count below is that run's, not today's.
 
 169 unwaived failures over 37 component × driver rows. By driver:
 
@@ -108,13 +148,16 @@ the Solid 2 port window.
 
 ## Work
 
-1. Reproduce one failure locally before theorising about 169. Take
+1. ☑ Reproduce one failure locally before theorising about 169. Take
    `toast` D1 `neutral · dark` — the largest component, the cheapest driver —
    and look at the actual diff image, not at the test name.
-2. Group the 169 by proven cause, not by apparent family. The receipt is the
-   worklist; a row leaves it only when a run says why it failed.
+2. ☑ Group the 169 by proven cause, not by apparent family. The receipt is the
+   worklist; a row leaves it only when a run says why it failed. Done by the
+   2026-09-21 census; what the grouping left is the 27 table above.
 3. Fix by cause. Each cause owes its own commit, its own re-run of the affected
-   spec, and a changeset if it touches a published package.
+   spec, and a changeset if it touches a published package. What is left is
+   #497 (22 rows, one ComboBox list defect), and #583, #584 and #609 after the
+   RC.
 4. Anything that is a deliberate Solid 2 divergence rather than a defect goes to
    `certification-debt.md` **by name**, with the owner's call recorded. It does
    not go to `certified-waivers.json` without a ticket and an expiry, which that
@@ -127,6 +170,13 @@ remaining failure is named in `certification-debt.md` with an owner decision,
 and the postcard in `apps/comparison/src/data/certified-suite-evidence.ts` is
 re-pinned to that revision — which is #194's Done when, reached from this side.
 
+Concretely, at the RC: `waiverGateFails` false, which means every remaining
+failure matched by a waiver whose ticket is open on the board and whose
+`expires` is in the future. All five waivable failures are there now, under
+three tickets — #584 two, #583 two, #609 one — measured as 5 waived against the
+run's 27. The 22 ComboBox rows are not waivable, so the gate stays red and #497
+is what closes them.
+
 ## Relationship
 
 Child of #544, and the thing stage 3 of
@@ -137,6 +187,12 @@ Closes the open question in #194, which asks for the certified record pinned to
 HEAD — it cannot be, because HEAD does not pass. #194's slices 1–3 are why this
 was visible at all: slice 1 is what turned a silent green merge into the failing
 step that produced this list.
+
+Work-children, each owning rows of the 27 table: #497 (ComboBox list, 22 rows,
+fixed not waived), #584 (Picker D13, 2), #583 (ToggleButton and
+ToggleButtonGroup D2, 2), #609 (Tabs D4, 1, opened from this census). #608 is
+the fifth child and owns no failing row — it is the tooltip case that turns the
+same job red through the flake budget.
 
 Bears on #576, which found the playground Toast region missing its
 `Notifications` landmark. Toast is also the largest certified cluster at 25.

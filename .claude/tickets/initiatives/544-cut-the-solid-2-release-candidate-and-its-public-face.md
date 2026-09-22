@@ -50,6 +50,11 @@ history:
       at: 2026-09-21,
       note: "review of `b6ea736a`; three findings, all three real, all three fixed, two of them as in-place edits to this file. (1) The waiver paragraph's headline evidence was superseded before it was written. Certification Gates 35646778662 at `d1c5f4b3`, the RC's own sha, ran all eight certified shards and its `certified report` job 106494691342 completed 2026-09-21T20:02:28Z, three minutes ahead of `b6ea736a` itself at 2026-09-21T20:05:26Z. Its log, read with `gh api repos/:owner/:repo/actions/jobs/106494691342/logs`, totals 2146 passed, 27 failed, 4 skipped, 0 waived and 0 flaky, and its 27 unwaived failure lines are identical to 35638122333's, diffed line by line rather than eyeballed. The one number that moved is the one that costs an exit code: `flakyBudget` is 0 in `apps/comparison/e2e/certified-case-floor.json`, and the older run's log carries `over-flaky: 1 cases passed only on a retry, budget 0` where the newer one carries no budget line at all. The paragraph now cites the RC's own run; `0 waived` survives the swap. The note above that quoted 35638122333 is left as written, being the record of what was believed then. (2) The `Gates green at one sha` bullet now ends by naming the ladder frontier - step 38 of run 35646778662 - and by saying why it is written on this ticket and not in `status.md`, which is #588's third Done-when clause; #588 carries the rest of that finding. (3) The note above records that the measurement-worktree grant went into this repository's `AGENTS.md`; what it did not record is that no owner sentence on this ticket supports it. The two quotes here are the soft-launch cut and a remark about more workers. The clause is removed from `ui/AGENTS.md`, the hub exception is the only seat list again, and the residue is item 22 on #552",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-21,
+      note: 'the four calls this cut left open came back delegated, the waiver list exists, and three statements in this file are corrected in place. The delegation, ~17:10: the conductor listed its open owner calls - quoting its own message, "the dist-tag (my default is `rc` alone), re-enabling Release Readiness and Site Gate, the waiver list once the census produces it, and the publish" - and the owner answered, verbatim: "can you handle all those? your default is fine", then "also you''re the only one working on this, the previous session was superseded by yours, so you can handle everything, don''t say "oh the other session is running" or whatever". The four defaults the owner accepted are the conductor''s own wording, not his, and each is written onto the ticket that owns it: dist-tag `rc` alone with no hand-moved `next` and the publish condition on #547, the two `gh workflow enable` commands on #568, the waiver rule on #578. In this file the `Release candidate shape` bullet gains a dated amendment, `Standing authority`, ordered item 6 and the `Done when` swap `next` for `rc`, and the `Owner gates` paragraph of the cut moves those three out of the owner column while keeping deploys, secrets, dependencies, public names and the `public-face` merge in it. Also his ~17:35 correction, verbatim, "well one tiny lie, there is an agent orchestrating work only on visualmode", which is why this seat touches no visualmode checkout and no hub policy file. Second, the waiver list: #578 wrote three entries into `apps/comparison/e2e/certified-waivers.json`, which was `[]` - #584 (two `picker-trigger` D13 rows), #583 (two D2 `default · hover-transition` rows) and the new #609 (`tabs` D4 `horizontal-regular · arrow-next-from-selected`), each with the ticket''s real board state and `expires: 2026-12-31`. That is 5 of the 27 reds of run 35668806426 at `b22a44eb`; the other 22 are one ComboBox list defect (#497, still `next` - its writer died before editing anything), are not waivable under the rule, and keep the blocking `certified report` job at exit 1. Third, three corrections. (a) The cut listed #584 and #586 nowhere: #584 is now in Deferred with its reason - focus placement on Picker open, no crash, every option still reachable - and #586 is split, its two landed colour fixes in the RC because they are already in the tree, its closing 174-route `a11y:contrast` run and its two round-2 residues deferred, the run because this host stops it for memory. (b) The `Gates green at one sha` bullet listed `docs:check` as outstanding while citing run 35646778662, which had walked past it; measured in both runs since, `docs:check` is step 37 and `success` (35646778662 at `d1c5f4b3`, and 35668806426 at `b22a44eb`, `certification-gates` job 106560418098), and the frontier is step 38 `comparison parity (strict)` on the stale postcard pin, which is #574. (c) The soft-launch note above defended deferring #596 with `createLabels.ts:50` is `props.id ?? createId()`, so no shipped path reaches it today - that does not follow, since the `??` fallback is precisely the branch that calls `createId()`, and it runs for any caller that passes no `id`. The reason that does hold, read from the one `createLabels.ts` in the tree, `packages/solidaria/src/label/createLabels.ts`: all five in-repo callers pass an id computed in their own hook body - `createLabel.ts:107`, `createComboBox.ts:824` and `:853`, `createDateSegment.ts:446`, `createGridListSection.ts:40` - so no path this RC ships takes the fallback, and the fallback is there for an external caller with no id, which the comment at `:36-49` says must call `createLabels` from a hook body because Solid 2''s `createUniqueId` needs a reactive owner while hydrating. The deferral stands; only its reason changes',
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
@@ -68,13 +73,18 @@ for a `latest` release.
   Solid does. Consumers move to the rc at once; nothing important is in
   production. Certified failures may ship as named debt in
   `certification-debt.md`. `latest` stays held to #537.
+  - Amended 2026-09-21: the dist-tag half of this was handed to the conductor
+    — "can you handle all those? your default is fine" — and the conductor's
+    stated default, accepted, is **`rc` alone, no hand-moved `next`**. The
+    `-rc.N` versions and the held `latest` are unchanged. #547 carries the
+    quotes and the mechanics; #600 carries the install line.
 - **Dependency.** `@tanstack/solid-router` and `@tanstack/solid-start` move to
   `2.0.0-rc.8`, the Solid 2 line (#545).
 - **Public surfaces in scope.** Site landing and docs, npm READMEs, the GitHub
   front door, and the comparison site.
 - **Standing authority for this campaign.** Push to `origin/main`; deploy the
   docs site once Site Gate is green on the exact revision; publish the rc to
-  `next` once #547's gates are green. Never force-push.
+  `rc` once #547's gates are green (`next` as amended above). Never force-push.
 - **CI.** GitHub-hosted runners and local checks only. No Blacksmith (#551).
 - **Workers.** Fable conducts, decides, and accepts diffs. Opus takes audit
   lenses, hard slices, and the second review seat. AGY is the default
@@ -89,7 +99,7 @@ for a `latest` release.
 3. #534 Hover slice: finish or revert the five preserved files.
 4. #545 web app on Solid 2. Site Gate cannot pass before this.
 5. #543 remainder, then #139 and the rest of #194, as #87 orders them.
-6. #547 rc prerelease on `next`.
+6. #547 rc prerelease on `rc`.
 7. #548 npm READMEs and GitHub front door.
 8. #549 site landing and docs, then deploy.
 9. #550 comparison site as public evidence.
@@ -117,7 +127,7 @@ which of them can be reached, and in what order.
 
 ## Done when
 
-An `-rc.N` of each in-scope package is on `next` from one exact revision with
+An `-rc.N` of each in-scope package is on `rc` from one exact revision with
 its gates recorded on #547. The public site builds from that revision and is
 deployed. The READMEs and front door describe what is certified, what is
 experimental, and the Solid 2 requirement, with a proof for each claim.
@@ -153,12 +163,17 @@ owner. What changes is which of them the RC waits for.
 - **Gates green at one sha.** The ladder itself. #606 is done and proved by
   Certification Gates 35646778662 at `d1c5f4b3`, step 24 `guard layer-boundary`
   green. What is left is whatever the local guard ladder and #590's twenty-leg
-  walk find red, `docs:check`, and a certified postcard re-pinned only from a
-  real full certified run — #574's open half at S0-d, which that same run
-  stopped at: step 38 `comparison parity (strict)`, a stale postcard, 3199
-  covered paths changed since `0f1e1198`. So the ladder frontier is step 38
-  of run 35646778662, and it is written here because `status.md` is generated
-  and work state lives only in `.claude/tickets` (#588).
+  walk find red, plus a certified postcard re-pinned only from a real full
+  certified run — #574's open half at S0-d, which is where both runs since
+  have stopped: step 38 `comparison parity (strict)`, a stale postcard, 3199
+  covered paths changed since `0f1e1198`. `docs:check` is **not** left: it is
+  step 37 and `success` in run 35646778662 at `d1c5f4b3` and again in run
+  35668806426 at `b22a44eb` (`certification-gates` job 106560418098), which is
+  the same run that names the frontier — this bullet used to list it as
+  outstanding while citing a run that had walked past it. So the ladder
+  frontier is step 38, now measured at `b22a44eb`, and it is written here
+  because `status.md` is generated and work state lives only in
+  `.claude/tickets` (#588).
 - **Hard crashes only.** #545, the web app on Solid 2, for the SSR failure; the
   crash-class subset of #578's certified reds; and any build, typecheck or test
   red #590 turns up. Which reds are crash-class is decided by the census being
@@ -166,24 +181,47 @@ owner. What changes is which of them the RC waits for.
 - **Consumer breakage.** #598 and #599, the route to npm.
 - **Public-face facts.** #548, #549 and #600, plus a "known gaps in this RC"
   section that links every ticket deferred below.
+- **Site colour, the landed half of #586.** Both of its fixes are in the tree
+  and are what makes `a11y:contrast`, the third `ci:site` leg, reachable at
+  all, so the RC ships them; it is in the RC because it is already in it, not
+  because the cut waits on it. What the RC does not wait for is the rest of
+  that ticket, which is deferred below: the closing 174-route run, which this
+  host stopped at 24 for memory, and the two round-2 residues.
 
 **Deferred to the release after the RC.** Each keeps its ticket and none is
 closed: #592, #593, #594, #595, #596, #603 and #605, the source defects; #597,
-#579, #601 and #604, the instruments and the residues; and every certified red
-the census does not call a crash.
+#579, #601 and #604, the instruments and the residues; **#584**, #583 and #609,
+the certified reds the census does not call a crash; and the unfinished half of
+**#586** — its closing 174-route `a11y:contrast` run, which needs a machine
+with memory headroom this one does not have, and its two round-2 residues, the
+hero gradient restyle that shipped without visual proof and the hardcoded
+`#ef4444` at `apps/web/src/routes/__root.tsx:82`. #584 is deferred rather than
+fixed for the reason the census gives: its two Picker journey rows are focus
+placement on open, not a crash, and every option stays reachable by keyboard.
 
-Carrying those reds as ticket-backed waivers in
-`apps/comparison/e2e/certified-waivers.json` is an owner call on a list that
-does not exist yet. The list is being prepared; nothing is waived. The file is
-`[]`, and the last complete certified run is the RC's own: 35646778662 at
-`d1c5f4b3`, all eight shards run and merged, `certified report` job
-106494691342 — 2146 passed, 27 failed, 4 skipped, **0 waived**, 0 flaky, the
-same 27 unwaived failures as the run before it. That earlier run, 35638122333
-at `45714230`, differed in one number: 1 flaky against a `flakyBudget` of 0.
+Those reds are now carried as ticket-backed waivers in
+`apps/comparison/e2e/certified-waivers.json`, which held `[]` when this cut was
+written. The rule was delegated on 2026-09-21 — "can you handle all those?
+your default is fine" — and the conductor's stated default, accepted, is:
+behaviour-class reds only, one entry per ticket, expiring at the next release,
+crash-class fixed and never waived. The list, written under #578: **#584** for
+the two `picker-trigger` D13 rows, **#583** for the two D2
+`default · hover-transition` rows on `togglebutton` and `togglebuttongroup`,
+**#609** for `tabs` D4 `horizontal-regular · arrow-next-from-selected`, all
+three `expires: 2026-12-31`. That is 5 of the 27. The other 22 are one ComboBox
+list defect, #497, and they are **not** waived, so the blocking
+`certified report` job still exits 1 until it lands. The newest complete
+certified run is 35668806426 at `b22a44eb`, `certified report` job
+106565094355 — 2146 passed, 27 failed, 4 skipped, **0 waived**, 0 flaky, the
+same 27 as the two runs before it; the flake that cost run 35638122333 its exit
+code is #608 and did not recur.
 
-**Owner gates, unchanged by this cut.** The publish (#547) and its dist-tag;
-enabling the Release Readiness and Site Gate workflows (#568); deploys; secret
-changes; dependencies; new public names; merging `public-face`.
+**Owner gates after the 2026-09-21 delegation.** Deploys other than this
+campaign's standing docs deploy after a green Site Gate; secret changes;
+dependencies; new public names; merging `public-face`. The publish and its
+dist-tag (#547), enabling the Release Readiness and Site Gate workflows (#568)
+and the waiver list (#578) were owner gates when this cut was written and are
+now the conductor's, under the conditions each of those tickets records.
 
 ## Path to the RC after the 2026-09-21 audit
 

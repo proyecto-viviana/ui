@@ -18,9 +18,43 @@ Do not start component work from this page without re-running the suite.
 Do not raise D3 / D13 thresholds. Do not revert `95d30443`. Do not change
 Meter `role="meter progressbar"`.
 
+## Where it stands, 2026-09-21
+
+Certification Gates **35668806426** at `b22a44eb`, merge job `106565094355`:
+**2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky** — the same 2177 tests
+as the two runs in `## Counts` below, which are the 2026-09-18 snapshot and are
+kept because the group map under `## Groups` is written against them.
+
+The 27, from that job's own `### Unwaived failures` list rather than retyped.
+Driver split: D1 6, D3 6, D9 6, D7 2, D10 2, D2 2, D13 2, D4 1.
+
+| Component           | Drivers                       | n   | Ticket                      |
+| ------------------- | ----------------------------- | --- | --------------------------- |
+| `combobox-list`     | D1 6, D3 6, D9 6, D7 2, D10 2 | 22  | #497 — fix, never waived    |
+| `picker-trigger`    | D13 2                         | 2   | #584 — waived to 2026-12-31 |
+| `togglebutton`      | D2 1                          | 1   | #583 — waived to 2026-12-31 |
+| `togglebuttongroup` | D2 1                          | 1   | #583 — waived to 2026-12-31 |
+| `tabs`              | D4 1                          | 1   | #609 — waived to 2026-12-31 |
+
+**None of the 27 is crash-class.** Every one is a behaviour or paint
+difference against the pair oracle; nothing throws, nothing fails to render.
+And none of the 39 group-A pressed-pixel rows below is in this list.
+
+Three of the five components are waived in `apps/comparison/e2e/certified-waivers.json`,
+which held `[]` until #578. Measured against those 27 lines: 3 entries, 0 load
+problems, **5 waived, 22 unwaived**, `waiverGateFails: true`. Each pattern was
+read against the 3065-case local inventory and matches exactly its own rows
+(2, 2, 1).
+
+That does not contradict the owner rule three sections down. A waiver here
+changes no threshold and closes no ticket: it names a deferral, carries the
+ticket's real board state and an expiry meaning the next release, and stops
+waiving the moment the ticket closes or the date passes. The blocking
+`certified report` job still exits 1, on #497's 22.
+
 ## Counts
 
-Two runs, same 2177 tests:
+The 2026-09-18 snapshot. Two runs, same 2177 tests:
 
 | Run                    | Command / source                                                                                                          | Passed |  Failed | Skipped | Waived | Flaky | Revision   |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- | -----: | ------: | ------: | -----: | ----: | ---------- |

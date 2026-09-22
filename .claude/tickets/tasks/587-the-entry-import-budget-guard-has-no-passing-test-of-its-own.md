@@ -36,6 +36,11 @@ history:
       at: 2026-09-21,
       note: "the run that reaches the step. 35623988073 stopped at step 24 and skipped it; Certification Gates 35646778662 at `d1c5f4b3`, job 106489054009, runs the reordered step 31 `guard entry-import-budget` and concludes it `success`, with every step 1 through 37 `success` and the first red at 38 `comparison parity (strict)`. Read with `gh run view 35646778662 --json jobs`. `verified`",
     }
+  - {
+      state: verified,
+      at: 2026-09-21,
+      note: "the note above is re-measured and it holds, but it proves less than `verified` reads as, so the limit is written down rather than left to be inferred. Re-read today with `gh api repos/:owner/:repo/actions/jobs/106489054009`: steps 1 through 37 are each `success`, step 31 is `guard entry-import-budget` `success`, step 38 `comparison parity (strict)` is the first `failure`, and the job's own conclusion is `failure` - so the ladder was red at that sha and the step-31 success is a step reading inside a failing job, which is what the ticket needed and all it shows. Confirmed a second time one sha later: run 35668806426 at `b22a44eb`, `certification-gates` job 106560418098, step 31 `success`, step 37 `docs:check` `success`, step 38 the same frontier. What is not proved on any runner is Scope item 1, the three rewritten cases in `scripts/check-entry-import-budget.test.ts`. Vitest reaches them only through root `test:run`, `grep -rn 'test:run' .github/workflows/ package.json` puts that string in `ci:release-readiness` and in two comments and in no workflow step, and `gh api repos/:owner/:repo/actions/workflows` still reports Release Readiness `disabled_manually` (Certification Gates `active`, Site Gate `disabled_manually`). `certification-gates.yml` runs `test:ci-guard-contracts` at step 11 and `test:ssr`/`test:hydrate` at 13 and 14, so the ordering contract this ticket added is CI-proved and the unit is not. The state stays `verified` - the scheme runs forward only and the guard, its ordering and its re-derivation all landed - and the owed runner execution of the unit belongs to #568, which re-enables Release Readiness; when that first run lands it is the evidence this note names as missing. Raised while #578 was reconciling the same two runs; no code, no numbers moved",
+    }
 ---
 
 ## Scope

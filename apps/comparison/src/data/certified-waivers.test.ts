@@ -49,10 +49,29 @@ function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
 }
 
 describe("certified waivers", () => {
-  it("keeps the tracked waiver file as a valid empty list", () => {
+  // This held the tracked file at `[]` until #578 carried the three
+  // behaviour-class reds of Certification Gates 35668806426 as waivers. An
+  // emptiness assertion cannot survive a list that exists, so what is held
+  // instead is the shape the certified verdict reads: the file loads with no
+  // problems, every entry names a ticket the board still has open, and the
+  // recorded `ticketStatus` is the board's own. That last read is
+  // `guard:certified-waiver-tickets`' job in CI; asserting it here as well
+  // means a stale entry fails inside the suite too, not only in the guard.
+  it("keeps the tracked waiver file loadable and ticket-backed", () => {
+    const root = comparisonRootFrom(import.meta.url);
     const loaded = loadCertifiedWaivers(join(here, "../../e2e/certified-waivers.json"));
     expect(loaded.problems).toEqual([]);
-    expect(loaded.waivers).toEqual([]);
+    expect(loaded.waivers.length).toBeGreaterThan(0);
+    expect(
+      reconcileWaiverTickets({
+        waivers: loaded.waivers,
+        ticketStatus: (ticketId) => readTicketStatus(repoRootFromComparison(root), ticketId).status,
+      }),
+    ).toEqual([]);
+    const closed = loaded.waivers.filter((entry) =>
+      ["verified", "merged", "closed"].includes(entry.ticketStatus),
+    );
+    expect(closed).toEqual([]);
   });
 
   it("rejects a waiver file that is not an array of pattern/ticket/expires/ticketStatus", () => {
@@ -255,11 +274,12 @@ describe("certified waivers", () => {
 });
 
 // `reconcileWaiverTickets` is unit-tested above with a stub board; nothing drove
-// the guard that runs it. The tracked `e2e/certified-waivers.json` is `[]`, so
-// every CI run of `guard:certified-waiver-tickets` iterates zero waivers and its
-// green line says only that the list was empty — a wrong path or a swallowed
-// exit code would read the same. These cases run the script itself over a
-// fixture that is not empty.
+// the guard that runs it. The tracked `e2e/certified-waivers.json` held `[]`
+// until #578, so every CI run of `guard:certified-waiver-tickets` iterated zero
+// waivers and its green line said only that the list was empty — a wrong path
+// or a swallowed exit code would have read the same. It holds three entries
+// now, so the guard's green line means something in CI; these cases stay,
+// because the refusals are what no tracked list may ever exercise.
 describe("guard:certified-waiver-tickets end to end", () => {
   const comparisonRoot = comparisonRootFrom(import.meta.url);
   const repoRoot = repoRootFromComparison(comparisonRoot);

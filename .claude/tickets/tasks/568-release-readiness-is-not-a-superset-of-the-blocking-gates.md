@@ -31,6 +31,11 @@ history:
       at: 2026-09-21,
       note: "placed at stage S5 of #544's path, before Site and before #547, where it had been only a footnote under two other stages. The deliverable is stated there in two parts: the owner action `gh workflow enable release-readiness.yml` and `gh workflow enable site-gate.yml`, and the writer's ladder-row correction. Re-checked here: `gh workflow list --all` still reports `Release Readiness` and `Site Gate` as `disabled_manually` while `Certification Gates`, `Changesets Check`, `Journey Fuzz Nightly` and `Release` are active, and `scripts/check-release-evidence.mjs:9-13` still requires a successful run of all three of `certification-gates.yml`, `release-readiness.yml` and `site-gate.yml` at the release sha.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: 'the owner''s answer, ~17:10, on the one call this ticket holds: the two `gh workflow enable` commands are **no longer an owner action**. The conductor listed its open owner calls, quoting its own message - "the dist-tag (my default is `rc` alone), re-enabling Release Readiness and Site Gate, the waiver list once the census produces it, and the publish" - and the owner answered, verbatim: "can you handle all those? your default is fine", then "also you''re the only one working on this, the previous session was superseded by yours, so you can handle everything, don''t say "oh the other session is running" or whatever". So the enable is delegated to the conductor, and the timing below is the conductor''s stated default that the owner accepted, not the owner''s wording: **once the twenty-leg chain is green locally at one sha**, or earlier only if `check-release-evidence.mjs` needs their runs to be satisfiable. The body''s line calling this an owner action is corrected in this commit; the three earlier notes that call it one stay as they are, because they were true when written - this seat''s own `gh workflow enable` was refused on 2026-09-20. Nothing else about this ticket moves: the delegation settles who runs two commands, not the Work section, which is still a live decision about what the chain is for, and not the coverage figure of 8 of 35. And the enable is a measurement, not an expected green - neither workflow has run since `f813032d`, so the first run on a current revision may well be red, which is the point of running it before the publish rather than during it',
+    }
 ---
 
 ## Scope
@@ -140,7 +145,8 @@ of one suppression that landed eight minutes after they were switched off, and
 nobody switched them back on. That is this ticket's thesis in its smallest
 possible form.
 
-**This blocks the release, and it is an owner action.**
+**This blocks the release, and it was filed here as an owner action.** The
+2026-09-21 history note records what changed and quotes the words it rests on.
 `scripts/check-release-evidence.mjs:10-12` requires a successful run of
 `Certification Gates`, `Release Readiness` **and** `Site Gate` for the exact
 release SHA. A `disabled_manually` workflow cannot produce one, so stage 4 of

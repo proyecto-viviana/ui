@@ -1,7 +1,7 @@
 ---
 id: 547
 type: task
-title: "Publish the Solid 2 release candidate to the next dist-tag"
+title: "Publish the Solid 2 release candidate to the `rc` dist-tag"
 created: 2026-09-20
 parent: 544
 status: open
@@ -22,6 +22,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Four findings land here. `release-path/rc-vs-next-tag-contradiction`: Scope step 5 still reads `Publish with --tag next. Never move latest`, which the decision section below it proves is a hard `ExitError` in pre mode - the ticket contradicts itself on its own page and has since the decision was written. Fix the Scope step to match the decision, whichever decision survives. `release-path/dist-tag-next-unreachable`: no code in this repository moves a dist-tag - the only `dist-tag` strings in `scripts/`, `package.json` and `.github/workflows/` are inside recorded evidence lines - and OIDC trusted publishing authorizes `publish`, not `dist-tag add`, so step 3 of the decided flow has neither an implementation nor a credential. `release-path/changeset-count-stale` and `board-truth/release-path-changeset-count`: the release-path doc gives two different pending counts and both are behind; counted at HEAD `65254a8c`, it is **56**. Corrected in that doc's 2026-09-21 block.",
     }
+  - {
+      state: open,
+      at: 2026-09-21,
+      note: 'the owner''s answer, ~17:10, on the two calls this ticket holds: the dist-tag and the publish. The conductor listed its open owner calls, quoting its own message - "the dist-tag (my default is `rc` alone), re-enabling Release Readiness and Site Gate, the waiver list once the census produces it, and the publish" - and the owner answered, verbatim: "can you handle all those? your default is fine", then "also you''re the only one working on this, the previous session was superseded by yours, so you can handle everything, don''t say "oh the other session is running" or whatever". Both calls are therefore delegated, and the two lines that follow are the conductor''s stated defaults that the owner accepted, not the owner''s own wording. Dist-tag: **`rc` alone, no hand-moved `next`**. Publish: **the conductor may publish the rc when the release condition holds - one sha, gates green, the required workflows green at that sha, `guard:publish-drift` green - and not before**. This supersedes the `next` wording in this ticket''s first note: the owner did not repeat `next`, he handed the tag call over, and the default he accepted names `rc`. What that removes, in this commit: Scope step 5''s `--tag next`, the Done when''s `next` listing, step 3 of the decided flow (`npm dist-tag add <pkg>@<version> next`), the unowned drift debt that step created, and the round-1 audit finding `release-path/dist-tag-next-unreachable` - OIDC trusted publishing authorizes `publish` and not `dist-tag add`, and now nothing needs the credential. `pre enter rc` alone moves out of Rejected and becomes the decision; the `pre enter next` rejection stands unchanged, because a `-next.N` version string is still a public name nobody steered. The public install line has to read the same tag, which is #600''s subject, not this one''s; the `public-face` branch already carries `NPM_INSTALL_TAG = "rc"` at `apps/web/src/lib/site.ts:29`, and its merge is gated on this publish. `blocked: true` stays: what blocks this ticket is the release condition and not an owner call. At the time of writing, three parts of that condition are unmet - the blocking `certified report` job exits 1 on #578''s 22 unwaived ComboBox rows (#497), `comparison parity (strict)` is red on the stale postcard pin, and the pipeline would publish to `latest` until `.changeset/pre.json` exists',
+    }
 ---
 
 ## Scope
@@ -38,23 +43,24 @@ history:
    waived. Failures that remain go to `certification-debt.md` by name.
 4. Pack the chain and install it in a clean off-workspace Solid 2 consumer
    before publishing (`guard:publish-drift`, `pack:local-chain`).
-5. Publish with `--tag next`. Never move `latest`.
+5. Publish in pre mode, which lands each package on `rc`. No `--tag` (it is a
+   hard error in pre mode) and no second dist-tag. Never move `latest`.
 
 ## Done when
 
-`npm view <pkg> dist-tags` shows `next` at the rc for each in-scope package,
-`latest` is unchanged, and the clean consumer builds and renders a component
-with SSR from the registry copy.
+`npm view <pkg> dist-tags` shows `rc` at the rc version for each in-scope
+package, `latest` is unchanged, no `next` tag was created, and the clean
+consumer builds and renders a component with SSR from the registry copy.
 
 ## Proof
 
 The revision, the gate outputs, the certified summary, the dist-tag listing,
 and the consumer proof, all in the session receipt and linked here.
 
-## The tag, decided by the conductor on 2026-09-20
+## The tag: `rc` alone, delegated by the owner on 2026-09-21
 
-Steps 1 and 5 above cannot both be run as written, and the audit found it before
-this seat did (`.agents/audit-2026-09-20/lens3-consumer.md`). Stock Changesets
+Steps 1 and 5 above could not both be run as written, and the audit found it
+before this seat did (`.agents/audit-2026-09-20/lens3-consumer.md`). Stock Changesets
 has **one** `tag` field and it drives both halves:
 
 - `@changesets/assemble-release-plan/dist/index.mjs:72` —
@@ -67,17 +73,20 @@ has **one** `tag` field and it drives both halves:
   is a hard error, `Releasing under custom tag is not allowed in pre mode!`
 
 So `pre enter rc` gives `0.7.0-rc.0` on dist-tag **`rc`**, and `pre enter next`
-gives `0.7.0-next.0` on dist-tag **`next`**. Step 1 asks for the first, the Done
-when asks for the second, and neither command produces both.
+gives `0.7.0-next.0` on dist-tag **`next`**. Step 1 asked for the first, the
+Done when asked for the second, and neither command produces both.
 
-**Decision: `pre enter rc`, then point `next` at the published versions as a
-separate step.** That is the only reading under which this ticket's own Done
-when is satisfiable, and it keeps both halves of the owner's words — `-rc.N`
-prereleases, installed with `@next` — instead of trading one away. The flow:
+**Decision: `pre enter rc`, and nothing else.** The tag call was the
+conductor's to make — see the 2026-09-21 note above, where the owner delegated
+it and accepted the stated default — so the contradiction is resolved by
+dropping `next`, not by chasing it. The flow:
 
 1. `changeset pre enter rc`, commit `.changeset/pre.json`.
 2. `release:prepare`, `changeset publish` — lands each package on `rc`.
-3. `npm dist-tag add <pkg>@<version> next`, once per in-scope package.
+
+Consumers install `<pkg>@rc`. That is the whole public contract, and the reason
+this is the better half to keep is in the next section: a second tag nobody's
+code moves is a promise that decays on the first re-publish.
 
 `latest` cannot move by accident here: `getPublishPlan.mjs:599` only forces
 `latest` when `publishedState === "only-pre"`, which requires every published
@@ -106,15 +115,20 @@ one number stage 4 compares against. Read `latest` from npm at the revision, not
 from the workspace; the local column is what is about to be published, which is
 the opposite of what is being held still.
 
-### The debt this creates, and it must not be paid by hand
+### The debt a second tag would have created, and why it is not paid at all
 
-Step 3 is outside Changesets, so `changeset publish` moves `rc` on every
-subsequent RC and leaves `next` pointing at `-rc.0` forever. A dist-tag that
-silently stops tracking is the same failure as #571, #572 and #573, one release
-further out and visible to strangers rather than to us. So step 3 belongs in
-`release:npm` or behind a guard that reads `npm view <pkg> dist-tags` and fails
-when `next` and `rc` disagree — not in a runbook sentence. Whoever takes this
-ticket owns that, and "we remembered to run it" is not an acceptable answer.
+A hand-moved `next` sits outside Changesets, so `changeset publish` moves `rc`
+on every subsequent RC and leaves `next` pointing at `-rc.0` forever. A
+dist-tag that silently stops tracking is the same failure as #571, #572 and
+#573, one release further out and visible to strangers rather than to us. It
+could only be answered by code — in `release:npm`, or behind a guard reading
+`npm view <pkg> dist-tags` and failing when the two disagree — and there is
+none: the only `dist-tag` strings in `scripts/`, `package.json` and
+`.github/workflows/` are inside recorded evidence lines, and OIDC trusted
+publishing authorizes `publish`, not `dist-tag add`. "We remembered to run it"
+was never going to be the answer, so the tag was dropped instead. The debt is
+retired by not taking it on; what remains is #600's job, keeping the install
+line and a registry check on the one tag that exists.
 
 ### Rejected
 
@@ -122,8 +136,12 @@ ticket owns that, and "we remembered to run it" is not an acceptable answer.
   published version reads `0.7.0-next.0`, and both this ticket and initiative
   #544 say `-rc.N`. A version string is a public name and is owner-steered; this
   seat will not mint a different one to save a step.
-- **`pre enter rc` alone.** Honest and simple, and it fails this ticket's Done
-  when: `npm install @proyecto-viviana/ui@next` stays `ETARGET`.
+- **`pre enter rc` plus a hand-moved `next`.** Satisfied the ticket's original
+  Done when and both halves of the 2026-09-20 wording, at the price of a tag
+  that nothing in this repository can keep current and no credential can even
+  set. Dropped on 2026-09-21 with the delegated tag call; `npm install
+@proyecto-viviana/ui@next` stays `ETARGET`, on purpose, and the Done when
+  above is rewritten to say so.
 
 ## Relationship
 
