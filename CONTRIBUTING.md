@@ -39,9 +39,9 @@ published package, run the release gate:
 vp run ci:release-readiness
 ```
 
-The `release-readiness` workflow runs the same command on pull requests and on
-pushes to `main`. Run it locally first. CI is the second opinion, not the
-first.
+Run it locally first. CI is the second opinion, not the first: the
+`release-readiness` workflow runs the same command, and it can be switched off
+between releases.
 
 ## How a port is certified
 
@@ -61,8 +61,12 @@ The floors, run constantly:
 ```bash
 vp run check
 vp run test:run
-vp run a11y:check
 ```
+
+The docs site's accessibility run, `vp run a11y:check`, is not green in this
+candidate and carries exemption lists
+(`apps/web/e2e/helpers/target-size-exemptions.ts`); run it, but do not read it
+as proof.
 
 The component-level evidence, per component:
 

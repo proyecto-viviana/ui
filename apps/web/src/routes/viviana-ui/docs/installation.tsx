@@ -263,7 +263,7 @@ export default defineConfig({
     exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
   },
   ssr: {
-    noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
+    noExternal: [/@proyecto-viviana\\/.*/],
   },
 });`}</Code>
       <p style={{ "margin-bottom": "0.75rem" }}>

@@ -116,6 +116,8 @@ export default defineConfig({
 ```
 
 This repository's docs site server-renders with the same `noExternal` line.
+Two hydration defects remain in this candidate; see
+[known gaps](#known-gaps-in-this-release-candidate).
 
 ## Status
 
@@ -138,9 +140,15 @@ counts. Until a component carries it, treat its parity as unproved.
 
 ## Known gaps in this release candidate
 
-This is a release candidate, cut early on purpose. Crashes were fixed before
-it shipped. The behavior defects below were not, and each has a ticket. If one
-of them matters to your app, wait for the next release or pin and test.
+This is a release candidate, cut early on purpose. Each defect below has a
+ticket. If one of them matters to your app, wait for the next release or pin
+and test.
+
+- **Two hydration defects.** A `TextField` or `SearchField` whose `prefix` or
+  `suffix` is JSX can throw while it mounts, and a `ComboBox` with a
+  `description` or `errorMessage` mismatches on hydration. Two of the docs
+  site's 174 routes fail on them today.
+  [#545](.claude/tickets/tasks/545-move-the-web-app-to-tanstack-solid-2.md)
 
 - **Link items bypass your router.** In a menu, list, or table, clicking an
   item that is a link does a full page load instead of a client-side
@@ -166,11 +174,13 @@ of them matters to your app, wait for the next release or pin and test.
 - **`ButtonGroup` misses an in-place size change.** It reacts when children are
   added or removed, not when one changes size where it stands.
   [#601](.claude/tickets/tasks/601-the-low-residues-the-audit-left-without-a-stage.md)
-- **The certified suite is not green.** Some component comparisons against the
-  React original still fail. The failures that are not crashes are waived by
-  name until the next release, each against a ticket, in
+- **The certified suite is not green.** 27 of its 2,178 comparisons against
+  the React original fail. 22 are one `ComboBox` defect: the selected item's
+  checkmark sits on the wrong accent stop
+  ([#497](.claude/tickets/tasks/497-match-combobox-and-picker-list-selected-checkmark-accent.md)).
+  The other five are waived by name until 2026-10-21, each against a ticket, in
   [`certified-waivers.json`](apps/comparison/e2e/certified-waivers.json).
-  [#578](.claude/tickets/tasks/578-the-certified-suite-is-169-red-and-it-is-the-release-bar.md)
+  [#578](.claude/tickets/tasks/578-the-certified-suite-is-27-red-and-it-is-the-release-bar.md)
 
 Three more are internal and change nothing you install: how the parity tooling
 counts and attributes upstream test facts

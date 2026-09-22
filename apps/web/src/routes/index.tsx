@@ -246,7 +246,7 @@ function SpecimenDeck() {
                     <SpectrumBadge variant="informative">Count: {count()}</SpectrumBadge>
                   </div>
                   <div class="pv-specimen-deck__status">
-                    Adobe React Spectrum S2 translation · Certified same behavior
+                    Adobe React Spectrum S2 translation
                   </div>
                 </div>
               </SpectrumProvider>

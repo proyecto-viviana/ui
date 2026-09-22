@@ -116,7 +116,7 @@ import { vivianaMacros } from "@proyecto-viviana/ui/vite";
 export default defineConfig({
   plugins: [vivianaMacros(), solid({ ssr: true })],
   optimizeDeps: { exclude: ["@proyecto-viviana/ui"] },
-  ssr: { noExternal: ["@proyecto-viviana/ui"] },
+  ssr: { noExternal: [/@proyecto-viviana\/.*/] },
 });
 ```
 
@@ -164,8 +164,10 @@ What this release candidate is known to get wrong is listed under
 ```bash
 vp run --filter @proyecto-viviana/ui build
 vp run test:run
-vp run a11y:check        # contrast on every route, WCAG 2.2 AA on the playground, both themes
 ```
+
+The docs site's accessibility run, `vp run a11y:check`, is not green in this
+candidate and carries exemption lists; it is not evidence for this package.
 
 What "ported" means here, and what evidence a component carries before it
 counts, is [the evidence bar](https://github.com/proyecto-viviana/ui/blob/main/.claude/current/certification.md).
