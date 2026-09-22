@@ -15,6 +15,17 @@
  *    such as `count: {n()}` becomes a text-node snapshot that stays at the
  *    server value after hydration (#135 Button; #168 / #169 still open).
  *
+ *    What makes it freeze, measured on the pinned Solid 2 (#545, twin
+ *    `packages/viviana-ui/test/TextField.{ssr,hydrate}.test.tsx`): WHERE the
+ *    snapshot is read. Read inside a JSX expression the memo re-resolves and
+ *    the text stays live after hydration; read once in a component body, which
+ *    `createComponent` runs untracked, the insert holds a plain value and
+ *    nothing re-runs it — the same fixture proves both halves, and a hydrated
+ *    TextField whose `prefix` and `suffix` carry a signal updates in the
+ *    claimed server nodes. The heuristic stays broad because it cannot see
+ *    that difference; a site measured benign is baselined with the ticket that
+ *    measured it (the four #545 field adornments).
+ *
  *    Heuristic (kept deliberately simple): a `const ident = children(() => …)` /
  *    `resolveChildren(() => …)` binding is flagged when `ident`, or a one-hop
  *    alias `const x = ident()` / `const x = () => ident()`, appears inside a
