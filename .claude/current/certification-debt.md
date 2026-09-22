@@ -25,13 +25,17 @@ Certification Gates **35668806426** at `b22a44eb`, merge job `106565094355`:
 as the two runs in `## Counts` below, which are the 2026-09-18 snapshot and are
 kept because the group map under `## Groups` is written against them.
 
-`b22a44eb` is not HEAD. As of 2026-09-22 HEAD is `90297632`, and three of the
-five commits between them touched what this suite runs — `8361daba` and
-`298f8e7c` (#608) on `e2e/comparison-page.ts` and `e2e/drivers/journeys-steps.ts`,
-which declare the two waived D13 rows, and `d3ccc7cc` (#545) on
-`ContextualHelpTrigger` in both published packages. Treat the table below as a
-reading of `b22a44eb` until a `certified report` job at or past `90297632`
-replaces it; #578 owns that re-read.
+`b22a44eb` is not HEAD. Three of the five commits from `b22a44eb` to
+`90297632` touched what this suite runs — `8361daba` and `298f8e7c` (#608) on
+`e2e/comparison-page.ts` and `e2e/drivers/journeys-steps.ts`, which declare the
+two waived D13 rows, and `d3ccc7cc` (#545) on `ContextualHelpTrigger` in both
+published packages. HEAD has since moved seven more commits past `90297632`,
+three of which matter here: `4ac92800` (#578) on `e2e/certified-waivers.json`,
+`096776df` (#545) on the field adornments and the ComboBox formatter in both
+published packages, and `d997d01f` (#497) on the ComboBox option paint, with
+this session's follow-up to it. Treat the table below as a reading of
+`b22a44eb` until a `certified report` job at or past HEAD replaces it; #578
+owns that re-read.
 
 The 27, from that job's own `### Unwaived failures` list rather than retyped.
 Driver split: D1 6, D3 6, D9 6, D7 2, D10 2, D2 2, D13 2, D4 1.
@@ -69,7 +73,8 @@ date passes. The expiry is the one part still approximate — no release date
 exists anywhere in this tree, so the loader enforces a 60-day horizon
 (`MAX_WAIVER_HORIZON_DAYS`) and the entries read `2026-10-21`; #610 owns
 binding it to the release itself. The blocking `certified report` job still
-exits 1, on #497's 22.
+exits 1, on #497's 22, until a run past `d997d01f` reads them again — see
+group B.
 
 ## Counts
 
@@ -160,6 +165,22 @@ React `rgb(242,242,242)` on `rgb(50,50,50)` ratio 11.45 vs Solid
 not because WCAG fails.
 
 ComboBox list D8 (target size) passed. Distinct from group C.
+
+**Closed on this checkout, not yet on a run.** `d997d01f` (#497) gives the
+option upstream's focus-visible answer, and the same shard under the same
+command went **22 failed / 6 passed** to **26 passed** here. The head count
+above still carries these 22 because run 35668806426 predates the commit.
+
+**What the fix leaves standing, until #612.** Ours corrects the answer in the
+styled layer, upstream gets it from the interaction modality itself, and the
+two part on a real mouse click: `createInteractionModality.ts:113-115` drops
+untrusted clicks where react-aria 3.52.0 does not, so a ComboBox or Picker
+option focused by a trusted click keeps the `focusRing()` outline and the
+lifted ink that upstream withholds under pointer modality. The pair oracle
+cannot see it — `clickLocator` dispatches `el.click()`, a `detail: 0` click,
+which upstream itself reads as virtual — so these rows are green and no waiver
+is owed. `data-focus-visible` still reports the uncorrected answer; #612 fixes
+the modality and deletes the styled compensation.
 
 ### C — Picker list 16px short / options 16px wide — 21
 

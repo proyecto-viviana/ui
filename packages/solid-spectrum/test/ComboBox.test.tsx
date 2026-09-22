@@ -587,6 +587,13 @@ describe("ComboBox (solid-spectrum)", () => {
     assertLabelledByResolves();
   });
 
+  // The attribute and the paint disagree after a pointer open, and this spec
+  // pins only the attribute. `data-focus-visible` comes from `createOption`,
+  // which reads the global interaction modality; ours stays `pointer` for a
+  // synthetic click where upstream's would be `virtual` (#612). The styled
+  // paint is corrected one layer up by `optionFocusVisible`, so the row takes
+  // the `focusRing()` outline that this attribute says it should not have. The
+  // spec below pins that paint; when #612 lands, both expectations move.
   it("does not treat a pointer-opened selected option as focus-visible", async () => {
     const user = setupUser();
     render(() => <FruitComboBox defaultSelectedKey="2" />);
@@ -599,6 +606,63 @@ describe("ComboBox (solid-spectrum)", () => {
     const selected = screen.getByRole("option", { selected: true });
     expect(selected).toHaveTextContent("Banana");
     expect(selected).not.toHaveAttribute("data-focus-visible");
+  });
+
+  // The guard for `optionFocusVisible`. That remap was written once, deleted by
+  // `b33a0a74` with nothing to catch it, and found six days later only by a
+  // certified browser run. It has to be the pointer open: under a keyboard open
+  // `createOption` already answers focus-visible on its own — `ListBox`
+  // mirrors the focused key onto the option with `moveVirtualFocus`, whose
+  // synthetic focus event arms the per-element ring — so the remap changes
+  // nothing there and nothing there can catch its removal. The pointer open is
+  // the case it exists for, and the case the certified pair oracle reads.
+  it("paints a pointer-focused option and its selected checkmark at the focus stop", async () => {
+    const user = setupUser();
+    render(() => <FruitComboBox defaultSelectedKey="2" />);
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+
+    const selected = () => screen.getByRole("option", { selected: true });
+    const checkmarkTokens = (option: HTMLElement) =>
+      classTokens(option.querySelector("svg")?.getAttribute("class") ?? "");
+    // Keep the declaration atoms only. The macro's leading `-` marks the two
+    // kinds of token that would answer these assertions without saying
+    // anything: the dev-only `-macro-dynamic-` markers, and custom-property
+    // atoms such as the checkmark's `--iconPrimary`, whose `forcedColors` value
+    // already moves on `isFocused` alone.
+    const atoms = (tokens: string[]) => tokens.filter((t) => !t.startsWith("-"));
+
+    // The open put the selected row under virtual focus, and the modality is
+    // `pointer`: focused, not focus-visible. Upstream's own answer for the
+    // click the pair oracle dispatches is focus-visible, which is what the
+    // paint below has to show.
+    expect(selected()).toHaveTextContent("Banana");
+    expect(selected()).toHaveAttribute("data-focused");
+    expect(selected()).not.toHaveAttribute("data-focus-visible");
+    const focusedRow = atoms(classTokens(selected().className));
+    const focusedCheckmark = atoms(checkmarkTokens(selected()));
+
+    // Move focus off the selected row; it stays selected, so only the
+    // focus-driven atoms may move.
+    await user.keyboard("{ArrowUp}");
+    expect(selected()).not.toHaveAttribute("data-focused");
+    const restingRow = atoms(classTokens(selected().className));
+    const restingCheckmark = atoms(checkmarkTokens(selected()));
+
+    // `comboBoxCheckmark` declares `color: baseColor('accent')` and, apart from
+    // `visibility` on `isSelected`, nothing else focus can touch — so this one
+    // moving atom is the accent focus stop, and it moves only on the value the
+    // option hands the checkmark.
+    expect(focusedCheckmark.filter((t) => !restingCheckmark.includes(t))).toHaveLength(1);
+
+    // `comboBoxOption` mirrors S2 `listboxItem`: `backgroundColor.isFocused`
+    // moves on focus alone, while the `baseColor('neutral')` ink and the
+    // `focusRing()` outline need `isFocusVisible` — so without the remap this
+    // row would differ by exactly the one background atom.
+    expect(focusedRow.filter((t) => !restingRow.includes(t)).length).toBeGreaterThan(1);
   });
 
   it("renders the selected option checkmark as a bare S2 ui-icon", async () => {

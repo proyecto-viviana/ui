@@ -81,6 +81,7 @@ import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
+import { optionFocusVisible } from "../utils/option-focus-visible";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
@@ -1172,10 +1173,11 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     [
       local.UNSAFE_className,
       local.class,
+      // One helper, shared with `combobox`, over two hand-written copies: it
+      // carries why this remap exists and the ticket that removes it (#612).
       pickerOption(
         {
-          ...renderProps,
-          isFocusVisible: renderProps.isFocused || renderProps.isFocusVisible,
+          ...optionFocusVisible(renderProps),
           size,
         },
         local.styles,

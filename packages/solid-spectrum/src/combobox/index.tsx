@@ -99,6 +99,7 @@ import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
+import { optionFocusVisible } from "../utils/option-focus-visible";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
@@ -1255,27 +1256,13 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
-  // `useOption` returns `isFocused && selectionManager.isFocused &&
-  // isFocusVisible()` — the GLOBAL interaction modality, read at render, with
-  // no ring of its own — and RAC `ListBoxItem` hands that one value to both
-  // `listboxItem` and `checkmark` (S2 ComboBox.tsx:470,510). Our headless
-  // option instead ANDs a per-element `createFocusRing()`
-  // (solidaria `createOption.ts`), and virtual focus never puts real DOM focus
-  // on the row, so ours is false wherever upstream's is true: the row ink stays
-  // one `baseColor('neutral')` stop low and the checkmark one `accent` stop
-  // low. Restore upstream's answer here, for both atoms, until `createOption`
-  // carries the expression itself. Measured on the certified list panel: the
-  // React row is `data-focus-visible`, ours is not.
-  const optionRenderProps = (
-    renderProps: ComboBoxOptionRenderProps,
-  ): ComboBoxOptionRenderProps => ({
-    ...renderProps,
-    isFocusVisible: renderProps.isFocusVisible || renderProps.isFocused,
-  });
+  // Both atoms read one value, as RAC `ListBoxItem` does. `optionFocusVisible`
+  // holds why, the pointer-modality divergence it carries, and the ticket that
+  // ends it (#612); `picker` calls the same helper.
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
-        ...optionRenderProps(renderProps),
+        ...optionFocusVisible(renderProps),
         size,
         isLink: isLink(),
       }),
@@ -1285,7 +1272,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       .join(" ");
   const checkClass = (renderProps: ComboBoxOptionRenderProps) =>
     comboBoxCheckmark({
-      ...optionRenderProps(renderProps),
+      ...optionFocusVisible(renderProps),
       size,
     });
   // Consume children in a nested component so the tracked read runs under the
