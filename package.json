@@ -141,7 +141,7 @@
     "changeset": "vp exec changeset",
     "changeset:status": "vp exec changeset status --since=origin/main",
     "changeset:version": "vp exec changeset version && vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "changeset:publish": "vp run guard:release-prerequisites && vp run guard:release-evidence && vp run build && vp exec changeset publish",
+    "changeset:publish": "vp run guard:release-prerequisites && vp run guard:release-evidence && vp run guard:publish-drift && vp run build && vp exec changeset publish",
     "ci:changesets": "vp exec tsx scripts/check-changeset-required.mjs && vp exec tsx scripts/check-changeset-status.mjs && vp run guard:publish-drift && vp run guard:release-prerequisites",
     "ci:release-readiness": "vp run check && vp run guard:workflow-pins && vp run guard:gate-server-reuse && vp run guard:attribution && vp run guard:generated-icons && vp run guard:theme-base && vp run guard:dependency-security && vp run guard:certified-case-floor && vp run guard:source-artifacts && vp run guard:entry-import-budget && vp run build && vp run guard:package-sourcemaps && vp run typecheck:apps && vp run test:run && vp run test:ssr && vp run test:hydrate && vp run test:comparison-ssr && vp run test:comparison-hydrate && vp run test:web && vp run comparison:test:journeys-driver",
     "ci:a11y": "vp run build && vp run a11y:check",

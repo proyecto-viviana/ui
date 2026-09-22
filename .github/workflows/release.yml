@@ -85,8 +85,17 @@ jobs:
       # It runs here, immediately before the publish it guards, because the
       # registry is half of the comparison: an answer taken on a pull request
       # hours ago describes a registry state that has since moved.
+      #
+      # `--version-stage` because the step below may be either stage. The
+      # version stage consumes the pending changesets into the next bump, so a
+      # bump the registry never received with a changeset queued on top of it is
+      # the state that stage clears, not a reason to refuse it: with the flag
+      # off, this step refused the only commit that could fix what it reported
+      # (#598 second review). Everything else still fails here, and the publish
+      # stage runs the same guard plain, inside `changeset:publish`, when there
+      # is nothing left to defer to.
       - name: guard publish-drift
-        run: pnpm run guard:publish-drift
+        run: node scripts/check-publish-drift.mjs --version-stage
 
       # `changesets/action@v1` is a mutable *branch*, not a tag — every push to
       # it lands here unreviewed, in the one job that holds `contents: write`,

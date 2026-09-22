@@ -31,6 +31,11 @@ history:
       at: 2026-09-21,
       note: "the #574/#589 retro review touched this ticket's file twice and neither finding reopens it; the four problems and every exit code are on #574's note of today, which owns the waiver rule they all come from. What lands here: `certifiedShardVerdict`'s test file `apps/comparison/src/data/certified-shard-gate.test.ts` carried a `CertifiedWaiver` literal missing the `ticketStatus` field #574 made required, which is why `vp run comparison:typecheck` was EXIT=1 at `58f33185`; and that file ran in no active workflow, because `comparison:test:certified-waivers` named only the waiver file and root `test:run` reaches it only through `Release Readiness`, which is `disabled_manually`. Both are fixed in the same commit - the field recorded, the root script widened to all three files, the step renamed `certified verdict unit tests`, and `scripts/test-ci-guard-contracts.mjs` asserting the step and the file list so a verdict rule cannot drift back out of the workflow that enforces it. `vp run comparison:test:certified-waivers` EXIT=0, 3 files, 52 passed; `vp run comparison:typecheck` EXIT=0 over 440 files; `node scripts/test-ci-guard-contracts.mjs` EXIT=0, 58 PASS. The shard verdict itself is unchanged and run 35638122333 still speaks for it, so this stays `verified`",
     }
+  - {
+      state: verified,
+      at: 2026-09-22,
+      note: "the amendment-B second review of `b22a44eb` drew no finding. Its five problems are all in `5fcf3d35` (#599) and `58f33185` (#598) and are answered there; nothing in this ticket moved",
+    }
 ---
 
 ## Scope

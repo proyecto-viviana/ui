@@ -1794,6 +1794,9 @@ try {
   // `head_repository` are there because head_sha plus head_branch is not the
   // whole contract: a `pull_request` run records the PR head's sha under the
   // PR's head ref name, which can be "main", from any fork (#599 review).
+  // `run_started_at` and `run_number` ascend with the id, as Actions numbers
+  // them: which run is newest is the whole question in the ordering cases
+  // below, and the guard reads the clock before it reads the id.
   const releaseRun = (id, conclusion, extra = {}) => ({
     id,
     status: "completed",
@@ -1802,6 +1805,8 @@ try {
     head_branch: "main",
     event: "push",
     head_repository: { full_name: "example/project" },
+    run_number: id,
+    run_started_at: new Date(Date.UTC(2026, 8, 21, 12, id)).toISOString(),
     ...extra,
   });
 
@@ -1823,6 +1828,14 @@ try {
           workflow === "certification-gates.yml"
             ? [releaseRun(1, "success"), releaseRun(2, "failure")]
             : [releaseRun(1, "success")],
+        "green-rerun":
+          workflow === "certification-gates.yml"
+            ? [releaseRun(1, "failure"), releaseRun(2, "success")]
+            : [releaseRun(1, "success")],
+        "cancelled-over-failure":
+          workflow === "site-gate.yml"
+            ? [releaseRun(1, "failure"), releaseRun(2, "cancelled")]
+            : [releaseRun(1, "success")],
         "pull-request": [releaseRun(1, "success", { event: "pull_request" })],
         "fork-push": [
           releaseRun(1, "success", { head_repository: { full_name: "someone-else/project" } }),
@@ -1841,6 +1854,10 @@ try {
     RELEASE_SHA: releaseSha,
     RELEASE_EVIDENCE_POLL_MS: "1",
     RELEASE_EVIDENCE_TIMEOUT_MS: "20",
+    // The second signal the loopback base needs. These two together are the
+    // only route into this file that is not a read of api.github.com, and the
+    // case below proves either one alone is refused.
+    RELEASE_EVIDENCE_FIXTURE: "1",
   };
 
   try {
@@ -1922,6 +1939,32 @@ try {
     );
     console.log("PASS: a later failure at the same SHA retracts the green a run already took.");
 
+    // And the way round that used to be unreleasable: a red run, then a green
+    // re-run of the same tree. The verdict was order-blind, so any completed
+    // failure in the list refused whatever ran after it — the ordinary "fix the
+    // flake and re-run" path could never produce evidence (#599 second review).
+    releaseMode = "green-rerun";
+    const greenRerun = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      greenRerun.status === 0,
+      "a green re-run after a failure at the same SHA was refused, so a re-run can never clear a red",
+    );
+    console.log("PASS: the newest completed run decides, so a green re-run clears an older red.");
+
+    // Standing aside is not standing in front: a cancellation on top of a
+    // failure leaves the failure deciding, not the guard guessing.
+    releaseMode = "cancelled-over-failure";
+    const cancelledOverFailure = await run("check-release-evidence.mjs", ROOT, releaseEnv);
+    assert(
+      cancelledOverFailure.status !== 0 &&
+        combined(cancelledOverFailure).includes(
+          `FAIL: Site Gate has no successful run at ${releaseSha}`,
+        ) &&
+        combined(cancelledOverFailure).includes("concluded failure"),
+      "a cancelled run on top of a failure hid the failure",
+    );
+    console.log("PASS: a cancellation stands aside without hiding the red behind it.");
+
     releaseMode = "pull-request";
     const pullRequestEvidence = await run("check-release-evidence.mjs", ROOT, releaseEnv);
     assert(
@@ -1961,6 +2004,22 @@ try {
       "a redirected API base was read as release evidence",
     );
     console.log("PASS: an API base that is not api.github.com is refused, not read.");
+
+    // The loopback base is the one route in this file that reads something
+    // other than api.github.com, and it takes two variables to open. With one
+    // of them, the second #599 review pointed a fixture server at this
+    // checkout's own HEAD and collected `PASS` and exit 0 from a guard whose
+    // header said it had no bypass.
+    const unopenedFixture = await run("check-release-evidence.mjs", ROOT, {
+      ...releaseEnv,
+      RELEASE_EVIDENCE_FIXTURE: "",
+    });
+    assert(
+      unopenedFixture.status !== 0 &&
+        combined(unopenedFixture).includes("no RELEASE_EVIDENCE_FIXTURE=1"),
+      "a loopback stand-in answered the release question on the strength of one variable",
+    );
+    console.log("PASS: a loopback stand-in is refused without the second signal beside it.");
 
     const unauthenticatedFixture = await run("check-release-evidence.mjs", ROOT, {
       ...releaseEnv,
@@ -2014,6 +2073,28 @@ try {
     );
     console.log("PASS: the publish step names the candidate SHA for the guard inside it.");
 
+    // The same reasoning one guard along. `ci:changesets` runs publish-drift on
+    // pull requests only, and the owner commits straight to main, so the read
+    // that stands between this tree and npm is the one inside the publish
+    // script (#598 second review).
+    assert(
+      publishScript.includes("guard:publish-drift") &&
+        publishScript.indexOf("guard:publish-drift") < publishScript.indexOf("changeset publish"),
+      "changeset:publish uploads without reading what the registry already serves",
+    );
+    assert(
+      !publishScript.includes("--version-stage"),
+      "changeset:publish defers the failure it is the last chance to catch",
+    );
+    console.log("PASS: the local publish route reads publish drift before it uploads anything.");
+
+    const driftStep = stepBlock(jobBlock(releaseWorkflow, "release"), "guard publish-drift");
+    assert(
+      driftStep.includes("--version-stage"),
+      "the drift step before changesets/action refuses the bump the version stage exists to clear",
+    );
+    console.log("PASS: the drift step before the version stage defers to it, and no further.");
+
     // With no RELEASE_SHA the sha comes from HEAD, and then `changeset publish`
     // ships this checkout. A green sha with uncommitted edits on top, or a
     // local commit nothing ever ran, is the hole #599 closed wearing a hat
@@ -2038,6 +2119,25 @@ try {
       "a dirty working tree published under the evidence of the SHA it no longer matches",
     );
     console.log("PASS: a HEAD-derived publish refuses a working tree the gate never saw.");
+
+    // Named instead of derived, and the same tree either way. `RELEASE_SHA`
+    // carrying HEAD's own digits used to skip both checkout refusals at once —
+    // `RELEASE_SHA=$(git rev-parse HEAD)` is how a release script writes this,
+    // and it published the edits sitting on top of that commit (#599 second
+    // review).
+    const namedHead = spawnSync("git", ["rev-parse", "HEAD"], {
+      cwd: headFixture,
+      encoding: "utf8",
+    }).stdout.trim();
+    const namedDirtyTree = await run("check-release-evidence.mjs", headFixture, {
+      ...headEnv,
+      RELEASE_SHA: namedHead,
+    });
+    assert(
+      namedDirtyTree.status !== 0 && combined(namedDirtyTree).includes("working tree is not clean"),
+      "naming HEAD's own SHA published a dirty tree the gate never saw",
+    );
+    console.log("PASS: naming HEAD's own SHA does not buy a dirty tree past the guard.");
 
     rmSync(dirtyPath);
     const noRemoteRef = await run("check-release-evidence.mjs", headFixture, headEnv);
@@ -2066,6 +2166,25 @@ try {
       "a clean checkout of a pushed commit with green runs at its SHA was refused",
     );
     console.log("PASS: a clean checkout of a pushed, green commit still publishes.");
+
+    // The other half of that split, kept on purpose: a caller naming a revision
+    // this checkout is not sitting on is asking about that revision, and this
+    // tree is not it. Uncommitted edits here are not edits to what was named.
+    const olderRevision = spawnSync("git", ["rev-parse", "HEAD~1"], {
+      cwd: headFixture,
+      encoding: "utf8",
+    }).stdout.trim();
+    writeFileSync(dirtyPath, "an edit on top of a revision nobody is publishing\n");
+    const namedOtherRevision = await run("check-release-evidence.mjs", headFixture, {
+      ...headEnv,
+      RELEASE_SHA: olderRevision,
+    });
+    rmSync(dirtyPath);
+    assert(
+      namedOtherRevision.status === 0,
+      "a named revision that is not this checkout's HEAD was judged by this checkout's tree",
+    );
+    console.log("PASS: naming another revision asks about that revision, not about this tree.");
   } finally {
     server.close();
   }

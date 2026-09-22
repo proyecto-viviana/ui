@@ -12,22 +12,27 @@
  * What the environment may say, and what it cannot (the #599 review found the
  * first draft of this file claiming "no env override" while three variables
  * decided the answer):
- *   - `RELEASE_SHA` / `GITHUB_SHA` name the revision. With neither, the sha
- *     comes from HEAD — and then the checkout itself has to be publishable: a
- *     clean tree, and a HEAD that `origin/main` already contains. `changeset
- *     publish` ships the working tree, not the sha this guard read.
+ *   - `RELEASE_SHA` / `GITHUB_SHA` name the revision. Whenever the revision
+ *     they name is this checkout's HEAD — including when they name nothing and
+ *     it comes from HEAD — the tree has to be clean, because `changeset
+ *     publish` ships the working tree and not the sha this guard read. Naming
+ *     HEAD by its own 40 digits does not buy a dirty tree past that; the second
+ *     #599 review found that it did.
  *   - `GITHUB_REPOSITORY` names the repository, and must agree with the
  *     `origin` remote when the checkout has one. Another repository's green run
  *     is not this repository's evidence.
  *   - `GITHUB_API_URL` is accepted only as https://api.github.com, or as a
- *     loopback stand-in for the contract tests — which is announced as one, and
- *     is never handed the `gh` credential.
+ *     loopback stand-in for this guard's own contract tests — which needs
+ *     `RELEASE_EVIDENCE_FIXTURE=1` beside it, is announced as a fixture, and is
+ *     never handed the `gh` credential.
  *
- * There is no bypass and no "if disabled, skip" branch. Two of the three
- * required workflows are `disabled_manually` today (#568, an owner gate), a
- * disabled workflow produces no run, and a missing run is refused with the
- * workflow named: while the owner keeps them off the release condition is
- * unsatisfiable, and saying so is the point.
+ * The one path that is not a read of api.github.com is that fixture pair, and
+ * it takes two variables that nothing on the release path sets; either alone is
+ * refused. There is no "if disabled, skip" branch. Two of the three required
+ * workflows are `disabled_manually` today (#568, an owner gate), a disabled
+ * workflow produces no run, and a missing run is refused with the workflow
+ * named: while the owner keeps them off the release condition is unsatisfiable,
+ * and saying so is the point.
  */
 
 import { execFileSync } from "node:child_process";
@@ -51,11 +56,12 @@ const required = [
 // (#599 review).
 const EVIDENCE_EVENTS = new Set(["push", "workflow_dispatch"]);
 
-// A cancellation or a skip after a green does not retract the green the same
-// tree already took. Every other completed conclusion does — `failure`,
-// `timed_out`, `action_required`, and any conclusion this set has never heard
-// of, because an unknown verdict is not a pass (#599 review).
-const STANDING_CONCLUSIONS = new Set(["success", "cancelled", "skipped"]);
+// A cancellation or a skip says nothing about the tree: it stands aside and the
+// verdict falls to the run behind it. Every other completed conclusion decides
+// — `success`, `failure`, `timed_out`, `action_required`, and any conclusion
+// this set has never heard of, because an unknown verdict is not a pass (#599
+// review).
+const STANDS_ASIDE = new Set(["cancelled", "skipped"]);
 
 function git(args) {
   try {
@@ -78,6 +84,12 @@ function git(args) {
  * refused: an env var that redirects the read is an env var that answers the
  * question, and the loopback case is fenced off from the `gh` credential
  * below rather than trusted.
+ *
+ * The loopback case needs a second, independent signal. One variable used to
+ * open it, so anything that could set `GITHUB_API_URL` could hand this guard a
+ * server that says "all green" and collect a PASS and an exit 0 from it — the
+ * second #599 review measured exactly that against this checkout. The contract
+ * tests set both; no release route sets either.
  */
 function resolveApi() {
   const raw = (process.env.GITHUB_API_URL?.trim() || DEFAULT_API_URL).replace(/\/+$/, "");
@@ -90,7 +102,17 @@ function resolveApi() {
   if (parsed.protocol === "https:" && parsed.hostname === "api.github.com") {
     return { base: raw, real: true };
   }
-  if (LOOPBACK_HOSTS.has(parsed.hostname)) return { base: raw, real: false };
+  if (LOOPBACK_HOSTS.has(parsed.hostname)) {
+    if (process.env.RELEASE_EVIDENCE_FIXTURE?.trim() !== "1") {
+      return {
+        error:
+          `GITHUB_API_URL is the loopback stand-in ${raw} with no RELEASE_EVIDENCE_FIXTURE=1 ` +
+          "beside it. That pair exists for this guard's own contract tests; a release reads " +
+          "api.github.com, and a stand-in's verdict is not evidence for any publish",
+      };
+    }
+    return { base: raw, real: false };
+  }
   return {
     error:
       `GITHUB_API_URL points at ${parsed.host}; release evidence is read from api.github.com ` +
@@ -118,15 +140,27 @@ function resolveRepository(realApi) {
   return { repository: fromEnv };
 }
 
+/**
+ * The revision under judgement, and its two relations to this checkout.
+ *
+ * `fromHead` is "the caller named no revision at all". `isHead` is the one the
+ * tree check cares about: the revision being judged is the one checked out,
+ * however it was spelled — nothing, `HEAD`, or its own 40 digits. They came as
+ * one flag until the second #599 review, so `RELEASE_SHA=$(git rev-parse HEAD)`
+ * turned the tree check off while publishing that very tree.
+ */
 function resolveSha() {
+  const head = git(["rev-parse", "HEAD"]).out.toLowerCase();
   const given = (process.env.RELEASE_SHA ?? process.env.GITHUB_SHA ?? "").trim();
-  if (/^[0-9a-f]{40}$/i.test(given)) return { sha: given.toLowerCase(), fromHead: false };
   const fromHead = given.length === 0;
-  const resolved = git(["rev-parse", fromHead ? "HEAD" : given]).out;
-  return {
-    sha: /^[0-9a-f]{40}$/i.test(resolved) ? resolved.toLowerCase() : "",
-    fromHead,
-  };
+  let sha = "";
+  if (/^[0-9a-f]{40}$/i.test(given)) {
+    sha = given.toLowerCase();
+  } else {
+    const resolved = git(["rev-parse", fromHead ? "HEAD" : given]).out.toLowerCase();
+    if (/^[0-9a-f]{40}$/.test(resolved)) sha = resolved;
+  }
+  return { sha, fromHead, isHead: sha.length > 0 && sha === head };
 }
 
 /**
@@ -151,14 +185,17 @@ function resolveToken(realApi) {
 }
 
 /**
- * The sha came from HEAD, so the checkout is what gets published.
+ * The revision being judged is the one checked out, so the tree is what gets
+ * published.
  *
- * `vp run release:npm` on a green sha with uncommitted edits, or on a commit
- * that was never pushed and so never ran anything, would publish something the
- * evidence does not cover — the same shape as the hole #599 was opened to close
- * (#599 review).
+ * `vp run release:npm` on a green sha with uncommitted edits publishes
+ * something the evidence does not cover — the same shape as the hole #599 was
+ * opened to close (#599 review). This runs on every route that judges HEAD,
+ * including CI: the release job reads evidence before `pnpm install`, and
+ * `changeset:publish` reads it before `vp run build`, so both see the checkout
+ * as `actions/checkout` left it.
  */
-function checkoutRefusals() {
+function treeRefusals() {
   const refusals = [];
   const status = git(["status", "--porcelain"]);
   if (!status.ok) {
@@ -166,9 +203,24 @@ function checkoutRefusals() {
   } else if (status.out.length > 0) {
     refusals.push(
       "the working tree is not clean; `changeset publish` ships the tree, not the SHA this " +
-        "guard read. Commit or stash first, or name the revision with RELEASE_SHA",
+        "guard read. Commit or stash first — naming this same commit in RELEASE_SHA does not " +
+        "make the edits on top of it published",
     );
   }
+  return refusals;
+}
+
+/**
+ * Nothing ran on a commit `origin/main` does not contain.
+ *
+ * Only for the route that names no revision at all. A caller who names one is
+ * asking about a revision, not about this checkout's branch state, and the read
+ * below already refuses anything that is not a push or dispatch run on this
+ * repository's own main at that exact sha — which is the same fact, taken from
+ * the API rather than from local refs (#599 second review).
+ */
+function ancestryRefusals() {
+  const refusals = [];
   const remoteMain = git(["rev-parse", "--verify", "--quiet", "refs/remotes/origin/main"]);
   if (!remoteMain.ok || remoteMain.out.length === 0) {
     refusals.push(
@@ -185,22 +237,31 @@ function checkoutRefusals() {
 
 const api = resolveApi();
 const repositoryRead = api.error ? {} : resolveRepository(api.real === true);
-const { sha, fromHead } = resolveSha();
+const { sha, fromHead, isHead } = resolveSha();
 const repository = repositoryRead.repository ?? "";
 const token = api.error ? "" : resolveToken(api.real === true);
 
-const setupRefusals = [
-  api.error,
-  repositoryRead.error,
-  repository ? null : "GITHUB_REPOSITORY (or a github.com `origin` remote) names no repository",
-  token
-    ? null
-    : api.real === false
-      ? "GITHUB_TOKEN is unset, and a stand-in API base is never handed the `gh` credential"
-      : "GITHUB_TOKEN (or an authenticated `gh`) gives no credential",
-  sha ? null : "RELEASE_SHA (or a resolvable HEAD) names no revision",
-  ...(sha && fromHead ? checkoutRefusals() : []),
-].filter(Boolean);
+// An unusable API base is the whole answer: the repository and the credential
+// are resolved off it, so reporting them as missing beside it would print two
+// sentences that are not true of the caller's environment.
+const setupRefusals = (
+  api.error
+    ? [api.error]
+    : [
+        repositoryRead.error,
+        repository
+          ? null
+          : "GITHUB_REPOSITORY (or a github.com `origin` remote) names no repository",
+        token
+          ? null
+          : api.real === false
+            ? "GITHUB_TOKEN is unset, and a stand-in API base is never handed the `gh` credential"
+            : "GITHUB_TOKEN (or an authenticated `gh`) gives no credential",
+        sha ? null : "RELEASE_SHA (or a resolvable HEAD) names no revision",
+        ...(sha && isHead ? treeRefusals() : []),
+        ...(sha && fromHead ? ancestryRefusals() : []),
+      ]
+).filter(Boolean);
 
 if (setupRefusals.length > 0) {
   for (const refusal of setupRefusals) console.error(`FAIL: ${refusal}.`);
@@ -241,43 +302,61 @@ async function runsAtSha(workflow) {
         EVIDENCE_EVENTS.has(run.event) &&
         (run.head_repository?.full_name ?? "").toLowerCase() === repository.toLowerCase(),
     )
-    .sort((a, b) => b.id - a.id);
+    .sort(newestFirst);
 }
 
 /**
- * One workflow's verdict at this sha.
+ * Newest first.
  *
- * `success` needs a run that completed successfully at this exact sha, and no
- * later verdict that retracts it. A re-run cancelled or skipped afterwards does
- * not take back the green the same tree already earned; a completed `failure`,
- * `timed_out` or `action_required` at that sha does, whichever ran first.
+ * Actions run ids ascend, but `run_started_at` is what "later" means, and
+ * `run_number` breaks the tie two runs started in the same second leave.
+ */
+function newestFirst(a, b) {
+  const started = Date.parse(b.run_started_at ?? "") - Date.parse(a.run_started_at ?? "");
+  if (Number.isFinite(started) && started !== 0) return started;
+  const numbered = (b.run_number ?? 0) - (a.run_number ?? 0);
+  if (numbered !== 0) return numbered;
+  return b.id - a.id;
+}
+
+/**
+ * One workflow's verdict at this sha: the newest run that says anything about
+ * the tree.
+ *
+ * Cancelled and skipped say nothing, so they stand aside for the run behind
+ * them; a run still going has not said anything yet, so it is waited for. Until
+ * the second #599 review this was order-blind — one completed failure anywhere
+ * in the list refused, so a red run followed by a green re-run at the same sha
+ * could never be released, whichever way round they came.
  */
 function verdict(runs) {
-  const succeeded = runs.some((run) => run.status === "completed" && run.conclusion === "success");
-  const retracting = runs.filter(
-    (run) => run.status === "completed" && !STANDING_CONCLUSIONS.has(run.conclusion ?? ""),
+  const ordered = [...runs].sort(newestFirst);
+  const decisive = ordered.find(
+    (run) => run.status !== "completed" || !STANDS_ASIDE.has(run.conclusion ?? ""),
   );
-  if (retracting.length > 0) {
-    const conclusions = retracting.map((run) => run.conclusion ?? "no conclusion").join(", ");
+  if (!decisive) {
+    if (ordered.length === 0) return { state: "absent", detail: "no run at this SHA" };
     return {
       state: "refused",
-      detail: `concluded ${conclusions}`,
-      // Only when a green is being overruled: otherwise "no successful run"
-      // says it better.
-      line: succeeded
-        ? `has a completed run at ${sha} on main that concluded ${conclusions}; the green at the same SHA does not stand against it`
-        : undefined,
+      detail: `concluded ${ordered.map((run) => run.conclusion ?? "no conclusion").join(", ")}`,
     };
   }
-  if (succeeded) {
-    return { state: "success", detail: "success" };
+  if (decisive.status !== "completed") {
+    return { state: "pending", detail: decisive.status ?? "pending" };
   }
-  const running = runs.find((run) => run.status !== "completed");
-  if (running) return { state: "pending", detail: running.status ?? "pending" };
-  if (runs.length === 0) return { state: "absent", detail: "no run at this SHA" };
+  if (decisive.conclusion === "success") return { state: "success", detail: "success" };
+  const conclusion = decisive.conclusion ?? "no conclusion";
+  const behind = ordered.some(
+    (run) => run !== decisive && run.status === "completed" && run.conclusion === "success",
+  );
   return {
     state: "refused",
-    detail: `concluded ${runs.map((run) => run.conclusion ?? "no conclusion").join(", ")}`,
+    detail: `concluded ${conclusion}`,
+    // Only when a green is being overruled: otherwise "no successful run" says
+    // it better.
+    line: behind
+      ? `has a completed run at ${sha} on main that concluded ${conclusion}; the older green at the same SHA does not stand against it`
+      : undefined,
   };
 }
 

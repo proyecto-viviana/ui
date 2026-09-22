@@ -51,6 +51,15 @@
  * and since every releasable package had a changeset it skipped every subject
  * the guard had.
  *
+ * Two stages, two questions. `release.yml` runs this guard twice: once before
+ * `changesets/action`, with `--version-stage`, and once inside
+ * `changeset:publish`, plain. The version stage exists to consume the pending
+ * changesets into the next bump, so refusing a bump they are queued on top of
+ * there refuses the remedy — with one flag the step blocked the only commit
+ * that could clear what it was reporting. By the publish stage the changesets
+ * are consumed, nothing is deferred, and what is left is what is about to be
+ * uploaded.
+ *
  * Only what the tarball carries counts, and each manifest's own `files` says
  * what that is.
  */
@@ -230,6 +239,24 @@ function publishedBoundary(read, tag) {
       };
 }
 
+/**
+ * `--version-stage`: the caller is about to run `changeset version`, not
+ * `changeset publish`.
+ *
+ * It defers one failure and one only — a bump the registry never received with
+ * a pending changeset queued on top of it — because that is the state the
+ * version stage is there to clear: the queued changesets are consumed into the
+ * next bump, which the publish stage then ships. Everything else still fails,
+ * and the publish stage runs this guard again with no flag, through
+ * `changeset:publish`, when there is nothing left to defer to.
+ *
+ * Without it the step in `release.yml` refused the only commit that could fix
+ * the thing it was refusing: measured on `main` at 25820f92, exit 1 naming all
+ * five packages, each one "a pending changeset is queued on top of that bump"
+ * (#598 second review).
+ */
+const versionStage = process.argv.slice(2).includes("--version-stage");
+
 // A shallow clone truncates history, so the last CHANGELOG.md commit may simply
 // not be present and every package would look clean. Refuse to give a green
 // answer we cannot support — checkout needs fetch-depth: 0.
@@ -254,6 +281,7 @@ for (const changeset of pendingChangesets()) {
 const problems = [];
 const unreadable = [];
 const unpublished = [];
+const deferred = [];
 
 for (const pkg of releasablePackages()) {
   const read = await packument(pkg.name);
@@ -331,6 +359,14 @@ for (const pkg of releasablePackages()) {
   // publish it guards impossible.
   if (!covered && changed.length === 0) continue;
 
+  // The version stage consumes exactly this: the queued changesets become the
+  // next bump, and the publish stage ships that. Refusing it before
+  // `changesets/action` runs blocks the one commit that clears the skew.
+  if (versionStage && covered) {
+    deferred.push({ ...pkg, published });
+    continue;
+  }
+
   const publishedTree = commitThatSetVersion(pkg.dir, published);
   problems.push({
     ...pkg,
@@ -346,10 +382,16 @@ for (const pkg of releasablePackages()) {
 // Where the registry has nothing to compare against, say so beside the verdict
 // it belongs to — inside a failure when there is one, so it cannot read as
 // reassurance in a run that exits 1.
-const notes = unpublished.map(
-  (pkg) =>
-    `${pkg.name}: ${registry} has no published version of this package, so there is nothing to drift from.`,
-);
+const notes = [
+  ...unpublished.map(
+    (pkg) =>
+      `${pkg.name}: ${registry} has no published version of this package, so there is nothing to drift from.`,
+  ),
+  ...deferred.map(
+    (pkg) =>
+      `${pkg.name}: the tree carries ${pkg.version} and ${registry} serves ${pkg.published}; deferred to the version stage, which consumes the changeset queued on top of that bump. The publish stage asks again, with nothing left to defer to.`,
+  ),
+];
 
 if (unreadable.length > 0) {
   for (const note of notes) console.error(note);
@@ -362,7 +404,9 @@ if (unreadable.length > 0) {
 if (problems.length === 0) {
   for (const note of notes) console.log(note);
   console.log(
-    `No publish drift: every package's ${tag} release matches this tree, or its unreleased changes have a changeset.`,
+    deferred.length > 0
+      ? `No publish drift the version stage does not clear: ${deferred.length} unpublished bump(s) deferred to it, and nothing else.`
+      : `No publish drift: every package's ${tag} release matches this tree, or its unreleased changes have a changeset.`,
   );
   process.exit(0);
 }
@@ -388,7 +432,12 @@ if (problems.some((pkg) => pkg.kind === "unpublished-bump")) {
   console.error("A version the registry never received is that same skew a step earlier:");
   console.error("`workspace:^` publishes as a range on a sibling version npm does not have, and");
   console.error("the changelog written for that version describes a tree nobody can install.");
-  console.error("Publish the bump before stacking more on it, or re-run the release for it.\n");
+  console.error("Publish the bump before stacking more on it. By hand: from a clean checkout of");
+  console.error("a SHA whose gates are green, `vp run release:npm` re-reads the release guards,");
+  console.error("builds, and publishes the versions this tree already carries — `changeset");
+  console.error("publish` ships whatever the registry is missing. In CI: re-run Release at that");
+  console.error("SHA. Before `changeset version`, this guard takes `--version-stage` and defers");
+  console.error("this one failure, because the version stage is what clears it.\n");
 }
 if (problems.some((pkg) => pkg.kind === "behind")) {
   console.error(

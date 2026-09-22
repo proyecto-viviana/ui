@@ -59,9 +59,12 @@ function preEnter(tag: string, consumed: string[] = []): void {
   );
 }
 
-function runGuard(registry = registryUrl): Promise<{ status: number | null; output: string }> {
+function runGuard(
+  registry = registryUrl,
+  args: string[] = [],
+): Promise<{ status: number | null; output: string }> {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [GUARD], {
+    const child = spawn(process.execPath, [GUARD, ...args], {
       cwd: root,
       env: { ...process.env, npm_config_registry: registry },
       stdio: ["ignore", "pipe", "pipe"],
@@ -246,6 +249,41 @@ describe("check-publish-drift", () => {
     const { status, output } = await runGuard();
     expect(status).toBe(0);
     expect(output).toContain("No publish drift");
+  });
+
+  // #598 second review: in `release.yml` this guard runs before
+  // `changesets/action`, whose version stage consumes exactly these changesets
+  // into the next bump. Refusing there refuses the remedy — measured on `main`
+  // at 25820f92, where the step failed all five packages on this state and the
+  // version PR that clears it could never be written.
+  it("defers that same tree to the version stage, which is what consumes the changeset", async () => {
+    bumpTo("1.1.0");
+    git("add", "-A");
+    git("commit", "-qm", "version packages");
+    writeFileSync(join(root, "packages", "a", "src", "index.ts"), "export const a = 2;\n");
+    changeset("covers-the-source-change");
+    git("add", "-A");
+    git("commit", "-qm", "source change with changeset");
+
+    const { status, output } = await runGuard(registryUrl, ["--version-stage"]);
+    expect(status).toBe(0);
+    expect(output).toContain("deferred to the version stage");
+  });
+
+  it("defers nothing else in the version stage: a change no changeset publishes still fails", async () => {
+    writeManifest({ ".": "./src/index.ts", "./extra": "./src/extra.ts" });
+    git("add", "-A");
+    git("commit", "-qm", "new subpath");
+    const { status, output } = await runGuard(registryUrl, ["--version-stage"]);
+    expect(status).toBe(1);
+    expect(output).toContain("packages/a/package.json");
+  });
+
+  it("defers nothing else in the version stage: a tree behind the registry still fails", async () => {
+    served["@scope/a"] = { latest: "2.0.0" };
+    const { status, output } = await runGuard(registryUrl, ["--version-stage"]);
+    expect(status).toBe(1);
+    expect(output).toContain("not the tree that was released");
   });
 
   it("reads the prerelease tag, and ignores changesets the prerelease consumed", async () => {

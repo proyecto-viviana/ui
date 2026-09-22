@@ -114,6 +114,17 @@ on it is the commit the release job publishes from, and passes. A pending
 changeset excuses unreleased source, because the next bump carries it; it never
 excuses an unpublished bump, which is what it is queued on top of.
 
+It runs at both Changesets stages, and each stage is asked a different question
+(#598 second review). Before `changeset version` it runs as `--version-stage`,
+which defers an unpublished bump a pending changeset covers: that stage is the
+route that consumes the changeset and supersedes the bump, so refusing there
+would block the only move that clears the drift. It defers nothing else — source
+no changeset will publish, and a tree behind the registry, still fail at that
+stage. Before `changeset publish`, inside `changeset:publish`, it runs plain,
+with nothing left to defer to. A bump abandoned by a failed publish is recovered
+by re-running `Release` at that same green SHA, or by `vp run release:npm` from a
+clean checkout of it; queuing a fresh changeset on top does not republish it.
+
 ## GitHub automation
 
 `Release` no longer races the evidence workflows on every push. A successful
@@ -124,14 +135,23 @@ Readiness`, and `Site Gate` runs for that same SHA. A run is evidence only if it
 is this repository's own `push` or `workflow_dispatch` on `main`: a
 `pull_request` run records the PR head's ref name and can carry a fork's code,
 so it never counts (#599). The guard waits for siblings still running and fails
-closed on no run at all. A completed `failure`, `timed_out`, or `action_required`
-refuses even when another run of that workflow at the same SHA was green;
-`cancelled` and `skipped` alone do not retract a green the tree already took.
-It reads `api.github.com` only — a `GITHUB_API_URL` naming any other host is a
-refusal, not a redirect, and never receives the local `gh` credential. Run
-locally without an explicit `RELEASE_SHA`, it also refuses a dirty tree and a
-HEAD that `origin/main` does not contain. Manual dispatch remains available and
-has the same exact-SHA check.
+closed on no run at all. The newest completed run at that SHA decides (#599
+second review): a green re-run clears an older `failure`, `timed_out` or
+`action_required`, and the refusal says when an older green stands behind the
+red it refuses on. `cancelled` and `skipped` stand aside — they neither release
+nor retract — so the decision falls to the newest run under them, and a SHA whose
+runs are all cancelled is refused as no evidence at all. It reads
+`api.github.com` only: a `GITHUB_API_URL` naming any other host is a refusal, not
+a redirect, and never receives the local `gh` credential. The single exception is
+this guard's own contract tests, and it needs two signals together — a loopback
+host **and** `RELEASE_EVIDENCE_FIXTURE=1`. Either alone refuses, so a stand-in
+server cannot answer for a release. Whenever the revision it judges is HEAD —
+taken from HEAD, or named in `RELEASE_SHA` by HEAD's own 40 digits — it refuses a
+dirty tree: edits on top of that commit are not what any workflow ran, and naming
+the commit does not make them published. Taken from HEAD it also requires an
+`origin/main` that contains HEAD; naming another revision explicitly asks about
+that revision, not about this checkout. Manual dispatch remains available and has
+the same exact-SHA check.
 
 After that evidence barrier, the workflow runs in two Changesets stages. If
 unpublished changesets exist, it creates or updates the version PR. When that
