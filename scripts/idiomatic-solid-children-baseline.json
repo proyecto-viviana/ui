@@ -1,209 +1,237 @@
 {
   "version": 1,
-  "generated": "2026-09-02",
+  "generated": "2026-09-22",
   "description": "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
   "sites": [
     {
       "file": "packages/solidaria-components/src/Focusable.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 55,
+      "line": 56,
       "ticket": 192
     },
     {
       "file": "packages/solidaria-components/src/Pressable.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 64,
+      "line": 65,
       "ticket": 192
     },
     {
       "file": "packages/solid-spectrum/src/badge/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 327,
+      "line": 322,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/button/ActionButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 328,
+      "line": 401,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/button/LinkButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 171,
+      "line": 172,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/button/ToggleButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 308,
+      "line": 339,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/gridlist/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 1043,
+      "line": 1051,
       "ticket": 192
     },
     {
       "file": "packages/solid-spectrum/src/gridlist/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 1211,
+      "line": 1225,
       "ticket": 192
     },
     {
       "file": "packages/solid-spectrum/src/overlays/OpenTransition.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 89,
+      "line": 81,
       "ticket": 192
     },
     {
       "file": "packages/solid-spectrum/src/radio/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 626,
+      "line": 632,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/segmentedcontrol/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 370,
+      "line": 373,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/selectboxgroup/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 456,
+      "line": 467,
       "ticket": 169
     },
     {
       "file": "packages/solid-spectrum/src/selectboxgroup/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 625,
+      "line": 636,
       "ticket": 169
     },
     {
       "file": "packages/solid-spectrum/src/tag-group/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 673,
+      "line": 683,
       "ticket": 168
     },
     {
       "file": "packages/solid-spectrum/src/tree/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 852,
+      "line": 858,
       "ticket": 192
     },
     {
       "file": "packages/solid-spectrum/src/tree/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 1011,
+      "line": 1031,
       "ticket": 192
     },
     {
       "file": "packages/viviana-ui/src/badge/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 482,
+      "line": 506,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/button/ActionButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 329,
+      "line": 406,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/button/LinkButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 160,
+      "line": 162,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/button/ToggleButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 308,
+      "line": 339,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/gridlist/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 1233,
+      "line": 1295,
       "ticket": 192
     },
     {
       "file": "packages/viviana-ui/src/overlays/OpenTransition.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 89,
+      "line": 81,
       "ticket": 192
     },
     {
       "file": "packages/viviana-ui/src/radio/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 636,
+      "line": 697,
       "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/searchfield/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 426,
+      "ticket": 545
+    },
+    {
+      "file": "packages/viviana-ui/src/searchfield/index.tsx",
+      "ident": "suffixNode",
+      "ordinal": 0,
+      "line": 427,
+      "ticket": 545
     },
     {
       "file": "packages/viviana-ui/src/segmentedcontrol/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 394,
+      "line": 445,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/selectboxgroup/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 471,
+      "line": 505,
       "ticket": 169
     },
     {
       "file": "packages/viviana-ui/src/selectboxgroup/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 640,
+      "line": 674,
       "ticket": 169
     },
     {
       "file": "packages/viviana-ui/src/tag-group/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 760,
+      "line": 784,
       "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/textfield/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 325,
+      "ticket": 545
+    },
+    {
+      "file": "packages/viviana-ui/src/textfield/index.tsx",
+      "ident": "suffixNode",
+      "ordinal": 0,
+      "line": 326,
+      "ticket": 545
     },
     {
       "file": "packages/viviana-ui/src/tree/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
-      "line": 853,
+      "line": 876,
       "ticket": 192
     },
     {
       "file": "packages/viviana-ui/src/tree/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 1026,
+      "line": 1056,
       "ticket": 192
     }
   ]

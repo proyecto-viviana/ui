@@ -5,12 +5,16 @@
  * non-event objects. The module-scope JSX rule flags what runs at module
  * evaluation (#545) and nothing that runs at call time.
  */
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import {
+  type ChildrenBaseline,
   findModuleScopeJsx,
   findRenderedChildrenSnapshots,
   findSolidJsEventLayeringMerges,
   isStyledMergePropsGuardPath,
+  ticketForChildrenSite,
 } from "./check-idiomatic-solid";
 
 const SNAPSHOT_RENDERED = `
@@ -51,6 +55,28 @@ describe("findRenderedChildrenSnapshots", () => {
   it("does not flag children() used only with toArray / length", () => {
     const sites = findRenderedChildrenSnapshots(STRUCTURAL_ONLY);
     expect(sites).toEqual([]);
+  });
+});
+
+describe("ticketForChildrenSite", () => {
+  it("puts the field adornments on #545 and keeps the wrapper closeouts", () => {
+    expect(ticketForChildrenSite("packages/viviana-ui/src/textfield/index.tsx")).toBe(545);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/searchfield/index.tsx")).toBe(545);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/selectboxgroup/index.tsx")).toBe(169);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/button/ActionButton.tsx")).toBe(168);
+    expect(ticketForChildrenSite("packages/solidaria-components/src/Focusable.tsx")).toBe(192);
+  });
+
+  it("agrees with every ticket in the committed baseline, so --write-baseline reproduces it", () => {
+    const baseline = JSON.parse(
+      readFileSync(
+        path.join(process.cwd(), "scripts", "idiomatic-solid-children-baseline.json"),
+        "utf8",
+      ),
+    ) as ChildrenBaseline;
+    expect(baseline.sites.length).toBeGreaterThan(0);
+    const disagreed = baseline.sites.filter((s) => s.ticket !== ticketForChildrenSite(s.file));
+    expect(disagreed.map((s) => `${s.file} #${s.ticket}`)).toEqual([]);
   });
 });
 

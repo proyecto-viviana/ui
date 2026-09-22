@@ -344,12 +344,17 @@ export function findRenderedChildrenSnapshots(source: string): ChildrenSnapshotS
 }
 
 /**
- * Ticket that owns removing a known snapshot-rendered `children()` site.
- * #168 / #169 are the styled-wrapper closeouts; remaining inspection wrappers
- * and extra collection copies sit on #192 until a dedicated closeout exists.
+ * Ticket that explains a known snapshot-rendered `children()` site — usually the
+ * one that owns removing it. #168 / #169 are the styled-wrapper closeouts;
+ * remaining inspection wrappers and extra collection copies sit on #192 until a
+ * dedicated closeout exists. The field adornments are the exception: #545
+ * resolves each of them once ON PURPOSE, because a JSX-valued `prefix`/`suffix`
+ * is a getter that rebuilds the component on every read and the input's ownerless
+ * ref callback re-read it; there the ticket is the reasoning, not a debt.
  */
 export function ticketForChildrenSite(file: string): number {
   const n = file.replace(/\\/g, "/");
+  if (n.includes("/textfield/") || n.includes("/searchfield/")) return 545;
   if (n.includes("/selectboxgroup/")) return 169;
   if (
     /\/(ActionButton|ToggleButton|LinkButton)\.tsx$/.test(n) ||

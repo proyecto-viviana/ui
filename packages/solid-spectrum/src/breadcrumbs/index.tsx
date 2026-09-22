@@ -260,9 +260,14 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
   // commit. Seeding it from `canMeasureOverflow()` read `window`, so the client's
   // first render carried the hidden measurement copy the server cannot emit, and the
   // copy's first `ElementTag` asked for a hydration key that does not exist (#545).
-  // Upstream S2 renders `HiddenBreadcrumbs` unconditionally and measures in a layout
-  // effect (@react-spectrum/s2 Breadcrumbs.tsx:527, :542): first render never reads
-  // the environment either way.
+  // This diverges from upstream S2 on purpose. It renders `HiddenBreadcrumbs`
+  // unconditionally (@react-spectrum/s2 1.7.0 `src/Breadcrumbs.tsx:542`) and measures
+  // in a layout effect (`:527`), so the hidden copy is in its server HTML and in its
+  // first client render alike, and React reconciles the two. Solid hydrates the
+  // server's DOM by key, so a node only one side renders throws — we render this copy
+  // on neither side until after commit. Upstream also seeds fully expanded
+  // (`useState(collection.size)`, `:452`) where `visibleTailCount` below starts at
+  // `MAX_VISIBLE_ITEMS - 2`. Do not "restore" either to upstream's shape.
   const [canMeasure, setCanMeasure] = createSignal(false);
   const [visibleTailCount, setVisibleTailCount] = createSignal(MAX_VISIBLE_ITEMS - 2);
   let cleanupOverflowObservers = () => {};
