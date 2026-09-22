@@ -1,5 +1,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
+import {
+  frameworkCanvas,
+  frameworkPanel,
+  scrollLocatorIntoView,
+  styledSection,
+} from "./comparison-page";
 import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 async function pickerFixtures(page: Page, query = "") {
@@ -386,9 +391,10 @@ test.describe("comparison Picker visual parity", () => {
   test("first pointer open does not scroll the page to the portal", async ({ page }) => {
     const fixtures = await pickerFixtures(page, "?size=XL");
 
-    await fixtures.solidButton.evaluate((element) => {
-      element.scrollIntoView({ block: "center", inline: "nearest" });
-    });
+    // The shared helper, not a second copy of it: it also waits out the
+    // `scroll` event this queues, which would otherwise reach the list the
+    // click below opens and close it (#608).
+    await scrollLocatorIntoView(fixtures.solidButton, "center");
     const beforeScrollY = await page.evaluate(() => window.scrollY);
 
     await fixtures.solidButton.click();

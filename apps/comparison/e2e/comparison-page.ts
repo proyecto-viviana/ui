@@ -80,18 +80,80 @@ export async function waitForPaintSettle(page: Page, paintBudgetMs = defaultPain
   }, paintBudgetMs);
 }
 
+/** Cap for the queued `scroll` event of `scrollLocatorIntoView`. */
+const scrollDispatchBudgetMs = 250;
+const scrollDispatchPollMs = 4;
+
+type ScrollTickWindow = Window & { __comparisonScrollTicks?: number };
+
 /**
  * Playwright's `scrollIntoViewIfNeeded` waits for two compositor-stable frames.
  * WSL Chromium 151 never issues those frames through SwiftShader, so the
  * action deadlocks. DOM `scrollIntoView` does not need a frame.
+ *
+ * The DOM call is not the end of the scroll: Chromium dispatches the `scroll`
+ * event at the next rendering update, a frame later. Upstream React Aria closes
+ * every overlay whose trigger sits inside the scrolled tree (`useCloseOnScroll`,
+ * which the port mirrors), so a helper that returned with that event queued
+ * would let the next helper open an overlay INTO it — the overlay opens,
+ * registers its scroll listener, and the stale event closes it again. Measured
+ * on the certified tooltip walk: the canvas scroll and the `beforePanel` hover
+ * are ~20 ms apart and the event lands between them, so whichever wins is the
+ * machine's choice. That is the flake #608 owns.
+ *
+ * So this returns only once the event it queued has been delivered, and only
+ * when something actually scrolled — an element already in view costs nothing.
+ * The wait is a condition, not a sleep: it polls a counter the page increments
+ * from the real `scroll` event, on the Node side, which does not consume
+ * Playwright's mocked clock (D11 drives hovers under a FROZEN clock, where page
+ * timers and rAF never fire). The budget is `waitForPaintSettle`'s degradation
+ * contract: a machine that never issues a rendering update proceeds instead of
+ * deadlocking.
  */
 export async function scrollLocatorIntoView(
   target: Locator,
   block: ScrollLogicalPosition = "nearest",
 ) {
-  await target.evaluate((element, align) => {
+  const ticksBefore = await target.evaluate((element, align) => {
+    const scrollWindow = window as ScrollTickWindow;
+    if (scrollWindow.__comparisonScrollTicks == null) {
+      scrollWindow.__comparisonScrollTicks = 0;
+      window.addEventListener(
+        "scroll",
+        () => {
+          scrollWindow.__comparisonScrollTicks = (scrollWindow.__comparisonScrollTicks ?? 0) + 1;
+        },
+        true,
+      );
+    }
+    const offsets = () => {
+      const parts = [`${window.scrollX},${window.scrollY}`];
+      for (let node: Element | null = element; node; node = node.parentElement) {
+        parts.push(`${node.scrollTop},${node.scrollLeft}`);
+      }
+      return parts.join("|");
+    };
+
+    const before = offsets();
     element.scrollIntoView({ block: align, inline: "nearest" });
+    return offsets() === before ? null : (scrollWindow.__comparisonScrollTicks ?? 0);
   }, block);
+
+  if (ticksBefore == null) {
+    return;
+  }
+
+  const page = target.page();
+  const deadline = Date.now() + scrollDispatchBudgetMs;
+  for (;;) {
+    const ticks = await page.evaluate(
+      () => (window as ScrollTickWindow).__comparisonScrollTicks ?? 0,
+    );
+    if (ticks > ticksBefore || Date.now() >= deadline) {
+      return;
+    }
+    await page.waitForTimeout(scrollDispatchPollMs);
+  }
 }
 
 /**
