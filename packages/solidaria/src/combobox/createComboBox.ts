@@ -320,9 +320,15 @@ export function createComboBox<T>(
   // Track focus state from state
   const isFocused = state.isFocused;
 
-  // String formatter for VoiceOver announcements
-  // Only create on client side
-  const stringFormatter = !isServer ? createStringFormatter(comboBoxIntlStrings) : null;
+  // String formatter for VoiceOver announcements. RAC useComboBox.ts:75 calls
+  // useLocalizedStringFormatter unconditionally at the top of the hook body, and
+  // so must we: createStringFormatter allocates reactive nodes, Solid 2's
+  // hydration keys are a per-owner path, and creating it on the client only
+  // shifted every sibling key after it. The first fallback-less claim in the
+  // shifted subtree — help text, which renders through ElementTag/dynamic — then
+  // threw `Hydration Mismatch. Unable to find DOM nodes for hydration key` and
+  // blanked /solid-spectrum/docs/components/combobox (#545).
+  const stringFormatter = createStringFormatter(comboBoxIntlStrings);
 
   // Track previous values for announcements
   let lastFocusedKey: Key | null = null;
@@ -334,7 +340,7 @@ export function createComboBox<T>(
   // (especially on iOS). We use a live region announcer to announce focus changes
   // manually. This matches React Aria's behavior.
   createTrackedEffect(() => {
-    if (isServer || !stringFormatter) return;
+    if (isServer) return;
 
     const focusedKey = state.focusedKey();
     const isOpen = state.isOpen();
@@ -365,7 +371,7 @@ export function createComboBox<T>(
 
   // Announce the number of available suggestions when it changes
   createTrackedEffect(() => {
-    if (isServer || !stringFormatter) return;
+    if (isServer) return;
 
     const isOpen = state.isOpen();
     const collection = state.collection();
@@ -395,7 +401,7 @@ export function createComboBox<T>(
 
   // Announce when a selection occurs for VoiceOver. Other screen readers typically do this automatically.
   createTrackedEffect(() => {
-    if (isServer || !stringFormatter) return;
+    if (isServer) return;
 
     const selectedKey = state.selectedKey();
     const selectedItem = state.selectedItem();

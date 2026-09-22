@@ -16,7 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/TextField.tsx.
 
-import { createContext, createUniqueId, merge, Show, useContext } from "solid-js";
+import { children, createContext, createUniqueId, merge, Show, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   TextField as HeadlessTextField,
@@ -312,10 +312,22 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   const prefixId = createUniqueId();
   const suffixId = createUniqueId();
+  // `prefix`/`suffix` are JSX props, so the compiler turns each into a getter
+  // that runs the component body on every read — `createComponent` is
+  // `untrack(() => Comp(props))`, not a cached node. `adornmentIds` is read
+  // through `PrefixInputProvider`'s thunk on every `inputProps` access, and one
+  // of those accesses happens inside the input's ref callback, which Solid 2
+  // applies with `getOwner() === null`; a context-reading adornment
+  // (`suffix={<Keyboard/>}` on /showcase/inputs) threw there and blanked the
+  // route (#545). `children()` resolves each node once, under this owner, and
+  // is then safe to read from anywhere. Upstream S2 gets this for free: a React
+  // element is inert, so re-reading the prop runs nothing.
+  const prefixNode = children(() => local.prefix);
+  const suffixNode = children(() => local.suffix);
   // Space-separated adornment ids appended to the input's `aria-labelledby`,
   // visual order (prefix before suffix). Read live by PrefixInputProvider.
   const adornmentIds = () =>
-    [local.prefix ? prefixId : null, local.suffix ? suffixId : null].filter(Boolean).join(" ");
+    [prefixNode() ? prefixId : null, suffixNode() ? suffixId : null].filter(Boolean).join(" ");
   const size = () => normalizeTextFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -443,17 +455,17 @@ export function TextField(props: TextFieldProps): JSX.Element {
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
             <Show
-              when={local.prefix || local.suffix}
+              when={prefixNode() || suffixNode()}
               fallback={<HeadlessInput class={textFieldInput} />}
             >
-              <Show when={local.prefix}>
-                <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <Show when={prefixNode()}>
+                <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
               </Show>
               <PrefixInputProvider context={HeadlessTextFieldContext} prefixId={adornmentIds()}>
                 <HeadlessInput class={textFieldInput} />
               </PrefixInputProvider>
-              <Show when={local.suffix}>
-                <FieldSuffix id={suffixId}>{local.suffix}</FieldSuffix>
+              <Show when={suffixNode()}>
+                <FieldSuffix id={suffixId}>{suffixNode()}</FieldSuffix>
               </Show>
             </Show>
             <Show when={renderProps.isInvalid && !renderProps.isDisabled}>

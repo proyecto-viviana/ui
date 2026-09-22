@@ -54,7 +54,7 @@ import {
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
-import { assignRef, attrString, splitProps } from "@proyecto-viviana/solidaria/utils";
+import { assignRef, attrString, splitProps, type RefLike } from "@proyecto-viviana/solidaria/utils";
 
 export interface TextFieldRenderProps {
   /** Whether the text field is disabled. */
@@ -135,6 +135,12 @@ function clearDelegatedTextEntryHandlers(element: HTMLElement) {
 export function Input(props: InputProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let inputElement: HTMLInputElement | undefined;
+  // Resolved here, in the component body, not in the ref callback below: Solid 2
+  // applies element refs through `runWithOwner(null, …)`, so a `context.inputProps`
+  // read from inside the callback runs with no owner. A styled register may put a
+  // proxy on that context whose `inputProps` getter re-runs caller thunks (#545),
+  // and anything ownerless those thunks reach throws.
+  const contextInputRef = context?.inputProps?.ref as RefLike<HTMLInputElement>;
 
   createEffect(
     () => attrString(props.id),
@@ -211,7 +217,7 @@ export function Input(props: InputProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         inputElement = element;
-        assignRef(context?.inputProps?.ref, element);
+        assignRef(contextInputRef, element);
         assignRef(props.ref, element);
       }}
     />
@@ -231,6 +237,8 @@ export interface TextAreaProps extends Omit<
 export function TextArea(props: TextAreaProps): JSX.Element {
   const context = useContext(TextFieldContext);
   let textAreaElement: HTMLTextAreaElement | undefined;
+  // Resolved in the component body, not in the ref callback: see `Input` above.
+  const contextInputRef = context?.inputProps?.ref as RefLike<HTMLTextAreaElement>;
 
   createEffect(
     () => attrString(props.id),
@@ -308,7 +316,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         textAreaElement = element;
-        assignRef(context?.inputProps?.ref, element);
+        assignRef(contextInputRef, element);
         assignRef(props.ref, element);
       }}
     />

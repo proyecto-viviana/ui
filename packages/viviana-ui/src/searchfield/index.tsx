@@ -16,7 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/SearchField.tsx.
 
-import { createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
+import { children, createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   SearchField as HeadlessSearchField,
@@ -419,10 +419,16 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
 
   const prefixId = createUniqueId();
   const suffixId = createUniqueId();
+  // Resolved once, under this owner: see the same block in textfield/index.tsx.
+  // `adornmentIds` is re-read from inside the input's ownerless ref callback, so
+  // a raw `local.prefix`/`local.suffix` read there re-runs a component-valued
+  // adornment with no owner and throws (#545).
+  const prefixNode = children(() => local.prefix);
+  const suffixNode = children(() => local.suffix);
   // Space-separated adornment ids appended to the input's `aria-labelledby`,
   // visual order (prefix before suffix). Read live by PrefixInputProvider.
   const adornmentIds = () =>
-    [local.prefix ? prefixId : null, local.suffix ? suffixId : null].filter(Boolean).join(" ");
+    [prefixNode() ? prefixId : null, suffixNode() ? suffixId : null].filter(Boolean).join(" ");
 
   const size = () => normalizeSearchFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
@@ -571,25 +577,25 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
             <Show
-              when={local.prefix}
+              when={prefixNode()}
               fallback={
                 <CenterBaseline slot="icon" styles={searchPromptWrapper}>
                   <span aria-hidden="true">/</span>
                 </CenterBaseline>
               }
             >
-              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
             </Show>
             <Show
-              when={local.prefix || local.suffix}
+              when={prefixNode() || suffixNode()}
               fallback={<HeadlessSearchFieldInput class={inputClass()} />}
             >
               <PrefixInputProvider context={HeadlessSearchFieldContext} prefixId={adornmentIds()}>
                 <HeadlessSearchFieldInput class={inputClass()} />
               </PrefixInputProvider>
             </Show>
-            <Show when={local.suffix}>
-              <FieldSuffix id={suffixId}>{local.suffix}</FieldSuffix>
+            <Show when={suffixNode()}>
+              <FieldSuffix id={suffixId}>{suffixNode()}</FieldSuffix>
             </Show>
             <Show when={local.shortcut}>
               {/* Decoration, not name: see `shortcut` on SearchFieldProps. It carries no
