@@ -20,7 +20,7 @@
  * provides focus-visible state and listeners.
  */
 
-import { createSignal, createTrackedEffect, untrack } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { isServer } from "@solidjs/web";
 import { getEventTarget, getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
@@ -55,9 +55,7 @@ export interface InteractionModalityResult {
 // read (useFocusVisible.ts). `currentModalityValue` is that let: every read
 // returns it. The signal is a notification counter, not a copy of the word.
 // `writeModality` updates the let. `publishModality` updates the let and bumps
-// the counter. `equals: false` so a second publish of the same word still
-// notifies: a reader that saw `pointer` through a silent move must re-run on
-// the next `keyboard`. Bump where upstream calls `triggerChangeHandlers`
+// the counter. Bump where upstream calls `triggerChangeHandlers`
 // (keyboard, pointerdown/mousedown, virtual focus, setInteractionModality)
 // and on handleClickEvent's virtual write. That click handler
 // (useFocusVisible.ts:105-111) stays silent because React re-renders after
@@ -68,7 +66,6 @@ export interface InteractionModalityResult {
 // `untrack` stops tracking; it does not exempt the write.
 let currentModalityValue: Modality | null = null;
 const [modalityEpoch, bumpModalityEpoch] = createSignal(0, {
-  equals: false,
   ownedWrite: true,
 });
 let currentPointerType: PointerType = "keyboard";
@@ -82,10 +79,6 @@ function publishModality(next: Modality): void {
   bumpModalityEpoch((n) => n + 1);
 }
 
-function readCurrentModality(): Modality | null {
-  modalityEpoch();
-  return currentModalityValue;
-}
 const changeHandlers = new Set<Handler>();
 
 export let hasSetupGlobalListeners: Map<
@@ -335,12 +328,17 @@ if (typeof document !== "undefined") {
   addWindowFocusTracking();
 }
 
+function focusVisibleSnapshot(): boolean {
+  return currentModalityValue !== "pointer";
+}
+
 /**
  * If true, keyboard focus is visible. The only tracked read of modality:
  * useOption's render predicate re-reads this on every render.
  */
 export function isFocusVisible(): boolean {
-  return readCurrentModality() !== "pointer";
+  modalityEpoch();
+  return focusVisibleSnapshot();
 }
 
 /**
@@ -426,7 +424,8 @@ export function createFocusVisibleListener(
     if (!isKeyboardFocusEvent(!!opts?.isTextInput, modality, e)) {
       return;
     }
-    handler(isFocusVisible());
+    // Upstream's listener read is a plain variable (useFocusVisible.ts:424); the listener runs synchronously inside setInteractionModality, which an effect may call.
+    handler(focusVisibleSnapshot());
   };
   changeHandlers.add(listener);
   return () => {
@@ -447,7 +446,7 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
   // span misses its hydration key. The let is the same answer, written
   // synchronously.
   const [isVisible, setIsVisible] = createSignal<boolean>(
-    isServer ? false : props.autoFocus || currentModalityValue !== "pointer",
+    isServer ? false : props.autoFocus || focusVisibleSnapshot(),
   );
 
   // Reserve the effect owner during SSR too; its callback runs only on client.

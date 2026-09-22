@@ -26,14 +26,13 @@ import {
   Show,
   useContext,
   createTrackedEffect,
-  untrack,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   mergeProps,
   createHover,
   createFocusVisibleListener,
-  isFocusVisible as isGlobalFocusVisible,
+  getInteractionModality,
 } from "@proyecto-viviana/solidaria";
 import {
   ComboBox as HeadlessComboBox,
@@ -660,7 +659,7 @@ function ComboBoxFieldGroup(props: {
   // group's own keyboard-modality flag; `isKeyboardFocusEvent` auto-detects
   // the text input so ArrowDown/type/Enter do not flip it.
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
-    untrack(isGlobalFocusVisible),
+    getInteractionModality() !== "pointer",
   );
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];

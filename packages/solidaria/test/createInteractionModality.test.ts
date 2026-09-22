@@ -262,7 +262,7 @@ describe("createInteractionModality", () => {
         expect(runs).toBe(4);
         expect(isFocusVisible()).toBe(true);
 
-        // Silent move, then the same word again. The counter must still bump.
+        // A same-word publish still bumps the counter.
         document.dispatchEvent(
           new PointerEvent("pointermove", { bubbles: true, pointerType: "mouse" }),
         );

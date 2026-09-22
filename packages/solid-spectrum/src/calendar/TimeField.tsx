@@ -24,7 +24,6 @@ import {
   Show,
   useContext,
   createTrackedEffect,
-  untrack,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -44,7 +43,7 @@ import {
   mergeProps,
   useLocale,
   createFocusVisibleListener,
-  isFocusVisible as isGlobalFocusVisible,
+  getInteractionModality,
 } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
@@ -365,7 +364,7 @@ function TimeFieldContent(props: {
   // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
   const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
-    untrack(isGlobalFocusVisible),
+    getInteractionModality() !== "pointer",
   );
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];

@@ -60,14 +60,18 @@ describe("createFocusRing", () => {
   describe("basic functionality", () => {
     it("runs a focusing effect once across a later keydown and pointerdown", () => {
       let runs = 0;
+      let isFocused: (() => boolean) | undefined;
+      let isFocusVisible: (() => boolean) | undefined;
       const FocusOnce: Component = () => {
         let el!: HTMLDivElement;
-        const { focusProps } = createFocusRing();
+        const ring = createFocusRing();
+        isFocused = ring.isFocused;
+        isFocusVisible = ring.isFocusVisible;
         createTrackedEffect(() => {
           runs += 1;
           el.focus();
         });
-        return <div tabIndex={0} {...focusProps} ref={el} data-testid="ring" />;
+        return <div tabIndex={0} {...ring.focusProps} ref={el} data-testid="ring" />;
       };
 
       flush();
@@ -75,6 +79,8 @@ describe("createFocusRing", () => {
       flush();
       expect(runs).toBe(1);
       expect(document.activeElement).toBe(screen.getByTestId("ring"));
+      expect(isFocused!()).toBe(true);
+      expect(isFocusVisible!()).toBe(true);
 
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
       document.dispatchEvent(

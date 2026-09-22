@@ -133,6 +133,120 @@ history:
       true. createOption hover stays isDisabled only until ListBox grows
       Spectrum's second useHover for the shouldFocusOnHover false case, and
       then the getter can match useOption.ts:155-156.
+  - state: merged
+    at: 2026-09-22
+    note: >-
+      Follow-up w-612c on 60166e22. focusVisibleSnapshot is module-private
+      (createInteractionModality.ts:331-333) and is not exported; index.ts is
+      untouched. isFocusVisible is modalityEpoch() then focusVisibleSnapshot()
+      (:339-342). The listener calls handler(focusVisibleSnapshot()) (:428).
+      The createFocusVisible seed is isServer ? false : props.autoFocus ||
+      focusVisibleSnapshot() (:449). equals: false is off the counter
+      (:68-70). A counter that always increments never repeats a value, so
+      the option was dead config. ownedWrite: true stays, with its sentence.
+      createFocusRing seeds autoFocus || getInteractionModality() !== "pointer"
+      (:57). onFocusChange still re-samples through untrack(isGlobalFocusVisible)
+      (:86): useFocusRing.ts:57-61 re-samples isFocusVisible() in its own
+      onFocusChange, pointermove writes the let without notifying, and the
+      focus event can be dispatched from an effect body. The six styled seeds
+      are getInteractionModality() !== "pointer": solid-spectrum
+      DateField.tsx:373, TimeField.tsx:367, combobox/index.tsx:662, viviana-ui
+      DateField.tsx:371, TimeField.tsx:365, combobox/index.tsx:675. SSR answer
+      is unchanged. getInteractionModality() returns null on the server, so
+      null !== "pointer" is true. The old isFocusVisible() read was the same
+      let comparison, also true when the let is null. createFocusVisible still
+      forces false through isServer. The ring accessor is isFocused() && flag
+      and isFocused starts false, so the focus-ring span text stays false.
+      The SSR writer is packages/solidaria/test/hydrationHooks.ssr.test.tsx
+      (writeFileSync of output/hook-${kind}-ssr.html). output/ is gitignored
+      (.gitignore:51). output/hook-focus-ring-ssr.html is
+      <section _hk=0><span _hk=33 id="32" data-hook="focus-ring">false</span></section>
+      before the seed fix (12:09, 81 bytes) and after it (12:21 cat). The
+      focus-visible span, cat at 12:21, is
+      <section _hk=0><span _hk=32 id="31" data-hook="focus-visible">false</span></section>.
+      Red first, fixture and hydrate branch only, before createFocusRing.ts:55
+      changed. 12:09 mkdir heavy.lock and echo w-612c exit 0, LOCK_OK, then
+      vp run test:ssr exit 0, Test Files 35 passed (35), Tests 94 passed (94),
+      Start at 12:09:28, Duration 12.28s, hydrationHooks.ssr.test.tsx 17 tests,
+      then rm of that lock, LOCK_RELEASED. 12:09 vp test run --config
+      vitest.hydrate.config.ts
+      packages/solidaria/test/hydrationHooks.hydrate.test.tsx --maxWorkers=2
+      exit 1. Test Files 1 failed (1). Tests 1 failed | 16 passed (17).
+      Start at 12:09:59. Duration 1.91s. FAIL hook owner hydration parity >
+      adopts focus-ring's following ID and retains its client behavior.
+      Hydration key miss for "33": no server-rendered element carries this
+      key (template: <span>), printed twice, thrown at hydrateOverSsr
+      packages/solidaria/test-utils/hydrate.ts:337:34 from
+      hydrationHooks.hydrate.test.tsx:416:25. git diff --stat was the two
+      fixture files, 10 insertions. After the let seed, 12:12 the same
+      hydrate command exit 0, Test Files 1 passed (1), Tests 17 passed (17),
+      Start at 12:12:09, Duration 2.23s. 12:12 vp test run
+      packages/solidaria/test/createFocusRing.test.tsx
+      packages/solidaria/test/createInteractionModality.test.ts
+      packages/solidaria/test/createListBox.test.tsx --maxWorkers=2 exit 0,
+      Test Files 3 passed (3), Tests 119 passed (119), Start at 12:12:09,
+      Duration 2.25s. The effect test also asserts the ring isFocused() true
+      and isFocusVisible() true under the keyboard modality beforeEach pins.
+      The detail-0 expects sit in try, and setInteractionModality("pointer")
+      is only in finally. The same-word comment now says a same-word publish
+      still bumps the counter. 12:12 vp test run
+      packages/solid-spectrum/test/ComboBox.test.tsx --maxWorkers=2 -t
+      "paints a synthetic detail-0" exit 0, Tests 1 passed | 32 skipped (33),
+      Start at 12:12:09, Duration 9.07s. That test opens with a pointer click,
+      asserts the selected option has no data-focus-visible, closes, then
+      does the detail-0 click. 12:13 vp fmt --write then vp fmt --check on
+      the 15 source, test, and changeset paths exit 0, all matched files use
+      the correct format, 15 files. 12:13 vp lint on the 14 source and test
+      paths exit 0, Found 0 warnings and 0 errors, 14 files, 98 rules.
+      12:13 vp run check exit 0, All 4467 files are correctly formatted, no
+      warnings or lint errors in 3208 files, tsc --noEmit pass, Duration
+      39.13s. 12:13 vp test run packages/solidaria --maxWorkers=2 exit 0,
+      Test Files 169 passed (169), Tests 4248 passed | 6 skipped (4254),
+      Start at 12:13:30, Duration 59.22s. 12:14 vp run guard:layer-boundary
+      exit 0, identical 524, diverged 84, new forks 0, unbaselined 0, PASS.
+      12:14 vp test run packages/solid-spectrum --maxWorkers=2 exit 0,
+      Test Files 85 passed (85), Tests 1135 passed | 1 expected fail (1136),
+      Start at 12:14:58, Duration 57.58s. 12:14 vp test run packages/viviana-ui
+      --maxWorkers=2 exit 0, Test Files 37 passed (37), Tests 232 passed (232),
+      Start at 12:14:58, Duration 21.62s. 12:16 heavy lock owner w-612c, then
+      vp run test:ssr exit 0, Test Files 35 passed (35), Tests 94 passed (94),
+      Start at 12:16:35, Duration 11.02s, lock released. 12:16 heavy lock
+      owner w-612c, then vp run test:hydrate exit 0, Test Files 31 passed
+      (31), Tests 108 passed (108), Start at 12:16:56, Duration 12.78s,
+      hydrationHooks.hydrate.test.tsx 17 tests. That lock was released at
+      12:19, LOCK_RELEASED. .changeset/virtual-click-modality.md adds
+      "@proyecto-viviana/ui": patch. The body is unchanged. Corrections to
+      the 60166e22 entry, which is not rewritten. The second useHover that
+      entry's dropped-item text cites is not in Spectrum's ListBox.tsx. It
+      is react-spectrum/packages/react-aria-components/src/ListBox.tsx:552-557
+      inside ListBoxItem (:538), and it is unconditional (isDisabled:
+      !states.allowsSelection && !states.hasAction && !isDraggable), never
+      keyed on shouldFocusOnHover. @react-spectrum/s2/src/ListBox.tsx has no
+      useHover. createOption.ts:159 can pass isDisabled || !shouldFocusOnHover
+      once packages/solidaria-components/src/ListBox.tsx grows RAC
+      ListBoxItem's own createHover (it has none today; isHovered comes from
+      optionAria.isHovered() at :1181 and :1292). The
+      getInteractionModality/getPointerType audit omitted four sites, all
+      read the lets, none a defect: packages/solidaria/src/dnd/utils.ts:128,
+      packages/solidaria/src/selection/createSelectableCollection.ts:415 and
+      :640, packages/solidaria/src/autocomplete/createAutocomplete.ts:444.
+      The 60166e22 entry's lines "10:56 focused modality and focus-ring tests
+      exit 0, 2 files, 5 passed, 42 skipped" and its hydrate filter line name
+      no command. This entry's proof lines all name the command. Every
+      changed read returns the same value it returned before (the let behind
+      the counter), only what the read subscribes or marks changes. No
+      certified run. 12:25 vp run docs:generate exit 0, generated
+      .claude/current/roadmap.md and .claude/current/status.md, and git diff
+      --stat on those two views was empty. 12:25 vp run docs:check exit 0,
+      docs:check passed. Followup: createFocusVisible's seed isServer ? false
+      (:449) has no upstream counterpart. useFocusVisible.ts:391-393 seeds
+      autoFocus || isFocusVisible(), which is true on the server
+      (currentModality starts null; isFocusVisible is currentModality !==
+      'pointer' at :304-305). An undocumented pre-existing divergence,
+      owner's call because changing it changes SSR markup. Followup: the
+      predicate !== "pointer" is inlined at seven sites outside the module
+      because the untracked predicate has no public name; an owner-steered
+      export would fold them.
 ---
 
 ## Scope

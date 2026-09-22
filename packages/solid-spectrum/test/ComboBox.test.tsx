@@ -598,7 +598,26 @@ describe("ComboBox (solid-spectrum)", () => {
     setInteractionModality("pointer");
     flush();
 
-    fireEvent.click(screen.getByRole("button"), { detail: 0 });
+    // The option is not mounted until the menu opens. A pointer open proves the
+    // setup on data-focus-visible; close, then the detail-0 click is the open.
+    const button = screen.getByRole("button");
+    fireEvent.pointerDown(button, { pointerType: "mouse" });
+    fireEvent.pointerUp(button, { pointerType: "mouse" });
+    fireEvent.click(button, { detail: 1 });
+    await waitFor(() => {
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+    expect(screen.getByRole("option", { selected: true })).not.toHaveAttribute(
+      "data-focus-visible",
+    );
+    fireEvent.pointerDown(button, { pointerType: "mouse" });
+    fireEvent.pointerUp(button, { pointerType: "mouse" });
+    fireEvent.click(button, { detail: 1 });
+    await waitFor(() => {
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(button, { detail: 0 });
     await waitFor(() => {
       expect(screen.getByRole("listbox")).toBeInTheDocument();
     });

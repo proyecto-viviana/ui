@@ -5,6 +5,7 @@ import {
   createHydrationState,
   useIsSSR,
 } from "../../src/ssr";
+import { createFocusRing } from "../../src/interactions/createFocusRing";
 import {
   createFocusVisible,
   useIsKeyboardFocused,
@@ -22,6 +23,7 @@ import {
 
 export const hookCases = [
   "focus-visible",
+  "focus-ring",
   "keyboard-focused",
   "hydration-state",
   "is-ssr",
@@ -55,6 +57,9 @@ function HookOwner(props: HookProbe) {
   switch (props.kind) {
     case "focus-visible":
       value = createFocusVisible().isFocusVisible;
+      break;
+    case "focus-ring":
+      value = createFocusRing().isFocusVisible;
       break;
     case "keyboard-focused":
       value = useIsKeyboardFocused();

@@ -459,6 +459,11 @@ describe("hook owner hydration parity", () => {
         );
         flush();
         expect(read()).toBe(false);
+      } else if (kind === "focus-ring") {
+        // The ring is not focused, so the accessor stays false. The case still
+        // adopts the following span; a counter read in the seed misses its key.
+        expect(read()).toBe(false);
+        expect(node).toHaveTextContent("false");
       } else if (kind === "hydration-state" || kind === "is-ssr") {
         expect(states).toEqual([true]);
         expect(read()).toBe(false);

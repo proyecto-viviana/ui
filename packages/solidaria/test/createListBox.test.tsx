@@ -1077,9 +1077,12 @@ describe("createOption", () => {
 
         document.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 }));
 
-        expect(option.isFocusVisible()).toBe(true);
-        expect(option.optionProps["data-focus-visible"]).toBe("true");
-        setInteractionModality("pointer");
+        try {
+          expect(option.isFocusVisible()).toBe(true);
+          expect(option.optionProps["data-focus-visible"]).toBe("true");
+        } finally {
+          setInteractionModality("pointer");
+        }
         dispose();
       });
     });

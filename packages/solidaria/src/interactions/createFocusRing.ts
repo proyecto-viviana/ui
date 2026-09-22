@@ -15,6 +15,7 @@ import { createFocus } from "./createFocus";
 import { createFocusWithin } from "./createFocusWithin";
 import {
   createFocusVisibleListener,
+  getInteractionModality,
   isFocusVisible as isGlobalFocusVisible,
 } from "./createInteractionModality";
 
@@ -50,9 +51,10 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
 
   const [isFocused, setIsFocused] = createSignal(false, { ownedWrite: true });
   const [focusVisibleFlag, setFocusVisibleFlag] = createSignal(
-    // Snapshot. The component body is not a tracking scope; a live read warns
-    // and would not update. onFocusChange and the listener re-sample later.
-    autoFocus || untrack(isGlobalFocusVisible),
+    // The counter may hold an unflushed publish during hydration. A read under
+    // `untrack` still marks the owner (`context`, not `tracking`). The let is
+    // the same answer.
+    autoFocus || getInteractionModality() !== "pointer",
     {
       ownedWrite: true,
     },
@@ -77,7 +79,10 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
 
   const onFocusChange = (focused: boolean) => {
     setIsFocused(focused);
-    // The focus event can be dispatched from an effect body.
+    // useFocusRing.ts:57-61 re-samples isFocusVisible() in its own onFocusChange.
+    // pointermove writes the let without notifying, so a FocusScope contain-restore
+    // after hover must not keep a stale keyboard ring. The focus event can be
+    // dispatched from an effect body.
     setFocusVisibleFlag(untrack(isGlobalFocusVisible));
   };
 
