@@ -1,7 +1,7 @@
 ---
 id: 578
 type: task
-title: "The certified suite is 27 red at `b22a44eb` on GitHub's runners, concentrated in five components"
+title: "The certified suite is 27 red at `d6745471` on GitHub's runners, concentrated in five components"
 created: 2026-09-20
 parent: 544
 status: in-progress
@@ -61,6 +61,11 @@ history:
       at: 2026-09-22,
       note: "#497's 22 `combobox-list` rows are fixed in this tree and all 22 turn green locally. The defect was one value, not a token: `ComboBoxOption` handed the row and checkmark atoms an `isFocusVisible` our headless layer computes from a per-element focus ring that ComboBox virtual focus never sets, where `useOption` reads the global interaction modality; `packages/solid-spectrum/src/combobox/index.tsx` now recomputes upstream's answer and both atoms are untouched. Proof under the heavy lock, cwd /home/emoporemilio/projects/viviana-hub/ui with `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`, after `VIVIANA_GATE=1 vp run comparison:build` (exit 0): `cd apps/comparison && VIVIANA_GATE=1 npx playwright test e2e/certified/combobox.certified.spec.ts --grep 'ComboBox list' --reporter=line` -> **26 passed (1.8m), exit 0**, against 22 failed and 4 certified passed, exit 1, on the pre-fix tree. So 22 of the 27 are accounted for by cause and the other 5 stay waived by ticket; `certified-waivers.json` is unchanged and `certified-case-floor.json` untouched. This is a local measurement on one component's shard, not a roster re-read: this seat does not push, so the head count still belongs to the `certified report` job at the pushed sha, and the obligation above to re-read the roster from the first report job at or past `90297632` stands. Title left as it is.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-22,
+      note: "the five waivers waived nothing. Measured, not inferred: run 35689146611 at `d6745471` - the first `certified report` job at or past `90297632`, so the re-read this ticket owed - reports `Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky` (job 106625669687, failed), and all five waiver candidates sit in its `Unwaived failures` list. Its 27 are the same rows as `b22a44eb`: `combobox-list` 22 (D1 6, D3 6, D7 2, D9 6, D10 2) owned by #497, plus the five candidates - `picker-trigger` D13 2, `tabs` D4 1, `togglebutton` D2 1, `togglebuttongroup` D2 1. 106 components in that job's per-component table, 101 green. Cause: the matched haystack is `${failure.file} ${failure.title}`, and `title` is the reporter's `test.titlePath()` minus its empty head, so it **opens with the Playwright project** - `chromium › certified/picker.certified.spec.ts › …`. Every pattern stepped from the declaring file straight to the spec path, so not one could match. What should have caught that is the breadth test written on 2026-09-22: it walked Playwright's `--list` report with a private title builder of its own, and in that report the project is not a suite level - it sits on `spec.tests[].projectName` - so the walk built projectless titles and the entries were proved against a second builder rather than against a report. Fix, in this commit: one builder. `certifiedCaseTitle` is exported from `apps/comparison/scripts/certified-summary.ts` and the reporter calls it; `certifiedCasesFromListing` beside it rebuilds each listed case's titlePath with its `projectName` at the head; the test's private copy is deleted and both tests read the shared one. Confirmed against a real record rather than by reading: the haystack the listing now reconstructs for `picker … keyboard-only` is character-for-character the record shard 7 wrote, and the old shape matches none of the five. Proof, both directions, over the 27 failure records read out of that run's own `certified-shard-{2,5,7,8}` artifacts and fed through `evaluateCertifiedWaivers`: with the landed waivers file `WAIVED 0, UNWAIVED 27`; with this commit's `WAIVED 5, UNWAIVED 22, problems 0, waiverGateFails true`, the 22 being exactly #497's `combobox-list` rows. The new contract test carries six of those real records as its fixture - the five candidates and one ComboBox row that must stay unwaived - and fails on the pre-fix waivers file (exit 1, `expected [] to deeply equal [ …(5) ]`), exit 0 after. Ran at this commit: `vp run comparison:test:certified-waivers` exit 0, 3 files, 59 passed (was 58; the contract test is the 59th); `node scripts/test-ci-guard-contracts.mjs` exit 0; `vp run comparison:guard:certified-waiver-tickets` exit 0, `5 waiver(s) … agree with the board`; `vp exec tsx scripts/check-changeset-required.mjs` exit 0; `vp check` exit 0 over 4456 formatted and 3204 linted files. One more thing rides in the same commit because it is the same file family: `4ac92800` made `reason` required and left the `certified-shard-gate.test.ts` fixture without one, so `vp run @proyecto-viviana/comparison#typecheck` exited 1 on `ts(2741)` at line 71 - measured both ways here, exit 1 without the line and exit 0 with it. What this does not settle is the head count. This seat does not push, so the RC's roster still belongs to the `certified report` job at the sha this commit lands on; the expectation there - an expectation, not a measurement - is 5 waived and the 22 ComboBox rows green from `d997d01f` and `6031691e`. #578 stays in-progress until that job says so.",
+    }
 ---
 
 ## Why this is filed above the remaining gate reds
@@ -77,20 +82,23 @@ than this ticket, and none of them is on the critical path in the way this is:
 a green `gates` job with a red certified suite is not a releasable revision
 under #547's own words.
 
-## Where the 27 are, run 35668806426 at `b22a44eb` (2026-09-21)
+## Where the 27 are, run 35689146611 at `d6745471` (2026-09-22)
 
-**This table is a reading of `b22a44eb`, not of HEAD.** HEAD is `90297632`,
-five commits on, and three of them touched what this suite runs: `8361daba`
-and `298f8e7c` (#608) changed `e2e/comparison-page.ts` and
-`e2e/drivers/journeys-steps.ts`, which declare the two waived D13 rows, and
-`d3ccc7cc` (#545) changed `ContextualHelpTrigger` in both published packages.
-So the roster is owed a re-read from the first `certified report` job at or
-past `90297632`, and this table is corrected from that job rather than from
-this one. It cannot be re-read on this host: the suite needs both stacks built
-across eight shards, and this seat does not push.
+Re-read, as this ticket owed, from the first `certified report` job at or past
+`90297632`: run 35689146611 at `d6745471`, six commits on, job 106625669687,
+failed. It returns the same 27 rows as `b22a44eb`, so the table below stands
+unchanged and now rests on a job that ran after #608's and #545's commits.
 
-`Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky`, merge job 106565094355. Five components; the other 102 in that job's per-component table
-are green.
+`Totals: 2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky`. Five
+components; the other 101 in that job's per-component table are green. **The
+`0 waived` is a defect, not a verdict**: the five entries below were in that
+job's `Unwaived failures` list because their patterns matched nothing, which
+the 2026-09-22 note above measures and this commit fixes.
+
+**This table is still not a reading of HEAD.** #497's fix (`d997d01f`,
+`6031691e`) and the waiver fix land after `d6745471`, and the sha they land on
+owes the next reading. It cannot be taken on this host: the suite needs both
+stacks built across eight shards, and this seat does not push.
 
 | component         | driver | failures | class     | owner | in the RC                             |
 | ----------------- | ------ | -------: | --------- | ----- | ------------------------------------- |
@@ -195,13 +203,15 @@ Concretely, at the RC: `waiverGateFails` false, which means every remaining
 failure matched by a waiver whose ticket is open on the board, whose `expires`
 is in the future and inside the horizon a release bounds, and whose pattern is
 anchored at both ends on one case. All five waivable failures are there now, as
-five entries under three tickets — #584 two, #583 two, #609 one — measured as 5
-waived against the run's 27. The 22 ComboBox rows are not waivable, so the gate
+five entries under three tickets — #584 two, #583 two, #609 one — and they are
+measured as 5 waived, 22 unwaived against the 27 failure records run
+35689146611 itself wrote. The 22 ComboBox rows are not waivable, so the gate
 stays red and #497 is what closes them.
 
-One condition is not met yet and is this ticket's, not #497's: the 27 above was
-read at `b22a44eb`, and the roster has to be re-read from a `certified report`
-job at or past `90297632` before the count in the head is the RC's count.
+One condition is not met yet and is this ticket's, not #497's: a `certified
+report` job at a sha carrying both this commit and #497's has to say so. Until
+then the 5 waived above is a local reading of a CI run's records, not a CI
+count, and the head count is `d6745471`'s.
 
 ## Relationship
 

@@ -53,15 +53,20 @@ difference against the pair oracle; nothing throws, nothing fails to render.
 And none of the 39 group-A pressed-pixel rows below is in this list.
 
 Three of the five components are waived in `apps/comparison/e2e/certified-waivers.json`,
-which held `[]` until #578. Measured against those 27 lines: **5 waived, 22
-unwaived**, `waiverGateFails: true`, 0 load problems.
+which held `[]` until #578. Measured against the 27 failure records run
+35689146611 itself wrote, read out of its `certified-shard-{2,5,7,8}`
+artifacts: **5 waived, 22 unwaived**, `waiverGateFails: true`, 0 load problems.
+That run reported `0 waived` on those same records — the five patterns were
+inert until `certifiedCaseTitle` became the one title builder.
 
 One entry per case, five in all, since #578's review on 2026-09-22 — a single
 entry cannot name the causes of two rows honestly, and #584's covered three
 causes while describing one. Every pattern is anchored `^…$` on the whole
 haystack, which starts with the file the case is **declared** in: for a
-driver-declared case that is `e2e/drivers/…`, not the spec, because the spec
-path is the head of the title. The breadth is no longer a claim: a test runs
+driver-declared case that is `e2e/drivers/…`, not the spec. The spec path sits
+in the title, and the **project** sits in front of it — `chromium › certified/…`
+— so a pattern that steps from the file straight to the spec matches nothing.
+The breadth is no longer a claim: a test runs
 every entry against Playwright's own `--list` discovery of all 2177 certified
 cases and fails unless it matches exactly one.
 

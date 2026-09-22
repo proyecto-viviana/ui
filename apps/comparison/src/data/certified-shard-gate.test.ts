@@ -73,6 +73,7 @@ describe("certifiedShardVerdict", () => {
               ticket: 553,
               expires: "2026-01-01",
               ticketStatus: "in-progress",
+              reason: "the fixture's own row; what a user sees goes here",
             },
             detail: "expired 2026-01-01",
           },

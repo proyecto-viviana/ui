@@ -107,6 +107,73 @@ export function parseComponentFromTitlePath(titlePath: readonly string[]): strin
   return null;
 }
 
+/**
+ * The title a certified report records for a case: Playwright's `titlePath()`
+ * below the root suite, joined with " › ". The root suite's title is empty and
+ * the project's is the head, so a certified title reads
+ * `chromium › certified/tabs.certified.spec.ts › D4 … — Tabs › …`.
+ *
+ * The only builder of it, because `failureHaystack` matches waivers against
+ * this string: a second builder that left the project out produced haystacks no
+ * anchored waiver could ever match, and five inert waivers with it (#578).
+ */
+export function certifiedCaseTitle(titlePath: readonly string[]): string {
+  return titlePath.slice(1).join(" › ");
+}
+
+/** A suite of `playwright test e2e/certified --list --reporter=json`. */
+export interface CertifiedListingSuite {
+  title?: string;
+  specs?: Array<{ title: string; file: string; tests?: Array<{ projectName?: string }> }>;
+  suites?: CertifiedListingSuite[];
+}
+
+export interface CertifiedListingReport {
+  suites?: CertifiedListingSuite[];
+}
+
+/**
+ * Every case that listing discovers, shaped as the reporter would record a
+ * failure for it — the discovery `guard:certified-case-floor` already runs, no
+ * browser and no web server.
+ *
+ * The project is not a suite level here: it sits on `spec.tests[].projectName`,
+ * one entry per project, while `titlePath()` carries it first, under the root
+ * suite. So the walk rebuilds the path in `titlePath()` order and hands it to
+ * the one title builder. A case declared by a shared driver carries the
+ * driver's own `file`, which is what `relativeSpecFile` hands the reporter, one
+ * `e2e/` prefix on.
+ *
+ * Unlike the reporter, nothing is dropped: a case whose driver does not parse
+ * comes back as `other`, so the count is the listing's own.
+ */
+export function certifiedCasesFromListing(report: CertifiedListingReport): CertifiedFailure[] {
+  const cases: CertifiedFailure[] = [];
+  const walk = (suite: CertifiedListingSuite, titles: readonly string[]): void => {
+    const next = suite.title ? [...titles, suite.title] : titles;
+    for (const spec of suite.specs ?? []) {
+      const file = `e2e/${spec.file}`;
+      for (const test of spec.tests ?? []) {
+        const titlePath = [
+          "",
+          ...(test.projectName ? [test.projectName] : []),
+          ...next,
+          spec.title,
+        ];
+        cases.push({
+          component: parseComponentFromTitlePath(titlePath) ?? parseComponentSlug(file) ?? "other",
+          driver: parseDriverId(titlePath),
+          file,
+          title: certifiedCaseTitle(titlePath),
+        });
+      }
+    }
+    for (const child of suite.suites ?? []) walk(child, next);
+  };
+  for (const suite of report.suites ?? []) walk(suite, []);
+  return cases;
+}
+
 export function cellKey(component: string, driver: DriverId): string {
   return `${component}\u0000${driver}`;
 }

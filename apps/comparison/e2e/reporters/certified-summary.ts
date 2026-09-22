@@ -14,6 +14,7 @@ import { clearCompositorPaintLatch } from "../visual-diff";
 import {
   applyWaiverCounts,
   CERTIFIED_RUN_STATUSES,
+  certifiedCaseTitle,
   certifiedSummaryPath,
   emptyCell,
   emptyTotals,
@@ -89,7 +90,7 @@ export default class CertifiedSummaryReporter implements Reporter {
         parseComponentFromTitlePath(test.titlePath()) ?? parseComponentSlug(file) ?? "other";
       const key = `${component}\u0000${driver}`;
       const cell = cells.get(key) ?? emptyCell(component, driver);
-      const title = test.titlePath().slice(1).join(" › ");
+      const title = certifiedCaseTitle(test.titlePath());
       const outcome = classifyResult(result);
 
       if (outcome === "passed") {

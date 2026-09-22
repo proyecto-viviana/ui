@@ -6,9 +6,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  certifiedCasesFromListing,
   parseComponentFromTitlePath,
   parseComponentSlug,
   parseDriverId,
+  type CertifiedListingReport,
 } from "../../scripts/certified-summary";
 import {
   comparisonRootFrom,
@@ -55,36 +57,57 @@ function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
   };
 }
 
-interface ListedSuite {
-  title?: string;
-  specs?: Array<{ title: string; file: string }>;
-  suites?: ListedSuite[];
-}
-
 /**
- * Every certified case Playwright discovers, shaped like the failure the
- * reporter would build for it. `spec.file` is relative to `testDir` (`./e2e`)
- * and a case declared by a shared driver carries the driver's own file, which
- * is exactly what `relativeSpecFile` hands the reporter, one `e2e/` prefix on.
+ * Failures a certified report actually wrote: the four red shards of
+ * Certification Gates run 35689146611 at `d6745471`, copied from the
+ * `certified-shard-{2,5,7,8}` artifacts. Five waiver candidates and one of the
+ * 22 ComboBox rows that must stay unwaived (#497). Every title head is the
+ * project, which is what made the first five entries inert.
  */
-function discoverCertifiedCases(): CertifiedFailure[] {
-  const report = readCertifiedListing() as { suites?: ListedSuite[] };
-  const cases: CertifiedFailure[] = [];
-  const walk = (suite: ListedSuite, titles: string[]): void => {
-    const next = suite.title ? [...titles, suite.title] : titles;
-    for (const spec of suite.specs ?? []) {
-      cases.push({
-        component: "",
-        driver: "",
-        file: `e2e/${spec.file}`,
-        title: [...next, spec.title].join(" › "),
-      });
-    }
-    for (const child of suite.suites ?? []) walk(child, next);
-  };
-  for (const suite of report.suites ?? []) walk(suite, []);
-  return cases;
-}
+const REPORTED_FAILURES: Record<string, CertifiedFailure> = {
+  pickerPointer: {
+    component: "picker-trigger",
+    driver: "D13",
+    file: "e2e/drivers/journeys.ts",
+    title:
+      "chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — open-arrow-enter-reopen-scroll-escape",
+  },
+  pickerKeyboard: {
+    component: "picker-trigger",
+    driver: "D13",
+    file: "e2e/drivers/journeys.ts",
+    title:
+      "chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
+  },
+  toggleButton: {
+    component: "togglebutton",
+    driver: "D2",
+    file: "e2e/drivers/motion.ts",
+    title:
+      "chromium › certified/togglebutton.certified.spec.ts › D2 motion (reduced) — ToggleButton › default · hover-transition",
+  },
+  toggleButtonGroup: {
+    component: "togglebuttongroup",
+    driver: "D2",
+    file: "e2e/drivers/motion.ts",
+    title:
+      "chromium › certified/togglebuttongroup.certified.spec.ts › D2 motion (reduced) — ToggleButtonGroup › default · hover-transition",
+  },
+  tabs: {
+    component: "tabs",
+    driver: "D4",
+    file: "e2e/drivers/events.ts",
+    title:
+      "chromium › certified/tabs.certified.spec.ts › D4 event sequence — Tabs › horizontal-regular · arrow-next-from-selected",
+  },
+  comboboxList: {
+    component: "combobox-list",
+    driver: "D1",
+    file: "e2e/drivers/state-matrix.ts",
+    title:
+      "chromium › certified/combobox.certified.spec.ts › D1 state matrix — ComboBox list › size-s · dark",
+  },
+};
 
 describe("certified waivers", () => {
   // This held the tracked file at `[]` until #578 carried the three
@@ -127,7 +150,7 @@ describe("certified waivers", () => {
   // entries. `--list` is discovery only: no browser, no web server.
   it("matches exactly one discovered certified case per tracked waiver", () => {
     const root = comparisonRootFrom(import.meta.url);
-    const cases = discoverCertifiedCases();
+    const cases = certifiedCasesFromListing(readCertifiedListing() as CertifiedListingReport);
     const floor = JSON.parse(readFileSync(join(root, "e2e/certified-case-floor.json"), "utf8")) as {
       total: number;
     };
@@ -149,26 +172,58 @@ describe("certified waivers", () => {
     );
   }, 120_000);
 
-  // Where a pattern has to start, which is not where it reads as if it should:
-  // the haystack opens with the file the case is DECLARED in — the driver's,
-  // for a driver-declared case — and the spec path is the head of the title.
-  // A pattern anchored `^certified/…spec.ts` matches nothing at all.
-  it("anchors on the declaring file, which is the driver's for a driver-declared case", () => {
-    const haystack = failureHaystack(
-      failure({
-        component: "picker",
-        driver: "D13",
-        file: "e2e/drivers/journeys.ts",
-        title:
-          "certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
-      }),
-    );
+  // Where a pattern has to start, which is not where it reads as if it should.
+  // Two segments a hand-written pattern drops: the haystack opens with the file
+  // the case is DECLARED in — the driver's, for a driver-declared case — and
+  // the title opens with the Playwright PROJECT, not with the spec path. Both
+  // are read off a record a certified report really wrote.
+  it("anchors on the declaring file and on the project the title opens with", () => {
+    const reported = REPORTED_FAILURES.pickerKeyboard;
+    const haystack = failureHaystack(reported);
     expect(haystack).toBe(
-      "e2e/drivers/journeys.ts certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
+      "e2e/drivers/journeys.ts chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
     );
     expect(/^certified\/picker\.certified\.spec\.ts .*keyboard-only$/.test(haystack)).toBe(false);
+    // The shape the first five entries were written to, and the reason none of
+    // them waived anything: no project segment, anchored, so it matches nothing.
+    expect(
+      /^e2e\/drivers\/journeys\.ts certified\/picker\.certified\.spec\.ts .*keyboard-only$/.test(
+        haystack,
+      ),
+    ).toBe(false);
     const tracked = loadCertifiedWaivers(join(here, "../../e2e/certified-waivers.json")).waivers;
     expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(1);
+  });
+
+  // #578, 2026-09-22. The five entries were INERT in CI: each was written
+  // against a haystack a second builder produced without the project, so run
+  // 35689146611 at `d6745471` — the revision that carries them — reported
+  // `0 waived` and listed all five under `Unwaived failures`. The fixture is
+  // that run's own records, so the list is graded against what a report writes
+  // rather than against a title this file builds for it.
+  it("waives the five rows a certified report really wrote, and leaves #497's alone", () => {
+    const root = comparisonRootFrom(import.meta.url);
+    const loaded = loadCertifiedWaivers(defaultWaiversPath(root));
+    expect(loaded.problems).toEqual([]);
+    const reported = Object.values(REPORTED_FAILURES);
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: loaded.waivers,
+      failures: reported,
+      now: new Date(),
+    });
+
+    expect(evaluation.problems).toEqual([]);
+    expect(evaluation.waived.map((entry) => entry.failure.title)).toEqual(
+      reported.filter((row) => row.component !== "combobox-list").map((row) => row.title),
+    );
+    // #497's ComboBox rows are a defect being fixed, never waived, so the gate
+    // stays red on them.
+    expect(evaluation.unwaived).toEqual([REPORTED_FAILURES.comboboxList]);
+    expect(waiverGateFails(evaluation)).toBe(true);
+    // One entry, one row: no waiver covers a second reported failure.
+    expect(new Set(evaluation.waived.map((entry) => entry.waiver.pattern)).size).toBe(
+      loaded.waivers.length,
+    );
   });
 
   it("rejects a waiver file that is not an array of pattern/ticket/expires/ticketStatus", () => {

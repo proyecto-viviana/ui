@@ -19,7 +19,11 @@ export const MAX_WAIVER_HORIZON_DAYS = 60;
 export interface CertifiedWaiver {
   /**
    * A regular expression over `failureHaystack`, which is the failing case's
-   * spec-or-driver file, a space, and its full title. Two rules, both held by
+   * spec-or-driver file, a space, and its full title — and that title opens
+   * with the Playwright project, `chromium › certified/…`, so a pattern that
+   * steps from the file straight to the spec path matches nothing. That is how
+   * the first five entries came to waive nothing at all (#578); the shape is
+   * `certifiedCaseTitle`'s, and only its. Two rules, both held by
    * `parseWaiverEntries`: it is anchored `^…$`, because a pattern that is only
    * tail-anchored waives every case whose title ends the same way; and it names
    * the `*.certified.spec.ts` the case belongs to, because a driver declares
