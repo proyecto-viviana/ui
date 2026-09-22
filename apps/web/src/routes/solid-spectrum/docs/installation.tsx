@@ -223,7 +223,7 @@ export function App() {
       <Code>{`{
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    "jsxImportSource": "@solidjs/web",
     "types": ["vite/client"]
   }
 }`}</Code>

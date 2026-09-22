@@ -126,9 +126,8 @@ export default defineConfig({
 
 `@solidjs/vite-plugin` is the Solid 2 plugin (this repository pins
 `3.0.0-next.44`); `vite-plugin-solid` targets Solid 1. This repository's docs
-site server-renders with the same `noExternal` line.
-Two hydration defects remain in this candidate; see
-[known gaps](#known-gaps-in-this-release-candidate).
+site server-renders with the same `noExternal` line, and its route sweep
+(`vp run test:routes`) hydrates every page without a console error.
 
 ## Status
 
@@ -155,12 +154,6 @@ This is a release candidate, cut early on purpose. Each defect below has a
 ticket. If one of them matters to your app, wait for the next release or pin
 and test.
 
-- **Two hydration defects.** A `TextField` or `SearchField` whose `prefix` or
-  `suffix` is JSX can throw while it mounts, and a `ComboBox` with a
-  `description` or `errorMessage` mismatches on hydration. Two of the docs
-  site's 174 routes fail on them today.
-  [#545](.claude/tickets/tasks/545-move-the-web-app-to-tanstack-solid-2.md)
-
 - **Link items bypass your router.** In a menu, list, or table, clicking an
   item that is a link does a full page load instead of a client-side
   navigation. [#592](.claude/tickets/tasks/592-link-items-bypass-the-router-at-four-call-sites.md)
@@ -185,12 +178,13 @@ and test.
 - **`ButtonGroup` misses an in-place size change.** It reacts when children are
   added or removed, not when one changes size where it stands.
   [#601](.claude/tickets/tasks/601-the-low-residues-the-audit-left-without-a-stage.md)
-- **The certified suite is not green.** 27 of its 2,178 comparisons against
-  the React original fail. 22 are one `ComboBox` defect: the selected item's
-  checkmark sits on the wrong accent stop
-  ([#497](.claude/tickets/tasks/497-match-combobox-and-picker-list-selected-checkmark-accent.md)).
-  The other five are waived by name until 2026-10-21, each against a ticket, in
-  [`certified-waivers.json`](apps/comparison/e2e/certified-waivers.json).
+- **The certified suite is one comparison short of green.** At `6e790bc9`,
+  2,167 of its comparisons against the React original pass, five are waived by
+  name until 2026-10-21, each against a ticket, in
+  [`certified-waivers.json`](apps/comparison/e2e/certified-waivers.json), and
+  one fails: a `ComboBox` reopened with a real mouse click paints a focus ring
+  on the selected option where the React original does not
+  ([#612](.claude/tickets/tasks/612-give-a-virtual-click-the-virtual-modality-upstream-gives-it.md)).
   [#578](.claude/tickets/tasks/578-the-certified-suite-is-27-red-and-it-is-the-release-bar.md)
 
 Three more are internal and change nothing you install: how the parity tooling
