@@ -12,7 +12,9 @@ const scripts = {
   typecheck: "vp exec tsc --noEmit -p tsconfig.typecheck.json",
 };
 
-function workflow(extra = []) {
+type Entry = { leg: string | null; why?: string };
+
+function workflow(extra: string[] = []) {
   return [
     "jobs:",
     "  certification-gates:",
@@ -40,7 +42,7 @@ function workflow(extra = []) {
   ].join("\n");
 }
 
-function coverage(extra = {}) {
+function coverage(extra: Record<string, Entry> = {}): Record<string, Entry> {
   return {
     typecheck: { leg: "typecheck" },
     [shardName]: {
@@ -62,12 +64,12 @@ describe("findCoverageProblems", () => {
 
   it("names a blocking step missing from the map", () => {
     const source = workflow(["      - name: docs:check", "        run: pnpm run docs:check"]);
-    const problems = evaluateGateCoverage(source, coverage(), scripts).problems;
+    const problems: string[] = evaluateGateCoverage(source, coverage(), scripts).problems;
     expect(problems.some((problem) => problem.includes('blocking step "docs:check"'))).toBe(true);
   });
 
   it("names an entry for a step that no longer exists", () => {
-    const problems = evaluateGateCoverage(
+    const problems: string[] = evaluateGateCoverage(
       workflow(),
       coverage({ "retired step": { leg: null, why: "This step was removed." } }),
       scripts,
@@ -82,7 +84,7 @@ describe("findCoverageProblems", () => {
   it("names a leg that is not a package.json script", () => {
     const mapped = coverage();
     mapped.typecheck = { leg: "no-such-script" };
-    const problems = evaluateGateCoverage(workflow(), mapped, scripts).problems;
+    const problems: string[] = evaluateGateCoverage(workflow(), mapped, scripts).problems;
     expect(
       problems.some(
         (problem) => problem.includes('entry "typecheck"') && problem.includes("no-such-script"),
@@ -93,7 +95,7 @@ describe("findCoverageProblems", () => {
   it("names a reached script whose leg was left null", () => {
     const mapped = coverage();
     mapped.typecheck = { leg: null, why: "Counted by the step name, not by the chain." };
-    const problems = evaluateGateCoverage(workflow(), mapped, scripts).problems;
+    const problems: string[] = evaluateGateCoverage(workflow(), mapped, scripts).problems;
     expect(problems.some((problem) => problem.includes('blocking step "typecheck"'))).toBe(true);
   });
 });
