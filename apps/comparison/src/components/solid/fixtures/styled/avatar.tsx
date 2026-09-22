@@ -5,6 +5,7 @@ import { Avatar as SolidSpectrumAvatar } from "@proyecto-viviana/solid-spectrum/
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   avatarDemoPropsFromWindow,
+  comparisonHarnessAvatarSrc,
   normalizeAvatarDemoProps,
   serializeAvatarDemoProps,
   type AvatarDemoProps,
@@ -72,7 +73,7 @@ function SolidSpectrumAvatarDemo() {
                 return demoProps().alt;
               },
               get src() {
-                return demoProps().src || undefined;
+                return comparisonHarnessAvatarSrc(demoProps().src, "solid") || undefined;
               },
               get size() {
                 return Number(demoProps().size);

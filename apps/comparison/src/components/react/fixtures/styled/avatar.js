@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Avatar as SpectrumAvatar } from "@react-spectrum/s2";
 import {
   avatarDemoPropsFromWindow,
+  comparisonHarnessAvatarSrc,
   normalizeAvatarDemoProps,
   serializeAvatarDemoProps,
 } from "@comparison/data/avatar-demo";
@@ -31,7 +32,7 @@ function ReactAvatarDemo() {
       "data-comparison-control-props": serializeAvatarDemoProps(demoProps),
       children: jsx(SpectrumAvatar, {
         alt: demoProps.alt,
-        src: demoProps.src || undefined,
+        src: comparisonHarnessAvatarSrc(demoProps.src, "react") || undefined,
         size: Number(demoProps.size),
         isOverBackground: demoProps.isOverBackground,
       }),

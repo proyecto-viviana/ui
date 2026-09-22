@@ -77,6 +77,34 @@ export function avatarDemoPropsFromWindow(): AvatarDemoProps {
   return avatarDemoPropsFromSearch(window.location.search);
 }
 
+/**
+ * Both comparison islands share one document. Chromium performs one fetch per
+ * image URL, so the later `<img>` joins that response in flight or, once it
+ * has ended, is already `complete` from the memory cache. Either way its
+ * `loadTime` drops under Image's 200ms opacity threshold. A per-stack query
+ * on this fixture path makes the two loads independent. Serialized demo props
+ * stay on the canonical path; this is applied only to the Avatar `src`.
+ */
+export function comparisonHarnessAvatarSrc(src: string, stack: "react" | "solid"): string {
+  if (typeof document === "undefined") {
+    return src;
+  }
+  if (document.querySelector(".js-component-example-section-mount") == null) {
+    return src;
+  }
+  if (!src.startsWith("/") || src.startsWith("//")) {
+    return src;
+  }
+
+  const url = new URL(src, "http://comparison.local");
+  if (url.pathname !== avatarDocsExampleSrc) {
+    return src;
+  }
+
+  url.searchParams.set("stack", stack);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export function serializeAvatarDemoProps(props: AvatarDemoProps): string {
   return JSON.stringify(normalizeAvatarDemoProps(props));
 }

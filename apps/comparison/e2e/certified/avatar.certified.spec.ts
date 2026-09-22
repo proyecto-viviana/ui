@@ -7,16 +7,19 @@ import { test } from "@playwright/test";
 /**
  * S2 `Image.tsx:185-201, 316` (Solid `packages/solid-spectrum/src/image/index.tsx:126-130, 269-295`)
  * sets `transition: isTransitioning ? 'opacity' : 'none'` with
- * `isTransitioning = isRevealed && loadTime > 200`. Without a delayed fetch,
- * React pays the cold load (transitioning) and Solid hits cache (`none`).
- * Delaying both fetches above 200 ms with `Cache-Control: no-store` puts
- * them on the transitioning branch (`loadTime > 200` stays `opacity`; S2
- * never clears it). `route.continue()` left React on the memory-cache
- * `img.complete` path (`none`) while Solid waited for `onLoad` (`opacity`).
+ * `isTransitioning = isRevealed && loadTime > 200`. The two islands used to
+ * request one URL, so Chromium shared that response: the later `<img>` either
+ * joined it in flight or was already `complete` from the memory cache, and
+ * its `transition-property` stayed `none` while the earlier island waited
+ * (`opacity`). `comparisonHarnessAvatarSrc` gives each panel `?stack=react`
+ * or `?stack=solid` on this fixture path. The glob's trailing `*` matches
+ * that query. Delaying both fetches above 200 ms with `Cache-Control:
+ * no-store` puts them on the transitioning branch (`loadTime > 200` stays
+ * `opacity`; S2 never clears it).
  * There is no `avatargroup.certified.spec.ts` (AvatarGroup uses
  * `/fixtures/avatar-group/*`, a different path).
  */
-const AVATAR_FIXTURE_URL = "**/fixtures/avatar/docs-avatar.png";
+const AVATAR_FIXTURE_URL = "**/fixtures/avatar/docs-avatar.png*";
 const IMAGE_TRANSITION_THRESHOLD_MS = 200;
 const AVATAR_FIXTURE_ROUTE_DELAY_MS = IMAGE_TRANSITION_THRESHOLD_MS + 100;
 
