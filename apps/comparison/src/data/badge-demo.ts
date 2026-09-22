@@ -89,7 +89,7 @@ export function badgeDemoPropsFromSearch(search: string): BadgeDemoProps {
   const iconPlacement = params.get("iconPlacement");
 
   return normalizeBadgeDemoProps({
-    children: params.get("children") || badgeDemoDefaults.children,
+    children: params.get("children") ?? badgeDemoDefaults.children,
     variant: isOneOf(variant, badgeVariantOptions) ? variant : badgeDemoDefaults.variant,
     fillStyle: isOneOf(fillStyle, badgeFillStyleOptions) ? fillStyle : badgeDemoDefaults.fillStyle,
     size: isOneOf(size, badgeSizeOptions) ? size : badgeDemoDefaults.size,

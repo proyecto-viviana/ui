@@ -57,7 +57,7 @@ export function linkDemoPropsFromSearch(search: string): LinkDemoProps {
   const staticColor = params.get("staticColor");
 
   return normalizeLinkDemoProps({
-    children: params.get("children") || linkDemoDefaults.children,
+    children: params.get("children") ?? linkDemoDefaults.children,
     href: params.get("href") || linkDemoDefaults.href,
     variant: isOneOf(variant, linkVariantOptions) ? variant : linkDemoDefaults.variant,
     staticColor: isOneOf(staticColor, linkStaticColorOptions)

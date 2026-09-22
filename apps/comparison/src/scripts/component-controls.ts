@@ -2,7 +2,7 @@ import {
   controlValueFromField,
   controlValueFromSearch,
   type ControlLiteral,
-} from "@comparison/data/control-value";
+} from "../data/control-value";
 
 type ControlValue = ControlLiteral;
 type ControlDefaults = Record<string, ControlValue>;
@@ -65,7 +65,7 @@ function namedControls(form: HTMLFormElement, name: string) {
   );
 }
 
-function readControls(form: HTMLFormElement, defaults: ControlDefaults): ControlValues {
+export function readControls(form: HTMLFormElement, defaults: ControlDefaults): ControlValues {
   const data = new FormData(form);
   const values: ControlValues = {};
 
