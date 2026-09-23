@@ -122,7 +122,25 @@ export function filterDOMProps<T extends object>(
         propNames?.has(prop) ||
         propRe.test(prop))
     ) {
-      (filteredProps as Record<string, unknown>)[prop] = props[prop];
+      const descriptor = Object.getOwnPropertyDescriptor(props, prop);
+      if (descriptor && (descriptor.get || descriptor.set)) {
+        // React props are plain values, so upstream copies them; Solid keeps the getter.
+        const defined: PropertyDescriptor = {
+          enumerable: true,
+          configurable: true,
+        };
+        if (descriptor.get) {
+          defined.get = () => descriptor.get!.call(props);
+        }
+        if (descriptor.set) {
+          defined.set = (value: unknown) => {
+            descriptor.set!.call(props, value);
+          };
+        }
+        Object.defineProperty(filteredProps, prop, defined);
+      } else {
+        (filteredProps as Record<string, unknown>)[prop] = (props as Record<string, unknown>)[prop];
+      }
     }
   }
 

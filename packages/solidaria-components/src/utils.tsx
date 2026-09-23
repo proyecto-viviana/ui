@@ -532,7 +532,25 @@ export function filterDOMProps<R extends object = Record<string, unknown>>(
         dataAttrs.test(key) ||
         (events && eventHandlers.test(key)))
     ) {
-      result[key] = (props as Record<string, unknown>)[key];
+      const descriptor = Object.getOwnPropertyDescriptor(props, key);
+      if (descriptor && (descriptor.get || descriptor.set)) {
+        // React props are plain values, so upstream copies them; Solid keeps the getter.
+        const defined: PropertyDescriptor = {
+          enumerable: true,
+          configurable: true,
+        };
+        if (descriptor.get) {
+          defined.get = () => descriptor.get!.call(props);
+        }
+        if (descriptor.set) {
+          defined.set = (value: unknown) => {
+            descriptor.set!.call(props, value);
+          };
+        }
+        Object.defineProperty(result, key, defined);
+      } else {
+        result[key] = (props as Record<string, unknown>)[key];
+      }
     }
   }
 
