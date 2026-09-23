@@ -20,17 +20,20 @@
 // Usage (a dual-target app build, e.g. TanStack Start / solid-start):
 //
 //   import { defineConfig } from "vite";
-//   import solid from "vite-plugin-solid";
+//   import solid from "@solidjs/vite-plugin";
 //   import { vivianaMacros } from "@proyecto-viviana/ui/vite";
 //
 //   export default defineConfig({
 //     plugins: [vivianaMacros(), solid({ ssr: true })],
-//     // Keep the linked Solid package out of the optimizer and bundle it into SSR:
-//     optimizeDeps: { exclude: ["@proyecto-viviana/ui"] },
-//     ssr: { noExternal: ["@proyecto-viviana/ui"] },
+//     optimizeDeps: {
+//       exclude: ["@proyecto-viviana/ui"],
+//     },
+//     ssr: {
+//       noExternal: ["@proyecto-viviana/ui"],
+//     },
 //   });
 //
-// Plugin order: place `vivianaMacros()` before `vite-plugin-solid` (the macro
+// Plugin order: place `vivianaMacros()` before `@solidjs/vite-plugin` (the macro
 // must expand style() before Solid compiles JSX), and before framework plugins
 // (TanStack Start / Cloudflare) that wrap the build. The macro plugin only
 // touches macro CSS resolution/loading and import stripping; the
@@ -38,20 +41,44 @@
 // app-owned (it depends on whether the app links sources or pre-built dists).
 import macros from "unplugin-parcel-macros";
 
-// A minimal structural view of the rolldown plugin that
-// `unplugin-parcel-macros` returns — only the hooks we wrap. Kept local (and
-// self-contained, with no rolldown/vite type imports) so the emitted
-// `dist/vite.d.ts` is portable: consumers don't need rolldown's types resolvable
-// to use the helper, and tsc can name the return type. `macros.rolldown()` is
-// typed `Plugin | Plugin[]`; we always get the single-plugin form.
+// Structural Vite plugin. `vite` is not a peerDependency, so this file does not
+// import Vite's `Plugin` and `dist/vite.d.ts` still has no vite or rolldown
+// types. The hook signatures are what Vite 8's `Plugin` accepts under
+// strictFunctionTypes: `name` is required, each result is a subset of that
+// hook's Vite result (`unknown` is not assignable to it), `this` stays
+// `unknown` because Vite's plugin context is assignable to `unknown`, and
+// `options?: object` accepts the options object Vite passes. There is no
+// string index signature — `[key: string]: unknown` types every hook as
+// `unknown`, which Vite rejects inside `plugins`. `macros.rolldown()` is typed
+// `Plugin | Plugin[]`; we always get the single-plugin form.
+type MacroCssResult = string | null | undefined | void | { code?: string };
+type MacroResolvedId = string | false | null | undefined | void | { id: string };
+type MacroLoaded = string | null | undefined | void | { code: string };
+
 interface MacroPlugin {
-  name?: string;
-  transformInclude?: (id: string) => boolean | void;
-  transform?: (this: unknown, code: string, id: string) => unknown;
-  resolveId?: (this: unknown, id: string, importer?: string, options?: object) => unknown;
-  loadInclude?: (id: string) => boolean | void;
-  load?: (this: unknown, id: string) => unknown;
-  [key: string]: unknown;
+  name: string;
+  transformInclude?: (id: string) => boolean | null | undefined | void;
+  transform?: (
+    this: unknown,
+    code: string,
+    id: string,
+    options?: object,
+  ) => MacroCssResult | Promise<MacroCssResult>;
+  resolveId?: (
+    this: unknown,
+    id: string,
+    importer?: string,
+    options?: object,
+  ) => MacroResolvedId | Promise<MacroResolvedId>;
+  loadInclude?: (id: string) => boolean | null | undefined | void;
+  load?: (this: unknown, id: string, options?: object) => MacroLoaded | Promise<MacroLoaded>;
+  renderChunk?: (
+    this: unknown,
+    code: string,
+    chunk?: object,
+    outputOptions?: object,
+    meta?: object,
+  ) => string | null | undefined | void;
 }
 
 const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
@@ -89,7 +116,7 @@ function getMacroCssContent(content: unknown) {
 
 /**
  * Returns the S2 style() macro plugin wrapped so its emitted CSS resolves and
- * loads correctly under rolldown-vite. Place it before `vite-plugin-solid`.
+ * loads correctly under rolldown-vite. Place it before `@solidjs/vite-plugin`.
  */
 export function vivianaMacros(): MacroPlugin {
   const plugin = macros.rolldown() as unknown as MacroPlugin;

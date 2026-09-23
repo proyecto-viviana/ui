@@ -4,12 +4,17 @@ type: task
 title: "The published Vite helper is typed for nobody and built by nobody"
 created: 2026-09-22
 parent: 32
-status: open
+status: done
 history:
   - {
       state: open,
       at: 2026-09-22,
       note: "opened from the README proof at public-face `eb7d533a` (`.agents/` receipt owed by #590's chain walk; measurement in the conductor's `measure-545.md`, section `README examples at eb7d533a`). The consumer harness type-checked every README fence against the packed tarballs; `packages/viviana-ui/README.md:122` fails with TS2769: `Type 'MacroPlugin' is not assignable to type 'PluginOption'`. `vivianaMacros()` (`packages/viviana-ui/src/vite.ts:94`) returns a local structural `MacroPlugin` whose `transform`/`resolveId`/`load` are typed `unknown`-returning with `this: unknown`, so Vite 8 rejects it inside `plugins: []` while the runtime build passes (`vite build --ssr` of the same README config exits 0). Nothing in this repository would have caught it: `grep -rln vivianaMacros apps packages --include=*.ts --include=*.mts` finds no vite config — `apps/web/vite.config.ts:5-90` and `apps/comparison/astro.config.mjs:9,144-` each carry their own copy of the same macro-CSS wrapper, so the exported one is the third copy and the only one never built. Its own doc comment (`src/vite.ts:23`, `:33`, `:92`) still tells consumers to pair it with `vite-plugin-solid`, the Solid 1 plugin that #548 removed from the READMEs at `eb7d533a`.",
+    }
+  - {
+      state: done,
+      at: 2026-09-22,
+      note: "vivianaMacros() returns a structural Vite 8 plugin. vite is not a peer. The eb7d533a README block type-checks against packs-614 (exit 0; old tarballs exit 2, TS2769). apps/web builds through the helper. The in-repo README fence still imports vite-plugin-solid.",
     }
 ---
 
@@ -65,3 +70,93 @@ on `public-face` but could not touch package source. Blocks nothing on the
 before the version commit because a consumer following the README hits it on
 day one. Rollback boundary: one commit in `packages/viviana-ui` and
 `apps/web/vite.config.ts`.
+
+## 2026-09-22
+
+`vite` is not a peer of `@proyecto-viviana/ui`. `packages/viviana-ui/package.json`
+`peerDependencies` names `@solidjs/web`, `solid-js`, and optional
+`unplugin-parcel-macros`. No `import type { Plugin } from "vite"`. The return
+is a structural `MacroPlugin`: required `name`, hook results that are subsets
+of Vite 8's results, `this: unknown`, `options?: object`, and no string index
+signature. `dist/vite.d.ts` imports neither vite nor rolldown.
+
+`apps/web` does not alias `@proyecto-viviana/ui` to source (aliases are `@`
+and `~` to `./src`). `exports["./vite"]` already points at `dist/vite.js` and
+`dist/vite.d.ts`, so the app was left on that export. `apps/web/vite.config.ts`
+calls `vivianaMacros()` in the old wrapper's plugin slot. The helper body is
+unchanged. `build:web` exited 0, so the web copy's cache-first `load` and
+try/catch were not folded in. The helper already strips `?tsr-split=`; the
+deleted web copy did not.
+
+The remaining twin is `apps/comparison/astro.config.mjs`. It calls
+`macros.raw()` (line 303) and serves cache-first (comment at line 414) because
+Astro's client and server passes share unplugin's asset map. Not edited.
+
+On this tree `packages/viviana-ui/README.md:122` is
+`noExternal: ["@proyecto-viviana/ui"]` inside the fence at lines 111-125, and
+that fence still imports `vite-plugin-solid`. The block the ticket measured is
+the public-face `eb7d533a` fence, already in the harness as
+`src/snippets/viviana-ui-122.tsx` (`@solidjs/vite-plugin`, five package names,
+`optimizeDeps.exclude`, `ssr.noExternal` of `/@proyecto-viviana\/.*/`). The
+proof file is a `.ts` copy of that snippet. Pasting the in-repo fence fails
+`TS2307` (`vite-plugin-solid` is not installed) against both tarball sets, so
+it cannot show the assignability change. Public-face owns the README; it was
+not edited. The comment in `src/vite.ts` keeps that fence's shape and names
+`@solidjs/vite-plugin` (lines 23, 36, 119).
+
+`docs:generate` was not run. It rewrites `.claude/current/status.md` and
+`roadmap.md`, which are outside the write paths, so those generated views stay
+stale. `scripts/macro-preset-smoke.mjs:31` still imports `vite-plugin-solid`.
+
+Commands, from `/home/emoporemilio/projects/viviana-hub/ui` unless noted.
+`SCRATCH` is `/home/emoporemilio/.cache/claude-tmp/claude-1000/-home-emoporemilio-projects-viviana-hub-ui/dcdf40fe-92b9-4723-a24c-d74b942d8751/scratchpad`.
+`TSC` is `/home/emoporemilio/projects/viviana-hub/ui/node_modules/typescript/bin/tsc`.
+
+- `vp run build` → exit 0. Proved: `dist/` was built before the pack.
+- `VIVIANA_PACK_OUT=$SCRATCH/packs-614 vp run pack:local-chain` → exit 1.
+  `scripts/scratch-dir.mjs` refused the path: not inside the temp directory
+  `/tmp/vw277-s3zdl4/tmp`. Nothing was deleted. The script's build half had
+  already rebuilt `dist/`.
+- `TMPDIR=$SCRATCH VIVIANA_PACK_OUT=$SCRATCH/packs-614 vp run pack:local-chain`
+  → exit 0. Tarballs in `$SCRATCH/packs-614`. Stage left at
+  `$SCRATCH/viviana-ui-pack-stage-SbGYgy`.
+- `cp -r $SCRATCH/readme-proof-eb7d533a $SCRATCH/readme-proof-614`, then the
+  five `packs-eb7d533a` `file:` deps in that copy's `package.json` were
+  rewritten to `packs-614`. `npm install --offline --no-audit --no-fund` inside
+  `$SCRATCH/readme-proof-614` only → exit 0 (`changed 5 packages`). `@swc/core`
+  postinstall was blocked by allowScripts.
+- Before, same block, unchanged tarballs. Copied
+  `viviana-ui-122.tsx` to `readme-122.ts` in `readme-proof-eb7d533a`, pointed
+  `tsconfig.one.json` `files` at it, then
+  `node $TSC -p $SCRATCH/readme-proof-eb7d533a/tsconfig.one.json --pretty false`
+  → exit 2, `TS2769` (`resolveId` returns `unknown`, not assignable to
+  `ResolveIdResult`). The harness `files` entry was restored to
+  `src/snippets/root-80.tsx` and `readme-122.ts` was removed there.
+- After: copied the same snippet to
+  `$SCRATCH/readme-proof-614/src/snippets/readme-122.ts`, `files` is
+  `["src/snippets/readme-122.ts"]`, then
+  `node $TSC -p $SCRATCH/readme-proof-614/tsconfig.one.json --pretty false`
+  → exit 0. Proved: that block type-checks against the packed tarball.
+  Installed `dist/vite.d.ts` is the structural declaration and imports no vite
+  types.
+- In-repo fence, same consumer, `tsconfig.main122.json` over
+  `src/snippets/readme-main-122.ts`:
+  `node $TSC -p $SCRATCH/readme-proof-614/tsconfig.main122.json --pretty false`
+  → exit 2, `TS2307` Cannot find module `vite-plugin-solid`.
+- `vp run build:web` → exit 0. Proved: `apps/web` builds through
+  `vivianaMacros()`.
+- `grep -c "macros.rolldown" apps/web/vite.config.ts` printed `0`. grep's own
+  exit is 1 when nothing matches. Proved: that file no longer calls
+  `macros.rolldown`.
+- `vp run check` → exit 0 (format, lint, `tsc -p tsconfig.typecheck.json`).
+- `vp run typecheck:apps` → exit 0 (comparison reported 0 errors and 35 hints).
+- `vp run guard:package-sourcemaps` → exit 0.
+- `vp run guard:entry-import-budget` → exit 0.
+- `vp run guard:source-artifacts` → exit 0.
+- `vp run guard:attribution` → exit 0.
+- There is no `check-changeset-required` script. `node scripts/check-changeset-required.mjs`
+  (diff `origin/main...HEAD`) → exit 0, `No changed files detected` (the source
+  change was still uncommitted). With `CHANGED_FILES` set to
+  `packages/viviana-ui/src/vite.ts`, `apps/web/vite.config.ts`, and
+  `.changeset/viviana-macros-vite-plugin.md` → exit 0, `Changeset covers every
+changed package: @proyecto-viviana/ui.`
