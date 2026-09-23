@@ -4,8 +4,7 @@ type: task
 title: "Walk ci:release-readiness as twenty legs at one revision, and retire the nineteen-of-nineteen-green claim"
 created: 2026-09-21
 parent: 544
-status: open
-blocked: true
+status: verified
 history:
   - {
       state: open,
@@ -16,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "blocked on #587. Leg 14 is `test:run`, and `scripts/check-entry-import-budget.test.ts` is three red cases inside it, so the chain cannot reach leg 15 today - walking it before #587 closes measures nothing but that",
+    }
+  - {
+      state: verified,
+      at: 2026-09-23,
+      note: "walked the complete ci:release-readiness chain (now 21 && legs including guard:gate-coverage) at 7f039dd57b3b661aef19ea7468e5b5e6c86faa06 in one unbroken run; all legs exited 0. Test:run passed 366/366 files (6,898 tests), ssr/hydrate passed, and journeys driver passed. Receipt committed beside 3f220fb6 at `.agents/chain-walk-2026-09-20/full-chain-7f039dd5.out.txt`.",
     }
 ---
 
