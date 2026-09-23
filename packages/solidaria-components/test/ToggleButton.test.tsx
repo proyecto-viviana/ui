@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { ToggleButton, type ToggleButtonRenderProps } from "../src/ToggleButton";
 import { ToggleButtonGroup } from "../src/ToggleButtonGroup";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -141,5 +142,28 @@ describe("ToggleButton", () => {
     const button = screen.getByRole("button");
     expect(button).toHaveAttribute("data-disabled");
     expect(screen.getByTestId("label")).toHaveTextContent("Disabled");
+  });
+
+  it("updates a signal-backed data attribute on a grouped ToggleButton", () => {
+    let setFlag!: (value: string) => void;
+
+    function Example() {
+      const [flag, nextFlag] = createSignal("one");
+      setFlag = nextFlag;
+      return (
+        <ToggleButtonGroup selectionMode="single" aria-label="Formatting">
+          <ToggleButton id="pin" aria-label="Pin" data-foo={flag()}>
+            Pin
+          </ToggleButton>
+        </ToggleButtonGroup>
+      );
+    }
+
+    render(() => <Example />);
+    const button = screen.getByRole("radio", { name: "Pin" });
+    expect(button.getAttribute("data-foo")).toBe("one");
+    setFlag("two");
+    flush();
+    expect(button.getAttribute("data-foo")).toBe("two");
   });
 });

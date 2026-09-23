@@ -16,6 +16,11 @@ history:
       at: 2026-09-22,
       note: "Both filterDOMProps copies forward an accessor descriptor instead of reading the kept prop once. A data property is still assigned. createToggleButton already calls mergeProps at lines 97 and 103 and was left as it is. The regression file fails with the sources reverted (3 failed, exit 1) and passes with them restored (3 passed, exit 0). The census, both runs, and the package suites are in the 2026-09-22 note.",
     }
+  - {
+      state: done,
+      at: 2026-09-22,
+      note: "Grouped ToggleButton passes aria props through mergeProps, and get id() reads local.id ?? local.toggleKey. ListBox's createListBox call uses mergeProps for the same spread. The new test fails with ToggleButton.tsx reverted (1 failed, exit 1) and passes restored (1 passed, exit 0). solidaria-components suite: 76 files, 2458 passed, 6 skipped, exit 0. The accessor block stays duplicated; Form.tsx:117 stays the named third copy.",
+    }
 ---
 
 `filterDOMProps` read each kept prop once while copying it. A `data-*` passed as a Solid getter was stored as the string from that read. ActionButton, ToggleButton, and a tab built on ActionButton then painted that string after the signal changed.
@@ -54,7 +59,9 @@ The components `filterDOMProps` (`packages/solidaria-components/src/utils.tsx:50
 
 `packages/solidaria-components/src/Form.tsx:117` assigns form names (`action`, `method`, and the rest of that set) that `filterDOMProps` drops. A reactive `action` is still a snapshot. `data-*` on Form already goes through the fixed filter at `:113`. The same descriptor block there would be a third copy, so it is not added.
 
-`packages/solidaria-components/src/ToggleButton.tsx:111` object-spreads `ariaProps` into `createToggleButtonGroupItem` when the button is in a group. The standalone path uses `mergeProps` at `:101`. A grouped ToggleButton still snapshots a reactive `data-*`. That is a different edit, and it is not in this change. The regression covers the standalone path.
+The grouped ToggleButton spread is fixed. `mergeProps` at `packages/solidaria-components/src/ToggleButton.tsx:108` is what `createToggleButtonGroupItem` receives at `:116`. `get id()` reads `local.id ?? local.toggleKey`.
+
+the accessor-forwarding block is duplicated in filterDOMProps.ts and solidaria-components utils.tsx; Form.tsx:117 would be the third copy
 
 ### Proof
 
@@ -97,3 +104,60 @@ EXIT=0
 `vp test run packages/solidaria --maxWorkers=2` at 21:25 also ran `packages/solidaria-components`, because that directory name starts with `packages/solidaria`. Printed: Test Files 170 passed (170). Tests 4251 passed | 6 skipped (4257). Start at 21:25:36. Duration 48.57s. EXIT=0.
 
 `vp test run packages/solidaria-components --maxWorkers=2` at 21:26. Printed: Test Files 76 passed (76). Tests 2457 passed | 6 skipped (2463). Start at 21:26:42. Duration 34.71s. EXIT=0.
+
+## Follow-up 2026-09-22
+
+`guard:layer-boundary` compares `packages/solid-spectrum/src` with `packages/viviana-ui/src`. It does not govern a solidaria-components import of `@proyecto-viviana/solidaria`. `packages/solidaria-components/src/utils.tsx` already imports `mergeProps` from that package. The accessor-forwarding block is not its own export. `filterDOMProps` is exported from solidaria, and the components copy keeps a different allow-list, so calling that function would change which props pass. No new export. Both copies stay.
+
+### Census
+
+Object spreads of `ariaProps` or `props` into a `create*` call under `packages/solidaria/src` and `packages/solidaria-components/src`.
+
+| Site                                                        | Verdict      | Why                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/solidaria-components/src/ToggleButton.tsx:108`    | fixed        | Group branch is `mergeProps`. `get id()` reads `local.id ?? local.toggleKey`. `createToggleButtonGroupItem` is at `:116`.                                                                                                                                                      |
+| `packages/solidaria-components/src/ListBox.tsx:513`         | fixed        | `createListBox` received `{ ...ariaProps }`. `filterDOMProps` inside `createListBox` copied that snapshot onto `listBoxProps`, and the root merges `listBoxProps` after its own `filterDOMProps`, so a `data-*` on the listbox stayed stale. The argument is now `mergeProps`. |
+| `packages/solidaria/src/tokenfield/createTokenField.ts:578` | not-affected | `createField({ ...props, labelElementType })` does not copy a `data-*` onto `fieldProps` or `tokenFieldProps`. `id` and the aria labeling props are rebuilt by name, then `const { fieldProps }` reads them once. `mergeProps` at this spread would still be read once there.  |
+| `packages/solidaria-components/src/Autocomplete.tsx:146`    | not-affected | `createAutocomplete` builds `inputProps` and `collectionProps` from named fields. A `data-*` on the spread is not copied onto either. `collectionId` and `collectionAriaLabel` are destructured once inside the hook.                                                          |
+| `packages/solidaria-components/src/useDragAndDrop.ts:232`   | not-affected | `createDraggableCollection({ ...props, ref })` only reads `ref` and returns `{ state }`. No DOM prop is passed through.                                                                                                                                                        |
+| `packages/solidaria-components/src/useDragAndDrop.ts:352`   | not-affected | The spread is inside `() => ({ ...props, ref })`. `createDroppableItem` re-reads that accessor. `dropProps` is drag handlers and `aria-hidden`, not the spread's `data-*`.                                                                                                     |
+| `packages/solidaria-components/src/Switch.tsx:143`          | not-affected | `createSwitch(() => ({ ...ariaProps }))`. `createToggle` calls `getProps()` from the `inputProps` getter, so the spread runs again when the input props are read.                                                                                                              |
+| `packages/solidaria-components/src/Switch.tsx:542`          | not-affected | Same accessor shape as `:143`.                                                                                                                                                                                                                                                 |
+| `packages/solidaria-components/src/RadioGroup.tsx:270`      | not-affected | `createRadioGroup(() => ({ ...ariaProps }))`. `radioGroupProps` calls `filterDOMProps(getProps())` on each read.                                                                                                                                                               |
+| `packages/solidaria-components/src/Checkbox.tsx:212`        | not-affected | `createCheckboxGroup(() => ({ ...ariaProps }))`. `groupProps` calls `filterDOMProps(getProps())` on each read.                                                                                                                                                                 |
+| `packages/solidaria-components/src/Tooltip.tsx:281`         | not-affected | `createEffect` compute, not a hook factory. The spread re-runs with the effect. The apply path reads `aria-describedby` only.                                                                                                                                                  |
+| `packages/solidaria-components/src/Table.tsx:1842`          | not-affected | `createMemo`, not a hook factory. The spread re-runs with the memo.                                                                                                                                                                                                            |
+
+### Proof
+
+Reverted only `packages/solidaria-components/src/ToggleButton.tsx` with `git diff -- <src> > $TMPDIR/p` and `git apply -R`. The test file stayed. Restored with `git apply`.
+
+`vp test run packages/solidaria-components/test/ToggleButton.test.tsx --maxWorkers=2 -t "updates a signal-backed data attribute on a grouped ToggleButton"` at 21:53, source reverted:
+
+```text
+FAIL  packages/solidaria-components/test/ToggleButton.test.tsx > ToggleButton > updates a signal-backed data attribute on a grouped ToggleButton
+AssertionError: expected 'one' to be 'two'
+ ❯ packages/solidaria-components/test/ToggleButton.test.tsx:167:45
+
+Test Files  1 failed (1)
+     Tests  1 failed | 9 skipped (10)
+  Start at  21:53:39
+  Duration  3.23s
+EXIT:1
+```
+
+Same command at 21:53, source restored:
+
+```text
+✓ packages/solidaria-components/test/ToggleButton.test.tsx (10 tests | 9 skipped) 96ms
+
+Test Files  1 passed (1)
+     Tests  1 passed | 9 skipped (10)
+  Start at  21:53:47
+  Duration  3.15s
+EXIT:0
+```
+
+`vp test run packages/solidaria-components --maxWorkers=2` at 21:55. Printed: Test Files 76 passed (76). Tests 2458 passed | 6 skipped (2464). Start at 21:55:17. Duration 35.27s. EXIT:0.
+
+`packages/solidaria` was not edited. Its suite was not re-run.

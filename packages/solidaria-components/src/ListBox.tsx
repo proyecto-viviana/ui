@@ -511,8 +511,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   // option emits aria-posinset/aria-setsize for the windowed (incomplete) DOM.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const listBoxAria = createListBox(
-    {
-      ...ariaProps,
+    mergeProps(ariaProps, {
       get isVirtualized() {
         return parentCollectionRenderer?.isVirtualized ?? ariaProps.isVirtualized;
       },
@@ -542,7 +541,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       get direction() {
         return locale().direction;
       },
-    },
+    }),
     state,
     () => listRef(),
   );

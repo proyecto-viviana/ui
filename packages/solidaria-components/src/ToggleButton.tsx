@@ -27,6 +27,7 @@ import {
   createFocusRing,
   createHover,
   mergeProps,
+  type AriaToggleButtonGroupItemProps,
   type AriaToggleButtonProps,
 } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -104,15 +105,15 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     },
   });
 
+  const groupedAriaProps = mergeProps<AriaToggleButtonGroupItemProps>(ariaProps, {
+    get id(): Key {
+      return (local.id ?? local.toggleKey) as Key;
+    },
+  });
+
   const toggleAria =
     groupState && groupKey != null
-      ? createToggleButtonGroupItem(
-          {
-            ...ariaProps,
-            id: groupKey,
-          },
-          groupState,
-        )
+      ? createToggleButtonGroupItem(groupedAriaProps, groupState)
       : createToggleButton(standaloneAriaProps);
 
   const isDisabled = () => resolveDisabledValue(ariaProps.isDisabled) || !!groupState?.isDisabled;
