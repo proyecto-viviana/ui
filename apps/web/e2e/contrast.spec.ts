@@ -29,15 +29,39 @@ const runAxe = process.env.RUN_AXE === "1";
  * evidence — an empty list here would be the honest default, and each addition
  * has to earn its place.
  */
+/**
+ * 2026-09-22 #586. `<html data-color-scheme>` is stamped by the head script from
+ * `localStorage` before paint, so a wait on that attribute returns while
+ * `useTheme`'s signal is still its initial `"dark"` and the root Provider has
+ * not applied `setColorScheme()`. A `[data-color-scheme]` probe matches `<html>`
+ * first. Under the full `a11y:contrast` load that window was long enough for axe
+ * to label the Provider's dark inks as light on `/docs/components/steplist`
+ * (`#ffffff` / `#c6cfdc` on the light page `#f3f6fa`, and light `#0f1622` on the
+ * Provider's dark `--surface-well` `#030405`). Three solo runs of that route
+ * passed. The site Provider is the first `[data-color-scheme]` under `body`.
+ * Sampled there once the route had settled: `<html>`'s computed `color-scheme`
+ * stays `normal`, and both `--lightningcss-light` and `--lightningcss-dark`
+ * come back from `getComputedStyle` as `""` (`initial` and the space sentinel
+ * do not round-trip), so the predicate is the Provider's computed `color-scheme`
+ * and `--s2-color-scheme`. Nested islands may disagree. A thrown route renders
+ * `ErrorFallback` with no Provider, and there the html attribute is the scheme.
+ */
 async function setTheme(page: Page, theme: "dark" | "light") {
   await page.evaluate((target) => {
     localStorage.setItem("pv-theme", target);
   }, theme);
   await page.reload({ waitUntil: "networkidle" });
-  await page.waitForFunction(
-    (target) => document.documentElement.getAttribute("data-color-scheme") === target,
-    theme,
-  );
+  await page.waitForFunction((target) => {
+    const root = document.documentElement;
+    if (root.getAttribute("data-color-scheme") !== target) return false;
+    if (document.querySelector("[data-testid=route-error-boundary]")) return true;
+    const site = document.querySelector("body [data-color-scheme]");
+    if (!site || site.getAttribute("data-color-scheme") !== target) return false;
+    const style = getComputedStyle(site);
+    return (
+      style.colorScheme === target && style.getPropertyValue("--s2-color-scheme").trim() === target
+    );
+  }, theme);
 }
 
 /**
@@ -72,6 +96,11 @@ for (const route of ALL_ROUTES) {
   test(`${route} — colour contrast in both themes`, async ({ page }) => {
     test.skip(!runAxe, "Queued until RUN_AXE=1");
     test.setTimeout(90_000);
+    /* 2026-09-22 #586. The LIVE badge breathes opacity over 2s. Mid-breath axe
+       cannot see its solid fill (incomplete, messageKey bgGradient, ratio 0),
+       so black on #d9128f only fails on the frame the breath is at rest.
+       The badge already stops that breath under prefers-reduced-motion. */
+    await page.emulateMedia({ reducedMotion: "reduce" });
 
     const failures: string[] = [];
 

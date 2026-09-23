@@ -21,6 +21,11 @@ history:
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`, finding `r2-certified-b/F6`, low. The arithmetic above was re-checked and holds - `--text-link` dark #3dadff on `--surface-raised` rgb(32,38,48) is 6.235:1 and light #0b5dc2 on white is 6.251:1 - and no token name is shadowed: `git grep` over `apps/web` finds no local redeclaration of `--text-link`, `--text-secondary`, `--interactive-fill`, `--text-on-accent`, `--white`, `--blue-500` or `--blue-600`. Two residues. First, the hero gradient is not one of the measured instances: `apps/web/src/components/theme/studio.css:640` paints `.pv-hero h1 span` with `linear-gradient(135deg, var(--text-link), #a855f7)` under a transparent text fill, which axe reports as incomplete rather than as a failure, so the swap from #0a6fef to #3dadff is a visible dark-mode landing restyle shipped under an a11y ticket with no visual proof - say so here as a deliberate visual edit. Second, the same commit leaves the one hardcoded colour in the file it touched: `apps/web/src/routes/__root.tsx:82`, the new ErrorFallback `h2` at #ef4444, about 3.45:1 and passing only as large text. Put it on a token, and either restore the literal fallbacks on the three new `var()` reads in `studio.css` or drop them consistently across the file",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-23,
+      note: "LIVE badge uses create-ink in packages/viviana-ui/src/badge/index.tsx, clearing 4.5:1 AA contrast on daylight #d9128f (#ffffff on #d9128f is 4.74:1; night #1a0512 on #ff4fc3 is 6.66:1; black on daylight #d9128f was 4.43:1). apps/web/e2e/contrast.spec.ts emulates reduced-motion to freeze the 2s opacity breath during axe measurement, and awaits provider data-color-scheme and --s2-color-scheme. Changeset added for @proyecto-viviana/ui. Targeted contrast tests on / (21.4s), /admin (20.9s), /docs/components/steplist (20.9s) pass exit 0 in both themes. vp run check exit 0 (4478 formatted, 3214 linted, tsc pass).",
+    }
 ---
 
 ## The defect

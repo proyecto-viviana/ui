@@ -186,10 +186,12 @@ const badgeStyles = style<{
             yellow: "black",
             chartreuse: "black",
             celery: "black",
-            /* LIVE's fuchsia is mid-luminance in both schemes; black clears
-               4.5:1, white does not (white-on-#ff4fc3 is 2.93:1, black 7.16:1).
-               Same black-ink family as notice/yellow. */
-            live: "black",
+            /* LIVE rides the CTA fuchsia (`--accent-live` = fuchsia-500). The ink
+               is `create-ink`, the ramp's fuchsia-ink, which flips with the fill:
+               #ffffff on daylight #d9128f is 4.74:1, #1a0512 on night #ff4fc3 is
+               6.66:1. Black only clears the night column (#000000 on #d9128f is
+               4.43:1). Same pair Button's create variant and the info toast use. */
+            live: "create-ink",
             /* Metric is the one channel whose token crosses the ink threshold
                between schemes: light `--cyan-500` is #0a7a9f (black 4.30:1 —
                BELOW AA, white 4.89:1) while dark #48daff takes black at 12.75:1.
