@@ -37,7 +37,44 @@ const dialogTitle = "Review Changes";
 
 const openDialogWithPointer = async ({ canvas, page }: PanelContext) => {
   await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
-  await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
+  const dialog = page.getByRole("dialog", { name: dialogTitle });
+  await expect(dialog).toBeVisible();
+  // useDialog focuses the surface, then blurs and refocuses it 500ms later
+  // for iOS VoiceOver (upstream useDialog.ts, port createDialog.ts). Author
+  // outline-style stays none, so the UA outline flips from the unfocused
+  // initial (medium / currentcolor) to :focus-visible (1px / the UA focus
+  // ring color) for the instant focus sits on body. D1's 400ms settle reads
+  // inside React's blur and before Solid's, which starts later from
+  // runAfterPaint. The keyboard opener drains the same timer with a fixed
+  // 600ms. Wait until this dialog has blurred and taken focus back.
+  await dialog.evaluate((element) => {
+    return new Promise<void>((resolve, reject) => {
+      let sawBlur = false;
+      const timer = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("dialog VoiceOver refocus did not complete"));
+      }, 2000);
+      const cleanup = () => {
+        window.clearTimeout(timer);
+        element.removeEventListener("focusout", onOut, true);
+        element.removeEventListener("focusin", onIn, true);
+      };
+      const onOut = (event: Event) => {
+        if (event.target === element) {
+          sawBlur = true;
+        }
+      };
+      const onIn = (event: Event) => {
+        if (sawBlur && event.target === element && document.activeElement === element) {
+          cleanup();
+          resolve();
+        }
+      };
+      element.addEventListener("focusout", onOut, true);
+      element.addEventListener("focusin", onIn, true);
+    });
+  });
+  await expect(dialog).toBeFocused();
 };
 
 const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
