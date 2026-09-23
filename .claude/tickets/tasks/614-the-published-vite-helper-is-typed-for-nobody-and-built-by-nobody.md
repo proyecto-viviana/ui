@@ -16,6 +16,11 @@ history:
       at: 2026-09-22,
       note: "vivianaMacros() returns a structural Vite 8 plugin. vite is not a peer. The eb7d533a README block type-checks against packs-614 (exit 0; old tarballs exit 2, TS2769). apps/web builds through the helper. The in-repo README fence still imports vite-plugin-solid.",
     }
+  - {
+      state: done,
+      at: 2026-09-22,
+      note: "w-ci81. Certification Gates run 35803106919 at 81affe37 failed guard attribution-headers. Reproduced at HEAD beea4cb0, which is that commit plus #617. 22:06 vp run guard:attribution-headers exit 1. Reviewed local source mismatch 1, satisfied 253, and the only named file is packages/viviana-ui/src/vite.ts. Cause: 260c4ffe rewrote that file and left scripts/attribution-local-reviews.json contentSha256 on the previous bytes. 22:11 git show 260c4ffe^:packages/viviana-ui/src/vite.ts | sha256sum printed 48863d33e04622a1a35d241136b91dfa224ae957e6a938f6f6e1ab1a88071cfc, the stored hash. 22:11 git show 260c4ffe:packages/viviana-ui/src/vite.ts | sha256sum and sha256sum of the working tree both printed 3348180bebe9d9af94cad3a8e6c67e6b4945cb1b6a3d00a914332c1d6576583b. git log -- packages/viviana-ui/src/vite.ts shows no commit after 260c4ffe. Re-review of that diff: comments and the structural MacroPlugin hook types only. The module is still the local rolldown-vite wrapper around unplugin-parcel-macros. 22:06 rg -n -i adobe|react-aria|react-spectrum|kumo|@react-|spectrum packages/viviana-ui/src/vite.ts printed nothing. Classification stays local-module-surface. Fix: that entry's contentSha256 only, now 3348180bebe9d9af94cad3a8e6c67e6b4945cb1b6a3d00a914332c1d6576583b. w-614 ran guard:attribution (scripts/check-package-attribution.mjs), which does not hash this review. 22:06 after the hash, vp run guard:attribution-headers exit 0, reviewed local source satisfied 254. 22:06 vp run guard:attribution exit 0. 22:09 vp fmt --check on the review json and this ticket exit 0, 2 files. 22:09 vp lint on those two paths exit 1, No files found to lint, 0 files; neither path is a lint target. 22:10 vp run check exit 0, 4477 formatted, 3214 lint-clean, tsc pass. No package source changed, so no changeset. 22:12 vp run docs:generate exit 0; .claude/current/roadmap.md and .claude/current/status.md stayed unstaged. 22:12 vp run docs:check exit 0.",
+    }
 ---
 
 ## Scope

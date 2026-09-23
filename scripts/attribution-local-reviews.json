@@ -1262,7 +1262,7 @@
   {
     "localPath": "packages/viviana-ui/src/vite.ts",
     "classification": "local-module-surface",
-    "contentSha256": "48863d33e04622a1a35d241136b91dfa224ae957e6a938f6f6e1ab1a88071cfc"
+    "contentSha256": "3348180bebe9d9af94cad3a8e6c67e6b4945cb1b6a3d00a914332c1d6576583b"
   },
   {
     "localPath": "packages/viviana-ui/src/well/index.tsx",
