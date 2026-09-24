@@ -43,7 +43,7 @@ export interface DraggableCollectionLike {
   getKeys?(): Iterable<DragKey>;
 }
 
-export interface DraggableCollectionStateOptions<T = object> {
+export interface DraggableCollectionStateOptions<_T = object> {
   /** A function that returns the items being dragged. */
   getItems: (keys: Set<DragKey>) => DragItem[];
   /** Function that returns the allowed drop operations. */

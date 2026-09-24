@@ -87,7 +87,7 @@ function isNavigationDisabled<T>(state: TableState<T, TableCollection<T>>, key: 
 
 function findNextNavigableKey<T>(
   state: TableState<T, TableCollection<T>>,
-  collection: TableCollection<T>,
+  _collection: TableCollection<T>,
   startKey: Key | null,
   step: (key: Key) => Key | null,
 ): Key | null {

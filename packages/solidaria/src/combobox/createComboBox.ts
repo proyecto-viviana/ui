@@ -53,7 +53,7 @@ import { createFormReset } from "../form/createFormReset";
 /**
  * Helper to count items in a collection
  */
-function getItemCount<T>(collection: { getKeys(): Iterable<Key> }): number {
+function getItemCount(collection: { getKeys(): Iterable<Key> }): number {
   let count = 0;
   for (const _ of collection.getKeys()) {
     count++;

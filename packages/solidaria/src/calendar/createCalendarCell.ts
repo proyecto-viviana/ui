@@ -176,7 +176,7 @@ export function createCalendarCell<T extends CalendarState>(
   // Handle pointer down - this is where selection happens
   // Using pointerdown instead of click ensures selection happens immediately
   // before focus changes can interfere with the event
-  const handlePointerDown = (e: PointerEvent) => {
+  const handlePointerDown = (_e: PointerEvent) => {
     cellReceivedPointer = true;
     if (!isDisabled() && !isUnavailable()) {
       setIsPressed(true);

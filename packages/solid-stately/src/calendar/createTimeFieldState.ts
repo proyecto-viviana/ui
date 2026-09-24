@@ -122,7 +122,7 @@ export interface TimeFieldStateProps<T extends TimeValue = Time> {
  * consumers.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface TimeFieldState<T extends TimeValue = Time> extends DateFieldState {
+export interface TimeFieldState<_T extends TimeValue = Time> extends DateFieldState {
   /** The current value in the `Time`/`CalendarDateTime`/`ZonedDateTime` domain. */
   timeValue: Accessor<TimeValue | null>;
 }
