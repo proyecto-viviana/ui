@@ -556,4 +556,60 @@ describe("Checkbox", () => {
       expect(screen.getByRole("img", { name: "(required)" })).toBeInTheDocument();
     });
   });
+
+  describe("CheckboxGroup live isInvalid aria-describedby", () => {
+    it("retargets aria-describedby when isInvalid changes live", async () => {
+      const [isInvalid, setIsInvalid] = createSignal(false);
+      render(() => (
+        <CheckboxGroup
+          label="Notifications"
+          isInvalid={isInvalid()}
+          description="Select notification channels."
+          errorMessage="Select at least one channel."
+        >
+          <Checkbox value="email">Email</Checkbox>
+          <Checkbox value="sms">SMS</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      const group = screen.getByRole("group");
+      const checkboxes = screen.getAllByRole("checkbox");
+
+      // Initially valid: aria-describedby points to description
+      const descEl = screen.getByText("Select notification channels.");
+      expect(descEl).toHaveAttribute("id");
+      const descId = descEl.getAttribute("id")!;
+      expect(group).toHaveAttribute("aria-describedby", descId);
+      for (const cb of checkboxes) {
+        expect(cb.getAttribute("aria-describedby")).toBe(descId);
+      }
+
+      // Live switch to invalid
+      setIsInvalid(true);
+
+      const errorEl = await screen.findByText("Select at least one channel.");
+      const errorContainer = errorEl.closest("[slot='errorMessage']") ?? errorEl.closest("[id]");
+      expect(errorContainer).toHaveAttribute("id");
+      const errorId = errorContainer!.getAttribute("id")!;
+
+      await waitFor(() => {
+        expect(group).toHaveAttribute("aria-describedby", errorId);
+        for (const cb of checkboxes) {
+          expect(cb.getAttribute("aria-describedby")).toBe(errorId);
+        }
+      });
+
+      // Live switch back to valid
+      setIsInvalid(false);
+
+      await screen.findByText("Select notification channels.");
+
+      await waitFor(() => {
+        expect(group).toHaveAttribute("aria-describedby", descId);
+        for (const cb of checkboxes) {
+          expect(cb.getAttribute("aria-describedby")).toBe(descId);
+        }
+      });
+    });
+  });
 });

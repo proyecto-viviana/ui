@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeAll } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal, createEffect, createRoot } from "solid-js";
+import { createSignal, createEffect, createRoot, Show } from "solid-js";
 import {
   createCheckboxGroup,
   createCheckboxGroupItem,
@@ -53,6 +53,7 @@ function Checkbox(props: AriaCheckboxGroupItemProps & { checkboxGroupState: Chec
         disabled={getInputProps().disabled}
         aria-readonly={getInputProps()["aria-readonly"]}
         aria-required={getInputProps()["aria-required"]}
+        aria-describedby={getInputProps()["aria-describedby"]}
         required={getInputProps().required}
         onChange={getInputProps().onChange}
       />
@@ -574,6 +575,66 @@ describe("createCheckboxGroup", () => {
       expect(aria.validationDetails.valid).toBe(false);
 
       dispose();
+    });
+  });
+
+  it("retargets group and item aria-describedby reactively when isInvalid changes live", async () => {
+    const [isInvalid, setIsInvalid] = createSignal(false);
+
+    function DynamicCheckboxGroup() {
+      const state = createCheckboxGroupState(() => ({
+        isInvalid: isInvalid(),
+      }));
+      const group = createCheckboxGroup(
+        () => ({
+          "aria-label": "Favorite Pet",
+          isInvalid: isInvalid(),
+          description: "Choose a pet",
+          errorMessage: "Selection required",
+        }),
+        state,
+      );
+
+      return (
+        <div {...group.groupProps}>
+          <Checkbox checkboxGroupState={state} value="dogs" children="Dogs" />
+          <Show when={!group.isInvalid}>
+            <span {...group.descriptionProps}>Choose a pet</span>
+          </Show>
+          <Show when={group.isInvalid}>
+            <span {...group.errorMessageProps}>Selection required</span>
+          </Show>
+        </div>
+      );
+    }
+
+    render(() => <DynamicCheckboxGroup />);
+
+    const groupEl = screen.getByRole("group");
+    const checkbox = screen.getByRole("checkbox");
+
+    const descEl = screen.getByText("Choose a pet");
+    const descId = descEl.getAttribute("id")!;
+    expect(groupEl).toHaveAttribute("aria-describedby", descId);
+    expect(checkbox).toHaveAttribute("aria-describedby", descId);
+
+    setIsInvalid(true);
+
+    const errorEl = await screen.findByText("Selection required");
+    const errorId = errorEl.getAttribute("id")!;
+
+    await waitFor(() => {
+      expect(groupEl).toHaveAttribute("aria-describedby", errorId);
+      expect(checkbox).toHaveAttribute("aria-describedby", errorId);
+    });
+
+    setIsInvalid(false);
+
+    await screen.findByText("Choose a pet");
+
+    await waitFor(() => {
+      expect(groupEl).toHaveAttribute("aria-describedby", descId);
+      expect(checkbox).toHaveAttribute("aria-describedby", descId);
     });
   });
 });

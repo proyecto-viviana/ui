@@ -4,12 +4,17 @@ type: task
 title: "Keep CheckboxGroup aria-describedby when isInvalid changes live"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 checkboxgroup functional pass: URL ?isInvalid=true threads errorMessage onto group and every child input on both; live isInvalid after mount swaps the visible HelpText slot on both (not #345) and drops Solid aria-describedby to null on the group and all three inputs. Live off from invalid leaves Solid description visible with describedby still null. React retargets description id ↔ error id",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "store checkboxGroupData with live getters for descriptionId, errorMessageId, and attributes so child items and styled HelpText slots evaluate reactive createSlotId accessors directly. Verified with CSR regression tests in createCheckboxGroup.test.tsx and Checkbox.test.tsx, plus Playwright certified suite.",
     }
 ---
 

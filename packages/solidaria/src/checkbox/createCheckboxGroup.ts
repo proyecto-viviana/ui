@@ -21,7 +21,6 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckboxGroup hook.
  */
 
-import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createField } from "../label";
 import { createFocusWithin } from "../interactions/createFocusWithin";
@@ -133,20 +132,26 @@ export function createCheckboxGroup(
     labelElementType: "span",
   });
 
-  const updateCheckboxGroupData = () => {
-    const p = getProps();
-    checkboxGroupData.set(state, {
-      name: p.name,
-      form: p.form,
-      descriptionId: p.description ? attrString(field.descriptionProps.id) : undefined,
-      errorMessageId: p.errorMessage ? attrString(field.errorMessageProps.id) : undefined,
-      validationBehavior: p.validationBehavior ?? "native",
-    });
-  };
-
-  // Store group metadata synchronously for first-render children, then keep it reactive.
-  updateCheckboxGroupData();
-  createTrackedEffect(updateCheckboxGroupData);
+  // Store reactive group metadata for children to access.
+  // Using getters ensures child inputs and styled layers reading descriptionId/errorMessageId
+  // track the reactive slot ids directly rather than reading stale WeakMap snapshots.
+  checkboxGroupData.set(state, {
+    get name() {
+      return getProps().name;
+    },
+    get form() {
+      return getProps().form;
+    },
+    get descriptionId() {
+      return getProps().description ? attrString(field.descriptionProps.id) : undefined;
+    },
+    get errorMessageId() {
+      return getProps().errorMessage ? attrString(field.errorMessageProps.id) : undefined;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
 
   // Filter DOM props
   const domProps = () =>
