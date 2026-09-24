@@ -323,6 +323,21 @@ describe("createTabs", () => {
       expect(onSelectionChange).toHaveBeenCalledTimes(1);
     });
 
+    it("synchronizes roving tabindex with keyboard navigation immediately (#609)", () => {
+      render(() => <TestTabs aria-label="Test Tabs" />);
+
+      const tabs = screen.getAllByRole("tab");
+      tabs[0].focus();
+      expect(tabs[0]).toHaveAttribute("tabindex", "0");
+      expect(tabs[1]).toHaveAttribute("tabindex", "-1");
+
+      fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+
+      expect(tabs[0]).toHaveAttribute("tabindex", "-1");
+      expect(tabs[1]).toHaveAttribute("tabindex", "0");
+      expect(document.activeElement).toBe(tabs[1]);
+    });
+
     it("ArrowLeft moves to previous tab", () => {
       const onSelectionChange = vi.fn();
       render(() => (

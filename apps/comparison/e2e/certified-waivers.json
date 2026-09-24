@@ -31,7 +31,7 @@
     "pattern": "^e2e/drivers/events\\.ts chromium › certified/tabs\\.certified\\.spec\\.ts › D4 event sequence — Tabs › horizontal-regular · arrow-next-from-selected$",
     "ticket": 609,
     "expires": "2026-10-21",
-    "ticketStatus": "open",
+    "ticketStatus": "in-progress",
     "reason": "ArrowRight from the selected tab selects and focuses the next tab, but the roving `tabindex` lands one frame late: for two events of the compared log the old tab still reads `tabindex=\"0\"` and the new one `\"-1\"`, the reverse of upstream. Keyboard navigation works and settles correctly; a tool that reads tab stops inside that frame sees the previous tab as the stop."
   }
 ]

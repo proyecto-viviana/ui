@@ -4,7 +4,7 @@ type: task
 title: "Tabs' roving `tabindex` lands one frame after the arrow move"
 created: 2026-09-21
 parent: 544
-status: open
+status: in-progress
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-22,
       note: "waiver bookkeeping only; the reading above is untouched. #578's review re-wrote `certified-waivers.json` one entry per case and anchored every pattern `^…$` on the whole haystack, which begins with the declaring file - for this row `e2e/drivers/events.ts`, not `certified/tabs.certified.spec.ts`, since the spec path is the head of the title and not of the file. A test now runs every entry against Playwright's `--list` discovery of all 2177 certified cases and fails unless it matches exactly one, so this entry can no longer widen in silence. `expires` moved from `2026-12-31` to `2026-10-21`, because the recorded rule is that a waiver stands until the next release and the loader now refuses a date past a 60-day horizon; #610 owns binding it to the release itself",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "Synchronized the roving tabindex attributes in createTabs handleKeyDown immediately before calling nextEl.focus(), matching React's post-reconciliation layout-effect timing. Both focusout on the prior tab and focusin on the target tab now observe tabindex='-1' and tabindex='0' respectively. D4 event sequence arrow-next-from-selected passes 100% and full tabs certified suite (23/23 tests) is green. Added regression unit test in createTabs.test.tsx. Awaiting CI certified report to remove waiver.",
     }
 ---
 

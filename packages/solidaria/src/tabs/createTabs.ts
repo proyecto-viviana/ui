@@ -332,8 +332,17 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       // the item effect with no element. Scope the query to the tablist so
       // React/Solid comparison-panel ids cannot collide.
       const tabList = e.currentTarget as Element | null;
+      const currentTab = tabList?.querySelector<HTMLElement>('[role="tab"][tabindex="0"]');
       const nextId = generateTabId(state, nextKey);
-      const nextEl = tabList?.querySelector(`#${CSS.escape(nextId)}`);
+      const nextEl = tabList?.querySelector<HTMLElement>(`#${CSS.escape(nextId)}`);
+      if (currentTab && currentTab !== nextEl) {
+        currentTab.tabIndex = -1;
+        currentTab.setAttribute("tabindex", "-1");
+      }
+      if (nextEl) {
+        nextEl.tabIndex = 0;
+        nextEl.setAttribute("tabindex", "0");
+      }
       if (nextEl instanceof HTMLElement && nextEl.ownerDocument.activeElement !== nextEl) {
         nextEl.focus();
       }
