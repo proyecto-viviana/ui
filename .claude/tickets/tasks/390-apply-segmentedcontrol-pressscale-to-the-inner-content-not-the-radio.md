@@ -4,12 +4,17 @@ type: task
 title: "Apply SegmentedControl pressScale to the inner content, not the radio"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 segmentedcontrol functional pass: pointer-down Grid keeps the S2 radio at 48×32 and scales the inner content DIV (24×18 → 23.51×17.63 matrix3d); Solid applies the same perspective math to the radio BUTTON (48×32 → 45.18×30.12 matrix3d) and leaves the inner SPAN transform none. During hold Solid document.activeElement is BODY / data-focused omitted; React stays on Grid. Pointerup 400ms both settle 48×32, focus Grid, selectedKey grid. Distinct from button-family 80ms matrix timing because the transformed element differs",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "applied pressScale to inner content DIV inside SegmentedControlItem and switched ToggleButton to renderChildrenStable. Host radio maintains 48x32 geometry and DOM focus during pointerdown hold, inner div scales with perspective math, settled pointerup verified in unit test and comparison e2e",
     }
 ---
 

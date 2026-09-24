@@ -198,7 +198,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       data-disabled={dataAttr(isDisabled())}
       data-selected={dataAttr(toggleAria.isSelected())}
     >
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </button>
   );
 }

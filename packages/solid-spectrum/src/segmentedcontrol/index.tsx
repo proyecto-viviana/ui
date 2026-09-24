@@ -43,6 +43,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { pressScale } from "../pressScale";
 
 export interface SegmentedControlProps extends Omit<
   HeadlessToggleButtonGroupProps,
@@ -330,8 +331,6 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
     "class",
     "id",
   ]);
-  let buttonElement: HTMLButtonElement | undefined;
-
   onSettled(() => context.register?.(local.id));
 
   const getClassName = (renderProps: ToggleButtonRenderProps): string =>
@@ -349,74 +348,60 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
       .filter(Boolean)
       .join(" ");
 
-  const getStyle = (renderProps: ToggleButtonRenderProps): JSX.CSSProperties => {
-    const style = { ...(local.UNSAFE_style ?? {}) } as JSX.CSSProperties;
-    const styleRecord = style as Record<string, string | number | undefined>;
-    const willChange = styleRecord["will-change"] ?? "";
-    styleRecord["will-change"] = `${willChange} transform`.trim();
-
-    if (renderProps.isPressed && buttonElement) {
-      const { width, height } = buttonElement.getBoundingClientRect();
-      const perspective = Math.max(height, width / 3, 24);
-      const transform = style.transform ?? "";
-      style.transform = `${transform} perspective(${perspective}px) translate3d(0, 0, -2px)`.trim();
-    }
-
-    return style;
+  const iconContextValue = {
+    slot: "icon",
+    render: centerBaseline({ slot: "icon", styles: style({ order: 0, flexShrink: 0 }) }),
+    styles: style({
+      size: fontRelative(20),
+      flexShrink: 0,
+    }),
   };
-
-  function SegmentContent(renderProps: ToggleButtonRenderProps) {
-    const iconContextValue = {
-      slot: "icon",
-      render: centerBaseline({ slot: "icon", styles: style({ order: 0, flexShrink: 0 }) }),
-      styles: style({
-        size: fontRelative(20),
-        flexShrink: 0,
-      }),
-    };
-
-    function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
-
-      return (
-        <span class={itemContent}>
-          {typeof content() === "string" ? (
-            <span class={itemText} data-rsp-slot="text">
-              {content()}
-            </span>
-          ) : (
-            content()
-          )}
-        </span>
-      );
-    }
-
-    return (
-      <>
-        <SelectionIndicator
-          isSelected={renderProps.isSelected}
-          class={selectionIndicator({ isDisabled: renderProps.isDisabled })}
-        />
-        <IconContext value={iconContextValue}>
-          <ResolvedContent />
-        </IconContext>
-      </>
-    );
-  }
 
   return (
     <HeadlessToggleButton
       {...headlessProps}
       id={local.id}
-      ref={(element: HTMLButtonElement) => {
-        buttonElement = element;
-      }}
       class={getClassName}
-      style={getStyle}
+      style={local.UNSAFE_style}
       data-segmented-control-item=""
     >
-      {(renderProps) => <SegmentContent {...renderProps} />}
+      {(renderProps) => {
+        let contentElement: HTMLDivElement | undefined;
+
+        function ResolvedContent() {
+          const resolvedChildren = resolveChildren(() => local.children);
+
+          return (
+            <div
+              ref={(element: HTMLDivElement) => {
+                contentElement = element;
+              }}
+              class={itemContent}
+              style={pressScale(() => contentElement)({ isPressed: renderProps.isPressed })}
+            >
+              {typeof resolvedChildren() === "string" ? (
+                <span class={itemText} data-rsp-slot="text">
+                  {resolvedChildren()}
+                </span>
+              ) : (
+                resolvedChildren()
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <>
+            <SelectionIndicator
+              isSelected={renderProps.isSelected}
+              class={selectionIndicator({ isDisabled: renderProps.isDisabled })}
+            />
+            <IconContext value={iconContextValue}>
+              <ResolvedContent />
+            </IconContext>
+          </>
+        );
+      }}
     </HeadlessToggleButton>
   );
 }

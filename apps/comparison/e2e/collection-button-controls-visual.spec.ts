@@ -882,6 +882,55 @@ test.describe("comparison collection button controls visual parity", () => {
     await expect(solidGrid).toHaveAttribute("aria-checked", "true");
   });
 
+  test("SegmentedControl press hold scales inner content and preserves radio button geometry", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(page, "segmentedcontrol", "?selectedKey=list");
+
+    const reactGrid = fixtures.reactRoot.getByRole("radio", { name: "Grid" });
+    const solidGrid = fixtures.solidRoot.getByRole("radio", { name: "Grid" });
+
+    const reactInitialBox = await reactGrid.boundingBox();
+    const solidInitialBox = await solidGrid.boundingBox();
+    expect(reactInitialBox).toBeTruthy();
+    expect(solidInitialBox).toBeTruthy();
+
+    await solidGrid.hover();
+    await page.mouse.down();
+    await page.waitForTimeout(300);
+
+    await expect(solidGrid).toHaveAttribute("data-pressed", "true");
+
+    const solidHeldBox = await solidGrid.boundingBox();
+    expect(solidHeldBox).toBeTruthy();
+    expect(Math.abs(solidHeldBox!.width - solidInitialBox!.width)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(solidHeldBox!.height - solidInitialBox!.height)).toBeLessThanOrEqual(0.5);
+
+    const solidInnerTransform = await solidGrid
+      .locator("div")
+      .first()
+      .evaluate((el) => {
+        return window.getComputedStyle(el).transform;
+      });
+    expect(solidInnerTransform).not.toBe("none");
+
+    const solidRadioTransform = await solidGrid.evaluate((el) => {
+      return (el as HTMLElement).style.transform;
+    });
+    expect(solidRadioTransform).toBe("");
+
+    const solidActiveTag = await page.evaluate(() => document.activeElement?.tagName);
+    expect(solidActiveTag).toBe("BUTTON");
+
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    await expect(solidGrid).toHaveAttribute("aria-checked", "true");
+    await expect(
+      fixtures.solidPanel.locator("[data-comparison-selected-key]").first(),
+    ).toHaveAttribute("data-comparison-selected-key", "grid");
+  });
+
   test("SelectBoxGroup interactive prop controls drive both stacks", async ({ page }) => {
     await pinComparisonTheme(page, "dark");
     await page.goto("/components/selectboxgroup/");

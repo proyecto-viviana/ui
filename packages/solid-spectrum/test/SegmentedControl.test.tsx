@@ -236,4 +236,46 @@ describe("SegmentedControl (solid-spectrum)", () => {
     expect(indicator).toHaveAttribute("data-selected", "true");
     expect(indicator?.className).toBeTruthy();
   });
+
+  it("applies pressScale to the inner content div and keeps host radio unscaled during pointer-down", () => {
+    render(() => (
+      <SegmentedControl aria-label="View mode" defaultSelectedKey="list">
+        <SegmentedControlItem id="list">List</SegmentedControlItem>
+        <SegmentedControlItem id="grid">Grid</SegmentedControlItem>
+      </SegmentedControl>
+    ));
+
+    const grid = screen.getByRole("radio", { name: "Grid" });
+    const innerContent = grid.querySelector("div");
+    expect(innerContent).toBeInTheDocument();
+
+    vi.spyOn(innerContent!, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      width: 24,
+      height: 18,
+      top: 0,
+      right: 24,
+      bottom: 18,
+      left: 0,
+      toJSON: () => {},
+    });
+
+    expect(grid.style.transform).toBe("");
+    expect(innerContent?.style.transform).toBe("");
+
+    grid.focus();
+    expect(document.activeElement).toBe(grid);
+
+    fireEvent.pointerDown(grid, { pointerType: "mouse", button: 0, pointerId: 1 });
+
+    expect(document.activeElement).toBe(grid);
+    expect(grid.style.transform).toBe("");
+    expect(innerContent?.style.transform).toContain("perspective(24px) translate3d(0, 0, -2px)");
+
+    fireEvent.pointerUp(grid, { pointerType: "mouse", button: 0, pointerId: 1 });
+    fireEvent.click(grid);
+    expect(innerContent?.style.transform).toBe("");
+    expect(grid.style.transform).toBe("");
+  });
 });
