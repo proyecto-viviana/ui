@@ -76,6 +76,8 @@ async function segmentedControlGeometry(root: Locator) {
         indicatorRect == null || selectedRect == null
           ? null
           : Number((indicatorRect.top - selectedRect.top).toFixed(4)),
+      indicatorBackgroundColor:
+        indicator == null ? null : window.getComputedStyle(indicator).backgroundColor,
       itemWidths,
     };
   });
@@ -832,12 +834,26 @@ test.describe("comparison collection button controls visual parity", () => {
 
     const reactGeometry = await segmentedControlGeometry(reactRoot);
     const solidGeometry = await segmentedControlGeometry(solidRoot);
+    expect(solidGeometry.indicatorBackgroundColor).toBe(reactGeometry.indicatorBackgroundColor);
+    expect(solidGeometry.indicatorBackgroundColor).not.toBe("rgb(128, 128, 128)");
     expect(
       Math.max(...reactGeometry.itemWidths) - Math.min(...reactGeometry.itemWidths),
     ).toBeLessThanOrEqual(1);
     expect(
       Math.max(...solidGeometry.itemWidths) - Math.min(...solidGeometry.itemWidths),
     ).toBeLessThanOrEqual(1);
+  });
+
+  test("SegmentedControl disabled indicator background matches React Spectrum gray-25 on URL remount", async ({
+    page,
+  }) => {
+    const fixtures = await collectionFixtures(page, "segmentedcontrol", "?isDisabled=true");
+
+    const reactGeometry = await segmentedControlGeometry(fixtures.reactRoot);
+    const solidGeometry = await segmentedControlGeometry(fixtures.solidRoot);
+
+    expect(solidGeometry.indicatorBackgroundColor).toBe(reactGeometry.indicatorBackgroundColor);
+    expect(solidGeometry.indicatorBackgroundColor).not.toBe("rgb(128, 128, 128)");
   });
 
   test("SegmentedControl keyboard selection matches React Spectrum", async ({ page }) => {

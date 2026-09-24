@@ -4,12 +4,17 @@ type: task
 title: "Paint the disabled SegmentedControl indicator with gray-25, not GrayText"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 segmentedcontrol functional pass: URL ?isDisabled=true and live isDisabled both keep labels rgb(198,198,198) and indicator border rgb(218,218,218); React indicator fill stays gray-25 rgb(255,255,255) and Solid paints GrayText rgb(128,128,128). S2 slider backgroundColor uses GrayText only under forcedColors.isDisabled; Solid selectionIndicator puts isDisabled:GrayText at the top level",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "updated selectionIndicator backgroundColor to default: gray-25 with forcedColors: { default: Highlight, isDisabled: GrayText } and aligned borderColor with upstream S2 tokens; regression verified in solid-spectrum unit test and collection-button-controls-visual e2e suite.",
     }
 ---
 

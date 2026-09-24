@@ -218,4 +218,22 @@ describe("SegmentedControl (solid-spectrum)", () => {
     expect(icon?.parentElement?.tagName).toBe("DIV");
     expect(grid.querySelector('[data-rsp-slot="text"]')).not.toBeInTheDocument();
   });
+
+  it("renders the selection indicator when disabled with gray-25 indicator styling", () => {
+    render(() => (
+      <SegmentedControl aria-label="View mode" isDisabled defaultSelectedKey="list">
+        <SegmentedControlItem id="list">List</SegmentedControlItem>
+        <SegmentedControlItem id="grid">Grid</SegmentedControlItem>
+      </SegmentedControl>
+    ));
+
+    const list = screen.getByRole("radio", { name: "List" });
+    expect(list).toBeDisabled();
+    expect(list).toHaveAttribute("aria-checked", "true");
+
+    const indicator = list.querySelector("[aria-hidden='true'][data-selected='true']");
+    expect(indicator).toBeInTheDocument();
+    expect(indicator).toHaveAttribute("data-selected", "true");
+    expect(indicator?.className).toBeTruthy();
+  });
 });

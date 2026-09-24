@@ -170,14 +170,20 @@ const selectionIndicator = style<{ isDisabled?: boolean }>({
   borderStyle: "solid",
   borderWidth: 2,
   borderColor: {
-    default: "[light-dark(rgb(19, 19, 19), rgb(242, 242, 242))]",
+    default: "gray-900",
     isDisabled: "disabled",
+    forcedColors: {
+      default: "Highlight",
+      isDisabled: "GrayText",
+    },
   },
   borderRadius: "lg",
   backgroundColor: {
-    default: "[light-dark(rgb(255, 255, 255), rgb(17, 17, 17))]",
-    forcedColors: "Highlight",
-    isDisabled: "GrayText",
+    default: "gray-25",
+    forcedColors: {
+      default: "Highlight",
+      isDisabled: "GrayText",
+    },
   },
   pointerEvents: "none",
 });
