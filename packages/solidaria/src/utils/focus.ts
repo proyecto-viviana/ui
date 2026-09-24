@@ -140,9 +140,9 @@ export function runAfterPaint(fn: () => void, doc?: Document): () => void {
     return () => {};
   }
 
-  // Window timers return `number` (DOM); `types: ["node"]` types global
-  // `setTimeout` as `NodeJS.Timeout`. Hold the union so both views compile.
-  let timeoutId: ReturnType<typeof setTimeout> | number | undefined;
+  // Window timers return `number` (DOM); type against Window["setTimeout"]
+  // so node environment types on global setTimeout do not interfere.
+  let timeoutId: ReturnType<Window["setTimeout"]> | undefined;
   let cancelled = false;
 
   const run = () => {
