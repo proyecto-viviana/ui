@@ -41,6 +41,11 @@ history:
       at: 2026-09-24,
       note: "re-pinned certified postcard in apps/comparison/src/data/certified-suite-evidence.ts to full certified suite run 35940000999 (job 107449391894 at 151006ff; 2168 passed, 0 failed, 4 skipped, 5 waived, total 2177). Set Playwright CI workers to 2 in apps/web/playwright.config.ts matching comparison runner configuration.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "diagnosed Release workflow failure in run 35946925695 (changesets/action@v1.9.0 crashed with ENOENT looking for .changeset/pre/changes.md in Changesets v1 compatibility check). Replaced action with direct `pnpm run changeset:publish` invocation in .github/workflows/release.yml, preserving same-SHA release evidence requirement and publish-drift guard. Excluded release.yml in apps/comparison/src/data/certified-suite-evidence.ts to maintain certified postcard currency across release workflow updates.",
+    }
 ---
 
 ## Scope

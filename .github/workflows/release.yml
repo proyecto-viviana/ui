@@ -97,22 +97,10 @@ jobs:
       - name: guard publish-drift
         run: node scripts/check-publish-drift.mjs --version-stage
 
-      # `changesets/action@v1` is a mutable *branch*, not a tag — every push to
-      # it lands here unreviewed, in the one job that holds `contents: write`,
-      # `pull-requests: write` and an npm publish token. Pinned to the commit
-      # that branch head pointed at, which is the `v1.9.0` tag.
+      # `changeset:publish` handles npm trusted publishing (OIDC) and provenance.
+      # Changesets Action v1 broke under pre-mode (ENOENT on .changeset/pre/changes.md).
       - name: Create release PR or publish packages
-        id: changesets
-        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
-        with:
-          commit: "chore(release): version packages"
-          title: "chore(release): version packages"
-          version: pnpm run changeset:version
-          publish: pnpm run changeset:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # `changeset:publish` re-reads the same-SHA evidence before it builds
-          # or publishes, so it needs the candidate SHA by name here too: the
-          # `workflow_run` default of `github.sha` is the default branch head,
-          # not the revision this run is releasing (#599).
           RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: pnpm run changeset:publish

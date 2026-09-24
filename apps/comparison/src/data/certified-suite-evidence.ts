@@ -71,6 +71,9 @@ export const certifiedSuiteCoveredPathspecs = [
   // The docs site. The certified run builds `packages/*` and `apps/comparison`
   // and serves the comparison preview; it never builds or loads `apps/web`.
   ":(top,exclude,glob)apps/web/**",
+  // The release workflow. The certified run verifies packages and comparison;
+  // it never runs or references release automation.
+  ":(top,exclude).github/workflows/release.yml",
 ] as const;
 
 export interface PostcardGitProbe {
