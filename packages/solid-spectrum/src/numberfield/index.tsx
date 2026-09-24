@@ -16,7 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/NumberField.tsx.
 
-import { createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
+import { children, createContext, createSignal, createUniqueId, Show, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   NumberField as HeadlessNumberField,
@@ -382,6 +382,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     "prefix",
   ]);
   const prefixId = createUniqueId();
+  const prefixNode = children(() => local.prefix);
   const size = () => normalizeNumberFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -505,7 +506,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
             <Show
-              when={local.prefix}
+              when={prefixNode()}
               fallback={
                 <HeadlessNumberFieldInput
                   class={inputClass}
@@ -514,7 +515,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                 />
               }
             >
-              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
               <PrefixInputProvider context={HeadlessNumberFieldContext} prefixId={prefixId}>
                 <HeadlessNumberFieldInput
                   class={inputClass}

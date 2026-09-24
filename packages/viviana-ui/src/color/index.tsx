@@ -25,6 +25,7 @@
 // Port of packages/@react-spectrum/s2/src/ColorWheel.tsx.
 
 import {
+  children,
   createContext,
   createEffect,
   createMemo,
@@ -1273,6 +1274,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
   const prefixId = createUniqueId();
+  const prefixNode = children(() => local.prefix);
   const size = () => normalizeColorFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -1374,10 +1376,10 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
             <Show
-              when={local.prefix}
+              when={prefixNode()}
               fallback={<HeadlessColorFieldInput class={fieldStyles().input} />}
             >
-              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
               <PrefixInputProvider context={HeadlessColorFieldContext} prefixId={prefixId}>
                 <HeadlessColorFieldInput class={fieldStyles().input} />
               </PrefixInputProvider>

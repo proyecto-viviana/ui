@@ -367,6 +367,14 @@ export function findRenderedChildrenSnapshots(source: string): ChildrenSnapshotS
  */
 export function ticketForChildrenSite(file: string): number {
   const n = file.replace(/\\/g, "/");
+  if (
+    n.includes("solid-spectrum/src/textfield/") ||
+    n.includes("/combobox/") ||
+    n.includes("/numberfield/") ||
+    n.includes("/color/")
+  ) {
+    return 611;
+  }
   if (n.includes("/textfield/") || n.includes("/searchfield/")) return 545;
   if (n.includes("/selectboxgroup/")) return 169;
   if (

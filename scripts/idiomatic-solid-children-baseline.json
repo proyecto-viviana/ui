@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-09-22",
+  "generated": "2026-09-24",
   "description": "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
   "sites": [
     {
@@ -28,7 +28,7 @@
       "file": "packages/solid-spectrum/src/button/ActionButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 401,
+      "line": 402,
       "ticket": 168
     },
     {
@@ -46,6 +46,20 @@
       "ticket": 168
     },
     {
+      "file": "packages/solid-spectrum/src/color/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 1279,
+      "ticket": 611
+    },
+    {
+      "file": "packages/solid-spectrum/src/combobox/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 951,
+      "ticket": 611
+    },
+    {
       "file": "packages/solid-spectrum/src/gridlist/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
@@ -58,6 +72,13 @@
       "ordinal": 0,
       "line": 1225,
       "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/numberfield/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 385,
+      "ticket": 611
     },
     {
       "file": "packages/solid-spectrum/src/overlays/OpenTransition.tsx",
@@ -102,6 +123,13 @@
       "ticket": 168
     },
     {
+      "file": "packages/solid-spectrum/src/textfield/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 288,
+      "ticket": 611
+    },
+    {
       "file": "packages/solid-spectrum/src/tree/index.tsx",
       "ident": "resolved",
       "ordinal": 0,
@@ -119,14 +147,14 @@
       "file": "packages/viviana-ui/src/badge/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 506,
+      "line": 508,
       "ticket": 168
     },
     {
       "file": "packages/viviana-ui/src/button/ActionButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
-      "line": 406,
+      "line": 407,
       "ticket": 168
     },
     {
@@ -144,11 +172,32 @@
       "ticket": 168
     },
     {
+      "file": "packages/viviana-ui/src/color/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 1277,
+      "ticket": 611
+    },
+    {
+      "file": "packages/viviana-ui/src/combobox/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 964,
+      "ticket": 611
+    },
+    {
       "file": "packages/viviana-ui/src/gridlist/index.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
       "line": 1295,
       "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/numberfield/index.tsx",
+      "ident": "prefixNode",
+      "ordinal": 0,
+      "line": 387,
+      "ticket": 611
     },
     {
       "file": "packages/viviana-ui/src/overlays/OpenTransition.tsx",

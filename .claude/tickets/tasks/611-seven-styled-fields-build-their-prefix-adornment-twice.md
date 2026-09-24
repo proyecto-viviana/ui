@@ -4,8 +4,13 @@ type: task
 title: "Seven styled fields build their prefix adornment twice"
 created: 2026-09-22
 parent: 531
-status: open
+status: verified
 history:
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "resolved prefixNode memo with children(() => local.prefix) across all 7 sites in solid-spectrum and viviana-ui; updated scripts/check-idiomatic-solid.ts and baseline test; regenerated idiomatic-solid-children-baseline.json; verified single-instantiation probes in both packages; layer boundary guard, check-changeset-required, and full vp run check pass.",
+    }
   - {
       state: open,
       at: 2026-09-22,

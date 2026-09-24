@@ -17,6 +17,7 @@
 // Port of packages/@react-spectrum/s2/src/ComboBox.tsx.
 
 import {
+  children,
   createContext,
   createEffect,
   createMemo,
@@ -960,6 +961,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   ]);
 
   const prefixId = createUniqueId();
+  const prefixNode = children(() => local.prefix);
   const size = () => normalizeComboBoxSize(local.size);
   // S2 `useScale()` (`packages/@react-spectrum/s2/src/utils.ts`): coarse pointer → large.
   const matchesCoarsePointer = createMediaQuery("not ((hover: hover) and (pointer: fine))");
@@ -1065,8 +1067,8 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
             </Show>
 
             <ComboBoxFieldGroup renderProps={renderProps} size={size}>
-              <Show when={local.prefix} fallback={<HeadlessComboBoxInput class={comboBoxInput} />}>
-                <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              <Show when={prefixNode()} fallback={<HeadlessComboBoxInput class={comboBoxInput} />}>
+                <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
                 <PrefixInputProvider
                   context={HeadlessComboBoxContext}
                   prefixId={prefixId}

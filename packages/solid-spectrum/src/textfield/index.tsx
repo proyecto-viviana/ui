@@ -16,7 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/TextField.tsx.
 
-import { createContext, createUniqueId, merge, Show, useContext } from "solid-js";
+import { children, createContext, createUniqueId, merge, Show, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   TextField as HeadlessTextField,
@@ -285,6 +285,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   ]);
 
   const prefixId = createUniqueId();
+  const prefixNode = children(() => local.prefix);
   const size = () => normalizeTextFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -419,8 +420,8 @@ export function TextField(props: TextFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <Show when={local.prefix} fallback={<HeadlessInput class={textFieldInput} />}>
-              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+            <Show when={prefixNode()} fallback={<HeadlessInput class={textFieldInput} />}>
+              <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
               <PrefixInputProvider context={HeadlessTextFieldContext} prefixId={prefixId}>
                 <HeadlessInput class={textFieldInput} />
               </PrefixInputProvider>

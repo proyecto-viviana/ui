@@ -61,6 +61,13 @@ describe("findRenderedChildrenSnapshots", () => {
 describe("ticketForChildrenSite", () => {
   it("puts the field adornments on #545 and keeps the wrapper closeouts", () => {
     expect(ticketForChildrenSite("packages/viviana-ui/src/textfield/index.tsx")).toBe(545);
+    expect(ticketForChildrenSite("packages/solid-spectrum/src/textfield/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/solid-spectrum/src/combobox/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/solid-spectrum/src/numberfield/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/solid-spectrum/src/color/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/combobox/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/numberfield/index.tsx")).toBe(611);
+    expect(ticketForChildrenSite("packages/viviana-ui/src/color/index.tsx")).toBe(611);
     expect(ticketForChildrenSite("packages/viviana-ui/src/searchfield/index.tsx")).toBe(545);
     expect(ticketForChildrenSite("packages/viviana-ui/src/selectboxgroup/index.tsx")).toBe(169);
     expect(ticketForChildrenSite("packages/viviana-ui/src/button/ActionButton.tsx")).toBe(168);
