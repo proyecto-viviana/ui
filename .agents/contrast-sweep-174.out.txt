@@ -1,0 +1,246 @@
+[WebServer] [PLUGIN_TIMINGS] Your build spent 88% of 3.8s inside plugin hooks (3.3s).
+[WebServer] Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+[WebServer]   - tanstack-router:code-splitter:compile-reference-file transform (32%, 1.2s, 184 calls)
+[WebServer] Those rows are 32% of the build; the rest of the 88% is below.
+[WebServer] Not measurable — 2 hooks whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+[WebServer]   - tanstack-start-core:import-protection resolveId (5549 calls)
+[WebServer]   - unplugin-macros transform (1106 calls)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer] 
+
+[WebServer] Default inspector port 9229 not available, using 9230 instead
+[WebServer] 
+
+
+Running 174 tests using 2 workers
+
+[1/174] [chromium] › e2e/contrast.spec.ts:96:3 › /admin — colour contrast in both themes
+[2/174] [chromium] › e2e/contrast.spec.ts:96:3 › / — colour contrast in both themes
+[3/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs — colour contrast in both themes
+[4/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/accordion — colour contrast in both themes
+[5/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/actionbar — colour contrast in both themes
+[6/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/actionbutton — colour contrast in both themes
+[7/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/actionbuttongroup — colour contrast in both themes
+[8/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/actiongroup — colour contrast in both themes
+[9/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/actionmenu — colour contrast in both themes
+[10/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/alertdialog — colour contrast in both themes
+[11/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/assetcard — colour contrast in both themes
+[12/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/avatar — colour contrast in both themes
+[13/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/badge — colour contrast in both themes
+[14/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/breadcrumbs — colour contrast in both themes
+[15/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/button — colour contrast in both themes
+[16/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/buttongroup — colour contrast in both themes
+[17/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/calendar — colour contrast in both themes
+[18/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/card — colour contrast in both themes
+[19/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/cardview — colour contrast in both themes
+[20/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/checkbox — colour contrast in both themes
+[21/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorarea — colour contrast in both themes
+[22/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/coloreditor — colour contrast in both themes
+[23/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorfield — colour contrast in both themes
+[24/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorslider — colour contrast in both themes
+[25/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorswatch — colour contrast in both themes
+[26/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorswatchpicker — colour contrast in both themes
+[27/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/colorwheel — colour contrast in both themes
+[28/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/combobox — colour contrast in both themes
+[29/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/contextualhelp — colour contrast in both themes
+[30/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/datefield — colour contrast in both themes
+[31/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/datepicker — colour contrast in both themes
+[32/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/daterangepicker — colour contrast in both themes
+[33/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/dialog — colour contrast in both themes
+[34/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/disclosure — colour contrast in both themes
+[35/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/divider — colour contrast in both themes
+[36/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/dropzone — colour contrast in both themes
+[37/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/filetrigger — colour contrast in both themes
+[38/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/form — colour contrast in both themes
+[39/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/gridlist — colour contrast in both themes
+[40/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/hudframe — colour contrast in both themes
+[41/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/icon — colour contrast in both themes
+[42/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/illustratedmessage — colour contrast in both themes
+[43/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/image — colour contrast in both themes
+[44/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/inlinealert — colour contrast in both themes
+[45/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/labeledvalue — colour contrast in both themes
+[46/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/layout — colour contrast in both themes
+[47/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/link — colour contrast in both themes
+[48/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/linkbutton — colour contrast in both themes
+[49/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/listbox — colour contrast in both themes
+[50/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/menu — colour contrast in both themes
+[51/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/meter — colour contrast in both themes
+[52/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/notificationbadge — colour contrast in both themes
+[53/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/numberfield — colour contrast in both themes
+[54/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/picker — colour contrast in both themes
+[55/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/popover — colour contrast in both themes
+[56/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/productcard — colour contrast in both themes
+[57/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/progress — colour contrast in both themes
+[58/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/progress-bar — colour contrast in both themes
+[59/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/provider — colour contrast in both themes
+[60/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/radio — colour contrast in both themes
+[61/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/rangecalendar — colour contrast in both themes
+[62/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/rangeslider — colour contrast in both themes
+[63/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/searchfield — colour contrast in both themes
+[64/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/segmentedcontrol — colour contrast in both themes
+[65/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/select — colour contrast in both themes
+[66/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/selectboxgroup — colour contrast in both themes
+[67/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/separator — colour contrast in both themes
+[68/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/skeleton — colour contrast in both themes
+[69/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/slider — colour contrast in both themes
+[70/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/statuslight — colour contrast in both themes
+[71/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/steplist — colour contrast in both themes
+[72/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/switch — colour contrast in both themes
+[73/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/table — colour contrast in both themes
+[74/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/tabs — colour contrast in both themes
+[75/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/tag-group — colour contrast in both themes
+[76/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/text — colour contrast in both themes
+[77/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/textfield — colour contrast in both themes
+[78/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/timefield — colour contrast in both themes
+[79/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/toast — colour contrast in both themes
+[80/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/togglebutton — colour contrast in both themes
+[81/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/togglebuttongroup — colour contrast in both themes
+[82/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/toolbar — colour contrast in both themes
+[83/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/tooltip — colour contrast in both themes
+[84/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/tree — colour contrast in both themes
+[85/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/usercard — colour contrast in both themes
+[86/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/view — colour contrast in both themes
+[87/174] [chromium] › e2e/contrast.spec.ts:96:3 › /docs/components/well — colour contrast in both themes
+[88/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples — colour contrast in both themes
+[89/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/explore — colour contrast in both themes
+[90/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/explore-empty — colour contrast in both themes
+[91/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/home — colour contrast in both themes
+[92/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/landing — colour contrast in both themes
+[93/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/lesson — colour contrast in both themes
+[94/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/live — colour contrast in both themes
+[95/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/playground — colour contrast in both themes
+[96/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/profile — colour contrast in both themes
+[97/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/settings — colour contrast in both themes
+[98/174] [chromium] › e2e/contrast.spec.ts:96:3 › /examples/theater — colour contrast in both themes
+[99/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase — colour contrast in both themes
+[100/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/buttons — colour contrast in both themes
+[101/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/cards — colour contrast in both themes
+[102/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/chips — colour contrast in both themes
+[103/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/collections — colour contrast in both themes
+[104/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/color — colour contrast in both themes
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[105/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/datetime — colour contrast in both themes
+[106/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/inputs — colour contrast in both themes
+[107/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/navigation — colour contrast in both themes
+[108/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/overlays — colour contrast in both themes
+[109/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/parity — colour contrast in both themes
+[110/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/pickers — colour contrast in both themes
+[111/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/scene — colour contrast in both themes
+[112/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/selection — colour contrast in both themes
+[113/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/sliders — colour contrast in both themes
+[114/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/status — colour contrast in both themes
+[115/174] [chromium] › e2e/contrast.spec.ts:96:3 › /showcase/type — colour contrast in both themes
+[116/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum — colour contrast in both themes
+[117/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs — colour contrast in both themes
+[118/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/accordion — colour contrast in both themes
+[119/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/actionbar — colour contrast in both themes
+[120/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/actiongroup — colour contrast in both themes
+[121/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/alertdialog — colour contrast in both themes
+[122/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/badge — colour contrast in both themes
+[123/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/breadcrumbs — colour contrast in both themes
+[124/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/button — colour contrast in both themes
+[125/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/calendar — colour contrast in both themes
+[126/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/checkbox — colour contrast in both themes
+[127/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/color — colour contrast in both themes
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[128/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/combobox — colour contrast in both themes
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[WebServer] If you do not provide a visible label, you must specify an aria-label or aria-labelledby attribute for accessibility
+
+[129/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/contextualhelp — colour contrast in both themes
+[130/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/datefield — colour contrast in both themes
+[131/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/datepicker — colour contrast in both themes
+[132/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/daterangepicker — colour contrast in both themes
+[133/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/dialog — colour contrast in both themes
+[134/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/disclosure — colour contrast in both themes
+[135/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/dropzone — colour contrast in both themes
+[136/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/filetrigger — colour contrast in both themes
+[137/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/gridlist — colour contrast in both themes
+[138/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/link — colour contrast in both themes
+[139/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/menu — colour contrast in both themes
+[140/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/meter — colour contrast in both themes
+[141/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/numberfield — colour contrast in both themes
+[142/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/picker — colour contrast in both themes
+[143/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/popover — colour contrast in both themes
+[144/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/progressbar — colour contrast in both themes
+[145/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/provider — colour contrast in both themes
+[146/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/rangecalendar — colour contrast in both themes
+[147/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/searchfield — colour contrast in both themes
+[148/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/select — colour contrast in both themes
+[149/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/separator — colour contrast in both themes
+[150/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/slider — colour contrast in both themes
+[151/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/switch — colour contrast in both themes
+[152/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/table — colour contrast in both themes
+[153/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/tabs — colour contrast in both themes
+[154/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/taggroup — colour contrast in both themes
+[155/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/textarea — colour contrast in both themes
+[156/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/textfield — colour contrast in both themes
+[157/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/timefield — colour contrast in both themes
+[158/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/toast — colour contrast in both themes
+[159/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/toolbar — colour contrast in both themes
+[160/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/tooltip — colour contrast in both themes
+[161/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/tree — colour contrast in both themes
+[162/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/components/virtualizer — colour contrast in both themes
+[163/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/hooks/create-button — colour contrast in both themes
+[164/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/hooks/create-press — colour contrast in both themes
+[165/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/docs/installation — colour contrast in both themes
+[166/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/ecosystem — colour contrast in both themes
+[167/174] [chromium] › e2e/contrast.spec.ts:96:3 › /solid-spectrum/playground — colour contrast in both themes
+[168/174] [chromium] › e2e/contrast.spec.ts:96:3 › /theme — colour contrast in both themes
+[169/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui — colour contrast in both themes
+[170/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui/docs — colour contrast in both themes
+[171/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui/docs/components/button — colour contrast in both themes
+[172/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui/docs/hooks/create-button — colour contrast in both themes
+[173/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui/docs/hooks/create-press — colour contrast in both themes
+[174/174] [chromium] › e2e/contrast.spec.ts:96:3 › /viviana-ui/docs/installation — colour contrast in both themes
+  174 passed (7.1m)

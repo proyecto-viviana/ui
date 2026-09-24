@@ -4,7 +4,7 @@ type: task
 title: "The accent fill is used as ink and fails AA on the landing page, and the error boundary that catches the dead routes fails AA too"
 created: 2026-09-21
 parent: 544
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: in-progress,
       at: 2026-09-23,
       note: "LIVE badge uses create-ink in packages/viviana-ui/src/badge/index.tsx, clearing 4.5:1 AA contrast on daylight #d9128f (#ffffff on #d9128f is 4.74:1; night #1a0512 on #ff4fc3 is 6.66:1; black on daylight #d9128f was 4.43:1). apps/web/e2e/contrast.spec.ts emulates reduced-motion to freeze the 2s opacity breath during axe measurement, and awaits provider data-color-scheme and --s2-color-scheme. Changeset added for @proyecto-viviana/ui. Targeted contrast tests on / (21.4s), /admin (20.9s), /docs/components/steplist (20.9s) pass exit 0 in both themes. vp run check exit 0 (4478 formatted, 3214 linted, tsc pass).",
+    }
+  - {
+      state: verified,
+      at: 2026-09-23,
+      note: "full sweep executed via `VIVIANA_GATE=1 RUN_AXE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/contrast.spec.ts --workers=2 --reporter=line`: all 174 routes passed in both dark and light modes with 0 failures (7.1m). Output logged to `.agents/contrast-sweep-174.out.txt`.",
     }
 ---
 
