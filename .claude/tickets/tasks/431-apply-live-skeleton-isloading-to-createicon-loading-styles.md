@@ -4,12 +4,17 @@ type: task
 title: "Apply live Skeleton isLoading to createIcon loading styles"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 skeleton functional pass: URL ?isLoading=false drops icon loadingStyle on both (bg none, radius 0, loadingTargetCount 0). Live comparison:controls-change {isLoading:false} and the control-form switch update Text/Image (inert off, img opacity 1, AX restores img Preview) but Solid svg keeps gradient + background-size 300% + radius 4px; React drops the paint. Solid cancels the WAAPI; React leaves a 2000ms animation on bg none (not user-visible). createIconForBase stamps class={mergedClass()} once; useInertAttribute/useLoadingAnimation refs already track. Same snapshot as #186, different surface",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "verified via full regression suite: Playwright e2e comparison test with live isLoading toggle and roundtrip re-check, hydrate integration assertions on SVG retained identity and loadingStyle/inert removal, and solid-spectrum + viviana-ui unit tests across JSX and hyperscript SVG icons.",
     }
 ---
 

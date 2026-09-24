@@ -5,11 +5,16 @@ import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { CollectionBuilder } from "@proyecto-viviana/solidaria-components";
+import h from "@solidjs/h";
+import { merge } from "solid-js";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import { createIcon } from "../src/icon";
+import { UserIcon } from "../src/icon/s2wf-icons/UserIcon";
 import {
   Skeleton,
   SkeletonCollection,
   SkeletonWrapper,
+  loadingStyle,
   type SkeletonCollectionProps,
   useIsSkeleton,
   useLoadingAnimation,
@@ -21,6 +26,30 @@ const TestIcon = createIcon((props) => (
     <path d="M0 0h10v10H0z" />
   </svg>
 ));
+
+const TestHIcon = createIcon((props) => {
+  const [local, rest] = splitProps(props, ["class"]);
+  return h(
+    "svg",
+    merge(
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "20",
+        height: "20",
+        viewBox: "0 0 20 20",
+      },
+      rest,
+      {
+        get class() {
+          return local.class;
+        },
+      },
+    ),
+    h("path", {
+      d: "M0 0h10v10H0z",
+    }),
+  )();
+});
 
 function Probe() {
   const isSkeleton = useIsSkeleton();
@@ -81,6 +110,84 @@ describe("Skeleton (solid-spectrum)", () => {
 
     expect(text).not.toHaveAttribute("inert");
     expect(container.querySelector("span[inert] span[inert]")).not.toBeInTheDocument();
+  });
+
+  it("updates skeleton icon styles when isLoading changes", () => {
+    const [isLoading, setIsLoading] = createSignal(true);
+    const { container } = render(() => (
+      <Skeleton isLoading={isLoading()}>
+        <TestIcon aria-label="Add" />
+      </Skeleton>
+    ));
+
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    const initialClass = svg?.getAttribute("class") ?? "";
+    expect(initialClass).toContain(loadingStyle);
+
+    setIsLoading(false);
+    flush();
+
+    const updatedClass = svg?.getAttribute("class") ?? "";
+    expect(updatedClass).not.toContain(loadingStyle);
+
+    setIsLoading(true);
+    flush();
+
+    const restoredClass = svg?.getAttribute("class") ?? "";
+    expect(restoredClass).toContain(loadingStyle);
+  });
+
+  it("updates UserIcon styles when isLoading changes", () => {
+    const [isLoading, setIsLoading] = createSignal(true);
+    const { container } = render(() => (
+      <Skeleton isLoading={isLoading()}>
+        <UserIcon aria-label="User" />
+      </Skeleton>
+    ));
+
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    const initialClass = svg?.getAttribute("class") ?? "";
+    expect(initialClass).toContain(loadingStyle);
+
+    setIsLoading(false);
+    flush();
+
+    const updatedClass = svg?.getAttribute("class") ?? "";
+    expect(updatedClass).not.toContain(loadingStyle);
+
+    setIsLoading(true);
+    flush();
+
+    const restoredClass = svg?.getAttribute("class") ?? "";
+    expect(restoredClass).toContain(loadingStyle);
+  });
+
+  it("updates TestHIcon styles when isLoading changes", () => {
+    const [isLoading, setIsLoading] = createSignal(true);
+    const { container } = render(() => (
+      <Skeleton isLoading={isLoading()}>
+        <TestHIcon aria-label="New" />
+      </Skeleton>
+    ));
+
+    const svg = container.querySelector("svg");
+    expect(svg).toBeInTheDocument();
+    const initialClass = svg?.getAttribute("class") ?? "";
+    expect(initialClass).toContain(loadingStyle);
+
+    setIsLoading(false);
+    flush();
+
+    const updatedClass = svg?.getAttribute("class") ?? "";
+    expect(updatedClass).not.toContain(loadingStyle);
+
+    setIsLoading(true);
+    flush();
+
+    const restoredClass = svg?.getAttribute("class") ?? "";
+    expect(restoredClass).toContain(loadingStyle);
   });
 
   it("does not add standalone status or aria-busy placeholders", () => {

@@ -34,6 +34,7 @@ import ProgressBar from "../../src/components/solid/fixtures/styled/progressbar"
 import ProgressCircle from "../../src/components/solid/fixtures/styled/progresscircle";
 import Provider from "../../src/components/solid/fixtures/styled/provider";
 import Skeleton from "../../src/components/solid/fixtures/styled/skeleton";
+import { loadingStyle } from "@proyecto-viviana/solid-spectrum/Skeleton";
 import StatusLight from "../../src/components/solid/fixtures/styled/statuslight";
 import ActionBar from "../../src/components/solid/fixtures/styled/actionbar";
 import ActionButton from "../../src/components/solid/fixtures/styled/actionbutton";
@@ -3615,9 +3616,13 @@ it.each(presentationFixtures)(
     const initialProps = root?.dataset.comparisonControlProps;
     const skeletonChild =
       component === "skeleton" ? root?.querySelector<HTMLElement>('[data-rsp-slot="text"]') : null;
+    const skeletonSvg = component === "skeleton" ? root?.querySelector<SVGSVGElement>("svg") : null;
     if (component === "skeleton") {
       expect(skeletonChild).not.toBeNull();
       expect(skeletonChild?.hasAttribute("inert")).toBe(true);
+      expect(skeletonSvg).not.toBeNull();
+      expect(skeletonSvg?.hasAttribute("inert")).toBe(true);
+      expect(skeletonSvg?.getAttribute("class") ?? "").toContain(loadingStyle);
     }
 
     controls(component, updated);
@@ -3637,6 +3642,9 @@ it.each(presentationFixtures)(
     if (component === "skeleton") {
       expect(liveRoot?.querySelector('[data-rsp-slot="text"]')).toBe(skeletonChild);
       expect(skeletonChild?.hasAttribute("inert")).toBe(false);
+      expect(liveRoot?.querySelector("svg")).toBe(skeletonSvg);
+      expect(skeletonSvg?.hasAttribute("inert")).toBe(false);
+      expect(skeletonSvg?.getAttribute("class") ?? "").not.toContain(loadingStyle);
     }
     const themeShell = container.querySelector<HTMLElement>("[data-color-scheme]");
     expect(themeShell?.getAttribute("data-color-scheme")).toBe(

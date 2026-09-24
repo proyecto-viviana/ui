@@ -135,6 +135,50 @@ test.describe("comparison Skeleton visual parity", () => {
     await expect(page.locator('input[name="isLoading"]')).not.toBeChecked();
   });
 
+  test("Skeleton live controls change drops loading treatment on icon and content", async ({
+    page,
+  }) => {
+    const fixtures = await skeletonFixtures(page);
+
+    const initialSolid = await skeletonContract(fixtures.solidRow);
+    expect(initialSolid.loadingTargetCount).toBeGreaterThan(0);
+    expect(initialSolid.iconInert).toBe(true);
+
+    const switchInput = page.locator('input[name="isLoading"]');
+    await expect(switchInput).toBeChecked();
+    await switchInput.setChecked(false, { force: true });
+
+    await waitForLoadedImage(fixtures.reactRow);
+    await waitForLoadedImage(fixtures.solidRow);
+
+    const liveSolid = await skeletonContract(fixtures.solidRow);
+    const liveReact = await skeletonContract(fixtures.reactRow);
+
+    expect(liveSolid.loadingTargetCount).toBe(0);
+    expect(liveSolid.iconInert).toBe(false);
+    expect(liveSolid).toEqual(liveReact);
+
+    const solidSvg = fixtures.solidRow.locator("svg");
+    const reactSvg = fixtures.reactRow.locator("svg");
+    const solidBg = await solidSvg.evaluate((el) => window.getComputedStyle(el).backgroundImage);
+    const reactBg = await reactSvg.evaluate((el) => window.getComputedStyle(el).backgroundImage);
+    expect(solidBg).toBe(reactBg);
+    expect(solidBg).toBe("none");
+
+    const solidRadius = await solidSvg.evaluate((el) => window.getComputedStyle(el).borderRadius);
+    const reactRadius = await reactSvg.evaluate((el) => window.getComputedStyle(el).borderRadius);
+    expect(solidRadius).toBe(reactRadius);
+    expect(solidRadius).toBe("0px");
+
+    // Re-check isLoading to verify live roundtrip restores loading treatment
+    await switchInput.setChecked(true, { force: true });
+    const restoredSolid = await skeletonContract(fixtures.solidRow);
+    const restoredReact = await skeletonContract(fixtures.reactRow);
+    expect(restoredSolid.loadingTargetCount).toBeGreaterThan(0);
+    expect(restoredSolid.iconInert).toBe(true);
+    expect(restoredSolid).toEqual(restoredReact);
+  });
+
   test("Skeleton child context matches React Spectrum", async ({ page }) => {
     const loadingFixtures = await skeletonFixtures(page);
     await expect(skeletonContract(loadingFixtures.solidRow)).resolves.toEqual(
