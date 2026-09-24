@@ -119,4 +119,50 @@ test.describe("comparison site chrome", () => {
       expect(Math.abs(solidBox!.height - reactBox!.height)).toBeLessThanOrEqual(2);
     });
   }
+
+  test("TimeField clears to placeholders when live controlled value is emptied", async ({
+    page,
+  }) => {
+    await page.goto("/components/timefield/");
+    await waitForComparisonRouteReady(page);
+
+    const reactField = page.locator(
+      '[data-comparison-framework="react"] .comparison-timefield-root',
+    );
+    const solidField = page.locator(
+      '[data-comparison-framework="solid"] .comparison-timefield-root',
+    );
+    await expect(reactField).toBeVisible();
+    await expect(solidField).toBeVisible();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: {
+            component: "timefield",
+            props: { value: "14:00:00" },
+          },
+        }),
+      );
+    });
+
+    await expect(reactField.locator('[role="spinbutton"][data-type="hour"]')).toHaveText("2");
+    await expect(solidField.locator('[role="spinbutton"][data-type="hour"]')).toHaveText("2");
+
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: {
+            component: "timefield",
+            props: { value: "" },
+          },
+        }),
+      );
+    });
+
+    await expect(reactField.locator('[role="spinbutton"][data-type="hour"]')).toHaveText("––");
+    await expect(solidField.locator('[role="spinbutton"][data-type="hour"]')).toHaveText("––");
+    await expect(reactField.locator('[role="spinbutton"][data-type="minute"]')).toHaveText("––");
+    await expect(solidField.locator('[role="spinbutton"][data-type="minute"]')).toHaveText("––");
+  });
 });

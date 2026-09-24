@@ -4,12 +4,17 @@ type: task
 title: "Clear TimeField when the controlled value is emptied after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 timefield functional pass: URL ?value= remounts placeholders on both; live value 14:00:00 matches 2:00 PM; live value empty then leaves React on 9:30 AM hidden 09:30:00 and Solid on ––/––/AM hidden empty. Fixtures pass value ?? undefined so null becomes uncontrolled",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "verified: passed value: value ?? null in React and Solid comparison fixtures so live emptying correctly controls both stacks to null instead of falling back to uncontrolled undefined, clearing both fields to placeholders",
     }
 ---
 

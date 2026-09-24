@@ -116,7 +116,7 @@ function SolidSpectrumTimeFieldDemo() {
               return contextualHelp();
             },
             get value() {
-              return value() ?? undefined;
+              return value() ?? null;
             },
             get granularity() {
               return demoProps().granularity;

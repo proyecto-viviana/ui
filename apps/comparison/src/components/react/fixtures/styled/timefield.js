@@ -64,7 +64,7 @@ function ReactTimeFieldDemo() {
         labelAlign: demoProps.labelAlign,
         necessityIndicator: demoProps.necessityIndicator,
         contextualHelp,
-        value: value ?? undefined,
+        value: value ?? null,
         granularity: demoProps.granularity,
         shouldForceLeadingZeros: demoProps.shouldForceLeadingZeros,
         hourCycle: demoProps.hourCycle ? Number(demoProps.hourCycle) : undefined,
