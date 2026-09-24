@@ -4,7 +4,7 @@ type: task
 title: "createFocusWithin never fires from a descendant, so overlays need an invented listener"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "2026-09-21 round-1 audit, receipt `.agents/audit-2026-09-21/round-1-results.md`. Two findings re-homed here from #555. `555-b/item3-closed-as-removed-but-kept`, confirmed: #555 is merged claiming item 3's invented listener was not kept; it is still live, and this ticket is the one that removes its reason to exist. `555-a/overlay-child-scope-unfixed`, and the headline is **refuted** - the `focusin` effect installs only when `shouldCloseOnBlur` is set, at `createPopover.ts:132`, so no child menu closes its dialog and there is no defect to fix. What is left is exactly this ticket's subject: `createFocusWithin` never fires from a descendant, so an overlay needs a listener upstream does not have. Fixing that deletes the listener; nothing else does.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "Route focusWithinProps through bubbling onFocusIn and onFocusOut events and normalize event type to focus/blur. Removed invented document-level focusin listener from createOverlay. Added dedicated descendant-focus test in createFocusWithin.test.tsx (all 12 tests green). Popover.test.tsx (all 44 tests green), ToggleButton.test.tsx, Dialog.test.tsx, and all 95 solidaria test files green. vp run check passes across 4493 files.",
     }
 ---
 

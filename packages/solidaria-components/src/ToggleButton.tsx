@@ -169,8 +169,9 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
 
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const buttonId = createUniqueId();
+  const isGrouped = () => Boolean(groupState && groupKey != null);
   const resolvedId = () =>
-    (local.id as string | undefined) ||
+    (!isGrouped() ? (local.id as string | undefined) : undefined) ||
     (dialogTriggerContext && local.slot !== "close" ? dialogTriggerContext.triggerId : undefined) ||
     buttonId;
 

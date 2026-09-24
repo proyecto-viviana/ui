@@ -106,6 +106,21 @@ function createSyntheticBlurHandler(): (
   };
 }
 
+function createFocusWithinEvent(event: FocusEvent, type: "focus" | "blur"): FocusEvent {
+  if (event.type === type) {
+    return event;
+  }
+  return new Proxy(event, {
+    get(target, prop, receiver) {
+      if (prop === "type") {
+        return type;
+      }
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+}
+
 /**
  * Handles focus events for the target and its descendants.
  *
@@ -134,21 +149,21 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
 
   const onBlur: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
     // Ignore events bubbling through portals
-    if (!e.currentTarget.contains(e.target as Node)) {
+    if (!nodeContains(e.currentTarget, getEventTarget(e))) {
       return;
     }
 
     // We don't want to trigger onBlurWithin and then immediately onFocusWithin again
     // when moving focus inside the element. Only trigger if the currentTarget doesn't
     // include the relatedTarget (where focus is moving).
-    if (isFocusWithin && !e.currentTarget.contains(e.relatedTarget as Node)) {
+    if (isFocusWithin && !nodeContains(e.currentTarget, e.relatedTarget as Element)) {
       isFocusWithin = false;
       removeAllGlobalListeners();
       cleanupRef?.();
       cleanupRef = undefined;
 
       if (props.onBlurWithin) {
-        props.onBlurWithin(e);
+        props.onBlurWithin(createFocusWithinEvent(e, "blur"));
       }
 
       if (props.onFocusWithinChange) {
@@ -159,7 +174,7 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
 
   const onFocus: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
     // Ignore events bubbling through portals
-    if (!e.currentTarget.contains(e.target as Node)) {
+    if (!nodeContains(e.currentTarget, getEventTarget(e))) {
       return;
     }
 
@@ -170,7 +185,7 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
 
     if (!isFocusWithin && activeElement === getEventTarget(e)) {
       if (props.onFocusWithin) {
-        props.onFocusWithin(e);
+        props.onFocusWithin(createFocusWithinEvent(e, "focus"));
       }
 
       if (props.onFocusWithinChange) {
@@ -222,6 +237,12 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
 
   return {
     focusWithinProps: {
+      get onFocusIn() {
+        return props.isDisabled ? undefined : onFocus;
+      },
+      get onFocusOut() {
+        return props.isDisabled ? undefined : onBlur;
+      },
       get onFocus() {
         return props.isDisabled ? undefined : onFocus;
       },

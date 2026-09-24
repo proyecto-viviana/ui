@@ -260,13 +260,7 @@ export function createDateField<T extends DateFieldState>(
       domProps as Record<string, unknown>,
       fieldDOMProps(),
       groupProps(),
-      // In Solid, onFocus/onBlur do not bubble, so the group (which only ever
-      // receives focus from its segment descendants) must listen via the
-      // bubbling onFocusIn/onFocusOut events instead.
-      {
-        onFocusIn: focusWithinProps.onFocus,
-        onFocusOut: focusWithinProps.onBlur,
-      },
+      focusWithinProps as Record<string, unknown>,
       {
         onKeyDown(e: KeyboardEvent) {
           getProps().onKeyDown?.(e);

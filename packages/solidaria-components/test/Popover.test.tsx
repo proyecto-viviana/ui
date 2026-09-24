@@ -819,6 +819,9 @@ describe("Popover", () => {
         expect(screen.getByTestId("inside-focus")).toBeInTheDocument();
       });
 
+      await waitFor(() => {
+        expect(document.activeElement).not.toBe(trigger);
+      });
       screen.getByTestId("outside-focus").focus();
 
       await waitFor(() => {

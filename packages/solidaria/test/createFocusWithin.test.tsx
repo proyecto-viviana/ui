@@ -152,25 +152,9 @@ describe("createFocusWithin", () => {
       </div>
     ));
 
-    const container = screen.getByTestId("example");
     const child = screen.getByTestId("child");
     child.focus();
-    onInnerFocus.mockClear();
-    onInnerBlur.mockClear();
-    onWrapperFocus.mockClear();
-    onWrapperBlur.mockClear();
-
-    const focusEvent = createFocusEvent(container, child);
-    focusWithinPropsRef?.onFocus?.(focusEvent);
-    if (!focusEvent.cancelBubble) {
-      onWrapperFocus(focusEvent);
-    }
-
-    const blurEvent = createFocusEvent(container, child, null);
-    focusWithinPropsRef?.onBlur?.(blurEvent);
-    if (!blurEvent.cancelBubble) {
-      onWrapperBlur(blurEvent);
-    }
+    child.blur();
 
     expect(onInnerFocus).toHaveBeenCalledTimes(1);
     expect(onInnerBlur).toHaveBeenCalledTimes(1);
@@ -183,14 +167,12 @@ describe("createFocusWithin", () => {
     const onWrapperBlur = vi.fn();
     const onInnerFocus = vi.fn();
     const onInnerBlur = vi.fn();
-    let focusWithinPropsRef: ReturnType<typeof createFocusWithin>["focusWithinProps"] | undefined;
 
     const Test: Component = () => {
       const { focusWithinProps } = createFocusWithin({
         onFocusWithin: onInnerFocus,
         onBlurWithin: onInnerBlur,
       });
-      focusWithinPropsRef = focusWithinProps;
       return (
         <div tabIndex={-1} {...focusWithinProps} data-testid="example">
           <div data-testid="child" tabIndex={0} />
@@ -204,25 +186,9 @@ describe("createFocusWithin", () => {
       </div>
     ));
 
-    const container = screen.getByTestId("example");
     const child = screen.getByTestId("child");
     child.focus();
-    onInnerFocus.mockClear();
-    onInnerBlur.mockClear();
-    onWrapperFocus.mockClear();
-    onWrapperBlur.mockClear();
-
-    const focusEvent = createFocusEvent(container, child);
-    focusWithinPropsRef?.onFocus?.(focusEvent);
-    if (!focusEvent.cancelBubble) {
-      onWrapperFocus(focusEvent);
-    }
-
-    const blurEvent = createFocusEvent(container, child, null);
-    focusWithinPropsRef?.onBlur?.(blurEvent);
-    if (!blurEvent.cancelBubble) {
-      onWrapperBlur(blurEvent);
-    }
+    child.blur();
 
     expect(onInnerFocus).toHaveBeenCalledTimes(1);
     expect(onInnerBlur).toHaveBeenCalledTimes(1);
@@ -423,5 +389,32 @@ describe("createFocusWithin", () => {
 
     outside.focus();
     expect(events.some((e) => e.type === "focuschange" && e.isFocused === false)).toBe(true);
+  });
+
+  it("fires onFocusWithin and onBlurWithin when only a descendant receives and loses focus", () => {
+    const onFocusWithin = vi.fn();
+    const onBlurWithin = vi.fn();
+    const onFocusWithinChange = vi.fn();
+
+    render(() => (
+      <Example
+        onFocusWithin={onFocusWithin}
+        onBlurWithin={onBlurWithin}
+        onFocusWithinChange={onFocusWithinChange}
+      >
+        <button data-testid="pure-descendant">Descendant</button>
+      </Example>
+    ));
+
+    const descendant = screen.getByTestId("pure-descendant");
+    descendant.focus();
+
+    expect(onFocusWithin).toHaveBeenCalledTimes(1);
+    expect(onFocusWithinChange).toHaveBeenCalledWith(true);
+
+    descendant.blur();
+
+    expect(onBlurWithin).toHaveBeenCalledTimes(1);
+    expect(onFocusWithinChange).toHaveBeenCalledWith(false);
   });
 });

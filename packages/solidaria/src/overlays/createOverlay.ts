@@ -148,42 +148,6 @@ export function createOverlay(props: AriaOverlayProps, ref: () => Element | null
     },
   });
 
-  // Not upstream: `useOverlay` closes on blur from `onBlurWithin` alone. Our
-  // `createFocusWithin` returns `onFocus`/`onBlur`, which in Solid bind the
-  // non-bubbling native events, so focus in a descendant never reaches it and
-  // an overlay whose focus lives in a child never blurs. #557 fixes that and
-  // removes this listener; until then it is the only thing closing a popover
-  // when focus leaves it.
-  createEffect(
-    () => {
-      if (!isOpen() || !shouldCloseOnBlur()) return null;
-      return overlayEl() ?? null;
-    },
-    (overlay) => {
-      if (!overlay) return;
-
-      const ownerDocument = getOwnerDocument(overlay);
-      const onFocusIn = (event: FocusEvent) => {
-        if (!isOpen()) {
-          return;
-        }
-
-        const currentOverlay = overlayEl();
-        const target = event.target as Element | null;
-        if (!currentOverlay || !target || nodeContains(currentOverlay, target)) {
-          return;
-        }
-
-        if (allowsCloseOnOutside(target)) {
-          onHide();
-        }
-      };
-
-      ownerDocument.addEventListener("focusin", onFocusIn, true);
-      return () => ownerDocument.removeEventListener("focusin", onFocusIn, true);
-    },
-  );
-
   // Handle focus within for blur detection
   const { focusWithinProps } = createFocusWithin({
     get isDisabled() {
