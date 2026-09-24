@@ -465,3 +465,14 @@ export async function checkControl(page: Page, name: string, value?: string) {
     .poll(async () => input.evaluate((element) => (element as HTMLInputElement).checked))
     .toBe(true);
 }
+
+export async function uncheckControl(page: Page, name: string) {
+  const input = page.locator(`input[name="${name}"]`);
+  if (!(await input.evaluate((element) => (element as HTMLInputElement).checked))) {
+    return;
+  }
+  await clickLocator(page.locator("label").filter({ has: input }));
+  await expect
+    .poll(async () => input.evaluate((element) => (element as HTMLInputElement).checked))
+    .toBe(false);
+}

@@ -4,12 +4,17 @@ type: task
 title: "Keep href on a disabled LinkButton span"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 linkbutton functional pass: ?isDisabled=true and live isDisabled both stacks become span[role=link][aria-disabled=true] tabindex=-1 with the same paint and Tab skip; React keeps href=https://example.com/docs so Chromium AX includes /url, Solid drops href so AX has no destination. RAC useLink always merges useLinkProps href onto the host; Solid createLink filterDOMProps isLink only when elementType is a",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "updated createLink filterDOMProps isLink to forward link attributes when href is present regardless of host element, converted baseProps/ariaProps to reactive getters, preserved descriptor getters in Link.tsx omitKeys and useRenderProps, and added regression tests in solidaria, solidaria-components, solid-spectrum, and single-button-controls-visual e2e.",
     }
 ---
 

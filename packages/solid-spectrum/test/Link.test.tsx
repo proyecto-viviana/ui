@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal, flush } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { Link, LinkContext } from "../src/link";
@@ -322,5 +323,54 @@ describe("LinkButton (solid-spectrum)", () => {
 
     await user.click(link!);
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it("keeps href on disabled LinkButton span with role=link and aria-disabled=true", () => {
+    render(() => (
+      <LinkButton href="https://example.com/docs" isDisabled>
+        Open docs
+      </LinkButton>
+    ));
+
+    const link = screen.getByRole("link", { name: "Open docs" });
+    expect(link.tagName).toBe("SPAN");
+    expect(link).toHaveAttribute("role", "link");
+    expect(link).toHaveAttribute("aria-disabled", "true");
+    expect(link).toHaveAttribute("data-disabled", "true");
+    expect(link).toHaveAttribute("href", "https://example.com/docs");
+  });
+
+  it("updates between <a> and disabled <span href> dynamically when isDisabled changes", () => {
+    const [disabled, setDisabled] = createSignal(false);
+    render(() => (
+      <LinkButton href="https://example.com/docs" isDisabled={disabled()}>
+        Open docs
+      </LinkButton>
+    ));
+
+    const initialLink = screen.getByRole("link", { name: "Open docs" });
+    expect(initialLink.tagName).toBe("A");
+    expect(initialLink).not.toHaveAttribute("role");
+    expect(initialLink).not.toHaveAttribute("aria-disabled");
+    expect(initialLink).not.toHaveAttribute("data-disabled");
+    expect(initialLink).toHaveAttribute("href", "https://example.com/docs");
+
+    setDisabled(true);
+    flush();
+    const disabledLink = screen.getByRole("link", { name: "Open docs" });
+    expect(disabledLink.tagName).toBe("SPAN");
+    expect(disabledLink).toHaveAttribute("role", "link");
+    expect(disabledLink).toHaveAttribute("aria-disabled", "true");
+    expect(disabledLink).toHaveAttribute("data-disabled", "true");
+    expect(disabledLink).toHaveAttribute("href", "https://example.com/docs");
+
+    setDisabled(false);
+    flush();
+    const reEnabledLink = screen.getByRole("link", { name: "Open docs" });
+    expect(reEnabledLink.tagName).toBe("A");
+    expect(reEnabledLink).not.toHaveAttribute("role");
+    expect(reEnabledLink).not.toHaveAttribute("aria-disabled");
+    expect(reEnabledLink).not.toHaveAttribute("data-disabled");
+    expect(reEnabledLink).toHaveAttribute("href", "https://example.com/docs");
   });
 });

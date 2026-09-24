@@ -234,8 +234,12 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
       get children() {
         return props.children;
       },
-      class: local.class,
-      style: local.style,
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
       defaultClassName: "solidaria-Link",
     },
     renderValues,
@@ -243,19 +247,28 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
 
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
-  const omitClickChannel = (raw: Record<string, unknown>): Record<string, unknown> => {
-    const { onClick: _onClick, ref: _ref, ...rest } = raw;
-    return rest;
+  const omitKeys = (
+    raw: Record<string, unknown>,
+    keysToOmit: Set<string>,
+  ): Record<string, unknown> => {
+    const result: Record<string, unknown> = {};
+    for (const key of Object.keys(raw)) {
+      if (keysToOmit.has(key)) continue;
+      const desc = Object.getOwnPropertyDescriptor(raw, key);
+      if (desc) {
+        Object.defineProperty(result, key, desc);
+      } else {
+        result[key] = raw[key];
+      }
+    }
+    return result;
   };
-  const cleanLinkProps = () => omitClickChannel(linkAria.linkProps as Record<string, unknown>);
-  const cleanHoverProps = () => {
-    const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
-  const cleanFocusProps = () => {
-    const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
-    return rest;
-  };
+  const clickAndRefKeys = new Set(["onClick", "ref"]);
+  const refOnlyKeys = new Set(["ref"]);
+  const cleanLinkProps = () =>
+    omitKeys(linkAria.linkProps as Record<string, unknown>, clickAndRefKeys);
+  const cleanHoverProps = () => omitKeys(hoverProps as Record<string, unknown>, refOnlyKeys);
+  const cleanFocusProps = () => omitKeys(focusProps as Record<string, unknown>, refOnlyKeys);
   const onLinkClick = (event: MouseEvent) => {
     const click = (linkAria.linkProps as Record<string, unknown>)["onClick"] as
       | ((event: MouseEvent) => void)
@@ -272,7 +285,7 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
   return (
     <ElementTag
       {...mergeProps(
-        omitClickChannel(domProps()),
+        omitKeys(domProps(), clickAndRefKeys),
         cleanLinkProps(),
         cleanHoverProps(),
         cleanFocusProps(),

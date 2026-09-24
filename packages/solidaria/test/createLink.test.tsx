@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal, flush } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Dynamic } from "@solidjs/web";
@@ -29,7 +30,7 @@ function TestLink(props: {
     return "span";
   };
 
-  const { linkProps, isPressed } = createLink({
+  const link = createLink({
     get href() {
       return props.href;
     },
@@ -63,7 +64,11 @@ function TestLink(props: {
   });
 
   return (
-    <Dynamic component={elementType()} {...linkProps} data-pressed={isPressed() || undefined}>
+    <Dynamic
+      component={elementType()}
+      {...link.linkProps}
+      data-pressed={link.isPressed() || undefined}
+    >
       {props.children ?? "Test Link"}
     </Dynamic>
   );
@@ -223,5 +228,46 @@ describe("createLink", () => {
     } finally {
       document.removeEventListener("click", intercept);
     }
+  });
+
+  it("keeps href on disabled non-anchor element and sets role=link with aria-disabled=true", () => {
+    render(() => (
+      <TestLink isDisabled elementType="span" href="https://example.com/docs">
+        Open docs
+      </TestLink>
+    ));
+    const link = screen.getByRole("link");
+    expect(link.tagName).toBe("SPAN");
+    expect(link).toHaveAttribute("role", "link");
+    expect(link).toHaveAttribute("aria-disabled", "true");
+    expect(link).toHaveAttribute("href", "https://example.com/docs");
+    expect(link).not.toHaveAttribute("tabIndex");
+  });
+
+  it("updates aria-disabled and tabIndex dynamically when isDisabled changes", () => {
+    const [disabled, setDisabled] = createSignal(false);
+    const link = createLink({
+      get isDisabled() {
+        return disabled();
+      },
+      elementType: "span",
+      href: "https://example.com/docs",
+    });
+
+    expect(link.linkProps.tabIndex).toBe(0);
+    expect(link.linkProps["aria-disabled"]).toBeUndefined();
+    expect(link.linkProps.href).toBe("https://example.com/docs");
+
+    setDisabled(true);
+    flush();
+    expect(link.linkProps.tabIndex).toBeUndefined();
+    expect(link.linkProps["aria-disabled"]).toBe("true");
+    expect(link.linkProps.href).toBe("https://example.com/docs");
+
+    setDisabled(false);
+    flush();
+    expect(link.linkProps.tabIndex).toBe(0);
+    expect(link.linkProps["aria-disabled"]).toBeUndefined();
+    expect(link.linkProps.href).toBe("https://example.com/docs");
   });
 });

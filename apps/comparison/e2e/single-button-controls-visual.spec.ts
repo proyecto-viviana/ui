@@ -4,6 +4,7 @@ import {
   frameworkCanvas,
   frameworkPanel,
   styledSection,
+  uncheckControl,
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import { clearPointer, expectExactScreenshotPair, pinComparisonTheme } from "./visual-diff";
@@ -341,6 +342,55 @@ test.describe("comparison single button-derived visual parity", () => {
       "href",
       "https://example.com/billing",
     );
+  });
+
+  test("LinkButton keeps href on disabled span host across both stacks and restores anchor on re-enable", async ({
+    page,
+  }) => {
+    await pinComparisonTheme(page, "dark");
+    await page.goto("/components/linkbutton/?isDisabled=true");
+    await waitForComparisonRouteReady(page);
+
+    const section = await styledSection(page);
+    const reactPanel = await frameworkPanel(section, "React Spectrum stack");
+    const solidPanel = await frameworkPanel(section, "Solidaria stack");
+    const reactRoot = reactPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+    const solidRoot = solidPanel.locator('[data-comparison-control-root="linkbutton"]').first();
+
+    expect(await controlProps(reactRoot)).toMatchObject({
+      isDisabled: true,
+      href: "https://example.com/docs",
+    });
+    expect(await controlProps(solidRoot)).toMatchObject({
+      isDisabled: true,
+      href: "https://example.com/docs",
+    });
+
+    const reactLink = reactPanel.getByRole("link", { name: "Open docs" });
+    const solidLink = solidPanel.getByRole("link", { name: "Open docs" });
+
+    await expect(reactLink).toHaveAttribute("href", "https://example.com/docs");
+    await expect(solidLink).toHaveAttribute("href", "https://example.com/docs");
+    await expect(reactLink).toHaveAttribute("aria-disabled", "true");
+    await expect(solidLink).toHaveAttribute("aria-disabled", "true");
+    await expect(reactLink).toHaveAttribute("data-disabled", "true");
+    await expect(solidLink).toHaveAttribute("data-disabled", "true");
+    expect(await reactLink.evaluate((el) => el.tagName)).toBe("SPAN");
+    expect(await solidLink.evaluate((el) => el.tagName)).toBe("SPAN");
+
+    // Live re-enable restores <a> without role or aria-disabled
+    await uncheckControl(page, "isDisabled");
+
+    await expect(reactLink).toHaveAttribute("href", "https://example.com/docs");
+    await expect(solidLink).toHaveAttribute("href", "https://example.com/docs");
+    await expect(reactLink).not.toHaveAttribute("role");
+    await expect(solidLink).not.toHaveAttribute("role");
+    await expect(reactLink).not.toHaveAttribute("aria-disabled");
+    await expect(solidLink).not.toHaveAttribute("aria-disabled");
+    await expect(reactLink).not.toHaveAttribute("data-disabled");
+    await expect(solidLink).not.toHaveAttribute("data-disabled");
+    expect(await reactLink.evaluate((el) => el.tagName)).toBe("A");
+    expect(await solidLink.evaluate((el) => el.tagName)).toBe("A");
   });
 
   test("ToggleButton interactive prop controls drive both stacks", async ({ page }) => {

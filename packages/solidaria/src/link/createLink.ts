@@ -164,56 +164,55 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
   // Build link props
   const getLinkProps = (): Record<string, unknown> => {
     const p = getProps();
-    const elType = elementType();
-    const disabled = isDisabled();
-
-    let baseProps: Record<string, unknown> = {};
 
     // If not an <a>, add role and tabIndex
-    if (elType !== "a") {
-      baseProps = {
-        role: "link",
-        tabIndex: disabled ? undefined : 0,
-      };
-    }
+    const baseProps: Record<string, unknown> = {
+      get role() {
+        return elementType() !== "a" ? "link" : undefined;
+      },
+      get tabIndex() {
+        return elementType() !== "a" ? (isDisabled() ? undefined : 0) : undefined;
+      },
+    };
 
     // ARIA attributes
     const ariaProps: Record<string, unknown> = {
-      "aria-disabled": disabled ? "true" : undefined,
+      get "aria-disabled"() {
+        return isDisabled() ? "true" : undefined;
+      },
+      get "aria-current"() {
+        return getProps()["aria-current"];
+      },
+      get "aria-label"() {
+        return getProps()["aria-label"];
+      },
+      get "aria-labelledby"() {
+        return getProps()["aria-labelledby"];
+      },
+      get "aria-describedby"() {
+        return getProps()["aria-describedby"];
+      },
+      get "aria-details"() {
+        return getProps()["aria-details"];
+      },
     };
-
-    if (p["aria-current"] !== undefined) {
-      ariaProps["aria-current"] = p["aria-current"];
-    }
-    if (p["aria-label"]) {
-      ariaProps["aria-label"] = p["aria-label"];
-    }
-    if (p["aria-labelledby"]) {
-      ariaProps["aria-labelledby"] = p["aria-labelledby"];
-    }
-    if (p["aria-describedby"]) {
-      ariaProps["aria-describedby"] = p["aria-describedby"];
-    }
-    if (p["aria-details"]) {
-      ariaProps["aria-details"] = p["aria-details"];
-    }
 
     // Host-native click so stopPropagation runs at the element before document
     // bubble interceptors. Disabled still preventDefaults and skips user onClick.
     // Router preventDefault stays in handleLinkClick when !isNative — not here.
     const onClick = (e: MouseEvent) => {
-      if (disabled) {
+      if (isDisabled()) {
         e.preventDefault();
         return;
       }
 
-      p.onClick?.(e);
+      getProps().onClick?.(e);
     };
 
     return mergeProps(
       filterDOMProps(p as Record<string, unknown>, {
         labelable: true,
-        isLink: elType === "a",
+        isLink: elementType() === "a" || getProps().href != null,
       }),
       baseProps,
       ariaProps,

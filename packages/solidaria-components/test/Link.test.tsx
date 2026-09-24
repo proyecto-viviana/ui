@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal, flush } from "solid-js";
 import { afterEach, describe, it, expect, vi } from "vite-plus/test";
 import { cleanup, render, screen, fireEvent } from "@solidjs/testing-library";
 import { Link } from "../src/Link";
@@ -261,14 +262,51 @@ describe("Link", () => {
     expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
   });
 
-  it("should render as span when disabled with href", () => {
+  it("should render as span when disabled with href and keep href attribute", () => {
     render(() => (
-      <Link href="https://example.com" isDisabled>
-        Test
+      <Link href="https://example.com/docs" isDisabled>
+        Open docs
       </Link>
     ));
     const link = screen.getByRole("link");
     expect(link.tagName).toBe("SPAN");
+    expect(link).toHaveAttribute("role", "link");
+    expect(link).toHaveAttribute("aria-disabled", "true");
+    expect(link).toHaveAttribute("data-disabled", "true");
+    expect(link).toHaveAttribute("href", "https://example.com/docs");
+  });
+
+  it("updates between <a> and disabled <span href> dynamically when isDisabled changes", () => {
+    const [disabled, setDisabled] = createSignal(false);
+    render(() => (
+      <Link href="https://example.com/docs" isDisabled={disabled()}>
+        Open docs
+      </Link>
+    ));
+    const initialLink = screen.getByRole("link");
+    expect(initialLink.tagName).toBe("A");
+    expect(initialLink).not.toHaveAttribute("role");
+    expect(initialLink).not.toHaveAttribute("aria-disabled");
+    expect(initialLink).not.toHaveAttribute("data-disabled");
+    expect(initialLink).toHaveAttribute("href", "https://example.com/docs");
+
+    setDisabled(true);
+    flush();
+    const disabledLink = screen.getByRole("link");
+    expect(disabledLink.tagName).toBe("SPAN");
+    expect(disabledLink).toHaveAttribute("role", "link");
+    expect(disabledLink).toHaveAttribute("aria-disabled", "true");
+    expect(disabledLink).toHaveAttribute("data-disabled", "true");
+    expect(disabledLink).toHaveAttribute("href", "https://example.com/docs");
+
+    setDisabled(false);
+    flush();
+    const reEnabledLink = screen.getByRole("link");
+    expect(reEnabledLink.tagName).toBe("A");
+    expect(reEnabledLink).not.toHaveAttribute("role");
+    expect(reEnabledLink).not.toHaveAttribute("aria-disabled");
+    expect(reEnabledLink).not.toHaveAttribute("data-disabled");
+    expect(reEnabledLink).toHaveAttribute("href", "https://example.com/docs");
   });
 
   it("should support slot prop", () => {
