@@ -29,7 +29,6 @@ import {
   useContext,
   For,
   Show,
-  createTrackedEffect,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -350,7 +349,7 @@ function resolveBoolean(value: unknown): boolean {
  * A menu trigger wraps a button and menu, handling the open/close state.
  */
 export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
-  const [local, stateProps] = splitProps(props, ["slot"]);
+  const [_local, stateProps] = splitProps(props, ["slot"]);
 
   const state = createMenuTriggerState({
     get isOpen() {

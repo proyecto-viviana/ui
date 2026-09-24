@@ -12,7 +12,6 @@ import {
   createRenderEffect,
   createUniqueId,
   createSignal,
-  onCleanup,
   untrack,
   useContext,
   For,

@@ -34,15 +34,7 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx
  */
 
-import {
-  createContext,
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  useContext,
-  createTrackedEffect,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type {
@@ -237,7 +229,7 @@ function isSameLayoutInfo(a: LayoutInfo, b: LayoutInfo): boolean {
  * Current implementation supports fixed-size visible range virtualization.
  */
 export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
-  const [local, domProps] = splitProps(props, [
+  const [local, _domProps] = splitProps(props, [
     "children",
     "layout",
     "layoutOptions",

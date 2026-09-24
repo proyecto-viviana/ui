@@ -191,7 +191,7 @@ interface VirtualizerLike {
   visibleRect: Rect;
 }
 
-export abstract class Layout<T extends object = object, O = unknown> {
+export abstract class Layout<_T extends object = object, O = unknown> {
   virtualizer: VirtualizerLike | null = null;
 
   abstract getVisibleLayoutInfos(rect: Rect): LayoutInfo[];

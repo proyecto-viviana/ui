@@ -28,7 +28,6 @@ import {
   For,
   Show,
   onCleanup,
-  sharedConfig,
   createTrackedEffect,
 } from "solid-js";
 import type { Accessor } from "solid-js";

@@ -19,12 +19,7 @@
  * to make an element pressable.
  */
 
-import {
-  children as resolveChildren,
-  createEffect,
-  onCleanup,
-  createTrackedEffect,
-} from "solid-js";
+import { children as resolveChildren, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {

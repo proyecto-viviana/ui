@@ -19,7 +19,7 @@
  * Renders server-side with the initial value for SSR safety.
  * Based on packages/react-aria-components/src/HiddenDateInput.tsx.
  */
-import { createEffect, createSignal, createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type DateValue, type FormValidationState } from "@proyecto-viviana/solid-stately";
 import { createFormValidation } from "@proyecto-viviana/solidaria";

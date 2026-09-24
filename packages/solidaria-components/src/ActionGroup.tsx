@@ -27,7 +27,6 @@
  */
 
 import { createContext, createMemo, useContext, For } from "solid-js";
-import type { ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createActionGroup,

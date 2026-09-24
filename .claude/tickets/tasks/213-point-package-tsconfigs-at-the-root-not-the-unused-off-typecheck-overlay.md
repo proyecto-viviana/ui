@@ -4,9 +4,14 @@ type: task
 title: "Point package tsconfigs at the root not the unused-off typecheck overlay"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "pointed solid-stately, solidaria, solidaria-components, kumo, and geist tsconfigs at root tsconfig; resolved all unused variable and parameter warnings; all package typechecks and tests pass clean",
+    }
 ---
 
 ## Cause

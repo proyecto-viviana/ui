@@ -122,7 +122,7 @@ export function useAutocompleteCollection() {
  * ```
  */
 export function Autocomplete<T = unknown>(props: AutocompleteProps<T>): JSX.Element {
-  const [stateProps, ariaProps, local] = splitProps(
+  const [stateProps, ariaProps] = splitProps(
     props,
     ["inputValue", "defaultInputValue", "onInputChange"],
     [

@@ -23,7 +23,6 @@
  */
 
 import {
-  onCleanup,
   createContext,
   createEffect,
   createMemo,

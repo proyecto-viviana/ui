@@ -21,7 +21,6 @@
 
 import {
   createContext,
-  createEffect,
   createMemo,
   createRenderEffect,
   createSignal,
@@ -1522,24 +1521,6 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
       </div>
     </SelectionIndicatorContext>
   );
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function toKey(value: unknown): Key | undefined {
-  if (typeof value === "string" || typeof value === "number") {
-    return value;
-  }
-  return undefined;
-}
-
-function toTextValue(value: unknown): string | undefined {
-  if (typeof value === "string" || typeof value === "number") {
-    return String(value);
-  }
-  return undefined;
 }
 
 function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {

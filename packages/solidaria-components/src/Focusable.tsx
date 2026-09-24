@@ -19,12 +19,7 @@
  * focusable and capable of auto focus.
  */
 
-import {
-  children as resolveChildren,
-  createEffect,
-  onCleanup,
-  createTrackedEffect,
-} from "solid-js";
+import { children as resolveChildren, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocusable, type CreateFocusableProps } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";

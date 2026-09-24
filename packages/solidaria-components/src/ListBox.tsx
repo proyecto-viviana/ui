@@ -25,7 +25,6 @@ import {
   createMemo,
   createRenderEffect,
   createSignal,
-  onCleanup,
   untrack,
   useContext,
   For,

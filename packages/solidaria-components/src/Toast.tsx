@@ -22,10 +22,8 @@
 import {
   createContext,
   createMemo,
-  createEffect,
   createRenderEffect,
   createSignal,
-  onCleanup,
   Show,
   useContext,
   createTrackedEffect,

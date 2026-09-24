@@ -21,7 +21,7 @@
  * https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx.
  */
 
-import { createSignal, Show, createEffect, createUniqueId, createTrackedEffect } from "solid-js";
+import { createSignal, Show, createUniqueId, createTrackedEffect } from "solid-js";
 import { dataAttr, ariaTrueFalse } from "./utils";
 import type { JSX } from "@solidjs/web";
 import { createInteractOutside } from "@proyecto-viviana/solidaria";

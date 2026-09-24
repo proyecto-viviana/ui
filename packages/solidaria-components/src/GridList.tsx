@@ -27,10 +27,8 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  onCleanup,
   useContext,
   For,
-  Show,
   createTrackedEffect,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";

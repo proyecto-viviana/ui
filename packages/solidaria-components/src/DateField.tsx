@@ -34,10 +34,8 @@
 
 import {
   createContext,
-  createEffect,
   createMemo,
   createSignal,
-  onCleanup,
   useContext,
   For,
   Show,
