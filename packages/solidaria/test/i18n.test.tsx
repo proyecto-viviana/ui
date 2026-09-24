@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
-import { createRoot, createSignal } from "solid-js";
+import { createRoot, createSignal, flush } from "solid-js";
 import { render, cleanup } from "@solidjs/testing-library";
 import {
   // Utils
@@ -476,6 +476,32 @@ describe("createDateFormatter", () => {
 
       dispose();
     });
+  });
+
+  it("should reactively update when options accessor changes", () => {
+    let formatter!: () => Intl.DateTimeFormat;
+    const [hour12, setHour12] = createSignal(true);
+    const dispose = createRoot((d) => {
+      formatter = createDateFormatter(() => ({
+        hour: "numeric",
+        hour12: hour12(),
+        timeZone: "UTC",
+      }));
+      return d;
+    });
+
+    const date = new Date("2026-01-01T09:30:00Z");
+    expect(formatter().format(date)).toBe("9 AM");
+
+    setHour12(false);
+    flush();
+    expect(formatter().format(date)).toBe("09");
+
+    setHour12(true);
+    flush();
+    expect(formatter().format(date)).toBe("9 AM");
+
+    dispose();
   });
 
   it("should format dates with basic options", () => {

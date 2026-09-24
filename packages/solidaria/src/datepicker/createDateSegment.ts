@@ -98,16 +98,16 @@ export function createDateSegment<T extends DateFieldState>(
   const focusManager = hd?.focusManager;
   const segmentId = createId();
 
-  const resolvedOptions = state.dateFormatter.resolvedOptions();
-  const monthDateFormatter = createDateFormatter({
+  const resolvedOptions = () => state.dateFormatter.resolvedOptions();
+  const monthDateFormatter = createDateFormatter(() => ({
     month: "long",
-    timeZone: resolvedOptions.timeZone,
-  });
-  const hourDateFormatter = createDateFormatter({
+    timeZone: resolvedOptions().timeZone,
+  }));
+  const hourDateFormatter = createDateFormatter(() => ({
     hour: "numeric",
-    hour12: resolvedOptions.hour12,
-    timeZone: resolvedOptions.timeZone,
-  });
+    hour12: resolvedOptions().hour12,
+    timeZone: resolvedOptions().timeZone,
+  }));
 
   const textValue = createMemo(() => {
     const seg = segment();
@@ -466,9 +466,7 @@ export function createDateSegment<T extends DateFieldState>(
     const segmentStyle: Record<string, string> = { "caret-color": "transparent" };
     if (direction() === "rtl") {
       segmentStyle["unicode-bidi"] = "embed";
-      const format = (state.dateFormatter.resolvedOptions() as unknown as Record<string, unknown>)[
-        seg.type
-      ];
+      const format = (resolvedOptions() as unknown as Record<string, unknown>)[seg.type];
       if (format === "numeric" || format === "2-digit") {
         segmentStyle.direction = "ltr";
       }
@@ -517,9 +515,7 @@ export function createDateSegment<T extends DateFieldState>(
     }
     if (direction() === "rtl") {
       el.style.setProperty("unicode-bidi", "embed");
-      const format = (state.dateFormatter.resolvedOptions() as unknown as Record<string, unknown>)[
-        seg.type
-      ];
+      const format = (resolvedOptions() as unknown as Record<string, unknown>)[seg.type];
       if (format === "numeric" || format === "2-digit") {
         el.style.setProperty("direction", "ltr");
       } else {

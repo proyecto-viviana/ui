@@ -4,12 +4,17 @@ type: task
 title: "Update TimeField aria-valuetext when hourCycle changes after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 timefield functional pass: URL ?hourCycle=24 paints hour 09 / aria-valuetext 09 on both; live hourCycle=24 after mount updates Solid text to 09 and drops dayPeriod but leaves aria-valuetext at 9 AM (React 09). Chromium AX snapshot uses text content so the tree still matches",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "support MaybeAccessor options in createDateFormatter and derive resolvedOptions dynamically in createDateSegment so monthDateFormatter and hourDateFormatter reactively update when state.dateFormatter options (such as hourCycle/hour12) change after mount. Verified with unit tests in i18n.test.tsx and TimeField.test.tsx.",
     }
 ---
 

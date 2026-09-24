@@ -23,6 +23,7 @@
 import { createMemo } from "solid-js";
 import { useLocale } from "./locale";
 import { createCacheKey } from "./utils";
+import { access, type MaybeAccessor } from "../utils/reactivity";
 
 const dateFormatterCache = new Map<string, Intl.DateTimeFormat>();
 
@@ -81,9 +82,9 @@ function getCachedDateFormatter(
  * ```
  */
 export function createDateFormatter(
-  options?: Intl.DateTimeFormatOptions,
+  options?: MaybeAccessor<Intl.DateTimeFormatOptions | undefined>,
 ): () => Intl.DateTimeFormat {
   const locale = useLocale();
 
-  return createMemo(() => getCachedDateFormatter(locale().locale, options));
+  return createMemo(() => getCachedDateFormatter(locale().locale, access(options)));
 }

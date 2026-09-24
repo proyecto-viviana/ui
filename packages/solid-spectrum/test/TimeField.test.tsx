@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { TimeField } from "../src/calendar/TimeField";
 import { TimeClass as Time } from "@proyecto-viviana/solid-stately";
 
@@ -134,5 +135,31 @@ describe("TimeField (solid-spectrum)", () => {
 
     expect(group).not.toHaveAttribute("aria-invalid");
     expect(screen.queryByText("Time is required")).not.toBeInTheDocument();
+  });
+
+  it("updates hour segment aria-valuetext when hourCycle changes after mount", async () => {
+    const [hourCycle, setHourCycle] = createSignal<12 | 24>(12);
+    render(() => (
+      <TimeField aria-label="Time" defaultValue={new Time(9, 30)} hourCycle={hourCycle()} />
+    ));
+    await waitForHydration();
+
+    const hourSpinbutton = screen.getAllByRole("spinbutton")[0];
+    expect(hourSpinbutton).toHaveAttribute("aria-valuetext", "9 AM");
+    expect(hourSpinbutton.textContent).toBe("9");
+
+    setHourCycle(24);
+
+    await waitFor(() => {
+      expect(hourSpinbutton).toHaveAttribute("aria-valuetext", "09");
+    });
+    expect(hourSpinbutton.textContent).toBe("09");
+
+    setHourCycle(12);
+
+    await waitFor(() => {
+      expect(hourSpinbutton).toHaveAttribute("aria-valuetext", "9 AM");
+    });
+    expect(hourSpinbutton.textContent).toBe("9");
   });
 });
