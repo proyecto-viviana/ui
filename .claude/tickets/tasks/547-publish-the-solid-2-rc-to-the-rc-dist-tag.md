@@ -36,6 +36,11 @@ history:
       at: 2026-09-24,
       note: "executed `release:prepare` (`changeset version` and `ci:release-readiness`). Consumed 65 pending changesets into -rc.0 bumps across all five packages (@proyecto-viviana/solid-spectrum -> 0.8.0-rc.0, @proyecto-viviana/solid-stately -> 0.6.0-rc.0, @proyecto-viviana/solidaria -> 0.6.0-rc.0, @proyecto-viviana/solidaria-components -> 0.7.0-rc.0, @proyecto-viviana/ui -> 0.8.0-rc.0) and generated package CHANGELOGs. Full 21-leg ci:release-readiness verified and passed locally. Re-pinned certified postcard in apps/comparison/src/data/certified-suite-evidence.ts to run 35936775475 at bb277c52 (2168 passed / 0 failed / 4 skipped / 5 waived). Re-enabled Release Readiness and Site Gate workflows.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "re-pinned certified postcard in apps/comparison/src/data/certified-suite-evidence.ts to full certified suite run 35940000999 (job 107449391894 at 151006ff; 2168 passed, 0 failed, 4 skipped, 5 waived, total 2177). Set Playwright CI workers to 2 in apps/web/playwright.config.ts matching comparison runner configuration.",
+    }
 ---
 
 ## Scope
