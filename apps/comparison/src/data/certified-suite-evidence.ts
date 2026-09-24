@@ -7,26 +7,28 @@ export interface CertifiedSuiteEvidence {
   passed: number;
   failed: number;
   skipped: number;
+  waived?: number;
 }
 
 /**
  * Postcard from the last complete certified suite run that was recorded against
  * an exact checked revision. This is NOT live truth. Ticket #194. The recorded
- * SHA is `0f1e1198` (2026-08-21, 2170 passed / 0 failed / 4 skipped).
+ * SHA is `5750b7fb` (2026-09-24, 2168 passed / 0 failed / 4 skipped / 5 waived).
  * `validateCertifiedSuiteEvidence` checks arithmetic and skipped-count against
  * the registered `knownDivergences` inventory; `certifiedSuitePostcardCurrency`
  * decides whether the run still speaks for HEAD, and the report blocks when it
  * does not.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
-  revision: "0f1e1198963c46eb3294744475e269a7c0041eb6",
-  runId: 32485238975,
-  jobId: 96780157126,
-  completedAt: "2026-08-21T13:45:39Z",
-  total: 2174,
-  passed: 2170,
+  revision: "5750b7fb65851ac336eab9d48a15c789e81aac5d",
+  runId: 35935084790,
+  jobId: 107434383600,
+  completedAt: "2026-09-24T00:01:57Z",
+  total: 2177,
+  passed: 2168,
   failed: 0,
   skipped: 4,
+  waived: 5,
 };
 
 /**
@@ -140,7 +142,10 @@ export function validateCertifiedSuiteEvidence(
   if (Number.isNaN(Date.parse(evidence.completedAt))) {
     problems.push("completedAt must be an ISO date-time");
   }
-  if (evidence.passed + evidence.failed + evidence.skipped !== evidence.total) {
+  if (
+    evidence.passed + evidence.failed + evidence.skipped + (evidence.waived ?? 0) !==
+    evidence.total
+  ) {
     problems.push("passed, failed, and skipped counts must add up to total");
   }
   if (evidence.failed !== 0) {

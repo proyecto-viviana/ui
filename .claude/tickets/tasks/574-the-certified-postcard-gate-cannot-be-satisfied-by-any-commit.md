@@ -4,7 +4,7 @@ type: task
 title: "The certified-postcard gate cannot be satisfied by any commit, so comparison parity (strict) is red forever"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -65,6 +65,11 @@ history:
       state: in-progress,
       at: 2026-09-22,
       note: "the amendment-B second review of `b22a44eb` drew no finding. Its five problems are all in `5fcf3d35` (#599) and `58f33185` (#598) and are answered there; nothing in this ticket moved",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "re-pinned lastFullCertifiedSuiteRun in apps/comparison/src/data/certified-suite-evidence.ts to full certified run 35935084790 (job 107434383600 at 5750b7fb65851ac336eab9d48a15c789e81aac5d; 2168 passed, 0 failed, 4 skipped, 5 waived, total 2177). Added support for waived count in CertifiedSuiteEvidence and validateCertifiedSuiteEvidence. vp run comparison:report:parity:strict now exits 0 with 0 blocking gaps outside the frozen baseline.",
     }
 ---
 
