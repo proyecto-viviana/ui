@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { createSignal } from "solid-js";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   ToastContainer,
@@ -673,6 +674,24 @@ describe("Toast (solid-spectrum)", () => {
         // list cross-fades instead of sliding when reduced motion is preferred.
         expect(item.style.getPropertyValue("view-transition-name")).toMatch(/^toast-\d+-\d+$/);
       }
+    });
+
+    it("keeps ToastContainer aria-label live after toasts are displayed (#435)", async () => {
+      const [label, setLabel] = createSignal<string | undefined>("Notifications");
+
+      render(() => <ToastContainer portal={false} aria-label={label()} />);
+
+      addToast({ title: "Live label toast", type: "info" });
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      expect(region).toBeInTheDocument();
+      expect(region).toHaveAttribute("aria-label", "Notifications");
+
+      setLabel("Alerts");
+      await Promise.resolve();
+
+      expect(screen.getByRole("region", { name: "Alerts" })).toBe(region);
+      expect(region).toHaveAttribute("aria-label", "Alerts");
     });
   });
 });

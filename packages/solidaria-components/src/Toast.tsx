@@ -357,13 +357,23 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
       return { ...placement, ...custom } as JSX.CSSProperties;
     };
 
-    const { ref: _ref, ...cleanRegionProps } = regionAria.regionProps as Record<string, unknown>;
+    const cleanRegionProps = () => {
+      const {
+        ref: _ref,
+        "aria-label": _label,
+        ...clean
+      } = regionAria.regionProps as Record<string, unknown>;
+      return clean;
+    };
+    const ariaLabel = () =>
+      (regionAria.regionProps as Record<string, unknown>)["aria-label"] as string | undefined;
 
     return (
       <div
         ref={setRegionElement}
         {...domProps()}
-        {...cleanRegionProps}
+        {...cleanRegionProps()}
+        aria-label={ariaLabel()}
         class={renderProps.class()}
         style={mergedStyle()}
         data-placement={normalizedPlacement()}

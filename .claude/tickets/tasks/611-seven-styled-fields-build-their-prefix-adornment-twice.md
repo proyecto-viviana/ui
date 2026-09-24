@@ -7,11 +7,6 @@ parent: 531
 status: verified
 history:
   - {
-      state: verified,
-      at: 2026-09-24,
-      note: "resolved prefixNode memo with children(() => local.prefix) across all 7 sites in solid-spectrum and viviana-ui; updated scripts/check-idiomatic-solid.ts and baseline test; regenerated idiomatic-solid-children-baseline.json; verified single-instantiation probes in both packages; layer boundary guard, check-changeset-required, and full vp run check pass.",
-    }
-  - {
       state: open,
       at: 2026-09-22,
       note: "opened from the review of #545's adornment commit `096776df`, which left this residue named in a ticket note and a receipt but on no board. Seven sites write `<Show when={local.prefix} …><FieldPrefix>{local.prefix}</FieldPrefix>…</Show>`: `packages/solid-spectrum/src/{textfield/index.tsx:422,combobox/index.tsx:1051,numberfield/index.tsx:508,color/index.tsx:1379}` and `packages/viviana-ui/src/{combobox/index.tsx:1066,numberfield/index.tsx:510,color/index.tsx:1377}`. A JSX prop compiles to a getter and `createComponent` is `untrack(() => Comp(props))`, so `Show`'s `when` memo builds the adornment and discards it, and the body builds it again. Measured on `096776df` with a throwaway jsdom probe (`prefix={<Probe/>}`, since deleted): viviana-ui NumberField, ColorField and ComboBox each report 2 instantiations and 1 `[data-probe]` node — one full component built and thrown away per render, and any `onMount`, ref or context registration in an adornment runs twice with the discarded copy never unmounting. It does not throw the way #545 class 2 did: all seven pass `prefixId={prefixId}`, a plain `createUniqueId()` string, so `PrefixInputProvider`'s thunk (`() => props.prefixId`, `field/prefix.tsx`) re-reads the prop and never the adornment, and nothing re-runs it from the input's ownerless ref callback. Unmeasured: whether the discarded build is symmetric under hydration — no route proves these, and the client probe is all that has been run",
@@ -30,6 +25,11 @@ history:
       state: open,
       at: 2026-09-22,
       note: "one correction to the entry above, measured on `358e509c` while closing #545's own review. 'only bare mixed text discriminates' is true of where the RENDERED snapshot is read, not of where the memo is resolved. Two mutations, both run: render a body-read local at `<FieldPrefix>`/`<FieldSuffix>` and leave the memos live for the `<Show>` conditions, and the hydrate half reads `wrapped: 1bare: 0` - the element-wrapped adornment survives, as the entry says. Resolve the `children()` memo itself once in the body instead, `const prefixFrozen = children(() => local.prefix)()` with every downstream read a constant, and both halves freeze: `wrapped: 0bare: 0`, in TextField and in SearchField alike. So the element's own insert effect protects it only while the resolution stays in a tracked scope. For this ticket the practical rule is unchanged and now covers both failure modes: resolve with `children()` where the entry above says, and read `prefixNode()` inside the JSX, never into a local. SearchField is measured too now, not inferred from TextField - `packages/viviana-ui/test/TextField.{ssr,hydrate}.test.tsx` renders both fields, and the three-`<Show>` gating SearchField uses changes nothing",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "resolved prefixNode memo with children(() => local.prefix) across all 7 sites in solid-spectrum and viviana-ui; updated scripts/check-idiomatic-solid.ts and baseline test; regenerated idiomatic-solid-children-baseline.json; verified single-instantiation probes in both packages; layer boundary guard, check-changeset-required, and full vp run check pass.",
     }
 ---
 

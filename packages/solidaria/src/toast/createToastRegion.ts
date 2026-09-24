@@ -30,6 +30,7 @@ import { createHover } from "../interactions/createHover";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 import { createLandmark } from "../landmark/createLandmark";
 import { focusWithoutScrolling } from "../utils/focus";
+import { access, type MaybeAccessor } from "../utils";
 export interface AriaToastRegionProps<T> {
   /** The toast state from createToastState. */ state: ToastState<T>;
   /** The toast region element. Required for landmark navigation and focus recovery. */ ref?: Accessor<
@@ -68,16 +69,24 @@ export interface ToastRegionAria {
  * }
  * ```
  */
-export function createToastRegion<T>(props: AriaToastRegionProps<T>): ToastRegionAria {
-  const visibleToasts = () =>
-    typeof props.state.visibleToasts === "function" ? props.state.visibleToasts() : [];
-  const regionRef = () => props.ref?.();
+export function createToastRegion<T>(
+  props: MaybeAccessor<AriaToastRegionProps<T>>,
+): ToastRegionAria {
+  const getProps = () => access(props);
+  const visibleToasts = () => {
+    const p = getProps();
+    return typeof p?.state?.visibleToasts === "function" ? p.state.visibleToasts() : [];
+  };
+  const regionRef = () => {
+    const r = getProps()?.ref;
+    return typeof r === "function" ? r() : r;
+  };
   const activeRegionRef = () => (visibleToasts().length > 0 ? regionRef() : undefined);
 
-  const { landmarkProps } = createLandmark(
+  const landmarkAria = createLandmark(
     () => ({
       role: "region",
-      "aria-label": props["aria-label"] ?? "Notifications",
+      "aria-label": getProps()?.["aria-label"] ?? "Notifications",
     }),
     activeRegionRef,
   );
@@ -90,10 +99,11 @@ export function createToastRegion<T>(props: AriaToastRegionProps<T>): ToastRegio
   let lastFocused: HTMLElement | null = null;
 
   const updateTimers = () => {
+    const state = getProps()?.state;
     if (isHovered || isFocused) {
-      props.state.pauseAll();
+      state?.pauseAll();
     } else {
-      props.state.resumeAll();
+      state?.resumeAll();
     }
   };
 
@@ -239,10 +249,13 @@ export function createToastRegion<T>(props: AriaToastRegionProps<T>): ToastRegio
 
   // Region props
   const regionProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
-    ...landmarkProps,
+    ...landmarkAria.landmarkProps,
     ...hoverProps,
     tabIndex: -1,
     "data-solidaria-top-layer": "true",
+    get "aria-label"() {
+      return getProps()?.["aria-label"] ?? "Notifications";
+    },
     onFocusIn: handleFocusIn,
     onFocusOut: handleFocusOut,
   }));

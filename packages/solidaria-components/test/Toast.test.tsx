@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { createRoot, For } from "solid-js";
+import { createRoot, createSignal, For } from "solid-js";
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createToastState, ToastQueue } from "@proyecto-viviana/solid-stately";
 import {
@@ -472,6 +472,34 @@ describe("Toast", () => {
       expect(screen.getByText("Monitor test toast").closest('[role="alert"]')).toBeTruthy();
 
       monitor.stop();
+    });
+
+    it("keeps ToastRegion aria-label live after the region mounts (#435)", async () => {
+      const [label, setLabel] = createSignal<string | undefined>("Notifications");
+
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} aria-label={label()}>
+            {(renderProps) => (
+              <For each={renderProps.visibleToasts()}>
+                {(toast) => <DefaultToast toast={toast} />}
+              </For>
+            )}
+          </ToastRegion>
+        </ToastProvider>
+      ));
+
+      addToast({ title: "Toast 1", type: "info" });
+
+      const region = screen.getByRole("region", { name: "Notifications" });
+      expect(region).toBeInTheDocument();
+      expect(region).toHaveAttribute("aria-label", "Notifications");
+
+      setLabel("Alerts");
+      await Promise.resolve();
+
+      expect(screen.getByRole("region", { name: "Alerts" })).toBe(region);
+      expect(region).toHaveAttribute("aria-label", "Alerts");
     });
   });
 });

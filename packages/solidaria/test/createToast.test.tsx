@@ -302,4 +302,34 @@ describe("createToastRegion", () => {
 
     expect(document.activeElement).toBe(before);
   });
+
+  it("keeps aria-label live when aria-label changes after mount (#435)", async () => {
+    const pauseAll = vi.fn();
+    const resumeAll = vi.fn();
+    const [label, setLabel] = createSignal<string | undefined>("Notifications");
+
+    render(() =>
+      (() => {
+        const [regionElement, setRegionElement] = createSignal<HTMLElement>();
+        const [toasts] = createSignal([{ key: "toast-1" }]);
+        const aria = createToastRegion({
+          state: { pauseAll, resumeAll, visibleToasts: toasts } as any,
+          ref: regionElement,
+          get "aria-label"() {
+            return label();
+          },
+        });
+
+        return <div {...aria.regionProps} ref={setRegionElement} data-testid="region" />;
+      })(),
+    );
+
+    const region = screen.getByTestId("region");
+    expect(region).toHaveAttribute("aria-label", "Notifications");
+
+    setLabel("Alerts");
+    await Promise.resolve();
+
+    expect(region).toHaveAttribute("aria-label", "Alerts");
+  });
 });

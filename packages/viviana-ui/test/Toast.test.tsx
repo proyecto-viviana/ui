@@ -2,8 +2,15 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach } from "vite-plus/test";
+import { createSignal } from "solid-js";
 import { render, screen, cleanup } from "@solidjs/testing-library";
-import { ToastProvider, ToastRegion, addToast, globalToastQueue } from "../src/toast";
+import {
+  ToastProvider,
+  ToastRegion,
+  ToastContainer,
+  addToast,
+  globalToastQueue,
+} from "../src/toast";
 
 afterEach(() => {
   globalToastQueue.clear();
@@ -46,5 +53,23 @@ describe("Toast (viviana-ui) view transitions", () => {
     } finally {
       delete (document as { startViewTransition?: unknown }).startViewTransition;
     }
+  });
+
+  it("keeps ToastContainer aria-label live after toasts are displayed (#435)", async () => {
+    const [label, setLabel] = createSignal<string | undefined>("Notifications");
+
+    render(() => <ToastContainer portal={false} aria-label={label()} />);
+
+    addToast({ title: "Live label toast", type: "info" });
+
+    const region = screen.getByRole("region", { name: "Notifications" });
+    expect(region).toBeInTheDocument();
+    expect(region).toHaveAttribute("aria-label", "Notifications");
+
+    setLabel("Alerts");
+    await Promise.resolve();
+
+    expect(screen.getByRole("region", { name: "Alerts" })).toBe(region);
+    expect(region).toHaveAttribute("aria-label", "Alerts");
   });
 });

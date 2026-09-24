@@ -4,12 +4,17 @@ type: task
 title: "Keep ToastRegion aria-label live after the region mounts"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: 'filed from the #260 toast functional pass: live comparison:controls-change {"aria-label":"Alerts"} updates data-comparison-control-props on BOTH panels; React region aria-label and AX become Alerts; Solid stays Notifications. URL ?aria-label=Inbox remounts and matches Inbox on both. Live placement/children/action already update. Solid ToastContainer stays mounted; headless ToastRegion regionContent() plus createToastRegion landmark default "Notifications" snapshot when hasToasts first flips true',
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "resolved: createToastRegion now supports MaybeAccessor<AriaToastRegionProps>, accesses props dynamically via getProps, keeps landmarkProps and aria-label reactive in regionProps memo. Headless ToastRegion dynamically binds cleanRegionProps and aria-label on the region DOM element. Tests pass across solidaria, solidaria-components, solid-spectrum, and viviana-ui.",
     }
 ---
 
