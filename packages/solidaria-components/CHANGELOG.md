@@ -1,5 +1,89 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.7.0-rc.0
+
+### Minor Changes
+
+- 163f437: Compile, pack, and consume the public packages on Solid 2 (`solid-js` / `@solidjs/web` 2.0.0-rc.9, `@solidjs/vite-plugin` 3.0.0-next.44). Consumers must use `@solidjs/web` as `jsxImportSource` and spread `[...solid({ ssr: true })]`.
+
+### Patch Changes
+
+- b33a0a7: Do not preventDefault ComboBox Escape; RAC omits shouldPreventDefault and only reverts.
+- 6399ea7: Match RAC ComboBox field `data-*` on the input, trigger button, and root.
+- 6e4840a: Skip ComboBox collection filtering when `items` is controlled, and default `defaultFilter` to locale-aware contains as RAC does.
+- b33a0a7: Port S2 ComboBox loadingState: field spinner, list loadingMore, and table.loading empty text.
+- b33a0a7: Keep ComboBox option aria-labelledby pointing at the label slot after keyboard focus moves.
+- 6c096b3: Keep ComboBox/Picker overlay placement on the preferred bottom axis and hide outside the popover, not only the listbox.
+- b33a0a7: Render ComboBox empty state inside the listbox via `renderEmptyState`, matching RAC ListBox / S2 ComboBox.
+- eb75ee0: DatePicker and DateRangePicker trigger buttons wrote their interaction state
+  through the `attr:` JSX namespace, which reached the DOM verbatim as
+  `attr:data-focused` instead of compiling away to `data-focused`. No selector
+  matching `data-hovered`, `data-focused`, `data-focus-visible` or `data-pressed`
+  could match either trigger, so styled siblings never painted hover, focus ring
+  or pressed state on them. The eight props now use the house idiom,
+  `data-focused={dataAttr(isFocused())}`, as every other component does.
+- 70a8d47: createDialog resolves its title and content ids through createSlotId, so a dialog without a title no longer points aria-labelledby at a missing element; Dialog falls back to its trigger's id reactively.
+- 81affe3: Keep a getter passed through `filterDOMProps`, so a reactive `data-*` updates after its signal changes, including on a grouped ToggleButton and on ListBox.
+- 096776d: TextField and SearchField resolve a `prefix`/`suffix` adornment once. A JSX prop
+  compiles to a getter that re-runs the component body on every read, and the
+  input's `aria-labelledby` thunk is read again from inside the input's ref
+  callback, which Solid 2 applies with no owner — a context-reading adornment
+  (`suffix={<Keyboard/>}`) threw there and blanked the page. `children()` resolves
+  each node under the field's own owner, so the later reads are safe.
+
+  `Input` and `TextArea` read the context's `inputProps.ref` in the component body
+  instead of inside the ref callback, for the same reason.
+
+  `createComboBox` builds its announcement string formatter unconditionally, as
+  `useComboBox` does upstream, instead of on the client only. Solid 2 hydration
+  keys are a per-owner path, so the client-only formatter shifted every sibling key
+  after it and the combobox's help text — which claims through `ElementTag` and has
+  no fallback — threw a hydration mismatch.
+
+- 76f0e26: Honor ListLayout `estimatedRowHeight` and `padding`, observe measured row size, and position VirtualizerItem from layoutInfo. ComboBox and Picker listboxes match S2 `padding: 0` so the 8px inset lives in the layout, not CSS.
+- b33a0a7: Name Menu and ActionMenu popover dialogs from the trigger via aria-labelledby, as RAC MenuTrigger does.
+- f13fd34: Modal locks the page with createPreventScroll, as upstream useModalOverlay does, instead of a one-off `overflow: hidden` that joined no refcount.
+- e6384f3: Open links by dispatching the click the browser would have produced instead of navigating, so routers, `preventDefault` and the link's own `target`/`rel` still apply, and keep one implementation of `openLink`.
+- c218a34: Keep ComboBox, Select, and ListBox option render-prop trees mounted across focus, and make generated ui-icon `class` reactive so the selected checkmark can toggle visibility without remounting the SVG.
+- 6ad3d12: Popover: a flipped popover enters from its flipped side. The `placement` render prop reports the measured axis as soon as positioning lands, as RAC's `PopoverInner` does, instead of holding the requested axis for the whole enter.
+- 8bd07d6: Wrap Popover portal children in FocusScope as RAC Overlay does, so sentinels are not siblings of the placement node.
+- 39fb2b1: Popover drops a `ref` on `Portal` that Solid 2 never calls, and the comment that claimed it did.
+- 6e59ec1: Give the Solid Portal wrapper display:contents so Popover stacks like RAC createPortal.
+- 495582e: `SelectListBox` under a `Virtualizer` wraps its rows in `CollectionRoot` and `VirtualizerItem`, as `ComboBoxListBox` does, so ListLayout's padding and row geometry reach the options.
+- 413b2f2: Select: root state attributes serialise as `"true"`, the trigger no longer carries `data-open` and its `data-focused` follows the button, and options draw `data-focus-visible` from their own focus ring.
+- 2d0612e: Re-export `setInteractionModality`, which react-aria-components exports and this barrel did not.
+- 49efef8: Release each virtualized item's ResizeObserver and pending animation frame when the item re-measures or unmounts; the Solid 2 port stranded both.
+- 41062bd: Wrap virtualized ListBox and ComboBox list items in a RAC VirtualizerItem presentation box (`contain: size layout style`). ComboBoxListBox now consumes CollectionRoot when a parent Virtualizer is present.
+- 3f4f11b: Observe visible Virtualizer item sizes with ResizeObserver when shouldObserveItemSize is set, and skip hidden collections so a display:none host cannot pin measured height at 0.
+- Updated dependencies b33a0a7:
+- Updated dependencies f3df1f1:
+- Updated dependencies b33a0a7:
+- Updated dependencies 69880d0:
+- Updated dependencies b33a0a7:
+- Updated dependencies 6e4840a:
+- Updated dependencies 6c096b3:
+- Updated dependencies b33a0a7:
+- Updated dependencies 4bbdeff:
+- Updated dependencies ef21edf:
+- Updated dependencies 70a8d47:
+- Updated dependencies 81affe3:
+- Updated dependencies 7fe157e:
+- Updated dependencies d77c494:
+- Updated dependencies d0f095a:
+- Updated dependencies 26ed035:
+- Updated dependencies 096776d:
+- Updated dependencies 344e86d:
+- Updated dependencies e6384f3:
+- Updated dependencies 31bf358:
+- Updated dependencies 870781a:
+- Updated dependencies 0666ab9:
+- Updated dependencies 5c8141e:
+- Updated dependencies 163f437:
+- Updated dependencies 002ea40:
+- Updated dependencies 7e7936d:
+  - @proyecto-viviana/solidaria@0.6.0-rc.0
+  - @proyecto-viviana/solid-stately@0.6.0-rc.0
+
 ## 0.6.0
 
 ### Minor Changes

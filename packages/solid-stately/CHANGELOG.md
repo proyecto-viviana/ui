@@ -1,5 +1,19 @@
 # @proyecto-viviana/solid-stately
 
+## 0.6.0-rc.0
+
+### Minor Changes
+
+- 163f437: Compile, pack, and consume the public packages on Solid 2 (`solid-js` / `@solidjs/web` 2.0.0-rc.9, `@solidjs/vite-plugin` 3.0.0-next.44). Consumers must use `@solidjs/web` as `jsxImportSource` and spread `[...solid({ ssr: true })]`.
+
+### Patch Changes
+
+- f3df1f1: Batch ComboBox selection updates and close on selection in the same open/close effect as RAC so a controlled inputValue update cannot reopen the menu.
+- 69880d0: Announce ComboBox option count assertively on open, matching RAC.
+- 6e4840a: Skip ComboBox collection filtering when `items` is controlled, and default `defaultFilter` to locale-aware contains as RAC does.
+- 4bbdeff: Generate an id in `createId` even when a default id is given, so a component that takes an `id` prop no longer shifts every id generated after it.
+- 344e86d: Parse and format NumberField values with NumberParser and NumberFormatter from @internationalized/number instead of local arithmetic. Adds @internationalized/number as a runtime dependency.
+
 ## 0.5.2
 
 ### Patch Changes

@@ -1,5 +1,63 @@
 # @proyecto-viviana/solidaria
 
+## 0.6.0-rc.0
+
+### Minor Changes
+
+- 163f437: Compile, pack, and consume the public packages on Solid 2 (`solid-js` / `@solidjs/web` 2.0.0-rc.9, `@solidjs/vite-plugin` 3.0.0-next.44). Consumers must use `@solidjs/web` as `jsxImportSource` and spread `[...solid({ ssr: true })]`.
+
+### Patch Changes
+
+- b33a0a7: Leave ArrowDown/ArrowUp default enabled when ComboBox is closed or already on the last/first option, and Home/End when it is open, as RAC does.
+- b33a0a7: Announce ComboBox option count on first open via 0→N, not on every didOpen, so a button reopen with a focused selection does not repeat "N options available."
+- 69880d0: Announce ComboBox option count assertively on open, matching RAC.
+- b33a0a7: Do not preventDefault ComboBox Escape; RAC omits shouldPreventDefault and only reverts.
+- 6c096b3: Keep ComboBox/Picker overlay placement on the preferred bottom axis and hide outside the popover, not only the listbox.
+- b33a0a7: Restore ComboBox input virtual focus when the open list has no focused option, matching RAC useComboBox.
+- 4bbdeff: Generate an id in `createId` even when a default id is given, so a component that takes an `id` prop no longer shifts every id generated after it.
+- ef21edf: Take the field id in `createLabels` from the caller instead of generating one inside a lazy prop getter, so hydration ids stay in step with the server.
+- 70a8d47: createDialog resolves its title and content ids through createSlotId, so a dialog without a title no longer points aria-labelledby at a missing element; Dialog falls back to its trigger's id reactively.
+- 81affe3: Keep a getter passed through `filterDOMProps`, so a reactive `data-*` updates after its signal changes, including on a grouped ToggleButton and on ListBox.
+- 7fe157e: Make the focus scope holding focus at mount the active one, and parent a scope that mounts outside the active scope under it.
+- d77c494: Hand the active focus scope back to its parent when that scope unmounts, so a later contained scope can become active.
+- d0f095a: FocusScope reads the `data-solidaria-top-layer` attribute the toast region actually sets, and regains upstream's active-scope tracking so `createOverlay` no longer closes when focus moves into a child scope, such as a menu inside a dialog.
+- 26ed035: Ignore emulated mouse hover for 500 ms after touch, as pinned useHover does; it was 50 ms.
+- 096776d: TextField and SearchField resolve a `prefix`/`suffix` adornment once. A JSX prop
+  compiles to a getter that re-runs the component body on every read, and the
+  input's `aria-labelledby` thunk is read again from inside the input's ref
+  callback, which Solid 2 applies with no owner — a context-reading adornment
+  (`suffix={<Keyboard/>}`) threw there and blanked the page. `children()` resolves
+  each node under the field's own owner, so the later reads are safe.
+
+  `Input` and `TextArea` read the context's `inputProps.ref` in the component body
+  instead of inside the ref callback, for the same reason.
+
+  `createComboBox` builds its announcement string formatter unconditionally, as
+  `useComboBox` does upstream, instead of on the client only. Solid 2 hydration
+  keys are a per-owner path, so the client-only formatter shifted every sibling key
+  after it and the combobox's help text — which claims through `ElementTag` and has
+  no fallback — threw a hydration mismatch.
+
+- e6384f3: Open links by dispatching the click the browser would have produced instead of navigating, so routers, `preventDefault` and the link's own `target`/`rel` still apply, and keep one implementation of `openLink`.
+- 31bf358: `openLink` reads the test flag through `isTestEnv()` instead of a bare
+  `process.env.NODE_ENV`. The bare reference compiled under typecheck but not
+  under the declaration build, which omits Node types on purpose.
+- 870781a: createOverlay hides only the overlay that was topmost when the outside interaction started, and no longer prevents that interaction's default action, so the click that dismisses an overlay can still focus or activate what it landed on.
+- 0666ab9: `createPress` opens a link the way `usePress` does. It passes `false` for `openLink`'s `setOpening`, so a collection item's click guard (`if (!openLink.isOpening) e.preventDefault()`) suppresses the click the press path dispatched: Space on a role-overridden `<a href>` in a selectable collection now navigates once instead of twice under `linkBehavior: "selection"`. `onClick` gains upstream's matching `!openLink.isOpening` re-entry guard, and the "link already opened" mark moves off the element plus a `setTimeout` onto the keyup event itself, so a second activation of the same link inside the old window opens it instead of doing nothing.
+
+  The same `false` is on the shared keyup path, so it also changes the other link behaviors: under `linkBehavior: "override"` and `"action"`, Space on a role-overridden `<a href>` no longer navigates at all — it selects, and Enter navigates. That is what react-aria 3.52.0 does (`useSelectableItem` returns early from `onSelect` for `"override"` and only treats Enter as an action key), and `"override"` is a listbox's default whenever `selectionBehavior` is `"toggle"`, so most collections are in it. If you relied on Space navigating there, bind Enter.
+
+- 5c8141e: Label the mobile Safari overscroll `<style>` with the page's CSP nonce, mirroring React Aria's `getNonce`.
+- 002ea40: `createToastRegion`'s doc comment is a doc comment again, not one 348-character line.
+- 7e7936d: Treat an untrusted `detail: 0` click as virtual interaction modality, as react-aria does, so an assistive-technology click and `element.click()` show a focus ring. The modality now notifies tracked readers only on keyboard, pointer-down, virtual focus and virtual click, never on a bare move. An option's focus-visible answer is now the live modality read `useOption` makes: the option is focused, the collection is focused, and the global modality is not pointer. ComboBox and Picker options take that answer from the option render props; a real mouse click stays pointer and does not paint the focus ring.
+- Updated dependencies f3df1f1:
+- Updated dependencies 69880d0:
+- Updated dependencies 6e4840a:
+- Updated dependencies 4bbdeff:
+- Updated dependencies 344e86d:
+- Updated dependencies 163f437:
+  - @proyecto-viviana/solid-stately@0.6.0-rc.0
+
 ## 0.5.0
 
 ### Minor Changes

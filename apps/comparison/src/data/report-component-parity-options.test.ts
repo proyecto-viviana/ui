@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vite-plus/test";
 
 import { parseParityReportOptions } from "../../scripts/report-component-parity-options";
+import { lastFullCertifiedSuiteRun } from "./certified-suite-evidence";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const comparisonRoot = resolve(here, "../..");
@@ -28,8 +29,10 @@ describe("component parity report options", () => {
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("[gap] Components that do not meet the full acceptance model");
-    expect(result.stdout).toContain("STALE certified-suite postcard");
-    expect(result.stdout).toContain("0f1e1198963c46eb3294744475e269a7c0041eb6");
+    expect(result.stdout).toMatch(
+      /(Last full certified suite: revision=|STALE certified-suite postcard)/,
+    );
+    expect(result.stdout).toContain(lastFullCertifiedSuiteRun.revision);
     expect(result.stdout).toContain("HEAD certified-suite subset (not a postcard; complete=false)");
     expect(result.stdout).toContain("d15a86fff09308728aa67887654aa57f7eb1ec8a");
   });

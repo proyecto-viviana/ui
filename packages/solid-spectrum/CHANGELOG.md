@@ -1,5 +1,93 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.8.0-rc.0
+
+### Minor Changes
+
+- 163f437: Compile, pack, and consume the public packages on Solid 2 (`solid-js` / `@solidjs/web` 2.0.0-rc.9, `@solidjs/vite-plugin` 3.0.0-next.44). Consumers must use `@solidjs/web` as `jsxImportSource` and spread `[...solid({ ssr: true })]`.
+
+### Patch Changes
+
+- 1a03671: ActionButton resolves `isDisabled` through the Form proxy, so `<Form isDisabled>` disables it and a `Skeleton` disables it even when it sets `isDisabled={false}`, as upstream does. An enclosing `ActionButtonGroup` stays the last resort, below the button's own prop, matching S2's `isDisabled={props.isDisabled ?? group.isDisabled}`, and a `NotificationBadge` inside the button greys out with it.
+
+  ToggleButton reads the same way inside a `MenuTrigger`: the trigger no longer forces `isDisabled` over the Form or a `Skeleton`, and it stays below the button's own prop, so `<MenuTrigger isDisabled><ToggleButton isDisabled={false}>` opts out as upstream's does.
+
+- 748070a: Breadcrumbs no longer seeds its overflow-measurement signal from `window`, so the client's first render matches the server's and the hidden measurement copy arrives in a post-hydration update instead of throwing `Hydration Mismatch. Unable to find DOM nodes for hydration key`.
+- 7e93d23: Button, ActionButton, ToggleButton and LinkButton take their size (and the other Form props) from an enclosing `Form`. The size default no longer hides the Form's value, and ActionButton, ToggleButton and LinkButton now read the Form at all, as upstream does.
+- c8e9e2a: ButtonGroup re-measures overflow when its children change, not only when a box resizes.
+- 6e43c43: Calendar and RangeCalendar: the root no longer sets its own `color-scheme` from the provider variable. Upstream's `calendarStyles` inherit the scheme from the surrounding tree, as every non-overlay S2 component does; ours reset it to `var(--s2-color-scheme)`, so a calendar outside its Provider's subtree (a copied or detached node) resolved light ink on a dark ground.
+- d33fefd: Size ComboBox checkmarks with the S2 token map instead of inline CSS pixels.
+- b33a0a7: Drive ComboBox field-group focus-visible from the group's own keyboard modality, matching RAC Group, instead of copying the input ring.
+- b33a0a7: Port S2 ComboBox loadingState: field spinner, list loadingMore, and table.loading empty text.
+- d33fefd: Keep the ComboBox list open on input focus when menuTrigger is focus.
+- b33a0a7: Keep ComboBox and Picker overlay options on one focus-visible answer, as RAC `ListBoxItem` hands the same value to `listboxItem` and `checkmark`: the row fill, the row ink and the selected checkmark all read what the option hands them, and `comboBoxCheckmark` stays plain `baseColor('accent')` with no `isFocused` variant of its own. That answer now comes from the headless live modality read, so an assistive-technology click and `element.click()` show the focus ring and a real mouse click does not.
+- b33a0a7: Keep ComboBox option aria-labelledby pointing at the label slot after keyboard focus moves.
+- 60d218a: Provide S2 ComboBoxItem and PickerItem Icon/Avatar/Text slot contexts, including Picker SelectValue providers.
+- 686911d: Provide S2 ComboBox/Picker listbox Header, Heading, and description slot contexts.
+- be6b2ca: Drop invented ComboBox and Picker listbox margin, padding, and list-style so the style map matches S2 `listbox`.
+- b33a0a7: Render ComboBox empty state inside the listbox via `renderEmptyState`, matching RAC ListBox / S2 ComboBox.
+- d3ccc7c: ContextualHelpTrigger builds its help and info icons inside components instead of binding them to module-scope `const`s. A module-scope JSX value is built when the module is evaluated: on a server that has already rendered a page, it reaches `ssrHydrationKey()` with no owner and throws `getNextContextId cannot be used under non-hydrating context`, so the whole menu module fails to evaluate and every route that imports anything from it serves an empty document with HTTP 200 — twenty of the docs app's 174 routes. In the browser the same binding is one DOM node shared by every trigger on the page, so a second trigger takes the first one's icon. Upstream renders its icon inside `UnavailableIconWrapper` for the same reason.
+- 76f0e26: Honor ListLayout `estimatedRowHeight` and `padding`, observe measured row size, and position VirtualizerItem from layoutInfo. ComboBox and Picker listboxes match S2 `padding: 0` so the 8px inset lives in the layout, not CSS.
+- b33a0a7: Name Menu and ActionMenu popover dialogs from the trigger via aria-labelledby, as RAC MenuTrigger does.
+- c218a34: Keep ComboBox, Select, and ListBox option render-prop trees mounted across focus, and make generated ui-icon `class` reactive so the selected checkmark can toggle visibility without remounting the SVG.
+- d2f9453: Toast: run the queue update inside the view transition instead of returning it.
+  `startViewTransition` passed `() => fn` to `document.startViewTransition`, so the
+  callback returned the mutation without calling it and no toast ever rendered in
+  a browser with the View Transitions API. Both packages now mirror upstream S2's
+  `() => flushSync(fn)` with Solid 2's `flush(fn)`, which drains the queue before
+  the browser snapshots.
+- d72df86: Apply S2 ui-icon token width/height on each generated asset and stop wrapping bare ui-icons with an invented flex-shrink. ComboBox Menu.checkmark no longer duplicates that size map.
+- 44aa6fb: Stop createUIIcon from consuming IconContext. S2 ui-icons never pass through Icon.tsx, so ComboBox/Picker/Menu checkmarks stay raw svgs in the checkmark grid cell instead of inheriting the item IconContext wrapper.
+- 7e7936d: Treat an untrusted `detail: 0` click as virtual interaction modality, as react-aria does, so an assistive-technology click and `element.click()` show a focus ring. The modality now notifies tracked readers only on keyboard, pointer-down, virtual focus and virtual click, never on a bare move. An option's focus-visible answer is now the live modality read `useOption` makes: the option is focused, the collection is focused, and the global modality is not pointer. ComboBox and Picker options take that answer from the option render props; a real mouse click stays pointer and does not paint the focus ring.
+- Updated dependencies b33a0a7:
+- Updated dependencies f3df1f1:
+- Updated dependencies b33a0a7:
+- Updated dependencies 69880d0:
+- Updated dependencies b33a0a7:
+- Updated dependencies 6399ea7:
+- Updated dependencies 6e4840a:
+- Updated dependencies b33a0a7:
+- Updated dependencies b33a0a7:
+- Updated dependencies 6c096b3:
+- Updated dependencies b33a0a7:
+- Updated dependencies b33a0a7:
+- Updated dependencies 4bbdeff:
+- Updated dependencies ef21edf:
+- Updated dependencies eb75ee0:
+- Updated dependencies 70a8d47:
+- Updated dependencies 81affe3:
+- Updated dependencies 7fe157e:
+- Updated dependencies d77c494:
+- Updated dependencies d0f095a:
+- Updated dependencies 26ed035:
+- Updated dependencies 096776d:
+- Updated dependencies 76f0e26:
+- Updated dependencies b33a0a7:
+- Updated dependencies f13fd34:
+- Updated dependencies 344e86d:
+- Updated dependencies e6384f3:
+- Updated dependencies 31bf358:
+- Updated dependencies c218a34:
+- Updated dependencies 870781a:
+- Updated dependencies 6ad3d12:
+- Updated dependencies 8bd07d6:
+- Updated dependencies 39fb2b1:
+- Updated dependencies 6e59ec1:
+- Updated dependencies 0666ab9:
+- Updated dependencies 5c8141e:
+- Updated dependencies 495582e:
+- Updated dependencies 413b2f2:
+- Updated dependencies 163f437:
+- Updated dependencies 2d0612e:
+- Updated dependencies 002ea40:
+- Updated dependencies 7e7936d:
+- Updated dependencies 49efef8:
+- Updated dependencies 41062bd:
+- Updated dependencies 3f4f11b:
+  - @proyecto-viviana/solidaria@0.6.0-rc.0
+  - @proyecto-viviana/solid-stately@0.6.0-rc.0
+  - @proyecto-viviana/solidaria-components@0.7.0-rc.0
+
 ## 0.7.0
 
 ### Minor Changes

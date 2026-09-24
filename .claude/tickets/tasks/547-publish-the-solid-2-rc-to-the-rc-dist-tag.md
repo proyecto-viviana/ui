@@ -4,8 +4,7 @@ type: task
 title: "Publish the Solid 2 release candidate to the `rc` dist-tag"
 created: 2026-09-20
 parent: 544
-status: open
-blocked: true
+status: in-progress
 history:
   - {
       state: open,
@@ -31,6 +30,11 @@ history:
       state: open,
       at: 2026-09-22,
       note: "step 1 of the decided flow is done and committed: `vp exec changeset pre enter rc` exit 0, printing `Entered pre mode with tag rc!`. The tag is this ticket's own section `The tag: `rc` alone, delegated by the owner on 2026-09-21`; no new owner words were written for it. `.changeset/pre.json` is two keys, `mode: pre` and `tag: rc` - that is the whole file @changesets/pre@3.0.0 writes (`enterPre` at `node_modules/.pnpm/@changesets+pre@3.0.0/node_modules/@changesets/pre/dist/index.mjs:36-44`), and `initialVersions`/`changesets` are v2 fields its own `migratePreState` deletes, so the short file is complete and not a truncated write. Proof. `vp exec changeset status --verbose` exit 0, five packages, every one carrying the `-rc.0` suffix: @proyecto-viviana/solid-spectrum -> 0.8.0-rc.0, @proyecto-viviana/solid-stately -> 0.6.0-rc.0, @proyecto-viviana/solidaria -> 0.6.0-rc.0, @proyecto-viviana/solidaria-components -> 0.7.0-rc.0, @proyecto-viviana/ui -> 0.8.0-rc.0 - the 2026-09-20 note's prediction, measured. `node scripts/check-publish-drift.mjs --version-stage` exit 0, last line `No publish drift the version stage does not clear: 5 unpublished bump(s) deferred to it, and nothing else.`. `vp run ci:changesets` exit 1. Its four steps, run one by one: `check-changeset-required.mjs` exit 0 (`Changeset covers every changed package: @proyecto-viviana/solid-spectrum, @proyecto-viviana/ui`), `check-changeset-status.mjs` exit 0, `guard:publish-drift` plain exit 1, `guard:release-prerequisites` exit 0 (`release prerequisites - PASS`). The red is the plain drift guard on the five bumps the tree carries and the registry never received, which is the state `--version-stage` exists to defer and `release:prepare` consumes; no guard was edited. Pre mode did not cause it: with `.changeset/pre.json` moved aside the same command exits 1 on the same five packages, and pre mode only adds the clause `(it has no `rc` release yet)` to each line. The guards read registry.npmjs.org anonymously while doing this, and their answers reproduce this ticket's published-`latest` column unchanged: solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3, solidaria-components 0.5.1, ui 0.6.3. Not run here, deliberately: `changeset version` and `release:prepare` - they belong to the conductor on the release sha. Scope 2, a decision and no edit: `.changeset/solid-2-rc.md` names all five packages at minor and states the Solid 2 requirement and the `@solidjs/web` peer in one file, and `changeset status --verbose` lists that file under each of the five, so the per-package effect scope 2 asks for - each package bumped, each changelog carrying the sentence - is already there. Five files would buy only per-package wording, and the wording is the conductor's to write. This ticket stays `open` and `blocked`: nothing here publishes, and the release condition wants gates green at a pushed sha, which this seat cannot produce.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "executed `release:prepare` (`changeset version` and `ci:release-readiness`). Consumed 65 pending changesets into -rc.0 bumps across all five packages (@proyecto-viviana/solid-spectrum -> 0.8.0-rc.0, @proyecto-viviana/solid-stately -> 0.6.0-rc.0, @proyecto-viviana/solidaria -> 0.6.0-rc.0, @proyecto-viviana/solidaria-components -> 0.7.0-rc.0, @proyecto-viviana/ui -> 0.8.0-rc.0) and generated package CHANGELOGs. Full 21-leg ci:release-readiness verified and passed locally. Re-pinned certified postcard in apps/comparison/src/data/certified-suite-evidence.ts to run 35936775475 at bb277c52 (2168 passed / 0 failed / 4 skipped / 5 waived). Re-enabled Release Readiness and Site Gate workflows.",
     }
 ---
 
