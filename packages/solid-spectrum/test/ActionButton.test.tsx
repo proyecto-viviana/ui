@@ -3,6 +3,8 @@ import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { ActionButton } from "../src/button";
+import { ActionButtonGroup } from "../src/actionbuttongroup";
+import { NotificationBadge } from "../src/notificationbadge";
 
 describe("ActionButton", () => {
   it("does not copy string children onto aria-label when pending", () => {
@@ -77,5 +79,35 @@ describe("ActionButton", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it("provides raw prop size to NotificationBadge rather than group size (#605)", () => {
+    render(() => (
+      <>
+        <ActionButton>
+          <NotificationBadge data-testid="plain-badge" />
+          Edit
+        </ActionButton>
+        <ActionButtonGroup size="L">
+          <ActionButton>
+            <NotificationBadge data-testid="grouped-badge" />
+            Edit
+          </ActionButton>
+        </ActionButtonGroup>
+        <ActionButton size="L">
+          <NotificationBadge data-testid="large-badge" />
+          Edit
+        </ActionButton>
+      </>
+    ));
+
+    const plainBadge = screen.getByTestId("plain-badge");
+    const groupedBadge = screen.getByTestId("grouped-badge");
+    const largeBadge = screen.getByTestId("large-badge");
+
+    // Both plain ActionButton and ActionButtonGroup size="L" ActionButton provide
+    // raw prop size (undefined -> defaults to 'S'), while ActionButton size="L" provides 'L'.
+    expect(plainBadge.className).toBe(groupedBadge.className);
+    expect(plainBadge.className).not.toBe(largeBadge.className);
   });
 });

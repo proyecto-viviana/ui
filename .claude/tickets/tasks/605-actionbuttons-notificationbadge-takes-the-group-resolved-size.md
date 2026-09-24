@@ -4,7 +4,7 @@ type: task
 title: "ActionButton's NotificationBadge takes the group-resolved size where upstream takes the raw prop"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "Separated buttonProps (own props after useFormProps) from groupProps in both packages/solid-spectrum/src/button/ActionButton.tsx and packages/viviana-ui/src/button/ActionButton.tsx. NotificationBadgeContext now reads buttonProps.size, passing undefined when not explicitly set so the badge defaults to S, and ignoring group size while honoring own size. Added regression unit test in ActionButton.test.tsx. Guard layer-boundary exits 0.",
     }
 ---
 

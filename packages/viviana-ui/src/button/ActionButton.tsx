@@ -160,9 +160,10 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   };
 
   // As Button: the Form fills what the layers leave unset; defaults are read-time.
-  const merged = useFormProps(
-    mergeProps<ActionButtonLayeredProps>(flags, contextProps ?? {}, runtimeProps, groupProps),
+  const buttonProps = useFormProps(
+    mergeProps<ActionButtonLayeredProps>(flags, contextProps ?? {}, runtimeProps),
   );
+  const merged = mergeProps<ActionButtonLayeredProps>(buttonProps, groupProps);
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "staticColor",
@@ -375,8 +376,8 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         return local.staticColor;
       },
       get size() {
-        const currentSize = size();
-        return currentSize === "XS" ? undefined : currentSize;
+        const propSize = buttonProps.size;
+        return propSize === "XS" ? undefined : propSize;
       },
       get isDisabled() {
         // Upstream hands the badge RACButton's children render prop, not the
