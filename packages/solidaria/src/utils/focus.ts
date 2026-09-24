@@ -50,76 +50,9 @@ import {
   nodeContains,
 } from "./dom";
 import { runAfterTransition } from "./runAfterTransition";
+import { focusWithoutScrolling, type FocusWithoutScrollingOptions } from "./focusWithoutScrolling";
 
-/**
- * Extra `element.focus()` options besides `preventScroll`, which this helper
- * always sets. `focusVisible` is the HTML focus option that requests CSS
- * `:focus-visible` (Chrome 131+); ignored by browsers that don't implement it.
- */
-export type FocusWithoutScrollingOptions = Pick<FocusOptions, "focusVisible">;
-
-/**
- * Focuses an element without scrolling the page.
- * Uses preventScroll option with fallback for older browsers.
- */
-export function focusWithoutScrolling(
-  element: HTMLElement | null,
-  options?: FocusWithoutScrollingOptions,
-): void {
-  if (!element) return;
-
-  const focusOptions: FocusOptions = { preventScroll: true, ...options };
-
-  try {
-    element.focus(focusOptions);
-  } catch {
-    // Fallback for browsers that don't support preventScroll
-    const scrollableElements = getScrollableAncestors(element);
-    const scrollPositions = scrollableElements.map((el) => ({
-      element: el,
-      scrollTop: el.scrollTop,
-      scrollLeft: el.scrollLeft,
-    }));
-
-    element.focus(options);
-
-    for (const { element: el, scrollTop, scrollLeft } of scrollPositions) {
-      el.scrollTop = scrollTop;
-      el.scrollLeft = scrollLeft;
-    }
-  }
-}
-
-/**
- * Gets all scrollable ancestors of an element.
- */
-function getScrollableAncestors(element: Element): Element[] {
-  const ancestors: Element[] = [];
-  let parent = element.parentElement;
-
-  while (parent) {
-    const style = getComputedStyle(parent);
-    const overflowY = style.overflowY;
-    const overflowX = style.overflowX;
-
-    if (
-      overflowY === "auto" ||
-      overflowY === "scroll" ||
-      overflowX === "auto" ||
-      overflowX === "scroll"
-    ) {
-      ancestors.push(parent);
-    }
-
-    parent = parent.parentElement;
-  }
-
-  // Also include the document scrolling element
-  const doc = getOwnerDocument(element);
-  ancestors.push(doc.documentElement);
-
-  return ancestors;
-}
+export { focusWithoutScrolling, type FocusWithoutScrollingOptions } from "./focusWithoutScrolling";
 
 /**
  * Run `fn` after paint. Mirrors React `useEffect` relative to `preventFocus`,

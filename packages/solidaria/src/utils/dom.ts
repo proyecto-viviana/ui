@@ -88,7 +88,7 @@
 
 import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
 import { isTestEnv } from "./env";
-import { focusWithoutScrolling } from "./focus";
+import { focusWithoutScrolling } from "./focusWithoutScrolling";
 import { isFirefox, isIPad, isMac, isWebKit } from "./platform";
 
 /**

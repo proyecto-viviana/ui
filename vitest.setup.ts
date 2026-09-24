@@ -61,6 +61,11 @@ EventTarget.prototype.dispatchEvent = function (event: Event): boolean {
 
 const originalFocus = HTMLElement.prototype.focus;
 HTMLElement.prototype.focus = function (this: HTMLElement, options?: FocusOptions): void {
+  // JSDOM does not access FocusOptions dictionary members. Access preventScroll
+  // to match real browser Web IDL binding behavior during feature probes.
+  if (options && typeof options === "object" && "preventScroll" in options) {
+    void options.preventScroll;
+  }
   flushAfter(() => originalFocus.call(this, options));
 };
 

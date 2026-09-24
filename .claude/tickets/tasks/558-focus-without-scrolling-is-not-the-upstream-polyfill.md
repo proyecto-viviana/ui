@@ -4,12 +4,17 @@ type: task
 title: "focusWithoutScrolling is not upstream's polyfill, and its rewrite closed an import cycle"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: 'found while reviewing #555 item 6 (`e6384f37`), which added `import { focusWithoutScrolling } from "./focus"` to `packages/solidaria/src/utils/dom.ts:90` while `packages/solidaria/src/utils/focus.ts:44-51` already imports seven names from `./dom`. Read against upstream to find where to cut it, and upstream''s `react-aria/src/utils/focusWithoutScrolling.ts` turns out to be a leaf module with **no runtime imports at all** - one type from `@react-types/shared`. Ours cannot be a leaf because it was written differently from upstream, and the three differences are each a behaviour difference, not a style one. The cycle is the symptom; the port is the defect',
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "Ported focusWithoutScrolling into packages/solidaria/src/utils/focusWithoutScrolling.ts as a pure leaf module with zero runtime imports. Added feature detection probe caching via throwaway div with getter. Updated ancestor walking to parentNode and checked actual overflow (offsetHeight < scrollHeight || offsetWidth < scrollWidth). Updated dom.ts to import from focusWithoutScrolling, breaking the import cycle. Added unit test suite in packages/solidaria/test/focusWithoutScrolling.test.ts verifying probe caching, scroll restoration on ignored preventScroll, and actual overflow ancestor selection. All 171 test files in solidaria passed.",
     }
 ---
 
