@@ -4,12 +4,17 @@ type: task
 title: "createComboBoxState has no validation state, so blur never commits validation"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: 'found while clearing the 73 unused bindings for #555 item 8.3. `packages/solid-stately/src/combobox/createComboBoxState.ts:556` held `let valueOnFocus = ""`, written on focus and never read. Upstream reads it: `react-stately/src/combobox/useComboBoxState.ts:578-593` keeps `valueOnFocus = useRef([inputValue, displayValue])` and, on blur, calls `validation.commitValidation()` when either moved while focused. Our hook has no validation object at all - `rg commitValidation packages/solid-stately/src` names createSelectState, createRadioGroupState, createCheckboxGroupState, createNumberFieldState and createDateFieldState, never combobox. The unused local was the visible end of a missing feature, so the cleanup commit removed the dead write and cites this ticket; the wiring is owed here',
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "wired createFormValidationState into createComboBoxState with full ComboBoxValidationValue surface (selectedKey, value, inputValue). Restored valueOnFocus tracking [inputValue, displayValue] and blur commitValidation() on change. Exposed realtimeValidation, displayValidation, updateValidation, resetValidation, and commitValidation on ComboBoxState. Added unit tests for validation lifecycle in createComboBoxState.test.ts; all 43 tests in solid-stately and 107 tests in solidaria-components ComboBox pass cleanly.",
     }
 ---
 

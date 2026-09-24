@@ -28,12 +28,26 @@ import { createOverlayTriggerState } from "../overlays";
 import { ListCollection } from "../collections/ListCollection";
 import type { Key, CollectionNode, Collection, FocusStrategy } from "../collections/types";
 import type { SelectionManager } from "../selection/SelectionManager";
+import {
+  createFormValidationState,
+  type FormValidationState,
+  type ValidationFunction,
+} from "../form";
 
 export type MenuTriggerAction = "focus" | "input" | "manual";
 
 export type { FocusStrategy } from "../collections/types";
 
 export type FilterFn = (textValue: string, inputValue: string) => boolean;
+
+export interface ComboBoxValidationValue {
+  /** The selected key in the ComboBox. */
+  selectedKey: Key | null;
+  /** The key(s) of the currently selected item(s). */
+  value: Key | null | Iterable<Key>;
+  /** The value of the ComboBox input. */
+  inputValue: string;
+}
 
 export interface ComboBoxStateProps<T = unknown> {
   /** The items to display in the combobox dropdown. */
@@ -90,9 +104,22 @@ export interface ComboBoxStateProps<T = unknown> {
   menuTrigger?: MenuTriggerAction;
   /** Whether to close the menu on blur. */
   shouldCloseOnBlur?: boolean;
+  /** Whether the combobox is invalid (controlled). */
+  isInvalid?: boolean;
+  /** @deprecated Use isInvalid instead. */
+  validationState?: "valid" | "invalid";
+  /** Custom validation function. */
+  validate?: ValidationFunction<ComboBoxValidationValue | null>;
+  /**
+   * Whether to use native HTML form validation or ARIA validation semantics.
+   * @default "native"
+   */
+  validationBehavior?: "aria" | "native";
+  /** Field name(s) for server error lookup. */
+  name?: string | string[];
 }
 
-export interface ComboBoxState<T = unknown> {
+export interface ComboBoxState<T = unknown> extends FormValidationState {
   /** The collection of items (may be filtered). */
   readonly collection: Accessor<Collection<T>>;
   /**
@@ -260,6 +287,43 @@ export function createComboBoxState<T = unknown>(
     }
     getProps().onSelectionChange?.(key);
   };
+
+  const displayValue: Accessor<Key | null | Set<Key>> = () => {
+    return isMultiple() ? selectedKeys() : selectedKey();
+  };
+
+  const validationValue = createMemo<ComboBoxValidationValue | null>(() => {
+    const dVal = displayValue();
+    if (dVal instanceof Set && dVal.size === 0) {
+      return null;
+    }
+    return {
+      inputValue: inputValue(),
+      value: dVal,
+      selectedKey: selectedKey(),
+    };
+  });
+
+  const validation = createFormValidationState({
+    get value() {
+      return validationValue();
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
+    get name() {
+      return getProps().name;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
 
   // ---- Overlay State ----
   // Assigned after createListState; onOpenChange only fires after both exist
@@ -554,18 +618,35 @@ export function createComboBoxState<T = unknown>(
   // ---- Focus Handling ----
   const [isFocused, setIsFocused] = createInternalSignal(false);
 
-  // RAC useComboBoxState.ts:578-593 also keeps `valueOnFocus` and, on blur,
-  // calls `validation.commitValidation()` when the input value or the display
-  // value moved while focused. This hook has no validation state at all, so
-  // the binding was written and never read; #560 owes the whole wiring.
+  let valueOnFocus: [string, Key | null | Set<Key>] = [untrack(inputValue), untrack(displayValue)];
+
+  const hasMoved = (a: Key | null | Set<Key>, b: Key | null | Set<Key>): boolean => {
+    if (a === b) return false;
+    if (a instanceof Set && b instanceof Set) {
+      if (a.size !== b.size) return true;
+      for (const k of a) {
+        if (!b.has(k)) return true;
+      }
+      return false;
+    }
+    return true;
+  };
+
+  // RAC useComboBoxState.ts:578-593 keeps `valueOnFocus = useRef([inputValue, displayValue])`
+  // and, on blur, calls `validation.commitValidation()` when the input value or the display
+  // value moved while focused.
   const setFocused = (focused: boolean) => {
     if (focused) {
+      valueOnFocus = [inputValue(), displayValue()];
       if (menuTrigger() === "focus" && !getProps().isReadOnly) {
         open(null, "focus");
       }
     } else {
       if (shouldCloseOnBlur()) {
         commitValue();
+      }
+      if (inputValue() !== valueOnFocus[0] || hasMoved(displayValue(), valueOnFocus[1])) {
+        validation.commitValidation();
       }
     }
     setIsFocused(focused);
@@ -725,6 +806,11 @@ export function createComboBoxState<T = unknown>(
 
   // ---- Return State ----
   return {
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     collection: displayedCollection,
     isOpen: overlayState.isOpen,
     open,

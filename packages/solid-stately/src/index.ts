@@ -118,6 +118,7 @@ export {
   defaultContainsFilter,
   type ComboBoxState,
   type ComboBoxStateProps,
+  type ComboBoxValidationValue,
   type FilterFn,
   type MenuTriggerAction,
 } from "./combobox";

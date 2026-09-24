@@ -781,6 +781,147 @@ describe("createComboBoxState", () => {
       });
     });
   });
+
+  describe("form validation", () => {
+    it("exposes realtime and display validation state", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          validate: (val) => (!val?.inputValue ? "Input required" : null),
+        });
+
+        flush();
+        expect(state.realtimeValidation().isInvalid).toBe(true);
+        expect(state.displayValidation().isInvalid).toBe(false);
+        dispose();
+      });
+    });
+
+    it("commits validation on blur when input value changes", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          allowsCustomValue: true,
+          defaultInputValue: "Apple",
+          validate: (val) => (val?.inputValue === "Bad" ? "Invalid input" : null),
+        });
+
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        // Focus field
+        state.setFocused(true);
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        // Change value to failing input
+        state.setInputValue("Bad");
+        flush();
+        expect(state.realtimeValidation().isInvalid).toBe(true);
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        // Blur field -> commits validation
+        state.setFocused(false);
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(true);
+        expect(state.displayValidation().validationErrors).toEqual(["Invalid input"]);
+
+        // Focus and restore valid value
+        state.setFocused(true);
+        state.setInputValue("Apple");
+        flush();
+        state.setFocused(false);
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("does not commit validation on blur if value and selection did not move", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultInputValue: "",
+          validate: (val) => (!val?.inputValue ? "Value required" : null),
+        });
+
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        // Focus then blur without changing anything
+        state.setFocused(true);
+        flush();
+        state.setFocused(false);
+        flush();
+
+        // Should not have committed validation on an untouched blur
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("commits validation on blur when selectedKey moves while focused", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          validate: (val) => (val?.selectedKey === "3" ? "Cherry cannot be selected" : null),
+        });
+
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        // Focus, change selection to 3, then blur
+        state.setFocused(true);
+        state.setSelectedKey("3");
+        flush();
+        state.setFocused(false);
+        flush();
+
+        expect(state.displayValidation().isInvalid).toBe(true);
+        expect(state.displayValidation().validationErrors).toEqual(["Cherry cannot be selected"]);
+
+        // Reset validation
+        state.resetValidation();
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        dispose();
+      });
+    });
+
+    it("supports controlled isInvalid prop", () => {
+      createRoot((dispose) => {
+        const [isInvalid, setIsInvalid] = createSignal(false);
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          get isInvalid() {
+            return isInvalid();
+          },
+        });
+
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+
+        setIsInvalid(true);
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(true);
+
+        dispose();
+      });
+    });
+  });
 });
 
 describe("defaultContainsFilter", () => {
