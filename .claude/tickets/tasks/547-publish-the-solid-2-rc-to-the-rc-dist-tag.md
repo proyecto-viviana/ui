@@ -4,7 +4,7 @@ type: task
 title: "Publish the Solid 2 release candidate to the `rc` dist-tag"
 created: 2026-09-20
 parent: 544
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -45,6 +45,11 @@ history:
       state: in-progress,
       at: 2026-09-24,
       note: "diagnosed Release workflow failure in run 35946925695 (changesets/action@v1.9.0 crashed with ENOENT looking for .changeset/pre/changes.md in Changesets v1 compatibility check). Replaced action with direct `pnpm run changeset:publish` invocation in .github/workflows/release.yml, preserving same-SHA release evidence requirement and publish-drift guard. Excluded release.yml in apps/comparison/src/data/certified-suite-evidence.ts to maintain certified postcard currency across release workflow updates.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "All release gates passed cleanly for revision a6830e30 (Certification Gates run 35948468405, Release Readiness run 35948468341, Site Gate run 35948468396). Release workflow run 35949672016 executed `changeset:publish` and published all five packages with OIDC trusted publishing and SLSA provenance (@proyecto-viviana/solid-stately@0.6.0-rc.0, @proyecto-viviana/solidaria@0.6.0-rc.0, @proyecto-viviana/solidaria-components@0.7.0-rc.0, @proyecto-viviana/solid-spectrum@0.8.0-rc.0, @proyecto-viviana/ui@0.8.0-rc.0). Verified live on npm: dist-tag `rc` correctly resolves to each -rc.0 version; dist-tag `latest` remains untouched (0.5.1 / 0.4.3 / 0.5.1 / 0.6.4 / 0.6.3); no `next` tag was created. Clean off-workspace Solid 2 consumer installing from npm @proyecto-viviana/ui@rc built and rendered Button via SSR with full styling classes.",
     }
 ---
 
