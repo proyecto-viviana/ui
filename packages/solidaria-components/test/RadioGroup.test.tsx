@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import {
   Radio,
   RadioContext,
@@ -1657,6 +1658,44 @@ describe("RadioGroup", () => {
       ));
       const group = screen.getByRole("radiogroup");
       expect(group).toHaveAttribute("id", "my-radio-group");
+    });
+
+    it("updates Radio data-disabled and renderProps reactively when group isDisabled changes live (#377)", async () => {
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      let renderPropsReceived: boolean | undefined;
+
+      const { container } = render(() => (
+        <RadioGroup aria-label="Options" isDisabled={isDisabled()}>
+          <Radio value="a">
+            {(rp) => {
+              renderPropsReceived = rp.isDisabled;
+              return "Option A";
+            }}
+          </Radio>
+          <Radio value="b">Option B</Radio>
+        </RadioGroup>
+      ));
+
+      const labels = container.querySelectorAll("label.solidaria-Radio");
+      expect(labels[0]).not.toHaveAttribute("data-disabled");
+      expect(labels[1]).not.toHaveAttribute("data-disabled");
+      expect(renderPropsReceived).toBe(false);
+
+      setIsDisabled(true);
+
+      await waitFor(() => {
+        expect(labels[0]).toHaveAttribute("data-disabled", "true");
+        expect(labels[1]).toHaveAttribute("data-disabled", "true");
+        expect(renderPropsReceived).toBe(true);
+      });
+
+      setIsDisabled(false);
+
+      await waitFor(() => {
+        expect(labels[0]).not.toHaveAttribute("data-disabled");
+        expect(labels[1]).not.toHaveAttribute("data-disabled");
+        expect(renderPropsReceived).toBe(false);
+      });
     });
   });
 });

@@ -238,6 +238,41 @@ describe("RadioGroup", () => {
       await user.click(radios[1]);
       expect(onChangeSpy).toHaveBeenCalledWith("b");
     });
+
+    it("updates radio labels reactively when group isDisabled changes live (#377)", async () => {
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      render(() => (
+        <RadioGroup aria-label="Test group" isDisabled={isDisabled()}>
+          <Radio value="a">Option A</Radio>
+          <Radio value="b">Option B</Radio>
+        </RadioGroup>
+      ));
+      const radios = screen.getAllByRole("radio");
+      const labelA = radios[0].closest("label")!;
+      const labelB = radios[1].closest("label")!;
+
+      expect(radios[0]).not.toBeDisabled();
+      expect(labelA).not.toHaveAttribute("data-disabled");
+      expect(labelB).not.toHaveAttribute("data-disabled");
+
+      setIsDisabled(true);
+
+      await waitFor(() => {
+        expect(radios[0]).toBeDisabled();
+        expect(radios[1]).toBeDisabled();
+        expect(labelA).toHaveAttribute("data-disabled", "true");
+        expect(labelB).toHaveAttribute("data-disabled", "true");
+      });
+
+      setIsDisabled(false);
+
+      await waitFor(() => {
+        expect(radios[0]).not.toBeDisabled();
+        expect(radios[1]).not.toBeDisabled();
+        expect(labelA).not.toHaveAttribute("data-disabled");
+        expect(labelB).not.toHaveAttribute("data-disabled");
+      });
+    });
   });
 
   describe("keyboard interaction", () => {

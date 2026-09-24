@@ -4,12 +4,17 @@ type: task
 title: "Keep Radio disabled styles reactive after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 radiogroup functional pass: live isDisabled sets native input.disabled and group aria-disabled/data-disabled on both and Tab skips both, but Solid radio labels omit data-disabled and keep circle border rgb(41,41,41) (React gray-400 rgb(198,198,198) + data-disabled on every label). URL remount of the same prop already matches. createRadio returns isDisabled as a one-shot boolean; Radio label data-* and style render props read radioAria.isDisabled while inputProps still re-reads",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "createRadio now returns isDisabled as a reactive getter; Radio label data-disabled and renderProps reactively update when group isDisabled changes live after mount; verified with tests in solidaria-components and solid-spectrum",
     }
 ---
 

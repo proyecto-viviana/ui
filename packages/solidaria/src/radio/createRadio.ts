@@ -374,7 +374,9 @@ export function createRadio(
     get descriptionProps() {
       return { id: descriptionId() };
     },
-    isDisabled: isDisabled(),
+    get isDisabled() {
+      return isDisabled();
+    },
     isSelected,
     isPressed: combinedIsPressed,
   };
