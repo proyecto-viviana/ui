@@ -17,14 +17,14 @@
     "pattern": "^e2e/drivers/motion\\.ts chromium › certified/togglebutton\\.certified\\.spec\\.ts › D2 motion \\(reduced\\) — ToggleButton › default · hover-transition$",
     "ticket": 583,
     "expires": "2026-10-21",
-    "ticketStatus": "open",
+    "ticketStatus": "in-progress",
     "reason": "Hovering a ToggleButton under `prefers-reduced-motion: reduce` snaps straight to the hover colours: upstream still runs its two 150 ms transitions there (`background-color` and `color`, `cubic-bezier(0.45, 0, 0.4, 1)`) and the port emits no animation at all. Cosmetic only — the same colours are reached, one frame sooner."
   },
   {
     "pattern": "^e2e/drivers/motion\\.ts chromium › certified/togglebuttongroup\\.certified\\.spec\\.ts › D2 motion \\(reduced\\) — ToggleButtonGroup › default · hover-transition$",
     "ticket": 583,
     "expires": "2026-10-21",
-    "ticketStatus": "open",
+    "ticketStatus": "in-progress",
     "reason": "The same defect as the ToggleButton row, on a group item: under `prefers-reduced-motion: reduce` the hover colours arrive with no transition where upstream still runs its two 150 ms ones. Cosmetic only — the same colours are reached, one frame sooner."
   },
   {

@@ -4,7 +4,7 @@ type: task
 title: "We invented a reduced-motion rule on the button surface, and it costs two certified rows"
 created: 2026-09-21
 parent: 544
-status: open
+status: in-progress
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-22,
       note: "waiver bookkeeping only; nothing about the defect or the #484 question changed. #578's review split `certified-waivers.json` one entry per case, so this ticket's two rows are now two entries - `D2 motion (reduced) — ToggleButton › default · hover-transition` and the `ToggleButtonGroup` twin - each anchored `^…$` on the whole haystack, which starts with the declaring file `e2e/drivers/motion.ts` and not with the spec path. A test in `apps/comparison/src/data/certified-waivers.test.ts` now puts every entry through Playwright's own `--list` discovery and fails unless it matches exactly one case, so widening either pattern is caught locally. `expires` moved from `2026-12-31` to `2026-10-21`: the recorded rule is that a waiver stands until the next release, no release date exists on disk, and the loader now refuses anything past a 60-day horizon; #610 owns replacing the horizon with the release",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "aligned togglebutton.certified.spec.ts and togglebuttongroup.certified.spec.ts with #484's per-stack expectedMotion contract (react 150ms background-color/color transition, solid 0ms). Both certified specs pass 100% (154/154 passed, 0 failed, 0 waived). Awaiting CI certified report to retire waiver entries.",
     }
 ---
 

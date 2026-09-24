@@ -66,6 +66,23 @@ const toggleButtonScenario: DriverScenario = {
       {
         id: "hover-transition",
         scopes: ["panel"],
+        expectedMotion: {
+          normal: {
+            transitionProperties: ["background-color", "color"],
+            durationMs: 150,
+          },
+          reduced: {
+            react: {
+              transitionProperties: ["background-color", "color"],
+              durationMs: 150,
+            },
+            solid: {
+              transitionProperties: [],
+              durationMs: 0,
+              maxAnimationDurationMs: 0,
+            },
+          },
+        },
         run: async ({ target }) => {
           await hoverLocator(target);
         },
