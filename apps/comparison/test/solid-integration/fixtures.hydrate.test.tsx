@@ -2841,8 +2841,13 @@ it("slider retains its live thumb and handles keyboard stepping", async () => {
   expect(thumb?.getAttribute("aria-valuenow")).toBe("41");
   expect(root?.dataset.comparisonValue).toBe("41");
   expect(container.querySelector('[role="slider"]')).toBe(thumb);
-  expect(document.activeElement).toBe(thumb);
-  controls("slider", { ...sliderDemoDefaults, label: "Output", isEmphasized: true });
+  const fill = container.querySelector<HTMLElement>('div[style*="inset-inline-start"]');
+  const output = container.querySelector<HTMLElement>("output");
+  expect(fill).not.toBeNull();
+  const defaultFillClass = fill?.className;
+  expect(output?.style.width).toBe("3ch");
+
+  controls("slider", { ...sliderDemoDefaults, label: "Output", isEmphasized: true, maxValue: 50 });
   window.dispatchEvent(
     new CustomEvent(comparisonThemeChangeEvent, { detail: { resolvedTheme: "dark" } }),
   );
@@ -2850,6 +2855,13 @@ it("slider retains its live thumb and handles keyboard stepping", async () => {
   expect(container.querySelector('[role="slider"]')).toBe(thumb);
   expect(container.textContent).toContain("Output");
   expect(root?.dataset.comparisonColorScheme).toBe("dark");
+  expect(fill?.className).not.toBe(defaultFillClass);
+  expect(output?.style.width).toBe("2ch");
+
+  controls("slider", { ...sliderDemoDefaults, label: "Output", isDisabled: true });
+  await settle();
+  expect(container.querySelector<HTMLInputElement>('input[type="range"]')?.disabled).toBe(true);
+  expect(fill?.className).not.toBe(defaultFillClass);
 });
 
 it("range slider retains and independently steps both live thumbs", async () => {

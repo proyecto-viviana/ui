@@ -4,12 +4,17 @@ type: task
 title: "Update Slider fill when emphasized or disabled changes after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 slider functional pass: URL ?isEmphasized=true / ?isDisabled=true paint fill accent-900 / disabled on both; live isEmphasized leaves Solid fill gray-700 rgb(80,80,80) (React accent rgb(59,99,251)); live isDisabled updates Solid upperTrack/label/thumb/input.disabled and Tab skip but leaves fill gray-700 (React disabled rgb(233,233,233)). Live maxValue=50 leaves Solid output 24px (3ch from mount-time max 100) vs React 16px. SliderTrackContent passes filledTrack({isDisabled,isEmphasized}) as a one-shot class string into SliderFill",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "restored reactive getters for class and style in useRenderProps calls in solidaria-components Slider; wired reactive filledTrack getter and output min/max width style in solid-spectrum Slider; regression tests verified in solidaria-components, solid-spectrum, comparison hydrate suite, and Playwright slider-visual and certified suites.",
     }
 ---
 

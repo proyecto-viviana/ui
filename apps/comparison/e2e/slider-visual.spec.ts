@@ -66,7 +66,7 @@ async function sliderGeometry(root: Locator) {
     const implicitSliders = Array.from(
       element.querySelectorAll<HTMLInputElement>('input[type="range"]'),
     ).filter((candidate) => !explicitSliders.includes(candidate));
-    const sliders = [...explicitSliders, ...implicitSliders].filter(
+    const sliders = (explicitSliders.length > 0 ? explicitSliders : implicitSliders).filter(
       (candidate) => candidate.getBoundingClientRect().width > 0,
     );
     const slider = sliders[0] ?? null;
@@ -115,13 +115,21 @@ async function sliderGeometry(root: Locator) {
       .sort((a, b) => area(b.rect) - area(a.rect));
     const track = wideTrackCandidates[0] ?? null;
     const fill =
-      wideTrackCandidates.find(
-        (candidate) =>
-          track != null &&
-          candidate.node !== track.node &&
-          candidate.style.backgroundColor !== track.style.backgroundColor &&
-          Math.abs(candidate.rect.height - track.rect.height) <= 1,
-      ) ?? null;
+      divs
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = window.getComputedStyle(node);
+          return { node, rect, style };
+        })
+        .find(
+          (candidate) =>
+            track != null &&
+            candidate.node !== track.node &&
+            candidate.rect.width >= 1 &&
+            candidate.style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+            candidate.style.backgroundColor !== track.style.backgroundColor &&
+            Math.abs(candidate.rect.height - track.rect.height) <= 1,
+        ) ?? null;
     const sliderRect = visibleThumb?.rect ?? slider?.getBoundingClientRect();
     const thumbStyle =
       visibleThumb?.style ?? (slider == null ? null : window.getComputedStyle(slider));
@@ -142,7 +150,11 @@ async function sliderGeometry(root: Locator) {
         slider?.getAttribute("aria-valuemax") ??
         (slider instanceof HTMLInputElement ? slider.max : null),
       valueText: slider?.getAttribute("aria-valuetext") ?? null,
-      disabled: slider?.getAttribute("aria-disabled") === "true",
+      disabled:
+        slider?.getAttribute("aria-disabled") === "true" ||
+        (slider instanceof HTMLInputElement
+          ? slider.disabled
+          : (slider?.hasAttribute("disabled") ?? false)),
       labelText: label?.textContent?.trim() ?? null,
       outputText: output?.textContent?.trim() ?? null,
       slider: relativeRect(sliderRect, rootRect),
@@ -352,5 +364,90 @@ test.describe("comparison Slider visual parity", () => {
         "41",
       );
     }
+  });
+
+  test("live controls change updates isEmphasized, isDisabled, and maxValue with exact parity", async ({
+    page,
+  }) => {
+    const fixtures = await sliderFixtures(page);
+
+    const initialSolid = await sliderGeometry(fixtures.solidRoot);
+    const initialReact = await sliderGeometry(fixtures.reactRoot);
+    expectSliderGeometryToMatch(initialSolid, initialReact);
+    expect(initialSolid.fillBackground).not.toBeNull();
+
+    // 1. Live isEmphasized: true
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: { component: "slider", props: { isEmphasized: true } },
+        }),
+      );
+    });
+
+    await expect
+      .poll(async () => (await sliderGeometry(fixtures.solidRoot)).fillBackground)
+      .toBe((await sliderGeometry(fixtures.reactRoot)).fillBackground);
+    const emphasizedSolid = await sliderGeometry(fixtures.solidRoot);
+    const emphasizedReact = await sliderGeometry(fixtures.reactRoot);
+    expectSliderGeometryToMatch(emphasizedSolid, emphasizedReact);
+    expect(emphasizedSolid.fillBackground).not.toBe(initialSolid.fillBackground);
+
+    // 2. Live isDisabled: true
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: { component: "slider", props: { isEmphasized: false, isDisabled: true } },
+        }),
+      );
+    });
+
+    await expect
+      .poll(async () => fixtures.solidRoot.locator('input[type="range"]').getAttribute("disabled"))
+      .toBe("");
+    await expect
+      .poll(async () => fixtures.reactRoot.locator('input[type="range"]').getAttribute("disabled"))
+      .toBe("");
+    const disabledSolid = await sliderGeometry(fixtures.solidRoot);
+    const disabledReact = await sliderGeometry(fixtures.reactRoot);
+    expect(disabledSolid.disabled).toBe(true);
+    expect(disabledReact.disabled).toBe(true);
+
+    const solidFillBg = await fixtures.solidRoot
+      .locator('div[style*="inset-inline-start"]')
+      .evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    const reactFillBg = await fixtures.reactRoot
+      .locator('div[style*="inset-inline-start"]')
+      .evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(solidFillBg).toBe(reactFillBg);
+    expect(solidFillBg).not.toBe(initialSolid.fillBackground);
+
+    // 3. Live maxValue: 50
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("comparison:controls-change", {
+          detail: {
+            component: "slider",
+            props: { label: "Gain", step: 5, maxValue: 50, value: 10, isDisabled: false },
+          },
+        }),
+      );
+    });
+
+    await expect
+      .poll(async () => fixtures.solidPanel.locator("output").evaluate((el) => el.style.width))
+      .toBe("2ch");
+    const solidOutputWidth = await fixtures.solidPanel
+      .locator("output")
+      .evaluate((el) => el.style.width);
+    const reactOutputWidth = await fixtures.reactPanel
+      .locator("output")
+      .evaluate((el) => el.style.width);
+    expect(solidOutputWidth).toBe("2ch");
+    expect(reactOutputWidth).toBe("2ch");
+
+    const max50Solid = await sliderGeometry(fixtures.solidRoot);
+    const max50React = await sliderGeometry(fixtures.reactRoot);
+    expectSliderGeometryToMatch(max50Solid, max50React);
   });
 });

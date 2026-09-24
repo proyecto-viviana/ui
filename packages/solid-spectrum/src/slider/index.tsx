@@ -587,11 +587,13 @@ export function Slider(props: SliderProps): JSX.Element {
         >
           <HeadlessSliderFill
             offset={local.fillOffset}
-            class={filledTrack({
-              isDisabled: trackRenderProps().isDisabled,
-              isEmphasized: isEmphasized(),
-              trackStyle: trackStyle(),
-            })}
+            class={() =>
+              filledTrack({
+                isDisabled: trackRenderProps().isDisabled,
+                isEmphasized: isEmphasized(),
+                trackStyle: trackStyle(),
+              })
+            }
           />
         </div>
         <HeadlessSliderThumb
@@ -648,11 +650,11 @@ export function Slider(props: SliderProps): JSX.Element {
             <Show when={labelPosition() === "top" && showOutput()}>
               <HeadlessSliderOutput
                 class={outputStyle(labelStyleState(renderProps))}
-                style={{
+                style={() => ({
                   width: `${maxLabelLength()}ch`,
                   "min-width": `${maxLabelLength()}ch`,
                   "font-variant-numeric": "tabular-nums",
-                }}
+                })}
               />
             </Show>
           </div>
@@ -671,11 +673,11 @@ export function Slider(props: SliderProps): JSX.Element {
             <Show when={labelPosition() === "side" && showOutput()}>
               <HeadlessSliderOutput
                 class={outputStyle(labelStyleState(renderProps))}
-                style={{
+                style={() => ({
                   width: `${maxLabelLength()}ch`,
                   "min-width": `${maxLabelLength()}ch`,
                   "font-variant-numeric": "tabular-nums",
-                }}
+                })}
               />
             </Show>
           </div>

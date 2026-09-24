@@ -12,6 +12,7 @@
  * - Orientation
  */
 
+import { createSignal, flush, type JSX } from "solid-js";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Slider, SliderTrack, SliderThumb, SliderFill, SliderOutput } from "../src/Slider";
@@ -656,7 +657,77 @@ describe("SliderFill", () => {
     expect(document.querySelector(".fill-50-horizontal")).toBeInTheDocument();
   });
 
+  it("should update class and style reactively when signal props change", () => {
+    const [fillClass, setFillClass] = createSignal("fill-initial");
+    const [fillStyle, setFillStyle] = createSignal<JSX.CSSProperties>({ opacity: "0.5" });
+
+    render(() => (
+      <Slider aria-label="Test Slider" defaultValue={50}>
+        {() => (
+          <SliderTrack>
+            {() => (
+              <>
+                <SliderFill class={fillClass()} style={fillStyle()} />
+                <SliderThumb />
+              </>
+            )}
+          </SliderTrack>
+        )}
+      </Slider>
+    ));
+
+    const fill = document.querySelector(".fill-initial") as HTMLElement;
+    expect(fill).toHaveClass("fill-initial");
+    expect(fill.style.opacity).toBe("0.5");
+
+    setFillClass("fill-updated");
+    setFillStyle({ opacity: "1" });
+    flush();
+
+    expect(fill).toHaveClass("fill-updated");
+    expect(fill).not.toHaveClass("fill-initial");
+    expect(fill.style.opacity).toBe("1");
+  });
+
   it("should throw when used outside a Slider", () => {
     expect(() => render(() => <SliderFill />)).toThrow(/must be used within a Slider/);
+  });
+});
+
+describe("SliderOutput", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("should update class and style reactively when signal props change", () => {
+    const [outputClass, setOutputClass] = createSignal("out-initial");
+    const [outputStyle, setOutputStyle] = createSignal<JSX.CSSProperties>({ width: "3ch" });
+
+    render(() => (
+      <Slider aria-label="Test Slider" defaultValue={50}>
+        {() => (
+          <>
+            <SliderTrack>{() => <SliderThumb />}</SliderTrack>
+            <SliderOutput class={outputClass()} style={outputStyle()} />
+          </>
+        )}
+      </Slider>
+    ));
+
+    const output = document.querySelector("output") as HTMLElement;
+    expect(output).toHaveClass("out-initial");
+    expect(output.style.width).toBe("3ch");
+
+    setOutputClass("out-updated");
+    setOutputStyle({ width: "2ch" });
+    flush();
+
+    expect(output).toHaveClass("out-updated");
+    expect(output).not.toHaveClass("out-initial");
+    expect(output.style.width).toBe("2ch");
+  });
+
+  it("should throw when used outside a Slider", () => {
+    expect(() => render(() => <SliderOutput />)).toThrow(/must be used within a Slider/);
   });
 });
