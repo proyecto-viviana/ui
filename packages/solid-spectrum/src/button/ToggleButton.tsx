@@ -24,6 +24,7 @@ import {
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
+  DialogTriggerContext,
   ToggleButton as HeadlessToggleButton,
   MenuTriggerContext,
   PopoverTriggerContext,
@@ -193,6 +194,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   );
   const menuTriggerContext = useContext(MenuTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const dialogTriggerContext = useContext(DialogTriggerContext);
   const assignButtonRefs = mergeContextRefs(
     (contextProps as { ref?: RefLike<HTMLButtonElement> } | null)?.ref,
     props.ref,
@@ -403,6 +405,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
         setResolvedButtonElement(element);
+        dialogTriggerContext?.setTriggerRef?.(element);
         popoverTriggerContext?.setTriggerRef(element);
         menuTriggerContext?.setTriggerRef?.(element);
         assignButtonRefs(element);

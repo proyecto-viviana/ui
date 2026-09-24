@@ -10,6 +10,8 @@ import { Dialog, DialogTrigger, Heading, type DialogRenderProps } from "../src/D
 import { Text } from "../src/Text";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { Button } from "../src/Button";
+import { ToggleButton } from "../src/ToggleButton";
+import { Link } from "../src/Link";
 import {
   setupUser,
   assertAriaIdIntegrity,
@@ -781,5 +783,76 @@ describe("Dialog a11y focus & ARIA integrity", () => {
     vi.runAllTimers();
 
     assertAriaIdIntegrity(document.body);
+  });
+
+  it("DialogTrigger around Button produces dialog whose aria-labelledby resolves to the button element", () => {
+    render(() => (
+      <DialogTrigger isOpen>
+        <Button>Open Dialog</Button>
+        <Dialog>
+          <p>Dialog body</p>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const button = screen.getByRole("button", { name: "Open Dialog" });
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    expect(button.id).toBe(labelledBy);
+    expect(document.getElementById(labelledBy!)).toBe(button);
+  });
+
+  it("DialogTrigger around ToggleButton produces dialog whose aria-labelledby resolves to the toggle button element", () => {
+    render(() => (
+      <DialogTrigger isOpen>
+        <ToggleButton>Toggle Dialog</ToggleButton>
+        <Dialog>
+          <p>Dialog body</p>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const toggleButton = screen.getByRole("button", { name: "Toggle Dialog" });
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    expect(toggleButton.id).toBe(labelledBy);
+    expect(document.getElementById(labelledBy!)).toBe(toggleButton);
+  });
+
+  it("DialogTrigger around Link produces dialog whose aria-labelledby resolves to the link element", () => {
+    render(() => (
+      <DialogTrigger isOpen>
+        <Link href="#open">Open via Link</Link>
+        <Dialog>
+          <p>Dialog body</p>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const link = screen.getByRole("link", { name: "Open via Link" });
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    expect(link.id).toBe(labelledBy);
+    expect(document.getElementById(labelledBy!)).toBe(link);
+  });
+
+  it("warns when Dialog lacks Heading, aria-label, aria-labelledby, and trigger context", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    render(() => (
+      <Dialog>
+        <p>Unlabelled dialog content</p>
+      </Dialog>
+    ));
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'If a Dialog does not contain a <Heading slot="title">, it must have an aria-label or aria-labelledby attribute for accessibility.',
+    );
   });
 });

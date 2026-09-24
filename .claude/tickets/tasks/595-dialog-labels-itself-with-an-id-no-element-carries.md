@@ -4,7 +4,7 @@ type: task
 title: "Dialog labels itself with a trigger id no element carries, and the fix the audit prescribed is the wrong one"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "declarative trigger id assigned in Button, ToggleButton, and Link; solid-spectrum ActionButton, ToggleButton, and LinkButton register with DialogTriggerContext; Dialog dev-mode accessibility warning added when unlabelled without Heading; preserved trigger fallback arm mirroring RAC 1.21.0 Dialog.mjs:59; verified by CSR and SSR suites",
     }
 ---
 

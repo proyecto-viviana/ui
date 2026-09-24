@@ -19,7 +19,7 @@
  * Port of react-aria-components/src/Link.tsx
  */
 
-import { createContext, createMemo } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
 import type { ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
@@ -40,6 +40,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { handleLinkClick, useRouter } from "./RouterProvider";
+import { DialogTriggerContext } from "./contexts";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
@@ -69,6 +70,8 @@ export interface LinkRenderProps {
 }
 
 export interface LinkProps extends Omit<AriaLinkProps, "elementType">, HoverEvents, SlotProps {
+  /** The unique identifier for the element. */
+  id?: string;
   /** The children of the component. A function may be provided to receive render props. */
   children?: RenderChildren<LinkRenderProps>;
   /** The CSS className for the element. */
@@ -261,6 +264,11 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
     handleLinkClick(event, router, ariaProps.href, ariaProps.routerOptions);
   };
 
+  const dialogTriggerContext = useContext(DialogTriggerContext);
+  const resolvedId = () =>
+    (ariaProps.id as string | undefined) ||
+    (dialogTriggerContext && local.slot !== "close" ? dialogTriggerContext.triggerId : undefined);
+
   return (
     <ElementTag
       {...mergeProps(
@@ -269,6 +277,9 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
         cleanHoverProps(),
         cleanFocusProps(),
         {
+          get id() {
+            return resolvedId();
+          },
           onClick: onLinkClick,
           get class() {
             return renderProps.class();
@@ -301,6 +312,9 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
         const linkRef = (linkAria.linkProps as { ref?: (el: HTMLElement) => void }).ref;
         if (typeof linkRef === "function") {
           linkRef(element);
+        }
+        if (dialogTriggerContext?.setTriggerRef && local.slot !== "close") {
+          dialogTriggerContext.setTriggerRef(element);
         }
       }}
       // last, so a stray `tag` in the spread can never redirect the element

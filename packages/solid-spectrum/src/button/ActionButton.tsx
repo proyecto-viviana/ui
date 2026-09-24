@@ -490,6 +490,8 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
         setResolvedButtonElement(element);
+        dialogTriggerContext?.setTriggerRef?.(element);
+        popoverTriggerContext?.setTriggerRef?.(element);
         assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {

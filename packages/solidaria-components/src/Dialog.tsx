@@ -20,6 +20,7 @@
  */
 
 import {
+  children as resolveChildren,
   createContext,
   createMemo,
   createSignal,
@@ -30,7 +31,7 @@ import {
   createTrackedEffect,
 } from "solid-js";
 import type { Context } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { isServer, type JSX } from "@solidjs/web";
 import {
   createDialog,
   createOverlayTrigger,
@@ -46,7 +47,7 @@ import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
 import { OverlayContext } from "./Popover";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { isDevEnv, splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DEFAULT_SLOT,
   Provider,
@@ -88,6 +89,7 @@ export interface DialogTriggerProps {
 interface DialogContextValue {
   close: () => void;
   titleId?: string;
+  registerHeading?: () => void;
 }
 
 export const DialogContext = createContext<DialogContextValue | null>(null);
@@ -244,19 +246,40 @@ export function Dialog(props: DialogProps): JSX.Element {
     triggerContext?.state.close();
   };
 
+  let hasHeading = false;
+  const registerHeading = () => {
+    hasHeading = true;
+  };
+
   // Label the dialog by its trigger when no title slot resolved. Mirrors RAC
   // `Dialog`: the trigger id arrives by context, so it is a fallback only and a
   // rendered title still wins. `createDialog`'s slot id clears itself when no
   // element takes it, which is what makes the fallback reachable.
+  // Note: the `?? triggerContext?.triggerId` fallback arm mirrors RAC 1.21.0
+  // (`Dialog.mjs:59`, `overlayProps['aria-labelledby'] = triggerProps.id`).
+  let hasWarned = false;
   const ariaLabelledBy = () => {
-    const p = dialogProps();
-    if (p["aria-labelledby"]) {
-      return p["aria-labelledby"] as string;
+    if (ariaProps["aria-labelledby"]) {
+      return ariaProps["aria-labelledby"] as string;
     }
-    if (p["aria-label"]) {
+    if (ariaProps["aria-label"]) {
       return undefined;
     }
-    return triggerContext?.triggerRef()?.id ?? triggerContext?.triggerId;
+    const p = dialogProps();
+    if (!isServer && p["aria-labelledby"]) {
+      return p["aria-labelledby"] as string;
+    }
+    if (hasHeading) {
+      return titleId();
+    }
+    const fallbackId = triggerContext?.triggerRef()?.id ?? triggerContext?.triggerId;
+    if (!fallbackId && !hasWarned && isDevEnv()) {
+      hasWarned = true;
+      console.warn(
+        'If a Dialog does not contain a <Heading slot="title">, it must have an aria-label or aria-labelledby attribute for accessibility.',
+      );
+    }
+    return fallbackId;
   };
 
   // RAC useDialog → useOverlayFocusContain: a nested Dialog still contains
@@ -286,38 +309,48 @@ export function Dialog(props: DialogProps): JSX.Element {
   );
 
   return (
-    <DialogContext value={{ close, titleId: titleId() }}>
-      <section
-        {...triggerContext?.overlayProps}
-        {...dialogProps()}
-        {...domProps()}
-        aria-labelledby={ariaLabelledBy()}
-        ref={setDialogRef}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        slot={local.slot}
-      >
-        <Provider
-          values={
-            [
+    <DialogContext value={{ close, titleId: titleId(), registerHeading }}>
+      {(() => {
+        const rendered = resolveChildren(() => (
+          <Provider
+            values={
               [
-                TextContext,
-                {
-                  slots: {
-                    [DEFAULT_SLOT]: {},
-                    get description() {
-                      return contentProps();
+                [
+                  TextContext,
+                  {
+                    slots: {
+                      [DEFAULT_SLOT]: {},
+                      get description() {
+                        return contentProps();
+                      },
                     },
                   },
-                },
-              ],
-              [ButtonContext, { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }],
-            ] as Array<[Context<unknown>, unknown]>
-          }
-        >
-          {renderProps.renderChildren()}
-        </Provider>
-      </section>
+                ],
+                [
+                  ButtonContext,
+                  { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } },
+                ],
+              ] as Array<[Context<unknown>, unknown]>
+            }
+          >
+            {renderProps.renderChildren()}
+          </Provider>
+        ))();
+        return (
+          <section
+            {...triggerContext?.overlayProps}
+            {...dialogProps()}
+            {...domProps()}
+            aria-labelledby={ariaLabelledBy()}
+            ref={setDialogRef}
+            class={renderProps.class()}
+            style={renderProps.style()}
+            slot={local.slot}
+          >
+            {rendered}
+          </section>
+        );
+      })()}
     </DialogContext>
   );
 }
@@ -339,6 +372,7 @@ export interface HeadingProps {
  */
 export function Heading(props: HeadingProps): JSX.Element {
   const dialogContext = useContext(DialogContext);
+  dialogContext?.registerHeading?.();
   const level = () => props.level ?? 2;
   const id = () => dialogContext?.titleId;
   let headingRef: HTMLHeadingElement | undefined;

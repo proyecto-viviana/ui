@@ -207,6 +207,7 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       style={getStyle}
       ref={(element: HTMLElement) => {
         linkElement = element as HTMLAnchorElement;
+        dialogTriggerContext?.setTriggerRef?.(element);
         assignLinkRefs(element);
       }}
       onHoverChange={(hovered) => {

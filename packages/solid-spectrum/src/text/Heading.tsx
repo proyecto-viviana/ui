@@ -17,6 +17,7 @@ import { createContext, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import { Dynamic } from "@solidjs/web";
+import { DialogContext as HeadlessDialogContext } from "@proyecto-viviana/solidaria-components";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -34,6 +35,8 @@ export interface HeadingProps extends BaseContentProps<HTMLHeadingElement> {
 export const HeadingContext = createContext<SpectrumContextValue<HeadingProps>>(null);
 
 export function Heading(props: HeadingProps): JSX.Element {
+  const headlessDialogContext = useContext(HeadlessDialogContext);
+  headlessDialogContext?.registerHeading?.();
   const contextProps = getSlottedContextProps(useContext(HeadingContext), props.slot);
   const merged = mergeProps(contextProps ?? {}, props) as HeadingProps;
   const [local] = splitProps(merged, [

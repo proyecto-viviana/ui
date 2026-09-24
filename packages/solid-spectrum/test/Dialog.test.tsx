@@ -20,7 +20,7 @@ import {
   Heading,
   useDialogContainer,
 } from "../src/dialog";
-import { Button } from "../src/button";
+import { ActionButton, Button, LinkButton, ToggleButton } from "../src/button";
 
 describe("Dialog (solid-spectrum)", () => {
   it("opens from trigger and closes via close action", async () => {
@@ -340,5 +340,94 @@ describe("Dialog (solid-spectrum)", () => {
     expect(fullscreenDialog).toHaveClass(/comparison-spectrum-FullscreenDialog/);
     expect(fullscreenDialog).toHaveAttribute("data-variant", "fullscreenTakeover");
     expect(within(fullscreenDialog).getByText("Fullscreen body")).toBeInTheDocument();
+  });
+
+  it("DialogTrigger around Button produces dialog whose aria-labelledby resolves to button in CSR", () => {
+    render(() => (
+      <DialogTrigger
+        defaultOpen
+        trigger={<Button>Trigger Button</Button>}
+        content={() => (
+          <Dialog>
+            <p>Body</p>
+          </Dialog>
+        )}
+      />
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    const trigger = document.getElementById(labelledBy!);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toContain("Trigger Button");
+  });
+
+  it("DialogTrigger around ActionButton produces dialog whose aria-labelledby resolves to action button in CSR", () => {
+    render(() => (
+      <DialogTrigger
+        defaultOpen
+        trigger={<ActionButton>Trigger Action</ActionButton>}
+        content={() => (
+          <Dialog>
+            <p>Body</p>
+          </Dialog>
+        )}
+      />
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    const trigger = document.getElementById(labelledBy!);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toContain("Trigger Action");
+  });
+
+  it("DialogTrigger around ToggleButton produces dialog whose aria-labelledby resolves to toggle button in CSR", () => {
+    render(() => (
+      <DialogTrigger
+        defaultOpen
+        trigger={<ToggleButton>Trigger Toggle</ToggleButton>}
+        content={() => (
+          <Dialog>
+            <p>Body</p>
+          </Dialog>
+        )}
+      />
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    const trigger = document.getElementById(labelledBy!);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toContain("Trigger Toggle");
+  });
+
+  it("DialogTrigger around LinkButton produces dialog whose aria-labelledby resolves to link button in CSR", () => {
+    render(() => (
+      <DialogTrigger
+        defaultOpen
+        trigger={<LinkButton href="#test">Trigger Link</LinkButton>}
+        content={() => (
+          <Dialog>
+            <p>Body</p>
+          </Dialog>
+        )}
+      />
+    ));
+
+    const dialog = screen.getByRole("dialog");
+    const labelledBy = dialog.getAttribute("aria-labelledby");
+
+    expect(labelledBy).toBeTruthy();
+    const trigger = document.getElementById(labelledBy!);
+    expect(trigger).not.toBeNull();
+    expect(trigger?.tagName.toLowerCase()).toBe("a");
+    expect(trigger?.textContent).toContain("Trigger Link");
   });
 });

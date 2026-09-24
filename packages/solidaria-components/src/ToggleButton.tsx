@@ -19,7 +19,7 @@
  * Based on packages/react-aria-components/src/ToggleButton.tsx.
  */
 
-import { createContext, createMemo, useContext } from "solid-js";
+import { createContext, createMemo, createUniqueId, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createToggleButton,
@@ -41,6 +41,7 @@ import {
   dataAttr,
 } from "./utils";
 import { useToggleButtonGroupStateContext } from "./ToggleButtonGroup";
+import { DialogTriggerContext } from "./contexts";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
@@ -166,15 +167,28 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     return rest;
   };
 
+  const dialogTriggerContext = useContext(DialogTriggerContext);
+  const buttonId = createUniqueId();
+  const resolvedId = () =>
+    (local.id as string | undefined) ||
+    (dialogTriggerContext && local.slot !== "close" ? dialogTriggerContext.triggerId : undefined) ||
+    buttonId;
+
   return (
     <button
       {...domProps()}
       {...cleanButtonProps()}
       {...cleanFocusProps()}
       {...cleanHoverProps()}
+      id={resolvedId()}
       class={renderProps.class()}
       style={renderProps.style()}
-      ref={(el) => assignRef(local.ref, el)}
+      ref={(el) => {
+        assignRef(local.ref, el);
+        if (dialogTriggerContext?.setTriggerRef && local.slot !== "close") {
+          dialogTriggerContext.setTriggerRef(el);
+        }
+      }}
       slot={local.slot}
       data-pressed={dataAttr(toggleAria.isPressed())}
       data-hovered={dataAttr(isHovered())}

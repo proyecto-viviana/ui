@@ -249,6 +249,7 @@ export function Button(props: ButtonProps): JSX.Element {
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {
         buttonElement = element;
+        dialogTriggerContext?.setTriggerRef?.(element);
         assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {

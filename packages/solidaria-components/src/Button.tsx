@@ -479,9 +479,6 @@ export function Button(props: ButtonProps): JSX.Element {
     // Register trigger ownership for surrounding trigger contexts.
     // Close buttons live inside the overlay and must not steal trigger identity.
     if (dialogTriggerContext?.setTriggerRef && local.slot !== "close") {
-      if (!el.id) {
-        el.id = dialogTriggerContext.triggerId;
-      }
       dialogTriggerContext.setTriggerRef(el);
     }
     if (popoverTriggerContext?.setTriggerRef) {
@@ -620,6 +617,9 @@ export function Button(props: ButtonProps): JSX.Element {
       id:
         ((ariaProps as { id?: string }).id as string | undefined) ||
         (menuTriggerProps()?.id as string | undefined) ||
+        (dialogTriggerContext && local.slot !== "close"
+          ? dialogTriggerContext.triggerId
+          : undefined) ||
         buttonId,
       class: renderProps.class(),
       style: renderProps.style(),
