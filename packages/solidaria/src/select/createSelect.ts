@@ -289,6 +289,11 @@ export function createSelect<T>(
     switch (e.key) {
       case "Enter":
       case " ":
+        // If typeahead handled the Space key, do not open/close the select.
+        // Upstream useMenuTrigger: if (!shouldOpen || e.isDefaultPrevented()) return;
+        if (e.defaultPrevented) {
+          return;
+        }
         e.preventDefault();
         if (state.isOpen()) {
           state.close();
@@ -417,9 +422,14 @@ export function createSelect<T>(
       const isDisabled = p.isDisabled ?? state.isDisabled;
       const fieldProps = field.fieldProps;
 
+      const { onKeyDown: _pressKeyDown, ...pressPropsWithoutKeyDown } = pressProps as Record<
+        string,
+        unknown
+      >;
+
       const baseProps = mergeProps(
         domProps(),
-        pressProps as Record<string, unknown>,
+        pressPropsWithoutKeyDown,
         focusProps as Record<string, unknown>,
         fieldProps as Record<string, unknown>,
         {
@@ -447,17 +457,15 @@ export function createSelect<T>(
           onKeyDown,
           onFocus: handleFocus,
           onBlur: handleBlur,
-          "data-open": isOpen || undefined,
-          "data-disabled": isDisabled || undefined,
-          "data-focus-visible": isFocusVisible() || undefined,
         } as Record<string, unknown>,
       );
 
-      // Add type-select props if enabled
+      // Add type-select props if enabled (mirrors upstream useSelect:
+      // triggerProps = mergeProps(typeSelectProps, menuTriggerProps, fieldProps))
       if (!p.disallowTypeAhead) {
         return mergeProps(
-          baseProps,
           typeSelectProps as Record<string, unknown>,
+          baseProps,
         ) as JSX.HTMLAttributes<HTMLElement>;
       }
 

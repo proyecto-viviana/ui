@@ -26,6 +26,11 @@ history:
       at: 2026-09-22,
       note: "widened to cover every cause the two waived D13 rows carry, because #578's review found the waiver disclosing only one of them. `apps/comparison/e2e/certified-waivers.json` waives `D13 journey — open-arrow-enter-reopen-scroll-escape` and `… — keyboard-only` against this ticket, one entry per case since 2026-09-22, and a waiver comes out only when the case it names goes green - so this ticket's Done-when has to be the whole case, not the attribute slice. The causes, each already measured below or in the round-2 note: pointer-open focus (open-arrow step 0 `focus`, ours the popover dialog where React has the selected option), keyboard-open focus order (keyboard-only step 1 `events`, the dialog's `focusin`/`focusout` pair), overlay entry motion behind cause 1 (opacity 0.41, dy 34 against React's 1 and 36, same family as #582), and the trigger's missing `data-pressed`, which is in the journey's compared attribute allowlist (`journeys.ts:78`) and is latent only because both journeys stop before the open popover is compared. The Done-when below now names all four, and the two waiver reasons name them too. The `expires` moved with that review from `2026-12-31` to `2026-10-21`; #610 owns binding the date to the release itself instead of to a horizon. One measurement that bears on the rows themselves and is not re-run here: `8361daba` (#608) changed `e2e/drivers/journeys-steps.ts`, which declares these two cases, after the run the waiver was written from - so the next `certified report` at or past `90297632` is what says whether they still fail the same way",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-24,
+      note: "Dropped invented data-open, data-disabled, and data-focus-visible from createSelect's triggerProps and retired pinning test in createSelect.test.tsx. Emitted data-pressed on SelectTrigger while open or pressed, matching RAC Button behavior. Ordered typeSelectProps before baseProps and respected e.defaultPrevented for mid-search Space so typeahead does not trigger menu open. Cleaned onKeyDown from createPress pressProps in triggerProps. Select 89/89 passed, Select+ComboBox+Picker 218/218 passed.",
+    }
 ---
 
 ## The defect

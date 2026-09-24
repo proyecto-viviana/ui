@@ -93,12 +93,14 @@ describe("createSelect", () => {
       });
     });
 
-    it("sets data-open when open", () => {
+    it("does not emit data-open, data-disabled, or data-focus-visible on triggerProps (#584)", () => {
       createRoot((dispose) => {
         const state = createTestState({ defaultOpen: true });
         const { triggerProps } = createSelect({}, state);
 
-        expect(triggerProps["data-open"]).toBe("true");
+        expect(triggerProps["data-open"]).toBeUndefined();
+        expect(triggerProps["data-disabled"]).toBeUndefined();
+        expect(triggerProps["data-focus-visible"]).toBeUndefined();
         dispose();
       });
     });

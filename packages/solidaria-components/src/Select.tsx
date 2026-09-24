@@ -896,7 +896,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
-    isPressed: isPressed(),
+    isPressed: isOpen() || isPressed(),
     isDisabled: state.isDisabled,
   }));
 
@@ -919,6 +919,8 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       ref: _ref1,
       "aria-disabled": _ariaDisabled,
       "data-open": _dataOpen,
+      "data-disabled": _dataDisabled,
+      "data-focus-visible": _dataFocusVisible,
       ...rest
     } = context.triggerProps as Record<string, unknown>;
     return mergeProps(rest, triggerFocusProps as Record<string, unknown>);
@@ -951,6 +953,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       data-focused={dataAttr(isFocused())}
       data-focus-visible={dataAttr(isFocusVisible())}
       data-hovered={dataAttr(isHovered())}
+      data-pressed={dataAttr(isOpen() || isPressed())}
       data-disabled={dataAttr(state.isDisabled)}
     >
       {renderProps.renderChildren()}
