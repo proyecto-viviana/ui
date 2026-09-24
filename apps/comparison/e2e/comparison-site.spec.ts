@@ -92,4 +92,31 @@ test.describe("comparison site chrome", () => {
     await waitForComparisonRouteReady(page);
     await expect(page.getByRole("heading", { level: 1, name: "Button" })).toBeVisible();
   });
+
+  for (const component of [
+    "timefield",
+    "datefield",
+    "checkboxgroup",
+    "slider",
+    "radiogroup",
+    "rangeslider",
+  ]) {
+    test(`${component} contextual help stays on label row`, async ({ page }) => {
+      await page.goto(`/components/${component}/?withContextualHelp=true`);
+      await waitForComparisonRouteReady(page);
+      const reactRoot = page.locator(
+        `[data-comparison-framework="react"] [data-comparison-control-root="${component}"]`,
+      );
+      const solidRoot = page.locator(
+        `[data-comparison-framework="solid"] [data-comparison-control-root="${component}"]`,
+      );
+      await expect(reactRoot).toBeVisible();
+      await expect(solidRoot).toBeVisible();
+      const reactBox = await reactRoot.boundingBox();
+      const solidBox = await solidRoot.boundingBox();
+      expect(solidBox).toBeTruthy();
+      expect(reactBox).toBeTruthy();
+      expect(Math.abs(solidBox!.height - reactBox!.height)).toBeLessThanOrEqual(2);
+    });
+  }
 });

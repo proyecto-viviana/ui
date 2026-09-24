@@ -4,7 +4,7 @@ type: task
 title: "Keep TimeField ContextualHelp on the label row"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -35,6 +35,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangeslider: same wrap. URL ?withContextualHelp=true group is 396×50 React vs 396×70 Solid; output 48×18 vs 48×38. RangeSlider.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "verified: label wrapper uses display: inline matching S2 FieldLabel, keeping contextualHelp button on the label row. Measured on TimeField, DateField, CheckboxGroup, Slider, RadioGroup, and RangeSlider with Playwright: all 6 components match React 1:1 with 0px height delta",
     }
 ---
 
