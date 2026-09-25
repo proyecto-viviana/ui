@@ -518,7 +518,9 @@ export class SelectionManager<T = unknown> {
     const item = this.collection.getItem(key);
     return (
       this.state.disabledBehavior === "all" &&
-      (this.state.disabledKeys.has(key) || !!item?.props?.isDisabled) &&
+      (this.state.disabledKeys.has(key) ||
+        !!item?.props?.isDisabled ||
+        item?.isDisabled === true) &&
       item?.props?.disabledBehavior !== "selection"
     );
   }

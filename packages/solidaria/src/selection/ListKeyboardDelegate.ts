@@ -62,7 +62,7 @@ export interface ListKeyboardDelegateOptions<T> {
   /** The text direction. */
   direction?: Direction;
   /** The item keys that are disabled. */
-  disabledKeys?: Set<Key>;
+  disabledKeys?: Set<Key> | (() => Set<Key>);
   /** Whether disabled items are skipped by navigation. @default 'all' */
   disabledBehavior?: DisabledBehavior;
   /** A delegate providing layout information (defaults to a DOM-backed one). */
@@ -74,7 +74,7 @@ export interface ListKeyboardDelegateOptions<T> {
  */
 export class ListKeyboardDelegate<T> implements KeyboardDelegate {
   private collection: Collection<T>;
-  private disabledKeys: Set<Key>;
+  private disabledKeys: Set<Key> | (() => Set<Key>);
   private disabledBehavior: DisabledBehavior;
   private ref: Accessor<HTMLElement | null>;
   private collator: Intl.Collator | undefined;
@@ -108,12 +108,19 @@ export class ListKeyboardDelegate<T> implements KeyboardDelegate {
     }
   }
 
+  private getDisabledKeys(): Set<Key> {
+    if (typeof this.disabledKeys === "function") {
+      return (this.disabledKeys as () => Set<Key>)();
+    }
+    return this.disabledKeys;
+  }
+
   private isDisabled(item: CollectionNode<T>): boolean {
     return (
       this.disabledBehavior === "all" &&
       (item.props?.isDisabled === true ||
         item.isDisabled === true ||
-        this.disabledKeys.has(item.key)) &&
+        this.getDisabledKeys().has(item.key)) &&
       item.props?.disabledBehavior !== "selection"
     );
   }

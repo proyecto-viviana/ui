@@ -4,12 +4,17 @@ type: task
 title: "Skip a disabled SelectBox during arrow navigation"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 selectboxgroup functional pass: SelectBox isDisabled is skipped by React arrows and by both stacks for disabledKeys, but Solid ArrowDown moves data-focused onto the disabled option and drops the focus ring",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "registered item-level disabled state through ListBoxContext so ListBox tracks itemDisabledKeys with ownedWrite; ListKeyboardDelegate and SelectionManager check item isDisabled and dynamic disabledKeys, skipping disabled options during arrow navigation without moving data-focused or losing the focus ring",
     }
 ---
 

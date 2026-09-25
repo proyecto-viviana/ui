@@ -84,13 +84,119 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
 
     const listbox = screen.getByRole("listbox", { name: "Plans" });
     expect(listbox).toHaveAttribute("data-orientation", "horizontal");
-    expect(listbox).toHaveAttribute("data-disabled", "true");
+    expect(listbox).not.toHaveAttribute("data-disabled");
+    expect(listbox).not.toHaveAttribute("aria-disabled");
+    expect(listbox).toHaveAttribute("tabindex", "0");
 
     const starter = screen.getByRole("option", { name: "Starter" });
+    const pro = screen.getByRole("option", { name: "Pro" });
     expect(starter).toHaveAttribute("aria-disabled", "true");
+    expect(starter).toHaveAttribute("data-disabled", "true");
+    expect(pro).toHaveAttribute("aria-disabled", "true");
+    expect(pro).toHaveAttribute("data-disabled", "true");
 
     await user.click(starter);
     expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it("skips a disabled SelectBox during arrow navigation (#290)", async () => {
+    const user = setupUser();
+    render(() => (
+      <SelectBoxGroup
+        aria-label="Plans"
+        items={plans}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.label}
+        defaultSelectedKeys={["starter"]}
+      >
+        {(item) => (
+          <SelectBox id={item.id} textValue={item.label} isDisabled={item.id === "pro"}>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
+          </SelectBox>
+        )}
+      </SelectBoxGroup>
+    ));
+
+    const starter = screen.getByRole("option", { name: "Starter" });
+    const pro = screen.getByRole("option", { name: "Pro" });
+
+    // Tab into the group - lands on Starter
+    await user.tab();
+    expect(starter).toHaveAttribute("data-focused", "true");
+    expect(starter).toHaveAttribute("data-focus-visible", "true");
+    expect(starter).toHaveAttribute("tabindex", "0");
+    expect(pro).toHaveAttribute("aria-disabled", "true");
+    expect(pro).not.toHaveAttribute("data-focused");
+
+    // ArrowDown tries to move to Pro, but Pro is disabled so it should skip it and stay on Starter
+    await user.keyboard("{ArrowDown}");
+    expect(starter).toHaveAttribute("data-focused", "true");
+    expect(starter).toHaveAttribute("data-focus-visible", "true");
+    expect(starter).toHaveAttribute("tabindex", "0");
+    expect(pro).not.toHaveAttribute("data-focused");
+  });
+
+  it("treats ArrowRight as a no-op when cards wrap into a single column (#292)", async () => {
+    const user = setupUser();
+    render(() => (
+      <SelectBoxGroup
+        aria-label="Plans"
+        items={plans}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.label}
+        orientation="horizontal"
+        defaultSelectedKeys={["starter"]}
+      >
+        {(item) => (
+          <SelectBox id={item.id} textValue={item.label}>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
+          </SelectBox>
+        )}
+      </SelectBoxGroup>
+    ));
+
+    const starter = screen.getByRole("option", { name: "Starter" });
+    const pro = screen.getByRole("option", { name: "Pro" });
+
+    // Mock DOM rectangles so Starter and Pro are stacked in the same visual column
+    // Starter: x=0, y=0, w=368, h=84
+    // Pro:     x=0, y=84, w=368, h=84
+    vi.spyOn(starter, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      bottom: 84,
+      right: 368,
+      width: 368,
+      height: 84,
+      toJSON: () => {},
+    });
+    vi.spyOn(pro, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 84,
+      top: 84,
+      left: 0,
+      bottom: 168,
+      right: 368,
+      width: 368,
+      height: 84,
+      toJSON: () => {},
+    });
+
+    await user.tab();
+    expect(starter).toHaveAttribute("data-focused", "true");
+
+    // ArrowRight in a 1-column wrapped grid has no item to the right -> stays on Starter
+    await user.keyboard("{ArrowRight}");
+    expect(starter).toHaveAttribute("data-focused", "true");
+    expect(pro).not.toHaveAttribute("data-focused");
+
+    // ArrowDown moves down the column to Pro
+    await user.keyboard("{ArrowDown}");
+    expect(pro).toHaveAttribute("data-focused", "true");
   });
 
   it("supports uncontrolled defaultSelectedKeys", async () => {

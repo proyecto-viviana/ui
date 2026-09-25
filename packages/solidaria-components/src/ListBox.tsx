@@ -30,6 +30,7 @@ import {
   For,
   Show,
   createTrackedEffect,
+  onCleanup,
 } from "solid-js";
 import type { Context, Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -232,6 +233,7 @@ export interface ListBoxSectionProps extends SectionProps {}
 interface ListBoxContextValue<T> {
   state: ListState<T>;
   isDisabled: () => boolean;
+  setItemDisabled?: (key: Key, disabled: boolean) => void;
   dragAndDropHooks?: DragAndDropHooks<unknown>;
   dragState?: unknown;
   dropState?: unknown;
@@ -445,6 +447,37 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 
   const hasSections = createMemo(() => stateProps.items.some((item) => isCollectionSection(item)));
 
+  const [itemDisabledKeys, setItemDisabledKeys] = createSignal<Set<Key>>(new Set(), {
+    ownedWrite: true,
+  });
+
+  const setItemDisabled = (key: Key, disabled: boolean) => {
+    setItemDisabledKeys((prev) => {
+      const has = prev.has(key);
+      if (has === disabled) return prev;
+      const next = new Set(prev);
+      if (disabled) {
+        next.add(key);
+      } else {
+        next.delete(key);
+      }
+      return next;
+    });
+  };
+
+  const mergedDisabledKeys = createMemo(() => {
+    const keys = new Set<Key>();
+    if (stateProps.disabledKeys) {
+      for (const k of stateProps.disabledKeys) {
+        keys.add(k);
+      }
+    }
+    for (const k of itemDisabledKeys()) {
+      keys.add(k);
+    }
+    return keys;
+  });
+
   const baseState = createListState<T>({
     get items() {
       return flatItems();
@@ -459,7 +492,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       return stateProps.getDisabled;
     },
     get disabledKeys() {
-      return stateProps.disabledKeys;
+      return mergedDisabledKeys();
     },
     get selectionMode() {
       return stateProps.selectionMode;
@@ -536,6 +569,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       },
       get orientation() {
         return stateProps.orientation ?? "vertical";
+      },
+      get layout() {
+        return stateProps.layout;
       },
       get direction() {
         return locale().direction;
@@ -915,6 +951,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         {
           state,
           isDisabled: resolveDisabled,
+          setItemDisabled,
           dragAndDropHooks: local.dragAndDropHooks as DragAndDropHooks<unknown> | undefined,
           dragState: dragState(),
           dropState: dropState(),
@@ -1141,6 +1178,25 @@ export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
   const state = context as ListState<T>;
   const listContext = useContext(ListBoxContext) as ListBoxContextValue<T> | null;
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+
+  const itemKey = () =>
+    (local.id != null ? local.id : undefined) ??
+    (local.item as { id?: Key; key?: Key } | undefined)?.id ??
+    (local.item as { id?: Key; key?: Key } | undefined)?.key;
+
+  createTrackedEffect(() => {
+    const key = itemKey();
+    if (key != null && listContext?.setItemDisabled) {
+      listContext.setItemDisabled(key, Boolean(ariaProps.isDisabled));
+    }
+  });
+
+  onCleanup(() => {
+    const key = itemKey();
+    if (key != null && listContext?.setItemDisabled) {
+      listContext.setItemDisabled(key, false);
+    }
+  });
 
   const optionAria = createOption<T>(
     {
