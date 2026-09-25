@@ -36,7 +36,7 @@ import {
   type CollectionProps as AriaCollectionProps,
   type CollectionBuilderProps as AriaCollectionBuilderProps,
 } from "@proyecto-viviana/solidaria";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { splitProps, isDevEnv } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -318,9 +318,7 @@ export function renderCollectionDropSlots(options: {
 export function Section(props: SectionProps): JSX.Element {
   const sectionContext = useContext(SectionContext);
   if (sectionContext) {
-    const nodeEnv = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-      ?.NODE_ENV;
-    if (nodeEnv !== "production") {
+    if (isDevEnv()) {
       console.warn(`<Section> is deprecated. Please use <${sectionContext.name}> instead.`);
     }
     return sectionContext.render(props, "solidaria-Section");

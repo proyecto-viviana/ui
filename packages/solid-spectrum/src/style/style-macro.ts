@@ -30,12 +30,9 @@ import type {
 } from "./types";
 import * as propertyInfo from "./properties.json";
 
-// Read process.env without depending on Node global types in the dts build
-// (tsconfig.build.json omits `types: ["node"]`) — mirrors the build-safe
-// globalThis cast already used in image/ and statuslight/.
+declare const process: { env?: Record<string, string | undefined> } | undefined;
 const env: Record<string, string | undefined> =
-  (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
-    .process?.env ?? {};
+  typeof process !== "undefined" ? (process.env ?? {}) : {};
 
 // Postfix all class names with the pinned S2 version, matching upstream, which
 // derives it as `json.version.replace(/[0.]/g, '')` from @react-spectrum/s2's

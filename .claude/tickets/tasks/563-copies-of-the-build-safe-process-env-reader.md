@@ -4,7 +4,7 @@ type: task
 title: "Eleven copies of the build-safe `process.env` reader sit beside a helper that already does it"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-20,
       note: "conductor: count corrected from six to eleven before the ticket was worked. The six style files are the copies the fix found; `image/` and `statuslight/` in both styled twins, and `solidaria-components/src/Collection.tsx`, carry the same cast in its NODE_ENV-only shape — the ticket's own quoted comment names two of them. Counted with `grep -rl 'globalThis as.*process?:' packages/*/src`: twelve files, eleven casts plus the helper. Renamed off `563-six-copies-…` at the same time: the scheme fixes only the `id` prefix, so a slug that carries a measured number goes stale the first time the measurement is refined. This one carries none",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "Centralized environment reading into packages/solidaria/src/utils/env.ts, exported getEnv and getEnvVar from @proyecto-viviana/solidaria/utils, and documented Vite vs Node precedence. Replaced handwritten casts in Collection, image, statuslight, and style runtime with isDevEnv/getEnv. Removed dead upstream DOCS_ENV reads in spectrum-theme. Scoped process declaration in style-macro. Fixed useFormProps descriptor fallback for inherited form props. grep returns only env.ts. All 369 test files pass (6951 tests), build and parity checks exit 0.",
     }
 ---
 

@@ -82,7 +82,7 @@ export {
   type GlobalListenerOptions,
 } from "./globalListeners";
 
-export { isTestEnv, isDevEnv, isProdEnv } from "./env";
+export { isTestEnv, isDevEnv, isProdEnv, getEnv, getEnvVar } from "./env";
 
 export {
   createDescription,

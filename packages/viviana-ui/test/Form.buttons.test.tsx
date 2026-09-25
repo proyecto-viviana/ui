@@ -170,6 +170,9 @@ describe("Form (viviana-ui) and the button family", () => {
         <ActionButton isDisabled>
           <NotificationBadge value={5} data-testid="own-badge" />
         </ActionButton>
+        <ActionButton isDisabled size="M">
+          <NotificationBadge value={5} data-testid="own-badge-m" />
+        </ActionButton>
         <ActionButton>
           <NotificationBadge value={5} data-testid="enabled-badge" />
         </ActionButton>
@@ -190,6 +193,6 @@ describe("Form (viviana-ui) and the button family", () => {
 
     expect(cls("own-badge")).not.toBe(cls("enabled-badge"));
     expect(cls("grouped-badge")).toBe(cls("own-badge"));
-    expect(cls("form-badge")).toBe(cls("own-badge"));
+    expect(cls("form-badge")).toBe(cls("own-badge-m"));
   });
 });

@@ -50,13 +50,6 @@ interface MacroContext {
   addAsset(asset: { type: string; content: string }): void;
 }
 
-// Read process.env without depending on Node global types in the dts build
-// (tsconfig.build.json omits `types: ["node"]`) — mirrors the build-safe
-// globalThis cast already used in image/ and statuslight/.
-const env: Record<string, string | undefined> =
-  (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
-    .process?.env ?? {};
-
 type GrayColorStop = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
 type ColorStop =
   | 100
@@ -145,20 +138,10 @@ function pxToRem(px: string | number) {
     px = parseFloat(px);
   }
 
-  // In the docs, we need to be able to simulate font size adjustment.
-  if (env.DOCS_ENV) {
-    return `calc(${px / 16} * var(--rem, 1rem))`;
-  }
-
   return px / 16 + "rem";
 }
 
 function hcmColor(color: string) {
-  // In the docs, HCM colors can be simulated.
-  if (env.DOCS_ENV) {
-    return `var(--hcm-${color.toLowerCase()}, ${color})`;
-  }
-
   return color;
 }
 
@@ -1280,7 +1263,7 @@ export const style = createTheme({
         if (typeof value === "number") {
           return {
             "--fs": `pow(1.125, ${value})`,
-            fontSize: `round(${fontSizeCalc} / 16 * ${env.DOCS_ENV ? "var(--rem, 1rem)" : "1rem"}, 1px)`,
+            fontSize: `round(${fontSizeCalc} / 16 * 1rem, 1px)`,
           } as CSSProperties;
         }
 
@@ -1807,9 +1790,7 @@ export const style = createTheme({
   },
   conditions: {
     // In the docs we need to be able to simulate HCM.
-    forcedColors: env.DOCS_ENV
-      ? ["@media (forced-colors: active)", ":is([data-hcm], [data-hcm] *)"]
-      : "@media (forced-colors: active)",
+    forcedColors: "@media (forced-colors: active)",
     // This detects touch primary devices as best as we can.
     // Ideally we'd use (pointer: course) but browser/device support is inconsistent.
     // Samsung Android devices claim to be mice at the hardware/OS level: (any-pointer: fine), (any-hover: hover), (hover: hover), and nothing for pointer.

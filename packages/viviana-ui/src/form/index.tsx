@@ -137,7 +137,20 @@ export function useFormProps<T extends object>(props: T): T {
 
       const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
       if (descriptor) {
-        return descriptor;
+        if (descriptor.get) {
+          const originalGet = descriptor.get;
+          return {
+            enumerable: descriptor.enumerable,
+            configurable: true,
+            get: () => {
+              const val = originalGet.call(target);
+              return val !== undefined ? val : getInheritedValue(property);
+            },
+          };
+        }
+        if (descriptor.value !== undefined) {
+          return descriptor;
+        }
       }
 
       if (getInheritedValue(property) !== undefined) {
@@ -148,7 +161,7 @@ export function useFormProps<T extends object>(props: T): T {
         };
       }
 
-      return undefined;
+      return descriptor;
     },
   }) as T;
 }

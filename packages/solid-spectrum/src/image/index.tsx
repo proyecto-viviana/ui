@@ -29,7 +29,7 @@ import {
 } from "../button/spectrum-context";
 import { useTheme } from "../provider";
 import { createIsSkeleton, loadingStyle, useLoadingAnimation } from "../skeleton";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { splitProps, isDevEnv } from "@proyecto-viviana/solidaria/utils";
 
 export interface ImageSource {
   /** A comma-separated list of image URLs and descriptors. */
@@ -274,9 +274,7 @@ export function Image(props: ImageProps): JSX.Element {
   const isSkeleton = createIsSkeleton();
   let imageElement: HTMLImageElement | undefined;
 
-  const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
-    .process?.env?.NODE_ENV;
-  if (local.alt == null && nodeEnv !== "production") {
+  if (local.alt == null && isDevEnv()) {
     console.warn(
       'The `alt` prop was not provided to an image. Add `alt` text for screen readers, or set `alt=""` prop to indicate that the image is decorative or redundant with displayed text and should not be announced by screen readers.',
     );

@@ -27,7 +27,7 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useIsSkeleton } from "../skeleton";
 import { Text, TextContext } from "../text";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { splitProps, isDevEnv } from "@proyecto-viviana/solidaria/utils";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -232,22 +232,15 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const mergedUnsafeClassName = () =>
     mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className);
-  const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
-    .process?.env?.NODE_ENV;
-
   // Share one tracked child value between classification and insertion.
   // Re-evaluation can construct children; keep reactive inputs live rather
   // than capturing an untracked setup-time snapshot.
   const content = createMemo(() => local.children);
-  if (!content() && !local["aria-label"] && nodeEnv !== "production") {
+  if (!content() && !local["aria-label"] && isDevEnv()) {
     console.warn("If no children are provided, an aria-label must be specified");
   }
 
-  if (
-    !local.role &&
-    (local["aria-label"] || local["aria-labelledby"]) &&
-    nodeEnv !== "production"
-  ) {
+  if (!local.role && (local["aria-label"] || local["aria-labelledby"]) && isDevEnv()) {
     console.warn("A labelled StatusLight must have a role.");
   }
 
