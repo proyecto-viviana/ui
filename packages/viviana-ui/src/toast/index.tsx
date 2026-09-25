@@ -44,6 +44,7 @@ import {
   createStringFormatter,
   filterDOMProps,
 } from "@proyecto-viviana/solidaria";
+import { getNonce } from "@proyecto-viviana/solidaria/utils";
 import {
   Toast as HeadlessToast,
   ToastRegion as HeadlessToastRegion,
@@ -279,16 +280,23 @@ html:active-view-transition-type(toast-expand, toast-collapse) {
 }
 `;
 
-let toastAnimationStylesInjected = false;
-function ensureToastAnimationStyles(): void {
-  if (toastAnimationStylesInjected || typeof document === "undefined") {
+const TOAST_ANIMATION_STYLES_ID = "solid-spectrum-toast-animations";
+function ensureToastAnimationStyles(doc?: Document): void {
+  if (typeof document === "undefined") {
     return;
   }
-  const styleEl = document.createElement("style");
-  styleEl.id = "solid-spectrum-toast-animations";
+  const ownerDoc = doc ?? document;
+  if (!ownerDoc || !ownerDoc.head || ownerDoc.getElementById(TOAST_ANIMATION_STYLES_ID)) {
+    return;
+  }
+  const styleEl = ownerDoc.createElement("style");
+  styleEl.id = TOAST_ANIMATION_STYLES_ID;
+  const nonce = getNonce(ownerDoc);
+  if (nonce) {
+    styleEl.nonce = nonce;
+  }
   styleEl.textContent = TOAST_ANIMATION_CSS;
-  document.head.appendChild(styleEl);
-  toastAnimationStylesInjected = true;
+  ownerDoc.head.appendChild(styleEl);
 }
 
 interface ViewTransition {

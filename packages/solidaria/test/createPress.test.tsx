@@ -7,8 +7,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createPress, type PressEvent } from "../src/interactions/createPress";
-import { mergeProps } from "../src/utils";
+import { createPress, injectPressableCSS, type PressEvent } from "../src/interactions/createPress";
+import { mergeProps, resetNonceCache } from "../src/utils";
 import { Dynamic } from "@solidjs/web";
 import { createSignal, flush } from "solid-js";
 import type { Component } from "solid-js";
@@ -2956,6 +2956,72 @@ describe("createPress", () => {
         click.mockRestore();
         focus.mockRestore();
       }
+    });
+  });
+
+  describe("CSP nonce and style injection (#594)", () => {
+    function addNonceMeta(value: string, doc: Document = document) {
+      const meta = doc.createElement("meta");
+      meta.setAttribute("property", "csp-nonce");
+      meta.setAttribute("content", value);
+      doc.head.appendChild(meta);
+    }
+
+    beforeEach(() => {
+      document.getElementById("solidaria-pressable-style")?.remove();
+      document.head.querySelectorAll('meta[property="csp-nonce"]').forEach((el) => el.remove());
+      resetNonceCache();
+    });
+
+    afterEach(() => {
+      document.getElementById("solidaria-pressable-style")?.remove();
+      document.head.querySelectorAll('meta[property="csp-nonce"]').forEach((el) => el.remove());
+      resetNonceCache();
+    });
+
+    it("labels the injected style element with the document's csp-nonce", () => {
+      addNonceMeta("test-press-nonce");
+      render(() => <Example />);
+
+      const style = document.getElementById("solidaria-pressable-style") as HTMLStyleElement | null;
+      expect(style).toBeDefined();
+      expect(style!.nonce).toBe("test-press-nonce");
+      expect(style!.textContent).toContain("@layer");
+      expect(style!.textContent).toContain("[data-solidaria-pressable]");
+      expect(style!.textContent).toContain("touch-action: pan-x pan-y pinch-zoom;");
+    });
+
+    it("prepends the style element into document.head", () => {
+      const marker = document.createElement("style");
+      marker.id = "marker-style";
+      document.head.appendChild(marker);
+
+      render(() => <Example />);
+
+      const firstChild = document.head.firstElementChild;
+      expect(firstChild?.id).toBe("solidaria-pressable-style");
+      marker.remove();
+    });
+
+    it("injects into the element's ownerDocument when in an iframe", () => {
+      const iframe = document.createElement("iframe");
+      document.body.appendChild(iframe);
+      const iframeDoc = iframe.contentDocument!;
+      addNonceMeta("iframe-nonce", iframeDoc);
+
+      const target = iframeDoc.createElement("div");
+      iframeDoc.body.appendChild(target);
+
+      injectPressableCSS(target);
+
+      const style = iframeDoc.getElementById(
+        "solidaria-pressable-style",
+      ) as HTMLStyleElement | null;
+      expect(style).toBeDefined();
+      expect(style!.nonce).toBe("iframe-nonce");
+      expect(style!.textContent).toContain("@layer");
+
+      iframe.remove();
     });
   });
 });

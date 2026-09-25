@@ -14,6 +14,7 @@
  * (background tab, throttled renderer). Under `prefers-reduced-motion` the swap
  * is instant and nothing is cloned. */
 import { onCleanup } from "solid-js";
+import { getNonce } from "@proyecto-viviana/solidaria/utils";
 
 export interface ThemeTransitionOptions {
   /** Where the wave starts, in viewport pixels. @default the last pointerdown, else the viewport centre */
@@ -147,7 +148,12 @@ export function createThemeTransition(
       if (from.scrollTop) to.scrollTop = from.scrollTop;
       if (from.scrollLeft) to.scrollLeft = from.scrollLeft;
     }
-    const freeze = document.createElement("style");
+    const ownerDoc = host.ownerDocument ?? document;
+    const freeze = ownerDoc.createElement("style");
+    const nonce = getNonce(ownerDoc);
+    if (nonce) {
+      freeze.nonce = nonce;
+    }
     freeze.textContent = FREEZE_CSS;
     inner.appendChild(freeze);
 

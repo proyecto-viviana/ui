@@ -92,3 +92,5 @@ export {
 } from "./createDescription";
 
 export { createEnterAnimation, createExitAnimation, type ElementAccessor } from "./animation";
+
+export { getNonce, resetNonceCache } from "./getNonce";

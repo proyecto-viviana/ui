@@ -101,7 +101,7 @@ import { ButtonGroup } from "../buttongroup";
 import { CustomDialog, DialogContainer } from "../dialog";
 import Cross from "../icon/ui-icons/Cross";
 import { s2IntlStrings } from "../intl";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { splitProps, getNonce } from "@proyecto-viviana/solidaria/utils";
 
 export type TableSize = "sm" | "md" | "lg";
 export type TableVariant = "default" | "striped" | "bordered";
@@ -451,11 +451,18 @@ const rowHighlightActiveBackground = colorMix("gray-25", "blue-900", 15);
 // also pins it to `z-index: 3` to paint above the virtualizer's sticky cells; our
 // real-DOM <table> has no sticky cells, so that part is dropped.
 const HIGHLIGHT_SELECTION_BORDER_CLASS = "solid-spectrum-table-highlight-selection";
-let highlightSelectionBorderInjected = false;
-function injectHighlightSelectionBorderCSS(): void {
-  if (highlightSelectionBorderInjected || typeof document === "undefined") return;
-  const style = document.createElement("style");
-  style.id = "solid-spectrum-table-highlight-selection-style";
+const HIGHLIGHT_SELECTION_BORDER_STYLE_ID = "solid-spectrum-table-highlight-selection-style";
+function injectHighlightSelectionBorderCSS(doc?: Document): void {
+  if (typeof document === "undefined") return;
+  const ownerDoc = doc ?? document;
+  if (!ownerDoc || !ownerDoc.head || ownerDoc.getElementById(HIGHLIGHT_SELECTION_BORDER_STYLE_ID))
+    return;
+  const style = ownerDoc.createElement("style");
+  style.id = HIGHLIGHT_SELECTION_BORDER_STYLE_ID;
+  const nonce = getNonce(ownerDoc);
+  if (nonce) {
+    style.nonce = nonce;
+  }
   style.textContent = `.${HIGHLIGHT_SELECTION_BORDER_CLASS}::before {
   content: "";
   position: absolute;
@@ -473,8 +480,7 @@ function injectHighlightSelectionBorderCSS(): void {
   border-end-start-radius: var(--borderBottomRadius);
   border-end-end-radius: var(--borderBottomRadius);
 }`;
-  document.head.appendChild(style);
-  highlightSelectionBorderInjected = true;
+  ownerDoc.head.appendChild(style);
 }
 
 // Upstream S2 draws the row-level focus/drop indicator as raw `&::after`
@@ -482,11 +488,17 @@ function injectHighlightSelectionBorderCSS(): void {
 // --topFocusRing/--bottomPosition. Keep the same overlay model rather than a
 // direct outline, which can't express the non-first-row -1px top extension.
 const ROW_FOCUS_INDICATOR_CLASS = "solid-spectrum-table-row-focus-indicator";
-let rowFocusIndicatorInjected = false;
-function injectRowFocusIndicatorCSS(): void {
-  if (rowFocusIndicatorInjected || typeof document === "undefined") return;
-  const style = document.createElement("style");
-  style.id = "solid-spectrum-table-row-focus-indicator-style";
+const ROW_FOCUS_INDICATOR_STYLE_ID = "solid-spectrum-table-row-focus-indicator-style";
+function injectRowFocusIndicatorCSS(doc?: Document): void {
+  if (typeof document === "undefined") return;
+  const ownerDoc = doc ?? document;
+  if (!ownerDoc || !ownerDoc.head || ownerDoc.getElementById(ROW_FOCUS_INDICATOR_STYLE_ID)) return;
+  const style = ownerDoc.createElement("style");
+  style.id = ROW_FOCUS_INDICATOR_STYLE_ID;
+  const nonce = getNonce(ownerDoc);
+  if (nonce) {
+    style.nonce = nonce;
+  }
   style.textContent = `.${ROW_FOCUS_INDICATOR_CLASS}::after {
   content: "";
   top: var(--topFocusRing);
@@ -502,8 +514,7 @@ function injectRowFocusIndicatorCSS(): void {
   outline-offset: -2px;
   pointer-events: none;
 }`;
-  document.head.appendChild(style);
-  rowFocusIndicatorInjected = true;
+  ownerDoc.head.appendChild(style);
 }
 
 const tableRow = style<

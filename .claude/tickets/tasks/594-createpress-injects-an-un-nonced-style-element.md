@@ -4,7 +4,7 @@ type: task
 title: "createPress injects an un-nonced style element, so a strict-CSP page keeps the double-tap zoom delay"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "widened from one site to every runtime style element in the packages, and the census is in this note rather than in a second ticket. `grep -rn 'createElement(\"style\")' packages/*/src` prints nine sites: `solid-spectrum/src/table/index.tsx:455` and `:486`, `solid-spectrum/src/toast/index.tsx:284`, `solidaria/src/interactions/createPress.ts:138`, `solidaria/src/overlays/createPreventScroll.ts:161`, `viviana-ui/src/provider/theme-transition.ts:150`, `viviana-ui/src/table/index.tsx:457` and `:488`, `viviana-ui/src/toast/index.tsx:287`. `grep -rn 'getNonce|\\.nonce' packages/*/src` puts a nonce at exactly one of them, `createPreventScroll.ts:165-167`, which #555 item 8 fixed. So the skeptic's 8 of 9 is confirmed at HEAD, and all eight also use the global `document` rather than an `ownerDocument`. Splitting them across two tickets would have left the second unwritten and unnumbered, which is what Scope item 3 asked for and what this note replaces: the sweep is item 4 here. Two facts the sweep needs, both read today rather than assumed. (1) The helper is not reachable from outside its own package: `getNonce` appears in `packages/solidaria/src/utils/getNonce.ts` and in `createPreventScroll.ts` and nowhere else, `packages/solidaria/src/index.ts` does not name it, and `packages/solidaria/src/utils/index.ts` - the barrel behind the published `./utils` subpath - does not export it either, so the four solid-spectrum and viviana-ui sites need it re-exported before they can import it, not copied. (2) `table/index.tsx` and `toast/index.tsx` are both on the `diverged` list in `scripts/layer-boundary-baseline.json`, 84 paths against 524 identical, and the two copies really do differ (51 changed lines in table, 118 in toast), so each copy is fixed in its own file and `guard:layer-boundary` stays green; this is not a byte-identical pair where one edit serves both, and #606 is the ticket that shows what happens when a fix lands on one side of such a pair. Still deferred past the RC by the soft-launch cut - nothing above changes that, only what the ticket will cover when it runs",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "re-exported getNonce from solidaria/utils; attached getNonce(ownerDocument), @layer, and prepend in createPress; swept all 7 remaining un-nonced createElement('style') sites in solid-spectrum and viviana-ui (table, toast, theme-transition); unit-tested CSP nonce inheritance in createPress and Toast suites; added guard:injected-style-nonce and unit test covering AST check across packages/*/src; typecheck, layer-boundary, and unit test suites exit 0",
     }
 ---
 

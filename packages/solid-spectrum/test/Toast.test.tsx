@@ -18,6 +18,7 @@ import {
   globalToastQueue,
 } from "../src/toast";
 import { Provider } from "../src/provider";
+import { resetNonceCache } from "@proyecto-viviana/solidaria/utils";
 import type { QueuedToast, ToastContent } from "../src/toast";
 
 /** Drain all toasts from the global queue. */
@@ -692,6 +693,29 @@ describe("Toast (solid-spectrum)", () => {
 
       expect(screen.getByRole("region", { name: "Alerts" })).toBe(region);
       expect(region).toHaveAttribute("aria-label", "Alerts");
+    });
+
+    it("attaches csp nonce to injected toast animation styles (#594)", () => {
+      document.getElementById("solid-spectrum-toast-animations")?.remove();
+      const meta = document.createElement("meta");
+      meta.setAttribute("property", "csp-nonce");
+      meta.setAttribute("content", "toast-nonce-xyz");
+      document.head.appendChild(meta);
+      resetNonceCache();
+
+      try {
+        render(() => <ToastContainer portal={false} />);
+        ToastQueue.neutral("Nonce test toast");
+        const style = document.getElementById(
+          "solid-spectrum-toast-animations",
+        ) as HTMLStyleElement | null;
+        expect(style).not.toBeNull();
+        expect(style?.nonce).toBe("toast-nonce-xyz");
+      } finally {
+        meta.remove();
+        resetNonceCache();
+        document.getElementById("solid-spectrum-toast-animations")?.remove();
+      }
     });
   });
 });

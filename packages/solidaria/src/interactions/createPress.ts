@@ -39,6 +39,8 @@ import {
   setEventTarget,
   focusWithoutScrolling,
   onOwnedCleanup,
+  getNonce,
+  getOwnerDocument,
 } from "../utils";
 import { createSignal, Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -131,19 +133,27 @@ const LINK_CLICKED = Symbol("linkClicked");
 type LinkClickedEvent = KeyboardEvent & { [LINK_CLICKED]?: boolean };
 
 // CSS for preventing double-tap zoom delay
-let pressableCSSInjected = false;
-function injectPressableCSS(): void {
-  if (pressableCSSInjected || typeof document === "undefined") return;
+const STYLE_ID = "solidaria-pressable-style";
+export function injectPressableCSS(element?: EventTarget | null): void {
+  if (typeof document === "undefined") return;
 
-  const style = document.createElement("style");
-  style.id = "solidaria-pressable-style";
+  const ownerDocument = getOwnerDocument(element);
+  if (!ownerDocument || !ownerDocument.head || ownerDocument.getElementById(STYLE_ID)) return;
+
+  const style = ownerDocument.createElement("style");
+  style.id = STYLE_ID;
+  const nonce = getNonce(ownerDocument);
+  if (nonce) {
+    style.nonce = nonce;
+  }
   style.textContent = `
-    [data-solidaria-pressable] {
-      touch-action: pan-x pan-y pinch-zoom;
-    }
-  `;
-  document.head.appendChild(style);
-  pressableCSSInjected = true;
+@layer {
+  [data-solidaria-pressable] {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+}
+  `.trim();
+  ownerDocument.head.prepend(style);
 }
 
 /**
@@ -347,6 +357,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       pressState.isOverTarget = true;
       pressState.activePointerId = e.pointerId;
       pressState.target = e.currentTarget;
+      injectPressableCSS(pressState.target);
 
       if (!props.allowTextSelectionOnPress) {
         disableTextSelection(pressState.target as HTMLElement);
@@ -529,6 +540,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
     pressState.isOverTarget = true;
     pressState.isPressed = true;
     pressState.target = e.currentTarget;
+    injectPressableCSS(pressState.target);
     pressState.pointerType = "touch";
 
     if (!props.allowTextSelectionOnPress) {
