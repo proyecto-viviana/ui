@@ -4,12 +4,17 @@ type: task
 title: "Keep a disabled SelectBoxGroup in the tab order"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 selectboxgroup functional pass: S2 leaves the listbox focusable and aria-disabled unset; Solid sets aria-disabled and drops tabIndex so Tab skips the group",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "aligned SelectBoxGroup with upstream S2 by removing isDisabled and data-disabled from the HeadlessListBox host; listbox stays focusable in tab order (tabIndex=0) and options receive isDisabled via context",
     }
 ---
 

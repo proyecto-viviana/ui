@@ -482,7 +482,6 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
         getKey={getKey()}
         getTextValue={getTextValue()}
         getDisabled={getDisabled()}
-        isDisabled={local.isDisabled}
         selectionMode={selectionMode()}
         layout="grid"
         orientation={orientation()}
@@ -490,7 +489,6 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
         class={className}
         style={mergedUnsafeStyle()}
         data-orientation={orientation()}
-        data-disabled={local.isDisabled ? "true" : undefined}
       >
         {(item: T) => renderItem(item)}
       </HeadlessListBox>
