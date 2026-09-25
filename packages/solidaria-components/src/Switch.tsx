@@ -59,7 +59,7 @@ import {
   dataAttr,
 } from "./utils";
 import { TextContext } from "./Text";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { assignRef, splitProps, type RefLike } from "@proyecto-viviana/solidaria/utils";
 
 export interface ToggleSwitchRenderProps {
   /** Whether the switch is selected. */
@@ -89,6 +89,10 @@ export interface ToggleSwitchProps extends Omit<AriaSwitchProps, "children">, Sl
   class?: ClassNameOrFunction<ToggleSwitchRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ToggleSwitchRenderProps>;
+  /** Ref for the outer label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
   /** A description for the switch. */
   description?: JSX.Element;
   /** An error message for the switch. */
@@ -125,6 +129,8 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
+    "ref",
+    "inputRef",
     "slot",
     "description",
     "errorMessage",
@@ -250,11 +256,20 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     return typeof children === "function" ? children(childRenderValues) : children;
   });
 
+  const setLabelRef = (el: HTMLLabelElement) => {
+    assignRef(local.ref, el);
+  };
+  const setInputRef = (el: HTMLInputElement) => {
+    setInputElement(el);
+    assignRef(local.inputRef, el);
+  };
+
   return (
     <label
       {...domProps()}
       {...cleanLabelProps()}
       {...cleanHoverProps()}
+      ref={setLabelRef}
       class={renderProps.class()}
       style={renderProps.style()}
       data-selected={dataAttr(switchAria.isSelected())}
@@ -267,7 +282,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     >
       <VisuallyHidden>
         <input
-          ref={setInputElement}
+          ref={setInputRef}
           {...cleanInputProps()}
           {...cleanFocusProps()}
           aria-describedby={describedBy()}
@@ -330,6 +345,10 @@ export interface SwitchFieldProps extends Omit<AriaSwitchProps, "children">, Slo
   class?: ClassNameOrFunction<SwitchFieldRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SwitchFieldRenderProps>;
+  /** Ref for the switch field root element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
 }
 
 export interface SwitchButtonProps extends SlotProps {
@@ -339,6 +358,10 @@ export interface SwitchButtonProps extends SlotProps {
   class?: ClassNameOrFunction<SwitchButtonRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SwitchButtonRenderProps>;
+  /** Ref for the outer label element. */
+  ref?: RefLike<HTMLLabelElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
   /** Handler called when hover starts. */
   onHoverStart?: () => void;
   /** Handler called when hover ends. */
@@ -347,8 +370,8 @@ export interface SwitchButtonProps extends SlotProps {
   onHoverChange?: (isHovered: boolean) => void;
 }
 
-export interface SwitchFieldContextValue extends SwitchFieldProps {
-  slots?: Record<string, SwitchFieldProps>;
+export interface SwitchFieldContextValue extends Partial<SwitchFieldProps> {
+  slots?: Record<string, Partial<SwitchFieldProps>>;
 }
 export const SwitchFieldContext = createContext<SwitchFieldContextValue | null>(null);
 
@@ -356,7 +379,7 @@ export const SwitchFieldContext = createContext<SwitchFieldContextValue | null>(
 interface InternalSwitchContextValue {
   switchAria: SwitchAria;
   state: ToggleState;
-  setInputElement: (el: HTMLInputElement | null) => void;
+  setInputRef: (el: HTMLInputElement) => void;
   defaultClassName: string;
   isRequired: boolean;
 }
@@ -474,10 +497,21 @@ function SwitchButtonImpl(props: {
     return typeof children === "function" ? children(childRenderValues) : children;
   });
 
+  const setButtonRef = (el: HTMLLabelElement) => {
+    assignRef(props.buttonProps.ref, el);
+  };
+  const setInputRef = (el: HTMLInputElement) => {
+    ctx.setInputRef(el);
+    if (props.buttonProps.inputRef) {
+      assignRef(props.buttonProps.inputRef, el);
+    }
+  };
+
   return (
     <label
       {...cleanLabelProps()}
       {...cleanHoverProps()}
+      ref={setButtonRef}
       class={renderProps.class()}
       style={renderProps.style()}
       slot={props.buttonProps.slot}
@@ -492,7 +526,7 @@ function SwitchButtonImpl(props: {
       data-required={dataAttr(ctx.isRequired)}
     >
       <VisuallyHidden>
-        <input ref={ctx.setInputElement} {...cleanInputProps()} {...cleanFocusProps()} />
+        <input ref={setInputRef} {...cleanInputProps()} {...cleanFocusProps()} />
       </VisuallyHidden>
       {switchChildren}
     </label>
@@ -516,7 +550,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
   const contextProps = useContext(SwitchFieldContext);
   const contextSlotProps =
     contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
-  const contextBaseProps = createMemo<SwitchFieldProps>(() => {
+  const contextBaseProps = createMemo<Partial<SwitchFieldProps>>(() => {
     if (!contextProps) return {};
     const { slots: _slots, ...rest } = contextProps;
     return rest;
@@ -526,11 +560,35 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
     : props;
 
   const [inputElement, setInputElement] = createSignal<HTMLInputElement | null>(null);
+  const inputRefs = createMemo(
+    () =>
+      [contextBaseProps().inputRef, contextSlotProps?.inputRef, merged.inputRef].filter(
+        Boolean,
+      ) as RefLike<HTMLInputElement>[],
+  );
+
   // `children` is split out of ariaProps so the hook accessor's `...ariaProps`
   // spread does not eagerly read it — reading a Solid `children` getter
   // instantiates the nested SwitchButton, and doing so OUTSIDE the
   // InternalSwitchContext provider both breaks its context binding and recurses.
-  const [local, ariaProps] = splitProps(merged, ["class", "style", "slot", "children"]);
+  const [local, ariaProps] = splitProps(merged, [
+    "class",
+    "style",
+    "ref",
+    "inputRef",
+    "slot",
+    "children",
+  ]);
+
+  const setInputRef = (el: HTMLInputElement) => {
+    setInputElement(el);
+    for (const ref of inputRefs()) {
+      assignRef(ref, el);
+    }
+  };
+  const setFieldRef = (el: HTMLDivElement) => {
+    assignRef(local.ref, el);
+  };
 
   const state = createToggleState(() => ({
     isSelected: ariaProps.isSelected,
@@ -553,7 +611,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
   const internalContext: InternalSwitchContextValue = {
     switchAria,
     state,
-    setInputElement,
+    setInputRef,
     defaultClassName: "solidaria-SwitchButton",
     get isRequired() {
       return ariaProps.isRequired || false;
@@ -650,6 +708,7 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
       <FieldErrorContext value={fieldErrorContext}>
         <div
           {...domProps()}
+          ref={setFieldRef}
           class={renderProps.class()}
           style={renderProps.style()}
           slot={local.slot}

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
-import { TabSwitch } from "../src/switch";
+import { TabSwitch, ToggleSwitch, SwitchContext } from "../src/switch";
 import { SegmentedControl } from "../src/segmentedcontrol";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
@@ -60,5 +60,91 @@ describe("TabSwitch", () => {
   it("is a mapping wrapper, not an identity alias of SegmentedControl", () => {
     expect(TabSwitch).not.toBe(SegmentedControl);
     expect(typeof TabSwitch).toBe("function");
+  });
+});
+
+describe("ToggleSwitch", () => {
+  it('renders with role="switch"', () => {
+    render(() => <ToggleSwitch aria-label="Notifications">Enable notifications</ToggleSwitch>);
+    const switchEl = screen.getByRole("switch");
+    expect(switchEl).toBeInTheDocument();
+  });
+
+  describe("ref and inputRef forwarding", () => {
+    it("forwards ref to field root div and inputRef to input element via function refs", () => {
+      let fieldEl: HTMLDivElement | null = null;
+      let inputEl: HTMLInputElement | null = null;
+
+      render(() => (
+        <ToggleSwitch
+          aria-label="Ref switch"
+          ref={(el) => {
+            fieldEl = el;
+          }}
+          inputRef={(el) => {
+            inputEl = el;
+          }}
+        >
+          Enable
+        </ToggleSwitch>
+      ));
+
+      expect(fieldEl).toBeInstanceOf(HTMLDivElement);
+      expect(inputEl).toBeInstanceOf(HTMLInputElement);
+      expect(inputEl?.getAttribute("role")).toBe("switch");
+      expect(fieldEl?.contains(inputEl!)).toBe(true);
+    });
+
+    it("forwards ref and inputRef via object refs", () => {
+      const fieldRef = { current: null as HTMLDivElement | null };
+      const inputRef = { current: null as HTMLInputElement | null };
+
+      render(() => (
+        <ToggleSwitch aria-label="Ref switch" ref={fieldRef} inputRef={inputRef}>
+          Enable
+        </ToggleSwitch>
+      ));
+
+      expect(fieldRef.current).toBeInstanceOf(HTMLDivElement);
+      expect(inputRef.current).toBeInstanceOf(HTMLInputElement);
+      expect(fieldRef.current?.contains(inputRef.current!)).toBe(true);
+    });
+
+    it("honors ref and inputRef injected through SwitchContext", () => {
+      let contextFieldEl: HTMLDivElement | null = null;
+      let contextInputEl: HTMLInputElement | null = null;
+      let localFieldEl: HTMLDivElement | null = null;
+      let localInputEl: HTMLInputElement | null = null;
+
+      render(() => (
+        <SwitchContext
+          value={{
+            ref: (el) => {
+              contextFieldEl = el;
+            },
+            inputRef: (el) => {
+              contextInputEl = el;
+            },
+          }}
+        >
+          <ToggleSwitch
+            aria-label="Context switch"
+            ref={(el) => {
+              localFieldEl = el;
+            }}
+            inputRef={(el) => {
+              localInputEl = el;
+            }}
+          >
+            Context test
+          </ToggleSwitch>
+        </SwitchContext>
+      ));
+
+      expect(contextFieldEl).toBeInstanceOf(HTMLDivElement);
+      expect(localFieldEl).toBe(contextFieldEl);
+      expect(contextInputEl).toBeInstanceOf(HTMLInputElement);
+      expect(localInputEl).toBe(contextInputEl);
+    });
   });
 });

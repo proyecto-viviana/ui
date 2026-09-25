@@ -20,8 +20,10 @@ import { Show, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   getSlottedContextProps,
+  mergeContextRefs,
   mergeContextStyles,
   mergeContextUnsafeStyle,
+  type RefLike,
 } from "../button/spectrum-context";
 import { SwitchContext } from ".";
 import {
@@ -72,6 +74,10 @@ export interface ToggleSwitchProps extends Omit<AriaSwitchProps, "children"> {
   UNSAFE_style?: JSX.CSSProperties;
   /** Additional CSS class name. */
   class?: string;
+  /** Ref for the underlying field (root `<div>`) element. */
+  ref?: RefLike<HTMLDivElement>;
+  /** Ref for the underlying input element. */
+  inputRef?: RefLike<HTMLInputElement>;
   /** A description for the Switch. */
   description?: JSX.Element;
   /** An error message for the Switch (rendered when invalid). */
@@ -428,6 +434,8 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     "description",
     "errorMessage",
     "slot",
+    "ref",
+    "inputRef",
   ]);
 
   const locale = useLocale();
@@ -442,6 +450,14 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
+  const assignRootRef = mergeContextRefs(
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+    props.ref,
+  );
+  const assignInputRef = mergeContextRefs(
+    (contextProps as { inputRef?: RefLike<HTMLInputElement> } | null)?.inputRef,
+    props.inputRef,
+  );
 
   // The field grid className. Mirrors upstream `field({...renderProps, isInForm,
   // size, isNoVisibleLabel}, styles)`.
@@ -494,6 +510,8 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   return (
     <HeadlessSwitchField
       {...headlessProps}
+      ref={(element) => assignRootRef(element)}
+      inputRef={(element) => assignInputRef(element)}
       slot={local.slot ?? undefined}
       class={getFieldClassName}
       style={mergedUnsafeStyle()}

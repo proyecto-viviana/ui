@@ -4,12 +4,17 @@ type: task
 title: "Forward Switch field and input refs"
 created: 2026-08-20
 parent: 33
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "migrated from legacy task headless-switch-ref-forwarding",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "forwarded root and input refs across ToggleSwitch, SwitchField, SwitchButton, and styled ToggleSwitch with unit tests across all three packages",
     }
 ---
 

@@ -9,7 +9,12 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
-import { ToggleSwitch, type ToggleSwitchRenderProps } from "../src/Switch";
+import {
+  ToggleSwitch,
+  SwitchField,
+  SwitchButton,
+  type ToggleSwitchRenderProps,
+} from "../src/Switch";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -416,6 +421,133 @@ describe("ToggleSwitch", () => {
       ));
       const elements = screen.getAllByTestId("my-switch");
       expect(elements.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("ref and inputRef forwarding", () => {
+    it("ToggleSwitch forwards ref to label and inputRef to input via function", () => {
+      let labelEl: HTMLLabelElement | null = null;
+      let inputEl: HTMLInputElement | null = null;
+
+      render(() => (
+        <ToggleSwitch
+          aria-label="Test"
+          ref={(el) => {
+            labelEl = el;
+          }}
+          inputRef={(el) => {
+            inputEl = el;
+          }}
+        >
+          Toggle
+        </ToggleSwitch>
+      ));
+
+      expect(labelEl).toBeInstanceOf(HTMLLabelElement);
+      expect(inputEl).toBeInstanceOf(HTMLInputElement);
+      expect(inputEl?.getAttribute("type")).toBe("checkbox");
+      expect(inputEl?.getAttribute("role")).toBe("switch");
+      expect(labelEl?.contains(inputEl!)).toBe(true);
+    });
+
+    it("ToggleSwitch forwards ref and inputRef via ref object", () => {
+      const labelRef = { current: null as HTMLLabelElement | null };
+      const inputRef = { current: null as HTMLInputElement | null };
+
+      render(() => (
+        <ToggleSwitch aria-label="Test" ref={labelRef} inputRef={inputRef}>
+          Toggle
+        </ToggleSwitch>
+      ));
+
+      expect(labelRef.current).toBeInstanceOf(HTMLLabelElement);
+      expect(inputRef.current).toBeInstanceOf(HTMLInputElement);
+    });
+
+    it("SwitchField forwards ref to root div and inputRef to input", () => {
+      let fieldEl: HTMLDivElement | null = null;
+      let inputEl: HTMLInputElement | null = null;
+
+      render(() => (
+        <SwitchField
+          aria-label="Field switch"
+          ref={(el) => {
+            fieldEl = el;
+          }}
+          inputRef={(el) => {
+            inputEl = el;
+          }}
+        >
+          <SwitchButton>Enable feature</SwitchButton>
+        </SwitchField>
+      ));
+
+      expect(fieldEl).toBeInstanceOf(HTMLDivElement);
+      expect(fieldEl).toHaveClass("solidaria-SwitchField");
+      expect(inputEl).toBeInstanceOf(HTMLInputElement);
+      expect(inputEl?.getAttribute("role")).toBe("switch");
+      expect(fieldEl?.contains(inputEl!)).toBe(true);
+    });
+
+    it("SwitchField forwards ref and inputRef via ref object", () => {
+      const fieldRef = { current: null as HTMLDivElement | null };
+      const inputRef = { current: null as HTMLInputElement | null };
+
+      render(() => (
+        <SwitchField aria-label="Field switch" ref={fieldRef} inputRef={inputRef}>
+          <SwitchButton>Enable feature</SwitchButton>
+        </SwitchField>
+      ));
+
+      expect(fieldRef.current).toBeInstanceOf(HTMLDivElement);
+      expect(inputRef.current).toBeInstanceOf(HTMLInputElement);
+    });
+
+    it("SwitchButton forwards ref to label and inputRef to input", () => {
+      let buttonEl: HTMLLabelElement | null = null;
+      let buttonInputEl: HTMLInputElement | null = null;
+
+      render(() => (
+        <SwitchField aria-label="Field switch">
+          <SwitchButton
+            ref={(el) => {
+              buttonEl = el;
+            }}
+            inputRef={(el) => {
+              buttonInputEl = el;
+            }}
+          >
+            Enable feature
+          </SwitchButton>
+        </SwitchField>
+      ));
+
+      expect(buttonEl).toBeInstanceOf(HTMLLabelElement);
+      expect(buttonEl).toHaveClass("solidaria-SwitchButton");
+      expect(buttonInputEl).toBeInstanceOf(HTMLInputElement);
+      expect(buttonEl?.contains(buttonInputEl!)).toBe(true);
+    });
+
+    it("simultaneously forwards field and button refs", () => {
+      const fieldRef = { current: null as HTMLDivElement | null };
+      const fieldInputRef = { current: null as HTMLInputElement | null };
+      const buttonRef = { current: null as HTMLLabelElement | null };
+      const buttonInputRef = { current: null as HTMLInputElement | null };
+
+      render(() => (
+        <SwitchField aria-label="Field switch" ref={fieldRef} inputRef={fieldInputRef}>
+          <SwitchButton ref={buttonRef} inputRef={buttonInputRef}>
+            Enable feature
+          </SwitchButton>
+        </SwitchField>
+      ));
+
+      expect(fieldRef.current).toBeInstanceOf(HTMLDivElement);
+      expect(buttonRef.current).toBeInstanceOf(HTMLLabelElement);
+      expect(fieldInputRef.current).toBeInstanceOf(HTMLInputElement);
+      expect(buttonInputRef.current).toBeInstanceOf(HTMLInputElement);
+      expect(fieldInputRef.current).toBe(buttonInputRef.current);
+      expect(fieldRef.current?.contains(buttonRef.current!)).toBe(true);
     });
   });
 });
