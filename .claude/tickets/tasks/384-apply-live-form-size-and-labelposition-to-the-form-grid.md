@@ -4,12 +4,17 @@ type: task
 title: "Apply live Form size and labelPosition to the form grid"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 form functional pass: URL ?size=XL / ?labelPosition=side remount match row-gap 40 / named columns [label] 77px [field] 224.297px on both; live {size:'XL'} updates React row-gap 40 formH 206 and leaves Solid row-gap 24 formH 190 (children both XL fonts/button 48); live {labelPosition:'side'} updates React form grid to the named columns and groupW 223.7 and leaves Solid form grid [field] 92.6562px 208.641px groupW 208 (child fieldAreas already side, formH 113 both). formStyles({size,labelPosition}) is joined into a static class string in Form()",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "Used reactive getters for class and style in Form useRenderProps so live size and labelPosition changes dynamically restyle the form grid class, verified with tests in solid-spectrum and viviana-ui.",
     }
 ---
 

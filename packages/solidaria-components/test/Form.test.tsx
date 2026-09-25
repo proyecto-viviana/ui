@@ -146,6 +146,27 @@ describe("Form", () => {
       flush();
       expect(screen.getByTestId("behavior")).toHaveTextContent("aria");
     });
+
+    it("tracks live class and style changes", () => {
+      const [customClass, setCustomClass] = createSignal("class-a");
+      const [margin, setMargin] = createSignal("10px");
+
+      render(() => (
+        <Form class={customClass()} style={{ margin: margin() }} aria-label="Style form" />
+      ));
+
+      const form = screen.getByRole("form", { name: "Style form" });
+      expect(form).toHaveClass("class-a");
+      expect(form.style.margin).toBe("10px");
+
+      setCustomClass("class-b");
+      setMargin("20px");
+      flush();
+
+      expect(form).not.toHaveClass("class-a");
+      expect(form).toHaveClass("class-b");
+      expect(form.style.margin).toBe("20px");
+    });
   });
 
   describe("descendant fields read the form validationBehavior", () => {

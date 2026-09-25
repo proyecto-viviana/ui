@@ -120,4 +120,28 @@ describe("Form (viviana-ui)", () => {
     form.requestSubmit();
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
+
+  it("tracks live size and labelPosition changes on the form grid class", () => {
+    const [size, setSize] = createSignal<"S" | "M" | "L" | "XL">("M");
+    const [labelPosition, setLabelPosition] = createSignal<"top" | "side">("top");
+
+    render(() => (
+      <Form size={size()} labelPosition={labelPosition()} aria-label="Live grid form">
+        <TextField label="Name" />
+      </Form>
+    ));
+
+    const form = screen.getByRole("form", { name: "Live grid form" }) as HTMLFormElement;
+    const initialClass = form.className;
+
+    setSize("XL");
+    flush();
+    const xlClass = form.className;
+    expect(xlClass).not.toBe(initialClass);
+
+    setLabelPosition("side");
+    flush();
+    const sideClass = form.className;
+    expect(sideClass).not.toBe(xlClass);
+  });
 });
