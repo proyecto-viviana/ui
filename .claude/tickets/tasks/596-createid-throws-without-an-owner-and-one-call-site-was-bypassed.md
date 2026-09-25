@@ -4,7 +4,7 @@ type: task
 title: "createId throws without an owner, and one call site was bypassed instead of the rule being restored"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "restored early return on defaultId in createId across solidaria and solid-stately; removed bypass in createLabels.ts (and gridlist/tree call sites) to use createId(props.id); guarded against missing reactive context and NoHydration undefined getNextContextId preventing solidaria-undefined; unit tests in ssr.test.tsx assert early return, NoHydration boundary, and undefined getNextContextId; test:ssr, test:hydrate, check, and layer boundary guard exit 0",
     }
 ---
 

@@ -164,7 +164,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   ref: Accessor<HTMLElement | null>,
 ): GridListAria {
   // Generate a unique ID for the grid list
-  const gridListId = props().id ?? createId();
+  const gridListId = createId(props().id);
 
   // Store grid list data for child components
   const gridListData: GridListData = {

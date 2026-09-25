@@ -37,17 +37,10 @@ export function createLabels(
   // freezes the value at call time. This is a pure snapshot transform, so it is
   // behaviourally identical, but keeping the reactive read explicit matches the
   // rest of the port and satisfies guard:idiomatic-solid.
-  // Upstream `useLabels` is itself a hook, so its `useId(props.id)` runs once in
-  // the component body. Ours is reached from lazy prop getters (`get fieldProps`
-  // → `createLabels`), which run during the hydration walk with no reactive
-  // owner, and Solid 2's `createUniqueId` resolves to `getNextContextId()` →
-  // `getNextChildId(getOwner())` while hydrating — it needs an owner, and the id
-  // it returns depends on that owner's position. Generating here would therefore
-  // either throw or hand back an id the server never emitted. Every caller in
-  // this repository generates its id in its own hook body and passes it, which
-  // is where upstream consumes one; this fallback is for a caller that has no
-  // id, and such a caller must call `createLabels` from a hook body.
-  let id = props.id ?? createId();
+  // Upstream `useLabels` calls `useId(props.id)` directly. `createId` returns
+  // early when `props.id` is present, avoiding invoking `createUniqueId` when
+  // reaching `createLabels` from lazy prop getters during hydration passes (#596).
+  let id = createId(props.id);
   let label = props["aria-label"];
   let labelledBy = props["aria-labelledby"];
 

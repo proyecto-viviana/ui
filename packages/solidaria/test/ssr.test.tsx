@@ -3,7 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { createRoot, createSignal, createEffect } from "solid-js";
+import {
+  createRoot,
+  createSignal,
+  createEffect,
+  NoHydration,
+  createComponent,
+  sharedConfig,
+} from "solid-js";
 import { render, cleanup } from "@solidjs/testing-library";
 import {
   // Basic utilities
@@ -71,23 +78,65 @@ describe("createId", () => {
     });
   });
 
-  it("consumes an id even when a default id is given", () => {
-    // Upstream `useId` always calls `useSSRSafeId` and only then picks the
-    // default (`useId.ts:33-46`). Solid 2's `createUniqueId` is order-dependent
-    // in both branches (`cl-${counter++}`, or `getNextContextId()` while
-    // hydrating), so an early return on `defaultId` shifts every later id in
-    // the same render or hydration pass.
+  it("does not consume a generated id when a default id is given (#596)", () => {
     createRoot((dispose) => {
       const counterOf = (id: string) => Number(id.slice(id.lastIndexOf("-") + 1));
 
       const first = createId();
-      createId("given-id");
+      const custom = createId("given-id");
       const third = createId();
 
-      expect(counterOf(third) - counterOf(first)).toBe(2);
+      expect(custom).toBe("given-id");
+      expect(counterOf(third) - counterOf(first)).toBe(1);
 
       dispose();
     });
+  });
+
+  it("does not produce solidaria-undefined under a NoHydration boundary (#596)", () => {
+    createRoot((dispose) => {
+      const id = createComponent(NoHydration, {
+        get children() {
+          return createId();
+        },
+      });
+
+      expect(id).not.toContain("undefined");
+      expect(id).toMatch(/^solidaria-/);
+
+      dispose();
+    });
+  });
+
+  it("does not produce solidaria-undefined when getNextContextId returns undefined (#596)", () => {
+    createRoot((dispose) => {
+      const priorHydrating = sharedConfig.hydrating;
+      const priorGetNextContextId = sharedConfig.getNextContextId;
+      try {
+        (sharedConfig as unknown as { hydrating: boolean }).hydrating = true;
+        (
+          sharedConfig as unknown as { getNextContextId: () => string | undefined }
+        ).getNextContextId = () => undefined;
+
+        const id = createId();
+        expect(id).not.toContain("undefined");
+        expect(id).toMatch(/^solidaria-nh-\d+$/);
+      } finally {
+        (sharedConfig as unknown as { hydrating: boolean }).hydrating = priorHydrating;
+        (
+          sharedConfig as unknown as { getNextContextId?: () => string | undefined }
+        ).getNextContextId = priorGetNextContextId;
+        dispose();
+      }
+    });
+  });
+
+  it("does not throw when called without a reactive owner (#596)", () => {
+    expect(() => {
+      const id = createId();
+      expect(id).not.toContain("undefined");
+      expect(id).toMatch(/^solidaria-/);
+    }).not.toThrow();
   });
 
   it("should generate different IDs on each call", () => {

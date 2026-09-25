@@ -87,14 +87,21 @@ export const canUseDOM = !isServer;
  * }
  * ```
  */
+let fallbackIdCounter = 0;
+
 export function createId(defaultId?: string): string {
-  // Generate first, choose second, like upstream `useId`: `createUniqueId` is
-  // order-dependent in both of its branches, so returning early on `defaultId`
-  // would shift every later id in the same render or hydration pass.
-  const ctx = useContextOptional(SSRContext);
-  const uniqueId = createUniqueId();
   if (defaultId) {
     return defaultId;
+  }
+  const ctx = useContextOptional(SSRContext);
+  let uniqueId: string | undefined;
+  try {
+    uniqueId = createUniqueId();
+  } catch {
+    // createUniqueId throws outside of a reactive context in server/hydration passes
+  }
+  if (!uniqueId) {
+    uniqueId = `nh-${++fallbackIdCounter}`;
   }
   return ctx?.prefix ? `solidaria-${ctx.prefix}-${uniqueId}` : `solidaria-${uniqueId}`;
 }

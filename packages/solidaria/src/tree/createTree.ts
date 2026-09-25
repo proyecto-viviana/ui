@@ -99,7 +99,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
   ref: Accessor<HTMLDivElement | null>,
 ): TreeAria {
   // Generate a unique ID for the tree
-  const treeId = props().id ?? createId();
+  const treeId = createId(props().id);
 
   // Store tree data for child components
   const treeData: TreeData = {
