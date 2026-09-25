@@ -134,4 +134,33 @@ describe("ColorField", () => {
       expect(input.validationMessage).toBe("Invalid value.");
     });
   });
+
+  it("paints FieldGroup hover and focus-visible attributes", () => {
+    const { container } = render(() => <ColorField label="Color" defaultValue="#336699" />);
+    const input = screen.getByRole("textbox");
+    const group = container.querySelector('[role="presentation"]') as HTMLElement;
+    expect(group).toBeInTheDocument();
+
+    expect(group).not.toHaveAttribute("data-hovered");
+    expect(group).not.toHaveAttribute("data-focus-visible");
+    expect(group).not.toHaveAttribute("data-focused");
+
+    // Hover FieldGroup
+    fireEvent.pointerEnter(group);
+    expect(group).toHaveAttribute("data-hovered", "true");
+
+    fireEvent.pointerLeave(group);
+    expect(group).not.toHaveAttribute("data-hovered");
+
+    // Keyboard focus onto input (simulating Tab navigation)
+    fireEvent.keyDown(document.body, { key: "Tab" });
+    input.focus();
+    expect(group).toHaveAttribute("data-focused", "true");
+    expect(group).toHaveAttribute("data-focus-visible", "true");
+
+    // Pointer down on input clears focus-visible
+    fireEvent.pointerDown(input);
+    expect(group).toHaveAttribute("data-focused", "true");
+    expect(group).not.toHaveAttribute("data-focus-visible");
+  });
 });

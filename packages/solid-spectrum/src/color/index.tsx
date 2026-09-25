@@ -37,7 +37,13 @@ import {
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import {
+  createFocusRing,
+  createHover,
+  createStringFormatter,
+  mergeProps,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import {
   ColorSlider as HeadlessColorSlider,
@@ -1082,6 +1088,8 @@ interface ColorFieldStyleProps extends Partial<Omit<ColorFieldRenderProps, "colo
   labelPosition?: ColorFieldLabelPosition;
   labelAlign?: ColorFieldLabelAlign;
   isFocusWithin?: boolean;
+  isFocusVisible?: boolean;
+  isHovered?: boolean;
   isStaticColor?: boolean;
   isInForm?: boolean;
   isQuiet?: boolean;
@@ -1273,7 +1281,18 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     "prefix",
   ]);
 
-  const [isFocusWithin, setIsFocusWithin] = createSignal(false);
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return !!mergedProps.isDisabled;
+    },
+  });
+  const {
+    isFocused: isFocusWithin,
+    isFocusVisible,
+    focusProps,
+  } = createFocusRing({
+    within: true,
+  });
 
   const prefixId = createUniqueId();
   const prefixNode = children(() => local.prefix);
@@ -1321,6 +1340,8 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       ...renderProps,
       size: size(),
       isFocusWithin: isFocusWithin(),
+      isFocusVisible: isFocusVisible(),
+      isHovered: isHovered(),
     });
 
   return (
@@ -1365,15 +1386,20 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
           <div
             role="presentation"
             class={groupClass(renderProps)}
+            onPointerEnter={hoverProps.onPointerEnter}
+            onPointerLeave={hoverProps.onPointerLeave}
+            onFocusIn={focusProps.onFocusIn}
+            onFocusOut={focusProps.onFocusOut}
             onPointerDown={(event) => {
               if (event.pointerType === "mouse") {
                 focusColorFieldInput(event);
               }
             }}
             onTouchEnd={focusColorFieldInput}
-            onFocusIn={() => setIsFocusWithin(true)}
-            onFocusOut={() => setIsFocusWithin(false)}
             data-focused={isFocusWithin() ? "true" : undefined}
+            data-focus-within={isFocusWithin() ? "true" : undefined}
+            data-focus-visible={isFocusVisible() ? "true" : undefined}
+            data-hovered={isHovered() ? "true" : undefined}
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >

@@ -4,12 +4,17 @@ type: task
 title: "Paint the ColorField FieldGroup hover and keyboard focus ring"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorfield functional pass: isolated group.hover darkens React border 218→198 with data-hovered=true; Solid stays 218 and omits hovered. Tab onto the input: both settle border rgb(19,19,19); React outline solid 2px + data-focus-visible; Solid outline none and data-focused only. Label click same ring gap. Pointer click omits the ring on both",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "wired createHover and createFocusRing onto solid-spectrum ColorField presentation group with data-hovered, data-focus-visible, and reactive groupClass props; verified with ColorField unit test and Playwright e2e comparison spec matching S2",
     }
 ---
 

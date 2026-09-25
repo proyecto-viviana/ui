@@ -165,4 +165,70 @@ test.describe("comparison site chrome", () => {
     await expect(reactField.locator('[role="spinbutton"][data-type="minute"]')).toHaveText("––");
     await expect(solidField.locator('[role="spinbutton"][data-type="minute"]')).toHaveText("––");
   });
+
+  test("ColorField paints FieldGroup hover and keyboard focus ring matching S2", async ({
+    page,
+  }) => {
+    await page.goto("/components/colorfield/");
+    await waitForComparisonRouteReady(page);
+
+    const reactGroup = page.locator(
+      '[data-comparison-framework="react"] [data-comparison-control-root="colorfield"] [role="presentation"]',
+    );
+    const solidGroup = page.locator(
+      '[data-comparison-framework="solid"] [data-comparison-control-root="colorfield"] [role="presentation"]',
+    );
+    await expect(reactGroup).toBeVisible();
+    await expect(solidGroup).toBeVisible();
+
+    // FieldGroup hover darkens border on both with data-hovered=true
+    await solidGroup.hover();
+    await expect(solidGroup).toHaveAttribute("data-hovered", "true");
+    await expect(solidGroup).toHaveCSS("border-color", "rgb(198, 198, 198)");
+
+    await reactGroup.hover();
+    await expect(reactGroup).toHaveAttribute("data-hovered", "true");
+    await expect(reactGroup).toHaveCSS("border-color", "rgb(198, 198, 198)");
+
+    // Pointer click on input focuses input but omits focus ring on both
+    const solidInput = solidGroup.locator("input");
+    await solidInput.click();
+    await expect(solidInput).toBeFocused();
+    await expect(solidGroup).toHaveAttribute("data-focused", "true");
+    await expect(solidGroup).not.toHaveAttribute("data-focus-visible");
+    const solidPointerOutline = await solidGroup.evaluate(
+      (el) => window.getComputedStyle(el).outlineStyle,
+    );
+    expect(solidPointerOutline).toBe("none");
+
+    const reactInput = reactGroup.locator("input");
+    await reactInput.click();
+    await expect(reactInput).toBeFocused();
+    await expect(reactGroup).not.toHaveAttribute("data-focus-visible");
+    const reactPointerOutline = await reactGroup.evaluate(
+      (el) => window.getComputedStyle(el).outlineStyle,
+    );
+    expect(reactPointerOutline).toBe("none");
+
+    // Injected element before the input then Tab (from ticket #369 description)
+    await page.evaluate(() => {
+      const before = document.createElement("button");
+      before.id = "injected-before";
+      before.textContent = "Before";
+      const solidRoot = document.querySelector(
+        '[data-comparison-framework="solid"] [data-comparison-control-root="colorfield"]',
+      );
+      solidRoot?.parentElement?.insertBefore(before, solidRoot);
+    });
+    const beforeBtn = page.locator("#injected-before");
+    await beforeBtn.focus();
+    await page.keyboard.press("Tab");
+
+    await expect(solidInput).toBeFocused();
+    await expect(solidGroup).toHaveAttribute("data-focus-visible", "true");
+    const solidKeyboardOutline = await solidGroup.evaluate(
+      (el) => window.getComputedStyle(el).outlineStyle,
+    );
+    expect(solidKeyboardOutline).toBe("solid");
+  });
 });
