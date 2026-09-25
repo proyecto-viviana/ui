@@ -4,9 +4,14 @@ type: task
 title: "Provide Tree default Checkbox context"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-77" }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "provided CheckboxContext and CheckboxFieldContext in TreeItem matching RAC",
+    }
 ---
 
 Match RAC Tree selection composition for an unslotted Checkbox.

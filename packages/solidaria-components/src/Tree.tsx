@@ -64,7 +64,14 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  DEFAULT_SLOT,
 } from "./utils";
+import {
+  CheckboxContext,
+  CheckboxFieldContext,
+  type CheckboxContextValue,
+  type CheckboxFieldContextValue,
+} from "./Checkbox";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
@@ -1671,10 +1678,63 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     >),
   });
 
+  const treeSelectionCheckboxAria = createTreeSelectionCheckbox<object, TreeCollection<object>>(
+    () => ({ key: local.id }),
+    () => state,
+  );
+
+  const checkboxSelectionProps = createMemo(() => {
+    const rawCheckboxProps = treeSelectionCheckboxAria.checkboxProps;
+    return {
+      id: typeof rawCheckboxProps.id === "string" ? rawCheckboxProps.id : undefined,
+      "aria-label":
+        typeof rawCheckboxProps["aria-label"] === "string"
+          ? rawCheckboxProps["aria-label"]
+          : undefined,
+      "aria-labelledby":
+        typeof rawCheckboxProps["aria-labelledby"] === "string"
+          ? rawCheckboxProps["aria-labelledby"]
+          : undefined,
+      get isSelected() {
+        return isSelected();
+      },
+      get isDisabled() {
+        return isDisabled();
+      },
+      onChange() {
+        if (!isDisabled()) {
+          state.toggleSelection(local.id);
+        }
+      },
+    };
+  });
+
+  const checkboxContextValue: CheckboxContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      get selection() {
+        return checkboxSelectionProps();
+      },
+    },
+  };
+
+  const checkboxFieldContextValue: CheckboxFieldContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      get selection() {
+        return checkboxSelectionProps();
+      },
+    },
+  };
+
   const rowContent = () => (
     <TreeItemContentContext value={renderValues()}>
       <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
-        {renderProps.renderChildren()}
+        <CheckboxContext value={checkboxContextValue}>
+          <CheckboxFieldContext value={checkboxFieldContextValue}>
+            {renderProps.renderChildren()}
+          </CheckboxFieldContext>
+        </CheckboxContext>
       </div>
     </TreeItemContentContext>
   );

@@ -20,6 +20,7 @@ import {
   TreeSection,
   TreeSelectionCheckbox,
 } from "../src/Tree";
+import { Checkbox, CheckboxField, CheckboxButton } from "../src/Checkbox";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type {
   TreeItemData,
@@ -1174,6 +1175,137 @@ describe("Tree", () => {
       fireEvent.click(rows[0]);
 
       expect(getFirstCheckbox()).toBeChecked();
+    });
+
+    it("connects slotted Checkbox to row selection state", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Tree with slotted selection checkbox"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              {() => (
+                <>
+                  <Checkbox slot="selection" />
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const checkboxes = screen.getAllByRole("checkbox");
+      expect(checkboxes[0]).not.toBeChecked();
+      expect(checkboxes[0]).toHaveAttribute("aria-label", "Select");
+
+      fireEvent.click(checkboxes[0]);
+      expect(checkboxes[0]).toBeChecked();
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      const selected = onSelectionChange.mock.calls[0][0];
+      expect(Array.from(selected)).toEqual(["item-1"]);
+    });
+
+    it("allows unslotted checkboxes in tree item content without affecting selection", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Tree with unslotted checkbox"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              {() => (
+                <>
+                  <Checkbox slot="selection" />
+                  <span>{item.textValue}</span>
+                  <Checkbox>Flag item</Checkbox>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const flagCheckboxes = screen.getAllByRole("checkbox", { name: "Flag item" });
+      expect(flagCheckboxes[0]).toBeInTheDocument();
+      expect(flagCheckboxes[0]).not.toBeChecked();
+
+      fireEvent.click(flagCheckboxes[0]);
+      expect(flagCheckboxes[0]).toBeChecked();
+      // Unslotted checkbox does not trigger tree selection
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      // Slotted selection checkbox is still unchecked
+      const allCheckboxes = screen.getAllByRole("checkbox");
+      expect(allCheckboxes[0]).not.toBeChecked();
+    });
+
+    it("connects slotted CheckboxField to row selection state", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Tree with slotted selection CheckboxField"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              {() => (
+                <>
+                  <CheckboxField slot="selection">
+                    <CheckboxButton />
+                  </CheckboxField>
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const checkboxes = screen.getAllByRole("checkbox");
+      expect(checkboxes[0]).not.toBeChecked();
+      expect(checkboxes[0]).toHaveAttribute("aria-label", "Select");
+
+      fireEvent.click(checkboxes[0]);
+      expect(checkboxes[0]).toBeChecked();
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      const selected = onSelectionChange.mock.calls[0][0];
+      expect(Array.from(selected)).toEqual(["item-1"]);
+    });
+
+    it("disables slotted selection checkbox when tree item is disabled", () => {
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Tree with disabled item"
+          selectionMode="multiple"
+          disabledKeys={["item-1"]}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              {() => (
+                <>
+                  <Checkbox slot="selection" />
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const checkboxes = screen.getAllByRole("checkbox");
+      expect(checkboxes[0]).toBeDisabled();
+      expect(checkboxes[1]).not.toBeDisabled();
     });
   });
 
