@@ -102,6 +102,7 @@ const switchFieldStyle = style<
 >(
   {
     display: "grid",
+    position: "relative",
     gridTemplateColumns: {
       default: ["max-content", "1fr"],
       isNoVisibleLabel: ["max-content"],
