@@ -225,6 +225,20 @@ describe("TableView (solid-spectrum)", () => {
     expectSelectAll(false, false);
   });
 
+  it("treats an explicit full set of selected keys as selected, not mixed", () => {
+    render(() => (
+      <TestTable
+        selectionMode="multiple"
+        defaultSelectedKeys={new Set(["alice", "bob", "carol"])}
+      />
+    ));
+
+    const selectAll = screen.getByRole("checkbox", { name: "Select All" }) as HTMLInputElement;
+    expect(selectAll.checked).toBe(true);
+    expect(selectAll.indeterminate).toBe(false);
+    expect(selectAll).not.toHaveAttribute("data-indeterminate");
+  });
+
   it("maps S2 density, quiet, and overflow props onto the table", () => {
     render(() => (
       <TestTable

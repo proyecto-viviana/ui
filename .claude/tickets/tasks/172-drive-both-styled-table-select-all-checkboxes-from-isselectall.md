@@ -4,9 +4,14 @@ type: task
 title: "Drive both styled Table select-all checkboxes from isSelectAll"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "drove viviana-ui TableSelectAllCheckbox from state.isSelectAll and state.isEmpty matching solid-spectrum, added explicit full set regression in solid-spectrum and created viviana-ui Table.test.tsx",
+    }
 ---
 
 ## Cause
