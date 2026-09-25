@@ -4,12 +4,17 @@ type: task
 title: "Honor Form validationBehavior on descendant fields"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 form functional pass: URL ?validationBehavior=aria&isRequired=true&value= sets both forms noValidate=true; React descendant input required=false aria-required=true :invalid=false; Solid keeps required=true aria-required omitted :invalid=true. Live {validationBehavior:'aria'} also leaves Solid form noValidate=false, so empty submit is blocked and focused on the input while React submits {name:''}",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "Verified form validationBehavior live and URL parity across solid-spectrum and viviana-ui with tests covering descendant required/aria-required toggling, live form noValidate reflection, and unblocked empty submit under aria validationBehavior.",
     }
 ---
 

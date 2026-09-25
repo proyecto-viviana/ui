@@ -3,6 +3,7 @@
  */
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import {
   ActionButton,
   ActionButtonGroup,
@@ -182,6 +183,79 @@ describe("Form (solid-spectrum)", () => {
     expect(input).not.toHaveAttribute("required");
     expect(input).toHaveAttribute("aria-required", "true");
     expect(input.validity.valueMissing).toBe(false);
+  });
+
+  it("tracks a live form validationBehavior change on a descendant TextField", () => {
+    const [behavior, setBehavior] = createSignal<"aria" | "native">("native");
+
+    render(() => (
+      <Form validationBehavior={behavior()} isRequired aria-label="Live descendant form">
+        <TextField label="Name" />
+      </Form>
+    ));
+
+    const form = screen.getByRole("form", { name: "Live descendant form" }) as HTMLFormElement;
+    const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+
+    expect(form.noValidate).toBe(false);
+    expect(input.required).toBe(true);
+    expect(input).not.toHaveAttribute("aria-required");
+
+    setBehavior("aria");
+    flush();
+
+    expect(form.noValidate).toBe(true);
+    expect(input.required).toBe(false);
+    expect(input).toHaveAttribute("aria-required", "true");
+  });
+
+  it("allows form submit when validationBehavior is aria and required field is empty", () => {
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+    render(() => (
+      <Form validationBehavior="aria" isRequired aria-label="Aria submit form" onSubmit={onSubmit}>
+        <TextField label="Name" />
+        <button type="submit">Submit</button>
+      </Form>
+    ));
+
+    const form = screen.getByRole("form", { name: "Aria submit form" }) as HTMLFormElement;
+    const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+
+    expect(form.noValidate).toBe(true);
+    expect(input.required).toBe(false);
+    expect(input).toHaveAttribute("aria-required", "true");
+
+    form.requestSubmit();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows form submit after live validationBehavior change to aria", () => {
+    const [behavior, setBehavior] = createSignal<"aria" | "native">("native");
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+    render(() => (
+      <Form
+        validationBehavior={behavior()}
+        isRequired
+        aria-label="Live submit form"
+        onSubmit={onSubmit}
+      >
+        <TextField label="Name" />
+        <button type="submit">Submit</button>
+      </Form>
+    ));
+
+    const form = screen.getByRole("form", { name: "Live submit form" }) as HTMLFormElement;
+
+    form.requestSubmit();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    setBehavior("aria");
+    flush();
+
+    form.requestSubmit();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it("provides S2 field props to TextField and Button children", () => {
