@@ -4,12 +4,17 @@ type: task
 title: "Focus the toast on Show all and the region on Collapse like S2"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 toast functional pass: S2 Show all onPress focuses toastRef then toggleExpanded (button disappears). S2 collapse focuses regionRef then toggleExpanded. Solid onPress only toggleExpanded; collapse() only startViewTransition setIsExpanded(false). After Show all: React focus=alertdialog Toast is burned!, Solid BODY. After Collapse: React region Notifications tabIndex -1, Solid BODY. After Clear all (from expanded, React still on the toast): React BODY vs Solid Show Positive Toast. Outside click while collapsed: React region vs Solid toast",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "Forwarded ref on ToastRegion and Toast. On Show all click, focused toastElement before toggleExpanded. In ToastContainer collapse, focused regionRef before transitioning to collapsed state.",
     }
 ---
 

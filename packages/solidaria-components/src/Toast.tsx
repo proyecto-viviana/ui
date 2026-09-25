@@ -46,7 +46,7 @@ import {
 } from "@proyecto-viviana/solidaria";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { assignRef, splitProps, type RefLike } from "@proyecto-viviana/solidaria/utils";
 import {
   type ContextValue,
   type RenderChildren,
@@ -130,6 +130,8 @@ export interface ToastRegionProps {
     | "bottom end"
     | "bottom-start"
     | "bottom-end";
+  /** Optional ref for the region element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export interface ToastProps {
@@ -145,6 +147,8 @@ export interface ToastProps {
   class?: ClassNameOrFunction<ToastRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<ToastRenderProps>;
+  /** Optional ref for the toast root element. */
+  ref?: RefLike<HTMLElement>;
 }
 
 export const ToastContext = createContext<ToastState<ToastContent> | null>(null);
@@ -247,6 +251,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     "aria-label",
     "portal",
     "placement",
+    "ref",
   ]);
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => portalContext.getContainer?.() ?? undefined;
@@ -370,7 +375,10 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
 
     return (
       <div
-        ref={setRegionElement}
+        ref={(el) => {
+          setRegionElement(el);
+          assignRef(local.ref, el);
+        }}
         {...domProps()}
         {...cleanRegionProps()}
         aria-label={ariaLabel()}
@@ -408,7 +416,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
  * ```
  */
 export function Toast(props: ToastProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["toast", "children", "class", "style"]);
+  const [local, rest] = splitProps(props, ["toast", "children", "class", "style", "ref"]);
 
   const [toastEl, setToastEl] = createSignal<HTMLDivElement | null>(null);
 
@@ -584,7 +592,10 @@ export function Toast(props: ToastProps): JSX.Element {
       }}
     >
       <div
-        ref={setToastEl}
+        ref={(el) => {
+          setToastEl(el);
+          assignRef(local.ref, el);
+        }}
         {...domProps()}
         {...cleanToastProps}
         class={renderProps.class()}

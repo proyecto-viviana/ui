@@ -284,6 +284,52 @@ describe("Toast (solid-spectrum)", () => {
       const iconSlot = showAllBtn.querySelector('svg[aria-hidden="true"]');
       expect(iconSlot).toBeInTheDocument();
     });
+
+    it("focuses the toast on Show all and the region on Collapse (#434)", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      const showAllBtn = screen.getByRole("button", { name: /Show all/ });
+      fireEvent.click(showAllBtn);
+
+      // Focus moves to the toast (alertdialog), not BODY
+      const activeAfterShowAll = document.activeElement;
+      expect(activeAfterShowAll).not.toBe(document.body);
+      expect(activeAfterShowAll?.getAttribute("role")).toBe("alertdialog");
+
+      const collapseBtn = screen.getByRole("button", { name: /Collapse/ });
+      fireEvent.click(collapseBtn);
+
+      // Focus moves to the region (Notifications), not BODY
+      const activeAfterCollapse = document.activeElement;
+      expect(activeAfterCollapse).not.toBe(document.body);
+      expect(activeAfterCollapse?.getAttribute("role")).toBe("region");
+    });
+
+    it("focuses the region when collapsing on Escape (#434)", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
+      expect(document.activeElement?.getAttribute("role")).toBe("alertdialog");
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(document.activeElement?.getAttribute("role")).toBe("region");
+    });
+
+    it("forwards ref on ToastContainer (#434)", () => {
+      let containerEl: HTMLElement | undefined;
+      render(() => <ToastContainer portal={false} ref={(el) => (containerEl = el)} />);
+
+      ToastQueue.neutral("First toast");
+
+      expect(containerEl).toBeInTheDocument();
+      expect(containerEl?.getAttribute("role")).toBe("region");
+    });
   });
 
   describe("variant contract", () => {

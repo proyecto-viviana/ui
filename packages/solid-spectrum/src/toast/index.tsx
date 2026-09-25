@@ -79,7 +79,7 @@ import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings } from "../intl";
 import { createMediaQuery } from "../utils/createMediaQuery";
 import { focusRing, style } from "../style" with { type: "macro" };
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { assignRef, splitProps, type RefLike } from "@proyecto-viviana/solidaria/utils";
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
 export type ToastVariant = "positive" | "negative" | "info" | "neutral";
@@ -720,7 +720,7 @@ export function ToastProvider(props: ToastProviderProps): JSX.Element {
  * This remains for lower-level composition; ToastContainer self-wires the global queue.
  */
 export function ToastRegion(props: ToastRegionProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["placement", "class"]);
+  const [local, rest] = splitProps(props, ["placement", "class", "ref"]);
   const placement = () => normalizePlacement(local.placement);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const containerContext = useContext(ToastContainerContext);
@@ -787,6 +787,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
   return (
     <HeadlessToastRegion
       {...rest}
+      ref={local.ref}
       placement={placement().placement}
       class={(_renderProps: ToastRegionRenderProps) =>
         [
@@ -873,8 +874,9 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
  * at the root of the app.
  */
 export function ToastContainer(props: ToastContainerProps): JSX.Element {
-  const [local, regionProps] = splitProps(props, ["PRIVATE_forceReducedMotion"]);
+  const [local, regionProps] = splitProps(props, ["PRIVATE_forceReducedMotion", "ref"]);
   const [isExpanded, setIsExpanded] = createSignal(false);
+  let regionRef: HTMLElement | undefined;
 
   onSettled(ensureToastAnimationStyles);
 
@@ -913,6 +915,7 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
       );
     },
     collapse: () => {
+      regionRef?.focus();
       if (isExpanded()) {
         startViewTransition(() => setIsExpanded(false), "toast-collapse");
       }
@@ -924,7 +927,13 @@ export function ToastContainer(props: ToastContainerProps): JSX.Element {
   return (
     <ToastContainerContext value={context}>
       <ToastProvider useGlobalQueue>
-        <ToastRegion {...regionProps} />
+        <ToastRegion
+          ref={(el) => {
+            regionRef = el;
+            assignRef(local.ref, el);
+          }}
+          {...regionProps}
+        />
       </ToastProvider>
     </ToastContainerContext>
   );
@@ -942,7 +951,9 @@ export function Toast(props: ToastProps): JSX.Element {
     "canExpand",
     "placementEdge",
     "placementAlign",
+    "ref",
   ]);
+  let toastElement: HTMLElement | undefined;
   const state = useToastContext();
   const containerCtx = useContext(ToastContainerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
@@ -1012,6 +1023,10 @@ export function Toast(props: ToastProps): JSX.Element {
         <HeadlessToast
           {...contentDomProps()}
           {...rest}
+          ref={(el) => {
+            toastElement = el;
+            assignRef(local.ref, el);
+          }}
           toast={local.toast}
           data-solid-spectrum-variant={variant()}
           style={
@@ -1055,7 +1070,10 @@ export function Toast(props: ToastProps): JSX.Element {
                 staticColor="white"
                 styles={toastExpand}
                 UNSAFE_className={useComponentTransition() ? "toast-expand" : undefined}
-                onPress={local.onToggleExpanded}
+                onPress={() => {
+                  toastElement?.focus();
+                  local.onToggleExpanded?.();
+                }}
               >
                 <Text>{stringFormatter().format("toast.showAll")}</Text>
                 <ChevronDownIcon
