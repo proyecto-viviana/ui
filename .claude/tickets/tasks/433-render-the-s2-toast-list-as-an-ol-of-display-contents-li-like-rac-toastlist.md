@@ -4,12 +4,17 @@ type: task
 title: "Render the S2 Toast list as an ol of display-contents li like RAC ToastList"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 toast functional pass: RAC ToastList is ol > li[display:contents] > alertdialog, so Chromium AX is region > list > listitem > alertdialog. Solid Spectrum ToastRegion uses a div[data-solid-spectrum-toast-list] and solidaria-components exports ToastRegion as UNSTABLE_ToastList (alias, not a list). AX is region > alertdialog with no list/listitem. Visual layout matches because li is display:contents. Certified D6 snapshots the alertdialog subtree only, so this missed the gate",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "rendered toast list as an ol with listStyleType none and wrapped each toast item in li style display:contents across both solid-spectrum and viviana-ui; verified region list/listitem accessibility tree",
     }
 ---
 

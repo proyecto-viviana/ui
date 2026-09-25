@@ -241,6 +241,32 @@ describe("Toast (solid-spectrum)", () => {
       expect(screen.queryByText("First toast")).not.toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Show all/ })).toBeInTheDocument();
     });
+
+    it("renders the toast list as an ol of display-contents li elements (#433)", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      const ol = document.querySelector<HTMLOListElement>("ol[data-solid-spectrum-toast-list]");
+      expect(ol).toBeInTheDocument();
+      expect(ol?.tagName.toLowerCase()).toBe("ol");
+
+      const listItems = ol?.querySelectorAll<HTMLLIElement>(":scope > li");
+      expect(listItems?.length).toBe(2);
+      listItems?.forEach((li) => {
+        expect(li.style.display).toBe("contents");
+      });
+
+      // Collapsed: main toast has alertdialog, background toast is presentation
+      expect(listItems?.[0].querySelector('[role="alertdialog"]')).toBeInTheDocument();
+
+      // Expanded: both items contain alertdialogs
+      fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
+      listItems?.forEach((li) => {
+        expect(li.querySelector('[role="alertdialog"]')).toBeInTheDocument();
+      });
+    });
   });
 
   describe("variant contract", () => {

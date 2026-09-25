@@ -489,6 +489,7 @@ const toastList = style<{ placement: ToastEdge; isExpanded?: boolean }>({
     },
   },
   boxSizing: "border-box",
+  listStyleType: "none",
   margin: 0,
   marginX: {
     default: 0,
@@ -889,7 +890,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
                   onClick={containerContext?.collapse}
                 />
               </Show>
-              <div
+              <ol
                 {...listHoverProps}
                 class={[
                   isExpanded() ? "toast-list-expanded" : "toast-list-collapsed",
@@ -901,19 +902,21 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
               >
                 <For each={visibleToasts()}>
                   {(toast, index) => (
-                    <Toast
-                      toast={toast}
-                      index={index}
-                      visibleToasts={visibleToasts}
-                      isExpanded={isExpanded}
-                      onToggleExpanded={() => toggleExpanded(visibleToasts())}
-                      canExpand={Boolean(containerContext)}
-                      placementEdge={placement().edge}
-                      placementAlign={placement().align}
-                    />
+                    <li style={{ display: "contents" }}>
+                      <Toast
+                        toast={toast}
+                        index={index}
+                        visibleToasts={visibleToasts}
+                        isExpanded={isExpanded}
+                        onToggleExpanded={() => toggleExpanded(visibleToasts())}
+                        canExpand={Boolean(containerContext)}
+                        placementEdge={placement().edge}
+                        placementAlign={placement().align}
+                      />
+                    </li>
                   )}
                 </For>
-              </div>
+              </ol>
               <Show when={containerContext}>
                 {(context) => (
                   <div
