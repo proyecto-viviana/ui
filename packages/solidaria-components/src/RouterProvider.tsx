@@ -15,219 +15,27 @@
 /**
  * RouterProvider for solidaria-components
  *
- * A context provider for client-side router integration.
- * SolidJS apps typically use TanStack Router or SolidRouter directly;
- * this provides API compatibility with React Aria's RouterProvider.
- * Based on packages/react-aria/src/utils/openLink.tsx.
+ * Re-exports router primitives from `@proyecto-viviana/solidaria/utils`
+ * where they can be consumed by both `solidaria` headless collection hooks
+ * and `solidaria-components` components.
  */
 
-import { createContext, useContext } from "solid-js";
-import { openLink } from "@proyecto-viviana/solidaria/utils";
-import type { JSX } from "@solidjs/web";
-
-export interface RouterClickModifiers {
-  metaKey?: boolean;
-  ctrlKey?: boolean;
-  altKey?: boolean;
-  shiftKey?: boolean;
-}
-
-export interface RouterContextValue {
-  /** Whether the router is a native browser router (no client-side navigation). */
-  isNative: boolean;
-  /** Navigate to a given href. */
-  navigate: (href: string, routerOptions?: RouterOptions) => void;
-  /** Open a link target with router-aware navigation behavior. */
-  open: (
-    target: Element,
-    modifiers: RouterClickModifiers,
-    href: string,
-    routerOptions?: RouterOptions,
-  ) => void;
-  /** Transform an href for the router. */
-  useHref: (href: string) => string;
-}
-
-export interface RouterOptions {
-  /** Whether to replace the current history entry. */
-  replace?: boolean;
-  /** Additional router-specific options. */
-  [key: string]: unknown;
-}
-
-export interface RouterProviderProps {
-  /** A function that performs client-side navigation. */
-  navigate: (href: string, routerOptions?: RouterOptions) => void;
-  /** An optional function that transforms hrefs. */
-  useHref?: (href: string) => string;
-  /** Children to render. */
-  children: JSX.Element;
-}
-
-const defaultRouter: RouterContextValue = {
-  isNative: true,
-  navigate: () => {},
-  open: (target, modifiers) => {
-    openSyntheticLink(target, modifiers);
-  },
-  useHref: (href: string) => href,
-};
-
-export const RouterContext = createContext<RouterContextValue>(defaultRouter);
-
-export interface LinkDOMProps {
-  href?: string;
-  target?: string;
-  rel?: string;
-  download?: string | boolean;
-  ping?: string;
-  referrerPolicy?:
-    | ""
-    | "no-referrer"
-    | "no-referrer-when-downgrade"
-    | "origin"
-    | "origin-when-cross-origin"
-    | "same-origin"
-    | "strict-origin"
-    | "strict-origin-when-cross-origin"
-    | "unsafe-url";
-}
-
-export function shouldClientNavigate(
-  link: HTMLAnchorElement,
-  modifiers: RouterClickModifiers,
-): boolean {
-  const target = link.getAttribute("target");
-  const sameOrigin = typeof location === "undefined" ? true : link.origin === location.origin;
-  return (
-    (!target || target === "_self") &&
-    sameOrigin &&
-    !link.hasAttribute("download") &&
-    !modifiers.metaKey &&
-    !modifiers.ctrlKey &&
-    !modifiers.altKey &&
-    !modifiers.shiftKey
-  );
-}
-
-// One implementation only: `openLink` lives in `@proyecto-viviana/solidaria`,
-// where the press and selection hooks already call it and where its `isOpening`
-// latch is read. This module re-exports it because it is part of this package's
-// public surface, as upstream keeps both in `openLink.tsx`.
-export { openLink };
-
-function getSyntheticLink(target: Element, open: (link: HTMLAnchorElement) => void): void {
-  if (target instanceof HTMLAnchorElement) {
-    open(target);
-    return;
-  }
-
-  const href = target.getAttribute("data-href");
-  if (!href) {
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.href = href;
-
-  const targetValue = target.getAttribute("data-target");
-  if (targetValue) link.target = targetValue;
-
-  const rel = target.getAttribute("data-rel");
-  if (rel) link.rel = rel;
-
-  const download = target.getAttribute("data-download");
-  if (download) link.download = download;
-
-  const ping = target.getAttribute("data-ping");
-  if (ping) link.ping = ping;
-
-  const referrerPolicy = target.getAttribute("data-referrer-policy");
-  if (referrerPolicy) {
-    link.referrerPolicy = referrerPolicy;
-  }
-
-  target.appendChild(link);
-  open(link);
-  target.removeChild(link);
-}
-
-function openSyntheticLink(target: Element, modifiers: RouterClickModifiers): void {
-  getSyntheticLink(target, (link) => openLink(link, modifiers));
-}
-
-export function useLinkProps(props?: LinkDOMProps): LinkDOMProps {
-  const router = useRouter();
-  const href = props?.href ?? "";
-  return {
-    href: props?.href ? router.useHref(href) : undefined,
-    target: props?.target,
-    rel: props?.rel,
-    download: props?.download,
-    ping: props?.ping,
-    referrerPolicy: props?.referrerPolicy,
-  };
-}
-
-export function handleLinkClick(
-  event: MouseEvent,
-  router: RouterContextValue,
-  href: string | undefined,
-  routerOptions?: RouterOptions,
-): void {
-  if (
-    !router.isNative &&
-    event.currentTarget instanceof HTMLAnchorElement &&
-    event.currentTarget.href &&
-    !event.defaultPrevented &&
-    href &&
-    shouldClientNavigate(event.currentTarget, event)
-  ) {
-    event.preventDefault();
-    router.open(event.currentTarget, event, href, routerOptions);
-  }
-}
-
-/**
- * A RouterProvider accepts a `navigate` function from a client-side router,
- * and provides it to all nested solidaria links to enable client-side navigation.
- *
- * @example
- * ```tsx
- * import { useNavigate } from '@solidjs/router';
- *
- * function App() {
- *   const navigate = useNavigate();
- *   return (
- *     <RouterProvider navigate={navigate}>
- *       <Link href="/about">About</Link>
- *     </RouterProvider>
- *   );
- * }
- * ```
- */
-export function RouterProvider(props: RouterProviderProps): JSX.Element {
-  const ctx: RouterContextValue = {
-    isNative: false,
-    navigate: props.navigate,
-    open: (target, modifiers, href, routerOptions) => {
-      getSyntheticLink(target, (link) => {
-        if (shouldClientNavigate(link, modifiers)) {
-          props.navigate(href, routerOptions);
-        } else {
-          openLink(link, modifiers);
-        }
-      });
-    },
-    useHref: props.useHref ?? ((href: string) => href),
-  };
-
-  return <RouterContext value={ctx}>{props.children}</RouterContext>;
-}
-
-/**
- * Returns the current router context value.
- */
-export function useRouter(): RouterContextValue {
-  return useContext(RouterContext);
-}
+export {
+  RouterProvider,
+  RouterContext,
+  useRouter,
+  useLinkProps,
+  useSyntheticLinkProps,
+  getSyntheticLinkProps,
+  handleLinkClick,
+  shouldClientNavigate,
+  openSyntheticLink,
+  getSyntheticLink,
+  openLink,
+  type RouterClickModifiers,
+  type RouterContextValue,
+  type RouterOptions,
+  type RouterProviderProps,
+  type LinkDOMProps,
+  type LinkModifiers,
+} from "@proyecto-viviana/solidaria/utils";

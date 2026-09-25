@@ -27,9 +27,9 @@
  *  - Plain closure variables replace `useRef` (a Solid component body runs once).
  *  - React's bubbling `onFocus` / `onBlur` are `onFocusIn` / `onFocusOut`
  *    (the native bubbling focus events) here.
- *  - The link branch opens the anchor directly (we have no router abstraction)
- *    and needs no `flushSync` — `setFocusedKey` is synchronous and the keyed
- *    item element already exists in the DOM.
+ *  - The link branch routes through useRouter().open(...) to respect
+ *    client-side routing, and needs no flushSync — setFocusedKey is synchronous
+ *    and the keyed item element already exists in the DOM.
  *  - Ticket #100 tracks the missing virtual-focus cursor movement through
  *    `moveVirtualFocus` and `dispatchVirtualFocus`. The focused-key bookkeeping
  *    around it is preserved.
@@ -49,8 +49,8 @@ import {
   isFocusWithin,
   isTabbable,
   nodeContains,
-  openLink,
 } from "../utils/dom";
+import { useRouter } from "../utils/openLink";
 import { focusSafely, focusWithoutScrolling } from "../utils/focus";
 import { scrollIntoView, scrollIntoViewport } from "../utils/scrollIntoView";
 import { getInteractionModality } from "../interactions/createInteractionModality";
@@ -134,6 +134,7 @@ export function createSelectableCollection<T = unknown>(
 
   const locale = useLocale();
   const direction = (): "ltr" | "rtl" => locale().direction;
+  const router = useRouter();
 
   const navigateToKey = (
     e: AriaKeyboardEvent,
@@ -149,8 +150,14 @@ export function createSelectableCollection<T = unknown>(
       ) {
         manager.setFocusedKey(key, childFocus);
         const item = getItemElement(ref, key);
-        if (item instanceof HTMLAnchorElement) {
-          openLink(item, e);
+        const itemProps = manager.getItemProps?.(key);
+        if (item) {
+          router.open(
+            item,
+            e,
+            itemProps?.href as string | undefined,
+            itemProps?.routerOptions as any,
+          );
           return;
         }
 

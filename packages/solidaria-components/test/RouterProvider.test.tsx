@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render } from "@solidjs/testing-library";
+import { render, fireEvent } from "@solidjs/testing-library";
 import { RouterProvider, RouterContext, useRouter, openLink } from "../src/RouterProvider";
 import { openLink as solidariaOpenLink } from "@proyecto-viviana/solidaria";
+import { GridList, GridListItem } from "../src/GridList";
+import { ComboBox, ComboBoxInput, ComboBoxListBox, ComboBoxOption } from "../src/ComboBox";
 
 describe("RouterProvider", () => {
   it("renders children", () => {
@@ -97,5 +99,58 @@ describe("RouterProvider", () => {
 
     expect(clicks).toHaveLength(1);
     link.remove();
+  });
+
+  it("navigates when activating a link item in a GridList (#592)", () => {
+    const navigate = vi.fn();
+    const { getByRole } = render(() => (
+      <RouterProvider navigate={navigate}>
+        <GridList aria-label="Links" items={[{ id: "1", name: "Home", href: "/home" }]}>
+          {(item) => (
+            <GridListItem id={item.id} href={item.href}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      </RouterProvider>
+    ));
+
+    const row = getByRole("row");
+    expect(row).toBeDefined();
+    expect(row.getAttribute("data-href")).toBe("/home");
+
+    // Click row
+    fireEvent.click(row);
+    expect(navigate).toHaveBeenCalledWith("/home", undefined);
+  });
+
+  it("navigates when activating a link item in a ComboBox (#592)", () => {
+    const navigate = vi.fn();
+    const { getByRole } = render(() => (
+      <RouterProvider navigate={navigate}>
+        <ComboBox
+          aria-label="Links"
+          defaultInputValue="Home"
+          items={[{ id: "1", name: "Home", href: "/home" }]}
+        >
+          <ComboBoxInput />
+          <ComboBoxListBox>
+            {(item) => (
+              <ComboBoxOption id={item.id} href={item.href} textValue={item.name}>
+                {item.name}
+              </ComboBoxOption>
+            )}
+          </ComboBoxListBox>
+        </ComboBox>
+      </RouterProvider>
+    ));
+
+    const input = getByRole("combobox") as HTMLInputElement;
+    // Arrow down to open the menu and focus the first option
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    // Press Enter to activate the focused link option
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(navigate).toHaveBeenCalledWith("/home", undefined);
   });
 });

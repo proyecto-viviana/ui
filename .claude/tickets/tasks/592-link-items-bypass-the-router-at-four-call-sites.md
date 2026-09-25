@@ -4,7 +4,7 @@ type: task
 title: "Four collection call sites open links directly, so a consumer's RouterProvider never navigates"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "centralized RouterProvider and useRouter in solidaria/utils (with solidaria-components re-exporting); routed link activations in createSelectableItem (onSelect and performAction), createSelectableCollection (navigateToKey), and createComboBox (Enter key) through useRouter().open(...); forwarded link props in createGridListItem and GridListItem; corrected createSelectableItem.ts docstring; verified RouterProvider test navigates on GridList and ComboBox link items",
     }
 ---
 

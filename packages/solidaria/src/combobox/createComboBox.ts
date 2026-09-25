@@ -40,7 +40,8 @@ import { attrString } from "../utils/domAttrs";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isAppleDevice } from "../utils/platform";
-import { getActiveElement, getOwnerDocument, nodeContains, openLink } from "../utils/dom";
+import { getActiveElement, getOwnerDocument, nodeContains } from "../utils/dom";
+import { useRouter } from "../utils/openLink";
 import { dispatchVirtualFocus } from "../focus/virtualFocus";
 import { ariaHideOutside } from "../overlays/ariaHideOutside";
 import { announce } from "../live-announcer";
@@ -167,6 +168,7 @@ export function createComboBox<T>(
   popoverRef?: () => Element | null,
 ): ComboBoxAria<T> {
   const getProps = () => access(props);
+  const router = useRouter();
   const id = createId(getProps().id);
 
   // Development-time warning for missing accessibility labels
@@ -558,10 +560,17 @@ export function createComboBox<T>(
             const listBox = listBoxRef?.();
             if (listBox) {
               const item = listBox.querySelector(`[data-key="${CSS.escape(String(focusedKey))}"]`);
-              if (item instanceof HTMLAnchorElement) {
-                openLink(item, e);
+              if (item) {
+                const routerOptions =
+                  collectionItem?.props?.routerOptions ??
+                  (collectionItem?.value as Record<string, unknown> | null)?.routerOptions;
+                router.open(item, e, String(itemHref), routerOptions as any);
               }
             }
+            state.close();
+            break;
+          } else if (collectionItem?.props?.onAction) {
+            (collectionItem.props.onAction as () => void)();
             state.close();
             break;
           }

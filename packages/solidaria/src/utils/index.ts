@@ -94,3 +94,21 @@ export {
 export { createEnterAnimation, createExitAnimation, type ElementAccessor } from "./animation";
 
 export { getNonce, resetNonceCache } from "./getNonce";
+
+export {
+  RouterProvider,
+  RouterContext,
+  useRouter,
+  useLinkProps,
+  useSyntheticLinkProps,
+  getSyntheticLinkProps,
+  handleLinkClick,
+  shouldClientNavigate,
+  openSyntheticLink,
+  getSyntheticLink,
+  type RouterContextValue,
+  type RouterOptions,
+  type RouterClickModifiers,
+  type RouterProviderProps,
+  type LinkDOMProps,
+} from "./openLink";

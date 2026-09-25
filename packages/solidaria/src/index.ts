@@ -710,7 +710,23 @@ export {
 } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
 export { createDescription, type DescriptionProps } from "./utils";
-// `solidaria-components`' `RouterProvider` re-exports this rather than keeping a
-// second copy of it.
-export { openLink, type LinkModifiers } from "./utils";
+export {
+  openLink,
+  RouterProvider,
+  RouterContext,
+  useRouter,
+  useLinkProps,
+  useSyntheticLinkProps,
+  getSyntheticLinkProps,
+  handleLinkClick,
+  shouldClientNavigate,
+  openSyntheticLink,
+  getSyntheticLink,
+  type LinkModifiers,
+  type RouterContextValue,
+  type RouterOptions,
+  type RouterClickModifiers,
+  type RouterProviderProps,
+  type LinkDOMProps,
+} from "./utils";
 export { createEnterAnimation, createExitAnimation, type ElementAccessor } from "./utils";

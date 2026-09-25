@@ -24,10 +24,11 @@
  * (Phase 0), which is also where the platform-aware modifier resolution lives.
  *
  * Documented adaptations from upstream (React → Solid / our thinner state):
- * - **Link model is prop-threaded.** Our collection nodes don't expose
- *   `manager.isLink`/`manager.getItemProps`, so link items pass `isLink` /
- *   `href` / `routerOptions` via options and navigation goes through
- *   {@link openLink} (we have no `RouterProvider` context).
+ * - **Link model routes via client router.** Link items pass `isLink` /
+ *   `href` / `routerOptions` either via options or via `manager.getItemProps(key)`.
+ *   Navigation routes through `useRouter().open(...)` so `RouterProvider`
+ *   integrations navigate via the client router, falling back to native
+ *   openLink when no custom router is provided.
  * - **Selection manager shape is structural.** ListState passes its
  *   SelectionManager; grid-like states pass an adapter with the same observable
  *   surface. `canSelectItem` is read from that surface when available so
@@ -58,6 +59,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
+import { useRouter } from "../utils/openLink";
 import { getCollectionId, isNonContiguousSelectionModifier } from "./utils";
 import { selectItem, type SelectItemState } from "./selectItem";
 import { createDragSession } from "../dnd/DragManager";
@@ -195,6 +197,7 @@ export function createSelectableItem<T>(
   ref: () => HTMLElement | null,
 ): SelectableItemAria {
   const getOptions = () => access(options);
+  const router = useRouter();
   const generatedId = createUniqueId();
 
   const key = () => getOptions().key;
@@ -203,7 +206,13 @@ export function createSelectableItem<T>(
   const shouldUseVirtualFocus = () => getOptions().shouldUseVirtualFocus ?? false;
   const allowsDifferentPressOrigin = () => getOptions().allowsDifferentPressOrigin ?? false;
   const shouldSelectOnPressUp = () => getOptions().shouldSelectOnPressUp ?? false;
-  const isLink = () => getOptions().isLink ?? !!getOptions().href;
+  const isLink = () => {
+    const o = getOptions();
+    if (o.isLink != null) return o.isLink;
+    if (o.href != null) return true;
+    const k = key();
+    return (manager as any).isLink?.(k) ?? (manager as any).selectionManager?.isLink?.(k) ?? false;
+  };
 
   const collection = (): Collection<T> => manager.collection();
 
@@ -282,8 +291,15 @@ export function createSelectableItem<T>(
     if (isLink()) {
       if (linkBehavior() === "selection") {
         const el = ref();
-        if (el instanceof HTMLAnchorElement) {
-          openLink(el, e);
+        if (el) {
+          const o = getOptions();
+          const itemProps =
+            (manager as any).getItemProps?.(k) ??
+            (manager as any).selectionManager?.getItemProps?.(k);
+          const targetHref =
+            o.href ?? itemProps?.href ?? (el instanceof HTMLAnchorElement ? el.href : undefined);
+          const targetRouterOptions = o.routerOptions ?? itemProps?.routerOptions;
+          router.open(el, e, targetHref, targetRouterOptions);
         }
         // Restore the prior selection so select/combobox close cleanly.
         const sel = manager.selectedKeys();
@@ -308,8 +324,15 @@ export function createSelectableItem<T>(
 
     if (hasLinkAction()) {
       const el = ref();
-      if (el instanceof HTMLAnchorElement) {
-        openLink(el, e);
+      if (el) {
+        const k = key();
+        const itemProps =
+          (manager as any).getItemProps?.(k) ??
+          (manager as any).selectionManager?.getItemProps?.(k);
+        const targetHref =
+          o.href ?? itemProps?.href ?? (el instanceof HTMLAnchorElement ? el.href : undefined);
+        const targetRouterOptions = o.routerOptions ?? itemProps?.routerOptions;
+        router.open(el, e, targetHref, targetRouterOptions);
       }
     }
   };

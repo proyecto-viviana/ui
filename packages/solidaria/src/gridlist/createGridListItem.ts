@@ -34,6 +34,7 @@ import { getGridListData } from "./createGridList";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
 import { mergeProps } from "../utils/mergeProps";
+import { useSyntheticLinkProps } from "../utils/openLink";
 
 /**
  * Creates accessibility props for a grid list item.
@@ -101,12 +102,22 @@ export function createGridListItem<
       const p = props();
       const gridListData = getGridListData(s);
       const onAction = gridListData?.actions.onAction;
+      const nodeProps = p.node?.props as Record<string, unknown> | undefined;
+      const isLink = p.isLink ?? (p.href != null || nodeProps?.href != null);
+      const href = (p.href ?? nodeProps?.href) as string | undefined;
+      const routerOptions = (p.routerOptions ?? nodeProps?.routerOptions) as
+        | Record<string, unknown>
+        | undefined;
 
       return {
         key: p.node.key,
         id: `${gridListData?.gridListId ?? "gridlist"}-row-${String(p.node.key)}`,
         isVirtualized: p.isVirtualized,
         shouldSelectOnPressUp: gridListData?.shouldSelectOnPressUp ?? false,
+        isLink,
+        href,
+        routerOptions,
+        linkBehavior: p.linkBehavior,
         onAction:
           onAction || p.onAction
             ? () => {
@@ -127,6 +138,17 @@ export function createGridListItem<
     const gridListData = getGridListData(s);
     const rowId = `${gridListData?.gridListId ?? "gridlist"}-row-${String(node.key)}`;
     const label = p.textValue || node["aria-label"] || node.textValue || undefined;
+    const nodeProps = node.props as Record<string, unknown> | undefined;
+    const itemHref = (p.href ?? nodeProps?.href) as string | undefined;
+    const syntheticLinkProps = useSyntheticLinkProps({
+      href: itemHref,
+      target: (nodeProps?.target ?? (p as any).target) as string | undefined,
+      rel: (nodeProps?.rel ?? (p as any).rel) as string | undefined,
+      download: (nodeProps?.download ?? (p as any).download) as string | boolean | undefined,
+      ping: (nodeProps?.ping ?? (p as any).ping) as string | undefined,
+      referrerPolicy: (nodeProps?.referrerPolicy ?? (p as any).referrerPolicy) as any,
+    });
+    const linkProps = selectableItem.hasAction() ? syntheticLinkProps : {};
 
     const baseProps: Record<string, unknown> = {
       role: "row",
@@ -146,6 +168,7 @@ export function createGridListItem<
 
     const mergedProps = mergeProps<JSX.HTMLAttributes<HTMLElement>>(
       selectableItem.itemProps,
+      linkProps,
       baseProps,
     );
 

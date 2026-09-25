@@ -27,7 +27,7 @@ import {
   useContextOptional,
   onOwnedCleanup,
 } from "../utils";
-import { createContext, createEffect, createSignal, onSettled } from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onSettled } from "solid-js";
 import type { Accessor, ParentComponent } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
@@ -647,6 +647,8 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     },
   );
 
+  const contain = createMemo(() => !!props.contain);
+
   // Register this scope in the focus-scope tree so containment can recognize a
   // portaled descendant scope as "inside" it. The scope-elements accessor is a
   // stable identity, so it works as the tree key even before it's populated.
@@ -665,20 +667,15 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       parentScope = activeScope;
     }
 
-    focusScopeTree.addTreeNode(
-      scopeElements,
-      parentScope,
-      nodeToRestore ?? undefined,
-      !!props.contain,
-    );
+    focusScopeTree.addTreeNode(scopeElements, parentScope, nodeToRestore ?? undefined, contain());
   });
 
   createEffect(
-    () => !!props.contain,
-    (contain) => {
+    () => contain(),
+    (c) => {
       const node = focusScopeTree.getTreeNode(scopeElements);
       if (node) {
-        node.contain = contain;
+        node.contain = c;
       }
     },
   );

@@ -106,6 +106,8 @@ export interface GridListAria {
   gridProps: JSX.HTMLAttributes<HTMLElement>;
 }
 
+import type { LinkBehavior } from "../selection/createSelectableItem";
+
 /**
  * Props for the createGridListItem hook.
  */
@@ -122,6 +124,17 @@ export interface AriaGridListItemProps {
   onAction?: () => void;
   /** Whether this item is disabled. */
   isDisabled?: boolean;
+  /** Whether the item is a link. */
+  isLink?: boolean;
+  /** The link target URL, when the item is a link. */
+  href?: string;
+  /** Router options forwarded to navigation, when the item is a link. */
+  routerOptions?: Record<string, unknown>;
+  /**
+   * The behavior of links in the collection.
+   * @default 'action'
+   */
+  linkBehavior?: LinkBehavior;
 }
 
 /**

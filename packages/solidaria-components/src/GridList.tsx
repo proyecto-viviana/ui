@@ -81,6 +81,7 @@ import {
   useDndPersistedKeys,
   useRenderDropIndicator,
 } from "./DragAndDrop";
+import type { LinkDOMProps, RouterOptions } from "./RouterProvider";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -185,6 +186,7 @@ export interface GridListItemRenderProps {
 export interface GridListItemProps<T extends object>
   extends
     SlotProps,
+    LinkDOMProps,
     Omit<JSX.HTMLAttributes<HTMLDivElement>, "class" | "style" | "children" | "id" | "ref"> {
   /** The unique key for the item. */
   id: Key;
@@ -204,6 +206,8 @@ export interface GridListItemProps<T extends object>
   isDisabled?: boolean;
   /** Ref for the rendered row element. */
   ref?: RefLike<HTMLDivElement>;
+  /** Router options forwarded to client router navigation, when href is provided. */
+  routerOptions?: RouterOptions;
 }
 
 export interface GridListLoadMoreItemProps extends SlotProps {
@@ -783,6 +787,13 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     "isDisabled",
     "children",
     "ref",
+    "href",
+    "routerOptions",
+    "target",
+    "rel",
+    "download",
+    "ping",
+    "referrerPolicy",
   ]);
 
   const context = useContext(GridListStateContext);
@@ -806,6 +817,15 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
         index: 0,
         hasChildNodes: false,
         childNodes: [],
+        props: {
+          href: local.href,
+          routerOptions: local.routerOptions,
+          target: local.target,
+          rel: local.rel,
+          download: local.download,
+          ping: local.ping,
+          referrerPolicy: local.referrerPolicy,
+        },
       } as GridNode<T>;
     }
     return node as GridNode<T>;
@@ -818,6 +838,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       onAction: local.onAction,
       isDisabled: local.isDisabled,
       selectionBehavior: listContext?.selectionBehavior ?? "toggle",
+      isLink: local.href != null,
+      href: local.href,
+      routerOptions: local.routerOptions,
     }),
     () => state,
     ref,
