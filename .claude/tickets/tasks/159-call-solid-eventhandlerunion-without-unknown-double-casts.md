@@ -4,9 +4,14 @@ type: task
 title: "Call Solid EventHandlerUnion without unknown double casts"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "shared callEventHandler and SolidEventHandlerUnion across solidaria-components without double casts",
+    }
 ---
 
 ## Cause

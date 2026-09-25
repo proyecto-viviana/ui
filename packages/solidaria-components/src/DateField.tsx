@@ -76,6 +76,7 @@ import {
   useRenderProps,
   dataAttr,
   Provider,
+  callEventHandler,
 } from "./utils";
 import { TextContext } from "./Text";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
@@ -533,8 +534,7 @@ export function DateInput(props: DateInputProps): JSX.Element {
     const handler = props.onPointerDownCapture;
     if (!element || !handler) return;
 
-    const listener = (event: PointerEvent) =>
-      (handler as unknown as (event: PointerEvent) => void)(event);
+    const listener = (event: PointerEvent) => callEventHandler(handler, event);
     element.addEventListener("pointerdown", listener, { capture: true });
     _s2Cleanups.push(() => element.removeEventListener("pointerdown", listener, { capture: true }));
 

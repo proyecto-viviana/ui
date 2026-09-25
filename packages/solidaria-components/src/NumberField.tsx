@@ -49,6 +49,7 @@ import {
   dataAttr,
   attrTrue,
   attrString,
+  callEventHandler,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
@@ -107,7 +108,8 @@ export interface NumberFieldInputRenderProps {
   isInvalid: boolean;
 }
 
-export interface NumberFieldInputProps extends SlotProps {
+export interface NumberFieldInputProps
+  extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "class" | "style">, SlotProps {
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<NumberFieldInputRenderProps>;
   /** The inline style for the element. */
@@ -646,12 +648,8 @@ export function NumberFieldInput(props: NumberFieldInputProps): JSX.Element {
     return rest;
   };
   const handleInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (event) => {
-    (
-      context.inputProps as unknown as { onInput?: JSX.EventHandler<HTMLInputElement, InputEvent> }
-    ).onInput?.(event);
-    (domProps as unknown as { onInput?: JSX.EventHandler<HTMLInputElement, InputEvent> }).onInput?.(
-      event,
-    );
+    callEventHandler(context.inputProps.onInput, event);
+    callEventHandler(domProps.onInput, event);
   };
 
   return (

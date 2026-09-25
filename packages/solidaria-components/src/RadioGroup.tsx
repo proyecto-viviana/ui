@@ -61,6 +61,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  callEventHandler,
 } from "./utils";
 import { TextContext } from "./Text";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -202,6 +203,8 @@ export interface RadioProps extends Omit<AriaRadioProps, "children">, SlotProps 
   onHoverEnd?: () => void;
   /** Handler called when hover state changes. */
   onHoverChange?: (isHovered: boolean) => void;
+  /** Handler called when clicking the label in capture phase. */
+  onClickCapture?: JSX.EventHandlerUnion<HTMLLabelElement, MouseEvent>;
 }
 
 export interface RadioGroupContextValue extends RadioGroupProps {
@@ -305,18 +308,10 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     return rest;
   };
   const handleGroupFocusIn: JSX.EventHandler<HTMLDivElement, FocusEvent> = (event) => {
-    (
-      groupAria.radioGroupProps as unknown as {
-        onFocus?: JSX.EventHandler<HTMLDivElement, FocusEvent>;
-      }
-    ).onFocus?.(event);
+    callEventHandler(groupAria.radioGroupProps.onFocus, event);
   };
   const handleGroupFocusOut: JSX.EventHandler<HTMLDivElement, FocusEvent> = (event) => {
-    (
-      groupAria.radioGroupProps as unknown as {
-        onBlur?: JSX.EventHandler<HTMLDivElement, FocusEvent>;
-      }
-    ).onBlur?.(event);
+    callEventHandler(groupAria.radioGroupProps.onBlur, event);
   };
   const handleGroupInvalidCapture: JSX.EventHandler<HTMLDivElement, Event> = (event) => {
     const target = event.target;
@@ -420,7 +415,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       </>
     );
   };
-  const groupEventProps = {} as unknown as JSX.HTMLAttributes<HTMLDivElement>;
+  const groupEventProps: JSX.HTMLAttributes<HTMLDivElement> = {};
   const customRootProps = () =>
     ({
       ...domProps(),
@@ -438,7 +433,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       "data-readonly": dataAttr(state.isReadOnly),
       "data-required": dataAttr(state.isRequired),
       "data-invalid": dataAttr(isInvalid()),
-    }) as unknown as JSX.HTMLAttributes<HTMLDivElement>;
+    }) as JSX.HTMLAttributes<HTMLDivElement>;
 
   // Do not call `groupDescribedBy()` in a `{local.render ? … : <div>}` ternary —
   // that memo re-runs on the `createSlotId` probe (`useField.ts:51-60`) and
@@ -675,46 +670,24 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     return rest;
   };
   const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      radioAria.inputProps as unknown as {
-        onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent>;
-      }
-    ).onFocus?.(event);
-    (
-      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
+    callEventHandler(radioAria.inputProps.onFocus, event);
+    callEventHandler(focusProps.onFocus, event);
   };
   const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      radioAria.inputProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onBlur?.(event);
-    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
-      event,
-    );
+    callEventHandler(radioAria.inputProps.onBlur, event);
+    callEventHandler(focusProps.onBlur, event);
   };
   const handleLabelClick: JSX.EventHandler<HTMLLabelElement, MouseEvent> = (event) => {
-    (
-      radioAria.labelProps as unknown as {
-        onClick?: JSX.EventHandler<HTMLLabelElement, MouseEvent>;
-      }
-    ).onClick?.(event);
+    callEventHandler(radioAria.labelProps.onClick, event);
   };
   const handleLabelClickCapture: JSX.EventHandler<HTMLLabelElement, MouseEvent> = (event) => {
-    (ariaProps as unknown as { onClickCapture?: (event: MouseEvent) => void }).onClickCapture?.(
-      event as unknown as MouseEvent,
-    );
+    callEventHandler(ariaProps.onClickCapture, event);
   };
   const handleInputClick: JSX.EventHandler<HTMLInputElement, MouseEvent> = (event) => {
-    (
-      radioAria.inputProps as unknown as {
-        onClick?: JSX.EventHandler<HTMLInputElement, MouseEvent>;
-      }
-    ).onClick?.(event);
+    callEventHandler(radioAria.inputProps.onClick, event);
   };
   const handleInputChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
-    (
-      radioAria.inputProps as unknown as { onChange?: JSX.EventHandler<HTMLInputElement, Event> }
-    ).onChange?.(event);
+    callEventHandler(radioAria.inputProps.onChange, event);
     state.updateValidation(
       event.currentTarget.validity.valid
         ? validValidation
@@ -794,8 +767,8 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       "data-invalid": dataAttr(state.isInvalid),
       "data-required": dataAttr(state.isRequired),
       children: labelChildren(),
-    }) as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
-  const labelCaptureProps = {} as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
+    }) as JSX.LabelHTMLAttributes<HTMLLabelElement>;
+  const labelCaptureProps: JSX.LabelHTMLAttributes<HTMLLabelElement> = {};
 
   // One-time `if` (not a JSX ternary). A `{local.render ? … : <label>}` memo
   // that re-runs on a `createSlotId` probe recreates the label/input and
@@ -1230,30 +1203,18 @@ function RadioButtonImpl(props: {
     return rest;
   };
   const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
-    (
-      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
+    callEventHandler(ctx.inputProps().onFocus, event);
+    callEventHandler(focusProps.onFocus, event);
   };
   const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onBlur?.(event);
-    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
-      event,
-    );
+    callEventHandler(ctx.inputProps().onBlur, event);
+    callEventHandler(focusProps.onBlur, event);
   };
   const handleInputClick: JSX.EventHandler<HTMLInputElement, MouseEvent> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onClick?: JSX.EventHandler<HTMLInputElement, MouseEvent> }
-    ).onClick?.(event);
+    callEventHandler(ctx.inputProps().onClick, event);
   };
   const handleInputChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onChange?: JSX.EventHandler<HTMLInputElement, Event> }
-    ).onChange?.(event);
+    callEventHandler(ctx.inputProps().onChange, event);
     state.updateValidation(
       event.currentTarget.validity.valid
         ? validValidation

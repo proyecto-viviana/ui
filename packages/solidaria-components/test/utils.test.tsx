@@ -27,6 +27,7 @@ import {
   assignRef,
   useRenderProps,
   OptionContent,
+  callEventHandler,
 } from "../src/utils";
 
 describe("utils — context/slot machinery", () => {
@@ -611,6 +612,64 @@ describe("utils — context/slot machinery", () => {
 
       render(() => <C />);
       expect(hasSlot?.()).toBe(false);
+    });
+  });
+
+  describe("callEventHandler", () => {
+    it("calls a standard function handler with the event", () => {
+      let received: Event | undefined;
+      const fn = (e: Event) => {
+        received = e;
+      };
+      const event = new Event("click");
+      callEventHandler(fn, event);
+      expect(received).toBe(event);
+    });
+
+    it("calls a Solid bound tuple [fn, data] with data and event", () => {
+      let receivedData: unknown;
+      let receivedEvent: Event | undefined;
+      const fn = (data: string, e: Event) => {
+        receivedData = data;
+        receivedEvent = e;
+      };
+      const event = new Event("click");
+      const boundTuple: [(data: string, e: Event) => void, string] = [fn, "payload"];
+      callEventHandler(boundTuple, event);
+      expect(receivedData).toBe("payload");
+      expect(receivedEvent).toBe(event);
+    });
+
+    it("handles defensive fallback for inverted tuple [data, fn]", () => {
+      let receivedData: unknown;
+      let receivedEvent: Event | undefined;
+      const fn = (data: unknown, e: Event) => {
+        receivedData = data;
+        receivedEvent = e;
+      };
+      const event = new Event("keydown");
+      const invertedTuple = ["payload", fn] as unknown as [typeof fn, string];
+      callEventHandler(invertedTuple, event);
+      expect(receivedData).toBe("payload");
+      expect(receivedEvent).toBe(event);
+    });
+
+    it("calls handleEvent on an EventListenerObject", () => {
+      let received: Event | undefined;
+      const listener: EventListenerObject = {
+        handleEvent(e: Event) {
+          received = e;
+        },
+      };
+      const event = new Event("focus");
+      callEventHandler(listener, event);
+      expect(received).toBe(event);
+    });
+
+    it("safely handles undefined and null handlers", () => {
+      const event = new Event("click");
+      expect(() => callEventHandler(undefined, event)).not.toThrow();
+      expect(() => callEventHandler(null, event)).not.toThrow();
     });
   });
 });

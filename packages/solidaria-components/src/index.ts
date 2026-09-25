@@ -32,6 +32,8 @@ export {
   removeDataAttributes,
   createDataAttributes,
   dataAttr,
+  callEventHandler,
+  type SolidEventHandlerUnion,
 } from "./utils";
 
 export { ElementTag, type ElementTagProps } from "./ElementTag";

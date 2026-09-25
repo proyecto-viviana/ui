@@ -22,7 +22,7 @@
  */
 
 import { createSignal, Show, createUniqueId, createTrackedEffect } from "solid-js";
-import { dataAttr, ariaTrueFalse } from "./utils";
+import { dataAttr, ariaTrueFalse, callEventHandler } from "./utils";
 import type { JSX } from "@solidjs/web";
 import { createInteractOutside } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -91,36 +91,14 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
 
   const close = () => setIsOpen(false);
 
-  const callHandler = <E extends Event>(
-    handler: JSX.EventHandlerUnion<HTMLButtonElement, E> | undefined,
-    event: E,
-  ) => {
-    if (!handler) return;
-    if (Array.isArray(handler)) {
-      handler[1].call(handler[0], event);
-      return;
-    }
-    if (typeof handler === "function") {
-      (handler as (evt: E) => void)(event);
-      return;
-    }
-    if (
-      typeof handler === "object" &&
-      "handleEvent" in handler &&
-      typeof handler.handleEvent === "function"
-    ) {
-      (handler.handleEvent as (evt: E) => void)(event);
-    }
-  };
-
   const handleTriggerClick = (e: MouseEvent) => {
-    callHandler(triggerProps.onClick, e);
+    callEventHandler(triggerProps.onClick, e);
     if (e.defaultPrevented) return;
     toggle();
   };
 
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
-    callHandler(triggerProps.onKeyDown, e);
+    callEventHandler(triggerProps.onKeyDown, e);
     if (e.defaultPrevented) return;
     if (e.key === "Escape" && isOpen()) {
       e.preventDefault();

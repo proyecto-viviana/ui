@@ -127,4 +127,37 @@ describe("ContextualHelpTrigger (headless)", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
+
+  describe("event handlers", () => {
+    it("invokes bound tuple onClick handler with payload and event", () => {
+      let receivedData: unknown;
+      let receivedEvent: MouseEvent | undefined;
+      const handleClick = (data: string, e: MouseEvent) => {
+        receivedData = data;
+        receivedEvent = e;
+      };
+
+      render(() => (
+        <ContextualHelpTrigger onClick={[handleClick, "help-token"]}>
+          {defaultChildren}
+        </ContextualHelpTrigger>
+      ));
+
+      fireEvent.click(screen.getByRole("button"));
+      expect(receivedData).toBe("help-token");
+      expect(receivedEvent).toBeDefined();
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    it("respects preventDefault in custom onClick handler", () => {
+      render(() => (
+        <ContextualHelpTrigger onClick={(e) => e.preventDefault()}>
+          {defaultChildren}
+        </ContextualHelpTrigger>
+      ));
+
+      fireEvent.click(screen.getByRole("button"));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
 });

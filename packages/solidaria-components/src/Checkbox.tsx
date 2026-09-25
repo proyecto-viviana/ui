@@ -57,6 +57,7 @@ import {
   filterDOMProps,
   dataAttr,
   isAriaTrue,
+  callEventHandler,
 } from "./utils";
 import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
@@ -562,20 +563,12 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     return rest;
   };
   const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
-    (
-      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
+    callEventHandler(inputProps().onFocus, event);
+    callEventHandler(focusProps.onFocus, event);
   };
   const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onBlur?.(event);
-    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
-      event,
-    );
+    callEventHandler(inputProps().onBlur, event);
+    callEventHandler(focusProps.onBlur, event);
   };
   const setLabelRef = (el: HTMLLabelElement) => {
     assignRef(local.ref, el);
@@ -1124,20 +1117,12 @@ function CheckboxButtonImpl(props: {
     return rest;
   };
   const handleInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
-    (
-      focusProps as unknown as { onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onFocus?.(event);
+    callEventHandler(ctx.inputProps()?.onFocus, event);
+    callEventHandler(focusProps.onFocus, event);
   };
   const handleInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (event) => {
-    (
-      ctx.inputProps() as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }
-    ).onBlur?.(event);
-    (focusProps as unknown as { onBlur?: JSX.EventHandler<HTMLInputElement, FocusEvent> }).onBlur?.(
-      event,
-    );
+    callEventHandler(ctx.inputProps()?.onBlur, event);
+    callEventHandler(focusProps.onBlur, event);
   };
   const setButtonRef = (el: HTMLLabelElement) => {
     assignRef(props.buttonProps.ref, el);

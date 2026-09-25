@@ -622,3 +622,37 @@ export function useIsHydrated(): Accessor<boolean> {
 
   return isHydrated;
 }
+
+export type SolidEventHandlerUnion<E extends Event = Event> =
+  | ((event: E & any) => void)
+  | { 0: (data: any, event: E & any) => void; 1: any }
+  | [(data: any, event: E & any) => void, any]
+  | readonly [(data: any, event: E & any) => void, any]
+  | { handleEvent(event: E & any): void };
+
+/**
+ * Safely calls a Solid EventHandlerUnion (function, [fn, data] bound tuple, or EventListenerObject).
+ * In Solid, a bound event handler tuple has the structure `[fn, data]`,
+ * invoked as `fn(data, event)`.
+ */
+export function callEventHandler<E extends Event>(
+  handler: SolidEventHandlerUnion<E> | undefined | null,
+  event: E,
+): void {
+  if (!handler) return;
+  if (typeof handler === "function") {
+    (handler as (e: E) => void)(event);
+  } else if (typeof handler === "object") {
+    if (0 in handler && typeof handler[0] === "function") {
+      (handler[0] as (data: unknown, e: E) => void)(handler[1], event);
+    } else if (1 in handler && typeof handler[1] === "function") {
+      // Defensive fallback if callers inverted tuple order [data, fn]
+      (handler[1] as (data: unknown, e: E) => void)(handler[0], event);
+    } else if (
+      "handleEvent" in handler &&
+      typeof (handler as { handleEvent?: unknown }).handleEvent === "function"
+    ) {
+      (handler as EventListenerObject).handleEvent(event);
+    }
+  }
+}

@@ -70,6 +70,7 @@ import {
   filterDOMProps,
   Provider,
   dataAttr,
+  callEventHandler,
 } from "./utils";
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
@@ -377,17 +378,6 @@ export const ComboBoxContext = createContext<ComboBoxContextValue<unknown> | nul
 export const ComboBoxStateContext = createContext<ComboBoxState<unknown> | null>(null);
 export const ComboBoxValueContext = ComboBoxContext;
 
-function callInputKeyDown(
-  handler: JSX.EventHandlerUnion<HTMLInputElement, KeyboardEvent> | undefined,
-  event: InputKeyboardEvent,
-) {
-  if (typeof handler === "function") {
-    handler(event);
-  } else if (handler) {
-    handler[0](handler[1], event);
-  }
-}
-
 /**
  * A combobox combines a text input with a listbox, allowing users to filter a list of options.
  */
@@ -577,7 +567,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           !state.isKeyDisabled(focusedKey);
         const optionAction = shouldRunAction ? optionActions.get(focusedKey) : undefined;
 
-        callInputKeyDown(originalOnKeyDown, event);
+        callEventHandler(originalOnKeyDown, event);
 
         optionAction?.();
       },
