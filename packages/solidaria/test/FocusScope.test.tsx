@@ -673,6 +673,150 @@ describe("FocusScope", () => {
       // Should NOT restore focus to outside (restoreFocus not set)
       expect(document.activeElement).not.toBe(outside);
     });
+
+    it("does not let a parent scope steal focus restore when an active child scope is torn down together (#593)", () => {
+      const [showParent, setShowParent] = createSignal(true);
+      const [showChild, setShowChild] = createSignal(false);
+
+      const button1 = document.createElement("button");
+      button1.setAttribute("data-testid", "button-1");
+      document.body.appendChild(button1);
+
+      const button2 = document.createElement("button");
+      button2.setAttribute("data-testid", "button-2");
+      document.body.appendChild(button2);
+
+      try {
+        button1.focus();
+        expect(document.activeElement).toBe(button1);
+
+        render(() => (
+          <Show when={showParent()}>
+            <FocusScope restoreFocus>
+              <input data-testid="parent-input" />
+              <Show when={showChild()}>
+                <FocusScope restoreFocus>
+                  <input data-testid="child-input" />
+                </FocusScope>
+              </Show>
+            </FocusScope>
+          </Show>
+        ));
+
+        // When child mounts, focus was on button2
+        button2.focus();
+        expect(document.activeElement).toBe(button2);
+
+        setShowChild(true);
+        flush();
+
+        const childInput = screen.getByTestId("child-input");
+        childInput.focus();
+        expect(document.activeElement).toBe(childInput);
+
+        // Tear down parent (which unmounts both parent and child)
+        setShowParent(false);
+        flush();
+        vi.runAllTimers();
+
+        // Focus must restore to button2 (child scope's nodeToRestore), not button1 (parent's nodeToRestore)
+        expect(document.activeElement).toBe(button2);
+      } finally {
+        button1.remove();
+        button2.remove();
+      }
+    });
+
+    it("tabs out of an uncontained restoring scope to the element after nodeToRestore (#593)", () => {
+      const TestComponent: Component = () => {
+        const [open, setOpen] = createSignal(false);
+
+        return (
+          <div>
+            <button data-testid="before">Before</button>
+            <button data-testid="trigger" onClick={() => setOpen(true)}>
+              Open
+            </button>
+            <button data-testid="after">After</button>
+            <Show when={open()}>
+              <FocusScope restoreFocus autoFocus>
+                <button data-testid="inside">Inside</button>
+              </FocusScope>
+            </Show>
+          </div>
+        );
+      };
+
+      setInteractionModality("keyboard");
+      render(() => <TestComponent />);
+
+      const trigger = screen.getByTestId("trigger");
+      const after = screen.getByTestId("after");
+
+      trigger.focus();
+      fireEvent.click(trigger);
+      vi.runAllTimers();
+
+      const inside = screen.getByTestId("inside");
+      expect(document.activeElement).toBe(inside);
+
+      // Press Tab inside the scope
+      const tabEvent = new KeyboardEvent("keydown", {
+        key: "Tab",
+        bubbles: true,
+        cancelable: true,
+      });
+      inside.dispatchEvent(tabEvent);
+
+      expect(tabEvent.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(after);
+    });
+
+    it("shift-tabs out of an uncontained restoring scope to the element before nodeToRestore (#593)", () => {
+      const TestComponent: Component = () => {
+        const [open, setOpen] = createSignal(false);
+
+        return (
+          <div>
+            <button data-testid="before">Before</button>
+            <button data-testid="trigger" onClick={() => setOpen(true)}>
+              Open
+            </button>
+            <button data-testid="after">After</button>
+            <Show when={open()}>
+              <FocusScope restoreFocus autoFocus>
+                <button data-testid="inside">Inside</button>
+              </FocusScope>
+            </Show>
+          </div>
+        );
+      };
+
+      setInteractionModality("keyboard");
+      render(() => <TestComponent />);
+
+      const before = screen.getByTestId("before");
+      const trigger = screen.getByTestId("trigger");
+
+      trigger.focus();
+      fireEvent.click(trigger);
+      vi.runAllTimers();
+
+      const inside = screen.getByTestId("inside");
+      expect(document.activeElement).toBe(inside);
+
+      // Press Shift+Tab inside the scope
+      const shiftTabEvent = new KeyboardEvent("keydown", {
+        key: "Tab",
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      inside.dispatchEvent(shiftTabEvent);
+
+      expect(shiftTabEvent.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(before);
+    });
   });
 
   // ============================================

@@ -4,7 +4,7 @@ type: task
 title: "FocusScope restores focus without asking which scope is active, because shouldRestoreFocus was never ported"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "ported shouldRestoreFocus and shouldContainFocus, ported uncontained Tab/Shift-Tab out walker to nodeToRestore, used getEventTarget in focusin tracker, and gated unmount focus restoration so active child scopes are not stolen by tearing down parent scopes. Verified via 40 FocusScope tests (including teardown theft test and Tab-out tests), test:ssr (37 files, 103 passed), test:hydrate (31 files, 108 passed), guard:layer-boundary (0 new forks), and typecheck",
     }
 ---
 

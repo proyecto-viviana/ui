@@ -23,6 +23,7 @@ import {
   isTabbable,
   getFocusableTreeWalker,
   getActiveElement,
+  getEventTarget,
   useContextOptional,
   onOwnedCleanup,
 } from "../utils";
@@ -311,6 +312,7 @@ interface FocusScopeTreeNode {
   parent: FocusScopeTreeNode | null;
   children: Set<FocusScopeTreeNode>;
   nodeToRestore?: Element;
+  contain?: boolean;
 }
 
 /**
@@ -334,9 +336,14 @@ class FocusScopeTree {
     return this.fastMap.get(scopeRef);
   }
 
-  addTreeNode(scopeRef: ScopeRef, parent: ScopeRef, nodeToRestore?: Element): void {
+  addTreeNode(
+    scopeRef: ScopeRef,
+    parent: ScopeRef,
+    nodeToRestore?: Element,
+    contain = false,
+  ): void {
     const parentNode = this.fastMap.get(parent) ?? this.root;
-    const node: FocusScopeTreeNode = { scopeRef, parent: parentNode, children: new Set() };
+    const node: FocusScopeTreeNode = { scopeRef, parent: parentNode, children: new Set(), contain };
     if (nodeToRestore) {
       node.nodeToRestore = nodeToRestore;
     }
@@ -364,7 +371,12 @@ class FocusScopeTree {
   clone(): FocusScopeTree {
     const newTree = new FocusScopeTree();
     for (const node of this.traverse()) {
-      newTree.addTreeNode(node.scopeRef, node.parent?.scopeRef ?? null, node.nodeToRestore);
+      newTree.addTreeNode(
+        node.scopeRef,
+        node.parent?.scopeRef ?? null,
+        node.nodeToRestore,
+        node.contain,
+      );
     }
     return newTree;
   }
@@ -439,6 +451,34 @@ function isElementInAnyScope(element: Element): boolean {
  */
 export function isElementInChildOfActiveScope(element: Element): boolean {
   return isElementInChildScope(element, activeScope);
+}
+
+/**
+ * Whether the scope should restore focus. Walks up the focus-scope tree from
+ * `activeScope` towards `scopeRef`, bailing if any intervening scope has a
+ * `nodeToRestore`. Mirrors @react-aria/focus's `shouldRestoreFocus`.
+ */
+function shouldRestoreFocus(scopeRef: ScopeRef): boolean {
+  let scope: FocusScopeTreeNode | null | undefined = focusScopeTree.getTreeNode(activeScope);
+  while (scope && scope.scopeRef !== scopeRef) {
+    if (scope.nodeToRestore) return false;
+    scope = scope.parent;
+  }
+  return scope?.scopeRef === scopeRef;
+}
+
+/**
+ * Whether the scope should contain focus. Walks up the focus-scope tree from
+ * `activeScope` towards `scopeRef`, bailing if any intervening scope contains
+ * focus. Mirrors @react-aria/focus's `shouldContainFocus`.
+ */
+function shouldContainFocus(scopeRef: ScopeRef): boolean {
+  let scope: FocusScopeTreeNode | null | undefined = focusScopeTree.getTreeNode(activeScope);
+  while (scope && scope.scopeRef !== scopeRef) {
+    if (scope.contain) return false;
+    scope = scope.parent;
+  }
+  return true;
 }
 
 /**
@@ -625,8 +665,23 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       parentScope = activeScope;
     }
 
-    focusScopeTree.addTreeNode(scopeElements, parentScope, nodeToRestore ?? undefined);
+    focusScopeTree.addTreeNode(
+      scopeElements,
+      parentScope,
+      nodeToRestore ?? undefined,
+      !!props.contain,
+    );
   });
+
+  createEffect(
+    () => !!props.contain,
+    (contain) => {
+      const node = focusScopeTree.getTreeNode(scopeElements);
+      if (node) {
+        node.contain = contain;
+      }
+    },
+  );
 
   // Once the tree is complete, the bottom-most scope that contains the focused
   // element becomes the active one. Upstream `FocusScope.tsx:154-173`: this is
@@ -657,22 +712,6 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     if (bottomMost && bottomMost === focusScopeTree.getTreeNode(scopeElements)) {
       activeScope = bottomMost.scopeRef;
     }
-  });
-  onOwnedCleanup(() => {
-    // Hand the active scope back to the parent before the node goes, like
-    // upstream's unmount cleanup (`FocusScope.tsx:182-190`). `removeTreeNode`
-    // re-parents this node's children, so a dead `activeScope` could never be
-    // an ancestor again: every later scope that activates through `contain` or
-    // `restoreFocus` alone would be locked out, and `isElementInChildScope`
-    // would walk from the root and call every scope on the page active.
-    const parentScope = focusScopeTree.getTreeNode(scopeElements)?.parent?.scopeRef ?? null;
-    if (
-      (scopeElements === activeScope || isAncestorScope(scopeElements, activeScope)) &&
-      (!parentScope || focusScopeTree.getTreeNode(parentScope))
-    ) {
-      activeScope = parentScope;
-    }
-    focusScopeTree.removeTreeNode(scopeElements);
   });
 
   // Persist the restore target onto the scope tree. Do not overwrite a
@@ -771,11 +810,13 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       return { contain, restore, scope };
     },
     ({ contain, restore, scope }) => {
-      if (contain || scope.length === 0) return;
+      if (contain) return;
 
-      const doc = getOwnerDocument(scope[0]);
+      const doc = getOwnerDocument(scope[0] ?? startEl());
       const onFocus = (e: FocusEvent) => {
-        const target = e.target as Element;
+        const target = getEventTarget<Element>(e);
+        if (!target) return;
+
         if (restore) {
           if (
             (!activeScope || isAncestorScope(activeScope, scopeElements)) &&
@@ -809,6 +850,84 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     },
   );
 
+  // Handle the Tab key so that tabbing out of an uncontained restoring scope
+  // moves focus to the element after (or before) the nodeToRestore, matching
+  // upstream `useRestoreFocus`.
+  createEffect(
+    () => {
+      const contain = !!props.contain;
+      const restore = !!props.restoreFocus;
+      const scope = scopeElements();
+      return { contain, restore, scope };
+    },
+    ({ contain, restore, scope }) => {
+      if (contain || !restore) return;
+
+      const doc = getOwnerDocument(scope[0] ?? startEl());
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (
+          e.key !== "Tab" ||
+          e.altKey ||
+          e.ctrlKey ||
+          e.metaKey ||
+          !shouldContainFocus(scopeElements) ||
+          e.isComposing
+        ) {
+          return;
+        }
+
+        const focusedElement = doc.activeElement as HTMLElement | null;
+        if (
+          !focusedElement ||
+          !isElementInChildScope(focusedElement, scopeElements) ||
+          !shouldRestoreFocus(scopeElements)
+        ) {
+          return;
+        }
+
+        const treeNode = focusScopeTree.getTreeNode(scopeElements);
+        if (!treeNode) return;
+
+        let targetNode = (treeNode.nodeToRestore ?? nodeToRestore) as HTMLElement | undefined;
+        if (!targetNode || !targetNode.isConnected || targetNode === doc.body) {
+          targetNode = undefined;
+          treeNode.nodeToRestore = undefined;
+        }
+
+        const walker = getFocusableTreeWalker(doc.body, { tabbable: true });
+        walker.currentNode = focusedElement;
+        let nextElement = (
+          e.shiftKey ? walker.previousNode() : walker.nextNode()
+        ) as HTMLElement | null;
+
+        if ((!nextElement || !isElementInChildScope(nextElement, scopeElements)) && targetNode) {
+          walker.currentNode = targetNode;
+          do {
+            nextElement = (
+              e.shiftKey ? walker.previousNode() : walker.nextNode()
+            ) as HTMLElement | null;
+          } while (nextElement && isElementInChildScope(nextElement, scopeElements));
+
+          e.preventDefault();
+          e.stopPropagation();
+          if (nextElement) {
+            focusSafely(nextElement);
+          } else if (!isElementInAnyScope(targetNode)) {
+            focusedElement.blur();
+          } else {
+            focusSafely(targetNode);
+          }
+        }
+      };
+
+      doc.addEventListener("keydown", onKeyDown, true);
+      return () => {
+        doc.removeEventListener("keydown", onKeyDown, true);
+      };
+    },
+  );
+
   // Focus containment. Split createEffect so reading JSX `contain` (a compiler
   // memo getter) does not create a primitive inside createTrackedEffect.
   createEffect(
@@ -826,7 +945,13 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       let focusedNode: Element | null = null;
 
       const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key !== "Tab" || e.altKey || e.ctrlKey || e.metaKey) {
+        if (
+          e.key !== "Tab" ||
+          e.altKey ||
+          e.ctrlKey ||
+          e.metaKey ||
+          !shouldContainFocus(scopeElements)
+        ) {
           return;
         }
 
@@ -853,7 +978,8 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
 
       const onFocusIn = (e: FocusEvent) => {
         const scope = scopeElements();
-        const target = e.target as Element;
+        const target = getEventTarget<Element>(e);
+        if (!target) return;
 
         if (isElementInScope(target, scope)) {
           // Focusing into a child of the active scope makes the child active;
@@ -875,20 +1001,20 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
           // pointermove (certified hover after the focus-visible reset) and
           // keep a stale keyboard ring.
           return;
-        } else if (focusedNode) {
-          // Focus escaped the scope, bring it back
-          focusSafely(focusedNode as HTMLElement);
-        } else {
-          // No previous focus, focus first element
-          focusManager.focusFirst();
+        } else if (shouldContainFocus(scopeElements)) {
+          if (focusedNode) {
+            focusSafely(focusedNode as HTMLElement);
+          } else {
+            focusManager.focusFirst();
+          }
         }
       };
 
       let restoreRaf: number | null = null;
 
       const onFocusOut = (e: FocusEvent) => {
-        const target = e.target as Element;
-        if (!isElementInScope(target, scopeElements())) return;
+        const target = getEventTarget<Element>(e);
+        if (!target || !isElementInScope(target, scopeElements())) return;
 
         // Focus left an element inside the scope. Wait a frame (like upstream's
         // onBlur) so a synchronous refocus elsewhere can settle; if focus ended
@@ -933,85 +1059,124 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
 
   // Restore focus on unmount. Walk ancestor scopes when nodeToRestore is gone
   // or a parent scope has nothing focusable, matching @react-aria/focus.
+  // Restore focus on unmount and clean up focus scope tree node.
   onOwnedCleanup(() => {
-    if (!props.restoreFocus) {
+    if (typeof window === "undefined") {
       return;
     }
 
-    const treeNode = focusScopeTree.getTreeNode(scopeElements);
-    const saved = (treeNode?.nodeToRestore ?? nodeToRestore) as HTMLElement | null;
-    if (!saved) {
-      return;
-    }
+    let willRestore = false;
+    let saved: HTMLElement | null = null;
+    let clonedTree: FocusScopeTree | null = null;
+    let win: Window = window;
+    let scopeDoc: Document = document;
 
-    const scope = scopeElements();
-    const scopeDoc = getOwnerDocument(scope[0] ?? startEl() ?? saved);
-    const clonedTree = focusScopeTree.clone();
-    const win = scopeDoc.defaultView ?? window;
+    if (props.restoreFocus) {
+      const treeNode = focusScopeTree.getTreeNode(scopeElements);
+      saved = (treeNode?.nodeToRestore ?? nodeToRestore) as HTMLElement | null;
+      if (saved) {
+        const scope = scopeElements();
+        scopeDoc = getOwnerDocument(scope[0] ?? startEl() ?? saved);
+        win = (scopeDoc.defaultView ?? window) as Window;
+        const activeAtUnmount = scopeDoc.activeElement as HTMLElement | null;
 
-    const restoreToParentScope = (): boolean => {
-      if (parentScopeRef) {
-        const first = firstInScope(parentScopeRef());
-        if (first) {
-          restoreFocusToElement(first);
-          return true;
+        const isLostToBody =
+          !activeAtUnmount ||
+          activeAtUnmount === scopeDoc.body ||
+          activeAtUnmount === scopeDoc.documentElement ||
+          !activeAtUnmount.isConnected;
+
+        const isInChildScope =
+          !!activeAtUnmount && isElementInChildScope(activeAtUnmount, scopeElements);
+
+        if ((isInChildScope || isLostToBody) && shouldRestoreFocus(scopeElements)) {
+          willRestore = true;
+          clonedTree = focusScopeTree.clone();
         }
       }
-      let node: FocusScopeTreeNode | null | undefined =
-        clonedTree.getTreeNode(scopeElements)?.parent ?? null;
-      while (node) {
-        if (node.scopeRef && focusScopeTree.getTreeNode(node.scopeRef)) {
-          const first = firstInScope(node.scopeRef());
+    }
+
+    // Hand the active scope back to the parent before the node goes, like
+    // upstream's unmount cleanup (`FocusScope.tsx:182-190`).
+    // If this scope is performing focus restoration, clear activeScope so an
+    // ancestor scope torn down in the same turn does not steal the restore (#593).
+    const parentScope = focusScopeTree.getTreeNode(scopeElements)?.parent?.scopeRef ?? null;
+    if (
+      scopeElements === activeScope ||
+      (activeScope && isAncestorScope(scopeElements, activeScope))
+    ) {
+      activeScope = willRestore ? null : parentScope;
+    }
+    focusScopeTree.removeTreeNode(scopeElements);
+
+    if (willRestore && clonedTree && saved) {
+      const capturedTree = clonedTree;
+      const capturedSaved = saved;
+
+      const restoreToParentScope = (): boolean => {
+        if (parentScopeRef) {
+          const first = firstInScope(parentScopeRef());
           if (first) {
             restoreFocusToElement(first);
             return true;
           }
         }
-        node = node.parent;
-      }
-      return false;
-    };
+        let node: FocusScopeTreeNode | null | undefined =
+          capturedTree.getTreeNode(scopeElements)?.parent ?? null;
+        while (node) {
+          if (node.scopeRef && focusScopeTree.getTreeNode(node.scopeRef)) {
+            const first = firstInScope(node.scopeRef());
+            if (first) {
+              restoreFocusToElement(first);
+              return true;
+            }
+          }
+          node = node.parent;
+        }
+        return false;
+      };
 
-    const tryRestore = () => {
-      // RAC FocusScope restores when the document's focus is the body after
-      // unmount. Instant overlay unmount (no exit animation) can leave
-      // activeElement on a detached dialog node instead of body; treat that
-      // the same so DialogTrigger popovers restore the trigger (#274).
-      // Do not restore while the leaving scope still holds focus — that must
-      // wait a frame so "restore after one frame" tests stay deferred.
-      const active = scopeDoc.activeElement as HTMLElement | null;
-      if (
-        active &&
-        active !== scopeDoc.body &&
-        active !== scopeDoc.documentElement &&
-        active.isConnected
-      ) {
-        return;
-      }
-
-      if (saved && saved.isConnected) {
-        restoreFocusToElement(saved);
-        return;
-      }
-
-      let node: FocusScopeTreeNode | null | undefined = clonedTree.getTreeNode(scopeElements);
-      while (node) {
+      const tryRestore = () => {
+        // RAC FocusScope restores when the document's focus is the body after
+        // unmount. Instant overlay unmount (no exit animation) can leave
+        // activeElement on a detached dialog node instead of body; treat that
+        // the same so DialogTrigger popovers restore the trigger (#274).
+        // Do not restore while the leaving scope still holds focus — that must
+        // wait a frame so "restore after one frame" tests stay deferred.
+        const active = scopeDoc.activeElement as HTMLElement | null;
         if (
-          node.nodeToRestore &&
-          node.nodeToRestore.isConnected &&
-          node.scopeRef !== scopeElements
+          active &&
+          active !== scopeDoc.body &&
+          active !== scopeDoc.documentElement &&
+          active.isConnected
         ) {
-          restoreFocusToElement(node.nodeToRestore as HTMLElement);
           return;
         }
-        node = node.parent;
-      }
 
-      restoreToParentScope();
-    };
+        if (capturedSaved && capturedSaved.isConnected) {
+          restoreFocusToElement(capturedSaved);
+          return;
+        }
 
-    tryRestore();
-    win.requestAnimationFrame(tryRestore);
+        let node: FocusScopeTreeNode | null | undefined = capturedTree.getTreeNode(scopeElements);
+        while (node) {
+          if (
+            node.nodeToRestore &&
+            node.nodeToRestore.isConnected &&
+            node.scopeRef !== scopeElements
+          ) {
+            restoreFocusToElement(node.nodeToRestore as HTMLElement);
+            return;
+          }
+          node = node.parent;
+        }
+
+        restoreToParentScope();
+      };
+
+      tryRestore();
+      win.requestAnimationFrame(tryRestore);
+    }
   });
 
   return (
