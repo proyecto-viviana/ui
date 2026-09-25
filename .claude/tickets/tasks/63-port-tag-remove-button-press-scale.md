@@ -4,9 +4,14 @@ type: task
 title: "Port Tag remove-button press scale"
 created: 2026-08-20
 parent: 33
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task taggroup-remove-pressscale" }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "threaded remove button ref and press state through pressScale with pointer and keyboard tests",
+    }
 ---
 
 Match the S2 ClearButton press behavior for the styled Tag remove button.

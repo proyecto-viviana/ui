@@ -31,6 +31,7 @@ import {
   TagRemoveButton as HeadlessTagRemoveButton,
   type TagListProps as HeadlessTagListProps,
   type TagRenderProps,
+  type TagRemoveButtonRenderProps,
   type TagProps as HeadlessTagProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, SelectionBehavior, SelectionMode } from "@proyecto-viviana/solid-stately";
@@ -515,11 +516,12 @@ export function Tag(props: TagProps): JSX.Element {
   const rowStyle = (renderProps: TagRenderProps): JSX.CSSProperties =>
     pressScale(() => tagEl, local.UNSAFE_style ?? local.style)(renderProps);
 
-  // Mirror S2 ClearButton: `<Button style={pressScale(domRef)}>` — pressScale
-  // ALWAYS contributes the `will-change: transform` layer hint. The plain headless
-  // remove button carries no press state yet, so only the resting hint is mirrored
-  // here. Ticket #63 owns the on-press scale.
-  const removeButtonRestStyle = pressScale(undefined)({ isPressed: false });
+  // Mirror S2 ClearButton: `<Button ref={domRef} style={pressScale(domRef)}>` —
+  // pressScale contributes the `will-change: transform` layer hint at rest, plus
+  // the press-down transform when pressed (#63).
+  let removeBtnEl: HTMLButtonElement | undefined;
+  const removeButtonStyleProps = (btnRenderProps: TagRemoveButtonRenderProps): JSX.CSSProperties =>
+    pressScale(() => removeBtnEl)(btnRenderProps);
 
   const className = (renderProps: TagRenderProps) =>
     [
@@ -560,6 +562,7 @@ export function Tag(props: TagProps): JSX.Element {
           <Show when={renderProps.allowsRemoving}>
             <HeadlessTagRemoveButton
               buttonProps={renderProps.removeButtonProps}
+              ref={(el: HTMLButtonElement) => (removeBtnEl = el)}
               class={removeButtonStyle({
                 ...renderProps,
                 size: size(),
@@ -567,7 +570,7 @@ export function Tag(props: TagProps): JSX.Element {
                 // S2 TagWrapper: `isStaticColor={isEmphasized && isSelected}`.
                 isStaticColor: isEmphasized() && renderProps.isSelected,
               })}
-              style={removeButtonRestStyle}
+              style={removeButtonStyleProps}
             >
               {/* S2 ClearButton renders `<CrossIcon size={props.size}/>` with the RAW
                   control size — the ui-icon selects its own variant (S→Size75,

@@ -611,6 +611,7 @@ export {
   type TagProps,
   type TagRenderProps,
   type TagRemoveButtonProps,
+  type TagRemoveButtonRenderProps,
 } from "./TagGroup";
 
 export {

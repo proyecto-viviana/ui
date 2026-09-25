@@ -385,6 +385,47 @@ describe("TagGroup", () => {
         expect(onRemove).toHaveBeenCalledWith(new Set(["1"]));
       });
     });
+
+    it("supports style render function and tracks isPressed on TagRemoveButton (#63)", () => {
+      let isPressedValue = false;
+      render(() => (
+        <TagGroup>
+          <TagList items={sampleItems} aria-label="Test" onRemove={() => {}}>
+            {(item) => (
+              <Tag id={item.id}>
+                {(renderProps) => (
+                  <>
+                    {item.name}
+                    <TagRemoveButton
+                      buttonProps={renderProps.removeButtonProps}
+                      style={(btnProps) => {
+                        isPressedValue = btnProps.isPressed;
+                        return { opacity: btnProps.isPressed ? "0.5" : "1" };
+                      }}
+                    />
+                  </>
+                )}
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const removeBtn = document.querySelectorAll(".solidaria-TagRemoveButton")[0] as HTMLElement;
+      expect(isPressedValue).toBe(false);
+      expect(removeBtn.style.opacity).toBe("1");
+      expect(removeBtn).not.toHaveAttribute("data-pressed");
+
+      fireEvent.pointerDown(removeBtn, { pointerType: "mouse", button: 0, pointerId: 1 });
+      expect(isPressedValue).toBe(true);
+      expect(removeBtn.style.opacity).toBe("0.5");
+      expect(removeBtn).toHaveAttribute("data-pressed", "true");
+
+      fireEvent.click(removeBtn);
+      expect(isPressedValue).toBe(false);
+      expect(removeBtn.style.opacity).toBe("1");
+      expect(removeBtn).not.toHaveAttribute("data-pressed");
+    });
   });
 
   // ============================================

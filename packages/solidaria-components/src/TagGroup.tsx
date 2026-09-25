@@ -25,6 +25,9 @@
 import { createContext, createMemo, createSignal, useContext, For, Show } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
+  createButton,
+  createFocusRing,
+  createHover,
   createTagGroup,
   createTag,
   useLocale,
@@ -47,6 +50,7 @@ import {
   filterDOMProps,
   dataAttr,
   mergeRefs,
+  assignRef,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -493,15 +497,36 @@ export function Tag(props: TagProps): JSX.Element {
   );
 }
 
-export interface TagRemoveButtonProps {
-  /** The children of the button (usually an X icon). */
-  children?: JSX.Element;
-  /** The CSS className for the element. */
-  class?: string;
-  /** The inline style for the element. */
-  style?: JSX.CSSProperties;
+export interface TagRemoveButtonRenderProps {
+  /** Whether the remove button is pressed. */
+  isPressed: boolean;
+  /** Whether the remove button is disabled. */
+  isDisabled: boolean;
+  /** Whether the remove button is hovered. */
+  isHovered: boolean;
+  /** Whether the remove button is focused. */
+  isFocused: boolean;
+  /** Whether the remove button has focus visible. */
+  isFocusVisible: boolean;
+}
+
+export interface TagRemoveButtonProps
+  extends
+    SlotProps,
+    Omit<
+      JSX.ButtonHTMLAttributes<HTMLButtonElement>,
+      "children" | "class" | "style" | "disabled" | "ref"
+    > {
+  /** The children of the button (usually an X icon) or a render function. */
+  children?: RenderChildren<TagRemoveButtonRenderProps>;
+  /** The CSS className for the element or a function. */
+  class?: ClassNameOrFunction<TagRemoveButtonRenderProps>;
+  /** The inline style for the element or a function. */
+  style?: StyleOrFunction<TagRemoveButtonRenderProps>;
   /** Explicit button props from Tag render props. */
   buttonProps?: Record<string, unknown>;
+  /** Ref to the button element. */
+  ref?: RefLike<HTMLButtonElement>;
 }
 
 /**
@@ -509,45 +534,168 @@ export interface TagRemoveButtonProps {
  * It should be placed inside a Tag component.
  */
 export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
+  const [local, domProps] = splitProps(props, ["children", "class", "style", "buttonProps", "ref"]);
+
   const tagContext = useContext(TagContext);
-  const getRemoveButtonProps = () => props.buttonProps ?? tagContext?.removeButtonProps ?? {};
-  const getIsDisabled = () => Boolean(getRemoveButtonProps().isDisabled);
-  const rawId = getRemoveButtonProps().id;
-  const rawAriaLabel = getRemoveButtonProps()["aria-label"];
-  const rawAriaLabelledBy = getRemoveButtonProps()["aria-labelledby"];
-  const rawTabIndex = getRemoveButtonProps().tabIndex;
-  const buttonId: string | undefined = typeof rawId === "string" ? rawId : undefined;
-  const ariaLabel: string = typeof rawAriaLabel === "string" ? rawAriaLabel : "Remove";
-  const ariaLabelledBy: string | undefined =
-    typeof rawAriaLabelledBy === "string" ? rawAriaLabelledBy : undefined;
-  const tabindex: number | undefined = typeof rawTabIndex === "number" ? rawTabIndex : undefined;
+  const getRemoveButtonProps = () =>
+    (local.buttonProps ?? tagContext?.removeButtonProps ?? {}) as Record<string, unknown>;
+  const isDisabled = () => Boolean(getRemoveButtonProps().isDisabled);
+  const rawId = () => getRemoveButtonProps().id;
+  const rawAriaLabel = () => getRemoveButtonProps()["aria-label"];
+  const rawAriaLabelledBy = () => getRemoveButtonProps()["aria-labelledby"];
+  const rawTabIndex = () => getRemoveButtonProps().tabIndex;
+
+  const buttonId = () => (typeof rawId() === "string" ? (rawId() as string) : undefined);
+  const ariaLabel = () =>
+    typeof rawAriaLabel() === "string" ? (rawAriaLabel() as string) : "Remove";
+  const ariaLabelledBy = () =>
+    typeof rawAriaLabelledBy() === "string" ? (rawAriaLabelledBy() as string) : undefined;
+  const tabIndex = () =>
+    typeof rawTabIndex() === "number" ? (rawTabIndex() as number) : undefined;
+
+  const { buttonProps, isPressed } = createButton({
+    get id() {
+      return buttonId();
+    },
+    get "aria-label"() {
+      return ariaLabel();
+    },
+    get "aria-labelledby"() {
+      return ariaLabelledBy();
+    },
+    get isDisabled() {
+      return isDisabled();
+    },
+    get excludeFromTabOrder() {
+      return tabIndex() === -1;
+    },
+    onPress: (e) => {
+      const handler = getRemoveButtonProps().onPress;
+      if (typeof handler === "function" && !isDisabled()) {
+        (handler as (e: unknown) => void)(e);
+      }
+    },
+  });
+
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return isDisabled();
+    },
+  });
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+
+  const renderValues = createMemo<TagRemoveButtonRenderProps>(() => ({
+    isPressed: isPressed(),
+    isDisabled: isDisabled(),
+    isHovered: isHovered(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      get children() {
+        return local.children ?? "×";
+      },
+      get class() {
+        return local.class;
+      },
+      get style() {
+        return local.style;
+      },
+      defaultClassName: "solidaria-TagRemoveButton",
+    },
+    renderValues,
+  );
+
+  const cleanButtonProps = () => {
+    const { ref: _ref, ...rest } = buttonProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanHoverProps = () => {
+    const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const { ref: _ref, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const handlePointerDown: JSX.EventHandler<HTMLButtonElement, PointerEvent> = (event) => {
+    event.stopPropagation();
+    const handler = cleanButtonProps().onPointerDown;
+    if (typeof handler === "function") {
+      (handler as JSX.EventHandler<HTMLButtonElement, PointerEvent>)(event);
+    }
+  };
+
+  const handleMouseDown: JSX.EventHandler<HTMLButtonElement, MouseEvent> = (event) => {
+    event.stopPropagation();
+    const handler = cleanButtonProps().onMouseDown;
+    if (typeof handler === "function") {
+      (handler as JSX.EventHandler<HTMLButtonElement, MouseEvent>)(event);
+    }
+  };
 
   const handleClick: JSX.EventHandler<HTMLButtonElement, MouseEvent> = (event) => {
     event.stopPropagation();
-    const handler = getRemoveButtonProps().onPress;
-    if (typeof handler === "function" && !getIsDisabled()) {
-      (handler as () => void)();
+    const handler = cleanButtonProps().onClick;
+    if (typeof handler === "function") {
+      (handler as JSX.EventHandler<HTMLButtonElement, MouseEvent>)(event);
     }
   };
-  const stopRowPress: JSX.EventHandler<HTMLButtonElement, PointerEvent> = (event) => {
-    event.stopPropagation();
+
+  const handleKeyDown: JSX.EventHandler<HTMLButtonElement, KeyboardEvent> = (event) => {
+    const handler = cleanButtonProps().onKeyDown;
+    if (typeof handler === "function") {
+      (handler as JSX.EventHandler<HTMLButtonElement, KeyboardEvent>)(event);
+    }
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.stopPropagation();
+    }
+  };
+
+  const handleKeyUp: JSX.EventHandler<HTMLButtonElement, KeyboardEvent> = (event) => {
+    const handler = cleanButtonProps().onKeyUp;
+    if (typeof handler === "function") {
+      (handler as JSX.EventHandler<HTMLButtonElement, KeyboardEvent>)(event);
+    }
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.stopPropagation();
+    }
   };
 
   return (
     <button
+      {...domProps}
+      {...cleanButtonProps()}
+      {...cleanFocusProps()}
+      {...cleanHoverProps()}
+      ref={(el) => {
+        assignRef(local.ref, el);
+      }}
       type="button"
-      class={props.class ?? "solidaria-TagRemoveButton"}
-      style={props.style}
-      id={buttonId}
-      aria-label={ariaLabel}
-      aria-labelledby={ariaLabelledBy}
-      tabindex={tabindex}
-      disabled={getIsDisabled()}
+      id={buttonId()}
+      aria-label={ariaLabel()}
+      aria-labelledby={ariaLabelledBy()}
+      tabindex={tabIndex()}
+      disabled={isDisabled()}
+      class={renderProps.class()}
+      style={renderProps.style()}
       data-allows-removing={dataAttr(tagContext?.allowsRemoving ?? false)}
-      onPointerDown={stopRowPress}
+      data-pressed={dataAttr(isPressed())}
+      data-disabled={dataAttr(isDisabled())}
+      data-hovered={dataAttr(isHovered())}
+      data-focused={dataAttr(isFocused())}
+      data-focus-visible={dataAttr(isFocusVisible())}
+      onPointerDown={handlePointerDown}
+      onMouseDown={handleMouseDown}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
     >
-      {props.children ?? "×"}
+      {renderProps.renderChildrenStable()}
     </button>
   );
 }

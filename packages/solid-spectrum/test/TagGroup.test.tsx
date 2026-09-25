@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Tag, TagGroup } from "../src/tag-group";
 
@@ -154,5 +154,91 @@ describe("TagGroup (solid-spectrum)", () => {
     await user.click(screen.getByRole("button", { name: "Add tag" }));
 
     expect(onGroupAction).toHaveBeenCalledTimes(1);
+  });
+
+  describe("remove button press scale (#63)", () => {
+    it("applies will-change at rest and press-scale transform on pointer down", () => {
+      const onRemove = vi.fn();
+      renderTagGroup({ onRemove });
+
+      const removeBtn = screen.getByRole("button", { name: "Remove News" });
+      const tagRow = screen.getByRole("row", { name: "News" });
+
+      vi.spyOn(removeBtn, "getBoundingClientRect").mockReturnValue({
+        x: 0,
+        y: 0,
+        width: 32,
+        height: 32,
+        top: 0,
+        right: 32,
+        bottom: 32,
+        left: 0,
+        toJSON: () => {},
+      });
+
+      // Resting state: will-change: transform, no transform applied
+      expect((removeBtn.style as Record<string, string | undefined>)["will-change"]).toContain(
+        "transform",
+      );
+      expect(removeBtn.style.transform).toBe("");
+
+      // Pointer down: triggers press state and perspective press-scale
+      fireEvent.pointerDown(removeBtn, { pointerType: "mouse", button: 0, pointerId: 1 });
+      expect((removeBtn.style as Record<string, string | undefined>)["will-change"]).toContain(
+        "transform",
+      );
+      expect(removeBtn.style.transform).toContain("perspective(32px) translate3d(0, 0, -2px)");
+      expect(removeBtn).toHaveAttribute("data-pressed", "true");
+      // Row must not receive press
+      expect(tagRow).not.toHaveAttribute("data-pressed");
+
+      // Click: press state released, transform clears
+      fireEvent.click(removeBtn);
+      expect(removeBtn.style.transform).toBe("");
+      expect(removeBtn).not.toHaveAttribute("data-pressed");
+    });
+
+    it("applies press-scale transform on keyboard press (Space and Enter)", () => {
+      const onRemove = vi.fn();
+      renderTagGroup({ onRemove });
+
+      const removeBtn = screen.getByRole("button", { name: "Remove News" });
+      const tagRow = screen.getByRole("row", { name: "News" });
+
+      vi.spyOn(removeBtn, "getBoundingClientRect").mockReturnValue({
+        x: 0,
+        y: 0,
+        width: 32,
+        height: 32,
+        top: 0,
+        right: 32,
+        bottom: 32,
+        left: 0,
+        toJSON: () => {},
+      });
+
+      removeBtn.focus();
+      expect(document.activeElement).toBe(removeBtn);
+
+      // KeyDown Space
+      fireEvent.keyDown(removeBtn, { key: " " });
+      expect(removeBtn.style.transform).toContain("perspective(32px) translate3d(0, 0, -2px)");
+      expect(removeBtn).toHaveAttribute("data-pressed", "true");
+      expect(tagRow).not.toHaveAttribute("data-pressed");
+
+      // KeyUp Space
+      fireEvent.keyUp(removeBtn, { key: " " });
+      expect(removeBtn.style.transform).toBe("");
+
+      // KeyDown Enter
+      fireEvent.keyDown(removeBtn, { key: "Enter" });
+      expect(removeBtn.style.transform).toContain("perspective(32px) translate3d(0, 0, -2px)");
+      expect(removeBtn).toHaveAttribute("data-pressed", "true");
+      expect(tagRow).not.toHaveAttribute("data-pressed");
+
+      // KeyUp Enter
+      fireEvent.keyUp(removeBtn, { key: "Enter" });
+      expect(removeBtn.style.transform).toBe("");
+    });
   });
 });
