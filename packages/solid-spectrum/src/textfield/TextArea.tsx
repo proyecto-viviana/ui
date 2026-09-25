@@ -45,7 +45,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { CenterBaseline } from "../icon/center-baseline";
+import { CenterBaseline, centerBaselineBefore } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
@@ -53,7 +53,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { textAreaFieldGroupStyles, textAreaInputStyles } from "./s2-textarea-styles";
 import { HelpText } from "../form/HelpText";
-import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { isChrome, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TextAreaSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TextAreaSize = "S" | "M" | "L" | "XL";
@@ -355,18 +355,23 @@ export function TextArea(props: TextAreaProps): JSX.Element {
     });
 
   const groupClass = (renderProps: TextFieldRenderProps) =>
-    mergeStyles(
-      fieldGroupStyles({
-        ...renderProps,
-        size: size(),
-        isFocusWithin: isFocusWithin(),
-      }),
-      textAreaFieldGroupStyles,
-    );
+    [
+      centerBaselineBefore,
+      mergeStyles(
+        fieldGroupStyles({
+          ...renderProps,
+          size: size(),
+          isFocusWithin: isFocusWithin(),
+        }),
+        textAreaFieldGroupStyles({ isChrome: isChrome() }),
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   // React S2 does not pass field size into TextAreaInput; it inherits font size
   // from the group while keeping the default min-height and center padding.
-  const textAreaInputClass = () => textAreaInputStyles({});
+  const textAreaInputClass = () => textAreaInputStyles({ isChrome: isChrome() });
 
   return (
     <HeadlessTextField

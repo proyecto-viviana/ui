@@ -188,4 +188,29 @@ describe("TextArea (solid-spectrum)", () => {
       expect(screen.queryByText("Notes are required.")).not.toBeInTheDocument();
     });
   });
+
+  describe("Chrome baseline top-padding workaround", () => {
+    it("applies centerBaselineBefore and Chrome ::before top-padding rule on field group when isChrome", () => {
+      const originalUserAgent = navigator.userAgent;
+      try {
+        Object.defineProperty(navigator, "userAgent", {
+          value:
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          configurable: true,
+        });
+
+        const { container } = render(() => <TextArea aria-label="Notes" />);
+        const group = container.querySelector('[role="presentation"]') as HTMLElement;
+        const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
+
+        expect(group.className).toContain("TSO4kUbZsXLs17");
+        expect(textarea.className).toContain("_de17");
+      } finally {
+        Object.defineProperty(navigator, "userAgent", {
+          value: originalUserAgent,
+          configurable: true,
+        });
+      }
+    });
+  });
 });

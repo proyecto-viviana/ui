@@ -19,12 +19,17 @@
 import { style } from "../style" with { type: "macro" };
 import { centerPadding, controlSize } from "../s2-internal/style-utils" with { type: "macro" };
 
-export const textAreaFieldGroupStyles = style({
+export const textAreaFieldGroupStyles = style<{ isChrome?: boolean }>({
   alignItems: "baseline",
   height: "auto",
+  paddingTop: {
+    isChrome: {
+      "::before": "[calc((var(--field-height) - 1lh) / 2)]",
+    },
+  },
 });
 
-export const textAreaInputStyles = style({
+export const textAreaInputStyles = style<{ isChrome?: boolean }>({
   paddingX: 0,
   paddingY: centerPadding(),
   minHeight: controlSize(),
@@ -41,6 +46,9 @@ export const textAreaInputStyles = style({
   fontSize: "inherit",
   fontWeight: "inherit",
   lineHeight: "inherit",
+  alignSelf: {
+    isChrome: "start",
+  },
   flexGrow: 1,
   minWidth: 0,
   outlineStyle: "none",

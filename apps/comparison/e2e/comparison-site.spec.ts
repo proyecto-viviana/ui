@@ -231,4 +231,28 @@ test.describe("comparison site chrome", () => {
     );
     expect(solidKeyboardOutline).toBe("solid");
   });
+
+  test("empty TextArea height and Chrome top-padding baseline rule match S2", async ({ page }) => {
+    await page.goto("/components/textarea/?value=");
+    await waitForComparisonRouteReady(page);
+
+    const reactGroup = page.locator(
+      '[data-comparison-framework="react"] [data-comparison-control-root="textarea"] [role="presentation"]',
+    );
+    const solidGroup = page.locator(
+      '[data-comparison-framework="solid"] [data-comparison-control-root="textarea"] [role="presentation"]',
+    );
+    await expect(reactGroup).toBeVisible();
+    await expect(solidGroup).toBeVisible();
+
+    const reactHeight = await reactGroup.evaluate((el) => el.getBoundingClientRect().height);
+    const solidHeight = await solidGroup.evaluate((el) => el.getBoundingClientRect().height);
+    expect(Math.abs(solidHeight - reactHeight)).toBeLessThanOrEqual(1);
+
+    // Verify S2 Chrome ::before top-padding rule class is present on both
+    const reactClasses = await reactGroup.evaluate((el) => el.className);
+    const solidClasses = await solidGroup.evaluate((el) => el.className);
+    expect(reactClasses).toContain("TSO4kUbZsXLs17");
+    expect(solidClasses).toContain("TSO4kUbZsXLs17");
+  });
 });
