@@ -26,7 +26,7 @@
 
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { createTrackedEffect } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { filterDOMProps } from "../utils";
 
@@ -67,232 +67,503 @@ export interface LandmarkAria<T extends HTMLElement = HTMLElement> {
 
 export interface LandmarkController {
   /** Focus the next landmark in DOM order. */
-  focusNext: () => void;
+  focusNext: (opts?: { from?: Element | null }) => boolean | void;
   /** Focus the previous landmark in DOM order. */
-  focusPrevious: () => void;
+  focusPrevious: (opts?: { from?: Element | null }) => boolean | void;
   /** Focus the main landmark. */
-  focusMain: () => void;
-  /** Navigate to a specific landmark by role. If multiple exist, the first one is focused. */
-  navigate: (role: AriaLandmarkRole) => void;
+  focusMain: () => boolean | void;
+  /** Navigate to a specific landmark by role or direction. */
+  navigate: (
+    roleOrDirection: AriaLandmarkRole | "forward" | "backward",
+    opts?: { from?: Element | null },
+  ) => boolean | void;
+  /** Dispose the controller (if created via createLandmarkController). */
+  dispose?: () => void;
 }
 
-interface LandmarkEntry {
-  ref: HTMLElement;
+export interface LandmarkEntry {
+  ref: Accessor<HTMLElement | undefined> | { current: HTMLElement | null } | HTMLElement;
   role: AriaLandmarkRole;
   label?: string;
-  focus?: () => void;
+  focus?: (direction?: "forward" | "backward") => void;
+  blur?: () => void;
   lastFocused?: HTMLElement;
+}
+
+function getLandmarkElement(
+  entry: LandmarkEntry | { ref: LandmarkEntry["ref"] } | null | undefined,
+): HTMLElement | null {
+  if (!entry) return null;
+  const r = entry.ref;
+  if (typeof r === "function") {
+    return r() ?? null;
+  }
+  if (r && typeof r === "object" && "current" in r) {
+    return r.current ?? null;
+  }
+  if (r instanceof HTMLElement) {
+    return r;
+  }
+  return null;
 }
 
 /**
  * Manages all registered landmarks and handles F6 keyboard navigation.
  */
-class LandmarkManager {
+export class LandmarkManager {
   private landmarks: LandmarkEntry[] = [];
-  private currentIndex = -1;
-  private listening = false;
+  private isListening = false;
+  private refCount = 0;
+  readonly version = 1;
 
   constructor() {
-    if (typeof window !== "undefined") {
-      this.startListening();
+    this.f6Handler = this.f6Handler.bind(this);
+    this.focusinHandler = this.focusinHandler.bind(this);
+    this.focusoutHandler = this.focusoutHandler.bind(this);
+  }
+
+  setupIfNeeded(): void {
+    if (this.isListening || typeof document === "undefined") return;
+    document.addEventListener("keydown", this.f6Handler, { capture: true });
+    document.addEventListener("focusin", this.focusinHandler, { capture: true });
+    document.addEventListener("focusout", this.focusoutHandler, { capture: true });
+    this.isListening = true;
+  }
+
+  teardownIfNeeded(): void {
+    if (
+      !this.isListening ||
+      this.landmarks.length > 0 ||
+      this.refCount > 0 ||
+      typeof document === "undefined"
+    ) {
+      return;
     }
+    document.removeEventListener("keydown", this.f6Handler, { capture: true });
+    document.removeEventListener("focusin", this.focusinHandler, { capture: true });
+    document.removeEventListener("focusout", this.focusoutHandler, { capture: true });
+    this.isListening = false;
   }
 
-  private startListening() {
-    if (this.listening) return;
-    this.listening = true;
+  addLandmark(newLandmark: LandmarkEntry): void {
+    this.setupIfNeeded();
+    const newElement = getLandmarkElement(newLandmark);
+    if (!newElement) return;
 
-    window.addEventListener("keydown", this.handleKeyDown.bind(this), true);
-  }
+    if (this.landmarks.some((landmark) => getLandmarkElement(landmark) === newElement)) {
+      return;
+    }
 
-  private handleKeyDown(event: KeyboardEvent) {
-    // F6 to navigate landmarks
-    if (event.key === "F6") {
-      event.preventDefault();
-      if (event.shiftKey) {
-        this.focusPrevious();
+    if (
+      process.env.NODE_ENV !== "production" &&
+      newLandmark.role === "main" &&
+      this.landmarks.filter((landmark) => landmark.role === "main").length > 0
+    ) {
+      console.error('Page can contain no more than one landmark with the role "main".');
+    }
+
+    if (this.landmarks.length === 0) {
+      this.landmarks = [newLandmark];
+      this.checkLabels(newLandmark.role);
+      return;
+    }
+
+    let start = 0;
+    let end = this.landmarks.length - 1;
+    while (start <= end) {
+      const mid = Math.floor((start + end) / 2);
+      const midElement = getLandmarkElement(this.landmarks[mid]);
+      if (!midElement) break;
+      const comparedPosition = newElement.compareDocumentPosition(midElement);
+      const isNewAfterExisting = Boolean(
+        comparedPosition & Node.DOCUMENT_POSITION_PRECEDING ||
+        comparedPosition & Node.DOCUMENT_POSITION_CONTAINS,
+      );
+      if (isNewAfterExisting) {
+        start = mid + 1;
       } else {
-        this.focusNext();
+        end = mid - 1;
       }
     }
+
+    this.landmarks.splice(start, 0, newLandmark);
+    this.checkLabels(newLandmark.role);
+  }
+
+  updateLandmark(landmark: Partial<LandmarkEntry> & { ref: LandmarkEntry["ref"] }): void {
+    const targetElement = getLandmarkElement(landmark as LandmarkEntry);
+    const index = this.landmarks.findIndex((l) => {
+      if (l.ref === landmark.ref) return true;
+      const el = getLandmarkElement(l);
+      return el && targetElement && el === targetElement;
+    });
+    if (index >= 0) {
+      this.landmarks[index] = {
+        ...this.landmarks[index],
+        ...landmark,
+      };
+      this.checkLabels(this.landmarks[index].role);
+    }
+  }
+
+  removeLandmark(ref: LandmarkEntry["ref"]): void {
+    const targetElement =
+      typeof ref === "function" || (typeof ref === "object" && ref !== null)
+        ? getLandmarkElement({ ref } as LandmarkEntry)
+        : null;
+
+    this.landmarks = this.landmarks.filter((landmark) => {
+      if (landmark.ref === ref) return false;
+      if (targetElement) {
+        const el = getLandmarkElement(landmark);
+        if (el === targetElement) return false;
+      }
+      return true;
+    });
+
+    this.teardownIfNeeded();
+  }
+
+  registerLandmark(landmark: LandmarkEntry): () => void {
+    const targetElement = getLandmarkElement(landmark);
+    const existing = this.landmarks.find((l) => {
+      if (l.ref === landmark.ref) return true;
+      const el = getLandmarkElement(l);
+      return el && targetElement && el === targetElement;
+    });
+
+    if (existing) {
+      this.updateLandmark(landmark);
+    } else {
+      this.addLandmark(landmark);
+    }
+
+    return () => this.removeLandmark(landmark.ref);
   }
 
   register(entry: LandmarkEntry): void {
-    // Insert in DOM order using compareDocumentPosition
-    const index = this.findInsertionIndex(entry.ref);
-    this.landmarks.splice(index, 0, entry);
-
-    // Validate: if multiple landmarks have the same role, they should have different labels
-    this.validateLabels();
+    this.addLandmark(entry);
   }
 
-  unregister(ref: HTMLElement): void {
-    const index = this.landmarks.findIndex((l) => l.ref === ref);
-    if (index !== -1) {
-      this.landmarks.splice(index, 1);
-      // Adjust currentIndex if needed
-      if (this.currentIndex >= this.landmarks.length) {
-        this.currentIndex = this.landmarks.length - 1;
-      }
-    }
+  unregister(ref: HTMLElement | LandmarkEntry["ref"]): void {
+    this.removeLandmark(ref as any);
   }
 
-  private findInsertionIndex(ref: HTMLElement): number {
-    // Binary search for insertion point based on DOM order
-    let low = 0;
-    let high = this.landmarks.length;
-
-    while (low < high) {
-      const mid = Math.floor((low + high) / 2);
-      const comparison = this.landmarks[mid].ref.compareDocumentPosition(ref);
-
-      // Node.DOCUMENT_POSITION_FOLLOWING = 4
-      if (comparison & Node.DOCUMENT_POSITION_FOLLOWING) {
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
-    }
-
-    return low;
-  }
-
-  private validateLabels(): void {
-    // Group landmarks by role
-    const roleGroups = new Map<AriaLandmarkRole, LandmarkEntry[]>();
-    for (const landmark of this.landmarks) {
-      const group = roleGroups.get(landmark.role) || [];
-      group.push(landmark);
-      roleGroups.set(landmark.role, group);
-    }
-
-    // Warn if multiple landmarks with the same role lack unique labels
-    for (const [role, group] of roleGroups) {
-      if (group.length > 1) {
-        const labels = group.map((l) => l.label);
-        const uniqueLabels = new Set(labels.filter(Boolean));
-        if (uniqueLabels.size < group.length) {
-          console.warn(
-            `Multiple landmarks with role "${role}" exist. Each should have a unique aria-label or aria-labelledby.`,
-          );
+  checkLabels(role: AriaLandmarkRole): void {
+    const landmarksWithRole = this.getLandmarksByRole(role);
+    if (landmarksWithRole.size > 1) {
+      const duplicatesWithoutLabel = [...landmarksWithRole].filter((l) => !l.label);
+      if (duplicatesWithoutLabel.length > 0 && process.env.NODE_ENV !== "production") {
+        console.warn(
+          `Multiple landmarks with role "${role}" exist. Each should have a unique aria-label or aria-labelledby.`,
+        );
+      } else if (process.env.NODE_ENV !== "production") {
+        const labels = [...landmarksWithRole].map((l) => l.label);
+        const duplicateLabels = labels.filter((item, index) => labels.indexOf(item) !== index);
+        if (duplicateLabels.length > 0) {
+          duplicateLabels.forEach((label) => {
+            console.warn(
+              `Multiple landmarks with role "${role}" and label "${label}" exist. Each should have a unique aria-label or aria-labelledby.`,
+            );
+          });
         }
       }
     }
   }
 
-  focusNext(): void {
-    if (this.landmarks.length === 0) return;
+  closestLandmark(element: Element | null): LandmarkEntry | undefined {
+    if (!element || typeof document === "undefined") return undefined;
+    const landmarkMap = new Map<HTMLElement, LandmarkEntry>();
+    for (const l of this.landmarks) {
+      const el = getLandmarkElement(l);
+      if (el) landmarkMap.set(el, l);
+    }
 
-    // Find the currently focused landmark
-    const activeElement = document.activeElement;
-    this.currentIndex = this.findCurrentLandmarkIndex(activeElement);
+    let currentElement: Element | null = element;
+    while (
+      currentElement &&
+      !landmarkMap.has(currentElement as HTMLElement) &&
+      currentElement !== document.body &&
+      currentElement.parentElement
+    ) {
+      currentElement = currentElement.parentElement;
+    }
 
-    // Move to next
-    this.currentIndex = (this.currentIndex + 1) % this.landmarks.length;
-    this.focusLandmark(this.landmarks[this.currentIndex]);
+    return currentElement ? landmarkMap.get(currentElement as HTMLElement) : undefined;
   }
 
-  focusPrevious(): void {
-    if (this.landmarks.length === 0) return;
+  getNextLandmark(
+    element: Element | null,
+    { backward }: { backward?: boolean } = {},
+  ): LandmarkEntry | undefined {
+    if (this.landmarks.length === 0) return undefined;
+    const currentLandmark = this.closestLandmark(element);
+    let nextLandmarkIndex = backward ? this.landmarks.length - 1 : 0;
+    if (currentLandmark) {
+      nextLandmarkIndex = this.landmarks.indexOf(currentLandmark) + (backward ? -1 : 1);
+    }
 
-    // Find the currently focused landmark
-    const activeElement = document.activeElement;
-    this.currentIndex = this.findCurrentLandmarkIndex(activeElement);
+    const wrapIfNeeded = () => {
+      if (nextLandmarkIndex < 0) {
+        if (
+          element &&
+          !element.dispatchEvent(
+            new CustomEvent("react-aria-landmark-navigation", {
+              detail: { direction: "backward" },
+              bubbles: true,
+              cancelable: true,
+            }),
+          )
+        ) {
+          return true;
+        }
+        nextLandmarkIndex = this.landmarks.length - 1;
+      } else if (nextLandmarkIndex >= this.landmarks.length) {
+        if (
+          element &&
+          !element.dispatchEvent(
+            new CustomEvent("react-aria-landmark-navigation", {
+              detail: { direction: "forward" },
+              bubbles: true,
+              cancelable: true,
+            }),
+          )
+        ) {
+          return true;
+        }
+        nextLandmarkIndex = 0;
+      }
+      return nextLandmarkIndex < 0 || nextLandmarkIndex >= this.landmarks.length;
+    };
 
-    // Move to previous
-    this.currentIndex = (this.currentIndex - 1 + this.landmarks.length) % this.landmarks.length;
-    this.focusLandmark(this.landmarks[this.currentIndex]);
+    if (wrapIfNeeded()) return undefined;
+
+    const startIndex = nextLandmarkIndex;
+    while (getLandmarkElement(this.landmarks[nextLandmarkIndex])?.closest('[aria-hidden="true"]')) {
+      nextLandmarkIndex += backward ? -1 : 1;
+      if (wrapIfNeeded()) return undefined;
+      if (nextLandmarkIndex === startIndex) break;
+    }
+
+    return this.landmarks[nextLandmarkIndex];
   }
 
-  focusMain(): void {
-    const main = this.landmarks.find((l) => l.role === "main");
+  f6Handler(e: KeyboardEvent): void {
+    if (e.key === "F6") {
+      let target: Element | null = e.target instanceof Element ? e.target : null;
+      if (
+        !target ||
+        (typeof document !== "undefined" &&
+          (target === document.body || (e.target as unknown) === document))
+      ) {
+        if (
+          typeof document !== "undefined" &&
+          document.activeElement &&
+          document.activeElement !== document.body
+        ) {
+          target = document.activeElement;
+        }
+      }
+      const handled = e.altKey ? this.focusMain() : this.navigate(target, e.shiftKey);
+      if (handled) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+  }
+
+  focusMain(): boolean {
+    const main = this.getLandmarkByRole("main");
     if (main) {
-      this.focusLandmark(main);
+      const el = getLandmarkElement(main);
+      if (el && el.isConnected) {
+        this.focusLandmark(el, "forward");
+        return true;
+      }
     }
+    return false;
   }
 
-  navigate(role: AriaLandmarkRole): void {
-    const landmark = this.landmarks.find((l) => l.role === role);
-    if (landmark) {
-      this.focusLandmark(landmark);
-    }
-  }
+  navigate(from: Element | null, backward: boolean): boolean {
+    const nextLandmark = this.getNextLandmark(from, { backward });
+    if (!nextLandmark) return false;
 
-  private findCurrentLandmarkIndex(activeElement: Element | null): number {
-    if (!activeElement) return -1;
-
-    // Check if active element is within any landmark
-    for (let i = 0; i < this.landmarks.length; i++) {
-      if (this.landmarks[i].ref.contains(activeElement)) {
-        // Store the last focused element for this landmark
-        if (activeElement instanceof HTMLElement) {
-          this.landmarks[i].lastFocused = activeElement;
-        }
-        return i;
+    if (nextLandmark.lastFocused) {
+      const lastFocused = nextLandmark.lastFocused;
+      if (typeof document !== "undefined" && document.body.contains(lastFocused)) {
+        lastFocused.focus();
+        return true;
       }
     }
 
-    return -1;
+    const el = getLandmarkElement(nextLandmark);
+    if (el && el.isConnected) {
+      this.focusLandmark(el, backward ? "backward" : "forward");
+      return true;
+    }
+
+    return false;
   }
 
-  private focusLandmark(landmark: LandmarkEntry): void {
-    // If a custom focus handler is provided, use it
-    if (landmark.focus) {
-      landmark.focus();
-      return;
+  focusinHandler(e: FocusEvent): void {
+    const target =
+      (e.target as Element | null) ??
+      (typeof document !== "undefined" ? document.activeElement : null);
+    const currentLandmark = this.closestLandmark(target);
+    const currentElement = currentLandmark ? getLandmarkElement(currentLandmark) : null;
+    if (currentLandmark && currentElement !== target && target instanceof HTMLElement) {
+      this.updateLandmark({
+        ref: currentLandmark.ref,
+        lastFocused: target,
+      });
     }
 
-    // If we previously focused an element in this landmark, try to restore it
-    if (landmark.lastFocused && landmark.ref.contains(landmark.lastFocused)) {
-      landmark.lastFocused.focus();
-      return;
+    const previousFocusedElement = e.relatedTarget as Element | null;
+    if (previousFocusedElement) {
+      const closestPreviousLandmark = this.closestLandmark(previousFocusedElement);
+      if (
+        closestPreviousLandmark &&
+        getLandmarkElement(closestPreviousLandmark) === previousFocusedElement
+      ) {
+        closestPreviousLandmark.blur?.();
+      }
     }
-
-    // Try to find the first focusable element
-    const focusable = this.findFirstFocusable(landmark.ref);
-    if (focusable) {
-      focusable.focus();
-      return;
-    }
-
-    // Fallback: make the landmark itself focusable and focus it
-    if (!landmark.ref.hasAttribute("tabindex")) {
-      landmark.ref.setAttribute("tabindex", "-1");
-    }
-    landmark.ref.focus();
   }
 
-  private findFirstFocusable(container: HTMLElement): HTMLElement | null {
-    const focusableSelectors = [
-      "a[href]",
-      "button:not([disabled])",
-      "input:not([disabled])",
-      "select:not([disabled])",
-      "textarea:not([disabled])",
-      '[tabindex]:not([tabindex="-1"])',
-    ].join(", ");
+  focusoutHandler(e: FocusEvent): void {
+    const previousFocusedElement =
+      (e.target instanceof Element ? e.target : null) ??
+      (typeof document !== "undefined" ? document.activeElement : null);
+    const nextFocusedElement = e.relatedTarget as EventTarget | null;
+    if (
+      !nextFocusedElement ||
+      (typeof document !== "undefined" && (nextFocusedElement as unknown) === document)
+    ) {
+      const closestPreviousLandmark = this.closestLandmark(previousFocusedElement);
+      if (
+        closestPreviousLandmark &&
+        getLandmarkElement(closestPreviousLandmark) === previousFocusedElement
+      ) {
+        closestPreviousLandmark.blur?.();
+      }
+    }
+  }
 
-    return container.querySelector<HTMLElement>(focusableSelectors);
+  focusLandmark(landmark: HTMLElement, direction: "forward" | "backward"): void {
+    const entry = this.landmarks.find((l) => getLandmarkElement(l) === landmark);
+    entry?.focus?.(direction);
+  }
+
+  getLandmarksByRole(role: AriaLandmarkRole): Set<LandmarkEntry> {
+    return new Set(this.landmarks.filter((l) => l.role === role));
+  }
+
+  getLandmarkByRole(role: AriaLandmarkRole): LandmarkEntry | undefined {
+    return this.landmarks.find((l) => l.role === role);
+  }
+
+  createLandmarkController(): LandmarkController {
+    this.refCount++;
+    this.setupIfNeeded();
+    let disposed = false;
+    return {
+      focusNext: (opts?: { from?: Element | null }) => {
+        if (disposed) return false;
+        const element =
+          opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+        return this.navigate(element, false);
+      },
+      focusPrevious: (opts?: { from?: Element | null }) => {
+        if (disposed) return false;
+        const element =
+          opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+        return this.navigate(element, true);
+      },
+      focusMain: () => {
+        if (disposed) return false;
+        return this.focusMain();
+      },
+      navigate: (
+        roleOrDirection: AriaLandmarkRole | "forward" | "backward",
+        opts?: { from?: Element | null },
+      ) => {
+        if (disposed) return false;
+        if (roleOrDirection === "backward" || roleOrDirection === "forward") {
+          const element =
+            opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+          return this.navigate(element, roleOrDirection === "backward");
+        }
+        const landmark = this.getLandmarkByRole(roleOrDirection);
+        if (landmark) {
+          const el = getLandmarkElement(landmark);
+          if (el && el.isConnected) {
+            this.focusLandmark(el, "forward");
+            return true;
+          }
+        }
+        return false;
+      },
+      dispose: () => {
+        if (!disposed) {
+          disposed = true;
+          this.refCount--;
+          this.teardownIfNeeded();
+        }
+      },
+    };
   }
 
   getController(): LandmarkController {
     return {
-      focusNext: () => this.focusNext(),
-      focusPrevious: () => this.focusPrevious(),
-      focusMain: () => this.focusMain(),
-      navigate: (role) => this.navigate(role),
+      focusNext: (opts?: { from?: Element | null }) => {
+        const element =
+          opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+        return this.navigate(element, false);
+      },
+      focusPrevious: (opts?: { from?: Element | null }) => {
+        const element =
+          opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+        return this.navigate(element, true);
+      },
+      focusMain: () => {
+        return this.focusMain();
+      },
+      navigate: (
+        roleOrDirection: AriaLandmarkRole | "forward" | "backward",
+        opts?: { from?: Element | null },
+      ) => {
+        if (roleOrDirection === "backward" || roleOrDirection === "forward") {
+          const element =
+            opts?.from ?? (typeof document !== "undefined" ? document.activeElement : null);
+          return this.navigate(element, roleOrDirection === "backward");
+        }
+        const landmark = this.getLandmarkByRole(roleOrDirection);
+        if (landmark) {
+          const el = getLandmarkElement(landmark);
+          if (el && el.isConnected) {
+            this.focusLandmark(el, "forward");
+            return true;
+          }
+        }
+        return false;
+      },
     };
   }
 }
 
 // Global singleton instance
-let landmarkManager: LandmarkManager | null = null;
+const LANDMARK_MANAGER_SYMBOL = Symbol.for("solidaria-landmark-manager");
 
-function getLandmarkManager(): LandmarkManager {
-  if (!landmarkManager) {
-    landmarkManager = new LandmarkManager();
+export function getLandmarkManager(): LandmarkManager {
+  if (typeof document === "undefined") {
+    return new LandmarkManager();
   }
-  return landmarkManager;
+  let instance = (document as any)[LANDMARK_MANAGER_SYMBOL] as LandmarkManager | undefined;
+  if (!instance) {
+    instance = new LandmarkManager();
+    (document as any)[LANDMARK_MANAGER_SYMBOL] = instance;
+  }
+  return instance;
 }
 
 /**
@@ -320,47 +591,76 @@ export function createLandmark<T extends HTMLElement = HTMLElement>(
   props: MaybeAccessor<AriaLandmarkProps>,
   ref: Accessor<T | undefined>,
 ): LandmarkAria<T> {
-  // Register with the landmark manager
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
+  const [isLandmarkFocused, setIsLandmarkFocused] = createSignal(false);
 
+  const defaultFocus = () => {
+    setIsLandmarkFocused(true);
+    const element = ref();
+    if (element) {
+      if (!element.hasAttribute("tabindex")) {
+        element.setAttribute("tabindex", "-1");
+      }
+      element.focus();
+    }
+  };
+
+  const blur = () => {
+    setIsLandmarkFocused(false);
+  };
+
+  createTrackedEffect(() => {
     const element = ref();
     if (!element) return;
 
     const p = access(props);
     const entry: LandmarkEntry = {
-      ref: element,
+      ref: () => element,
       role: p.role,
-      label: p["aria-label"],
-      focus: p.focus,
+      label: p["aria-label"] || p["aria-labelledby"],
+      focus: p.focus || defaultFocus,
+      blur,
     };
 
     const manager = getLandmarkManager();
-    manager.register(entry);
-
-    _s2Cleanups.push(() => {
-      manager.unregister(element);
-    });
+    const unregister = manager.registerLandmark(entry);
 
     return () => {
-      for (const c of _s2Cleanups) c();
+      unregister();
     };
   });
 
-  const getLandmarkProps = (): JSX.HTMLAttributes<T> => {
-    const p = access(props);
-    const domProps = filterDOMProps(p as unknown as Record<string, unknown>, { labelable: true });
+  createTrackedEffect(() => {
+    if (isLandmarkFocused()) {
+      const element = ref();
+      if (element && document.activeElement !== element) {
+        if (!element.hasAttribute("tabindex")) {
+          element.setAttribute("tabindex", "-1");
+        }
+        element.focus();
+      }
+    }
+  });
 
-    return {
-      ...domProps,
-      role: p.role,
-    };
+  const landmarkProps = {
+    get role() {
+      return access(props).role;
+    },
+    get tabIndex() {
+      return isLandmarkFocused() ? -1 : undefined;
+    },
+    get "aria-label"() {
+      return access(props)["aria-label"];
+    },
+    get "aria-labelledby"() {
+      return access(props)["aria-labelledby"];
+    },
+    get id() {
+      return access(props).id;
+    },
   };
 
   return {
-    get landmarkProps() {
-      return getLandmarkProps();
-    },
+    landmarkProps: landmarkProps as JSX.HTMLAttributes<T>,
   };
 }
 

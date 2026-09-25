@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, untrack } from "solid-js";
 import { createLandmark, getLandmarkController, type AriaLandmarkRole } from "../src/landmark";
 
 // Test component that uses createLandmark
@@ -34,9 +34,12 @@ function TestLandmark(props: {
     ref,
   );
 
+  const testId = untrack(() => `landmark-${props.role}`);
+  const content = untrack(() => props.children ?? `${props.role} content`);
+
   return (
-    <div ref={setRef} {...landmarkProps} data-testid={`landmark-${props.role}`}>
-      {props.children ?? `${props.role} content`}
+    <div ref={setRef} {...landmarkProps} data-testid={testId}>
+      {content}
     </div>
   );
 }
@@ -176,10 +179,10 @@ describe("createLandmark", () => {
       expect(document.activeElement).toBe(banner);
 
       // Simulate F6 keypress
-      fireEvent.keyDown(window, { key: "F6" });
+      fireEvent.keyDown(document, { key: "F6" });
 
       // After F6, focus should move to next landmark
-      // Note: The exact behavior depends on the manager implementation
+      expect(document.activeElement).toBe(navigation);
     });
 
     it("should respond to Shift+F6 for backwards navigation", async () => {
@@ -199,9 +202,10 @@ describe("createLandmark", () => {
       expect(document.activeElement).toBe(main);
 
       // Simulate Shift+F6 keypress
-      fireEvent.keyDown(window, { key: "F6", shiftKey: true });
+      fireEvent.keyDown(document, { key: "F6", shiftKey: true });
 
       // After Shift+F6, focus should move to previous landmark
+      expect(document.activeElement).toBe(navigation);
     });
   });
 
@@ -255,6 +259,83 @@ describe("createLandmark", () => {
       // The landmark should be unregistered (internal state, hard to test directly)
       // We can test that the element is no longer in the DOM
       expect(screen.queryByTestId("landmark-main")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("React Aria parity (#436)", () => {
+    it("does not call preventDefault on F6 when 0 landmarks exist", () => {
+      const event = new KeyboardEvent("keydown", { key: "F6", cancelable: true, bubbles: true });
+      const preventDefaultSpy = vi.spyOn(event, "preventDefault");
+      document.dispatchEvent(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+
+    it("focuses the landmark element itself, not the first tabbable child inside", () => {
+      render(() => (
+        <>
+          <button data-testid="before">Before</button>
+          <TestLandmark role="region" aria-label="Notifications">
+            <button data-testid="inside-btn">Inside button</button>
+          </TestLandmark>
+        </>
+      ));
+
+      const before = screen.getByTestId("before");
+      const region = screen.getByTestId("landmark-region");
+      const insideBtn = screen.getByTestId("inside-btn");
+
+      before.focus();
+      expect(document.activeElement).toBe(before);
+
+      fireEvent.keyDown(document, { key: "F6" });
+
+      // Focus lands on the region landmark itself, not insideBtn
+      expect(document.activeElement).toBe(region);
+      expect(document.activeElement).not.toBe(insideBtn);
+    });
+
+    it("restores focus to lastFocused inside the landmark when returning", () => {
+      render(() => (
+        <>
+          <button data-testid="before">Before</button>
+          <TestLandmark role="region" aria-label="Notifications">
+            <button data-testid="inside-btn">Inside button</button>
+          </TestLandmark>
+        </>
+      ));
+
+      const before = screen.getByTestId("before");
+      const insideBtn = screen.getByTestId("inside-btn");
+
+      // Focus inside the landmark
+      insideBtn.focus();
+      fireEvent.focusIn(insideBtn);
+      expect(document.activeElement).toBe(insideBtn);
+
+      // Move focus outside
+      before.focus();
+      expect(document.activeElement).toBe(before);
+
+      // Press F6: should restore focus to insideBtn (lastFocused)
+      fireEvent.keyDown(document, { key: "F6" });
+      expect(document.activeElement).toBe(insideBtn);
+    });
+
+    it("tears down document listeners when all landmarks unmount", () => {
+      const removeEventListenerSpy = vi.spyOn(document, "removeEventListener");
+
+      const { unmount } = render(() => <TestLandmark role="region" aria-label="Test region" />);
+
+      unmount();
+
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        "keydown",
+        expect.any(Function),
+        expect.objectContaining({ capture: true }),
+      );
+
+      removeEventListenerSpy.mockRestore();
     });
   });
 });

@@ -4,12 +4,17 @@ type: task
 title: "Match React Aria LandmarkManager F6 capture and landmark focus target"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 toast functional pass: isolated React F6 from Before and from Show Neutral Toast stays on the start; isolated Solid F6 focuses the alertdialog toast. RAC LandmarkManager listens on document capture, setupIfNeeded only after addLandmark, preventDefault only if handled, and focuses the landmark element (the region, tabIndex -1) unless lastFocused. Solid LandmarkManager startListening() in the constructor on window capture, preventDefault()s every F6 even with 0 landmarks, and focusLandmark prefers the first tabbable (alertdialog tabIndex 0). Window capture runs before document, so the still-loaded Solid island steals F6 from S2 on the comparison page",
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "Matched RAC LandmarkManager contract: listen on document capture only when landmarks exist, call preventDefault only when F6 is handled, and focus landmark container instead of first tabbable child unless restoring lastFocused.",
     }
 ---
 

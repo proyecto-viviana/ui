@@ -208,7 +208,7 @@ describe("createToastRegion", () => {
     expect(region).toHaveAttribute("data-solidaria-top-layer", "true");
 
     before.focus();
-    fireEvent.keyDown(window, { key: "F6" });
+    fireEvent.keyDown(document, { key: "F6" });
 
     expect(document.activeElement).toBe(region);
   });
