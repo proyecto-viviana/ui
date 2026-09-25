@@ -4,9 +4,14 @@ type: task
 title: "Align platform and user-agent detection"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-85" }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "reconciled platform detector with upstream React Aria, added isSafari, brands, and matrix tests",
+    }
 ---
 
 Reconcile the shared platform detector with the pinned upstream implementation.

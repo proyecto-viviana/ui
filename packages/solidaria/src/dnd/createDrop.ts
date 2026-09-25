@@ -35,6 +35,7 @@ import {
   setGlobalDropEffect,
   getGlobalAllowedDropOperations,
 } from "./utils";
+import { isMac } from "../utils/platform";
 import type { DropOperation } from "@proyecto-viviana/solid-stately";
 
 const DROP_ACTIVATE_TIMEOUT = 800;
@@ -90,9 +91,7 @@ export function createDrop(props: Accessor<AriaDropOptions>): DropAria {
 
     // macOS: Alt=copy, Ctrl=link, Cmd=move
     // Windows/Linux: Alt=link, Shift=move, Ctrl=copy
-    const isMac = typeof navigator !== "undefined" && /mac/i.test(navigator.platform);
-
-    if (isMac) {
+    if (isMac()) {
       if (e.altKey) modifierAllowed |= DROP_OPERATION.copy;
       if (e.ctrlKey) modifierAllowed |= DROP_OPERATION.link;
       if (e.metaKey) modifierAllowed |= DROP_OPERATION.move;

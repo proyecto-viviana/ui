@@ -17,60 +17,90 @@
  * Ported from packages/react-aria/src/utils/platform.ts.
  */
 
+interface NavigatorUAData {
+  brands?: Array<{ brand: string; version: string }>;
+  platform?: string;
+}
+
 interface NavigatorWithUserAgentData extends Navigator {
-  userAgentData?: {
-    platform?: string;
-  };
-}
-
-function getNavigator(): NavigatorWithUserAgentData | null {
-  if (typeof window === "undefined" || window.navigator == null) return null;
-  return window.navigator as NavigatorWithUserAgentData;
-}
-
-function testPlatform(re: RegExp): boolean {
-  const nav = getNavigator();
-  if (!nav) return false;
-  return re.test(nav.platform || nav.userAgentData?.platform || "");
+  userAgentData?: NavigatorUAData;
 }
 
 function testUserAgent(re: RegExp): boolean {
-  const nav = getNavigator();
-  return nav ? re.test(nav.userAgent) : false;
+  if (typeof window === "undefined" || window.navigator == null) {
+    return false;
+  }
+  const nav = window.navigator as NavigatorWithUserAgentData;
+  const brands = nav.userAgentData?.brands;
+  return (
+    (Array.isArray(brands) &&
+      brands.some((brand: { brand: string; version: string }) => re.test(brand.brand))) ||
+    re.test(nav.userAgent)
+  );
 }
 
-export function isMac(): boolean {
+function testPlatform(re: RegExp): boolean {
+  if (typeof window === "undefined" || window.navigator == null) {
+    return false;
+  }
+  const nav = window.navigator as NavigatorWithUserAgentData;
+  return re.test(nav.userAgentData?.platform || nav.platform || "");
+}
+
+function cached(fn: () => boolean): () => boolean {
+  if (process.env.NODE_ENV === "test") {
+    return fn;
+  }
+
+  let res: boolean | null = null;
+  return () => {
+    if (res == null) {
+      res = fn();
+    }
+    return res;
+  };
+}
+
+export const isMac: () => boolean = cached(function () {
   return testPlatform(/^Mac/i);
-}
+});
 
-export function isIPhone(): boolean {
+export const isIPhone: () => boolean = cached(function () {
   return testPlatform(/^iPhone/i);
-}
+});
 
-export function isIPad(): boolean {
-  return testPlatform(/^iPad/i) || (isMac() && navigator.maxTouchPoints > 1);
-}
+export const isIPad: () => boolean = cached(function () {
+  return (
+    testPlatform(/^iPad/i) ||
+    // iPadOS 13 lies and says it's a Mac, but we can distinguish by detecting touch support.
+    (isMac() && (typeof navigator !== "undefined" ? navigator.maxTouchPoints > 1 : false))
+  );
+});
 
-export function isIOS(): boolean {
+export const isIOS: () => boolean = cached(function () {
   return isIPhone() || isIPad();
-}
+});
 
-export function isAppleDevice(): boolean {
+export const isAppleDevice: () => boolean = cached(function () {
   return isMac() || isIOS();
-}
+});
 
-export function isWebKit(): boolean {
-  return testUserAgent(/AppleWebKit/i) && !isChrome();
-}
+export const isWebKit: () => boolean = cached(function () {
+  return testUserAgent(/AppleWebKit/i) && (isIOS() || !isChrome());
+});
 
-export function isChrome(): boolean {
-  return testUserAgent(/Chrome/i);
-}
+export const isSafari: () => boolean = cached(function () {
+  return isWebKit() && !isChrome() && !isFirefox();
+});
 
-export function isAndroid(): boolean {
+export const isChrome: () => boolean = cached(function () {
+  return testUserAgent(/Chrome|CriOS|CrMo/i);
+});
+
+export const isAndroid: () => boolean = cached(function () {
   return testUserAgent(/Android/i);
-}
+});
 
-export function isFirefox(): boolean {
-  return testUserAgent(/Firefox/i);
-}
+export const isFirefox: () => boolean = cached(function () {
+  return testUserAgent(/(Firefox|FxiOS)/i);
+});

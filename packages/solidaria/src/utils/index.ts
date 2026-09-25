@@ -23,6 +23,7 @@ export {
   isIOS,
   isAppleDevice,
   isWebKit,
+  isSafari,
   isChrome,
   isAndroid,
   isFirefox,
