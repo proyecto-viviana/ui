@@ -4,12 +4,17 @@ type: task
 title: "Wrap Toast Show all in Text so the label participates in ActionButton layout"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: 'filed from the #260 toast functional pass: collapsed stack of 3, S2 Show all is 94×32 with span slot=text "Show all" 48×18 + icon 16×18; Solid is 48×32 with childCount 1 (icon slot only, svg 18×18). The "Show all" string is a raw text node, so ActionButton grid does not size the label. Collapsed toast 228×84 vs 189×84, x 606 vs 625.5. Accessible name is still Show all. S2 wraps <Text>{toast.showAll}</Text><Chevron/>',
+    }
+  - {
+      state: verified,
+      at: 2026-09-25,
+      note: "wrapped toast.showAll format in Text across solid-spectrum and viviana-ui so it participates in ActionButton text slot and grid layout",
     }
 ---
 

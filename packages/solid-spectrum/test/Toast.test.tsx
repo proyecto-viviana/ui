@@ -267,6 +267,23 @@ describe("Toast (solid-spectrum)", () => {
         expect(li.querySelector('[role="alertdialog"]')).toBeInTheDocument();
       });
     });
+
+    it("wraps Show all label in Text so it participates in ActionButton layout (#432)", () => {
+      render(() => <ToastContainer portal={false} />);
+
+      ToastQueue.neutral("First toast");
+      ToastQueue.info("Second toast");
+
+      const showAllBtn = screen.getByRole("button", { name: /Show all/ });
+      expect(showAllBtn).toBeInTheDocument();
+
+      const textSlot = showAllBtn.querySelector('[data-rsp-slot="text"], [slot="text"]');
+      expect(textSlot).toBeInTheDocument();
+      expect(textSlot?.textContent).toBe("Show all");
+
+      const iconSlot = showAllBtn.querySelector('svg[aria-hidden="true"]');
+      expect(iconSlot).toBeInTheDocument();
+    });
   });
 
   describe("variant contract", () => {

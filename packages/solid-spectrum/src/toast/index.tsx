@@ -69,6 +69,7 @@ import {
   type ToastOptions as StatelyToastOptions,
 } from "@proyecto-viviana/solid-stately";
 import { ActionButton, Button } from "../button";
+import { Text } from "../text";
 import { CenterBaseline } from "../CenterBaseline";
 import { CloseButton } from "../dialog";
 import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
@@ -1056,7 +1057,7 @@ export function Toast(props: ToastProps): JSX.Element {
                 UNSAFE_className={useComponentTransition() ? "toast-expand" : undefined}
                 onPress={local.onToggleExpanded}
               >
-                {stringFormatter().format("toast.showAll")}
+                <Text>{stringFormatter().format("toast.showAll")}</Text>
                 <ChevronDownIcon
                   aria-hidden="true"
                   style={{
