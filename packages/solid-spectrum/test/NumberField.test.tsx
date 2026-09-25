@@ -4,6 +4,7 @@
 import { describe, it, expect } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { NumberField } from "../src/numberfield";
 
 describe("NumberField (solid-spectrum)", () => {
@@ -66,5 +67,33 @@ describe("NumberField (solid-spectrum)", () => {
     flush();
     expect(screen.queryByText("Enter a quantity.")).not.toBeInTheDocument();
     expect(screen.getByText("Quantity is required.")).toBeInTheDocument();
+  });
+
+  it("localizes aria-roledescription and stepper buttons under I18nProvider", () => {
+    const { unmount } = render(() => (
+      <I18nProvider locale="ar-AE">
+        <NumberField label="الكمية" defaultValue={5} />
+      </I18nProvider>
+    ));
+
+    let input = screen.getByRole("textbox", { name: "الكمية" });
+    let buttons = screen.getAllByRole("button");
+    expect(input).toHaveAttribute("aria-roledescription", "حقل رقمي");
+    expect(buttons[0]).toHaveAttribute("aria-label", "خفض");
+    expect(buttons[1]).toHaveAttribute("aria-label", "زيادة");
+
+    unmount();
+
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <NumberField label="Menge" defaultValue={5} />
+      </I18nProvider>
+    ));
+
+    input = screen.getByRole("textbox", { name: "Menge" });
+    buttons = screen.getAllByRole("button");
+    expect(input).toHaveAttribute("aria-roledescription", "Nummernfeld");
+    expect(buttons[0]).toHaveAttribute("aria-label", "verringern");
+    expect(buttons[1]).toHaveAttribute("aria-label", "erhöhen");
   });
 });

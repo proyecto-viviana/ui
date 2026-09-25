@@ -296,7 +296,13 @@ export {
   type BreadcrumbItemAria,
 } from "./breadcrumbs";
 
-export { createNumberField, type AriaNumberFieldProps, type NumberFieldAria } from "./numberfield";
+export {
+  createNumberField,
+  type AriaNumberFieldProps,
+  type NumberFieldAria,
+  numberFieldStrings,
+  numberFieldIntlStrings,
+} from "./numberfield";
 
 export { createSearchField, type AriaSearchFieldProps, type SearchFieldAria } from "./searchfield";
 

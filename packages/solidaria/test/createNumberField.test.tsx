@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createNumberField } from "../src/numberfield/createNumberField";
 import { createNumberFieldState } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "../src/i18n";
 import { Show } from "solid-js";
 
 // Test component that uses createNumberField
@@ -24,6 +25,8 @@ function TestNumberField(props: {
   validationBehavior?: "aria" | "native";
   commitBehavior?: "snap" | "validate";
   "aria-label"?: string;
+  decrementAriaLabel?: string;
+  incrementAriaLabel?: string;
   label?: string;
   description?: string;
   errorMessage?: string;
@@ -67,6 +70,8 @@ function TestNumberField(props: {
   } = createNumberField(
     () => ({
       "aria-label": props["aria-label"],
+      decrementAriaLabel: props.decrementAriaLabel,
+      incrementAriaLabel: props.incrementAriaLabel,
       label: props.label,
       isDisabled: props.isDisabled,
       isReadOnly: props.isReadOnly,
@@ -743,6 +748,107 @@ describe("createNumberField", () => {
 
       (screen.getByRole("form", { name: "Amount form" }) as HTMLFormElement).requestSubmit();
       expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("localization and RTL contracts", () => {
+    it.each([
+      {
+        locale: "ar-AE",
+        dir: "rtl",
+        roledescription: "حقل رقمي",
+        incNoLabel: "زيادة",
+        decNoLabel: "خفض",
+        incWithLabel: "زيادة المبلغ",
+        decWithLabel: "خفض المبلغ",
+      },
+      {
+        locale: "de-DE",
+        dir: "ltr",
+        roledescription: "Nummernfeld",
+        incNoLabel: "erhöhen",
+        decNoLabel: "verringern",
+        incWithLabel: "Menge erhöhen",
+        decWithLabel: "Menge verringern",
+      },
+      {
+        locale: "ja-JP",
+        dir: "ltr",
+        roledescription: "数値フィールド",
+        incNoLabel: "を拡大",
+        decNoLabel: "を縮小",
+        incWithLabel: "数量を拡大",
+        decWithLabel: "数量を縮小",
+      },
+      {
+        locale: "he-IL",
+        dir: "rtl",
+        roledescription: "שדה מספר",
+        incNoLabel: "הגדל",
+        decNoLabel: "הקטן",
+        incWithLabel: "הגדל סכום",
+        decWithLabel: "הקטן סכום",
+      },
+    ])(
+      "localizes role description and stepper labels for $locale ($dir)",
+      ({ locale, roledescription, incNoLabel, decNoLabel, incWithLabel, decWithLabel }) => {
+        // Without visible/aria label (e.g. slotted label or bare field)
+        const { unmount } = render(() => (
+          <I18nProvider locale={locale}>
+            <TestNumberField />
+          </I18nProvider>
+        ));
+
+        let input = screen.getByRole("textbox");
+        let inc = screen.getByTestId("increment");
+        let dec = screen.getByTestId("decrement");
+
+        expect(input).toHaveAttribute("aria-roledescription", roledescription);
+        expect(inc).toHaveAttribute("aria-label", incNoLabel);
+        expect(dec).toHaveAttribute("aria-label", decNoLabel);
+
+        unmount();
+
+        // With explicit aria-label
+        render(() => (
+          <I18nProvider locale={locale}>
+            <TestNumberField
+              aria-label={
+                locale === "ar-AE"
+                  ? "المبلغ"
+                  : locale === "de-DE"
+                    ? "Menge"
+                    : locale === "ja-JP"
+                      ? "数量"
+                      : "סכום"
+              }
+            />
+          </I18nProvider>
+        ));
+
+        input = screen.getByRole("textbox");
+        inc = screen.getByTestId("increment");
+        dec = screen.getByTestId("decrement");
+
+        expect(input).toHaveAttribute("aria-roledescription", roledescription);
+        expect(inc).toHaveAttribute("aria-label", incWithLabel);
+        expect(dec).toHaveAttribute("aria-label", decWithLabel);
+      },
+    );
+
+    it("allows overriding stepper labels with incrementAriaLabel and decrementAriaLabel", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TestNumberField
+            aria-label="Menge"
+            incrementAriaLabel="Schritt aufwärts"
+            decrementAriaLabel="Schritt abwärts"
+          />
+        </I18nProvider>
+      ));
+
+      expect(screen.getByTestId("increment")).toHaveAttribute("aria-label", "Schritt aufwärts");
+      expect(screen.getByTestId("decrement")).toHaveAttribute("aria-label", "Schritt abwärts");
     });
   });
 });

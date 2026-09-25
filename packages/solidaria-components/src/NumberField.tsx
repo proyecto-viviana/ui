@@ -185,6 +185,8 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       "aria-label",
       "aria-labelledby",
       "aria-describedby",
+      "decrementAriaLabel",
+      "incrementAriaLabel",
       "isDisabled",
       "isReadOnly",
       "isRequired",
@@ -286,6 +288,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       },
       get "aria-describedby"() {
         return ariaProps["aria-describedby"];
+      },
+      get decrementAriaLabel() {
+        return ariaProps.decrementAriaLabel;
+      },
+      get incrementAriaLabel() {
+        return ariaProps.incrementAriaLabel;
       },
       get isDisabled() {
         return ariaProps.isDisabled;

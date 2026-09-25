@@ -18,6 +18,7 @@ import { gridListIntlStrings } from "../src/gridlist/intl";
 import { overlaysIntlStrings } from "../src/overlays/intl";
 import { toastIntlStrings } from "../src/toast/intl";
 import { treeIntlStrings } from "../src/tree/intl";
+import { numberFieldIntlStrings } from "../src/numberfield/intl";
 import type { LocalizedStrings } from "@internationalized/string";
 
 const LOCALES = ["ar-AE", "de-DE", "ja-JP", "he-IL"] as const;
@@ -197,6 +198,20 @@ describe("react-aria intl catalogs", () => {
       "de-DE": "Erweitern",
       "ja-JP": "展開",
       "he-IL": "הרחב",
+    },
+  });
+
+  expectCatalog({
+    name: "numberfield",
+    strings: numberFieldIntlStrings as LocalizedStrings<string, string>,
+    messageKey: "numberField",
+    packageName: "@react-aria/numberfield",
+    english: "Number field",
+    expected: {
+      "ar-AE": "حقل رقمي",
+      "de-DE": "Nummernfeld",
+      "ja-JP": "数値フィールド",
+      "he-IL": "שדה מספר",
     },
   });
 });

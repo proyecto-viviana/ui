@@ -24,6 +24,7 @@ import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -630,6 +631,84 @@ describe("NumberField", () => {
 
       (screen.getByRole("form", { name: "Quantity form" }) as HTMLFormElement).requestSubmit();
       expect(onSubmit).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("localization and stepper overrides", () => {
+    it.each([
+      {
+        locale: "ar-AE",
+        roledescription: "حقل رقمي",
+        incLabel: "زيادة",
+        decLabel: "خفض",
+      },
+      {
+        locale: "de-DE",
+        roledescription: "Nummernfeld",
+        incLabel: "erhöhen",
+        decLabel: "verringern",
+      },
+      {
+        locale: "ja-JP",
+        roledescription: "数値フィールド",
+        incLabel: "を拡大",
+        decLabel: "を縮小",
+      },
+      {
+        locale: "he-IL",
+        roledescription: "שדה מספר",
+        incLabel: "הגדל",
+        decLabel: "הקטן",
+      },
+    ])(
+      "localizes role description and stepper labels under $locale",
+      ({ locale, roledescription, incLabel, decLabel }) => {
+        render(() => (
+          <I18nProvider locale={locale}>
+            <NumberField>
+              {() => (
+                <>
+                  <Label>Quantity</Label>
+                  <NumberFieldGroup>
+                    <NumberFieldDecrementButton />
+                    <NumberFieldInput />
+                    <NumberFieldIncrementButton />
+                  </NumberFieldGroup>
+                </>
+              )}
+            </NumberField>
+          </I18nProvider>
+        ));
+
+        const input = screen.getByRole("textbox");
+        const buttons = screen.getAllByRole("button");
+        expect(input).toHaveAttribute("aria-roledescription", roledescription);
+        expect(buttons[0]).toHaveAttribute("aria-label", decLabel);
+        expect(buttons[1]).toHaveAttribute("aria-label", incLabel);
+      },
+    );
+
+    it("supports custom decrementAriaLabel and incrementAriaLabel overrides", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <NumberField incrementAriaLabel="Schritt vorwärts" decrementAriaLabel="Schritt rückwärts">
+            {() => (
+              <>
+                <Label>Menge</Label>
+                <NumberFieldGroup>
+                  <NumberFieldDecrementButton />
+                  <NumberFieldInput />
+                  <NumberFieldIncrementButton />
+                </NumberFieldGroup>
+              </>
+            )}
+          </NumberField>
+        </I18nProvider>
+      ));
+
+      const buttons = screen.getAllByRole("button");
+      expect(buttons[0]).toHaveAttribute("aria-label", "Schritt rückwärts");
+      expect(buttons[1]).toHaveAttribute("aria-label", "Schritt vorwärts");
     });
   });
 });

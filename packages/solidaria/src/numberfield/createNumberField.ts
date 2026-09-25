@@ -33,6 +33,9 @@ import { createFocusWithin } from "../interactions/createFocusWithin";
 import { announce, clearAnnouncer } from "../live-announcer";
 import { createFormValidation } from "../form/createFormValidation";
 import { createFormReset } from "../form/createFormReset";
+import { createStringFormatter } from "../i18n";
+import { isIOS } from "../utils/platform";
+import { numberFieldStrings } from "./intl";
 
 export interface AriaNumberFieldProps {
   /** A label for the number field. */
@@ -43,6 +46,16 @@ export interface AriaNumberFieldProps {
   "aria-labelledby"?: string;
   /** The element ID that describes the number field. */
   "aria-describedby"?: string;
+  /**
+   * A custom aria-label for the decrement button. If not provided, the localized string "Decrease"
+   * is used.
+   */
+  decrementAriaLabel?: string;
+  /**
+   * A custom aria-label for the increment button. If not provided, the localized string "Increase"
+   * is used.
+   */
+  incrementAriaLabel?: string;
   /** Whether the number field is disabled. */
   isDisabled?: boolean;
   /** Whether the number field is read-only. */
@@ -136,6 +149,7 @@ export function createNumberField(
   const getProps = () => access(props);
   const id = createId(getProps().id);
   const displayValidation = () => state.displayValidation();
+  const stringFormatter = createStringFormatter(numberFieldStrings, "@react-aria/numberfield");
 
   const resolvedInput = followRef(() => inputRef?.() ?? null);
   createFormReset(
@@ -495,13 +509,9 @@ export function createNumberField(
           // input's own value. Mirror that contract instead of leaking the raw
           // spinbutton semantics.
           //
-          // The string MUST match upstream's `stringFormatter.format('numberField')`,
-          // whose en-US value is `Number field` (capitalised) — not a lowercase
-          // hand-roll. Full locale routing via `createStringFormatter` (as
-          // `createDateField` does) is tracked as `intl-roledescription-hardcodes`
-          // (also covers the ColorArea/ColorSwatch English hardcodes); this keeps the
-          // en-US roledescription byte-identical to React Spectrum in the meantime.
-          "aria-roledescription": "Number field",
+          // Upstream useNumberField overrides the spinbutton role for VoiceOver:
+          // ignore aria-roledescription on iOS so that required state will announce when present.
+          "aria-roledescription": !isIOS() ? stringFormatter().format("numberField") : undefined,
           "aria-invalid": displayValidation().isInvalid || undefined,
           "aria-required":
             ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
@@ -527,12 +537,16 @@ export function createNumberField(
       ) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get incrementButtonProps() {
+      const p = getProps();
       const labelledBy = buttonLabelledBy();
       return {
         id: incrementId,
         type: "button",
-        "aria-label": `Increase ${fieldLabel()}`.trim(),
-        "aria-labelledby": labelledBy ? `${incrementId} ${labelledBy}` : undefined,
+        "aria-label":
+          p.incrementAriaLabel ||
+          stringFormatter().format("increase", { fieldLabel: fieldLabel() }).trim(),
+        "aria-labelledby":
+          labelledBy && !p.incrementAriaLabel ? `${incrementId} ${labelledBy}` : undefined,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
@@ -551,12 +565,16 @@ export function createNumberField(
       } as AriaButtonProps;
     },
     get decrementButtonProps() {
+      const p = getProps();
       const labelledBy = buttonLabelledBy();
       return {
         id: decrementId,
         type: "button",
-        "aria-label": `Decrease ${fieldLabel()}`.trim(),
-        "aria-labelledby": labelledBy ? `${decrementId} ${labelledBy}` : undefined,
+        "aria-label":
+          p.decrementAriaLabel ||
+          stringFormatter().format("decrease", { fieldLabel: fieldLabel() }).trim(),
+        "aria-labelledby":
+          labelledBy && !p.decrementAriaLabel ? `${decrementId} ${labelledBy}` : undefined,
         "aria-controls": inputId,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
