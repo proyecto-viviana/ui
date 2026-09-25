@@ -103,6 +103,12 @@ export interface AriaListBoxProps {
    * an option press may toggle the final selected item.
    */
   disallowEmptySelection?: boolean;
+  /**
+   * The layout of the listbox items: a 1D `stack` (default) or a 2D `grid`.
+   * When `grid`, spatial 2D keyboard navigation is used.
+   * @default "stack"
+   */
+  layout?: "stack" | "grid";
 }
 
 export interface ListBoxAria {
@@ -226,6 +232,9 @@ export function createListBox<T>(
     ref,
     get shouldFocusWrap() {
       return getProps().shouldFocusWrap;
+    },
+    get layout() {
+      return getProps().layout;
     },
     get disallowEmptySelection() {
       return getProps().disallowEmptySelection ?? state.disallowEmptySelection();

@@ -4,12 +4,17 @@ type: task
 title: "Move SelectBoxGroup ArrowRight only to the next column"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 selectboxgroup functional pass: default horizontal cards wrap to one column; React ArrowRight is a no-op, Solid moves to the next option",
+    }
+  - {
+      state: verified,
+      at: 2026-09-24,
+      note: "forwarded layout from ListBox props through createListBox and createSelectableList into ListKeyboardDelegate; in a wrapped grid (layout=grid) ArrowRight computes spatial 2D columns, staying on the current option when items are stacked in one column",
     }
 ---
 

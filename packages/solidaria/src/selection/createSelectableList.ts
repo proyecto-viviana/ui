@@ -57,6 +57,8 @@ export interface CreateSelectableListOptions<T = unknown> extends Omit<
    * read from the DOM.
    */
   layoutDelegate?: LayoutDelegate;
+  /** The layout of the list items: a 1D `stack` (default) or a 2D `grid`. @default "stack" */
+  layout?: "stack" | "grid";
   /** The primary orientation of the list items. @default "vertical" */
   orientation?: "horizontal" | "vertical";
   /** The text direction used for horizontal navigation. */
@@ -91,6 +93,7 @@ export function createSelectableList<T = unknown>(
       ref: options.ref,
       collator: collator(),
       layoutDelegate: options.layoutDelegate,
+      layout: options.layout,
       orientation: options.orientation,
       direction: options.direction,
     });
