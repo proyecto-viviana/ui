@@ -113,13 +113,38 @@ function parseColumnDef(col: ColumnResizeDefinition, tableWidth: number): Parsed
   return { key: col.key, fr: 0, fixedPx: isNaN(px) ? 0 : px, minWidth, maxWidth };
 }
 
+function applyFractionalRemainder(
+  widths: Map<Key, number>,
+  columns: ColumnResizeDefinition[],
+  originalWidth: number,
+): void {
+  const flooredWidth = Math.floor(originalWidth);
+  const hasFractionalWidth = originalWidth - flooredWidth > 0;
+  if (!hasFractionalWidth || columns.length === 0) return;
+
+  const lastKey = columns[columns.length - 1].key;
+  if (widths.has(lastKey)) {
+    const tableFractionalWidth = originalWidth.toString().split(".")[1];
+    if (tableFractionalWidth) {
+      const columnWidth = Math.floor(widths.get(lastKey)!).toString();
+      widths.set(lastKey, Number(columnWidth + "." + tableFractionalWidth));
+    }
+  }
+}
+
 /**
  * Distribute `tableWidth` among columns:
- *  1. Fixed-width columns get their declared width (clamped to min/max).
- *  2. Remaining space is distributed among fractional columns proportionally.
+ *  1. Floor tableWidth to integer before column sizing, matching upstream TableUtils.calculateColumnSizes.
+ *  2. Fixed-width columns get their declared width (clamped to min/max).
+ *  3. Remaining space is distributed among fractional columns proportionally with cascading rounding.
+ *  4. Leftover sub-pixel width is added to the last column so widths sum exactly to tableWidth.
  */
 function distributeWidths(columns: ColumnResizeDefinition[], tableWidth: number): Map<Key, number> {
-  const parsed = columns.map((c) => parseColumnDef(c, tableWidth));
+  const originalWidth = tableWidth;
+  const flooredWidth = Math.floor(tableWidth);
+  const availableWidth = Math.max(0, flooredWidth);
+
+  const parsed = columns.map((c) => parseColumnDef(c, availableWidth));
 
   // Pass 1 — allocate fixed columns
   let usedSpace = 0;
@@ -133,22 +158,35 @@ function distributeWidths(columns: ColumnResizeDefinition[], tableWidth: number)
     }
   }
 
-  const remainingSpace = Math.max(0, tableWidth - usedSpace);
+  const remainingSpace = Math.max(0, availableWidth - usedSpace);
   const perFr = totalFr > 0 ? remainingSpace / totalFr : 0;
 
-  // Pass 2 — build map
+  // Pass 2 — build map with cascading rounding
   const widths = new Map<Key, number>();
+  let fpTotal = 0;
+  let intTotal = 0;
+
   for (const p of parsed) {
-    let w: number;
+    let targetSize: number;
     if (p.fr > 0) {
-      w = p.fr * perFr;
+      targetSize = p.fr * perFr;
     } else {
-      w = p.fixedPx;
+      targetSize = p.fixedPx;
     }
     // Clamp
-    w = Math.max(p.minWidth, Math.min(p.maxWidth, w));
-    widths.set(p.key, Math.round(w));
+    targetSize = Math.max(p.minWidth, Math.min(p.maxWidth, targetSize));
+
+    // Cascade rounding to ensure sum of integers matches availableWidth
+    const rounded = Math.round(targetSize + fpTotal) - intTotal;
+    fpTotal += targetSize;
+    intTotal += rounded;
+
+    widths.set(p.key, rounded);
   }
+
+  // Give the leftover sub-pixel width to the last column so the columns sum
+  // exactly to the (possibly fractional) available width.
+  applyFractionalRemainder(widths, columns, originalWidth);
 
   return widths;
 }
@@ -186,6 +224,7 @@ export function createTableColumnResizeState(
         merged.set(key, width);
       }
     }
+    applyFractionalRemainder(merged, getProps().columns, getProps().tableWidth);
     return merged;
   });
 
@@ -229,7 +268,7 @@ export function createTableColumnResizeState(
   const updateResizedColumns = (key: Key, width: number): Map<Key, number> => {
     const minW = getColumnMinWidth(key);
     const maxW = getColumnMaxWidth(key);
-    const clampedWidth = Math.round(Math.max(minW, Math.min(maxW, width)));
+    const clampedWidth = Math.max(minW, Math.min(maxW, Math.floor(width)));
 
     const newOverrides = new Map(overrides());
     newOverrides.set(key, clampedWidth);
@@ -243,6 +282,7 @@ export function createTableColumnResizeState(
         merged.set(k, w);
       }
     }
+    applyFractionalRemainder(merged, getProps().columns, getProps().tableWidth);
     return merged;
   };
 

@@ -4,9 +4,14 @@ type: task
 title: "Floor Table width before column sizing"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-63" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "floored availableWidth before column sizing and allocated fractional remainder to the last column matching upstream TableUtils",
+    }
 ---
 
 Match upstream fractional Table column sizing.
