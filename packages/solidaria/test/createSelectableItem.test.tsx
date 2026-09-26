@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { createRoot, flush } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
@@ -362,11 +362,11 @@ describe("createSelectableItem — press path", () => {
     const onAction = vi.fn();
     const { state, el } = renderItem(
       { key: "a", onAction },
-      // The state now permits this internal switch. Ticket #101 owns direct
-      // evidence for the state reset and prop-sync branches.
       { selectionMode: "multiple", selectionBehavior: "replace" },
     );
     const setSelectionBehavior = vi.spyOn(state, "setSelectionBehavior");
+
+    expect(state.selectionBehavior()).toBe("replace");
 
     fireEvent(
       el,
@@ -376,6 +376,12 @@ describe("createSelectableItem — press path", () => {
 
     expect(setSelectionBehavior).toHaveBeenCalledWith("toggle");
     expect(state.isSelected("a")).toBe(true);
+    expect(state.selectionBehavior()).toBe("toggle");
+
+    // Deselecting all items resets selectionBehavior back to replace
+    state.setSelectedKeys([]);
+    flush();
+    expect(state.selectionBehavior()).toBe("replace");
   });
 });
 

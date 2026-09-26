@@ -4,12 +4,17 @@ type: task
 title: "Prove selection-behavior state transitions"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "recovered while checking a stale state gap in the completed press-path epic",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "verified selectionBehavior state transitions across createMultipleSelectionState, SelectionManager, List, Grid, Tree, and Table with touch long-press lifecycle tests",
     }
 ---
 

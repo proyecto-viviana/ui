@@ -92,18 +92,26 @@ export function createTreeState<T extends object, C extends TreeCollection<T> = 
   const disallowEmptySelection = createMemo(() => getOptions().disallowEmptySelection ?? false);
   const disabledBehavior = createMemo(() => getOptions().disabledBehavior ?? "all");
 
+  let lastSelectionBehavior = selectionBehaviorProp();
   createEffect(selectionBehaviorProp, (behavior) => {
-    setSelectionBehaviorState(behavior);
+    if (behavior !== lastSelectionBehavior) {
+      setSelectionBehaviorState(behavior);
+      lastSelectionBehavior = behavior;
+    }
   });
 
   createEffect(
     () => ({
       prop: selectionBehaviorProp(),
-      state: selectionBehaviorState(),
       keys: selectedKeys(),
     }),
-    ({ prop, state, keys }) => {
-      if (prop === "replace" && state === "toggle" && keys !== "all" && keys.size === 0) {
+    ({ prop, keys }) => {
+      if (
+        prop === "replace" &&
+        selectionBehaviorState() === "toggle" &&
+        keys !== "all" &&
+        keys.size === 0
+      ) {
         setSelectionBehaviorState("replace");
       }
     },
