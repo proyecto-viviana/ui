@@ -1268,5 +1268,97 @@ describe("GridList", () => {
       fireEvent.keyDown(checkbox, { key: "ArrowRight" });
       expect(document.activeElement).toBe(row.querySelector("button"));
     });
+
+    it("navigates with PageDown and PageUp", () => {
+      const items = Array.from({ length: 20 }, (_, i) => ({
+        id: i + 1,
+        name: `Item ${i + 1}`,
+      }));
+
+      const mockLayoutDelegate = {
+        getItemRect(key: any) {
+          const index = items.findIndex((it) => it.id === key);
+          if (index < 0) return null;
+          return { x: 0, y: index * 40, width: 200, height: 40 };
+        },
+        getContentSize() {
+          return { width: 200, height: items.length * 40 };
+        },
+        getVisibleRect() {
+          return { x: 0, y: 0, width: 200, height: 200 };
+        },
+      };
+
+      render(() => (
+        <GridList
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Items"
+          selectionMode="single"
+          layoutDelegate={mockLayoutDelegate}
+          style={{ "overflow-y": "auto", height: "200px" }}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const firstRow = screen.getByRole("row", { name: "Item 1" });
+      firstRow.focus();
+      flush();
+
+      const grid = screen.getByRole("grid");
+
+      // PageDown moves focus down ~5 items
+      fireEvent.keyDown(grid, { key: "PageDown" });
+      flush();
+      expect(screen.getByRole("row", { name: "Item 5" })).toHaveAttribute("data-focused");
+
+      // PageDown again
+      fireEvent.keyDown(grid, { key: "PageDown" });
+      flush();
+      expect(screen.getByRole("row", { name: "Item 9" })).toHaveAttribute("data-focused");
+
+      // PageUp moves focus back up
+      fireEvent.keyDown(grid, { key: "PageUp" });
+      flush();
+      expect(screen.getByRole("row", { name: "Item 5" })).toHaveAttribute("data-focused");
+
+      // PageUp back to top
+      fireEvent.keyDown(grid, { key: "PageUp" });
+      flush();
+      expect(screen.getByRole("row", { name: "Item 1" })).toHaveAttribute("data-focused");
+    });
+
+    it("does not consume boundary keys when no target exists in GridList", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="single"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const grid = screen.getByRole("grid");
+      const pageUpEvent = new KeyboardEvent("keydown", {
+        key: "PageUp",
+        bubbles: true,
+        cancelable: true,
+      });
+      grid.dispatchEvent(pageUpEvent);
+      expect(pageUpEvent.defaultPrevented).toBe(false);
+    });
   });
 });

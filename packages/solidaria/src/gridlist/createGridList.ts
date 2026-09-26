@@ -28,6 +28,10 @@ import { getInteractionModality } from "../interactions/createInteractionModalit
 import { mergeProps } from "../utils/mergeProps";
 import { createTypeSelect } from "../selection/createTypeSelect";
 import { isNonContiguousSelectionModifier } from "../selection/utils";
+import { createCollator } from "../i18n";
+import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
+import type { KeyboardDelegate } from "../grid/types";
+import { access } from "../utils/reactivity";
 
 /**
  * Metadata stored for a grid list instance.
@@ -202,6 +206,25 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     ref,
   });
 
+  const collator = createCollator({ usage: "search", sensitivity: "base" });
+  const keyboardDelegate = createMemo<KeyboardDelegate>(() => {
+    const p = props();
+    if (p.keyboardDelegate != null) {
+      return access(p.keyboardDelegate);
+    }
+    return new ListKeyboardDelegate<T>({
+      collection: state().collection as unknown as Collection<T>,
+      disabledKeys: () => state().disabledKeys,
+      disabledBehavior: state().disabledBehavior,
+      ref,
+      collator: collator(),
+      layoutDelegate: p.layoutDelegate,
+      layout: p.layout,
+      orientation: p.orientation,
+      direction: p.direction,
+    });
+  });
+
   // Handle keyboard navigation
   const onKeyDown = (e: KeyboardEvent) => {
     const s = state();
@@ -216,7 +239,9 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     const moveFocus = (nextKey: Key | null) => {
       if (nextKey == null) return;
       s.setFocusedKey(nextKey);
-      if (selectOnFocus && !e.shiftKey && !isNonContiguousSelectionModifier(e)) {
+      if (e.shiftKey && s.selectionMode === "multiple") {
+        s.extendSelection(nextKey);
+      } else if (selectOnFocus && !e.shiftKey && !isNonContiguousSelectionModifier(e)) {
         s.replaceSelection(nextKey);
       }
     };
@@ -316,6 +341,28 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
           collection.getKeyBefore(k),
         );
         moveFocus(lastKey);
+        break;
+      }
+      case "PageUp": {
+        const delegate = keyboardDelegate();
+        if (delegate.getKeyPageAbove && focusedKey != null) {
+          const nextKey = delegate.getKeyPageAbove(focusedKey);
+          if (nextKey != null) {
+            e.preventDefault();
+            moveFocus(nextKey);
+          }
+        }
+        break;
+      }
+      case "PageDown": {
+        const delegate = keyboardDelegate();
+        if (delegate.getKeyPageBelow && focusedKey != null) {
+          const nextKey = delegate.getKeyPageBelow(focusedKey);
+          if (nextKey != null) {
+            e.preventDefault();
+            moveFocus(nextKey);
+          }
+        }
         break;
       }
       case "a":

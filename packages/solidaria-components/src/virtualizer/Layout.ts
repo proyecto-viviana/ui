@@ -28,6 +28,7 @@
  */
 
 import type { Key } from "@proyecto-viviana/solid-stately";
+import type { LayoutDelegate } from "@proyecto-viviana/solidaria";
 
 export interface InvalidationContext<O = unknown> {
   contentChanged?: boolean;
@@ -191,7 +192,7 @@ interface VirtualizerLike {
   visibleRect: Rect;
 }
 
-export abstract class Layout<_T extends object = object, O = unknown> {
+export abstract class Layout<_T extends object = object, O = unknown> implements LayoutDelegate {
   virtualizer: VirtualizerLike | null = null;
 
   abstract getVisibleLayoutInfos(rect: Rect): LayoutInfo[];
@@ -211,7 +212,7 @@ export abstract class Layout<_T extends object = object, O = unknown> {
   updateItemSize?(_key: Key, _size: Size): boolean;
   getDropTargetLayoutInfo?(_target: unknown): LayoutInfo | null;
 
-  protected getItemRect(key: Key): Rect | null {
+  getItemRect(key: Key): Rect | null {
     return this.getLayoutInfo(key)?.rect ?? null;
   }
 

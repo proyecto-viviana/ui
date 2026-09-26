@@ -1140,6 +1140,57 @@ describe("Virtualizer", () => {
     expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
   });
 
+  it("navigates virtualized listbox items across pages with PageDown and PageUp", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const items = Array.from({ length: 50 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+
+    render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 40, viewportSize: 200, overscan: 0 }}>
+        <ListBox
+          aria-label="Page navigation list"
+          items={items}
+          getKey={(item) => item.id}
+          selectionMode="single"
+          style={{ "overflow-y": "auto", height: "200px" }}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const container = screen.getByRole("listbox") as HTMLDivElement;
+    container.focus();
+
+    const initialOptions = screen.getAllByRole("option");
+    expect(initialOptions[0]).toHaveAttribute("data-focused");
+
+    // PageDown advances from Item 0
+    fireEvent.keyDown(container, { key: "PageDown" });
+    const item4 = screen.getByText("Item 4");
+    expect(item4.closest('[role="option"]')).toHaveAttribute("data-focused");
+
+    // PageDown again advances
+    fireEvent.keyDown(container, { key: "PageDown" });
+    const item8 = screen.getByText("Item 8");
+    expect(item8.closest('[role="option"]')).toHaveAttribute("data-focused");
+
+    // PageUp returns back
+    fireEvent.keyDown(container, { key: "PageUp" });
+    expect(screen.getByText("Item 4").closest('[role="option"]')).toHaveAttribute("data-focused");
+
+    // PageUp returns back to Item 0
+    fireEvent.keyDown(container, { key: "PageUp" });
+    expect(screen.getByText("Item 0").closest('[role="option"]')).toHaveAttribute("data-focused");
+  });
+
   it("disables content pointer events while scrolling and restores after the debounce", () => {
     // Only fake setTimeout/clearTimeout so the rAF spy below still drives scroll updates.
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });

@@ -42,8 +42,9 @@ import type {
   DropOperation,
   DropTarget,
   ItemDropTarget,
+  Key,
 } from "@proyecto-viviana/solid-stately";
-import { createScrollView, useLocale } from "@proyecto-viviana/solidaria";
+import { createScrollView, useLocale, type LayoutDelegate } from "@proyecto-viviana/solidaria";
 import { isElementVisible } from "@proyecto-viviana/solidaria/utils";
 import {
   CollectionRendererContext,
@@ -806,10 +807,87 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     setKeyboardNavigationOverride: assignKeyboardNavigationOverride,
     getBaseKeyboardNavigationTarget,
   }));
+  const virtualizerLayoutDelegate = createMemo<LayoutDelegate>(() => {
+    const layout = resolvedLayout();
+    const delegate: LayoutDelegate = {
+      getItemRect(key: Key): Rect | null {
+        if (typeof (layout as any).getItemRect === "function") {
+          const rect = (layout as any).getItemRect(key);
+          if (rect) return rect;
+        }
+        const indexResolver = dropTargetIndexResolver();
+        let index: number | null = null;
+        if (indexResolver) {
+          index = indexResolver(key);
+        } else if (typeof key === "number") {
+          index = key;
+        } else if (typeof key === "string" && !Number.isNaN(Number(key))) {
+          index = Number(key);
+        }
+        if (index == null || index < 0) {
+          return null;
+        }
+        const info = getLayoutInfo(index);
+        return info ? info.rect : null;
+      },
+      getContentSize(): Size {
+        if (
+          typeof (layout as any).getContentSize === "function" &&
+          (layout as any).getContentSize.length === 0
+        ) {
+          return (layout as any).getContentSize();
+        }
+        const countResolver = dropTargetItemCountResolver();
+        const count = countResolver ? countResolver() : 0;
+        return getContentSize(count);
+      },
+      getVisibleRect(): Rect {
+        if (typeof (layout as any).getVisibleRect === "function") {
+          const rect = (layout as any).getVisibleRect();
+          if (rect && (rect.width > 0 || rect.height > 0)) {
+            return rect;
+          }
+        }
+        const width =
+          orientation() === "horizontal"
+            ? Number(mainViewportSize() || 0)
+            : Number(measuredViewportWidth() || 0);
+        const height =
+          orientation() === "horizontal"
+            ? Number(measuredViewportSize() || 0)
+            : Number(mainViewportSize() || 0);
+        return {
+          x: scrollOffsetX(),
+          y: scrollOffset(),
+          width,
+          height,
+        };
+      },
+    };
+
+    if (typeof (layout as any).getKeyAbove === "function") {
+      delegate.getKeyAbove = (key: Key) => (layout as any).getKeyAbove(key);
+    }
+    if (typeof (layout as any).getKeyBelow === "function") {
+      delegate.getKeyBelow = (key: Key) => (layout as any).getKeyBelow(key);
+    }
+    if (typeof (layout as any).getKeyLeftOf === "function") {
+      delegate.getKeyLeftOf = (key: Key) => (layout as any).getKeyLeftOf(key);
+    }
+    if (typeof (layout as any).getKeyRightOf === "function") {
+      delegate.getKeyRightOf = (key: Key) => (layout as any).getKeyRightOf(key);
+    }
+    if (typeof (layout as any).getKeyRange === "function") {
+      delegate.getKeyRange = (from: Key, to: Key) => (layout as any).getKeyRange(from, to);
+    }
+
+    return delegate;
+  });
+
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     renderItem: (item) => item as JSX.Element,
     isVirtualized: true,
-    layoutDelegate: resolvedLayout(),
+    layoutDelegate: virtualizerLayoutDelegate(),
     dropTargetDelegate: {
       getDropTargetFromPoint: getCollectionDropTargetFromPoint,
       getDropOperation: getCollectionDropOperation,

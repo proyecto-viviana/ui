@@ -42,6 +42,8 @@ import {
   mergeProps,
   type AriaGridListProps,
   type GridListSectionAria,
+  type LayoutDelegate,
+  type KeyboardDelegate,
   useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
@@ -435,6 +437,15 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       },
       get isVirtualized() {
         return ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized;
+      },
+      get layoutDelegate() {
+        return (
+          ariaProps.layoutDelegate ??
+          (parentCollectionRenderer?.layoutDelegate as LayoutDelegate | undefined)
+        );
+      },
+      get keyboardDelegate() {
+        return ariaProps.keyboardDelegate;
       },
       get onAction() {
         return ariaProps.onAction;

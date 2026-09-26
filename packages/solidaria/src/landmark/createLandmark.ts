@@ -643,17 +643,17 @@ export function createLandmark<T extends HTMLElement = HTMLElement>(
   });
 
   const landmarkProps = {
-    get role() {
-      return access(props).role;
-    },
-    get tabIndex() {
-      return isLandmarkFocused() ? -1 : undefined;
-    },
     get "aria-label"() {
       return access(props)["aria-label"];
     },
     get "aria-labelledby"() {
       return access(props)["aria-labelledby"];
+    },
+    get role() {
+      return access(props).role;
+    },
+    get tabIndex() {
+      return isLandmarkFocused() ? -1 : undefined;
     },
     get id() {
       return access(props).id;

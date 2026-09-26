@@ -40,6 +40,8 @@
 
 import type { JSX } from "@solidjs/web";
 import type { Key, GridNode } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "../grid/types";
+import type { LayoutDelegate } from "../selection/DOMLayoutDelegate";
 
 /**
  * Props for the createGridList hook.
@@ -55,6 +57,17 @@ export interface AriaGridListProps {
   "aria-describedby"?: string;
   /** Whether the grid list uses virtual scrolling. */
   isVirtualized?: boolean;
+  /**
+   * An optional keyboard delegate implementation for type to select,
+   * to override the default.
+   */
+  keyboardDelegate?: KeyboardDelegate;
+  /**
+   * A delegate object that provides layout information for items in the collection.
+   * By default this uses the DOM, but this can be overridden to implement things like
+   * virtualized scrolling.
+   */
+  layoutDelegate?: LayoutDelegate;
   /** Handler for item actions. */
   onAction?: (key: Key) => void;
   /** Whether selection should occur on press up. */

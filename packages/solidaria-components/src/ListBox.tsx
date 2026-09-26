@@ -48,6 +48,8 @@ import {
   CLEAR_FOCUS_EVENT,
   type AriaListBoxProps,
   type AriaOptionProps,
+  type LayoutDelegate,
+  type KeyboardDelegate,
 } from "@proyecto-viviana/solidaria";
 import {
   createListState,
@@ -547,6 +549,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     mergeProps(ariaProps, {
       get isVirtualized() {
         return parentCollectionRenderer?.isVirtualized ?? ariaProps.isVirtualized;
+      },
+      get layoutDelegate() {
+        return (
+          ariaProps.layoutDelegate ??
+          (parentCollectionRenderer?.layoutDelegate as LayoutDelegate | undefined)
+        );
+      },
+      get keyboardDelegate() {
+        return ariaProps.keyboardDelegate;
       },
       // Under Autocomplete, the input owns the collection's id (its
       // aria-controls target), accessible name, and virtual-focus/type-ahead

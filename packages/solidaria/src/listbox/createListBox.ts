@@ -29,6 +29,8 @@ import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
 import type { ListState, Key } from "@proyecto-viviana/solid-stately";
+import type { KeyboardDelegate } from "../grid/types";
+import type { LayoutDelegate } from "../selection/DOMLayoutDelegate";
 
 export interface AriaListBoxProps {
   /** An ID for the listbox. */
@@ -59,6 +61,17 @@ export interface AriaListBoxProps {
   shouldFocusOnHover?: boolean;
   /** Whether the listbox uses virtual scrolling. */
   isVirtualized?: boolean;
+  /**
+   * An optional keyboard delegate implementation for type to select,
+   * to override the default.
+   */
+  keyboardDelegate?: KeyboardDelegate;
+  /**
+   * A delegate object that provides layout information for items in the collection.
+   * By default this uses the DOM, but this can be overridden to implement things like
+   * virtualized scrolling.
+   */
+  layoutDelegate?: LayoutDelegate;
   /** Whether options should use virtual focus instead of receiving DOM focus. */
   shouldUseVirtualFocus?: boolean;
   /** The behavior of links in the collection. */
@@ -230,6 +243,12 @@ export function createListBox<T>(
   const selectableList = createSelectableList<T>({
     selectionManager: state.selectionManager,
     ref,
+    get keyboardDelegate() {
+      return getProps().keyboardDelegate;
+    },
+    get layoutDelegate() {
+      return getProps().layoutDelegate;
+    },
     get shouldFocusWrap() {
       return getProps().shouldFocusWrap;
     },

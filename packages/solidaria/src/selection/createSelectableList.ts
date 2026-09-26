@@ -56,7 +56,7 @@ export interface CreateSelectableListOptions<T = unknown> extends Omit<
    * collection. Supply this for virtualized collections; by default layout is
    * read from the DOM.
    */
-  layoutDelegate?: LayoutDelegate;
+  layoutDelegate?: MaybeAccessor<LayoutDelegate | undefined>;
   /** The layout of the list items: a 1D `stack` (default) or a 2D `grid`. @default "stack" */
   layout?: "stack" | "grid";
   /** The primary orientation of the list items. @default "vertical" */
@@ -92,7 +92,7 @@ export function createSelectableList<T = unknown>(
       disabledBehavior: manager.disabledBehavior,
       ref: options.ref,
       collator: collator(),
-      layoutDelegate: options.layoutDelegate,
+      layoutDelegate: access(options.layoutDelegate),
       layout: options.layout,
       orientation: options.orientation,
       direction: options.direction,

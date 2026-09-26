@@ -417,3 +417,118 @@ describe("createSelectableList — autoFocus with selectOnFocus", () => {
     expect(manager.selectedKeys.size).toBe(items.length);
   });
 });
+
+describe("createSelectableList — layout delegate & page navigation", () => {
+  it("navigates with PageDown and PageUp using layout delegate geometry", () => {
+    const listItems = Array.from({ length: 20 }, (_, i) => ({
+      key: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+
+    const mockLayoutDelegate = {
+      getItemRect(key: string) {
+        const index = listItems.findIndex((it) => it.key === key);
+        if (index < 0) return null;
+        return { x: 0, y: index * 40, width: 200, height: 40 };
+      },
+      getContentSize() {
+        return { width: 200, height: listItems.length * 40 };
+      },
+      getVisibleRect() {
+        return { x: 0, y: 0, width: 200, height: 200 };
+      },
+    };
+
+    let state!: ListState<(typeof listItems)[0]>;
+    let container!: HTMLUListElement;
+    render(() => {
+      state = createListState({
+        items: listItems,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+        selectionBehavior: "replace",
+      });
+      const api = createSelectableList({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+        layoutDelegate: mockLayoutDelegate,
+      });
+      const listProps = api.listProps as Record<string, unknown>;
+      return (
+        <ul ref={container} {...listProps} style={{ height: "200px", overflow: "auto" }}>
+          {listItems.map((item) => (
+            <li
+              data-key={item.key}
+              data-collection={container?.dataset.collection}
+              style={{ height: "40px" }}
+            >
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      );
+    });
+
+    state.selectionManager.setFocusedKey("item-0");
+    expect(state.selectionManager.focusedKey).toBe("item-0");
+
+    // PageDown moves down ~5 items
+    fireEvent.keyDown(container, { key: "PageDown" });
+    expect(state.selectionManager.focusedKey).toBe("item-4");
+
+    // PageDown again
+    fireEvent.keyDown(container, { key: "PageDown" });
+    expect(state.selectionManager.focusedKey).toBe("item-8");
+
+    // PageUp moves back up
+    fireEvent.keyDown(container, { key: "PageUp" });
+    expect(state.selectionManager.focusedKey).toBe("item-4");
+
+    // PageUp back to top
+    fireEvent.keyDown(container, { key: "PageUp" });
+    expect(state.selectionManager.focusedKey).toBe("item-0");
+  });
+
+  it("does not consume PageDown/PageUp when no item is focused", () => {
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+      });
+      const listProps = api.listProps as Record<string, unknown>;
+      return (
+        <ul ref={container} {...listProps}>
+          {items.map((item) => (
+            <li data-key={item.key} data-collection={container?.dataset.collection}>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      );
+    });
+
+    expect(state.selectionManager.focusedKey).toBeNull();
+
+    const pageDownEvent = new KeyboardEvent("keydown", {
+      key: "PageDown",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(pageDownEvent);
+    expect(pageDownEvent.defaultPrevented).toBe(false);
+
+    const pageUpEvent = new KeyboardEvent("keydown", {
+      key: "PageUp",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(pageUpEvent);
+    expect(pageUpEvent.defaultPrevented).toBe(false);
+  });
+});
