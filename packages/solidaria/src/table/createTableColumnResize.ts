@@ -20,17 +20,28 @@
  * correct ARIA attributes for screen readers.
  */
 
-import { createSignal, createMemo } from "solid-js";
+import { createSignal, createMemo, onCleanup, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { Key, TableColumnResizeState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
+import { createMove } from "../interactions/createMove";
+import { createPress } from "../interactions/createPress";
+import { createKeyboard } from "../interactions/createKeyboard";
+import { mergeProps } from "../utils/mergeProps";
+import { focusSafely } from "../utils/focus";
+import { createGlobalListeners } from "../utils";
 
 export interface CreateTableColumnResizeProps {
   /** The column being resized. */
   column: { key: Key };
   /** Accessible label for the resizer. */
   "aria-label": string;
+  /**
+   * Ref to the trigger if resizing was started from a column header menu. If it's provided, focus
+   * will be returned there when resizing is done.
+   */
+  triggerRef?: () => HTMLElement | null;
   /** Whether resizing is disabled. */
   isDisabled?: boolean;
   /** Called when a resize operation starts. */
@@ -48,6 +59,11 @@ export interface TableColumnResizeResult {
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
   /** Whether this column is currently being resized. */
   isResizing: Accessor<boolean>;
+  /**
+   * Whether this column is currently being resized via a mouse drag (e.g. to render a cursor
+   * overlay).
+   */
+  isMouseResizing: Accessor<boolean>;
 }
 
 const KEYBOARD_STEP = 10; // px per arrow key press
@@ -61,14 +77,17 @@ const KEYBOARD_STEP = 10; // px per arrow key press
 export function createTableColumnResize(
   props: Accessor<CreateTableColumnResizeProps>,
   state: Accessor<TableColumnResizeState>,
+  inputRef?: () => HTMLInputElement | null,
 ): TableColumnResizeResult {
   const getProps = () => props();
   const getState = () => state();
   const locale = useLocale();
 
-  const [isPointerDragging, setIsPointerDragging] = createSignal(false);
-  const [isKeyboardResizing, setIsKeyboardResizing] = createSignal(false);
+  let isResizingRef = false;
+  let lastSize: Map<Key, number> | null = null;
+  let wasFocusedOnResizeStart = false;
 
+  const [isMouseResizing, setIsMouseResizing] = createSignal(false);
   const isResizing = createMemo(() => getState().resizingColumn() === getProps().column.key);
 
   const isRtl = createMemo(() => {
@@ -76,119 +95,233 @@ export function createTableColumnResize(
     return l?.direction === "rtl";
   });
 
-  // ---- Pointer (mouse/touch) drag ----
+  const { addGlobalListener, removeAllGlobalListeners } = createGlobalListeners();
 
-  let startX = 0;
-  let startWidth = 0;
+  let internalInputRef: HTMLInputElement | null = null;
+  const getInput = () => inputRef?.() ?? internalInputRef;
 
-  const onPointerDown = (e: PointerEvent) => {
-    if (getProps().isDisabled) return;
-    e.preventDefault();
-    e.stopPropagation();
+  const focusInput = () => {
+    const input = getInput();
+    if (input) {
+      focusSafely(input);
+    }
+  };
 
+  const startResize = () => {
     const key = getProps().column.key;
-    startX = e.clientX;
-    startWidth = getState().getColumnWidth(key);
+    if (!isResizingRef) {
+      lastSize = getState().updateResizedColumns(key, getState().getColumnWidth(key));
+      getState().startResize(key);
+      (
+        getState() as unknown as {
+          tableState?: { setKeyboardNavigationDisabled?: (disabled: boolean) => void };
+        }
+      ).tableState?.setKeyboardNavigationDisabled?.(true);
+      getProps().onResizeStart?.(lastSize);
 
-    getState().startResize(key);
-    getProps().onResizeStart?.(getState().columnWidths());
-    setIsPointerDragging(true);
-
-    const target = e.currentTarget as HTMLElement;
-    target.setPointerCapture(e.pointerId);
+      // Listen for window-level cancel events while resize is active
+      const onCancel = () => {
+        endResize();
+      };
+      addGlobalListener("pointercancel", onCancel, { isWindow: true });
+      addGlobalListener("touchcancel", onCancel, { isWindow: true });
+    }
+    isResizingRef = true;
   };
 
-  const onPointerMove = (e: PointerEvent) => {
-    if (!isPointerDragging()) return;
-    e.preventDefault();
-
-    const deltaX = e.clientX - startX;
-    const direction = isRtl() ? -1 : 1;
-    const newWidth = startWidth + deltaX * direction;
-
+  const resize = (newWidth: number) => {
     const key = getProps().column.key;
-    const widths = getState().updateResizedColumns(key, newWidth);
-    getProps().onResize?.(widths);
+    const sizes = getState().updateResizedColumns(key, newWidth);
+    getProps().onResize?.(sizes);
+    lastSize = sizes;
   };
 
-  const onPointerUp = (e: PointerEvent) => {
-    if (!isPointerDragging()) return;
-    e.preventDefault();
-    setIsPointerDragging(false);
-    getState().endResize();
-    getProps().onResizeEnd?.(getState().columnWidths());
+  const endResize = () => {
+    const key = getProps().column.key;
+    removeAllGlobalListeners();
+    if (isResizingRef || getState().resizingColumn() === key) {
+      if (lastSize == null) {
+        lastSize = getState().updateResizedColumns(key, getState().getColumnWidth(key));
+      }
+
+      getState().endResize();
+      (
+        getState() as unknown as {
+          tableState?: { setKeyboardNavigationDisabled?: (disabled: boolean) => void };
+        }
+      ).tableState?.setKeyboardNavigationDisabled?.(false);
+      getProps().onResizeEnd?.(lastSize);
+      isResizingRef = false;
+
+      const trigger = getProps().triggerRef?.();
+      if (trigger && !wasFocusedOnResizeStart) {
+        focusSafely(trigger);
+      }
+    }
+    lastSize = null;
   };
 
-  // ---- Keyboard resize (on the hidden input) ----
+  // Ensure resize never remains active if component unmounts while resizing
+  onCleanup(() => {
+    if (isResizingRef || getState().resizingColumn() === getProps().column.key) {
+      endResize();
+    }
+  });
 
-  const onKeyDown = (e: KeyboardEvent) => {
+  // Synchronize when state initiates resizing externally (e.g. via column header menu)
+  let prevResizingColumn: Key | null = null;
+  createTrackedEffect(() => {
+    const resizingCol = getState().resizingColumn();
+    const key = getProps().column.key;
+    if (prevResizingColumn !== resizingCol && resizingCol != null && resizingCol === key) {
+      const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+      wasFocusedOnResizeStart = activeEl === getInput();
+      startResize();
+      const timeout = setTimeout(() => focusInput(), 0);
+      const voTimeout = setTimeout(() => focusInput(), 400);
+      return () => {
+        clearTimeout(timeout);
+        clearTimeout(voTimeout);
+      };
+    }
+    prevResizingColumn = resizingCol;
+  });
+
+  // Shared move lifecycle: drag movements and completion
+  const columnResizeWidthRef = { current: 0 };
+  const { moveProps } = createMove({
+    onMoveStart(e) {
+      if (getProps().isDisabled) return;
+      const key = getProps().column.key;
+      columnResizeWidthRef.current = getState().getColumnWidth(key);
+      if (e.pointerType === "mouse") {
+        setIsMouseResizing(true);
+      }
+      startResize();
+    },
+    onMove(e) {
+      if (getProps().isDisabled) return;
+      let { deltaX, deltaY, pointerType } = e;
+      if (isRtl()) {
+        deltaX *= -1;
+      }
+      if (pointerType === "keyboard") {
+        if (deltaY !== 0 && deltaX === 0) {
+          deltaX = deltaY * -1;
+        }
+        deltaX *= KEYBOARD_STEP;
+      }
+      if (deltaX !== 0) {
+        columnResizeWidthRef.current += deltaX;
+        resize(columnResizeWidthRef.current);
+      }
+    },
+    onMoveEnd() {
+      columnResizeWidthRef.current = 0;
+      setIsMouseResizing(false);
+      endResize();
+    },
+  });
+
+  // Press interaction for tap, click, and hold lifecycle
+  const { pressProps } = createPress({
+    isDisabled: () => getProps().isDisabled ?? false,
+    preventFocusOnPress: true,
+    onPressStart: (e) => {
+      if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey || e.pointerType === "keyboard") {
+        return;
+      }
+      if (e.pointerType === "virtual" && getState().resizingColumn() != null) {
+        endResize();
+        return;
+      }
+
+      focusInput();
+
+      if (e.pointerType !== "virtual") {
+        startResize();
+      }
+    },
+    onPress: (e) => {
+      if (
+        ((e.pointerType === "touch" && wasFocusedOnResizeStart) || e.pointerType === "mouse") &&
+        getState().resizingColumn() != null
+      ) {
+        endResize();
+      }
+    },
+    onPressEnd: () => {
+      // If press ends or cancels without an active move drag, ensure resize never remains stuck
+      if (!isMouseResizing() && columnResizeWidthRef.current === 0) {
+        endResize();
+      }
+    },
+  });
+
+  const { keyboardProps } = createKeyboard({
+    shortcuts: {
+      Escape: () => endResize(),
+      Enter: () => {
+        if (isResizingRef || getState().resizingColumn() === getProps().column.key) {
+          endResize();
+        } else {
+          startResize();
+        }
+      },
+      " ": () => endResize(),
+      Tab: () => endResize(),
+    },
+  });
+
+  // Keyboard resize on the hidden input
+  const onInputKeyDown = (e: KeyboardEvent) => {
     if (getProps().isDisabled) return;
-
     const key = getProps().column.key;
     const rtlMul = isRtl() ? -1 : 1;
 
     switch (e.key) {
       case "Enter": {
-        if (isKeyboardResizing()) {
-          // End resize
-          setIsKeyboardResizing(false);
-          getState().endResize();
-          getProps().onResizeEnd?.(getState().columnWidths());
-        } else {
-          // Start resize
-          setIsKeyboardResizing(true);
-          getState().startResize(key);
-          getProps().onResizeStart?.(getState().columnWidths());
-        }
+        e.stopPropagation();
         e.preventDefault();
+        if (isResizingRef || getState().resizingColumn() === key) {
+          endResize();
+        } else {
+          startResize();
+        }
         break;
       }
       case "Escape": {
-        if (isKeyboardResizing()) {
-          setIsKeyboardResizing(false);
-          getState().endResize();
-          getProps().onResizeEnd?.(getState().columnWidths());
-          e.preventDefault();
+        e.stopPropagation();
+        e.preventDefault();
+        if (isResizingRef || getState().resizingColumn() === key) {
+          endResize();
         }
         break;
       }
       case "Tab": {
-        if (isKeyboardResizing()) {
-          setIsKeyboardResizing(false);
-          getState().endResize();
-          getProps().onResizeEnd?.(getState().columnWidths());
+        if (isResizingRef || getState().resizingColumn() === key) {
+          endResize();
         }
-        // Let Tab propagate for focus management
         break;
       }
       case "ArrowRight": {
-        if (isKeyboardResizing()) {
-          const currentWidth = getState().getColumnWidth(key);
-          const widths = getState().updateResizedColumns(
-            key,
-            currentWidth + KEYBOARD_STEP * rtlMul,
-          );
-          getProps().onResize?.(widths);
-          e.preventDefault();
-        }
+        e.stopPropagation();
+        e.preventDefault();
+        const currentWidth = getState().getColumnWidth(key);
+        resize(currentWidth + KEYBOARD_STEP * rtlMul);
         break;
       }
       case "ArrowLeft": {
-        if (isKeyboardResizing()) {
-          const currentWidth = getState().getColumnWidth(key);
-          const widths = getState().updateResizedColumns(
-            key,
-            currentWidth - KEYBOARD_STEP * rtlMul,
-          );
-          getProps().onResize?.(widths);
-          e.preventDefault();
-        }
+        e.stopPropagation();
+        e.preventDefault();
+        const currentWidth = getState().getColumnWidth(key);
+        resize(currentWidth - KEYBOARD_STEP * rtlMul);
         break;
       }
     }
   };
 
-  // Handle input change (from screen reader range slider)
+  // Screen reader range input change
   const onInputChange = (e: Event) => {
     const input = e.target as HTMLInputElement;
     const newWidth = parseFloat(input.value);
@@ -196,34 +329,34 @@ export function createTableColumnResize(
 
     const key = getProps().column.key;
     if (!isResizing()) {
-      getState().startResize(key);
-      getProps().onResizeStart?.(getState().columnWidths());
+      startResize();
     }
-
-    const widths = getState().updateResizedColumns(key, newWidth);
-    getProps().onResize?.(widths);
-
-    // End immediately for discrete input changes
-    getState().endResize();
-    getProps().onResizeEnd?.(getState().columnWidths());
+    resize(newWidth);
+    endResize();
   };
 
-  // Visible resize handle props. The accessible resize control is the hidden
-  // range input below, matching React Aria's ColumnResizer structure.
-  const resizerProps: JSX.HTMLAttributes<HTMLDivElement> = {
-    role: "presentation",
-    tabindex: -1,
-    style: {
-      "touch-action": "none",
-      cursor: "col-resize",
+  const resizerProps: JSX.HTMLAttributes<HTMLDivElement> = mergeProps<
+    JSX.HTMLAttributes<HTMLDivElement>
+  >(
+    {
+      role: "presentation",
+      tabIndex: -1,
     },
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-  };
+    keyboardProps,
+    moveProps,
+    pressProps,
+    {
+      style: {
+        "touch-action": "none",
+        cursor: "col-resize",
+      },
+    },
+  );
 
-  // Visually hidden range input props
   const inputProps: JSX.InputHTMLAttributes<HTMLInputElement> = {
+    ref: (el: HTMLInputElement | null) => {
+      internalInputRef = el;
+    },
     get type() {
       return "range";
     },
@@ -260,13 +393,17 @@ export function createTableColumnResize(
       "white-space": "nowrap",
       "border-width": "0",
     },
-    onKeyDown,
+    onKeyDown: onInputKeyDown,
     onChange: onInputChange,
+    onBlur: () => {
+      endResize();
+    },
   };
 
   return {
     resizerProps,
     inputProps,
     isResizing,
+    isMouseResizing,
   };
 }

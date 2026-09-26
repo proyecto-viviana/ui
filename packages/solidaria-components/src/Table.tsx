@@ -2430,8 +2430,22 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
       <Show when={hasResizeContext}>
         <input
           {...columnResize.inputProps}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(e) => {
+            (
+              columnResize.inputProps.onFocus as
+                | JSX.FocusEventHandler<HTMLInputElement, FocusEvent>
+                | undefined
+            )?.(e);
+            setIsFocused(true);
+          }}
+          onBlur={(e) => {
+            (
+              columnResize.inputProps.onBlur as
+                | JSX.FocusEventHandler<HTMLInputElement, FocusEvent>
+                | undefined
+            )?.(e);
+            setIsFocused(false);
+          }}
         />
       </Show>
       {typeof local.children === "function"

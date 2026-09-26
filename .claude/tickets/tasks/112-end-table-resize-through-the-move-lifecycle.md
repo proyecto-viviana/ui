@@ -4,9 +4,14 @@ type: task
 title: "End Table resize through the move lifecycle"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-70" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "routed column resize through createMove and createPress lifecycle with mouse, touch, click, hold, cancel, blur, and unmount cleanup coverage",
+    }
 ---
 
 Route Table column-resize completion through the shared move lifecycle.
