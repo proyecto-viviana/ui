@@ -34,6 +34,7 @@ import {
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
+  createButton,
   createTree,
   createTreeItem,
   createTreeSelectionCheckbox,
@@ -44,6 +45,7 @@ import {
   type AriaTreeProps,
   useLocale,
 } from "@proyecto-viviana/solidaria";
+import { ButtonContext, type ButtonContextValue, type ButtonProps } from "./Button";
 import {
   createTreeState,
   createTreeCollection,
@@ -1727,14 +1729,25 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     },
   };
 
+  const buttonContextValue: ButtonContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      get chevron() {
+        return treeItemAria.expandButtonProps as unknown as ButtonProps;
+      },
+    },
+  };
+
   const rowContent = () => (
     <TreeItemContentContext value={renderValues()}>
       <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
-        <CheckboxContext value={checkboxContextValue}>
-          <CheckboxFieldContext value={checkboxFieldContextValue}>
-            {renderProps.renderChildren()}
-          </CheckboxFieldContext>
-        </CheckboxContext>
+        <ButtonContext value={buttonContextValue}>
+          <CheckboxContext value={checkboxContextValue}>
+            <CheckboxFieldContext value={checkboxFieldContextValue}>
+              {renderProps.renderChildren()}
+            </CheckboxFieldContext>
+          </CheckboxContext>
+        </ButtonContext>
       </div>
     </TreeItemContentContext>
   );
@@ -1831,6 +1844,15 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
     const { ref: _ref, ...rest } = treeItemAria.expandButtonProps as Record<string, unknown>;
     return rest;
   };
+
+  const { buttonProps } = createButton({
+    elementType: "button",
+    get isDisabled() {
+      return treeItemAria.isDisabled;
+    },
+    ...cleanExpandProps(),
+  });
+
   const dataProps = () => {
     const result: Record<string, string | undefined> = {};
     for (const key in props) {
@@ -1853,7 +1875,7 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
   return (
     <Show when={itemContext.isExpandable}>
       <button
-        {...cleanExpandProps()}
+        {...buttonProps}
         {...dataProps()}
         class={props.class ?? "solidaria-Tree-expand-button"}
         style={props.style}

@@ -866,6 +866,47 @@ describe("Tree", () => {
       expect(getFirstExpandButton()).toHaveAttribute("aria-label", "Collapse");
     });
 
+    it("expands controlled Tree via TreeExpandButton click and pointer press", () => {
+      const onExpandedChange = vi.fn();
+      const [expandedKeys, setExpandedKeys] = createSignal<Set<string | number>>(new Set());
+
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Tree controlled expand"
+          expandedKeys={expandedKeys()}
+          onExpandedChange={(keys) => {
+            setExpandedKeys(new Set(keys));
+            onExpandedChange(keys);
+          }}
+        >
+          {(item) => (
+            <TreeItem id={item.key}>
+              {() => (
+                <>
+                  <TreeExpandButton>
+                    {({ isExpanded }) => (isExpanded ? "-" : "+")}
+                  </TreeExpandButton>
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const getFirstExpandButton = () => screen.getAllByRole("button")[0];
+      expect(getFirstExpandButton()).toHaveAttribute("aria-label", "Expand");
+
+      fireEvent.pointerDown(getFirstExpandButton(), { pointerId: 1, pointerType: "mouse" });
+      fireEvent.pointerUp(getFirstExpandButton(), { pointerId: 1, pointerType: "mouse" });
+      fireEvent.click(getFirstExpandButton());
+      flush();
+
+      expect(onExpandedChange).toHaveBeenCalledTimes(1);
+      expect(getFirstExpandButton()).toHaveAttribute("aria-label", "Collapse");
+    });
+
     it("expands on ArrowLeft under I18nProvider he-IL without document.dir", () => {
       const dirGetter = vi.spyOn(document, "dir", "get");
       render(() => (

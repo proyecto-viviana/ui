@@ -30,6 +30,7 @@ import type {
   TreeCollection,
 } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeItemProps, TreeItemAria } from "./types";
+import type { AriaButtonProps } from "../button";
 import { getTreeData } from "./createTree";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
@@ -263,21 +264,15 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
   });
 
   // Expand button handler
-  const onExpandClick = (e: MouseEvent) => {
-    e.stopPropagation(); // Don't trigger row click
+  const onExpandPress = () => {
     const s = state();
     const p = props();
 
     if (selectableItem.isDisabled()) return;
 
     s.toggleKey(p.node.key);
-    queueMicrotask(() => ref()?.focus());
-  };
-
-  const stopPointerPropagation = (e: Event) => {
-    // Prevent row pointer handlers from flipping pressed state and re-rendering
-    // before the button click handler can run.
-    e.stopPropagation();
+    s.setFocused(true);
+    s.setFocusedKey(p.node.key);
   };
 
   const expandButtonProps = () => {
@@ -287,16 +282,14 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
       "aria-labelledby": isExpandable() ? `${expandButtonId} ${rowId()}` : undefined,
       "data-react-aria-prevent-focus": true,
-      onClick: onExpandClick,
-      onPointerDown: stopPointerPropagation,
-      onPointerUp: stopPointerPropagation,
-      onMouseDown: stopPointerPropagation,
-      onMouseUp: stopPointerPropagation,
+      onPress: onExpandPress,
+      excludeFromTabOrder: true,
+      preventFocusOnPress: true,
       tabIndex: -1, // Not in tab order, use arrow keys
       "aria-hidden": !isExpandable() ? "true" : undefined,
     };
 
-    return baseProps as JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+    return baseProps as AriaButtonProps & JSX.ButtonHTMLAttributes<HTMLButtonElement>;
   };
 
   return {

@@ -38,6 +38,7 @@
 
 import type { JSX } from "@solidjs/web";
 import type { Key, TreeNode } from "@proyecto-viviana/solid-stately";
+import type { AriaButtonProps } from "../button";
 
 /**
  * Props for createTree.
@@ -106,7 +107,7 @@ export interface TreeItemAria {
   /** Props for the grid cell content wrapper. */
   gridCellProps: JSX.HTMLAttributes<HTMLDivElement>;
   /** Props for the expand button (if the item is expandable). */
-  expandButtonProps: JSX.ButtonHTMLAttributes<HTMLButtonElement>;
+  expandButtonProps: AriaButtonProps & JSX.ButtonHTMLAttributes<HTMLButtonElement>;
   /** Whether the item is selected. */
   isSelected: boolean;
   /** Whether the item is disabled. */

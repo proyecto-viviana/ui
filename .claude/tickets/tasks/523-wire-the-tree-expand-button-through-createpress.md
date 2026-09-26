@@ -4,12 +4,17 @@ type: task
 title: "Wire the Tree expand button through createPress"
 created: 2026-09-09
 parent: 136
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-09,
       note: "filed from the Terminal Glass port gate sweep on 117a2886",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "wired Tree expandButtonProps through onPress and createPress, provided ButtonContext with chevron slot, and proved controlled Tree pointer expansion",
     }
 ---
 
