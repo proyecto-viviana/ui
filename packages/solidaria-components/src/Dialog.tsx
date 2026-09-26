@@ -43,7 +43,14 @@ import {
   createOverlayTriggerState,
   type OverlayTriggerState,
 } from "@proyecto-viviana/solid-stately";
-import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
+import {
+  DialogTriggerContext,
+  OverlayTriggerStateContext,
+  PopoverTriggerContext,
+  useOverlayTriggerState,
+  type OverlayTriggerState as ContextOverlayTriggerState,
+  type PopoverTriggerContextValue,
+} from "./contexts";
 import { OverlayContext } from "./Popover";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
@@ -121,6 +128,8 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   // Create overlay trigger props so registered trigger components can expose
   // the same expanded/controls relationship as React Aria DialogTrigger.
   const triggerAria = createOverlayTrigger({ type: "dialog" }, state, triggerRef);
+  (triggerAria.triggerProps as Record<string, unknown>).id = triggerId;
+  (triggerAria.overlayProps as Record<string, unknown>)["aria-labelledby"] = triggerId;
 
   const restoreFocusToTrigger = () => {
     const trigger = triggerRef();
@@ -180,6 +189,38 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     overlayProps: triggerAria.overlayProps,
   }));
 
+  const popoverContextValue = createMemo<PopoverTriggerContextValue>(() => ({
+    state: {
+      isOpen: () => stateWithFocusRestore.isOpen(),
+      open: () => stateWithFocusRestore.open(),
+      close: () => stateWithFocusRestore.close(),
+      toggle: () => stateWithFocusRestore.toggle(),
+      setOpen: (next: boolean) => stateWithFocusRestore.setOpen(next),
+      point: () => stateWithFocusRestore.point?.() ?? null,
+      setPoint: (next: { x: number; y: number }) => stateWithFocusRestore.setPoint?.(next),
+    },
+    triggerRef,
+    setTriggerRef,
+    triggerId,
+    triggerProps: triggerAria.triggerProps,
+    overlayProps: triggerAria.overlayProps,
+    trigger: "DialogTrigger",
+  }));
+
+  const overlayStateContextValue: ContextOverlayTriggerState = {
+    get isOpen() {
+      return stateWithFocusRestore.isOpen();
+    },
+    open: () => stateWithFocusRestore.open(),
+    close: () => stateWithFocusRestore.close(),
+    toggle: () => stateWithFocusRestore.toggle(),
+    setOpen: (next: boolean) => stateWithFocusRestore.setOpen(next),
+    get point() {
+      return stateWithFocusRestore.point?.() ?? null;
+    },
+    setPoint: (next: { x: number; y: number }) => stateWithFocusRestore.setPoint?.(next),
+  };
+
   // If within a collection (e.g. Tabs), render nothing. Matches RAC DialogTrigger
   // (`useIsHidden()` early return) so a hidden collection pass does not leak a
   // duplicate trigger. Not using createHideableComponent: that also wraps a ref.
@@ -188,8 +229,15 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     return null;
   }
 
-  // In SolidJS, we simply render children directly within the provider
-  return <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>;
+  // Provide OverlayTriggerStateContext, PopoverTriggerContext, and
+  // DialogTriggerContext, matching RAC DialogTrigger context wiring.
+  return (
+    <OverlayTriggerStateContext value={overlayStateContextValue}>
+      <PopoverTriggerContext value={popoverContextValue()}>
+        <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>
+      </PopoverTriggerContext>
+    </OverlayTriggerStateContext>
+  );
 }
 
 /**

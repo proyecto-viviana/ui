@@ -6,7 +6,7 @@ import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
 import { Button } from "../src/Button";
-import { DialogTrigger } from "../src/Dialog";
+import { Dialog, DialogTrigger, Heading } from "../src/Dialog";
 import { createSignal, flush, onMount, onSettled } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -111,6 +111,70 @@ describe("Popover", () => {
       expect(button).not.toHaveAttribute("aria-haspopup");
       expect(button).toHaveAttribute("aria-expanded", "true");
       expect(button).toHaveAttribute("aria-controls", dialog.id);
+    });
+
+    it("provides DialogTrigger overlay id and aria-labelledby to composed Popover", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <DialogTrigger>
+          <Button>Help</Button>
+          <Popover>Help content</Popover>
+        </DialogTrigger>
+      ));
+
+      const button = screen.getByRole("button", { name: "Help" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      await user.click(button);
+
+      const dialog = screen.getByRole("dialog");
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveTextContent("Help content");
+      expect(button).toHaveAttribute("aria-controls", dialog.id);
+      expect(dialog).toHaveAttribute("aria-labelledby", button.id);
+      expect(dialog).toHaveAttribute("data-trigger", "DialogTrigger");
+      expect(dialog).toHaveAccessibleName("Help");
+
+      await user.click(button);
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
+    });
+
+    it("provides DialogTrigger overlay id and controls to nested Dialog within Popover", async () => {
+      const user = setupUser();
+
+      render(() => (
+        <DialogTrigger>
+          <Button>Settings</Button>
+          <Popover>
+            <Dialog>
+              <Heading slot="title">Settings Menu</Heading>
+              <p>Preferences</p>
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
+      ));
+
+      const button = screen.getByRole("button", { name: "Settings" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      await user.click(button);
+
+      const dialog = screen.getByRole("dialog", { name: "Settings Menu" });
+      expect(dialog).toBeInTheDocument();
+      expect(button).toHaveAttribute("aria-controls", dialog.id);
+
+      const popover = dialog.closest(".solidaria-Popover");
+      expect(popover).toBeInTheDocument();
+      expect(popover).toHaveAttribute("data-trigger", "DialogTrigger");
+      expect(popover).not.toHaveAttribute("id", dialog.id);
+
+      await user.click(button);
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
     });
 
     it("should render popover content when open", async () => {

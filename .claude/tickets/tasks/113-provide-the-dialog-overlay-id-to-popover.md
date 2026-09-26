@@ -4,9 +4,14 @@ type: task
 title: "Provide the Dialog overlay id to Popover"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-71" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "overlay id and trigger context provided to popover with aria-controls/labelledby parity",
+    }
 ---
 
 Match RAC DialogTrigger context wiring.

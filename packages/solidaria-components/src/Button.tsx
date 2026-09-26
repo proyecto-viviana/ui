@@ -313,8 +313,7 @@ export function Button(props: ButtonProps): JSX.Element {
     // Toggle only when this exact button is the registered trigger element.
     if (isDialogTrigger() && local.slot !== "close") {
       dialogTriggerContext!.state.toggle();
-    }
-    if (isPopoverTrigger()) {
+    } else if (isPopoverTrigger() && local.slot !== "close") {
       const triggerOnPress = popoverTriggerContext!.triggerProps?.onPress as
         | ((event: PressEvent) => void)
         | undefined;
@@ -481,7 +480,7 @@ export function Button(props: ButtonProps): JSX.Element {
     if (dialogTriggerContext?.setTriggerRef && local.slot !== "close") {
       dialogTriggerContext.setTriggerRef(el);
     }
-    if (popoverTriggerContext?.setTriggerRef) {
+    if (popoverTriggerContext?.setTriggerRef && local.slot !== "close") {
       popoverTriggerContext.setTriggerRef(el);
     }
   };
@@ -619,6 +618,9 @@ export function Button(props: ButtonProps): JSX.Element {
         (menuTriggerProps()?.id as string | undefined) ||
         (dialogTriggerContext && local.slot !== "close"
           ? dialogTriggerContext.triggerId
+          : undefined) ||
+        (popoverTriggerContext && local.slot !== "close"
+          ? popoverTriggerContext.triggerId
           : undefined) ||
         buttonId,
       class: renderProps.class(),

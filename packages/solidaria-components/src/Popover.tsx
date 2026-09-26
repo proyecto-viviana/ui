@@ -377,6 +377,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     (selectContext?.menuProps as { "aria-labelledby"?: string } | undefined)?.["aria-labelledby"] ??
     (triggerContext?.overlayProps as { "aria-labelledby"?: string } | undefined)?.[
       "aria-labelledby"
+    ] ??
+    (dialogTriggerContext?.overlayProps as { "aria-labelledby"?: string } | undefined)?.[
+      "aria-labelledby"
     ];
   const resolvedTrigger = () =>
     local.trigger ??
@@ -573,11 +576,11 @@ export function Popover(props: PopoverProps): JSX.Element {
   );
   const overlayId = () => {
     const restId = (rest as Record<string, unknown>).id as string | undefined;
-    return (
-      restId ??
-      (triggerContext?.overlayProps?.id as string | undefined) ??
-      (dialogTriggerContext?.overlayProps?.id as string | undefined)
-    );
+    if (restId) return restId;
+    return shouldBeDialog()
+      ? ((triggerContext?.overlayProps?.id as string | undefined) ??
+          (dialogTriggerContext?.overlayProps?.id as string | undefined))
+      : undefined;
   };
 
   const cleanPopoverProps = () => {
