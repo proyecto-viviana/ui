@@ -4,9 +4,14 @@ type: task
 title: "Prove Firefox date-segment selection focus"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-84" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "added getActiveElement guard to selectionchange handler in createDateSegment; verified in createDateSegment.test.tsx and DateField.test.tsx",
+    }
 ---
 
 Port the active-element guard in the date-segment `selectionchange` path.

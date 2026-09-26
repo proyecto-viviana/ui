@@ -362,4 +362,67 @@ describe("createDateSegment", () => {
     expect(state.setSegment).toHaveBeenNthCalledWith(1, "day", 1);
     expect(state.setSegment).toHaveBeenNthCalledWith(2, "day", 12);
   });
+
+  describe("selectionchange focus guard", () => {
+    it("does not collapse selection onto segment while another element is focused", () => {
+      renderSegment();
+      const segment = screen.getByTestId("segment");
+      const button = document.createElement("button");
+      document.body.appendChild(button);
+      button.focus();
+      expect(document.activeElement).toBe(button);
+
+      const collapse = vi.fn();
+      const getSelectionSpy = vi.spyOn(window, "getSelection").mockReturnValue({
+        anchorNode: segment.firstChild ?? segment,
+        collapse,
+      } as unknown as Selection);
+
+      document.dispatchEvent(new Event("selectionchange"));
+      expect(collapse).not.toHaveBeenCalled();
+
+      getSelectionSpy.mockRestore();
+      button.remove();
+    });
+
+    it("collapses selection onto segment when the segment is focused", () => {
+      renderSegment();
+      const segment = screen.getByTestId("segment");
+      segment.focus();
+      expect(document.activeElement).toBe(segment);
+
+      const collapse = vi.fn();
+      const getSelectionSpy = vi.spyOn(window, "getSelection").mockReturnValue({
+        anchorNode: segment.firstChild ?? segment,
+        collapse,
+      } as unknown as Selection);
+
+      document.dispatchEvent(new Event("selectionchange"));
+      expect(collapse).toHaveBeenCalledWith(segment);
+
+      getSelectionSpy.mockRestore();
+    });
+
+    it("does not collapse selection when selection anchor is outside segment", () => {
+      renderSegment();
+      const segment = screen.getByTestId("segment");
+      segment.focus();
+      expect(document.activeElement).toBe(segment);
+
+      const outsideDiv = document.createElement("div");
+      document.body.appendChild(outsideDiv);
+
+      const collapse = vi.fn();
+      const getSelectionSpy = vi.spyOn(window, "getSelection").mockReturnValue({
+        anchorNode: outsideDiv,
+        collapse,
+      } as unknown as Selection);
+
+      document.dispatchEvent(new Event("selectionchange"));
+      expect(collapse).not.toHaveBeenCalled();
+
+      getSelectionSpy.mockRestore();
+      outsideDiv.remove();
+    });
+  });
 });

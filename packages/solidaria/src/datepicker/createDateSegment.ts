@@ -29,6 +29,8 @@ import {
   getScrollParent,
   nodeContains,
   onOwnedCleanup,
+  getActiveElement,
+  getOwnerDocument,
 } from "../utils";
 import { createMemo, createTrackedEffect } from "solid-js";
 import { toCalendar, CalendarDate } from "@internationalized/date";
@@ -321,9 +323,19 @@ export function createDateSegment<T extends DateFieldState>(
       return;
     }
     const handler = () => {
+      const el = ref();
+      if (!el) {
+        return;
+      }
       const selection = window.getSelection();
-      if (selection?.anchorNode && nodeContains(ref(), selection.anchorNode)) {
-        selection.collapse(ref());
+      // Only collapse while focused, otherwise a stale anchor left in the segment (e.g. on Firefox)
+      // steals focus back into it on selectionchange. See #10259.
+      if (
+        selection?.anchorNode &&
+        nodeContains(el, selection.anchorNode) &&
+        getActiveElement(getOwnerDocument(el)) === el
+      ) {
+        selection.collapse(el);
       }
     };
     document.addEventListener("selectionchange", handler);

@@ -636,4 +636,53 @@ describe("DateField", () => {
       expect(segmentsWithValue.length).toBeGreaterThan(0);
     });
   });
+
+  describe("selectionchange focus guard", () => {
+    it("does not collapse the selection onto a segment while another element is focused", async () => {
+      const button = document.createElement("button");
+      button.textContent = "sibling";
+      document.body.appendChild(button);
+
+      render(() => <TestDateField fieldProps={{ defaultValue: new CalendarDate(2020, 2, 3) }} />);
+      await waitForDateFieldHydration();
+
+      const segments = screen.getAllByRole("spinbutton");
+      const segment = segments[segments.length - 1];
+      button.focus();
+      expect(document.activeElement).toBe(button);
+
+      const collapse = vi.fn();
+      const getSelectionSpy = vi.spyOn(window, "getSelection").mockReturnValue({
+        anchorNode: segment.firstChild ?? segment,
+        collapse,
+      } as unknown as Selection);
+
+      document.dispatchEvent(new Event("selectionchange"));
+      expect(collapse).not.toHaveBeenCalled();
+
+      getSelectionSpy.mockRestore();
+      button.remove();
+    });
+
+    it("collapses the selection onto a segment when that segment is focused", async () => {
+      render(() => <TestDateField fieldProps={{ defaultValue: new CalendarDate(2020, 2, 3) }} />);
+      await waitForDateFieldHydration();
+
+      const segments = screen.getAllByRole("spinbutton");
+      const segment = segments[0];
+      segment.focus();
+      expect(document.activeElement).toBe(segment);
+
+      const collapse = vi.fn();
+      const getSelectionSpy = vi.spyOn(window, "getSelection").mockReturnValue({
+        anchorNode: segment.firstChild ?? segment,
+        collapse,
+      } as unknown as Selection);
+
+      document.dispatchEvent(new Event("selectionchange"));
+      expect(collapse).toHaveBeenCalledWith(segment);
+
+      getSelectionSpy.mockRestore();
+    });
+  });
 });
