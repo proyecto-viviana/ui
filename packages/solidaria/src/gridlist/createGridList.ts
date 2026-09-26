@@ -199,6 +199,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     focusedKey: () => state().focusedKey,
     onFocusedKeyChange: (key) => state().setFocusedKey(key),
     isKeyDisabled: (key) => isNavigationDisabled(state(), key),
+    ref,
   });
 
   // Handle keyboard navigation

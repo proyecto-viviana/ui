@@ -28,6 +28,7 @@ import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createSignal, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
+import { isDevEnv } from "../utils/env";
 import { filterDOMProps } from "../utils";
 
 /** ARIA landmark roles */
@@ -155,7 +156,7 @@ export class LandmarkManager {
     }
 
     if (
-      process.env.NODE_ENV !== "production" &&
+      isDevEnv() &&
       newLandmark.role === "main" &&
       this.landmarks.filter((landmark) => landmark.role === "main").length > 0
     ) {
@@ -253,11 +254,11 @@ export class LandmarkManager {
     const landmarksWithRole = this.getLandmarksByRole(role);
     if (landmarksWithRole.size > 1) {
       const duplicatesWithoutLabel = [...landmarksWithRole].filter((l) => !l.label);
-      if (duplicatesWithoutLabel.length > 0 && process.env.NODE_ENV !== "production") {
+      if (duplicatesWithoutLabel.length > 0 && isDevEnv()) {
         console.warn(
           `Multiple landmarks with role "${role}" exist. Each should have a unique aria-label or aria-labelledby.`,
         );
-      } else if (process.env.NODE_ENV !== "production") {
+      } else if (isDevEnv()) {
         const labels = [...landmarksWithRole].map((l) => l.label);
         const duplicateLabels = labels.filter((item, index) => labels.indexOf(item) !== index);
         if (duplicateLabels.length > 0) {

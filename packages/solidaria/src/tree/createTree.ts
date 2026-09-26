@@ -125,6 +125,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     focusedKey: () => state().focusedKey,
     onFocusedKeyChange: (key) => state().setFocusedKey(key),
     isKeyDisabled: (key) => isNavigationDisabled(state(), key),
+    ref,
   });
 
   const restoreFocusedRow = (key: Key | null) => {

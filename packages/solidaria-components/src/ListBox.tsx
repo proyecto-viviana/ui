@@ -542,6 +542,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   // renderer context; the base ListBox forwards it into createListBox so each
   // option emits aria-posinset/aria-setsize for the windowed (incomplete) DOM.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
+  const [listRef, setListRef] = createSignal<HTMLElement | null>(null);
   const listBoxAria = createListBox(
     mergeProps(ariaProps, {
       get isVirtualized() {
@@ -619,7 +620,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     const { ref: _ref3, ...rest } = listBoxAria.labelProps as Record<string, unknown>;
     return rest;
   };
-  const [listRef, setListRef] = createSignal<HTMLElement | null>(null);
 
   // Reveal the activedescendant-focused option on keyboard navigation. The
   // listbox keeps real DOM focus on itself, so the browser won't natively scroll

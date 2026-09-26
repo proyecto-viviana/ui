@@ -17,6 +17,8 @@
  * Ported from packages/react-aria/src/utils/platform.ts.
  */
 
+import { isTestEnv } from "./env";
+
 interface NavigatorUAData {
   brands?: Array<{ brand: string; version: string }>;
   platform?: string;
@@ -48,7 +50,7 @@ function testPlatform(re: RegExp): boolean {
 }
 
 function cached(fn: () => boolean): () => boolean {
-  if (process.env.NODE_ENV === "test") {
+  if (isTestEnv()) {
     return fn;
   }
 

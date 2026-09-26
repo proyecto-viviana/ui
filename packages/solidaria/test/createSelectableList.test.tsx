@@ -302,6 +302,63 @@ describe("createSelectableList — typeahead", () => {
     fireEvent.keyDown(container, { key: "b" });
     expect(manager.focusedKey).toBe("b");
   });
+
+  it("binds typeahead Space in capture phase without triggering collection selection", () => {
+    const spaceItems: Item[] = [
+      { key: "1", label: "Item 1" },
+      { key: "2", label: "Item 2" },
+    ];
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    render(() => {
+      state = createListState<Item>({
+        items: spaceItems,
+        getKey: (item) => item.key,
+        selectionMode: "multiple",
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+      });
+      const listProps = api.listProps as Record<string, unknown>;
+      const collectionId = listProps["data-collection"] as string;
+      return (
+        <ul ref={container} {...api.listProps}>
+          {spaceItems.map((item) => (
+            <li data-key={item.key} data-collection={collectionId} tabIndex={-1}>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      );
+    });
+
+    container.focus();
+
+    // Type "i", "t", "e", "m"
+    fireEvent.keyDown(container, { key: "i" });
+    fireEvent.keyDown(container, { key: "t" });
+    fireEvent.keyDown(container, { key: "e" });
+    fireEvent.keyDown(container, { key: "m" });
+    expect(state.selectionManager.focusedKey).toBe("1");
+    expect(state.selectionManager.selectedKeys.size).toBe(0);
+
+    // Mid-search Space must be consumed in the capture phase by typeahead.
+    // It must NOT trigger collection selection.
+    const spaceEvent = new window.KeyboardEvent("keydown", {
+      key: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(spaceEvent);
+    expect(spaceEvent.defaultPrevented).toBe(true);
+    expect(state.selectionManager.selectedKeys.size).toBe(0);
+
+    // Type "2" to complete "item 2"
+    fireEvent.keyDown(container, { key: "2" });
+    expect(state.selectionManager.focusedKey).toBe("2");
+    expect(state.selectionManager.selectedKeys.size).toBe(0);
+  });
 });
 
 describe("createSelectableList — collection props", () => {

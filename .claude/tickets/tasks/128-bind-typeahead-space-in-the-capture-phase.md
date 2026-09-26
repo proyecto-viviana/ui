@@ -4,13 +4,18 @@ type: task
 title: "Bind typeahead Space in the capture phase"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the completed upstream behavior sweep" }
   - {
       state: open,
       at: 2026-09-03,
       note: "#260 virtualizer: Tab then type Item 5 (or Item then Space) moves React focus to Item 5 / keeps the typeahead buffer; Solid selects Item 0 because Space is handled as selection on the bubble path. Letter typeahead (i) still matches. Isolated, one panel at a time.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "bound onKeyDownCapture in capture phase via bindCapture and captureRef; threaded ref into createTypeSelect across collection hooks; guarded against SSR; verified in createTypeSelect.test.tsx and createSelectableList.test.tsx",
     }
 ---
 

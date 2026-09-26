@@ -278,6 +278,7 @@ export function createSelect<T>(
         (getProps().disallowTypeAhead ?? false) || getProps().isDisabled || state.isDisabled,
       );
     },
+    ref: _ref,
   });
 
   // Keyboard navigation

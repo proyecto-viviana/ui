@@ -713,6 +713,7 @@ export function createSelectableCollection<T = unknown>(
     focusedKey: () => manager.focusedKey,
     onFocusedKeyChange: (key) => manager.setFocusedKey(key),
     isKeyDisabled: (key) => manager.isDisabled(key),
+    ref,
   });
 
   // A stable id shared with this collection's items (keyed by the manager) so

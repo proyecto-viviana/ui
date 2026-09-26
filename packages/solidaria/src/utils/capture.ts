@@ -7,32 +7,47 @@
 
 import { createEffect } from "solid-js";
 import type { Accessor } from "solid-js";
+import { isServer } from "@solidjs/web";
+import { onOwnedCleanup } from "./owner";
 
 export type CaptureListeners = Record<
   string,
   EventListenerOrEventListenerObject | undefined | null
 >;
 
-export function attachCaptureListeners(el: EventTarget, listeners: CaptureListeners): () => void {
+export function attachCaptureListeners(
+  el: EventTarget | null | undefined,
+  listeners: CaptureListeners,
+): () => void {
+  if (isServer || !el || typeof (el as EventTarget).addEventListener !== "function") {
+    return () => {};
+  }
+  const target = el as EventTarget;
   const attached: [string, EventListenerOrEventListenerObject][] = [];
   for (const [type, handler] of Object.entries(listeners)) {
     if (!handler) continue;
-    el.addEventListener(type, handler, true);
+    target.addEventListener(type, handler, true);
     attached.push([type, handler]);
   }
   return () => {
     for (const [type, handler] of attached) {
-      el.removeEventListener(type, handler, true);
+      target.removeEventListener(type, handler, true);
     }
   };
 }
 
 /** Ref callback that binds capture-phase listeners. */
-export function captureRef(listeners: CaptureListeners): (el: EventTarget) => void {
+export function captureRef(
+  listeners: CaptureListeners,
+): (el: EventTarget | null | undefined) => void {
+  if (isServer) return () => {};
   let detach: (() => void) | undefined;
+  onOwnedCleanup(() => detach?.());
   return (el) => {
     detach?.();
-    detach = attachCaptureListeners(el, listeners);
+    if (el) {
+      detach = attachCaptureListeners(el, listeners);
+    }
   };
 }
 
@@ -41,6 +56,7 @@ export function bindCapture(
   el: Accessor<EventTarget | null | undefined>,
   listeners: CaptureListeners,
 ): void {
+  if (isServer) return;
   createEffect(
     () => el(),
     (node) => {

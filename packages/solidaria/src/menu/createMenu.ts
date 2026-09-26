@@ -224,6 +224,7 @@ export function createMenu<T>(
     get isDisabled() {
       return getProps().disallowTypeAhead ?? false;
     },
+    ref,
   });
 
   // Auto-focus the menu (or its first/last/selected item) when `autoFocus` is

@@ -21,6 +21,7 @@
  */
 
 import { onOwnedCleanup } from "../utils/owner";
+import { bindCapture, captureRef } from "../utils/capture";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
@@ -44,6 +45,11 @@ export interface TypeSelectOptions<T> {
   isKeyDisabled?: (key: Key) => boolean;
   /** Whether type-to-select is disabled. */
   isDisabled?: boolean;
+  /**
+   * Ref to the collection element for attaching the capture-phase keydown listener.
+   * If omitted, capture listeners fall back to `typeSelectProps.ref`.
+   */
+  ref?: Accessor<HTMLElement | null | undefined>;
 }
 
 export interface TypeSelectAria {
@@ -261,16 +267,17 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
     clearTimeout(state.timeout);
   });
 
+  if (options.ref) {
+    bindCapture(options.ref, {
+      keydown: onKeyDownCapture as EventListener,
+    });
+  }
+
   return {
     typeSelectProps: {
-      // Upstream binds `onKeyDownCapture` so Spacebar is handled before the
-      // collection's own keydown handler. In Solid a capture handler delivered
-      // through a `{...typeSelectProps}` spread is inert (it never fires), so the
-      // bubble-phase `onKeyDown` is the live path — and it also covers mid-search
-      // Space because its bail check only rejects a *leading* Space. True capture
-      // would need a ref-based addEventListener threaded through every consumer;
-      // A spread capture handler is inert in Solid; ticket #128 owns the real
-      // capture-phase binding.
+      ref: captureRef({
+        keydown: onKeyDownCapture as EventListener,
+      }),
       onKeyDownCapture,
       onKeyDown,
     } as JSX.HTMLAttributes<HTMLElement>,

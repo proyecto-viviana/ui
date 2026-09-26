@@ -626,4 +626,118 @@ describe("createTypeSelect", () => {
     fireEvent.keyDown(container, { key: "e" });
     expect(onFocusedKeyChange).toHaveBeenCalledWith("e");
   });
+
+  it("handles mid-search Space in capture phase before child/bubble listeners", async () => {
+    const onFocusedKeyChange = vi.fn();
+    const childBubbleKeyDown = vi.fn();
+
+    const { getByTestId } = render(() => {
+      const spaceItems = [
+        { key: "item-1", label: "Item 1" },
+        { key: "item-2", label: "Item 2" },
+      ];
+      const collection = createMockCollection(spaceItems);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+      });
+
+      return (
+        <div {...typeSelectProps} data-testid="container" tabIndex={0}>
+          <div data-testid="child-item" tabIndex={-1} onKeyDown={childBubbleKeyDown}>
+            Item 1
+          </div>
+        </div>
+      );
+    });
+
+    const container = getByTestId("container");
+    const childItem = getByTestId("child-item");
+    childItem.focus();
+
+    // Type "i", "t", "e", "m"
+    fireEvent.keyDown(childItem, { key: "i" });
+    fireEvent.keyDown(childItem, { key: "t" });
+    fireEvent.keyDown(childItem, { key: "e" });
+    fireEvent.keyDown(childItem, { key: "m" });
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("item-1");
+
+    childBubbleKeyDown.mockClear();
+
+    // Now dispatch Space on child item
+    const spaceEvent = new KeyboardEvent("keydown", {
+      key: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    childItem.dispatchEvent(spaceEvent);
+
+    // The capture handler caught Space, preventing default and stopping propagation
+    expect(spaceEvent.defaultPrevented).toBe(true);
+    expect(childBubbleKeyDown).not.toHaveBeenCalled();
+
+    // Next character "2" continues the search "item 2" and lands on item-2
+    fireEvent.keyDown(childItem, { key: "2" });
+    expect(onFocusedKeyChange).toHaveBeenLastCalledWith("item-2");
+  });
+
+  it("binds capture listener from options.ref and cleans up on unmount", async () => {
+    const onFocusedKeyChange = vi.fn();
+    let containerEl!: HTMLDivElement;
+
+    const { unmount } = render(() => {
+      const spaceItems = [
+        { key: "item-1", label: "Item 1" },
+        { key: "item-2", label: "Item 2" },
+      ];
+      const collection = createMockCollection(spaceItems);
+      const [focusedKey, setFocusedKey] = createSignal<Key | null>(null);
+
+      const { typeSelectProps } = createTypeSelect({
+        collection: () => collection,
+        focusedKey,
+        onFocusedKeyChange: (key) => {
+          setFocusedKey(key);
+          onFocusedKeyChange(key);
+        },
+        ref: () => containerEl,
+      });
+
+      return (
+        <div ref={containerEl} {...typeSelectProps} data-testid="container" tabIndex={0}>
+          <div data-testid="child">Child</div>
+        </div>
+      );
+    });
+
+    // Start a search with "i"
+    fireEvent.keyDown(containerEl, { key: "i" });
+    expect(onFocusedKeyChange).toHaveBeenCalledWith("item-1");
+
+    // Space should be captured
+    const spaceEvent = new KeyboardEvent("keydown", {
+      key: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    containerEl.dispatchEvent(spaceEvent);
+    expect(spaceEvent.defaultPrevented).toBe(true);
+
+    // Unmount and verify no listeners leak
+    unmount();
+
+    const postUnmountEvent = new KeyboardEvent("keydown", {
+      key: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    containerEl.dispatchEvent(postUnmountEvent);
+    expect(postUnmountEvent.defaultPrevented).toBe(false);
+  });
 });
