@@ -27,6 +27,7 @@ import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { createStep } from "@proyecto-viviana/solidaria";
 
 export type StepListSize = "sm" | "md" | "lg";
 
@@ -208,6 +209,17 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
   const ctx = useContext(StepListSizeContext);
   const listState = useStepListState();
   const [isFocusVisible, setIsFocusVisible] = createSignal(false);
+  let linkRef: HTMLAnchorElement | undefined;
+
+  const { stepProps } = createStep(
+    {
+      get key() {
+        return props.item.key;
+      },
+    },
+    listState,
+    () => linkRef ?? null,
+  );
 
   // Accessible name composed from marker + visually-hidden state + label,
   // matching the vendored `@adobe/react-spectrum` StepListItem
@@ -232,6 +244,8 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
       data-disabled={!props.renderProps.isSelectable || undefined}
     >
       <a
+        ref={(el) => (linkRef = el)}
+        {...stepProps}
         role="link"
         aria-current={props.renderProps.isSelected ? "step" : undefined}
         aria-disabled={!props.renderProps.isSelectable ? "true" : undefined}
@@ -254,8 +268,18 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
             listState.setSelectedKey(props.item.key);
           }
         }}
-        onFocus={(e) => setIsFocusVisible(e.currentTarget.matches(":focus-visible"))}
-        onBlur={() => setIsFocusVisible(false)}
+        onFocus={(e) => {
+          if (typeof stepProps.onFocus === "function") {
+            (stepProps.onFocus as (e: FocusEvent) => void)(e);
+          }
+          setIsFocusVisible(e.currentTarget.matches(":focus-visible"));
+        }}
+        onBlur={(e) => {
+          if (typeof stepProps.onBlur === "function") {
+            (stepProps.onBlur as (e: FocusEvent) => void)(e);
+          }
+          setIsFocusVisible(false);
+        }}
       >
         {/* Marker ALWAYS carries the step number as text — it is referenced by
             aria-labelledby, so the accessible name stays "N State: Label" in

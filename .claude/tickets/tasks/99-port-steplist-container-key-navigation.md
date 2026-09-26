@@ -4,7 +4,7 @@ type: task
 title: "Port StepList container key navigation"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 steplist: progress Tab Details→Select offers→Fallback offer→After matches; from Details, React ArrowDown moves focus (two downs land on Fallback offer), End stays on last selectable, Home returns to Details, typeahead s focuses Select offers without selecting; Solid stays on Details for all four. Default (only step 1 selectable) arrows/Home/End/typeahead are no-ops both. ArrowRight no-op both (vertical). Did not waive.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "createStepListState routed through SingleSelectListState collection spine; createStepList and createStep hooked to createSelectableList and createSelectableItem with allowsTabNavigation. Certified container key walks across default and progress pass pair diffing with React oracle.",
     }
 ---
 

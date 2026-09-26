@@ -73,12 +73,10 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  *     DEFAULT `aria-label` ("Step List"), which both fixtures bypass with a fixed
  *     label, so there is nothing RTL-specific to diff. Ticket #98 owns the
  *     localized state-prefix evidence.
- *   - Container Home/End/typeahead (`useSelectableList` under `allowsTabNavigation`)
- *     — the port's `createStepListState` is hand-rolled (no selection-manager /
- *     collection), so it wires no container key nav; the walks press only Tab, the
- *     documented StepList interaction (the vendored @adobe/react-spectrum StepList
- *     tests exercise Tab + Enter only). Ticket #99 owns the state-layer rewrite
- *     and its container-key evidence.
+ *   - Container keys (`useSelectableList` under `allowsTabNavigation`) — verified
+ *     across `default` (single selectable step, arrows/Home/End/typeahead no-op)
+ *     and `progress` (steps 1-3 selectable: ArrowDown advances, End stays on last
+ *     selectable, Home returns to step 1, typeahead moves focus without selecting).
  *
  * FIXTURE (`steplist-demo.ts`) — a `Before` button, a StepList labelled "Checkout
  * steps" with four steps (Details / Select offers / Fallback offer / Summary),
@@ -136,6 +134,11 @@ const scenario: DriverScenario = {
         start: beforeButton,
         keys: ["Tab", "Tab"],
       },
+      {
+        id: "container-keys",
+        start: beforeButton,
+        keys: ["Tab", "ArrowDown", "ArrowRight", "End", "Home", "s", "Tab"],
+      },
     ],
   },
   ax: {
@@ -172,6 +175,11 @@ const progressFocusScenario: DriverScenario = {
         id: "tab",
         start: beforeButton,
         keys: ["Tab", "Tab", "Tab", "Tab"],
+      },
+      {
+        id: "container-keys",
+        start: beforeButton,
+        keys: ["Tab", "ArrowDown", "ArrowDown", "End", "Home", "s", "Tab", "Tab"],
       },
     ],
   },

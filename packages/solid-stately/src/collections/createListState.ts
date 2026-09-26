@@ -376,7 +376,7 @@ export function createSingleSelectListState<T = unknown>(
     allowDuplicateSelectionEvents: true,
     get selectedKeys() {
       const key = getProps().selectedKey;
-      return key != null ? [key] : [];
+      return key !== undefined ? (key != null ? [key] : []) : undefined;
     },
     get defaultSelectedKeys() {
       const key = getProps().defaultSelectedKey;

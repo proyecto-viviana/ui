@@ -282,19 +282,121 @@ describe("StepList", () => {
       expect(li2.getAttribute("data-selected")).toBeTruthy();
     });
 
-    it("should prevent ArrowUp/ArrowDown", () => {
+    it("should navigate between selectable steps with ArrowDown and ArrowUp", () => {
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step2" }}
+        />
+      ));
+
+      const link1 = getStepLink(1);
+      const link2 = getStepLink(2);
+      const link3 = getStepLink(3);
+
+      link1.focus();
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(link2);
+
+      fireEvent.keyDown(link2, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(link3);
+
+      fireEvent.keyDown(link3, { key: "ArrowUp" });
+      expect(document.activeElement).toBe(link2);
+
+      fireEvent.keyDown(link2, { key: "ArrowUp" });
+      expect(document.activeElement).toBe(link1);
+    });
+
+    it("should navigate to first and last selectable steps with Home and End", () => {
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step2" }}
+        />
+      ));
+
+      const link1 = getStepLink(1);
+      const link2 = getStepLink(2);
+      const link3 = getStepLink(3);
+
+      link1.focus();
+      expect(document.activeElement).toBe(link1);
+
+      // Navigate down to link2, then Home returns to link1
+      fireEvent.keyDown(link1, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(link2);
+
+      fireEvent.keyDown(link2, { key: "Home" });
+      expect(document.activeElement).toBe(link1);
+
+      // From link1, navigate down to last selectable (link3); End stays on last selectable
+      fireEvent.keyDown(link1, { key: "ArrowDown" });
+      fireEvent.keyDown(link2, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(link3);
+
+      fireEvent.keyDown(link3, { key: "End" });
+      expect(document.activeElement).toBe(link3);
+    });
+
+    it("should navigate via typeahead without changing selection", () => {
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step2" }}
+        />
+      ));
+
+      const link1 = getStepLink(1);
+      const link2 = getStepLink(2);
+
+      link1.focus();
+      expect(document.activeElement).toBe(link1);
+
+      // Typeahead 'p' for 'Profile' (step 2)
+      fireEvent.keyDown(link1, { key: "p" });
+      expect(document.activeElement).toBe(link2);
+
+      // Selection must remain on step 1 (typeahead only moves focus)
+      expect(getStepLi(1).getAttribute("data-selected")).toBeTruthy();
+      expect(getStepLi(2).getAttribute("data-selected")).toBeFalsy();
+    });
+
+    it("should treat arrows, Home, End, and typeahead as no-ops when only step 1 is selectable", () => {
       render(() => <TestStepList />);
 
       const link1 = getStepLink(1);
       link1.focus();
+      expect(document.activeElement).toBe(link1);
 
-      const downEvent = new KeyboardEvent("keydown", {
-        key: "ArrowDown",
-        bubbles: true,
-        cancelable: true,
-      });
-      const prevented = !link1.dispatchEvent(downEvent);
-      expect(prevented).toBe(true);
+      fireEvent.keyDown(link1, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "End" });
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "Home" });
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "p" });
+      expect(document.activeElement).toBe(link1);
+    });
+
+    it("should not navigate horizontally on a vertical step list", () => {
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step2" }}
+        />
+      ));
+
+      const link1 = getStepLink(1);
+      link1.focus();
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(link1);
+
+      fireEvent.keyDown(link1, { key: "ArrowLeft" });
+      expect(document.activeElement).toBe(link1);
     });
   });
 

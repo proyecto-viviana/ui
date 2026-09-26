@@ -15,37 +15,78 @@
 
 /**
  * ARIA hooks for StepList components.
- * Provides accessible step list and step item props.
+ * Provides accessible step list and step item props with container key navigation.
  */
 
 import type { JSX } from "@solidjs/web";
-import type { StepListState } from "@proyecto-viviana/solid-stately";
-import type { Key } from "@proyecto-viviana/solid-stately";
+import type { StepListState, Key } from "@proyecto-viviana/solid-stately";
+import { createSelectableList } from "../selection/createSelectableList";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
+import { filterDOMProps } from "../utils/filterDOMProps";
+import { mergeProps } from "../utils/mergeProps";
 
 export interface AriaStepListProps {
   /** Accessible label for the step list. */
   "aria-label"?: string;
   /** ID of element that labels the step list. */
   "aria-labelledby"?: string;
+  /** Primary orientation of the step list items. @default "vertical" */
+  orientation?: "vertical" | "horizontal";
+  /** Whether typeahead navigation is disabled. @default false */
+  disallowTypeAhead?: boolean;
+  /** Ref accessor for the step list container element. */
+  ref?: () => HTMLElement | null;
 }
 
 export interface StepListAria {
   /** Props for the step list container element. */
   stepListProps: JSX.HTMLAttributes<HTMLOListElement>;
+  /** Props for the step list container element (matching upstream listProps). */
+  listProps: JSX.HTMLAttributes<HTMLOListElement>;
 }
 
 /**
- * Creates ARIA props for a step list container.
+ * Creates ARIA props for a step list container with keyboard navigation.
  */
-export function createStepList(props: AriaStepListProps, _state: StepListState): StepListAria {
+export function createStepList(
+  props: AriaStepListProps,
+  state: StepListState,
+  ref?: () => HTMLElement | null,
+): StepListAria {
+  const listRef = () => ref?.() ?? props.ref?.() ?? null;
+
+  const selectableList = createSelectableList({
+    selectionManager: state.selectionManager,
+    ref: listRef,
+    allowsTabNavigation: true,
+    orientation: props.orientation ?? "vertical",
+    disallowTypeAhead: props.disallowTypeAhead ?? false,
+  });
+
+  const domProps = () =>
+    filterDOMProps(props as unknown as Record<string, unknown>, { labelable: true });
+
+  const mergedProps = mergeProps(selectableList.listProps as Record<string, unknown>, domProps(), {
+    get "aria-label"() {
+      return props["aria-label"] ?? "Step List";
+    },
+    get "aria-labelledby"() {
+      return props["aria-labelledby"];
+    },
+  }) as JSX.HTMLAttributes<HTMLOListElement>;
+
+  Object.defineProperty(mergedProps, "tabIndex", {
+    enumerable: true,
+    configurable: true,
+    get: () => undefined,
+  });
+
   return {
-    stepListProps: {
-      get "aria-label"() {
-        return props["aria-label"] ?? "Step List";
-      },
-      get "aria-labelledby"() {
-        return props["aria-labelledby"];
-      },
+    get stepListProps() {
+      return mergedProps;
+    },
+    get listProps() {
+      return mergedProps;
     },
   };
 }
@@ -53,6 +94,8 @@ export function createStepList(props: AriaStepListProps, _state: StepListState):
 export interface AriaStepProps {
   /** The key of this step. */
   key: Key;
+  /** Ref accessor for the step link element. */
+  ref?: () => HTMLElement | null;
 }
 
 export interface StepAria {
@@ -62,13 +105,35 @@ export interface StepAria {
   stepStateText: string;
 }
 
+export type AriaStepListItemProps = AriaStepProps;
+export type StepListItemAria = StepAria;
+
 /**
  * Creates ARIA props for an individual step within a step list.
  */
-export function createStep(props: AriaStepProps, state: StepListState): StepAria {
+export function createStep(
+  props: AriaStepProps,
+  state: StepListState,
+  ref?: () => HTMLElement | null,
+): StepAria {
+  const itemRef = () => ref?.() ?? props.ref?.() ?? null;
   const isSelected = () => state.selectedKey() === props.key;
   const isCompleted = () => state.isCompleted(props.key);
   const selectable = () => state.isSelectable(props.key);
+  const isDisabled = () => !selectable();
+
+  const { itemProps } = createSelectableItem(
+    {
+      get key() {
+        return props.key;
+      },
+      get isDisabled() {
+        return isDisabled();
+      },
+    },
+    state as unknown as SelectableItemState<unknown>,
+    itemRef,
+  );
 
   const getStepStateText = (): string => {
     if (isSelected()) return "Current";
@@ -76,46 +141,27 @@ export function createStep(props: AriaStepProps, state: StepListState): StepAria
     return "Not completed";
   };
 
-  const handleClick: JSX.EventHandler<HTMLAnchorElement, MouseEvent> = (e) => {
-    e.preventDefault();
-    if (selectable()) {
-      state.setSelectedKey(props.key);
-    }
-  };
-
-  const handleKeyDown: JSX.EventHandler<HTMLAnchorElement, KeyboardEvent> = (e) => {
-    // Prevent arrow key scrolling — tab order handles navigation
-    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-      e.preventDefault();
-      return;
-    }
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (selectable()) {
-        state.setSelectedKey(props.key);
-      }
-    }
-  };
+  const stepProps = mergeProps(itemProps as Record<string, unknown>, {
+    role: "link" as const,
+    get "aria-current"() {
+      return isSelected() ? ("step" as const) : undefined;
+    },
+    get "aria-disabled"() {
+      return isDisabled() ? ("true" as const) : undefined;
+    },
+    get tabIndex() {
+      return selectable() ? 0 : undefined;
+    },
+  }) as JSX.HTMLAttributes<HTMLAnchorElement>;
 
   return {
     get stepProps() {
-      return {
-        role: "link" as const,
-        get "aria-current"() {
-          return isSelected() ? ("step" as const) : undefined;
-        },
-        get "aria-disabled"() {
-          return !selectable() ? "true" : undefined;
-        },
-        get tabIndex() {
-          return selectable() ? 0 : undefined;
-        },
-        onClick: handleClick,
-        onKeyDown: handleKeyDown,
-      };
+      return stepProps;
     },
     get stepStateText() {
       return getStepStateText();
     },
   };
 }
+
+export const createStepListItem = createStep;

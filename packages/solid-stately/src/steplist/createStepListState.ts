@@ -22,10 +22,13 @@
 import { createEffect, createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal } from "../utils";
+import type { CollectionNode, Key } from "../collections/types";
+import {
+  createSingleSelectListState,
+  type SingleSelectListState,
+} from "../collections/createListState";
 
-import type { Key } from "../collections/types";
-
-export interface StepListStateProps {
+export interface StepListStateProps<T = unknown> {
   /** The currently selected step key (controlled). */
   selectedKey?: Key;
   /** The default selected step key (uncontrolled). */
@@ -45,44 +48,29 @@ export interface StepListStateProps {
   /** Keys of individually disabled steps. */
   disabledKeys?: Iterable<Key>;
   /** The step items. */
-  items: Array<{ key: Key; [key: string]: any }>;
+  items: T[];
 }
 
-export interface StepListState {
-  readonly selectedKey: Accessor<Key | null>;
+export interface StepListState<T = unknown> extends SingleSelectListState<T> {
   readonly lastCompletedStep: Accessor<Key | null>;
-  readonly items: Accessor<Array<{ key: Key }>>;
+  readonly items: Accessor<T[]>;
   setSelectedKey(key: Key): void;
-  setLastCompletedStep(key: Key): void;
+  setLastCompletedStep(key: Key | null): void;
   isCompleted(key: Key): boolean;
   isSelectable(key: Key): boolean;
-  isDisabled: Accessor<boolean>;
+  isDisabled: Accessor<boolean> & ((key?: Key) => boolean);
   isReadOnly: Accessor<boolean>;
 }
 
 /**
  * Creates state for a step list component.
  */
-export function createStepListState(props: StepListStateProps): StepListState {
-  const items = () => props.items;
-
-  // Build an index map: Key -> index
-  const indexMap = createMemo(() => {
-    const map = new Map<Key, number>();
-    const currentItems = items();
-    for (let i = 0; i < currentItems.length; i++) {
-      map.set(currentItems[i].key, i);
-    }
-    return map;
-  });
-
-  // Disabled keys set
-  const disabledKeysSet = createMemo(() => new Set<Key>(props.disabledKeys ?? []));
-
-  const isDisabled: Accessor<boolean> = () => props.isDisabled ?? false;
+export function createStepListState<T = unknown>(props: StepListStateProps<T>): StepListState<T> {
+  const isListDisabled: Accessor<boolean> = () => props.isDisabled ?? false;
   const isReadOnly: Accessor<boolean> = () => props.isReadOnly ?? false;
+  const items: Accessor<T[]> = () => props.items ?? [];
 
-  // Last completed step signal (uncontrolled)
+  // Last completed step signal (uncontrolled / controlled sync)
   const [lastCompletedStepInternal, setLastCompletedStepInternal] =
     createInternalSignal<Key | null>(props.defaultLastCompletedStep ?? null);
 
@@ -93,9 +81,99 @@ export function createStepListState(props: StepListStateProps): StepListState {
     return lastCompletedStepInternal();
   };
 
-  const setLastCompletedStep = (key: Key) => {
-    const currentIndex = indexMap().get(key);
-    const prevIndex = lastCompletedStep() !== null ? indexMap().get(lastCompletedStep()!) : -1;
+  const isCompleted = (step: Key): boolean => {
+    if (step == null) return false;
+    const completed = lastCompletedStep();
+    if (completed == null) return false;
+    const { indexMap } = keyMaps();
+    const stepIdx = indexMap.get(step);
+    const completedIdx = indexMap.get(completed);
+    if (stepIdx === undefined || completedIdx === undefined) return false;
+    return stepIdx <= completedIdx;
+  };
+
+  const isSelectable = (step: Key): boolean => {
+    if (isListDisabled() || singleSelectListState.disabledKeys().has(step) || isReadOnly()) {
+      return false;
+    }
+    if (isCompleted(step)) return true;
+    const { keysLinkedList } = keyMaps();
+    const prevStep = keysLinkedList.get(step);
+    return (
+      (prevStep !== undefined && isCompleted(prevStep)) ||
+      step === singleSelectListState.collection().getFirstKey()
+    );
+  };
+
+  const findInitialSelectedKey = (): Key | undefined => {
+    if (props.defaultSelectedKey !== undefined) {
+      return props.defaultSelectedKey;
+    }
+    const currentItems = (props.items ?? []) as Array<{ key: Key; [key: string]: any }>;
+    const disabled = new Set<Key>(props.disabledKeys ?? []);
+    for (const item of currentItems) {
+      if (!disabled.has(item.key)) {
+        return item.key;
+      }
+    }
+    return currentItems[0]?.key;
+  };
+
+  // Route through the shared SingleSelectListState collection spine
+  const singleSelectListState = createSingleSelectListState<T>({
+    get items() {
+      return (props.items ?? []) as T[];
+    },
+    getKey(item: any) {
+      return item.key;
+    },
+    getTextValue(item: any) {
+      return item.label ?? item.textValue ?? (item.key != null ? String(item.key) : "");
+    },
+    get disabledKeys() {
+      return props.disabledKeys;
+    },
+    get selectedKey() {
+      return props.selectedKey;
+    },
+    get defaultSelectedKey() {
+      return findInitialSelectedKey();
+    },
+    onSelectionChange(key) {
+      if (key != null) {
+        props.onSelectionChange?.(key);
+      }
+    },
+  });
+
+  // Build indexMap and keysLinkedList from the collection
+  const keyMaps = createMemo(() => {
+    const coll = singleSelectListState.collection();
+    const indexMap = new Map<Key, number>();
+    const keysLinkedList = new Map<Key, Key | undefined>();
+    let i = 0;
+    let prev: CollectionNode<T> | undefined;
+    for (const item of coll) {
+      indexMap.set(item.key, i);
+      keysLinkedList.set(item.key, prev?.key);
+      prev = item;
+      i++;
+    }
+    return { indexMap, keysLinkedList };
+  });
+
+  const setLastCompletedStep = (key: Key | null) => {
+    if (key == null) {
+      if (props.lastCompletedStep === undefined) {
+        setLastCompletedStepInternal(null);
+      }
+      props.onLastCompletedStepChange?.(null);
+      return;
+    }
+    const { indexMap } = keyMaps();
+    const currentIndex = indexMap.get(key);
+    const completed = lastCompletedStep();
+    const prevIndex = completed !== null ? indexMap.get(completed) : -1;
 
     // Only advance completion, never go back
     if (
@@ -109,127 +187,82 @@ export function createStepListState(props: StepListStateProps): StepListState {
     }
   };
 
-  const isCompleted = (key: Key): boolean => {
-    const completed = lastCompletedStep();
-    if (completed === null) return false;
-    const keyIndex = indexMap().get(key);
-    const completedIndex = indexMap().get(completed);
-    if (keyIndex === undefined || completedIndex === undefined) return false;
-    return keyIndex <= completedIndex;
-  };
-
-  const isStepDisabled = (key: Key): boolean => {
-    if (isDisabled()) return true;
-    return disabledKeysSet().has(key);
-  };
-
-  const isSelectable = (key: Key): boolean => {
-    if (isDisabled() || isReadOnly() || isStepDisabled(key)) return false;
-    // Completed steps are always selectable
-    if (isCompleted(key)) return true;
-    // First step is always selectable
-    const keyIndex = indexMap().get(key);
-    if (keyIndex === 0) return true;
-    // Otherwise a step is selectable only if the PREVIOUS step is completed —
-    // mirrors react-stately `useStepListState.isSelectable`
-    // (`isCompleted(prevStep) || step === firstKey`). There is no "step after the
-    // currently selected step" clause upstream: a fresh list exposes only the
-    // first step, and the immediate-next step becomes selectable when its
-    // predecessor is *completed*, not merely selected.
-    const currentItems = items();
-    if (keyIndex !== undefined && keyIndex > 0) {
-      const prevKey = currentItems[keyIndex - 1].key;
-      if (isCompleted(prevKey)) return true;
-    }
-    return false;
-  };
-
-  // Find the first selectable non-completed step
-  const findDefaultSelectedKey = (): Key | null => {
-    const currentItems = items();
-    for (const item of currentItems) {
-      if (!isCompleted(item.key) && !isStepDisabled(item.key)) {
-        return item.key;
-      }
-    }
-    // All completed - select first non-disabled
-    for (const item of currentItems) {
-      if (!isStepDisabled(item.key)) {
-        return item.key;
-      }
-    }
-    return currentItems.length > 0 ? currentItems[0].key : null;
-  };
-
-  // Selected key signal (uncontrolled)
-  const [selectedKeyInternal, setSelectedKeyInternal] = createInternalSignal<Key | null>(
-    props.defaultSelectedKey ?? findDefaultSelectedKey(),
-  );
-
-  const selectedKey: Accessor<Key | null> = () => {
-    if (props.selectedKey !== undefined) {
-      return props.selectedKey;
-    }
-    return selectedKeyInternal();
-  };
-
-  const setSelectedKey = (key: Key) => {
-    if (isReadOnly() || isDisabled()) return;
-    if (!isSelectable(key)) return;
-
-    // Mark previous selected step as completed if advancing
-    const currentSelected = selectedKey();
-    if (currentSelected !== null) {
-      const currentIndex = indexMap().get(currentSelected);
-      const newIndex = indexMap().get(key);
-      if (
-        currentIndex !== undefined &&
-        newIndex !== undefined &&
-        newIndex > currentIndex &&
-        !isCompleted(currentSelected)
-      ) {
-        setLastCompletedStep(currentSelected);
-      }
-    }
-
-    if (props.selectedKey === undefined) {
-      setSelectedKeyInternal(key);
-    }
-    props.onSelectionChange?.(key);
-  };
-
-  // Mirror react-stately `useStepListState`'s effect: whenever the selected step
+  // Mirror react-stately useStepListState's effect: whenever the selected step
   // sits more than one past the last completed step (e.g. mounted with a
-  // `defaultSelectedKey` ahead of progress), auto-complete its immediate
-  // predecessor. Because completion is cumulative (`isCompleted` = index ≤
-  // lastCompleted index), advancing `lastCompletedStep` to `selectedIdx - 1`
-  // marks every intermediate step complete. This runs regardless of
-  // `isDisabled` / `isReadOnly`, exactly as upstream (the effect is ungated).
+  // defaultSelectedKey ahead of progress), auto-complete its immediate predecessor.
   createEffect(
     () => {
-      const selKey = selectedKey();
+      const selKey = singleSelectListState.selectedKey();
       if (selKey === null) return null;
-      const selIdx = indexMap().get(selKey);
+      const { indexMap, keysLinkedList } = keyMaps();
+      const selIdx = indexMap.get(selKey);
       if (selIdx === undefined || selIdx <= 0) return null;
       const completed = lastCompletedStep();
-      const lcs = completed !== null ? (indexMap().get(completed) ?? -1) : -1;
+      const lcs = completed !== null ? (indexMap.get(completed) ?? -1) : -1;
       if (selIdx <= lcs + 1) return null;
-      return items()[selIdx - 1]?.key;
+      return keysLinkedList.get(selKey) ?? null;
     },
     (prevKey) => {
-      if (prevKey !== undefined && prevKey !== null) setLastCompletedStep(prevKey);
+      if (prevKey != null) {
+        setLastCompletedStep(prevKey);
+      }
     },
   );
 
+  // Sync initial focus to selectedKey if focusedKey is unset
+  createEffect(
+    () => singleSelectListState.selectedKey(),
+    (selKey) => {
+      if (singleSelectListState.focusedKey() == null && selKey != null) {
+        singleSelectListState.setFocusedKey(selKey);
+      }
+    },
+  );
+
+  const setSelectedKey = (key: Key) => {
+    if (isListDisabled() || isReadOnly()) return;
+    if (!isSelectable(key)) return;
+    const { keysLinkedList } = keyMaps();
+    const prevKey = keysLinkedList.get(key);
+    if (prevKey && !isCompleted(prevKey)) {
+      setLastCompletedStep(prevKey);
+    }
+    singleSelectListState.setSelectedKey(key);
+  };
+
+  // Bridge selectionManager with step list selectability
+  singleSelectListState.selectionManager.canSelectItem = (key: Key) => isSelectable(key);
+  const origReplaceSelection = singleSelectListState.selectionManager.replaceSelection.bind(
+    singleSelectListState.selectionManager,
+  );
+  singleSelectListState.selectionManager.replaceSelection = (key: Key) => {
+    if (isListDisabled() || isReadOnly()) return;
+    if (!isSelectable(key)) return;
+    const { keysLinkedList } = keyMaps();
+    const prevKey = keysLinkedList.get(key);
+    if (prevKey && !isCompleted(prevKey)) {
+      setLastCompletedStep(prevKey);
+    }
+    origReplaceSelection(key);
+  };
+
+  const isDisabledFn = ((key?: Key): boolean => {
+    if (key === undefined) {
+      return isListDisabled();
+    }
+    return !isSelectable(key);
+  }) as Accessor<boolean> & ((key?: Key) => boolean);
+
   return {
-    selectedKey,
+    ...singleSelectListState,
+    selectedKey: singleSelectListState.selectedKey,
     lastCompletedStep,
     items,
     setSelectedKey,
     setLastCompletedStep,
     isCompleted,
     isSelectable,
-    isDisabled,
+    isDisabled: isDisabledFn,
     isReadOnly,
   };
 }

@@ -27,7 +27,7 @@
 import { createContext, createMemo, useContext, For } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createStepListState, type StepListState, type Key } from "@proyecto-viviana/solid-stately";
-import { createStepList, type AriaStepListProps } from "@proyecto-viviana/solidaria";
+import { createStepList, createStep, type AriaStepListProps } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
@@ -171,6 +171,8 @@ export function StepList<T extends { key: Key; label: string }>(
     },
   });
 
+  let olRef: HTMLOListElement | undefined;
+
   // Create ARIA props
   const { stepListProps } = createStepList(
     {
@@ -180,8 +182,10 @@ export function StepList<T extends { key: Key; label: string }>(
       get "aria-labelledby"() {
         return ariaProps["aria-labelledby"];
       },
+      ref: () => olRef ?? null,
     },
     state,
+    () => olRef ?? null,
   );
 
   const renderValues = createMemo<StepListRenderProps>(() => ({
@@ -204,6 +208,7 @@ export function StepList<T extends { key: Key; label: string }>(
   return (
     <StepListStateContext value={state}>
       <ol
+        ref={(el) => (olRef = el)}
         {...stepListProps}
         {...domProps()}
         class={renderProps.class()}
@@ -254,6 +259,17 @@ export function Step(props: StepProps): JSX.Element {
   const [local, domProps] = splitProps(props, ["item", "stepNumber", "children", "class", "style"]);
 
   const state = useStepListState();
+  let linkRef: HTMLAnchorElement | undefined;
+
+  const { stepProps } = createStep(
+    {
+      get key() {
+        return local.item.key;
+      },
+    },
+    state,
+    () => linkRef ?? null,
+  );
 
   const isSelected = () => state.selectedKey() === local.item.key;
   const isCompleted = () => state.isCompleted(local.item.key);
@@ -267,10 +283,6 @@ export function Step(props: StepProps): JSX.Element {
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-      e.preventDefault();
-      return;
-    }
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       if (selectable()) {
@@ -290,9 +302,8 @@ export function Step(props: StepProps): JSX.Element {
       data-selectable={dataAttr(selectable())}
     >
       <a
-        role="link"
-        aria-current={isSelected() ? "step" : undefined}
-        aria-disabled={attrTrue(!selectable())}
+        ref={(el) => (linkRef = el)}
+        {...stepProps}
         tabindex={selectable() ? 0 : undefined}
         onClick={handleClick}
         onKeyDown={handleKeyDown}

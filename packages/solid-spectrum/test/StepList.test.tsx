@@ -89,4 +89,35 @@ describe("StepList DefaultStep (solid-spectrum)", () => {
     expect(fallback).toHaveAttribute("aria-current", "step");
     expect(summary).not.toHaveAttribute("aria-current");
   });
+
+  it("navigates between selectable steps with ArrowDown and ArrowUp", () => {
+    renderProgressStepList();
+
+    const [details, selectOffers, fallback] = stepLinks();
+    details.focus();
+    expect(document.activeElement).toBe(details);
+
+    fireEvent.keyDown(details, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(selectOffers);
+
+    fireEvent.keyDown(selectOffers, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(fallback);
+
+    fireEvent.keyDown(fallback, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(selectOffers);
+  });
+
+  it("focuses matching step via typeahead without selecting", () => {
+    renderProgressStepList();
+
+    const [details, selectOffers, fallback] = stepLinks();
+    details.focus();
+    expect(document.activeElement).toBe(details);
+
+    fireEvent.keyDown(details, { key: "s" });
+    expect(document.activeElement).toBe(selectOffers);
+    // Selection remains on fallback-offer
+    expect(fallback).toHaveAttribute("aria-current", "step");
+    expect(selectOffers).not.toHaveAttribute("aria-current");
+  });
 });
