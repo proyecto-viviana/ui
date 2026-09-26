@@ -9,6 +9,9 @@ export {
   type OverlayTriggerAria,
 } from "./createOverlayTrigger";
 
+// Close on scroll
+export { createCloseOnScroll, type CloseOnScrollOptions } from "./createCloseOnScroll";
+
 // Overlay behavior
 export { createOverlay, type AriaOverlayProps, type OverlayAria } from "./createOverlay";
 

@@ -205,6 +205,9 @@ export {
   onCloseMap,
   type OverlayTriggerProps,
   type OverlayTriggerAria,
+  // Close on scroll
+  createCloseOnScroll,
+  type CloseOnScrollOptions,
   // Overlay behavior
   createOverlay,
   type AriaOverlayProps,
@@ -711,6 +714,11 @@ export {
   focusSafely,
   bindCapture,
   captureRef,
+  nodeContains,
+  getEventTarget,
+  addEvent,
+  getPropagationTargets,
+  addGlobalScrollListener,
   type CaptureListeners,
   type FilterDOMPropsOptions,
 } from "./utils";

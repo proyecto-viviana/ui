@@ -4,9 +4,14 @@ type: task
 title: "Listen for global scroll across shadow roots"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-92" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "ported addGlobalScrollListener and createCloseOnScroll observing intermediate shadow roots across popover and tooltip",
+    }
 ---
 
 Port `addGlobalScrollListener` and use it for overlay `closeOnScroll` behavior.

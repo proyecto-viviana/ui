@@ -50,6 +50,9 @@ export {
   willOpenKeyboard,
   getActiveElement,
   getFocusableTreeWalker,
+  addEvent,
+  getPropagationTargets,
+  addGlobalScrollListener,
 } from "./dom";
 
 export { scrollIntoView, scrollIntoViewport } from "./scrollIntoView";

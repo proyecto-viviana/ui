@@ -23,6 +23,7 @@ import { createEffect, createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { useLocale } from "../i18n";
 import { addEvent, getActiveElement, getPropagationTargets, isFocusWithin } from "../utils/dom";
+import { createCloseOnScroll } from "../overlays/createCloseOnScroll";
 import {
   calculatePosition,
   getRect,
@@ -384,13 +385,13 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   });
 
   // Handle visual viewport resize (for iOS virtual keyboard)
+  let isResizing = false;
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];
 
     if (!isOpen()) return;
 
     let timeout: ReturnType<typeof setTimeout>;
-    let isResizing = false;
 
     const onResize = () => {
       isResizing = true;
@@ -424,36 +425,16 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   });
 
   // Close on scroll (when scrolling a parent of the trigger)
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
+  const close = () => {
+    if (!isResizing) {
+      onClose()?.();
+    }
+  };
 
-    const targetNode = targetRef();
-    const closeHandler = onClose();
-    if (!targetNode || !isOpen() || !closeHandler) return;
-
-    const handleScroll = (e: Event) => {
-      const target = e.target as Element;
-      // Don't close if scrolling within the overlay
-      if (overlayRef()?.contains(target)) return;
-      // Close if scrolling a parent of the target (but not body/html)
-      if (
-        target !== document.body &&
-        target !== document.documentElement &&
-        target.contains(targetNode)
-      ) {
-        closeHandler();
-      }
-    };
-
-    document.addEventListener("scroll", handleScroll, true);
-
-    _s2Cleanups.push(() => {
-      document.removeEventListener("scroll", handleScroll, true);
-    });
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
+  createCloseOnScroll({
+    triggerRef: targetRef,
+    isOpen,
+    onClose: onClose() ? close : undefined,
   });
 
   return {

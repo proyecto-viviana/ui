@@ -43,6 +43,9 @@ import {
   type TooltipTriggerProps as AriaProps,
   OverlayContainer,
   useLocale,
+  addGlobalScrollListener,
+  nodeContains,
+  getEventTarget,
 } from "@proyecto-viviana/solidaria";
 import {
   type RenderChildren,
@@ -383,6 +386,7 @@ const TriggerWrapper: ParentComponent<{
     const elementChild = findElementChild(span);
     if (elementChild) {
       setTriggerElement(elementChild);
+      props.ref(elementChild);
     }
 
     const immediateChild = findVisibleChild(span);
@@ -724,22 +728,10 @@ function TooltipContent(
     let pendingRaf = 0;
     let pendingTimeout = 0;
 
-    const tryUpdatePosition = () => {
-      pendingRaf = 0;
-      pendingTimeout = 0;
-      const success = updatePosition();
-      if (!success && retryCount < maxRetries) {
-        retryCount++;
-        pendingTimeout = window.setTimeout(tryUpdatePosition, 16);
-      }
-    };
-
-    pendingRaf = requestAnimationFrame(tryUpdatePosition);
-
     const closeOnScroll = (event: Event) => {
       const trigger = props.triggerRef();
-      const target = event.target;
-      if (!trigger || (target instanceof Node && !target.contains(trigger))) {
+      const target = getEventTarget(event);
+      if (!trigger || (target instanceof Node && !nodeContains(target, trigger))) {
         return;
       }
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
@@ -749,13 +741,37 @@ function TooltipContent(
       props.state.close(true);
     };
 
-    window.addEventListener("scroll", closeOnScroll, true);
+    let attachedTrigger = props.triggerRef();
+    let cleanupScroll = addGlobalScrollListener(attachedTrigger, closeOnScroll, true);
+
+    const rebindScrollIfNeeded = () => {
+      const current = props.triggerRef();
+      if (current && current !== attachedTrigger) {
+        cleanupScroll();
+        attachedTrigger = current;
+        cleanupScroll = addGlobalScrollListener(current, closeOnScroll, true);
+      }
+    };
+
+    const tryUpdatePosition = () => {
+      pendingRaf = 0;
+      pendingTimeout = 0;
+      rebindScrollIfNeeded();
+      const success = updatePosition();
+      if (!success && retryCount < maxRetries) {
+        retryCount++;
+        pendingTimeout = window.setTimeout(tryUpdatePosition, 16);
+      }
+    };
+
+    pendingRaf = requestAnimationFrame(tryUpdatePosition);
+
     window.addEventListener("resize", updatePosition);
 
     _s2Cleanups.push(() => {
       if (pendingRaf) cancelAnimationFrame(pendingRaf);
       if (pendingTimeout) clearTimeout(pendingTimeout);
-      window.removeEventListener("scroll", closeOnScroll, true);
+      cleanupScroll();
       window.removeEventListener("resize", updatePosition);
     });
 

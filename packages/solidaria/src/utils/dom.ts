@@ -214,6 +214,19 @@ export function getPropagationTargets(
 }
 
 /**
+ * Attaches a capturing scroll listener to global targets (including intermediate shadow roots)
+ * for a given element, ensuring scroll events that do not compose across shadow DOM boundaries
+ * are observed. Returns a cleanup function.
+ */
+export function addGlobalScrollListener(
+  target: EventTarget | null | undefined,
+  listener: (e: Event) => void,
+  options: boolean | AddEventListenerOptions = true,
+): () => void {
+  return addEvent(getPropagationTargets(target), "scroll", listener as EventListener, options);
+}
+
+/**
  * Sets a CSS property on an element and returns a cleanup function.
  * Property names are kebab-case (`scrollbar-gutter`, `padding-right`), matching
  * @react-aria/utils `setStyle` which uses `style.setProperty`.
