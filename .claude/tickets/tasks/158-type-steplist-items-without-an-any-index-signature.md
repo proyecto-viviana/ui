@@ -4,9 +4,14 @@ type: task
 title: "Type StepList items without an any index signature"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "StepListStateProps.items and StepListState.items typed with generic T[] instead of any index signature.",
+    }
 ---
 
 ## Cause

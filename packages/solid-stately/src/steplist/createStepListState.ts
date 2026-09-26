@@ -109,7 +109,7 @@ export function createStepListState<T = unknown>(props: StepListStateProps<T>): 
     if (props.defaultSelectedKey !== undefined) {
       return props.defaultSelectedKey;
     }
-    const currentItems = (props.items ?? []) as Array<{ key: Key; [key: string]: any }>;
+    const currentItems = (props.items ?? []) as Array<{ key: Key }>;
     const disabled = new Set<Key>(props.disabledKeys ?? []);
     for (const item of currentItems) {
       if (!disabled.has(item.key)) {
