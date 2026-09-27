@@ -12,6 +12,7 @@ import {
   createIcon,
   createIllustration,
 } from "../src/icon";
+import { style } from "../src/style";
 import { GitHubIcon } from "../src/icon/icons/GitHubIcon";
 import CrossIcon from "../src/icon/ui-icons/Cross";
 import Checkmark from "../src/icon/ui-icons/Checkmark";
@@ -281,5 +282,42 @@ describe("Icon (solid-spectrum)", () => {
     ));
 
     expect(container.querySelector("svg")).toHaveAttribute("data-slot", "illustration");
+  });
+
+  it("applies IconContext styles reactively when styles accessor changes", () => {
+    const [hidden, setHidden] = createSignal(false);
+    const { container } = render(() => (
+      <IconContext
+        value={{
+          styles: () =>
+            style({
+              visibility: {
+                isHidden: "hidden",
+              },
+            })({ isHidden: hidden() }),
+        }}
+      >
+        <TestCreatedIcon />
+      </IconContext>
+    ));
+
+    const svg = container.querySelector("svg")!;
+    const initialSvgClass = svg.getAttribute("class");
+    const hiddenClass = style({ visibility: "hidden" });
+    const [hiddenAtomicClass] = hiddenClass.trim().split(/\s+/);
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+
+    setHidden(true);
+    flush();
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).toContain(hiddenAtomicClass);
+    expect(svg.getAttribute("class")).not.toEqual(initialSvgClass);
+
+    setHidden(false);
+    flush();
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+    expect(svg.getAttribute("class")).toEqual(initialSvgClass);
   });
 });

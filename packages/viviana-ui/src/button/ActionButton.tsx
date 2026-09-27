@@ -333,23 +333,23 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       slot: "icon",
       render: centerBaseline({
         slot: "icon",
-        styles: () =>
-          style({
-            gridArea: "icon",
-            visibility: {
-              isProgressVisible: "hidden",
-            },
-          })({ isProgressVisible: isProgressVisible() }),
+        styles: style({
+          gridArea: "icon",
+        }),
       }),
-      styles: style({
-        /* fontRelative(16) — matches Button. S2's fontRelative(20) sizes to its 20px
-         * workflow-icon grid; on this register's 15px control font that renders ~21px,
-         * bigger than the register's 17px PixelIcon default (primitives.tsx:55).
-         * fontRelative(16) lands ~17px at the control font. */
-        size: fontRelative(16),
-        marginStart: "--iconMargin",
-        flexShrink: 0,
-      }),
+      styles: () =>
+        style({
+          /* fontRelative(16) — matches Button. S2's fontRelative(20) sizes to its 20px
+           * workflow-icon grid; on this register's 15px control font that renders ~21px,
+           * bigger than the register's 17px PixelIcon default (primitives.tsx:55).
+           * fontRelative(16) lands ~17px at the control font. */
+          size: fontRelative(16),
+          marginStart: "--iconMargin",
+          flexShrink: 0,
+          visibility: {
+            isProgressVisible: "hidden",
+          },
+        })({ isProgressVisible: isProgressVisible() }),
     };
     const textContextValue = {
       styles: () => s2ActionButtonText({ isProgressVisible: isProgressVisible() }),

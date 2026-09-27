@@ -4,8 +4,9 @@
 import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { createSignal, flush, type Component } from "solid-js";
-import { Icon, createIcon } from "../src/icon";
+import { Icon, IconContext, createIcon } from "../src/icon";
 import { Skeleton, loadingStyle } from "../src/skeleton";
+import { style } from "../src/style";
 
 type ProbeIcon = Component<{ size?: string | number; color?: string }>;
 
@@ -87,5 +88,48 @@ describe("Icon (@proyecto-viviana/ui)", () => {
 
     expect(svg?.getAttribute("class") ?? "").toContain(loadingStyle);
     expect(svg).toHaveAttribute("inert");
+  });
+
+  it("applies IconContext styles reactively when styles accessor changes", () => {
+    const TestCreatedIcon = createIcon((props) => (
+      <svg viewBox="0 0 20 20" {...props}>
+        <path d="M4 9h12v2H4z" />
+      </svg>
+    ));
+
+    const [hidden, setHidden] = createSignal(false);
+    const { container } = render(() => (
+      <IconContext
+        value={{
+          styles: () =>
+            style({
+              visibility: {
+                isHidden: "hidden",
+              },
+            })({ isHidden: hidden() }),
+        }}
+      >
+        <TestCreatedIcon />
+      </IconContext>
+    ));
+
+    const svg = container.querySelector("svg")!;
+    const initialSvgClass = svg.getAttribute("class");
+    const hiddenClass = style({ visibility: "hidden" });
+    const [hiddenAtomicClass] = hiddenClass.trim().split(/\s+/);
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+
+    setHidden(true);
+    flush();
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).toContain(hiddenAtomicClass);
+    expect(svg.getAttribute("class")).not.toEqual(initialSvgClass);
+
+    setHidden(false);
+    flush();
+
+    expect(svg.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+    expect(svg.getAttribute("class")).toEqual(initialSvgClass);
   });
 });

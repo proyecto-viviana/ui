@@ -4,9 +4,19 @@ type: task
 title: "Apply IconContext styles reactively in createIcon"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-26,
+      note: "made createIcon track IconContext styles reactively; restored Button and ActionButton S2 wrapper layout contract",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "verified reactive icon hiding via IconContext.styles in Button and ActionButton regression suites across both styled packages",
+    }
 ---
 
 ## Cause

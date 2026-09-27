@@ -5,6 +5,7 @@ import { Button, ButtonContext } from "../src/button";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
 import { pressScale } from "../src/pressScale";
+import { style } from "../src/style";
 
 // setupUser is consolidated in solid-spectrum-test-utils.
 
@@ -612,6 +613,46 @@ describe("Button", () => {
         expect(warnings).toEqual([]);
       } finally {
         warn.mockRestore();
+      }
+    });
+
+    it("hides authored createIcon child via IconContext.styles when pending progress becomes visible", () => {
+      vi.useFakeTimers();
+      try {
+        let setPending!: (pending: boolean) => void;
+        const { container } = render(() => {
+          const [pending, updatePending] = createSignal(false);
+          setPending = updatePending;
+          return (
+            <Button isPending={pending()}>
+              <BellIcon />
+              Save
+            </Button>
+          );
+        });
+
+        const iconWrapper = container.querySelector('[slot="icon"]')!;
+        const svg = iconWrapper.querySelector("svg")!;
+        const initialWrapperClass = iconWrapper.getAttribute("class");
+        const initialSvgClass = svg.getAttribute("class");
+
+        const hiddenClass = style({ visibility: "hidden" });
+        const [hiddenAtomicClass] = hiddenClass.trim().split(/\s+/);
+        expect(svg.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+        expect(iconWrapper.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+
+        setPending(true);
+        flush();
+        vi.advanceTimersByTime(1000);
+        flush();
+
+        expect(svg.getAttribute("class")?.split(/\s+/)).toContain(hiddenAtomicClass);
+        expect(svg.getAttribute("class")).not.toEqual(initialSvgClass);
+
+        expect(iconWrapper.getAttribute("class")?.split(/\s+/)).not.toContain(hiddenAtomicClass);
+        expect(iconWrapper.getAttribute("class")).toEqual(initialWrapperClass);
+      } finally {
+        vi.useRealTimers();
       }
     });
   });

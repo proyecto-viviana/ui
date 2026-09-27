@@ -151,13 +151,9 @@ export function Button(props: ButtonProps): JSX.Element {
     const iconContextValue = {
       render: centerBaseline({
         slot: "icon",
-        styles: () =>
-          style({
-            order: 0,
-            visibility: {
-              isProgressVisible: "hidden",
-            },
-          })({ isProgressVisible: isProgressVisible() }),
+        styles: style({
+          order: 0,
+        }),
       }),
       styles: () =>
         style({
@@ -170,7 +166,10 @@ export function Button(props: ButtonProps): JSX.Element {
           size: fontRelative(16),
           marginStart: "--iconMargin",
           flexShrink: 0,
-        }),
+          visibility: {
+            isProgressVisible: "hidden",
+          },
+        })({ isProgressVisible: isProgressVisible() }),
     };
     const textContextValue = {
       styles: () => s2ButtonText({ isProgressVisible: isProgressVisible() }),

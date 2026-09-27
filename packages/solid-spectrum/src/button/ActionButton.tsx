@@ -332,19 +332,19 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       slot: "icon",
       render: centerBaseline({
         slot: "icon",
-        styles: () =>
-          style({
-            gridArea: "icon",
-            visibility: {
-              isProgressVisible: "hidden",
-            },
-          })({ isProgressVisible: isProgressVisible() }),
+        styles: style({
+          gridArea: "icon",
+        }),
       }),
-      styles: style({
-        size: "1lh",
-        marginStart: "--iconMargin",
-        flexShrink: 0,
-      }),
+      styles: () =>
+        style({
+          size: "1lh",
+          marginStart: "--iconMargin",
+          flexShrink: 0,
+          visibility: {
+            isProgressVisible: "hidden",
+          },
+        })({ isProgressVisible: isProgressVisible() }),
     };
     const textContextValue = {
       styles: () => s2ActionButtonText({ isProgressVisible: isProgressVisible() }),

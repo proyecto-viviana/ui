@@ -147,7 +147,7 @@ function createIconForBase(
   bare = false,
 ) {
   return (props: SpectrumIconProps): JSX.Element => {
-    const ctx = useContext(context);
+    const ctx = () => useContext(context);
     const [local, rest] = splitProps(props, [
       "slot",
       "styles",
@@ -169,13 +169,17 @@ function createIconForBase(
         return local.slot ?? undefined;
       }
 
-      return local.slot ?? ctx.slot ?? undefined;
+      return local.slot ?? ctx()?.slot ?? undefined;
     };
     const contextStyles = () => {
       if (bare) {
         return undefined;
       }
-      return typeof ctx.styles === "function" ? ctx.styles() : ctx.styles;
+      const c = ctx();
+      if (!c) {
+        return undefined;
+      }
+      return typeof c.styles === "function" ? c.styles() : c.styles;
     };
     const isSkeleton = createIsSkeleton();
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
@@ -223,13 +227,13 @@ function createIconForBase(
     );
 
     // S2 ui-icons never call IconContext.render (centerBaseline / gridArea: icon).
-    return !bare && ctx.render ? ctx.render(svg) : svg;
+    return !bare && ctx()?.render ? ctx()!.render!(svg) : svg;
   };
 }
 
 export function createIllustration(Component: Component<SpectrumSvgComponentProps>) {
   return (props: SpectrumIllustrationProps): JSX.Element => {
-    const ctx = useContext(IllustrationContext);
+    const ctx = () => useContext(IllustrationContext);
     const [local, rest] = splitProps(props, [
       "slot",
       "styles",
@@ -245,10 +249,16 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
         return undefined;
       }
 
-      return local.slot ?? ctx.slot ?? undefined;
+      return local.slot ?? ctx()?.slot ?? undefined;
     };
-    const size = () => local.size ?? ctx.size ?? "M";
-    const contextStyles = () => (typeof ctx.styles === "function" ? ctx.styles() : ctx.styles);
+    const size = () => local.size ?? ctx()?.size ?? "M";
+    const contextStyles = () => {
+      const c = ctx();
+      if (!c) {
+        return undefined;
+      }
+      return typeof c.styles === "function" ? c.styles() : c.styles;
+    };
 
     const mergedClass = () =>
       [
@@ -283,6 +293,6 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
       />
     );
 
-    return ctx.render ? ctx.render(svg) : svg;
+    return ctx()?.render ? ctx()!.render!(svg) : svg;
   };
 }
