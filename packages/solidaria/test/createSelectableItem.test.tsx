@@ -468,3 +468,98 @@ describe("createSelectableItem — link activation", () => {
     expect(activate("action", "Enter")).toEqual({ total: 1, opened: 1, selected: false });
   });
 });
+
+describe("createSelectableItem — virtual focus", () => {
+  function renderVirtualFocusList() {
+    let state!: ListState<Item>;
+    let itemAEl!: HTMLDivElement;
+    let itemBEl!: HTMLDivElement;
+    let inputEl!: HTMLInputElement;
+
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+      });
+
+      const apiA = createSelectableItem(
+        () => ({ key: "a", id: "item-a", shouldUseVirtualFocus: true }),
+        state,
+        () => itemAEl,
+      );
+
+      const apiB = createSelectableItem(
+        () => ({ key: "b", id: "item-b", shouldUseVirtualFocus: true }),
+        state,
+        () => itemBEl,
+      );
+
+      return (
+        <div>
+          <input ref={(el) => (inputEl = el)} data-testid="input" />
+          <div ref={(el) => (itemAEl = el)} id="item-a" data-testid="item-a" {...apiA.itemProps}>
+            Apple
+          </div>
+          <div ref={(el) => (itemBEl = el)} id="item-b" data-testid="item-b" {...apiB.itemProps}>
+            Banana
+          </div>
+        </div>
+      );
+    });
+
+    return { state, inputEl, itemAEl, itemBEl };
+  }
+
+  it("dispatches virtual focus without moving real DOM focus to the item", () => {
+    const { state, inputEl, itemAEl } = renderVirtualFocusList();
+    inputEl.focus();
+    expect(document.activeElement).toBe(inputEl);
+
+    const events: string[] = [];
+    itemAEl.addEventListener("focus", () => events.push("focus"));
+    itemAEl.addEventListener("focusin", () => events.push("focusin"));
+
+    state.selectionManager.setFocused(true);
+    state.selectionManager.setFocusedKey("a");
+    flush();
+
+    expect(events).toEqual(["focus", "focusin"]);
+    expect(document.activeElement).toBe(inputEl);
+  });
+
+  it("dispatches virtual blur and focus in upstream order when switching focused items", () => {
+    const { state, inputEl, itemAEl, itemBEl } = renderVirtualFocusList();
+    inputEl.focus();
+
+    state.selectionManager.setFocused(true);
+    state.selectionManager.setFocusedKey("a");
+    flush();
+    inputEl.setAttribute("aria-activedescendant", "item-a");
+
+    const events: Array<{ type: string; target: string; relatedTarget: string | null }> = [];
+    const record = (targetName: string) => (e: Event) => {
+      const fe = e as FocusEvent;
+      events.push({
+        type: fe.type,
+        target: targetName,
+        relatedTarget: (fe.relatedTarget as HTMLElement)?.id ?? null,
+      });
+    };
+
+    itemAEl.addEventListener("blur", record("item-a"));
+    itemAEl.addEventListener("focusout", record("item-a"));
+    itemBEl.addEventListener("focus", record("item-b"));
+    itemBEl.addEventListener("focusin", record("item-b"));
+
+    state.selectionManager.setFocusedKey("b");
+    flush();
+
+    expect(events).toEqual([
+      { type: "blur", target: "item-a", relatedTarget: "item-b" },
+      { type: "focusout", target: "item-a", relatedTarget: "item-b" },
+      { type: "focus", target: "item-b", relatedTarget: "item-a" },
+      { type: "focusin", target: "item-b", relatedTarget: "item-a" },
+    ]);
+    expect(document.activeElement).toBe(inputEl);
+  });
+});

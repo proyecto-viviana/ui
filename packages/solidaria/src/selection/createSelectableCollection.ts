@@ -30,13 +30,12 @@
  *  - The link branch routes through useRouter().open(...) to respect
  *    client-side routing, and needs no flushSync — setFocusedKey is synchronous
  *    and the keyed item element already exists in the DOM.
- *  - Ticket #100 tracks the missing virtual-focus cursor movement through
- *    `moveVirtualFocus` and `dispatchVirtualFocus`. The focused-key bookkeeping
- *    around it is preserved.
+ *  - Virtual-focus cursor movement and AT cursor reset are wired through
+ *    `moveVirtualFocus` and `dispatchVirtualFocus`.
  */
 
 import { onOwnedCleanup } from "../utils/owner";
-import { createEffect, createTrackedEffect, flush } from "solid-js";
+import { createSignal, createTrackedEffect, flush } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { FocusStrategy, Key, SelectionManager } from "@proyecto-viviana/solid-stately";
 import type { KeyboardDelegate } from "../grid/types";
@@ -46,10 +45,12 @@ import {
   getActiveElement,
   getEventTarget,
   getFocusableTreeWalker,
+  getOwnerDocument,
   isFocusWithin,
   isTabbable,
   nodeContains,
 } from "../utils/dom";
+import { dispatchVirtualFocus, moveVirtualFocus } from "../focus/virtualFocus";
 import { useRouter } from "../utils/openLink";
 import { focusSafely, focusWithoutScrolling } from "../utils/focus";
 import { scrollIntoView, scrollIntoViewport } from "../utils/scrollIntoView";
@@ -468,10 +469,12 @@ export function createSelectableCollection<T = unknown>(
       }
     }
 
-    try {
-      flush();
-    } catch {
-      /* inside an effect apply — DOM updates on the current flush */
+    if (!shouldUseVirtualFocus) {
+      try {
+        flush();
+      } catch {
+        /* inside an effect apply — DOM updates on the current flush */
+      }
     }
   };
 
@@ -520,7 +523,7 @@ export function createSelectableCollection<T = unknown>(
 
   // Whether to auto-focus the first item once the collection updates (used by
   // virtual focus / autocomplete as the user types).
-  let shouldVirtualFocusFirst = false;
+  const [shouldVirtualFocusFirst, setShouldVirtualFocusFirst] = createSignal(false);
 
   if (shouldUseVirtualFocus) {
     addRefListener(ref, FOCUS_EVENT, (e: Event) => {
@@ -529,7 +532,7 @@ export function createSelectableCollection<T = unknown>(
       manager.setFocused(true);
       // If the user is typing forwards, autofocus the first option in the list.
       if (detail?.focusStrategy === "first") {
-        shouldVirtualFocusFirst = true;
+        setShouldVirtualFocusFirst(true);
       }
     });
 
@@ -542,38 +545,47 @@ export function createSelectableCollection<T = unknown>(
     });
   }
 
-  // Update active descendant (skip-first; runs on [firstKey, collection.size]).
-  createEffect(
-    () => [delegate().getFirstKey?.() ?? null, manager.collection.size] as const,
-    ([firstKey]) => {
-      if (!shouldVirtualFocusFirst) {
-        return;
+  // Update active descendant
+  createTrackedEffect(() => {
+    if (!shouldVirtualFocusFirst()) {
+      return;
+    }
+    const firstKey = delegate().getFirstKey?.() ?? null;
+    const collectionSize = manager.collection.size;
+    if (firstKey == null) {
+      // If no focusable items exist in the list, make sure to clear any activedescendant that may still exist and move focus back to
+      // the original active element (e.g. the autocomplete input)
+      const previousActiveElement = getActiveElement(getOwnerDocument(ref() ?? null));
+      moveVirtualFocus(ref() ?? null);
+      if (previousActiveElement) {
+        dispatchVirtualFocus(previousActiveElement, null);
       }
-      if (firstKey == null) {
-        // No focusable items: clear the virtual-focus intent once the
-        // collection is settled. Ticket #100 tracks the missing AT cursor
-        // reset for this branch.
-        if (manager.collection.size > 0) {
-          shouldVirtualFocusFirst = false;
-        }
-      } else {
-        manager.setFocusedKey(firstKey);
-        shouldVirtualFocusFirst = false;
+      // If there wasn't a focusable key but the collection had items, then that means we aren't in an intermediate load state and all keys are disabled.
+      // Reset shouldVirtualFocusFirst so that we don't erroneously autofocus an item when the collection is filtered again.
+      if (collectionSize > 0) {
+        setShouldVirtualFocusFirst(false);
       }
-    },
-    { defer: true },
-  );
+    } else {
+      manager.setFocusedKey(firstKey);
+      // Only set shouldVirtualFocusFirst to false if we've successfully set the first key as the focused key
+      // If there wasn't a key to focus, we might be in a temporary loading state so we'll want to still focus the first key
+      // after the collection updates after load
+      setShouldVirtualFocusFirst(false);
+    }
+  });
 
   // Reset the focus-first flag if the focused key changed by any other means.
-  createEffect(
-    () => manager.focusedKey,
-    () => {
-      if (manager.collection.size > 0) {
-        shouldVirtualFocusFirst = false;
-      }
-    },
-    { defer: true },
-  );
+  let initialFocusedKey = true;
+  createTrackedEffect(() => {
+    const _focusedKey = manager.focusedKey;
+    if (initialFocusedKey) {
+      initialFocusedKey = false;
+      return;
+    }
+    if (manager.collection.size > 0) {
+      setShouldVirtualFocusFirst(false);
+    }
+  });
 
   // Auto-focus the collection (or its first/last/selected item) on mount, once
   // the collection has items. Re-runs as the collection size changes.

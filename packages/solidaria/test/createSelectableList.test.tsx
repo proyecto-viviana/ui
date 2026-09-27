@@ -11,8 +11,10 @@
  */
 
 import { describe, it, expect, afterEach } from "vite-plus/test";
+import { createSignal, flush } from "solid-js";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
+import { FOCUS_EVENT } from "../src/selection/constants";
 import {
   createSelectableList,
   type CreateSelectableListOptions,
@@ -530,5 +532,189 @@ describe("createSelectableList — layout delegate & page navigation", () => {
     });
     container.dispatchEvent(pageUpEvent);
     expect(pageUpEvent.defaultPrevented).toBe(false);
+  });
+});
+
+describe("createSelectableCollection — virtual focus", () => {
+  it("autofocuses first focusable item on FOCUS_EVENT under shouldUseVirtualFocus", () => {
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    let inputEl!: HTMLInputElement;
+
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+        shouldUseVirtualFocus: true,
+      });
+      return (
+        <div>
+          <input ref={(el) => (inputEl = el)} />
+          <ul ref={(el) => (container = el)} {...(api.listProps as Record<string, unknown>)}>
+            {items.map((item) => (
+              <li data-key={item.key}>{item.label}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    });
+
+    inputEl.focus();
+    expect(document.activeElement).toBe(inputEl);
+    expect(state.selectionManager.focusedKey).toBeNull();
+
+    container.dispatchEvent(
+      new CustomEvent(FOCUS_EVENT, {
+        bubbles: true,
+        detail: { focusStrategy: "first" },
+      }),
+    );
+    flush();
+
+    expect(state.selectionManager.focusedKey).toBe("a");
+    expect(document.activeElement).toBe(inputEl);
+  });
+
+  it("skips disabled items and focuses first enabled item on FOCUS_EVENT", () => {
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    let inputEl!: HTMLInputElement;
+
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+        disabledKeys: ["a"],
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+        shouldUseVirtualFocus: true,
+      });
+      return (
+        <div>
+          <input ref={(el) => (inputEl = el)} />
+          <ul ref={(el) => (container = el)} {...(api.listProps as Record<string, unknown>)}>
+            {items.map((item) => (
+              <li data-key={item.key}>{item.label}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    });
+
+    inputEl.focus();
+    container.dispatchEvent(
+      new CustomEvent(FOCUS_EVENT, {
+        bubbles: true,
+        detail: { focusStrategy: "first" },
+      }),
+    );
+    flush();
+
+    expect(state.selectionManager.focusedKey).toBe("b");
+    expect(document.activeElement).toBe(inputEl);
+  });
+
+  it("dispatches virtual reset to active element when all items are disabled", () => {
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    let inputEl!: HTMLInputElement;
+
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+        disabledKeys: ["a", "b", "c", "d"],
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+        shouldUseVirtualFocus: true,
+      });
+      return (
+        <div>
+          <input ref={(el) => (inputEl = el)} />
+          <ul ref={(el) => (container = el)} {...(api.listProps as Record<string, unknown>)}>
+            {items.map((item) => (
+              <li data-key={item.key}>{item.label}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    });
+
+    inputEl.focus();
+
+    const inputEvents: string[] = [];
+    inputEl.addEventListener("focus", () => inputEvents.push("focus"));
+    inputEl.addEventListener("focusin", () => inputEvents.push("focusin"));
+
+    container.dispatchEvent(
+      new CustomEvent(FOCUS_EVENT, {
+        bubbles: true,
+        detail: { focusStrategy: "first" },
+      }),
+    );
+    flush();
+
+    expect(state.selectionManager.focusedKey).toBeNull();
+    expect(inputEvents).toEqual(["focus", "focusin"]);
+    expect(document.activeElement).toBe(inputEl);
+  });
+
+  it("preserves focus-first intent while empty and focuses after items load", () => {
+    const [currentItems, setCurrentItems] = createSignal<Item[]>([]);
+    let state!: ListState<Item>;
+    let container!: HTMLUListElement;
+    let inputEl!: HTMLInputElement;
+
+    render(() => {
+      state = createListState<Item>({
+        get items() {
+          return currentItems();
+        },
+        getKey: (item) => item.key,
+      });
+      const api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+        shouldUseVirtualFocus: true,
+      });
+      return (
+        <div>
+          <input ref={(el) => (inputEl = el)} />
+          <ul ref={(el) => (container = el)} {...(api.listProps as Record<string, unknown>)}>
+            {currentItems().map((item) => (
+              <li data-key={item.key}>{item.label}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    });
+
+    inputEl.focus();
+
+    // Trigger focus while empty (e.g. async fetch in progress)
+    container.dispatchEvent(
+      new CustomEvent(FOCUS_EVENT, {
+        bubbles: true,
+        detail: { focusStrategy: "first" },
+      }),
+    );
+    flush();
+
+    expect(state.selectionManager.focusedKey).toBeNull();
+
+    // Items finish loading
+    setCurrentItems(items);
+    flush();
+
+    expect(state.selectionManager.focusedKey).toBe("a");
+    expect(document.activeElement).toBe(inputEl);
   });
 });

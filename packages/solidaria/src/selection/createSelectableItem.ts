@@ -59,6 +59,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
+import { moveVirtualFocus } from "../focus/virtualFocus";
 import { useRouter } from "../utils/openLink";
 import { getCollectionId, isNonContiguousSelectionModifier } from "./utils";
 import { selectItem, type SelectItemState } from "./selectItem";
@@ -368,8 +369,9 @@ export function createSelectableItem<T>(
           focusSafely(el);
         }
       }
+    } else {
+      moveVirtualFocus(ref() ?? null);
     }
-    // Ticket #100 tracks the missing moveVirtualFocus call for this branch.
   });
 
   const { pressProps, isPressed } = createPress({

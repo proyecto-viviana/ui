@@ -4,12 +4,17 @@ type: task
 title: "Wire virtual focus into selectable collections"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "recovered from the completed press-path epic and current selection source comments",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "wired moveVirtualFocus in createSelectableItem and cursor reset in createSelectableCollection",
     }
 ---
 
