@@ -4,12 +4,22 @@ type: task
 title: "Open MenuTrigger from any usePress child as RAC PressResponder does"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #257 menu-focus follow-up; found alongside, not blocking :20",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "package test for an S2 Button inside MenuTrigger, matching the ActionButton press contract",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "an S2 Button inside MenuTrigger already exposes aria-haspopup and opens the menu on click; the package test locks that press contract",
     }
 ---
 

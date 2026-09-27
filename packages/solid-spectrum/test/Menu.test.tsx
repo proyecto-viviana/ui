@@ -139,6 +139,31 @@ describe("Menu (solid-spectrum)", () => {
       expect(dialog).toHaveAccessibleName("Layer actions");
     });
 
+    it("opens the menu from an S2 Button the way RAC PressResponder does", async () => {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger>
+          <Button>Actions</Button>
+          <Menu aria-label="Actions">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Actions" });
+      expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+      await user.click(trigger);
+
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(trigger).toHaveAttribute("aria-controls", menu.id);
+    });
+
     it("places from live direction and align after mount, matching RAC", async () => {
       const user = setupUser();
       function LivePlacementMenu() {
