@@ -228,8 +228,8 @@ Trivial audit fixes:
   is **#168** — do not fold into #135.
 - Docs: architecture `solid` export points at dist; certification snapshot
   vs ticket-state split; the Relationship lines on #47, #56, and #81 no
-  longer point at deleted `tech-debt.md` (42 other ticket files still cite
-  it as provenance — #215).
+  longer point at deleted `tech-debt.md`. Other tickets name that retired
+  note without a path (#215).
 - Hygiene: deleted tracked empty `.codex`; deleted
   `packages/solid-spectrum/archive/alert/index.tsx`; stopped exporting unused
   `create*Tester` from solidaria test-utils.

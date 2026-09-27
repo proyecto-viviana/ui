@@ -23,4 +23,4 @@ gate passes.
 
 ## Relationship
 
-Replaces `lint-rules-reenable` from `.claude/current/tech-debt.md`.
+Replaces `lint-rules-reenable` from the retired tech-debt note.

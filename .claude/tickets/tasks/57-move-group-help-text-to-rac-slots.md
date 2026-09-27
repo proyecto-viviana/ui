@@ -25,4 +25,4 @@ and run its gates before continuing.
 ## Relationship
 
 Replaces `describedby-slots-group-redesign` from
-`.claude/current/tech-debt.md`. Depends on #56.
+the retired tech-debt note. Depends on #56.

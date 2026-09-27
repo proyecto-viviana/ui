@@ -20,4 +20,4 @@ accessibility contracts.
 ## Relationship
 
 Replaces `viviana-ui-button-passthrough` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

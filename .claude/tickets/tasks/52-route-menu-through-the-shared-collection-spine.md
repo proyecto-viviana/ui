@@ -14,5 +14,5 @@ the per-widget copy after parity evidence passes.
 
 ## Relationship
 
-Replaces `migrate-menu-spine` from `.claude/current/tech-debt.md`. Its legacy
+Replaces `migrate-menu-spine` from the retired tech-debt note. Its legacy
 manager and delegate prerequisites are complete.

@@ -42,4 +42,4 @@ coverage asserts the role description and stepper labels.
 ## Relationship
 
 Replaces `intl-roledescription-hardcodes` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

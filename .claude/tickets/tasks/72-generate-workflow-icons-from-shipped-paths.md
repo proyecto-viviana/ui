@@ -52,4 +52,4 @@ focused Icons and SearchField Playwright run passed all 44 cases.
 ## Relationship
 
 Replaces `s2wf-icon-shipped-path-provenance` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

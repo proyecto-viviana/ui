@@ -48,4 +48,4 @@ after that shrink, not a parallel type war (#156).
 
 Finding `L1-M2-typecheck-gate-skips-37k-lines` (CONFIRMED). Related: #2 (same class of suppressed signal).
 This ticket also replaces legacy task `ts-nocheck-components` from
-`.claude/current/tech-debt.md`; both records describe the same burn-down.
+the retired tech-debt note; both records describe the same burn-down.

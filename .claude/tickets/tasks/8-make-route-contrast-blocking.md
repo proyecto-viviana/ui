@@ -76,5 +76,5 @@ evidence: playground `10/10`, comparison `80/80`, and browser smoke `44/44`.
 
 ## Relationship
 
-Closes `tech-debt.md` → "axe color-contrast excluded from the blocking gate".
+Closes the retired tech-debt item "axe color-contrast excluded from the blocking gate".
 Complements ticket #2: a passing check that CI never invokes is not a gate.

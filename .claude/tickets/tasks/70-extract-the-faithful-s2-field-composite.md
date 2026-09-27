@@ -53,4 +53,4 @@ source.
 ## Relationship
 
 Replaces `helptext-fielderror-visual-port` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

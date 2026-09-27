@@ -22,5 +22,5 @@ Delete the per-widget navigation copy after parity evidence passes.
 
 ## Relationship
 
-Replaces `migrate-taggroup-spine` from `.claude/current/tech-debt.md`. Its
+Replaces `migrate-taggroup-spine` from the retired tech-debt note. Its
 legacy manager and delegate prerequisites are complete.

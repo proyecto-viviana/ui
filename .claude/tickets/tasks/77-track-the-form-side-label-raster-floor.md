@@ -30,4 +30,4 @@ evidence.
 ## Relationship
 
 Replaces `form-side-label-halfpixel-baseline` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

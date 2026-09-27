@@ -31,4 +31,4 @@ temporary limitation section.
 ## Relationship
 
 Replaces `picker-static-children-and-sections` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

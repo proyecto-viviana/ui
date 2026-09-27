@@ -142,4 +142,4 @@ versions and provenance records are verified.
 
 ## Relationship
 
-Replaces `release-train-unjam` from `.claude/current/tech-debt.md`.
+Replaces `release-train-unjam` from the retired tech-debt note.

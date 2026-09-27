@@ -18,5 +18,5 @@ this task is evidence-harness work.
 
 ## Relationship
 
-Replaces `combobox-d6-announcements` from `.claude/current/tech-debt.md`.
+Replaces `combobox-d6-announcements` from the retired tech-debt note.
 Depends on #79.

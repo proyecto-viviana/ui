@@ -20,4 +20,4 @@ does not already contain a dialog.
 
 ## Relationship
 
-Replaces `popover-enter-motion` from `.claude/current/tech-debt.md`.
+Replaces `popover-enter-motion` from the retired tech-debt note.

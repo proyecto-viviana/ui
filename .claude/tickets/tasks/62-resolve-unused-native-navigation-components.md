@@ -30,5 +30,5 @@ public barrel until the owner reopens that surface.
 
 ## Relationship
 
-Replaces `dead-natives` from `.claude/current/tech-debt.md`. Closed together
+Replaces `dead-natives` from the retired tech-debt note. Closed together
 with #145.

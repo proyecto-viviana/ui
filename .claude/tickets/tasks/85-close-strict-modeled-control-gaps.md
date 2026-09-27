@@ -24,7 +24,7 @@ work.
 
 ## Relationship
 
-Replaces `labeledvalue-strict-parity` from `.claude/current/tech-debt.md`.
+Replaces `labeledvalue-strict-parity` from the retired tech-debt note.
 GitHub issue #24 holds the original external scope.
 
 ## Round-2 note (2026-09-01)

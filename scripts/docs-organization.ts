@@ -147,5 +147,87 @@ export function checkDocsOrganization(
     }
   }
 
+  failures.push(...checkTicketLocalPaths(root));
+
+  return failures;
+}
+
+const CLAUDE_BACKTICK = /`(\.claude\/[^`]+)`/g;
+const LINE_ANCHOR = /:\d+(?:-\d+)?$/;
+const HISTORICAL_MARK = /^\s*\((?:deleted|retired|example)\)/;
+const CONCRETE_CLAUDE_PATH = /^\.claude(?:\/[\w.+@=-]+)+\/?$/;
+
+/**
+ * A backtick or markdown path under `.claude/` is a claim that the file is
+ * there. `(deleted)`, `(retired)`, and `(example)` immediately after the cite
+ * keep a historical or illustrative mention without making that claim. Globs
+ * and ellipsis abbreviations are not paths.
+ */
+function concreteClaudePath(token: string): string | null {
+  const trimmed = token
+    .trim()
+    .replace(LINE_ANCHOR, "")
+    .replace(/[.,);]+$/, "");
+  if (!CONCRETE_CLAUDE_PATH.test(trimmed)) return null;
+  if (trimmed.includes("...")) return null;
+  return trimmed;
+}
+
+function citedClaudePaths(line: string, filePath: string, root: string): string[] {
+  const cited = new Set<string>();
+
+  for (const match of line.matchAll(CLAUDE_BACKTICK)) {
+    const raw = match[1];
+    if (!raw) continue;
+    const after = line.slice((match.index ?? 0) + match[0].length);
+    if (HISTORICAL_MARK.test(after)) continue;
+    const concrete = concreteClaudePath(raw);
+    if (concrete) cited.add(concrete);
+  }
+
+  for (const match of line.matchAll(MARKDOWN_LINK)) {
+    const rawTarget = match[1] ?? match[2];
+    if (!rawTarget || rawTarget.startsWith("#") || EXTERNAL_TARGET.test(rawTarget)) continue;
+    const pathPart = rawTarget.split("#", 1)[0]?.split("?", 1)[0];
+    if (!pathPart || !/^(?:\.|\.claude)|\/|\.claude\//.test(pathPart)) continue;
+    if (/[*?<>]|\.\.\./.test(pathPart)) continue;
+    const after = line.slice((match.index ?? 0) + match[0].length);
+    if (HISTORICAL_MARK.test(after)) continue;
+
+    let resolved: string;
+    try {
+      resolved = path.resolve(path.dirname(filePath), decodeURIComponent(pathPart));
+    } catch {
+      continue;
+    }
+    const repoPath = toRepoPath(root, resolved);
+    if (repoPath.startsWith("..")) continue;
+    const concrete = concreteClaudePath(repoPath);
+    if (concrete) cited.add(concrete);
+  }
+
+  return [...cited];
+}
+
+function checkTicketLocalPaths(root: string): string[] {
+  const failures: string[] = [];
+  const ticketsDir = path.join(root, ".claude", "tickets");
+  const ticketFiles = walk(ticketsDir)
+    .filter((file) => file.endsWith(".md"))
+    .sort();
+
+  for (const file of ticketFiles) {
+    const relative = toRepoPath(root, file);
+    const lines = readFileSync(file, "utf8").split(/\r?\n/);
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index] ?? "";
+      for (const repoPath of citedClaudePaths(line, file, root)) {
+        if (!existsSync(path.join(root, repoPath))) {
+          failures.push(`Missing ticket path in ${relative}:${index + 1}: ${repoPath}`);
+        }
+      }
+    }
+  }
+
   return failures;
 }

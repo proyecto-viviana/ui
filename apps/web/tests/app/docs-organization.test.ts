@@ -143,4 +143,39 @@ Update when: the document set changes.
       "Active internal plan is not allowed under public docs: docs/release-plan.md",
     );
   });
+
+  it("rejects a ticket path under .claude that is not on disk", () => {
+    const root = fixture();
+    write(
+      root,
+      ".claude/tickets/tasks/example.md",
+      "See `.claude/current/tech-debt.md` and [launch](../../current/launch.md).\n",
+    );
+
+    const problems = checkDocsOrganization(root, { liveCurrentDocs: liveDocs });
+    expect(problems).toContain(
+      "Missing ticket path in .claude/tickets/tasks/example.md:1: .claude/current/tech-debt.md",
+    );
+    expect(problems).toContain(
+      "Missing ticket path in .claude/tickets/tasks/example.md:1: .claude/current/launch.md",
+    );
+  });
+
+  it("accepts a historical or illustrative ticket path, and a path that exists", () => {
+    const root = fixture();
+    write(
+      root,
+      ".claude/tickets/tasks/example.md",
+      [
+        "Replaces `item` from `.claude/current/tech-debt.md` (deleted).",
+        "The review used `.claude/tickets/tasks/999-x.md` (example).",
+        "Stable policy lives in `.claude/current/status.md`.",
+        "Globs such as `.claude/current/*.md` and `.claude/tickets/tasks/603-...md` are not paths.",
+        "Bound tuples call `handler[0](handler[1], e)`.",
+        "",
+      ].join("\n"),
+    );
+
+    expect(checkDocsOrganization(root, { liveCurrentDocs: liveDocs })).toEqual([]);
+  });
 });

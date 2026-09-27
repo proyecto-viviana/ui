@@ -18,4 +18,4 @@ The export inventory closes and packed-consumer tests prove each public path.
 
 ## Relationship
 
-Replaces `viviana-ui-subpath-exports` from `.claude/current/tech-debt.md`.
+Replaces `viviana-ui-subpath-exports` from the retired tech-debt note.

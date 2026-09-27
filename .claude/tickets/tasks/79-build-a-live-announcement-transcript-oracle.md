@@ -24,4 +24,4 @@ and can support #80.
 ## Relationship
 
 Replaces `d6-announcement-calibration` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

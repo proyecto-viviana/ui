@@ -60,7 +60,7 @@ Findings `L1-ui-is-a-fork-not-a-layer` (CONFIRMED),
 2026-08-01 audit record; this ticket corrects their implied collapse boundary.
 Consolidation row R2.6. Blocked in practice by #2.
 This ticket also replaces legacy task `upper-layer-convergence` from
-`.claude/current/tech-debt.md`; both records describe the same owner-steered
+the retired tech-debt note; both records describe the same owner-steered
 upper-layer boundary work.
 
 ## Round-2 note (2026-09-01)

@@ -125,7 +125,7 @@ their view from that record.
 - `/admin` reads and updates ticket status and blocked state.
 - The parser accepts legacy `done` state and normalizes it to `merged`.
 - The parser preserves unknown frontmatter fields.
-- All 45 unique active records from `tech-debt.md` have ticket coverage.
+- All 45 unique active records from the retired tech-debt note have ticket coverage.
 - Active records from the Kumo plan, work queue, upstream audit, and comparison
   docs plan have ticket coverage.
 - `.claude/current` contains no writable task or roadmap-item state.

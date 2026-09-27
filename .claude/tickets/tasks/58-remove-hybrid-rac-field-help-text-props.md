@@ -19,5 +19,5 @@ binding pattern. This breaking change is owner-authorized.
 
 ## Relationship
 
-Replaces `rac-field-prop-divergence` from `.claude/current/tech-debt.md`.
+Replaces `rac-field-prop-divergence` from the retired tech-debt note.
 Depends on #56.

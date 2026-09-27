@@ -4,15 +4,20 @@ type: task
 title: "Stop ticket relationship lines from citing deleted current-doc paths"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "docs:check rejects a ticket path under .claude/ that is not on disk. Provenance lines name the retired tech-debt note; a cite marked deleted, retired, or example does not count as the file being there",
+    }
 ---
 
 ## Cause
 
 Round 1's fix-now retargeted three tickets (#47, #56, #81) off deleted
-`.claude/current/tech-debt.md`, and #136 recorded "relationship lines no
+`.claude/current/tech-debt.md` (deleted), and #136 recorded "relationship lines no
 longer point at deleted `tech-debt.md`". `rg` finds the path in 42 ticket
 files today, including #1 and #62 (edited in the same audit commit). Most
 are provenance lines ("Replaces `x` from `tech-debt.md`"), which is history,

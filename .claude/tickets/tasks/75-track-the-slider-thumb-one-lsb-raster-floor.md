@@ -30,4 +30,4 @@ raster floor with current evidence.
 ## Relationship
 
 Replaces `slider-thumb-antialias-1lsb` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

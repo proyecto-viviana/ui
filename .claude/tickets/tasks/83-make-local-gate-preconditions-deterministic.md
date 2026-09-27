@@ -22,5 +22,5 @@ report a clear, actionable precondition without misleading type errors.
 
 ## Relationship
 
-Replaces `local-gate-preconditions` from `.claude/current/tech-debt.md`.
+Replaces `local-gate-preconditions` from the retired tech-debt note.
 GitHub issue #28 holds the original external scope.

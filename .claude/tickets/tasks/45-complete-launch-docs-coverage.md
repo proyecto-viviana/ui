@@ -23,5 +23,5 @@ GitHub issue #27 remains the external execution record.
 
 ## Relationship
 
-Replaces `launch-docs-coverage` from `.claude/current/tech-debt.md` and supports
+Replaces `launch-docs-coverage` from the retired tech-debt note and supports
 initiative #26.

@@ -30,4 +30,4 @@ temporary `tooltip-arrow-overlayarrow-subpixel` waiver is removed.
 
 ## Relationship
 
-Replaces `tooltip-arrow-overlayarrow` from `.claude/current/tech-debt.md`.
+Replaces `tooltip-arrow-overlayarrow` from the retired tech-debt note.

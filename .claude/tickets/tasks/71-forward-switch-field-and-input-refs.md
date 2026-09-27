@@ -28,4 +28,4 @@ This is existing debt, not a certification regression.
 ## Relationship
 
 Replaces `headless-switch-ref-forwarding` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

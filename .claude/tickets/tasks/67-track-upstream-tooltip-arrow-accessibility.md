@@ -22,4 +22,4 @@ evidence. Until then, retain and document the upstream behavior.
 
 ## Relationship
 
-Replaces `tooltip-arrow-aria-exposed` from `.claude/current/tech-debt.md`.
+Replaces `tooltip-arrow-aria-exposed` from the retired tech-debt note.

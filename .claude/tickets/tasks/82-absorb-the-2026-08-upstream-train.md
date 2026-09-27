@@ -93,5 +93,5 @@ condition of this one. Met at `5ecb333`; the next train is #220.
 
 ## Relationship
 
-Replaces `upstream-train-2026-08` from `.claude/current/tech-debt.md`. GitHub
+Replaces `upstream-train-2026-08` from the retired tech-debt note. GitHub
 issue #23 holds the original external scope.

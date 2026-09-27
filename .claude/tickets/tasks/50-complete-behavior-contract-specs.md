@@ -19,6 +19,6 @@ behavior branches under the component playbook.
 
 ## Relationship
 
-Replaces `contract-spec-burndown` from `.claude/current/tech-debt.md`. Its
+Replaces `contract-spec-burndown` from the retired tech-debt note. Its
 legacy spine prerequisites are complete; verify the current report before
 selecting the next component.

@@ -24,4 +24,4 @@ the affected strict pixel cases become byte-exact, and the waiver is removed.
 
 ## Relationship
 
-Replaces `listview-virtualizer-subpixel` from `.claude/current/tech-debt.md`.
+Replaces `listview-virtualizer-subpixel` from the retired tech-debt note.

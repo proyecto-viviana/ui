@@ -24,4 +24,4 @@ TreeView evidence no longer scopes out this structure.
 
 ## Relationship
 
-Replaces `treeview-div-grid-paint` from `.claude/current/tech-debt.md`.
+Replaces `treeview-div-grid-paint` from the retired tech-debt note.

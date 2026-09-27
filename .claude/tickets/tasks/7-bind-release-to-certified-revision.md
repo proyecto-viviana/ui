@@ -57,7 +57,7 @@ It also requires Certification Gates to build the published package artifacts
 before `guard:jsx-deopt-size` measures `dist/*.jsx`, so a dirty local checkout
 cannot supply evidence that a clean runner never produced.
 
-The separate owner-steered branch-policy task (`tech-debt.md` →
+The separate owner-steered branch-policy task (retired tech-debt item
 `ci-gates-required`) is also closed: after the exact hosted head passed,
 `main` protection was enabled and read back with strict required checks for
 `certification-gates`, `changesets-check`, `release-readiness`, and `site-gate`,

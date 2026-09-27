@@ -46,4 +46,4 @@ known divergence is removed.
 ## Relationship
 
 Replaces `slider-thumb-native-input-semantics` from
-`.claude/current/tech-debt.md`. Do not patch individual widgets.
+the retired tech-debt note. Do not patch individual widgets.

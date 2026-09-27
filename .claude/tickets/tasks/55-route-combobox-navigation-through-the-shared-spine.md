@@ -13,5 +13,5 @@ Replace the ComboBox local navigation logic with the shared keyboard delegate.
 
 ## Relationship
 
-Replaces `migrate-combobox-nav` from `.claude/current/tech-debt.md`. Its legacy
+Replaces `migrate-combobox-nav` from the retired tech-debt note. Its legacy
 delegate prerequisite is complete.

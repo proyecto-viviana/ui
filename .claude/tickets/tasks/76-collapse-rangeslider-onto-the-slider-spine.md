@@ -29,4 +29,4 @@ Slider fixes propagate without duplicate edits.
 ## Relationship
 
 Replaces `rangeslider-duplicates-slider-spine` from
-`.claude/current/tech-debt.md`. Coordinate with #74.
+the retired tech-debt note. Coordinate with #74.

@@ -108,12 +108,12 @@ in Git.
 
 ## Initial retirement candidates
 
-- [x] `.claude/current/archive/recertification-full.md`
-- [x] `.claude/current/launch.md`
-- [x] `.claude/current/recertification.md`
-- [x] `.claude/current/repo-assessment.md`
-- [x] `.claude/current/ui-client-contract.md`
-- [x] `.claude/current/visual-system-lane.md`
+- [x] `.claude/current/archive/recertification-full.md` (deleted)
+- [x] `.claude/current/launch.md` (deleted)
+- [x] `.claude/current/recertification.md` (deleted)
+- [x] `.claude/current/repo-assessment.md` (deleted)
+- [x] `.claude/current/ui-client-contract.md` (deleted)
+- [x] `.claude/current/visual-system-lane.md` (deleted)
 
 This list is a research input. Verify each live dependency before removal.
 

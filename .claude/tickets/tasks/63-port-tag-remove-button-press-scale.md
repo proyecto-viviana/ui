@@ -28,4 +28,4 @@ as upstream.
 
 ## Relationship
 
-Replaces `taggroup-remove-pressscale` from `.claude/current/tech-debt.md`.
+Replaces `taggroup-remove-pressscale` from the retired tech-debt note.

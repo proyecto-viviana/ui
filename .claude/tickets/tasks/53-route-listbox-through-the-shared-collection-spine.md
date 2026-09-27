@@ -14,5 +14,5 @@ upstream `div[role]` structure instead of the current `ul`/`li` structure.
 
 ## Relationship
 
-Replaces `migrate-listbox-spine` from `.claude/current/tech-debt.md`. Its
+Replaces `migrate-listbox-spine` from the retired tech-debt note. Its
 legacy manager and delegate prerequisites are complete.

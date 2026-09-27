@@ -29,4 +29,4 @@ structure, and visual evidence pass.
 ## Relationship
 
 Replaces `contextualhelp-popover-delegation` from
-`.claude/current/tech-debt.md`.
+the retired tech-debt note.

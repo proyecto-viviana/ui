@@ -17,4 +17,4 @@ Submenu state and its transitions match upstream and have regression evidence.
 
 ## Relationship
 
-Replaces `port-submenu-state` from `.claude/current/tech-debt.md`.
+Replaces `port-submenu-state` from the retired tech-debt note.
