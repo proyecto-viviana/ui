@@ -27,7 +27,12 @@ import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import { createStep } from "@proyecto-viviana/solidaria";
+import {
+  createStep,
+  createStringFormatter,
+  createNumberFormatter,
+} from "@proyecto-viviana/solidaria";
+import { stepListIntlStrings } from "./intl";
 
 export type StepListSize = "sm" | "md" | "lg";
 
@@ -158,6 +163,7 @@ export function StepList<T extends { key: Key; label: string }>(
 
   const size = () => local.size ?? "md";
   const customClass = () => local.class ?? "";
+  const stringFormatter = createStringFormatter(stepListIntlStrings, "@react-spectrum/steplist");
 
   const renderStep = (item: T, renderProps: StepListItemRenderProps): JSX.Element => {
     if (local.children) {
@@ -168,6 +174,10 @@ export function StepList<T extends { key: Key; label: string }>(
       <DefaultStep item={item} stepNumber={renderProps.stepNumber} renderProps={renderProps} />
     );
   };
+
+  const defaultAriaLabel = () =>
+    headlessProps["aria-label"] ??
+    (headlessProps["aria-labelledby"] ? undefined : stringFormatter().format("steplist"));
 
   return (
     <StepListSizeContext
@@ -182,6 +192,7 @@ export function StepList<T extends { key: Key; label: string }>(
     >
       <HeadlessStepList
         {...headlessProps}
+        aria-label={defaultAriaLabel()}
         class={[listStyles, customClass()].filter(Boolean).join(" ")}
         children={renderStep}
       />
@@ -195,10 +206,13 @@ export function StepList<T extends { key: Key; label: string }>(
  * `"notCompleted"`). These are referenced through `aria-labelledby` so a screen
  * reader announces e.g. "1 Current: Details".
  */
-function stepStateLabel(renderProps: StepListItemRenderProps): string {
-  if (renderProps.isSelected) return "Current: ";
-  if (renderProps.isCompleted) return "Completed: ";
-  return "Not completed: ";
+function stepStateLabel(
+  renderProps: StepListItemRenderProps,
+  formatter: () => { format: (key: "current" | "completed" | "notCompleted") => string },
+): string {
+  if (renderProps.isSelected) return formatter().format("current");
+  if (renderProps.isCompleted) return formatter().format("completed");
+  return formatter().format("notCompleted");
 }
 
 function DefaultStep<T extends { key: Key; label: string }>(props: {
@@ -209,6 +223,8 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
   const ctx = useContext(StepListSizeContext);
   const listState = useStepListState();
   const [isFocusVisible, setIsFocusVisible] = createSignal(false);
+  const stringFormatter = createStringFormatter(stepListIntlStrings, "@react-spectrum/steplist");
+  const numberFormatter = createNumberFormatter();
   let linkRef: HTMLAnchorElement | undefined;
 
   const { stepProps } = createStep(
@@ -290,7 +306,7 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
             solely through aria-labelledby (which pierces aria-hidden), exactly
             as the vendored StepListItem hides its marker wrapper + label div. */}
         <span id={markerId} aria-hidden="true" class={indicatorStyles(state())}>
-          {props.stepNumber}
+          {numberFormatter().format(props.stepNumber)}
         </span>
         {/* Visually-hidden state prefix, referenced by aria-labelledby only. */}
         <span
@@ -308,7 +324,7 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
             "white-space": "nowrap",
           }}
         >
-          {stepStateLabel(props.renderProps)}
+          {stepStateLabel(props.renderProps, stringFormatter)}
         </span>
         <span id={labelId} aria-hidden="true" class={labelStyles(state())}>
           {props.item.label}

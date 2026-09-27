@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { StepList } from "../src/steplist";
 
 const progressItems = [
@@ -31,6 +32,12 @@ function stepStateText(link: HTMLAnchorElement): string {
   const ids = link.getAttribute("aria-labelledby")?.split(" ") ?? [];
   const stateEl = ids[1] ? document.getElementById(ids[1]) : null;
   return stateEl?.textContent ?? "";
+}
+
+function stepMarkerText(link: HTMLAnchorElement): string {
+  const ids = link.getAttribute("aria-labelledby")?.split(" ") ?? [];
+  const markerEl = ids[0] ? document.getElementById(ids[0]) : null;
+  return markerEl?.textContent?.trim() ?? "";
 }
 
 describe("StepList DefaultStep (solid-spectrum)", () => {
@@ -119,5 +126,101 @@ describe("StepList DefaultStep (solid-spectrum)", () => {
     // Selection remains on fallback-offer
     expect(fallback).toHaveAttribute("aria-current", "step");
     expect(selectOffers).not.toHaveAttribute("aria-current");
+  });
+});
+
+describe("StepList localization", () => {
+  it("localizes state prefixes, markers, and default container label under es-ES", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <StepList
+          items={progressItems}
+          defaultSelectedKey="fallback-offer"
+          defaultLastCompletedStep="select-offers"
+        />
+      </I18nProvider>
+    ));
+
+    const list = screen.getByRole("list");
+    expect(list).toHaveAttribute("aria-label", "Lista de pasos");
+
+    const [details, selectOffers, fallback, summary] = stepLinks();
+
+    // Markers format numbers
+    expect(stepMarkerText(details)).toBe("1");
+    expect(stepMarkerText(selectOffers)).toBe("2");
+    expect(stepMarkerText(fallback)).toBe("3");
+    expect(stepMarkerText(summary)).toBe("4");
+
+    // State prefixes in Spanish
+    expect(stepStateText(details)).toBe("Completado: ");
+    expect(stepStateText(selectOffers)).toBe("Completado: ");
+    expect(stepStateText(fallback)).toBe("Actual: ");
+    expect(stepStateText(summary)).toBe("No se ha completado: ");
+  });
+
+  it("localizes state prefixes, markers, and default container label under ar-AE", () => {
+    render(() => (
+      <I18nProvider locale="ar-AE">
+        <StepList
+          items={progressItems}
+          defaultSelectedKey="fallback-offer"
+          defaultLastCompletedStep="select-offers"
+        />
+      </I18nProvider>
+    ));
+
+    const list = screen.getByRole("list");
+    expect(list).toHaveAttribute("aria-label", "قائمة الخطوات");
+
+    const [details, selectOffers, fallback, summary] = stepLinks();
+
+    // Markers format numbers (ar-AE standard numbering uses Western digits)
+    expect(stepMarkerText(details)).toBe("1");
+    expect(stepMarkerText(selectOffers)).toBe("2");
+    expect(stepMarkerText(fallback)).toBe("3");
+    expect(stepMarkerText(summary)).toBe("4");
+
+    // State prefixes in Arabic
+    expect(stepStateText(details)).toBe("مكتمل: ");
+    expect(stepStateText(selectOffers)).toBe("مكتمل: ");
+    expect(stepStateText(fallback)).toBe("الحالي: ");
+    expect(stepStateText(summary)).toBe("غير مكتمل: ");
+  });
+
+  it("localizes state prefixes and default container label under de-DE", () => {
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <StepList
+          items={progressItems}
+          defaultSelectedKey="fallback-offer"
+          defaultLastCompletedStep="select-offers"
+        />
+      </I18nProvider>
+    ));
+
+    const list = screen.getByRole("list");
+    expect(list).toHaveAttribute("aria-label", "Schrittliste");
+
+    const [details, , fallback, summary] = stepLinks();
+    expect(stepStateText(details)).toBe("Abgeschlossen: ");
+    expect(stepStateText(fallback)).toBe("Aktuell: ");
+    expect(stepStateText(summary)).toBe("Nicht abgeschlossen: ");
+  });
+
+  it("preserves explicit aria-label over localized default", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <StepList
+          aria-label="Pasos de compra"
+          items={progressItems}
+          defaultSelectedKey="fallback-offer"
+          defaultLastCompletedStep="select-offers"
+        />
+      </I18nProvider>
+    ));
+
+    const list = screen.getByRole("list");
+    expect(list).toHaveAttribute("aria-label", "Pasos de compra");
   });
 });

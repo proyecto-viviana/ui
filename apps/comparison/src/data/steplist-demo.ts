@@ -42,6 +42,8 @@ export interface StepListDemoProps {
   isDisabled: boolean;
   /** Whether the whole list is read-only (no step selectable). */
   isReadOnly: boolean;
+  /** Custom container label; "" falls back to default localized label. */
+  ariaLabel?: string;
 }
 
 export const stepListDemoDefaults: StepListDemoProps = {
@@ -50,6 +52,7 @@ export const stepListDemoDefaults: StepListDemoProps = {
   disabledKeys: "",
   isDisabled: false,
   isReadOnly: false,
+  ariaLabel: undefined,
 };
 
 function isKnownKey(value: string | null | undefined): value is string {
@@ -83,6 +86,7 @@ export function normalizeStepListDemoProps(
     disabledKeys: stepListKeysFromValue(props.disabledKeys).join(","),
     isDisabled: coerceBoolean(props.isDisabled),
     isReadOnly: coerceBoolean(props.isReadOnly),
+    ariaLabel: props.ariaLabel,
   };
 }
 
@@ -94,7 +98,20 @@ export function stepListDemoPropsFromSearch(search: string): StepListDemoProps {
     disabledKeys: params.get("disabledKeys") ?? undefined,
     isDisabled: params.get("isDisabled") === "true",
     isReadOnly: params.get("isReadOnly") === "true",
+    ariaLabel: params.has("ariaLabel") ? (params.get("ariaLabel") ?? "") : undefined,
   });
+}
+
+export function stepListDemoLocaleFromSearch(search: string): string | undefined {
+  const params = new URLSearchParams(search);
+  return params.get("locale") ?? undefined;
+}
+
+export function stepListDemoLocaleFromWindow(): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+  return stepListDemoLocaleFromSearch(window.location.search);
 }
 
 export function stepListDemoPropsFromWindow(): StepListDemoProps {
@@ -109,3 +126,4 @@ export function serializeStepListDemoProps(props: StepListDemoProps): string {
 }
 
 export { comparisonControlsEvent } from "./button-demo";
+export { stepListIntlStrings } from "../../../../packages/solid-spectrum/src/steplist/intl";

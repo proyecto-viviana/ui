@@ -6,6 +6,7 @@ import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spect
 import {
   stepListDemoItems,
   stepListDemoPropsFromWindow,
+  stepListDemoLocaleFromWindow,
   stepListKeysFromValue,
   normalizeStepListDemoProps,
   serializeStepListDemoProps,
@@ -22,10 +23,11 @@ import { providerShellStyle } from "../styled-shared.tsx";
 // Solid StepList: the solid-spectrum styled StepList over the base
 // `createStepList` / `createStepListState` port. The fixed four-step wizard +
 // prop-driven completion/selection state pair-diffs against the hand-wired v3
-// hooks oracle (React panel). No locale plumbing — D10 is scoped out for
-// StepList (see the certified spec).
+// hooks oracle (React panel). Localized state prefixes and default container
+// label certified across locales under D6 AX.
 function SolidSpectrumStepListDemo() {
   const [demoProps, setDemoProps] = createSignal<StepListDemoProps>(stepListDemoPropsFromWindow());
+  const locale = stepListDemoLocaleFromWindow();
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
@@ -52,7 +54,11 @@ function SolidSpectrumStepListDemo() {
 
   const renderedStepList = createMemo(() =>
     hc(SolidSpectrumStepList, {
-      "aria-label": "Checkout steps",
+      get "aria-label"() {
+        return demoProps().ariaLabel !== undefined
+          ? demoProps().ariaLabel || undefined
+          : "Checkout steps";
+      },
       items: stepListDemoItems,
       get defaultSelectedKey() {
         return demoProps().defaultSelectedKey || undefined;
@@ -82,6 +88,7 @@ function SolidSpectrumStepListDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      locale: locale || undefined,
       background: "base",
       style: providerShellStyle,
     },

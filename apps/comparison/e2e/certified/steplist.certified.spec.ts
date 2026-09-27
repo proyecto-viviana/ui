@@ -68,11 +68,11 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  *     shared selection-manager / interaction-hook family, per the hook-family
  *     rule; StepList selection is a click/Enter/Space delegate over it.
  *   - D9 (forced colors) — a paint concern, moot without a styled oracle.
- *   - D10 (RTL) — StepList navigation is native-Tab + vertical; it has no
- *     RTL-flipped arrow axis. The only localized surface is the container's
- *     DEFAULT `aria-label` ("Step List"), which both fixtures bypass with a fixed
- *     label, so there is nothing RTL-specific to diff. Ticket #98 owns the
- *     localized state-prefix evidence.
+ *   - D10 (RTL / i18n) — StepList navigation is native-Tab + vertical; it has no
+ *     RTL-flipped arrow axis. Localized state prefixes ("Current: " / "Completed: " /
+ *     "Not completed: "), formatted step numbers, and default container
+ *     labels ("Step List") are pair-diffed and certified across locales
+ *     (`localized-es`, `localized-ar`) under D6 AX.
  *   - Container keys (`useSelectableList` under `allowsTabNavigation`) — verified
  *     across `default` (single selectable step, arrows/Home/End/typeahead no-op)
  *     and `progress` (steps 1-3 selectable: ArrowDown advances, End stays on last
@@ -98,7 +98,7 @@ const beforeButton: TargetResolver = ({ canvas }) => canvas.getByRole("button", 
 /**
  * Main scenario. `default` fresh state exposes ONLY step 1 (the invented
  * "prev===selected" clause the port drops would have exposed step 2). D6 runs
- * across all four cases; the D5 `default` walk Tabs in (→ step 1) and straight
+ * across all cases; the D5 `default` walk Tabs in (→ step 1) and straight
  * out to After, pinning the single-tabbable-step at-rest layout.
  */
 const scenario: DriverScenario = {
@@ -124,6 +124,24 @@ const scenario: DriverScenario = {
         isReadOnly: "true",
       },
     },
+    {
+      id: "localized-es",
+      params: {
+        locale: "es-ES",
+        defaultSelectedKey: "fallback-offer",
+        defaultLastCompletedStep: "select-offers",
+        ariaLabel: "",
+      },
+    },
+    {
+      id: "localized-ar",
+      params: {
+        locale: "ar-AE",
+        defaultSelectedKey: "fallback-offer",
+        defaultLastCompletedStep: "select-offers",
+        ariaLabel: "",
+      },
+    },
   ],
   focus: {
     cases: ["default"],
@@ -142,7 +160,7 @@ const scenario: DriverScenario = {
     ],
   },
   ax: {
-    cases: ["default", "progress", "disabled", "readonly"],
+    cases: ["default", "progress", "disabled", "readonly", "localized-es", "localized-ar"],
     roots: {
       list,
     },
