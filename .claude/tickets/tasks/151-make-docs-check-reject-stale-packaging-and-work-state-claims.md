@@ -4,9 +4,14 @@ type: task
 title: "Make docs check reject stale packaging and work-state claims"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "docs:check rejects a solid export pointed at src, mappings that remain under audit, and a verified ticket named as remaining work. The corrected live sentences stay green",
+    }
 ---
 
 ## Cause

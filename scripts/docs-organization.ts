@@ -148,8 +148,88 @@ export function checkDocsOrganization(
   }
 
   failures.push(...checkTicketLocalPaths(root));
+  failures.push(...checkStableClaims(root, expected));
 
   return failures;
+}
+
+const GENERATED_WORK_VIEWS = new Set([".claude/current/status.md", ".claude/current/roadmap.md"]);
+
+const SOLID_POINTS_AT_SRC =
+  /`solid`(?:\s+export condition)?\s+pointing at\s+`src`|`solid`\s+points at\s+`src`|points\s+`solid`\s+at\s+(?:compiled\s+)?`src`|point(?:s|ing)?\b[^.]{0,40}\bat\s+`src`/;
+
+/**
+ * Stable prose may describe current work. These are the shapes that went stale
+ * while docs:check stayed green: the `solid` condition pointed at `src`,
+ * source mappings "remain under audit", and a verified ticket still named as
+ * remaining work.
+ */
+function checkStableClaims(root: string, liveDocs: Set<string>): string[] {
+  const failures: string[] = [];
+  const statusById = ticketStatusById(root);
+  const files = [...liveDocs]
+    .filter((relative) => !GENERATED_WORK_VIEWS.has(relative))
+    .map((relative) => path.join(root, relative));
+  const readme = path.join(root, "README.md");
+  if (existsSync(readme)) files.push(readme);
+
+  for (const file of files) {
+    if (!existsSync(file)) continue;
+    const relative = toRepoPath(root, file);
+    const prose = readFileSync(file, "utf8").replace(/```[\s\S]*?```/g, " ");
+    if (/mappings remain under audit/i.test(prose)) {
+      failures.push(`Stale packaging claim in ${relative}: mappings remain under audit`);
+    }
+    for (const sentence of prose.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)) {
+      if (SOLID_POINTS_AT_SRC.test(sentence) && /`solid`|\bsolid export\b/.test(sentence)) {
+        failures.push(`Stale packaging claim in ${relative}: solid export points at src`);
+      }
+      for (const id of verifiedTicketsNamedAsRemainingWork(sentence, statusById)) {
+        failures.push(
+          `Stale work-state claim in ${relative}: verified ticket #${id} is named as remaining work`,
+        );
+      }
+    }
+  }
+
+  return failures;
+}
+
+function ticketStatusById(root: string): Map<string, string> {
+  const statuses = new Map<string, string>();
+  const ticketsDir = path.join(root, ".claude", "tickets");
+  for (const file of walk(ticketsDir).filter((entry) => entry.endsWith(".md"))) {
+    const contents = readFileSync(file, "utf8");
+    const id = frontmatterField(contents, "id");
+    const status = frontmatterField(contents, "status");
+    if (id && status) statuses.set(id, status);
+  }
+  return statuses;
+}
+
+function verifiedTicketsNamedAsRemainingWork(
+  sentence: string,
+  statusById: Map<string, string>,
+): string[] {
+  const ids = new Set<string>();
+  for (const pattern of [
+    /#(\d+)\b[\s\S]{0,160}?\btracks\b/g,
+    /#(\d+)\b[\s\S]{0,160}?\bremaining\b/g,
+    /\bremaining(?:-work| work)\b[\s\S]{0,160}?#(\d+)\b/g,
+    /#(\d+)\b\s+is open\b/g,
+  ]) {
+    for (const match of sentence.matchAll(pattern)) {
+      const id = match[1];
+      if (id) ids.add(id);
+    }
+  }
+  if (/\bwhile that (?:initiative|ticket) is open\b/i.test(sentence)) {
+    for (const match of sentence.matchAll(/(?<!Rule )#(\d+)\b/g)) {
+      const id = match[1];
+      if (id) ids.add(id);
+    }
+  }
+  return [...ids].filter((id) => statusById.get(id) === "verified").sort();
 }
 
 const CLAUDE_BACKTICK = /`(\.claude\/[^`]+)`/g;

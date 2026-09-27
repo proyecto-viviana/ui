@@ -161,6 +161,96 @@ Update when: the document set changes.
     );
   });
 
+  it("rejects a solid export pointed at src", () => {
+    const root = fixture();
+    write(
+      root,
+      ".claude/current/README.md",
+      `---
+status: current
+---
+
+# Current docs
+
+Status: live index.
+Update when: the document set changes.
+
+[Status](status.md)
+
+Each package exposes a \`solid\` export condition pointing at \`src\`.
+`,
+    );
+
+    expect(checkDocsOrganization(root, { liveCurrentDocs: liveDocs })).toContain(
+      "Stale packaging claim in .claude/current/README.md: solid export points at src",
+    );
+  });
+
+  it("rejects mappings that remain under audit", () => {
+    const root = fixture();
+    write(root, "README.md", "Exact source-file mappings remain under audit.\n");
+
+    expect(checkDocsOrganization(root, { liveCurrentDocs: liveDocs })).toContain(
+      "Stale packaging claim in README.md: mappings remain under audit",
+    );
+  });
+
+  it("rejects a verified ticket named as remaining work", () => {
+    const root = fixture();
+    write(root, ".claude/tickets/tasks/15-rewrite.md", "---\nid: 15\nstatus: verified\n---\n");
+    write(root, ".claude/tickets/tasks/16-enforce.md", "---\nid: 16\nstatus: verified\n---\n");
+    write(
+      root,
+      ".claude/current/README.md",
+      `---
+status: current
+---
+
+# Current docs
+
+Status: live index.
+Update when: the document set changes.
+
+[Status](status.md)
+
+Ticket #15 tracks the remaining prose rewrite. Ticket #16 tracks automated enforcement.
+`,
+    );
+
+    const problems = checkDocsOrganization(root, { liveCurrentDocs: liveDocs });
+    expect(problems).toContain(
+      "Stale work-state claim in .claude/current/README.md: verified ticket #15 is named as remaining work",
+    );
+    expect(problems).toContain(
+      "Stale work-state claim in .claude/current/README.md: verified ticket #16 is named as remaining work",
+    );
+  });
+
+  it("accepts the corrected packaging and work-state sentences", () => {
+    const root = fixture();
+    write(root, ".claude/tickets/tasks/87-close.md", "---\nid: 87\nstatus: in-progress\n---\n");
+    write(
+      root,
+      ".claude/current/README.md",
+      `---
+status: current
+---
+
+# Current docs
+
+Status: live index.
+Update when: the document set changes.
+
+[Status](status.md)
+
+Each public package points \`solid\` at compiled \`dist\`. Ticket #87 owns the ordered remaining-work program.
+`,
+    );
+    write(root, "README.md", "Per-file mappings are guarded by `guard:attribution-headers`.\n");
+
+    expect(checkDocsOrganization(root, { liveCurrentDocs: liveDocs })).toEqual([]);
+  });
+
   it("accepts a historical or illustrative ticket path, and a path that exists", () => {
     const root = fixture();
     write(
