@@ -12,15 +12,22 @@ import { registerEventSequenceDriver } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
-import type { DriverScenario, EventGesture, PanelContext } from "../drivers/scenario";
+import type {
+  DriverScenario,
+  EventGesture,
+  PanelContext,
+  TargetResolver,
+} from "../drivers/scenario";
+import { panelDialog } from "../panel-dialog";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { registerTargetSizeDriver } from "../drivers/target-size";
 
 /**
  * Recertification pilot: Dialog — the overlay/portal proof for the walk
- * engine. The dialog renders in a page-level portal, so targets resolve from
- * the page, not the panel canvas; the panel-major walk guarantees only one
- * panel's dialog is ever open. Two scenarios:
+ * engine. Both stacks portal the dialog outside the canvas. Locators go
+ * through `panelDialog` (the expanded trigger's `aria-controls` or
+ * `aria-labelledby`), so a React dialog cannot satisfy the Solid panel.
+ * Two scenarios:
  *
  * 1. `dialog` — the modal surface itself, default state only (a dialog
  *    surface has no hover/press affordances).
@@ -35,9 +42,11 @@ import { registerTargetSizeDriver } from "../drivers/target-size";
 
 const dialogTitle = "Review Changes";
 
-const openDialogWithPointer = async ({ canvas, page }: PanelContext) => {
-  await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
-  const dialog = page.getByRole("dialog", { name: dialogTitle });
+const namedDialog: TargetResolver = (ctx) => panelDialog(ctx, { name: dialogTitle });
+
+const openDialogWithPointer = async (ctx: PanelContext) => {
+  await clickLocator(ctx.canvas.getByRole("button", { name: "Open Dialog" }).first());
+  const dialog = namedDialog(ctx);
   await expect(dialog).toBeVisible();
   // useDialog focuses the surface, then blurs and refocuses it 500ms later
   // for iOS VoiceOver (upstream useDialog.ts, port createDialog.ts). Author
@@ -77,10 +86,10 @@ const openDialogWithPointer = async ({ canvas, page }: PanelContext) => {
   await expect(dialog).toBeFocused();
 };
 
-const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
-  await focusLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
-  await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: dialogTitle });
+const openDialogWithKeyboard = async (ctx: PanelContext) => {
+  await focusLocator(ctx.canvas.getByRole("button", { name: "Open Dialog" }).first());
+  await ctx.page.keyboard.press("Enter");
+  const dialog = namedDialog(ctx);
   await expect(dialog).toBeVisible();
   // `useDialog` focuses the dialog surface when no descendant owns autofocus,
   // then deliberately blurs + refocuses it after 500ms for iOS VoiceOver
@@ -89,12 +98,12 @@ const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
   // full-suite load, leaking setup events into the close gesture's recording.
   // Drain the specified timer and hold the setup contract at its final focus
   // destination before D4 starts recording.
-  await page.waitForTimeout(600);
+  await ctx.page.waitForTimeout(600);
   await expect(dialog).toBeFocused();
 };
 
-const closeDialog = async ({ page }: PanelContext) => {
-  const dialog = page.getByRole("dialog");
+const closeDialog = async (ctx: PanelContext) => {
+  const dialog = panelDialog(ctx);
   if ((await dialog.count()) === 0) {
     return;
   }
@@ -106,18 +115,17 @@ const surfaceScenario: DriverScenario = {
   title: "Dialog surface",
   beforePanel: openDialogWithPointer,
   afterPanel: closeDialog,
-  target: ({ page }) => page.getByRole("dialog", { name: dialogTitle }),
+  target: namedDialog,
   // The dialog portals outside the panel canvas, so the canvas default would
   // miss it entirely. Shoot the dialog's parent — the modal element — because
   // that is where both stacks paint the surface (--s2-container-bg: layer-2,
   // border radius, elevation shadow); role=dialog itself is transparent.
-  pixelTarget: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+  pixelTarget: (ctx) => namedDialog(ctx).locator(".."),
   states: ["default"],
   settleMs: 400,
   cases: [{ id: "modal-open" }],
   parts: {
-    heading: ({ page }) =>
-      page.getByRole("dialog", { name: dialogTitle }).getByRole("heading", { name: dialogTitle }),
+    heading: (ctx) => namedDialog(ctx).getByRole("heading", { name: dialogTitle }),
   },
   // D6: the overlay AX proof. `beforePanel` opens the dialog, so the root is
   // the portaled dialog itself (the canvas default would miss it). The subtree
@@ -131,7 +139,7 @@ const surfaceScenario: DriverScenario = {
   // waiver would now hide a regression in that completed parity work.
   ax: {
     roots: {
-      dialog: ({ page }) => page.getByRole("dialog", { name: dialogTitle }),
+      dialog: namedDialog,
     },
   },
   // D7: contrast of every text node inside the open dialog — the heading, the
@@ -139,7 +147,7 @@ const surfaceScenario: DriverScenario = {
   // surface (`--s2-container-bg: layer-2`). Root is the portaled dialog
   // (`pixelTarget`, the modal surface), which `beforePanel` opens.
   contrast: {
-    root: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+    root: (ctx) => namedDialog(ctx).locator(".."),
   },
   // D8: every interactive control inside the open dialog — the visible
   // CloseButton, the footer action buttons, AND RAC's injected screen-reader
@@ -150,7 +158,7 @@ const surfaceScenario: DriverScenario = {
   // where upstream wraps a bare button (~16x6) in a VisuallyHidden div — now
   // mirrored faithfully in Modal.tsx, so the sentinel measures identically.
   targetSize: {
-    root: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+    root: (ctx) => namedDialog(ctx).locator(".."),
   },
 };
 
@@ -189,14 +197,12 @@ const closeButtonScenario: DriverScenario = {
   title: "Dialog close button",
   beforePanel: openDialogWithKeyboard,
   afterPanel: closeDialog,
-  target: ({ page }) =>
-    page
-      .getByRole("dialog", { name: dialogTitle })
+  target: (ctx) =>
+    namedDialog(ctx)
       .getByRole("button", { name: /dismiss|close/i })
       .first(),
-  pixelTarget: ({ page }) =>
-    page
-      .getByRole("dialog", { name: dialogTitle })
+  pixelTarget: (ctx) =>
+    namedDialog(ctx)
       .getByRole("button", { name: /dismiss|close/i })
       .first(),
   settleMs: 400,
@@ -240,13 +246,13 @@ const triggerScenario: DriverScenario = {
     gestures: [
       {
         id: "open-escape-close",
-        run: async ({ page, target }) => {
-          await focusLocator(target);
-          await page.keyboard.press("Enter");
-          await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
-          await page.waitForTimeout(600);
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        run: async (ctx) => {
+          await focusLocator(ctx.target);
+          await ctx.page.keyboard.press("Enter");
+          await expect(namedDialog(ctx)).toBeVisible();
+          await ctx.page.waitForTimeout(600);
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 700,
       },
@@ -266,20 +272,20 @@ const motionScenario: DriverScenario = {
   slug: "dialog",
   title: "Dialog motion",
   target: ({ canvas }) => canvas.getByRole("button", { name: "Open Dialog" }).first(),
-  pixelTarget: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+  pixelTarget: (ctx) => namedDialog(ctx).locator(".."),
   cases: [{ id: "modal-open" }],
   motion: {
     triggers: [
       {
         id: "open-enter",
         scopes: ["overlay"],
-        run: async ({ canvas, page }) => {
-          await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
-          await expect(page.getByRole("dialog", { name: dialogTitle })).toHaveCount(1);
+        run: async (ctx) => {
+          await clickLocator(ctx.canvas.getByRole("button", { name: "Open Dialog" }).first());
+          await expect(namedDialog(ctx)).toHaveCount(1);
         },
-        cleanup: async ({ page }) => {
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        cleanup: async (ctx) => {
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 260,
       },

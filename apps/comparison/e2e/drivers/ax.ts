@@ -34,8 +34,8 @@ import { forEachScenarioPanel } from "./walk";
  *   different frames), the same way D2 excludes hashed keyframe names.
  *
  * Semantics are theme-independent, so D6 runs the first scenario theme only.
- * Overlay components point a root at their portal (`page.getByRole("dialog")`)
- * since it renders outside the panel canvas; `beforePanel` opens it first.
+ * Overlay components point a root at their portal (`panelDialog`) since it
+ * renders outside the panel canvas; `beforePanel` opens it first.
  */
 
 const axSettleMs = 120;

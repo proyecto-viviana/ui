@@ -1,4 +1,5 @@
 import { clickLocator, dismissOverlay } from "../comparison-page";
+import { panelDialog } from "../panel-dialog";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -80,35 +81,35 @@ const triggerIcon: TargetResolver = ({ canvas }) =>
   canvas.getByRole("button").first().locator("svg").first();
 
 /** The opened `role="dialog"` popover surface. With the canonical default-slot
- *  Heading the dialog is UNNAMED in both stacks (dangling `aria-labelledby`), and
- *  `beforePanel` opens exactly one panel's popover, so address it by bare role. */
-const contentDialog: TargetResolver = ({ page }) => page.getByRole("dialog");
+ *  Heading the dialog is UNNAMED in both stacks (dangling `aria-labelledby`).
+ *  Scope it with `panelDialog` so another panel's dialog cannot satisfy this one. */
+const contentDialog: TargetResolver = (ctx) => panelDialog(ctx);
 /** The Heading — a headless `<Heading>` renders at the RAC default level (`<h3>`)
  *  in both fixtures, so address it by bare role. */
-const contentHeading: TargetResolver = ({ page }) => page.getByRole("dialog").getByRole("heading");
+const contentHeading: TargetResolver = (ctx) => panelDialog(ctx).getByRole("heading");
 /** The frame (`wrappingDiv`): the Heading's grandparent (Heading -> inner -> frame,
  *  identical nesting in both stacks; Providers are context, not DOM). */
-const contentFrame: TargetResolver = ({ page }) =>
-  page.getByRole("dialog").getByRole("heading").locator("xpath=../..");
+const contentFrame: TargetResolver = (ctx) =>
+  panelDialog(ctx).getByRole("heading").locator("xpath=../..");
 /** The inner body div (`dialogInner` merge): the Heading's parent. */
-const contentInner: TargetResolver = ({ page }) =>
-  page.getByRole("dialog").getByRole("heading").locator("xpath=..");
+const contentInner: TargetResolver = (ctx) =>
+  panelDialog(ctx).getByRole("heading").locator("xpath=..");
 /** The Content copy `<div>`. */
-const contentBody: TargetResolver = ({ page }) =>
-  page.getByRole("dialog").getByText(contentText, { exact: true });
+const contentBody: TargetResolver = (ctx) =>
+  panelDialog(ctx).getByText(contentText, { exact: true });
 /** The `<footer>` (marginTop 16, body-sm) — a stable element in both stacks. */
-const contentFooter: TargetResolver = ({ page }) => page.getByRole("dialog").locator("footer");
+const contentFooter: TargetResolver = (ctx) => panelDialog(ctx).locator("footer");
 
 /** Click this panel's trigger to open its (and only its) popover. */
-const openHelp = async ({ canvas, page }: PanelContext) => {
-  await clickLocator(canvas.getByRole("button").first());
-  await expect(page.getByRole("dialog")).toBeVisible();
+const openHelp = async (ctx: PanelContext) => {
+  await clickLocator(ctx.canvas.getByRole("button").first());
+  await expect(panelDialog(ctx)).toBeVisible();
 };
 
 /** Best-effort close before the next panel (isolation is the per-panel `goto`);
  *  NEVER asserts — close-on-Escape is a DialogTrigger contract, not this unit's. */
-const closeHelp = async ({ page }: PanelContext) => {
-  await dismissOverlay(page.getByRole("dialog"));
+const closeHelp = async (ctx: PanelContext) => {
+  await dismissOverlay(panelDialog(ctx));
 };
 
 /** Scenario 1 — the closed icon-only quiet trigger across variant × size. The

@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
+import { registerPanelDialogEngine } from "./e2e/panel-dialog.ts";
+
+await registerPanelDialogEngine();
 
 // Gitignored repo `.env.local` — machine switches such as
 // COMPARISON_CHROMIUM_ARGS. Not loaded in CI; existing env wins.

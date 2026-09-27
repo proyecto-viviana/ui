@@ -7,6 +7,8 @@ import {
   waitForComparisonRouteReady,
   type FrameworkName,
 } from "./comparison-page";
+import { panelDialog } from "./panel-dialog";
+import type { PanelFramework } from "./drivers/scenario";
 
 const stacks: FrameworkName[] = ["React Spectrum stack", "Solidaria stack"];
 
@@ -59,11 +61,12 @@ test.describe("clickLocator", () => {
       await waitForComparisonRouteReady(page, ["react", "solid"], { paintBudgetMs: 0 });
       const section = await styledSection(page);
       const canvas = await frameworkCanvas(section, stack);
+      const framework: PanelFramework = stack === "React Spectrum stack" ? "react" : "solid";
       await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
-      const dialog = page.getByRole("dialog", { name: "Review Changes" });
+      const dialog = panelDialog({ page, canvas, framework }, { name: "Review Changes" });
       await expect(dialog).toBeVisible();
       await dismissOverlay(dialog);
-      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await expect(panelDialog({ page, canvas, framework })).toHaveCount(0);
     });
   }
 });

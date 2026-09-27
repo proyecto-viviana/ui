@@ -161,8 +161,9 @@ export interface AxConfig {
   cases?: readonly string[];
   /**
    * Elements whose AX subtree is snapshotted, keyed by a stable label; defaults
-   * to the panel canvas. Overlay components point a root at their portal (e.g.
-   * `page.getByRole("dialog")`) since the portal renders outside the canvas.
+   * to the panel canvas. Overlay components point a root at their portal
+   * (`panelDialog`, the expanded trigger's `aria-controls` or
+   * `aria-labelledby`) since the portal renders outside the canvas.
    */
   roots?: Record<string, TargetResolver>;
   /** Scripted interactions expected to emit live-region announcements. */

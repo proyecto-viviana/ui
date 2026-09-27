@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { panelDialog } from "../panel-dialog";
 import { clickLocator, focusLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
@@ -89,9 +90,10 @@ import { registerTargetSizeDriver } from "../drivers/target-size";
  *   [readonly]). D10 re-runs the walks + diffs the root/segment bidi under ar-AE.
  *
  *   POPOVER (`datePickerPopoverScenario`) — D6/D5 on the OPEN overlay. Opened
- *   with the keyboard so focus-modality stays non-pointer; the panel-major walk
- *   guarantees only one panel's dialog is open, so `page.getByRole("dialog")`
- *   is unique. D6 root = the dialog (certifies the dialog labelling/no-aria-label
+ *   with the keyboard so focus-modality stays non-pointer. Dialog locators go
+ *   through `panelDialog` (the expanded trigger's `aria-controls` or
+ *   `aria-labelledby`), so a React dialog cannot satisfy the Solid panel.
+ *   D6 root = the dialog (certifies the dialog labelling/no-aria-label
  *   composition); D5 = the focus trail once open.
  *
  *   EVENTS (`datePickerTriggerScenario`, `datePickerValueScenario`) — D4, the
@@ -149,17 +151,17 @@ const fieldGroup: TargetResolver = ({ canvas }) =>
 const helpText: TargetResolver = ({ canvas }) =>
   canvas.locator(".comparison-datepicker-root > :nth-child(3)");
 
-/** The open calendar popover — portaled outside the canvas, unique per panel. */
-const popover: TargetResolver = ({ page }) => page.getByRole("dialog");
+/** The open calendar popover — React on document.body, Solid in the panel overlay. */
+const popover: TargetResolver = (ctx) => panelDialog(ctx);
 
-const openPopoverWithKeyboard = async ({ canvas, page }: PanelContext) => {
-  await focusLocator(trigger({ canvas, page, framework: "react" }));
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog")).toBeVisible();
+const openPopoverWithKeyboard = async (ctx: PanelContext) => {
+  await focusLocator(trigger(ctx));
+  await ctx.page.keyboard.press("Enter");
+  await expect(panelDialog(ctx)).toBeVisible();
 };
 
-const closePopover = async ({ page }: PanelContext) => {
-  const dialog = page.getByRole("dialog");
+const closePopover = async (ctx: PanelContext) => {
+  const dialog = panelDialog(ctx);
   if ((await dialog.count()) === 0) {
     return;
   }
@@ -330,13 +332,13 @@ const datePickerTriggerScenario: DriverScenario = {
     gestures: [
       {
         id: "open-escape-close",
-        run: async ({ page, target }) => {
-          await focusLocator(target);
-          await page.keyboard.press("Enter");
-          await expect(page.getByRole("dialog")).toBeVisible();
-          await page.waitForTimeout(600);
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        run: async (ctx) => {
+          await focusLocator(ctx.target);
+          await ctx.page.keyboard.press("Enter");
+          await expect(panelDialog(ctx)).toBeVisible();
+          await ctx.page.waitForTimeout(600);
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 700,
       },
@@ -387,13 +389,13 @@ const datePickerMotionScenario: DriverScenario = {
       {
         id: "open-enter",
         scopes: ["overlay"],
-        run: async ({ target, page }) => {
-          await clickLocator(target);
-          await expect(page.getByRole("dialog")).toHaveCount(1);
+        run: async (ctx) => {
+          await clickLocator(ctx.target);
+          await expect(panelDialog(ctx)).toHaveCount(1);
         },
-        cleanup: async ({ page }) => {
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        cleanup: async (ctx) => {
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 260,
       },

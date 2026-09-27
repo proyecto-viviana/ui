@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
 import { clickLocator, focusLocator, dismissOverlay } from "../comparison-page";
+import { panelDialog } from "../panel-dialog";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
@@ -180,17 +181,17 @@ const fieldGroup: TargetResolver = ({ canvas }) =>
 const helpText: TargetResolver = ({ canvas }) =>
   canvas.locator(".comparison-daterangepicker-root > :nth-child(3)");
 
-/** The open range calendar popover — portaled outside the canvas, unique per panel. */
-const popover: TargetResolver = ({ page }) => page.getByRole("dialog");
+/** The open range calendar popover — React on document.body, Solid in the panel overlay. */
+const popover: TargetResolver = (ctx) => panelDialog(ctx);
 
-const openPopoverWithKeyboard = async ({ canvas, page }: PanelContext) => {
-  await focusLocator(trigger({ canvas, page, framework: "react" }));
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog")).toBeVisible();
+const openPopoverWithKeyboard = async (ctx: PanelContext) => {
+  await focusLocator(trigger(ctx));
+  await ctx.page.keyboard.press("Enter");
+  await expect(panelDialog(ctx)).toBeVisible();
 };
 
-const closePopover = async ({ page }: PanelContext) => {
-  const dialog = page.getByRole("dialog");
+const closePopover = async (ctx: PanelContext) => {
+  const dialog = panelDialog(ctx);
   if ((await dialog.count()) === 0) {
     return;
   }
@@ -385,13 +386,13 @@ const dateRangePickerTriggerScenario: DriverScenario = {
     gestures: [
       {
         id: "open-escape-close",
-        run: async ({ page, target }) => {
-          await focusLocator(target);
-          await page.keyboard.press("Enter");
-          await expect(page.getByRole("dialog")).toBeVisible();
-          await page.waitForTimeout(600);
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        run: async (ctx) => {
+          await focusLocator(ctx.target);
+          await ctx.page.keyboard.press("Enter");
+          await expect(panelDialog(ctx)).toBeVisible();
+          await ctx.page.waitForTimeout(600);
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 700,
       },
@@ -442,13 +443,13 @@ const dateRangePickerMotionScenario: DriverScenario = {
       {
         id: "open-enter",
         scopes: ["overlay"],
-        run: async ({ target, page }) => {
-          await clickLocator(target);
-          await expect(page.getByRole("dialog")).toHaveCount(1);
+        run: async (ctx) => {
+          await clickLocator(ctx.target);
+          await expect(panelDialog(ctx)).toHaveCount(1);
         },
-        cleanup: async ({ page }) => {
-          await page.keyboard.press("Escape");
-          await expect(page.getByRole("dialog")).toHaveCount(0);
+        cleanup: async (ctx) => {
+          await ctx.page.keyboard.press("Escape");
+          await expect(panelDialog(ctx)).toHaveCount(0);
         },
         settleMs: 260,
       },

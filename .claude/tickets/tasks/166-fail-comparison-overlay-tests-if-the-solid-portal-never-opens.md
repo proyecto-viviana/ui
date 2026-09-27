@@ -4,9 +4,14 @@ type: task
 title: "Fail comparison overlay tests if the Solid portal never opens"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "overlay assertions follow the expanded trigger (aria-controls or aria-labelledby). A React body dialog does not satisfy the Solid panel; Dialog and DatePicker still open on both stacks",
+    }
 ---
 
 ## Cause
