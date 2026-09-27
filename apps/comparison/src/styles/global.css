@@ -2733,23 +2733,6 @@ main[data-shortcut-bubble-count] button {
   backdrop-filter: blur(5px);
 }
 
-body.comparison-app [class*="spectrum-Underlay"][class*="spectrum-overlay"] {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 1999 !important;
-  width: auto !important;
-  height: auto !important;
-}
-
-body.comparison-app > div[class*="_spectrum"] {
-  position: relative;
-  z-index: 2000;
-}
-
-body.comparison-app [class*="spectrum-Modal-wrapper"] {
-  z-index: 2000 !important;
-}
-
 .comparison-dialog-positioner {
   position: fixed;
   inset: 0;
@@ -2792,7 +2775,6 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
 }
 
-.comparison-spectrum-Dialog-title,
 .comparison-dialog-surface h2 {
   margin: 0;
   color: #f5f5f5;
@@ -2802,7 +2784,6 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
   line-height: 1.25;
 }
 
-.comparison-spectrum-Dialog-body,
 .comparison-dialog-surface p,
 .comparison-dialog-surface > div:last-child {
   margin: 0;
@@ -2812,7 +2793,6 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
   line-height: 1.5;
 }
 
-.comparison-spectrum-Dialog-closeButton,
 .comparison-dialog-surface button[aria-label="Close dialog"] {
   appearance: none;
   position: absolute;
@@ -2831,13 +2811,11 @@ body.comparison-app [class*="spectrum-Modal-wrapper"] {
   cursor: pointer;
 }
 
-.comparison-spectrum-Dialog-closeButton:hover,
 .comparison-dialog-surface button[aria-label="Close dialog"]:hover {
   border-color: #707070;
   color: #ffffff;
 }
 
-.comparison-spectrum-Dialog-closeButton svg,
 .comparison-dialog-surface button[aria-label="Close dialog"] svg {
   width: 18px;
   height: 18px;

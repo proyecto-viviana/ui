@@ -839,13 +839,7 @@ export function Dialog(props: DialogProps): JSX.Element {
   const hasLegacyTitle = () => local.title !== undefined && local.title !== null;
 
   const className = () =>
-    joinClass(
-      "comparison-spectrum-Dialog",
-      dialogInner,
-      resolveStyles(local.styles),
-      local.UNSAFE_className,
-      local.class,
-    );
+    joinClass(dialogInner, resolveStyles(local.styles), local.UNSAFE_className, local.class);
 
   return (
     <DialogModal
@@ -1043,7 +1037,6 @@ export function FullscreenDialog(props: FullscreenDialogProps): JSX.Element {
   const size = () => local.variant ?? "fullscreen";
   const className = () =>
     joinClass(
-      "comparison-spectrum-FullscreenDialog",
       fullscreenDialogInner,
       resolveStyles(local.styles),
       local.UNSAFE_className,
@@ -1112,7 +1105,6 @@ export function CustomDialog(props: CustomDialogProps): JSX.Element {
     local.isKeyboardDismissDisabled ?? triggerOptions?.isKeyboardDismissDisabled ?? false;
   const className = () =>
     joinClass(
-      "comparison-spectrum-CustomDialog",
       customDialog({ padding: local.padding ?? "default" }),
       resolveStyles(local.styles),
       local.UNSAFE_className,

@@ -4,9 +4,19 @@ type: task
 title: "Remove comparison-spectrum class names from published Dialogs"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: in-progress,
+      at: 2026-09-26,
+      note: "removed comparison-spectrum-* classes from Dialog, FullscreenDialog, and CustomDialog in both styled packages and retired global.css overrides",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "verified Dialog DOM no longer stamps comparison-spectrum-* classes and comparison builds cleanly",
+    }
 ---
 
 ## Cause

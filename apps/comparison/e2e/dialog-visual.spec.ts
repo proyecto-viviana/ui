@@ -174,7 +174,7 @@ test.describe("comparison Dialog visual parity", () => {
 
     const solidDialog = await openDialog(solidPanel);
     await expect(solidRoot).toHaveAttribute("data-comparison-open", "true");
-    await expect(solidDialog).toHaveClass(/comparison-spectrum-Dialog/);
+    await expect(solidDialog).toBeVisible();
     await expect(solidDialog).toHaveAttribute("data-size", "M");
     await expect(solidDialog.getByRole("heading", { name: dialogTitle })).toBeVisible();
     await expect(solidDialog.getByText(dialogText)).toBeVisible();

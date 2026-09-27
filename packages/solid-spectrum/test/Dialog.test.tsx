@@ -40,9 +40,9 @@ describe("Dialog (solid-spectrum)", () => {
     const openButton = screen.getByRole("button", { name: "Open dialog" });
 
     await user.click(openButton);
-    expect(screen.getByRole("dialog", { name: "Settings" })).toHaveClass(
-      /comparison-spectrum-Dialog/,
-    );
+    const dialog = screen.getByRole("dialog", { name: "Settings" });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog.getAttribute("class")).not.toContain("comparison-spectrum");
     expect(screen.getByText("Settings")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close now" }));
@@ -256,7 +256,8 @@ describe("Dialog (solid-spectrum)", () => {
     ));
 
     const dialog = screen.getByRole("alertdialog", { name: "Delete project" });
-    expect(dialog).toHaveClass(/comparison-spectrum-Dialog/);
+    expect(dialog).toBeInTheDocument();
+    expect(dialog.getAttribute("class")).not.toContain("comparison-spectrum");
     expect(within(dialog).getByRole("button", { name: "Delete" })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Archive" })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeInTheDocument();
@@ -318,7 +319,8 @@ describe("Dialog (solid-spectrum)", () => {
     ));
 
     const customDialog = screen.getByRole("dialog", { name: "Custom surface" });
-    expect(customDialog).toHaveClass(/comparison-spectrum-CustomDialog/);
+    expect(customDialog).toBeInTheDocument();
+    expect(customDialog.getAttribute("class")).not.toContain("comparison-spectrum");
     expect(within(customDialog).getByText("Custom body")).toBeInTheDocument();
 
     await user.click(within(customDialog).getByRole("button", { name: "Dismiss" }));
@@ -337,7 +339,8 @@ describe("Dialog (solid-spectrum)", () => {
     ));
 
     const fullscreenDialog = screen.getByRole("dialog", { name: "Fullscreen surface" });
-    expect(fullscreenDialog).toHaveClass(/comparison-spectrum-FullscreenDialog/);
+    expect(fullscreenDialog).toBeInTheDocument();
+    expect(fullscreenDialog.getAttribute("class")).not.toContain("comparison-spectrum");
     expect(fullscreenDialog).toHaveAttribute("data-variant", "fullscreenTakeover");
     expect(within(fullscreenDialog).getByText("Fullscreen body")).toBeInTheDocument();
   });
