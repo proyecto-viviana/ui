@@ -1081,15 +1081,30 @@ describe("FocusScope", () => {
 
   describe("edge cases", () => {
     it("should handle empty scope gracefully", () => {
-      render(() => (
-        <FocusScope contain autoFocus>
-          <div>No focusable elements</div>
-        </FocusScope>
-      ));
+      const outside = document.createElement("button");
+      document.body.appendChild(outside);
+      outside.focus();
+      try {
+        render(() => (
+          <FocusScope contain autoFocus>
+            <div>No focusable elements</div>
+          </FocusScope>
+        ));
 
-      vi.runAllTimers();
-      // Should not throw
-      expect(true).toBe(true);
+        vi.runAllTimers();
+        expect(document.activeElement).toBe(outside);
+
+        const tab = new KeyboardEvent("keydown", {
+          key: "Tab",
+          bubbles: true,
+          cancelable: true,
+        });
+        outside.dispatchEvent(tab);
+        expect(tab.defaultPrevented).toBe(false);
+        expect(document.activeElement).toBe(outside);
+      } finally {
+        outside.remove();
+      }
     });
 
     it("should handle dynamic content", () => {

@@ -327,20 +327,33 @@ describe("createInteractOutside", () => {
 
     it("should handle element removal during interaction", () => {
       const onInteractOutside = vi.fn();
+      const add = vi.spyOn(document, "addEventListener");
+      const remove = vi.spyOn(document, "removeEventListener");
+      const listenersBefore = add.mock.calls.length;
 
       const { unmount } = render(() => <Example onInteractOutside={onInteractOutside} />);
 
-      // Start interaction
-      fireEvent(document.body, pointerEvent("pointerdown"));
+      try {
+        fireEvent(document.body, pointerEvent("pointerdown"));
+        const listeners = add.mock.calls
+          .slice(listenersBefore)
+          .filter(
+            ([type, , capture]) => (type === "pointerdown" || type === "click") && capture === true,
+          );
+        expect(listeners.map(([type]) => type).sort()).toEqual(["click", "pointerdown"]);
 
-      // Unmount the component
-      unmount();
+        unmount();
+        for (const listener of listeners) {
+          expect(remove).toHaveBeenCalledWith(...listener);
+        }
 
-      // Complete the click - should not cause errors
-      fireEvent.click(document.body);
-
-      // No errors should occur
-      expect(true).toBe(true);
+        fireEvent.click(document.body);
+        expect(onInteractOutside).not.toHaveBeenCalled();
+      } finally {
+        unmount();
+        add.mockRestore();
+        remove.mockRestore();
+      }
     });
 
     it("should not fire when ref is null", () => {
