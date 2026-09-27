@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import { render } from "@solidjs/testing-library";
 import { ContextualHelpTrigger } from "../src/menu/ContextualHelpTrigger";
+import { UnavailableMenuItemTrigger } from "../src/menu";
 
 describe("ContextualHelpTrigger (viviana-ui)", () => {
   it("gives each trigger on a page its own icon node", () => {
@@ -37,5 +38,29 @@ describe("ContextualHelpTrigger (viviana-ui)", () => {
     const icons = container.querySelectorAll("svg");
     expect(icons).toHaveLength(2);
     expect(icons[0]).not.toBe(icons[1]);
+  });
+});
+
+describe("UnavailableMenuItemTrigger (viviana-ui)", () => {
+  it("renders single child directly when available", () => {
+    const { container } = render(() => (
+      <UnavailableMenuItemTrigger isUnavailable={false}>
+        <div data-testid="item">Single Item</div>
+      </UnavailableMenuItemTrigger>
+    ));
+
+    expect(container.querySelector('[data-testid="item"]')?.textContent).toBe("Single Item");
+  });
+
+  it("extracts first child from array when available", () => {
+    const { container } = render(() => (
+      <UnavailableMenuItemTrigger isUnavailable={false}>
+        <div data-testid="item">First Item</div>
+        <div data-testid="popover">Popover</div>
+      </UnavailableMenuItemTrigger>
+    ));
+
+    expect(container.querySelector('[data-testid="item"]')?.textContent).toBe("First Item");
+    expect(container.querySelector('[data-testid="popover"]')).toBeNull();
   });
 });
