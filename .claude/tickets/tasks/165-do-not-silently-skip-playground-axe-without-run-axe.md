@@ -4,9 +4,14 @@ type: task
 title: "Do not silently skip playground axe without RUN_AXE"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "naming playground-axe or contrast without RUN_AXE=1 exits 1 before the preview server; with the env both files list their scans, and an unfiltered run omits them",
+    }
 ---
 
 ## Cause

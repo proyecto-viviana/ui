@@ -4,7 +4,11 @@ import { routes } from "./helpers/routes";
 import { CONTRAST_EXEMPTIONS } from "./helpers/contrast-exemptions";
 import { PLAYGROUND_TARGET_SIZE_EXEMPTIONS } from "./helpers/target-size-exemptions";
 
-const runAxe = process.env.RUN_AXE === "1";
+// Loaded only when RUN_AXE=1 (see playwright.config.ts). A skip would exit 0.
+if (process.env.RUN_AXE !== "1") {
+  throw new Error("RUN_AXE=1 is required. playground-axe.spec.ts must not skip.");
+}
+
 const includeContrast = process.env.AXE_INCLUDE_CONTRAST === "1";
 const SECTION_SELECTOR = 'section[data-testid^="section-"]';
 
@@ -131,7 +135,6 @@ test.describe("Playground accessibility (axe scan)", () => {
   for (const theme of ["dark", "light"] as const) {
     // Level 1: WCAG 2.1 A + AA (the standard bar — must pass)
     test(`[${theme}] WCAG 2.1 AA — zero violations`, async ({ page }) => {
-      test.skip(!runAxe, "Queued until RUN_AXE=1");
       await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
@@ -145,7 +148,6 @@ test.describe("Playground accessibility (axe scan)", () => {
 
     // Level 2: WCAG 2.2 AA (latest standard)
     test(`[${theme}] WCAG 2.2 AA — zero violations`, async ({ page }) => {
-      test.skip(!runAxe, "Queued until RUN_AXE=1");
       await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
@@ -164,7 +166,6 @@ test.describe("Playground accessibility (axe scan)", () => {
 
     // Level 3: Best practices (axe recommendations beyond WCAG)
     test(`[${theme}] best-practices — zero violations`, async ({ page }) => {
-      test.skip(!runAxe, "Queued until RUN_AXE=1");
       await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
@@ -179,7 +180,6 @@ test.describe("Playground accessibility (axe scan)", () => {
     // same distinction). Keep every other AAA rule strict and attach the full
     // enhanced-contrast evidence instead of hiding it or rewriting S2 tokens.
     test(`[${theme}] WCAG 2.1 AAA — enhanced contrast report`, async ({ page }) => {
-      test.skip(!runAxe, "Queued until RUN_AXE=1");
       await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);
@@ -212,7 +212,6 @@ test.describe("Playground accessibility (axe scan)", () => {
     // Keep that upstream contract visible as an attached report; every other
     // experimental finding remains a hard failure.
     test(`[${theme}] experimental rules — upstream focus semantics report`, async ({ page }) => {
-      test.skip(!runAxe, "Queued until RUN_AXE=1");
       await page.goto(routes.playground);
       await setTheme(page, theme);
       await showAllSections(page);

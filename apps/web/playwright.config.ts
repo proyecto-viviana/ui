@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
+import { assertAxeRunRequested, axeTestIgnore } from "./e2e/require-run-axe.ts";
 
 if (!process.env.CI) {
   const localEnv = fileURLToPath(new URL("../../.env.local", import.meta.url));
@@ -9,8 +10,14 @@ if (!process.env.CI) {
   }
 }
 
+// A missing RUN_AXE used to skip the axe files and exit 0. Naming either file
+// fails here, before the preview server starts. An unfiltered run omits them
+// so it cannot report them as passed.
+assertAxeRunRequested(process.argv, process.env);
+
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: axeTestIgnore(process.env),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

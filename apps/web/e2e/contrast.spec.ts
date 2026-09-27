@@ -20,7 +20,10 @@ import { CONTRAST_EXEMPTIONS } from "./helpers/contrast-exemptions";
  * re-navigating is cheaper than a second worker.
  */
 
-const runAxe = process.env.RUN_AXE === "1";
+// Loaded only when RUN_AXE=1 (see playwright.config.ts). A skip would exit 0.
+if (process.env.RUN_AXE !== "1") {
+  throw new Error("RUN_AXE=1 is required. contrast.spec.ts must not skip.");
+}
 
 /**
  * Contrast is measured against what a sighted user actually sees, so a rule
@@ -94,7 +97,6 @@ function describe(
 
 for (const route of ALL_ROUTES) {
   test(`${route} — colour contrast in both themes`, async ({ page }) => {
-    test.skip(!runAxe, "Queued until RUN_AXE=1");
     test.setTimeout(90_000);
     /* 2026-09-22 #586. The LIVE badge breathes opacity over 2s. Mid-breath axe
        cannot see its solid fill (incomplete, messageKey bgGradient, ratio 0),
