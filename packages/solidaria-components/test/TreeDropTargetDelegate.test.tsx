@@ -86,4 +86,41 @@ describe("createTreeDropTargetDelegate", () => {
     const target = delegate.getDropTargetFromPoint(70, 75, (_target: DropTarget) => true);
     expect(target).toEqual({ type: "item", key: "b2", dropPosition: "after" });
   });
+
+  it("returns the root target when every candidate is rejected", () => {
+    const collection = createMockCollection([
+      {
+        type: "item",
+        key: "parent",
+        parentKey: null,
+        nextKey: null,
+        hasChildNodes: true,
+        level: 0,
+      },
+      {
+        type: "item",
+        key: "child",
+        parentKey: "parent",
+        nextKey: null,
+        hasChildNodes: false,
+        level: 1,
+      },
+    ]);
+    const base = {
+      getDropTargetFromPoint: (): ItemDropTarget => ({
+        type: "item",
+        key: "parent",
+        dropPosition: "after",
+      }),
+    };
+    const delegate = createTreeDropTargetDelegate(
+      base,
+      { collection, expandedKeys: new Set(["parent"]) } as Parameters<
+        typeof createTreeDropTargetDelegate
+      >[1],
+      "ltr",
+    );
+
+    expect(delegate.getDropTargetFromPoint(10, 10, () => false)).toEqual({ type: "root" });
+  });
 });

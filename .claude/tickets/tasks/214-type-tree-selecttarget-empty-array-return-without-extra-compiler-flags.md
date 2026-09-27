@@ -4,9 +4,19 @@ type: task
 title: "Type Tree selectTarget empty-array return without extra compiler flags"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "selectTarget returns undefined for an empty candidate list, and the drop delegate test drives that list",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "an empty candidate list is undefined inside selectTarget and the root target at the delegate; typecheck stayed green without a new compiler flag",
+    }
 ---
 
 ## Cause

@@ -460,8 +460,9 @@ export function createTreeDropTargetDelegate<T extends object>(
     y: number,
     currentYMovement: "up" | "down" | null,
     currentXMovement: "left" | "right" | null,
-  ): ItemDropTarget => {
-    if (potentialTargets.length < 2) return potentialTargets[0];
+  ): ItemDropTarget | undefined => {
+    if (potentialTargets.length === 0) return undefined;
+    if (potentialTargets.length === 1) return potentialTargets[0];
 
     const currentItem = state.collection.getItem(originalTarget.key);
     const parentKey = currentItem?.parentKey;
@@ -779,7 +780,11 @@ export function createTreeDropTargetDelegate<T extends object>(
       if (potentialTargets.length === 0) return { type: "root" };
 
       if (potentialTargets.length > 1) {
-        return selectTarget(potentialTargets, target, x, y, currentYMovement, currentXMovement);
+        return (
+          selectTarget(potentialTargets, target, x, y, currentYMovement, currentXMovement) ?? {
+            type: "root",
+          }
+        );
       }
 
       pointerTracking.boundaryContext = null;
