@@ -73,4 +73,26 @@ describe("FileTrigger", () => {
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input).toBeDisabled();
   });
+
+  it("stops the hidden input click from reaching an ancestor", () => {
+    const onParentClick = vi.fn();
+    const { container } = render(() => (
+      <div>
+        <FileTrigger>
+          <button type="button">Upload</button>
+        </FileTrigger>
+      </div>
+    ));
+    const parent = container.firstElementChild as HTMLDivElement;
+    parent.addEventListener("click", onParentClick);
+    const button = parent.querySelector("button") as HTMLButtonElement;
+    const input = parent.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.click(button);
+    expect(onParentClick).toHaveBeenCalledTimes(1);
+
+    onParentClick.mockClear();
+    fireEvent.click(input);
+    expect(onParentClick).not.toHaveBeenCalled();
+  });
 });

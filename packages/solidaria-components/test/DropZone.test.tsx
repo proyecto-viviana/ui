@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { DropZone, DropZoneContext } from "../src/DropZone";
 
 function createDataTransferStub(): DataTransfer {
@@ -171,5 +172,41 @@ describe("DropZone", () => {
     expect(screen.getByRole("button", { name: "Ablegebereich" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Drop files" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "DropZone" })).not.toBeInTheDocument();
+  });
+
+  it("restores focus with the hidden button's native focus when the zone is clicked", () => {
+    render(() => <DropZone>Drop files</DropZone>);
+    const button = screen.getByRole("button", { name: "DropZone" });
+    const focus = vi.spyOn(button, "focus");
+    const zone = document.querySelector(".solidaria-DropZone") as HTMLDivElement;
+
+    fireEvent.click(zone);
+
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(focus.mock.calls[0]).toEqual([]);
+    expect(button).toHaveFocus();
+  });
+
+  it("leaves a focusable child focused when that child is clicked", () => {
+    render(() => (
+      <DropZone>
+        <button type="button">Upload</button>
+      </DropZone>
+    ));
+    const hidden = screen.getByRole("button", { name: "DropZone" });
+    const focus = vi.spyOn(hidden, "focus");
+
+    fireEvent.click(screen.getByRole("button", { name: "Upload" }));
+
+    expect(focus).not.toHaveBeenCalled();
+  });
+
+  it("tabs to the hidden button", async () => {
+    const user = setupUser();
+    render(() => <DropZone>Drop files</DropZone>);
+
+    await user.tab();
+
+    expect(screen.getByRole("button", { name: "DropZone" })).toHaveFocus();
   });
 });

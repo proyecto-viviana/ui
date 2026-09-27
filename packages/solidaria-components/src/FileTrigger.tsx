@@ -19,7 +19,7 @@
  * Based on packages/react-aria-components/src/FileTrigger.tsx.
  */
 
-import { createSignal } from "solid-js";
+import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -77,6 +77,22 @@ export function FileTrigger(props: FileTriggerProps): JSX.Element {
   const onInputChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     local.onSelect?.(e.currentTarget.files);
   };
+  // Native listener, not a delegated onClick: it has to stop the event at the
+  // input, before a DropZone ancestor sees the picker click.
+  createTrackedEffect(() => {
+    const cleanups: Array<() => void> = [];
+    const input = inputRef();
+    if (input) {
+      const stop = (event: MouseEvent) => {
+        event.stopPropagation();
+      };
+      input.addEventListener("click", stop);
+      cleanups.push(() => input.removeEventListener("click", stop));
+    }
+    return () => {
+      for (const cleanup of cleanups) cleanup();
+    };
+  });
 
   return (
     <>
