@@ -4,13 +4,23 @@ type: task
 title: "Align the S2 RangeSlider disabled state"
 created: 2026-08-20
 parent: 24
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the remaining-work hygiene census" }
   - {
       state: open,
       at: 2026-09-03,
       note: "#260 rangeslider: polarity is now the inverse of this write-up. URL ?isDisabled=true and live isDisabled stamp data-disabled=true on the S2 group and omit it on Solid. Fill/upperTrack/label/thumb paint and Tab skip already match; the attribute is not user-visible on this route. Do not file a new id.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "pinned S2 RangeSlider renders through RAC Slider, which stamps data-disabled on the group; solid-spectrum omitted it and viviana-ui already set it",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "solid-spectrum group now stamps data-disabled only while disabled, matching RAC Slider; both package suites lock the enabled omission and the disabled branch",
     }
 ---
 

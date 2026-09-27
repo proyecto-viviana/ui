@@ -9,7 +9,9 @@ describe("RangeSlider (solid-spectrum)", () => {
   it("renders S2 range slider semantics with min/max defaults", () => {
     render(() => <RangeSlider label="Range" />);
 
-    expect(screen.getByRole("group", { name: "Range" })).toBeInTheDocument();
+    const group = screen.getByRole("group", { name: "Range" });
+    expect(group).toBeInTheDocument();
+    expect(group).not.toHaveAttribute("data-disabled");
     const sliders = screen.getAllByRole("slider");
     expect(sliders).toHaveLength(2);
     expect(sliders[0]).toHaveAttribute("aria-label", "Minimum");
@@ -59,6 +61,14 @@ describe("RangeSlider (solid-spectrum)", () => {
     expect(endInput).toHaveValue("75");
   });
 
+  it("stamps data-disabled on the group when isDisabled is set", () => {
+    render(() => <RangeSlider label="Range" isDisabled value={{ start: 25, end: 75 }} />);
+
+    expect(screen.getByRole("group", { name: "Range" })).toHaveAttribute("data-disabled", "true");
+    expect(screen.getAllByRole("slider")[0]).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getAllByRole("slider")[1]).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("inherits form disabled state", () => {
     const { container } = render(() => (
       <Form isDisabled>
@@ -71,6 +81,7 @@ describe("RangeSlider (solid-spectrum)", () => {
       </Form>
     ));
 
+    expect(screen.getByRole("group", { name: "Range" })).toHaveAttribute("data-disabled", "true");
     const sliders = screen.getAllByRole("slider");
     expect(sliders[0]).toHaveAttribute("aria-disabled", "true");
     expect(sliders[1]).toHaveAttribute("aria-disabled", "true");
