@@ -1,13 +1,11 @@
 /**
- * Hydration-reactivity guard for the S2 Button.
+ * Hydration-reactivity guard for the Button (@proyecto-viviana/ui).
  *
- * The comparison D12 (SSR/hydration) work drives the Button through a
- * createMemo-recreation pattern: a control event swaps demoProps, the memo
- * rebuilds the whole Button subtree. This suite hydrates each SSR fixture over
- * its server markup and then flips the signal, asserting:
- *  - RECREATION re-binds after hydration (the property the fixture relies on).
+ * This suite hydrates each SSR fixture over its server markup and then flips
+ * the signal, asserting:
+ *  - RECREATION re-binds after hydration.
  *  - FINE-GRAINED reactive text passed directly as Button children re-binds
- *    without recreating the Button subtree.
+ *    without recreating the Button subtree (host identity survives setCount).
  * Both shapes must hydrate with no throw and no console.error (no mismatch).
  */
 import { createMemo, createSignal, flush } from "solid-js";
@@ -70,19 +68,19 @@ async function hydrateAndFlip(
   return { before, after, serverButton, afterButton };
 }
 
-describe("Button hydration reactivity", () => {
+describe("Button hydration reactivity (@proyecto-viviana/ui)", () => {
   afterEach(() => {
     document.body.innerHTML = "";
   });
 
-  it("recreation pattern re-binds after hydration (comparison fixture shape)", async () => {
-    const r = await hydrateAndFlip("button-recreate-ssr.html", RecreationFixture);
+  it("recreation pattern re-binds after hydration", async () => {
+    const r = await hydrateAndFlip("vui-button-recreate-ssr.html", RecreationFixture);
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
   });
 
   it("re-binds fine-grained direct text children after hydration", async () => {
-    const r = await hydrateAndFlip("button-finegrained-ssr.html", FineGrainedFixture);
+    const r = await hydrateAndFlip("vui-button-finegrained-ssr.html", FineGrainedFixture);
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");
     expect(r.afterButton).toBe(r.serverButton);

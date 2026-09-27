@@ -25,6 +25,47 @@ describe("Button", () => {
     expect(screen.getByRole("button")).toHaveTextContent("Saved");
   });
 
+  it("updates direct mixed reactive text children", () => {
+    let setCount!: (value: number) => void;
+
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return <Button>count: {count()}</Button>;
+    });
+
+    expect(screen.getByRole("button")).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("button")).toHaveTextContent("count: 1");
+  });
+
+  it("preserves icon element identity when reactive sibling text updates", () => {
+    let setCount!: (value: number) => void;
+
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return (
+        <Button>
+          <BellIcon />
+          count: {count()}
+        </Button>
+      );
+    });
+
+    const button = screen.getByRole("button");
+    const svg = button.querySelector("svg");
+    expect(svg).not.toBeNull();
+    expect(button).toHaveTextContent("count: 0");
+
+    setCount(1);
+    flush();
+
+    expect(button).toHaveTextContent("count: 1");
+    expect(button.querySelector("svg")).toBe(svg);
+  });
+
   it("owns compound pending props across pointer and keyboard presses", async () => {
     const user = setupUser();
     const warnings: string[] = [];

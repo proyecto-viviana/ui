@@ -4,9 +4,19 @@ type: task
 title: "Complete Button hydration evidence in both public packages"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-26,
+      note: "added mixed-text client regressions, icon element identity assertions, and SSR/hydration suite twin for viviana-ui with host-identity checks",
+    }
+  - {
+      state: verified,
+      at: 2026-09-26,
+      note: "all 4 failure modes verified across both styled packages in unit, SSR, and hydration test suites",
+    }
 ---
 
 ## Cause
