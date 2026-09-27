@@ -4,12 +4,22 @@ type: task
 title: "Support static Meter labels during hydration"
 created: 2026-08-20
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "found while adding the headless hydration evidence for #130",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "added a static Meter Label SSR and hydration case beside the render-child fixture",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "static Label already server-renders and hydrates as a span whose id is the meter's aria-labelledby; render-child path stayed green",
     }
 ---
 

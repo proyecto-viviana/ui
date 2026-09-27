@@ -24,6 +24,15 @@ function MeterFixture() {
   );
 }
 
+function StaticMeterFixture() {
+  return (
+    <Meter value={25}>
+      <Label>Storage space</Label>
+      <span>25%</span>
+    </Meter>
+  );
+}
+
 describe("Meter SSR", () => {
   it("is compiled for the server", () => {
     expect(isServer).toBe(true);
@@ -41,5 +50,19 @@ describe("Meter SSR", () => {
     const outDir = resolve(import.meta.dirname, "../../../output");
     mkdirSync(outDir, { recursive: true });
     writeFileSync(resolve(outDir, "meter-ssr.html"), html, "utf8");
+  });
+
+  it("renders a static Label as the meter's span", () => {
+    const html = renderToString(() => <StaticMeterFixture />);
+    const labelledBy = html.match(/aria-labelledby="([^"]+)"/)?.[1];
+
+    expect(labelledBy).toBeTruthy();
+    expect(html).toMatch(new RegExp(`<span\\b[^>]*\\bid="${labelledBy}"`));
+    expect(html).not.toMatch(/<label[\s>]/);
+    expect(html).toContain("Storage space");
+
+    const outDir = resolve(import.meta.dirname, "../../../output");
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(resolve(outDir, "meter-static-label-ssr.html"), html, "utf8");
   });
 });

@@ -24,8 +24,22 @@ function MeterFixture() {
   );
 }
 
+function StaticMeterFixture() {
+  return (
+    <Meter value={25}>
+      <Label>Storage space</Label>
+      <span>25%</span>
+    </Meter>
+  );
+}
+
 const ssrHtml = readFileSync(
   resolve(import.meta.dirname, "../../../output/meter-ssr.html"),
+  "utf8",
+);
+
+const staticSsrHtml = readFileSync(
+  resolve(import.meta.dirname, "../../../output/meter-static-label-ssr.html"),
   "utf8",
 );
 
@@ -52,5 +66,25 @@ describe("Meter hydration over server markup", () => {
     expect(label).not.toBeNull();
     expect(meter?.getAttribute("role")).toBe("meter progressbar");
     expect(meter?.getAttribute("aria-labelledby")).toBe(label?.id);
+  });
+
+  it("hydrates a static Label as a span with the meter's label id", async () => {
+    const selector = '[role~="meter"], span[id]';
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(staticSsrHtml, () => <StaticMeterFixture />, {
+      beforeHydrate(container) {
+        serverNodes = Array.from(container.querySelectorAll(selector));
+        expect(serverNodes).toHaveLength(2);
+        expect(container.querySelector("label")).toBeNull();
+      },
+    });
+    const hydratedNodes = container.querySelectorAll(selector);
+    expect(hydratedNodes).toHaveLength(serverNodes.length);
+    serverNodes.forEach((node, index) => expect(hydratedNodes[index]).toBe(node));
+    const meter = container.querySelector<HTMLElement>('[role~="meter"]');
+    const label = container.querySelector<HTMLElement>("span[id]");
+    expect(label?.tagName).toBe("SPAN");
+    expect(meter?.getAttribute("aria-labelledby")).toBe(label?.id);
+    expect(label?.textContent).toBe("Storage space");
   });
 });
