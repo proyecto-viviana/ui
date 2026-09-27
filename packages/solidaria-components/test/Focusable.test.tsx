@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, fireEvent } from "@solidjs/testing-library";
+import { describe, it, expect } from "vite-plus/test";
+import { render } from "@solidjs/testing-library";
 import { Focusable } from "../src/Focusable";
 
 describe("Focusable", () => {
@@ -13,11 +13,6 @@ describe("Focusable", () => {
     ));
     expect(getByTestId("child")).toBeDefined();
     expect(getByTestId("child").textContent).toBe("Focusable content");
-  });
-
-  it("can be exported from index", async () => {
-    const mod = await import("../src/index");
-    expect(mod.Focusable).toBeDefined();
   });
 
   it("renders without errors when disabled", () => {

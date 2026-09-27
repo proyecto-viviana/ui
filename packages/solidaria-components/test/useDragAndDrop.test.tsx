@@ -19,28 +19,70 @@ afterEach(() => {
 });
 
 describe("useDragAndDrop", () => {
-  it("returns draggable hooks when getItems is provided", () => {
+  it("calls getItems from draggable state and omits those hooks without it", () => {
+    const dropOnly = useDragAndDrop({
+      onDrop: () => {},
+    });
+    expect(dropOnly.dragAndDropHooks.useDraggableCollectionState).toBeUndefined();
+    expect(dropOnly.dragAndDropHooks.useDraggableCollection).toBeUndefined();
+    expect(dropOnly.dragAndDropHooks.useDraggableItem).toBeUndefined();
+    expect(dropOnly.dragAndDropHooks.DragPreview).toBeUndefined();
+    expect(dropOnly.dragAndDropHooks.isVirtualDragging).toBeUndefined();
+
+    const getItems = vi.fn((keys: Set<string | number>) =>
+      Array.from(keys).map((key) => ({ "text/plain": String(key) })),
+    );
     const { dragAndDropHooks } = useDragAndDrop({
       items: [{ id: "a" }],
-      getItems: (keys) => Array.from(keys).map((key) => ({ "text/plain": String(key) })),
+      getItems,
     });
 
-    expect(typeof dragAndDropHooks.useDraggableCollectionState).toBe("function");
-    expect(typeof dragAndDropHooks.useDraggableCollection).toBe("function");
-    expect(typeof dragAndDropHooks.useDraggableItem).toBe("function");
-    expect(typeof dragAndDropHooks.DragPreview).toBe("function");
+    createRoot((dispose) => {
+      const dragState = dragAndDropHooks.useDraggableCollectionState!({
+        items: [{ id: "a" }],
+      });
+      expect(dragState.getItems(new Set(["a"]))).toEqual([{ "text/plain": "a" }]);
+      expect(getItems).toHaveBeenCalledTimes(1);
+      expect(getItems).toHaveBeenCalledWith(new Set(["a"]), [{ id: "a" }]);
+
+      const item = dragAndDropHooks.useDraggableItem!({ key: "a" }, dragState);
+      expect(item.dragProps.draggable).toBe(true);
+
+      const collection = dragAndDropHooks.useDraggableCollection!({}, dragState, () => null);
+      expect(collection.state).toBe(dragState);
+
+      const disabled = useDragAndDrop({
+        getItems,
+        isDisabled: true,
+      });
+      const disabledState = disabled.dragAndDropHooks.useDraggableCollectionState!({});
+      const disabledItem = disabled.dragAndDropHooks.useDraggableItem!({ key: "a" }, disabledState);
+      expect(disabledItem.dragProps.draggable).toBe(false);
+
+      dispose();
+    });
   });
 
-  it("returns droppable hooks when drop handlers are provided", () => {
-    const { dragAndDropHooks } = useDragAndDrop({
-      onInsert: () => {},
+  it("omits droppable hooks unless a drop handler is provided", () => {
+    const dragOnly = useDragAndDrop({
+      getItems: () => [],
     });
+    expect(dragOnly.dragAndDropHooks.useDroppableCollectionState).toBeUndefined();
+    expect(dragOnly.dragAndDropHooks.useDroppableCollection).toBeUndefined();
+    expect(dragOnly.dragAndDropHooks.useDroppableItem).toBeUndefined();
+    expect(dragOnly.dragAndDropHooks.useDropIndicator).toBeUndefined();
+    expect(dragOnly.dragAndDropHooks.ListDropTargetDelegate).toBeUndefined();
 
-    expect(typeof dragAndDropHooks.useDroppableCollectionState).toBe("function");
-    expect(typeof dragAndDropHooks.useDroppableCollection).toBe("function");
-    expect(typeof dragAndDropHooks.useDroppableItem).toBe("function");
-    expect(typeof dragAndDropHooks.useDropIndicator).toBe("function");
-    expect(typeof dragAndDropHooks.ListDropTargetDelegate).toBe("function");
+    createRoot((dispose) => {
+      const { dragAndDropHooks } = useDragAndDrop({
+        onInsert: () => {},
+      });
+      const dropState = dragAndDropHooks.useDroppableCollectionState!({});
+      const item = dragAndDropHooks.useDroppableItem!({ key: "row-1" }, dropState, () => null);
+      expect(item.isDropTarget).toBe(false);
+
+      dispose();
+    });
   });
 
   it("wires renderDragPreview into draggable collection state when preview is not provided", () => {

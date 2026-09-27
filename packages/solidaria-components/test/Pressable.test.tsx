@@ -1,5 +1,5 @@
-import { afterEach, describe, it, expect, vi } from "vite-plus/test";
-import { cleanup, render, fireEvent } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect } from "vite-plus/test";
+import { cleanup, render } from "@solidjs/testing-library";
 import { Pressable } from "../src/Pressable";
 
 afterEach(cleanup);
@@ -15,11 +15,6 @@ describe("Pressable", () => {
     ));
     expect(getByTestId("child")).toBeDefined();
     expect(getByTestId("child").textContent).toBe("Pressable");
-  });
-
-  it("can be exported from index", async () => {
-    const mod = await import("../src/index");
-    expect(mod.Pressable).toBeDefined();
   });
 
   it("renders without errors when disabled", () => {

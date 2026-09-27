@@ -4,13 +4,18 @@ type: task
 title: "Replace export-floor and did-not-throw tautologies with behavior contracts"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
       state: in-progress,
       at: 2026-09-27,
       note: "createInteractOutside removal and empty FocusScope no longer assert expect(true). createPress cleanup was already a listener spy. Export floors in re-exports, Pressable, Focusable, and useDragAndDrop are still open",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "No package test asserts expect(true). Barrel re-exports, Pressable, Focusable, PickerItem, and the useDragAndDrop hook gates now assert behavior. Every remaining typeof === function assertion sits beside a behavior case in the same file",
     }
 ---
 
