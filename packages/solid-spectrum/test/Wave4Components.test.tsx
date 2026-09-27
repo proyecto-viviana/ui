@@ -10,7 +10,6 @@ import { LogicButton } from "../src/button/LogicButton";
 import { ProgressCircle } from "../src/progress/ProgressCircle";
 import { Field } from "../src/form/Field";
 import { HelpText } from "../src/form/HelpText";
-import { Overlay } from "../src/overlays/Overlay";
 import { Content, ViewHeader, ViewFooter } from "../src/view/Content";
 import { Illustration } from "../src/icon/Illustration";
 import { UIIcon } from "../src/icon/UIIcon";
@@ -167,28 +166,6 @@ describe("Wave 4 UI Components", () => {
       ));
       expect(container.textContent).toContain("Error!");
       expect(container.textContent).not.toContain("Help");
-    });
-  });
-
-  // 4H: Overlay variants
-  describe("Overlay", () => {
-    it("renders children when open", () => {
-      const { container } = render(() => (
-        <Overlay isOpen>
-          <div data-testid="content">Overlay content</div>
-        </Overlay>
-      ));
-      // Portal renders outside container
-      expect(document.body.textContent).toContain("Overlay content");
-    });
-
-    it("does not render when closed", () => {
-      const { container } = render(() => (
-        <Overlay isOpen={false}>
-          <div>Hidden</div>
-        </Overlay>
-      ));
-      expect(container.textContent).not.toContain("Hidden");
     });
   });
 

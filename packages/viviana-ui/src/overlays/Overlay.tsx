@@ -18,6 +18,7 @@ import type { JSX } from "@solidjs/web";
 import { Portal } from "@solidjs/web";
 import { useUNSAFE_PortalContext } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { style } from "../style" with { type: "macro" };
 
 export interface OverlayProps {
   /** Whether the overlay is currently open. */
@@ -29,6 +30,11 @@ export interface OverlayProps {
   /** The container element to render the overlay into. */
   container?: HTMLElement;
 }
+
+const overlayStyles = style({
+  position: "fixed",
+  zIndex: 50,
+});
 
 /**
  * A generic overlay container that renders content above the page via a portal.
@@ -44,7 +50,9 @@ export function Overlay(props: OverlayProps): JSX.Element {
   return (
     <Show when={local.isOpen}>
       <Portal mount={portalContainer()}>
-        <div class={`fixed z-50 ${local.class ?? ""}`}>{local.children}</div>
+        <div class={local.class ? `${overlayStyles} ${local.class}` : overlayStyles}>
+          {local.children}
+        </div>
       </Portal>
     </Show>
   );

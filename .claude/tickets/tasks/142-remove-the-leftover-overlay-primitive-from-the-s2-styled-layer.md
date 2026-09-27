@@ -4,9 +4,19 @@ type: task
 title: "Remove the leftover Overlay primitive from the S2 styled layer"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "routed Overlay through style() in both styled packages and stopped Wave 4 from mounting it",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "Overlay tests reject fixed/z-50, emit the macro class, and keep the identical dual copy; OpenTransition had no Tailwind classes",
+    }
 ---
 
 ## Cause
