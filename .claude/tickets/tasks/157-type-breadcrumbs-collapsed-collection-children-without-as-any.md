@@ -4,9 +4,19 @@ type: task
 title: "Type Breadcrumbs collapsed collection children without as-any"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "removed the styled Breadcrumbs children cast; the collapse path already uses CollapsedBreadcrumbEntry",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "typecheck is green without children as any in both styled Breadcrumbs; the existing behavior tests stayed green",
+    }
 ---
 
 ## Cause

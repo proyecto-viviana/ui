@@ -650,7 +650,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
             ref={setRootElement}
             class={getClassName}
             style={() => mergedUnsafeStyle() ?? {}}
-            children={local.children as any}
+            children={local.children}
           />
         }
       >
