@@ -14,13 +14,12 @@ completed operational records.
 
 ## Start here
 
-1. Read [status.md](status.md) for the active task summary.
+1. Read [status.md](status.md) for the active task summary, then open one ticket from that summary.
 2. Read [roadmap.md](roadmap.md) for initiative progress.
-3. Open [the ticket board](../tickets/) for full task records and history.
-4. Read [steering.md](steering.md) for owner direction.
-5. Read [architecture.md](architecture.md) before you change package boundaries.
-6. Read [certification.md](certification.md) before you claim the same behavior.
-7. Read [tooling.md](tooling.md) before you run repository commands.
+3. Read [steering.md](steering.md) for owner direction.
+4. Read [architecture.md](architecture.md) before you change package boundaries.
+5. Read [certification.md](certification.md) before you claim the same behavior.
+6. Read [tooling.md](tooling.md) before you run repository commands.
 
 `status.md` and `roadmap.md` are generated. Do not edit them. Run
 `vp run docs:generate` after a ticket change.
@@ -60,7 +59,5 @@ completed operational records.
 - [docs/adr/](../../docs/adr/) stores architecture decisions.
 - [reference/patterns.md](../reference/patterns.md) stores reusable Solid porting
   patterns.
-- [Ticket #136](../tickets/initiatives/136-run-the-2026-09-full-repo-audit.md) is
-  the 2026-09 full-repo audit reviewer handoff while that initiative is open.
 
 Run `vp run docs:check` after documentation or ticket changes.

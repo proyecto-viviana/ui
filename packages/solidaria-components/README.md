@@ -33,8 +33,8 @@ export function ToolbarButton() {
     <Button class="button">
       {({ isPressed, isFocusVisible }) => (
         <span
-          data-pressed={isPressed() || undefined}
-          data-focus-visible={isFocusVisible() || undefined}
+          data-pressed={isPressed || undefined}
+          data-focus-visible={isFocusVisible || undefined}
         >
           Save
         </span>

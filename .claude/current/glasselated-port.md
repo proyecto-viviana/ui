@@ -42,8 +42,11 @@ Its primary sources are:
 
 - Glass surfaces use translucency, backdrop blur, and an inset glass rim.
 - Terminal wells are matte and opaque. They are never glass.
-- The palette uses blue, amber, violet, and red. It does not use green.
-- The create action is yellow, not orange.
+- The palette drops amber, orange, and violet. Channels are neutral, blue and
+  cyan, fuchsia, and yellow. Red is fault only. Success green is the
+  `--color-success` scale in `packages/viviana-ui/src/viviana-tokens.css`.
+- The create action is fuchsia. Yellow is transient detail, never a fill or a
+  button.
 - Display, title, headline, and label text use Geist Pixel.
 - Body and meta text use Geist. Micro, terminal, and button text use Geist Mono.
 - The source CSS is authoritative when this summary is incomplete.
@@ -67,13 +70,17 @@ whole of `@proyecto-viviana/ui` was restyled onto it. `solid-spectrum` and
 `apps/comparison` were not touched. The package takes a major bump
 (`.changeset/terminal-glass-register.md`).
 
-- Foundation: colour ramps blue, cyan, fuchsia, yellow, red, green, gray (amber
-  and orange deleted); `viviana-tokens.css` re-cut to four channels and one rim
-  (`--edge-glass`); corner ladder 4/5/8/12/999; `display-xl/lg/md` type roles;
-  a single `[data-color-scheme]` attribute, with `[data-theme]` retired outside
-  Kumo. Helpers `glassSurface`, `dither`, `pixelBlocks`, `hudBracket`,
-  `edgeFade` live in `src/s2-internal/style-utils.ts`; the stepped keyframes
-  live in `src/style/motion.ts` behind `createPrefersReducedMotion`.
+- Foundation: colour ramps blue, cyan, fuchsia, yellow, red, and slate gray.
+  Amber, orange, and violet are gone. Success green is the `--color-success`
+  scale, not a channel ramp. `viviana-tokens.css` keeps four channels and one
+  rim (`--edge-glass`); corner ladder 4/5/8/12/999; `display-xl/lg/md` type
+  roles. viviana-ui switches scheme with one `[data-color-scheme]` attribute.
+  `[data-theme]` is not retired: Geist scopes with `[data-theme="geist"]` in
+  `packages/geist/src/styles.css`, and Kumo scopes with `[data-theme="kumo"]`.
+  Helpers `glassSurface`, `dither`, `pixelBlocks`, `hudBracket`, `edgeFade`
+  live in `src/s2-internal/style-utils.ts`. The stepped keyframes live in
+  `src/style/motion.ts` and do not gate themselves. `createPrefersReducedMotion`
+  is private in the skeleton and is not that gate.
 - Components: every family restyled — buttons (`variant="terminal"`), badges,
   meters and progress, selection controls, fields, collections, cards, wells,
   and the float tier for popovers, menus, dialogs, tooltips and toasts.

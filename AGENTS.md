@@ -26,7 +26,7 @@ See: [what a ported component must pass](./.claude/current/certification.md) and
 
 ## Commands
 
-`vp install`; `vp run check`, `vp run test`, `vp run build`; `vp lint`.
+`vp install`; `vp run check`, `vp run test:run`, `vp run build`; `vp lint`.
 
 ## Local rules
 

@@ -19,7 +19,7 @@ import { createButton } from "@proyecto-viviana/solidaria";
 
 export function Button(props) {
   let ref!: HTMLButtonElement;
-  const { buttonProps, isPressed } = createButton(props, () => ref);
+  const { buttonProps, isPressed } = createButton(props);
 
   return (
     <button {...buttonProps} ref={ref} data-pressed={isPressed() || undefined}>

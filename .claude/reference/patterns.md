@@ -4,30 +4,27 @@ Patterns specific to our SolidJS implementation vs React-Aria.
 
 ## Props as Accessors
 
-React-Aria hooks take props objects. In SolidJS, we wrap in accessors for reactivity:
+React Aria's `useButton` takes `(props, ref)`. `createButton` takes props only.
+A field such as `isDisabled` may be a boolean or an accessor. The props object
+itself is not an accessor, and there is no ref argument.
 
 ```typescript
-// React-Aria
-function useButton(props: ButtonProps) { ... }
+// React Aria
+function useButton(props: ButtonProps, ref: RefObject<HTMLElement | null>) { ... }
 
 // Solidaria
-function createButton(
-  props: MaybeAccessor<ButtonProps>,  // Can be object or () => object
-  ref: () => HTMLElement | null
-) { ... }
+function createButton(props: AriaButtonProps) { ... }
 ```
 
 Usage:
 
 ```typescript
-// Static props
-createButton({ onPress: handlePress }, () => ref);
+createButton({ onPress: handlePress });
 
-// Reactive props (from component props)
-createButton(
-  () => ({ onPress: props.onPress }),
-  () => ref,
-);
+createButton({
+  onPress: props.onPress,
+  isDisabled: () => props.isDisabled,
+});
 ```
 
 ## Ref Pattern
@@ -41,8 +38,9 @@ const ref = useRef<HTMLButtonElement>(null);
 let ref: HTMLButtonElement | null = null;
 <button ref={(el) => (ref = el)} />
 
-// For hooks, pass a getter
-createButton(props, () => ref);
+// Hooks that take a ref, such as createOverlay, take a getter.
+// createButton does not.
+createOverlay(props, () => ref);
 ```
 
 ## State vs Signal
