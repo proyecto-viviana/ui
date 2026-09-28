@@ -421,7 +421,8 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
 
   // Create calendar state synced through datePickerState
   const calendarState = createCalendarState<T>({
-    value: () => datePickerState.value(),
+    // Popover calendar reads dateValue (in-progress date), matching useDatePicker.
+    value: () => datePickerState.dateValue() as T | null,
     onChange: (value) => {
       if (!value) {
         return;

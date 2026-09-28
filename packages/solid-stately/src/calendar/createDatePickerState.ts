@@ -64,8 +64,10 @@ export interface DatePickerState<T extends DateValue = DateValue> {
   value: Accessor<T | null>;
   defaultValue: T | null;
   setValue: (value: T | null) => void;
+  /** Committed value, or the in-progress date before the other half commits. */
   dateValue: Accessor<DateValue | null>;
   setDateValue: (value: DateValue) => void;
+  /** Committed value when it has a time; otherwise the in-progress time. */
   timeValue: Accessor<TimeValue | null>;
   setTimeValue: (value: TimeValue) => void;
   granularity: Granularity;
@@ -129,18 +131,19 @@ export function createDatePickerState<T extends DateValue = DateValue>(
   const validationState = createMemo(() => access(props.validationState));
   const isOpen: Accessor<boolean> = () => access(props.isOpen) ?? readNow(internalOpen);
 
-  // Date and time portions of the current value
-  const dateValue = createMemo<DateValue | null>(() => {
-    const v = value();
-    if (!v) return null;
-    return toCalendarDate(v);
-  });
+  // useDatePickerState shadows selectedDate/selectedTime with the committed
+  // value during render. Otherwise the popover reads the in-progress half.
+  const dateValue: Accessor<DateValue | null> = () => {
+    const committed = value();
+    if (committed) return committed;
+    return selectedDate();
+  };
 
-  const timeValue = createMemo<TimeValue | null>(() => {
-    const v = value();
-    if (!v || !("hour" in v)) return null;
-    return v as unknown as TimeValue;
-  });
+  const timeValue: Accessor<TimeValue | null> = () => {
+    const committed = value();
+    if (committed && "hour" in committed) return committed as unknown as TimeValue;
+    return selectedTime();
+  };
 
   // Helper to resolve placeholder time (midnight fallback)
   const getPlaceholderTime = (): TimeValue => {

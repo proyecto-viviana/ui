@@ -747,9 +747,10 @@ export function DatePicker<T extends DateValue = CalendarDate>(
             createCalendar: createCalendarProps.createCalendar,
           }}
           hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
-          shouldForceLeadingZeros={
-            (rest as { shouldForceLeadingZeros?: boolean }).shouldForceLeadingZeros
-          }
+          placeholderValue={calendarProps.placeholderValue}
+          minValue={calendarProps.minValue}
+          maxValue={calendarProps.maxValue}
+          hideTimeZone={(rest as { hideTimeZone?: boolean }).hideTimeZone}
         />
       </DatePickerFieldGroup>
 
@@ -778,7 +779,10 @@ function DatePickerPopup(props: {
   maxVisibleMonths?: number;
   calendarProps?: Record<string, unknown>;
   hourCycle?: 12 | 24;
-  shouldForceLeadingZeros?: boolean;
+  placeholderValue?: DateValue;
+  minValue?: DateValue;
+  maxValue?: DateValue;
+  hideTimeZone?: boolean;
 }): JSX.Element {
   const theme = useTheme();
   const datePicker = useDatePickerContext();
@@ -787,6 +791,19 @@ function DatePickerPopup(props: {
     datePicker.datePickerState.granularity === "day"
       ? "minute"
       : datePicker.datePickerState.granularity;
+  // S2 only forwards a placeholder or bound that actually carries a time.
+  const timePlaceholder = () => {
+    const placeholder = props.placeholderValue;
+    return placeholder && "hour" in placeholder ? placeholder : undefined;
+  };
+  const timeMinValue = () => {
+    const minValue = props.minValue;
+    return minValue && "hour" in minValue ? minValue : undefined;
+  };
+  const timeMaxValue = () => {
+    const maxValue = props.maxValue;
+    return maxValue && "hour" in maxValue ? maxValue : undefined;
+  };
 
   return (
     <DatePickerContent
@@ -813,7 +830,10 @@ function DatePickerPopup(props: {
               value={datePicker.datePickerState.timeValue() ?? undefined}
               granularity={timeGranularity()}
               hourCycle={props.hourCycle}
-              shouldForceLeadingZeros={props.shouldForceLeadingZeros}
+              placeholderValue={timePlaceholder()}
+              minValue={timeMinValue()}
+              maxValue={timeMaxValue()}
+              hideTimeZone={props.hideTimeZone}
               onChange={(nextValue) => {
                 if (nextValue) {
                   datePicker.datePickerState.setTimeValue(nextValue);
