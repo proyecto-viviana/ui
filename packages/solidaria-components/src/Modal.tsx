@@ -37,6 +37,8 @@ import {
   useUNSAFE_PortalContext,
   createEnterAnimation,
   createExitAnimation,
+  createStringFormatter,
+  overlaysIntlStrings,
 } from "@proyecto-viviana/solidaria";
 import {
   type RenderChildren,
@@ -411,6 +413,8 @@ function ModalContent(props: ModalProps): JSX.Element {
     "isExiting",
   ]);
 
+  const stringFormatter = createStringFormatter(overlaysIntlStrings, "@react-aria/overlays");
+
   let modalRef!: HTMLDivElement;
   const modalRefAccessor = () => modalRef ?? null;
   // Signal-backed element for the enter animation, so the effect re-runs when
@@ -625,7 +629,7 @@ function ModalContent(props: ModalProps): JSX.Element {
               upstream's ~16x6 sentinel. */}
           <VisuallyHidden elementType="div">
             <button
-              aria-label="Dismiss"
+              aria-label={stringFormatter().format("dismiss")}
               tabindex={-1}
               onClick={close}
               style={{ width: "1px", height: "1px" }}
