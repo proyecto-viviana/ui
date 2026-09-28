@@ -85,7 +85,12 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { createMediaQuery } from "../utils/createMediaQuery";
-import { mergeProps, createStringFormatter, getOwnerDocument } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps,
+  createStringFormatter,
+  createTableSelectAllCheckbox,
+  getOwnerDocument,
+} from "@proyecto-viviana/solidaria";
 import {
   ActionButton,
   ActionButtonContext,
@@ -2040,16 +2045,24 @@ export function TableSelectAllCheckbox(): JSX.Element {
       selectionColumn,
     );
 
-  // Mirrors S2's `TableColumnHeader`: in single-selection mode there is no
-  // select-all checkbox — the header column instead exposes a `VisuallyHidden`
-  // "Select" label (S2 `VisuallyHiddenSelectAllLabel`). Only `multiple` mode
-  // renders the real select-all checkbox.
+  // Mirrors S2 VisuallyHiddenSelectAllLabel: single selection has no checkbox.
+  // The hidden name is the select-all slot label, the table catalog "select" string.
   const isSingle = () => state?.selectionMode === "single";
+  const selectAllAria = createTableSelectAllCheckbox(() => {
+    if (!state) {
+      throw new Error("TableSelectAllCheckbox requires table state");
+    }
+    return state;
+  });
+  const hiddenSelectLabel = () => {
+    const label = selectAllAria.checkboxProps["aria-label"];
+    return typeof label === "string" ? label : undefined;
+  };
 
   return (
     <HeadlessTableColumn id="__selection__" class={className}>
       {isSingle() ? (
-        <HeadlessVisuallyHidden>Select</HeadlessVisuallyHidden>
+        <HeadlessVisuallyHidden>{hiddenSelectLabel()}</HeadlessVisuallyHidden>
       ) : (
         <span class={selectionCheckbox({})} data-rsp-slot="select-all-indicator">
           <HeadlessTableSelectAllCheckbox class={selectionCheckboxInput} />

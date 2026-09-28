@@ -1,6 +1,7 @@
 import { createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import {
@@ -237,6 +238,16 @@ describe("TableView (solid-spectrum)", () => {
     expect(selectAll.checked).toBe(true);
     expect(selectAll.indeterminate).toBe(false);
     expect(selectAll).not.toHaveAttribute("data-indeterminate");
+  });
+
+  it("names the single-selection header from the table catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <TestTable selectionMode="single" />
+      </I18nProvider>
+    ));
+
+    expect(screen.getByText("Seleccionar")).toBeInTheDocument();
   });
 
   it("maps S2 density, quiet, and overflow props onto the table", () => {
