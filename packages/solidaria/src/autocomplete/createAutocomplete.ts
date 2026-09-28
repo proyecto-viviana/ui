@@ -29,6 +29,8 @@ import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../selection/constants";
 import { dispatchVirtualBlur, dispatchVirtualFocus } from "../focus/virtualFocus";
 import { getActiveElement, getEventTarget } from "../utils/dom";
 import { getPointerType } from "../interactions";
+import { createStringFormatter } from "../i18n/createStringFormatter";
+import { autocompleteIntlStrings } from "./intl";
 
 export interface CollectionOptions {
   /** The id of the collection element. */
@@ -176,6 +178,10 @@ export function createAutocomplete<T = unknown>(
   } = props;
 
   const collectionId = collectionIdProp ?? createId();
+  const stringFormatter = createStringFormatter(
+    autocompleteIntlStrings,
+    "@react-aria/autocomplete",
+  );
   const [shouldUseVirtualFocus] = createSignal(!disableVirtualFocus);
   // When the first item should be focused but the collection hasn't mounted yet,
   // defer it by threading autoFocus through collectionProps so the collection
@@ -551,7 +557,9 @@ export function createAutocomplete<T = unknown>(
     },
     collectionProps: {
       id: collectionId,
-      "aria-label": collectionAriaLabel,
+      get "aria-label"() {
+        return collectionAriaLabel || stringFormatter().format("collectionLabel");
+      },
       shouldUseVirtualFocus: shouldUseVirtualFocus(),
       disallowTypeAhead: shouldUseVirtualFocus(),
       get autoFocus() {

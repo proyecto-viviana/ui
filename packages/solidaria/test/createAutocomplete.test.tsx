@@ -7,6 +7,7 @@ import { createAutocomplete, type AutocompleteAria } from "../src/autocomplete";
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../src/selection/constants";
 import { createAutocompleteState, type AutocompleteState } from "@proyecto-viviana/solid-stately";
 import { Show } from "solid-js";
+import { I18nProvider } from "../src/i18n";
 
 // Test component using createAutocomplete
 function TestAutocomplete(props: {
@@ -108,11 +109,14 @@ describe("createAutocomplete", () => {
     expect(listbox).toHaveAttribute("id", controlsId);
   });
 
-  it("should not force a default collection aria-label", () => {
-    render(() => <TestAutocomplete />);
+  it("names an unlabeled collection from the autocomplete catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <TestAutocomplete />
+      </I18nProvider>
+    ));
 
-    const listbox = screen.getByTestId("listbox");
-    expect(listbox).not.toHaveAttribute("aria-label");
+    expect(screen.getByTestId("listbox")).toHaveAttribute("aria-label", "Sugerencias");
   });
 
   it("should allow overriding collection id and aria-label", () => {

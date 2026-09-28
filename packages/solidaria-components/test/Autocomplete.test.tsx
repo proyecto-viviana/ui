@@ -14,7 +14,7 @@ import {
 } from "../src/Autocomplete";
 import { ListBox, ListBoxOption } from "../src/ListBox";
 import { SearchField, SearchFieldInput } from "../src/SearchField";
-import { createFilter } from "@proyecto-viviana/solidaria";
+import { createFilter, I18nProvider } from "@proyecto-viviana/solidaria";
 import { For, Show, createSignal, flush } from "solid-js";
 
 // Simple test input component
@@ -296,6 +296,47 @@ const fruitItems = [
   { id: "orange", label: "Orange" },
   { id: "peach", label: "Peach" },
 ];
+
+it("names an unlabeled suggestion list from the autocomplete catalog", () => {
+  render(() => (
+    <I18nProvider locale="es-ES">
+      <Autocomplete>
+        <ListBox items={fruitItems} getKey={(item) => item.id} getTextValue={(item) => item.label}>
+          {(item) => (
+            <ListBoxOption id={item.id} textValue={item.label}>
+              {item.label}
+            </ListBoxOption>
+          )}
+        </ListBox>
+      </Autocomplete>
+    </I18nProvider>
+  ));
+
+  expect(screen.getByRole("listbox")).toHaveAttribute("aria-label", "Sugerencias");
+});
+
+it("keeps an explicit suggestion list label", () => {
+  render(() => (
+    <I18nProvider locale="es-ES">
+      <Autocomplete>
+        <ListBox
+          aria-label="Fruits"
+          items={fruitItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.label}
+        >
+          {(item) => (
+            <ListBoxOption id={item.id} textValue={item.label}>
+              {item.label}
+            </ListBoxOption>
+          )}
+        </ListBox>
+      </Autocomplete>
+    </I18nProvider>
+  ));
+
+  expect(screen.getByRole("listbox", { name: "Fruits" })).toBeInTheDocument();
+});
 
 function FruitAutocomplete() {
   const filter = createFilter({ sensitivity: "base" });

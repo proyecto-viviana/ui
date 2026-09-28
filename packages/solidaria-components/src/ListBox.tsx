@@ -560,13 +560,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         return ariaProps.keyboardDelegate;
       },
       // Under Autocomplete, the input owns the collection's id (its
-      // aria-controls target), accessible name, and virtual-focus/type-ahead
-      // config; prefer the bridged values over any locally-passed props.
+      // aria-controls target) and virtual-focus/type-ahead config; prefer
+      // those bridged values over any locally-passed props. An explicit
+      // aria-label on the list still names it; otherwise the autocomplete
+      // catalog name applies.
       get id() {
         return autocompleteCtx?.collectionProps.id ?? (ariaProps as { id?: string }).id;
       },
       get "aria-label"() {
-        return autocompleteCtx?.collectionProps["aria-label"] ?? ariaProps["aria-label"];
+        return ariaProps["aria-label"] ?? autocompleteCtx?.collectionProps["aria-label"];
       },
       get shouldUseVirtualFocus() {
         return (
