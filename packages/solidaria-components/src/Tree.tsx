@@ -32,6 +32,7 @@ import {
   Show,
   createTrackedEffect,
 } from "solid-js";
+import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createButton,
@@ -807,7 +808,7 @@ export const TreeStateContext = createContext<TreeState<object, TreeCollection<o
   null,
 );
 export const TreeItemContext = createContext<TreeItemContextValue<object> | null>(null);
-const TreeItemContentContext = createContext<TreeItemRenderProps | null>(null);
+const TreeItemContentContext = createContext<Accessor<TreeItemRenderProps> | null>(null);
 
 function isTreeItemRecord(value: unknown): value is Record<PropertyKey, unknown> {
   return typeof value === "object" && value !== null;
@@ -1743,8 +1744,10 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     },
   };
 
+  // Provider reads props.value once. Pass the renderValues accessor so
+  // selection, focus, hover, press, and expansion stay current.
   const rowContent = () => (
-    <TreeItemContentContext value={renderValues()}>
+    <TreeItemContentContext value={renderValues}>
       <div
         {...treeItemAria.gridCellProps}
         class="solidaria-Tree-item-content"
@@ -2031,7 +2034,7 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
         return props.children;
       },
     },
-    () => context,
+    context,
   );
 
   return <>{renderProps.renderChildren()}</>;
