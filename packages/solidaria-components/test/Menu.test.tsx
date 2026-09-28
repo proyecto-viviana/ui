@@ -843,7 +843,7 @@ describe("Menu", () => {
       expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
-    it("matches upstream duplicate selection callbacks when mouse release starts elsewhere", () => {
+    it("selects once when the mouse release starts on another element", () => {
       const onAction = vi.fn();
       const onSelectionChange = vi.fn();
       render(() => (
@@ -876,11 +876,8 @@ describe("Menu", () => {
       expect(cat).toHaveAttribute("aria-checked", "true");
       expect(dog).toHaveAttribute("aria-checked", "true");
       expect(kangaroo).toHaveAttribute("aria-checked", "true");
-      expect(onSelectionChange).toHaveBeenCalledTimes(2);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
       expect(new Set(onSelectionChange.mock.calls[0]?.[0])).toEqual(
-        new Set(["cat", "dog", "kangaroo"]),
-      );
-      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(
         new Set(["cat", "dog", "kangaroo"]),
       );
       expect(onAction).toHaveBeenCalledTimes(1);
