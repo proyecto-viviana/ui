@@ -73,7 +73,7 @@ function TestColorField(props: Parameters<typeof ColorField>[0]) {
 
 function TestColorSwatchPicker(props: Parameters<typeof ColorSwatchPicker>[0]) {
   return (
-    <ColorSwatchPicker {...props}>
+    <ColorSwatchPicker defaultValue="#ff0000" {...props}>
       <ColorSwatchPickerItem color="#ff0000" />
       <ColorSwatchPickerItem color="#00ff00" />
       <ColorSwatchPickerItem color="#0000ff" />
@@ -83,7 +83,7 @@ function TestColorSwatchPicker(props: Parameters<typeof ColorSwatchPicker>[0]) {
 
 function TestColorSwatchPickerFourItems(props: Parameters<typeof ColorSwatchPicker>[0]) {
   return (
-    <ColorSwatchPicker {...props}>
+    <ColorSwatchPicker defaultValue="#ff0000" {...props}>
       <ColorSwatchPickerItem color="#ff0000" />
       <ColorSwatchPickerItem color="#00ff00" />
       <ColorSwatchPickerItem color="#0000ff" />
@@ -1601,6 +1601,18 @@ describe("Color Components", () => {
     const selectedIndex = () =>
       screen.getAllByRole("option").findIndex((o) => o.getAttribute("aria-selected") === "true");
 
+    it("leaves every swatch unselected when the uncontrolled color is black", () => {
+      render(() => (
+        <ColorSwatchPicker aria-label="Palette">
+          <ColorSwatchPickerItem color="#ff0000" />
+          <ColorSwatchPickerItem color="#00ff00" />
+          <ColorSwatchPickerItem color="#0000ff" />
+        </ColorSwatchPicker>
+      ));
+
+      expect(selectedIndex()).toBe(-1);
+    });
+
     it("should render with listbox semantics", () => {
       render(() => <TestColorSwatchPicker />);
 
@@ -1678,7 +1690,12 @@ describe("Color Components", () => {
     it("should skip disabled items during grid focus navigation and commit with Enter", () => {
       const onChange = vi.fn();
       render(() => (
-        <ColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid">
+        <ColorSwatchPicker
+          defaultValue="#ff0000"
+          onChange={onChange}
+          aria-label="Palette"
+          layout="grid"
+        >
           <ColorSwatchPickerItem color="#ff0000" />
           <ColorSwatchPickerItem color="#00ff00" isDisabled />
           <ColorSwatchPickerItem color="#0000ff" />

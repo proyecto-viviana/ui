@@ -2081,7 +2081,7 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
   ]);
 
   const [internalColor, setInternalColor] = createSignal<Color>(
-    normalizeColor(local.defaultValue ?? "#ff0000"),
+    normalizeColor(local.defaultValue ?? "#000000"),
   );
 
   const color = createMemo<Color>(() => {
@@ -2162,7 +2162,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   });
   const [itemOrder, setItemOrder] = createSignal<string[]>([], { ownedWrite: true });
   const [internalColor, setInternalColor] = createSignal<Color>(
-    normalizeColor(local.defaultValue ?? pickerContext?.value ?? "#ff0000"),
+    normalizeColor(local.defaultValue ?? pickerContext?.value ?? "#000000"),
   );
 
   const selectedColor = createMemo<Color>(() => {
@@ -2623,7 +2623,13 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
       class={renderProps.class()}
       style={renderProps.style()}
     >
-      <ColorSwatchContextInternal value={{ color: color() }}>
+      <ColorSwatchContextInternal
+        value={{
+          get color() {
+            return color();
+          },
+        }}
+      >
         {renderProps.children ? renderProps.renderChildren() : <ColorSwatch />}
       </ColorSwatchContextInternal>
     </div>
