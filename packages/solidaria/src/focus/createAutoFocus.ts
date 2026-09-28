@@ -11,7 +11,10 @@
 import { onOwnedCleanup } from "../utils/owner";
 import { onSettled } from "solid-js";
 import { isServer } from "@solidjs/web";
-import { focusSafely } from "../utils/focus";
+import { getInteractionModality } from "../interactions/createInteractionModality";
+import { getActiveElement, getOwnerDocument } from "../utils/dom";
+import { focusSafely, focusWithoutScrolling } from "../utils/focus";
+import { runAfterTransition } from "../utils/runAfterTransition";
 
 export interface AutoFocusOptions {
   /**
@@ -80,6 +83,41 @@ const pendingAutoFocus = new Set<QueuedFocus>();
 let processingTimeout: ReturnType<typeof setTimeout> | null = null;
 
 /**
+ * Focus one owned request. Virtual modality defers inside `focusSafely` through
+ * `runAfterTransition`, and that callback cannot see this queue. Keep ownership
+ * until the frame so cancel, disposal, and clear still suppress focus and
+ * `onFocus`. The active-element guard matches `focusSafely`.
+ */
+function focusOwned(item: QueuedFocus, element: HTMLElement): void {
+  if (!pendingAutoFocus.has(item)) return;
+
+  if (item.preventScroll && getInteractionModality() === "virtual") {
+    const ownerDocument = getOwnerDocument(element);
+    const lastFocusedElement = getActiveElement(ownerDocument);
+    runAfterTransition(() => {
+      if (!pendingAutoFocus.has(item)) return;
+      const activeElement = getActiveElement(ownerDocument);
+      const shouldFocus =
+        (activeElement === lastFocusedElement || activeElement === ownerDocument.body) &&
+        element.isConnected;
+      removeRequest(item);
+      if (!shouldFocus) return;
+      focusWithoutScrolling(element);
+      item.onFocus?.(element);
+    });
+    return;
+  }
+
+  removeRequest(item);
+  if (item.preventScroll) {
+    focusSafely(element);
+  } else {
+    element.focus();
+  }
+  item.onFocus?.(element);
+}
+
+/**
  * Process the auto-focus queue and focus the highest priority element.
  */
 function processAutoFocusQueue(): void {
@@ -133,30 +171,17 @@ function processAutoFocusQueue(): void {
     if (winner.delay > 0) {
       winner.timeout = setTimeout(() => {
         if (!pendingAutoFocus.has(winner)) return;
-        try {
-          const el = winner.ref();
-          if (!pendingAutoFocus.has(winner)) return;
+        const el = winner.ref();
+        if (!pendingAutoFocus.has(winner)) return;
+        if (!el || !document.body.contains(el)) {
           removeRequest(winner);
-          if (el && document.body.contains(el)) {
-            if (winner.preventScroll) {
-              focusSafely(el);
-            } else {
-              el.focus();
-            }
-            winner.onFocus?.(el);
-          }
-        } finally {
-          removeRequest(winner);
+          return;
         }
+        winner.timeout = undefined;
+        focusOwned(winner, el);
       }, winner.delay);
     } else {
-      removeRequest(winner);
-      if (winner.preventScroll) {
-        focusSafely(element);
-      } else {
-        element.focus();
-      }
-      winner.onFocus?.(element);
+      focusOwned(winner, element);
     }
   } catch (error) {
     // Do not retain a detached batch if a consumer callback throws. Requests

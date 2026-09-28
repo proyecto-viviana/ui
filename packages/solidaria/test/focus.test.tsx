@@ -827,6 +827,38 @@ describe("createAutoFocus", () => {
       });
     }
 
+    for (const action of ["cancel", "dispose", "clear"] as const) {
+      it(`cancels virtual-modality focus after the delay hands off to the next frame on ${action}`, () => {
+        setInteractionModality("virtual");
+        const target = button();
+        const api = request(() => target);
+        dequeue();
+        vi.advanceTimersByTime(100);
+        expect(document.activeElement).toBe(trigger);
+        expect(api.onFocus).not.toHaveBeenCalled();
+        if (action === "clear") clearAutoFocusQueue();
+        else api[action]();
+        vi.advanceTimersByTime(32);
+        expect(document.activeElement).toBe(trigger);
+        expect(api.onFocus).not.toHaveBeenCalled();
+        expect(api.onSkip).not.toHaveBeenCalled();
+      });
+    }
+
+    it("focuses a delayed winner on the frame after virtual-modality handoff", () => {
+      setInteractionModality("virtual");
+      const target = button();
+      const api = request(() => target);
+      dequeue();
+      vi.advanceTimersByTime(100);
+      expect(document.activeElement).toBe(trigger);
+      expect(api.onFocus).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(32);
+      expect(document.activeElement).toBe(target);
+      expect(api.onFocus).toHaveBeenCalledExactlyOnceWith(target);
+      expect(api.onSkip).not.toHaveBeenCalled();
+    });
+
     it("focuses a live delayed winner exactly once after its full delay", () => {
       const target = button();
       const api = request(() => target);

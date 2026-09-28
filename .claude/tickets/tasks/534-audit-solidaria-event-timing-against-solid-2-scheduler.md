@@ -36,6 +36,11 @@ history:
       at: 2026-09-20,
       note: "touch timing slice: pinned useHover clears emulated-mouse suppression after 500 ms; ours cleared after 50. Source now 500. A boundary test holds both the pointer and the mouse-fallback path at 499 ms and releases at 500; with 50 restored it fails 2 of 30. Affected files pass 145/145, one worker. Tooltip and Button suites own their cleanup and settle the suppression timer. Menu, virtual-focus and the final owning audit remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "A delayed autofocus winner stays owned through the virtual-modality runAfterTransition frame. Cancel, disposal, and clear after the delay timer suppress focus and onFocus. The successful frame still focuses once. focus.test.tsx and focusSafely.test.tsx pass 56/56. Menu drag, item keyboard and modality re-entry, and the final owning audit remain",
+    }
 ---
 
 ## Cause
