@@ -4,10 +4,10 @@
  * Ported from react-aria-components Dialog.test.js
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, within } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { Dialog, DialogTrigger, Heading, type DialogRenderProps } from "../src/Dialog";
-import { Menu, MenuItem } from "../src/Menu";
+import { Menu, MenuItem, SubmenuTrigger } from "../src/Menu";
 import { Text } from "../src/Text";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { Button } from "../src/Button";
@@ -454,6 +454,74 @@ describe("DialogTrigger", () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("closes the dialog when a submenu item is selected", async () => {
+    const onOpenChange = vi.fn();
+
+    render(() => (
+      <DialogTrigger defaultOpen onOpenChange={onOpenChange}>
+        <Button>Open</Button>
+        <Modal>
+          <Dialog aria-label="Actions">
+            <Menu aria-label="Actions">
+              <SubmenuTrigger>
+                <MenuItem id="share" textValue="Share">
+                  Share
+                </MenuItem>
+                <Menu aria-label="Share">
+                  <MenuItem id="email" textValue="Email">
+                    Email
+                  </MenuItem>
+                </Menu>
+              </SubmenuTrigger>
+            </Menu>
+          </Dialog>
+        </Modal>
+      </DialogTrigger>
+    ));
+
+    await user.click(screen.getByRole("menuitem", { name: "Share" }));
+    await user.click(screen.getByRole("menuitem", { name: "Email" }));
+    vi.runAllTimers();
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("keeps the dialog open when Escape is pressed in a submenu", async () => {
+    const onOpenChange = vi.fn();
+
+    render(() => (
+      <DialogTrigger defaultOpen onOpenChange={onOpenChange}>
+        <Button>Open</Button>
+        <Modal>
+          <Dialog aria-label="Actions">
+            <Menu aria-label="Actions">
+              <SubmenuTrigger>
+                <MenuItem id="share" textValue="Share">
+                  Share
+                </MenuItem>
+                <Menu aria-label="Share">
+                  <MenuItem id="email" textValue="Email">
+                    Email
+                  </MenuItem>
+                </Menu>
+              </SubmenuTrigger>
+            </Menu>
+          </Dialog>
+        </Modal>
+      </DialogTrigger>
+    ));
+
+    await user.click(screen.getByRole("menuitem", { name: "Share" }));
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Email" }), { key: "Escape" });
+    vi.runAllTimers();
+
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(screen.getByRole("dialog", { name: "Actions" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Email" })).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Share" })).toBeInTheDocument();
   });
 
   it("should call onOpenChange when dialog opens and closes", async () => {

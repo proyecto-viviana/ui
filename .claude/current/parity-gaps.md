@@ -91,6 +91,7 @@ These behaviors match the pin in this checkout.
 - A SearchField `id` and `validate` function reach the text field.
 - A submenu popover is non-modal, and a keyboard-opened submenu takes focus.
 - A menu inside a dialog closes with the dialog.
+- A submenu item closes the menu, and closes a dialog that contains that menu. Escape closes only the submenu.
 - A heading outside a dialog defaults to level 3.
 - The modal dismiss control takes its name from the overlays catalog.
 

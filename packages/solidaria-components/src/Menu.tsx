@@ -704,11 +704,18 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const rootMenuTriggerState = useContext(RootMenuTriggerStateContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const closeFromTrigger = () => {
-    if (triggerContext) {
-      triggerContext.state.close();
+    const root = rootMenuTriggerState;
+    const local = triggerContext?.state;
+    // Submenu item selection uses the root trigger's close (RAC `closeAll`).
+    // The submenu state is closed too so it does not stay open if it remains mounted.
+    if (local && local !== root) {
+      local.close();
+    }
+    if (root) {
+      root.close();
       return;
     }
-    rootMenuTriggerState?.close();
+    local?.close();
   };
   const overlayContext = useContext(OverlayContext);
   const locale = useLocale();
@@ -936,8 +943,29 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
 
   const cleanMenuProps = () => {
-    const { ref: _ref1, ...rest } = menuProps as Record<string, unknown>;
-    return rest;
+    const {
+      ref: _ref1,
+      onKeyDown,
+      ...rest
+    } = menuProps as Record<string, unknown> & {
+      onKeyDown?: (event: KeyboardEvent) => void;
+    };
+    return {
+      ...rest,
+      onKeyDown(event: KeyboardEvent) {
+        const local = triggerContext?.state;
+        const root = rootMenuTriggerState;
+        // useSubmenuTrigger consumes Escape inside the submenu and closes only
+        // that menu. Letting it bubble closes the root trigger and a dialog.
+        if (event.key === "Escape" && local && root && local !== root) {
+          event.preventDefault();
+          event.stopPropagation();
+          local.close();
+          return;
+        }
+        onKeyDown?.(event);
+      },
+    };
   };
   const cleanTriggerMenuProps = () => {
     if (!triggerContext) return {};

@@ -1851,6 +1851,58 @@ describe("MenuTrigger", () => {
       expect(dirGetter).not.toHaveBeenCalled();
       dirGetter.mockRestore();
     });
+
+    it("closes the root menu when a submenu item is selected", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <Button>Open Menu</Button>
+          <Menu aria-label="Test">
+            <SubmenuTrigger>
+              <MenuItem id="share" textValue="Share">
+                Share
+              </MenuItem>
+              <Menu aria-label="Share submenu">
+                <MenuItem id="email" textValue="Email">
+                  Email
+                </MenuItem>
+              </Menu>
+            </SubmenuTrigger>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("menuitem", { name: "Share" }));
+      await user.click(screen.getByRole("menuitem", { name: "Email" }));
+
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
+    it("closes only the submenu when Escape is pressed", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <Button>Open Menu</Button>
+          <Menu aria-label="Test">
+            <SubmenuTrigger>
+              <MenuItem id="share" textValue="Share">
+                Share
+              </MenuItem>
+              <Menu aria-label="Share submenu">
+                <MenuItem id="email" textValue="Email">
+                  Email
+                </MenuItem>
+              </Menu>
+            </SubmenuTrigger>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("menuitem", { name: "Share" }));
+      fireEvent.keyDown(screen.getByRole("menuitem", { name: "Email" }), { key: "Escape" });
+
+      expect(screen.queryByRole("menuitem", { name: "Email" })).not.toBeInTheDocument();
+      expect(screen.getByRole("menu", { name: "Test" })).toBeInTheDocument();
+      expect(screen.getByRole("menuitem", { name: "Share" })).toBeInTheDocument();
+    });
   });
 
   // ============================================
