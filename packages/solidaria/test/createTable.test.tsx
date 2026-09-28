@@ -46,35 +46,6 @@ describe("createTable announcement infrastructure", () => {
     });
   });
 
-  describe("sort announcement format", () => {
-    // The createTable hook announces sort changes using:
-    // announce(`Sorted by ${columnName}, ${directionText}`, 'assertive', 500);
-
-    it("produces correct ascending announcement", () => {
-      const columnName = "Name";
-      const direction = "ascending";
-      const message = `Sorted by ${columnName}, ${direction}`;
-
-      expect(message).toBe("Sorted by Name, ascending");
-    });
-
-    it("produces correct descending announcement", () => {
-      const columnName = "Price";
-      const direction = "descending";
-      const message = `Sorted by ${columnName}, ${direction}`;
-
-      expect(message).toBe("Sorted by Price, descending");
-    });
-
-    it("handles column names with spaces", () => {
-      const columnName = "First Name";
-      const direction = "ascending";
-      const message = `Sorted by ${columnName}, ${direction}`;
-
-      expect(message).toBe("Sorted by First Name, ascending");
-    });
-  });
-
   describe("clearAnnouncer function", () => {
     it("exists and can be called", () => {
       expect(typeof clearAnnouncer).toBe("function");

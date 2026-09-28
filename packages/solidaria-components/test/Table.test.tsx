@@ -2810,6 +2810,58 @@ describe("Table", () => {
   // ============================================
 
   describe("sorting", () => {
+    it("describes a sorted table from the table catalog", () => {
+      render(() => {
+        const [sortDescriptor, setSortDescriptor] = createSignal<
+          { column: string | number; direction: "ascending" | "descending" } | undefined
+        >(undefined);
+
+        return (
+          <I18nProvider locale="es-ES">
+            <Table
+              items={testData}
+              columns={testColumns}
+              getKey={(item: any) => item.id}
+              aria-label="Pokemon"
+              sortDescriptor={sortDescriptor() as any}
+              onSortChange={(descriptor) =>
+                setSortDescriptor(
+                  descriptor as { column: string | number; direction: "ascending" | "descending" },
+                )
+              }
+            >
+              {() => (
+                <>
+                  <TableHeader>
+                    <TableColumn id="name" allowsSorting>
+                      {() => <>Name</>}
+                    </TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {(item: any) => (
+                      <TableRow id={item.id}>
+                        {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </>
+              )}
+            </Table>
+          </I18nProvider>
+        );
+      });
+
+      fireEvent.click(screen.getByRole("columnheader", { name: "Name" }));
+
+      const grid = screen.getByRole("grid", { name: "Pokemon" });
+      const describedBy = grid.getAttribute("aria-describedby")?.split(" ")[0];
+      const description = describedBy ? document.getElementById(describedBy) : null;
+      expect(description?.textContent).toBe("ordenado por columna Name en sentido ascendente");
+
+      const log = document.querySelector("[data-live-announcer='true'] [aria-live='assertive']");
+      expect(log?.textContent).toContain("ordenado por columna Name en sentido ascendente");
+    });
+
     it("should support sortDescriptor prop", () => {
       render(() => <TestTable sortDescriptor={{ column: "name", direction: "ascending" }} />);
 

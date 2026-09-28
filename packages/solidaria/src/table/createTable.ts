@@ -23,7 +23,8 @@ import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TableState, TableCollection, Key, GridNode } from "@proyecto-viviana/solid-stately";
 import type { AriaTableProps, TableAria } from "./types";
-import { useLocale } from "../i18n";
+import { createStringFormatter, useLocale } from "../i18n";
+import { tableIntlStrings } from "./intl";
 import { announce } from "../live-announcer";
 import { createDescription } from "../utils/createDescription";
 import { scrollIntoViewport } from "../utils";
@@ -113,6 +114,7 @@ export function createTable<T extends object>(
 ): TableAria {
   const id = createId(props().id);
   const locale = useLocale();
+  const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
 
   // Track previous sort descriptor for announcements
   let prevSortDescriptor: { column: Key; direction: "ascending" | "descending" } | null = null;
@@ -155,12 +157,10 @@ export function createTable<T extends object>(
         (sortDescriptor.column !== prevSortDescriptor?.column ||
           sortDescriptor.direction !== prevSortDescriptor?.direction)
       ) {
-        const collection = state().collection;
-        const column = collection.columns.find((c) => c.key === sortDescriptor.column);
-        const columnName = column?.textValue ?? String(sortDescriptor.column);
-        const directionText = sortDescriptor.direction === "ascending" ? "ascending" : "descending";
-
-        announce(`Sorted by ${columnName}, ${directionText}`, "assertive", 500);
+        const message = sortDescription();
+        if (message) {
+          announce(message, "assertive", 500);
+        }
       }
 
       prevSortDescriptor = sortDescriptor;
@@ -646,12 +646,8 @@ export function createTable<T extends object>(
     }
   });
 
-  // A sorted table exposes a persistent sort description on the grid ("sorted by
-  // column {name} in {direction} order"), mirroring `useTable`'s
-  // `useDescription(sortDescription)` — separate from the transient live-region
-  // announcement above. `columnName` follows upstream exactly
-  // (`columns.find(c => c.key === column)?.textValue ?? ''`) so a header with no
-  // plain-text value yields an empty name, matching the S2 oracle.
+  // useTable's sort description, from the table catalog. The live announcement
+  // above speaks the same string. An empty textValue stays empty.
   const sortDescription = () => {
     const s = state();
     const descriptor = s.sortDescriptor;
@@ -661,7 +657,7 @@ export function createTable<T extends object>(
       return undefined;
     }
     const columnName = s.collection.columns.find((c) => c.key === column)?.textValue ?? "";
-    return `sorted by column ${columnName} in ${direction} order`;
+    return stringFormatter().format(`${direction}Sort`, { columnName });
   };
   const sortDescriptionProps = createDescription(sortDescription);
 
