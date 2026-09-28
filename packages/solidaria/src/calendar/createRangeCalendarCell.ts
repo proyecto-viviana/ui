@@ -25,6 +25,8 @@ import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
+import { getEventTarget, nodeContains } from "../utils/dom";
+import { onOwnedCleanup } from "../utils/owner";
 import type { RangeCalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import {
   isToday as isTodayUtil,
@@ -181,29 +183,140 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     return date().day.toString();
   });
 
-  // Handle pointer down - selection on pointerdown avoids losing selection when
-  // hover/focus updates re-render cells before click fires.
-  const handlePointerDown = (e: PointerEvent) => {
-    cellReceivedPointer = true;
-    const target = (e.currentTarget || e.target) as HTMLElement | null;
+  // RAC `useCalendarCell` onPressStart. A raw PointerEvent uses "" when the
+  // type is omitted; usePress would have passed "mouse" for that press.
+  let isRangeBoundaryPressed = false;
+  let isAnchorPressed = false;
+  let suppressReleaseSelection = false;
+  let touchDragTimer: ReturnType<typeof setTimeout> | undefined;
+  let removeTouchDragListeners: (() => void) | undefined;
+
+  const clearTouchDragTimer = () => {
+    if (touchDragTimer !== undefined) {
+      clearTimeout(touchDragTimer);
+      touchDragTimer = undefined;
+    }
+    if (removeTouchDragListeners) {
+      const remove = removeTouchDragListeners;
+      removeTouchDragListeners = undefined;
+      remove();
+    }
+  };
+  onOwnedCleanup(clearTouchDragTimer);
+
+  const focusCell = () => {
+    const element = ref?.();
+    if (element) {
+      focusSafely(element);
+    }
+  };
+
+  const releasePointerCapture = (event: PointerEvent) => {
+    const target = (event.currentTarget || event.target) as HTMLElement | null;
     if (target && "releasePointerCapture" in target) {
-      if ("hasPointerCapture" in target ? target.hasPointerCapture(e.pointerId) : true) {
+      if ("hasPointerCapture" in target ? target.hasPointerCapture(event.pointerId) : true) {
         try {
-          target.releasePointerCapture(e.pointerId);
+          target.releasePointerCapture(event.pointerId);
         } catch {}
       }
     }
-    if (isSelectable()) {
-      setIsPressed(true);
-      state.setFocusedDate(date());
-      state.setFocused(true);
-      state.selectDate(date());
-      ignoreNextClick = true;
+  };
+
+  // Pressing an existing start or end anchors the other end so the drag resizes
+  // that endpoint. A new touch selection waits 200ms so a scroll does not drag.
+  const armTouchDrag = (startDragging: () => void) => {
+    clearTouchDragTimer();
+    const onWindowPointerUp = (event: PointerEvent) => {
+      if (touchDragTimer === undefined) {
+        return;
+      }
       const element = ref?.();
-      if (element) {
-        focusSafely(element);
+      const target = getEventTarget(event);
+      if (element && target instanceof Node && nodeContains(element, target)) {
+        return;
+      }
+      clearTouchDragTimer();
+    };
+    const onWindowPointerCancel = () => {
+      clearTouchDragTimer();
+    };
+    touchDragTimer = setTimeout(() => {
+      clearTouchDragTimer();
+      startDragging();
+    }, 200);
+    window.addEventListener("pointerup", onWindowPointerUp);
+    window.addEventListener("pointercancel", onWindowPointerCancel);
+    removeTouchDragListeners = () => {
+      window.removeEventListener("pointerup", onWindowPointerUp);
+      window.removeEventListener("pointercancel", onWindowPointerCancel);
+    };
+  };
+
+  const handlePointerDown = (e: PointerEvent) => {
+    cellReceivedPointer = true;
+    releasePointerCapture(e);
+    if (!isSelectable() || e.button !== 0) {
+      return;
+    }
+
+    setIsPressed(true);
+    ignoreNextClick = true;
+    isRangeBoundaryPressed = false;
+    isAnchorPressed = false;
+    suppressReleaseSelection = false;
+    clearTouchDragTimer();
+
+    const pressedDate = date();
+    if (state.isReadOnly()) {
+      state.setFocusedDate(pressedDate);
+      state.setFocused(true);
+      focusCell();
+      return;
+    }
+
+    // Once a range anchor exists, press start does nothing. Release selects,
+    // so a touch scroll cannot finalize the in-progress range.
+    if (state.anchorDate()) {
+      return;
+    }
+
+    const pointerType = e.pointerType || "mouse";
+    const range = state.highlightedRange();
+    if (range && !isInvalid()) {
+      const anchorOtherEnd = (anchor: CalendarDate) => {
+        state.setAnchorDate(anchor);
+        state.setFocusedDate(pressedDate);
+        state.setFocused(true);
+        state.setDragging(true);
+        isRangeBoundaryPressed = true;
+        focusCell();
+      };
+      if (isSameDay(pressedDate, range.start)) {
+        anchorOtherEnd(range.end);
+        return;
+      }
+      if (isSameDay(pressedDate, range.end)) {
+        anchorOtherEnd(range.start);
+        return;
       }
     }
+
+    const startDragging = () => {
+      state.setDragging(true);
+      touchDragTimer = undefined;
+      state.selectDate(pressedDate);
+      state.setFocusedDate(pressedDate);
+      state.setFocused(true);
+      isAnchorPressed = true;
+      focusCell();
+    };
+
+    if (pointerType === "touch") {
+      armTouchDrag(startDragging);
+      return;
+    }
+
+    startDragging();
   };
 
   // Handle click for keyboard activation (Enter/Space).
@@ -229,25 +342,67 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 
   const handlePointerUp = (e?: PointerEvent) => {
     setIsPressed(false);
-    if (
-      isSelectable() &&
-      (!e || e.button === 0) &&
-      state.isDragging() &&
-      state.anchorDate() &&
-      !isSameDay(date(), state.anchorDate()!)
-    ) {
-      state.selectDate(date());
-      state.setFocusedDate(date());
+    const pressedDate = date();
+    const anchorPressed = isAnchorPressed;
+    const boundaryPressed = isRangeBoundaryPressed;
+    const pendingTouch = touchDragTimer !== undefined;
+    isAnchorPressed = false;
+    isRangeBoundaryPressed = false;
+
+    if (suppressReleaseSelection) {
+      suppressReleaseSelection = false;
+      clearTouchDragTimer();
+      return;
+    }
+    if (!isSelectable() || (e && e.button !== 0) || state.isReadOnly()) {
+      clearTouchDragTimer();
+      return;
+    }
+
+    if (pendingTouch) {
+      // Quick tap: one selectDate anchors the date. Falling through would see
+      // the synchronous anchor and could commit a one-day range in this turn.
+      clearTouchDragTimer();
+      state.selectDate(pressedDate);
+      state.setFocusedDate(pressedDate);
       state.setFocused(true);
-      const element = ref?.();
-      if (element) {
-        focusSafely(element);
-      }
+      focusCell();
+      return;
+    }
+
+    if (boundaryPressed) {
+      // A click on the endpoint starts a new selection. A drag releases on
+      // another cell, which commits against the anchored other end below.
+      state.setAnchorDate(pressedDate);
+      state.setFocusedDate(pressedDate);
+      state.setFocused(true);
+      focusCell();
+      return;
+    }
+
+    // The press that created the anchor must not commit on release. A later
+    // press, including on that same day, completes the range.
+    if (state.anchorDate() && !anchorPressed) {
+      state.selectDate(pressedDate);
+      state.setFocusedDate(pressedDate);
+      state.setFocused(true);
+      focusCell();
     }
   };
 
   const handlePointerLeave = () => {
     setIsPressed(false);
+    // Leaving before 200ms cancels the pending touch drag. Hover resize stays
+    // on pointerenter; do not suppress the later pointerup on the release cell.
+    clearTouchDragTimer();
+    isRangeBoundaryPressed = false;
+  };
+
+  const handlePointerCancel = () => {
+    setIsPressed(false);
+    clearTouchDragTimer();
+    isRangeBoundaryPressed = false;
+    suppressReleaseSelection = true;
   };
 
   // Handle hover during range selection
@@ -359,6 +514,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
         onPointerDown: handlePointerDown,
         onPointerUp: handlePointerUp,
         onPointerLeave: handlePointerLeave,
+        onPointerCancel: handlePointerCancel,
         onPointerEnter: handlePointerEnter,
         onFocus: () => {
           if (!state.isCellFocused(d)) {
