@@ -35,7 +35,7 @@ import {
   getLocalTimeZone,
   isSameDay,
 } from "@internationalized/date";
-import { getCalendarHookData } from "./utils";
+import { getCalendarHookData, getEraFormat } from "./utils";
 import { formatCalendarLabel } from "./intl";
 
 export interface AriaCalendarCellProps {
@@ -264,6 +264,7 @@ export function createCalendarCell<T extends CalendarState>(
       year: "numeric",
       month: "long",
       day: "numeric",
+      era: getEraFormat(d),
       calendar: d.calendar.identifier,
     } as Intl.DateTimeFormatOptions);
     // Mirror @react-aria/calendar useCalendarCell: route the selected/today
