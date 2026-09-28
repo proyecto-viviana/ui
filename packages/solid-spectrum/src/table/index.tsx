@@ -303,7 +303,6 @@ const tableShell = style<{ isQuiet?: boolean }>({
 const table = style<TableRenderProps & { isQuiet?: boolean; hasActionBar?: boolean }>({
   ...focusRing(),
   outlineOffset: -1,
-  outlineStyle: "none",
   userSelect: "none",
   minWidth: "full",
   width: "full",

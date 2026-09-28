@@ -231,7 +231,6 @@ const treeView = style<TreeRenderProps & { isActionBar?: boolean }>(
   {
     ...focusRing(),
     outlineOffset: -2,
-    outlineStyle: "none",
     userSelect: "none",
     minHeight: 0,
     minWidth: 0,

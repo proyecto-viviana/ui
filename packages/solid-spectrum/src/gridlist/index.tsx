@@ -230,7 +230,6 @@ const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: 
       default: -2,
       isQuiet: -1,
     },
-    outlineStyle: "none",
     userSelect: "none",
     minHeight: 0,
     minWidth: 0,
