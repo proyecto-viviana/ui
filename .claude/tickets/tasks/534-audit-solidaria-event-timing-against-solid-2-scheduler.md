@@ -41,6 +41,11 @@ history:
       at: 2026-09-27,
       note: "A delayed autofocus winner stays owned through the virtual-modality runAfterTransition frame. Cancel, disposal, and clear after the delay timer suppress focus and onFocus. The successful frame still focuses once. focus.test.tsx and focusSafely.test.tsx pass 56/56. Menu drag, item keyboard and modality re-entry, and the final owning audit remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "Space and Enter on a menu item restore keyboard modality after target.click() publishes virtual. During the action the modality is virtual; after the handler it is keyboard. createMenu.test.tsx passes 66/66. Menu drag and the final owning audit remain",
+    }
 ---
 
 ## Cause

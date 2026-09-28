@@ -18,7 +18,10 @@ import {
   type AriaMenuTriggerProps,
 } from "../src/menu";
 import { PressEvent } from "../src/interactions/createPress";
-import { setInteractionModality } from "../src/interactions/createInteractionModality";
+import {
+  getInteractionModality,
+  setInteractionModality,
+} from "../src/interactions/createInteractionModality";
 
 describe("createMenu", () => {
   afterEach(() => {
@@ -394,6 +397,38 @@ describe("createMenuItem", () => {
       dispose();
     });
   });
+
+  for (const key of ["Enter", " "] as const) {
+    it(`restores keyboard modality after ${key === " " ? "Space" : "Enter"} clicks the item`, () => {
+      setInteractionModality("pointer");
+      let modalityDuringAction: ReturnType<typeof getInteractionModality> = "pointer";
+      const onAction = vi.fn(() => {
+        modalityDuringAction = getInteractionModality();
+      });
+      const items = [{ key: "copy", label: "Copy" }];
+      let itemRef!: HTMLDivElement;
+
+      render(() => {
+        const state = createMenuState({
+          items,
+          getKey: (item) => item.key,
+        });
+        createMenu({ onAction, "aria-label": "Actions" }, state);
+        const item = createMenuItem({ key: "copy" }, state, () => itemRef);
+        return (
+          <div ref={itemRef} {...item.menuItemProps}>
+            <span {...item.labelProps}>Copy</span>
+          </div>
+        );
+      });
+
+      fireEvent.keyDown(screen.getByRole("menuitem", { name: "Copy" }), { key });
+
+      expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+      expect(modalityDuringAction).toBe("virtual");
+      expect(getInteractionModality()).toBe("keyboard");
+    });
+  }
 
   it("sets aria-disabled when disabled", () => {
     createRoot((dispose) => {

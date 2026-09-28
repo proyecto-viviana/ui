@@ -22,6 +22,7 @@ import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "../interactions/createPress";
 import { createHover } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
+import { setInteractionModality } from "../interactions/createInteractionModality";
 import { createSelectableItem } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -323,6 +324,10 @@ export function createMenuItem<T>(
         } finally {
           isDispatchingKeyboardClick = false;
         }
+        // element.click() publishes virtual modality. Restore keyboard so a
+        // following focusSafely moves focus on the keyboard path, matching
+        // useMenuItem.
+        setInteractionModality("keyboard");
       }
     },
     onKeyUp: (event: KeyboardEvent) => {
