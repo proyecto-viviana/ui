@@ -20,10 +20,12 @@
 
 import type { JSX } from "@solidjs/web";
 import type { StepListState, Key } from "@proyecto-viviana/solid-stately";
+import { createStringFormatter } from "../i18n/createStringFormatter";
 import { createSelectableList } from "../selection/createSelectableList";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
+import { stepListIntlStrings } from "./intl";
 
 export interface AriaStepListProps {
   /** Accessible label for the step list. */
@@ -54,6 +56,7 @@ export function createStepList(
   ref?: () => HTMLElement | null,
 ): StepListAria {
   const listRef = () => ref?.() ?? props.ref?.() ?? null;
+  const stringFormatter = createStringFormatter(stepListIntlStrings, "@react-aria/steplist");
 
   const selectableList = createSelectableList({
     selectionManager: state.selectionManager,
@@ -68,7 +71,7 @@ export function createStepList(
 
   const mergedProps = mergeProps(selectableList.listProps as Record<string, unknown>, domProps(), {
     get "aria-label"() {
-      return props["aria-label"] ?? "Step List";
+      return props["aria-label"] || stringFormatter().format("steplist");
     },
     get "aria-labelledby"() {
       return props["aria-labelledby"];

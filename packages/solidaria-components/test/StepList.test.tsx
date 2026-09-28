@@ -15,6 +15,7 @@ import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSignal, flush, type Accessor } from "solid-js";
 import { StepList, Step } from "../src/StepList";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // Test data
@@ -91,6 +92,16 @@ describe("StepList", () => {
       const ol = document.querySelector("ol");
       expect(ol).toBeInTheDocument();
       expect(ol?.getAttribute("aria-label")).toBe("Test Steps");
+    });
+
+    it("names an unlabeled step list from the step list catalog", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <StepList items={testSteps}>{(item) => <span>{item.label}</span>}</StepList>
+        </I18nProvider>
+      ));
+
+      expect(document.querySelector("ol")).toHaveAttribute("aria-label", "Lista de pasos");
     });
 
     it("should apply default class", () => {
