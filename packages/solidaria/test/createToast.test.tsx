@@ -1,7 +1,34 @@
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
-import { createRoot, createSignal, flush, For } from "solid-js";
+import { createRoot, createSignal, For } from "solid-js";
+import { I18nProvider } from "../src/i18n";
 import { createToast, createToastRegion } from "../src/toast";
+
+function ToastSemanticsProbe() {
+  const aria = createToast({
+    toast: { key: "toast-1", animation: "entering" } as any,
+    state: { close: () => {} } as any,
+  });
+
+  return (
+    <div {...aria.toastProps}>
+      <div {...aria.contentProps}>
+        <span {...aria.titleProps}>Title</span>
+        <span {...aria.descriptionProps}>Description</span>
+      </div>
+      <button {...aria.closeButtonProps}>×</button>
+    </div>
+  );
+}
+
+function ToastCloseProbe() {
+  const aria = createToast({
+    toast: { key: "toast-es", animation: "entering" } as any,
+    state: { close: () => {} } as any,
+  });
+
+  return <button {...aria.closeButtonProps}>×</button>;
+}
 
 describe("createToast", () => {
   afterEach(() => {
@@ -9,30 +36,29 @@ describe("createToast", () => {
   });
 
   it("returns alertdialog semantics and labeled content props", () => {
-    createRoot((dispose) => {
-      const toast = {
-        key: "toast-1",
-        animation: "entering",
-      } as any;
+    render(() => <ToastSemanticsProbe />);
 
-      const state = {
-        close: vi.fn(),
-      } as any;
+    const toast = screen.getByRole("alertdialog");
+    const content = screen.getByRole("alert");
+    expect(toast).toHaveAttribute("aria-modal", "false");
+    expect(content).toHaveAttribute("aria-atomic", "true");
+    expect(content).not.toHaveAttribute("aria-live");
+    expect(content).not.toHaveAttribute("aria-hidden");
+    expect(screen.getByText("Title").id).toBeTruthy();
+    expect(screen.getByText("Description").id).toBeTruthy();
+    expect(toast).toHaveAttribute("aria-labelledby", screen.getByText("Title").id);
+    expect(toast).toHaveAttribute("aria-describedby", screen.getByText("Description").id);
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Close");
+  });
 
-      const aria = createToast({ toast, state });
-      flush();
+  it("names the close button from the toast catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <ToastCloseProbe />
+      </I18nProvider>
+    ));
 
-      expect(aria.toastProps.role).toBe("alertdialog");
-      expect(aria.toastProps["aria-modal"]).toBe("false");
-      expect(aria.contentProps.role).toBe("alert");
-      expect(aria.contentProps["aria-atomic"]).toBe("true");
-      expect(aria.contentProps["aria-live"]).toBeUndefined();
-      expect(aria.contentProps["aria-hidden"]).toBeUndefined();
-      expect(aria.titleProps.id).toBeTruthy();
-      expect(aria.descriptionProps.id).toBeTruthy();
-      expect(aria.closeButtonProps["aria-label"]).toBe("Close");
-      dispose();
-    });
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Cerrar");
   });
 
   it("calls state.close with the toast key when close button is pressed", () => {

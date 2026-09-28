@@ -24,7 +24,9 @@ import { createMemo, createRenderEffect, createSignal } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
+import { createStringFormatter } from "../i18n";
 import { createId } from "../ssr";
+import { toastIntlStrings } from "./intl";
 
 export interface AriaToastProps<T> {
   /** The toast to display. */
@@ -84,6 +86,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
   const descriptionId = createId();
   const hasTitle = props.hasTitle ?? true;
   const hasDescription = props.hasDescription ?? true;
+  const stringFormatter = createStringFormatter(toastIntlStrings, "@react-aria/toast");
 
   const close = () => {
     props.state.close(props.toast.key);
@@ -134,9 +137,9 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     id: descriptionId,
   }));
 
-  // Close button
+  // Close button. Match useToast: the name is the toast catalog "close" string.
   const closeButtonProps = createMemo<JSX.ButtonHTMLAttributes<HTMLButtonElement>>(() => ({
-    "aria-label": "Close",
+    "aria-label": stringFormatter().format("close"),
     onClick: close,
   }));
 

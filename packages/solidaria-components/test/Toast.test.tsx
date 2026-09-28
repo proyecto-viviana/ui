@@ -10,6 +10,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { createRoot, createSignal, For } from "solid-js";
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createToastState, ToastQueue } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   ToastProvider,
   ToastRegion,
@@ -198,6 +199,27 @@ describe("Toast", () => {
       expect(description.id).toBeTruthy();
       expect(toast).toHaveAttribute("aria-labelledby", title.id);
       expect(toast).toHaveAttribute("aria-describedby", description.id);
+    });
+
+    it("names the close button from the toast catalog", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <ToastProvider useGlobalQueue>
+            <ToastRegion portal={false}>
+              {(renderProps) => (
+                <For each={renderProps.visibleToasts()}>
+                  {(toast) => <DefaultToast toast={toast} />}
+                </For>
+              )}
+            </ToastRegion>
+          </ToastProvider>
+        </I18nProvider>
+      ));
+
+      addToast({ title: "Aviso", type: "info" });
+
+      const toast = screen.getByRole("alertdialog", { name: "Aviso" });
+      expect(within(toast).getByRole("button")).toHaveAttribute("aria-label", "Cerrar");
     });
   });
 

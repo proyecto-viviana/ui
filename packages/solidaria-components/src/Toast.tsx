@@ -745,11 +745,17 @@ export interface ToastCloseButtonProps {
  */
 export function ToastCloseButton(props: ToastCloseButtonProps): JSX.Element {
   const contextState = useContext(ToastContext);
+  const buttonContext = useContext(ButtonContext);
   const handleClose = () => {
     const key = props.toast.key;
     const state = contextState ?? toastStateByKey.get(key);
     state?.close(key);
     state?.remove(key);
+  };
+  // The close slot carries useToast's catalog name. An explicit prop still wins.
+  const slotLabel = () => {
+    const label = buttonContext?.slots?.close?.["aria-label"];
+    return typeof label === "string" ? label : undefined;
   };
 
   return (
@@ -757,7 +763,7 @@ export function ToastCloseButton(props: ToastCloseButtonProps): JSX.Element {
       type="button"
       class={props.class}
       style={props.style}
-      aria-label={props["aria-label"] ?? "Close"}
+      aria-label={props["aria-label"] ?? slotLabel() ?? "Close"}
       data-solidaria-toast-close-button=""
       onClick={handleClose}
     >
