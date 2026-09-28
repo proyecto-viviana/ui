@@ -77,6 +77,7 @@ These behaviors match the pin in this checkout.
 - A toast region is named with the notifications catalog string and the visible count.
 - Progress and meter values format with the provider locale.
 - A checkbox group merges each item's validity and clears it when that item becomes valid.
+- A range calendar cell paints the formattable day, so a custom calendar's day field is not the visible number.
 
 **Components**
 
@@ -124,7 +125,6 @@ These behaviors match the pin in this checkout.
 | Tag group live region          | No `aria-live`, and removing the last tag does not focus the group.                                  | `useTagGroup.ts` sets `aria-live` to `polite` while the grid is focused, and focuses the group when the size hits 0. | #54    |
 | Disclosure `hidden` during SSR | `hidden` drops as soon as `canUseDOM` is true, including the first client render.                    | `useDisclosure.ts` keeps `hidden` while `useIsSSR()` is true.                                                        | #188   |
 | Default locale during SSR      | `getDefaultLocale` reads `navigator.language` when the client module runs.                           | `useDefaultLocale.ts` stays on `en-US` and `ltr` for the whole `useIsSSR()` window.                                  | #188   |
-| Range cell day number          | The cell paints `date().day`.                                                                        | `useCalendarCell.ts` paints the `day` part from `DateFormatter.formatToParts`.                                       | #424   |
 
 ## Components — `react-aria-components`
 

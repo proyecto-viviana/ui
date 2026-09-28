@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 rangecalendar functional pass: ?calendarSystem=custom454 paints React cell texts 2/3/4/5/6/7/8 and Solid 1/2/3/4/5/6/7 while both AX names stay Monday February 3–Friday February 7; Calendar slug already matches (createCalendarCell uses formatToParts)",
     }
+  - {
+      state: open,
+      at: 2026-09-28,
+      note: "createRangeCalendarCell formattedDate now uses DateFormatter.formatToParts, the same path as createCalendarCell. A unit test paints 3 when the calendar day field is 2 on 3 February 2025, and the accessible name still says February 3. The comparison route was not walked.",
+    }
 ---
 
 RAC / S2 `useCalendarCell` paints the visible day from
@@ -20,20 +25,13 @@ Gregorian day (Adobe 454) still shows 2, 3, 4 on the first week of
 February 2025.
 
 Solid `createCalendarCell` already does that
-(`packages/solidaria/src/calendar/createCalendarCell.ts`). Range cells
-do not:
-
-```
-const formattedDate = createMemo(() => {
-  return date().day.toString();
-});
-```
-
-(`packages/solidaria/src/calendar/createRangeCalendarCell.ts`). In
-custom454 that is 1..7 for the same Sunday–Saturday row whose
-accessible names are still Gregorian February 2–8. The selected-range
-description and `comparisonValue` stay `2025-02-03/2025-02-07` on
-both; only the painted number is wrong.
+(`packages/solidaria/src/calendar/createCalendarCell.ts`).
+`createRangeCalendarCell` now uses that same `formatToParts` path.
+The old range cell returned `date().day.toString()`, which in
+custom454 is 1..7 for the Sunday–Saturday row whose accessible names
+are Gregorian February 2–8. The selected-range description and
+`comparisonValue` stay `2025-02-03/2025-02-07` on both; only the
+painted number was wrong.
 
 ## Evidence
 
@@ -44,10 +42,13 @@ Both: heading `Trip dates, February 2025`, 28 cells, height 214,
 selected AX names Monday Feb 3 – Friday Feb 7, value
 `2025-02-03/2025-02-07`.
 
-First-row button text:
+First-row button text on 2026-09-03:
 
 - React: `2` `3` `4` `5` `6` `7` `8`
 - Solid: **`1` `2` `3` `4` `5` `6` `7`**
+
+The hook now paints the formattable day. The comparison route has not
+been walked since that change.
 
 Gregorian default (no `calendarSystem`) already matches `1`–`28`.
 Calendar `?calendarSystem=custom454` already matches (not this

@@ -178,9 +178,20 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   });
   const descriptionProps = createDescription(rangeSelectionPrompt);
 
-  // Format the date for display
+  // Format the date for display. Same path as `createCalendarCell`: the
+  // visible number is the formattable day, not the calendar's `day` field.
   const formattedDate = createMemo(() => {
-    return date().day.toString();
+    const d = date();
+    const formatter = new DateFormatter(state.locale(), {
+      day: "numeric",
+      timeZone,
+      calendar: d.calendar.identifier,
+    } as Intl.DateTimeFormatOptions);
+
+    return (
+      formatter.formatToParts(d.toDate(timeZone)).find((part) => part.type === "day")?.value ??
+      d.day.toString()
+    );
   });
 
   // RAC `useCalendarCell` onPressStart. A raw PointerEvent uses "" when the
