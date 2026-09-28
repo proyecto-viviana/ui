@@ -133,7 +133,14 @@ export function Form(props: FormProps): JSX.Element {
   ]);
 
   const validationBehavior = () => local.validationBehavior ?? "native";
-  const errors = local.validationErrors ?? {};
+  // Context stores `value` once. RAC passes `validationErrors ?? {}` on each
+  // render; fields later index `serverErrors[name]`. This getter re-reads the
+  // prop so a later server map still reaches them. Do not spread `props`.
+  const errors: ValidationErrors = new Proxy({} as ValidationErrors, {
+    get: (_target, key) =>
+      (local.validationErrors ?? ({} as ValidationErrors))[key as keyof ValidationErrors],
+    has: (_target, key) => key in (local.validationErrors ?? {}),
+  });
   const renderProps = useRenderProps(
     {
       get children() {
