@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "description": "Shrink-only ceiling for parity-strict-baseline.json (#194). A baseline section may not grow past the slugs listed here. When a baseline entry is deleted, delete it here in the same change. Never add a slug.",
+  "allowedBlockingGapSlugs": {
+    "missingControlGroups": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ],
+    "missingValidationNotes": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ],
+    "noCurrentVisualEvidence": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ]
+  }
+}

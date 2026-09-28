@@ -26,6 +26,8 @@ import { getVisualStateTargets } from "../src/data/visual-state-matrix";
 import { gitPostcardProbe } from "./certified-postcard-git";
 import { formatCertifiedSummaryMarkdown, readCertifiedSummaryFile } from "./certified-summary";
 import {
+  baselineSlugsAboveCeiling,
+  ceilingSlugsAboveBaseline,
   staleBaselineSlugs,
   strictBaselineSections,
   unbaselined,
@@ -47,9 +49,9 @@ interface Gap {
 // docs page at a time has a focused gate to run.
 const { strict, strictFull, slugFilter } = parseParityReportOptions(process.argv.slice(2));
 
-function loadStrictBaseline(): StrictBaseline | null {
+function loadBaselineDocument(filename: string): StrictBaseline | null {
   if (strictFull) return null;
-  const baselineUrl = new URL("./parity-strict-baseline.json", import.meta.url);
+  const baselineUrl = new URL(`./${filename}`, import.meta.url);
   if (!existsSync(baselineUrl)) return null;
   return JSON.parse(readFileSync(fileURLToPath(baselineUrl), "utf8")) as StrictBaseline;
 }
@@ -561,7 +563,10 @@ for (const entry of reactSpectrumCatalogue) {
   }
 }
 
-const strictBaseline = strict ? loadStrictBaseline() : null;
+const strictBaseline = strict ? loadBaselineDocument("parity-strict-baseline.json") : null;
+const strictBaselineCeiling = strict
+  ? loadBaselineDocument("parity-strict-baseline.ceiling.json")
+  : null;
 const allowed = strictBaseline?.allowedBlockingGapSlugs;
 
 // Structural / integrity gaps always block under --strict. The three known
@@ -611,6 +616,30 @@ const staleBaselineEntries = strictBaselineSections.flatMap((section) =>
     allowed?.[section].filter((slug) => !slugFilter || slug === slugFilter),
   ).map((slug) => ({ section, slug })),
 );
+const baselineCeilingProblems =
+  strictBaseline == null
+    ? []
+    : strictBaselineCeiling == null
+      ? [
+          {
+            section: "ceiling",
+            slug: "parity-strict-baseline.ceiling.json",
+            kind: "missing" as const,
+          },
+        ]
+      : strictBaselineSections.flatMap((section) => {
+          const listed = allowed?.[section];
+          const capped = strictBaselineCeiling.allowedBlockingGapSlugs[section];
+          const inScope = (slug: string) => !slugFilter || slug === slugFilter;
+          return [
+            ...baselineSlugsAboveCeiling(listed, capped)
+              .filter(inScope)
+              .map((slug) => ({ section, slug, kind: "exceeds" as const })),
+            ...ceilingSlugsAboveBaseline(listed, capped)
+              .filter(inScope)
+              .map((slug) => ({ section, slug, kind: "not-lowered" as const })),
+          ];
+        });
 
 const structuralBlockingGaps = alwaysBlockingSections.reduce(
   (count, gaps) => count + scope(gaps).length,
@@ -624,6 +653,7 @@ const strictFailCount =
   structuralBlockingGaps +
   baselinedNewGaps +
   staleBaselineEntries.length +
+  baselineCeilingProblems.length +
   (strictFull ? scope(componentAcceptanceGaps).length : 0);
 
 console.log("Comparison component catalogue and acceptance inventory");
@@ -806,6 +836,22 @@ if (strict) {
       }
     } else {
       console.log("[pass] Every baselined gap still occurs");
+    }
+    if (baselineCeilingProblems.length > 0) {
+      console.log(`[gap] Strict baseline ceiling: ${baselineCeilingProblems.length}`);
+      for (const problem of baselineCeilingProblems) {
+        if (problem.kind === "missing") {
+          console.log(`- ${problem.slug} is missing`);
+        } else if (problem.kind === "exceeds") {
+          console.log(`- ${problem.section}: ${problem.slug} is above the shrink-only ceiling`);
+        } else {
+          console.log(
+            `- ${problem.section}: ${problem.slug} is still on the ceiling after leaving the baseline`,
+          );
+        }
+      }
+    } else {
+      console.log("[pass] Strict baseline is within its shrink-only ceiling");
     }
   }
 

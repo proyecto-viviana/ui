@@ -57,6 +57,11 @@ history:
       at: 2026-09-21,
       note: "the waiver record this ticket landed gained a field, so `## Landed` is corrected in place: an entry is `{ pattern, ticket, expires, ticketStatus }`, and the merged verdict reads that recorded state instead of resolving the ticket out of `.claude/tickets` on every run. #574's review found that read: the board is outside `certifiedSuiteCoveredPathspecs`, so one commit editing `status:` flipped the merger's exit code while the postcard still said current. The board read now lives in `comparison:guard:certified-waiver-tickets`, outside the certified job. Nothing else here moves - the file is still `[]` and the pin still waits on a full run",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-28,
+      note: "shrink-only ceiling: parity-strict-baseline.ceiling.json snapshots each section. A baseline slug outside it fails strict parity, and a ceiling slug the baseline dropped fails until the ceiling drops too. Planted button and listbox cases plus the live 9/9/9 equality are held by parity-strict-baseline.test.ts (10). The strict report passes the ceiling and still fails because postcard 151006ff does not speak for HEAD 3186dd94: 355 covered paths changed. The full certified run that would re-pin the postcard remains open",
+    }
 ---
 
 ## Cause
