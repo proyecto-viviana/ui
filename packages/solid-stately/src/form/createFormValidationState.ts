@@ -121,6 +121,18 @@ export const DEFAULT_VALIDATION_RESULT: ValidationResult = {
 /** Context for server-side validation errors. */
 export const FormValidationContext = createContext<ValidationErrors>({});
 
+// Form publishes one proxy so field setup does not freeze the first map.
+// The symbol reads the current validationErrors object. A new object resets
+// the clear flag, matching the pin's context identity check.
+const validationErrorsSource = Symbol.for("proyecto-viviana.validationErrorsSource");
+
+function validationErrorsIdentity(errors: ValidationErrors): ValidationErrors {
+  const source = (errors as ValidationErrors & Record<symbol, ValidationErrors | undefined>)[
+    validationErrorsSource
+  ];
+  return source ?? errors;
+}
+
 /** Private prop key for passing validation state to children. */
 export const privateValidationStateProp = "__formValidationState" + Date.now();
 
@@ -240,12 +252,14 @@ export function createFormValidationState<T>(props: FormValidationProps<T>): For
     return [];
   });
 
-  // Track server errors clearing
-  const [lastServerErrors, setLastServerErrors] = createInternalSignal(serverErrors);
+  // Track server errors clearing. Compare the map object, not the proxy.
+  const [lastServerErrors, setLastServerErrors] = createInternalSignal(
+    validationErrorsIdentity(serverErrors),
+  );
   const [isServerErrorCleared, setServerErrorCleared] = createInternalSignal(false);
 
   createEffect(
-    () => ({ errors: serverErrors, last: lastServerErrors() }),
+    () => ({ errors: validationErrorsIdentity(serverErrors), last: lastServerErrors() }),
     ({ errors, last }) => {
       if (errors !== last) {
         setLastServerErrors(errors);

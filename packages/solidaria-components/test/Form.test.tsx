@@ -6,6 +6,7 @@ import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { createSignal, flush, useContext } from "solid-js";
 import { FormValidationContext, type ValidationErrors } from "@proyecto-viviana/solid-stately";
 import { Form } from "../src/Form";
+import { FieldError } from "../src/FieldError";
 import { Input, Label, TextField } from "../src/TextField";
 
 function ContextProbe() {
@@ -111,6 +112,39 @@ describe("Form", () => {
     render(() => <Form validationErrors={validationErrors}>{() => <ContextProbe />}</Form>);
 
     expect(screen.getByTestId("errors")).toHaveTextContent("Invalid email");
+  });
+
+  it("shows a replaced validationErrors object after the field commits or the form resets", () => {
+    const [errors, setErrors] = createSignal<ValidationErrors>({ email: "First error" });
+
+    render(() => (
+      <Form validationErrors={errors()} aria-label="Account">
+        <TextField name="email" defaultValue="ada@example.com">
+          <Label>Email</Label>
+          <Input />
+          <FieldError />
+        </TextField>
+        <button type="reset">Reset</button>
+      </Form>
+    ));
+
+    expect(screen.getByText("First error")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Email" }));
+    flush();
+    expect(screen.queryByText("First error")).not.toBeInTheDocument();
+
+    setErrors({ email: "Second error" });
+    flush();
+    expect(screen.getByText("Second error")).toBeInTheDocument();
+
+    fireEvent.reset(screen.getByRole("form", { name: "Account" }));
+    flush();
+    expect(screen.queryByText("Second error")).not.toBeInTheDocument();
+
+    setErrors({ email: "Third error" });
+    flush();
+    expect(screen.getByText("Third error")).toBeInTheDocument();
   });
 
   describe("validationBehavior is live", () => {
