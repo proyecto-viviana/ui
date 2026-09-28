@@ -125,6 +125,9 @@ export function createSlider(
       position = (rect.bottom - clientY) / rect.height;
     } else {
       position = (clientX - rect.left) / rect.width;
+      if (locale().direction === "rtl") {
+        position = 1 - position;
+      }
     }
 
     return Math.max(0, Math.min(1, position));
@@ -315,6 +318,7 @@ export function createSlider(
     get thumbProps() {
       const percent = state.getValuePercent();
       const isVertical = state.orientation === "vertical";
+      const offset = !isVertical && locale().direction === "rtl" ? 1 - percent : percent;
 
       return {
         role: "slider",
@@ -333,7 +337,7 @@ export function createSlider(
         onBlur,
         style: {
           position: "absolute",
-          [isVertical ? "bottom" : "left"]: `${percent * 100}%`,
+          [isVertical ? "bottom" : "left"]: `${offset * 100}%`,
           transform: isVertical ? "translateY(50%)" : "translateX(-50%)",
           "touch-action": "none",
         },
