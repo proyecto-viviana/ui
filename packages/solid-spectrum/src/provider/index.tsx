@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Provider.tsx
 
 // Port of packages/@react-spectrum/s2/src/Provider.tsx.
-import { createContext, createMemo, useContext } from "solid-js";
+import { createContext, createMemo, Show, useContext } from "solid-js";
 import type { ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
 // Narrow subpaths, not the root barrel: a consumer that renders only a Provider
@@ -25,7 +25,12 @@ import { mergeStyles } from "../style/runtime";
 import { setColorScheme, style as s2Style } from "../style" with { type: "macro" };
 import type { StyleString } from "../style";
 import { generateDefaultColorSchemeStyles } from "../s2-internal/page.macro" with { type: "macro" };
-import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
+import {
+  mergeProps,
+  RouterProvider,
+  splitProps,
+  type RouterOptions,
+} from "@proyecto-viviana/solidaria/utils";
 
 export type ColorScheme = "light" | "dark" | "light dark";
 export type Scale = "medium" | "large";
@@ -63,6 +68,14 @@ export interface ProviderContextValue extends ThemeContextValue, ProviderInherit
 export interface ProviderProps extends ParentProps, ProviderInheritedProps {
   /** The locale for i18n. If not provided, inherits the nearest locale. */
   locale?: string;
+  /**
+   * Provides a client side router to all nested links to enable client side
+   * navigation.
+   */
+  router?: {
+    navigate: (path: string, routerOptions: RouterOptions | undefined) => void;
+    useHref?: (href: string) => string;
+  };
   /** The color scheme. Inherits from the nearest provider when omitted. */
   colorScheme?: Exclude<ColorScheme, "light dark">;
   /** The background for this provider. If not provided, the background is transparent. */
@@ -209,6 +222,27 @@ function ProviderRoot(props: ProviderRootProps): JSX.Element {
 }
 
 /**
+ * S2 mounts RouterProvider only when `router` is set, as the outermost wrapper.
+ * `useHref` is read once inside RouterProvider, so the delegates below stay live.
+ */
+function ProviderRouter(props: ParentProps<{ router?: ProviderProps["router"] }>): JSX.Element {
+  return (
+    <Show when={props.router} fallback={props.children}>
+      {(router) => (
+        <RouterProvider
+          navigate={(path, routerOptions) => {
+            router().navigate(path, routerOptions);
+          }}
+          useHref={(href) => router().useHref?.(href) ?? href}
+        >
+          {props.children}
+        </RouterProvider>
+      )}
+    </Show>
+  );
+}
+
+/**
  * Root provider for Spectrum 2-compatible styling.
  */
 export function Provider(props: ProviderProps): JSX.Element {
@@ -217,6 +251,7 @@ export function Provider(props: ProviderProps): JSX.Element {
 
   const [local, rest] = splitProps(props, [
     "locale",
+    "router",
     "colorScheme",
     "background",
     "scale",
@@ -286,24 +321,26 @@ export function Provider(props: ProviderProps): JSX.Element {
   }));
 
   return (
-    <ProviderContext value={providerValue}>
-      <ThemeContext value={providerValue}>
-        <ColorSchemeContext value={colorScheme()}>
-          <I18nProvider locale={locale()}>
-            <ModalProvider>
-              <ProviderRoot
-                rest={rest as Record<string, unknown>}
-                class={classes()}
-                style={mergedStyle()}
-                colorScheme={colorScheme()}
-                background={local.background}
-              >
-                {local.children}
-              </ProviderRoot>
-            </ModalProvider>
-          </I18nProvider>
-        </ColorSchemeContext>
-      </ThemeContext>
-    </ProviderContext>
+    <ProviderRouter router={local.router}>
+      <ProviderContext value={providerValue}>
+        <ThemeContext value={providerValue}>
+          <ColorSchemeContext value={colorScheme()}>
+            <I18nProvider locale={locale()}>
+              <ModalProvider>
+                <ProviderRoot
+                  rest={rest as Record<string, unknown>}
+                  class={classes()}
+                  style={mergedStyle()}
+                  colorScheme={colorScheme()}
+                  background={local.background}
+                >
+                  {local.children}
+                </ProviderRoot>
+              </ModalProvider>
+            </I18nProvider>
+          </ColorSchemeContext>
+        </ThemeContext>
+      </ProviderContext>
+    </ProviderRouter>
   );
 }
