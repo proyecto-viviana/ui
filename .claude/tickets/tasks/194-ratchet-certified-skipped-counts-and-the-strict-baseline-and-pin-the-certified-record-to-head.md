@@ -62,6 +62,11 @@ history:
       at: 2026-09-28,
       note: "shrink-only ceiling: parity-strict-baseline.ceiling.json snapshots each section. A baseline slug outside it fails strict parity, and a ceiling slug the baseline dropped fails until the ceiling drops too. Planted button and listbox cases plus the live 9/9/9 equality are held by parity-strict-baseline.test.ts (10). The strict report passes the ceiling and still fails because postcard 151006ff does not speak for HEAD 3186dd94: 355 covered paths changed. The full certified run that would re-pin the postcard remains open",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-28,
+      note: "two local runs at 78af41c1 died before a summary. Unsharded workers=1 reached test 500/2181 and Playwright was terminated as headless Chrome aborted (signal 5, int3, same binary offset) at 01:35:20. Shard 1/8 workers=1 then exited 143 at test 85/323 on ActionMenu list D3 at 01:48:59, same Chrome abort, certified-summary.1.json missing. That second signal is the same second a visualmode shell started kill_tree on pid 3809160 and then launched its own Playwright test. earlyoom logged no kill. No assertion mismatch was printed. Postcard stays 151006ff. The ceiling commit stands. The record that speaks for HEAD is still open",
+    }
 ---
 
 ## Cause
