@@ -24,6 +24,8 @@ import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeSelectionCheckboxProps, TreeSelectionCheckboxAria } from "./types";
 import { getTreeData } from "./createTree";
+import { createStringFormatter } from "../i18n";
+import { gridIntlStrings } from "../grid/intl";
 
 /**
  * Creates accessibility props for a tree selection checkbox.
@@ -37,9 +39,10 @@ export function createTreeSelectionCheckbox<
 ): TreeSelectionCheckboxAria {
   const fallbackRowId = createId();
   const checkboxId = createId();
+  const stringFormatter = createStringFormatter(gridIntlStrings, "@react-aria/grid");
 
-  // Mirror @react-aria/tree getRowId: the checkbox's aria-labelledby folds its own
-  // "Select" label with the row's id so the SR announces "Select <row text>".
+  // Mirror useGridListSelectionCheckbox: the checkbox name is the grid catalog
+  // "select" string, and aria-labelledby folds that name with the row.
   const rowId = createMemo(() => {
     const treeData = getTreeData(state());
     return treeData ? `${treeData.treeId}-row-${String(props().key)}` : fallbackRowId;
@@ -73,7 +76,7 @@ export function createTreeSelectionCheckbox<
       return {
         type: "checkbox",
         id: checkboxId,
-        "aria-label": "Select",
+        "aria-label": stringFormatter().format("select"),
         "aria-labelledby": `${checkboxId} ${rowId()}`,
         checked: isSelected(),
         disabled: isDisabled(),

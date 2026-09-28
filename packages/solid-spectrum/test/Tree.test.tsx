@@ -4,6 +4,7 @@
 import { createSignal } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import {
   Text,
@@ -105,6 +106,16 @@ describe("TreeView (solid-spectrum)", () => {
       import: "./dist/TreeView.js",
       default: "./dist/TreeView.js",
     });
+  });
+
+  it("names the selection checkbox from the grid catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <FileTree selectionMode="multiple" />
+      </I18nProvider>
+    ));
+
+    expect(screen.getAllByRole("checkbox")[0]).toHaveAttribute("aria-label", "Seleccionar");
   });
 
   it("renders dynamic id-based items with S2 treegrid semantics and slots", () => {

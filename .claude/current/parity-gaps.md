@@ -80,6 +80,7 @@ These behaviors match the pin in this checkout.
 - A range calendar cell paints the formattable day, so a custom calendar's day field is not the visible number.
 - A collapsed disclosure keeps `hidden` through the hydration walk.
 - The default locale stays `en-US` and `ltr` through the hydration walk, then follows the browser language.
+- A tree selection checkbox, and the spectrum list and tree checkboxes, take their name from the grid catalog.
 
 **Components**
 

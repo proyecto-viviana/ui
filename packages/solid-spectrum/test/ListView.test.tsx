@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { ListView, ListViewContext, ListViewItem, Text, type ListViewSelectionStyle } from "../src";
 import * as listViewSubpath from "../src/ListView";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 interface DocumentItem {
@@ -225,6 +226,20 @@ describe("ListView (solid-spectrum)", () => {
 
     expect(quarterlyReport).not.toHaveAttribute("data-selected");
     expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it("names the selection checkbox from the grid catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <ListView aria-label="Documents" selectionMode="multiple">
+          <ListViewItem id="project-brief" textValue="Project brief">
+            Project brief
+          </ListViewItem>
+        </ListView>
+      </I18nProvider>
+    ));
+
+    expect(screen.getByRole("checkbox")).toHaveAttribute("aria-label", "Seleccionar");
   });
 
   it("supports static ListViewItem children", async () => {

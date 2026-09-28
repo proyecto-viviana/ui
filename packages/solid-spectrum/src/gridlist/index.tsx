@@ -1338,7 +1338,7 @@ export function GridListSelectionCheckbox(props: {
         itemKey={props.itemKey}
         class={listViewCheckboxInput}
         excludeFromTabOrder={props.excludeFromTabOrder}
-        aria-label={props["aria-label"] ?? "Select"}
+        aria-label={props["aria-label"]}
       />
       <span class={listViewCheckboxBox(renderProps())} aria-hidden="true">
         {renderProps().isSelected ? (

@@ -1216,7 +1216,7 @@ export function TreeSelectionCheckbox(props: {
         itemKey={props.itemKey}
         class={treeCheckboxInput}
         excludeFromTabOrder={props.excludeFromTabOrder}
-        aria-label={props["aria-label"] ?? "Select"}
+        aria-label={props["aria-label"]}
       />
       <span class={treeCheckboxBox(renderProps())}>
         {renderProps().isSelected ? <Checkmark size="XS" class={treeCheckboxIcon} /> : null}
