@@ -414,7 +414,7 @@ export interface HeadingProps {
   children: JSX.Element;
   /** The CSS className. */
   class?: string;
-  /** The heading level (1-6). Defaults to 2. */
+  /** The heading level (1-6). Defaults to 3, or 2 when this heading titles a dialog. */
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   /** The slot to render into. */
   slot?: string;
@@ -427,7 +427,9 @@ export interface HeadingProps {
 export function Heading(props: HeadingProps): JSX.Element {
   const dialogContext = useContext(DialogContext);
   dialogContext?.registerHeading?.();
-  const level = () => props.level ?? 2;
+  // RAC Heading defaults to level 3. A heading rendered in a dialog is the
+  // title slot here, and that title is level 2.
+  const level = () => props.level ?? (dialogContext ? 2 : 3);
   const id = () => dialogContext?.titleId;
   let headingRef: HTMLHeadingElement | undefined;
   const setHeadingRef = (element: HTMLHeadingElement) => {

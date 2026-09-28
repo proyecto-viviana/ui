@@ -35,6 +35,22 @@ describe("Dialog", () => {
     vi.restoreAllMocks();
   });
 
+  it("defaults to level 3 outside a dialog", () => {
+    render(() => <Heading>Section</Heading>);
+
+    expect(screen.getByRole("heading", { level: 3, name: "Section" })).toBeInTheDocument();
+  });
+
+  it("titles a dialog as level 2", () => {
+    render(() => (
+      <Dialog>
+        <Heading>Title</Heading>
+      </Dialog>
+    ));
+
+    expect(screen.getByRole("heading", { level: 2, name: "Title" })).toBeInTheDocument();
+  });
+
   it("should have a base default set of attributes", () => {
     render(() => (
       <Dialog>

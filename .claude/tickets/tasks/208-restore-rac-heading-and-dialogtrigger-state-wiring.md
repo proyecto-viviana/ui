@@ -12,23 +12,20 @@ history:
       at: 2026-09-28,
       note: "DialogTrigger now uses createMenuTriggerState and provides RootMenuTriggerStateContext, so a menu inside the dialog closes with the dialog. Heading still defaults to level 2 and still lives in Dialog.tsx; HeadingContext is not ported.",
     }
+  - {
+      state: open,
+      at: 2026-09-28,
+      note: "A heading outside a dialog defaults to level 3. Inside a dialog the heading is still the title at level 2, because the styled dialog legacy title renders it without a slot. The public HeadingContext export is still the collection context.",
+    }
 ---
 
 ## Cause
 
-RAC `Heading` is a general slot (default `level = 3`, `HeadingContext`).
-Local `Heading` lives in `Dialog.tsx`, is documented as the dialog title,
-defaults to level 2, and is exported as both `Heading` and `DialogHeading`
-(`packages/solidaria-components/src/Dialog.tsx:70-71, 300-317`,
-`index.ts:501-513`). A RAC-shaped `<Heading slot="title">` outside a dialog
-gets a dialog helper; inside one it gets `h2` where RAC gives `h3`.
+A heading outside a dialog now defaults to level 3, and `DialogTrigger` provides root menu-trigger state.
 
-RAC `DialogTrigger` uses `useMenuTriggerState` and provides
-`OverlayTriggerStateContext`, `RootMenuTriggerStateContext`, `DialogContext`,
-`PopoverContext` with `overlayProps.id`. Local uses `createOverlayTriggerState`
-and one `DialogTriggerContext` (`Dialog.tsx:98-177`); #113 names the missing
-overlay id but not the menu-trigger state swap. Local `DialogProps.onClose`
-has no RAC counterpart.
+`Heading` still lives in `Dialog.tsx`. Inside a dialog every `Heading` is the title and defaults to level 2. RAC's unsloated `Heading` inside a dialog stays level 3; only `slot="title"` is level 2. The styled dialog legacy title renders this heading without that slot, so the inside default stays 2.
+
+The public `HeadingContext` export is the collection header context, not RAC's heading slot context. `DialogProps.onClose` has no RAC counterpart.
 
 ## Work
 
