@@ -24,8 +24,10 @@ parity evidence and is never imported by a package.
 - the React Spectrum S2 and React Aria Components versions.
 - the date when the pin changed.
 
-The checkout is shallow and stays at the exact commit in that file. The
-comparison app must use the same exact upstream package versions. The
+The checkout is shallow and stays at the exact commit in that file. Source
+gaps confirmed against that commit are listed in
+[parity-gaps.md](parity-gaps.md). The comparison app must use the same exact
+upstream package versions. The
 `@adobe/spectrum-tokens` version in `solid-spectrum` and in `viviana-ui` must
 equal the exact version used by the pinned S2 source.
 

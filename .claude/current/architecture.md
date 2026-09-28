@@ -44,6 +44,10 @@ Upstream mapping:
 | Cloudflare Kumo         | `kumo`                 | `@proyecto-viviana/kumo`                 |
 | Vercel Geist (docs)     | `geist`                | `@proyecto-viviana/geist`                |
 
+Source gaps confirmed against the pinned train are listed in
+[parity-gaps.md](parity-gaps.md). Each row names the upstream package for its
+layer.
+
 All seven public packages are releasable. The Kumo and Geist packages are
 still experimental. Workspace Kumo and Geist stay `0.0.0` until the first
 real publish (`release-policy.md`).
