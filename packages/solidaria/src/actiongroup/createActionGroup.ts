@@ -135,11 +135,11 @@ export function createActionGroup<T>(
     return next;
   };
 
-  // Mirrors react-aria `useActionGroup.onKeyDown` (3.50.0): only the four arrows
-  // are handled and they are ORIENTATION-AGNOSTIC — ArrowRight/ArrowDown always
-  // move next, ArrowLeft/ArrowUp always move previous (orientation only drives
-  // `aria-orientation`). `flipDirection` swaps ArrowRight/ArrowLeft under RTL for
-  // horizontal groups. No Home/End (they fall through to the browser). Focus
+  // Mirrors react-aria `useActionGroup` keyboard map: only the four arrows are
+  // handled. ArrowLeft/ArrowRight follow the locale's text direction regardless
+  // of orientation, so ArrowLeft moves next in RTL, including a vertical group.
+  // ArrowUp/ArrowDown are never flipped. Orientation only drives
+  // `aria-orientation`. No Home/End (they fall through to the browser). Focus
   // moves via `focusRelative` → `focusSafely` → the item's own `onFocus`, which
   // sets the focused key — so there is no selection-follows-focus here.
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
@@ -147,8 +147,7 @@ export function createActionGroup<T>(
     if (!root || isActionGroupDisabled(props, state)) return;
     if (!nodeContains(e.currentTarget, getEventTarget(e))) return;
 
-    const orientation = props.orientation ?? "horizontal";
-    const flipDirection = locale().direction === "rtl" && orientation === "horizontal";
+    const flipDirection = locale().direction === "rtl";
 
     switch (e.key) {
       case "ArrowRight":
