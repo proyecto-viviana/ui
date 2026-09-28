@@ -27,11 +27,8 @@ import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { style, focusRing } from "../style" with { type: "macro" };
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import {
-  createStep,
-  createStringFormatter,
-  createNumberFormatter,
-} from "@proyecto-viviana/solidaria";
+import { createStep } from "@proyecto-viviana/solidaria/steplist";
+import { createStringFormatter, createNumberFormatter } from "@proyecto-viviana/solidaria/i18n";
 import { stepListIntlStrings } from "./intl";
 
 export type StepListSize = "sm" | "md" | "lg";

@@ -28,7 +28,7 @@
  */
 
 import type { Key } from "@proyecto-viviana/solid-stately";
-import type { LayoutDelegate } from "@proyecto-viviana/solidaria";
+import type { LayoutDelegate } from "@proyecto-viviana/solidaria/selection";
 
 export interface InvalidationContext<O = unknown> {
   contentChanged?: boolean;

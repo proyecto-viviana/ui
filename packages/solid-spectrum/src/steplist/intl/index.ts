@@ -43,7 +43,7 @@
  * (locale → language → sibling region → en-US).
  */
 
-import type { LocalizedStrings } from "@proyecto-viviana/solidaria";
+import type { LocalizedStrings } from "@proyecto-viviana/solidaria/i18n";
 
 import arAE from "./ar-AE.json" with { type: "json" };
 import bgBG from "./bg-BG.json" with { type: "json" };
