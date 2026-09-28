@@ -17,6 +17,11 @@ history:
       at: 2026-09-26,
       note: "bound onKeyDownCapture in capture phase via bindCapture and captureRef; threaded ref into createTypeSelect across collection hooks; guarded against SSR; verified in createTypeSelect.test.tsx and createSelectableList.test.tsx",
     }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "bindCapture still attaches listeners only in the browser, and it creates its effect during SSR so that hydration slot matches the client. ComboBox, RadioGroup, Virtualizer, ListView, and Tree hydrate twins pass.",
+    }
 ---
 
 Make the typeahead Space handler run before a collection's own keydown handler.

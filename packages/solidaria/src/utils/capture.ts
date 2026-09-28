@@ -56,11 +56,12 @@ export function bindCapture(
   el: Accessor<EventTarget | null | undefined>,
   listeners: CaptureListeners,
 ): void {
-  if (isServer) return;
+  // createEffect takes a hydration slot. Create it while rendering on the
+  // server so later ids in this owner match the client.
   createEffect(
     () => el(),
     (node) => {
-      if (!node) return;
+      if (isServer || !node) return;
       return attachCaptureListeners(node, listeners);
     },
   );
