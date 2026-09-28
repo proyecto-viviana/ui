@@ -117,20 +117,18 @@ const optionStyles = style<ListBoxOptionRenderProps & { size: ListBoxSize }>({
   paddingX: { size: { sm: 12, md: 16, lg: 20 } },
   paddingY: { size: { sm: "[6px]", md: 8, lg: "[10px]" } },
   gap: { size: { sm: 8, md: 12, lg: 12 } },
-  // Later keys win when several conditions are active: selected beats hover,
-  // disabled beats everything.
+  // Later keys win when several conditions are active. Disabled clears the fill.
   backgroundColor: {
     default: "transparent",
     isHovered: "gray-100",
     isFocused: "gray-100",
-    isSelected: "accent-subtle",
     isDisabled: "transparent",
   },
   color: {
     default: "neutral-subdued",
     isHovered: "neutral",
     isFocused: "neutral",
-    isSelected: "accent",
+    isSelected: "neutral",
     isDisabled: "disabled",
   },
 });

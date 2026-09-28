@@ -193,14 +193,13 @@ const optionStyles = style<SelectOptionRenderProps & { size: SelectSize }>({
     default: "transparent",
     isHovered: "gray-100",
     isFocused: "gray-100",
-    isSelected: "accent-subtle",
     isDisabled: "transparent",
   },
   color: {
     default: "neutral-subdued",
     isHovered: "neutral",
     isFocused: "neutral",
-    isSelected: "accent",
+    isSelected: "neutral",
     isDisabled: "disabled",
   },
 });
