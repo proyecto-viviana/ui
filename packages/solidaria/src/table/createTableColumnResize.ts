@@ -24,7 +24,8 @@ import { createSignal, createMemo, onCleanup, createTrackedEffect } from "solid-
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { Key, TableColumnResizeState } from "@proyecto-viviana/solid-stately";
-import { useLocale } from "../i18n";
+import { createStringFormatter, useLocale } from "../i18n";
+import { tableIntlStrings } from "./intl";
 import { createMove } from "../interactions/createMove";
 import { createPress } from "../interactions/createPress";
 import { createKeyboard } from "../interactions/createKeyboard";
@@ -82,6 +83,7 @@ export function createTableColumnResize(
   const getProps = () => props();
   const getState = () => state();
   const locale = useLocale();
+  const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
 
   let isResizingRef = false;
   let lastSize: Map<Key, number> | null = null;
@@ -381,6 +383,10 @@ export function createTableColumnResize(
     },
     get value() {
       return getState().getColumnWidth(getProps().column.key);
+    },
+    get "aria-valuetext"() {
+      const value = Math.floor(getState().getColumnWidth(getProps().column.key));
+      return stringFormatter().format("columnSize", { value });
     },
     style: {
       position: "absolute",

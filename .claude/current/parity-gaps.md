@@ -76,6 +76,7 @@ These behaviors match the pin in this checkout.
 - An unlabeled color channel field names itself in the active locale.
 - An unlabeled step list takes its name from the step list catalog.
 - An unlabeled autocomplete suggestion list takes its name from the autocomplete catalog.
+- A column resizer announces its width from the table catalog.
 - A color editor's hue slider and channel fields, and the spectrum color picker's sliders, take their names from the color channel catalog.
 - A toast region is named with the notifications catalog string and the visible count.
 - A toast close button takes its name from the toast catalog.

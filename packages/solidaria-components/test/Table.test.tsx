@@ -4230,6 +4230,16 @@ describe("Table", () => {
       expect(labels).toContain("Resize Type");
     });
 
+    it("names the column resizer value from the table catalog", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <ResizableTestTable />
+        </I18nProvider>
+      ));
+      const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
+      expect(input).toHaveAttribute("aria-valuetext", `${Math.floor(Number(input.value))} píxeles`);
+    });
+
     it("honors Column minWidth and maxWidth on the Name resizer", () => {
       render(() => (
         <ResizableTableContainer>
