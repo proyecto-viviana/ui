@@ -20,6 +20,7 @@ import {
   type ButtonRenderProps,
   DialogTriggerContext,
   PopoverTriggerContext,
+  ProgressBarContext,
 } from "@proyecto-viviana/solidaria-components";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
@@ -35,7 +36,7 @@ import {
   type S2ButtonRenderState,
 } from "./s2-button-styles";
 import { createPendingState } from "./pending-state";
-import { S2PendingProgressCircle } from "./S2PendingProgressCircle";
+import { ProgressCircle } from "../progress/ProgressCircle";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
@@ -94,6 +95,10 @@ export function Button(props: ButtonProps): JSX.Element {
   const { isProgressVisible } = createPendingState(() => local.isPending);
   const [isHovered, setIsHovered] = createSignal(false);
   const [isPressed, setIsPressed] = createSignal(false);
+  // Class render props run inside the headless button's class memo. ownedWrite
+  // publishes that focus-visible flag for the gradient without a second focus ring.
+  const [isFocusVisible, setIsFocusVisible] = createSignal(false, { ownedWrite: true });
+  let publishedFocusVisible = false;
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
@@ -131,8 +136,13 @@ export function Button(props: ButtonProps): JSX.Element {
     isPending: local.isPending,
   });
 
-  const getClassName = (renderProps: ButtonRenderProps): string =>
-    [
+  const getClassName = (renderProps: ButtonRenderProps): string => {
+    if (publishedFocusVisible !== renderProps.isFocusVisible) {
+      publishedFocusVisible = renderProps.isFocusVisible;
+      setIsFocusVisible(publishedFocusVisible);
+    }
+
+    return [
       local.UNSAFE_className,
       s2Button(
         {
@@ -148,10 +158,12 @@ export function Button(props: ButtonProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
+  };
 
   const getGradientState = (): S2ButtonRenderState => ({
     isHovered: isHovered() || isOverlayTriggerOpen(),
     isPressed: isPressed(),
+    isFocusVisible: isFocusVisible(),
     isDisabled: isDisabled() || isProgressVisible(),
     isPending: local.isPending,
   });
@@ -161,6 +173,7 @@ export function Button(props: ButtonProps): JSX.Element {
   };
 
   function ButtonContent() {
+    const progressContext = useContext(ProgressBarContext);
     const iconContextValue = {
       render: centerBaseline({
         slot: "icon",
@@ -227,10 +240,24 @@ export function Button(props: ButtonProps): JSX.Element {
                     isProgressVisible: isProgressVisible(),
                   })}
                 >
-                  <S2PendingProgressCircle
+                  <ProgressCircle
+                    isIndeterminate
+                    id={progressContext?.id}
                     aria-label={pendingLabel()}
-                    size={size()}
+                    size="S"
                     staticColor={local.staticColor}
+                    styles={() =>
+                      style({
+                        size: {
+                          size: {
+                            S: 14,
+                            M: 18,
+                            L: 20,
+                            XL: 24,
+                          },
+                        },
+                      })({ size: size() })
+                    }
                   />
                 </div>
               ) : null}
