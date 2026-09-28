@@ -377,7 +377,7 @@ describe("createTooltipTrigger - hover behavior", () => {
     expect(screen.queryByTestId("tooltip")).toBeNull();
   });
 
-  it("does not close tooltip on non-press keyboard keys", () => {
+  it("closes the tooltip on a key that is not Enter or Space", () => {
     function TestComponent() {
       let ref: HTMLButtonElement | undefined;
       const state = createTooltipTriggerState({ delay: 0 });
@@ -405,7 +405,7 @@ describe("createTooltipTrigger - hover behavior", () => {
     expect(screen.queryByTestId("tooltip")).not.toBeNull();
 
     fireEvent.keyDown(trigger, { key: "ArrowRight" });
-    expect(screen.queryByTestId("tooltip")).not.toBeNull();
+    expect(screen.queryByTestId("tooltip")).toBeNull();
   });
 });
 

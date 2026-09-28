@@ -199,13 +199,6 @@ export function createTooltipTrigger(
     handleHide(true);
   };
 
-  const onKeyDownPress = (event: KeyboardEvent) => {
-    if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") {
-      return;
-    }
-    closeOnPress();
-  };
-
   const onFocus = () => {
     if (isDisabled()) {
       return;
@@ -243,7 +236,7 @@ export function createTooltipTrigger(
       return !isDisabled() && state.isOpen() ? tooltipId() : undefined;
     },
     onPointerDown: closeOnPress,
-    onKeyDown: onKeyDownPress,
+    onKeyDown: closeOnPress,
     // Remove tabIndex set by focusableProps to avoid overriding
     tabIndex: undefined,
   };
