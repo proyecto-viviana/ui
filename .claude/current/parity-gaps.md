@@ -76,13 +76,16 @@ These behaviors match the pin in this checkout.
 - An unlabeled color channel field names itself in the active locale.
 - A toast region is named with the notifications catalog string and the visible count.
 - Progress and meter values format with the provider locale.
+- A checkbox group merges each item's validity and clears it when that item becomes valid.
 
 **Components**
 
 - A color swatch follows later color updates, and an uncontrolled picker starts at black.
 - Tree item content reads the current selection, focus, hover, press, and expansion.
 - Virtualizer context and the collection renderer keep the current layout. The layout type includes the layout methods, and the component calls them without a cast.
-- Form fields re-read `validationErrors` through one proxy.
+- Form fields re-read `validationErrors` through one proxy. A replaced map shows server errors again after commit or reset.
+- Menu items keep a label id for element children, and a section names its group from the heading.
+- A SearchField `id` and `validate` function reach the text field.
 - A submenu popover is non-modal, and a keyboard-opened submenu takes focus.
 - The modal dismiss control takes its name from the overlays catalog.
 
@@ -116,7 +119,6 @@ These behaviors match the pin in this checkout.
 | Gap                            | Ours                                                                                                 | Pinned source                                                                                                        | Ticket |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------ |
 | Slider focus target            | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`.     | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role.                              | #74    |
-| Checkbox group validity        | Items never call `setInvalid`. The group state has no such method.                                   | `useCheckboxGroupItem.ts` calls `state.setInvalid`. `useCheckboxGroupState.ts` defines it.                           |        |
 | Closed Select shortcuts        | Home and End select. ArrowLeft and ArrowRight still replace the selection when the mode is multiple. | `useSelect.ts` returns false for those arrows when selection is multiple. That shortcut map has no Home or End.      | #125   |
 | Tag remove description         | The row `aria-label` is `textValue` alone.                                                           | `useTag.ts` adds the `removeDescription` catalog string on the row.                                                  | #54    |
 | Tag group live region          | No `aria-live`, and removing the last tag does not focus the group.                                  | `useTagGroup.ts` sets `aria-live` to `polite` while the grid is focused, and focuses the group when the size hits 0. | #54    |
@@ -126,16 +128,12 @@ These behaviors match the pin in this checkout.
 
 ## Components — `react-aria-components`
 
-| Gap                             | Ours                                                                                                                                                                                                                                                                                   | Pinned source                                                                                                   | Ticket |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------ |
-| MenuItem name                   | Non-string children delete `aria-labelledby`, so the name includes the description and the shortcut.                                                                                                                                                                                   | `useMenuItem.ts` keeps `aria-labelledby` on the label id. `Menu.tsx` puts the label slot props on any children. |        |
-| SearchField `validate` and `id` | The `createSearchField` argument includes neither. The hook already reads `validate` when it is passed. The `id` near the label is the label's id. The caller `id` never reaches the text field.                                                                                       | `useSearchField.ts` spreads props into `useTextField`.                                                          |        |
-| Form server-error clear flag    | `createFormValidationState.ts` resets `isServerErrorCleared` when the context value is a different object. `Form.tsx` publishes one proxy, so a replaced `validationErrors` object updates the indexed messages and leaves the flag set after `commitValidation` or `resetValidation`. | The pin's context value is that render's `validationErrors` object. A new object resets the flag.               |        |
-| Dynamic menu section            | The header is `role="heading"`. The group is labeled only from `aria-label`.                                                                                                                                                                                                           | `useMenuSection.ts` sets `role: 'presentation'` on the heading and `aria-labelledby` on `role="group"`.         |        |
-| Closed submenu trigger          | `aria-expanded` is omitted while closed. Open does not focus the first item.                                                                                                                                                                                                           | `useSubmenuTrigger.ts` sets `aria-expanded` to `true` or `false`, and opens with `onSubmenuOpen('first')`.      | #51    |
-| Tree keyboard drag              | `TreeItem` starts a drag without `hasDragButton` and has no drag-button slot.                                                                                                                                                                                                          | `Tree.tsx` passes `hasDragButton: true` and renders the drag slot.                                              | #84    |
-| Menu inside a dialog            | `DialogTrigger` uses `createOverlayTriggerState` and does not provide `RootMenuTriggerStateContext`.                                                                                                                                                                                   | `Dialog.tsx` provides that context from `useMenuTriggerState`.                                                  | #208   |
-| Static picker children          | `Select` requires `items`, so static `PickerItem` and `PickerSection` children do not become the collection.                                                                                                                                                                           | S2 `Picker.tsx` renders `children` unless `children` is a function and `items` is set.                          | #43    |
+| Gap                    | Ours                                                                                                         | Pinned source                                                                                              | Ticket |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ |
+| Closed submenu trigger | `aria-expanded` is omitted while closed. Open does not focus the first item.                                 | `useSubmenuTrigger.ts` sets `aria-expanded` to `true` or `false`, and opens with `onSubmenuOpen('first')`. | #51    |
+| Tree keyboard drag     | `TreeItem` starts a drag without `hasDragButton` and has no drag-button slot.                                | `Tree.tsx` passes `hasDragButton: true` and renders the drag slot.                                         | #84    |
+| Menu inside a dialog   | `DialogTrigger` uses `createOverlayTriggerState` and does not provide `RootMenuTriggerStateContext`.         | `Dialog.tsx` provides that context from `useMenuTriggerState`.                                             | #208   |
+| Static picker children | `Select` requires `items`, so static `PickerItem` and `PickerSection` children do not become the collection. | S2 `Picker.tsx` renders `children` unless `children` is a function and `items` is set.                     | #43    |
 
 ## Styled — `@react-spectrum/s2`
 
