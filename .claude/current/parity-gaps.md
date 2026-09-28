@@ -74,6 +74,7 @@ These behaviors match the pin in this checkout.
 - Pressing a range endpoint resizes that end, and a touch drag waits 200ms. Hovering across cells during a drag is #423.
 - A calendar cell name includes the era for a Gregorian BC date.
 - An unlabeled color channel field names itself in the active locale.
+- A color editor's hue slider and channel fields, and the spectrum color picker's sliders, take their names from the color channel catalog.
 - A toast region is named with the notifications catalog string and the visible count.
 - A toast close button takes its name from the toast catalog.
 - A table row expand button takes its name from the table catalog.

@@ -1703,7 +1703,6 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
           defaultValue={props.defaultValue}
           onChange={props.onChange}
           channel="hue"
-          label="Hue"
           size={size()}
           showValue
           isDisabled={props.isDisabled}
@@ -1714,7 +1713,6 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
           defaultValue={props.defaultValue}
           onChange={props.onChange}
           channel="alpha"
-          label="Alpha"
           size={size()}
           showValue
           isDisabled={props.isDisabled}

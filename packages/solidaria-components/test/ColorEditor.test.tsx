@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { ColorEditor } from "../src/ColorEditor";
 import { parseColor } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { ColorSwatch } from "../src/Color";
 
 describe("ColorEditor (headless)", () => {
@@ -21,9 +22,20 @@ describe("ColorEditor (headless)", () => {
 
     it("renders hue slider", () => {
       render(() => <ColorEditor />);
-      // Hue slider has aria-label "Hue"
-      const hueSlider = screen.getByLabelText("Hue");
+      const hueSlider = screen.getByRole("slider", { name: "Hue" });
       expect(hueSlider).toBeInTheDocument();
+    });
+
+    it("names the hue slider and channel fields from the color catalog", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <ColorEditor />
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("slider", { name: "Tono" })).toBeInTheDocument();
+      const select = screen.getByLabelText("Color format") as HTMLSelectElement;
+      fireEvent.change(select, { target: { value: "rgb" } });
+      expect(screen.getByRole("textbox", { name: "Rojo" })).toBeInTheDocument();
     });
 
     it("renders alpha controls by default", () => {

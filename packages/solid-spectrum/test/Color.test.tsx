@@ -3,7 +3,8 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
-import { ColorSlider, ColorSwatch, ColorWheel } from "../src/color";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { ColorPicker, ColorSlider, ColorSwatch, ColorWheel } from "../src/color";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 
 describe("ColorSwatch (solid-spectrum)", () => {
@@ -39,6 +40,17 @@ describe("ColorSwatch (solid-spectrum)", () => {
     const style = swatch.getAttribute("style") ?? "";
     expect(style).toContain("linear-gradient");
     expect(style).not.toContain("repeating-conic-gradient");
+  });
+});
+
+describe("ColorPicker (solid-spectrum)", () => {
+  it("names an unlabeled hue slider from the color channel catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <ColorPicker defaultValue="#ff0000" />
+      </I18nProvider>
+    ));
+    expect(screen.getByRole("slider", { name: "Tono" })).toBeInTheDocument();
   });
 });
 

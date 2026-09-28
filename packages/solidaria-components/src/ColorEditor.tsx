@@ -155,12 +155,12 @@ export function ColorEditor(props: ColorEditorProps): JSX.Element {
                 )}
               </ColorArea>
 
-              <ColorSlider channel="hue" isDisabled={local.isDisabled} aria-label="Hue">
+              <ColorSlider channel="hue" isDisabled={local.isDisabled}>
                 {() => <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>}
               </ColorSlider>
 
               <Show when={!local.hideAlphaChannel}>
-                <ColorSlider channel="alpha" isDisabled={local.isDisabled} aria-label="Alpha">
+                <ColorSlider channel="alpha" isDisabled={local.isDisabled}>
                   {() => <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>}
                 </ColorSlider>
               </Show>
@@ -192,11 +192,7 @@ export function ColorEditor(props: ColorEditorProps): JSX.Element {
               >
                 <For each={channels()}>
                   {(channel) => (
-                    <ColorField
-                      channel={channel}
-                      isDisabled={local.isDisabled}
-                      aria-label={channel}
-                    >
+                    <ColorField channel={channel} isDisabled={local.isDisabled}>
                       {() => <ColorFieldInput />}
                     </ColorField>
                   )}
@@ -204,7 +200,7 @@ export function ColorEditor(props: ColorEditorProps): JSX.Element {
               </Show>
 
               <Show when={!local.hideAlphaChannel && activeSpace() !== "hex"}>
-                <ColorField channel="alpha" isDisabled={local.isDisabled} aria-label="Alpha">
+                <ColorField channel="alpha" isDisabled={local.isDisabled}>
                   {() => <ColorFieldInput />}
                 </ColorField>
               </Show>
