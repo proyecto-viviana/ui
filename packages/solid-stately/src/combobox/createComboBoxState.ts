@@ -367,7 +367,14 @@ export function createComboBoxState<T = unknown>(
     get selectionMode() {
       return isMultiple() ? ("multiple" as const) : ("single" as const);
     },
-    disallowEmptySelection: false,
+    // RAC useComboBoxState.ts:254-255. Single selection cannot be toggled
+    // empty. Duplicate events re-emit the same key so a click on the selected
+    // option reaches the reset-and-close branch below. Multiple selection
+    // still allows clearing the last key.
+    get disallowEmptySelection() {
+      return !isMultiple();
+    },
+    allowDuplicateSelectionEvents: true,
     get selectedKeys() {
       if (isMultiple()) {
         return Array.from(selectedKeys());
@@ -387,8 +394,10 @@ export function createComboBoxState<T = unknown>(
 
       const key = keys.size > 0 ? Array.from(keys)[0] : null;
 
-      // If same key selected, just reset input and close
+      // RAC useComboBoxState.ts:265-270 — same key still notifies, then
+      // resets the input and closes (click on the already selected option).
       if (key === selectedKey()) {
+        getProps().onSelectionChange?.(key);
         resetInputValue();
         closeMenu();
         return;
