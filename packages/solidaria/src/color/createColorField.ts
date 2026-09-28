@@ -23,6 +23,7 @@
 import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
+import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
@@ -41,6 +42,7 @@ export function createColorField(
 ): ColorFieldAria {
   const getProps = () => props();
   const getState = () => state();
+  const locale = useLocale();
 
   const generatedInputId = createId();
   const labelId = createId();
@@ -193,7 +195,9 @@ export function createColorField(
     const s = getState();
     const p = getProps();
     const channelLabel =
-      s.channel && s.colorValue ? s.colorValue.getChannelName(s.channel, "en-US") : undefined;
+      s.channel && s.colorValue
+        ? s.colorValue.getChannelName(s.channel, locale().locale)
+        : undefined;
     const required = p.isRequired || s.isRequired;
     const invalid = isInvalid();
 
