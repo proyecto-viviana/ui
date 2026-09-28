@@ -7,6 +7,11 @@ parent: 136
 status: open
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: open,
+      at: 2026-09-28,
+      note: "DialogTrigger now uses createMenuTriggerState and provides RootMenuTriggerStateContext, so a menu inside the dialog closes with the dialog. Heading still defaults to level 2 and still lives in Dialog.tsx; HeadingContext is not ported.",
+    }
 ---
 
 ## Cause

@@ -9,7 +9,10 @@
  */
 
 import { createContext, useContext } from "solid-js";
-import type { OverlayTriggerState as StatelyOverlayTriggerState } from "@proyecto-viviana/solid-stately";
+import type {
+  MenuTriggerState,
+  OverlayTriggerState as StatelyOverlayTriggerState,
+} from "@proyecto-viviana/solid-stately";
 
 export interface OverlayTriggerState {
   isOpen: boolean;
@@ -71,6 +74,12 @@ export interface PopoverTriggerContextValue {
 }
 
 export const PopoverTriggerContext = createContext<PopoverTriggerContextValue | null>(null);
+
+/**
+ * The menu trigger that owns a menu tree. `DialogTrigger` provides it so a
+ * menu rendered inside the dialog closes with the dialog.
+ */
+export const RootMenuTriggerStateContext = createContext<MenuTriggerState | null>(null);
 
 /**
  * Hook to access the popover trigger state from context.

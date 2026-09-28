@@ -90,6 +90,7 @@ These behaviors match the pin in this checkout.
 - Menu items keep a label id for element children, and a section names its group from the heading.
 - A SearchField `id` and `validate` function reach the text field.
 - A submenu popover is non-modal, and a keyboard-opened submenu takes focus.
+- A menu inside a dialog closes with the dialog.
 - The modal dismiss control takes its name from the overlays catalog.
 
 **Styled**
@@ -132,7 +133,6 @@ These behaviors match the pin in this checkout.
 | ---------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ |
 | Closed submenu trigger | `aria-expanded` is omitted while closed. Open does not focus the first item.                                 | `useSubmenuTrigger.ts` sets `aria-expanded` to `true` or `false`, and opens with `onSubmenuOpen('first')`. | #51    |
 | Tree keyboard drag     | `TreeItem` starts a drag without `hasDragButton` and has no drag-button slot.                                | `Tree.tsx` passes `hasDragButton: true` and renders the drag slot.                                         | #84    |
-| Menu inside a dialog   | `DialogTrigger` uses `createOverlayTriggerState` and does not provide `RootMenuTriggerStateContext`.         | `Dialog.tsx` provides that context from `useMenuTriggerState`.                                             | #208   |
 | Static picker children | `Select` requires `items`, so static `PickerItem` and `PickerSection` children do not become the collection. | S2 `Picker.tsx` renders `children` unless `children` is a function and `items` is set.                     | #43    |
 
 ## Styled — `@react-spectrum/s2`

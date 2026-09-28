@@ -39,14 +39,12 @@ import {
   useIsHidden,
   type AriaDialogProps,
 } from "@proyecto-viviana/solidaria";
-import {
-  createOverlayTriggerState,
-  type OverlayTriggerState,
-} from "@proyecto-viviana/solid-stately";
+import { createMenuTriggerState, type MenuTriggerState } from "@proyecto-viviana/solid-stately";
 import {
   DialogTriggerContext,
   OverlayTriggerStateContext,
   PopoverTriggerContext,
+  RootMenuTriggerStateContext,
   useOverlayTriggerState,
   type OverlayTriggerState as ContextOverlayTriggerState,
   type PopoverTriggerContextValue,
@@ -110,7 +108,9 @@ export { DialogTriggerContext, useDialogTrigger } from "./contexts";
 export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   const [local] = splitProps(props, ["isOpen", "defaultOpen", "onOpenChange"]);
 
-  const state = createOverlayTriggerState({
+  // A menu inside the dialog reads this state from RootMenuTriggerStateContext
+  // and closes the dialog with the menu.
+  const state = createMenuTriggerState({
     get isOpen() {
       return local.isOpen;
     },
@@ -145,22 +145,26 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     });
   };
 
-  const stateWithFocusRestore: OverlayTriggerState = {
+  const stateWithFocusRestore: MenuTriggerState = {
     isOpen: state.isOpen,
+    focusStrategy: state.focusStrategy,
+    setFocusStrategy: state.setFocusStrategy,
     setOpen: (isOpen) => {
       state.setOpen(isOpen);
       if (!isOpen) {
         restoreFocusToTrigger();
       }
     },
-    open: state.open,
+    open: (strategy = null) => {
+      state.open(strategy);
+    },
     close: () => {
       state.close();
       restoreFocusToTrigger();
     },
-    toggle: () => {
+    toggle: (strategy = null) => {
       const wasOpen = state.isOpen();
-      state.toggle();
+      state.toggle(strategy);
       if (wasOpen) {
         restoreFocusToTrigger();
       }
@@ -229,13 +233,15 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
     return null;
   }
 
-  // Provide OverlayTriggerStateContext, PopoverTriggerContext, and
-  // DialogTriggerContext, matching RAC DialogTrigger context wiring.
+  // Provide the menu-trigger state alongside the overlay contexts so a menu
+  // inside the dialog shares this trigger. RAC DialogTrigger does the same.
   return (
     <OverlayTriggerStateContext value={overlayStateContextValue}>
-      <PopoverTriggerContext value={popoverContextValue()}>
-        <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>
-      </PopoverTriggerContext>
+      <RootMenuTriggerStateContext value={stateWithFocusRestore}>
+        <PopoverTriggerContext value={popoverContextValue()}>
+          <DialogTriggerContext value={contextValue()}>{props.children}</DialogTriggerContext>
+        </PopoverTriggerContext>
+      </RootMenuTriggerStateContext>
     </OverlayTriggerStateContext>
   );
 }

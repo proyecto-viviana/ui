@@ -101,7 +101,7 @@ import {
   useDndPersistedKeys,
   useRenderDropIndicator,
 } from "./DragAndDrop";
-import { PopoverTriggerContext } from "./contexts";
+import { PopoverTriggerContext, RootMenuTriggerStateContext } from "./contexts";
 import { OverlayContext } from "./Popover";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -339,7 +339,7 @@ interface MenuItemCloseRegistryContextValue {
 export const MenuContext = createContext<MenuContextValue<unknown> | null>(null);
 export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
-export const RootMenuTriggerStateContext = createContext<MenuTriggerState | null>(null);
+export { RootMenuTriggerStateContext };
 const MenuItemContext = createContext<MenuItemContextValue | null>(null);
 const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextValue | null>(null);
 const MenuSectionSelectionContext = createContext<MenuSectionSelectionContextValue | null>(null);
@@ -701,7 +701,15 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
 
   const triggerContext = useContext(MenuTriggerContext);
+  const rootMenuTriggerState = useContext(RootMenuTriggerStateContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const closeFromTrigger = () => {
+    if (triggerContext) {
+      triggerContext.state.close();
+      return;
+    }
+    rootMenuTriggerState?.close();
+  };
   const overlayContext = useContext(OverlayContext);
   const locale = useLocale();
 
@@ -840,7 +848,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       return handleAction;
     },
     get onClose() {
-      return stateProps.onClose ?? (() => triggerContext?.state.close());
+      return stateProps.onClose ?? closeFromTrigger;
     },
   });
 
@@ -867,11 +875,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         return handleAction;
       },
       get onClose() {
-        return (
-          stateProps.onClose ??
-          triggerContext?.menuProps.onClose ??
-          (() => triggerContext?.state.close())
-        );
+        return stateProps.onClose ?? triggerContext?.menuProps.onClose ?? closeFromTrigger;
       },
       get shouldCloseOnSelect() {
         return (

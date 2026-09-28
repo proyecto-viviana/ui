@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { Dialog, DialogTrigger, Heading, type DialogRenderProps } from "../src/Dialog";
+import { Menu, MenuItem } from "../src/Menu";
 import { Text } from "../src/Text";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { Button } from "../src/Button";
@@ -411,6 +412,32 @@ describe("DialogTrigger", () => {
     // Should be open by default
     const dialog = screen.getByRole("dialog");
     expect(dialog).toBeInTheDocument();
+  });
+
+  it("closes the dialog when a menu inside it selects an item", async () => {
+    const onOpenChange = vi.fn();
+
+    render(() => (
+      <DialogTrigger defaultOpen onOpenChange={onOpenChange}>
+        <Button>Open</Button>
+        <Modal>
+          <Dialog aria-label="Actions">
+            <Menu aria-label="Actions">
+              <MenuItem id="save" textValue="Save">
+                Save
+              </MenuItem>
+            </Menu>
+          </Dialog>
+        </Modal>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog", { name: "Actions" });
+    await user.click(within(dialog).getByRole("menuitem", { name: "Save" }));
+    vi.runAllTimers();
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("should call onOpenChange when dialog opens and closes", async () => {
