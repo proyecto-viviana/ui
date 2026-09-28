@@ -31,6 +31,8 @@ import { getInteractionModality } from "../interactions/createInteractionModalit
 import { createLandmark } from "../landmark/createLandmark";
 import { focusWithoutScrolling } from "../utils/focus";
 import { access, type MaybeAccessor } from "../utils";
+import { createStringFormatter } from "../i18n";
+import { toastIntlStrings } from "./intl";
 export interface AriaToastRegionProps<T> {
   /** The toast state from createToastState. */ state: ToastState<T>;
   /** The toast region element. Required for landmark navigation and focus recovery. */ ref?: Accessor<
@@ -77,6 +79,11 @@ export function createToastRegion<T>(
     const p = getProps();
     return typeof p?.state?.visibleToasts === "function" ? p.state.visibleToasts() : [];
   };
+  const stringFormatter = createStringFormatter(toastIntlStrings, "@react-aria/toast");
+  // Match useToastRegion: a provided label wins; otherwise the catalog plural.
+  const regionLabel = () =>
+    getProps()?.["aria-label"] ||
+    stringFormatter().format("notifications", { count: visibleToasts().length });
   const regionRef = () => {
     const r = getProps()?.ref;
     return typeof r === "function" ? r() : r;
@@ -86,7 +93,7 @@ export function createToastRegion<T>(
   const landmarkAria = createLandmark(
     () => ({
       role: "region",
-      "aria-label": getProps()?.["aria-label"] ?? "Notifications",
+      "aria-label": regionLabel(),
     }),
     activeRegionRef,
   );
@@ -254,7 +261,7 @@ export function createToastRegion<T>(
     tabIndex: -1,
     "data-solidaria-top-layer": "true",
     get "aria-label"() {
-      return getProps()?.["aria-label"] ?? "Notifications";
+      return regionLabel();
     },
     onFocusIn: handleFocusIn,
     onFocusOut: handleFocusOut,
