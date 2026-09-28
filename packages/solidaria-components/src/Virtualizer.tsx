@@ -79,9 +79,12 @@ export interface LayoutOptionsDelegate<O> {
   useLayoutOptions?(): O;
 }
 
-export interface VirtualizerLayout<O = unknown> extends LayoutOptionsDelegate<O> {
+export interface VirtualizerLayout<O = unknown>
+  extends LayoutOptionsDelegate<O>, Partial<Omit<LayoutDelegate, "getContentSize">> {
   getVisibleRange?(context: VirtualizerRangeContext, options?: O): VirtualizerVisibleRange;
   getLayoutInfo?(index: number, context: VirtualizerLayoutInfoContext, options?: O): LayoutInfo;
+  // Layout.getContentSize() takes no arguments. The index helper takes a count.
+  // function.length tells them apart, matching ILayout extends Layout.
   getContentSize?(itemCount: number, context: VirtualizerLayoutInfoContext, options?: O): Size;
   updateItemSize?(index: number, mainSize: number): boolean;
   getDropTargetFromPoint?(
@@ -202,6 +205,26 @@ function getObjectValue<T extends object, K extends keyof T>(
   key: K,
 ): T[K] | undefined {
   return value?.[key];
+}
+
+function isZeroArgContentSize(fn: { length: number }): fn is () => Size {
+  return typeof fn === "function" && fn.length === 0;
+}
+
+// The provider stores props.value once. An accessor keeps later reads current.
+function contextAccessor<T extends object>(read: Accessor<T>): T {
+  const current = read();
+  const accessor = (() => read()) as T;
+  for (const key of Object.keys(current) as Array<Extract<keyof T, string>>) {
+    Object.defineProperty(accessor, key, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return read()[key];
+      },
+    });
+  }
+  return accessor;
 }
 
 function isSameRange(a: VirtualizerVisibleRange, b: VirtualizerVisibleRange): boolean {
@@ -811,10 +834,8 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     const layout = resolvedLayout();
     const delegate: LayoutDelegate = {
       getItemRect(key: Key): Rect | null {
-        if (typeof (layout as any).getItemRect === "function") {
-          const rect = (layout as any).getItemRect(key);
-          if (rect) return rect;
-        }
+        const rect = layout.getItemRect?.(key);
+        if (rect) return rect;
         const indexResolver = dropTargetIndexResolver();
         let index: number | null = null;
         if (indexResolver) {
@@ -831,22 +852,18 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
         return info ? info.rect : null;
       },
       getContentSize(): Size {
-        if (
-          typeof (layout as any).getContentSize === "function" &&
-          (layout as any).getContentSize.length === 0
-        ) {
-          return (layout as any).getContentSize();
+        const read = layout.getContentSize;
+        if (read && isZeroArgContentSize(read)) {
+          return read.call(layout);
         }
         const countResolver = dropTargetItemCountResolver();
         const count = countResolver ? countResolver() : 0;
         return getContentSize(count);
       },
       getVisibleRect(): Rect {
-        if (typeof (layout as any).getVisibleRect === "function") {
-          const rect = (layout as any).getVisibleRect();
-          if (rect && (rect.width > 0 || rect.height > 0)) {
-            return rect;
-          }
+        const rect = layout.getVisibleRect?.();
+        if (rect && (rect.width > 0 || rect.height > 0)) {
+          return rect;
         }
         const width =
           orientation() === "horizontal"
@@ -865,20 +882,20 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
       },
     };
 
-    if (typeof (layout as any).getKeyAbove === "function") {
-      delegate.getKeyAbove = (key: Key) => (layout as any).getKeyAbove(key);
+    if (typeof layout.getKeyAbove === "function") {
+      delegate.getKeyAbove = (key) => layout.getKeyAbove!(key);
     }
-    if (typeof (layout as any).getKeyBelow === "function") {
-      delegate.getKeyBelow = (key: Key) => (layout as any).getKeyBelow(key);
+    if (typeof layout.getKeyBelow === "function") {
+      delegate.getKeyBelow = (key) => layout.getKeyBelow!(key);
     }
-    if (typeof (layout as any).getKeyLeftOf === "function") {
-      delegate.getKeyLeftOf = (key: Key) => (layout as any).getKeyLeftOf(key);
+    if (typeof layout.getKeyLeftOf === "function") {
+      delegate.getKeyLeftOf = (key) => layout.getKeyLeftOf!(key);
     }
-    if (typeof (layout as any).getKeyRightOf === "function") {
-      delegate.getKeyRightOf = (key: Key) => (layout as any).getKeyRightOf(key);
+    if (typeof layout.getKeyRightOf === "function") {
+      delegate.getKeyRightOf = (key) => layout.getKeyRightOf!(key);
     }
-    if (typeof (layout as any).getKeyRange === "function") {
-      delegate.getKeyRange = (from: Key, to: Key) => (layout as any).getKeyRange(from, to);
+    if (typeof layout.getKeyRange === "function") {
+      delegate.getKeyRange = (from, to) => layout.getKeyRange!(from, to);
     }
 
     return delegate;
@@ -911,9 +928,13 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
 
   // RAC `Virtualizer.tsx:71-96`: context-only — no DOM. The collection element
   // is the scroller; CollectionRoot owns useScrollView against that ref.
+  // Pass accessors: the provider keeps the first props.value, so a plain object
+  // would freeze orientation and layoutDelegate at mount.
+  const virtualizerContext = contextAccessor(contextValue);
+  const collectionRendererContext = contextAccessor(collectionRenderer);
   return (
-    <CollectionRendererContext value={collectionRenderer()}>
-      <VirtualizerContext value={contextValue()}>
+    <CollectionRendererContext value={collectionRendererContext}>
+      <VirtualizerContext value={virtualizerContext}>
         <VirtualizerOptionsContext
           value={{
             layout: resolvedLayout() as VirtualizerLayout<unknown>,
