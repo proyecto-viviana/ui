@@ -30,7 +30,7 @@ import { getEventTarget } from "../utils/dom";
 import { isVirtualClick } from "../utils/events";
 import { createSlotId } from "../ssr";
 import { getMenuData } from "./createMenu";
-import type { MenuState, Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
+import type { MenuState, Key, SelectionMode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaMenuItemProps {
   /** The unique key for the menu item. */
@@ -147,9 +147,6 @@ export function createMenuItem<T>(
   let isMenuPressActive = false;
   let isDispatchingKeyboardClick = false;
   let isDispatchingMenuSyntheticClick = false;
-  let selectionEventBeforeMenuPressUp: Selection | null = null;
-  let hasSelectionEventBeforeMenuPressUp = false;
-  let pendingSyntheticClickSelectionEvent: Selection | null = null;
   let suppressNextKeyboardClick = false;
 
   const getShouldClose = (): boolean => {
@@ -224,55 +221,24 @@ export function createMenuItem<T>(
       // releasing to activate it. Upstream useMenuItem synthesizes a click in
       // this different-origin mouse case.
       if (e.pointerType === "mouse" && !isMenuPressActive && e.target instanceof HTMLElement) {
-        const selectionEventAfterPressUp = state.selectionManager.lastSelectionEvent;
-        pendingSyntheticClickSelectionEvent =
-          hasSelectionEventBeforeMenuPressUp &&
-          selectionEventAfterPressUp != null &&
-          selectionEventAfterPressUp !== selectionEventBeforeMenuPressUp
-            ? selectionEventAfterPressUp
-            : null;
-
         isDispatchingMenuSyntheticClick = true;
         try {
           e.target.click();
         } finally {
           isDispatchingMenuSyntheticClick = false;
-          hasSelectionEventBeforeMenuPressUp = false;
-          selectionEventBeforeMenuPressUp = null;
-          pendingSyntheticClickSelectionEvent = null;
         }
       }
     },
   });
-
-  const captureSelectionEventBeforeMenuPressUp = () => {
-    selectionEventBeforeMenuPressUp = state.selectionManager.lastSelectionEvent;
-    hasSelectionEventBeforeMenuPressUp = true;
-  };
-
-  const withMenuPressUpSelectionSnapshot = <EventType extends Event>(handler: unknown) => {
-    if (typeof handler !== "function") {
-      return handler;
-    }
-
-    return (event: EventType) => {
-      captureSelectionEventBeforeMenuPressUp();
-      (handler as (event: EventType) => void)(event);
-    };
-  };
 
   const selectableItemProps = () => {
     const props = selectableItem.itemProps as Record<string, unknown>;
     const onClick = props.onClick;
 
     const interceptSyntheticClick = (event: MouseEvent, fallbackHandler?: unknown) => {
-      // The menu layer's upstream-compatible target.click() should activate
-      // the menu item, not feed back into selectable-item virtual selection.
+      // The menu layer's target.click() activates the item. The selectable
+      // press would read that virtual click as a second selection.
       if (isDispatchingMenuSyntheticClick && isVirtualClick(event)) {
-        if (pendingSyntheticClickSelectionEvent != null) {
-          state.selectionManager.emitDuplicateSelectionEvent(pendingSyntheticClickSelectionEvent);
-          pendingSyntheticClickSelectionEvent = null;
-        }
         return;
       }
 
@@ -283,8 +249,6 @@ export function createMenuItem<T>(
 
     return {
       ...props,
-      onPointerUp: withMenuPressUpSelectionSnapshot<PointerEvent>(props.onPointerUp),
-      onMouseUp: withMenuPressUpSelectionSnapshot<MouseEvent>(props.onMouseUp),
       onClick:
         typeof onClick === "function"
           ? (event: MouseEvent) => interceptSyntheticClick(event, onClick)

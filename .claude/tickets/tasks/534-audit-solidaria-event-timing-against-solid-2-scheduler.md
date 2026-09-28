@@ -46,6 +46,11 @@ history:
       at: 2026-09-27,
       note: "Space and Enter on a menu item restore keyboard modality after target.click() publishes virtual. During the action the modality is virtual; after the handler it is keyboard. createMenu.test.tsx passes 66/66. Menu drag and the final owning audit remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "A different-origin mouse release activates the item under the pointer and selects it once. The synthetic click no longer re-emits that selection. createMenu.test.tsx passes 69/69. The final owning press, hover, and focus audit remains",
+    }
 ---
 
 ## Cause

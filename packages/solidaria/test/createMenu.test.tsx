@@ -430,6 +430,135 @@ describe("createMenuItem", () => {
     });
   }
 
+  it("activates an item when the pointer is released over it from another origin", () => {
+    const onAction = vi.fn();
+    const items = [{ key: "copy", label: "Copy" }];
+    let itemRef!: HTMLDivElement;
+
+    render(() => {
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      createMenu({ onAction, "aria-label": "Actions" }, state);
+      const item = createMenuItem({ key: "copy" }, state, () => itemRef);
+      return (
+        <div>
+          <button type="button">Trigger</button>
+          <div ref={itemRef} {...item.menuItemProps}>
+            <span {...item.labelProps}>Copy</span>
+          </div>
+        </div>
+      );
+    });
+
+    const trigger = screen.getByRole("button", { name: "Trigger" });
+    const item = screen.getByRole("menuitem", { name: "Copy" });
+    fireEvent.pointerDown(trigger, { pointerType: "mouse", button: 0, pointerId: 1 });
+    fireEvent.pointerUp(item, { pointerType: "mouse", button: 0, pointerId: 1 });
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+  });
+
+  it("selects once when a different-origin release activates a single-selection item", () => {
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
+    let state!: MenuState<(typeof items)[number]>;
+    let itemRef!: HTMLDivElement;
+
+    render(() => {
+      state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+        onSelectionChange,
+      });
+      createMenu({ onAction, "aria-label": "Actions" }, state);
+      const item = createMenuItem({ key: "copy" }, state, () => itemRef);
+      return (
+        <div>
+          <button type="button">Trigger</button>
+          <div ref={itemRef} {...item.menuItemProps}>
+            <span {...item.labelProps}>Copy</span>
+          </div>
+        </div>
+      );
+    });
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Trigger" }), {
+      pointerType: "mouse",
+      button: 0,
+      pointerId: 1,
+    });
+    fireEvent.pointerUp(screen.getByRole("menuitemradio", { name: "Copy" }), {
+      pointerType: "mouse",
+      button: 0,
+      pointerId: 1,
+    });
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+    expect(state.isSelected("copy")).toBe(true);
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("toggles once when a different-origin release lands on a multiple-selection item", () => {
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
+    let state!: MenuState<(typeof items)[number]>;
+    let copyRef!: HTMLDivElement;
+    let pasteRef!: HTMLDivElement;
+
+    render(() => {
+      state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["copy"],
+        onSelectionChange,
+      });
+      createMenu({ onAction, "aria-label": "Actions" }, state);
+      const copy = createMenuItem({ key: "copy" }, state, () => copyRef);
+      const paste = createMenuItem({ key: "paste" }, state, () => pasteRef);
+      return (
+        <div>
+          <div ref={copyRef} {...copy.menuItemProps}>
+            <span {...copy.labelProps}>Copy</span>
+          </div>
+          <div ref={pasteRef} {...paste.menuItemProps}>
+            <span {...paste.labelProps}>Paste</span>
+          </div>
+        </div>
+      );
+    });
+
+    fireEvent.pointerDown(screen.getByRole("menuitemcheckbox", { name: "Copy" }), {
+      pointerType: "mouse",
+      button: 0,
+      pointerId: 1,
+    });
+    fireEvent.pointerUp(screen.getByRole("menuitemcheckbox", { name: "Paste" }), {
+      pointerType: "mouse",
+      button: 0,
+      pointerId: 1,
+    });
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith("paste", items[1]);
+    expect(state.isSelected("copy")).toBe(true);
+    expect(state.isSelected("paste")).toBe(true);
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
   it("sets aria-disabled when disabled", () => {
     createRoot((dispose) => {
       const items = [{ key: "copy", label: "Copy" }];
