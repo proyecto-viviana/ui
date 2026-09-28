@@ -31,6 +31,7 @@ import {
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
+import { handleLinkClick, useRouter } from "./RouterProvider";
 import {
   createBreadcrumbs,
   createBreadcrumbItem,
@@ -65,6 +66,18 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
   } else {
     ref.current = el;
   }
+}
+
+function omitOnClick(raw: Record<string, unknown>): Record<string, unknown> {
+  const rest: Record<string, unknown> = {};
+  for (const key of Object.keys(raw)) {
+    if (key === "onClick") continue;
+    const desc = Object.getOwnPropertyDescriptor(raw, key);
+    if (desc) {
+      Object.defineProperty(rest, key, desc);
+    }
+  }
+  return rest;
 }
 
 export interface BreadcrumbsRenderProps {
@@ -283,6 +296,7 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
 
   const context = useContext(BreadcrumbsContext);
   const itemContext = useContext(BreadcrumbItemContext);
+  const router = useRouter();
   const staticIndex = itemContext ? null : context?.registerStaticItem?.();
   const isDisabled = () => local.isDisabled ?? context?.isDisabled() ?? false;
   const isCurrent = () =>
@@ -400,6 +414,17 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       hoverProps as Record<string, unknown>,
     ),
   );
+  // createLink does not call handleLinkClick.
+  const onItemClick = (event: MouseEvent) => {
+    const click = (mergedItemProps() as { onClick?: (event: MouseEvent) => void }).onClick;
+    click?.(event);
+    handleLinkClick(event, router, ariaProps.href, ariaProps.routerOptions);
+  };
+  const itemDomProps = createMemo(() =>
+    mergeProps(omitOnClick(mergedItemProps() as Record<string, unknown>), {
+      onClick: onItemClick,
+    }),
+  );
 
   const renderValues = createMemo<BreadcrumbItemRenderProps>(() => ({
     isCurrent: isCurrent(),
@@ -431,7 +456,7 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
   return (
     <ElementTag
       tag={elementType()}
-      {...mergedItemProps()}
+      {...itemDomProps()}
       ref={(element: HTMLElement) => assignRef(local.ref, element)}
       aria-current={isCurrent() ? (ariaProps["aria-current"] ?? "page") : undefined}
       aria-disabled={attrTrue(isDisabled() || isCurrent())}

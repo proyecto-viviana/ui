@@ -22,10 +22,12 @@
  * - packages/react-aria/src/breadcrumbs/useBreadcrumbItem.ts
  */
 
+import { createStringFormatter } from "../i18n";
 import { createLink, type AriaLinkProps, type LinkAria } from "../link";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
+import { breadcrumbsIntlStrings } from "./intl";
 
 export interface AriaBreadcrumbsProps {
   /** Provides a label for the breadcrumbs navigation. */
@@ -68,15 +70,21 @@ export function createBreadcrumbs(
   props: MaybeAccessor<AriaBreadcrumbsProps> = {},
 ): BreadcrumbsAria {
   const getProps = () => access(props);
+  const stringFormatter = createStringFormatter(breadcrumbsIntlStrings, "@react-aria/breadcrumbs");
 
   const getNavProps = (): Record<string, unknown> => {
     const p = getProps();
 
-    // Only apply a default label when no other label source exists.
-    const ariaLabel = p["aria-label"] ?? (p["aria-labelledby"] ? undefined : "Breadcrumbs");
-
     return mergeProps(filterDOMProps(p as Record<string, unknown>, { labelable: true }), {
-      "aria-label": ariaLabel,
+      // Getter so a `const { navProps }` snapshot still reads the active locale.
+      get "aria-label"() {
+        const current = getProps();
+        // Only apply a default label when no other label source exists.
+        return (
+          current["aria-label"] ??
+          (current["aria-labelledby"] ? undefined : stringFormatter().format("breadcrumbs"))
+        );
+      },
       "aria-details": p["aria-details"],
     });
   };
