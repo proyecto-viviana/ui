@@ -6,8 +6,10 @@
  * `useTableRow` for the `UNSTABLE_` tree-grid feature.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup } from "@solidjs/testing-library";
 import { createRoot, flush, type Accessor } from "solid-js";
+import { I18nProvider } from "../src/i18n";
 import {
   createTreeGridState,
   createTableState,
@@ -69,7 +71,17 @@ function rowFor<T extends object>(
   );
 }
 
+function SpanishExpandButton() {
+  const state = createTreeGridState<Item>(() => ({ columns: treeColumns, rows: treeRows }));
+  const row = rowFor(state, "projects");
+  return <button aria-label={row.expandButtonProps["aria-label"]} />;
+}
+
 describe("createTableRow (tree grid)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("omits tree aria attributes for a plain (non-tree) table", () => {
     createRoot((dispose) => {
       const collection = createTableCollection<Item>({
@@ -180,6 +192,16 @@ describe("createTableRow (tree grid)", () => {
 
         dispose();
       });
+    });
+
+    it("names the expand button from the table catalog", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <SpanishExpandButton />
+        </I18nProvider>
+      ));
+
+      expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Ampliar");
     });
 
     it("disables the chevron when the row is disabled", () => {

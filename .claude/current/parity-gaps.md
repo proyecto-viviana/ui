@@ -76,6 +76,7 @@ These behaviors match the pin in this checkout.
 - An unlabeled color channel field names itself in the active locale.
 - A toast region is named with the notifications catalog string and the visible count.
 - A toast close button takes its name from the toast catalog.
+- A table row expand button takes its name from the table catalog.
 - Progress and meter values format with the provider locale.
 - A checkbox group merges each item's validity and clears it when that item becomes valid.
 - A range calendar cell paints the formattable day, so a custom calendar's day field is not the visible number.

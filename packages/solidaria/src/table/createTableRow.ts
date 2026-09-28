@@ -30,7 +30,8 @@ import type {
 import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
 import { getRowLabelledBy } from "./utils";
-import { useLocale } from "../i18n";
+import { tableIntlStrings } from "./intl";
+import { createStringFormatter, useLocale } from "../i18n";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
 
@@ -52,6 +53,7 @@ export function createTableRow<T extends object>(
   ref: Accessor<HTMLTableRowElement | null>,
 ): TableRowAria {
   const locale = useLocale();
+  const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
 
   const hasChildRows = createMemo(() => props().node.isExpandable ?? false);
 
@@ -265,7 +267,7 @@ export function createTableRow<T extends object>(
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
         "data-react-aria-prevent-focus": true,
-        "aria-label": isExpanded() ? "Collapse" : "Expand",
+        "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
       } as ExpandButtonProps;
     },
     get isSelected() {
