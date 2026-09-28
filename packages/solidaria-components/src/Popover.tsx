@@ -37,6 +37,7 @@ import {
   createEnterAnimation,
   createExitAnimation,
   FocusScope,
+  getInteractionModality,
   useIsHidden,
   useLocale,
   useUNSAFE_PortalContext,
@@ -386,6 +387,10 @@ export function Popover(props: PopoverProps): JSX.Element {
     triggerContext?.trigger ??
     (dialogTriggerContext ? "DialogTrigger" : undefined);
   const isSubPopover = () => resolvedTrigger() === "SubmenuTrigger" && popoverGroupContext != null;
+  // useSubmenuTrigger sets isNonModal. An explicit prop still wins.
+  const resolvedIsNonModal = () =>
+    local.isNonModal ??
+    (resolvedTrigger() === "PreviewTrigger" || resolvedTrigger() === "SubmenuTrigger");
 
   const [internalOpen, setInternalOpen] = createSignal(local.defaultOpen ?? false);
 
@@ -470,7 +475,7 @@ export function Popover(props: PopoverProps): JSX.Element {
         return local.scrollRef;
       },
       get isNonModal() {
-        return local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
+        return resolvedIsNonModal();
       },
       get isKeyboardDismissDisabled() {
         return local.isKeyboardDismissDisabled;
@@ -688,14 +693,15 @@ export function Popover(props: PopoverProps): JSX.Element {
     },
     ({ open, dialog, autoFocus, node, trigger }) => {
       if (!open || !dialog) return;
-      if (autoFocus === false) return;
       if (!node) return;
-      if (trigger === "SubmenuTrigger") return;
       // RAC Overlay does not auto-focus a PreviewTrigger popover — focus stays
       // on the trigger so Tab can move into the preview (usePreviewTrigger
       // onKeyDown). Stealing focus here blurs the link and either closes the
       // preview or leaves Tab landing on the next page control.
       if (trigger === "PreviewTrigger") return;
+      // Pointer-opened submenus keep focus on the trigger. autoFocus does not apply.
+      if (trigger === "SubmenuTrigger" && getInteractionModality() === "pointer") return;
+      if (trigger !== "SubmenuTrigger" && autoFocus === false) return;
 
       let timeout: number | undefined;
       let frame: number | undefined;
@@ -703,7 +709,10 @@ export function Popover(props: PopoverProps): JSX.Element {
       const focusIfNeeded = () => {
         if (!isOpen() || !shouldBeDialog()) return;
         const current = popoverRef();
-        if (!current || resolvedTrigger() === "SubmenuTrigger") return;
+        if (!current) return;
+        if (resolvedTrigger() === "SubmenuTrigger" && getInteractionModality() === "pointer") {
+          return;
+        }
         if (resolvedTrigger() === "PreviewTrigger") return;
         // Nested Dialog (DatePicker) owns initial focus via createDialog —
         // RAC PopoverInner skips focusSafely when isDialog is false.
@@ -756,7 +765,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     },
   );
 
-  const isNonModal = () => local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
+  const isNonModal = resolvedIsNonModal;
 
   // Enter animation is owned by this inner tree so it remounts on each full
   // open (RAC PopoverInner + useEnterAnimation). It stays mounted while
