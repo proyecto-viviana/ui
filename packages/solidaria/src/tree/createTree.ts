@@ -27,6 +27,10 @@ import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 import { mergeProps } from "../utils/mergeProps";
 import { createTypeSelect } from "../selection/createTypeSelect";
+import {
+  createGridSelectionAnnouncement,
+  createHighlightSelectionDescription,
+} from "../grid/createGrid";
 
 /**
  * Metadata stored for a tree instance.
@@ -349,6 +353,14 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     }
   });
 
+  // useTree gets these from useGridList. This tree keeps its own keyboard path.
+  const descriptionProps = createHighlightSelectionDescription({
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => state().selectionBehavior,
+    hasItemActions: () => !!props().onAction,
+  });
+  createGridSelectionAnnouncement(state);
+
   const treeProps = createMemo(() => {
     const p = props();
     const s = state();
@@ -360,7 +372,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
         id: treeId,
         "aria-label": p["aria-label"],
         "aria-labelledby": p["aria-labelledby"],
-        "aria-describedby": p["aria-describedby"],
+        "aria-describedby": descriptionProps["aria-describedby"] ?? p["aria-describedby"],
         "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
         "aria-disabled": p.isDisabled || undefined,
         // Roving container tab stop: `0` while no row is focused (Tab enters the

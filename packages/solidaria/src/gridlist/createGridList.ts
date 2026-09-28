@@ -31,6 +31,10 @@ import { isNonContiguousSelectionModifier } from "../selection/utils";
 import { createCollator } from "../i18n";
 import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
 import type { KeyboardDelegate } from "../grid/types";
+import {
+  createGridSelectionAnnouncement,
+  createHighlightSelectionDescription,
+} from "../grid/createGrid";
 import { access } from "../utils/reactivity";
 
 /**
@@ -478,6 +482,14 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     }
   });
 
+  // Same two calls as useGridList. The hint is a description, not a press gesture.
+  const descriptionProps = createHighlightSelectionDescription({
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => state().selectionBehavior,
+    hasItemActions: () => !!props().onAction,
+  });
+  createGridSelectionAnnouncement(state);
+
   const gridProps = createMemo(() => {
     const p = props();
     const s = state();
@@ -489,7 +501,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         id: gridListId,
         "aria-label": p["aria-label"],
         "aria-labelledby": p["aria-labelledby"],
-        "aria-describedby": p["aria-describedby"],
+        "aria-describedby": descriptionProps["aria-describedby"] ?? p["aria-describedby"],
         "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
         "aria-disabled": p.isDisabled || undefined,
         // Roving container tabIndex mirrors useSelectableCollection: the container
