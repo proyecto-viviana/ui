@@ -23,6 +23,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
   createUniqueId,
   onCleanup,
@@ -30,6 +31,7 @@ import {
   For,
   Show,
 } from "solid-js";
+import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createMenu,
@@ -64,6 +66,9 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  DEFAULT_SLOT,
+  OptionContent,
+  Provider,
   useRenderProps,
   filterDOMProps,
   assignRef,
@@ -71,12 +76,13 @@ import {
   isAriaTrue,
   type RefLike,
 } from "./utils";
+import { KeyboardContext } from "./Keyboard";
+import { TextContext } from "./Text";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   CollectionRendererContext,
   Section,
-  Header,
   Group,
   type CollectionEntry,
   type CollectionRendererContextValue,
@@ -634,6 +640,39 @@ export interface MenuSectionProps
 }
 
 /**
+ * Dynamic collection section. Matches `useMenuSection`: the heading is
+ * `role="presentation"` and the group is named from that heading.
+ */
+function DynamicMenuSection(props: {
+  title?: JSX.Element;
+  ariaLabel?: string;
+  children: JSX.Element;
+}): JSX.Element {
+  const headingId = createUniqueId();
+  const hasHeading = () => props.title != null;
+  return (
+    <div role="presentation" data-section-wrapper>
+      <Section class="solidaria-Menu-section">
+        <Show when={hasHeading()}>
+          <div id={headingId} role="presentation" class="solidaria-Menu-sectionHeader" data-header>
+            {props.title}
+          </div>
+        </Show>
+        <Group class="solidaria-Menu-sectionGroup">
+          <div
+            role="group"
+            aria-label={props.ariaLabel}
+            aria-labelledby={hasHeading() ? headingId : undefined}
+          >
+            {props.children}
+          </div>
+        </Group>
+      </Section>
+    </div>
+  );
+}
+
+/**
  * A menu displays a list of actions or options for the user to choose from.
  */
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
@@ -1128,28 +1167,22 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
             <For each={sectionedRenderEntries()}>
               {(entry) =>
                 entry.type === "section" ? (
-                  <div role="presentation" data-section-wrapper>
-                    <Section class="solidaria-Menu-section">
-                      {entry.section.title != null && (
-                        <Header class="solidaria-Menu-sectionHeader">{entry.section.title}</Header>
-                      )}
-                      <Group class="solidaria-Menu-sectionGroup">
-                        <div role="group" aria-label={entry.section["aria-label"]}>
-                          <For each={entry.items}>
-                            {(indexedItem) =>
-                              renderCollectionDropSlots({
-                                index: indexedItem.index,
-                                lastIndex: getItemNodes().length - 1,
-                                renderDropIndicator: (i, position) =>
-                                  collectionRenderer().renderDropIndicator?.(i, position),
-                                children: renderDynamicItem(indexedItem.item),
-                              })
-                            }
-                          </For>
-                        </div>
-                      </Group>
-                    </Section>
-                  </div>
+                  <DynamicMenuSection
+                    title={entry.section.title}
+                    ariaLabel={entry.section["aria-label"]}
+                  >
+                    <For each={entry.items}>
+                      {(indexedItem) =>
+                        renderCollectionDropSlots({
+                          index: indexedItem.index,
+                          lastIndex: getItemNodes().length - 1,
+                          renderDropIndicator: (i, position) =>
+                            collectionRenderer().renderDropIndicator?.(i, position),
+                          children: renderDynamicItem(indexedItem.item),
+                        })
+                      }
+                    </For>
+                  </DynamicMenuSection>
                 ) : (
                   renderCollectionDropSlots({
                     index: entry.item.index,
@@ -1197,28 +1230,22 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         <For each={sectionedRenderEntries()}>
           {(entry) =>
             entry.type === "section" ? (
-              <div role="presentation" data-section-wrapper>
-                <Section class="solidaria-Menu-section">
-                  {entry.section.title != null && (
-                    <Header class="solidaria-Menu-sectionHeader">{entry.section.title}</Header>
-                  )}
-                  <Group class="solidaria-Menu-sectionGroup">
-                    <div role="group" aria-label={entry.section["aria-label"]}>
-                      <For each={entry.items}>
-                        {(indexedItem) =>
-                          renderCollectionDropSlots({
-                            index: indexedItem.index,
-                            lastIndex: getItemNodes().length - 1,
-                            renderDropIndicator: (i, position) =>
-                              collectionRenderer().renderDropIndicator?.(i, position),
-                            children: renderDynamicItem(indexedItem.item),
-                          })
-                        }
-                      </For>
-                    </div>
-                  </Group>
-                </Section>
-              </div>
+              <DynamicMenuSection
+                title={entry.section.title}
+                ariaLabel={entry.section["aria-label"]}
+              >
+                <For each={entry.items}>
+                  {(indexedItem) =>
+                    renderCollectionDropSlots({
+                      index: indexedItem.index,
+                      lastIndex: getItemNodes().length - 1,
+                      renderDropIndicator: (i, position) =>
+                        collectionRenderer().renderDropIndicator?.(i, position),
+                      children: renderDynamicItem(indexedItem.item),
+                    })
+                  }
+                </For>
+              </DynamicMenuSection>
             ) : (
               renderCollectionDropSlots({
                 index: entry.item.index,
@@ -1587,9 +1614,65 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     },
     renderValues,
   );
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
+  // `useMenuItem` keeps `aria-labelledby` on the label id. Drop it only when
+  // that id is not in the DOM (`useSlotId`), including when `textValue` made
+  // the headless omit it. Element children are not a reason to drop it.
+  const [labelMounted, setLabelMounted] = createSignal(true);
+  const itemTextSlots = {
+    slots: {
+      get [DEFAULT_SLOT]() {
+        return itemAria.labelProps;
+      },
+      get label() {
+        return itemAria.labelProps;
+      },
+      get description() {
+        return itemAria.descriptionProps;
+      },
+    },
   };
+  // RAC KeyboardContext is `keyboardShortcutProps` from useMenuItem: `{ id }` only.
+  const itemKeyboardContext = {
+    get id() {
+      return itemAria.keyboardShortcutProps.id;
+    },
+  };
+  // Stamp `[slot]` nodes before `createSlotId` probes (`createTrackedEffect`
+  // runs after render effects). Styled items render a span, not `<Text>`.
+  createRenderEffect(
+    () => ({
+      el: ref(),
+      labelId: itemAria.labelProps.id,
+      descriptionId: itemAria.descriptionProps.id,
+    }),
+    ({ el, labelId, descriptionId }) => {
+      if (!el) return;
+      if (labelId != null) {
+        const label = el.querySelector("[slot='label']");
+        if (label instanceof Element && !label.id) label.id = String(labelId);
+      }
+      if (descriptionId != null) {
+        const description = el.querySelector("[slot='description']");
+        if (description instanceof Element && !description.id) {
+          description.id = String(descriptionId);
+        }
+      }
+    },
+  );
+  createEffect(
+    () => ({
+      el: ref(),
+      labelId: itemAria.labelProps.id,
+    }),
+    ({ el, labelId }) => {
+      if (!el || labelId == null || typeof document === "undefined") {
+        setLabelMounted(false);
+        return;
+      }
+      const found = document.getElementById(String(labelId));
+      setLabelMounted(found != null && (found === el || el.contains(found)));
+    },
+  );
 
   const cleanItemProps = () => {
     // Keep `aria-describedby`: the headless emits it (via `createSlotId`) only
@@ -1599,9 +1682,17 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     // delegation. `createSlotId` clears it to `undefined` on description-less
     // items, so nothing dangles.
     const { ref: _ref1, ...rest } = itemAria.menuItemProps as Record<string, unknown>;
-    if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
-      delete rest["aria-labelledby"];
-    }
+    // Getter, not a snapshot: the spread effect must re-read `labelMounted`.
+    // `undefined` removes the attribute (`setAttribute` treats null as remove).
+    Object.defineProperty(rest, "aria-labelledby", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        if (!labelMounted()) return undefined;
+        const labelId = itemAria.labelProps.id;
+        return labelId != null ? labelId : undefined;
+      },
+    });
     const selection = activeSectionSelection();
     const selectionMode = selection?.selectionMode();
     if (selectionMode) {
@@ -1683,12 +1774,21 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     };
   };
 
-  const childContent = () =>
-    hasPrimitiveLabel() ? (
-      <span {...itemAria.labelProps}>{renderProps.renderChildren()}</span>
-    ) : (
-      renderProps.renderChildren()
-    );
+  const childContent = () => (
+    <Provider
+      values={
+        [
+          [TextContext, itemTextSlots],
+          [KeyboardContext, itemKeyboardContext],
+        ] as Array<[Context<unknown>, unknown]>
+      }
+    >
+      <OptionContent
+        render={renderProps.renderChildren}
+        labelProps={itemAria.labelProps as JSX.HTMLAttributes<HTMLSpanElement>}
+      />
+    </Provider>
+  );
   const setResolvedItemRef = (el: HTMLElement | null) => {
     setRef(el);
     itemContext?.setItemRef?.(el);

@@ -454,7 +454,8 @@ describe("Menu", () => {
       ));
 
       expect(screen.getByText("Mammals")).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Mammals actions" })).toBeInTheDocument();
+      const group = screen.getByRole("group", { name: "Mammals" });
+      expect(group).toHaveAttribute("aria-label", "Mammals actions");
       expect(screen.getAllByRole("menuitem")).toHaveLength(3);
     });
 
