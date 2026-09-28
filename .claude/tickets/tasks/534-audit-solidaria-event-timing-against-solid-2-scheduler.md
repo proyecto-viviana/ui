@@ -4,7 +4,7 @@ type: task
 title: "Audit solidaria event timing against Solid 2 scheduler"
 created: 2026-09-13
 parent: 531
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -50,6 +50,11 @@ history:
       state: in-progress,
       at: 2026-09-27,
       note: "A different-origin mouse release activates the item under the pointer and selects it once. The synthetic click no longer re-emits that selection. createMenu.test.tsx passes 69/69. The final owning press, hover, and focus audit remains",
+    }
+  - {
+      state: verified,
+      at: 2026-09-27,
+      note: "Press, hover, focus, modality, long-press, and menu tests pass 433/433 across 17 files. Space and Enter restore keyboard modality after the virtual click. A different-origin release selects once. eventPathContains stays. One FocusScope mount case prints FLUSH_IN_EFFECT_CALLBACK while its assertion passes",
     }
 ---
 
