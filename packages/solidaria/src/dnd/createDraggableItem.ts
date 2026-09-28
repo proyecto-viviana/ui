@@ -102,6 +102,15 @@ const DRAG_DESCRIPTION_MESSAGES: Record<string, { selected: string; notSelected:
   virtual: { selected: "dragDescriptionVirtual", notSelected: "dragDescriptionVirtual" },
 };
 
+function dragItemText(state: DraggableCollectionState, key: string | number): string {
+  const collection = state.collection;
+  if (!collection) return "";
+  const item = collection.getItem(key);
+  // An empty drag column joins into the row text as a leading space.
+  const raw = collection.getTextValue?.(key) ?? item?.textValue ?? "";
+  return raw.trim();
+}
+
 export function createDraggableItem(
   options: Accessor<DraggableItemOptions>,
   state: DraggableCollectionState,
@@ -358,8 +367,24 @@ export function createDraggableItem(
     return baseProps;
   });
 
+  // Match useDraggableItem: a selection description replaces the button name.
+  // Otherwise the name is dragSelectedItems or dragItem from the dnd catalog.
+  const dragButtonLabel = createMemo(() => {
+    const opts = getOptions();
+    if (!opts.hasDragButton && opts.selectionMode != null && opts.selectionMode !== "none") {
+      return undefined;
+    }
+    const key = opts.key;
+    const numKeys = keysForDrag().size;
+    if (numKeys > 1 && state.isSelected(key)) {
+      return stringFormatter().format("dragSelectedItems", { count: numKeys });
+    }
+    return stringFormatter().format("dragItem", { itemText: dragItemText(state, key) });
+  });
+
   const dragButtonProps = createMemo(() => {
     const opts = getOptions();
+    const label = dragButtonLabel();
 
     if (opts.isDisabled || state.isDisabled) {
       return {
@@ -369,7 +394,7 @@ export function createDraggableItem(
 
     return {
       type: "button" as const,
-      "aria-label": "Drag",
+      ...(label != null ? { "aria-label": label } : {}),
       onKeyDown,
       onKeyUp,
     };

@@ -36,11 +36,13 @@ type DragKey = string | number;
 
 export interface DraggableCollectionNode {
   parentKey?: DragKey | null;
+  textValue?: string;
 }
 
 export interface DraggableCollectionLike {
   getItem(key: DragKey): DraggableCollectionNode | null | undefined;
   getKeys?(): Iterable<DragKey>;
+  getTextValue?(key: DragKey): string;
 }
 
 export interface DraggableCollectionStateOptions<_T = object> {
@@ -95,6 +97,8 @@ export interface DraggableCollectionState {
   getKeysForDrag(key: DragKey): Set<DragKey>;
   /** Returns whether `key` is selected. */
   isSelected(key: DragKey): boolean;
+  /** Collection passed to the drag. Item text is read from here. */
+  readonly collection?: DraggableCollectionLike;
 }
 
 function selectedKeySet(
@@ -280,6 +284,9 @@ export function createDraggableCollectionState<T = object>(
       }
       const selected = selectedKeySet(p.selectedKeys, p.collection);
       return selected === "all" ? true : selected.has(key);
+    },
+    get collection() {
+      return getProps().collection;
     },
   };
 }

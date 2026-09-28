@@ -1840,10 +1840,8 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   };
   const dragButtonProps = createMemo<ButtonProps>(() => {
     const props = (draggableItem()?.dragButtonProps as ButtonProps | undefined) ?? {};
-    const textValue = (rowNode().textValue || String(rowKey())).trim();
     return {
       ...props,
-      "aria-label": `Drag ${textValue}`,
       style: {
         ...(typeof props.style === "object" ? props.style : {}),
         "pointer-events": "none",

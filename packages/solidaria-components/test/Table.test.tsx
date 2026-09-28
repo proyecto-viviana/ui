@@ -1801,6 +1801,57 @@ describe("Table", () => {
       expect(screen.getAllByRole("button")[0]).toHaveAttribute("aria-label", "Drag Games");
     });
 
+    it("names the drag button from the drag catalog", () => {
+      const rows = [
+        { id: 1, name: "Games", type: "File folder" },
+        { id: 2, name: "Program Files", type: "File folder" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<(typeof rows)[number]>({
+        items: rows,
+        getItems: (keys, items) =>
+          items.filter((item) => keys.has(item.id)).map((item) => ({ "text/plain": item.name })),
+      });
+
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <Table
+            items={rows}
+            columns={[
+              { key: "drag", name: "Drag" },
+              { key: "name", name: "Name" },
+            ]}
+            getKey={(item: any) => item.id}
+            getTextValue={(item: any, column: any) => (column.key === "name" ? item.name : "")}
+            aria-label="Files"
+            dragAndDropHooks={dragAndDropHooks}
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="drag">{() => <>Drag</>}</TableColumn>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => (
+                        <>
+                          <TableCell>{() => <Button slot="drag">≡</Button>}</TableCell>
+                          <TableCell>{() => <>{item.name}</>}</TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </I18nProvider>
+      ));
+
+      expect(screen.getAllByRole("button")[0]).toHaveAttribute("aria-label", "Arrastrar Games");
+    });
+
     it("should support disabled drag and drop", () => {
       const { dragAndDropHooks } = useDragAndDrop<(typeof testData)[number]>({
         items: testData,
