@@ -4,12 +4,17 @@ type: task
 title: "Transition solid-stately to standard signal accessors"
 created: 2026-09-13
 parent: 531
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-13,
       note: "opened under #531 to retire the MaybeAccessor runtime tax and align with Solid 2 push-pull reactivity",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-27,
+      note: "createListState and createSingleSelectListState resolve a props object or accessor once. Later reads call that accessor, so getKey stays a field. A standard accessor updates the collection. collections.test.ts passes 45/45 and direct list callers pass 170/170. Table, tree, and the rest of MaybeAccessor remain",
     }
 ---
 

@@ -23,7 +23,7 @@
 
 import { createMemo, createEffect } from "solid-js";
 import type { Accessor } from "solid-js";
-import { access, type MaybeAccessor } from "../utils";
+import { type MaybeAccessor } from "../utils";
 import { ListCollection } from "./ListCollection";
 import type { SelectionState, SelectionPressEvent } from "./createSelectionState";
 import { createMultipleSelectionState } from "../selection/createMultipleSelectionState";
@@ -38,6 +38,14 @@ import type {
   SelectionBehavior,
   SelectionMode,
 } from "./types";
+
+/**
+ * Resolve a props bag once. Later reads call the accessor directly, so a
+ * function-valued field such as `getKey` is never treated as the bag.
+ */
+function propsAccessor<T extends object>(props: MaybeAccessor<T>): Accessor<T> {
+  return typeof props === "function" ? props : () => props;
+}
 
 export interface ListStateProps<T = unknown> {
   /** The items in the list (for dynamic rendering). */
@@ -91,7 +99,7 @@ export interface ListState<T = unknown> extends SelectionState {
 export function createListState<T = unknown>(
   props: MaybeAccessor<ListStateProps<T>>,
 ): ListState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Build collection from items (memoized to avoid rebuilding on every access)
   const collection: Accessor<Collection<T>> = createMemo(() => {
@@ -349,7 +357,7 @@ export interface SingleSelectListState<T = unknown> extends ListState<T> {
 export function createSingleSelectListState<T = unknown>(
   props: MaybeAccessor<SingleSelectListStateProps<T>>,
 ): SingleSelectListState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Convert single selection props to multiple selection props
   const listState = createListState<T>({

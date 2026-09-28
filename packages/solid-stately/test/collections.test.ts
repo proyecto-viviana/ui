@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { flush, createRoot, createSignal } from "solid-js";
 import {
   ListCollection,
   createListCollection,
@@ -407,6 +407,33 @@ describe("createListState", () => {
       expect(state.collection().size).toBe(3);
       dispose();
     });
+  });
+
+  it("tracks items from a standard accessor without calling getKey as the props bag", () => {
+    const [items, setItems] = createSignal([{ key: "a", label: "Apple" }]);
+    const getKey = (item: { key: string; label: string }) => item.key;
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createListState<{ key: string; label: string }>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createListState(() => ({
+        items: items(),
+        getKey,
+        selectionMode: "single",
+      }));
+    });
+
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["a"]);
+
+    setItems([
+      { key: "a", label: "Apple" },
+      { key: "b", label: "Banana" },
+    ]);
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["a", "b"]);
+    dispose();
   });
 
   it("tracks focused key", () => {
