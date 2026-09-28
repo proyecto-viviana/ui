@@ -23,6 +23,7 @@
  */
 
 import { createLabel } from "../label/createLabel";
+import { NumberFormatter, useLocale } from "../i18n";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -80,6 +81,7 @@ export function createProgressBar(
   props: MaybeAccessor<AriaProgressBarProps> = {},
 ): ProgressBarAria {
   const getProps = () => access(props);
+  const locale = useLocale();
 
   // Create label handling
   const labelAria = createLabel({
@@ -117,7 +119,7 @@ export function createProgressBar(
     if (!isIndeterminate && !valueLabel) {
       const valueToFormat = formatOptions.style === "percent" ? percentage : clampedValue;
       try {
-        const formatter = new Intl.NumberFormat(undefined, formatOptions);
+        const formatter = new NumberFormatter(locale().locale, formatOptions);
         valueLabel = formatter.format(valueToFormat);
       } catch {
         // Fallback if formatting fails
