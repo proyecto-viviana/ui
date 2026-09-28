@@ -11,6 +11,7 @@ import {
   createCheckboxGroupState,
   type CheckboxGroupProps,
 } from "../src/checkbox/createCheckboxGroupState";
+import { DEFAULT_VALIDATION_RESULT, type ValidationResult } from "../src/form";
 
 describe("createCheckboxGroupState", () => {
   describe("basic interface", () => {
@@ -494,6 +495,45 @@ describe("createCheckboxGroupState", () => {
       expect(state.displayValidation().isInvalid).toBe(false);
 
       dispose();
+    });
+
+    it("merges item validation and clears an item that becomes valid", () => {
+      createRoot((dispose) => {
+        const state = createCheckboxGroupState({ validationBehavior: "native" });
+        const invalid: ValidationResult = {
+          isInvalid: true,
+          validationErrors: ["Select dogs"],
+          validationDetails: {
+            ...DEFAULT_VALIDATION_RESULT.validationDetails,
+            customError: true,
+            valid: false,
+          },
+        };
+        const other: ValidationResult = {
+          ...invalid,
+          validationErrors: ["Select cats"],
+        };
+
+        state.setInvalid("dogs", invalid);
+        state.setInvalid("cats", other);
+        state.commitValidation();
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(true);
+        expect(state.displayValidation().validationErrors).toEqual(["Select dogs", "Select cats"]);
+
+        state.setInvalid("dogs", DEFAULT_VALIDATION_RESULT);
+        state.commitValidation();
+        flush();
+        expect(state.displayValidation().validationErrors).toEqual(["Select cats"]);
+
+        state.setInvalid("cats", DEFAULT_VALIDATION_RESULT);
+        state.commitValidation();
+        flush();
+        expect(state.displayValidation().isInvalid).toBe(false);
+        expect(state.displayValidation().validationErrors).toEqual([]);
+
+        dispose();
+      });
     });
   });
 });

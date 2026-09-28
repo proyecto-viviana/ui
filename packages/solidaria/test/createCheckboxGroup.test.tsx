@@ -67,11 +67,7 @@ function CheckboxGroup(props: {
   checkboxProps: AriaCheckboxGroupItemProps[];
 }) {
   const state = createCheckboxGroupState(() => props.groupProps);
-  const {
-    groupProps: checkboxGroupProps,
-    labelProps,
-    isInvalid,
-  } = createCheckboxGroup(() => props.groupProps, state);
+  const group = createCheckboxGroup(() => props.groupProps, state);
 
   // Access checkbox props outside JSX to avoid proxy issues
   const getCheckboxProps = (index: number): AriaCheckboxGroupItemProps => {
@@ -88,8 +84,8 @@ function CheckboxGroup(props: {
   };
 
   return (
-    <div {...checkboxGroupProps} data-invalid={isInvalid || undefined}>
-      {props.groupProps.label && <span {...labelProps}>{props.groupProps.label}</span>}
+    <div {...group.groupProps} data-invalid={group.isInvalid ? "true" : undefined}>
+      {props.groupProps.label && <span {...group.labelProps}>{props.groupProps.label}</span>}
       <Checkbox checkboxGroupState={state} {...getCheckboxProps(0)} />
       <Checkbox checkboxGroupState={state} {...getCheckboxProps(1)} />
       <Checkbox checkboxGroupState={state} {...getCheckboxProps(2)} />
@@ -562,6 +558,82 @@ describe("createCheckboxGroup", () => {
       expect(checkbox).toHaveAttribute("required");
       expect(checkbox).not.toHaveAttribute("aria-required");
     });
+  });
+
+  it("shows a required group as invalid only while nothing is selected", async () => {
+    render(() => (
+      <CheckboxGroup
+        groupProps={{
+          label: "Favorite Pet",
+          isRequired: true,
+          validationBehavior: "aria",
+        }}
+        checkboxProps={[
+          { value: "dogs", children: "Dogs", validationBehavior: "native" },
+          { value: "cats", children: "Cats", validationBehavior: "native" },
+          { value: "dragons", children: "Dragons", validationBehavior: "native" },
+        ]}
+      />
+    ));
+
+    const group = screen.getByRole("group");
+    const dragons = screen.getByLabelText("Dragons");
+
+    await user.click(dragons);
+    expect(group).not.toHaveAttribute("data-invalid");
+
+    await user.click(dragons);
+    expect(group).toHaveAttribute("data-invalid", "true");
+
+    await user.click(dragons);
+    expect(group).not.toHaveAttribute("data-invalid");
+  });
+
+  it("clears a group validate error once the selection satisfies it", async () => {
+    function ValidatingGroup() {
+      const state = createCheckboxGroupState(() => ({
+        label: "Favorite Pet",
+        validationBehavior: "native" as const,
+        validate: (value: readonly string[]) =>
+          value.length === 0 ? "Select at least one option" : null,
+      }));
+      const group = createCheckboxGroup(() => ({ label: "Favorite Pet" }), state);
+      return (
+        <div
+          {...group.groupProps}
+          data-invalid={group.isInvalid ? "true" : undefined}
+          data-errors={group.validationErrors.join("|")}
+        >
+          <span {...group.labelProps}>Favorite Pet</span>
+          <Checkbox checkboxGroupState={state} value="dogs" validationBehavior="native">
+            Dogs
+          </Checkbox>
+          <Checkbox checkboxGroupState={state} value="cats" validationBehavior="native">
+            Cats
+          </Checkbox>
+          <Checkbox checkboxGroupState={state} value="dragons" validationBehavior="native">
+            Dragons
+          </Checkbox>
+        </div>
+      );
+    }
+
+    render(() => <ValidatingGroup />);
+    const group = screen.getByRole("group");
+    const dragons = screen.getByLabelText("Dragons") as HTMLInputElement;
+
+    await user.click(dragons);
+    expect(group).not.toHaveAttribute("data-invalid");
+    expect(dragons.validity.customError).toBe(false);
+
+    await user.click(dragons);
+    expect(group).toHaveAttribute("data-invalid", "true");
+    expect(group).toHaveAttribute("data-errors", "Select at least one option");
+
+    await user.click(dragons);
+    expect(group).not.toHaveAttribute("data-invalid");
+    expect(dragons.validity.customError).toBe(false);
+    expect(dragons.validationMessage).toBe("");
   });
 
   it("exposes validation metadata from state", () => {

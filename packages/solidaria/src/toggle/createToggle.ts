@@ -29,9 +29,15 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
 import { createSlotId } from "../ssr";
-import { createFormValidationState, type ToggleState } from "@proyecto-viviana/solid-stately";
+import {
+  createFormValidationState,
+  privateValidationStateProp,
+  type FormValidationState,
+  type ToggleState,
+  type ValidationFunction,
+} from "@proyecto-viviana/solid-stately";
 import { type PressEvent } from "../interactions/PressEvent";
-import { createFormValidation } from "../form/createFormValidation";
+import { createFormValidation, syncInputCustomValidity } from "../form/createFormValidation";
 import { createFormReset } from "../form/createFormReset";
 
 export interface AriaToggleProps {
@@ -55,6 +61,10 @@ export interface AriaToggleProps {
   isRequired?: boolean;
   /** Whether the element is invalid. */
   isInvalid?: boolean;
+  /** Custom validation for the toggle's selected state. */
+  validate?: ValidationFunction<boolean>;
+  /** Backward-compatible controlled validation state. */
+  validationState?: "valid" | "invalid";
   /**
    * `"native"` sets the `required` attribute and omits `aria-required`.
    * `"aria"` does the reverse. S2 Checkbox default is native.
@@ -137,31 +147,64 @@ export function createToggle(
   const isDisabled = () => getProps().isDisabled ?? false;
   const isReadOnly = () => getProps().isReadOnly ?? false;
   const validationBehavior = () => getProps().validationBehavior ?? "native";
-  const isInvalid = () => {
-    return getProps().isInvalid ?? false;
+  const externalValidation = (): FormValidationState | undefined => {
+    const value = (getProps() as unknown as Record<string, unknown>)[privateValidationStateProp];
+    return value as FormValidationState | undefined;
   };
 
-  const validationState = createFormValidationState({
+  const localValidation = createFormValidationState({
     get value() {
       return state.isSelected();
     },
     get isInvalid() {
       return getProps().isInvalid;
     },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
     get validationBehavior() {
       return validationBehavior();
     },
   });
+
+  const activeValidation = (): FormValidationState => externalValidation() ?? localValidation;
+  const isInvalid = () =>
+    activeValidation().displayValidation().isInvalid || getProps().validationState === "invalid";
+
+  const validationFacade: FormValidationState = {
+    realtimeValidation: () => activeValidation().realtimeValidation(),
+    displayValidation: () => activeValidation().displayValidation(),
+    updateValidation: (result) => activeValidation().updateValidation(result),
+    resetValidation: () => activeValidation().resetValidation(),
+    commitValidation: () => activeValidation().commitValidation(),
+  };
 
   createFormValidation(
     {
       get validationBehavior() {
         return validationBehavior();
       },
+      get clearCustomValidityFirst() {
+        return externalValidation() != null;
+      },
     },
-    validationState,
+    validationFacade,
     () => ref() ?? undefined,
   );
+
+  const commitActiveValidation = () => {
+    const external = externalValidation();
+    const active = external ?? localValidation;
+    const input = ref();
+    if (external && input && validationBehavior() === "native") {
+      input.required = !!(getProps().isRequired && validationBehavior() === "native");
+      syncInputCustomValidity(input, active, true);
+    }
+    active.commitValidation();
+  };
 
   // RAC useToggle: useFormReset(ref, state.defaultSelected, state.setSelected).
   createFormReset(
@@ -235,7 +278,7 @@ export function createToggle(
       getProps().onPress?.(e);
       state.toggle();
       ref()?.focus();
-      validationState.commitValidation();
+      commitActiveValidation();
     },
     get isDisabled() {
       return isDisabled() || isReadOnly();
@@ -294,6 +337,9 @@ export function createToggle(
     }
 
     state.setSelected(e.currentTarget.checked);
+    if (externalValidation()) {
+      commitActiveValidation();
+    }
   };
 
   // Warn if no accessible label

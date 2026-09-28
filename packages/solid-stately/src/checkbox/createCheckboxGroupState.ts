@@ -25,6 +25,7 @@ import { createMemo, Accessor } from "solid-js";
 import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
 import {
   createFormValidationState,
+  mergeValidation,
   type FormValidationState,
   type ValidationFunction,
   type ValidationResult,
@@ -98,6 +99,8 @@ export interface CheckboxGroupState extends Pick<
   removeValue(value: string): void;
   /** Toggles a value in the set of selected values. */
   toggleValue(value: string): void;
+  /** Records one checkbox's validation and merges it into the group. */
+  setInvalid(value: string, validation: ValidationResult): void;
 
   /** Current display validation result for the group. */
   readonly displayValidation: Accessor<ValidationResult>;
@@ -195,6 +198,18 @@ export function createCheckboxGroupState(
     }
   }
 
+  const invalidValues = new Map<string, ValidationResult>();
+
+  function setInvalid(itemValue: string, result: ValidationResult): void {
+    if (result.isInvalid) {
+      invalidValues.set(itemValue, result);
+    } else {
+      invalidValues.delete(itemValue);
+    }
+
+    validation.updateValidation(mergeValidation(...invalidValues.values()));
+  }
+
   function toggleValue(toggleVal: string): void {
     const p = getProps();
     if (p.isReadOnly || p.isDisabled) {
@@ -227,6 +242,7 @@ export function createCheckboxGroupState(
     addValue,
     removeValue,
     toggleValue,
+    setInvalid,
     realtimeValidation: validation.realtimeValidation,
     displayValidation: validation.displayValidation,
     updateValidation: validation.updateValidation,

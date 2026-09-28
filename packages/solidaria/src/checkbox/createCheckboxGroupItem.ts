@@ -21,9 +21,18 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckboxGroupItem hook.
  */
 
+import { createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createCheckbox, type AriaCheckboxProps, type CheckboxAria } from "./createCheckbox";
-import { type ToggleState, type CheckboxGroupState } from "@proyecto-viviana/solid-stately";
+import {
+  createFormValidationState,
+  privateValidationStateProp,
+  DEFAULT_VALIDATION_RESULT,
+  type CheckboxGroupState,
+  type FormValidationState,
+  type ToggleState,
+  type ValidationResult,
+} from "@proyecto-viviana/solid-stately";
 import { checkboxGroupData } from "./createCheckboxGroup";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
@@ -70,20 +79,73 @@ export function createCheckboxGroupItem(
 
   const getGroupData = () => checkboxGroupData.get(state);
 
+  // Item-local validation. The group's own errors stay on the group state.
+  // `name` stays unset so server errors are not applied twice.
+  const itemValidation = createFormValidationState<boolean>({
+    get value() {
+      return state.isSelected(getProps().value);
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validate() {
+      return getProps().validate;
+    },
+    validationBehavior: "aria",
+  });
+
+  let nativeValidation: ValidationResult = DEFAULT_VALIDATION_RESULT;
+
+  const publish = () => {
+    const realtime = itemValidation.realtimeValidation();
+    state.setInvalid(getProps().value, realtime.isInvalid ? realtime : nativeValidation);
+  };
+
+  createEffect(
+    () => ({
+      value: getProps().value,
+      realtime: itemValidation.realtimeValidation(),
+    }),
+    () => {
+      publish();
+    },
+  );
+
+  const groupRealtime = () => {
+    const realtime = state.realtimeValidation();
+    return realtime.isInvalid ? realtime : itemValidation.realtimeValidation();
+  };
+
+  const groupValidation: FormValidationState = {
+    realtimeValidation: groupRealtime,
+    displayValidation: () => {
+      const behavior =
+        getProps().validationBehavior ?? getGroupData()?.validationBehavior ?? "native";
+      return behavior === "native" ? state.displayValidation() : groupRealtime();
+    },
+    updateValidation(result) {
+      nativeValidation = result;
+      publish();
+    },
+    resetValidation: () => state.resetValidation(),
+    commitValidation: () => state.commitValidation(),
+  };
+
   const checkboxProps = (): AriaCheckboxProps => {
     const p = getProps();
     const groupData = getGroupData();
 
-    return {
+    const next: AriaCheckboxProps = {
       ...p,
       isReadOnly: p.isReadOnly ?? state.isReadOnly,
       isDisabled: p.isDisabled ?? state.isDisabled,
-      isInvalid: p.isInvalid ?? state.isInvalid,
       name: p.name ?? groupData?.name,
       form: p.form ?? groupData?.form,
       isRequired: p.isRequired ?? state.isRequired(),
       validationBehavior: p.validationBehavior ?? groupData?.validationBehavior ?? "native",
     };
+    (next as unknown as Record<string, unknown>)[privateValidationStateProp] = groupValidation;
+    return next;
   };
 
   const result = createCheckbox(checkboxProps, toggleState, inputRef);

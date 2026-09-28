@@ -36,6 +36,12 @@ export interface FormValidationProps {
   validationBehavior?: ValidationBehavior;
   /** Custom focus function to call on validation error. */
   focus?: () => void;
+  /**
+   * Write custom validity, including a clear, before reading `input.validity`.
+   * Checkbox groups own that message. Number fields leave it false so a
+   * constraint hook's custom error is still visible to the snapshot.
+   */
+  clearCustomValidityFirst?: boolean;
 }
 
 function getValidity(input: ValidatableElement): ValidityState {
@@ -62,6 +68,46 @@ function getNativeValidity(input: ValidatableElement): ValidationResult {
     validationDetails: getValidity(input),
     validationErrors: input.validationMessage ? [input.validationMessage] : [],
   };
+}
+
+/**
+ * Mirrors the native half of `useFormValidation`.
+ * `clearCustomValidityFirst` matches the pin: set the message (or `""`), then
+ * snapshot. The default reads first so a number field's own custom error survives.
+ */
+export function syncInputCustomValidity(
+  input: ValidatableElement,
+  state: FormValidationState,
+  clearCustomValidityFirst = false,
+): void {
+  if (!("setCustomValidity" in input) || input.disabled) {
+    return;
+  }
+
+  const realtime = state.realtimeValidation();
+  const message = realtime.isInvalid ? realtime.validationErrors.join(" ") || "Invalid value." : "";
+
+  if (!input.hasAttribute("title")) {
+    input.title = "";
+  }
+
+  if (clearCustomValidityFirst) {
+    input.setCustomValidity(message);
+    if (!realtime.isInvalid) {
+      state.updateValidation(getNativeValidity(input));
+    }
+    return;
+  }
+
+  if (realtime.isInvalid) {
+    input.setCustomValidity(message);
+    return;
+  }
+
+  state.updateValidation(getNativeValidity(input));
+  if (input.validity.valid) {
+    input.setCustomValidity("");
+  }
 }
 
 function getFirstInvalidInput(form: HTMLFormElement): ValidatableElement | null {
@@ -117,6 +163,7 @@ export function createFormValidation(
 ): void {
   const validationBehavior = () => props.validationBehavior ?? "aria";
   const focus = () => props.focus;
+  const clearCustomValidityFirst = () => props.clearCustomValidityFirst ?? false;
   const inputRef = followRef(ref);
 
   // Track whether we should ignore form reset (for React-like programmatic resets)
@@ -127,36 +174,17 @@ export function createFormValidation(
   createEffect(
     () => {
       const input = inputRef();
-      const realtimeValidation = state.realtimeValidation();
+      state.realtimeValidation();
       return {
         input,
         behavior: validationBehavior(),
-        isInvalid: realtimeValidation.isInvalid,
-        errorMessage: realtimeValidation.isInvalid
-          ? realtimeValidation.validationErrors.join(" ") || "Invalid value."
-          : "",
+        clearFirst: clearCustomValidityFirst(),
         disabled: !!input?.disabled,
       };
     },
-    ({ input, behavior, isInvalid, errorMessage, disabled }) => {
-      // `'setCustomValidity' in input` guards refs that aren't true form elements
-      // (e.g. a custom element), matching upstream useFormValidation.
-      if (behavior === "native" && input && "setCustomValidity" in input && !disabled) {
-        // Prevent default tooltip for validation message
-        if (!input.hasAttribute("title")) {
-          input.title = "";
-        }
-
-        if (isInvalid) {
-          input.setCustomValidity(errorMessage);
-        } else {
-          // Do not wipe a custom error owned by native constraint hooks
-          // (`createNativeValidation`) before reading validity.
-          state.updateValidation(getNativeValidity(input));
-          if (input.validity.valid) {
-            input.setCustomValidity("");
-          }
-        }
+    ({ input, behavior, clearFirst, disabled }) => {
+      if (behavior === "native" && input && !disabled) {
+        syncInputCustomValidity(input, state, clearFirst);
       }
     },
   );
