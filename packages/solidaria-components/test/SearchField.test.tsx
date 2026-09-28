@@ -449,6 +449,39 @@ describe("SearchField", () => {
       expect(input).toBeInTheDocument();
     });
 
+    it("puts the caller id on the input and points the label at it", () => {
+      render(() => (
+        <SearchField id="site-search">
+          {() => (
+            <>
+              <Label>Query</Label>
+              <SearchFieldInput />
+            </>
+          )}
+        </SearchField>
+      ));
+
+      const input = screen.getByRole("searchbox", { name: "Query" });
+      const label = screen.getByText("Query");
+      expect(input).toHaveAttribute("id", "site-search");
+      expect(label).toHaveAttribute("for", "site-search");
+      expect(label).not.toHaveAttribute("id", "site-search");
+    });
+
+    it("runs validate against the search value", async () => {
+      render(() => (
+        <SearchField aria-label="Search" defaultValue="q" validate={() => "No matches"}>
+          {() => <SearchFieldInput />}
+        </SearchField>
+      ));
+
+      const input = screen.getByRole("searchbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.validationMessage).toBe("No matches");
+      });
+    });
+
     it("should have aria-label when provided", () => {
       render(() => <TestSearchField />);
 

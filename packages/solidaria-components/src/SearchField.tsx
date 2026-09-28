@@ -255,6 +255,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       "description",
       "errorMessage",
       "id",
+      "validate",
       "autoFocus",
       "excludeFromTabOrder",
       "name",
@@ -320,6 +321,12 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       },
       get isInvalid() {
         return ariaProps.isInvalid;
+      },
+      get id() {
+        return ariaProps.id;
+      },
+      get validate() {
+        return ariaProps.validate;
       },
       // A slotted `<Label>` / `<SearchFieldLabel>` counts as a label, exactly
       // as RAC's `useSlot` does (`SearchField.tsx:117`). Without it `useLabel`

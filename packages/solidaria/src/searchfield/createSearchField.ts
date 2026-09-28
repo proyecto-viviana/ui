@@ -86,6 +86,9 @@ export function createSearchField(
     get validationState() {
       return getProps().validationState;
     },
+    get id() {
+      return getProps().id;
+    },
     get validate() {
       return getProps().validate;
     },

@@ -23,6 +23,8 @@ function TestSearchField(props: {
   validationBehavior?: "aria" | "native";
   "aria-label"?: string;
   label?: string;
+  id?: string;
+  validate?: (value: string) => string | string[] | true | null | undefined;
   type?: string;
   name?: string;
   form?: string;
@@ -43,6 +45,8 @@ function TestSearchField(props: {
     () => ({
       "aria-label": props["aria-label"],
       label: props.label,
+      id: props.id,
+      validate: props.validate,
       placeholder: props.placeholder,
       isDisabled: props.isDisabled,
       isReadOnly: props.isReadOnly,
@@ -139,6 +143,22 @@ describe("createSearchField", () => {
     it("should support visible label", () => {
       render(() => <TestSearchField label="Search products" />);
       expect(screen.getByText("Search products")).toBeInTheDocument();
+    });
+
+    it("puts the caller id on the input and points the label at it", () => {
+      render(() => <TestSearchField label="Query" id="site-search" />);
+      const input = screen.getByTestId("search-input");
+      const label = screen.getByText("Query");
+      expect(input).toHaveAttribute("id", "site-search");
+      expect(label).toHaveAttribute("for", "site-search");
+      expect(label).not.toHaveAttribute("id", "site-search");
+    });
+
+    it("forwards validate into the text field", () => {
+      render(() => <TestSearchField aria-label="Search" validate={() => "No matches"} />);
+      const input = screen.getByTestId("search-input") as HTMLInputElement;
+      expect(input.validity.customError).toBe(true);
+      expect(input.validationMessage).toBe("No matches");
     });
 
     it("clear button should have aria-label", () => {
