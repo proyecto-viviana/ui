@@ -37,7 +37,12 @@ async function loadLocale(runtime: Runtime): Promise<LocaleModule> {
   vi.doMock("solid-js", () => runtime);
   // Compiled component JSX only needs createComponent. Resolve that public
   // re-export to this generation too, rather than mixing renderer owners.
-  vi.doMock("@solidjs/web", () => ({ createComponent: runtime.createComponent }));
+  // `createDefaultLocale` reads `useIsSSR`, which needs `isServer` from this
+  // module. Keep the mock on this runtime generation; do not pull `@solidjs/web`.
+  vi.doMock("@solidjs/web", () => ({
+    createComponent: runtime.createComponent,
+    isServer: true,
+  }));
   return import("../src/i18n/locale");
 }
 

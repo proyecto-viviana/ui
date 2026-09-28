@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { createDisclosureState } from "@proyecto-viviana/solid-stately";
 import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
@@ -5,6 +7,7 @@ import {
   createDisclosure,
   getDisclosurePanelHiddenAttribute,
 } from "../src/disclosure/createDisclosure";
+import { CollapsedDisclosureFixture } from "./fixtures/collapsedDisclosure";
 
 type DisclosurePanelProps = ReturnType<typeof createDisclosure>["panelProps"];
 
@@ -70,5 +73,13 @@ describe("createDisclosure SSR", () => {
   it("leaves hidden management to the browser after hydration", () => {
     expect(getDisclosurePanelHiddenAttribute(false, true)).toBeUndefined();
     expect(getDisclosurePanelHiddenAttribute(true, true)).toBeUndefined();
+  });
+
+  it("writes collapsed markup for the hydration walk", () => {
+    const html = renderToString(() => <CollapsedDisclosureFixture />);
+    expect(html).toMatch(/ hidden(?:=""|(?=[ >]))/);
+    const output = resolve(import.meta.dirname, "../../../output");
+    mkdirSync(output, { recursive: true });
+    writeFileSync(resolve(output, "disclosure-collapsed-ssr.html"), html, "utf8");
   });
 });

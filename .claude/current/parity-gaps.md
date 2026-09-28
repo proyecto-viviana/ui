@@ -78,6 +78,8 @@ These behaviors match the pin in this checkout.
 - Progress and meter values format with the provider locale.
 - A checkbox group merges each item's validity and clears it when that item becomes valid.
 - A range calendar cell paints the formattable day, so a custom calendar's day field is not the visible number.
+- A collapsed disclosure keeps `hidden` through the hydration walk.
+- The default locale stays `en-US` and `ltr` through the hydration walk, then follows the browser language.
 
 **Components**
 
@@ -117,14 +119,12 @@ These behaviors match the pin in this checkout.
 
 ## Hooks — `react-aria`
 
-| Gap                            | Ours                                                                                                 | Pinned source                                                                                                        | Ticket |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------ |
-| Slider focus target            | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`.     | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role.                              | #74    |
-| Closed Select shortcuts        | Home and End select. ArrowLeft and ArrowRight still replace the selection when the mode is multiple. | `useSelect.ts` returns false for those arrows when selection is multiple. That shortcut map has no Home or End.      | #125   |
-| Tag remove description         | The row `aria-label` is `textValue` alone.                                                           | `useTag.ts` adds the `removeDescription` catalog string on the row.                                                  | #54    |
-| Tag group live region          | No `aria-live`, and removing the last tag does not focus the group.                                  | `useTagGroup.ts` sets `aria-live` to `polite` while the grid is focused, and focuses the group when the size hits 0. | #54    |
-| Disclosure `hidden` during SSR | `hidden` drops as soon as `canUseDOM` is true, including the first client render.                    | `useDisclosure.ts` keeps `hidden` while `useIsSSR()` is true.                                                        | #188   |
-| Default locale during SSR      | `getDefaultLocale` reads `navigator.language` when the client module runs.                           | `useDefaultLocale.ts` stays on `en-US` and `ltr` for the whole `useIsSSR()` window.                                  | #188   |
+| Gap                     | Ours                                                                                                 | Pinned source                                                                                                        | Ticket |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------ |
+| Slider focus target     | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`.     | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role.                              | #74    |
+| Closed Select shortcuts | Home and End select. ArrowLeft and ArrowRight still replace the selection when the mode is multiple. | `useSelect.ts` returns false for those arrows when selection is multiple. That shortcut map has no Home or End.      | #125   |
+| Tag remove description  | The row `aria-label` is `textValue` alone.                                                           | `useTag.ts` adds the `removeDescription` catalog string on the row.                                                  | #54    |
+| Tag group live region   | No `aria-live`, and removing the last tag does not focus the group.                                  | `useTagGroup.ts` sets `aria-live` to `polite` while the grid is focused, and focuses the group when the size hits 0. | #54    |
 
 ## Components — `react-aria-components`
 

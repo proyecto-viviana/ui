@@ -21,6 +21,7 @@
  */
 
 import { useContextOptional } from "../utils/owner";
+import { useIsSSR } from "../ssr";
 import { createContext, createMemo, createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor, Context, ParentProps } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -119,6 +120,10 @@ const I18nContext = getI18nContext();
  * ```
  */
 export function createDefaultLocale(): Accessor<Locale> {
+  // The browser language is not known on the server. Stay on en-US / ltr for
+  // the whole hydration walk, then publish the cached browser locale.
+  const isSSR = useIsSSR();
+
   if (!currentLocale) {
     currentLocale = getDefaultLocale();
   }
@@ -150,7 +155,18 @@ export function createDefaultLocale(): Accessor<Locale> {
     };
   });
 
-  return locale;
+  return () => {
+    if (!isSSR()) return locale();
+
+    const passed =
+      typeof window !== "undefined"
+        ? (window as unknown as Record<symbol, string | undefined>)[localeSymbol]
+        : undefined;
+    return {
+      locale: passed || "en-US",
+      direction: "ltr",
+    };
+  };
 }
 
 /**

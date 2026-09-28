@@ -4,31 +4,29 @@ type: task
 title: "Port useIsSSR through hydration for disclosure hidden and default locale"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-28,
+      note: "createDisclosure keeps hidden through useIsSSR, and createDefaultLocale stays on en-US and ltr for that walk before following navigator.language. SSR and hydrate tests cover a collapsed panel and the useLocale probe ProviderRoot reads, with navigator.language ar-SA.",
+    }
 ---
 
 ## Cause
 
-React Aria's `useIsSSR()` stays true for the first client render so server
-HTML and the hydration walk agree, then flips. `createIsSSR()` returns
-`isServer` and `canUseDOM = !isServer`
-(`packages/solidaria/src/ssr/index.tsx:62-70`), while `useIsSSR()` /
-`createHydrationState()` in the same module already implement the correct
-accessor. Two public ports apply the wrong flag to markup:
+React Aria's `useIsSSR()` stays true for the hydration walk, then flips.
+`createIsSSR()` and `canUseDOM` stay the static server/client flags.
+`useIsSSR()` was already the hydration accessor. The two markup paths now
+use it:
 
-- `createDisclosure` emits `hidden: getDisclosurePanelHiddenAttribute(...)`
-  gated on `canUseDOM` (`packages/solidaria/src/disclosure/createDisclosure.ts:43-47, 240-247`).
-  Upstream: `hidden: isSSR ? !state.isExpanded : undefined`. Collapsed panels
-  get `hidden=true` on the server and `hidden=undefined` on first client paint.
-- `createDefaultLocale` / `getDefaultLocale` read `navigator.language` as
-  soon as the client module runs (`packages/solidaria/src/i18n/locale.tsx:61-107`).
-  Upstream returns `en-US` while `useIsSSR()` is true. Spectrum `ProviderRoot`
-  writes `lang` / `dir` from that locale on its wrapper
-  (`packages/solid-spectrum/src/provider/index.tsx:187-198`), so a consumer
-  without an explicit `locale` hydrates browser `lang`/`dir` against server
-  `en-US`. jsdom's `en-US` hides this in package tests.
+- A collapsed `createDisclosure` panel renders `hidden` while the walk is
+  true. After the walk, the client effect applies `until-found`.
+- `createDefaultLocale` returns `en-US` and `ltr` while the walk is true,
+  including when `navigator.language` is something else, then returns the
+  browser locale. A locale passed on `window` still wins, with direction
+  `ltr`, matching `useDefaultLocale`. `ProviderRoot` reads that value.
 
 ## Work
 

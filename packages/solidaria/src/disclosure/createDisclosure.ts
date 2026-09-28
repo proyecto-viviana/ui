@@ -24,7 +24,7 @@ import { onOwnedCleanup } from "../utils/owner";
 import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type DisclosureState } from "@proyecto-viviana/solid-stately";
-import { createId, canUseDOM } from "../ssr";
+import { createId, canUseDOM, useIsSSR } from "../ssr";
 import { createPress } from "../interactions/createPress";
 import { mergeProps } from "../utils/mergeProps";
 
@@ -87,6 +87,9 @@ export function createDisclosure(
 ): DisclosureAria {
   // Handle both plain object and accessor function patterns
   const getProps = typeof props === "function" ? props : () => props;
+  // `useIsSSR` stays true through the hydration walk. `canUseDOM` is already
+  // true on that walk, so the panel attribute has to follow `useIsSSR`.
+  const isSSR = useIsSSR();
 
   const triggerId = createId();
   const panelId = createId();
@@ -157,9 +160,10 @@ export function createDisclosure(
     };
   });
 
-  // Handle panel visibility and animation sizing.
+  // Handle panel visibility and animation sizing. Skip the hydration walk
+  // so the server `hidden` attribute is still there when the client reads it.
   createTrackedEffect(() => {
-    if (!canUseDOM) return;
+    if (!canUseDOM || isSSR()) return;
 
     const panel = panelRef();
     if (!panel) return;
@@ -251,7 +255,7 @@ export function createDisclosure(
         role: "group",
         "aria-labelledby": triggerId,
         "aria-hidden": state.isExpanded() ? "false" : "true",
-        hidden: getDisclosurePanelHiddenAttribute(state.isExpanded()),
+        hidden: getDisclosurePanelHiddenAttribute(state.isExpanded(), !isSSR()),
       };
     },
   };
