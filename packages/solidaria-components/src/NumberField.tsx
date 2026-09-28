@@ -19,7 +19,7 @@
  * Port of react-aria-components/src/NumberField.tsx
  */
 
-import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import { createContext, createMemo, createSignal, Show, useContext } from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -193,6 +193,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       "isReadOnly",
       "isRequired",
       "isInvalid",
+      "isWheelDisabled",
       "description",
       "errorMessage",
       "id",
@@ -308,6 +309,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       },
       get isInvalid() {
         return ariaProps.isInvalid;
+      },
+      get isWheelDisabled() {
+        return ariaProps.isWheelDisabled;
+      },
+      get formatOptions() {
+        return stateProps.formatOptions;
       },
       get description() {
         return ariaProps.description;
@@ -529,6 +536,15 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                 {fieldChildren()}
               </Provider>
             </div>
+            <Show when={ariaProps.name}>
+              <input
+                type="hidden"
+                name={ariaProps.name}
+                form={ariaProps.form}
+                value={Number.isNaN(state.numberValue()) ? "" : String(state.numberValue())}
+                disabled={ariaProps.isDisabled || undefined}
+              />
+            </Show>
           </NumberFieldContext>
         </NumberFieldStateContext>
       </LabelContext>

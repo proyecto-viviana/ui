@@ -539,6 +539,21 @@ describe("NumberField", () => {
     });
   });
 
+  it("submits the parsed value from a hidden input", () => {
+    render(() => (
+      <TestNumberField fieldProps={{ name: "quantity", form: "checkout-form", defaultValue: 4 }} />
+    ));
+
+    const input = screen.getByRole("textbox");
+    expect(input).not.toHaveAttribute("name");
+    expect(input).not.toHaveAttribute("form");
+    const hidden = document.querySelector('input[type="hidden"]') as HTMLInputElement | null;
+    expect(hidden).not.toBeNull();
+    expect(hidden!.name).toBe("quantity");
+    expect(hidden!.getAttribute("form")).toBe("checkout-form");
+    expect(hidden!.value).toBe("4");
+  });
+
   describe("native custom validity", () => {
     it("sets customError when isInvalid", async () => {
       const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());

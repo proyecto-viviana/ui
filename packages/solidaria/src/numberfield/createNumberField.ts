@@ -33,8 +33,8 @@ import { createFocusWithin } from "../interactions/createFocusWithin";
 import { announce, clearAnnouncer } from "../live-announcer";
 import { createFormValidation } from "../form/createFormValidation";
 import { createFormReset } from "../form/createFormReset";
-import { createStringFormatter } from "../i18n";
-import { isIOS } from "../utils/platform";
+import { createStringFormatter, NumberFormatter, useLocale } from "../i18n";
+import { isAndroid, isIOS, isIPhone } from "../utils/platform";
 import { numberFieldStrings } from "./intl";
 
 export interface AriaNumberFieldProps {
@@ -76,6 +76,11 @@ export interface AriaNumberFieldProps {
   name?: string;
   /** The form element this input belongs to. */
   form?: string;
+  /**
+   * Formatting options for the value. Resolved fraction digits choose `inputMode`
+   * on iPhone and Android, matching `useNumberFormatter(formatOptions)`.
+   */
+  formatOptions?: Intl.NumberFormatOptions;
   /** Handler for focus events. */
   onFocus?: JSX.EventHandler<HTMLInputElement, FocusEvent>;
   /** Handler for blur events. */
@@ -147,6 +152,12 @@ export function createNumberField(
   inputRef?: () => HTMLInputElement | null,
 ): NumberFieldAria {
   const getProps = () => access(props);
+  const locale = useLocale();
+  // Same formatter `useNumberField` consults for `maximumFractionDigits`.
+  // The provider locale matches `useNumberFormatter`, not the field locale prop.
+  const intlOptions = createMemo(() =>
+    new NumberFormatter(locale().locale, getProps().formatOptions ?? {}).resolvedOptions(),
+  );
   const id = createId(getProps().id);
   const displayValidation = () => state.displayValidation();
   const stringFormatter = createStringFormatter(numberFieldStrings, "@react-aria/numberfield");
@@ -457,6 +468,31 @@ export function createNumberField(
     inputRef?.()?.focus();
   };
 
+  // Touch keyboards disagree about minus and decimal. Desktop and iPad stay
+  // `numeric`: iPad's numeric keyboard already has both keys.
+  const inputMode = (): "numeric" | "decimal" | "text" => {
+    const hasDecimals = (intlOptions().maximumFractionDigits ?? 0) > 0;
+    const minValue = state.minValue();
+    const hasNegative = minValue === undefined || Number.isNaN(minValue) || minValue < 0;
+    let mode: "numeric" | "decimal" | "text" = "numeric";
+    if (isIPhone()) {
+      // iPhone has no minus key in numeric or decimal.
+      if (hasNegative) {
+        mode = "text";
+      } else if (hasDecimals) {
+        mode = "decimal";
+      }
+    } else if (isAndroid()) {
+      // Android numeric has minus and decimal. decimal has no minus key.
+      if (hasNegative) {
+        mode = "numeric";
+      } else if (hasDecimals) {
+        mode = "decimal";
+      }
+    }
+    return mode;
+  };
+
   // Build aria-describedby
   const getAriaDescribedBy = () => {
     const p = getProps();
@@ -489,7 +525,7 @@ export function createNumberField(
         {
           id: inputId,
           type: "text",
-          inputMode: "decimal" as const,
+          inputMode: inputMode(),
           autoComplete: "off",
           autoCorrect: "off",
           spellcheck: false,
@@ -530,8 +566,8 @@ export function createNumberField(
           onPaste: p.onPaste,
           onCopy: p.onCopy,
           onCut: p.onCut,
-          name: p.name,
-          form: p.form,
+          // `name` and `form` are submitted from the hidden input, not this
+          // formatted text field (`useNumberField` sets both to undefined).
           autoFocus: p.autoFocus,
         } as Record<string, unknown>,
       ) as JSX.InputHTMLAttributes<HTMLInputElement>;

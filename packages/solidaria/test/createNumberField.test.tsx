@@ -525,11 +525,11 @@ describe("createNumberField", () => {
       expect(input).toHaveAttribute("type", "text");
     });
 
-    it("has decimal inputmode", () => {
+    it("uses numeric inputmode on desktop", () => {
       render(() => <TestNumberField aria-label="Amount" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("inputmode", "decimal");
+      expect(input).toHaveAttribute("inputmode", "numeric");
     });
 
     it("disables autocomplete", () => {
@@ -539,18 +539,18 @@ describe("createNumberField", () => {
       expect(input).toHaveAttribute("autocomplete", "off");
     });
 
-    it("supports name attribute", () => {
+    it("keeps name off the formatted field", () => {
       render(() => <TestNumberField aria-label="Amount" name="quantity" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("name", "quantity");
+      expect(input).not.toHaveAttribute("name");
     });
 
-    it("supports form attribute", () => {
+    it("keeps form off the formatted field", () => {
       render(() => <TestNumberField aria-label="Amount" name="quantity" form="checkout-form" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("form", "checkout-form");
+      expect(input).not.toHaveAttribute("form");
     });
 
     it("forwards focus and keyboard handlers", () => {
