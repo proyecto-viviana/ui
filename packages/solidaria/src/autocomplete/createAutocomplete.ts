@@ -26,6 +26,7 @@ import type { Accessor } from "solid-js";
 import { createId, getOwnerDocument } from "../ssr";
 import { type AutocompleteState, type CollectionNode } from "@proyecto-viviana/solid-stately";
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../selection/constants";
+import { dispatchVirtualBlur, dispatchVirtualFocus } from "../focus/virtualFocus";
 import { getActiveElement, getEventTarget } from "../utils/dom";
 import { getPointerType } from "../interactions";
 
@@ -404,23 +405,44 @@ export function createAutocomplete<T = unknown>(
     }
   };
 
-  // Handle focus events
-  const onFocus = (e: FocusEvent) => {
-    if (!e.isTrusted) return;
+  // Show the option ring only while the field is focused. Blur dispatches a
+  // virtual blur on the active option; focus restores virtual focus on the
+  // collection (not the option) so the collection reapplies the focused item.
+  // Mirrors useAutocomplete. The later focusin path still owns aria-activedescendant.
+  const onBlur = (e: FocusEvent) => {
+    if (!e.isTrusted) {
+      return;
+    }
 
-    // Restore virtual focus when refocusing input
-    const focusedNodeId = state.focusedNodeId();
-    if (focusedNodeId) {
-      const item = document.getElementById(focusedNodeId);
-      if (item) {
-        // Item still exists, keep focus on it
-      }
+    const lastFocusedNode = queuedActiveDescendant
+      ? document.getElementById(queuedActiveDescendant)
+      : null;
+    if (lastFocusedNode) {
+      const relatedTarget = e.relatedTarget instanceof Element ? e.relatedTarget : null;
+      dispatchVirtualBlur(lastFocusedNode, relatedTarget);
     }
   };
 
-  const onBlur = (e: FocusEvent) => {
-    if (!e.isTrusted) return;
-    // Virtual focus blur handling would go here
+  const onFocus = (e: FocusEvent) => {
+    if (!e.isTrusted) {
+      return;
+    }
+
+    const curFocusedNode = queuedActiveDescendant
+      ? document.getElementById(queuedActiveDescendant)
+      : null;
+    if (curFocusedNode) {
+      const target = getEventTarget<Element>(e);
+      queueMicrotask(() => {
+        // Focus the collection, not the last option. The collection decides
+        // which item to focus (createSelectableCollection).
+        const collection = collectionRef();
+        if (target && collection) {
+          dispatchVirtualBlur(target, collection);
+          dispatchVirtualFocus(collection, target);
+        }
+      });
+    }
   };
 
   // Reverse path: mirror the collection's virtually-focused option into the
