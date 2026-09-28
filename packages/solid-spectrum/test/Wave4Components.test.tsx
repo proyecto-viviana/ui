@@ -73,9 +73,9 @@ describe("Wave 4 UI Components", () => {
   });
 
   describe("ClearButton", () => {
-    it("renders with clear aria-label", () => {
+    it("leaves the accessible name to the caller", () => {
       const { getByRole } = render(() => <ClearButton />);
-      expect(getByRole("button").getAttribute("aria-label")).toBe("Clear");
+      expect(getByRole("button").getAttribute("aria-label")).toBeNull();
     });
 
     it("renders SVG icon", () => {
