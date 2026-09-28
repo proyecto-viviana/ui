@@ -14,7 +14,7 @@
 
 import { Accessor } from "solid-js";
 import { createPress } from "../interactions";
-import { createFocusable } from "../interactions";
+import { createFocusable, type FocusableProps } from "../interactions";
 import { mergeProps, filterDOMProps } from "../utils";
 import type { AriaButtonProps, ButtonAria } from "./types";
 
@@ -51,7 +51,7 @@ function isDisabledValue(isDisabled: Accessor<boolean> | boolean | undefined): b
  * }
  * ```
  */
-export function createButton(props: AriaButtonProps = {}): ButtonAria {
+export function createButton(props: AriaButtonProps & FocusableProps = {}): ButtonAria {
   const elementType = props.elementType ?? "button";
   const isDisabled = () => isDisabledValue(props.isDisabled);
 
@@ -72,6 +72,11 @@ export function createButton(props: AriaButtonProps = {}): ButtonAria {
     isDisabled,
     autoFocus: props.autoFocus,
     excludeFromTabOrder: props.excludeFromTabOrder,
+    onFocus: props.onFocus,
+    onBlur: props.onBlur,
+    onFocusChange: props.onFocusChange,
+    onKeyDown: props.onKeyDown,
+    onKeyUp: props.onKeyUp,
   });
 
   const isNativeButton = elementType === "button";
