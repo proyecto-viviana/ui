@@ -39,7 +39,9 @@ import { mergeProps } from "../utils/mergeProps";
 import { attrString } from "../utils/domAttrs";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import { isAppleDevice } from "../utils/platform";
+import { isAppleDevice, isMac } from "../utils/platform";
+import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
+import { isNonContiguousSelectionModifier } from "../selection/utils";
 import { getActiveElement, getOwnerDocument, nodeContains } from "../utils/dom";
 import { useRouter } from "../utils/openLink";
 import { dispatchVirtualFocus } from "../focus/virtualFocus";
@@ -60,6 +62,21 @@ function getItemCount(collection: { getKeys(): Iterable<Key> }): number {
     count++;
   }
   return count;
+}
+
+/**
+ * Modifier set for `useSelectableCollection`'s `withShiftSel` page bindings.
+ * Mac: the key, Shift, Alt, and Shift+Alt. Elsewhere: the key, Shift, Control,
+ * and Shift+Control. Meta is never part of that map.
+ */
+function isCollectionPageShortcut(e: KeyboardEvent): boolean {
+  if (e.metaKey) {
+    return false;
+  }
+  if (isMac()) {
+    return !e.ctrlKey;
+  }
+  return !e.altKey;
 }
 
 export interface AriaComboBoxProps {
@@ -644,6 +661,64 @@ export function createComboBox<T>(
           }
         }
         break;
+
+      case "ArrowLeft":
+      case "ArrowRight": {
+        // RAC useComboBox.ts:257-264. Unmodified arrows only (not withShiftSel).
+        // A vertical stack deletes getKeyLeftOf/getKeyRightOf, so the open-menu
+        // collection handler no-ops, then these clear the focused key.
+        // shouldPreventDefault is false: the caret default stays. The shortcut
+        // does not continue propagation.
+        if (e.isComposing || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) {
+          break;
+        }
+        state.setFocusedKey(null);
+        e.stopPropagation();
+        break;
+      }
+
+      case "PageDown":
+      case "PageUp": {
+        // RAC useComboBox.ts:314 chains collection keydown only while the menu
+        // is open. useSelectableCollection.ts:332-349 moves when a key is
+        // focused and ListKeyboardDelegate returns a page target
+        // (useComboBox.ts:160-170). navigateToKey prevents the default only
+        // when Shift extends a multiple selection or selectOnFocus replaces
+        // (selectionBehavior === "replace"). ComboBox defaults to toggle, so
+        // a plain page key leaves the input default enabled.
+        if (
+          e.isComposing ||
+          !isCollectionPageShortcut(e) ||
+          !state.isOpen() ||
+          focusedKey == null
+        ) {
+          break;
+        }
+        const delegate = new ListKeyboardDelegate({
+          collection,
+          disabledKeys: state.selectionManager.disabledKeys,
+          ref: () => listBoxRef?.() ?? null,
+        });
+        const nextKey =
+          e.key === "PageDown"
+            ? delegate.getKeyPageBelow(focusedKey)
+            : delegate.getKeyPageAbove(focusedKey);
+        if (nextKey == null) {
+          break;
+        }
+        state.setFocusedKey(nextKey);
+        const selectOnFocus = state.selectionManager.selectionBehavior === "replace";
+        if (e.shiftKey && state.selectionManager.selectionMode === "multiple") {
+          state.selectionManager.extendSelection(nextKey);
+          e.preventDefault();
+          e.stopPropagation();
+        } else if (selectOnFocus && !isNonContiguousSelectionModifier(e)) {
+          state.selectionManager.replaceSelection(nextKey);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        break;
+      }
 
       case "Home":
         // RAC leaves Home/End default enabled on the input (useComboBox
