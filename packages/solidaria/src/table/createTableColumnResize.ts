@@ -26,9 +26,11 @@ import type { JSX } from "@solidjs/web";
 import type { Key, TableColumnResizeState } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter, useLocale } from "../i18n";
 import { tableIntlStrings } from "./intl";
+import { createInteractionModality } from "../interactions/createInteractionModality";
 import { createMove } from "../interactions/createMove";
 import { createPress } from "../interactions/createPress";
 import { createKeyboard } from "../interactions/createKeyboard";
+import { createDescription } from "../utils/createDescription";
 import { mergeProps } from "../utils/mergeProps";
 import { focusSafely } from "../utils/focus";
 import { createGlobalListeners } from "../utils";
@@ -84,6 +86,7 @@ export function createTableColumnResize(
   const getState = () => state();
   const locale = useLocale();
   const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
+  const { modality } = createInteractionModality();
 
   let isResizingRef = false;
   let lastSize: Map<Key, number> | null = null;
@@ -91,6 +94,19 @@ export function createTableColumnResize(
 
   const [isMouseResizing, setIsMouseResizing] = createSignal(false);
   const isResizing = createMemo(() => getState().resizingColumn() === getProps().column.key);
+  // useTableColumnResize describes the hidden input only for keyboard and
+  // virtual users, and only while a column-header menu trigger is absent.
+  const descriptionProps = createDescription(() => {
+    const trigger = getProps().triggerRef?.() ?? null;
+    let current = modality();
+    if (current === "virtual" && typeof window !== "undefined" && "ontouchstart" in window) {
+      current = null;
+    }
+    if (trigger != null || (current !== "keyboard" && current !== "virtual") || isResizing()) {
+      return undefined;
+    }
+    return stringFormatter().format("resizerDescription");
+  });
 
   const isRtl = createMemo(() => {
     const l = locale();
@@ -387,6 +403,9 @@ export function createTableColumnResize(
     get "aria-valuetext"() {
       const value = Math.floor(getState().getColumnWidth(getProps().column.key));
       return stringFormatter().format("columnSize", { value });
+    },
+    get "aria-describedby"() {
+      return descriptionProps["aria-describedby"];
     },
     style: {
       position: "absolute",

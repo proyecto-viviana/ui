@@ -6,7 +6,7 @@ import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, flush, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
 import { Checkbox } from "../src/Checkbox";
 import { RouterProvider } from "../src/RouterProvider";
@@ -4238,6 +4238,37 @@ describe("Table", () => {
       ));
       const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
       expect(input).toHaveAttribute("aria-valuetext", `${Math.floor(Number(input.value))} píxeles`);
+    });
+
+    it("describes a keyboard column resizer from the table catalog", () => {
+      setInteractionModality("keyboard");
+      try {
+        render(() => (
+          <I18nProvider locale="es-ES">
+            <ResizableTestTable />
+          </I18nProvider>
+        ));
+        const input = screen.getByRole("slider", { name: "Resize Name" });
+        const describedBy = input.getAttribute("aria-describedby");
+        const description = describedBy ? document.getElementById(describedBy) : null;
+        expect(description?.textContent).toBe("Pulse Intro para empezar a redimensionar");
+        setInteractionModality("virtual");
+        flush();
+        if ("ontouchstart" in window) {
+          expect(input).not.toHaveAttribute("aria-describedby");
+        } else {
+          const virtualDescribedBy = input.getAttribute("aria-describedby");
+          const virtualDescription = virtualDescribedBy
+            ? document.getElementById(virtualDescribedBy)
+            : null;
+          expect(virtualDescription?.textContent).toBe("Pulse Intro para empezar a redimensionar");
+        }
+        setInteractionModality("pointer");
+        flush();
+        expect(input).not.toHaveAttribute("aria-describedby");
+      } finally {
+        setInteractionModality("pointer");
+      }
     });
 
     it("honors Column minWidth and maxWidth on the Name resizer", () => {
