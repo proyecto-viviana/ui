@@ -61,7 +61,8 @@ import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
+import { baseColor, css, focusRing, space, style } from "../style" with { type: "macro" };
+import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -583,6 +584,31 @@ const treeActionMenu = style({
   alignSelf: "center",
 });
 
+const treeSlotLayout = css(`
+  [slot="icon"], [data-slot="icon"], [data-rsp-slot="icon"] {
+    grid-area: icon;
+    grid-row-end: span 2;
+    align-self: center;
+  }
+  [slot="actions"], [data-slot="actions"], [data-rsp-slot="actions"] {
+    grid-area: actions;
+    grid-row-end: span 2;
+    align-self: center;
+    justify-self: end;
+  }
+  [slot="actionmenu"], [data-slot="actionmenu"], [data-rsp-slot="actionmenu"] {
+    grid-area: actionmenu;
+    grid-row-end: span 2;
+    align-self: center;
+  }
+  [slot="label"], [data-slot="label"], [data-rsp-slot="label"] {
+    grid-area: label;
+  }
+  [slot="description"], [data-slot="description"], [data-rsp-slot="description"] {
+    grid-area: description;
+  }
+`);
+
 const treeLoadMore = style({
   minHeight: 32,
   display: "flex",
@@ -590,71 +616,6 @@ const treeLoadMore = style({
   justifyContent: "center",
   color: "neutral-subdued",
 });
-
-function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
-  const previousClass = element.getAttribute(dataAttribute);
-
-  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
-    element.classList.remove(className);
-  }
-
-  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
-    element.classList.add(className);
-  }
-
-  element.setAttribute(dataAttribute, nextClass);
-}
-
-function applyItemSlotClasses(
-  root: HTMLElement | undefined,
-  renderProps: TreeItemRenderProps,
-  context: TreeViewContextValue,
-): void {
-  if (!root) {
-    return;
-  }
-
-  const state = {
-    ...renderProps,
-    selectionStyle: context.selectionStyle,
-  };
-
-  const gridCell = root.querySelector('[role="gridcell"]');
-  if (gridCell) {
-    replaceManagedClass(gridCell, "data-s2-treeview-cell-class", treeViewItemCell);
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
-  )) {
-    replaceManagedClass(element, "data-s2-treeview-slot-class", treeLabel(state));
-    element.setAttribute("data-rsp-slot", "label");
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll(
-      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
-    ),
-  )) {
-    replaceManagedClass(element, "data-s2-treeview-slot-class", treeDescription(state));
-    element.setAttribute("data-rsp-slot", "description");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="icon"], [data-slot="icon"]'))) {
-    replaceManagedClass(element, "data-s2-treeview-slot-class", treeSlotIcon);
-    element.setAttribute("data-rsp-slot", "icon");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="actions"]'))) {
-    replaceManagedClass(element, "data-s2-treeview-slot-class", treeActions);
-    element.setAttribute("data-rsp-slot", "actions");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="actionmenu"]'))) {
-    replaceManagedClass(element, "data-s2-treeview-slot-class", treeActionMenu);
-    element.setAttribute("data-rsp-slot", "actionmenu");
-  }
-}
 
 function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
   if (keys === "all") {
@@ -1000,10 +961,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     return null;
   }
 
-  let itemElement: HTMLElement | undefined;
-  const assignItemRef = mergeContextRefs(local.ref, (element: HTMLElement) => {
-    itemElement = element;
-  });
+  const assignItemRef = mergeContextRefs(local.ref);
   const getRowLayerProps = (renderProps: TreeItemRenderProps): TreeRowLayerProps => ({
     ...renderProps,
     selectionStyle: context.selectionStyle,
@@ -1013,6 +971,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     [
       local.UNSAFE_className,
       local.class,
+      treeSlotLayout,
       mergeStyles(
         treeViewItem({
           ...getRowLayerProps(renderProps),
@@ -1050,7 +1009,17 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     !renderProps.isDisabled;
 
   function ItemChildren(renderProps: TreeItemRenderProps) {
-    createTrackedEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+    const slots = () => {
+      const state = getRowLayerProps(renderProps);
+      return {
+        default: { class: treeLabel(state), "data-rsp-slot": "label" },
+        label: { class: treeLabel(state), "data-rsp-slot": "label" },
+        description: { class: treeDescription(state), "data-rsp-slot": "description" },
+        icon: { class: treeSlotIcon, "data-rsp-slot": "icon" },
+        actions: { class: treeActions, "data-rsp-slot": "actions" },
+        actionmenu: { class: treeActionMenu, "data-rsp-slot": "actionmenu" },
+      };
+    };
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() => {
@@ -1081,53 +1050,55 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     }
 
     return (
-      <TextContext value={textContext(renderProps) as SpectrumContextValue<any>}>
-        <IconContext
-          value={{
-            slot: "icon",
-            styles: treeSlotIcon,
-          }}
-        >
-          <ActionButtonGroupContext
+      <SlotProvider slots={slots}>
+        <TextContext value={textContext(renderProps) as SpectrumContextValue<any>}>
+          <IconContext
             value={{
-              slot: "actions",
-              size: "S",
-              styles: treeActions,
+              slot: "icon",
+              styles: treeSlotIcon,
             }}
           >
-            <ActionMenuContext
+            <ActionButtonGroupContext
               value={{
-                slot: "actionmenu",
+                slot: "actions",
                 size: "S",
-                menuSize: "S",
-                styles: treeActionMenu,
+                styles: treeActions,
               }}
             >
-              {shouldShowCheckbox(renderProps) ? (
-                <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
-              ) : null}
-              <div
-                class={treeViewRowBackground(getRowLayerProps(renderProps))}
-                aria-hidden="true"
-              />
-              {renderProps.isFocusVisible ? (
+              <ActionMenuContext
+                value={{
+                  slot: "actionmenu",
+                  size: "S",
+                  menuSize: "S",
+                  styles: treeActionMenu,
+                }}
+              >
+                {shouldShowCheckbox(renderProps) ? (
+                  <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
+                ) : null}
                 <div
-                  class={treeViewRowFocusRing(getRowLayerProps(renderProps))}
+                  class={treeViewRowBackground(getRowLayerProps(renderProps))}
                   aria-hidden="true"
                 />
-              ) : null}
-              <span class={treeLevelPadding} aria-hidden="true" />
-              <TreeExpandButton renderProps={renderProps} />
-              {local.icon ? (
-                <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
-                  {local.icon()}
-                </span>
-              ) : null}
-              <ResolvedItemContent />
-            </ActionMenuContext>
-          </ActionButtonGroupContext>
-        </IconContext>
-      </TextContext>
+                {renderProps.isFocusVisible ? (
+                  <div
+                    class={treeViewRowFocusRing(getRowLayerProps(renderProps))}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <span class={treeLevelPadding} aria-hidden="true" />
+                <TreeExpandButton renderProps={renderProps} />
+                {local.icon ? (
+                  <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
+                    {local.icon()}
+                  </span>
+                ) : null}
+                <ResolvedItemContent />
+              </ActionMenuContext>
+            </ActionButtonGroupContext>
+          </IconContext>
+        </TextContext>
+      </SlotProvider>
     );
   }
 

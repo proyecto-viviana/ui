@@ -319,6 +319,12 @@
       "import": "./dist/Slider.js",
       "default": "./dist/Slider.js"
     },
+    "./slots": {
+      "types": "./dist/slots.d.ts",
+      "solid": "./dist/slots.jsx",
+      "import": "./dist/slots.js",
+      "default": "./dist/slots.js"
+    },
     "./StepList": {
       "types": "./dist/StepList.d.ts",
       "solid": "./dist/StepList.jsx",

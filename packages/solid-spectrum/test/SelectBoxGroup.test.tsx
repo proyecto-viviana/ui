@@ -52,12 +52,49 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
     const pro = screen.getByRole("option", { name: "Pro" });
     expect(starter).toHaveAttribute("data-selected", "true");
     expect(pro).not.toHaveAttribute("data-selected");
+    expect(screen.getByText("Starter")).toHaveAttribute("data-rsp-slot", "label");
+    expect(screen.getByText("For small teams")).toHaveAttribute("data-rsp-slot", "description");
 
     await user.click(pro);
 
     expect(starter).not.toHaveAttribute("data-selected");
     expect(pro).toHaveAttribute("data-selected", "true");
     expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["pro"]));
+  });
+
+  it("drops a slotted description when the item children change", async () => {
+    const user = setupUser();
+
+    function Demo() {
+      const [showDescription, setShowDescription] = createSignal(true);
+      return (
+        <div>
+          <button type="button" onClick={() => setShowDescription(false)}>
+            Hide description
+          </button>
+          <SelectBoxGroup
+            aria-label="Plans"
+            items={plans}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.label}
+          >
+            {(item) => (
+              <SelectBox id={item.id} textValue={item.label}>
+                <Text slot="label">{item.label}</Text>
+                {showDescription() ? <Text slot="description">{item.description}</Text> : null}
+              </SelectBox>
+            )}
+          </SelectBoxGroup>
+        </div>
+      );
+    }
+
+    render(() => <Demo />);
+
+    expect(screen.getByText("For small teams")).toHaveAttribute("data-rsp-slot", "description");
+    await user.click(screen.getByRole("button", { name: "Hide description" }));
+    expect(screen.queryByText("For small teams")).not.toBeInTheDocument();
+    expect(screen.getByText("Starter")).toHaveAttribute("data-rsp-slot", "label");
   });
 
   it("supports horizontal orientation and disabled state", async () => {

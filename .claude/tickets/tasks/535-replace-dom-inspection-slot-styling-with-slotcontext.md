@@ -4,12 +4,17 @@ type: task
 title: "Replace DOM inspection slot styling with SlotContext"
 created: 2026-09-13
 parent: 531
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-13,
       note: "opened under #531 to retire applySlotClasses and querySelectorAll DOM inspection before Solid 2.0",
+    }
+  - {
+      state: verified,
+      at: 2026-09-28,
+      note: "SlotContext in solidaria-components/slots applies Text, Icon, and Button slot classes during render on solid-spectrum and viviana-ui. SelectBox, Tree, and GridList render those classes on first paint; the querySelectorAll slot walks are gone. Vertical comparison cards measure 48px 8px 18px with the description hidden; horizontal cards measure 18px 30px over 48px 10px 250px. SelectBoxGroup tests 10/10",
     }
 ---
 

@@ -987,6 +987,16 @@ export {
 
 export { Icon, IconContext, type IconProps, type IconRenderProps } from "./Icon";
 
+export {
+  SlotContext,
+  SlotProvider,
+  useSlotValue,
+  joinSlotClass,
+  type SlotValue,
+  type SlotMap,
+  type SlotContextValue,
+} from "./slots";
+
 export { Focusable, type FocusableProps } from "./Focusable";
 
 export { Pressable, type PressableProps } from "./Pressable";

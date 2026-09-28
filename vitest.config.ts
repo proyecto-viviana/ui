@@ -68,6 +68,10 @@ export default defineConfig({
       // import (`solidaria/i18n` becomes `src/index.ts/i18n`). A directory
       // resolves both the bare specifier and each subpath to its own index.
       "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src"),
+      "@proyecto-viviana/solidaria-components/slots": resolve(
+        __dirname,
+        "packages/solidaria-components/src/slots.tsx",
+      ),
       "@proyecto-viviana/solidaria-components": resolve(
         __dirname,
         "packages/solidaria-components/src/index.ts",

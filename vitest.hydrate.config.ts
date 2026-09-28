@@ -66,6 +66,10 @@ export default defineConfig({
       // also matches `<key>/<subpath>`, so a narrow subpath import only resolves
       // if the replacement is the directory.
       "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src"),
+      "@proyecto-viviana/solidaria-components/slots": resolve(
+        __dirname,
+        "packages/solidaria-components/src/slots.tsx",
+      ),
       "@proyecto-viviana/solidaria-components": resolve(
         __dirname,
         "packages/solidaria-components/src/index.ts",

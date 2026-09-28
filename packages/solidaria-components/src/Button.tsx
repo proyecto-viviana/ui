@@ -50,6 +50,7 @@ import {
 } from "./utils";
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
 import { ProgressBarContext } from "./ProgressBar";
+import { joinSlotClass, useSlotValue } from "./slots";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 // Events preserved when `isPending` is true (for tooltips and other overlays),
@@ -253,6 +254,9 @@ export function Button(props: ButtonProps): JSX.Element {
     "onHoverEnd",
     "onHoverChange",
   ]);
+  const slotValue = useSlotValue(() => (typeof local.slot === "string" ? local.slot : undefined), {
+    named: true,
+  });
 
   // Check if inside a DialogTrigger or PopoverTrigger - if so, toggle on press
   // NOTE: Context is captured at component creation time. For Buttons inside a Modal,
@@ -412,6 +416,7 @@ export function Button(props: ButtonProps): JSX.Element {
     },
     renderValues,
   );
+  const slotClass = () => joinSlotClass(renderProps.class(), slotValue().class);
 
   // Remove onClick from DOM props - it's already handled by createPress
   // This matches React Aria Components behavior (Button.tsx line 144: delete DOMProps.onClick)
@@ -623,9 +628,10 @@ export function Button(props: ButtonProps): JSX.Element {
           ? popoverTriggerContext.triggerId
           : undefined) ||
         buttonId,
-      class: renderProps.class(),
+      class: slotClass(),
       style: renderProps.style(),
       slot: local.slot,
+      "data-rsp-slot": slotValue()["data-rsp-slot"],
       disabled: resolvePending() && isPendingFocusable() ? undefined : cleanButtonProps().disabled,
       "aria-labelledby": ariaLabelledBy(),
       "aria-disabled": resolvePending()
@@ -649,12 +655,7 @@ export function Button(props: ButtonProps): JSX.Element {
           customRenderValues,
         )
       ) : (
-        <button
-          ref={handleRef}
-          {...rootProps()}
-          class={renderProps.class()}
-          style={renderProps.style()}
-        >
+        <button ref={handleRef} {...rootProps()} class={slotClass()} style={renderProps.style()}>
           {buttonContent()}
         </button>
       )}

@@ -24,6 +24,7 @@ import {
   dataAttr,
 } from "./utils";
 import { Button } from "./Button";
+import { joinSlotClass, useSlotValue } from "./slots";
 import type { PressEvent } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -105,6 +106,11 @@ export function Icon(props: IconProps): JSX.Element {
   );
 
   const domProps = createMemo(() => filterDOMProps(rest, { global: true }));
+  const slotValue = useSlotValue(() => (typeof local.slot === "string" ? local.slot : undefined), {
+    named: true,
+  });
+  const slotName = () => (typeof local.slot === "string" ? local.slot : undefined);
+  const className = () => joinSlotClass(renderProps.class(), slotValue().class);
 
   return (
     <Show
@@ -116,8 +122,10 @@ export function Icon(props: IconProps): JSX.Element {
           aria-hidden={isDecorative() ? "true" : undefined}
           aria-label={local["aria-label"]}
           aria-labelledby={local["aria-labelledby"]}
-          class={renderProps.class()}
+          class={className()}
           style={renderProps.style()}
+          slot={slotName()}
+          data-rsp-slot={slotValue()["data-rsp-slot"]}
           data-interactive={undefined}
           data-decorative={dataAttr(isDecorative())}
         >
@@ -127,10 +135,11 @@ export function Icon(props: IconProps): JSX.Element {
     >
       <Button
         {...domProps()}
+        slot={slotName()}
         onPress={local.onPress}
         aria-label={local["aria-label"]}
         aria-labelledby={local["aria-labelledby"]}
-        class={renderProps.class()}
+        class={className()}
         style={renderProps.style()}
         data-interactive=""
       >

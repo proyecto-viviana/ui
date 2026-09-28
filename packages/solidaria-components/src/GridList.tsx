@@ -965,7 +965,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
           },
         }}
       >
-        <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
+        <div {...itemAria.gridCellProps} style={{ display: "contents" }}>
+          {renderProps.renderChildren()}
+        </div>
       </TextContext>
     </div>
   );

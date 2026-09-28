@@ -21,6 +21,7 @@ import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
 import {
   createIsSkeleton,
   loadingStyle,
@@ -181,6 +182,7 @@ function createIconForBase(
       }
       return typeof c.styles === "function" ? c.styles() : c.styles;
     };
+    const slotValue = useSlotValue(slot, { named: true });
     const isSkeleton = createIsSkeleton();
     const skeletonAnimationRef = useLoadingAnimation(isSkeleton);
     const inertRef = useInertAttribute(isSkeleton);
@@ -198,9 +200,12 @@ function createIconForBase(
     };
 
     const mergedClass = () =>
-      [local.class, skeletonStyles(), isSkeleton() ? loadingStyle : undefined]
-        .filter(Boolean)
-        .join(" ");
+      joinSlotClass(
+        [local.class, skeletonStyles(), isSkeleton() ? loadingStyle : undefined]
+          .filter(Boolean)
+          .join(" "),
+        slotValue().class,
+      );
 
     const ariaHidden = () => {
       if (local["aria-label"] || bare) {
@@ -221,6 +226,7 @@ function createIconForBase(
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
+        data-rsp-slot={slotValue()["data-rsp-slot"]}
         class={mergedClass()}
         style={local.style}
       />
@@ -251,6 +257,7 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
 
       return local.slot ?? ctx()?.slot ?? undefined;
     };
+    const slotValue = useSlotValue(slot, { named: true });
     const size = () => local.size ?? ctx()?.size ?? "M";
     const contextStyles = () => {
       const c = ctx();
@@ -261,12 +268,15 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
     };
 
     const mergedClass = () =>
-      [
-        local.class,
-        mergeStyles(illustrationBaseStyles({ size: size() }, local.styles), contextStyles()),
-      ]
-        .filter(Boolean)
-        .join(" ");
+      joinSlotClass(
+        [
+          local.class,
+          mergeStyles(illustrationBaseStyles({ size: size() }, local.styles), contextStyles()),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        slotValue().class,
+      );
 
     const ariaHidden = () => {
       if (local["aria-label"]) {
@@ -288,6 +298,7 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
+        data-rsp-slot={slotValue()["data-rsp-slot"]}
         class={mergedClass()}
         style={local.style}
       />

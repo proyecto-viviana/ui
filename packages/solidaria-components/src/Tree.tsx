@@ -1745,7 +1745,11 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
 
   const rowContent = () => (
     <TreeItemContentContext value={renderValues()}>
-      <div {...treeItemAria.gridCellProps} class="solidaria-Tree-item-content">
+      <div
+        {...treeItemAria.gridCellProps}
+        class="solidaria-Tree-item-content"
+        style={{ display: "contents" }}
+      >
         <ButtonContext value={buttonContextValue}>
           <CheckboxContext value={checkboxContextValue}>
             <CheckboxFieldContext value={checkboxFieldContextValue}>

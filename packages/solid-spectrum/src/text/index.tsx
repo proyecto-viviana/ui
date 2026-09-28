@@ -26,6 +26,7 @@ import {
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
 
 export interface TextProps extends BaseContentProps<HTMLSpanElement> {}
 
@@ -55,6 +56,7 @@ export function Text(props: TextProps): JSX.Element {
     "slot",
     "ref",
   ]);
+  const slotValue = useSlotValue(() => (typeof local.slot === "string" ? local.slot : undefined));
   const isSkeleton = createIsSkeleton();
   const inertRef = useInertAttribute(isSkeleton);
   const unsafeStyle = () =>
@@ -62,12 +64,15 @@ export function Text(props: TextProps): JSX.Element {
   const id = () => props.id ?? contextProps()?.id;
   const [children, skeletonStyle] = useSkeletonText(() => local.children, unsafeStyle);
   const className = () =>
-    [
-      mergeUnsafeClassName(contextProps()?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(contextProps()?.styles, props.styles),
-    ]
-      .filter(Boolean)
-      .join(" ");
+    joinSlotClass(
+      [
+        mergeUnsafeClassName(contextProps()?.UNSAFE_className, props.UNSAFE_className),
+        mergeContextStyles(contextProps()?.styles, props.styles),
+      ]
+        .filter(Boolean)
+        .join(" "),
+      slotValue().class,
+    );
 
   if (local.isHidden) {
     return null as unknown as JSX.Element;
@@ -81,7 +86,7 @@ export function Text(props: TextProps): JSX.Element {
       class={className()}
       style={skeletonStyle()}
       slot={local.slot || undefined}
-      data-rsp-slot="text"
+      data-rsp-slot={slotValue()["data-rsp-slot"] ?? "text"}
     >
       {children()}
     </span>

@@ -15,6 +15,7 @@
 import { createContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
+import { joinSlotClass, useSlotValue } from "./slots";
 import { type ContextValue, type SlotProps, useContextProps, filterDOMProps } from "./utils";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -43,11 +44,14 @@ export function Text(props: TextProps): JSX.Element {
   // RAC `Text.tsx:28-31` spreads remaining props — including `slot` — onto the
   // element. `ref`/`class`/`children`/`elementType` are rendered explicitly.
   const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "ref"]);
+  const slotValue = useSlotValue(() => (typeof merged.slot === "string" ? merged.slot : undefined));
+  const slotName = () => slotValue()["data-rsp-slot"];
   return (
     <ElementTag
-      class={local.class ?? "solidaria-Text"}
+      class={joinSlotClass(local.class ?? "solidaria-Text", slotValue().class)}
       {...filterDOMProps(domProps, { global: true })}
       slot={merged.slot}
+      data-rsp-slot={slotName()}
       // last, so a stray `tag` in the spread can never redirect the element
       tag={local.elementType ?? "span"}
     >

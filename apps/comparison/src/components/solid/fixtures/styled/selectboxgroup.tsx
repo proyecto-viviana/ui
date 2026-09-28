@@ -2,6 +2,7 @@ import h from "@solidjs/h";
 import { createEffect, createMemo, createSignal, onSettled, createTrackedEffect } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   SelectBox as SolidSpectrumSelectBox,
   SelectBoxGroup as SolidSpectrumSelectBoxGroup,
@@ -161,10 +162,8 @@ function SolidSpectrumSelectBoxGroupDemo() {
                         }),
                       ]
                     : []),
-                  hc("span", { slot: "label", "data-rsp-slot": "label" }, [item.label]),
-                  hc("span", { slot: "description", "data-rsp-slot": "description" }, [
-                    item.description,
-                  ]),
+                  hc(SolidSpectrumText, { slot: "label" }, [item.label]),
+                  hc(SolidSpectrumText, { slot: "description" }, [item.description]),
                 ],
               ),
             ),

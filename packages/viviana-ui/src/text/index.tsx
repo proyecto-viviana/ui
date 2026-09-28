@@ -28,6 +28,7 @@ import {
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { typeRoles } from "./type-roles";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
 
 /* Standalone type-role defaults (Glasselated register, mirror panel 09):
  * Text, Content and Keyboard were pure slot markers — bare elements with an
@@ -71,21 +72,25 @@ export function Text(props: TextProps): JSX.Element {
     "slot",
     "ref",
   ]);
+  const slotValue = useSlotValue(() => (typeof local.slot === "string" ? local.slot : undefined));
   const isSkeleton = createIsSkeleton();
   const inertRef = useInertAttribute(isSkeleton);
   const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const id = () => props.id ?? contextProps?.id;
   const [children, skeletonStyle] = useSkeletonText(() => local.children, unsafeStyle);
   const className = () =>
-    [
-      mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(
-        contextProps == null ? typeRoles.meta : undefined,
-        mergeContextStyles(contextProps?.styles, props.styles),
-      ),
-    ]
-      .filter(Boolean)
-      .join(" ");
+    joinSlotClass(
+      [
+        mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
+        mergeContextStyles(
+          contextProps == null ? typeRoles.meta : undefined,
+          mergeContextStyles(contextProps?.styles, props.styles),
+        ),
+      ]
+        .filter(Boolean)
+        .join(" "),
+      slotValue().class,
+    );
 
   if (local.isHidden) {
     return null as unknown as JSX.Element;
@@ -99,7 +104,7 @@ export function Text(props: TextProps): JSX.Element {
       class={className()}
       style={skeletonStyle()}
       slot={local.slot || undefined}
-      data-rsp-slot="text"
+      data-rsp-slot={slotValue()["data-rsp-slot"] ?? "text"}
     >
       {children()}
     </span>

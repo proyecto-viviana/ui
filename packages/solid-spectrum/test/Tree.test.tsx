@@ -478,9 +478,15 @@ describe("TreeView (solid-spectrum)", () => {
     ));
 
     const projects = screen.getByRole("row", { name: /Projects/ });
-    expect(projects.querySelector('[data-rsp-slot="icon"]')).toBeInTheDocument();
-    expect(projects.querySelector('[data-rsp-slot="actions"]')).toBeInTheDocument();
-    expect(projects.querySelector('[data-rsp-slot="actionmenu"]')).toBeInTheDocument();
+    const icon = screen.getByTestId("project-icon");
+    expect(icon).toHaveAttribute("slot", "icon");
+    expect(icon).not.toHaveAttribute("data-rsp-slot");
+    const actions = projects.querySelector('[slot="actions"]');
+    const actionMenu = projects.querySelector('[slot="actionmenu"]');
+    expect(actions).toBeInTheDocument();
+    expect(actions).not.toHaveAttribute("data-rsp-slot");
+    expect(actionMenu).toBeInTheDocument();
+    expect(actionMenu).not.toHaveAttribute("data-rsp-slot");
     expect(screen.getByText("Projects")).toHaveAttribute("data-rsp-slot", "label");
     expect(screen.getByText("Pinned work")).toHaveAttribute("data-rsp-slot", "description");
   });

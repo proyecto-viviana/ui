@@ -15,7 +15,6 @@
 import {
   children as resolveChildren,
   createContext,
-  createEffect,
   createMemo,
   onCleanup,
   Show,
@@ -35,7 +34,8 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { baseColor, css, focusRing, style } from "../style" with { type: "macro" };
+import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
@@ -133,6 +133,11 @@ const selectBoxGroupStyles = style<{ orientation?: SelectBoxOrientation }>({
   },
 });
 
+const hasSelectBoxDescription =
+  ":has([slot=description], [data-slot=description], [data-rsp-slot=description])";
+const hasSelectBoxIllustration =
+  ":has([slot=illustration], [data-slot=illustration], [data-rsp-slot=illustration])";
+
 const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectBoxOrientation }>({
   ...focusRing(),
   display: "grid",
@@ -200,15 +205,24 @@ const selectBoxStyles = style<ListBoxOptionRenderProps & { orientation?: SelectB
   gridTemplateAreas: {
     orientation: {
       vertical: ["illustration", ".", "label"],
+      horizontal: {
+        default: ["illustration . label"],
+        [hasSelectBoxDescription]: ["illustration . label", "illustration . description"],
+      },
     },
   },
   gridTemplateRows: {
     orientation: {
-      vertical: ["min-content", 8, "min-content"],
+      vertical: "[48px 8px 18px]",
+      horizontal: {
+        default: "min-content",
+        [hasSelectBoxIllustration]: "[18px 30px]",
+      },
     },
   },
   gridTemplateColumns: {
     orientation: {
+      vertical: "[1fr]",
       horizontal: "[min-content 10px 1fr]",
     },
   },
@@ -351,6 +365,18 @@ const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBo
     isDisabled: "disabled",
   },
 });
+
+const selectBoxSlotLayout = css(`
+  [slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"] {
+    grid-area: illustration;
+  }
+  [slot="label"], [data-slot="label"], [data-rsp-slot="label"] {
+    grid-area: label;
+  }
+  [slot="description"], [data-slot="description"], [data-rsp-slot="description"] {
+    grid-area: description;
+  }
+`);
 
 /**
  * SelectBoxGroup allows users to select one or more options from a list.
@@ -496,82 +522,6 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   );
 }
 
-function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
-  const previousClass = element.getAttribute(dataAttribute);
-  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
-    element.classList.remove(className);
-  }
-
-  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
-    element.classList.add(className);
-  }
-
-  element.setAttribute(dataAttribute, nextClass);
-}
-
-function applySlotClasses(
-  root: HTMLElement | undefined,
-  renderProps: ListBoxOptionRenderProps,
-  orientation: SelectBoxOrientation,
-  isDisabled: boolean,
-): void {
-  if (!root) {
-    return;
-  }
-
-  const slotState = {
-    ...renderProps,
-    isDisabled: renderProps.isDisabled || isDisabled,
-    orientation,
-  };
-
-  for (const element of Array.from(
-    root.querySelectorAll(
-      '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"]',
-    ),
-  )) {
-    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxIllustration(slotState));
-    element.setAttribute("data-rsp-slot", "illustration");
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
-  )) {
-    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxLabel(slotState));
-    element.setAttribute("data-rsp-slot", "label");
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll(
-      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
-    ),
-  )) {
-    replaceManagedClass(element, "data-s2-select-box-slot-class", selectBoxDescription(slotState));
-    element.setAttribute("data-rsp-slot", "description");
-  }
-
-  if (orientation === "horizontal") {
-    const hasIllustration = !!root.querySelector(
-      '[slot="illustration"], [data-slot="illustration"], [data-rsp-slot="illustration"]',
-    );
-    const hasDescription = !!root.querySelector(
-      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
-    );
-
-    root.style.gridTemplateAreas = hasDescription
-      ? '"illustration . label" "illustration . description"'
-      : '"illustration . label"';
-    root.style.gridTemplateRows = hasIllustration ? "18px 30px" : "min-content";
-  } else {
-    root.style.gridTemplateAreas = '"illustration" "." "label"';
-    root.style.gridTemplateRows = "48px 8px 18px";
-    root.style.gridTemplateColumns = "1fr";
-    return;
-  }
-
-  root.style.removeProperty("grid-template-columns");
-}
-
 /**
  * SelectBox is a single selectable item in a SelectBoxGroup.
  */
@@ -616,6 +566,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     [
       local.UNSAFE_className,
       local.class,
+      selectBoxSlotLayout,
       mergeStyles(
         selectBoxStyles({
           ...renderProps,
@@ -631,13 +582,30 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     pressScale(() => optionElement, local.UNSAFE_style)(renderProps);
 
   function SelectBoxContent(renderProps: ListBoxOptionRenderProps) {
-    const resolvedChildren = resolveChildren(() => local.children);
-    createTrackedEffect(() =>
-      applySlotClasses(optionElement, renderProps, orientation(), isDisabled()),
-    );
+    const slots = () => {
+      const slotState = {
+        ...renderProps,
+        isDisabled: renderProps.isDisabled || isDisabled(),
+        orientation: orientation(),
+      };
+      return {
+        default: { class: selectBoxLabel(slotState), "data-rsp-slot": "label" },
+        label: { class: selectBoxLabel(slotState), "data-rsp-slot": "label" },
+        description: { class: selectBoxDescription(slotState), "data-rsp-slot": "description" },
+        illustration: { class: selectBoxIllustration(slotState), "data-rsp-slot": "illustration" },
+      };
+    };
+
+    // Resolve authored children under the provider. Doing it in SelectBoxContent
+    // would own them outside SlotContext, so Text and Illustration would miss it.
+    // The read stays in JSX so a later children change still subscribes.
+    function SlottedChildren() {
+      const resolvedChildren = resolveChildren(() => local.children);
+      return <>{resolvedChildren()}</>;
+    }
 
     return (
-      <>
+      <SlotProvider slots={slots}>
         <div class={selectBoxSelectionIndicator} aria-hidden="true">
           <Show when={!renderProps.isDisabled && selectionMode() === "multiple"}>
             <div class={selectBoxCheckboxBox(renderProps)} data-rsp-slot="selection-indicator">
@@ -653,8 +621,8 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
             </div>
           </Show>
         </div>
-        {resolvedChildren()}
-      </>
+        <SlottedChildren />
+      </SlotProvider>
     );
   }
 

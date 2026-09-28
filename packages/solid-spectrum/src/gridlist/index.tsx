@@ -57,7 +57,8 @@ import LinkOut from "../icon/ui-icons/LinkOut";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
+import { baseColor, colorMix, css, focusRing, space, style } from "../style" with { type: "macro" };
+import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
@@ -761,6 +762,31 @@ const listViewActionMenu = style({
   alignSelf: "center",
 });
 
+const listViewSlotLayout = css(`
+  [slot="icon"], [data-slot="icon"], [data-rsp-slot="icon"] {
+    grid-area: icon;
+    grid-row-end: span 2;
+    align-self: center;
+  }
+  [slot="actions"], [data-slot="actions"], [data-rsp-slot="actions"] {
+    grid-area: actions;
+    grid-row-end: span 2;
+    align-self: center;
+    justify-self: end;
+  }
+  [slot="actionmenu"], [data-slot="actionmenu"], [data-rsp-slot="actionmenu"] {
+    grid-area: actionmenu;
+    grid-row-end: span 2;
+    align-self: center;
+  }
+  [slot="label"], [data-slot="label"], [data-rsp-slot="label"] {
+    grid-area: label;
+  }
+  [slot="description"], [data-slot="description"], [data-rsp-slot="description"] {
+    grid-area: description;
+  }
+`);
+
 const listViewTrailingIcon = style<GridListItemRenderProps>({
   gridArea: "trailing-icon",
   gridRowEnd: "span 2",
@@ -803,70 +829,6 @@ function isTextOnlyChildren(value: unknown): boolean {
   }
 
   return Array.isArray(value) && value.every(isTextOnlyChildren);
-}
-
-function replaceManagedClass(element: Element, dataAttribute: string, nextClass: string): void {
-  const previousClass = element.getAttribute(dataAttribute);
-  for (const className of previousClass?.split(/\s+/).filter(Boolean) ?? []) {
-    element.classList.remove(className);
-  }
-
-  for (const className of nextClass.split(/\s+/).filter(Boolean)) {
-    element.classList.add(className);
-  }
-
-  element.setAttribute(dataAttribute, nextClass);
-}
-
-function applyItemSlotClasses(
-  root: HTMLElement | undefined,
-  renderProps: GridListItemRenderProps,
-  context: ListViewContextValue,
-): void {
-  if (!root) {
-    return;
-  }
-
-  const state = {
-    ...renderProps,
-    overflowMode: context.overflowMode,
-  };
-
-  const gridCell = root.querySelector('[role="gridcell"]');
-  if (gridCell) {
-    replaceManagedClass(gridCell, "data-s2-listview-cell-class", listViewItemCell);
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll('[slot="label"], [data-slot="label"], [data-rsp-slot="label"]'),
-  )) {
-    replaceManagedClass(element, "data-s2-listview-slot-class", listViewLabel(state));
-    element.setAttribute("data-rsp-slot", "label");
-  }
-
-  for (const element of Array.from(
-    root.querySelectorAll(
-      '[slot="description"], [data-slot="description"], [data-rsp-slot="description"]',
-    ),
-  )) {
-    replaceManagedClass(element, "data-s2-listview-slot-class", listViewDescription(state));
-    element.setAttribute("data-rsp-slot", "description");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="icon"], [data-slot="icon"]'))) {
-    replaceManagedClass(element, "data-s2-listview-slot-class", listViewSlotIcon);
-    element.setAttribute("data-rsp-slot", "icon");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="actions"]'))) {
-    replaceManagedClass(element, "data-s2-listview-slot-class", listViewActions);
-    element.setAttribute("data-rsp-slot", "actions");
-  }
-
-  for (const element of Array.from(root.querySelectorAll('[slot="actionmenu"]'))) {
-    replaceManagedClass(element, "data-s2-listview-slot-class", listViewActionMenu);
-    element.setAttribute("data-rsp-slot", "actionmenu");
-  }
 }
 
 export function GridList<T extends object>(props: GridListProps<T>): JSX.Element {
@@ -1165,10 +1127,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   }
 
   const collectionState = useContext(HeadlessGridListStateContext);
-  let itemElement: HTMLDivElement | undefined;
-  const assignItemRef = mergeContextRefs(local.ref, (element: HTMLDivElement) => {
-    itemElement = element;
-  });
+  const assignItemRef = mergeContextRefs(local.ref);
   const isExternalLink = () => !!local.href && local.target === "_blank";
   const hasTrailingIcon = () =>
     (isExternalLink() && !context.hideLinkOutIcon) || Boolean(local.hasChildItems);
@@ -1176,6 +1135,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     [
       local.UNSAFE_className,
       local.class,
+      listViewSlotLayout,
       mergeStyles(
         listViewItem({
           ...getRowLayerProps(renderProps),
@@ -1211,7 +1171,20 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     };
   };
   function ItemChildren(renderProps: GridListItemRenderProps) {
-    createTrackedEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+    const slots = () => {
+      const state = {
+        ...renderProps,
+        overflowMode: context.overflowMode,
+      };
+      return {
+        default: { class: listViewLabel(state), "data-rsp-slot": "label" },
+        label: { class: listViewLabel(state), "data-rsp-slot": "label" },
+        description: { class: listViewDescription(state), "data-rsp-slot": "description" },
+        icon: { class: listViewSlotIcon, "data-rsp-slot": "icon" },
+        actions: { class: listViewActions, "data-rsp-slot": "actions" },
+        actionmenu: { class: listViewActionMenu, "data-rsp-slot": "actionmenu" },
+      };
+    };
 
     const textContext = () => ({
       slots: {
@@ -1237,81 +1210,83 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     }
 
     return (
-      <TextContext value={textContext() as SpectrumContextValue<any>}>
-        <IconContext
-          value={{
-            slot: "icon",
-            styles: listViewSlotIcon,
-          }}
-        >
-          <ImageContext
+      <SlotProvider slots={slots}>
+        <TextContext value={textContext() as SpectrumContextValue<any>}>
+          <IconContext
             value={{
-              slot: "image",
-              styles: listViewImage,
+              slot: "icon",
+              styles: listViewSlotIcon,
             }}
           >
-            <ActionButtonGroupContext
+            <ImageContext
               value={{
-                slot: "actions",
-                size: "S",
-                styles: listViewActions,
+                slot: "image",
+                styles: listViewImage,
               }}
             >
-              <ActionMenuContext
+              <ActionButtonGroupContext
                 value={{
-                  slot: "actionmenu",
+                  slot: "actions",
                   size: "S",
-                  menuSize: "S",
-                  styles: listViewActionMenu,
+                  styles: listViewActions,
                 }}
               >
-                {renderProps.selectionMode !== "none" &&
-                renderProps.selectionBehavior === "toggle" ? (
-                  <GridListSelectionCheckbox
-                    itemKey={props.id}
-                    renderProps={renderProps}
-                    excludeFromTabOrder
-                  />
-                ) : null}
-                <div
-                  class={listViewRowBackground(getRowLayerProps(renderProps))}
-                  aria-hidden="true"
-                />
-                {renderProps.isFocusVisible ? (
+                <ActionMenuContext
+                  value={{
+                    slot: "actionmenu",
+                    size: "S",
+                    menuSize: "S",
+                    styles: listViewActionMenu,
+                  }}
+                >
+                  {renderProps.selectionMode !== "none" &&
+                  renderProps.selectionBehavior === "toggle" ? (
+                    <GridListSelectionCheckbox
+                      itemKey={props.id}
+                      renderProps={renderProps}
+                      excludeFromTabOrder
+                    />
+                  ) : null}
                   <div
-                    class={listViewRowFocusRing(getRowLayerProps(renderProps))}
+                    class={listViewRowBackground(getRowLayerProps(renderProps))}
                     aria-hidden="true"
                   />
-                ) : null}
-                {local.image ? (
-                  <Image src={local.image} alt={local.imageAlt ?? ""} styles={listViewImage} />
-                ) : null}
-                {local.icon ? (
-                  <span slot="icon" class={listViewSlotIcon} data-rsp-slot="icon">
-                    {local.icon()}
-                  </span>
-                ) : null}
-                <ResolvedItemContent />
-                {isExternalLink() && !context.hideLinkOutIcon ? (
-                  <LinkOut
-                    size="M"
-                    class={listViewTrailingIcon(renderProps)}
-                    data-rsp-slot="trailing-icon"
-                    aria-hidden="true"
-                  />
-                ) : local.hasChildItems ? (
-                  <Chevron
-                    size="M"
-                    class={listViewTrailingIcon(renderProps)}
-                    data-rsp-slot="trailing-icon"
-                    aria-hidden="true"
-                  />
-                ) : null}
-              </ActionMenuContext>
-            </ActionButtonGroupContext>
-          </ImageContext>
-        </IconContext>
-      </TextContext>
+                  {renderProps.isFocusVisible ? (
+                    <div
+                      class={listViewRowFocusRing(getRowLayerProps(renderProps))}
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  {local.image ? (
+                    <Image src={local.image} alt={local.imageAlt ?? ""} styles={listViewImage} />
+                  ) : null}
+                  {local.icon ? (
+                    <span slot="icon" class={listViewSlotIcon} data-rsp-slot="icon">
+                      {local.icon()}
+                    </span>
+                  ) : null}
+                  <ResolvedItemContent />
+                  {isExternalLink() && !context.hideLinkOutIcon ? (
+                    <LinkOut
+                      size="M"
+                      class={listViewTrailingIcon(renderProps)}
+                      data-rsp-slot="trailing-icon"
+                      aria-hidden="true"
+                    />
+                  ) : local.hasChildItems ? (
+                    <Chevron
+                      size="M"
+                      class={listViewTrailingIcon(renderProps)}
+                      data-rsp-slot="trailing-icon"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                </ActionMenuContext>
+              </ActionButtonGroupContext>
+            </ImageContext>
+          </IconContext>
+        </TextContext>
+      </SlotProvider>
     );
   }
 
