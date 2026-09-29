@@ -263,6 +263,46 @@ describe("createAutocomplete", () => {
     expect(keySpy).toHaveBeenCalledWith("a");
   });
 
+  // Pin useAutocomplete returns before collection emulation for Shift+Home/End
+  // when nothing is virtually focused, so the field can extend its text selection.
+  it("keeps Shift+Home in the text field when nothing is virtually focused", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const listbox = screen.getByTestId("listbox");
+    const focusSpy = vi.fn();
+    listbox.addEventListener(FOCUS_EVENT, focusSpy);
+
+    fireEvent.keyDown(input, { key: "Home", shiftKey: true });
+    fireEvent.keyDown(input, { key: "End", shiftKey: true });
+
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
+
+  it("still moves Home into the collection when shift is not held", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const listbox = screen.getByTestId("listbox");
+    const focusSpy = vi.fn();
+    listbox.addEventListener(FOCUS_EVENT, focusSpy);
+
+    fireEvent.keyDown(input, { key: "Home" });
+
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("still forwards Shift+Home to the focused option", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const item = screen.getByTestId("item-1");
+    item.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    const keySpy = vi.fn();
+    item.addEventListener("keydown", (e) => keySpy((e as KeyboardEvent).key));
+
+    fireEvent.keyDown(input, { key: "End", shiftKey: true });
+
+    expect(keySpy).toHaveBeenCalledWith("End");
+  });
+
   it("should handle Escape key", () => {
     render(() => <TestAutocomplete />);
 

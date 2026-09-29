@@ -346,6 +346,12 @@ export function createAutocomplete<T = unknown>(
       case "End":
       case "PageUp":
       case "PageDown": {
+        // Shift+Home/End with no virtual focus extends the text selection.
+        // Returning leaves that shortcut in the field.
+        if ((e.key === "Home" || e.key === "End") && !focusedNodeId && e.shiftKey) {
+          return;
+        }
+
         // Prevent cursor movement in input
         e.preventDefault();
 

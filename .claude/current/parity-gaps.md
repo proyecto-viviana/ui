@@ -77,6 +77,7 @@ These behaviors match the pin in this checkout.
 - An unlabeled step list takes its name from the step list catalog.
 - An unlabeled autocomplete suggestion list takes its name from the autocomplete catalog.
 - An autocomplete text field keeps the platform select-all shortcut.
+- An autocomplete text field keeps Shift+Home and Shift+End when nothing is virtually focused.
 - A column resizer announces its width from the table catalog.
 - A keyboard or virtual column resizer describes itself from the table catalog.
 - A sorted table describes and announces its sort from the table catalog.
