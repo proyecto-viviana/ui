@@ -96,6 +96,7 @@ These behaviors match the pin in this checkout.
 - A virtualized grid list counts one column.
 - A text field forwards its popup and error attributes to the input.
 - A slider forwards its description and details to the slider.
+- A virtualized grid list item exposes its row index.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

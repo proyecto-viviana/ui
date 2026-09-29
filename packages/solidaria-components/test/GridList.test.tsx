@@ -14,6 +14,7 @@ import {
   GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
+import { CollectionRendererContext } from "../src/Collection";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 
@@ -1183,6 +1184,58 @@ describe("GridList", () => {
 
       const grid = document.querySelector('[role="grid"]');
       expect(grid).toBeTruthy();
+    });
+
+    it("numbers rows when a parent collection renderer virtualizes the list", () => {
+      render(() => (
+        <CollectionRendererContext
+          value={{
+            isVirtualized: true,
+            renderItem: () => undefined as never,
+          }}
+        >
+          <GridList items={testItems} getKey={(item) => item.id} aria-label="Fruits">
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        </CollectionRendererContext>
+      ));
+
+      expect(screen.getByRole("row", { name: "Apple" })).toHaveAttribute("aria-rowindex", "1");
+      expect(screen.getByRole("row", { name: "Banana" })).toHaveAttribute("aria-rowindex", "2");
+      expect(screen.getByRole("row", { name: "Cherry" })).toHaveAttribute("aria-rowindex", "3");
+    });
+
+    it("numbers rows when the grid list itself is virtualized", () => {
+      render(() => (
+        <GridList items={testItems} getKey={(item) => item.id} aria-label="Fruits" isVirtualized>
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      expect(screen.getByRole("row", { name: "Apple" })).toHaveAttribute("aria-rowindex", "1");
+      expect(screen.getByRole("row", { name: "Cherry" })).toHaveAttribute("aria-rowindex", "3");
+    });
+
+    it("omits the row index when the list is not virtualized", () => {
+      render(() => (
+        <GridList items={testItems} getKey={(item) => item.id} aria-label="Fruits">
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      expect(screen.getByRole("row", { name: "Apple" })).not.toHaveAttribute("aria-rowindex");
     });
   });
 

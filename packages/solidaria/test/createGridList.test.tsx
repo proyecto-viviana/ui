@@ -486,3 +486,168 @@ describe("createGridList virtualized column count", () => {
     });
   });
 });
+
+function createSectionedRowCollection(): GridCollection<{ key: Key }> {
+  const nodes: GridNode<{ key: Key }>[] = [
+    {
+      type: "section",
+      key: "s1",
+      value: null,
+      textValue: "",
+      rendered: null,
+      level: 0,
+      index: 0,
+      parentKey: null,
+      hasChildNodes: true,
+      childNodes: [],
+    },
+    {
+      type: "item",
+      key: "a",
+      value: { key: "a" },
+      textValue: "a",
+      rendered: null,
+      level: 1,
+      index: 0,
+      parentKey: "s1",
+      hasChildNodes: false,
+      childNodes: [],
+    },
+    {
+      type: "item",
+      key: "b",
+      value: { key: "b" },
+      textValue: "b",
+      rendered: null,
+      level: 1,
+      index: 1,
+      parentKey: "s1",
+      hasChildNodes: false,
+      childNodes: [],
+    },
+    {
+      type: "section",
+      key: "s2",
+      value: null,
+      textValue: "",
+      rendered: null,
+      level: 0,
+      index: 1,
+      parentKey: null,
+      hasChildNodes: true,
+      childNodes: [],
+    },
+    {
+      type: "item",
+      key: "c",
+      value: { key: "c" },
+      textValue: "c",
+      rendered: null,
+      level: 1,
+      index: 0,
+      parentKey: "s2",
+      hasChildNodes: false,
+      childNodes: [],
+    },
+  ];
+  const keyMap = new Map<Key, GridNode<{ key: Key }>>();
+  nodes.forEach((node) => keyMap.set(node.key, node));
+  const order = nodes.map((node) => node.key);
+
+  return {
+    rows: nodes,
+    columns: [],
+    headerRows: [],
+    get rowCount() {
+      return nodes.length;
+    },
+    get columnCount() {
+      return 1;
+    },
+    get size() {
+      return nodes.length;
+    },
+    getKeys() {
+      return order;
+    },
+    getItem(key) {
+      return keyMap.get(key) ?? null;
+    },
+    at(index) {
+      return nodes[index] ?? null;
+    },
+    getKeyBefore(key) {
+      const idx = order.indexOf(key);
+      return idx > 0 ? order[idx - 1] : null;
+    },
+    getKeyAfter(key) {
+      const idx = order.indexOf(key);
+      return idx >= 0 && idx < order.length - 1 ? order[idx + 1] : null;
+    },
+    getFirstKey() {
+      return order[0] ?? null;
+    },
+    getLastKey() {
+      return order[order.length - 1] ?? null;
+    },
+    getChildren(key) {
+      return keyMap.get(key)?.childNodes ?? [];
+    },
+    getTextValue(key) {
+      return keyMap.get(key)?.textValue ?? "";
+    },
+    getCell() {
+      return null;
+    },
+    [Symbol.iterator]() {
+      return nodes[Symbol.iterator]();
+    },
+  };
+}
+
+describe("createGridListItem virtualized row index", () => {
+  it("numbers a virtualized row from its collection index", () => {
+    createRoot((dispose) => {
+      const state = createRowGridState();
+      const node = state.collection.getItem("c")!;
+      const item = createGridListItem(
+        () => ({ node, isVirtualized: true }),
+        () => state,
+        () => null,
+      );
+
+      expect(node.rowIndex).toBeUndefined();
+      expect(item.rowProps["aria-rowindex"]).toBe(3);
+      dispose();
+    });
+  });
+
+  it("skips section nodes when numbering a virtualized row", () => {
+    createRoot((dispose) => {
+      const collection = createSectionedRowCollection();
+      const state = createGridState<{ key: Key }>(() => ({ collection }));
+      const item = createGridListItem(
+        () => ({ node: state.collection.getItem("c")!, isVirtualized: true }),
+        () => state,
+        () => null,
+      );
+
+      expect(item.rowProps["aria-rowindex"]).toBe(3);
+      dispose();
+    });
+  });
+
+  it("omits the row index when the list is not virtualized", () => {
+    createRoot((dispose) => {
+      const state = createRowGridState();
+      const item = createGridListItem(
+        () => ({ node: state.collection.getItem("c")! }),
+        () => state,
+        () => null,
+      );
+
+      expect(item.rowProps["aria-rowindex"]).toBeUndefined();
+      dispose();
+    });
+  });
+});

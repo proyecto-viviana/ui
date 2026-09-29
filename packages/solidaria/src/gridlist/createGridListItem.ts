@@ -161,9 +161,16 @@ export function createGridListItem<
       "aria-labelledby": label ? `${rowId} ${descriptionId}` : undefined,
     };
 
-    // Add aria-rowindex for virtualized lists
-    if (p.isVirtualized && node.rowIndex != null) {
-      baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
+    // Virtualized rows number by position among non-section nodes. List nodes
+    // store `index`, which restarts inside a section, so a section collection
+    // cannot use that index directly. Matches useGridListItem.
+    if (p.isVirtualized) {
+      const nodes = [...s.collection];
+      baseProps["aria-rowindex"] = nodes.some((candidate) => candidate.type === "section")
+        ? [...s.collection.getKeys()]
+            .filter((key) => s.collection.getItem(key)?.type !== "section")
+            .findIndex((key) => key === node.key) + 1
+        : node.index + 1;
     }
 
     const mergedProps = mergeProps<JSX.HTMLAttributes<HTMLElement>>(

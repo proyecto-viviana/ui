@@ -690,6 +690,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   }));
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
+    isVirtualized: ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized,
     renderItem: (item) => props.children(item as T),
     renderDropIndicator: (index: number, position: "before" | "after" | "on") =>
       dndDropIndicator(index, position) ??
@@ -808,6 +809,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   ]);
 
   const context = useContext(GridListStateContext);
+  const itemRenderer = useCollectionRenderer<unknown>();
   if (!context) {
     throw new Error("GridListItem must be used within a GridList");
   }
@@ -852,6 +854,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       isLink: local.href != null,
       href: local.href,
       routerOptions: local.routerOptions,
+      isVirtualized: itemRenderer?.isVirtualized,
     }),
     () => state,
     ref,
