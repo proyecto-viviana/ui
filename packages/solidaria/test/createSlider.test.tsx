@@ -31,6 +31,8 @@ function TestSlider(props: {
   isDisabled?: boolean;
   orientation?: "horizontal" | "vertical";
   "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-details"?: string;
   label?: string;
 }) {
   let trackRef: HTMLDivElement | null = null;
@@ -50,6 +52,8 @@ function TestSlider(props: {
   const { labelProps, groupProps, trackProps, thumbProps, inputProps, outputProps } = createSlider(
     () => ({
       "aria-label": props["aria-label"],
+      "aria-describedby": props["aria-describedby"],
+      "aria-details": props["aria-details"],
       label: props.label,
       isDisabled: props.isDisabled,
       orientation: props.orientation,
@@ -128,6 +132,35 @@ describe("createSlider", () => {
       render(() => <TestSlider aria-label="Volume" isDisabled />);
       const thumb = screen.getByTestId("slider-thumb");
       expect(thumb).not.toHaveAttribute("tabIndex");
+    });
+
+    it("puts the description and details on the slider thumb", () => {
+      render(() => (
+        <TestSlider
+          aria-label="Volume"
+          aria-describedby="volume-hint"
+          aria-details="volume-details"
+        />
+      ));
+      const thumb = screen.getByTestId("slider-thumb");
+      const group = screen.getByTestId("slider-group");
+      const input = screen.getByTestId("slider-input");
+      expect(thumb).toHaveAttribute("aria-describedby", "volume-hint");
+      expect(thumb).toHaveAttribute("aria-details", "volume-details");
+      expect(group).not.toHaveAttribute("aria-describedby");
+      expect(group).not.toHaveAttribute("aria-details");
+      expect(input).not.toHaveAttribute("aria-describedby");
+      expect(input).not.toHaveAttribute("aria-details");
+    });
+
+    it("omits the description and details when they are not set", () => {
+      render(() => <TestSlider aria-label="Volume" />);
+      const thumb = screen.getByTestId("slider-thumb");
+      const group = screen.getByTestId("slider-group");
+      expect(thumb).not.toHaveAttribute("aria-describedby");
+      expect(thumb).not.toHaveAttribute("aria-details");
+      expect(group).not.toHaveAttribute("aria-describedby");
+      expect(group).not.toHaveAttribute("aria-details");
     });
   });
 

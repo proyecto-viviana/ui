@@ -43,6 +43,8 @@ export interface AriaSliderProps {
   "aria-labelledby"?: string;
   /** The ID of an element that describes the slider. */
   "aria-describedby"?: string;
+  /** The ID of an element that provides details for the slider. */
+  "aria-details"?: string;
   /** The orientation of the slider. */
   orientation?: SliderOrientation;
   /** The name for the form input. */
@@ -290,7 +292,7 @@ export function createSlider(
       return labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get groupProps() {
-      return mergeProps(
+      const merged = mergeProps(
         domProps(),
         fieldProps as Record<string, unknown>,
         {
@@ -298,7 +300,11 @@ export function createSlider(
           "data-disabled": state.isDisabled || undefined,
           "data-orientation": state.orientation,
         } as Record<string, unknown>,
-      ) as JSX.HTMLAttributes<HTMLElement>;
+      ) as Record<string, unknown>;
+      // The labelable filter copies these onto the group. They belong on the slider.
+      delete merged["aria-describedby"];
+      delete merged["aria-details"];
+      return merged as JSX.HTMLAttributes<HTMLElement>;
     },
     get trackProps() {
       return {
@@ -316,6 +322,7 @@ export function createSlider(
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get thumbProps() {
+      const p = getProps();
       const percent = state.getValuePercent();
       const isVertical = state.orientation === "vertical";
       const offset = !isVertical && locale().direction === "rtl" ? 1 - percent : percent;
@@ -330,6 +337,8 @@ export function createSlider(
         "aria-disabled": state.isDisabled ? "true" : undefined,
         "aria-labelledby": labelledBy(),
         "aria-label": labelledBy() ? undefined : ariaLabel(),
+        "aria-describedby": p["aria-describedby"],
+        "aria-details": p["aria-details"],
         tabIndex: state.isDisabled ? undefined : 0,
         onPointerDown: onThumbPointerDown,
         onKeyDown: onThumbKeyDown,

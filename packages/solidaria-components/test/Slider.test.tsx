@@ -398,6 +398,27 @@ describe("Slider", () => {
       const slider = screen.getByRole("slider");
       expect(slider).toHaveAttribute("aria-orientation", "vertical");
     });
+
+    it("puts the description and details on the slider", () => {
+      render(() => (
+        <TestSlider
+          sliderProps={{
+            "aria-describedby": "volume-hint",
+            "aria-details": "volume-details",
+          }}
+        />
+      ));
+
+      const slider = screen.getByRole("slider");
+      const group = document.querySelector(".solidaria-Slider");
+      const input = document.querySelector('input[type="range"]');
+      expect(slider).toHaveAttribute("aria-describedby", "volume-hint");
+      expect(slider).toHaveAttribute("aria-details", "volume-details");
+      expect(group).not.toHaveAttribute("aria-describedby");
+      expect(group).not.toHaveAttribute("aria-details");
+      expect(input).not.toHaveAttribute("aria-describedby");
+      expect(input).not.toHaveAttribute("aria-details");
+    });
   });
 
   // ============================================

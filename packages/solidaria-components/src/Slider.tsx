@@ -228,6 +228,7 @@ export function Slider(props: SliderProps): JSX.Element {
       "aria-label",
       "aria-labelledby",
       "aria-describedby",
+      "aria-details",
       "isDisabled",
       "id",
       "name",
