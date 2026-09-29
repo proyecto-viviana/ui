@@ -4282,13 +4282,26 @@ describe("Table", () => {
       expect(labels).toContain("Resize Type");
     });
 
+    it("names the column resizer from its label and the column header", () => {
+      render(() => <ResizableTestTable />);
+      const input = document.querySelector(
+        'input[aria-label="Resize Name"]',
+      ) as HTMLInputElement | null;
+      expect(input).not.toBeNull();
+      const header = input!.closest('[role="columnheader"]') as HTMLElement | null;
+      expect(header).not.toBeNull();
+      expect(input!.id).not.toBe("");
+      expect(header!.id).not.toBe("");
+      expect(input).toHaveAttribute("aria-labelledby", `${input!.id} ${header!.id}`);
+    });
+
     it("names the column resizer value from the table catalog", () => {
       render(() => (
         <I18nProvider locale="es-ES">
           <ResizableTestTable />
         </I18nProvider>
       ));
-      const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
+      const input = screen.getByRole("slider", { name: "Resize Name Name" }) as HTMLInputElement;
       expect(input).toHaveAttribute("aria-valuetext", `${Math.floor(Number(input.value))} píxeles`);
     });
 
@@ -4300,7 +4313,7 @@ describe("Table", () => {
             <ResizableTestTable />
           </I18nProvider>
         ));
-        const input = screen.getByRole("slider", { name: "Resize Name" });
+        const input = screen.getByRole("slider", { name: "Resize Name Name" });
         const describedBy = input.getAttribute("aria-describedby");
         const description = describedBy ? document.getElementById(describedBy) : null;
         expect(description?.textContent).toBe("Pulse Intro para empezar a redimensionar");
@@ -4357,7 +4370,7 @@ describe("Table", () => {
         </ResizableTableContainer>
       ));
 
-      const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
+      const input = screen.getByRole("slider", { name: "Resize Name Name" }) as HTMLInputElement;
       expect(input.min).toBe("180");
       expect(input.max).toBe("320");
       const value = Number(input.value);

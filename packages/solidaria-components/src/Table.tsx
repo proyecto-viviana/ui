@@ -2348,6 +2348,8 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
 
   const resizeCtx = useContext(TableColumnResizeStateContext);
   const hasResizeContext = !!resizeCtx;
+  // Resize state has no table. The header id is on the table this resizer is inside.
+  const tableState = useContext(TableStateContext);
 
   // Create a fallback "no-op" resize state for when there's no ResizableTableContainer
   const noopResizeState: TableColumnResizeState = {
@@ -2391,7 +2393,11 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
         local.onResizeEnd?.(widths);
       },
     }),
-    () => resizeCtx?.getState() ?? noopResizeState,
+    () => {
+      const resize = resizeCtx?.getState() ?? noopResizeState;
+      if (!tableState) return resize;
+      return { ...resize, tableState };
+    },
   );
 
   const renderValues = createMemo<ColumnResizerRenderProps>(() => ({

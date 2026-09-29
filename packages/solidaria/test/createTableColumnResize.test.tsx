@@ -498,4 +498,11 @@ describe("createTableColumnResize lifecycle", () => {
       expect(sharedState.resizingColumn()).toBeNull();
     });
   });
+
+  it("gives the range input an id and omits the column header when no table is mounted", () => {
+    render(() => <ResizerHarness />);
+    const input = screen.getByTestId("resizer-input");
+    expect(input.id).not.toBe("");
+    expect(input).not.toHaveAttribute("aria-labelledby");
+  });
 });

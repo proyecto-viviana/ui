@@ -80,6 +80,7 @@ These behaviors match the pin in this checkout.
 - An autocomplete text field keeps Shift+Home and Shift+End when nothing is virtually focused.
 - A column resizer announces its width from the table catalog.
 - A keyboard or virtual column resizer describes itself from the table catalog.
+- A column resizer names itself from its label and the column header.
 - A sorted table describes and announces its sort from the table catalog.
 - A drop target describes how to drop from the drag catalog while a drag is in progress.
 - A drop zone button describes how to drop from the drag catalog while a drag is in progress.

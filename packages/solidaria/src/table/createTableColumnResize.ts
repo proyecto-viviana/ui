@@ -23,8 +23,15 @@
 import { createSignal, createMemo, onCleanup, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import type { Key, TableColumnResizeState } from "@proyecto-viviana/solid-stately";
+import {
+  createId,
+  type Key,
+  type TableCollection,
+  type TableColumnResizeState,
+  type TableState,
+} from "@proyecto-viviana/solid-stately";
 import { createStringFormatter, useLocale } from "../i18n";
+import { getTableData } from "./createTable";
 import { tableIntlStrings } from "./intl";
 import { createInteractionModality } from "../interactions/createInteractionModality";
 import { createMove } from "../interactions/createMove";
@@ -79,11 +86,16 @@ const KEYBOARD_STEP = 10; // px per arrow key press
  */
 export function createTableColumnResize(
   props: Accessor<CreateTableColumnResizeProps>,
-  state: Accessor<TableColumnResizeState>,
+  state: Accessor<
+    TableColumnResizeState & {
+      tableState?: TableState<object, TableCollection<object>>;
+    }
+  >,
   inputRef?: () => HTMLInputElement | null,
 ): TableColumnResizeResult {
   const getProps = () => props();
   const getState = () => state();
+  const inputId = createId();
   const locale = useLocale();
   const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
   const { modality } = createInteractionModality();
@@ -375,6 +387,7 @@ export function createTableColumnResize(
     ref: (el: HTMLInputElement | null) => {
       internalInputRef = el;
     },
+    id: inputId,
     get type() {
       return "range";
     },
@@ -386,6 +399,15 @@ export function createTableColumnResize(
     },
     get "aria-label"() {
       return getProps()["aria-label"];
+    },
+    // Join this input with the column header id (`${tableId}-${columnKey}`).
+    // Omit the attribute when the resizer is not inside a table.
+    get "aria-labelledby"() {
+      const tableState = getState().tableState;
+      if (!tableState) return undefined;
+      const tableData = getTableData(tableState);
+      if (!tableData) return undefined;
+      return `${inputId} ${tableData.tableId}-${String(getProps().column.key)}`;
     },
     get "aria-orientation"() {
       return "horizontal" as const;
