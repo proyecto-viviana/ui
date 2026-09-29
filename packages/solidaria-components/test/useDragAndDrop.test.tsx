@@ -4,14 +4,20 @@
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import { render } from "@solidjs/testing-library";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
 import type {
   DropTarget,
   DroppableCollectionState,
   DragPreviewRenderer,
+  Key,
 } from "@proyecto-viviana/solid-stately";
-import { setGlobalDraggingCollectionRef, setGlobalDraggingKeys } from "@proyecto-viviana/solidaria";
+import {
+  I18nProvider,
+  setGlobalDraggingCollectionRef,
+  setGlobalDraggingKeys,
+} from "@proyecto-viviana/solidaria";
 
 afterEach(() => {
   setGlobalDraggingCollectionRef(null);
@@ -261,6 +267,99 @@ describe("useDragAndDrop", () => {
 
       dispose();
     });
+  });
+
+  it("names a drop indicator from the drag catalog", () => {
+    // RAC `useDropIndicator.ts:65-107`. Neighbor keys are the node's prevKey/nextKey,
+    // and only a neighbor whose type is `item` joins the between/after/before label.
+    type IndicatorNode = {
+      type: string;
+      key: string;
+      textValue: string;
+      prevKey: string | null;
+      nextKey: string | null;
+    };
+    const nodes: Record<string, IndicatorNode> = {
+      heading: {
+        type: "section",
+        key: "heading",
+        textValue: "Grupo",
+        prevKey: null,
+        nextKey: "read",
+      },
+      read: {
+        type: "item",
+        key: "read",
+        textValue: "Leer",
+        prevKey: "heading",
+        nextKey: "write",
+      },
+      write: {
+        type: "item",
+        key: "write",
+        textValue: "Escribir",
+        prevKey: "read",
+        nextKey: "admin",
+      },
+      admin: {
+        type: "item",
+        key: "admin",
+        textValue: "Admin",
+        prevKey: "write",
+        nextKey: null,
+      },
+    };
+    const collection = {
+      getTextValue(key: Key) {
+        return nodes[String(key)]?.textValue;
+      },
+      getItem(key: Key) {
+        return nodes[String(key)] ?? null;
+      },
+      getKeyBefore(key: Key) {
+        return nodes[String(key)]?.prevKey ?? null;
+      },
+      getKeyAfter(key: Key) {
+        return nodes[String(key)]?.nextKey ?? null;
+      },
+    };
+
+    const labels = new Map<string, string | undefined>();
+    const labelledBy = new Map<string, string | undefined>();
+
+    const Probe = (props: { id: string; target: DropTarget }) => {
+      const { dragAndDropHooks } = useDragAndDrop({ onInsert: () => {} });
+      // RAC `useDroppableCollectionState.ts:175` returns `collection` for the indicator.
+      const state = dragAndDropHooks.useDroppableCollectionState?.({ collection });
+      if (!state) return null;
+      const result = dragAndDropHooks.useDropIndicator?.(
+        { target: props.target },
+        state,
+        () => null,
+      );
+      labels.set(props.id, result?.dropIndicatorProps["aria-label"]);
+      labelledBy.set(props.id, result?.dropIndicatorProps["aria-labelledby"] as string | undefined);
+      return null;
+    };
+
+    const view = render(() => (
+      <I18nProvider locale="es-ES">
+        <Probe id="between" target={{ type: "item", key: "write", dropPosition: "before" }} />
+        <Probe id="before" target={{ type: "item", key: "read", dropPosition: "before" }} />
+        <Probe id="after" target={{ type: "item", key: "admin", dropPosition: "after" }} />
+        <Probe id="on" target={{ type: "item", key: "write", dropPosition: "on" }} />
+        <Probe id="root" target={{ type: "root" }} />
+      </I18nProvider>
+    ));
+
+    expect(labels.get("between")).toBe("Insertar entre Leer y Escribir");
+    expect(labels.get("before")).toBe("Insertar antes de Leer");
+    expect(labels.get("after")).toBe("Insertar después de Admin");
+    expect(labels.get("on")).toBe("Soltar en Escribir");
+    expect(labels.get("root")).toBe("Soltar en");
+    expect(labelledBy.get("root")).toBeUndefined();
+
+    view.unmount();
   });
 
   it("preserves symbol accepted drag types through droppable state wiring", () => {

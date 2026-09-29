@@ -28,6 +28,8 @@ describe("createDroppableCollectionState", () => {
         onReorder: () => {},
       }));
 
+      expect(state.collection).toBe(collection);
+
       state.setTarget({ type: "item", key: "read", dropPosition: "after" });
 
       flush();
@@ -45,6 +47,14 @@ describe("createDroppableCollectionState", () => {
       flush();
       expect(state.isDropTargetFor({ type: "item", key: "write", dropPosition: "on" })).toBe(false);
 
+      dispose();
+    });
+  });
+
+  it("leaves collection undefined when the host omits it", () => {
+    createRoot((dispose) => {
+      const state = createDroppableCollectionState(() => ({ onInsert: () => {} }));
+      expect(state.collection).toBeUndefined();
       dispose();
     });
   });

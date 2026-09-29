@@ -21,11 +21,97 @@
 import { createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import type { DroppableCollectionState, DropTarget } from "@proyecto-viviana/solid-stately";
+import type { DroppableCollectionState, DropTarget, Key } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { createDroppableItem } from "./createDroppableItem";
 import { createDragSession } from "./DragManager";
 import { dndIntlStrings } from "./intl";
+
+type DropIndicatorLabelKey =
+  | "dropOnRoot"
+  | "dropOnItem"
+  | "insertBetween"
+  | "insertAfter"
+  | "insertBefore";
+
+type IndicatorCollectionNode = {
+  type?: string;
+  key?: Key;
+  textValue?: string;
+  prevKey?: Key | null;
+  nextKey?: Key | null;
+};
+
+type IndicatorCollection = {
+  getTextValue?: (key: Key) => string | undefined;
+  getItem: (key: Key) => IndicatorCollectionNode | null | undefined;
+};
+
+const indicatorCollection = (state: DroppableCollectionState): IndicatorCollection | undefined => {
+  const candidate = state.collection;
+  if (candidate != null && typeof candidate.getItem === "function") {
+    // `DroppableCollectionLike` only types the neighbor walk. Item text and
+    // prevKey/nextKey live on the host collection the state now returns.
+    return candidate as unknown as IndicatorCollection;
+  }
+  return undefined;
+};
+
+// RAC `useDropIndicator.ts:65-107`. Root `aria-labelledby` stays unset: this
+// port's collection map stores a ref, not an id.
+const dropIndicatorLabel = (
+  target: DropTarget,
+  state: DroppableCollectionState,
+  format: (key: DropIndicatorLabelKey, args?: Record<string, string>) => string,
+): string => {
+  if (target.type === "root") {
+    return format("dropOnRoot");
+  }
+
+  const collection = indicatorCollection(state);
+  if (!collection) return "";
+
+  const getText = (key: Key | null | undefined): string => {
+    if (key == null) return "";
+    return collection.getTextValue?.(key) ?? collection.getItem(key)?.textValue ?? "";
+  };
+
+  if (target.dropPosition === "on") {
+    return format("dropOnItem", { itemText: getText(target.key) });
+  }
+
+  let before: Key | null | undefined;
+  let after: Key | null | undefined;
+  if (target.dropPosition === "before") {
+    const prevKey = collection.getItem(target.key)?.prevKey;
+    const prevNode = prevKey != null ? collection.getItem(prevKey) : null;
+    before = prevNode?.type === "item" ? prevNode.key : null;
+  } else {
+    before = target.key;
+  }
+
+  if (target.dropPosition === "after") {
+    const nextKey = collection.getItem(target.key)?.nextKey;
+    const nextNode = nextKey != null ? collection.getItem(nextKey) : null;
+    after = nextNode?.type === "item" ? nextNode.key : null;
+  } else {
+    after = target.key;
+  }
+
+  if (before != null && after != null) {
+    return format("insertBetween", {
+      beforeItemText: getText(before),
+      afterItemText: getText(after),
+    });
+  }
+  if (before != null) {
+    return format("insertAfter", { itemText: getText(before) });
+  }
+  if (after != null) {
+    return format("insertBefore", { itemText: getText(after) });
+  }
+  return "";
+};
 
 export interface DropIndicatorOptions {
   /** The drop target that the drop indicator represents. */
@@ -75,9 +161,13 @@ export function createDropIndicator(
 
   return {
     get dropIndicatorProps() {
+      const formatter = stringFormatter();
       return {
         ...droppable.dropProps,
-        "aria-roledescription": stringFormatter().format("dropIndicator"),
+        "aria-roledescription": formatter.format("dropIndicator"),
+        "aria-label": dropIndicatorLabel(props.target, state, (key, args) =>
+          formatter.format(key, args),
+        ),
         "aria-hidden": ariaHidden(),
         tabIndex: -1,
       };

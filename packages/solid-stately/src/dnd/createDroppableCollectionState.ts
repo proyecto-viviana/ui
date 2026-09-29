@@ -147,6 +147,12 @@ export interface DroppableCollectionState {
    * level boolean on this port.
    */
   isDropTargetFor(target: DropTarget | null): boolean;
+  /**
+   * The host collection from the options. RAC always has one
+   * (`useDroppableCollectionState.ts:46-48`); this port's option is optional,
+   * so the field is undefined when the host omits it.
+   */
+  readonly collection: DroppableCollectionLike | undefined;
 }
 
 /**
@@ -525,6 +531,10 @@ export function createDroppableCollectionState(
     getDropOperation,
     shouldAcceptItemDrop,
     isDropTargetFor,
+    // RAC `useDroppableCollectionState.ts:175-176`.
+    get collection() {
+      return getProps().collection;
+    },
   };
 }
 
