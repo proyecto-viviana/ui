@@ -93,6 +93,7 @@ These behaviors match the pin in this checkout.
 - A toast close button takes its name from the toast catalog.
 - A table row expand button takes its name from the table catalog.
 - A table with expandable rows exposes the treegrid role.
+- A virtualized grid list counts one column.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

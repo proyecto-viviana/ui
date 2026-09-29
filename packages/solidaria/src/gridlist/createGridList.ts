@@ -519,9 +519,10 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       },
     );
 
-    // Add row count for virtualized lists
+    // A virtualized grid list is one column.
     if (p.isVirtualized) {
       baseProps["aria-rowcount"] = s.collection.rowCount;
+      baseProps["aria-colcount"] = 1;
     }
 
     return baseProps as JSX.HTMLAttributes<HTMLElement>;

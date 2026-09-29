@@ -454,3 +454,35 @@ describe("createGridList typeahead", () => {
     });
   });
 });
+
+describe("createGridList virtualized column count", () => {
+  it("counts one column when the list is virtualized", () => {
+    createRoot((dispose) => {
+      const state = createRowGridState();
+      const grid = createGridList(
+        () => ({ "aria-label": "Files", isVirtualized: true }),
+        () => state,
+        () => null,
+      );
+
+      expect(grid.gridProps["aria-rowcount"]).toBe(5);
+      expect(grid.gridProps["aria-colcount"]).toBe(1);
+      dispose();
+    });
+  });
+
+  it("omits the column count when the list is not virtualized", () => {
+    createRoot((dispose) => {
+      const state = createRowGridState();
+      const grid = createGridList(
+        () => ({ "aria-label": "Files" }),
+        () => state,
+        () => null,
+      );
+
+      expect(grid.gridProps["aria-colcount"]).toBeUndefined();
+      expect(grid.gridProps["aria-rowcount"]).toBeUndefined();
+      dispose();
+    });
+  });
+});
