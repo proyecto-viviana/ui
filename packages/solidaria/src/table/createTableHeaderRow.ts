@@ -28,7 +28,7 @@ import type { AriaTableHeaderRowProps, TableHeaderRowAria } from "./types";
  */
 export function createTableHeaderRow<T extends object>(
   props: Accessor<AriaTableHeaderRowProps>,
-  _state: Accessor<TableState<T, TableCollection<T>>>,
+  state: Accessor<TableState<T, TableCollection<T>>>,
   _ref: Accessor<HTMLTableRowElement | null>,
 ): TableHeaderRowAria {
   const rowProps = createMemo(() => {
@@ -39,8 +39,8 @@ export function createTableHeaderRow<T extends object>(
       role: "row",
     };
 
-    // Add aria-rowindex for virtualized tables
-    if (p.isVirtualized && node.rowIndex != null) {
+    // Virtualized flat tables expose the header row index. Tree grids omit it.
+    if (p.isVirtualized && state().treeColumn == null && node.rowIndex != null) {
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 

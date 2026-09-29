@@ -4909,6 +4909,24 @@ describe("Table (tree grid / expandable rows)", () => {
     expect(file1).toHaveAttribute("aria-posinset", "1");
   });
 
+  it("omits the header row index on a virtualized tree grid", () => {
+    render(() => (
+      <Virtualizer
+        layout={TableLayout}
+        layoutOptions={{ itemSize: 36, viewportSize: 72, overscan: 0 }}
+      >
+        <TestTreeTable />
+      </Virtualizer>
+    ));
+
+    const headerCell = screen.getAllByRole("columnheader")[0];
+    const headerRow = headerCell?.closest('[role="row"]');
+    expect(headerRow).not.toHaveAttribute("aria-rowindex");
+
+    const projects = screen.getByRole("row", { name: /Projects/ });
+    expect(projects).not.toHaveAttribute("aria-rowindex");
+  });
+
   it("exposes tree data attributes and the --table-row-level var on rows", () => {
     render(() => <TestTreeTable UNSTABLE_defaultExpandedKeys={["projects", "project-1"]} />);
 
