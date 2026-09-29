@@ -164,9 +164,15 @@ export function createGridCell<T extends object>(
       onPointerUp,
     };
 
-    // Add column index for virtualized grids
-    if (p.isVirtualized && node?.column != null) {
-      baseProps["aria-colindex"] = node.column + 1; // aria-colindex is 1-based
+    // aria-colindex is 1-based. Virtualized cells fall back to the node index.
+    if (node != null && node.column != null) {
+      baseProps["aria-colindex"] = node.column + 1;
+    }
+    if (p.isVirtualized && node != null) {
+      const columnIndex = node.column ?? node.index;
+      if (columnIndex != null) {
+        baseProps["aria-colindex"] = columnIndex + 1;
+      }
     }
 
     // Add colspan if present

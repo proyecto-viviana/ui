@@ -104,6 +104,7 @@ These behaviors match the pin in this checkout.
 - A virtualized tree grid omits the header row index.
 - A table column header exposes its column index.
 - A list box section names its group from the heading.
+- A grid cell exposes its column index, and a virtualized cell falls back to its index.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.
