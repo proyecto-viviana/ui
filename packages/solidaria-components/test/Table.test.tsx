@@ -1738,6 +1738,58 @@ describe("Table", () => {
       expect(cells[1]).toHaveAttribute("aria-colindex", "2");
     });
 
+    it("exposes the header row index on a virtualized table", () => {
+      const rows = [
+        { id: 1, name: "Pikachu", type: "Electric" },
+        { id: 2, name: "Bulbasaur", type: "Grass" },
+      ];
+
+      render(() => (
+        <Virtualizer
+          layout={TableLayout}
+          layoutOptions={{ itemSize: 36, viewportSize: 72, overscan: 0 }}
+        >
+          <Table
+            items={rows}
+            columns={[
+              { key: "name", name: "Name" },
+              { key: "type", name: "Type" },
+            ]}
+            getKey={(item: any) => item.id}
+            aria-label="Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                  <TableColumn id="type">{() => <>Type</>}</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => (
+                        <>
+                          <TableCell id="name">{() => <>{item.name}</>}</TableCell>
+                          <TableCell id="type">{() => <>{item.type}</>}</TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </Virtualizer>
+      ));
+
+      const headerCell = screen.getAllByRole("columnheader")[0];
+      const headerRow = headerCell?.closest('[role="row"]');
+      expect(headerRow).toHaveAttribute("aria-rowindex", "1");
+
+      const body = screen.getByRole("row", { name: /Pikachu/ });
+      expect(body).toHaveAttribute("aria-rowindex", "2");
+    });
+
     it("should have the correct row indicies after loading more items", () => {
       const [items, setItems] = createSignal<typeof testData>([]);
       const [isLoading, setIsLoading] = createSignal(true);

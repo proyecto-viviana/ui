@@ -22,6 +22,7 @@ import type { JSX } from "@solidjs/web";
 import {
   createTable,
   createTableColumnHeader,
+  createTableHeaderRow,
   createTableRow,
   createTableCell,
   createTableRowGroup,
@@ -989,6 +990,41 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
     return rest;
   };
 
+  const { state } = context;
+  const [headerRowRef, setHeaderRowRef] = createSignal<HTMLTableRowElement | null>(null);
+  const headerRowNode = createMemo(() => {
+    return (
+      context.collection.headerRows[0] ??
+      ({
+        type: "headerrow" as const,
+        key: "headerrow-0",
+        value: null,
+        textValue: "",
+        level: 0,
+        index: 0,
+        hasChildNodes: false,
+        childNodes: [],
+      } as GridNode<unknown>)
+    );
+  });
+  const headerRowAria = createTableHeaderRow<object>(
+    () => ({
+      node: headerRowNode(),
+      isVirtualized: context.isVirtualized,
+    }),
+    () => state as TableState<object, TableCollection<object>>,
+    headerRowRef,
+  );
+  const cleanHeaderRowProps = () => {
+    const { ref: _ref, ...rest } = headerRowAria.rowProps as Record<string, unknown>;
+    return rest;
+  };
+  const headerRowProps = () =>
+    ({
+      ref: (el: HTMLTableRowElement) => setHeaderRowRef(el),
+      ...cleanHeaderRowProps(),
+    }) as JSX.HTMLAttributes<HTMLTableRowElement>;
+
   const headerProps = () =>
     ({
       ref: (el: HTMLTableSectionElement) => assignRef(local.ref, el),
@@ -999,7 +1035,7 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
       style: renderProps.style(),
       "data-hovered": isHovered() || undefined,
       children: (
-        <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row">
+        <TableHost hostTag="tr" virtualized={context.isVirtualized} {...headerRowProps()}>
           {local.children}
         </TableHost>
       ),
@@ -1019,7 +1055,7 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
       style={renderProps.style()}
       data-hovered={dataAttr(isHovered())}
     >
-      <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row">
+      <TableHost hostTag="tr" virtualized={context.isVirtualized} {...headerRowProps()}>
         {local.children}
       </TableHost>
     </TableHost>
