@@ -725,6 +725,7 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
         aria-labelledby={tabPanelProps["aria-labelledby"]}
         aria-label={tabPanelProps["aria-label"]}
         aria-describedby={tabPanelProps["aria-describedby"]}
+        aria-details={tabPanelProps["aria-details"]}
         tabindex={tabPanelProps.tabIndex}
         class={renderProps.class()}
         style={renderProps.style()}

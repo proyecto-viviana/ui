@@ -1027,4 +1027,18 @@ describe("createTabPanel", () => {
       dispose();
     });
   });
+
+  it("forwards aria-details", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: defaultItems,
+        getKey: (item) => item.key,
+      });
+
+      const { tabPanelProps } = createTabPanel({ id: "tab1", "aria-details": "details-id" }, state);
+
+      expect(tabPanelProps["aria-details"]).toBe("details-id");
+      dispose();
+    });
+  });
 });

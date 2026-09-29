@@ -150,6 +150,21 @@ describe("Tabs", () => {
       expect(panel).toHaveClass("solidaria-TabPanel");
     });
 
+    it("forwards aria-details onto the selected tab panel", () => {
+      render(() => (
+        <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+          <TabList>
+            <Tab id="draft">Draft</Tab>
+          </TabList>
+          <TabPanel id="draft" aria-details="draft-details">
+            Draft body
+          </TabPanel>
+        </Tabs>
+      ));
+
+      expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-details", "draft-details");
+    });
+
     it("only makes a panel without tabbable descendants a focus stop", async () => {
       render(() => (
         <Tabs aria-label="Writing sections" defaultSelectedKey="draft">

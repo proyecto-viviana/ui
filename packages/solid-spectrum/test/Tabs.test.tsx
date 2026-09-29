@@ -69,6 +69,21 @@ describe("Tabs (solid-spectrum S2)", () => {
     expect(screen.getByRole("tabpanel")).toHaveTextContent("Content 1");
   });
 
+  it("forwards aria-details onto the selected tab panel", async () => {
+    render(() => (
+      <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+        <TabList>
+          <Tab id="draft">Draft</Tab>
+        </TabList>
+        <TabPanel id="draft" aria-details="draft-details">
+          Draft body
+        </TabPanel>
+      </Tabs>
+    ));
+
+    expect(await screen.findByRole("tabpanel")).toHaveAttribute("aria-details", "draft-details");
+  });
+
   it("supports collection items on TabList without Tabs items", async () => {
     render(() => (
       <Tabs aria-label="Dynamic sections" defaultSelectedKey="tab3">

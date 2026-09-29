@@ -142,6 +142,8 @@ export interface AriaTabPanelProps {
   "aria-labelledby"?: string;
   /** ID of element that describes the tab panel. */
   "aria-describedby"?: string;
+  /** ID of element that provides more details for the tab panel. */
+  "aria-details"?: string;
 }
 
 export interface TabPanelAria {
@@ -152,6 +154,7 @@ export interface TabPanelAria {
     "aria-labelledby"?: string;
     "aria-label"?: string;
     "aria-describedby"?: string;
+    "aria-details"?: string;
     tabIndex: number | undefined;
   };
   /** Whether this panel is the selected one. */
@@ -618,6 +621,7 @@ export function createTabPanel<T>(
       },
       "aria-label": props["aria-label"],
       "aria-describedby": props["aria-describedby"],
+      "aria-details": props["aria-details"],
       // Tabbing from the selected tab should enter the first tabbable child.
       // Keep the panel itself in sequential focus order only when it is empty
       // of tabbable descendants.

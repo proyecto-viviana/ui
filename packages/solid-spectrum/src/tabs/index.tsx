@@ -1146,6 +1146,7 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
         }
         aria-label={hasTabPanelSemantics() ? tabPanelProps["aria-label"] : undefined}
         aria-describedby={hasTabPanelSemantics() ? tabPanelProps["aria-describedby"] : undefined}
+        aria-details={hasTabPanelSemantics() ? tabPanelProps["aria-details"] : undefined}
         tabindex={context.showTabs() && isInert() ? undefined : tabPanelProps.tabIndex}
         slot={local.slot ?? undefined}
         class={className(activeRenderProps())}
