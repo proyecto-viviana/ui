@@ -1738,6 +1738,57 @@ describe("Table", () => {
       expect(cells[1]).toHaveAttribute("aria-colindex", "2");
     });
 
+    it("exposes each column index on a table header", () => {
+      const rows = [
+        { id: 1, name: "Pikachu", type: "Electric" },
+        { id: 2, name: "Bulbasaur", type: "Grass" },
+      ];
+
+      render(() => (
+        <Table
+          items={rows}
+          columns={[
+            { key: "name", name: "Name" },
+            { key: "type", name: "Type" },
+          ]}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                <TableColumn id="type">{() => <>Type</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell id="name">{() => <>{item.name}</>}</TableCell>
+                        <TableCell id="type">{() => <>{item.type}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const headers = screen.getAllByRole("columnheader");
+      expect(headers).toHaveLength(2);
+      expect(headers[0]).toHaveAttribute("aria-colindex", "1");
+      expect(headers[1]).toHaveAttribute("aria-colindex", "2");
+
+      const row = screen.getByRole("row", { name: /Pikachu/ });
+      const cells = row.querySelectorAll('[role="rowheader"], [role="gridcell"]');
+      expect(cells).toHaveLength(2);
+      expect(cells[0]).not.toHaveAttribute("aria-colindex");
+      expect(cells[1]).not.toHaveAttribute("aria-colindex");
+    });
+
     it("exposes the header row index on a virtualized table", () => {
       const rows = [
         { id: 1, name: "Pikachu", type: "Electric" },

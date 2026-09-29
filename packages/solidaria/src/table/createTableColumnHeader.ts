@@ -168,8 +168,8 @@ export function createTableColumnHeader<T extends object>(
       baseProps.style = { cursor: "pointer" };
     }
 
-    // Add aria-colindex for virtualized tables
-    if (p.isVirtualized && node.column != null) {
+    // Header nodes always carry a column index.
+    if (node.column != null) {
       baseProps["aria-colindex"] = node.column + 1; // 1-based
     }
 
