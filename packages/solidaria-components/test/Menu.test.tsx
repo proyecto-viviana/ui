@@ -24,6 +24,7 @@ import {
 import { Button } from "../src/Button";
 import { Separator } from "../src/Separator";
 import { Popover } from "../src/Popover";
+import { CollectionRendererContext } from "../src/Collection";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -2326,5 +2327,40 @@ describe("Menu async loading", () => {
 
     fireEvent.keyDown(menu, { key: "ArrowDown" });
     expect(loader).not.toHaveAttribute("data-focused");
+  });
+});
+
+describe("virtualized menu position", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("sets aria-posinset and aria-setsize when a parent collection renderer virtualizes the menu", () => {
+    render(() => (
+      <CollectionRendererContext
+        value={{
+          isVirtualized: true,
+          renderItem: () => undefined as never,
+        }}
+      >
+        <TestMenu />
+      </CollectionRendererContext>
+    ));
+
+    expect(screen.getByRole("menuitem", { name: "Cat" })).toHaveAttribute("aria-posinset", "1");
+    expect(screen.getByRole("menuitem", { name: "Cat" })).toHaveAttribute("aria-setsize", "3");
+    expect(screen.getByRole("menuitem", { name: "Dog" })).toHaveAttribute("aria-posinset", "2");
+    expect(screen.getByRole("menuitem", { name: "Kangaroo" })).toHaveAttribute(
+      "aria-posinset",
+      "3",
+    );
+    expect(screen.getByRole("menuitem", { name: "Kangaroo" })).toHaveAttribute("aria-setsize", "3");
+  });
+
+  it("omits aria-posinset and aria-setsize when the menu is not virtualized", () => {
+    render(() => <TestMenu />);
+
+    expect(screen.getByRole("menuitem", { name: "Cat" })).not.toHaveAttribute("aria-posinset");
+    expect(screen.getByRole("menuitem", { name: "Cat" })).not.toHaveAttribute("aria-setsize");
   });
 });

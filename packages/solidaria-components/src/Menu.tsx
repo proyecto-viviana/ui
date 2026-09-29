@@ -1437,6 +1437,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   ]);
 
   const context = useContext(MenuStateContext);
+  const itemRenderer = useCollectionRenderer<unknown>();
   if (!context) {
     throw new Error("MenuItem must be used within a Menu");
   }
@@ -1603,6 +1604,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       },
       get download() {
         return local.download;
+      },
+      get isVirtualized() {
+        return itemRenderer?.isVirtualized;
       },
     },
     state,

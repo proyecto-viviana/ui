@@ -1693,3 +1693,43 @@ describe("createMenuTrigger", () => {
     expect(open).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("createMenuItem virtualized position", () => {
+  it("sets aria-posinset and aria-setsize from the collection index", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "a", label: "A" },
+        { key: "b", label: "B" },
+        { key: "c", label: "C" },
+      ];
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const { menuItemProps } = createMenuItem({ key: "c", isVirtualized: true }, state);
+
+      expect(menuItemProps["aria-posinset"]).toBe(3);
+      expect(menuItemProps["aria-setsize"]).toBe(3);
+      dispose();
+    });
+  });
+
+  it("omits aria-posinset and aria-setsize when the item is not virtualized", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "a", label: "A" },
+        { key: "b", label: "B" },
+        { key: "c", label: "C" },
+      ];
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const { menuItemProps } = createMenuItem({ key: "c" }, state);
+
+      expect(menuItemProps["aria-posinset"]).toBeUndefined();
+      expect(menuItemProps["aria-setsize"]).toBeUndefined();
+      dispose();
+    });
+  });
+});

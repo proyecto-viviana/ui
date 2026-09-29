@@ -30,7 +30,12 @@ import { getEventTarget } from "../utils/dom";
 import { isVirtualClick } from "../utils/events";
 import { createSlotId } from "../ssr";
 import { getMenuData } from "./createMenu";
-import type { MenuState, Key, SelectionMode } from "@proyecto-viviana/solid-stately";
+import {
+  getItemCount,
+  type MenuState,
+  type Key,
+  type SelectionMode,
+} from "@proyecto-viviana/solid-stately";
 
 export interface AriaMenuItemProps {
   /** The unique key for the menu item. */
@@ -47,6 +52,8 @@ export interface AriaMenuItemProps {
   "aria-haspopup"?: string | boolean;
   /** Whether the submenu or subdialog is expanded. */
   "aria-expanded"?: boolean | "true" | "false";
+  /** Whether the menu item is contained in a virtual scrolling menu. */
+  isVirtualized?: boolean;
   /** Handler called when the menu item is selected. */
   onAction?: () => void;
   /** Whether to close the menu when this item is selected. */
@@ -333,6 +340,17 @@ export function createMenuItem<T>(
       const selected = isSelected();
       const trigger = isTrigger();
 
+      // A virtualized menu only mounts the visible window, so assistive tech
+      // cannot derive position from the DOM. Mirrors useMenuItem: 1-based
+      // `item.index`, and set size from item nodes only.
+      let ariaPosInSet: number | undefined;
+      let ariaSetSize: number | undefined;
+      if (p.isVirtualized) {
+        const index = Number(state.collection().getItem(key)?.index);
+        ariaPosInSet = Number.isNaN(index) ? undefined : index + 1;
+        ariaSetSize = getItemCount(state.collection());
+      }
+
       const baseProps: Record<string, unknown> = {
         role: trigger
           ? "menuitem"
@@ -350,6 +368,8 @@ export function createMenuItem<T>(
         "aria-controls": p["aria-controls"],
         "aria-haspopup": p["aria-haspopup"],
         "aria-expanded": p["aria-expanded"],
+        "aria-posinset": ariaPosInSet,
+        "aria-setsize": ariaSetSize,
         "data-selected": selected ? "true" : undefined,
         "data-focused": isFocused() ? "true" : undefined,
         "data-focus-visible": isFocusVisible() ? "true" : undefined,
