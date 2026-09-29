@@ -28,6 +28,7 @@ import { type AutocompleteState, type CollectionNode } from "@proyecto-viviana/s
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../selection/constants";
 import { dispatchVirtualBlur, dispatchVirtualFocus } from "../focus/virtualFocus";
 import { getActiveElement, getEventTarget } from "../utils/dom";
+import { isCtrlKeyPressed } from "../utils/keyboard";
 import { getPointerType } from "../interactions";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { autocompleteIntlStrings } from "./intl";
@@ -317,6 +318,13 @@ export function createAutocomplete<T = unknown>(
     const ownerDocument = getOwnerDocument(inputRef() ?? collection);
 
     switch (e.key) {
+      case "a":
+        // Platform select-all stays in the text field. Returning before
+        // collection emulation keeps Mod+A from selecting every item.
+        if (isCtrlKeyPressed(e)) {
+          return;
+        }
+        break;
       case "Escape":
         // Let the input handle Escape (e.g., clear value)
         if (e.defaultPrevented) {

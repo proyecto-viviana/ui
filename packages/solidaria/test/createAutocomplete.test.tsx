@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createAutocomplete, type AutocompleteAria } from "../src/autocomplete";
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../src/selection/constants";
+import { isMac } from "../src/utils/platform";
 import { createAutocompleteState, type AutocompleteState } from "@proyecto-viviana/solid-stately";
 import { Show } from "solid-js";
 import { I18nProvider } from "../src/i18n";
@@ -204,6 +205,60 @@ describe("createAutocomplete", () => {
     });
 
     fireEvent.keyDown(input, { key: "a", code: "KeyA" });
+
+    expect(keySpy).toHaveBeenCalledWith("a");
+  });
+
+  // Pin useAutocomplete returns before collection emulation when the platform
+  // select-all modifier is held, so Mod+A stays a text-field shortcut. The
+  // collection's own Mod+A selects every item.
+  function platformSelectAllInit(): KeyboardEventInit {
+    return {
+      key: "a",
+      code: "KeyA",
+      ctrlKey: !isMac(),
+      metaKey: isMac(),
+    };
+  }
+
+  it("keeps the platform select-all shortcut in the text field", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const listbox = screen.getByTestId("listbox");
+    const keySpy = vi.fn();
+    listbox.addEventListener("keydown", (e) => keySpy((e as KeyboardEvent).key));
+
+    fireEvent.keyDown(input, platformSelectAllInit());
+
+    expect(keySpy).not.toHaveBeenCalled();
+  });
+
+  it("keeps the platform select-all shortcut off the focused option", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const item = screen.getByTestId("item-1");
+    item.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    const keySpy = vi.fn();
+    item.addEventListener("keydown", (e) => keySpy((e as KeyboardEvent).key));
+
+    fireEvent.keyDown(input, platformSelectAllInit());
+
+    expect(keySpy).not.toHaveBeenCalled();
+  });
+
+  it("still forwards a letter held with the other modifier", () => {
+    render(() => <TestAutocomplete />);
+    const input = screen.getByTestId("input");
+    const listbox = screen.getByTestId("listbox");
+    const keySpy = vi.fn();
+    listbox.addEventListener("keydown", (e) => keySpy((e as KeyboardEvent).key));
+
+    fireEvent.keyDown(input, {
+      key: "a",
+      code: "KeyA",
+      ctrlKey: isMac(),
+      metaKey: !isMac(),
+    });
 
     expect(keySpy).toHaveBeenCalledWith("a");
   });
