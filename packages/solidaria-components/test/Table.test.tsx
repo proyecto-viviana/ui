@@ -1682,6 +1682,62 @@ describe("Table", () => {
       expect(screen.queryByText("Pokemon 25")).toBeNull();
     });
 
+    it("exposes each column index on a virtualized header and cell", () => {
+      const rows = [
+        { id: 1, name: "Pikachu", type: "Electric" },
+        { id: 2, name: "Bulbasaur", type: "Grass" },
+      ];
+
+      render(() => (
+        <Virtualizer
+          layout={TableLayout}
+          layoutOptions={{ itemSize: 36, viewportSize: 72, overscan: 0 }}
+        >
+          <Table
+            items={rows}
+            columns={[
+              { key: "name", name: "Name" },
+              { key: "type", name: "Type" },
+            ]}
+            getKey={(item: any) => item.id}
+            aria-label="Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                  <TableColumn id="type">{() => <>Type</>}</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => (
+                        <>
+                          <TableCell id="name">{() => <>{item.name}</>}</TableCell>
+                          <TableCell id="type">{() => <>{item.type}</>}</TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </Virtualizer>
+      ));
+
+      const headers = screen.getAllByRole("columnheader");
+      expect(headers).toHaveLength(2);
+      expect(headers[0]).toHaveAttribute("aria-colindex", "1");
+      expect(headers[1]).toHaveAttribute("aria-colindex", "2");
+
+      const row = screen.getByRole("row", { name: /Pikachu/ });
+      const cells = row.querySelectorAll('[role="rowheader"], [role="gridcell"]');
+      expect(cells).toHaveLength(2);
+      expect(cells[0]).toHaveAttribute("aria-colindex", "1");
+      expect(cells[1]).toHaveAttribute("aria-colindex", "2");
+    });
+
     it("should have the correct row indicies after loading more items", () => {
       const [items, setItems] = createSignal<typeof testData>([]);
       const [isLoading, setIsLoading] = createSignal(true);

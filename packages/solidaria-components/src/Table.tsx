@@ -1082,6 +1082,7 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
     () => ({
       node: columnNode(),
       allowsSorting: local.allowsSorting,
+      isVirtualized: context.isVirtualized,
     }),
     () => state as TableState<object, TableCollection<object>>,
     ref,
@@ -2094,6 +2095,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
   const cellAria = createTableCell<object>(
     () => ({
       node: cellNode(),
+      isVirtualized: tableContext.isVirtualized,
     }),
     () => state as TableState<object, TableCollection<object>>,
     ref,
