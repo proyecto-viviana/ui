@@ -92,6 +92,7 @@ These behaviors match the pin in this checkout.
 - A toast region is named with the notifications catalog string and the visible count.
 - A toast close button takes its name from the toast catalog.
 - A table row expand button takes its name from the table catalog.
+- A table with expandable rows exposes the treegrid role.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

@@ -670,7 +670,7 @@ export function createTable<T extends object>(
       undefined;
 
     const baseProps: Record<string, unknown> = {
-      role: "grid",
+      role: s.treeColumn != null ? "treegrid" : "grid",
       id,
       "aria-label": p["aria-label"],
       "aria-labelledby": p["aria-labelledby"],
