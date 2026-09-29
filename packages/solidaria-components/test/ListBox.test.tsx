@@ -153,7 +153,8 @@ describe("ListBox", () => {
       ));
 
       expect(screen.getByRole("listbox")).toHaveAttribute("aria-label", "Animals");
-      expect(screen.getByRole("group", { name: "Mammals group" })).toBeInTheDocument();
+      const group = screen.getByRole("group", { name: "Mammals" });
+      expect(group).toHaveAttribute("aria-label", "Mammals group");
       for (const option of screen.getAllByRole("option")) {
         expect(option).toHaveAttribute("id");
         expect(option).toHaveAttribute("aria-labelledby");
@@ -285,6 +286,33 @@ describe("ListBox", () => {
       expect(screen.getByRole("group", { name: "Protein" })).toBeInTheDocument();
     });
 
+    it("names a section group from its heading", () => {
+      render(() => (
+        <ListBox<TestItem>
+          aria-label="Test"
+          items={[
+            {
+              title: <span>Veggies</span>,
+              items: testItems.slice(0, 2),
+            },
+          ]}
+          getKey={(item) => item.id}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.name}</ListBoxOption>}
+        </ListBox>
+      ));
+
+      const group = screen.getByRole("group", { name: "Veggies" });
+      const labelledBy = group.getAttribute("aria-labelledby");
+      expect(labelledBy).toBeTruthy();
+      const heading = document.getElementById(labelledBy!);
+      expect(heading).toHaveTextContent("Veggies");
+      expect(heading).toHaveAttribute("role", "presentation");
+      const event = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+      heading!.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
     it("renders a visible label element when label prop is provided", () => {
       render(() => (
         <ListBox<TestItem>
@@ -366,7 +394,8 @@ describe("ListBox", () => {
       ));
 
       expect(screen.getByText("Mammals")).toBeInTheDocument();
-      expect(screen.getByRole("group", { name: "Mammals group" })).toBeInTheDocument();
+      const group = screen.getByRole("group", { name: "Mammals" });
+      expect(group).toHaveAttribute("aria-label", "Mammals group");
       expect(screen.getAllByRole("option")).toHaveLength(3);
     });
 

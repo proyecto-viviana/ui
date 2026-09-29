@@ -25,6 +25,7 @@ import {
   createMemo,
   createRenderEffect,
   createSignal,
+  createUniqueId,
   untrack,
   useContext,
   For,
@@ -96,7 +97,6 @@ import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   CollectionRendererContext,
   Section,
-  Header,
   Group,
   type CollectionEntry,
   type CollectionRendererContextValue,
@@ -245,6 +245,48 @@ interface ListBoxContextValue<T> {
 export const ListBoxContext = createContext<ListBoxContextValue<unknown> | null>(null);
 export const ListBoxStateContext = createContext<ListState<unknown> | null>(null);
 export const ListStateContext = ListBoxStateContext;
+
+/**
+ * Dynamic collection section. Matches `useListBoxSection`: the heading is
+ * `role="presentation"` and the group is named from that heading.
+ */
+function DynamicListBoxSection(props: {
+  title?: JSX.Element;
+  ariaLabel?: string;
+  children: JSX.Element;
+}): JSX.Element {
+  const headingId = createUniqueId();
+  const hasHeading = () => props.title != null;
+  return (
+    <div role="presentation" data-section-wrapper>
+      <Section class="solidaria-ListBox-section">
+        <Show when={hasHeading()}>
+          <div
+            id={headingId}
+            role="presentation"
+            class="solidaria-ListBox-sectionHeader"
+            data-header
+            onMouseDown={(event) => {
+              // Keep virtual focus when the heading is pressed.
+              event.preventDefault();
+            }}
+          >
+            {props.title}
+          </div>
+        </Show>
+        <Group class="solidaria-ListBox-sectionGroup">
+          <div
+            role="group"
+            aria-label={props.ariaLabel}
+            aria-labelledby={hasHeading() ? headingId : undefined}
+          >
+            {props.children}
+          </div>
+        </Group>
+      </Section>
+    </div>
+  );
+}
 
 function dropIndicatorLabel(
   target: ItemDropTarget,
@@ -1015,34 +1057,24 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <For each={sectionedRenderEntries()}>
                             {(entry) =>
                               entry.type === "section" ? (
-                                <div role="presentation" data-section-wrapper>
-                                  <Section class="solidaria-ListBox-section">
-                                    {entry.section.title != null && (
-                                      <Header class="solidaria-ListBox-sectionHeader">
-                                        {entry.section.title}
-                                      </Header>
+                                <DynamicListBoxSection
+                                  title={entry.section.title}
+                                  ariaLabel={entry.section["aria-label"]}
+                                >
+                                  <For each={entry.items}>
+                                    {(indexedItem) => (
+                                      <VirtualizerItem index={indexedItem.index}>
+                                        <ListBoxItemWithDropIndicators
+                                          item={indexedItem.item}
+                                          itemIndex={indexedItem.index}
+                                          isLastInLevel={() => isLastDropItem(indexedItem.index)}
+                                          renderItem={local.children}
+                                          renderDropIndicator={renderItemDropIndicator}
+                                        />
+                                      </VirtualizerItem>
                                     )}
-                                    <Group class="solidaria-ListBox-sectionGroup">
-                                      <div role="group" aria-label={entry.section["aria-label"]}>
-                                        <For each={entry.items}>
-                                          {(indexedItem) => (
-                                            <VirtualizerItem index={indexedItem.index}>
-                                              <ListBoxItemWithDropIndicators
-                                                item={indexedItem.item}
-                                                itemIndex={indexedItem.index}
-                                                isLastInLevel={() =>
-                                                  isLastDropItem(indexedItem.index)
-                                                }
-                                                renderItem={local.children}
-                                                renderDropIndicator={renderItemDropIndicator}
-                                              />
-                                            </VirtualizerItem>
-                                          )}
-                                        </For>
-                                      </div>
-                                    </Group>
-                                  </Section>
-                                </div>
+                                  </For>
+                                </DynamicListBoxSection>
                               ) : (
                                 <VirtualizerItem index={entry.item.index}>
                                   <ListBoxItemWithDropIndicators
@@ -1105,30 +1137,22 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                     <For each={sectionedRenderEntries()}>
                       {(entry) =>
                         entry.type === "section" ? (
-                          <div role="presentation" data-section-wrapper>
-                            <Section class="solidaria-ListBox-section">
-                              {entry.section.title != null && (
-                                <Header class="solidaria-ListBox-sectionHeader">
-                                  {entry.section.title}
-                                </Header>
+                          <DynamicListBoxSection
+                            title={entry.section.title}
+                            ariaLabel={entry.section["aria-label"]}
+                          >
+                            <For each={entry.items}>
+                              {(indexedItem) => (
+                                <ListBoxItemWithDropIndicators
+                                  item={indexedItem.item}
+                                  itemIndex={indexedItem.index}
+                                  isLastInLevel={() => isLastDropItem(indexedItem.index)}
+                                  renderItem={local.children}
+                                  renderDropIndicator={renderItemDropIndicator}
+                                />
                               )}
-                              <Group class="solidaria-ListBox-sectionGroup">
-                                <div role="group" aria-label={entry.section["aria-label"]}>
-                                  <For each={entry.items}>
-                                    {(indexedItem) => (
-                                      <ListBoxItemWithDropIndicators
-                                        item={indexedItem.item}
-                                        itemIndex={indexedItem.index}
-                                        isLastInLevel={() => isLastDropItem(indexedItem.index)}
-                                        renderItem={local.children}
-                                        renderDropIndicator={renderItemDropIndicator}
-                                      />
-                                    )}
-                                  </For>
-                                </div>
-                              </Group>
-                            </Section>
-                          </div>
+                            </For>
+                          </DynamicListBoxSection>
                         ) : (
                           <ListBoxItemWithDropIndicators
                             item={entry.item.item}
