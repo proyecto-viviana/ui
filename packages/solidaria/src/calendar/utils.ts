@@ -102,9 +102,18 @@ export function formatSelectedDateDescription(state: CalendarState | RangeCalend
     start = range?.start;
     end = range?.end;
   } else {
-    const value = state.value();
-    start = (value as CalendarDate | null) ?? undefined;
-    end = (value as CalendarDate | null) ?? undefined;
+    const value = state.value() as CalendarDate | CalendarDate[] | null;
+    if (Array.isArray(value)) {
+      start = value[0];
+      end = value.at(-1);
+      // Several different dates are a list in the pin, not a range.
+      if (value.length > 1 && start && end && !isSameDay(start, end)) {
+        return "";
+      }
+    } else {
+      start = value ?? undefined;
+      end = value ?? undefined;
+    }
   }
 
   const anchorDate = "anchorDate" in state ? state.anchorDate() : null;
@@ -225,6 +234,40 @@ export function announceVisibleRangeChange(
       }
       if (!untrack(() => state.isFocused())) {
         announce(description);
+      }
+    },
+  );
+}
+
+const selectedDateAnnouncers = new WeakSet<object>();
+
+/**
+ * Announce a selection change once per calendar state.
+ * The first run is skipped, matching useUpdateEffect. An empty description
+ * (an in-progress range, or nothing selected) is not announced.
+ */
+export function announceSelectedDateChange(
+  state: CalendarState | RangeCalendarState,
+  selectedDateDescription: Accessor<string>,
+): void {
+  if (selectedDateAnnouncers.has(state)) {
+    return;
+  }
+  selectedDateAnnouncers.add(state);
+  onCleanup(() => {
+    selectedDateAnnouncers.delete(state);
+  });
+
+  let skipInitial = true;
+  createEffect(
+    () => selectedDateDescription(),
+    (description) => {
+      if (skipInitial) {
+        skipInitial = false;
+        return;
+      }
+      if (description) {
+        announce(description, "polite", 4000);
       }
     },
   );

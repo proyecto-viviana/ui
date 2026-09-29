@@ -27,6 +27,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { getEventTarget, isFocusWithin, nodeContains } from "../utils/dom";
 import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
 import {
+  announceSelectedDateChange,
   announceVisibleRangeChange,
   formatSelectedDateDescription,
   formatVisibleRangeDescription,
@@ -108,6 +109,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");
   });
   const selectedDateDescription = createMemo(() => formatSelectedDateDescription(state));
+  announceSelectedDateChange(state, selectedDateDescription);
 
   const initialProps = getProps();
   // Gate the hook-data write on an identifying prop, mirroring createCalendar.

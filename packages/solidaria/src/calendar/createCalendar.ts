@@ -25,7 +25,9 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState } from "@proyecto-viviana/solid-stately";
 import {
+  announceSelectedDateChange,
   announceVisibleRangeChange,
+  formatSelectedDateDescription,
   formatVisibleRangeDescription,
   setCalendarHookData,
 } from "./utils";
@@ -90,6 +92,8 @@ export function createCalendar<T extends CalendarState>(
     return formatVisibleRangeDescription(range.start, range.end, state.timeZone, state.locale());
   });
   announceVisibleRangeChange(state, visibleRangeDescription);
+  const selectedDateDescription = createMemo(() => formatSelectedDateDescription(state));
+  announceSelectedDateChange(state, selectedDateDescription);
   const calendarLabel = createMemo(() => {
     const p = getProps();
     return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");

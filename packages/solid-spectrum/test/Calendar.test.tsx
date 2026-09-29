@@ -428,4 +428,23 @@ describe("Calendar (solid-spectrum)", () => {
     const log = document.querySelector("[data-live-announcer='true'] [aria-live='assertive']");
     expect(log?.textContent ?? "").toBe("");
   });
+
+  it("announces a selected date from the calendar catalog", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <Calendar
+          aria-label="Date de rendez-vous"
+          defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        />
+      </Provider>
+    ));
+    await waitForCalendar();
+
+    clearAnnouncer("polite");
+    await user.click(screen.getByRole("button", { name: /15 février 2025/i }));
+
+    const log = document.querySelector("[data-live-announcer='true'] [aria-live='polite']");
+    expect(log?.childElementCount).toBe(1);
+    expect(log?.textContent).toBe("Date sélectionnée\u00a0: samedi 15 février 2025");
+  });
 });

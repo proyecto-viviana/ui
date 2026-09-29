@@ -384,4 +384,24 @@ describe("RangeCalendar (solid-spectrum)", () => {
     expect(log?.childElementCount).toBe(1);
     expect(log?.textContent).toBe("avril à mai 2025");
   });
+
+  it("announces a selected range from the calendar catalog", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <RangeCalendar
+          aria-label="Dates du voyage"
+          defaultFocusedValue={new CalendarDate(2025, 2, 4)}
+        />
+      </Provider>
+    ));
+    await waitForRangeCalendar();
+
+    clearAnnouncer("polite");
+    await user.click(screen.getByRole("button", { name: "mardi 4 février 2025" }));
+    await user.click(screen.getByRole("button", { name: "vendredi 7 février 2025" }));
+
+    const log = document.querySelector("[data-live-announcer='true'] [aria-live='polite']");
+    expect(log?.childElementCount).toBe(1);
+    expect(log?.textContent).toBe("Plage sélectionnée\u00a0: mardi 4 à vendredi 7 février 2025");
+  });
 });
