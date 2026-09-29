@@ -91,6 +91,7 @@ These behaviors match the pin in this checkout.
 - A table row expand button takes its name from the table catalog.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
+- A spectrum tag group names its action row from the tag catalog.
 - Progress and meter values format with the provider locale.
 - A checkbox group merges each item's validity and clears it when that item becomes valid.
 - A range calendar cell paints the formattable day, so a custom calendar's day field is not the visible number.

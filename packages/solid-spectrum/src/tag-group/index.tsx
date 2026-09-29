@@ -769,7 +769,17 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
           </HeadlessTagList>
 
           <Show when={hasItems() && local.groupActionLabel && local.onGroupAction}>
-            <span class={resolveStyleClass(actionRowStyle, { size: size() })}>
+            {/* S2 ActionGroup: `tag.actions`, prefixed only by the group's aria-label. */}
+            <span
+              role="group"
+              aria-label={
+                local["aria-label"]
+                  ? `${local["aria-label"]} ${stringFormatter().format("tag.actions")}`
+                  : stringFormatter().format("tag.actions")
+              }
+              aria-labelledby={local["aria-labelledby"] || undefined}
+              class={resolveStyleClass(actionRowStyle, { size: size() })}
+            >
               <ActionButton size={size()} isQuiet onPress={local.onGroupAction}>
                 {local.groupActionLabel}
               </ActionButton>

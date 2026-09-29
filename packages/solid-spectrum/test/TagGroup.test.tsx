@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Tag, TagGroup } from "../src/tag-group";
 
 interface TagItem {
@@ -154,6 +155,41 @@ describe("TagGroup (solid-spectrum)", () => {
     await user.click(screen.getByRole("button", { name: "Add tag" }));
 
     expect(onGroupAction).toHaveBeenCalledTimes(1);
+  });
+
+  it("names the group action from the tag catalog", () => {
+    renderTagGroup({ groupActionLabel: "Add tag", onGroupAction: () => {} });
+
+    // Visible `label` names the grid. S2 prefixes the action group only from `aria-label`.
+    expect(screen.getByRole("group", { name: "Actions" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Topics Actions" })).not.toBeInTheDocument();
+  });
+
+  it("prefixes the group action name with the tag group's aria-label", () => {
+    render(() => (
+      <TagGroup<TagItem>
+        items={items}
+        aria-label="Topics"
+        groupActionLabel="Add tag"
+        onGroupAction={() => {}}
+      >
+        {(item) => item.name}
+      </TagGroup>
+    ));
+
+    expect(screen.getByRole("group", { name: "Topics Actions" })).toBeInTheDocument();
+  });
+
+  it("names the group action from the es-ES catalog", () => {
+    render(() => (
+      <I18nProvider locale="es-ES">
+        <TagGroup<TagItem> items={items} groupActionLabel="Añadir" onGroupAction={() => {}}>
+          {(item) => item.name}
+        </TagGroup>
+      </I18nProvider>
+    ));
+
+    expect(screen.getByRole("group", { name: "Acciones" })).toBeInTheDocument();
   });
 
   describe("remove button press scale (#63)", () => {
