@@ -36,14 +36,30 @@ import type {
 import { getGlobalDraggingCollectionRef, getGlobalDraggingKeys } from "./createDraggableCollection";
 import { getGlobalDropCollectionRef, getDroppableCollectionRef } from "./createDroppableCollection";
 import { createDragSession, isVirtualDragging, registerDropItem } from "./DragManager";
+import { createInteractionModality } from "../interactions";
+import { createStringFormatter } from "../i18n/createStringFormatter";
+import { createDescription } from "../utils/createDescription";
+import { dndIntlStrings } from "./intl";
 import {
   DragTypesImpl,
   DROP_OPERATION,
   DROP_OPERATION_ALLOWED,
   DROP_OPERATION_TO_DROP_EFFECT,
+  getDragModality,
   getGlobalAllowedDropOperations,
   getTypes,
 } from "./utils";
+
+// RAC `useVirtualDrop.ts:25-29`. Empty when no drag session is active, so the
+// collection's start-drag description stays on the item.
+const DROP_DESCRIPTION_MESSAGES: Record<
+  string,
+  "dropDescriptionKeyboard" | "dropDescriptionTouch" | "dropDescriptionVirtual"
+> = {
+  keyboard: "dropDescriptionKeyboard",
+  touch: "dropDescriptionTouch",
+  virtual: "dropDescriptionVirtual",
+};
 
 export interface DroppableItemOptions {
   /** The unique key of the item. Used when `target` is omitted (`dropPosition: "on"`). */
@@ -107,6 +123,16 @@ export function createDroppableItem(
   const getOptions = createMemo(() => options());
   const resolvedTarget = createMemo(() => resolveTarget(getOptions()));
   const dragSession = createDragSession();
+  const stringFormatter = createStringFormatter(dndIntlStrings, "@react-aria/dnd");
+  const { modality } = createInteractionModality();
+  const dropDescription = (): string | undefined => {
+    if (!dragSession()) return undefined;
+    modality();
+    const dragModality = getDragModality();
+    const key = DROP_DESCRIPTION_MESSAGES[dragModality] ?? "dropDescriptionVirtual";
+    return stringFormatter().format(key);
+  };
+  const descriptionProps = createDescription(dropDescription);
 
   const isDropTarget = createMemo(() => {
     const target = resolvedTarget();
@@ -331,13 +357,19 @@ export function createDroppableItem(
 
   const dropProps = createMemo(() => {
     const opts = getOptions();
-    // RAC `useVirtualDrop.ts:61-70` + `useDroppableItem.ts:90-94`.
+    // RAC `useVirtualDrop.ts:31-48` + `useDroppableItem.ts:90-94`.
     const session = dragSession();
     const ariaHidden = !session || isValidDropTarget() ? undefined : "true";
+    // Reading the getter subscribes this memo to the description id, which the
+    // effect writes after the session render.
+    const describedBy = descriptionProps["aria-describedby"];
     const virtualProps: JSX.HTMLAttributes<HTMLElement> = {
       onClick: () => {},
       "aria-hidden": ariaHidden,
     };
+    if (describedBy) {
+      virtualProps["aria-describedby"] = describedBy;
+    }
 
     if (opts.isDisabled || opts.key == null) {
       return virtualProps;

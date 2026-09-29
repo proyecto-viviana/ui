@@ -599,6 +599,58 @@ describe("ListBox", () => {
       }
     });
 
+    it("describes a drop target from the drag catalog while a drag is in progress", async () => {
+      // useVirtualDrop describes the target only during a drag session.
+      // es-ES proves the catalog, not the English sentence the en-US row happens to use.
+      const dropDescription = "Pulse Intro para soltar. Pulse Escape para cancelar el arrastre.";
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <ListBox
+            aria-label="Permissions"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            selectionMode="multiple"
+            dragAndDropHooks={dragAndDropHooks}
+          >
+            {(item) => (
+              <ListBoxOption id={item.id} textValue={item.name}>
+                {item.name}
+              </ListBoxOption>
+            )}
+          </ListBox>
+        </I18nProvider>
+      ));
+
+      const describedByText = (element: Element | null) => {
+        const ids = element?.getAttribute("aria-describedby")?.split(/\s+/).filter(Boolean) ?? [];
+        return ids.map((id) => document.getElementById(id)?.textContent ?? "").join(" ");
+      };
+
+      const write = document.getElementById("write");
+      expect(describedByText(write)).not.toBe(dropDescription);
+
+      write?.focus();
+      await user.keyboard("{Enter}");
+      try {
+        await waitFor(() => {
+          expect(describedByText(document.getElementById("write"))).toBe(dropDescription);
+        });
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+    });
+
     it("keeps the dragged option node when children are one-shot component thunks", async () => {
       // Comparison `hc` returns `() => createComponent(...)`. If indicator
       // `Show` shares that insert, the thunk is consumed twice, the option
