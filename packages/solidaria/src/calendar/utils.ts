@@ -106,10 +106,6 @@ export function formatSelectedDateDescription(state: CalendarState | RangeCalend
     if (Array.isArray(value)) {
       start = value[0];
       end = value.at(-1);
-      // Several different dates are a list in the pin, not a range.
-      if (value.length > 1 && start && end && !isSameDay(start, end)) {
-        return "";
-      }
     } else {
       start = value ?? undefined;
       end = value ?? undefined;
@@ -134,6 +130,16 @@ export function formatSelectedDateDescription(state: CalendarState | RangeCalend
     return formatCalendarLabel(locale, "selectedDateDescription", {
       date: dateFormatter.format(start.toDate(timeZone)),
     });
+  }
+
+  if (!("highlightedRange" in state)) {
+    const selected = state.value() as CalendarDate | CalendarDate[] | null;
+    if (Array.isArray(selected)) {
+      const dates = selected.map((date) => dateFormatter.format(date.toDate(timeZone)));
+      return formatCalendarLabel(locale, "selectedDateDescription", {
+        date: new Intl.ListFormat(locale).format(dates),
+      });
+    }
   }
 
   return formatCalendarLabel(locale, "selectedRangeDescription", {

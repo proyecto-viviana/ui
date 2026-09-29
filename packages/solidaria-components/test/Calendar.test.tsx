@@ -22,7 +22,7 @@ import {
   type CalendarProps,
 } from "../src/Calendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { clearAnnouncer, I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -525,6 +525,34 @@ describe("Calendar", () => {
       await user.click(screen.getByText("12"));
       await waitFor(() => expect(onChange).toHaveBeenCalledTimes(2));
       expect(onChange.mock.calls[1][0]).toHaveLength(2);
+    });
+
+    it("announces several selected dates as a list from the calendar catalog", async () => {
+      render(() => (
+        <TestMultiCalendar
+          calendarProps={{
+            locale: "fr-FR",
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day10 = screen.getByRole("button", { name: "lundi 10 juin 2024" });
+      const day12 = screen.getByRole("button", { name: "mercredi 12 juin 2024" });
+      const day14 = screen.getByRole("button", { name: "vendredi 14 juin 2024" });
+
+      clearAnnouncer("polite");
+      await user.click(day10);
+      await user.click(day12);
+      clearAnnouncer("polite");
+      await user.click(day14);
+
+      const log = document.querySelector("[data-live-announcer='true'] [aria-live='polite']");
+      expect(log?.childElementCount).toBe(1);
+      expect(log?.textContent).toBe(
+        "Date sélectionnée\u00a0: lundi 10 juin 2024, mercredi 12 juin 2024 et vendredi 14 juin 2024",
+      );
     });
   });
 
