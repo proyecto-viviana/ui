@@ -24,7 +24,11 @@ import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState } from "@proyecto-viviana/solid-stately";
-import { formatVisibleRangeDescription, setCalendarHookData } from "./utils";
+import {
+  announceVisibleRangeChange,
+  formatVisibleRangeDescription,
+  setCalendarHookData,
+} from "./utils";
 import { formatCalendarLabel } from "./intl";
 
 export interface AriaCalendarProps {
@@ -85,6 +89,7 @@ export function createCalendar<T extends CalendarState>(
     const range = state.visibleRange();
     return formatVisibleRangeDescription(range.start, range.end, state.timeZone, state.locale());
   });
+  announceVisibleRangeChange(state, visibleRangeDescription);
   const calendarLabel = createMemo(() => {
     const p = getProps();
     return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");

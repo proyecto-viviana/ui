@@ -19,7 +19,9 @@ import {
   isSameDay,
   startOfMonth,
 } from "@internationalized/date";
+import { createEffect, onCleanup, untrack, type Accessor } from "solid-js";
 import type { CalendarState, RangeCalendarState } from "@proyecto-viviana/solid-stately";
+import { announce } from "../live-announcer";
 import { formatCalendarLabel } from "./intl";
 
 export interface CalendarHookData {
@@ -190,4 +192,40 @@ function formatLabelRange(
     startDate: startValue,
     endDate: endValue,
   });
+}
+
+const visibleRangeAnnouncers = new WeakSet<object>();
+
+/**
+ * Announce a visible-range change once per calendar state.
+ * CalendarButton re-enters the hook with the same state; a second effect
+ * would repeat the page announcement. The first run is skipped, matching
+ * useUpdateEffect, and focus is read untracked so focusing the grid does
+ * not announce the range it already shows.
+ */
+export function announceVisibleRangeChange(
+  state: CalendarState | RangeCalendarState,
+  visibleRangeDescription: Accessor<string>,
+): void {
+  if (visibleRangeAnnouncers.has(state)) {
+    return;
+  }
+  visibleRangeAnnouncers.add(state);
+  onCleanup(() => {
+    visibleRangeAnnouncers.delete(state);
+  });
+
+  let skipInitial = true;
+  createEffect(
+    () => visibleRangeDescription(),
+    (description) => {
+      if (skipInitial) {
+        skipInitial = false;
+        return;
+      }
+      if (!untrack(() => state.isFocused())) {
+        announce(description);
+      }
+    },
+  );
 }

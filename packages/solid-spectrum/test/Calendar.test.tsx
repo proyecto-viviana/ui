@@ -4,6 +4,7 @@ import { createSignal } from "solid-js";
 import { Calendar, CalendarContext } from "../src/Calendar";
 import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
+import { clearAnnouncer } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 async function waitForCalendar() {
@@ -384,5 +385,47 @@ describe("Calendar (solid-spectrum)", () => {
     expect(
       screen.getByRole("application", { name: "Date de rendez-vous, février à mars 2025" }),
     ).toBeInTheDocument();
+  });
+
+  it("announces a visible-range change from the calendar catalog when the calendar is not focused", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <Calendar
+          aria-label="Date de rendez-vous"
+          defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+          visibleMonths={2}
+        />
+      </Provider>
+    ));
+    await waitForCalendar();
+
+    clearAnnouncer("assertive");
+    await user.click(screen.getAllByRole("button", { name: "Suivant" })[0]!);
+
+    const log = document.querySelector("[data-live-announcer='true'] [aria-live='assertive']");
+    expect(log?.childElementCount).toBe(1);
+    expect(log?.textContent).toBe("avril à mai 2025");
+  });
+
+  it("does not announce a visible-range change while the calendar is focused", async () => {
+    const [visibleMonths, setVisibleMonths] = createSignal(1);
+    render(() => (
+      <Calendar
+        aria-label="Event date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        visibleMonths={visibleMonths()}
+      />
+    ));
+    await waitForCalendar();
+
+    await user.click(screen.getByRole("button", { name: /February 15, 2025/i }));
+    clearAnnouncer("assertive");
+    setVisibleMonths(2);
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    const log = document.querySelector("[data-live-announcer='true'] [aria-live='assertive']");
+    expect(log?.textContent ?? "").toBe("");
   });
 });

@@ -27,6 +27,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { getEventTarget, isFocusWithin, nodeContains } from "../utils/dom";
 import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
 import {
+  announceVisibleRangeChange,
   formatSelectedDateDescription,
   formatVisibleRangeDescription,
   setCalendarHookData,
@@ -101,6 +102,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     const range = state.visibleRange();
     return formatVisibleRangeDescription(range.start, range.end, state.timeZone, state.locale());
   });
+  announceVisibleRangeChange(state, visibleRangeDescription);
   const calendarLabel = createMemo(() => {
     const p = getProps();
     return [p["aria-label"], visibleRangeDescription()].filter(Boolean).join(", ");

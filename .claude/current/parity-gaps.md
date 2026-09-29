@@ -81,6 +81,7 @@ These behaviors match the pin in this checkout.
 - A sorted table describes and announces its sort from the table catalog.
 - A drop target describes how to drop from the drag catalog while a drag is in progress.
 - A multi-month calendar names its visible range from the calendar catalog.
+- A calendar announces a visible-range change when the calendar is not focused.
 - A color editor's hue slider and channel fields, and the spectrum color picker's sliders, take their names from the color channel catalog.
 - A toast region is named with the notifications catalog string and the visible count.
 - A toast close button takes its name from the toast catalog.

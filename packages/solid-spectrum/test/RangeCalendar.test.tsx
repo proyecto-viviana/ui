@@ -4,6 +4,7 @@ import { createSignal } from "solid-js";
 import { RangeCalendar, RangeCalendarContext } from "../src";
 import { Provider } from "../src/provider";
 import { CalendarDateClass as CalendarDate } from "@proyecto-viviana/solid-stately";
+import { clearAnnouncer } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 async function waitForRangeCalendar() {
@@ -362,5 +363,25 @@ describe("RangeCalendar (solid-spectrum)", () => {
     expect(march1Buttons.length).toBe(2);
     const activeMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
     expect(activeMarch1).toBeDefined();
+  });
+
+  it("announces a visible-range change from the calendar catalog when the calendar is not focused", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <RangeCalendar
+          aria-label="Dates du voyage"
+          defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+          visibleMonths={2}
+        />
+      </Provider>
+    ));
+    await waitForRangeCalendar();
+
+    clearAnnouncer("assertive");
+    await user.click(screen.getAllByRole("button", { name: "Suivant" })[0]!);
+
+    const log = document.querySelector("[data-live-announcer='true'] [aria-live='assertive']");
+    expect(log?.childElementCount).toBe(1);
+    expect(log?.textContent).toBe("avril à mai 2025");
   });
 });
