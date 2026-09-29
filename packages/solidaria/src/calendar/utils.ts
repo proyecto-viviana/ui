@@ -82,11 +82,11 @@ export function formatVisibleRangeDescription(
     }
 
     if (isSameDay(endDate, endOfMonth(endDate))) {
-      return formatRange(monthFormatter, startMonth, endMonth, timeZone);
+      return formatLabelRange(monthFormatter, startMonth, endMonth, timeZone, locale);
     }
   }
 
-  return formatRange(dateFormatter, startDate, endDate, timeZone);
+  return formatLabelRange(dateFormatter, startDate, endDate, timeZone, locale);
 }
 
 export function formatSelectedDateDescription(state: CalendarState | RangeCalendarState): string {
@@ -128,58 +128,6 @@ export function formatSelectedDateDescription(state: CalendarState | RangeCalend
   return formatCalendarLabel(locale, "selectedRangeDescription", {
     dateRange: formatLabelRange(dateFormatter, start, end, timeZone, locale),
   });
-}
-
-function formatRange(
-  dateFormatter: DateFormatter,
-  startDate: CalendarDate,
-  endDate: CalendarDate,
-  timeZone: string,
-): string {
-  const formatter = dateFormatter as DateFormatter & {
-    formatRangeToParts?: (start: Date, end: Date) => Intl.DateTimeFormatPart[];
-  };
-  const start = startDate.toDate(timeZone);
-  const end = endDate.toDate(timeZone);
-
-  if (!formatter.formatRangeToParts) {
-    return `${dateFormatter.format(start)} to ${dateFormatter.format(end)}`;
-  }
-
-  const parts = formatter.formatRangeToParts(start, end) as Array<
-    Intl.DateTimeFormatPart & { source?: "startRange" | "shared" | "endRange" }
-  >;
-  let separatorIndex = -1;
-
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (part?.source === "shared" && part.type === "literal") {
-      separatorIndex = i;
-    } else if (part?.source === "endRange") {
-      break;
-    }
-  }
-
-  if (separatorIndex < 0) {
-    return `${dateFormatter.format(start)} to ${dateFormatter.format(end)}`;
-  }
-
-  let startValue = "";
-  let endValue = "";
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (!part) {
-      continue;
-    }
-
-    if (i < separatorIndex) {
-      startValue += part.value;
-    } else if (i > separatorIndex) {
-      endValue += part.value;
-    }
-  }
-
-  return `${startValue} to ${endValue}`;
 }
 
 function formatLabelRange(

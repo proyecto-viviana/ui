@@ -367,4 +367,22 @@ describe("Calendar (solid-spectrum)", () => {
     const activeMarch1 = march1Buttons.find((b) => b.getAttribute("aria-disabled") !== "true");
     expect(activeMarch1).toBeDefined();
   });
+
+  it("names a multi-month visible range from the calendar catalog", async () => {
+    render(() => (
+      <Provider locale="fr-FR">
+        <Calendar
+          aria-label="Date de rendez-vous"
+          defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+          visibleMonths={2}
+        />
+      </Provider>
+    ));
+    await waitForCalendar();
+
+    expect(screen.getByText("février 2025")).toBeInTheDocument();
+    expect(
+      screen.getByRole("application", { name: "Date de rendez-vous, février à mars 2025" }),
+    ).toBeInTheDocument();
+  });
 });
