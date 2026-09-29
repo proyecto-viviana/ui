@@ -130,4 +130,33 @@ describe("createTextField hook", () => {
       expect(props.pattern).toBeUndefined();
     });
   });
+
+  describe("popup and error attributes", () => {
+    it("forwards popup and error attributes to the input", () => {
+      const props = renderTextFieldHook({
+        "aria-label": "City",
+        "aria-errormessage": "city-error",
+        "aria-activedescendant": "city-option",
+        "aria-autocomplete": "list",
+        "aria-haspopup": "listbox",
+        "aria-controls": "city-list",
+      });
+
+      expect(props["aria-errormessage"]).toBe("city-error");
+      expect(props["aria-activedescendant"]).toBe("city-option");
+      expect(props["aria-autocomplete"]).toBe("list");
+      expect(props["aria-haspopup"]).toBe("listbox");
+      expect(props["aria-controls"]).toBe("city-list");
+    });
+
+    it("omits popup and error attributes when they are not set", () => {
+      const props = renderTextFieldHook({ "aria-label": "City" });
+
+      expect(props["aria-errormessage"]).toBeUndefined();
+      expect(props["aria-activedescendant"]).toBeUndefined();
+      expect(props["aria-autocomplete"]).toBeUndefined();
+      expect(props["aria-haspopup"]).toBeUndefined();
+      expect(props["aria-controls"]).toBeUndefined();
+    });
+  });
 });

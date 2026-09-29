@@ -73,6 +73,16 @@ export interface AriaTextFieldProps extends AriaFieldProps, FocusableProps, Focu
   autoCapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
   /** The element type to use for the input. Defaults to 'input'. */
   inputElementType?: "input" | "textarea";
+  /** Identifies the element that provides an error message for the object. */
+  "aria-errormessage"?: string;
+  /** Identifies the currently active element when focus is on the textbox. */
+  "aria-activedescendant"?: string;
+  /** How predictions of the user's intended value are presented. */
+  "aria-autocomplete"?: "none" | "inline" | "list" | "both";
+  /** The kind of popup the text field can open. */
+  "aria-haspopup"?: boolean | "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog";
+  /** Identifies the element whose contents or presence the text field controls. */
+  "aria-controls"?: string;
 
   // Clipboard events
   onCopy?: JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>;
@@ -241,6 +251,12 @@ export function createTextField<
         required: validationBehavior === "native" && p.isRequired,
         "aria-required": (validationBehavior === "aria" && p.isRequired) || undefined,
         "aria-invalid": isInvalid || undefined,
+        // The labelable filter drops popup and error attributes.
+        "aria-errormessage": p["aria-errormessage"],
+        "aria-activedescendant": p["aria-activedescendant"],
+        "aria-autocomplete": p["aria-autocomplete"],
+        "aria-haspopup": p["aria-haspopup"],
+        "aria-controls": p["aria-controls"],
         value: p.value ?? p.defaultValue ?? "",
         ref: setInputRef,
         onChange: (e: Event) => {
