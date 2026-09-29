@@ -56,9 +56,13 @@ const dragManagerMock = vi.hoisted(() => {
   };
 });
 
-vi.mock("../src/dnd/DragManager", () => ({
-  registerDropTarget: dragManagerMock.registerDropTarget,
-}));
+vi.mock("../src/dnd/DragManager", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/dnd/DragManager")>();
+  return {
+    ...actual,
+    registerDropTarget: dragManagerMock.registerDropTarget,
+  };
+});
 
 // Import after the mock is declared so the effect's `registerDropTarget` resolves
 // to the capturing stub.

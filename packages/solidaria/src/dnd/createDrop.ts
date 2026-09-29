@@ -25,6 +25,11 @@ import { createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createDropState } from "@proyecto-viviana/solid-stately";
 import type { AriaDropOptions, DropAria } from "./types";
+import { createDragSession } from "./DragManager";
+import { createInteractionModality } from "../interactions";
+import { createStringFormatter } from "../i18n/createStringFormatter";
+import { createDescription } from "../utils/createDescription";
+import { dndIntlStrings } from "./intl";
 import {
   readFromDataTransfer,
   DragTypesImpl,
@@ -34,11 +39,22 @@ import {
   DROP_EFFECT_TO_DROP_OPERATION,
   setGlobalDropEffect,
   getGlobalAllowedDropOperations,
+  getDragModality,
 } from "./utils";
 import { isMac } from "../utils/platform";
 import type { DropOperation } from "@proyecto-viviana/solid-stately";
 
 const DROP_ACTIVATE_TIMEOUT = 800;
+
+// RAC `useVirtualDrop.ts:25-48`. Empty when no drag session is active.
+const DROP_DESCRIPTION_MESSAGES: Record<
+  string,
+  "dropDescriptionKeyboard" | "dropDescriptionTouch" | "dropDescriptionVirtual"
+> = {
+  keyboard: "dropDescriptionKeyboard",
+  touch: "dropDescriptionTouch",
+  virtual: "dropDescriptionVirtual",
+};
 
 /**
  * Creates ARIA props for a drop target element.
@@ -283,6 +299,36 @@ export function createDrop(props: Accessor<AriaDropOptions>): DropAria {
     clearTimeout(dropActivateTimer);
   };
 
+  const dragSession = createDragSession();
+  const stringFormatter = createStringFormatter(dndIntlStrings, "@react-aria/dnd");
+  const { modality } = createInteractionModality();
+  const dropDescription = (): string | undefined => {
+    if (!dragSession()) return undefined;
+    modality();
+    const dragModality = getDragModality();
+    const key = DROP_DESCRIPTION_MESSAGES[dragModality] ?? "dropDescriptionVirtual";
+    return stringFormatter().format(key);
+  };
+  const descriptionProps = createDescription(dropDescription);
+  // Read the getter inside the memo that should publish it. Spreading
+  // descriptionProps snapshots the id before the effect writes it.
+  const virtualDropProps = (): {
+    onClick: () => void;
+    "aria-describedby"?: string;
+  } => {
+    const describedBy = descriptionProps["aria-describedby"];
+    const virtualProps: {
+      onClick: () => void;
+      "aria-describedby"?: string;
+    } = {
+      onClick: () => {},
+    };
+    if (describedBy) {
+      virtualProps["aria-describedby"] = describedBy;
+    }
+    return virtualProps;
+  };
+
   const dropProps = createMemo(() => {
     const p = getProps();
 
@@ -296,6 +342,10 @@ export function createDrop(props: Accessor<AriaDropOptions>): DropAria {
       onDragLeave,
       onDrop: onDropHandler,
     };
+
+    if (!p.hasDropButton) {
+      Object.assign(baseProps, virtualDropProps());
+    }
 
     return baseProps;
   });
@@ -312,6 +362,7 @@ export function createDrop(props: Accessor<AriaDropOptions>): DropAria {
     return {
       type: "button" as const,
       "aria-label": "Drop",
+      ...(p.hasDropButton ? virtualDropProps() : {}),
     };
   });
 

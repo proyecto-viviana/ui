@@ -80,6 +80,7 @@ These behaviors match the pin in this checkout.
 - A keyboard or virtual column resizer describes itself from the table catalog.
 - A sorted table describes and announces its sort from the table catalog.
 - A drop target describes how to drop from the drag catalog while a drag is in progress.
+- A drop zone button describes how to drop from the drag catalog while a drag is in progress.
 - A drop indicator names an item or the root from the drag catalog.
 - A multi-month calendar names its visible range from the calendar catalog.
 - A calendar announces a visible-range change when the calendar is not focused.
