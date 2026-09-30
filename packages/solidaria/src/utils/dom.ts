@@ -724,6 +724,19 @@ export function getScrollParents(node: Element, checkForOverflow?: boolean): Ele
   return parentElements;
 }
 
+// HTML input types that do not cause the software keyboard to appear.
+const nonTextInputTypes = new Set([
+  "checkbox",
+  "radio",
+  "range",
+  "color",
+  "file",
+  "image",
+  "button",
+  "submit",
+  "reset",
+]);
+
 /**
  * Checks if an element will open a virtual keyboard when focused.
  * Used for iOS Safari scroll handling.
@@ -733,43 +746,12 @@ export function willOpenKeyboard(target: Element | null): boolean {
     return false;
   }
 
-  const tagName = target.tagName.toLowerCase();
-
-  // Inputs that open keyboard (not all input types do)
-  if (tagName === "input") {
-    const type = (target as HTMLInputElement).type.toLowerCase();
-    // These input types open the keyboard
-    const keyboardTypes = [
-      "text",
-      "search",
-      "url",
-      "tel",
-      "email",
-      "password",
-      "date",
-      "month",
-      "week",
-      "time",
-      "datetime-local",
-      "number",
-    ];
-    return keyboardTypes.includes(type);
-  }
-
-  // Textareas always open keyboard
-  if (tagName === "textarea") {
-    return true;
-  }
-
-  // Contenteditable elements open keyboard
-  if (
-    target.hasAttribute("contenteditable") &&
-    target.getAttribute("contenteditable") !== "false"
-  ) {
-    return true;
-  }
-
-  return false;
+  // `=== true` keeps this a boolean where jsdom leaves isContentEditable unimplemented.
+  return (
+    (target instanceof HTMLInputElement && !nonTextInputTypes.has(target.type)) ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable === true)
+  );
 }
 
 /**

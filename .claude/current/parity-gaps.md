@@ -200,6 +200,7 @@ These behaviors match the pin in this checkout.
 - An interact-outside handler is the one current when the pointer event fires.
 - Restoring text selection leaves a user-select written during the press, and the iOS page restore waits until transitions end.
 - The document scrolling root counts as scrollable unless its overflow is hidden.
+- A hidden input opens the keyboard, and contenteditable follows `isContentEditable`.
 
 **Components**
 
