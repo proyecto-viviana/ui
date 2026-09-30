@@ -255,12 +255,16 @@ export function createToggle(
         return;
       }
       getProps().onPressStart?.(e);
+      // Pointer presses on the label are not the input's press. Report them
+      // here, and leave keyboard and virtual activation to the input.
+      getProps().onPressChange?.(true);
     },
     onPressEnd(e: PressEvent) {
       if (skipLabelKeyboardPress(e)) {
         return;
       }
       getProps().onPressEnd?.(e);
+      getProps().onPressChange?.(false);
     },
     onPressUp(e: PressEvent) {
       if (skipLabelKeyboardPress(e)) {

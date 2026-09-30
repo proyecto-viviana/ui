@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { createSwitch, createToggleState } from "../src";
-import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // Test component that uses createSwitch
 function TestSwitch(props: {
   isSelected?: boolean;
   defaultSelected?: boolean;
   onChange?: (isSelected: boolean) => void;
+  onPressChange?: (isPressed: boolean) => void;
   isDisabled?: boolean;
   isReadOnly?: boolean;
   "aria-label"?: string;
@@ -26,6 +27,7 @@ function TestSwitch(props: {
     () => ({
       isDisabled: props.isDisabled,
       isReadOnly: props.isReadOnly,
+      onPressChange: props.onPressChange,
       "aria-label": props["aria-label"],
       children: props.children,
     }),
@@ -143,6 +145,35 @@ describe("createSwitch", () => {
 
       await user.click(switchEl);
       expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("label press", () => {
+    it("reports onPressChange while the label is pressed", () => {
+      const onPressChange = vi.fn();
+      render(() => <TestSwitch aria-label="Notify" onPressChange={onPressChange} />);
+
+      const label = screen.getByRole("switch").closest("label")!;
+      fireEvent(label, createPointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+
+      expect(onPressChange).toHaveBeenCalledWith(true);
+
+      fireEvent(label, createPointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
+      fireEvent.click(label);
+
+      expect(onPressChange.mock.calls).toEqual([[true], [false]]);
+    });
+
+    it("reports one press change when Space activates the input", async () => {
+      const user = setupUser();
+      const onPressChange = vi.fn();
+      render(() => <TestSwitch aria-label="Notify" onPressChange={onPressChange} />);
+
+      const switchEl = screen.getByRole("switch");
+      switchEl.focus();
+      await user.keyboard(" ");
+
+      expect(onPressChange.mock.calls).toEqual([[true], [false]]);
     });
   });
 
