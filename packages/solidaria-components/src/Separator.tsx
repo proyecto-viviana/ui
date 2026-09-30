@@ -27,19 +27,10 @@ import {
   type AriaSeparatorProps,
   type Orientation,
 } from "@proyecto-viviana/solidaria";
-import { type SlotProps, filterDOMProps } from "./utils";
+import { type ContextValue, type SlotProps, filterDOMProps, useContextProps } from "./utils";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
-
-function assignRef<T>(ref: RefLike<T>, el: T): void {
-  if (!ref) return;
-  if (typeof ref === "function") {
-    ref(el);
-  } else {
-    ref.current = el;
-  }
-}
 
 export interface SeparatorRenderProps {
   /** The orientation of the separator. */
@@ -55,7 +46,7 @@ export interface SeparatorProps extends AriaSeparatorProps, SlotProps {
   ref?: RefLike<HTMLElement>;
 }
 
-export const SeparatorContext = createContext<SeparatorProps | null>(null);
+export const SeparatorContext = createContext<ContextValue<SeparatorProps, HTMLElement>>(null);
 
 /**
  * A separator is a visual divider between two groups of content,
@@ -73,7 +64,8 @@ export const SeparatorContext = createContext<SeparatorProps | null>(null);
  * ```
  */
 export function Separator(props: SeparatorProps): JSX.Element {
-  const [local, ariaProps] = splitProps(props, ["class", "style", "ref", "slot"]);
+  const [merged, ref] = useContextProps(props, props.ref, SeparatorContext);
+  const [local, ariaProps] = splitProps(merged, ["class", "style", "ref", "slot"]);
 
   const elementType = createMemo(() => {
     let element = ariaProps.elementType || "hr";
@@ -135,7 +127,7 @@ export function Separator(props: SeparatorProps): JSX.Element {
       tag={elementType()}
       {...domProps()}
       {...separatorAria.separatorProps}
-      ref={(el: HTMLElement) => assignRef(local.ref, el)}
+      ref={ref}
       class={resolvedClass()}
       style={resolvedStyle()}
       slot={local.slot}

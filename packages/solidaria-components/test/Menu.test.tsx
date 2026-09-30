@@ -471,6 +471,38 @@ describe("Menu", () => {
       expect(container.querySelector('[role="separator"],hr')).toHaveClass("my-separator");
     });
 
+    it("renders a separator inside a menu as a div", () => {
+      render(() => (
+        <Menu aria-label="Actions">
+          <MenuItem id="foo" textValue="Foo">
+            Foo
+          </MenuItem>
+          <Separator />
+          <MenuItem id="bar" textValue="Bar">
+            Bar
+          </MenuItem>
+        </Menu>
+      ));
+
+      const separator = screen.getByRole("separator");
+      expect(separator.tagName).toBe("DIV");
+      expect(separator).toHaveAttribute("role", "separator");
+      expect(separator).toHaveClass("solidaria-Separator");
+      expect(screen.getAllByRole("menuitem")).toHaveLength(2);
+    });
+
+    it("keeps an explicit hr separator inside a menu", () => {
+      render(() => (
+        <Menu aria-label="Actions">
+          <Separator elementType="hr" />
+        </Menu>
+      ));
+
+      const separator = screen.getByRole("separator");
+      expect(separator.tagName).toBe("HR");
+      expect(separator).not.toHaveAttribute("role");
+    });
+
     it("should support sections", () => {
       render(() => (
         <Menu<TestItem>

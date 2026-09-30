@@ -109,6 +109,7 @@ import {
 } from "./DragAndDrop";
 import { PopoverTriggerContext, RootMenuTriggerStateContext } from "./contexts";
 import { OverlayContext } from "./Popover";
+import { SeparatorContext } from "./Separator";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface MenuRenderProps {
@@ -1192,133 +1193,135 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       : {},
   );
   const menuListChildren = () => (
-    <SharedElementTransition>
-      {parentCollectionRenderer?.isVirtualized ? (
-        <CollectionRoot
-          collection={virtualRange() ? (stateProps.items ?? []) : []}
-          scrollRef={() => menuRef()}
-          persistedKeys={persistedKeys()}
-        >
-          {usesStaticChildren() ? (
-            renderStaticChildren()
-          ) : hasSections() ? (
-            <For each={sectionedRenderEntries()}>
-              {(entry) =>
-                entry.type === "section" ? (
-                  <DynamicMenuSection
-                    title={entry.section.title}
-                    ariaLabel={entry.section["aria-label"]}
-                  >
-                    <For each={entry.items}>
-                      {(indexedItem) =>
-                        renderCollectionDropSlots({
-                          index: indexedItem.index,
-                          lastIndex: getItemNodes().length - 1,
-                          renderDropIndicator: (i, position) =>
-                            collectionRenderer().renderDropIndicator?.(i, position),
-                          children: renderDynamicItem(indexedItem.item),
-                        })
-                      }
-                    </For>
-                  </DynamicMenuSection>
-                ) : (
-                  renderCollectionDropSlots({
-                    index: entry.item.index,
-                    lastIndex: getItemNodes().length - 1,
-                    renderDropIndicator: (i, position) =>
-                      collectionRenderer().renderDropIndicator?.(i, position),
-                    children: renderDynamicItem(entry.item.item),
-                  })
-                )
-              }
-            </For>
-          ) : (
-            <>
-              <For each={visibleItems()}>
-                {(item, index) => {
-                  const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                  return renderCollectionDropSlots({
-                    index: itemIndex(),
-                    lastIndex: getItemNodes().length - 1,
-                    renderDropIndicator: (i, position) =>
-                      collectionRenderer().renderDropIndicator?.(i, position),
-                    children: renderDynamicItem(item as T),
-                  });
-                }}
-              </For>
-              <For each={persistedOutsideIndexes()}>
-                {(index) => (
-                  <PersistedVirtualItem index={index}>
-                    {renderCollectionDropSlots({
-                      index,
-                      lastIndex: getItemNodes().length - 1,
-                      renderDropIndicator: (i, position) =>
-                        collectionRenderer().renderDropIndicator?.(i, position),
-                      children: renderDynamicItem((stateProps.items ?? [])[index] as T),
-                    })}
-                  </PersistedVirtualItem>
-                )}
-              </For>
-            </>
-          )}
-        </CollectionRoot>
-      ) : usesStaticChildren() ? (
-        renderStaticChildren()
-      ) : hasSections() ? (
-        <For each={sectionedRenderEntries()}>
-          {(entry) =>
-            entry.type === "section" ? (
-              <DynamicMenuSection
-                title={entry.section.title}
-                ariaLabel={entry.section["aria-label"]}
-              >
-                <For each={entry.items}>
-                  {(indexedItem) =>
+    <SeparatorContext value={{ elementType: "div" }}>
+      <SharedElementTransition>
+        {parentCollectionRenderer?.isVirtualized ? (
+          <CollectionRoot
+            collection={virtualRange() ? (stateProps.items ?? []) : []}
+            scrollRef={() => menuRef()}
+            persistedKeys={persistedKeys()}
+          >
+            {usesStaticChildren() ? (
+              renderStaticChildren()
+            ) : hasSections() ? (
+              <For each={sectionedRenderEntries()}>
+                {(entry) =>
+                  entry.type === "section" ? (
+                    <DynamicMenuSection
+                      title={entry.section.title}
+                      ariaLabel={entry.section["aria-label"]}
+                    >
+                      <For each={entry.items}>
+                        {(indexedItem) =>
+                          renderCollectionDropSlots({
+                            index: indexedItem.index,
+                            lastIndex: getItemNodes().length - 1,
+                            renderDropIndicator: (i, position) =>
+                              collectionRenderer().renderDropIndicator?.(i, position),
+                            children: renderDynamicItem(indexedItem.item),
+                          })
+                        }
+                      </For>
+                    </DynamicMenuSection>
+                  ) : (
                     renderCollectionDropSlots({
-                      index: indexedItem.index,
+                      index: entry.item.index,
                       lastIndex: getItemNodes().length - 1,
                       renderDropIndicator: (i, position) =>
                         collectionRenderer().renderDropIndicator?.(i, position),
-                      children: renderDynamicItem(indexedItem.item),
+                      children: renderDynamicItem(entry.item.item),
                     })
-                  }
-                </For>
-              </DynamicMenuSection>
+                  )
+                }
+              </For>
             ) : (
-              renderCollectionDropSlots({
-                index: entry.item.index,
-                lastIndex: getItemNodes().length - 1,
-                renderDropIndicator: (i, position) =>
-                  collectionRenderer().renderDropIndicator?.(i, position),
-                children: renderDynamicItem(entry.item.item),
-              })
-            )
-          }
-        </For>
-      ) : (
-        <>
-          <For each={visibleItems()}>
-            {(item, index) => {
-              const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-              return renderCollectionDropSlots({
-                index: itemIndex(),
-                lastIndex: getItemNodes().length - 1,
-                renderDropIndicator: (i, position) =>
-                  collectionRenderer().renderDropIndicator?.(i, position),
-                children: renderDynamicItem(item as T),
-              });
-            }}
+              <>
+                <For each={visibleItems()}>
+                  {(item, index) => {
+                    const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                    return renderCollectionDropSlots({
+                      index: itemIndex(),
+                      lastIndex: getItemNodes().length - 1,
+                      renderDropIndicator: (i, position) =>
+                        collectionRenderer().renderDropIndicator?.(i, position),
+                      children: renderDynamicItem(item as T),
+                    });
+                  }}
+                </For>
+                <For each={persistedOutsideIndexes()}>
+                  {(index) => (
+                    <PersistedVirtualItem index={index}>
+                      {renderCollectionDropSlots({
+                        index,
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: renderDynamicItem((stateProps.items ?? [])[index] as T),
+                      })}
+                    </PersistedVirtualItem>
+                  )}
+                </For>
+              </>
+            )}
+          </CollectionRoot>
+        ) : usesStaticChildren() ? (
+          renderStaticChildren()
+        ) : hasSections() ? (
+          <For each={sectionedRenderEntries()}>
+            {(entry) =>
+              entry.type === "section" ? (
+                <DynamicMenuSection
+                  title={entry.section.title}
+                  ariaLabel={entry.section["aria-label"]}
+                >
+                  <For each={entry.items}>
+                    {(indexedItem) =>
+                      renderCollectionDropSlots({
+                        index: indexedItem.index,
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: renderDynamicItem(indexedItem.item),
+                      })
+                    }
+                  </For>
+                </DynamicMenuSection>
+              ) : (
+                renderCollectionDropSlots({
+                  index: entry.item.index,
+                  lastIndex: getItemNodes().length - 1,
+                  renderDropIndicator: (i, position) =>
+                    collectionRenderer().renderDropIndicator?.(i, position),
+                  children: renderDynamicItem(entry.item.item),
+                })
+              )
+            }
           </For>
-        </>
-      )}
-      {state.collection().size === 0 && local.renderEmptyState ? (
-        <div role="presentation" data-empty-state>
-          <div role="menuitem" style={{ display: "contents" }}>
-            {local.renderEmptyState()}
+        ) : (
+          <>
+            <For each={visibleItems()}>
+              {(item, index) => {
+                const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                return renderCollectionDropSlots({
+                  index: itemIndex(),
+                  lastIndex: getItemNodes().length - 1,
+                  renderDropIndicator: (i, position) =>
+                    collectionRenderer().renderDropIndicator?.(i, position),
+                  children: renderDynamicItem(item as T),
+                });
+              }}
+            </For>
+          </>
+        )}
+        {state.collection().size === 0 && local.renderEmptyState ? (
+          <div role="presentation" data-empty-state>
+            <div role="menuitem" style={{ display: "contents" }}>
+              {local.renderEmptyState()}
+            </div>
           </div>
-        </div>
-      ) : null}
-    </SharedElementTransition>
+        ) : null}
+      </SharedElementTransition>
+    </SeparatorContext>
   );
   const menuListProps = () =>
     ({
