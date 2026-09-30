@@ -47,7 +47,9 @@ import {
   useRenderProps,
   dataAttr,
   Provider,
+  useSlot,
 } from "./utils";
+import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -166,9 +168,25 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
 
   const state = createTimeFieldState(stateProps);
 
+  const hasExplicitName = () =>
+    Boolean(
+      (rest as Record<string, unknown>)["aria-label"] ||
+      (rest as Record<string, unknown>)["aria-labelledby"],
+    );
+  const stringLabel = (): string | undefined => {
+    const label = (rest as Record<string, unknown>).label;
+    return typeof label === "string" && label !== "" ? label : undefined;
+  };
+  // A string label names the field through TimeFieldLabel. Slot detection
+  // starts only when that string and an explicit aria name are both absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitName() && stringLabel() === undefined);
+
   const fieldAria = createTimeField(
     () => ({
       ...(rest as Record<string, unknown>),
+      // Keep a string label for TimeFieldLabel. An explicit aria name wins over
+      // a child Label. Otherwise the slot flag tells createLabel a label exists.
+      label: stringLabel() ?? (hasExplicitName() ? undefined : hasLabel()),
       // RAC threads these props into both useTimeFieldState and useTimeField;
       // they live in `stateProps` here, so forward them for the field hook's
       // aria-disabled and the native validation <input> (type/required).
@@ -211,6 +229,17 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
         return fieldAria.errorMessageProps;
       },
     },
+  };
+
+  const labelContextValue: LabelProps = {
+    get id() {
+      if (hasExplicitName() || stringLabel() !== undefined || !hasLabel()) {
+        return undefined;
+      }
+      return fieldAria.labelProps.id as string | undefined;
+    },
+    ref: labelRef,
+    elementType: "span",
   };
 
   // The shared context read by the reused DateInput/DateSegment. Read through
@@ -278,7 +307,14 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
               data-required={dataAttr(state.isRequired())}
               data-invalid={dataAttr(state.isInvalid())}
             >
-              <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+              <Provider
+                values={
+                  [
+                    [TextContext, textSlots],
+                    [LabelContext, labelContextValue],
+                  ] as Array<[Context<unknown>, unknown]>
+                }
+              >
                 {local.children as JSX.Element}
               </Provider>
             </div>

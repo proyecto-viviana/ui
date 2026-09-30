@@ -23,6 +23,7 @@ import {
 // TimeField reuses the certified DateField segment stack — there is no
 // TimeInput/TimeSegment upstream (RAC TimeField renders DateInput/DateSegment).
 import { DateInput, DateSegment } from "../src/DateField";
+import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -646,6 +647,84 @@ describe("TimeField", () => {
       expect(label).toHaveAttribute("id");
       expect(group).toHaveAttribute("aria-labelledby");
       expect(group.getAttribute("aria-labelledby")).toContain(label.getAttribute("id"));
+    });
+
+    it("names the time field from a child Label", async () => {
+      render(() => (
+        <TimeField>
+          <Label>Meeting time</Label>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Meeting time" });
+      const label = screen.getByText("Meeting time");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+      const spinbuttons = screen.getAllByRole("spinbutton");
+      expect(
+        spinbuttons.some((segment) =>
+          segment.getAttribute("aria-labelledby")?.split(/\s+/).includes(label.id),
+        ),
+      ).toBe(true);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", async () => {
+      render(() => (
+        <TimeField aria-label="Test Time">
+          <Label>Meeting time</Label>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Test Time" });
+      const label = screen.getByText("Meeting time");
+      expect(group).toHaveAttribute("aria-label", "Test Time");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+      for (const segment of screen.getAllByRole("spinbutton")) {
+        const labelledBy = segment.getAttribute("aria-labelledby");
+        if (!labelledBy) continue;
+        for (const id of labelledBy.split(/\s+/)) {
+          expect(document.getElementById(id)).not.toBeNull();
+        }
+      }
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", async () => {
+      render(() => (
+        <>
+          <span id="external-time-field-label">External</span>
+          <TimeField aria-labelledby="external-time-field-label">
+            <Label>Meeting time</Label>
+            <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          </TimeField>
+        </>
+      ));
+      await waitForTimeFieldHydration();
+
+      const group = screen.getByRole("group");
+      const label = screen.getByText("Meeting time");
+      expect(group).toHaveAttribute("aria-labelledby", "external-time-field-label");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("does not point an unlabeled time field at a missing label", async () => {
+      render(() => (
+        <TimeField>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      await waitFor(() => {
+        expect(screen.getByRole("group")).not.toHaveAttribute("aria-labelledby");
+      });
+      for (const segment of screen.getAllByRole("spinbutton")) {
+        expect(segment).not.toHaveAttribute("aria-labelledby");
+      }
     });
 
     it("wires description and error message to aria-describedby", async () => {
