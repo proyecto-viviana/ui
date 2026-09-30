@@ -169,6 +169,9 @@ export function createToastRegion<T>(
     if (!target || !currentTarget.contains(target)) {
       isFocused = false;
       focusedToastIndex = -1;
+      // Match useToastRegion: leaving the region forgets the entry target, so a
+      // later dismiss does not pull focus back.
+      lastFocused = null;
       updateTimers();
     }
   };

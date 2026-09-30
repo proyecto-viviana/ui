@@ -364,6 +364,57 @@ describe("createToastRegion", () => {
     expect(document.activeElement).toBe(before);
   });
 
+  it("leaves focus where the user moved it after they leave the region", async () => {
+    const pauseAll = vi.fn();
+    const resumeAll = vi.fn();
+    let removeAll = () => {};
+
+    render(() =>
+      (() => {
+        const [regionElement, setRegionElement] = createSignal<HTMLElement>();
+        const [toasts, setToasts] = createSignal([{ key: "toast-1" }]);
+        removeAll = () => setToasts([]);
+        const aria = createToastRegion({
+          state: { pauseAll, resumeAll, visibleToasts: toasts } as any,
+          ref: regionElement,
+        });
+
+        return (
+          <>
+            <button data-testid="before">Before</button>
+            <div {...aria.regionProps} ref={setRegionElement} data-testid="region">
+              <For each={toasts()}>
+                {(toast) => (
+                  <div role="alertdialog" tabIndex={-1} data-testid={toast.key}>
+                    {toast.key}
+                  </div>
+                )}
+              </For>
+            </div>
+            <button data-testid="after">After</button>
+          </>
+        );
+      })(),
+    );
+
+    const before = screen.getByTestId("before");
+    const after = screen.getByTestId("after");
+    const region = screen.getByTestId("region");
+    const firstToast = screen.getByTestId("toast-1");
+
+    before.focus();
+    firstToast.focus();
+    fireEvent.focusIn(firstToast, { relatedTarget: before });
+
+    after.focus();
+    fireEvent.focusOut(region, { relatedTarget: after });
+
+    removeAll();
+    await Promise.resolve();
+
+    expect(document.activeElement).toBe(after);
+  });
+
   it("keeps aria-label live when aria-label changes after mount (#435)", async () => {
     const pauseAll = vi.fn();
     const resumeAll = vi.fn();

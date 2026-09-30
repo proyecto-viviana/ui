@@ -195,6 +195,7 @@ These behaviors match the pin in this checkout.
 - An empty table disables keyboard navigation, and clearing that flag leaves navigation disabled until the table has rows.
 - An empty table keeps its column headers out of the tab order, and a focused column key is cleared when the last row leaves.
 - A year picker formats a truthy era option as short.
+- A toast region forgets its entry target once focus leaves, so a later dismiss leaves focus where the user moved it.
 
 **Components**
 
