@@ -190,6 +190,7 @@ These behaviors match the pin in this checkout.
 - An empty grid, table, or grid list yields its tab stop when it already contains a tabbable control.
 - An empty list inserts an item before a missing key.
 - An empty async list inserts an item before or after a missing key, and removing the last items clears select-all when no later page remains.
+- Removing a tree node clears the selection of descendants that leave with it.
 
 **Components**
 

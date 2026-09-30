@@ -345,6 +345,11 @@ export function createTreeData<T>(options: TreeOptions<T>): TreeData<T> {
     },
 
     remove(...keys: Key[]) {
+      if (keys.length === 0) {
+        return;
+      }
+
+      let nextMap: Map<Key, TreeNode<T>> | undefined;
       setTreeState((state) => {
         let { items, nodeMap } = state;
         let newMap = new Map(nodeMap);
@@ -356,14 +361,17 @@ export function createTreeData<T>(options: TreeOptions<T>): TreeData<T> {
           newMap = result.nodeMap;
         }
 
+        nextMap = newMap;
         return { items: newItems, nodeMap: newMap };
       });
 
       setSelectedKeys((sel) => {
-        if (sel === "all") return sel;
+        if (sel === "all" || !nextMap) return sel;
         const newSel = new Set(sel);
-        for (const key of keys) {
-          newSel.delete(key);
+        for (const key of sel) {
+          if (!nextMap.has(key)) {
+            newSel.delete(key);
+          }
         }
         return newSel;
       });

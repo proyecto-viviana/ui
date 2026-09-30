@@ -167,6 +167,20 @@ describe("createTreeData", () => {
     });
   });
 
+  it("drops a selected descendant when its parent is removed", () => {
+    createRoot((dispose) => {
+      const tree = createTestTree();
+      tree.setSelectedKeys(new Set([11, 2]));
+      flush();
+      tree.remove(1);
+      flush();
+      expect(tree.getItem(11)).toBeUndefined();
+      flush();
+      expect(tree.selectedKeys).toEqual(new Set([2]));
+      dispose();
+    });
+  });
+
   it("removeSelectedItems removes selected items", () => {
     createRoot((dispose) => {
       const tree = createTreeData<TreeItem>({
