@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
+import { SelectionIndicator } from "../src/SelectionIndicator";
 import { ToggleButton, type ToggleButtonRenderProps } from "../src/ToggleButton";
 import { ToggleButtonGroup } from "../src/ToggleButtonGroup";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -165,5 +166,43 @@ describe("ToggleButton", () => {
     setFlag("two");
     flush();
     expect(button.getAttribute("data-foo")).toBe("two");
+  });
+
+  it("shows a SelectionIndicator only while the button is selected", async () => {
+    render(() => (
+      <ToggleButton aria-label="Pin">
+        Pin
+        <SelectionIndicator>Mark</SelectionIndicator>
+      </ToggleButton>
+    ));
+
+    expect(screen.queryByText("Mark")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Pin" }));
+    expect(screen.getByText("Mark")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Pin" }));
+    expect(screen.queryByText("Mark")).toBeNull();
+  });
+
+  it("shows a SelectionIndicator for the selected button in a group", () => {
+    render(() => (
+      <ToggleButtonGroup
+        selectionMode="single"
+        defaultSelectedKeys={["pin"]}
+        aria-label="Formatting"
+      >
+        <ToggleButton id="pin" aria-label="Pin">
+          Pin
+          <SelectionIndicator>Mark</SelectionIndicator>
+        </ToggleButton>
+        <ToggleButton id="bold" aria-label="Bold">
+          Bold
+          <SelectionIndicator>Mark</SelectionIndicator>
+        </ToggleButton>
+      </ToggleButtonGroup>
+    ));
+
+    const marks = screen.getAllByText("Mark");
+    expect(marks).toHaveLength(1);
+    expect(screen.getByRole("radio", { name: "Pin" }).contains(marks[0]!)).toBe(true);
   });
 });

@@ -41,6 +41,10 @@ import {
   dataAttr,
 } from "./utils";
 import { useToggleButtonGroupStateContext } from "./ToggleButtonGroup";
+import {
+  SelectionIndicatorContext,
+  type SelectionIndicatorContextValue,
+} from "./SelectionIndicator";
 import { DialogTriggerContext } from "./contexts";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -147,6 +151,10 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     renderValues,
   );
 
+  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+    isSelected: toggleAria.isSelected,
+  }));
+
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
     delete (filtered as Record<string, unknown>).onClick;
@@ -198,7 +206,9 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       data-disabled={dataAttr(isDisabled())}
       data-selected={dataAttr(toggleAria.isSelected())}
     >
-      {renderProps.renderChildrenStable()}
+      <SelectionIndicatorContext value={selectionIndicatorContext()}>
+        {renderProps.renderChildrenStable()}
+      </SelectionIndicatorContext>
     </button>
   );
 }
