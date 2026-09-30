@@ -255,7 +255,6 @@ export function createColorArea(
     if (getState().isDragging) return;
 
     setValueChangedViaKeyboard(false);
-    setValueChangedViaInputChangeEvent(false);
 
     const s = getState();
     if (fromThumb) {

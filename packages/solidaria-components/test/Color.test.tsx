@@ -1099,6 +1099,26 @@ describe("Color Components", () => {
           expect(document.activeElement).toBe(inputs[0]);
         });
       });
+
+      it("keeps the short channel aria-valuetext after a pointer press that follows a range edit", () => {
+        render(() => <TestColorArea defaultValue={parseColor("#ff00ff")} />);
+
+        const inputs = screen.getAllByRole("slider", { hidden: true }) as HTMLInputElement[];
+        const color = parseColor("#ff00ff").withChannelValue("red", 254);
+        const xText = `${color.getChannelName("red", "en-US")}: ${color.formatChannelValue("red", "en-US")}, ${color.getColorName("en-US")}`;
+        const yText = `${color.getChannelName("green", "en-US")}: ${color.formatChannelValue("green", "en-US")}, ${color.getColorName("en-US")}`;
+
+        fireEvent.change(inputs[0]!, { target: { value: "254" } });
+        expect(inputs[0]).toHaveAttribute("aria-valuetext", xText);
+        expect(inputs[1]).toHaveAttribute("aria-valuetext", yText);
+
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
+        fireEvent.pointerDown(thumb, { clientX: 10, clientY: 10, pointerId: 1, button: 0 });
+
+        expect(inputs[0]!.value).toBe("254");
+        expect(inputs[0]).toHaveAttribute("aria-valuetext", xText);
+        expect(inputs[1]).toHaveAttribute("aria-valuetext", yText);
+      });
     });
 
     describe("forms", () => {

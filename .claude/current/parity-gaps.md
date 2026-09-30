@@ -171,6 +171,7 @@ These behaviors match the pin in this checkout.
 - A color field restores its initial color when the form resets.
 - A color slider restores its initial channel when the form resets.
 - A color area includes each element's own id in aria-labelledby when that element also has an aria-label.
+- A color area keeps the short single-channel aria-valuetext after a pointer press that follows a range edit.
 
 **Components**
 
