@@ -65,6 +65,8 @@ export interface ColorSliderState {
   readonly maxValue: number;
   /** Whether the slider is disabled. */
   readonly isDisabled: boolean;
+  /** The channel number a native form reset restores. */
+  readonly defaultThumbValue: number;
 
   /** Get the current channel value. */
   getThumbValue(): number;
@@ -124,6 +126,22 @@ export function createColorSliderState(
       setInternalValue(init);
     }
   }
+
+  // Form reset restores the first defaultValue's channel, or the first
+  // controlled color's channel when that default was omitted. An explicit
+  // null default falls through.
+  const initialOptions = getOptions();
+  const resetColor = (color: Color | string) => {
+    const normalized = normalizeColor(color);
+    return initialOptions.colorSpace ? normalized.toFormat(initialOptions.colorSpace) : normalized;
+  };
+  const initialDefault = initialOptions.defaultValue
+    ? resetColor(initialOptions.defaultValue)
+    : undefined;
+  const firstColor =
+    initialOptions.value !== undefined ? resetColor(initialOptions.value) : undefined;
+  const defaultColor = initialDefault ?? firstColor ?? resetColor("#ff0000");
+  const defaultThumbValue = defaultColor.getChannelValue(initialOptions.channel);
 
   // Controlled vs uncontrolled value
   const value = createMemo(() => {
@@ -286,6 +304,7 @@ export function createColorSliderState(
     get isDisabled() {
       return isDisabled();
     },
+    defaultThumbValue,
     getThumbValue,
     getThumbMinValue,
     getThumbMaxValue,

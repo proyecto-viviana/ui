@@ -26,6 +26,7 @@ import type { Accessor } from "solid-js";
 import type { ColorSliderState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
+import { createFormReset } from "../form/createFormReset";
 import { focusWithoutScrolling } from "../utils/focus";
 import type { AriaColorSliderOptions, ColorSliderAria } from "./types";
 
@@ -52,6 +53,11 @@ export function createColorSlider(
 
   const getInput = () =>
     inputRef?.() ?? trackRef()?.querySelector<HTMLInputElement>('input[type="range"]') ?? null;
+  createFormReset(
+    () => getInput() ?? undefined,
+    getState().defaultThumbValue,
+    (value) => getState().setThumbValue(value),
+  );
   const focusInput = () => {
     focusWithoutScrolling(getInput());
     queueMicrotask(() => focusWithoutScrolling(getInput()));

@@ -639,6 +639,29 @@ describe("Color Components", () => {
         });
       });
     });
+
+    describe("forms", () => {
+      it("supports form reset", () => {
+        const [value, setValue] = createSignal(parseColor("#7f0000"));
+        render(() => (
+          <form>
+            <TestColorSlider channel="red" value={value()} onChange={setValue} />
+          </form>
+        ));
+
+        const input = screen.getByRole("slider", { name: "Red" }) as HTMLInputElement;
+        expect(input).toHaveValue("127");
+
+        fireEvent.change(input, { target: { value: "255" } });
+        expect(input).toHaveValue("255");
+
+        // JSDOM's HTMLFormElement.reset() does not dispatch `reset`.
+        fireEvent.reset(input.form!);
+        expect(input).toHaveValue("127");
+        expect(value()?.getChannelValue("red")).toBe(127);
+        expect(value()?.toString("hex")).toBe("#7f0000");
+      });
+    });
   });
 
   // ============================================
