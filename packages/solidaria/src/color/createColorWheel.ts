@@ -48,6 +48,9 @@ export function createColorWheel(
   let cleanupMouseDrag: (() => void) | undefined;
   let dragElement: HTMLElement | null = null;
   let thumbGrab: { clientX: number; clientY: number; x: number; y: number } | null = null;
+  // Track clicks change the hue before the thumb position can be read back.
+  // The origin is kept until the first move, which is when the pin seeds it.
+  let trackOrigin: { clientX: number; clientY: number } | null = null;
 
   const outerRadius = () => getProps().outerRadius ?? 100;
   const innerRadius = () => getProps().innerRadius ?? 74;
@@ -99,6 +102,7 @@ export function createColorWheel(
   };
 
   const beginThumbGrab = (clientX: number, clientY: number) => {
+    trackOrigin = null;
     const position = getState().getThumbPosition(thumbRadius());
     thumbGrab = { clientX, clientY, x: position.x, y: position.y };
   };
@@ -114,6 +118,7 @@ export function createColorWheel(
 
   const endDrag = () => {
     thumbGrab = null;
+    trackOrigin = null;
     if (!getState().isDragging) return;
     getState().setDragging(false);
     dragElement = null;
@@ -126,6 +131,7 @@ export function createColorWheel(
 
     const onPointerMove = (e: PointerEvent) => {
       if (!getState().isDragging) return;
+      if (trackOrigin) beginThumbGrab(trackOrigin.clientX, trackOrigin.clientY);
       if (thumbGrab) {
         updateFromThumbGrab(e.clientX, e.clientY);
         return;
@@ -155,6 +161,7 @@ export function createColorWheel(
 
     const onMouseMove = (e: MouseEvent) => {
       if (!getState().isDragging) return;
+      if (trackOrigin) beginThumbGrab(trackOrigin.clientX, trackOrigin.clientY);
       if (thumbGrab) {
         updateFromThumbGrab(e.clientX, e.clientY);
         return;
@@ -185,11 +192,13 @@ export function createColorWheel(
     if (e.pointerType === "mouse" && (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)) return;
 
     thumbGrab = null;
+    trackOrigin = null;
     dragElement = e.currentTarget as HTMLElement;
     if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
       dragElement = null;
       return;
     }
+    trackOrigin = { clientX: e.clientX, clientY: e.clientY };
     focusInput();
     getState().setDragging(true);
     installPointerDragListeners();
@@ -200,11 +209,13 @@ export function createColorWheel(
     if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey) return;
 
     thumbGrab = null;
+    trackOrigin = null;
     dragElement = e.currentTarget as HTMLElement;
     if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
       dragElement = null;
       return;
     }
+    trackOrigin = { clientX: e.clientX, clientY: e.clientY };
     focusInput();
     getState().setDragging(true);
     installMouseDragListeners();

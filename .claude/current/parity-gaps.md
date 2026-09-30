@@ -173,6 +173,7 @@ These behaviors match the pin in this checkout.
 - A color area includes each element's own id in aria-labelledby when that element also has an aria-label.
 - A color area keeps the short single-channel aria-valuetext after a pointer press that follows a range edit.
 - A color wheel thumb drag keeps the grab offset, so an off-center press does not jump the hue to the pointer angle.
+- A color wheel track drag continues from the thumb position, so the hue does not jump to the pointer angle.
 
 **Components**
 

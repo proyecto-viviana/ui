@@ -1399,6 +1399,49 @@ describe("Color Components", () => {
         expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(25);
       });
 
+      it("continues a track drag from the thumb position instead of the pointer angle", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(90, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChange={onChange}
+          />
+        ));
+
+        const track = document.querySelector(".solidaria-ColorWheel-track") as HTMLElement;
+        track.getBoundingClientRect = () =>
+          ({
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 200,
+            width: 200,
+            height: 200,
+            toJSON: () => ({}),
+          }) as DOMRect;
+
+        // 80px right of center is on the ring and sets hue 0. A 40px downward drag
+        // then follows the thumb at radius 87, which is hue 25. The pointer itself,
+        // 80px right and 40px down, is hue 27.
+        fireEvent.pointerDown(track, {
+          clientX: 180,
+          clientY: 100,
+          button: 0,
+          pointerType: "mouse",
+          pointerId: 1,
+        });
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(0);
+
+        fireEvent.pointerMove(window, { clientX: 180, clientY: 140, pointerId: 1 });
+
+        expect(onChange).toHaveBeenCalledTimes(2);
+        expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(25);
+      });
+
       it("supports form reset", () => {
         const [value, setValue] = createSignal(parseColor("hsl(15, 100%, 50%)"));
         render(() => (
