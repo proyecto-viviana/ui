@@ -286,6 +286,31 @@ export function createColorField(
     };
   });
 
+  const inputElementId = () => getProps().id ?? generatedInputId;
+  // useLabel treats only a truthy label as visible. The channel name is a
+  // fallback and must not count as an explicit aria-label.
+  const hasVisibleLabel = () => Boolean(getProps().label);
+  const resolvedAriaLabel = () => {
+    const p = getProps();
+    if (p["aria-label"]) return p["aria-label"];
+    if (hasVisibleLabel() || p["aria-labelledby"]) return undefined;
+    const s = getState();
+    return s.channel && s.colorValue
+      ? s.colorValue.getChannelName(s.channel, locale().locale)
+      : undefined;
+  };
+  const resolvedLabelledBy = () => {
+    const p = getProps();
+    let labelledBy = p["aria-labelledby"];
+    if (hasVisibleLabel()) {
+      labelledBy = labelledBy ? `${labelId} ${labelledBy}` : labelId;
+    }
+    if (!labelledBy) return undefined;
+    const parts = labelledBy.trim().split(/\s+/);
+    if (p["aria-label"]) return [...new Set([inputElementId(), ...parts])].join(" ");
+    return parts.join(" ");
+  };
+
   const descriptionProps = () => field.descriptionProps;
 
   const errorMessageProps = () => field.errorMessageProps;
@@ -293,10 +318,6 @@ export function createColorField(
   const inputProps = createMemo(() => {
     const s = getState();
     const p = getProps();
-    const channelLabel =
-      s.channel && s.colorValue
-        ? s.colorValue.getChannelName(s.channel, locale().locale)
-        : undefined;
     const required = p.isRequired || s.isRequired;
     const invalid = isInvalid();
 
@@ -321,8 +342,8 @@ export function createColorField(
       autoComplete: "off",
       autoCorrect: "off",
       spellCheck: "false",
-      "aria-label": p["aria-label"] ?? channelLabel,
-      "aria-labelledby": p["aria-labelledby"],
+      "aria-label": resolvedAriaLabel(),
+      "aria-labelledby": resolvedLabelledBy(),
       "aria-describedby": field.fieldProps["aria-describedby"],
       "aria-details": p["aria-details"],
       "aria-errormessage": invalid

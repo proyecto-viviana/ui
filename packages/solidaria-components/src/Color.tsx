@@ -1620,6 +1620,12 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const colorFieldAria = createColorField(
     () => ({
       id: ariaProps.id,
+      label:
+        local.label != null
+          ? local.label
+          : hasExplicitName() || !(hasRegisteredLabelElement() || hasLabel())
+            ? undefined
+            : true,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
@@ -1644,19 +1650,6 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     () => state,
     () => inputRef ?? null,
   );
-
-  const fieldInputProps = () => {
-    const labelledBy =
-      ariaProps["aria-labelledby"] ??
-      (!ariaProps["aria-label"] && (local.label || hasRegisteredLabelElement() || hasLabel())
-        ? colorFieldAria.labelProps.id
-        : undefined);
-    return {
-      ...colorFieldAria.inputProps,
-      "aria-label": labelledBy ? undefined : colorFieldAria.inputProps["aria-label"],
-      "aria-labelledby": labelledBy,
-    } as JSX.InputHTMLAttributes<HTMLInputElement>;
-  };
 
   const labelContextValue: LabelProps = {
     get id() {
@@ -1771,7 +1764,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       value={{
         state,
         get inputProps() {
-          return fieldInputProps();
+          return colorFieldAria.inputProps;
         },
         get labelProps() {
           return colorFieldAria.labelProps;

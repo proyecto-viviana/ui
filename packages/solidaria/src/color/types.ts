@@ -164,6 +164,8 @@ export interface ColorWheelAria {
 export interface AriaColorFieldOptions {
   /** Element id for the input. */
   id?: string;
+  /** Visible label content, used to connect a custom label with the field. */
+  label?: JSX.Element;
   /** Accessible label for the field. */
   "aria-label"?: string;
   /** ID of element that labels the field. */

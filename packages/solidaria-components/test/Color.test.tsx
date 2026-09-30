@@ -1880,6 +1880,78 @@ describe("Color Components", () => {
 
         expect(input).not.toHaveAttribute("aria-labelledby");
       });
+
+      it("includes its own id in aria-labelledby when an aria-label is also set", () => {
+        const { unmount } = render(() => (
+          <>
+            <span id="label-id">External color</span>
+            <TestColorField
+              id="color-field"
+              aria-label="Color"
+              aria-labelledby="label-id"
+              defaultValue={parseColor("#ff0000")}
+            />
+          </>
+        ));
+
+        const input = screen.getByRole("textbox");
+        expect(input).toHaveAttribute("id", "color-field");
+        expect(input).toHaveAttribute("aria-label", "Color");
+        expect(input).toHaveAttribute("aria-labelledby", "color-field label-id");
+        unmount();
+
+        render(() => (
+          <>
+            <span id="label-id">External color</span>
+            <span id="extra">Extra</span>
+            <TestColorField
+              id="color-field"
+              aria-labelledby="  label-id   extra  "
+              defaultValue={parseColor("#ff0000")}
+            />
+          </>
+        ));
+
+        const labelledOnly = screen.getByRole("textbox");
+        expect(labelledOnly).toHaveAttribute("id", "color-field");
+        expect(labelledOnly).not.toHaveAttribute("aria-label");
+        expect(labelledOnly).toHaveAttribute("aria-labelledby", "label-id extra");
+      });
+
+      it("keeps a visible label id beside an external aria-labelledby", () => {
+        render(() => (
+          <>
+            <span id="extra-color">Extra color</span>
+            <TestColorField
+              id="color-field"
+              label="Color"
+              aria-labelledby="extra-color"
+              defaultValue={parseColor("#ff0000")}
+            />
+          </>
+        ));
+
+        const label = screen.getByText("Color");
+        const input = screen.getByRole("textbox");
+        expect(input).not.toHaveAttribute("aria-label");
+        expect(input).toHaveAttribute("aria-labelledby", `${label.id} extra-color`);
+      });
+
+      it("includes its own id before the visible label when an aria-label is also set", () => {
+        render(() => (
+          <TestColorField
+            id="color-field"
+            label="Color"
+            aria-label="Custom color"
+            defaultValue={parseColor("#ff0000")}
+          />
+        ));
+
+        const label = screen.getByText("Color");
+        const input = screen.getByRole("textbox");
+        expect(input).toHaveAttribute("aria-label", "Custom color");
+        expect(input).toHaveAttribute("aria-labelledby", `color-field ${label.id}`);
+      });
     });
 
     describe("slots", () => {

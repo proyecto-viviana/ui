@@ -181,6 +181,7 @@ These behaviors match the pin in this checkout.
 - On iOS and Android, an unlabeled color area is named Color picker, and both sliders stay exposed.
 - A color wheel includes its own id in aria-labelledby when an aria-label is also set.
 - A color slider includes its own id in aria-labelledby when an aria-label is also set, and keeps a visible label id beside an external label.
+- A color field includes its own id in aria-labelledby when an aria-label is also set, and keeps a visible label id beside an external label.
 
 **Components**
 
