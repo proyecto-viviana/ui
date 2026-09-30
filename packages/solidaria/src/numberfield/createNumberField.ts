@@ -241,6 +241,85 @@ export function createNumberField(
     }
   };
 
+  // useFormattedTextField cancels a beforeinput whose next value fails
+  // partial-number validation, so the character never enters the field or the
+  // undo stack. Undo, redo, and Enter pass through. Solid's onBeforeInput is
+  // the native event, so this is the native branch (not the Firefox fallback
+  // that concatenates a null `data`).
+  const onBeforeInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (e) => {
+    const input = e.currentTarget;
+    if (!input) return;
+
+    let nextValue: string | null = null;
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? 0;
+    switch (e.inputType) {
+      case "historyUndo":
+      case "historyRedo":
+      case "insertLineBreak":
+        return;
+      case "deleteContent":
+      case "deleteByCut":
+      case "deleteByDrag":
+        nextValue = input.value.slice(0, start) + input.value.slice(end);
+        break;
+      case "deleteContentForward":
+        nextValue =
+          end === start
+            ? input.value.slice(0, start) + input.value.slice(end + 1)
+            : input.value.slice(0, start) + input.value.slice(end);
+        break;
+      case "deleteContentBackward":
+        nextValue =
+          end === start
+            ? input.value.slice(0, start - 1) + input.value.slice(start)
+            : input.value.slice(0, start) + input.value.slice(end);
+        break;
+      case "deleteSoftLineBackward":
+      case "deleteHardLineBackward":
+        nextValue = input.value.slice(start);
+        break;
+      default:
+        if (e.data != null) {
+          nextValue = input.value.slice(0, start) + e.data + input.value.slice(end);
+        }
+        break;
+    }
+
+    if (nextValue == null || !state.validate(nextValue)) {
+      e.preventDefault();
+    }
+  };
+
+  // Chrome does not cancel the final composition via beforeinput. Remember the
+  // value at compositionstart and put it back if compositionend is invalid.
+  let compositionStart: {
+    value: string;
+    selectionStart: number | null;
+    selectionEnd: number | null;
+  } | null = null;
+
+  const onCompositionStart: JSX.EventHandler<HTMLInputElement, CompositionEvent> = () => {
+    const input = inputRef?.() ?? null;
+    if (!input) return;
+    compositionStart = {
+      value: input.value,
+      selectionStart: input.selectionStart,
+      selectionEnd: input.selectionEnd,
+    };
+  };
+
+  const onCompositionEnd: JSX.EventHandler<HTMLInputElement, CompositionEvent> = () => {
+    const input = inputRef?.() ?? null;
+    const saved = compositionStart;
+    if (!input || !saved || state.validate(input.value)) return;
+    input.value = saved.value;
+    if (saved.selectionStart != null && saved.selectionEnd != null) {
+      input.setSelectionRange(saved.selectionStart, saved.selectionEnd);
+    }
+    state.setInputValue(saved.value);
+  };
+
   // Handle input blur - commit value
   // Non-reactive focus flag — matches useSpinButton. Focus itself must not
   // announce; only a later change to inputValue while focused does.
@@ -558,6 +637,9 @@ export function createNumberField(
           value: state.inputValue(),
           onInput: onInputChange,
           onChange: onInputChange,
+          onBeforeInput,
+          onCompositionStart,
+          onCompositionEnd,
           onFocus: onInputFocus,
           onBlur: onInputBlur,
           onKeyDown,

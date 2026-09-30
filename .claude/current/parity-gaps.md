@@ -68,6 +68,7 @@ These behaviors match the pin in this checkout.
 - ActionGroup flips left and right arrows in RTL, including a vertical group.
 - `createButton` forwards focus and key handlers into the focusable props, and takes props only.
 - NumberField chooses `inputMode` from the platform and the range, passes `isWheelDisabled`, keeps `name` and `form` off the formatted field, and submits the parsed value from a hidden input.
+- A number field rejects a character that cannot be part of the number before it is inserted, and restores the previous value when a composition ends invalid.
 - Grid, grid list, and tree announce selection changes and the long-press hint. The announcer helpers are exported from the grid and grid-list modules.
 - A tooltip trigger key closes the tooltip when close-on-press is set.
 - Autocomplete blur clears the option ring, and focus restores virtual focus on the collection.

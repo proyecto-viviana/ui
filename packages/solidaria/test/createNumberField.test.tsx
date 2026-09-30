@@ -583,6 +583,63 @@ describe("createNumberField", () => {
       expect(onKeyDown).toHaveBeenCalled();
       expect(onKeyUp).toHaveBeenCalled();
     });
+
+    // useFormattedTextField preventDefault's a beforeinput whose next value
+    // fails validate, so the character never enters the field or the undo stack.
+    // Undo, redo, and Enter are allowed through. A composition that ends invalid
+    // is restored to the value from compositionstart.
+    function beforeInput(el: HTMLInputElement, inputType: string, data: string | null = null) {
+      const event = new InputEvent("beforeinput", {
+        inputType,
+        data,
+        bubbles: true,
+        cancelable: true,
+      });
+      el.dispatchEvent(event);
+      return event;
+    }
+
+    it("rejects an invalid character on beforeinput", () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={12} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.setSelectionRange(input.value.length, input.value.length);
+      const rejected = beforeInput(input, "insertText", "a");
+
+      expect(rejected.defaultPrevented).toBe(true);
+      expect(input).toHaveValue("12");
+    });
+
+    it("lets a valid digit through beforeinput", () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={12} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.setSelectionRange(input.value.length, input.value.length);
+      const allowed = beforeInput(input, "insertText", "3");
+
+      expect(allowed.defaultPrevented).toBe(false);
+    });
+
+    it("allows undo, redo, and enter on beforeinput", () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={12} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      for (const inputType of ["historyUndo", "historyRedo", "insertLineBreak"]) {
+        const event = beforeInput(input, inputType);
+        expect(event.defaultPrevented).toBe(false);
+      }
+    });
+
+    it("restores the field when a composition ends on an invalid value", () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={12} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.compositionStart(input);
+      input.value = "12x";
+      fireEvent.compositionEnd(input);
+
+      expect(input).toHaveValue("12");
+    });
   });
 
   describe("disabled state", () => {
