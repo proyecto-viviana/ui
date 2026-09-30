@@ -27,6 +27,7 @@ import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
+import { createFormReset } from "../form/createFormReset";
 import { createFormValidation } from "../form/createFormValidation";
 import { ariaTrueFalse } from "../utils/domAttrs";
 import type { JSX } from "@solidjs/web";
@@ -81,6 +82,12 @@ export function createColorField(
     },
     validationState,
     () => inputRef() ?? undefined,
+  );
+
+  createFormReset(
+    () => inputRef() ?? undefined,
+    getState().defaultColorValue,
+    (value) => getState().setColorValue(value),
   );
 
   // RAC `useColorField` reaches `useField` through `useFormattedTextField` /

@@ -57,6 +57,8 @@ export interface ColorFieldState {
   readonly value: Color | null;
   /** The color used for channel calculations. */
   readonly colorValue: Color;
+  /** The color a native form reset restores. */
+  readonly defaultColorValue: Color | null;
   /** The current input text. */
   readonly inputValue: string;
   /** The numeric value exposed by channel fields. */
@@ -212,6 +214,15 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   const getOptions = () => options();
   const initialOptions = getOptions();
   const initialValue = getDefaultValue(initialOptions);
+  // Form reset restores the first defaultValue, or the first controlled color
+  // when that default was omitted. An explicit null default falls through.
+  const initialDefault =
+    initialOptions.defaultValue !== undefined
+      ? normalizeNullableColor(initialOptions.defaultValue)
+      : undefined;
+  const firstColor =
+    initialOptions.value !== undefined ? normalizeNullableColor(initialOptions.value) : undefined;
+  const defaultColorValue = initialDefault ?? firstColor ?? null;
 
   const [internalValue, setInternalValue] = createInternalSignal<Color | null>(initialValue);
   const [inputValue, setInputValueInternal] = createInternalSignal(
@@ -397,6 +408,7 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
     get colorValue() {
       return colorValue();
     },
+    defaultColorValue,
     get inputValue() {
       return inputValue();
     },

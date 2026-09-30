@@ -1884,6 +1884,50 @@ describe("Color Components", () => {
         expect(scrolled).toBe(true);
       });
     });
+
+    describe("forms", () => {
+      it("supports form reset", () => {
+        const [value, setValue] = createSignal(parseColor("#7f0000"));
+        render(() => (
+          <form>
+            <TestColorField value={value()} onChange={setValue} aria-label="mandatory label" />
+          </form>
+        ));
+
+        const input = screen.getByRole("textbox", { name: "mandatory label" }) as HTMLInputElement;
+        expect(input).toHaveValue("#7F0000");
+
+        fireEvent.input(input, { target: { value: "#000" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(input).toHaveValue("#000000");
+
+        // JSDOM's HTMLFormElement.reset() does not dispatch `reset`.
+        fireEvent.reset(input.form!);
+        expect(input).toHaveValue("#7F0000");
+        expect(value()?.toString("hex")).toBe("#7f0000");
+      });
+
+      it("supports form reset for a channel", () => {
+        const [value, setValue] = createSignal(parseColor("#ff0"));
+        render(() => (
+          <form>
+            <TestColorField channel="red" value={value()} onChange={setValue} />
+          </form>
+        ));
+
+        const input = screen.getByRole("textbox") as HTMLInputElement;
+        expect(input).toHaveValue("255");
+
+        fireEvent.input(input, { target: { value: "0" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(input).toHaveValue("0");
+
+        // JSDOM's HTMLFormElement.reset() does not dispatch `reset`.
+        fireEvent.reset(input.form!);
+        expect(input).toHaveValue("255");
+        expect(value()?.getChannelValue("red")).toBe(255);
+      });
+    });
   });
 
   // ============================================
