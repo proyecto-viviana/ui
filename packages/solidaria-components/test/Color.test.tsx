@@ -29,6 +29,7 @@ import {
   ColorSwatchPickerItem,
 } from "../src/Color";
 import { Text } from "../src/Text";
+import { Label } from "../src/Label";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 
 // Helper components using render props pattern
@@ -216,6 +217,102 @@ describe("Color Components", () => {
 
         expect(screen.getByRole("group", { name: "Hue" })).toBeTruthy();
         expect(screen.getByRole("slider", { name: "Hue" })).toBeTruthy();
+      });
+
+      it("names the slider from an empty child label using the channel name", () => {
+        render(() => (
+          <ColorSlider channel="red" defaultValue={parseColor("rgb(255, 0, 0)")}>
+            {() => (
+              <>
+                <Label />
+                <ColorSliderOutput />
+                <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+              </>
+            )}
+          </ColorSlider>
+        ));
+
+        const label = screen.getByText("Red");
+        const group = screen.getByRole("group", { name: "Red" });
+        const input = screen.getByRole("slider", { name: "Red" });
+
+        expect(label.tagName).toBe("LABEL");
+        expect(label).toHaveClass("solidaria-Label");
+        expect(label.id).toBeTruthy();
+        expect(group).toHaveAttribute("aria-labelledby", label.id);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+      });
+
+      it("names the slider from a child label instead of the channel name", () => {
+        render(() => (
+          <ColorSlider channel="hue" defaultValue={parseColor("hsl(0, 100%, 50%)")}>
+            {() => (
+              <>
+                <Label>Favorite hue</Label>
+                <ColorSliderOutput />
+                <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+              </>
+            )}
+          </ColorSlider>
+        ));
+
+        const label = screen.getByText("Favorite hue");
+        const group = screen.getByRole("group", { name: "Favorite hue" });
+        const input = screen.getByRole("slider", { name: "Favorite hue" });
+
+        expect(label.tagName).toBe("LABEL");
+        expect(group).toHaveAttribute("aria-labelledby", label.id);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+      });
+
+      it("keeps an explicit aria-label when a child label is present", () => {
+        render(() => (
+          <ColorSlider
+            channel="hue"
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Custom hue"
+          >
+            {() => (
+              <>
+                <Label>Favorite hue</Label>
+                <ColorSliderOutput />
+                <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+              </>
+            )}
+          </ColorSlider>
+        ));
+
+        const group = screen.getByRole("group", { name: "Custom hue" });
+        const input = screen.getByRole("slider", { name: "Custom hue" });
+
+        expect(group).not.toHaveAttribute("aria-labelledby");
+        expect(input).not.toHaveAttribute("aria-labelledby", screen.getByText("Favorite hue").id);
+      });
+
+      it("keeps an explicit aria-labelledby when a child label is present", () => {
+        render(() => (
+          <>
+            <span id="external-hue">External hue</span>
+            <ColorSlider
+              channel="hue"
+              defaultValue={parseColor("hsl(0, 100%, 50%)")}
+              aria-labelledby="external-hue"
+            >
+              {() => (
+                <>
+                  <Label>Favorite hue</Label>
+                  <ColorSliderOutput />
+                  <ColorSliderTrack>{() => <ColorSliderThumb />}</ColorSliderTrack>
+                </>
+              )}
+            </ColorSlider>
+          </>
+        ));
+
+        const group = screen.getByRole("group", { name: "External hue" });
+
+        expect(group).toHaveAttribute("aria-labelledby", "external-hue");
+        expect(group).not.toHaveAttribute("aria-labelledby", screen.getByText("Favorite hue").id);
       });
 
       it("should propagate form and description props to the hidden range input", () => {

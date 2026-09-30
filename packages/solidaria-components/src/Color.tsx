@@ -118,12 +118,14 @@ import {
   type StyleOrFunction,
   type SlotProps,
   useRenderProps,
+  useSlot,
   filterDOMProps,
   Provider,
   dataAttr,
   attrString,
 } from "./utils";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
+import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
 import { racIntlStrings } from "./intl";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -327,12 +329,20 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     inputRef = el;
   };
 
+  const hasExplicitName = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  // A prop label already names the slider through ColorSliderLabel. Slot
+  // detection starts only when that prop and an explicit aria name are absent.
+  // `false` still counts as a label because the hook treats any non-null label
+  // as visible (`label != null`).
+  const [labelRef, hasLabel] = useSlot(!hasExplicitName() && local.label == null);
+
   // Create color slider aria props
   const colorSliderAria = createColorSlider(
     () => ({
       id: ariaProps.id,
       channel: stateProps.channel,
-      label: local.label,
+      label:
+        local.label != null ? local.label : hasExplicitName() || !hasLabel() ? undefined : true,
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
@@ -375,6 +385,20 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  const labelContextValue: LabelProps = {
+    get id() {
+      if (hasExplicitName() || local.label != null || !hasLabel()) return undefined;
+      return colorSliderAria.labelProps.id as string | undefined;
+    },
+    ref: labelRef,
+    get onClick() {
+      return colorSliderAria.labelProps.onClick;
+    },
+    get children() {
+      return state.value.getChannelName(state.channel, locale().locale);
+    },
+  };
+
   return (
     <ColorSliderContext
       value={{
@@ -410,7 +434,7 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
         data-orientation={state.orientation}
         slot={local.slot || undefined}
       >
-        {renderProps.renderChildrenStable()}
+        <LabelContext value={labelContextValue}>{renderProps.renderChildrenStable()}</LabelContext>
       </div>
     </ColorSliderContext>
   );
