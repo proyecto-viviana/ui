@@ -34,7 +34,12 @@ import {
   type ValidityState,
 } from "@proyecto-viviana/solid-stately";
 
-export interface AriaCheckboxGroupProps extends CheckboxGroupProps {
+export interface AriaCheckboxGroupProps extends Omit<CheckboxGroupProps, "label"> {
+  /**
+   * Slot presence or other label content. A group is not a labelable input,
+   * so this is not rendered; the field only checks whether it is set.
+   */
+  label?: JSX.Element;
   /** Defines a string value that labels the current element. */
   "aria-label"?: string;
   /** Identifies the element (or elements) that labels the current element. */

@@ -14,6 +14,7 @@ import {
   type CheckboxRenderProps,
   type CheckboxGroupRenderProps,
 } from "../src/Checkbox";
+import { Label } from "../src/Label";
 import { Form } from "../src/Form";
 import {
   setupUser,
@@ -697,6 +698,63 @@ describe("CheckboxGroup", () => {
 
       expect(screen.getByText("Option A")).toBeInTheDocument();
       expect(screen.getByText("Option B")).toBeInTheDocument();
+    });
+
+    it("names the checkbox group from a child Label", () => {
+      render(() => (
+        <CheckboxGroup>
+          <Label>Test</Label>
+          <Checkbox value="a">A</Checkbox>
+          <Checkbox value="b">B</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      const group = screen.getByRole("group", { name: "Test" });
+      const label = screen.getByText("Test");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", () => {
+      render(() => (
+        <CheckboxGroup aria-label="Explicit">
+          <Label>Test</Label>
+          <Checkbox value="a">A</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      const group = screen.getByRole("group");
+      const label = screen.getByText("Test");
+      expect(group).toHaveAttribute("aria-label", "Explicit");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", () => {
+      render(() => (
+        <>
+          <span id="external-checkbox-group-label">External</span>
+          <CheckboxGroup aria-labelledby="external-checkbox-group-label">
+            <Label>Test</Label>
+            <Checkbox value="a">A</Checkbox>
+          </CheckboxGroup>
+        </>
+      ));
+
+      const group = screen.getByRole("group");
+      const label = screen.getByText("Test");
+      expect(group).toHaveAttribute("aria-labelledby", "external-checkbox-group-label");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("does not point an unlabeled checkbox group at a missing label", () => {
+      render(() => (
+        <CheckboxGroup>
+          <Checkbox value="a">A</Checkbox>
+        </CheckboxGroup>
+      ));
+
+      expect(screen.getByRole("group")).not.toHaveAttribute("aria-labelledby");
     });
   });
 

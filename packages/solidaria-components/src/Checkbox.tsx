@@ -58,7 +58,9 @@ import {
   dataAttr,
   isAriaTrue,
   callEventHandler,
+  useSlot,
 } from "./utils";
+import { LabelContext, type LabelProps } from "./Label";
 import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { TextContext } from "./Text";
@@ -210,15 +212,27 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     name: ariaProps.name,
   }));
 
+  const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel());
+
   const groupAria = createCheckboxGroup(
     () => ({
       ...ariaProps,
+      label: hasExplicitLabel() ? undefined : hasLabel(),
       validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
       description: local.description,
       errorMessage: local.errorMessage,
     }),
     state,
   );
+
+  const labelContextValue: LabelProps = {
+    get id() {
+      return hasExplicitLabel() ? undefined : (groupAria.labelProps.id as string | undefined);
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
 
   const renderValues = createMemo<CheckboxGroupRenderProps>(() => ({
     isDisabled: state.isDisabled,
@@ -307,7 +321,9 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         data-required={dataAttr(ariaProps.isRequired)}
         data-invalid={dataAttr(groupAria.isInvalid)}
       >
-        <GroupChildren />
+        <LabelContext value={labelContextValue}>
+          <GroupChildren />
+        </LabelContext>
         {/* A styled layer can own the visible HelpText (renderHelpText={false});
             the id wiring above still runs so the group and its items stay
             associated. Default true keeps the bare headless self-sufficient. */}
