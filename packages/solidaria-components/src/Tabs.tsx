@@ -245,6 +245,19 @@ function staticTabText(tab: RegisteredTab): string {
   return tab.textValue ?? String(tab.id);
 }
 
+function focusWithinDomProps(
+  focusProps: JSX.HTMLAttributes<HTMLElement>,
+): JSX.HTMLAttributes<HTMLElement> {
+  const { ref: _ref, onFocus, onBlur, ...rest } = focusProps as Record<string, unknown>;
+  // Solid's onFocus/onBlur do not bubble. RAC's within ring listens via React's
+  // bubbling onFocus, so the same handlers attach as onFocusIn/onFocusOut.
+  return {
+    ...rest,
+    onFocusIn: onFocus,
+    onFocusOut: onBlur,
+  } as JSX.HTMLAttributes<HTMLElement>;
+}
+
 /**
  * Tabs provide a way to organize content into multiple sections, with only one section visible at a time.
  */
@@ -349,6 +362,10 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  // RAC Tabs root: useFocusRing({within: true}). The within flag is data-focused.
+  // Solid's onFocus does not bubble, so the ring listens on onFocusIn/onFocusOut.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing({ within: true });
+
   const contextValue: TabsContextValue<T> = {
     state,
     items: effectiveItems,
@@ -372,11 +389,14 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
       <TabsStateContext value={state}>
         <div
           {...domProps()}
+          {...focusWithinDomProps(focusProps)}
           ref={(element) => assignRef(local.ref, element)}
           class={renderProps.class()}
           style={renderProps.style()}
           data-orientation={state.orientation()}
           data-disabled={dataAttr(state.isDisabled())}
+          data-focused={dataAttr(isFocused())}
+          data-focus-visible={dataAttr(isFocusVisible())}
         >
           {props.children as JSX.Element}
         </div>

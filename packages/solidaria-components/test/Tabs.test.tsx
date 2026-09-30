@@ -26,7 +26,7 @@ import { Dialog, DialogTrigger } from "../src/Dialog";
 import { Button } from "../src/Button";
 import { Modal } from "../src/Modal";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
   assertAriaIdIntegrity,
@@ -73,6 +73,37 @@ function TestTabs(props: {
 describe("Tabs", () => {
   afterEach(() => {
     cleanup();
+  });
+
+  describe("root focus", () => {
+    it("marks focus within the tabs", async () => {
+      render(() => <TestTabs />);
+
+      const root = document.querySelector(".solidaria-Tabs") as HTMLElement;
+      const tab = screen.getAllByRole("tab")[0]!;
+      expect(root).not.toHaveAttribute("data-focused");
+      expect(root).not.toHaveAttribute("data-focus-visible");
+
+      setInteractionModality("keyboard");
+      tab.focus();
+      await waitFor(() => {
+        expect(root).toHaveAttribute("data-focused", "true");
+        expect(root).toHaveAttribute("data-focus-visible", "true");
+      });
+
+      tab.blur();
+      await waitFor(() => {
+        expect(root).not.toHaveAttribute("data-focused");
+        expect(root).not.toHaveAttribute("data-focus-visible");
+      });
+
+      setInteractionModality("pointer");
+      tab.focus();
+      await waitFor(() => {
+        expect(root).toHaveAttribute("data-focused", "true");
+        expect(root).not.toHaveAttribute("data-focus-visible");
+      });
+    });
   });
 
   // ============================================
