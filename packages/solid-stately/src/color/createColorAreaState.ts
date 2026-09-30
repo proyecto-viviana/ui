@@ -45,6 +45,8 @@ export interface ColorAreaStateOptions {
 export interface ColorAreaState {
   /** The current color value. */
   readonly value: Color;
+  /** The color a native form reset restores. */
+  readonly defaultValue: Color;
   /** The X axis channel. */
   readonly xChannel: ColorChannel;
   /** The Y axis channel. */
@@ -72,6 +74,8 @@ export interface ColorAreaState {
   setXValue(value: number): void;
   /** Set the Y channel value. */
   setYValue(value: number): void;
+  /** Replace the color. */
+  setValue(value: Color | string): void;
   /** Set color from a point (0-1, 0-1). */
   setColorFromPoint(x: number, y: number): void;
   /** Get the thumb position as percentages. */
@@ -104,6 +108,13 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
 
   // Internal value state
   const [internalValue, setInternalValue] = createInternalSignal<Color | null>(null);
+  // Pin useColorAreaState returns the first controlled color as defaultValue
+  // so a native form reset restores that color. The built-in red is only the
+  // uncontrolled fallback when no defaultValue was passed.
+  const firstOptions = getOptions();
+  const controlledInitial =
+    firstOptions.value !== undefined ? normalizeValue(firstOptions.value) : undefined;
+  const initialValue = normalizeValue(firstOptions.defaultValue ?? "#ff0000");
   const [isDragging, setIsDragging] = createInternalSignal(false);
 
   // Initialize internal value
@@ -181,6 +192,10 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
 
   // Get Y value
   const getYValue = () => value().getChannelValue(yChannel());
+
+  const setValue = (newValue: Color | string) => {
+    updateValue(normalizeValue(newValue));
+  };
 
   // Set X value
   const setXValue = (newValue: number) => {
@@ -283,6 +298,9 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
     get value() {
       return value();
     },
+    get defaultValue() {
+      return controlledInitial ?? initialValue;
+    },
     get xChannel() {
       return xChannel();
     },
@@ -314,6 +332,7 @@ export function createColorAreaState(options: Accessor<ColorAreaStateOptions>): 
     getYValue,
     setXValue,
     setYValue,
+    setValue,
     setColorFromPoint,
     getThumbPosition,
     incrementX,

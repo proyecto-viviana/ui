@@ -1037,6 +1037,31 @@ describe("Color Components", () => {
         });
       });
     });
+
+    describe("forms", () => {
+      it("supports form reset", () => {
+        const [value, setValue] = createSignal(parseColor("rgb(100, 200, 0)"));
+        render(() => (
+          <form>
+            <TestColorArea value={value()} onChange={setValue} />
+          </form>
+        ));
+
+        const inputs = screen.getAllByRole("slider", { hidden: true }) as HTMLInputElement[];
+        expect(inputs[0].value).toBe("100");
+        expect(inputs[1].value).toBe("200");
+
+        fireEvent.change(inputs[0], { target: { value: "10" } });
+        fireEvent.change(inputs[1], { target: { value: "20" } });
+        expect(inputs[0].value).toBe("10");
+        expect(inputs[1].value).toBe("20");
+
+        // JSDOM's HTMLFormElement.reset() does not dispatch `reset`.
+        fireEvent.reset(inputs[0].form!);
+        expect(inputs[0].value).toBe("100");
+        expect(inputs[1].value).toBe("200");
+      });
+    });
   });
 
   // ============================================

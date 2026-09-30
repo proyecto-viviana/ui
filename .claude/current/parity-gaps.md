@@ -167,6 +167,7 @@ These behaviors match the pin in this checkout.
 - A color wheel ignores a secondary or modified mouse press on the ring and thumb, and a touch press still sets the hue.
 - A color wheel sets the hue from the click angle on the outer ring.
 - A color wheel restores its initial hue when the form resets.
+- A color area restores its initial color when the form resets.
 
 **Components**
 
