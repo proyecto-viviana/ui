@@ -119,6 +119,7 @@ These behaviors match the pin in this checkout.
 - A search field clears from a Button, and a slotted button does not.
 - A date picker and a date range picker open from a Button, and a slotted button does not.
 - A tag removes from a Button in the remove slot, and an unslotted button does not.
+- A grid list selects from a Checkbox in the selection slot, and an unslotted checkbox does not.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

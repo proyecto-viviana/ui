@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
@@ -14,6 +14,7 @@ import {
   GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
+import { Checkbox, CheckboxButton, CheckboxField } from "../src/Checkbox";
 import { Text } from "../src/Text";
 import { CollectionRendererContext } from "../src/Collection";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -1454,6 +1455,112 @@ describe("GridList", () => {
       });
       grid.dispatchEvent(pageUpEvent);
       expect(pageUpEvent.defaultPrevented).toBe(false);
+    });
+  });
+
+  describe("Checkbox selection slot", () => {
+    it("selects from a Checkbox in the selection slot, and an unslotted checkbox does not", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <Checkbox slot="selection" />
+              {item.name}
+              <Checkbox>Keep</Checkbox>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const selection = row.querySelector('[slot="selection"] input');
+      expect(selection).toBeInstanceOf(HTMLInputElement);
+      expect(selection).toHaveAttribute("aria-label", "Select");
+      expect(selection).toHaveAttribute("aria-labelledby", `${selection!.id} ${row.id}`);
+      expect(selection).not.toBeChecked();
+
+      const keep = within(row).getByRole("checkbox", { name: "Keep" });
+      expect(keep).not.toHaveAttribute("aria-label", "Select");
+      fireEvent.click(keep);
+      expect(keep).toBeChecked();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(row).not.toHaveAttribute("aria-selected", "true");
+
+      fireEvent.click(selection!);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(Array.from(onSelectionChange.mock.calls[0][0])).toEqual([1]);
+      expect(selection).toBeChecked();
+      expect(row).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("does not select a disabled item from the Checkbox", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          disabledKeys={new Set([1])}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <Checkbox slot="selection" />
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const selection = row.querySelector('[slot="selection"] input');
+      expect(selection).toBeDisabled();
+      fireEvent.click(selection!);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(row).not.toHaveAttribute("aria-selected", "true");
+    });
+
+    it("selects from a CheckboxField in the selection slot", () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <CheckboxField slot="selection">
+                <CheckboxButton />
+              </CheckboxField>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const selection = row.querySelector('[slot="selection"] input');
+      expect(selection).toHaveAttribute("aria-label", "Select");
+      expect(selection).toHaveAttribute("aria-labelledby", `${selection!.id} ${row.id}`);
+      fireEvent.click(selection!);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(Array.from(onSelectionChange.mock.calls[0][0])).toEqual([1]);
+      expect(selection).toBeChecked();
+      expect(row).toHaveAttribute("aria-selected", "true");
     });
   });
 });

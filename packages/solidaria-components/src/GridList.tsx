@@ -62,6 +62,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  DEFAULT_SLOT,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
@@ -74,6 +75,12 @@ import {
   renderCollectionDropSlots,
 } from "./Collection";
 import { TextContext } from "./Text";
+import {
+  CheckboxContext,
+  CheckboxFieldContext,
+  type CheckboxContextValue,
+  type CheckboxFieldContextValue,
+} from "./Checkbox";
 import { useVirtualizerContext, PersistedVirtualItem, type Orientation } from "./Virtualizer";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -863,6 +870,53 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   const isDisabled = () => itemAria.isDisabled;
   const isPressed = () => itemAria.isPressed;
 
+  // Checkbox reads isSelected. The hook's checked, disabled, and type do not.
+  const selectionCheckboxAria = createGridListSelectionCheckbox<T, GridCollection<T>>(
+    () => ({ key: local.id }),
+    () => state,
+  );
+  const checkboxSelectionProps = createMemo(() => {
+    const rawCheckboxProps = selectionCheckboxAria.checkboxProps;
+    return {
+      id: typeof rawCheckboxProps.id === "string" ? rawCheckboxProps.id : undefined,
+      "aria-label":
+        typeof rawCheckboxProps["aria-label"] === "string"
+          ? rawCheckboxProps["aria-label"]
+          : undefined,
+      "aria-labelledby":
+        typeof rawCheckboxProps["aria-labelledby"] === "string"
+          ? rawCheckboxProps["aria-labelledby"]
+          : undefined,
+      get isSelected() {
+        return isSelected();
+      },
+      get isDisabled() {
+        return isDisabled();
+      },
+      onChange() {
+        if (!isDisabled()) {
+          state.toggleSelection(local.id);
+        }
+      },
+    };
+  });
+  const checkboxContextValue: CheckboxContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      get selection() {
+        return checkboxSelectionProps();
+      },
+    },
+  };
+  const checkboxFieldContextValue: CheckboxFieldContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      get selection() {
+        return checkboxSelectionProps();
+      },
+    },
+  };
+
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
       return isDisabled();
@@ -969,7 +1023,11 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
         }}
       >
         <div {...itemAria.gridCellProps} style={{ display: "contents" }}>
-          {renderProps.renderChildren()}
+          <CheckboxContext value={checkboxContextValue}>
+            <CheckboxFieldContext value={checkboxFieldContextValue}>
+              {renderProps.renderChildren()}
+            </CheckboxFieldContext>
+          </CheckboxContext>
         </div>
       </TextContext>
     </div>
