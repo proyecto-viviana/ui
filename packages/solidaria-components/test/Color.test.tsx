@@ -779,6 +779,46 @@ describe("Color Components", () => {
         expect(inputs[1]).toHaveAttribute("aria-hidden", "true");
       });
 
+      it("points each hidden slider at its own id and an aria-labelledby", () => {
+        render(() => (
+          <TestColorArea defaultValue={parseColor("#ff00ff")} aria-labelledby="label-id" />
+        ));
+
+        const area = document.querySelector(".solidaria-ColorArea") as HTMLElement;
+        expect(area).toHaveAttribute("aria-labelledby", "label-id");
+        expect(area).not.toHaveAttribute("aria-label");
+
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        expect(inputs).toHaveLength(2);
+        expect(inputs[0]).toHaveAttribute("aria-label", "Color picker");
+        expect(inputs[1]).toHaveAttribute("aria-label", "Color picker");
+        expect(inputs[0]).toHaveAttribute("aria-labelledby", `${inputs[0]!.id} label-id`);
+        expect(inputs[1]).toHaveAttribute("aria-labelledby", `${inputs[1]!.id} label-id`);
+      });
+
+      it("includes its own id in aria-labelledby when an aria-label is also set", () => {
+        render(() => (
+          <TestColorArea
+            id="favorite-color"
+            defaultValue={parseColor("#ff00ff")}
+            aria-label="Color hue"
+            aria-labelledby="label-id"
+          />
+        ));
+
+        const area = document.getElementById("favorite-color") as HTMLElement;
+        expect(area).toHaveAttribute("aria-label", "Color hue, Color picker");
+        expect(area).toHaveAttribute("aria-labelledby", "favorite-color label-id");
+
+        const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+        expect(inputs[0]!.id).toBe("favorite-color-x");
+        expect(inputs[1]!.id).toBe("favorite-color-y");
+        expect(inputs[0]).toHaveAttribute("aria-label", "Color hue, Color picker");
+        expect(inputs[1]).toHaveAttribute("aria-label", "Color hue, Color picker");
+        expect(inputs[0]).toHaveAttribute("aria-labelledby", "favorite-color-x label-id");
+        expect(inputs[1]).toHaveAttribute("aria-labelledby", "favorite-color-y label-id");
+      });
+
       it("should apply the generated area gradient on the root", () => {
         render(() => (
           <TestColorArea

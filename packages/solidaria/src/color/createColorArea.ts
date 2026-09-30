@@ -72,6 +72,18 @@ export function createColorArea(
     const ariaLabel = getProps()["aria-label"];
     return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : undefined;
   };
+  // Pin useLabels prepends this element's id only when aria-label and aria-labelledby are both set.
+  const resolvedLabelledBy = (
+    elementId: string,
+    label: string | undefined,
+    labelledBy: string | undefined,
+  ) => {
+    if (!labelledBy) return undefined;
+    if (label) {
+      return [...new Set([elementId, ...labelledBy.trim().split(/\s+/)])].join(" ");
+    }
+    return labelledBy.trim().split(/\s+/).join(" ");
+  };
   const formatChannelValueText = (channel: ColorChannel) => {
     const value = getState().getDisplayColor();
     const loc = locale().locale;
@@ -418,11 +430,14 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
 
+    const groupId = p.id ?? colorAreaId;
+    const groupLabel = colorAreaLabel();
+
     return {
-      id: p.id ?? colorAreaId,
+      id: groupId,
       role: "group" as const,
-      "aria-label": colorAreaLabel(),
-      "aria-labelledby": p["aria-labelledby"],
+      "aria-label": groupLabel,
+      "aria-labelledby": resolvedLabelledBy(groupId, groupLabel, p["aria-labelledby"]),
       onPointerDown: onAreaPointerDown,
       onPointerMove,
       onPointerUp,
@@ -566,11 +581,14 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
     const xRange = s.value.getChannelRange(s.xChannel);
+    const inputId = p.id ? `${p.id}-x` : xInputId;
+    const inputLabel = colorInputLabel();
 
     return {
       type: "range",
-      id: p.id ? `${p.id}-x` : xInputId,
-      "aria-label": colorInputLabel(),
+      id: inputId,
+      "aria-label": inputLabel,
+      "aria-labelledby": resolvedLabelledBy(inputId, inputLabel, p["aria-labelledby"]),
       "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.xChannel),
       "aria-orientation": "horizontal" as const,
@@ -611,11 +629,14 @@ export function createColorArea(
     const s = getState();
     const p = getProps();
     const yRange = s.value.getChannelRange(s.yChannel);
+    const inputId = p.id ? `${p.id}-y` : yInputId;
+    const inputLabel = colorInputLabel();
 
     return {
       type: "range",
-      id: p.id ? `${p.id}-y` : yInputId,
-      "aria-label": colorInputLabel(),
+      id: inputId,
+      "aria-label": inputLabel,
+      "aria-labelledby": resolvedLabelledBy(inputId, inputLabel, p["aria-labelledby"]),
       "aria-roledescription": stringFormatter().format("twoDimensionalSlider"),
       "aria-valuetext": getAriaValueTextForChannel(s.yChannel),
       "aria-orientation": "vertical" as const,
