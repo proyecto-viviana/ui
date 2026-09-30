@@ -416,6 +416,8 @@ interface RootHiddenDateInputProps {
  * detaches it from form submission (the DateInput's <Input> submits), so it
  * never double-counts in FormData. RAC renders it unconditionally, which is why
  * it appears as the trailing tabindex="-1" element in the focus trail.
+ * `data-react-aria-prevent-focus` keeps FocusScope off the wrapper, and
+ * `data-a11y-ignore="aria-hidden-focus"` skips the aria-hidden focusable warning.
  */
 function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
   // RAC uses useVisuallyHidden with position:fixed/top:0/left:0 to keep the
@@ -473,6 +475,8 @@ function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
     <div
       {...(visuallyHiddenProps() as unknown as Record<string, unknown>)}
       aria-hidden="true"
+      data-a11y-ignore="aria-hidden-focus"
+      data-react-aria-prevent-focus="true"
       data-testid="hidden-dateinput-container"
     >
       <input

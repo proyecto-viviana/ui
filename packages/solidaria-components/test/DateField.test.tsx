@@ -110,6 +110,17 @@ describe("DateField", () => {
       expect(field).toBeInTheDocument();
     });
 
+    it("marks the hidden autofill container so focus and aria-hidden checks skip it", async () => {
+      render(() => <TestDateField />);
+      await waitForDateFieldHydration();
+
+      const container = document.querySelector('[data-testid="hidden-dateinput-container"]');
+      expect(container).toBeInTheDocument();
+      expect(container).toHaveAttribute("aria-hidden", "true");
+      expect(container).toHaveAttribute("data-a11y-ignore", "aria-hidden-focus");
+      expect(container).toHaveAttribute("data-react-aria-prevent-focus", "true");
+    });
+
     it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
       // DateField provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the group's aria-describedby
