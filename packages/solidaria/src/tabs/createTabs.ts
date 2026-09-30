@@ -98,6 +98,10 @@ export interface AriaTabProps {
   "aria-label"?: string;
   /** ID reference for the tab label. */
   "aria-labelledby"?: string;
+  /** ID of element that describes the tab. */
+  "aria-describedby"?: string;
+  /** ID of element that provides more details for the tab. */
+  "aria-details"?: string;
 }
 
 export interface TabAria {
@@ -110,6 +114,8 @@ export interface TabAria {
     "aria-controls": string | undefined;
     "aria-label"?: string;
     "aria-labelledby"?: string;
+    "aria-describedby"?: string;
+    "aria-details"?: string;
     tabIndex: number | undefined;
     onKeyDown: (e: KeyboardEvent) => void;
     onMouseDown: (e: MouseEvent) => void;
@@ -546,6 +552,8 @@ export function createTab<T>(
       },
       "aria-label": props["aria-label"],
       "aria-labelledby": props["aria-labelledby"],
+      "aria-describedby": props["aria-describedby"],
+      "aria-details": props["aria-details"],
       get tabIndex() {
         // Roving tabIndex follows the focused key (mirrors useSelectableItem);
         // disabled tabs get no tabIndex at all (mirrors useTab).

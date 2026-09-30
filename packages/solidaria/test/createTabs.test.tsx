@@ -1042,3 +1042,27 @@ describe("createTabPanel", () => {
     });
   });
 });
+
+describe("createTab", () => {
+  it("forwards aria-describedby and aria-details", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: defaultItems,
+        getKey: (item) => item.key,
+      });
+
+      const { tabProps } = createTab(
+        {
+          key: "tab1",
+          "aria-describedby": "tab-description",
+          "aria-details": "tab-details",
+        },
+        state,
+      );
+
+      expect(tabProps["aria-describedby"]).toBe("tab-description");
+      expect(tabProps["aria-details"]).toBe("tab-details");
+      dispose();
+    });
+  });
+});

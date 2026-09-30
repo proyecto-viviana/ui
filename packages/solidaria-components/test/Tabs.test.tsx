@@ -165,6 +165,23 @@ describe("Tabs", () => {
       expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-details", "draft-details");
     });
 
+    it("forwards aria-describedby and aria-details onto the tab", () => {
+      render(() => (
+        <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+          <TabList>
+            <Tab id="draft" aria-describedby="draft-description" aria-details="draft-details">
+              Draft
+            </Tab>
+          </TabList>
+          <TabPanel id="draft">Draft body</TabPanel>
+        </Tabs>
+      ));
+
+      const tab = screen.getByRole("tab", { name: "Draft" });
+      expect(tab).toHaveAttribute("aria-describedby", "draft-description");
+      expect(tab).toHaveAttribute("aria-details", "draft-details");
+    });
+
     it("only makes a panel without tabbable descendants a focus stop", async () => {
       render(() => (
         <Tabs aria-label="Writing sections" defaultSelectedKey="draft">

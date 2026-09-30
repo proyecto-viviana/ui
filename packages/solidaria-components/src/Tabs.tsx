@@ -529,6 +529,12 @@ export function Tab(props: TabProps): JSX.Element {
       get "aria-labelledby"() {
         return ariaProps["aria-labelledby"];
       },
+      get "aria-describedby"() {
+        return ariaProps["aria-describedby"];
+      },
+      get "aria-details"() {
+        return ariaProps["aria-details"];
+      },
     },
     context,
     tabRef,
@@ -575,6 +581,8 @@ export function Tab(props: TabProps): JSX.Element {
       aria-controls={tabAria.isSelected() ? tabAria.tabProps["aria-controls"] : undefined}
       aria-label={tabAria.tabProps["aria-label"]}
       aria-labelledby={tabAria.tabProps["aria-labelledby"]}
+      aria-describedby={tabAria.tabProps["aria-describedby"]}
+      aria-details={tabAria.tabProps["aria-details"]}
       tabindex={tabAria.tabProps.tabIndex}
       class={renderProps.class()}
       style={renderProps.style()}
