@@ -26,6 +26,7 @@ import {
   mergeProps,
   type AriaProgressBarProps,
 } from "@proyecto-viviana/solidaria";
+import { LabelContext, type LabelProps } from "./Label";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   type RenderChildren,
@@ -34,6 +35,7 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  useSlot,
 } from "./utils";
 
 export interface ProgressBarRenderProps {
@@ -95,6 +97,10 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const minValue = () => ariaProps.minValue ?? 0;
   const maxValue = () => ariaProps.maxValue ?? 100;
   const isIndeterminate = () => ariaProps.isIndeterminate ?? false;
+  const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  // A string `label` names the bar. Slot detection starts only when that string
+  // and an explicit aria name are both absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel() && !ariaProps.label);
 
   const progressAria = createProgressBar({
     get id() {
@@ -119,7 +125,7 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
       return ariaProps.formatOptions;
     },
     get label() {
-      return ariaProps.label;
+      return hasExplicitLabel() ? undefined : (ariaProps.label ?? hasLabel());
     },
     get "aria-label"() {
       return ariaProps["aria-label"];
@@ -166,6 +172,13 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
   );
 
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
+  const labelContextValue: LabelProps = {
+    get id() {
+      return hasExplicitLabel() ? undefined : (progressAria.labelProps.id as string | undefined);
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
 
   return (
     <div
@@ -175,7 +188,7 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
       style={renderProps.style()}
       slot={local.slot}
     >
-      {renderProps.renderChildren()}
+      <LabelContext value={labelContextValue}>{renderProps.renderChildren()}</LabelContext>
     </div>
   );
 }

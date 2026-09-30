@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { Label } from "../src/Label";
 import { ProgressBar } from "../src/ProgressBar";
 import {
   assertNoA11yViolations,
@@ -79,6 +80,30 @@ describe("ProgressBar", () => {
     render(() => <ProgressBar value={50} label="Loading..." />);
     const progressbar = screen.getByRole("progressbar");
     expect(progressbar).toHaveAttribute("aria-labelledby");
+  });
+
+  it("names the progress bar from a child Label", () => {
+    render(() => <ProgressBar value={25}>{() => <Label>Loading...</Label>}</ProgressBar>);
+
+    const progressbar = screen.getByRole("progressbar", { name: "Loading..." });
+    const label = screen.getByText("Loading...");
+    expect(label.tagName).toBe("SPAN");
+    expect(label).toHaveAttribute("id");
+    expect(progressbar).toHaveAttribute("aria-labelledby", label.id);
+  });
+
+  it("gives an explicit aria-label precedence over a child Label", () => {
+    render(() => (
+      <ProgressBar aria-label="Explicit progress name" value={25}>
+        {() => <Label>Visible label</Label>}
+      </ProgressBar>
+    ));
+
+    const progressbar = screen.getByRole("progressbar");
+    const label = screen.getByText("Visible label");
+    expect(progressbar).toHaveAttribute("aria-label", "Explicit progress name");
+    expect(progressbar).not.toHaveAttribute("aria-labelledby");
+    expect(label).not.toHaveAttribute("id");
   });
 
   it("should support aria-label", () => {
