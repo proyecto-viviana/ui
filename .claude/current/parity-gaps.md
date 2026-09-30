@@ -202,6 +202,7 @@ These behaviors match the pin in this checkout.
 - The document scrolling root counts as scrollable unless its overflow is hidden.
 - A hidden input opens the keyboard, and contenteditable follows `isContentEditable`.
 - A load-more sentinel observes its scroll parent, and the end margin covers the right, bottom, and left of that parent.
+- A load-more sentinel calls onLoadMore for every intersection, including while a load is already in flight.
 
 **Components**
 

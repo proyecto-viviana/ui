@@ -1616,8 +1616,8 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
   const isLoading = () => !!props.isLoading || isPending();
   const tableContext = useContext(TableContext);
 
+  // A load already in flight still calls onLoadMore. The pin leaves duplicates to the caller.
   const triggerLoadMore = async () => {
-    if (isPending()) return;
     setIsPending(true);
     try {
       await props.onLoadMore();

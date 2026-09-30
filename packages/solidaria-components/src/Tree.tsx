@@ -1971,8 +1971,8 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
     props.loadingState === "loadingMore" ||
     isPending();
 
+  // A load already in flight still calls onLoadMore. The pin leaves duplicates to the caller.
   const triggerLoadMore = async () => {
-    if (isLoading()) return;
     setIsPending(true);
     try {
       await props.onLoadMore();
