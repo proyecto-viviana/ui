@@ -125,12 +125,16 @@ describe("DatePicker", () => {
       await waitForDatePickerHydration();
 
       const picker = document.querySelector(".solidaria-DatePicker") as HTMLElement;
+      const input = document.querySelector(".solidaria-DateInput") as HTMLElement;
       const segment = screen.getAllByRole("spinbutton")[0]!;
       const hidden = document.querySelector('input[name="date"]') as HTMLInputElement;
       expect(picker.contains(hidden)).toBe(false);
+      expect(input).toHaveAttribute("role", "presentation");
       expect(picker).not.toHaveAttribute("data-focus-within");
       expect(picker).not.toHaveAttribute("data-focus-visible");
       expect(picker).not.toHaveClass("is-focus-within");
+      expect(input).not.toHaveAttribute("data-focus-within");
+      expect(input).not.toHaveAttribute("data-focused");
 
       setInteractionModality("keyboard");
       segment.focus();
@@ -138,6 +142,9 @@ describe("DatePicker", () => {
         expect(picker).toHaveAttribute("data-focus-within", "true");
         expect(picker).toHaveAttribute("data-focus-visible", "true");
         expect(picker).toHaveClass("is-focus-within");
+        expect(input).toHaveAttribute("data-focus-within", "true");
+        expect(input).toHaveAttribute("data-focus-visible", "true");
+        expect(input).not.toHaveAttribute("data-focused");
       });
 
       segment.blur();
@@ -145,6 +152,8 @@ describe("DatePicker", () => {
         expect(picker).not.toHaveAttribute("data-focus-within");
         expect(picker).not.toHaveAttribute("data-focus-visible");
         expect(picker).not.toHaveClass("is-focus-within");
+        expect(input).not.toHaveAttribute("data-focus-within");
+        expect(input).not.toHaveAttribute("data-focus-visible");
       });
 
       setInteractionModality("pointer");
@@ -152,6 +161,8 @@ describe("DatePicker", () => {
       await waitFor(() => {
         expect(picker).toHaveAttribute("data-focus-within", "true");
         expect(picker).not.toHaveAttribute("data-focus-visible");
+        expect(input).toHaveAttribute("data-focus-within", "true");
+        expect(input).not.toHaveAttribute("data-focus-visible");
       });
 
       hidden.focus();

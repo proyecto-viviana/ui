@@ -13,7 +13,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Time } from "@internationalized/date";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import {
   TimeField,
   TimeFieldLabel,
@@ -84,6 +84,30 @@ describe("TimeField", () => {
 
       const input = document.querySelector(".solidaria-DateInput");
       expect(input).toBeInTheDocument();
+    });
+
+    it("marks focus within the time segment group", async () => {
+      render(() => (
+        <TimeField aria-label="Test Time" isReadOnly validationState="invalid">
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </TimeField>
+      ));
+      await waitForTimeFieldHydration();
+
+      const input = document.querySelector(".solidaria-DateInput") as HTMLElement;
+      const segment = screen.getAllByRole("spinbutton")[0]!;
+      expect(input).toHaveAttribute("role", "group");
+      expect(input).toHaveAttribute("data-invalid", "true");
+      expect(input).toHaveAttribute("data-readonly", "true");
+      expect(input).not.toHaveAttribute("data-focus-within");
+
+      setInteractionModality("keyboard");
+      segment.focus();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("data-focus-within", "true");
+        expect(input).toHaveAttribute("data-focus-visible", "true");
+        expect(input).not.toHaveAttribute("data-focused");
+      });
     });
 
     it("should render segments", async () => {

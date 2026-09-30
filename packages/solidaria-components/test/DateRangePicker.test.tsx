@@ -411,6 +411,36 @@ describe("DateRangePicker", () => {
     expect(endInput.value).toBe("2025-02-14T17:30:30-05:00[America/New_York]");
   });
 
+  it("marks focus within the focused range field and leaves the other field unmarked", async () => {
+    render(() => (
+      <DateRangePicker aria-label="Range">
+        <DateRangeSegmentFields />
+      </DateRangePicker>
+    ));
+    await waitForHydration();
+
+    const inputs = document.querySelectorAll(".solidaria-DateInput");
+    expect(inputs).toHaveLength(2);
+    const startGroup = inputs[0] as HTMLElement;
+    const endGroup = inputs[1] as HTMLElement;
+    const startSegment = within(screen.getByTestId("start-input")).getAllByRole("spinbutton")[0]!;
+
+    expect(startGroup).toHaveAttribute("role", "presentation");
+    expect(endGroup).toHaveAttribute("role", "presentation");
+    expect(startGroup).not.toHaveAttribute("data-focus-within");
+    expect(endGroup).not.toHaveAttribute("data-focus-within");
+
+    setInteractionModality("keyboard");
+    startSegment.focus();
+    await waitFor(() => {
+      expect(startGroup).toHaveAttribute("data-focus-within", "true");
+      expect(startGroup).toHaveAttribute("data-focus-visible", "true");
+      expect(startGroup).not.toHaveAttribute("data-focused");
+      expect(endGroup).not.toHaveAttribute("data-focus-within");
+      expect(endGroup).not.toHaveAttribute("data-focus-visible");
+    });
+  });
+
   it("supports DateInput start/end slots with editable segments", async () => {
     const defaultValue = {
       start: new CalendarDate(2024, 6, 1),

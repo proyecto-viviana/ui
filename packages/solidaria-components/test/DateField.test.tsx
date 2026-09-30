@@ -22,6 +22,7 @@ import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { CalendarDate } from "@internationalized/date";
+import { setInteractionModality } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -107,6 +108,108 @@ describe("DateField", () => {
       const input = document.querySelector(".solidaria-DateInput");
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("role", "group");
+    });
+
+    it("marks focus within the segment group, and a pointer focus hides the ring", async () => {
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
+      const onFocusChange = vi.fn();
+      render(() => (
+        <DateField
+          aria-label="Test Date Field"
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onFocusChange={onFocusChange}
+        >
+          <DateInput
+            class={(values) =>
+              values.isFocusWithin ? "solidaria-DateInput is-focus-within" : "solidaria-DateInput"
+            }
+          >
+            {(segment) => <DateSegment segment={segment} />}
+          </DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector(".solidaria-DateInput") as HTMLElement;
+      const segment = screen.getAllByRole("spinbutton")[0]!;
+      expect(input).not.toHaveAttribute("data-focus-within");
+      expect(input).not.toHaveAttribute("data-focus-visible");
+      expect(input).not.toHaveAttribute("data-focused");
+      expect(input).not.toHaveClass("is-focus-within");
+
+      setInteractionModality("keyboard");
+      segment.focus();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("data-focus-within", "true");
+        expect(input).toHaveAttribute("data-focus-visible", "true");
+        expect(input).not.toHaveAttribute("data-focused");
+        expect(input).toHaveClass("is-focus-within");
+      });
+      expect(onFocus).toHaveBeenCalledTimes(1);
+      expect(onFocusChange).toHaveBeenCalledTimes(1);
+      expect(onFocusChange).toHaveBeenLastCalledWith(true);
+
+      segment.blur();
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("data-focus-within");
+        expect(input).not.toHaveAttribute("data-focus-visible");
+        expect(input).not.toHaveClass("is-focus-within");
+      });
+      expect(onBlur).toHaveBeenCalledTimes(1);
+      expect(onFocusChange).toHaveBeenCalledTimes(2);
+      expect(onFocusChange).toHaveBeenLastCalledWith(false);
+
+      setInteractionModality("pointer");
+      segment.focus();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("data-focus-within", "true");
+        expect(input).not.toHaveAttribute("data-focus-visible");
+      });
+    });
+
+    it("marks the segment group hovered, invalid, and read only", async () => {
+      render(() => (
+        <DateField aria-label="Test Date Field" isReadOnly validationState="invalid">
+          <DateInput
+            class={(values) =>
+              values.isHovered && values.isInvalid
+                ? "solidaria-DateInput hovered"
+                : "solidaria-DateInput"
+            }
+          >
+            {(segment) => <DateSegment segment={segment} />}
+          </DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector(".solidaria-DateInput") as HTMLElement;
+      const field = document.querySelector(".solidaria-DateField") as HTMLElement;
+      expect(input).toHaveAttribute("data-invalid", "true");
+      expect(input).toHaveAttribute("data-readonly", "true");
+      expect(field).toHaveAttribute("data-invalid", "true");
+      expect(field).toHaveAttribute("data-readonly", "true");
+      expect(input).not.toHaveAttribute("data-hovered");
+
+      await user.hover(input);
+      expect(input).toHaveAttribute("data-hovered", "true");
+      expect(input).toHaveClass("hovered");
+
+      await user.unhover(input);
+      expect(input).not.toHaveAttribute("data-hovered");
+      expect(input).not.toHaveClass("hovered");
+    });
+
+    it("does not mark a disabled segment group hovered", async () => {
+      render(() => <TestDateField fieldProps={{ isDisabled: true }} />);
+      await waitForDateFieldHydration();
+
+      const input = document.querySelector(".solidaria-DateInput") as HTMLElement;
+      expect(input).toHaveAttribute("data-disabled", "true");
+      await user.hover(input);
+      expect(input).not.toHaveAttribute("data-hovered");
     });
 
     it("should render with custom class", async () => {

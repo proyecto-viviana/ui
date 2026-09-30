@@ -115,9 +115,20 @@ export interface DateFieldProps<T extends DateValue = DateValue>
 }
 
 export interface DateInputRenderProps {
+  /** Whether the input is hovered with a pointer. */
+  isHovered: boolean;
+  /** Whether an element within the input is focused. */
+  isFocusWithin: boolean;
+  /** Whether an element within the input is keyboard focused. */
+  isFocusVisible: boolean;
   /** Whether the input is disabled. */
   isDisabled: boolean;
-  /** Whether the input is focused. */
+  /** Whether the input is invalid. */
+  isInvalid: boolean;
+  /**
+   * Whether an element within the input is focused.
+   * Same signal as `isFocusWithin`. The group stamps `data-focus-within`.
+   */
   isFocused: boolean;
 }
 
@@ -536,11 +547,23 @@ function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
 export function DateInput(props: DateInputProps): JSX.Element {
   const context = useDateInputContext(props.slot);
   const { state, aria } = context;
-  const [isFocused, setIsFocused] = createSignal(false);
   const [inputRef, setInputRef] = createSignal<HTMLDivElement | null>(null);
+  // Pin DateInput renders Group, which tracks hover and focus within.
+  // createFocusRing already exposes the within handlers as onFocusIn/onFocusOut.
+  // Read them as plain functions so mergeProps chains them onto the field's
+  // own focus-within (value snapshot and validation commit). A later getter
+  // would replace that handler.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing({ within: true });
+  const { isHovered, hoverProps } = createHover(() => ({
+    isDisabled: state.isDisabled(),
+  }));
 
   const renderValues = createMemo<DateInputRenderProps>(() => ({
+    isHovered: isHovered(),
+    isFocusWithin: isFocused(),
+    isFocusVisible: isFocusVisible(),
     isDisabled: state.isDisabled(),
+    isInvalid: state.isInvalid(),
     isFocused: isFocused(),
   }));
 
@@ -553,19 +576,17 @@ export function DateInput(props: DateInputProps): JSX.Element {
     renderValues,
   );
 
-  // The group props (role="group", aria-labelledby, unicode-bidi:isolate,
-  // arrow-key nav, focus-within handlers) carry the field's own `style` and
-  // focus handlers. Merge — not clobber — so the group keeps its unicode-bidi
-  // isolation and the local isFocused signal chains onto the field's
-  // focusWithin handlers. Solid onFocus/onBlur do not bubble, so track focus
-  // via onFocusIn/onFocusOut.
-  const inputDivProps = createMemo(() =>
-    mergeProps(aria.inputProps, {
-      onFocusIn: () => setIsFocused(true),
-      onFocusOut: () => setIsFocused(false),
+  const inputDivProps = createMemo(() => {
+    const ring = focusProps as {
+      onFocusIn?: (event: FocusEvent) => void;
+      onFocusOut?: (event: FocusEvent) => void;
+    };
+    return mergeProps(aria.inputProps, hoverProps, {
+      onFocusIn: ring.onFocusIn,
+      onFocusOut: ring.onFocusOut,
       style: renderProps.style(),
-    }),
-  );
+    });
+  });
 
   createTrackedEffect(() => {
     const _s2Cleanups: Array<() => void> = [];
@@ -590,7 +611,11 @@ export function DateInput(props: DateInputProps): JSX.Element {
         {...inputDivProps()}
         class={renderProps.class()}
         data-disabled={dataAttr(state.isDisabled())}
-        data-focused={dataAttr(isFocused())}
+        data-invalid={dataAttr(state.isInvalid())}
+        data-readonly={dataAttr(state.isReadOnly())}
+        data-hovered={dataAttr(isHovered())}
+        data-focus-within={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
       >
         {/*
           <For keyed={false}> keys by position, not identity, so each DateSegment
