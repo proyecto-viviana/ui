@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { createMemo, createRoot, flush } from "solid-js";
+import { createSignal } from "./owned-signal";
 import {
   createTableState,
   TableCollection,
@@ -354,6 +355,45 @@ describe("createTableState", () => {
         expect(state.showSelectionCheckboxes).toBe(false);
         flush();
         expect(state.sortDescriptor).toBeNull();
+
+        dispose();
+      });
+    });
+
+    it("disables keyboard navigation while the table has no rows", () => {
+      createRoot((dispose) => {
+        const [rows, setRows] = createSignal<Person[]>([]);
+        const collection = createMemo(() =>
+          createTableCollection({
+            columns: testColumns,
+            rows: rows(),
+            getKey: (item) => item.id,
+          }),
+        );
+
+        const state = createTableState(() => ({
+          collection: collection(),
+        }));
+
+        flush();
+        expect(collection().size).toBe(0);
+        expect(state.isKeyboardNavigationDisabled).toBe(true);
+
+        state.setKeyboardNavigationDisabled(false);
+        flush();
+        expect(state.isKeyboardNavigationDisabled).toBe(true);
+
+        setRows(testData);
+        flush();
+        expect(state.isKeyboardNavigationDisabled).toBe(false);
+
+        state.setKeyboardNavigationDisabled(true);
+        flush();
+        expect(state.isKeyboardNavigationDisabled).toBe(true);
+
+        state.setKeyboardNavigationDisabled(false);
+        flush();
+        expect(state.isKeyboardNavigationDisabled).toBe(false);
 
         dispose();
       });

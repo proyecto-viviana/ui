@@ -103,7 +103,8 @@ export function createTableState<
       return gridState.disabledBehavior;
     },
     get isKeyboardNavigationDisabled() {
-      return gridState.isKeyboardNavigationDisabled;
+      // An empty body keeps navigation disabled after the flag is cleared.
+      return getOptions().collection.size === 0 || gridState.isKeyboardNavigationDisabled;
     },
     get focusedKey() {
       return gridState.focusedKey;
