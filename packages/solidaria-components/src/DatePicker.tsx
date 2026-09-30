@@ -69,6 +69,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { ButtonContext, type ButtonProps } from "./Button";
 import { DateFieldContext } from "./DateField";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
@@ -537,6 +538,42 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       formContext,
     );
 
+  // RAC composes an unslotted `<Button>` as the calendar trigger. The slot
+  // object stays stable so Button's one-time slot read keeps these getters.
+  // Press DOM handlers stay on DatePickerButton: merging them here opens twice.
+  const calendarButtonSlot: ButtonProps = {
+    get id() {
+      return pickerAria.buttonProps.id as string;
+    },
+    type: "button",
+    get "aria-label"() {
+      return pickerAria.buttonProps["aria-label"] as string;
+    },
+    get "aria-labelledby"() {
+      return pickerAria.buttonProps["aria-labelledby"] as string;
+    },
+    get "aria-describedby"() {
+      return pickerAria.buttonProps["aria-describedby"] as string | undefined;
+    },
+    get "aria-haspopup"() {
+      return pickerAria.buttonProps["aria-haspopup"] as "dialog";
+    },
+    get "aria-expanded"() {
+      return pickerAria.buttonProps["aria-expanded"] as boolean;
+    },
+    get isDisabled() {
+      return pickerAria.isButtonDisabled();
+    },
+    onPress() {
+      overlayState.open();
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      default: calendarButtonSlot,
+    },
+  };
+
   return (
     <DatePickerStateContext value={fieldState as unknown as DateFieldState<DateValue>}>
       <DatePickerContext value={contextValue}>
@@ -597,6 +634,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                         },
                       },
                     ],
+                    [ButtonContext, buttonContextValue],
                   ] as Array<[Context<unknown>, unknown]>
                 }
               >
@@ -921,6 +959,41 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     renderValues,
   );
 
+  // Same calendar trigger as DatePicker: a stable default Button slot, with
+  // press DOM handlers left on DateRangePickerButton so the dialog opens once.
+  const calendarButtonSlot: ButtonProps = {
+    get id() {
+      return pickerAria.buttonProps.id as string;
+    },
+    type: "button",
+    get "aria-label"() {
+      return pickerAria.buttonProps["aria-label"] as string;
+    },
+    get "aria-labelledby"() {
+      return pickerAria.buttonProps["aria-labelledby"] as string;
+    },
+    get "aria-describedby"() {
+      return pickerAria.buttonProps["aria-describedby"] as string | undefined;
+    },
+    get "aria-haspopup"() {
+      return pickerAria.buttonProps["aria-haspopup"] as "dialog";
+    },
+    get "aria-expanded"() {
+      return pickerAria.buttonProps["aria-expanded"] as boolean;
+    },
+    get isDisabled() {
+      return pickerAria.isButtonDisabled();
+    },
+    onPress() {
+      overlayState.open();
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      default: calendarButtonSlot,
+    },
+  };
+
   return (
     <DateRangePickerStateContext value={calendarState as unknown as RangeCalendarState<DateValue>}>
       <DateRangePickerContext value={contextValue}>
@@ -958,6 +1031,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
                       },
                     },
                   ],
+                  [ButtonContext, buttonContextValue],
                 ] as Array<[Context<unknown>, unknown]>
               }
             >

@@ -14,6 +14,7 @@ import {
   DateRangePickerContent,
   useDateRangePickerContext,
 } from "../src/DatePicker";
+import { Button } from "../src/Button";
 import { DateInput, DateSegment } from "../src/DateField";
 import { RangeCalendar, RangeCalendarGrid, RangeCalendarCell } from "../src/RangeCalendar";
 import {
@@ -565,6 +566,82 @@ describe("DateRangePicker", () => {
     await waitFor(() => {
       const cells = document.querySelectorAll('[role="gridcell"] button, [role="gridcell"]');
       expect(cells.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Button calendar slot", () => {
+    function CalendarButtonPicker(props: {
+      isDisabled?: boolean;
+      isReadOnly?: boolean;
+      onOpenChange?: (isOpen: boolean) => void;
+      withNeighbors?: boolean;
+    }) {
+      return (
+        <DateRangePicker
+          aria-label="Trip"
+          isDisabled={props.isDisabled}
+          isReadOnly={props.isReadOnly}
+          onOpenChange={props.onOpenChange}
+        >
+          <Button>▼</Button>
+          {props.withNeighbors ? <Button slot="other">Adjacent</Button> : null}
+          <DateRangePickerContent>
+            <Button>Hi</Button>
+            <RangeCalendar>
+              <RangeCalendarGrid>{(date) => <RangeCalendarCell date={date} />}</RangeCalendarGrid>
+            </RangeCalendar>
+          </DateRangePickerContent>
+        </DateRangePicker>
+      );
+    }
+
+    it("opens from a Button and does not claim a slotted or in-dialog button", async () => {
+      const onOpenChange = vi.fn();
+      render(() => <CalendarButtonPicker onOpenChange={onOpenChange} withNeighbors />);
+      await waitForHydration();
+
+      const trigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(trigger).toHaveAttribute("aria-label", "Calendar");
+      expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(screen.getByRole("button", { name: "Adjacent" })).not.toHaveAttribute("aria-haspopup");
+
+      await user.click(trigger);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledWith(true);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByRole("grid")).toBeInTheDocument();
+      const inside = screen.getByRole("button", { name: "Hi" });
+      expect(inside).not.toHaveAttribute("aria-haspopup");
+      expect(inside).not.toHaveAttribute("aria-expanded");
+
+      await user.click(trigger);
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(onOpenChange.mock.calls.map((call) => call[0])).toEqual([true, false]);
+    });
+
+    it("does not open a disabled or read-only picker from the Button", async () => {
+      const onOpenChange = vi.fn();
+      render(() => <CalendarButtonPicker isDisabled onOpenChange={onOpenChange} />);
+      await waitForHydration();
+
+      const trigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(trigger).toBeDisabled();
+      await user.click(trigger);
+      expect(onOpenChange).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      cleanup();
+      const onOpenChangeReadOnly = vi.fn();
+      render(() => <CalendarButtonPicker isReadOnly onOpenChange={onOpenChangeReadOnly} />);
+      await waitForHydration();
+      const readOnlyTrigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(readOnlyTrigger).toBeDisabled();
+      await user.click(readOnlyTrigger);
+      expect(onOpenChangeReadOnly).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 });

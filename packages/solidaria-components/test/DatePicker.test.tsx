@@ -14,6 +14,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
+import { Button } from "../src/Button";
 import { DateInput, DateSegment } from "../src/DateField";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
@@ -795,6 +796,90 @@ describe("DatePicker", () => {
         await user.tab();
         expect(document.activeElement).toHaveAccessibleName(/next/i);
       }
+    });
+  });
+
+  describe("Button calendar slot", () => {
+    function CalendarButtonPicker(props: {
+      isDisabled?: boolean;
+      isReadOnly?: boolean;
+      onOpenChange?: (isOpen: boolean) => void;
+      withNeighbors?: boolean;
+    }) {
+      return (
+        <DatePicker
+          aria-label="Event date"
+          isDisabled={props.isDisabled}
+          isReadOnly={props.isReadOnly}
+          onOpenChange={props.onOpenChange}
+        >
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          <Button>▼</Button>
+          {props.withNeighbors ? <Button slot="other">Adjacent</Button> : null}
+          <DatePickerContent>
+            <Button>Hi</Button>
+            <Calendar>
+              <header>
+                <CalendarButton slot="previous">◀</CalendarButton>
+                <CalendarHeading />
+                <CalendarButton slot="next">▶</CalendarButton>
+              </header>
+              <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+            </Calendar>
+          </DatePickerContent>
+        </DatePicker>
+      );
+    }
+
+    it("opens from a Button and does not claim a slotted or in-dialog button", async () => {
+      const onOpenChange = vi.fn();
+      render(() => <CalendarButtonPicker onOpenChange={onOpenChange} withNeighbors />);
+      await waitForDatePickerHydration();
+
+      const trigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(trigger).toHaveAttribute("aria-label", "Calendar");
+      expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(screen.getByRole("button", { name: "Adjacent" })).not.toHaveAttribute("aria-haspopup");
+
+      await user.click(trigger);
+      expect(onOpenChange).toHaveBeenCalledTimes(1);
+      expect(onOpenChange).toHaveBeenCalledWith(true);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByRole("grid")).toBeInTheDocument();
+      const inside = screen.getByRole("button", { name: "Hi" });
+      expect(inside).not.toHaveAttribute("aria-haspopup");
+      expect(inside).not.toHaveAttribute("aria-expanded");
+
+      // The outside-interaction boundary is the popover, not the trigger.
+      // A second press on the button is outside, so the calendar closes.
+      await user.click(trigger);
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(onOpenChange.mock.calls.map((call) => call[0])).toEqual([true, false]);
+    });
+
+    it("does not open a disabled or read-only picker from the Button", async () => {
+      const onOpenChange = vi.fn();
+      render(() => <CalendarButtonPicker isDisabled onOpenChange={onOpenChange} />);
+      await waitForDatePickerHydration();
+
+      const trigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(trigger).toBeDisabled();
+      await user.click(trigger);
+      expect(onOpenChange).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      cleanup();
+      const onOpenChangeReadOnly = vi.fn();
+      render(() => <CalendarButtonPicker isReadOnly onOpenChange={onOpenChangeReadOnly} />);
+      await waitForDatePickerHydration();
+      const readOnlyTrigger = screen.getByText("▼").closest("button") as HTMLButtonElement;
+      expect(readOnlyTrigger).toBeDisabled();
+      await user.click(readOnlyTrigger);
+      expect(onOpenChangeReadOnly).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 });

@@ -117,6 +117,7 @@ These behaviors match the pin in this checkout.
 - A disclosure toggles from a Button in the trigger slot, and a button inside the panel is not that trigger.
 - A number field steps from a Button in the increment and decrement slots, and an unslotted button does not.
 - A search field clears from a Button, and a slotted button does not.
+- A date picker and a date range picker open from a Button, and a slotted button does not.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.
