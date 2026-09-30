@@ -47,8 +47,8 @@ import type { DateFieldState, CalendarState } from "@proyecto-viviana/solid-stat
 export interface AriaDatePickerProps {
   /** An ID for the date picker. */
   id?: string;
-  /** A visible label for the date picker. */
-  label?: string;
+  /** A visible label string, or true when a child label supplies the name. */
+  label?: string | boolean;
   /** An accessible label for the date picker. */
   "aria-label"?: string;
   /** The ID of an element that labels the date picker. */

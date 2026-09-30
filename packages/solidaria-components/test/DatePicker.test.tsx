@@ -14,8 +14,14 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { setInteractionModality } from "@proyecto-viviana/solidaria";
-import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
+import {
+  DatePicker,
+  DatePickerButton,
+  DatePickerContent,
+  DatePickerLabel,
+} from "../src/DatePicker";
 import { Button } from "../src/Button";
+import { Label } from "../src/Label";
 import { DateInput, DateSegment } from "../src/DateField";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
@@ -957,6 +963,103 @@ describe("DatePicker", () => {
       await user.click(readOnlyTrigger);
       expect(onOpenChangeReadOnly).not.toHaveBeenCalled();
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("child label", () => {
+    function PickerSegments() {
+      return <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>;
+    }
+
+    it("names the date picker from a child Label", async () => {
+      render(() => (
+        <DatePicker>
+          <Label>Appointment</Label>
+          <PickerSegments />
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const label = screen.getByText("Appointment");
+      expect(label.tagName).toBe("SPAN");
+      const spinbuttons = screen.getAllByRole("spinbutton");
+      expect(
+        spinbuttons.some((segment) =>
+          segment.getAttribute("aria-labelledby")?.split(/\s+/).includes(label.id),
+        ),
+      ).toBe(true);
+    });
+
+    it("names the date picker from its label prop", async () => {
+      render(() => (
+        <DatePicker label="Appointment">
+          <DatePickerLabel>Appointment</DatePickerLabel>
+          <PickerSegments />
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const label = screen.getByText("Appointment");
+      expect(label.tagName).toBe("SPAN");
+      const spinbuttons = screen.getAllByRole("spinbutton");
+      expect(
+        spinbuttons.some((segment) =>
+          segment.getAttribute("aria-labelledby")?.split(/\s+/).includes(label.id),
+        ),
+      ).toBe(true);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", async () => {
+      render(() => (
+        <DatePicker aria-label="Test Date Picker">
+          <Label>Appointment</Label>
+          <PickerSegments />
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const label = screen.getByText("Appointment");
+      expect(label).not.toHaveAttribute("id");
+      expect(screen.getAllByRole("spinbutton")[0]?.getAttribute("aria-label")).toContain(
+        "Test Date Picker",
+      );
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", async () => {
+      render(() => (
+        <>
+          <span id="external-date-picker-label">External</span>
+          <DatePicker aria-labelledby="external-date-picker-label">
+            <Label>Appointment</Label>
+            <PickerSegments />
+          </DatePicker>
+        </>
+      ));
+      await waitForDatePickerHydration();
+
+      const label = screen.getByText("Appointment");
+      expect(label).not.toHaveAttribute("id");
+      expect(
+        screen
+          .getAllByRole("spinbutton")[0]
+          ?.getAttribute("aria-labelledby")
+          ?.split(/\s+/)
+          .includes("external-date-picker-label"),
+      ).toBe(true);
+    });
+
+    it("does not give the builtin label an id when the picker is unlabeled", async () => {
+      render(() => (
+        <DatePicker>
+          <DatePickerLabel>Visible</DatePickerLabel>
+          <PickerSegments />
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      await waitFor(() => {
+        expect(screen.getByText("Visible")).not.toHaveAttribute("id");
+      });
     });
   });
 });

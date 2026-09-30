@@ -52,7 +52,8 @@ import type { DatePickerState } from "./createDatePicker";
 
 export interface AriaDateRangePickerProps {
   id?: string;
-  label?: string;
+  /** A visible label string, or true when a child label supplies the name. */
+  label?: string | boolean;
   "aria-label"?: string;
   "aria-labelledby"?: string;
   "aria-describedby"?: string;

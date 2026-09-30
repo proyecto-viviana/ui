@@ -16,6 +16,7 @@ import {
   useDateRangePickerContext,
 } from "../src/DatePicker";
 import { Button } from "../src/Button";
+import { Label } from "../src/Label";
 import { DateInput, DateSegment } from "../src/DateField";
 import { RangeCalendar, RangeCalendarGrid, RangeCalendarCell } from "../src/RangeCalendar";
 import {
@@ -718,6 +719,101 @@ describe("DateRangePicker", () => {
       await user.click(readOnlyTrigger);
       expect(onOpenChangeReadOnly).not.toHaveBeenCalled();
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("child label", () => {
+    it("names both range fields from a child Label", async () => {
+      render(() => (
+        <DateRangePicker>
+          <Label>Trip dates</Label>
+          <DateRangeSegmentFields />
+        </DateRangePicker>
+      ));
+      await waitForHydration();
+
+      const label = screen.getByText("Trip dates");
+      expect(label.tagName).toBe("SPAN");
+      const start = within(screen.getByTestId("start-input")).getAllByRole("spinbutton")[0]!;
+      const end = within(screen.getByTestId("end-input")).getAllByRole("spinbutton")[0]!;
+      expect(start.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(label.id);
+      expect(end.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(label.id);
+      expect(start.getAttribute("aria-label")).toContain("Start Date");
+      expect(end.getAttribute("aria-label")).toContain("End Date");
+    });
+
+    it("names the range from its label prop", async () => {
+      render(() => (
+        <DateRangePicker label="Trip dates">
+          <DateRangePickerLabel>Trip dates</DateRangePickerLabel>
+          <DateRangeSegmentFields />
+        </DateRangePicker>
+      ));
+      await waitForHydration();
+
+      const label = screen.getByText("Trip dates");
+      expect(label.tagName).toBe("SPAN");
+      const start = within(screen.getByTestId("start-input")).getAllByRole("spinbutton")[0]!;
+      const end = within(screen.getByTestId("end-input")).getAllByRole("spinbutton")[0]!;
+      expect(start.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(label.id);
+      expect(end.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(label.id);
+      expect(start.getAttribute("aria-label")).toContain("Start Date");
+      expect(end.getAttribute("aria-label")).toContain("End Date");
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", async () => {
+      render(() => (
+        <DateRangePicker aria-label="Trip">
+          <Label>Trip dates</Label>
+          <DateRangeSegmentFields />
+        </DateRangePicker>
+      ));
+      await waitForHydration();
+
+      const label = screen.getByText("Trip dates");
+      expect(label).not.toHaveAttribute("id");
+      const start = within(screen.getByTestId("start-input")).getAllByRole("spinbutton")[0]!;
+      const end = within(screen.getByTestId("end-input")).getAllByRole("spinbutton")[0]!;
+      expect(start.getAttribute("aria-label")).toContain("Start Date");
+      expect(end.getAttribute("aria-label")).toContain("End Date");
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", async () => {
+      render(() => (
+        <>
+          <span id="external-date-range-label">External</span>
+          <DateRangePicker aria-labelledby="external-date-range-label">
+            <Label>Trip dates</Label>
+            <DateRangeSegmentFields />
+          </DateRangePicker>
+        </>
+      ));
+      await waitForHydration();
+
+      const label = screen.getByText("Trip dates");
+      expect(label).not.toHaveAttribute("id");
+      const start = within(screen.getByTestId("start-input")).getAllByRole("spinbutton")[0]!;
+      const end = within(screen.getByTestId("end-input")).getAllByRole("spinbutton")[0]!;
+      expect(start.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(
+        "external-date-range-label",
+      );
+      expect(end.getAttribute("aria-labelledby")?.split(/\s+/)).toContain(
+        "external-date-range-label",
+      );
+    });
+
+    it("does not give the builtin label an id when the range picker is unlabeled", async () => {
+      render(() => (
+        <DateRangePicker>
+          <DateRangePickerLabel>Visible</DateRangePickerLabel>
+          <DateRangeSegmentFields />
+        </DateRangePicker>
+      ));
+      await waitForHydration();
+
+      await waitFor(() => {
+        expect(screen.getByText("Visible")).not.toHaveAttribute("id");
+      });
     });
   });
 });

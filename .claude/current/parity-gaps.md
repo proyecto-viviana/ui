@@ -145,6 +145,7 @@ These behaviors match the pin in this checkout.
 - A toast region marks hover and focus, and a toast marks its own focus.
 - A tag list marks its own focus, and a focused row leaves the list unmarked.
 - A date input marks focus within its group, and pointer focus hides the ring.
+- A date picker and a date range picker take their name from a child label, and an explicit aria-label keeps its own name.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

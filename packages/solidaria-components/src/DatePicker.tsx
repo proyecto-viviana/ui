@@ -67,10 +67,12 @@ import {
   useRenderProps,
   dataAttr,
   Provider,
+  useSlot,
 } from "./utils";
 import { TextContext } from "./Text";
 import { ButtonContext, type ButtonProps } from "./Button";
 import { DateFieldContext } from "./DateField";
+import { LabelContext, type LabelProps } from "./Label";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
@@ -480,12 +482,28 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     wasOpen = open;
   });
 
+  const hasExplicitName = () =>
+    Boolean(
+      (rest as Record<string, unknown>)["aria-label"] ||
+      (rest as Record<string, unknown>)["aria-labelledby"],
+    );
+  const stringLabel = (): string | undefined => {
+    const label = (rest as Record<string, unknown>).label;
+    return typeof label === "string" && label !== "" ? label : undefined;
+  };
+  // A string label names the picker through DatePickerLabel. Slot detection
+  // starts only when that string and an explicit aria name are both absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitName() && stringLabel() === undefined);
+
   // Create date picker ARIA props
   const pickerAria = createDatePicker(
     () => ({
       ...(rest as Record<string, unknown>),
       description: stateProps.description,
       errorMessage: stateProps.errorMessage,
+      // Keep a string label for DatePickerLabel. An explicit aria name wins over
+      // a child Label. Otherwise the slot flag tells createLabel a label exists.
+      label: stringLabel() ?? (hasExplicitName() ? undefined : hasLabel()),
     }),
     fieldState as unknown as DateFieldState<DateValue>,
     overlayState as AriaDatePickerState,
@@ -597,6 +615,17 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     },
   };
 
+  const labelContextValue: LabelProps = {
+    get id() {
+      if (hasExplicitName() || stringLabel() !== undefined || !hasLabel()) {
+        return undefined;
+      }
+      return pickerAria.labelProps.id as string | undefined;
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
+
   return (
     <DatePickerStateContext value={fieldState as unknown as DateFieldState<DateValue>}>
       <DatePickerContext value={contextValue}>
@@ -661,6 +690,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                       },
                     ],
                     [ButtonContext, buttonContextValue],
+                    [LabelContext, labelContextValue],
                   ] as Array<[Context<unknown>, unknown]>
                 }
               >
@@ -884,11 +914,27 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     onChange: (value) => setRangeFieldValue("end", value),
   });
 
+  const hasExplicitName = () =>
+    Boolean(
+      (rest as Record<string, unknown>)["aria-label"] ||
+      (rest as Record<string, unknown>)["aria-labelledby"],
+    );
+  const stringLabel = (): string | undefined => {
+    const label = (rest as Record<string, unknown>).label;
+    return typeof label === "string" && label !== "" ? label : undefined;
+  };
+  // A string label names the picker through DateRangePickerLabel. Slot detection
+  // starts only when that string and an explicit aria name are both absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitName() && stringLabel() === undefined);
+
   const pickerAria = createDateRangePicker(
     () => ({
       ...(rest as Record<string, unknown>),
       description: (props as { description?: string }).description,
       errorMessage: (props as { errorMessage?: string }).errorMessage,
+      // Keep a string label for DateRangePickerLabel. An explicit aria name wins
+      // over a child Label. Otherwise the slot flag tells createLabel a label exists.
+      label: stringLabel() ?? (hasExplicitName() ? undefined : hasLabel()),
     }),
     calendarState as unknown as RangeCalendarState<DateValue>,
     overlayState as AriaDatePickerState,
@@ -1026,6 +1072,17 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     },
   };
 
+  const labelContextValue: LabelProps = {
+    get id() {
+      if (hasExplicitName() || stringLabel() !== undefined || !hasLabel()) {
+        return undefined;
+      }
+      return pickerAria.labelProps.id as string | undefined;
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
+
   return (
     <DateRangePickerStateContext value={calendarState as unknown as RangeCalendarState<DateValue>}>
       <DateRangePickerContext value={contextValue}>
@@ -1067,6 +1124,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
                     },
                   ],
                   [ButtonContext, buttonContextValue],
+                  [LabelContext, labelContextValue],
                 ] as Array<[Context<unknown>, unknown]>
               }
             >
