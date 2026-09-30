@@ -99,6 +99,31 @@ describe("createListData", () => {
     });
   });
 
+  it("insertBefore with nonexistent key on empty list inserts at position 0", () => {
+    createRoot((dispose) => {
+      const list = createListData<{ id: number; name: string }>({
+        initialItems: [],
+        getKey: (item) => item.id,
+      });
+      list.insertBefore(999, { id: 1, name: "First" });
+      flush();
+      expect(list.items).toHaveLength(1);
+      flush();
+      expect(list.items[0].name).toBe("First");
+      dispose();
+    });
+  });
+
+  it("insertBefore with nonexistent key on non-empty list is a no-op", () => {
+    createRoot((dispose) => {
+      const list = createTestList();
+      list.insertBefore(999, { id: 10, name: "Ghost" });
+      flush();
+      expect(list.items).toHaveLength(3);
+      dispose();
+    });
+  });
+
   it("insertAfter adds items after key", () => {
     createRoot((dispose) => {
       const list = createTestList();
