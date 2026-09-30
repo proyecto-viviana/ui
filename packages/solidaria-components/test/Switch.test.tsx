@@ -195,6 +195,22 @@ describe("ToggleSwitch", () => {
       expect(label).toHaveAttribute("data-readonly");
     });
 
+    it("should set data-invalid when invalid", () => {
+      render(() => (
+        <ToggleSwitch aria-label="Toggle" isInvalid>
+          Toggle
+        </ToggleSwitch>
+      ));
+      const label = screen.getByRole("switch").closest("label")!;
+      expect(label).toHaveAttribute("data-invalid", "true");
+    });
+
+    it("should omit data-invalid when the switch is valid", () => {
+      render(() => <ToggleSwitch aria-label="Toggle">Toggle</ToggleSwitch>);
+      const label = screen.getByRole("switch").closest("label")!;
+      expect(label).not.toHaveAttribute("data-invalid");
+    });
+
     it("should set data-focus-visible on keyboard focus", async () => {
       render(() => <ToggleSwitch aria-label="Toggle">Toggle</ToggleSwitch>);
       const label = screen.getByRole("switch").closest("label")!;

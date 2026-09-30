@@ -279,6 +279,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
       data-focus-visible={dataAttr(isFocusVisible())}
       data-disabled={dataAttr(switchAria.isDisabled)}
       data-readonly={dataAttr(switchAria.isReadOnly)}
+      data-invalid={dataAttr(switchAria.isInvalid)}
     >
       <VisuallyHidden>
         <input
