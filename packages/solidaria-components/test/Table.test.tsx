@@ -1670,6 +1670,93 @@ describe("Table", () => {
       }
     });
 
+    it("rebuilds the load-more observer when the collection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [items, setItems] = createSignal([
+        { id: 1, name: "Bulbasaur", type: "Grass", level: 10 },
+      ]);
+
+      try {
+        render(() => (
+          <Table
+            items={items()}
+            columns={testColumns}
+            getKey={(item: { id: number }) => item.id}
+            aria-label="Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                </TableHeader>
+                <TableBody hasMore onLoadMore={() => {}}>
+                  {(item: { id: number; name: string }) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setItems([
+          { id: 1, name: "Bulbasaur", type: "Grass", level: 10 },
+          { id: 2, name: "Charizard", type: "Fire", level: 45 },
+        ]);
+        flush();
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("keeps the load-more observer when selection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<number>>(new Set());
+
+      try {
+        render(() => (
+          <Table
+            items={testData}
+            columns={testColumns}
+            getKey={(item: { id: number }) => item.id}
+            aria-label="Pokemon"
+            selectionMode="multiple"
+            selectedKeys={selectedKeys()}
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                </TableHeader>
+                <TableBody hasMore onLoadMore={() => {}}>
+                  {(item: { id: number; name: string }) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setSelectedKeys(new Set([1]));
+        flush();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+      } finally {
+        observer.restore();
+      }
+    });
+
     it("should always render the sentinel even when virtualized", () => {
       const rows = Array.from({ length: 25 }, (_, index) => ({
         id: index + 1,

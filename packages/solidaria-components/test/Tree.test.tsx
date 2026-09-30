@@ -305,6 +305,114 @@ describe("Tree", () => {
       }
     });
 
+    it("rebuilds the load-more observer when the collection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [items, setItems] = createSignal<TreeItemData<TestItem>[]>([
+        { key: "item-1", value: { name: "Item 1" }, textValue: "Item 1" },
+      ]);
+
+      try {
+        render(() => (
+          <Tree items={items()} aria-label="Test Tree" hasMore onLoadMore={() => {}}>
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setItems([
+          { key: "item-1", value: { name: "Item 1" }, textValue: "Item 1" },
+          { key: "item-2", value: { name: "Item 2" }, textValue: "Item 2" },
+        ]);
+        flush();
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("rebuilds the load-more observer when items are replaced at the same length", () => {
+      const observer = setupIntersectionObserverMock();
+      const [items, setItems] = createSignal<TreeItemData<TestItem>[]>([
+        { key: "item-1", value: { name: "Item 1" }, textValue: "Item 1" },
+      ]);
+
+      try {
+        render(() => (
+          <Tree items={items()} aria-label="Test Tree" hasMore onLoadMore={() => {}}>
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setItems([{ key: "item-1", value: { name: "Renamed" }, textValue: "Renamed" }]);
+        flush();
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("keeps the load-more observer when selection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set());
+
+      try {
+        render(() => (
+          <Tree
+            items={createTestItems()}
+            aria-label="Test Tree"
+            selectionMode="multiple"
+            selectedKeys={selectedKeys()}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setSelectedKeys(new Set(["item-1"]));
+        flush();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("rebuilds the load-more observer when a branch expands", () => {
+      const observer = setupIntersectionObserverMock();
+      const [expandedKeys, setExpandedKeys] = createSignal<Set<string>>(new Set());
+
+      try {
+        render(() => (
+          <Tree
+            items={createTestItems()}
+            aria-label="Test Tree"
+            expandedKeys={expandedKeys()}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setExpandedKeys(new Set(["item-1"]));
+        flush();
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
+    });
+
     it("should apply draggable item semantics when drag hooks are provided", () => {
       const items = createTestItems();
       const dndItems = items.map((item) => ({ key: String(item.key), name: item.value.name }));

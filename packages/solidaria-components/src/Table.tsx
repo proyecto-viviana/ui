@@ -1629,6 +1629,8 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
     () => ({
       current: sentinel(),
       scrollOffset: scrollOffsetValue(),
+      // collection also reads selection. items is the row list only.
+      items: tableContext?.items,
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;

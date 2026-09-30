@@ -295,6 +295,75 @@ describe("GridList", () => {
       }
     });
 
+    it("rebuilds the load-more observer when the collection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [items, setItems] = createSignal([{ id: 1, name: "Apple" }]);
+
+      try {
+        render(() => (
+          <GridList
+            items={items()}
+            getKey={(item) => item.id}
+            aria-label="Fruits"
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setItems([
+          { id: 1, name: "Apple" },
+          { id: 2, name: "Banana" },
+        ]);
+        flush();
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("keeps the load-more observer when selection changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<number>>(new Set());
+
+      try {
+        render(() => (
+          <GridList
+            items={testItems}
+            getKey={(item) => item.id}
+            aria-label="Fruits"
+            selectionMode="multiple"
+            selectedKeys={selectedKeys()}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setSelectedKeys(new Set([1]));
+        flush();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+      } finally {
+        observer.restore();
+      }
+    });
+
     it("should apply draggable item semantics when drag hooks are provided", () => {
       const { dragAndDropHooks } = useDragAndDrop<(typeof testItems)[number]>({
         items: testItems,

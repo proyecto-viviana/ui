@@ -1405,6 +1405,10 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
   const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
   const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
+  // The collection accessor is narrow (items, key, text, disabled). Reading it
+  // here recreates the observer when items change so a short list that never
+  // fills the scroller loads the next page. A standalone sentinel has no state.
+  const listState = useContext(ListBoxStateContext);
 
   const isLoading = () => !!props.isLoading || isPending();
 
@@ -1422,6 +1426,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
     () => ({
       current: sentinel(),
       scrollOffset: scrollOffsetValue(),
+      collection: listState?.collection(),
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;

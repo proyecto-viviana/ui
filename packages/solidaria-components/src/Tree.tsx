@@ -808,6 +808,9 @@ interface TreeItemContextValue<T extends object> {
 }
 
 export const TreeContext = createContext<TreeContextValue<object> | null>(null);
+// state.collection also reads selection. One epoch covers item identity and expansion.
+const treeLoadMoreCollection = new WeakMap<object, () => number>();
+
 export const TreeStateContext = createContext<TreeState<object, TreeCollection<object>> | null>(
   null,
 );
@@ -910,6 +913,21 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       setCollectionVersion((v) => v + 1);
     }
   });
+  // flatItems() updates in the signal phase; collectionVersion is written in the
+  // effect phase. Reading both recreates the sentinel twice when the list grows.
+  const [loadMoreEpoch, setLoadMoreEpoch] = createSignal(0);
+  let lastLoadMoreItems = flatItems();
+  let lastLoadMoreExpanded = new Set<Key>(state.expandedKeys);
+  createTrackedEffect(() => {
+    const items = flatItems();
+    const expanded = state.expandedKeys;
+    if (items !== lastLoadMoreItems || !areSetsEqual(lastLoadMoreExpanded, expanded)) {
+      lastLoadMoreItems = items;
+      lastLoadMoreExpanded = new Set(expanded);
+      setLoadMoreEpoch((version) => version + 1);
+    }
+  });
+  treeLoadMoreCollection.set(state, () => loadMoreEpoch());
 
   // Resolve writing direction for keyboard expand/collapse parity
   const treeDirection = createMemo(() => ariaProps.direction ?? locale().direction);
@@ -1945,6 +1963,7 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
   const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
   const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
+  const treeState = useContext(TreeStateContext);
   const isLoading = () =>
     !!props.isLoading ||
     props.loadingState === "loading" ||
@@ -1965,6 +1984,7 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
     () => ({
       current: sentinel(),
       scrollOffset: scrollOffsetValue(),
+      collection: treeState ? treeLoadMoreCollection.get(treeState)?.() : undefined,
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;

@@ -251,6 +251,9 @@ interface GridListContextValue<T extends object> {
 }
 
 export const GridListContext = createContext<GridListContextValue<object> | null>(null);
+// state.collection also reads selection. The sentinel subscribes to the items memo.
+const gridListLoadMoreCollection = new WeakMap<object, () => unknown>();
+
 export const GridListStateContext = createContext<GridState<object, GridCollection<object>> | null>(
   null,
 );
@@ -425,6 +428,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     defaultSelectedKeys: stateProps.defaultSelectedKeys,
     onSelectionChange: stateProps.onSelectionChange,
   }));
+  gridListLoadMoreCollection.set(state, () => collection());
 
   // Keep the aria object (do NOT destructure `gridProps`): its `gridProps` getter
   // returns a memo that recomputes on state changes — chiefly the roving container
@@ -1080,6 +1084,7 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
   const [sentinel, setSentinel] = createSignal<HTMLDivElement | undefined>();
   const [isPending, setIsPending] = createSignal(false);
   const scrollOffsetValue = createMemo(() => props.scrollOffset ?? 1);
+  const gridState = useContext(GridListStateContext);
   const isLoading = () => !!props.isLoading || isPending();
 
   const triggerLoadMore = async () => {
@@ -1096,6 +1101,7 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
     () => ({
       current: sentinel(),
       scrollOffset: scrollOffsetValue(),
+      collection: gridState ? gridListLoadMoreCollection.get(gridState)?.() : undefined,
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;

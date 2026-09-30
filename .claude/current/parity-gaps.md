@@ -191,6 +191,7 @@ These behaviors match the pin in this checkout.
 - An empty list inserts an item before a missing key.
 - An empty async list inserts an item before or after a missing key, and removing the last items clears select-all when no later page remains.
 - Removing a tree node clears the selection of descendants that leave with it.
+- A list, grid list, table, or tree recreates its load-more observer when the items change, including a same-length replacement, and a tree recreates it once when a branch expands. A selection change leaves the observer in place.
 
 **Components**
 

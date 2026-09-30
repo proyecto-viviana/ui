@@ -834,6 +834,91 @@ describe("ListBox", () => {
         vi.unstubAllGlobals();
       }
     });
+
+    it("rebuilds the load-more observer when the collection changes", () => {
+      const observe = vi.fn();
+      const disconnect = vi.fn();
+      class TestIntersectionObserver {
+        constructor(_callback: IntersectionObserverCallback) {}
+        observe = observe;
+        disconnect = disconnect;
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
+      const [items, setItems] = createSignal<TestItem[]>([{ id: "cat", name: "Cat" }]);
+
+      try {
+        render(() => (
+          <ListBox<TestItem>
+            aria-label="Load test"
+            items={items()}
+            getKey={(item) => item.id}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => <ListBoxOption id={item.id}>{item.name}</ListBoxOption>}
+          </ListBox>
+        ));
+
+        expect(observe).toHaveBeenCalledTimes(1);
+        expect(disconnect).not.toHaveBeenCalled();
+        setItems([
+          { id: "cat", name: "Cat" },
+          { id: "dog", name: "Dog" },
+        ]);
+        flush();
+        expect(disconnect).toHaveBeenCalledTimes(1);
+        expect(observe).toHaveBeenCalledTimes(2);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it("keeps the load-more observer when selection changes", () => {
+      const observe = vi.fn();
+      const disconnect = vi.fn();
+      class TestIntersectionObserver {
+        constructor(_callback: IntersectionObserverCallback) {}
+        observe = observe;
+        disconnect = disconnect;
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
+      const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set());
+
+      try {
+        render(() => (
+          <ListBox<TestItem>
+            aria-label="Load test"
+            items={testItems}
+            getKey={(item) => item.id}
+            selectionMode="multiple"
+            selectedKeys={selectedKeys()}
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => <ListBoxOption id={item.id}>{item.name}</ListBoxOption>}
+          </ListBox>
+        ));
+
+        expect(observe).toHaveBeenCalledTimes(1);
+        expect(disconnect).not.toHaveBeenCalled();
+        setSelectedKeys(new Set(["cat"]));
+        flush();
+        expect(disconnect).not.toHaveBeenCalled();
+        expect(observe).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
   });
 
   // ============================================
