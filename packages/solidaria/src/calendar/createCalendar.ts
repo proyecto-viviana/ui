@@ -20,7 +20,7 @@
  */
 
 import { createMemo } from "solid-js";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState } from "@proyecto-viviana/solid-stately";
@@ -83,7 +83,17 @@ export function createCalendar<T extends CalendarState>(
   const getProps = () => access(props);
   const id = createId(getProps().id);
   const titleId = createId();
-  const errorMessageId = createId(getProps().errorMessageId);
+  // An explicit id stays a stable string. createSlotId cannot take a default,
+  // and styled calendars pass their own id and mount the message themselves.
+  const explicitErrorMessageId = getProps().errorMessageId || undefined;
+  // useCalendarBase uses useSlotId: the id is linked only after an element
+  // with it is in the DOM. Cells read this through a getter so the probe can
+  // clear a dangling id.
+  const slotErrorMessageId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => Boolean(getProps().isInvalid) || state.isValueInvalid(),
+    () => state.validationState(),
+  ]);
 
   // Title (e.g., "December 2024")
   const title = createMemo(() => state.title());
@@ -110,8 +120,9 @@ export function createCalendar<T extends CalendarState>(
     initialProps.errorMessageId
   ) {
     setCalendarHookData(state, {
-      errorMessageId:
-        initialProps.errorMessage || initialProps.errorMessageId ? errorMessageId : undefined,
+      get errorMessageId() {
+        return explicitErrorMessageId || slotErrorMessageId() || undefined;
+      },
       ariaLabel: initialProps["aria-label"],
       ariaLabelledBy: initialProps["aria-labelledby"],
     });
@@ -160,7 +171,7 @@ export function createCalendar<T extends CalendarState>(
     "aria-live": "polite" as const,
   }));
   const errorMessageProps = createMemo(() => ({
-    id: errorMessageId,
+    id: explicitErrorMessageId || slotErrorMessageId(),
   }));
 
   // Calendar container props

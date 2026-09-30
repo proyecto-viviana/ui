@@ -21,6 +21,7 @@ import {
   useCalendarContext,
   type CalendarProps,
 } from "../src/Calendar";
+import { Text } from "../src/Text";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 import { clearAnnouncer, I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -745,6 +746,44 @@ describe("Calendar", () => {
       expect(selectedDate).toHaveAttribute("aria-invalid", "true");
       expect(selectedDate).toHaveAttribute("aria-describedby", "calendar-error");
       expect(selectedDate?.closest("td")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("does not point an invalid day at a missing error message", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Test Calendar"
+          value={new CalendarDate(2024, 6, 15)}
+          validationState="invalid"
+          errorMessage="Not shown"
+        >
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const selectedDate = document.querySelector("[data-selected]");
+      expect(selectedDate).toHaveAttribute("aria-invalid", "true");
+      expect(selectedDate).not.toHaveAttribute("aria-describedby");
+    });
+
+    it("links an invalid day to its error message slot", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Test Calendar"
+          value={new CalendarDate(2024, 6, 15)}
+          validationState="invalid"
+        >
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <Text slot="errorMessage">Choose a weekday</Text>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const error = screen.getByText("Choose a weekday");
+      const selectedDate = document.querySelector("[data-selected]");
+      expect(error.id).not.toBe("");
+      expect(selectedDate).toHaveAttribute("aria-invalid", "true");
+      expect(selectedDate).toHaveAttribute("aria-describedby", error.id);
     });
 
     it("should have gridcell role on cells", async () => {

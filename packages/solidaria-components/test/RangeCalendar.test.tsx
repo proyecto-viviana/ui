@@ -18,6 +18,7 @@ import {
   RangeCalendarGrid,
   RangeCalendarCell,
 } from "../src/RangeCalendar";
+import { Text } from "../src/Text";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -832,6 +833,60 @@ describe("RangeCalendar", () => {
         expect(document.getElementById(ids[1] ?? "")).toHaveTextContent(
           "Click to start selecting date range",
         );
+      });
+    });
+
+    it("does not point an invalid range day at a missing error message", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            defaultFocusedValue: new CalendarDate(2024, 6, 10),
+            validationState: "invalid",
+            errorMessage: "Not shown",
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      day10.focus();
+
+      await waitFor(() => {
+        const ids = (day10.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+        expect(ids.every((id) => document.getElementById(id))).toBe(true);
+      });
+      expect(screen.queryByText("Not shown")).toBeNull();
+    });
+
+    it("links an invalid range day to its error message slot", async () => {
+      render(() => (
+        <RangeCalendar
+          aria-label="Test Range Calendar"
+          value={{
+            start: new CalendarDate(2024, 6, 10),
+            end: new CalendarDate(2024, 6, 15),
+          }}
+          defaultFocusedValue={new CalendarDate(2024, 6, 10)}
+          validationState="invalid"
+        >
+          <RangeCalendarGrid>{(date) => <RangeCalendarCell date={date} />}</RangeCalendarGrid>
+          <Text slot="errorMessage">Choose a shorter range</Text>
+        </RangeCalendar>
+      ));
+      await waitForRangeCalendarHydration();
+
+      const error = screen.getByText("Choose a shorter range");
+      const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      day10.focus();
+
+      await waitFor(() => {
+        const ids = (day10.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+        expect(error.id).not.toBe("");
+        expect(ids).toContain(error.id);
       });
     });
 

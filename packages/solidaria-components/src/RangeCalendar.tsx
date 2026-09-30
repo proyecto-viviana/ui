@@ -50,6 +50,7 @@ import {
   dataAttr,
   coerceDomRecord,
 } from "./utils";
+import { TextContext } from "./Text";
 import { VisuallyHidden } from "./VisuallyHidden";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -294,7 +295,17 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
           <VisuallyHidden>
             <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
           </VisuallyHidden>
-          {props.children}
+          <TextContext
+            value={{
+              slots: {
+                get errorMessage() {
+                  return calendarAria.errorMessageProps;
+                },
+              },
+            }}
+          >
+            {props.children}
+          </TextContext>
           {/* For touch screen readers, a visually hidden next button after the
            * month grid so it's easy to navigate after reaching the end without
            * going all the way back to the start. Matches the upstream component
@@ -390,7 +401,17 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
           <VisuallyHidden>
             <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
           </VisuallyHidden>
-          {props.children}
+          <TextContext
+            value={{
+              slots: {
+                get errorMessage() {
+                  return calendarAria.errorMessageProps;
+                },
+              },
+            }}
+          >
+            {props.children}
+          </TextContext>
           {/* For touch screen readers, a visually hidden next button after the
            * month grid so it's easy to navigate after reaching the end without
            * going all the way back to the start. Matches the upstream component

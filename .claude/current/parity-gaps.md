@@ -112,6 +112,7 @@ These behaviors match the pin in this checkout.
 - A drop zone names its button from the label slot.
 - A grid list row names itself from its description slot.
 - A toast names itself from its description slot.
+- An invalid calendar day names itself from its error message slot.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.
