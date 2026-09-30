@@ -1585,6 +1585,10 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const [hasRegisteredLabelElement, setHasRegisteredLabelElement] = createSignal(false, {
     ownedWrite: true,
   });
+  const hasExplicitName = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  // A prop label already names the field through the builtin label. Slot
+  // detection starts only when that prop and an explicit aria name are absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitName() && local.label == null);
 
   // Create color field state
   const state = createColorFieldState(() => ({
@@ -1644,7 +1648,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const fieldInputProps = () => {
     const labelledBy =
       ariaProps["aria-labelledby"] ??
-      (!ariaProps["aria-label"] && (local.label || hasRegisteredLabelElement())
+      (!ariaProps["aria-label"] && (local.label || hasRegisteredLabelElement() || hasLabel())
         ? colorFieldAria.labelProps.id
         : undefined);
     return {
@@ -1652,6 +1656,18 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       "aria-label": labelledBy ? undefined : colorFieldAria.inputProps["aria-label"],
       "aria-labelledby": labelledBy,
     } as JSX.InputHTMLAttributes<HTMLInputElement>;
+  };
+
+  const labelContextValue: LabelProps = {
+    get id() {
+      if (hasExplicitName() || local.label != null || !hasLabel()) return undefined;
+      return colorFieldAria.labelProps.id as string | undefined;
+    },
+    get for() {
+      if (hasExplicitName() || local.label != null || !hasLabel()) return undefined;
+      return colorFieldAria.labelProps.for;
+    },
+    ref: labelRef,
   };
 
   const hiddenInputValue = createMemo(() =>
@@ -1786,16 +1802,18 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
             <label {...colorFieldAria.labelProps}>{local.label}</label>
           </Show>
 
-          <Provider
-            values={
-              [
-                [TextContext, textSlots],
-                [FieldErrorContext, fieldErrorContext],
-              ] as Array<[Context<unknown>, unknown]>
-            }
-          >
-            {renderChildren()}
-          </Provider>
+          <LabelContext value={labelContextValue}>
+            <Provider
+              values={
+                [
+                  [TextContext, textSlots],
+                  [FieldErrorContext, fieldErrorContext],
+                ] as Array<[Context<unknown>, unknown]>
+              }
+            >
+              {renderChildren()}
+            </Provider>
+          </LabelContext>
         </div>
         <Show when={state.channel && ariaProps.name}>
           <input

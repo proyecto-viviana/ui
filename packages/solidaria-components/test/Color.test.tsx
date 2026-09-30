@@ -1300,6 +1300,75 @@ describe("Color Components", () => {
         expect(input).toHaveAttribute("aria-labelledby", label.id);
         expect(input).not.toHaveAttribute("aria-label");
       });
+
+      it("names the field from a child label", () => {
+        render(() => (
+          <ColorField defaultValue="#f00">
+            {() => (
+              <>
+                <Label>Color</Label>
+                <ColorFieldInput />
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const label = screen.getByText("Color");
+        const input = screen.getByRole("textbox", { name: "Color" });
+
+        expect(label.tagName).toBe("LABEL");
+        expect(label).toHaveClass("solidaria-Label");
+        expect(label.id).toBeTruthy();
+        expect(label).toHaveAttribute("for", input.id);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+        expect(input).not.toHaveAttribute("aria-label");
+      });
+
+      it("keeps an explicit aria-label when a child label is present", () => {
+        render(() => (
+          <ColorField defaultValue="#f00" aria-label="Custom color">
+            {() => (
+              <>
+                <Label>Color</Label>
+                <ColorFieldInput />
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Custom color" });
+
+        expect(input).not.toHaveAttribute("aria-labelledby", screen.getByText("Color").id);
+      });
+
+      it("keeps an explicit aria-labelledby when a child label is present", () => {
+        render(() => (
+          <>
+            <span id="external-color">External color</span>
+            <ColorField defaultValue="#f00" aria-labelledby="external-color">
+              {() => (
+                <>
+                  <Label>Color</Label>
+                  <ColorFieldInput />
+                </>
+              )}
+            </ColorField>
+          </>
+        ));
+
+        const input = screen.getByRole("textbox", { name: "External color" });
+
+        expect(input).toHaveAttribute("aria-labelledby", "external-color");
+        expect(input).not.toHaveAttribute("aria-labelledby", screen.getByText("Color").id);
+      });
+
+      it("does not point the input at a missing label when no child label is rendered", () => {
+        render(() => <ColorField defaultValue="#f00">{() => <ColorFieldInput />}</ColorField>);
+
+        const input = screen.getByRole("textbox");
+
+        expect(input).not.toHaveAttribute("aria-labelledby");
+      });
     });
 
     describe("slots", () => {
