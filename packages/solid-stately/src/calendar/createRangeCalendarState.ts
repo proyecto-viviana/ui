@@ -315,10 +315,14 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   const rawAlignStart = (date: CalendarDate): CalendarDate => startOfMonth(date);
 
-  const rawAlignEnd = (date: CalendarDate): CalendarDate =>
-    startOfMonth(date).subtract({ months: Math.max(visibleMonths() - 1, 0) });
+  const rawAlignEnd = (date: CalendarDate, months = visibleMonths()): CalendarDate =>
+    startOfMonth(date).subtract({ months: Math.max(months - 1, 0) });
 
-  const constrainVisibleRangeStart = (date: CalendarDate, aligned: CalendarDate): CalendarDate => {
+  const constrainVisibleRangeStart = (
+    date: CalendarDate,
+    aligned: CalendarDate,
+    months = visibleMonths(),
+  ): CalendarDate => {
     const minValue = access(props.minValue);
     const maxValue = access(props.maxValue);
     let constrained = aligned;
@@ -331,7 +335,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     }
 
     if (maxValue && date.compare(toDisplayCalendarDate(maxValue)) <= 0) {
-      const maxStart = rawAlignEnd(toDisplayCalendarDate(maxValue));
+      const maxStart = rawAlignEnd(toDisplayCalendarDate(maxValue), months);
       if (maxStart.compare(constrained) < 0) {
         constrained = maxStart;
       }
@@ -736,17 +740,21 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   // advance the grid.
   const focusPreviousPage = () => {
     const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths();
-    const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
+    const currentFocused = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocused.subtract({ months: pageMonths }));
+    const slidStart = startOfMonth(visibleRangeStart().subtract({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
+    setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
     props.onFocusChange?.(nextFocusedDate);
   };
 
   const focusNextPage = () => {
     const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths();
-    const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
+    const currentFocused = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocused.add({ months: pageMonths }));
+    const slidStart = startOfMonth(visibleRangeStart().add({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
+    setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
     props.onFocusChange?.(nextFocusedDate);
   };
 

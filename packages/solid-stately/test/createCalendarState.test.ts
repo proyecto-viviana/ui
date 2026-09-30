@@ -849,6 +849,135 @@ describe("createCalendarState", () => {
         dispose();
       });
     });
+
+    it("pulls a centered window forward so it starts on the minimum month", () => {
+      // visibleMonths 3, center, focused June 15, min June 10.
+      // Unconstrained center is May–July. constrainStart keeps the focused
+      // date on or after min, so the window starts at startOfMonth(min).
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          visibleMonths: 3,
+          minValue: new CalendarDate(2024, 6, 10),
+        });
+
+        flush();
+        const range = state.visibleRange();
+        expect(range.start).toEqual(new CalendarDate(2024, 6, 1));
+        flush();
+        expect(range.end).toEqual(new CalendarDate(2024, 8, 31));
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 6, 15));
+
+        dispose();
+      });
+    });
+
+    it("pulls a centered window backward so it ends inside the maximum month", () => {
+      // visibleMonths 2 centers with offset 0 (June–July). alignEnd(max)
+      // is May 1, which is earlier, so the window becomes May–June.
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          visibleMonths: 2,
+          maxValue: new CalendarDate(2024, 6, 20),
+        });
+
+        flush();
+        const range = state.visibleRange();
+        expect(range.start).toEqual(new CalendarDate(2024, 5, 1));
+        flush();
+        expect(range.end).toEqual(new CalendarDate(2024, 6, 30));
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 6, 15));
+
+        dispose();
+      });
+    });
+
+    it("drops end alignment when the minimum month is later than that start", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          visibleMonths: 3,
+          selectionAlignment: "end",
+          minValue: new CalendarDate(2024, 6, 10),
+        });
+
+        flush();
+        const range = state.visibleRange();
+        expect(range.start).toEqual(new CalendarDate(2024, 6, 1));
+        flush();
+        expect(range.end).toEqual(new CalendarDate(2024, 8, 31));
+
+        dispose();
+      });
+    });
+
+    it("realigns the window when focus moves before the visible start", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          visibleMonths: 3,
+          minValue: new CalendarDate(2024, 4, 20),
+        });
+
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 5, 1));
+
+        state.setFocusedDate(new CalendarDate(2024, 4, 10));
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 4, 20));
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 4, 1));
+        flush();
+        expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 6, 30));
+
+        dispose();
+      });
+    });
+
+    it("stops paging forward once the next page would pass the maximum", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          maxValue: new CalendarDate(2024, 8, 31),
+        });
+
+        state.focusNextPage();
+        state.focusNextPage();
+        state.focusNextPage();
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 8, 31));
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 8, 1));
+        flush();
+        expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 8, 31));
+
+        dispose();
+      });
+    });
+
+    it("stops paging backward once the previous page would pass the minimum", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          minValue: new CalendarDate(2024, 4, 10),
+        });
+
+        state.focusPreviousPage();
+        state.focusPreviousPage();
+        state.focusPreviousPage();
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 4, 10));
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 4, 1));
+        flush();
+        expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 4, 30));
+
+        dispose();
+      });
+    });
   });
 
   describe("focus state", () => {

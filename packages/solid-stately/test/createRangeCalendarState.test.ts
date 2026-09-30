@@ -853,6 +853,48 @@ describe("createRangeCalendarState", () => {
         dispose();
       });
     });
+
+    it("stops paging forward once the next page would pass the maximum", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          maxValue: new CalendarDate(2024, 8, 31),
+        });
+
+        state.focusNextPage();
+        state.focusNextPage();
+        state.focusNextPage();
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 8, 31));
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 8, 1));
+        flush();
+        expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 8, 31));
+
+        dispose();
+      });
+    });
+
+    it("stops paging backward once the previous page would pass the minimum", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          minValue: new CalendarDate(2024, 4, 10),
+        });
+
+        state.focusPreviousPage();
+        state.focusPreviousPage();
+        state.focusPreviousPage();
+        flush();
+        expect(state.focusedDate()).toEqual(new CalendarDate(2024, 4, 10));
+        flush();
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2024, 4, 1));
+        flush();
+        expect(state.visibleRange().end).toEqual(new CalendarDate(2024, 4, 30));
+
+        dispose();
+      });
+    });
   });
 
   describe("focus state", () => {

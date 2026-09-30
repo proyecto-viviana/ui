@@ -244,9 +244,44 @@ export function createCalendarState<
     }
   };
 
+  const rawAlignStart = (date: CalendarDate): CalendarDate => startOfMonth(date);
+
+  const rawAlignEnd = (date: CalendarDate, months: number): CalendarDate =>
+    startOfMonth(date).subtract({ months: Math.max(months - 1, 0) });
+
+  // Month-duration constrainStart. The focused date only gates the clamp.
+  // alignStart(min) and alignEnd(max) take no min/max of their own. Compare
+  // instead of maxDate/minDate so a cross-calendar null is not introduced.
+  const constrainVisibleRangeStart = (
+    date: CalendarDate,
+    aligned: CalendarDate,
+    months: number,
+  ): CalendarDate => {
+    const minValue = access(props.minValue);
+    const maxValue = access(props.maxValue);
+    let constrained = aligned;
+
+    if (minValue && date.compare(toDisplayCalendarDate(minValue)) >= 0) {
+      const minStart = rawAlignStart(toDisplayCalendarDate(minValue));
+      if (minStart.compare(constrained) > 0) {
+        constrained = minStart;
+      }
+    }
+
+    if (maxValue && date.compare(toDisplayCalendarDate(maxValue)) <= 0) {
+      const maxStart = rawAlignEnd(toDisplayCalendarDate(maxValue), months);
+      if (maxStart.compare(constrained) < 0) {
+        constrained = maxStart;
+      }
+    }
+
+    return constrained;
+  };
+
   const alignVisibleRangeStart = (date: CalendarDate): CalendarDate => {
     const offset = selectionAlignmentOffset();
-    return startOfMonth(offset > 0 ? date.subtract({ months: offset }) : date);
+    const aligned = rawAlignStart(offset > 0 ? date.subtract({ months: offset }) : date);
+    return constrainVisibleRangeStart(date, aligned, visibleMonths());
   };
 
   const visibleRangeEnd = (start: CalendarDate): CalendarDate => {
@@ -348,9 +383,13 @@ export function createCalendarState<
     months: number,
   ) => {
     if (nextFocusedDate.compare(range.start) < 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate.subtract({ months: months - 1 })));
+      setVisibleRangeStart(
+        constrainVisibleRangeStart(nextFocusedDate, rawAlignEnd(nextFocusedDate, months), months),
+      );
     } else if (nextFocusedDate.compare(range.end) > 0) {
-      setVisibleRangeStart(startOfMonth(nextFocusedDate));
+      setVisibleRangeStart(
+        constrainVisibleRangeStart(nextFocusedDate, rawAlignStart(nextFocusedDate), months),
+      );
     }
   };
 
@@ -602,9 +641,11 @@ export function createCalendarState<
   const focusPreviousPage = () => {
     setIsPaginating(true);
     const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
-    const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
+    const currentFocused = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocused.subtract({ months: pageMonths }));
+    const slidStart = startOfMonth(visibleRangeStart().subtract({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
+    setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
     props.onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
@@ -612,9 +653,11 @@ export function createCalendarState<
   const focusNextPage = () => {
     setIsPaginating(true);
     const pageMonths = props.pageBehavior === "single" ? 1 : visibleMonths();
-    const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
+    const currentFocused = focusedDate();
+    const nextFocusedDate = constrainDate(currentFocused.add({ months: pageMonths }));
+    const slidStart = startOfMonth(visibleRangeStart().add({ months: pageMonths }));
     setFocusedDateInternal(nextFocusedDate);
-    setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
+    setVisibleRangeStart(constrainVisibleRangeStart(currentFocused, slidStart, pageMonths));
     props.onFocusChange?.(nextFocusedDate);
     setIsPaginating(false);
   };
