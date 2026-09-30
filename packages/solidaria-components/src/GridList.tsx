@@ -74,6 +74,10 @@ import {
   useCollectionRoot,
   renderCollectionDropSlots,
 } from "./Collection";
+import {
+  SelectionIndicatorContext,
+  type SelectionIndicatorContextValue,
+} from "./SelectionIndicator";
 import { TextContext } from "./Text";
 import {
   CheckboxContext,
@@ -916,6 +920,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       },
     },
   };
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
+    isSelected,
+  };
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -1025,7 +1032,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
         <div {...itemAria.gridCellProps} style={{ display: "contents" }}>
           <CheckboxContext value={checkboxContextValue}>
             <CheckboxFieldContext value={checkboxFieldContextValue}>
-              {renderProps.renderChildren()}
+              <SelectionIndicatorContext value={selectionIndicatorContext}>
+                {renderProps.renderChildren()}
+              </SelectionIndicatorContext>
             </CheckboxFieldContext>
           </CheckboxContext>
         </div>

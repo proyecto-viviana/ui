@@ -15,6 +15,7 @@ import {
   GridListSelectionCheckbox,
 } from "../src/GridList";
 import { Checkbox, CheckboxButton, CheckboxField } from "../src/Checkbox";
+import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Text } from "../src/Text";
 import { CollectionRendererContext } from "../src/Collection";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -805,6 +806,35 @@ describe("GridList", () => {
       pressWithMouse(trigger.querySelector("span") ?? trigger);
 
       expect(onButtonClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows a SelectionIndicator only for the selected row", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="single"
+          defaultSelectedKeys={new Set([1])}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+              <SelectionIndicator>Mark</SelectionIndicator>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("row", { name: "Apple" })).toContainElement(screen.getByText("Mark"));
+
+      pressWithMouse(screen.getByRole("row", { name: "Banana" }));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("row", { name: "Banana" })).toContainElement(
+        screen.getByText("Mark"),
+      );
     });
   });
 
