@@ -315,6 +315,89 @@ describe("Color Components", () => {
         expect(group).not.toHaveAttribute("aria-labelledby", screen.getByText("Favorite hue").id);
       });
 
+      it("includes its own id in aria-labelledby when an aria-label is also set", () => {
+        const { unmount } = render(() => (
+          <>
+            <span id="label-id">External hue</span>
+            <TestColorSlider
+              id="hue-slider"
+              channel="hue"
+              aria-label="Hue"
+              aria-labelledby="label-id"
+              defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            />
+          </>
+        ));
+
+        const group = screen.getByRole("group");
+        const input = screen.getByRole("slider");
+        expect(group).toHaveAttribute("id", "hue-slider");
+        expect(group).toHaveAttribute("aria-label", "Hue");
+        expect(group).toHaveAttribute("aria-labelledby", "hue-slider label-id");
+        expect(input).toHaveAttribute("aria-labelledby", "hue-slider");
+        expect(input).not.toHaveAttribute("aria-label");
+        unmount();
+
+        render(() => (
+          <>
+            <span id="label-id">External hue</span>
+            <span id="extra">Extra</span>
+            <TestColorSlider
+              id="hue-slider"
+              channel="hue"
+              aria-labelledby="  label-id   extra  "
+              defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            />
+          </>
+        ));
+
+        const labelledOnly = screen.getByRole("group");
+        expect(labelledOnly).toHaveAttribute("id", "hue-slider");
+        expect(labelledOnly).not.toHaveAttribute("aria-label");
+        expect(labelledOnly).toHaveAttribute("aria-labelledby", "label-id extra");
+      });
+
+      it("keeps a visible label id beside an external aria-labelledby", () => {
+        render(() => (
+          <>
+            <span id="extra-hue">Extra hue</span>
+            <TestColorSlider
+              id="hue-slider"
+              channel="hue"
+              label="Hue"
+              aria-labelledby="extra-hue"
+              defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            />
+          </>
+        ));
+
+        const label = screen.getByText("Hue");
+        const group = screen.getByRole("group");
+        const input = screen.getByRole("slider");
+        expect(group).not.toHaveAttribute("aria-label");
+        expect(group).toHaveAttribute("aria-labelledby", `${label.id} extra-hue`);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+      });
+
+      it("includes its own id before the visible label when an aria-label is also set", () => {
+        render(() => (
+          <TestColorSlider
+            id="hue-slider"
+            channel="hue"
+            label="Hue"
+            aria-label="Custom hue"
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+          />
+        ));
+
+        const label = screen.getByText("Hue");
+        const group = screen.getByRole("group");
+        const input = screen.getByRole("slider");
+        expect(group).toHaveAttribute("aria-label", "Custom hue");
+        expect(group).toHaveAttribute("aria-labelledby", `hue-slider ${label.id}`);
+        expect(input).toHaveAttribute("aria-labelledby", label.id);
+      });
+
       it("should propagate form and description props to the hidden range input", () => {
         render(() => (
           <>

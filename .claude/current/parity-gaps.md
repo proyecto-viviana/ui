@@ -180,6 +180,7 @@ These behaviors match the pin in this checkout.
 - A color field steps the hex being typed, and an empty field starts at black.
 - On iOS and Android, an unlabeled color area is named Color picker, and both sliders stay exposed.
 - A color wheel includes its own id in aria-labelledby when an aria-label is also set.
+- A color slider includes its own id in aria-labelledby when an aria-label is also set, and keeps a visible label id beside an external label.
 
 **Components**
 

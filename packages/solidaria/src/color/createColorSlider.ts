@@ -76,7 +76,14 @@ export function createColorSlider(
   const trackElementId = () => getProps().id ?? trackId;
   const trackLabelledBy = () => {
     const p = getProps();
-    return p["aria-labelledby"] ?? (hasVisibleLabel() ? labelId : undefined);
+    let labelledBy = p["aria-labelledby"];
+    if (hasVisibleLabel()) {
+      labelledBy = labelledBy ? `${labelId} ${labelledBy}` : labelId;
+    }
+    if (!labelledBy) return undefined;
+    const parts = labelledBy.trim().split(/\s+/);
+    if (p["aria-label"]) return [...new Set([trackElementId(), ...parts])].join(" ");
+    return parts.join(" ");
   };
   const inputLabelledBy = () => (hasVisibleLabel() ? labelId : trackElementId());
   const trackAriaLabel = () => {
