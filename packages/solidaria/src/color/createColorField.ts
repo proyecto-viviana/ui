@@ -169,6 +169,11 @@ export function createColorField(
       return;
     }
 
+    // A mostly horizontal trackpad gesture is not a step. Match useColorField.
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+      return;
+    }
+
     if (e.deltaY > 0) {
       s.increment();
     } else if (e.deltaY < 0) {

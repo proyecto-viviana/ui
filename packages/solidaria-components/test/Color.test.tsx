@@ -1667,6 +1667,43 @@ describe("Color Components", () => {
 
         expect(input).toHaveValue("#0a");
       });
+
+      // useColorField steps only when vertical travel is larger than horizontal.
+      it("ignores a mostly horizontal wheel on a focused field", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#000000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        input.focus();
+        fireEvent.wheel(input, { deltaX: 120, deltaY: 40 });
+
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("#000000");
+      });
+
+      it("increments a focused field on a vertical wheel", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#000000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        input.focus();
+        fireEvent.wheel(input, { deltaY: 120, deltaX: 0 });
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].toString("hex")).toBe("#000001");
+      });
     });
   });
 

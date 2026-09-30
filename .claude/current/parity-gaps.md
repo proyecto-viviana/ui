@@ -141,6 +141,7 @@ These behaviors match the pin in this checkout.
 - A color slider takes its name from a child label, and an explicit aria-label keeps its own name.
 - A color field takes its name from a child label, and an explicit aria-label keeps its own name.
 - A color field rejects a character that cannot be part of the color before it is inserted, and restores the previous value when a composition ends invalid.
+- A color field ignores a mostly horizontal wheel, and a vertical wheel still changes the color.
 - A calendar cell marks a date outside the visible range, and a date in another visible month stays unmarked.
 - A date picker and a date range picker mark focus within the root, and the hidden autofill input stays unmarked.
 - Tabs mark focus within the root.
