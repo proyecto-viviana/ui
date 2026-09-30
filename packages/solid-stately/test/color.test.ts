@@ -936,6 +936,25 @@ describe("createColorWheelState", () => {
     });
   });
 
+  it("keeps the hue of a point outside the radius square", () => {
+    createRoot((dispose) => {
+      let changedColor: Color | null = null;
+      const state = createColorWheelState(() => ({
+        defaultValue: "hsl(0, 100%, 50%)",
+        onChange: (color) => {
+          changedColor = color;
+        },
+      }));
+
+      // (87, 100) at radius 87 is past the square. Clamping each axis
+      // snaps that point to the 45° corner.
+      state.setHueFromPoint(87, 100, 87);
+      flush();
+      expect(changedColor!.getChannelValue("hue")).toBe(49);
+      dispose();
+    });
+  });
+
   it("should get thumb position from hue and radius", () => {
     createRoot((dispose) => {
       const state = createColorWheelState(() => ({

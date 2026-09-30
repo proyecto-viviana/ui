@@ -153,9 +153,7 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
   const degToRad = (deg: number) => (deg * Math.PI) / 180;
 
   const cartesianToAngle = (x: number, y: number, radius: number) => {
-    const clampedX = Math.max(-radius, Math.min(radius, x));
-    const clampedY = Math.max(-radius, Math.min(radius, y));
-    return mod(radToDeg(Math.atan2(clampedY, clampedX)), 360);
+    return mod(radToDeg(Math.atan2(y / radius, x / radius)), 360);
   };
 
   const angleToCartesian = (angle: number, radius: number) => ({
