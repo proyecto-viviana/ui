@@ -35,6 +35,7 @@ import {
   type SearchFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
+import { ButtonContext, type ButtonProps } from "./Button";
 import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
@@ -567,6 +568,30 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       },
     },
   };
+  // RAC composes `<Button>` as the clear control. The slot object stays stable
+  // so Button's one-time slot read keeps these getters. `onClick` stays on the
+  // dedicated clear button: createPress would clear again if it were merged here.
+  const clearButtonSlot: ButtonProps = {
+    get "aria-label"() {
+      return searchFieldAria.clearButtonProps["aria-label"];
+    },
+    excludeFromTabOrder: true,
+    preventFocusOnPress: true,
+    get isDisabled() {
+      return !!(ariaProps.isDisabled || ariaProps.isReadOnly);
+    },
+    onPressStart() {
+      inputRef?.focus();
+    },
+    onPress() {
+      searchFieldAria.clearButtonProps.onClick();
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      default: clearButtonSlot,
+    },
+  };
 
   // RAC exposes one shared `<Label>` through `LabelContext`; `SearchFieldLabel`
   // is a local convenience alias over the same wiring.
@@ -604,7 +629,14 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             data-required={dataAttr(ariaProps.isRequired)}
             data-readonly={dataAttr(ariaProps.isReadOnly)}
           >
-            <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+            <Provider
+              values={
+                [
+                  [TextContext, textSlots],
+                  [ButtonContext, buttonContextValue],
+                ] as Array<[Context<unknown>, unknown]>
+              }
+            >
               {fieldChildren()}
             </Provider>
           </div>

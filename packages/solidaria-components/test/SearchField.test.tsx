@@ -22,6 +22,7 @@ import { Label } from "../src/Label";
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
 import { Text } from "../src/Text";
+import { Button } from "../src/Button";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
@@ -295,6 +296,70 @@ describe("SearchField", () => {
 
       const clearButton = screen.getByRole("button");
       expect(clearButton).toHaveAttribute("aria-label");
+    });
+  });
+
+  describe("Button clear slot", () => {
+    it("clears from a Button", async () => {
+      const onChange = vi.fn();
+      const onClear = vi.fn();
+      render(() => (
+        <SearchField aria-label="Search" defaultValue="test" onChange={onChange} onClear={onClear}>
+          <SearchFieldInput />
+          <Button>x</Button>
+          <Button slot="other">Adjacent</Button>
+        </SearchField>
+      ));
+
+      const input = screen.getByRole("searchbox");
+      const clear = screen.getByRole("button", { name: "Clear search" });
+      const adjacent = screen.getByRole("button", { name: "Adjacent" });
+      input.focus();
+
+      expect(clear).toHaveAttribute("tabindex", "-1");
+      expect(input).toHaveValue("test");
+
+      await user.click(clear);
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("");
+      expect(input).toHaveValue("");
+      expect(document.activeElement).toBe(input);
+
+      await user.click(adjacent);
+      expect(onClear).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue("");
+    });
+
+    it("does not clear a disabled or read-only field from the Button", async () => {
+      const onClear = vi.fn();
+      render(() => (
+        <SearchField aria-label="Search" defaultValue="test" isDisabled onClear={onClear}>
+          <SearchFieldInput />
+          <Button>x</Button>
+        </SearchField>
+      ));
+
+      const clear = screen.getByRole("button", { name: "Clear search" });
+      expect(clear).toBeDisabled();
+      await user.click(clear);
+      expect(onClear).not.toHaveBeenCalled();
+      expect(screen.getByRole("searchbox")).toHaveValue("test");
+
+      cleanup();
+      const onClearReadOnly = vi.fn();
+      render(() => (
+        <SearchField aria-label="Search" defaultValue="test" isReadOnly onClear={onClearReadOnly}>
+          <SearchFieldInput />
+          <Button>x</Button>
+        </SearchField>
+      ));
+      const readOnlyClear = screen.getByRole("button", { name: "Clear search" });
+      expect(readOnlyClear).toBeDisabled();
+      await user.click(readOnlyClear);
+      expect(onClearReadOnly).not.toHaveBeenCalled();
+      expect(screen.getByRole("searchbox")).toHaveValue("test");
     });
   });
 
