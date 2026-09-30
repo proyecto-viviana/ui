@@ -21,6 +21,8 @@
 
 import { createMemo } from "solid-js";
 import { DateFormatter, startOfWeek, today } from "@internationalized/date";
+import { createId } from "../ssr";
+import { createLabels } from "../label/createLabels";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { useLocale } from "../i18n";
 import type { CalendarState, CalendarDate } from "@proyecto-viviana/solid-stately";
@@ -192,15 +194,31 @@ export function createCalendarGrid<T extends CalendarState>(
     return formatVisibleRangeDescription(start, end, state.timeZone, state.locale());
   });
 
+  // useCalendarGrid runs the joined name through useLabels, which prepends a
+  // generated id when aria-labelledby is also set. Create that id only then:
+  // the label-only path must not consume a createId, or later SSR ids shift.
+  const gridLabelId = getCalendarHookData(state)?.ariaLabelledBy ? createId() : undefined;
+
   // Grid props
   const gridProps = createMemo(() => {
     const data = getCalendarHookData(state);
     const gridLabel = [data?.ariaLabel, visibleRangeDescription()].filter(Boolean).join(", ");
+    const labelledBy = data?.ariaLabelledBy;
+    const labelProps =
+      gridLabelId && gridLabel && labelledBy
+        ? createLabels({
+            id: gridLabelId,
+            "aria-label": gridLabel,
+            "aria-labelledby": labelledBy,
+          })
+        : {
+            "aria-label": gridLabel || undefined,
+            "aria-labelledby": labelledBy,
+          };
 
     return {
-      role: "grid",
-      "aria-label": gridLabel || undefined,
-      "aria-labelledby": data?.ariaLabelledBy,
+      ...labelProps,
+      role: "grid" as const,
       "aria-readonly": state.isReadOnly() ? "true" : undefined,
       "aria-disabled": state.isDisabled() ? "true" : undefined,
       "aria-multiselectable": isMultiSelectable() ? "true" : undefined,

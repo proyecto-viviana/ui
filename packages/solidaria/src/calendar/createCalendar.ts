@@ -21,6 +21,7 @@
 
 import { createMemo } from "solid-js";
 import { createId, createSlotId } from "../ssr";
+import { createLabels } from "../label/createLabels";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState } from "@proyecto-viviana/solid-stately";
@@ -174,18 +175,24 @@ export function createCalendar<T extends CalendarState>(
     id: explicitErrorMessageId || slotErrorMessageId(),
   }));
 
-  // Calendar container props
+  // Calendar container props. The range description always makes aria-label
+  // truthy, so a caller aria-labelledby would hide that name. createLabels
+  // prepends this id and keeps both, matching useCalendarBase.
   const calendarProps = createMemo(() => {
     const p = getProps();
 
-    return mergeProps({
-      id,
-      role: "application",
-      "aria-labelledby": p["aria-labelledby"],
-      "aria-label": calendarLabel(),
-      "aria-describedby": p["aria-describedby"],
-      "aria-details": p["aria-details"],
-    });
+    return mergeProps(
+      createLabels({
+        id,
+        "aria-label": calendarLabel(),
+        "aria-labelledby": p["aria-labelledby"],
+      }),
+      {
+        role: "application" as const,
+        "aria-describedby": p["aria-describedby"],
+        "aria-details": p["aria-details"],
+      },
+    );
   });
 
   return {

@@ -22,6 +22,7 @@
 import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createId, createSlotId } from "../ssr";
+import { createLabels } from "../label/createLabels";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import { getEventTarget, isFocusWithin, nodeContains } from "../utils/dom";
@@ -191,18 +192,23 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     id: explicitErrorMessageId || slotErrorMessageId(),
   }));
 
-  // Calendar container props
+  // Same labelledby merge as createCalendar: the range description stays
+  // in the name when the caller also passes aria-labelledby.
   const calendarProps = createMemo(() => {
     const p = getProps();
 
-    return mergeProps({
-      id,
-      role: "application",
-      "aria-labelledby": p["aria-labelledby"],
-      "aria-label": calendarLabel(),
-      "aria-describedby": p["aria-describedby"],
-      "aria-details": p["aria-details"],
-    });
+    return mergeProps(
+      createLabels({
+        id,
+        "aria-label": calendarLabel(),
+        "aria-labelledby": p["aria-labelledby"],
+      }),
+      {
+        role: "application" as const,
+        "aria-describedby": p["aria-describedby"],
+        "aria-details": p["aria-details"],
+      },
+    );
   });
 
   // Execute method corresponding to `commitBehavior` when pressing or releasing a pointer

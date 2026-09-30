@@ -185,6 +185,7 @@ These behaviors match the pin in this checkout.
 - A color thumb paints its display color, and an alpha slider keeps that alpha.
 - A checkbox or switch reports onPressChange when its label is pressed.
 - A toast keeps an explicit label, and the title names it when that label is absent.
+- A calendar and its grid include their own id in aria-labelledby when the visible-range name is also set.
 
 **Components**
 
