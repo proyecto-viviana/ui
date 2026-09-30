@@ -34,6 +34,7 @@ import {
   createHover,
   createFocusVisibleListener,
   getInteractionModality,
+  createId,
 } from "@proyecto-viviana/solidaria";
 import {
   ComboBox as HeadlessComboBox,
@@ -716,17 +717,50 @@ function ComboBoxFieldGroup(props: {
   );
 }
 
+function withFieldSpinnerDescribedBy<T extends object>(
+  context: T | null,
+  spinnerId: () => string | undefined,
+): T | null {
+  if (context == null) {
+    return context;
+  }
+  return new Proxy(context, {
+    get(target, property, receiver) {
+      if (property === "inputProps") {
+        const read = Reflect.get(target, property, target) as () => Record<string, unknown>;
+        return () => {
+          const inputProps = read();
+          const id = spinnerId();
+          if (id == null) {
+            return inputProps;
+          }
+          // S2 passes `aria-describedby={spinnerId}` on Input, which replaces
+          // the field description while the circle is mounted (RAC Input merges
+          // local props over context). Undefined leaves the field ids in place.
+          return { ...inputProps, "aria-describedby": id };
+        };
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+}
+
 function ComboBoxFieldSpinner(props: {
   loadingState: () => LoadingState | undefined;
   menuTrigger: () => MenuTriggerAction | undefined;
   label: string;
+  children: JSX.Element;
 }) {
   const comboBoxContext = useContext(HeadlessComboBoxContext) as {
     state?: { inputValue?: () => string };
     isOpen?: () => boolean;
   } | null;
   const [showLoading, setShowLoading] = createSignal(false);
-  const spinnerId = createUniqueId();
+  // Raw id stays on the circle. The resolved id follows useSlotId: it is this
+  // id only after the circle is in the document, otherwise undefined.
+  const spinnerElementId = createId();
+  const [linkedSpinnerId, setLinkedSpinnerId] = createSignal<string | undefined>(spinnerElementId);
+  const [probeTick, setProbeTick] = createSignal(0);
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let lastInputValue: string | undefined;
 
@@ -776,16 +810,36 @@ function ComboBoxFieldSpinner(props: {
       props.menuTrigger() === "manual" ||
       props.loadingState() === "loading");
 
+  // S2 ComboBox.tsx:601-605 and useSlotId: re-probe when the circle mounts or
+  // unmounts. Yield the raw id first so the circle can carry it, then keep that
+  // id only when the element is actually in the document.
+  createTrackedEffect(() => {
+    showFieldSpinner();
+    setLinkedSpinnerId(spinnerElementId);
+    setProbeTick((tick) => tick + 1);
+  });
+
+  createTrackedEffect(() => {
+    probeTick();
+    if (linkedSpinnerId() !== spinnerElementId) {
+      return;
+    }
+    setLinkedSpinnerId(document.getElementById(spinnerElementId) ? spinnerElementId : undefined);
+  });
+
   return (
-    <Show when={showFieldSpinner()}>
-      <ProgressCircle
-        id={spinnerId}
-        isIndeterminate
-        size="S"
-        styles={comboBoxProgressCircle({ isInput: true })}
-        aria-label={props.label}
-      />
-    </Show>
+    <HeadlessComboBoxContext value={withFieldSpinnerDescribedBy(comboBoxContext, linkedSpinnerId)}>
+      {props.children}
+      <Show when={showFieldSpinner()}>
+        <ProgressCircle
+          id={spinnerElementId}
+          isIndeterminate
+          size="S"
+          styles={comboBoxProgressCircle({ isInput: true })}
+          aria-label={props.label}
+        />
+      </Show>
+    </HeadlessComboBoxContext>
   );
 }
 
@@ -1052,28 +1106,32 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
             </Show>
 
             <ComboBoxFieldGroup renderProps={renderProps} size={size}>
-              <Show when={prefixNode()} fallback={<HeadlessComboBoxInput class={comboBoxInput} />}>
-                <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
-                <PrefixInputProvider
-                  context={HeadlessComboBoxContext}
-                  prefixId={prefixId}
-                  inputPropsIsFunction
-                >
-                  <HeadlessComboBoxInput class={comboBoxInput} />
-                </PrefixInputProvider>
-              </Show>
-              <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
-                <CenterBaseline>
-                  <AlertTriangleIcon styles={fieldErrorIcon} />
-                </CenterBaseline>
-              </Show>
               <ComboBoxFieldSpinner
                 loadingState={() => local.loadingState}
                 menuTrigger={() =>
                   (headlessProps as { menuTrigger?: MenuTriggerAction }).menuTrigger
                 }
                 label={stringFormatter().format("table.loading")}
-              />
+              >
+                <Show
+                  when={prefixNode()}
+                  fallback={<HeadlessComboBoxInput class={comboBoxInput} />}
+                >
+                  <FieldPrefix id={prefixId}>{prefixNode()}</FieldPrefix>
+                  <PrefixInputProvider
+                    context={HeadlessComboBoxContext}
+                    prefixId={prefixId}
+                    inputPropsIsFunction
+                  >
+                    <HeadlessComboBoxInput class={comboBoxInput} />
+                  </PrefixInputProvider>
+                </Show>
+                <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
+                  <CenterBaseline>
+                    <AlertTriangleIcon styles={fieldErrorIcon} />
+                  </CenterBaseline>
+                </Show>
+              </ComboBoxFieldSpinner>
               <HeadlessComboBoxButton
                 ref={setChevronEl}
                 class={buttonClass}

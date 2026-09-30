@@ -107,6 +107,7 @@ These behaviors match the pin in this checkout.
 - A grid cell exposes its column index, and a virtualized cell falls back to its index.
 - A tab panel forwards its details attribute.
 - A tab forwards its description and details.
+- A loading combobox field points its description at the spinner.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

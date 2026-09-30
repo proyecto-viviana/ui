@@ -194,6 +194,22 @@ describe("ComboBox (solid-spectrum)", () => {
     vi.useRealTimers();
   });
 
+  it("links the field spinner to the combobox while that spinner is mounted", async () => {
+    vi.useFakeTimers();
+    render(() => <FruitComboBox loadingState="loading" description="Pick one item" />);
+    flush();
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    const description = screen.getByText("Pick one item");
+    expect(input.getAttribute("aria-describedby") ?? "").toContain(description.id);
+    expect(screen.queryByRole("progressbar", { name: "Loading…" })).not.toBeInTheDocument();
+
+    await vi.advanceTimersByTimeAsync(500);
+    flush();
+    const spinner = screen.getByRole("progressbar", { name: "Loading…" });
+    expect(input.getAttribute("aria-describedby")).toBe(spinner.id);
+  });
+
   it("provides S2 listbox header, heading, and description slot contexts", async () => {
     render(() => (
       <ComboBox<Fruit>
