@@ -159,7 +159,7 @@ export interface GridListItemAria {
   /** Props to spread on the grid cell wrapper. */
   gridCellProps: JSX.HTMLAttributes<HTMLDivElement>;
   /** Props for the item description element, if any. */
-  descriptionProps: { id: string };
+  descriptionProps: { id?: string };
   /** Whether the item is selected. */
   isSelected: boolean;
   /** Whether the item is disabled. */

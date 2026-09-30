@@ -14,6 +14,7 @@ import {
   GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
+import { Text } from "../src/Text";
 import { CollectionRendererContext } from "../src/Collection";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { useDragAndDrop } from "../src/useDragAndDrop";
@@ -150,6 +151,47 @@ describe("GridList", () => {
       // upstream GridList.test.js `getAllByRole('gridcell')`; createGridListItem
       // emits role: "row" › role: "gridcell").
       expect(screen.getAllByRole("gridcell")).toHaveLength(3);
+    });
+
+    // useGridListItem sets aria-labelledby only when useSlotId resolves a
+    // mounted description. A row with text and no description slot must not
+    // point at a missing id.
+    it("does not point a row at a missing description", () => {
+      render(() => (
+        <GridList items={testItems} getKey={(item) => item.id} aria-label="Fruits">
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+      flush();
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      expect(row).not.toHaveAttribute("aria-labelledby");
+    });
+
+    it("names a row from its description slot", () => {
+      render(() => (
+        <GridList
+          items={[{ id: "apple", name: "Apple" }]}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+              <Text slot="description">A fruit</Text>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+      flush();
+
+      const text = screen.getByText("A fruit");
+      const row = screen.getByRole("row", { name: "Apple A fruit" });
+      expect(row).toHaveAttribute("aria-labelledby", `${row.id} ${text.id}`);
     });
 
     it("should render items with default class", () => {

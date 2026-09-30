@@ -28,8 +28,8 @@ import type {
   Key,
   Selection,
 } from "@proyecto-viviana/solid-stately";
-import { createId } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListItemProps, GridListItemAria } from "./types";
+import { createSlotId } from "../ssr";
 import { getGridListData } from "./createGridList";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
@@ -47,7 +47,9 @@ export function createGridListItem<
   state: Accessor<GridState<T, C>>,
   ref: Accessor<HTMLElement | null>,
 ): GridListItemAria {
-  const descriptionId = createId();
+  // useGridListItem uses useSlotId: aria-labelledby includes the description
+  // only after an element with that id is in the DOM.
+  const descriptionId = createSlotId();
 
   const isSelected = createMemo(() => {
     const s = state();
@@ -158,7 +160,10 @@ export function createGridListItem<
         s.selectionMode !== "none" && !s.isDisabled(node.key) ? isSelected() : undefined,
       "aria-disabled": selectableItem.isDisabled() || undefined,
       "aria-label": label,
-      "aria-labelledby": label ? `${rowId} ${descriptionId}` : undefined,
+      "aria-labelledby":
+        descriptionId() && (node["aria-label"] || node.textValue)
+          ? `${rowId} ${descriptionId()}`
+          : undefined,
     };
 
     // Virtualized rows number by position among non-section nodes. List nodes
@@ -210,7 +215,7 @@ export function createGridListItem<
       return gridCellProps();
     },
     get descriptionProps() {
-      return { id: descriptionId };
+      return { id: descriptionId() };
     },
     get isSelected() {
       return isSelected();
