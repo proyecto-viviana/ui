@@ -13,6 +13,8 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
 import { createSignal, flush, Show } from "solid-js";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
+import { Label } from "../src/Label";
+import { Text } from "../src/Text";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -433,6 +435,49 @@ describe("TagGroup", () => {
   // ============================================
 
   describe("aria attributes", () => {
+    it("links the grid to its label, description, and error message slots", () => {
+      render(() => (
+        <TagGroup>
+          <Label>Test</Label>
+          <TagList items={sampleItems}>{(item) => <Tag id={item.id}>{item.name}</Tag>}</TagList>
+          <Text slot="description">Description</Text>
+          <Text slot="errorMessage">Error</Text>
+        </TagGroup>
+      ));
+
+      const grid = screen.getByRole("grid");
+      const labelId = grid.getAttribute("aria-labelledby");
+      expect(labelId).toBeTruthy();
+      expect(document.getElementById(labelId!)?.textContent).toBe("Test");
+
+      const describedBy = grid.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
+      expect(
+        describedBy!
+          .split(" ")
+          .map((id) => document.getElementById(id)?.textContent)
+          .join(" "),
+      ).toBe("Description Error");
+    });
+
+    it("does not point the grid at a missing description", () => {
+      render(() => (
+        <TagGroup>
+          <TagList items={sampleItems} aria-label="Topics">
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const grid = screen.getByRole("grid", { name: "Topics" });
+      const describedBy = grid.getAttribute("aria-describedby");
+      if (describedBy) {
+        for (const id of describedBy.split(" ")) {
+          expect(document.getElementById(id)).not.toBeNull();
+        }
+      }
+    });
+
     it("should have aria-label on tag list", () => {
       render(() => <TestTagGroup />);
 

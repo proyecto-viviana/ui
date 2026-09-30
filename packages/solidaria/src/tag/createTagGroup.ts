@@ -113,8 +113,10 @@ export function createTagGroup<T>(
   const domProps = () =>
     filterDOMProps(getProps() as unknown as Record<string, unknown>, { labelable: true });
 
-  // Create label handling
-  const { labelProps, fieldProps } = createLabel({
+  // Create label handling. Do not destructure: `fieldProps` is a getter, and
+  // callers pass label props that change after this function returns (a Label
+  // slot starts assumed and clears when no Label child mounts).
+  const labeling = createLabel({
     get label() {
       return getProps().label;
     },
@@ -232,7 +234,7 @@ export function createTagGroup<T>(
       const p = getProps();
       const hasItems = state.collection().size > 0;
 
-      return mergeProps(domProps(), fieldProps as Record<string, unknown>, {
+      return mergeProps(domProps(), labeling.fieldProps as Record<string, unknown>, {
         id,
         role: hasItems ? "grid" : "group",
         "aria-multiselectable": hasItems && state.selectionMode() === "multiple" ? true : undefined,
@@ -249,7 +251,7 @@ export function createTagGroup<T>(
       });
     },
     get labelProps() {
-      return labelProps as Record<string, unknown>;
+      return labeling.labelProps as Record<string, unknown>;
     },
     get descriptionProps() {
       return {

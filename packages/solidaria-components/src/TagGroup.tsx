@@ -28,6 +28,8 @@ import {
   createButton,
   createFocusRing,
   createHover,
+  createId,
+  createSlotId,
   createTagGroup,
   createTag,
   useLocale,
@@ -51,7 +53,10 @@ import {
   dataAttr,
   mergeRefs,
   assignRef,
+  useSlot,
 } from "./utils";
+import { LabelContext } from "./Label";
+import { TextContext } from "./Text";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -184,6 +189,19 @@ export const TagGroupContext = createContext<TagGroupContextValue | null>(null);
 export const TagListStateContext = createContext<ListState | null>(null);
 export const TagContext = createContext<TagContextValue | null>(null);
 
+// Label and help text are siblings of TagList, so the group mints their ids
+// and the list points the grid at them. Remove-button text, aria-live, and
+// focusing the list when the last tag disappears stay out of this path (#54).
+interface TagGroupFieldContextValue {
+  descriptionId: () => string | undefined;
+  errorMessageId: () => string | undefined;
+  labelledBy: () => string | undefined;
+  ariaLabel: () => string | undefined;
+  describedBy: () => string | undefined;
+}
+
+const TagGroupFieldContext = createContext<TagGroupFieldContextValue | null>(null);
+
 export function useTagGroupContext(): TagGroupContextValue | null {
   return useContext(TagGroupContext);
 }
@@ -202,9 +220,51 @@ export function useTagGroupContext(): TagGroupContextValue | null {
  * ```
  */
 export function TagGroup(props: TagGroupProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "children",
+    "label",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "description",
+    "errorMessage",
+  ]);
 
-  // We need TagList to provide the state, so TagGroup just provides context
+  // Start true when nothing else names the group, matching useSlot: a Label
+  // child confirms it, and onSettled clears it when that child is absent.
+  const [labelRef, hasLabel] = useSlot(
+    !local["aria-label"] && !local["aria-labelledby"] && !local.label,
+  );
+  const labelId = createId();
+  const descriptionId = createSlotId([
+    () => Boolean(local.description),
+    () => Boolean(local.errorMessage),
+  ]);
+  const errorMessageId = createSlotId([
+    () => Boolean(local.description),
+    () => Boolean(local.errorMessage),
+  ]);
+  const field: TagGroupFieldContextValue = {
+    descriptionId,
+    errorMessageId,
+    labelledBy: () => local["aria-labelledby"] ?? (hasLabel() ? labelId : undefined),
+    ariaLabel: () => local["aria-label"],
+    describedBy: () => local["aria-describedby"],
+  };
+  const textSlots = {
+    slots: {
+      get description() {
+        return { id: descriptionId() };
+      },
+      get errorMessage() {
+        return { id: errorMessageId() };
+      },
+    },
+  };
+
   return (
     <div
       {...domProps}
@@ -212,7 +272,19 @@ export function TagGroup(props: TagGroupProps): JSX.Element {
       style={typeof local.style === "object" ? local.style : undefined}
       slot={local.slot}
     >
-      {props.children}
+      <TagGroupFieldContext value={field}>
+        <LabelContext
+          value={{
+            ref: labelRef,
+            elementType: "span",
+            get id() {
+              return labelId;
+            },
+          }}
+        >
+          <TextContext value={textSlots}>{local.children}</TextContext>
+        </LabelContext>
+      </TagGroupFieldContext>
     </div>
   );
 }
@@ -283,22 +355,41 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
   // under RTL. Thread the resolved layout direction into the hook (mirrors
   // ListBox, and useTagGroup passing `direction` to the ListKeyboardDelegate).
   const locale = useLocale();
+  const field = useContext(TagGroupFieldContext);
 
   // Callback-valued props must not go through createMemo — a memo that
   // stores a function is easy to unwrap/call, and the live getter
   // `onRemove={handler()}` must re-read on each access.
   const onRemove = () => local.onRemove;
 
+  const labelledBy = () => local["aria-labelledby"] ?? field?.labelledBy();
+  const describedBy = () => {
+    const ids = [
+      field?.descriptionId(),
+      field?.errorMessageId(),
+      local["aria-describedby"] ?? field?.describedBy(),
+    ].filter((id): id is string => !!id);
+    return ids.length > 0 ? ids.join(" ") : undefined;
+  };
+
   const tagGroupAria = createTagGroup(
     {
       get "aria-label"() {
-        return local["aria-label"] ?? (!local["aria-labelledby"] ? local.label : undefined);
+        if (local["aria-label"] != null) {
+          return local["aria-label"];
+        }
+        // A real label id suppresses the string fallback; the grid is named
+        // by aria-labelledby. TagList's own label still wins when no id is set.
+        if (labelledBy()) {
+          return field?.ariaLabel();
+        }
+        return local.label ?? field?.ariaLabel();
       },
       get "aria-labelledby"() {
-        return local["aria-labelledby"];
+        return labelledBy();
       },
       get "aria-describedby"() {
-        return local["aria-describedby"];
+        return describedBy();
       },
       get isDisabled() {
         return local.isDisabled;
