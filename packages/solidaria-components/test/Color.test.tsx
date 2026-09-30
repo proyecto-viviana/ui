@@ -1172,6 +1172,51 @@ describe("Color Components", () => {
         });
       });
 
+      it("should ignore a secondary or modified mouse press on the ring and thumb", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChange={onChange}
+          />
+        ));
+
+        const track = document.querySelector(".solidaria-ColorWheel-track") as HTMLElement;
+        const thumb = document.querySelector(".solidaria-ColorWheel-thumb") as HTMLElement;
+        const rect = () =>
+          ({
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 200,
+            width: 200,
+            height: 200,
+            toJSON: () => ({}),
+          }) as DOMRect;
+        track.getBoundingClientRect = rect;
+        thumb.getBoundingClientRect = rect;
+
+        const ring = { clientX: 100, clientY: 10, pointerType: "mouse" as const };
+        fireEvent.pointerDown(track, { ...ring, button: 2 });
+        fireEvent.pointerDown(track, { ...ring, button: 0, ctrlKey: true });
+        fireEvent.pointerDown(track, { ...ring, button: 0, altKey: true });
+        fireEvent.pointerDown(track, { ...ring, button: 0, metaKey: true });
+        fireEvent.mouseDown(track, { clientX: 100, clientY: 10, button: 2 });
+        fireEvent.mouseDown(track, { clientX: 100, clientY: 10, button: 0, ctrlKey: true });
+        fireEvent.pointerDown(thumb, { button: 2, pointerType: "mouse" });
+        fireEvent.mouseDown(thumb, { button: 2 });
+
+        expect(onChange).not.toHaveBeenCalled();
+        expect(thumb.getAttribute("data-dragging")).toBeNull();
+
+        fireEvent.pointerDown(track, { ...ring, button: 0, pointerType: "touch" });
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(270);
+      });
+
       it("should commit keyboard changes through onChangeEnd", async () => {
         const onChangeEnd = vi.fn();
         render(() => (
