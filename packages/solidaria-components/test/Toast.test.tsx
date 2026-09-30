@@ -176,6 +176,43 @@ describe("Toast", () => {
       expect(screen.getByText("You have a new message")).toBeInTheDocument();
     });
 
+    it("keeps an explicit label on the toast", () => {
+      render(() => {
+        const queue = new ToastQueue<ToastContent>({});
+        const state = createToastState({ queue });
+        queue.add({ title: "Saved", type: "info" });
+        return (
+          <ToastContext value={state}>
+            <ToastRegion portal={false} state={state}>
+              {(renderProps) => (
+                <For each={renderProps.visibleToasts()}>
+                  {(toast) => (
+                    <Toast
+                      toast={toast}
+                      aria-label="Status"
+                      aria-labelledby="external-title"
+                      aria-describedby="external-desc"
+                      aria-details="external-details"
+                    >
+                      <ToastContent>
+                        <Text slot="title">{toast.content.title}</Text>
+                      </ToastContent>
+                    </Toast>
+                  )}
+                </For>
+              )}
+            </ToastRegion>
+          </ToastContext>
+        );
+      });
+
+      const toast = screen.getByRole("alertdialog");
+      expect(toast).toHaveAttribute("aria-label", "Status");
+      expect(toast).toHaveAttribute("aria-labelledby", "external-title");
+      expect(toast).toHaveAttribute("aria-describedby", "external-desc");
+      expect(toast).toHaveAttribute("aria-details", "external-details");
+    });
+
     it("should link alertdialog aria-labelledby/aria-describedby to rendered title and description", () => {
       render(() => (
         <ToastProvider useGlobalQueue>

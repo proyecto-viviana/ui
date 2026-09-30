@@ -82,6 +82,41 @@ describe("createToast", () => {
     });
   });
 
+  it("keeps an explicit label, and the title names the toast when that label is absent", () => {
+    createRoot((dispose) => {
+      const toast = {
+        key: "toast-label",
+        animation: "entering",
+      } as any;
+
+      const explicit = createToast({
+        toast,
+        state: { close: vi.fn() } as any,
+        "aria-label": "Status",
+        "aria-labelledby": "external-title",
+        "aria-describedby": "external-desc",
+        "aria-details": "external-details",
+      });
+
+      expect(explicit.toastProps["aria-label"]).toBe("Status");
+      expect(explicit.toastProps["aria-labelledby"]).toBe("external-title");
+      expect(explicit.toastProps["aria-describedby"]).toBe("external-desc");
+      expect(explicit.toastProps["aria-details"]).toBe("external-details");
+
+      const fallback = createToast({
+        toast,
+        state: { close: vi.fn() } as any,
+        "aria-labelledby": "",
+        "aria-describedby": "",
+      });
+      expect(fallback.toastProps["aria-labelledby"]).toBeTruthy();
+      expect(fallback.toastProps["aria-labelledby"]).not.toBe("");
+      expect(fallback.toastProps["aria-describedby"]).toBeTruthy();
+      expect(fallback.toastProps["aria-describedby"]).not.toBe("");
+      dispose();
+    });
+  });
+
   it("omits aria-describedby when hasDescription is false", () => {
     createRoot((dispose) => {
       const toast = {

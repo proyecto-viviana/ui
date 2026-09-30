@@ -46,6 +46,7 @@ import {
   createToastRegion,
   mergeProps,
   useUNSAFE_PortalContext,
+  type AriaLabelingProps,
 } from "@proyecto-viviana/solidaria";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
@@ -148,7 +149,7 @@ export interface ToastRegionProps {
   ref?: RefLike<HTMLElement>;
 }
 
-export interface ToastProps {
+export interface ToastProps extends AriaLabelingProps {
   /** DOM id for the toast root. */
   id?: string;
   /** Data attributes for the toast root. */
@@ -441,7 +442,17 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
  * ```
  */
 export function Toast(props: ToastProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["toast", "children", "class", "style", "ref"]);
+  const [local, rest] = splitProps(props, [
+    "toast",
+    "children",
+    "class",
+    "style",
+    "ref",
+    "aria-label",
+    "aria-labelledby",
+    "aria-describedby",
+    "aria-details",
+  ]);
 
   const [toastEl, setToastEl] = createSignal<HTMLDivElement | null>(null);
 
@@ -468,6 +479,18 @@ export function Toast(props: ToastProps): JSX.Element {
     toast: local.toast,
     state,
     hasTitle: hasTitle(),
+    get "aria-label"() {
+      return local["aria-label"];
+    },
+    get "aria-labelledby"() {
+      return local["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return local["aria-describedby"];
+    },
+    get "aria-details"() {
+      return local["aria-details"];
+    },
   });
 
   const { focusProps, isFocused, isFocusVisible } = createFocusRing();

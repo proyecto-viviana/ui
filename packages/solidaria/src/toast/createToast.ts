@@ -25,10 +25,11 @@ import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter } from "../i18n";
+import type { AriaLabelingProps } from "../label";
 import { createId, createSlotId } from "../ssr";
 import { toastIntlStrings } from "./intl";
 
-export interface AriaToastProps<T> {
+export interface AriaToastProps<T> extends AriaLabelingProps {
   /** The toast to display. */
   toast: QueuedToast<T>;
   /** The toast state from createToastState. */
@@ -106,16 +107,27 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     },
   );
 
-  // Toast container - role="alertdialog" for screen readers
-  const toastProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
-    role: "alertdialog",
-    "aria-modal": "false",
-    "aria-labelledby": hasTitle ? titleId : undefined,
-    "aria-describedby": hasDescription ? descriptionId() : undefined,
-    tabIndex: 0,
-    "data-animation": props.toast.animation,
-    "data-key": props.toast.key,
-  }));
+  // Toast container - role="alertdialog" for screen readers.
+  // useToast copies labelable props, then `||` so an empty labelledby or
+  // describedby still falls back to the title and description ids. The
+  // hasTitle/hasDescription gates apply only to that fallback.
+  const toastProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => {
+    const label = props["aria-label"];
+    const details = props["aria-details"];
+    const labelledBy = props["aria-labelledby"];
+    const describedBy = props["aria-describedby"];
+    return {
+      role: "alertdialog",
+      "aria-modal": "false",
+      ...(label != null ? { "aria-label": label } : {}),
+      "aria-labelledby": labelledBy || (hasTitle ? titleId : undefined),
+      "aria-describedby": describedBy || (hasDescription ? descriptionId() : undefined),
+      ...(details != null ? { "aria-details": details } : {}),
+      tabIndex: 0,
+      "data-animation": props.toast.animation,
+      "data-key": props.toast.key,
+    };
+  });
 
   // Content area. Match RAC useToast: role="alert" + aria-atomic; aria-hidden
   // until mounted. Getters keep the object stable so slotted context still
