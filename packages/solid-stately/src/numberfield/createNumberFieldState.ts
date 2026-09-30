@@ -98,8 +98,8 @@ export interface NumberFieldState extends FormValidationState {
   setInputValue: (value: string) => void;
   /** Validate a partial input value. */
   validate: (value: string) => boolean;
-  /** Commit the current input value. */
-  commit: () => void;
+  /** Commit the current input value, or an override when a paste replaces it. */
+  commit: (value?: string) => void;
   /** Increment the value by step. */
   increment: () => void;
   /** Decrement the value by step. */
@@ -320,11 +320,11 @@ export function createNumberFieldState(
     setInputValueInternal(value);
   };
 
-  // Commit the current input value
-  const commit = () => {
+  // Commit the current input value, or an override when a paste replaces it.
+  const commit = (override?: string) => {
     ensureInitialized();
     const p = getProps();
-    const input = readNow(inputValue);
+    const input = override === undefined ? readNow(inputValue) : override;
 
     if (input === "" || input === "-") {
       // Clear value
@@ -348,7 +348,8 @@ export function createNumberFieldState(
     parsed = numberParser().parse(formatNumber(parsed));
 
     setNumberValue(parsed);
-    setInputValueInternal(formatNumber(parsed));
+    // A controlled field keeps the current number until its value prop updates.
+    setInputValueInternal(formatNumber(p.value === undefined ? parsed : previous));
 
     p.onChange?.(parsed);
     if (parsed !== previous) {

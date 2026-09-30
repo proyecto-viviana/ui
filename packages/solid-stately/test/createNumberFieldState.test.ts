@@ -621,6 +621,57 @@ describe("createNumberFieldState", () => {
         dispose();
       });
     });
+
+    it("should commit an override instead of the current input", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createNumberFieldState({ defaultValue: 5, onChange });
+
+        state.commit("42");
+
+        flush();
+        expect(state.numberValue()).toBe(42);
+        flush();
+        expect(state.inputValue()).toBe("42");
+        flush();
+        expect(onChange).toHaveBeenCalledWith(42);
+
+        dispose();
+      });
+    });
+
+    it("should snap an override to the step", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({ defaultValue: 5, step: 5 });
+
+        state.commit("42");
+
+        flush();
+        expect(state.numberValue()).toBe(40);
+        flush();
+        expect(state.inputValue()).toBe("40");
+
+        dispose();
+      });
+    });
+
+    it("should keep the controlled input when an override is not accepted", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createNumberFieldState({ value: 12, onChange });
+
+        state.commit("99");
+
+        flush();
+        expect(onChange).toHaveBeenCalledWith(99);
+        flush();
+        expect(state.inputValue()).toBe("12");
+        flush();
+        expect(state.numberValue()).toBe(12);
+
+        dispose();
+      });
+    });
   });
 
   describe("validation", () => {

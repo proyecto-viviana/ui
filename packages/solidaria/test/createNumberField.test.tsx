@@ -17,6 +17,7 @@ function TestNumberField(props: {
   minValue?: number;
   maxValue?: number;
   step?: number;
+  formatOptions?: Intl.NumberFormatOptions;
   onChange?: (value: number) => void;
   isDisabled?: boolean;
   isReadOnly?: boolean;
@@ -50,6 +51,7 @@ function TestNumberField(props: {
     minValue: props.minValue,
     maxValue: props.maxValue,
     step: props.step ?? 1,
+    formatOptions: props.formatOptions,
     onChange: props.onChange,
     isDisabled: props.isDisabled,
     isReadOnly: props.isReadOnly,
@@ -59,15 +61,8 @@ function TestNumberField(props: {
     name: props.name,
   });
 
-  const {
-    labelProps,
-    groupProps,
-    inputProps,
-    incrementButtonProps,
-    decrementButtonProps,
-    descriptionProps,
-    errorMessageProps,
-  } = createNumberField(
+  // JSX has to read these getters. Destructuring once freezes `value`.
+  const field = createNumberField(
     () => ({
       "aria-label": props["aria-label"],
       decrementAriaLabel: props.decrementAriaLabel,
@@ -79,6 +74,7 @@ function TestNumberField(props: {
       isInvalid: props.isInvalid,
       validationBehavior: props.validationBehavior,
       commitBehavior: props.commitBehavior,
+      formatOptions: props.formatOptions,
       description: props.description,
       errorMessage: props.errorMessage,
       name: props.name,
@@ -98,24 +94,24 @@ function TestNumberField(props: {
   );
 
   return (
-    <div {...groupProps} data-testid="group">
+    <div {...field.groupProps} data-testid="group">
       <Show when={props.label}>
-        <label {...labelProps}>{props.label}</label>
+        <label {...field.labelProps}>{props.label}</label>
       </Show>
-      <button {...decrementButtonProps} data-testid="decrement">
+      <button {...field.decrementButtonProps} data-testid="decrement">
         -
       </button>
-      <input {...inputProps} ref={(el) => (inputRef = el)} data-testid="input" />
-      <button {...incrementButtonProps} data-testid="increment">
+      <input {...field.inputProps} ref={(el) => (inputRef = el)} data-testid="input" />
+      <button {...field.incrementButtonProps} data-testid="increment">
         +
       </button>
       <Show when={props.description}>
-        <div {...descriptionProps} data-testid="description">
+        <div {...field.descriptionProps} data-testid="description">
           {props.description}
         </div>
       </Show>
       <Show when={props.isInvalid && props.errorMessage}>
-        <div {...errorMessageProps} data-testid="error">
+        <div {...field.errorMessageProps} data-testid="error">
           {props.errorMessage}
         </div>
       </Show>
@@ -749,6 +745,116 @@ describe("createNumberField", () => {
       expect(onChange.mock.calls.at(-1)?.[0]).toBeGreaterThanOrEqual(13);
       pressUp?.({ pointerType: "mouse" });
       vi.useRealTimers();
+    });
+  });
+
+  describe("paste", () => {
+    function clipboard(text: string): DataTransfer {
+      return {
+        items: [{ kind: "string", type: "text/plain" }] as unknown as DataTransferItemList,
+        types: ["text/plain"],
+        files: [] as unknown as FileList,
+        dropEffect: "copy",
+        effectAllowed: "copy",
+        getData: (type: string) => (type === "text/plain" ? text : ""),
+        setData: () => {},
+        clearData: () => {},
+        setDragImage: () => {},
+      } as unknown as DataTransfer;
+    }
+
+    function selectAll(input: HTMLInputElement) {
+      input.focus();
+      input.setSelectionRange(0, input.value.length);
+    }
+
+    it("commits a full-selection paste immediately", () => {
+      const onChange = vi.fn();
+      const onPaste = vi.fn();
+      render(() => (
+        <TestNumberField
+          aria-label="Amount"
+          defaultValue={5}
+          onChange={onChange}
+          onPaste={onPaste}
+        />
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      selectAll(input);
+      const pasted = fireEvent.paste(input, { clipboardData: clipboard("  12  ") });
+
+      expect(onPaste).toHaveBeenCalledTimes(1);
+      expect(pasted).toBe(false);
+      expect(onChange).toHaveBeenCalledWith(12);
+      expect(input).toHaveValue("12");
+    });
+
+    it("commits a paste that replaces an empty field", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      selectAll(input);
+      fireEvent.paste(input, { clipboardData: clipboard("12") });
+
+      expect(onChange).toHaveBeenCalledWith(12);
+      expect(input).toHaveValue("12");
+    });
+
+    it("leaves a partial selection for the browser", () => {
+      const onChange = vi.fn();
+      const onPaste = vi.fn();
+      render(() => (
+        <TestNumberField
+          aria-label="Amount"
+          defaultValue={50}
+          onChange={onChange}
+          onPaste={onPaste}
+        />
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      input.setSelectionRange(1, 1);
+      const pasted = fireEvent.paste(input, { clipboardData: clipboard("9") });
+
+      expect(onPaste).toHaveBeenCalledTimes(1);
+      expect(pasted).toBe(true);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue("50");
+    });
+
+    it("keeps the controlled value on screen when the paste is not accepted", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" value={200} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      selectAll(input);
+      fireEvent.paste(input, { clipboardData: clipboard("1024") });
+
+      expect(onChange).toHaveBeenCalledWith(1024);
+      expect(input).toHaveValue("200");
+    });
+
+    it("formats a currency paste without waiting for enter", () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestNumberField
+          aria-label="Amount"
+          defaultValue={200}
+          onChange={onChange}
+          formatOptions={{ style: "currency", currency: "USD" }}
+        />
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      expect(input).toHaveValue("$200.00");
+      selectAll(input);
+      fireEvent.paste(input, { clipboardData: clipboard("1,024") });
+
+      expect(onChange).toHaveBeenCalledWith(1024);
+      expect(input).toHaveValue("$1,024.00");
     });
   });
 

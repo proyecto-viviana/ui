@@ -395,6 +395,22 @@ export function createNumberField(
     getProps().onKeyUp?.(e);
   };
 
+  // A paste that replaces the whole value commits before the browser inserts it.
+  // A partial selection is left to the browser.
+  const onPaste: JSX.EventHandler<HTMLInputElement, ClipboardEvent> = (e) => {
+    const p = getProps();
+    p.onPaste?.(e);
+    const inputElement = inputRef?.();
+    if (
+      inputElement &&
+      (inputElement.selectionEnd ?? -1) - (inputElement.selectionStart ?? 0) ===
+        inputElement.value.length
+    ) {
+      e.preventDefault();
+      state.commit(e.clipboardData?.getData?.("text/plain")?.trim() ?? "");
+    }
+  };
+
   const [focusWithin, setFocusWithin] = createSignal(false);
   const { focusWithinProps } = createFocusWithin({
     onFocusWithinChange: setFocusWithin,
@@ -652,7 +668,7 @@ export function createNumberField(
           onKeyDown,
           onKeyUp,
           onWheel,
-          onPaste: p.onPaste,
+          onPaste,
           onCopy: p.onCopy,
           onCut: p.onCut,
           // `name` and `form` are submitted from the hidden input, not this
