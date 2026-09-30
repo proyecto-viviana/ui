@@ -674,9 +674,12 @@ describe("createNumberField", () => {
 
       const input = screen.getByRole("textbox") as HTMLInputElement;
       input.focus();
+      const parentHeard = vi.fn();
+      input.parentElement!.addEventListener("wheel", parentHeard);
       fireEvent.wheel(input, { deltaY: 120, deltaX: 0 });
 
       expect(onChange).toHaveBeenCalledWith(6);
+      expect(parentHeard).not.toHaveBeenCalled();
     });
 
     it("decrements a focused input on wheel deltaY < 0", () => {
@@ -688,6 +691,35 @@ describe("createNumberField", () => {
       fireEvent.wheel(input, { deltaY: -120, deltaX: 0 });
 
       expect(onChange).toHaveBeenCalledWith(4);
+    });
+
+    it("does not step a focused input on a mostly horizontal wheel, and stops the scroll", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      const parentHeard = vi.fn();
+      input.parentElement!.addEventListener("wheel", parentHeard);
+      const scrolled = fireEvent.wheel(input, { deltaX: 120, deltaY: 40 });
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue("5");
+      expect(scrolled).toBe(false);
+      expect(parentHeard).not.toHaveBeenCalled();
+    });
+
+    it("ignores a pinch-zoom wheel on a focused input", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      const scrolled = fireEvent.wheel(input, { deltaY: 120, deltaX: 0, ctrlKey: true });
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(input).toHaveValue("5");
+      expect(scrolled).toBe(true);
     });
 
     it("repeats increment while the mouse stepper is held", () => {

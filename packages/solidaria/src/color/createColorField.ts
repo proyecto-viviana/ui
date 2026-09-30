@@ -169,6 +169,15 @@ export function createColorField(
       return;
     }
 
+    // ctrlKey is a pinch-zoom. Leave it alone so the browser can zoom.
+    if (e.ctrlKey) {
+      return;
+    }
+
+    // Cancel page scroll before deciding whether this gesture is a step.
+    e.preventDefault();
+    e.stopPropagation();
+
     // A mostly horizontal trackpad gesture is not a step. Match useColorField.
     if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
       return;
@@ -178,11 +187,7 @@ export function createColorField(
       s.increment();
     } else if (e.deltaY < 0) {
       s.decrement();
-    } else {
-      return;
     }
-
-    e.preventDefault();
   };
 
   // useFormattedTextField cancels a beforeinput whose next value fails

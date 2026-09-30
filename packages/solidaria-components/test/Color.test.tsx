@@ -1681,10 +1681,14 @@ describe("Color Components", () => {
 
         const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
         input.focus();
-        fireEvent.wheel(input, { deltaX: 120, deltaY: 40 });
+        const parentHeard = vi.fn();
+        input.parentElement!.addEventListener("wheel", parentHeard);
+        const scrolled = fireEvent.wheel(input, { deltaX: 120, deltaY: 40 });
 
         expect(onChange).not.toHaveBeenCalled();
         expect(input).toHaveValue("#000000");
+        expect(scrolled).toBe(false);
+        expect(parentHeard).not.toHaveBeenCalled();
       });
 
       it("increments a focused field on a vertical wheel", () => {
@@ -1699,10 +1703,32 @@ describe("Color Components", () => {
 
         const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
         input.focus();
+        const parentHeard = vi.fn();
+        input.parentElement!.addEventListener("wheel", parentHeard);
         fireEvent.wheel(input, { deltaY: 120, deltaX: 0 });
 
         expect(onChange).toHaveBeenCalledTimes(1);
         expect(onChange.mock.calls[0][0].toString("hex")).toBe("#000001");
+        expect(parentHeard).not.toHaveBeenCalled();
+      });
+
+      it("ignores a pinch-zoom wheel on a focused field", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#000000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        input.focus();
+        const scrolled = fireEvent.wheel(input, { deltaY: 120, deltaX: 0, ctrlKey: true });
+
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("#000000");
+        expect(scrolled).toBe(true);
       });
     });
   });

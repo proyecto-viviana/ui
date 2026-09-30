@@ -412,6 +412,16 @@ export function createNumberField(
     ) {
       return;
     }
+
+    // ctrlKey is a pinch-zoom. Leave it alone so the browser can zoom.
+    if (e.ctrlKey) {
+      return;
+    }
+
+    // Cancel page scroll before deciding whether this gesture is a step.
+    e.preventDefault();
+    e.stopPropagation();
+
     if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
       return;
     }
@@ -419,10 +429,7 @@ export function createNumberField(
       state.increment();
     } else if (e.deltaY < 0) {
       state.decrement();
-    } else {
-      return;
     }
-    e.preventDefault();
   };
 
   const onButtonPressStart = (e: PressEvent) => {
