@@ -666,10 +666,16 @@ export function isScrollable(node: Element | null, checkForOverflow?: boolean): 
   }
 
   const style = window.getComputedStyle(node);
-  const scrollable = /(auto|scroll)/.test(style.overflow + style.overflowX + style.overflowY);
+  const root = document.scrollingElement || document.documentElement;
+  let scrollable = /(auto|scroll)/.test(style.overflow + style.overflowX + style.overflowY);
+
+  // The root's overflow is `visible` by default, and it still scrolls.
+  if (node === root && style.overflow !== "hidden") {
+    scrollable = true;
+  }
 
   if (scrollable && checkForOverflow) {
-    return node.scrollHeight !== node.clientHeight || node.scrollWidth !== node.clientWidth;
+    scrollable = node.scrollHeight !== node.clientHeight || node.scrollWidth !== node.clientWidth;
   }
 
   return scrollable;
