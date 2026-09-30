@@ -8,7 +8,7 @@ import { createSignal, flush, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
-import { Checkbox } from "../src/Checkbox";
+import { Checkbox, CheckboxButton, CheckboxField } from "../src/Checkbox";
 import { RouterProvider } from "../src/RouterProvider";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import { TableLayout, Virtualizer } from "../src/Virtualizer";
@@ -4768,6 +4768,160 @@ describe("Table", () => {
       "data-key",
       "2-name",
     );
+  });
+
+  describe("Checkbox selection slot", () => {
+    const columns = [
+      { key: "name", name: "Name", isRowHeader: true },
+      { key: "type", name: "Type" },
+    ];
+
+    function renderSelectionTable(
+      props: Partial<Parameters<typeof Table>[0]> = {},
+      selection: "checkbox" | "field" = "checkbox",
+    ) {
+      render(() => (
+        <Table
+          items={testData}
+          columns={columns}
+          getKey={(item: (typeof testData)[number]) => item.id}
+          getTextValue={(item, column) =>
+            String(item[column.key as keyof (typeof testData)[number]] ?? "")
+          }
+          aria-label="Pokemon"
+          selectionMode="multiple"
+          {...props}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">
+                  {() => (
+                    <>
+                      <Checkbox slot="selection" />
+                      Name
+                    </>
+                  )}
+                </TableColumn>
+                <TableColumn id="type">{() => <>Type</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: (typeof testData)[number]) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>
+                          {() => (
+                            <>
+                              {selection === "field" ? (
+                                <CheckboxField slot="selection">
+                                  <CheckboxButton />
+                                </CheckboxField>
+                              ) : (
+                                <Checkbox slot="selection" />
+                              )}
+                              {item.name}
+                            </>
+                          )}
+                        </TableCell>
+                        <TableCell>{() => <Checkbox aria-label="Agree" />}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+    }
+
+    function rowHeaderCell(name: string): HTMLElement {
+      const cell = screen
+        .getAllByRole("rowheader")
+        .find((candidate) => candidate.textContent?.includes(name));
+      expect(cell).toBeTruthy();
+      return cell!;
+    }
+
+    function selectionInput(cell: HTMLElement): HTMLInputElement {
+      const input = cell.querySelector('[slot="selection"] input');
+      expect(input).toBeInstanceOf(HTMLInputElement);
+      return input as HTMLInputElement;
+    }
+
+    it("selects from a Checkbox in the selection slot, and an unslotted checkbox does not", () => {
+      const onSelectionChange = vi.fn();
+      renderSelectionTable({ onSelectionChange });
+
+      const rowHeader = rowHeaderCell("Pikachu");
+      const selection = selectionInput(rowHeader);
+      const row = rowHeader.closest("tr")!;
+      expect(selection).toHaveAttribute("aria-label", "Select");
+      expect(selection).toHaveAttribute("aria-labelledby", `${selection.id} ${rowHeader.id}`);
+      expect(selection).not.toBeChecked();
+
+      const agree = within(row).getByRole("checkbox", { name: "Agree" });
+      fireEvent.click(agree);
+      expect(agree).toBeChecked();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(row).not.toHaveAttribute("aria-selected", "true");
+
+      fireEvent.click(selection);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(Array.from(onSelectionChange.mock.calls[0][0] as Set<number>)).toEqual([1]);
+      expect(selection).toBeChecked();
+      expect(row).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("does not select a disabled row from the Checkbox", () => {
+      const onSelectionChange = vi.fn();
+      renderSelectionTable({ disabledKeys: [2], onSelectionChange });
+
+      const rowHeader = rowHeaderCell("Charizard");
+      const selection = selectionInput(rowHeader);
+      expect(selection).toBeDisabled();
+      fireEvent.click(selection);
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(rowHeader.closest("tr")).not.toHaveAttribute("aria-selected", "true");
+    });
+
+    it("selects from a CheckboxField in the selection slot", () => {
+      const onSelectionChange = vi.fn();
+      renderSelectionTable({ onSelectionChange }, "field");
+
+      const rowHeader = rowHeaderCell("Pikachu");
+      const selection = selectionInput(rowHeader);
+      expect(selection).toHaveAttribute("aria-label", "Select");
+      expect(selection).toHaveAttribute("aria-labelledby", `${selection.id} ${rowHeader.id}`);
+      fireEvent.click(selection);
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+      expect(Array.from(onSelectionChange.mock.calls[0][0] as Set<number>)).toEqual([1]);
+      expect(selection).toBeChecked();
+      expect(rowHeader.closest("tr")).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("selects every row from a Checkbox in the header selection slot", () => {
+      const onSelectionChange = vi.fn();
+      renderSelectionTable({ onSelectionChange });
+
+      const nameHeader = screen
+        .getAllByRole("columnheader")
+        .find((cell) => cell.textContent?.includes("Name"));
+      expect(nameHeader).toBeTruthy();
+      const selectAll = selectionInput(nameHeader!);
+      expect(selectAll).toHaveAttribute("aria-label", "Select All");
+      expect(selectAll).not.toBeChecked();
+
+      fireEvent.click(selectionInput(rowHeaderCell("Pikachu")));
+      expect(selectionInput(nameHeader!)).toHaveProperty("indeterminate", true);
+
+      fireEvent.click(selectionInput(nameHeader!));
+      expect(onSelectionChange).toHaveBeenLastCalledWith("all");
+      for (const name of ["Pikachu", "Charizard", "Blastoise"]) {
+        expect(selectionInput(rowHeaderCell(name))).toBeChecked();
+      }
+    });
   });
 });
 
