@@ -16,6 +16,7 @@ import {
   type RadioGroupRenderProps,
 } from "../src/RadioGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";
+import { Label } from "../src/Label";
 import { FieldError } from "../src/FieldError";
 import { Button } from "../src/Button";
 import { Dialog, DialogTrigger } from "../src/Dialog";
@@ -73,6 +74,105 @@ describe("RadioGroup", () => {
 
       expect(screen.getByText("Option A")).toBeInTheDocument();
       expect(screen.getByText("Option B")).toBeInTheDocument();
+    });
+
+    it("names the radio group from a child Label", () => {
+      render(() => (
+        <RadioGroup>
+          <Label>Test</Label>
+          <Radio value="a">A</Radio>
+          <Radio value="b">B</Radio>
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup", { name: "Test" });
+      const label = screen.getByText("Test");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("names the radio group from a Label inside render props", () => {
+      render(() => (
+        <RadioGroup isRequired>
+          {() => (
+            <>
+              <Label>Test</Label>
+              <Radio value="a">A</Radio>
+            </>
+          )}
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup", { name: "Test" });
+      const label = screen.getByText("Test");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", () => {
+      render(() => (
+        <RadioGroup aria-label="Explicit">
+          <Label>Test</Label>
+          <Radio value="a">A</Radio>
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup");
+      const label = screen.getByText("Test");
+      expect(group).toHaveAttribute("aria-label", "Explicit");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", () => {
+      render(() => (
+        <>
+          <span id="external-radio-group-label">External</span>
+          <RadioGroup aria-labelledby="external-radio-group-label">
+            <Label>Test</Label>
+            <Radio value="a">A</Radio>
+          </RadioGroup>
+        </>
+      ));
+
+      const group = screen.getByRole("radiogroup");
+      const label = screen.getByText("Test");
+      expect(group).toHaveAttribute("aria-labelledby", "external-radio-group-label");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("does not point an unlabeled radio group at a missing label", () => {
+      render(() => (
+        <RadioGroup>
+          <Radio value="a">A</Radio>
+        </RadioGroup>
+      ));
+
+      expect(screen.getByRole("radiogroup")).not.toHaveAttribute("aria-labelledby");
+    });
+
+    it("keeps radios mounted when an unlabeled group drops its label slot", async () => {
+      let input: HTMLInputElement | undefined;
+      render(() => (
+        <RadioGroup>
+          <Radio
+            value="a"
+            inputRef={(el) => {
+              input = el;
+            }}
+          >
+            A
+          </Radio>
+        </RadioGroup>
+      ));
+
+      const first = input;
+      const group = screen.getByRole("radiogroup");
+      await waitFor(() => {
+        expect(group).not.toHaveAttribute("aria-labelledby");
+      });
+      expect(input).toBe(first);
+      expect(screen.getByRole("radio")).toBe(first);
     });
 
     it("should render radios with default class", () => {

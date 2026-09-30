@@ -129,6 +129,7 @@ These behaviors match the pin in this checkout.
 - A progress bar takes its name from a child label, and an explicit aria-label keeps its own name.
 - A slider takes its name from a child label, and an explicit aria-label keeps its own name.
 - A checkbox group takes its name from a child label, and an explicit aria-label keeps its own name.
+- A radio group takes its name from a child label, and an explicit aria-label keeps its own name.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

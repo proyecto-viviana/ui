@@ -62,7 +62,9 @@ import {
   filterDOMProps,
   dataAttr,
   callEventHandler,
+  useSlot,
 } from "./utils";
+import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -269,15 +271,28 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     form: mergedProps.form,
   }));
 
-  // Create radio group aria props
+  // Slot presence is the label. Children stay out of this getter so the
+  // createSlotId probe cannot remount radios (#258).
+  const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel());
+
   const groupAria = createRadioGroup(
     () => ({
       ...ariaProps,
+      label: hasExplicitLabel() ? undefined : hasLabel(),
       description: mergedProps.description,
       errorMessage: mergedProps.errorMessage,
     }),
     state,
   );
+
+  const labelContextValue: LabelProps = {
+    get id() {
+      return hasExplicitLabel() ? undefined : (groupAria.labelProps.id as string | undefined);
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
   const isInvalid = createMemo(() => state.isInvalid);
   const validation = createMemo(() => state.displayValidation());
   const fallbackErrorMessageId = createUniqueId();
@@ -463,7 +478,9 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
           getRequired={() => state.isRequired || undefined}
           getInvalid={() => isInvalid() || undefined}
         >
-          <GroupChildren />
+          <LabelContext value={labelContextValue}>
+            <GroupChildren />
+          </LabelContext>
         </RadioGroupDefaultRoot>
       </FieldErrorContext>
     </RadioGroupStateContext>
