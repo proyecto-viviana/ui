@@ -179,6 +179,7 @@ These behaviors match the pin in this checkout.
 - A number field keeps its current value when the committed text is only a minus sign.
 - A color field steps the hex being typed, and an empty field starts at black.
 - On iOS and Android, an unlabeled color area is named Color picker, and both sliders stay exposed.
+- A color wheel includes its own id in aria-labelledby when an aria-label is also set.
 
 **Components**
 

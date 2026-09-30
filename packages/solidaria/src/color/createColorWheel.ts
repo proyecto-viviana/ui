@@ -67,6 +67,18 @@ export function createColorWheel(
     queueMicrotask(() => focusWithoutScrolling(getInput()));
   };
 
+  // Pin useLabels prepends this element's id only when aria-label and aria-labelledby are both set.
+  const resolvedLabelledBy = (
+    elementId: string,
+    label: string | undefined,
+    labelledBy: string | undefined,
+  ) => {
+    if (!labelledBy) return undefined;
+    const parts = labelledBy.trim().split(/\s+/);
+    if (label) return [...new Set([elementId, ...parts])].join(" ");
+    return parts.join(" ");
+  };
+
   const getPointFromEvent = (clientX: number, clientY: number, element?: HTMLElement | null) => {
     const wheel = element ?? dragElement ?? wheelRef();
     if (!wheel) return null;
@@ -353,10 +365,14 @@ export function createColorWheel(
   const inputProps = createMemo(() => {
     const s = getState();
     const p = getProps();
+    const elementId = p.id ?? inputId;
+    const ariaLabel =
+      p["aria-label"] ??
+      (p["aria-labelledby"] ? undefined : s.value.getChannelName("hue", locale().locale));
 
     return {
       type: "range",
-      id: p.id ?? inputId,
+      id: elementId,
       min: 0,
       max: 360,
       step: s.step,
@@ -364,10 +380,8 @@ export function createColorWheel(
       name: p.name,
       form: p.form,
       disabled: s.isDisabled || p.isDisabled,
-      "aria-label":
-        p["aria-label"] ??
-        (p["aria-labelledby"] ? undefined : s.value.getChannelName("hue", locale().locale)),
-      "aria-labelledby": p["aria-labelledby"],
+      "aria-label": ariaLabel,
+      "aria-labelledby": resolvedLabelledBy(elementId, ariaLabel, p["aria-labelledby"]),
       "aria-describedby": p["aria-describedby"],
       "aria-details": p["aria-details"],
       "aria-errormessage": p["aria-errormessage"],

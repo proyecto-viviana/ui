@@ -1283,6 +1283,36 @@ describe("Color Components", () => {
         expect(input).toHaveAttribute("aria-describedby", "wheel-description");
       });
 
+      it("includes its own id in aria-labelledby when an aria-label is also set", () => {
+        const { unmount } = render(() => (
+          <TestColorWheel
+            id="hue-wheel"
+            aria-label="Hue"
+            aria-labelledby="label-id"
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+          />
+        ));
+
+        const input = screen.getByRole("slider");
+        expect(input).toHaveAttribute("id", "hue-wheel");
+        expect(input).toHaveAttribute("aria-label", "Hue");
+        expect(input).toHaveAttribute("aria-labelledby", "hue-wheel label-id");
+        unmount();
+
+        render(() => (
+          <TestColorWheel
+            id="hue-wheel"
+            aria-labelledby="  label-id   extra  "
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+          />
+        ));
+
+        const labelledOnly = screen.getByRole("slider");
+        expect(labelledOnly).toHaveAttribute("id", "hue-wheel");
+        expect(labelledOnly).not.toHaveAttribute("aria-label");
+        expect(labelledOnly).toHaveAttribute("aria-labelledby", "label-id extra");
+      });
+
       it("should expose radius-based default track and thumb styles", () => {
         render(() => (
           <TestColorWheel defaultValue={parseColor("hsl(0, 100%, 50%)")} aria-label="Hue wheel" />
