@@ -21,6 +21,7 @@ import {
   TreeSelectionCheckbox,
 } from "../src/Tree";
 import { Checkbox, CheckboxField, CheckboxButton } from "../src/Checkbox";
+import { SelectionIndicator } from "../src/SelectionIndicator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type {
   TreeItemData,
@@ -1347,6 +1348,37 @@ describe("Tree", () => {
       const checkboxes = screen.getAllByRole("checkbox");
       expect(checkboxes[0]).toBeDisabled();
       expect(checkboxes[1]).not.toBeDisabled();
+    });
+
+    it("shows a SelectionIndicator only for the selected row", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="single"
+          defaultSelectedKeys={["item-1"]}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+              <SelectionIndicator>Mark</SelectionIndicator>
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("row", { name: "Item 1" })).toContainElement(
+        screen.getByText("Mark"),
+      );
+
+      await user.click(screen.getByRole("row", { name: "Item 2" }));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("row", { name: "Item 2" })).toContainElement(
+        screen.getByText("Mark"),
+      );
     });
   });
 

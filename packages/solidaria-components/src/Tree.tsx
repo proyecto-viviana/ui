@@ -75,6 +75,10 @@ import {
   type CheckboxContextValue,
   type CheckboxFieldContextValue,
 } from "./Checkbox";
+import {
+  SelectionIndicatorContext,
+  type SelectionIndicatorContextValue,
+} from "./SelectionIndicator";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
@@ -1743,6 +1747,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       },
     },
   };
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
+    isSelected,
+  };
 
   // Provider reads props.value once. Pass the renderValues accessor so
   // selection, focus, hover, press, and expansion stay current.
@@ -1756,7 +1763,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         <ButtonContext value={buttonContextValue}>
           <CheckboxContext value={checkboxContextValue}>
             <CheckboxFieldContext value={checkboxFieldContextValue}>
-              {renderProps.renderChildren()}
+              <SelectionIndicatorContext value={selectionIndicatorContext}>
+                {renderProps.renderChildren()}
+              </SelectionIndicatorContext>
             </CheckboxFieldContext>
           </CheckboxContext>
         </ButtonContext>
