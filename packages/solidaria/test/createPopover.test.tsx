@@ -93,4 +93,48 @@ describe("createPopover", () => {
     clickOutside(outside);
     expect(state.isOpen()).toBe(false);
   });
+
+  it("reports focus entering and leaving the popover", () => {
+    const state = createOverlayTriggerState({ defaultOpen: true });
+    const changes: boolean[] = [];
+
+    render(() => {
+      const [trigger, setTrigger] = createSignal<HTMLButtonElement | null>(null, {
+        ownedWrite: true,
+      });
+      const [popover, setPopover] = createSignal<HTMLDivElement | null>(null, {
+        ownedWrite: true,
+      });
+      const { popoverProps } = createPopover(
+        {
+          triggerRef: trigger,
+          popoverRef: popover,
+          onFocusWithinChange(isFocusWithin) {
+            changes.push(isFocusWithin);
+          },
+        },
+        state,
+      );
+
+      return (
+        <div>
+          <button ref={setTrigger} type="button">
+            trigger
+          </button>
+          <div ref={setPopover} data-testid="popover" {...popoverProps}>
+            <button type="button" data-testid="inside">
+              inside
+            </button>
+          </div>
+        </div>
+      );
+    });
+
+    const inside = screen.getByTestId("inside");
+    inside.focus();
+    expect(changes).toEqual([true]);
+
+    inside.blur();
+    expect(changes).toEqual([true, false]);
+  });
 });

@@ -167,6 +167,12 @@ export interface PopoverProps extends SlotProps, AriaLabelingProps {
    * Filter for which outside interactions should close the popover.
    */
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
+  /** Handler that is called when the popover or a descendant receives focus. */
+  onFocusWithin?: (e: FocusEvent) => void;
+  /** Handler that is called when the popover and all descendants lose focus. */
+  onBlurWithin?: (e: FocusEvent) => void;
+  /** Handler that is called when the popover's focus-within state changes. */
+  onFocusWithinChange?: (isFocusWithin: boolean) => void;
   /** Whether the popover is open (controlled). */
   isOpen?: boolean;
   /** Whether the popover opens by default (uncontrolled). */
@@ -334,6 +340,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     "isNonModal",
     "isKeyboardDismissDisabled",
     "shouldCloseOnInteractOutside",
+    "onFocusWithin",
+    "onBlurWithin",
+    "onFocusWithinChange",
     "isOpen",
     "defaultOpen",
     "onOpenChange",
@@ -482,6 +491,15 @@ export function Popover(props: PopoverProps): JSX.Element {
       },
       get shouldCloseOnInteractOutside() {
         return local.shouldCloseOnInteractOutside;
+      },
+      get onFocusWithin() {
+        return local.onFocusWithin;
+      },
+      get onBlurWithin() {
+        return local.onBlurWithin;
+      },
+      get onFocusWithinChange() {
+        return local.onFocusWithinChange;
       },
       get trigger() {
         return resolvedTrigger();

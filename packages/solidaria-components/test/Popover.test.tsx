@@ -442,6 +442,33 @@ describe("Popover", () => {
       document.body.removeChild(trigger);
     });
 
+    it("reports focus entering and leaving the popover", async () => {
+      const trigger = document.createElement("button");
+      document.body.appendChild(trigger);
+      const changes: boolean[] = [];
+
+      render(() => (
+        <Popover
+          defaultOpen
+          triggerRef={() => trigger}
+          onFocusWithinChange={(isFocusWithin) => {
+            changes.push(isFocusWithin);
+          }}
+        >
+          <button type="button" data-testid="inside">
+            inside
+          </button>
+        </Popover>
+      ));
+
+      const inside = await waitFor(() => screen.getByTestId("inside"));
+      inside.focus();
+      inside.blur();
+      expect(changes).toEqual([true, false]);
+
+      document.body.removeChild(trigger);
+    });
+
     it("positions a standalone popover against a sibling triggerRef accessor", async () => {
       const restore = mockGetAnimations(() => []);
       try {

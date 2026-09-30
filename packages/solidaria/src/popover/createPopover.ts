@@ -21,6 +21,7 @@
 
 import { createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import { createFocusWithin, type FocusWithinProps } from "../interactions/createFocusWithin";
 import { createOverlay } from "../overlays/createOverlay";
 import {
   createOverlayPosition,
@@ -44,10 +45,10 @@ export interface OverlayTriggerState {
   point?: () => { x: number; y: number } | null;
 }
 
-export interface AriaPopoverProps extends Omit<
-  AriaPositionProps,
-  "isOpen" | "onClose" | "targetRef" | "overlayRef"
-> {
+export interface AriaPopoverProps
+  extends
+    Omit<AriaPositionProps, "isOpen" | "onClose" | "targetRef" | "overlayRef">,
+    Omit<FocusWithinProps, "isDisabled"> {
   /**
    * The ref for the element which the popover positions itself with respect to.
    */
@@ -238,7 +239,25 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
     },
   );
 
-  const merged = mergeProps(overlayProps, positionProps) as Record<string, unknown>;
+  // Caller focus-within is separate from overlay blur-dismiss. isDisabled is
+  // omitted so these still run when PreviewTrigger or a submenu disables
+  // shouldCloseOnBlur.
+  const { focusWithinProps } = createFocusWithin({
+    get onFocusWithin() {
+      return props.onFocusWithin;
+    },
+    get onBlurWithin() {
+      return props.onBlurWithin;
+    },
+    get onFocusWithinChange() {
+      return props.onFocusWithinChange;
+    },
+  });
+
+  const merged = mergeProps(overlayProps, positionProps, focusWithinProps) as Record<
+    string,
+    unknown
+  >;
   const popoverProps = new Proxy(merged, {
     get(target, key: string) {
       if (key === "style") return positionProps.style;
