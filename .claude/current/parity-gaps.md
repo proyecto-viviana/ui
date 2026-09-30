@@ -193,6 +193,7 @@ These behaviors match the pin in this checkout.
 - Removing a tree node clears the selection of descendants that leave with it.
 - A list, grid list, table, or tree recreates its load-more observer when the items change, including a same-length replacement, and a tree recreates it once when a branch expands. A selection change leaves the observer in place.
 - An empty table disables keyboard navigation, and clearing that flag leaves navigation disabled until the table has rows.
+- An empty table keeps its column headers out of the tab order, and a focused column key is cleared when the last row leaves.
 
 **Components**
 

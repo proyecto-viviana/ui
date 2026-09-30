@@ -17,7 +17,7 @@
  * Based on @react-aria/table/useTableColumnHeader.
  */
 
-import { createMemo, createSignal } from "solid-js";
+import { createEffect, createMemo, createSignal, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
@@ -45,6 +45,23 @@ export function createTableColumnHeader<T extends object>(
     const p = props();
     return s.focusedKey === p.node.key;
   });
+
+  // An empty body takes the focused column key out of the header.
+  createEffect(
+    () => {
+      const s = state();
+      return {
+        shouldDisableFocus: s.collection.size === 0,
+        nodeKey: props().node.key,
+        focusedKey: untrack(() => s.focusedKey),
+      };
+    },
+    ({ shouldDisableFocus, nodeKey, focusedKey }) => {
+      if (shouldDisableFocus && focusedKey === nodeKey) {
+        state().setFocusedKey(null);
+      }
+    },
+  );
 
   // A sortable column header is described as "sortable column" — mirrors
   // `useTableColumnHeader`'s `useDescription(stringFormatter.format('sortable'))`.
@@ -148,12 +165,15 @@ export function createTableColumnHeader<T extends object>(
       }
     }
 
+    // An empty body keeps every column header out of the tab order.
+    const shouldDisableFocus = s.collection.size === 0;
+
     const baseProps: Record<string, unknown> = {
       role: "columnheader",
       id: tableData ? `${tableData.tableId}-${node.key}` : undefined,
       "aria-sort": ariaSort,
       "aria-describedby": sortDescriptionProps["aria-describedby"],
-      tabIndex: isFocused() ? 0 : -1,
+      tabIndex: shouldDisableFocus ? -1 : isFocused() ? 0 : -1,
       onFocus,
     };
 
