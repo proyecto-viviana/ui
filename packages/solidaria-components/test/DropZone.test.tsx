@@ -6,6 +6,7 @@ import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { DropZone, DropZoneContext } from "../src/DropZone";
+import { Text } from "../src/Text";
 
 function createDataTransferStub(): DataTransfer {
   return {
@@ -60,6 +61,7 @@ describe("DropZone", () => {
 
     const button = screen.getByRole("button", { name: "DropZone" });
     expect(button).toBeInTheDocument();
+    expect(button).not.toHaveAttribute("aria-labelledby");
   });
 
   it("calls onDrop handler on drop event", () => {
@@ -145,6 +147,20 @@ describe("DropZone", () => {
         dropOperation: "copy",
       }),
     );
+  });
+
+  // RAC DropZone.test.js: the label slot id and the button's own id are joined
+  // by useLabels, so the catalog name and the slotted text both name the button.
+  it("names the hidden button from the label slot", () => {
+    render(() => (
+      <DropZone>
+        <Text slot="label">Test</Text>
+      </DropZone>
+    ));
+
+    const text = screen.getByText("Test");
+    const button = screen.getByRole("button");
+    expect(button).toHaveAttribute("aria-labelledby", `${button.id} ${text.id}`);
   });
 
   it("uses explicit aria-label for hidden drop button", () => {

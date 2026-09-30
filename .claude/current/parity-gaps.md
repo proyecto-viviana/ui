@@ -109,6 +109,7 @@ These behaviors match the pin in this checkout.
 - A tab forwards its description and details.
 - A loading combobox field points its description at the spinner.
 - A loading picker button points its description at the spinner.
+- A drop zone names its button from the label slot.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

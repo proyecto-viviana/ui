@@ -19,7 +19,7 @@
  * Based on packages/react-aria-components/src/DropZone.tsx.
  */
 
-import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import { createContext, createMemo, createSignal, useContext, type Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createDrop,
@@ -29,6 +29,9 @@ import {
   type HoverEvents,
   type AriaDropOptions,
   createStringFormatter,
+  createId,
+  createLabels,
+  createSlotId,
   mergeProps,
 } from "@proyecto-viviana/solidaria";
 import {
@@ -36,10 +39,12 @@ import {
   type StyleOrFunction,
   type RenderChildren,
   type SlotProps,
+  Provider,
   useRenderProps,
   filterDOMProps,
   dataAttr,
 } from "./utils";
+import { TextContext } from "./Text";
 import { VisuallyHidden } from "./VisuallyHidden";
 import { racIntlStrings } from "./intl";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -211,39 +216,55 @@ export function DropZone(props: DropZoneProps): JSX.Element {
     });
   };
 
-  const dropButtonAriaLabel = createMemo(
-    () =>
-      local["aria-label"] ??
-      (!local["aria-labelledby"] ? stringFormatter().format("dropzoneLabel") : undefined),
-  );
+  // RAC DropZone.tsx: `useSlotId()` on the label slot, then `useLabels` joins that
+  // id with `aria-labelledby` and the catalog name onto the hidden button.
+  const textId = createSlotId();
+  const buttonLabelId = createId();
+  const textSlot = {
+    get id() {
+      return textId();
+    },
+    slot: "label" as const,
+  };
+  const labelProps = () => {
+    const ariaLabel = local["aria-label"] || stringFormatter().format("dropzoneLabel");
+    const messageId = local["aria-labelledby"];
+    const ariaLabelledby = [textId(), messageId].filter(Boolean).join(" ") || undefined;
+    return createLabels({
+      id: buttonLabelId,
+      "aria-label": ariaLabel,
+      "aria-labelledby": ariaLabelledby,
+    });
+  };
 
   return (
-    <div
-      ref={setDropZoneRef}
-      {...filteredDomProps()}
-      {...cleanDropProps()}
-      {...cleanHoverProps()}
-      onClick={onRootClick}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      slot={local.slot}
-      data-hovered={dataAttr(isHovered())}
-      data-focused={dataAttr(isFocused())}
-      data-focus-visible={dataAttr(isFocusVisible())}
-      data-drop-target={dataAttr(dropAria.isDropTarget)}
-      data-disabled={dataAttr(dropProps.isDisabled)}
-    >
-      <VisuallyHidden>
-        <button
-          ref={setDropButtonRef}
-          {...cleanDropButtonProps()}
-          {...cleanFocusProps()}
-          aria-label={dropButtonAriaLabel()}
-          aria-labelledby={local["aria-labelledby"]}
-          onPaste={onHiddenButtonPaste}
-        />
-      </VisuallyHidden>
-      {renderProps.renderChildren()}
-    </div>
+    <Provider values={[[TextContext, textSlot] as [Context<unknown>, unknown]]}>
+      <div
+        ref={setDropZoneRef}
+        {...filteredDomProps()}
+        {...cleanDropProps()}
+        {...cleanHoverProps()}
+        onClick={onRootClick}
+        class={renderProps.class()}
+        style={renderProps.style()}
+        slot={local.slot}
+        data-hovered={dataAttr(isHovered())}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
+        data-drop-target={dataAttr(dropAria.isDropTarget)}
+        data-disabled={dataAttr(dropProps.isDisabled)}
+      >
+        <VisuallyHidden>
+          <button
+            ref={setDropButtonRef}
+            {...cleanDropButtonProps()}
+            {...cleanFocusProps()}
+            {...labelProps()}
+            onPaste={onHiddenButtonPaste}
+          />
+        </VisuallyHidden>
+        {renderProps.renderChildren()}
+      </div>
+    </Provider>
   );
 }
