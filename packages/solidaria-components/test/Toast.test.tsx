@@ -8,9 +8,9 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { createRoot, createSignal, flush, For } from "solid-js";
-import { render, screen, cleanup, within } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createToastState, ToastQueue } from "@proyecto-viviana/solid-stately";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import {
   ToastProvider,
   ToastRegion,
@@ -35,11 +35,9 @@ import {
 let user: ReturnType<typeof setupUser>;
 
 function clearGlobalToasts() {
-  const toastsAccessor = globalToastQueue.visibleToasts;
-  if (typeof toastsAccessor !== "function") return;
-  for (const toast of toastsAccessor()) {
-    globalToastQueue.remove(toast.key);
-  }
+  // ToastQueue has no visibleToasts accessor. clear() drops queued and visible
+  // toasts, including ones close() left exiting because the global queue animates.
+  globalToastQueue.clear();
 }
 
 describe("Toast", () => {
@@ -289,6 +287,92 @@ describe("Toast", () => {
     });
   });
 
+  describe("hover and focus", () => {
+    it("marks hover and focus on the region and focus on the toast", async () => {
+      const pauseAll = vi.spyOn(globalToastQueue, "pauseAll");
+      const resumeAll = vi.spyOn(globalToastQueue, "resumeAll");
+
+      try {
+        render(() => (
+          <ToastProvider useGlobalQueue>
+            <ToastRegion
+              portal={false}
+              class={(renderProps) => (renderProps.isHovered ? "region-hovered" : "region-idle")}
+            >
+              {(renderProps) => (
+                <For each={renderProps.visibleToasts()}>
+                  {(toast) => (
+                    <Toast
+                      toast={toast}
+                      class={(props) => (props.isFocusVisible ? "toast-focus" : "toast-idle")}
+                    >
+                      <ToastContent>
+                        <Text slot="title">{toast.content.title}</Text>
+                      </ToastContent>
+                    </Toast>
+                  )}
+                </For>
+              )}
+            </ToastRegion>
+          </ToastProvider>
+        ));
+        addToast({ title: "Saved", type: "info" });
+        flush();
+
+        const region = screen.getByRole("region", { name: "1 notification." });
+        const toast = screen.getByRole("alertdialog", { name: "Saved" });
+        expect(region).not.toHaveAttribute("data-hovered");
+        expect(region).not.toHaveAttribute("data-focused");
+        expect(region).not.toHaveAttribute("data-focus-visible");
+        expect(region).toHaveClass("region-idle");
+        expect(toast).not.toHaveAttribute("data-focused");
+        expect(toast).not.toHaveAttribute("data-focus-visible");
+        expect(toast).not.toHaveAttribute("data-hovered");
+        expect(toast).toHaveClass("toast-idle");
+
+        pauseAll.mockClear();
+        resumeAll.mockClear();
+        fireEvent.pointerEnter(region, { pointerType: "mouse" });
+        expect(region).toHaveAttribute("data-hovered", "true");
+        expect(region).toHaveClass("region-hovered");
+        expect(toast).not.toHaveAttribute("data-hovered");
+        expect(pauseAll).toHaveBeenCalled();
+
+        fireEvent.pointerLeave(region, { pointerType: "mouse" });
+        expect(region).not.toHaveAttribute("data-hovered");
+        expect(region).toHaveClass("region-idle");
+        expect(resumeAll).toHaveBeenCalled();
+
+        setInteractionModality("keyboard");
+        toast.focus();
+        await waitFor(() => {
+          expect(toast).toHaveAttribute("data-focused", "true");
+          expect(toast).toHaveAttribute("data-focus-visible", "true");
+          expect(toast).toHaveClass("toast-focus");
+          expect(region).not.toHaveAttribute("data-focused");
+          expect(region).not.toHaveAttribute("data-focus-visible");
+        });
+
+        region.focus();
+        await waitFor(() => {
+          expect(region).toHaveAttribute("data-focused", "true");
+          expect(region).toHaveAttribute("data-focus-visible", "true");
+          expect(toast).not.toHaveAttribute("data-focused");
+        });
+
+        setInteractionModality("pointer");
+        region.focus();
+        await waitFor(() => {
+          expect(region).toHaveAttribute("data-focused", "true");
+          expect(region).not.toHaveAttribute("data-focus-visible");
+        });
+      } finally {
+        pauseAll.mockRestore();
+        resumeAll.mockRestore();
+      }
+    });
+  });
+
   describe("ToastRegion placement styles", () => {
     function renderRegion(className?: string) {
       render(() => (
@@ -305,7 +389,7 @@ describe("Toast", () => {
 
       addToast({ title: "Placed toast", type: "info" });
 
-      return screen.getByRole("region", { name: "Notifications" });
+      return screen.getByRole("region", { name: "1 notification." });
     }
 
     it("keeps fallback placement styles for a bare region", () => {
@@ -494,7 +578,7 @@ describe("Toast", () => {
 
       addToast({ title: "Hello" });
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "1 notification." });
       const toast = screen.getByRole("alertdialog", { name: "Hello" });
 
       expect(region).toHaveAttribute("data-solidaria-top-layer", "true");

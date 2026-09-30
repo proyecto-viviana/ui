@@ -40,8 +40,11 @@ import {
   createToastState,
 } from "@proyecto-viviana/solid-stately";
 import {
+  createFocusRing,
+  createHover,
   createToast,
   createToastRegion,
+  mergeProps,
   useUNSAFE_PortalContext,
 } from "@proyecto-viviana/solidaria";
 import { ButtonContext } from "./Button";
@@ -57,6 +60,7 @@ import {
   Provider,
   useContextProps,
   useRenderProps,
+  dataAttr,
   filterDOMProps,
   useIsHydrated,
 } from "./utils";
@@ -98,11 +102,21 @@ export interface ToastRenderProps {
   animation: "entering" | "exiting" | "queued" | undefined;
   /** The toast data. */
   toast: QueuedToast<ToastContent>;
+  /** Whether the toast is focused. @selector [data-focused] */
+  isFocused: boolean;
+  /** Whether the toast has a visible focus ring. @selector [data-focus-visible] */
+  isFocusVisible: boolean;
 }
 
 export interface ToastRegionRenderProps {
   /** The visible toasts. */
   visibleToasts: Accessor<QueuedToast<ToastContent>[]>;
+  /** Whether the region is hovered. @selector [data-hovered] */
+  isHovered: boolean;
+  /** Whether the region itself is focused. @selector [data-focused] */
+  isFocused: boolean;
+  /** Whether the region has a visible focus ring. @selector [data-focus-visible] */
+  isFocusVisible: boolean;
 }
 
 export interface ToastRegionProps {
@@ -276,8 +290,17 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
     },
   });
 
+  // Timer hover lives in regionProps and pauses the queue. This hover only paints
+  // data-hovered, chained so both pointer handlers run. The ring is self-focus:
+  // a focused toast must not mark the region.
+  const { hoverProps, isHovered } = createHover({});
+  const { focusProps, isFocused, isFocusVisible } = createFocusRing();
+
   const renderValues = createMemo<ToastRegionRenderProps>(() => ({
     visibleToasts: () => state()?.visibleToasts() ?? [],
+    isHovered: isHovered(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
   }));
 
   const renderProps = useRenderProps(
@@ -379,14 +402,16 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
           setRegionElement(el);
           assignRef(local.ref, el);
         }}
-        {...domProps()}
-        {...cleanRegionProps()}
+        {...mergeProps(domProps(), cleanRegionProps(), focusProps, hoverProps)}
         aria-label={ariaLabel()}
         class={renderProps.class()}
         style={mergedStyle()}
         data-placement={normalizedPlacement()}
+        data-hovered={dataAttr(isHovered())}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
       >
-        {renderProps.renderChildren()}
+        {renderProps.renderChildrenStable()}
       </div>
     );
   };
@@ -445,11 +470,15 @@ export function Toast(props: ToastProps): JSX.Element {
     hasTitle: hasTitle(),
   });
 
+  const { focusProps, isFocused, isFocusVisible } = createFocusRing();
+
   const renderValues = createMemo<ToastRenderProps>(() => ({
     isEntering: local.toast.animation === "entering",
     isExiting: local.toast.animation === "exiting",
     animation: local.toast.animation,
     toast: local.toast,
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
   }));
 
   const renderProps = useRenderProps(
@@ -600,13 +629,14 @@ export function Toast(props: ToastProps): JSX.Element {
           setToastEl(el);
           assignRef(local.ref, el);
         }}
-        {...domProps()}
-        {...cleanToastProps()}
+        {...mergeProps(domProps(), cleanToastProps(), focusProps)}
         class={renderProps.class()}
         style={mergedStyle()}
         data-animation={local.toast.animation}
         data-type={local.toast.content.type ?? local.toast.content.variant}
         data-variant={local.toast.content.variant}
+        data-focused={dataAttr(isFocused())}
+        data-focus-visible={dataAttr(isFocusVisible())}
         onClick={handleRootClick}
       >
         <Provider
