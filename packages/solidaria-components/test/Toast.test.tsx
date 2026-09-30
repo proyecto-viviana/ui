@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { createRoot, createSignal, For } from "solid-js";
+import { createRoot, createSignal, flush, For } from "solid-js";
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createToastState, ToastQueue } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -15,12 +15,16 @@ import {
   ToastProvider,
   ToastRegion,
   DefaultToast,
+  Toast,
+  ToastContent,
+  ToastContext,
   ToastTitle,
   ToastDescription,
   globalToastQueue,
   addToast,
   useToastContext,
 } from "../src/Toast";
+import { Text } from "../src/Text";
 import {
   setupUser,
   createLiveRegionMonitor,
@@ -199,6 +203,68 @@ describe("Toast", () => {
       expect(description.id).toBeTruthy();
       expect(toast).toHaveAttribute("aria-labelledby", title.id);
       expect(toast).toHaveAttribute("aria-describedby", description.id);
+    });
+
+    // useToast sets aria-describedby from useSlotId. A description string on
+    // the queued content does not count unless a description element is mounted.
+    it("does not point a toast at a missing description", () => {
+      render(() => {
+        const queue = new ToastQueue<ToastContent>({});
+        const state = createToastState({ queue });
+        queue.add({ title: "Saved", description: "Not shown", type: "info" });
+        return (
+          <ToastContext value={state}>
+            <ToastRegion portal={false} state={state}>
+              {(renderProps) => (
+                <For each={renderProps.visibleToasts()}>
+                  {(toast) => (
+                    <Toast toast={toast}>
+                      <ToastContent>
+                        <Text slot="title">{toast.content.title}</Text>
+                      </ToastContent>
+                    </Toast>
+                  )}
+                </For>
+              )}
+            </ToastRegion>
+          </ToastContext>
+        );
+      });
+      flush();
+
+      const toast = screen.getByRole("alertdialog", { name: "Saved" });
+      expect(toast).not.toHaveAttribute("aria-describedby");
+    });
+
+    it("names a toast from its description slot", () => {
+      render(() => {
+        const queue = new ToastQueue<ToastContent>({});
+        const state = createToastState({ queue });
+        queue.add({ title: "Saved", type: "info" });
+        return (
+          <ToastContext value={state}>
+            <ToastRegion portal={false} state={state}>
+              {(renderProps) => (
+                <For each={renderProps.visibleToasts()}>
+                  {(toast) => (
+                    <Toast toast={toast}>
+                      <ToastContent>
+                        <Text slot="title">{toast.content.title}</Text>
+                        <Text slot="description">Shown details</Text>
+                      </ToastContent>
+                    </Toast>
+                  )}
+                </For>
+              )}
+            </ToastRegion>
+          </ToastContext>
+        );
+      });
+      flush();
+
+      const details = screen.getByText("Shown details");
+      const toast = screen.getByRole("alertdialog", { name: "Saved" });
+      expect(toast).toHaveAttribute("aria-describedby", details.id);
     });
 
     it("names the close button from the toast catalog", () => {

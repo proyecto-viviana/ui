@@ -443,7 +443,6 @@ export function Toast(props: ToastProps): JSX.Element {
     toast: local.toast,
     state,
     hasTitle: hasTitle(),
-    hasDescription: !!local.toast.content.description,
   });
 
   const renderValues = createMemo<ToastRenderProps>(() => ({
@@ -537,7 +536,12 @@ export function Toast(props: ToastProps): JSX.Element {
     };
   });
 
-  const { ref: _ref, ...cleanToastProps } = toastAria.toastProps as Record<string, unknown>;
+  // Read toastProps inside the JSX spread. Destructuring once would freeze
+  // aria-describedby before useSlotId clears a description that never mounted.
+  const cleanToastProps = () => {
+    const { ref: _ref, ...rest } = toastAria.toastProps as Record<string, unknown>;
+    return rest;
+  };
 
   // Apply title/description ids and content live-region attributes onto
   // descendants that opted in via data-solidaria-toast-* (S2 used a raw
@@ -597,7 +601,7 @@ export function Toast(props: ToastProps): JSX.Element {
           assignRef(local.ref, el);
         }}
         {...domProps()}
-        {...cleanToastProps}
+        {...cleanToastProps()}
         class={renderProps.class()}
         style={mergedStyle()}
         data-animation={local.toast.animation}

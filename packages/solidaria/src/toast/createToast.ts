@@ -25,7 +25,7 @@ import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter } from "../i18n";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { toastIntlStrings } from "./intl";
 
 export interface AriaToastProps<T> {
@@ -83,7 +83,9 @@ export interface ToastAria {
  */
 export function createToast<T>(props: AriaToastProps<T>): ToastAria {
   const titleId = createId();
-  const descriptionId = createId();
+  // useToast uses useSlotId: aria-describedby includes the description only
+  // after an element with that id is in the DOM.
+  const descriptionId = createSlotId();
   const hasTitle = props.hasTitle ?? true;
   const hasDescription = props.hasDescription ?? true;
   const stringFormatter = createStringFormatter(toastIntlStrings, "@react-aria/toast");
@@ -109,7 +111,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     role: "alertdialog",
     "aria-modal": "false",
     "aria-labelledby": hasTitle ? titleId : undefined,
-    "aria-describedby": hasDescription ? descriptionId : undefined,
+    "aria-describedby": hasDescription ? descriptionId() : undefined,
     tabIndex: 0,
     "data-animation": props.toast.animation,
     "data-key": props.toast.key,
@@ -134,7 +136,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
 
   // Description props
   const descriptionProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
-    id: descriptionId,
+    id: descriptionId(),
   }));
 
   // Close button. Match useToast: the name is the toast catalog "close" string.
