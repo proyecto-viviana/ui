@@ -24,6 +24,7 @@ import { onOwnedCleanup } from "../utils/owner";
 import { createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { ColorWheelState } from "@proyecto-viviana/solid-stately";
+import { createFormReset } from "../form/createFormReset";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { focusWithoutScrolling } from "../utils/focus";
@@ -52,6 +53,11 @@ export function createColorWheel(
   const thumbRadius = () => (innerRadius() + outerRadius()) / 2;
 
   const getInput = () => wheelRef()?.querySelector<HTMLInputElement>('input[type="range"]') ?? null;
+  createFormReset(
+    () => getInput() ?? undefined,
+    getState().defaultValue,
+    (value) => getState().setValue(value),
+  );
   const focusInput = () => {
     focusWithoutScrolling(getInput());
     queueMicrotask(() => focusWithoutScrolling(getInput()));

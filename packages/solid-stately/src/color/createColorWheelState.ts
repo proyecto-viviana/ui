@@ -86,7 +86,13 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
     return value.toFormat(value.getColorSpace() === "hsb" ? "hsb" : "hsl");
   };
 
-  const initialValue = normalizeWheelValue(getOptions().defaultValue ?? defaultColor);
+  // Pin useColorWheelState returns the first controlled color as defaultValue
+  // so a native form reset restores that hue. The built-in red is only used
+  // when the wheel is uncontrolled and no defaultValue was passed.
+  const firstOptions = getOptions();
+  const controlledInitial =
+    firstOptions.value !== undefined ? normalizeWheelValue(firstOptions.value) : undefined;
+  const initialValue = normalizeWheelValue(firstOptions.defaultValue ?? defaultColor);
   const [internalValue, setInternalValue] = createInternalSignal<Color>(initialValue);
   const [isDragging, setIsDragging] = createInternalSignal(false);
   let valueRef = initialValue;
@@ -235,7 +241,7 @@ export function createColorWheelState(options: Accessor<ColorWheelStateOptions>)
       return value();
     },
     get defaultValue() {
-      return initialValue;
+      return controlledInitial ?? initialValue;
     },
     get isDragging() {
       return isDragging();

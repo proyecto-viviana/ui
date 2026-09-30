@@ -1248,6 +1248,25 @@ describe("Color Components", () => {
         expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(20);
       });
 
+      it("supports form reset", () => {
+        const [value, setValue] = createSignal(parseColor("hsl(15, 100%, 50%)"));
+        render(() => (
+          <form>
+            <TestColorWheel value={value()} onChange={setValue} aria-label="Hue wheel" />
+          </form>
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+        expect(input.value).toBe("15");
+
+        fireEvent.change(input, { target: { value: "30" } });
+        expect(input.value).toBe("30");
+
+        // JSDOM's HTMLFormElement.reset() does not dispatch `reset`.
+        fireEvent.reset(input.form!);
+        expect(input.value).toBe("15");
+      });
+
       it("should commit keyboard changes through onChangeEnd", async () => {
         const onChangeEnd = vi.fn();
         render(() => (
