@@ -29,12 +29,14 @@ import {
   createHover,
   type AriaNumberFieldProps,
   type AriaButtonProps,
+  type PressEvent,
 } from "@proyecto-viviana/solidaria";
 import {
   createNumberFieldState,
   type NumberFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
+import { ButtonContext, type ButtonProps } from "./Button";
 import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
@@ -517,6 +519,76 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       return numberFieldAria.errorMessageProps;
     },
   };
+  // RAC composes `<Button slot="increment">` / `slot="decrement"`. The slot
+  // objects stay stable so Button's one-time slot read keeps these getters.
+  // `onClick` stays off this path: the dedicated stepper components strip it,
+  // and createPress would increment again if it were merged here.
+  const incrementButtonSlot: ButtonProps = {
+    get id() {
+      const id = numberFieldAria.incrementButtonProps.id;
+      return id == null ? undefined : String(id);
+    },
+    get "aria-label"() {
+      return numberFieldAria.incrementButtonProps["aria-label"];
+    },
+    get "aria-labelledby"() {
+      return numberFieldAria.incrementButtonProps["aria-labelledby"];
+    },
+    get "aria-controls"() {
+      return numberFieldAria.incrementButtonProps["aria-controls"];
+    },
+    excludeFromTabOrder: true,
+    preventFocusOnPress: true,
+    allowFocusWhenDisabled: true,
+    get isDisabled() {
+      return !!numberFieldAria.incrementButtonProps.isDisabled;
+    },
+    onPressStart(event: PressEvent) {
+      numberFieldAria.incrementButtonProps.onPressStart?.(event);
+    },
+    onPressUp(event: PressEvent) {
+      numberFieldAria.incrementButtonProps.onPressUp?.(event);
+    },
+    onPressEnd(event: PressEvent) {
+      numberFieldAria.incrementButtonProps.onPressEnd?.(event);
+    },
+  };
+  const decrementButtonSlot: ButtonProps = {
+    get id() {
+      const id = numberFieldAria.decrementButtonProps.id;
+      return id == null ? undefined : String(id);
+    },
+    get "aria-label"() {
+      return numberFieldAria.decrementButtonProps["aria-label"];
+    },
+    get "aria-labelledby"() {
+      return numberFieldAria.decrementButtonProps["aria-labelledby"];
+    },
+    get "aria-controls"() {
+      return numberFieldAria.decrementButtonProps["aria-controls"];
+    },
+    excludeFromTabOrder: true,
+    preventFocusOnPress: true,
+    allowFocusWhenDisabled: true,
+    get isDisabled() {
+      return !!numberFieldAria.decrementButtonProps.isDisabled;
+    },
+    onPressStart(event: PressEvent) {
+      numberFieldAria.decrementButtonProps.onPressStart?.(event);
+    },
+    onPressUp(event: PressEvent) {
+      numberFieldAria.decrementButtonProps.onPressUp?.(event);
+    },
+    onPressEnd(event: PressEvent) {
+      numberFieldAria.decrementButtonProps.onPressEnd?.(event);
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      increment: incrementButtonSlot,
+      decrement: decrementButtonSlot,
+    },
+  };
 
   return (
     <FieldErrorContext value={fieldErrorContext}>
@@ -532,7 +604,14 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
               data-required={dataAttr(ariaProps.isRequired)}
               data-readonly={dataAttr(ariaProps.isReadOnly)}
             >
-              <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+              <Provider
+                values={
+                  [
+                    [TextContext, textSlots],
+                    [ButtonContext, buttonContextValue],
+                  ] as Array<[Context<unknown>, unknown]>
+                }
+              >
                 {fieldChildren()}
               </Provider>
             </div>

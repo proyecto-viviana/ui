@@ -20,6 +20,7 @@ import {
   NumberFieldIncrementButton,
   NumberFieldDecrementButton,
 } from "../src/NumberField";
+import { Button } from "../src/Button";
 import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { FieldError } from "../src/FieldError";
@@ -252,6 +253,73 @@ describe("NumberField", () => {
 
       const decrementButton = screen.getByRole("button", { name: /decrease/i });
       expect(decrementButton).toHaveAttribute("data-disabled");
+    });
+  });
+
+  describe("Button stepper slots", () => {
+    it("steps from a Button in the increment and decrement slots", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <NumberField
+          aria-label="Width"
+          defaultValue={2}
+          minValue={0}
+          maxValue={3}
+          onChange={onChange}
+        >
+          <Button slot="decrement">-</Button>
+          <NumberFieldInput />
+          <Button slot="increment">+</Button>
+          <Button>Adjacent</Button>
+        </NumberField>
+      ));
+
+      const input = screen.getByRole("textbox");
+      const increment = screen.getByRole("button", { name: "Increase Width" });
+      const decrement = screen.getByRole("button", { name: "Decrease Width" });
+      const adjacent = screen.getByRole("button", { name: "Adjacent" });
+
+      expect(increment).toHaveAttribute("aria-controls", input.id);
+      expect(decrement).toHaveAttribute("aria-controls", input.id);
+      expect(increment).toHaveAttribute("tabindex", "-1");
+      expect(decrement).toHaveAttribute("tabindex", "-1");
+      expect(adjacent).not.toHaveAttribute("aria-controls", input.id);
+
+      await user.click(increment);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(3);
+      expect(input).toHaveValue("3");
+      expect(increment).toBeDisabled();
+
+      await user.click(increment);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue("3");
+
+      await user.click(adjacent);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(input).toHaveValue("3");
+
+      await user.click(decrement);
+      expect(onChange).toHaveBeenLastCalledWith(2);
+      expect(input).toHaveValue("2");
+      expect(increment).not.toBeDisabled();
+    });
+
+    it("does not step a disabled field from the increment slot", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <NumberField aria-label="Width" defaultValue={2} isDisabled onChange={onChange}>
+          <Button slot="decrement">-</Button>
+          <NumberFieldInput />
+          <Button slot="increment">+</Button>
+        </NumberField>
+      ));
+
+      const increment = screen.getByRole("button", { name: "Increase Width" });
+      expect(increment).toBeDisabled();
+      await user.click(increment);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole("textbox")).toHaveValue("2");
     });
   });
 
