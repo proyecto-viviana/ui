@@ -727,6 +727,79 @@ describe("Table", () => {
       expect(row).not.toHaveAttribute("data-focus-visible-within");
     });
 
+    it("marks every cell when focus is visible within the row", () => {
+      render(() => (
+        <Table
+          items={[testData[0]]}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                <TableColumn id="type">{() => <>Type</>}</TableColumn>
+                <TableColumn id="level">{() => <>Level</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <button type="button">{item.name}</button>}</TableCell>
+                        <TableCell
+                          class={(props) =>
+                            props.isFocusVisibleWithinRow ? "row-focus" : "row-blur"
+                          }
+                        >
+                          {() => <>{item.type}</>}
+                        </TableCell>
+                        <TableCell>{() => <>{item.level}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const row = screen.getAllByRole("row")[1];
+      const button = screen.getByRole("button", { name: "Pikachu" });
+      const cells = row.querySelectorAll("td");
+      expect(cells).toHaveLength(3);
+      for (const cell of cells) {
+        expect(cell).not.toHaveAttribute("data-focus-visible-within-row");
+      }
+      expect(cells[1]).toHaveClass("row-blur");
+
+      fireEvent.keyDown(document, { key: "Tab" });
+      row.focus();
+      fireEvent.focus(row);
+      expect(row).toHaveAttribute("data-focus-visible-within");
+      for (const cell of cells) {
+        expect(cell).toHaveAttribute("data-focus-visible-within-row");
+      }
+      expect(cells[1]).toHaveClass("row-focus");
+
+      fireEvent.blur(row, { relatedTarget: button });
+      button.focus();
+      fireEvent.focus(button);
+      for (const cell of cells) {
+        expect(cell).toHaveAttribute("data-focus-visible-within-row");
+      }
+      expect(cells[1]).toHaveClass("row-focus");
+
+      fireEvent.focusOut(row);
+      for (const cell of cells) {
+        expect(cell).not.toHaveAttribute("data-focus-visible-within-row");
+      }
+      expect(cells[1]).toHaveClass("row-blur");
+    });
+
     it("should render header", () => {
       render(() => <TestTable />);
 

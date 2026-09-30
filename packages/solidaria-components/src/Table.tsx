@@ -485,6 +485,11 @@ export interface TableCellRenderProps {
   isFocused: boolean;
   /** Whether the cell has keyboard focus. */
   isFocusVisible: boolean;
+  /**
+   * Whether keyboard focus is visible anywhere within the parent row.
+   * @selector [data-focus-visible-within-row]
+   */
+  isFocusVisibleWithinRow: boolean;
   /** The zero-based column index for the cell. */
   columnIndex: number;
   /** Whether the cell is pressed. */
@@ -582,6 +587,15 @@ interface TableRowContextValue {
 }
 
 export const TableRowContext = createContext<TableRowContextValue | null>(null);
+
+interface RowFocusContextValue {
+  readonly isFocusVisibleWithinRow: boolean;
+}
+
+/** Same flag the row publishes as data-focus-visible-within. Cells read it for their own attribute. */
+const RowFocusContext = createContext<RowFocusContextValue>({
+  isFocusVisibleWithinRow: false,
+});
 
 /**
  * A table displays data in rows and columns and enables a user to navigate its contents via directional navigation keys,
@@ -2057,6 +2071,11 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected,
   };
+  const rowFocusContext: RowFocusContextValue = {
+    get isFocusVisibleWithinRow() {
+      return isFocusWithin() && isGlobalFocusVisible();
+    },
+  };
 
   return (
     <TableRowContext value={rowContextValue}>
@@ -2064,107 +2083,110 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
         <CheckboxContext value={checkboxContextValue}>
           <CheckboxFieldContext value={checkboxFieldContextValue}>
             <SelectionIndicatorContext value={selectionIndicatorContext}>
-              {(() => {
-                // Build the row's children HERE — inside the providers — so each cell instantiates under
-                // this owner. TableCell/EditableCell read TableRowContext, a slotted
-                // <Button slot="drag"|"chevron"> reads ButtonContext, a slotted
-                // <Checkbox slot="selection"> reads CheckboxContext, and a
-                // <SelectionIndicator> reads SelectionIndicatorContext. useContext binds at the
-                // owner active when the component executes, so the children must be created inside the
-                // providers, not merely wrapped by them afterwards. They are built EXACTLY ONCE: a press
-                // or focus bubbling up from interactive cell content (e.g. an EditableCell's edit button)
-                // flips the row's render-props signals, and re-deriving the children on every such change
-                // would dispose and recreate the subtree, destroying the in-flight press. Cells claim
-                // their column by render order (see getCellColumnKey), so reset the registry once before
-                // this single pass.
-                registeredCellIds.length = 0;
-                const rowChildrenContent =
-                  typeof local.children === "function" ? (
-                    local.columns ? (
-                      <For each={local.columns}>
-                        {(column) =>
-                          (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(
-                            column,
-                          )
-                        }
-                      </For>
-                    ) : (
-                      (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(
-                        childRenderProps,
-                      )
-                    )
-                  ) : (
-                    local.children
-                  );
-                const tableRowProps = () =>
-                  ({
-                    ref: (el: HTMLTableRowElement) => {
-                      setRef(el);
-                      assignRef(local.ref, el);
-                      const dragRef = (
-                        draggableItem()?.dragProps as
-                          | { ref?: (el: HTMLTableRowElement) => void }
-                          | undefined
-                      )?.ref;
-                      if (typeof dragRef === "function") dragRef(el);
-                    },
-                    ...domProps,
-                    ...mergeProps(
-                      cleanRowProps(),
-                      cleanHoverProps(),
-                      cleanFocusProps(),
-                      focusWithinProps as Record<string, unknown>,
-                      (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
-                      (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
-                    ),
-                    class: renderProps.class(),
-                    style: rowStyle(),
-                    "data-key": rowKey(),
-                    "data-selected": dataAttr(isSelected()),
-                    "data-focused": dataAttr(isFocused()),
-                    "data-focus-visible": dataAttr(isFocusVisible() && isFocused()),
-                    "data-focus-visible-within": dataAttr(
-                      isFocusWithin() && isGlobalFocusVisible(),
-                    ),
-                    "data-pressed": dataAttr(isPressed()),
-                    "data-hovered": dataAttr(isHovered()),
-                    "data-disabled": dataAttr(isDisabled()),
-                    "data-href": linkProps().href,
-                    "data-target": linkProps().target,
-                    "data-rel": linkProps().rel,
-                    "data-download":
-                      typeof linkProps().download === "string"
-                        ? linkProps().download
-                        : linkProps().download
-                          ? ""
-                          : undefined,
-                    "data-ping": linkProps().ping,
-                    "data-referrer-policy": linkProps().referrerPolicy,
-                    "data-dragging": dataAttr(!!draggableItem()?.isDragging),
-                    "data-drop-target": dataAttr(!!droppableItem()?.isDropTarget),
-                    "data-expanded": dataAttr(isTreeRow() && isExpanded()),
-                    "data-has-child-items": dataAttr(isTreeRow() && hasChildItems()),
-                    "data-level": isTreeRow() ? rowLevel() : undefined,
-                    children: rowChildrenContent,
-                  }) as JSX.HTMLAttributes<HTMLTableRowElement>;
-
-                return (
-                  <Show
-                    when={local.render}
-                    fallback={
-                      tableContext.isVirtualized ? (
-                        <div
-                          {...(tableRowProps() as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
-                        />
+              <RowFocusContext value={rowFocusContext}>
+                {(() => {
+                  // Build the row's children HERE — inside the providers — so each cell instantiates under
+                  // this owner. TableCell/EditableCell read TableRowContext, a slotted
+                  // <Button slot="drag"|"chevron"> reads ButtonContext, a slotted
+                  // <Checkbox slot="selection"> reads CheckboxContext, a
+                  // <SelectionIndicator> reads SelectionIndicatorContext, and each cell reads
+                  // RowFocusContext for data-focus-visible-within-row. useContext binds at the
+                  // owner active when the component executes, so the children must be created inside the
+                  // providers, not merely wrapped by them afterwards. They are built EXACTLY ONCE: a press
+                  // or focus bubbling up from interactive cell content (e.g. an EditableCell's edit button)
+                  // flips the row's render-props signals, and re-deriving the children on every such change
+                  // would dispose and recreate the subtree, destroying the in-flight press. Cells claim
+                  // their column by render order (see getCellColumnKey), so reset the registry once before
+                  // this single pass.
+                  registeredCellIds.length = 0;
+                  const rowChildrenContent =
+                    typeof local.children === "function" ? (
+                      local.columns ? (
+                        <For each={local.columns}>
+                          {(column) =>
+                            (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(
+                              column,
+                            )
+                          }
+                        </For>
                       ) : (
-                        <tr {...tableRowProps()} />
+                        (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(
+                          childRenderProps,
+                        )
                       )
-                    }
-                  >
-                    {local.render!(tableRowProps(), renderValues())}
-                  </Show>
-                );
-              })()}
+                    ) : (
+                      local.children
+                    );
+                  const tableRowProps = () =>
+                    ({
+                      ref: (el: HTMLTableRowElement) => {
+                        setRef(el);
+                        assignRef(local.ref, el);
+                        const dragRef = (
+                          draggableItem()?.dragProps as
+                            | { ref?: (el: HTMLTableRowElement) => void }
+                            | undefined
+                        )?.ref;
+                        if (typeof dragRef === "function") dragRef(el);
+                      },
+                      ...domProps,
+                      ...mergeProps(
+                        cleanRowProps(),
+                        cleanHoverProps(),
+                        cleanFocusProps(),
+                        focusWithinProps as Record<string, unknown>,
+                        (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
+                        (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
+                      ),
+                      class: renderProps.class(),
+                      style: rowStyle(),
+                      "data-key": rowKey(),
+                      "data-selected": dataAttr(isSelected()),
+                      "data-focused": dataAttr(isFocused()),
+                      "data-focus-visible": dataAttr(isFocusVisible() && isFocused()),
+                      "data-focus-visible-within": dataAttr(
+                        isFocusWithin() && isGlobalFocusVisible(),
+                      ),
+                      "data-pressed": dataAttr(isPressed()),
+                      "data-hovered": dataAttr(isHovered()),
+                      "data-disabled": dataAttr(isDisabled()),
+                      "data-href": linkProps().href,
+                      "data-target": linkProps().target,
+                      "data-rel": linkProps().rel,
+                      "data-download":
+                        typeof linkProps().download === "string"
+                          ? linkProps().download
+                          : linkProps().download
+                            ? ""
+                            : undefined,
+                      "data-ping": linkProps().ping,
+                      "data-referrer-policy": linkProps().referrerPolicy,
+                      "data-dragging": dataAttr(!!draggableItem()?.isDragging),
+                      "data-drop-target": dataAttr(!!droppableItem()?.isDropTarget),
+                      "data-expanded": dataAttr(isTreeRow() && isExpanded()),
+                      "data-has-child-items": dataAttr(isTreeRow() && hasChildItems()),
+                      "data-level": isTreeRow() ? rowLevel() : undefined,
+                      children: rowChildrenContent,
+                    }) as JSX.HTMLAttributes<HTMLTableRowElement>;
+
+                  return (
+                    <Show
+                      when={local.render}
+                      fallback={
+                        tableContext.isVirtualized ? (
+                          <div
+                            {...(tableRowProps() as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
+                          />
+                        ) : (
+                          <tr {...tableRowProps()} />
+                        )
+                      }
+                    >
+                      {local.render!(tableRowProps(), renderValues())}
+                    </Show>
+                  );
+                })()}
+              </RowFocusContext>
             </SelectionIndicatorContext>
           </CheckboxFieldContext>
         </CheckboxContext>
@@ -2190,6 +2212,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
 
   const tableContext = useContext(TableContext);
   const rowContext = useContext(TableRowContext);
+  const rowFocus = useContext(RowFocusContext);
 
   if (!tableContext) {
     throw new Error("TableCell must be used within a Table");
@@ -2278,6 +2301,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
   const renderValues = createMemo<TableCellRenderProps>(() => ({
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible() && isFocused(),
+    isFocusVisibleWithinRow: rowFocus.isFocusVisibleWithinRow,
     columnIndex: cellColumnIndex() ?? 0,
     isPressed: isPressed(),
     isHovered: isHovered(),
@@ -2328,6 +2352,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
       "data-key": cellNode().key,
       "data-focused": dataAttr(isFocused()),
       "data-focus-visible": dataAttr(isFocusVisible() && isFocused()),
+      "data-focus-visible-within-row": dataAttr(rowFocus.isFocusVisibleWithinRow),
       "data-column-index": cellColumnIndex(),
       "data-pressed": dataAttr(isPressed()),
       "data-hovered": dataAttr(isHovered()),
