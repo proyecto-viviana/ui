@@ -1297,6 +1297,84 @@ describe("createColorFieldState", () => {
     });
   });
 
+  it("should step the hex being typed, starting an empty field at black", () => {
+    createRoot((dispose) => {
+      const changes: Array<string | null> = [];
+      const state = createColorFieldState(() => ({
+        onChange: (color) => {
+          changes.push(color ? color.toString("hex") : null);
+        },
+      }));
+
+      state.increment();
+      flush();
+      expect(state.inputValue).toBe("#000001");
+      flush();
+      expect(changes).toEqual(["#000001"]);
+
+      state.decrement();
+      flush();
+      expect(state.inputValue).toBe("#000000");
+      dispose();
+    });
+
+    createRoot((dispose) => {
+      const state = createColorFieldState(() => ({}));
+
+      state.decrement();
+      flush();
+      expect(state.inputValue).toBe("#000000");
+
+      state.incrementToMax();
+      flush();
+      expect(state.inputValue).toBe("#FFFFFF");
+
+      state.decrementToMin();
+      flush();
+      expect(state.inputValue).toBe("#000000");
+      dispose();
+    });
+
+    createRoot((dispose) => {
+      const state = createColorFieldState(() => ({
+        defaultValue: "#FF0000",
+      }));
+
+      flush();
+      state.setInputValue("");
+      state.increment();
+      flush();
+      expect(state.inputValue).toBe("#000001");
+
+      state.setInputValue("#00FF00");
+      state.increment();
+      flush();
+      expect(state.inputValue).toBe("#00FF01");
+      dispose();
+    });
+
+    createRoot((dispose) => {
+      const changes: string[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#FFFFFF",
+        onChange: (color) => {
+          if (color) {
+            changes.push(color.toString("hex"));
+          }
+        },
+      }));
+
+      flush();
+      state.setInputValue("fffffe");
+      state.increment();
+      flush();
+      expect(state.inputValue).toBe("fffffe");
+      flush();
+      expect(changes).toEqual([]);
+      dispose();
+    });
+  });
+
   it("should normalize percentage channel state like React Stately", () => {
     createRoot((dispose) => {
       const state = createColorFieldState(() => ({

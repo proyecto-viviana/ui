@@ -318,13 +318,25 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   };
 
   const incrementHex = (amount: number) => {
-    const currentColor = value();
-    if (!currentColor) {
+    // Step the text being edited. A missing or unparseable hex starts at black,
+    // matching useColorFieldState's addColorValue(parsedValue, step).
+    const text = readNow(inputValue);
+    let parsed: Color | null = null;
+    try {
+      parsed = parseColor(text.startsWith("#") ? text : `#${text}`);
+    } catch {
+      parsed = null;
+    }
+
+    const base = parsed ?? hexIntToColor(0);
+    const nextColor = hexIntToColor(base.toFormat("rgb").toHexInt() + amount);
+    const current = value();
+    if (current && current.toFormat("rgb").toHexInt() === nextColor.toHexInt()) {
       return;
     }
 
-    const newColor = hexIntToColor(currentColor.toFormat("rgb").toHexInt() + amount);
-    updateValue(getOptions().colorFormat ? newColor.toFormat(getOptions().colorFormat!) : newColor);
+    const format = getOptions().colorFormat;
+    updateValue(format ? nextColor.toFormat(format) : nextColor);
   };
 
   const updateChannel = (amount: number | "min" | "max") => {
