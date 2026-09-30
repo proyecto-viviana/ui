@@ -641,7 +641,11 @@ export function ColorSliderThumb(props: ColorSliderThumbProps): JSX.Element {
   const mergedStyle = () => {
     const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
-    return { ...thumbStyle, ...renderStyle };
+    return {
+      ...thumbStyle,
+      "background-color": state.getDisplayColor().toString(),
+      ...renderStyle,
+    };
   };
 
   return (
@@ -1057,7 +1061,11 @@ export function ColorAreaThumb(props: ColorAreaThumbProps): JSX.Element {
   const mergedStyle = () => {
     const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
-    return { ...thumbStyle, ...renderStyle };
+    return {
+      ...thumbStyle,
+      "background-color": state.getDisplayColor().toString(),
+      ...renderStyle,
+    };
   };
 
   const syncInputValue = (input: HTMLInputElement | undefined, value: number) => {
@@ -1447,7 +1455,11 @@ export function ColorWheelThumb(props: ColorWheelThumbProps): JSX.Element {
   const mergedStyle = () => {
     const thumbStyle = (context.thumbProps as { style?: Record<string, string> }).style || {};
     const renderStyle = renderProps.style() || {};
-    return { ...thumbStyle, ...renderStyle };
+    return {
+      ...thumbStyle,
+      "background-color": state.getDisplayColor().toString(),
+      ...renderStyle,
+    };
   };
 
   return (

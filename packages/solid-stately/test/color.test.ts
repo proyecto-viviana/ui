@@ -600,6 +600,34 @@ describe("createColorSliderState", () => {
       dispose();
     });
   });
+
+  it("keeps the current alpha on an alpha slider display color", () => {
+    createRoot((dispose) => {
+      const state = createColorSliderState(() => ({
+        channel: "alpha",
+        defaultValue: "rgba(255, 0, 0, 0.5)",
+      }));
+
+      flush();
+      expect(state.getDisplayColor().getChannelValue("alpha")).toBe(0.5);
+      expect(state.getDisplayColor().getChannelValue("red")).toBe(255);
+      dispose();
+    });
+  });
+
+  it("forces an opaque display color for a non-alpha channel", () => {
+    createRoot((dispose) => {
+      const state = createColorSliderState(() => ({
+        channel: "red",
+        defaultValue: "rgba(128, 0, 0, 0.25)",
+      }));
+
+      flush();
+      expect(state.getDisplayColor().getChannelValue("alpha")).toBe(1);
+      expect(state.getDisplayColor().getChannelValue("red")).toBe(128);
+      dispose();
+    });
+  });
 });
 
 describe("createColorAreaState", () => {

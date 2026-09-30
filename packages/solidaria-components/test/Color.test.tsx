@@ -177,6 +177,50 @@ describe("Color Components", () => {
         expect(thumb).toBeTruthy();
       });
 
+      it("paints the slider thumb with the display color", () => {
+        render(() => (
+          <TestColorSlider
+            channel="red"
+            defaultValue={parseColor("rgb(255, 0, 0)")}
+            aria-label="Red"
+          />
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+        expect(thumb.style.backgroundColor).toBe("rgb(255, 0, 0)");
+        expect(thumb.style.left).toBe("100%");
+      });
+
+      it("keeps the alpha slider thumb translucent", () => {
+        render(() => (
+          <TestColorSlider
+            channel="alpha"
+            defaultValue={parseColor("rgba(255, 0, 0, 0.5)")}
+            aria-label="Alpha"
+          />
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+        expect(thumb.style.backgroundColor).toBe("rgba(255, 0, 0, 0.5)");
+        expect(thumb.style.left).toBe("50%");
+      });
+
+      it("lets a thumb style override the display color", () => {
+        render(() => (
+          <ColorSlider channel="red" defaultValue={parseColor("rgb(255, 0, 0)")} aria-label="Red">
+            {() => (
+              <ColorSliderTrack>
+                {() => <ColorSliderThumb style={{ "background-color": "rgb(1, 2, 3)" }} />}
+              </ColorSliderTrack>
+            )}
+          </ColorSlider>
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorSlider-thumb") as HTMLElement;
+        expect(thumb.style.backgroundColor).toBe("rgb(1, 2, 3)");
+        expect(thumb.style.left).toBe("100%");
+      });
+
       it("should render with label", () => {
         render(() => (
           <TestColorSlider
@@ -784,6 +828,15 @@ describe("Color Components", () => {
         const thumb = document.querySelector(".solidaria-ColorArea-thumb");
         expect(gradient).toBeTruthy();
         expect(thumb).toBeTruthy();
+      });
+
+      it("paints the area thumb with the display color", () => {
+        render(() => (
+          <TestColorArea defaultValue={parseColor("rgb(255, 0, 0)")} aria-label="Color picker" />
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorArea-thumb") as HTMLElement;
+        expect(thumb.style.backgroundColor).toBe("rgb(255, 0, 0)");
       });
     });
 
@@ -1407,6 +1460,17 @@ describe("Color Components", () => {
         expect(track.getAttribute("style")).toContain("width: 200px");
         expect(track.getAttribute("style")).toContain("height: 200px");
         expect(track.getAttribute("style")).toContain("clip-path:");
+        expect(thumb.style.left).toBe("187px");
+        expect(thumb.style.top).toBe("100px");
+      });
+
+      it("paints the wheel thumb with the display color", () => {
+        render(() => (
+          <TestColorWheel defaultValue={parseColor("hsl(0, 100%, 50%)")} aria-label="Hue wheel" />
+        ));
+
+        const thumb = document.querySelector(".solidaria-ColorWheel-thumb") as HTMLElement;
+        expect(thumb.style.backgroundColor).toBe("rgb(255, 0, 0)");
         expect(thumb.style.left).toBe("187px");
         expect(thumb.style.top).toBe("100px");
       });

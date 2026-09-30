@@ -182,6 +182,7 @@ These behaviors match the pin in this checkout.
 - A color wheel includes its own id in aria-labelledby when an aria-label is also set.
 - A color slider includes its own id in aria-labelledby when an aria-label is also set, and keeps a visible label id beside an external label.
 - A color field includes its own id in aria-labelledby when an aria-label is also set, and keeps a visible label id beside an external label.
+- A color thumb paints its display color, and an alpha slider keeps that alpha.
 
 **Components**
 

@@ -259,11 +259,15 @@ export function createColorSliderState(
     }
   };
 
-  // Get display color (alpha = 1)
+  // Hue paints a pure color. Alpha keeps its alpha. Other channels paint opaque.
   const getDisplayColor = () => {
     const v = value();
-    if (channel() === "hue") {
+    const current = channel();
+    if (current === "hue") {
       return normalizeColor(`hsl(${v.getChannelValue("hue")}, 100%, 50%)`);
+    }
+    if (current === "alpha") {
+      return v;
     }
     return v.withChannelValue("alpha", 1);
   };
