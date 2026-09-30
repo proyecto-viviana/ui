@@ -189,6 +189,7 @@ These behaviors match the pin in this checkout.
 - A tab panel includes its own id in aria-labelledby when an aria-label is also set.
 - An empty grid, table, or grid list yields its tab stop when it already contains a tabbable control.
 - An empty list inserts an item before a missing key.
+- An empty async list inserts an item before or after a missing key, and removing the last items clears select-all when no later page remains.
 
 **Components**
 

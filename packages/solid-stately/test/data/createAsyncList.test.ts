@@ -224,6 +224,87 @@ describe("createAsyncList", () => {
     });
   });
 
+  it("insertBefore on an empty list inserts at the start", async () => {
+    await createRoot(async (dispose) => {
+      const list = createAsyncList<Item>({
+        load: async () => ({ items: [] }),
+      });
+
+      await waitForIdle(list);
+      flush();
+      list.insertBefore(999, { id: 1, name: "First" });
+      flush();
+      expect(list.items).toHaveLength(1);
+      flush();
+      expect(list.items[0].name).toBe("First");
+      dispose();
+    });
+  });
+
+  it("insertAfter on an empty list inserts at the start", async () => {
+    await createRoot(async (dispose) => {
+      const list = createAsyncList<Item>({
+        load: async () => ({ items: [] }),
+      });
+
+      await waitForIdle(list);
+      flush();
+      list.insertAfter(999, { id: 1, name: "First" });
+      flush();
+      expect(list.items).toHaveLength(1);
+      flush();
+      expect(list.items[0].name).toBe("First");
+      dispose();
+    });
+  });
+
+  it("clears a select-all selection when the last items are removed and no page remains", async () => {
+    await createRoot(async (dispose) => {
+      const list = createAsyncList<Item>({
+        load: async () => ({
+          items: [
+            { id: 1, name: "One" },
+            { id: 2, name: "Two" },
+          ],
+        }),
+      });
+
+      await waitForIdle(list);
+      list.setSelectedKeys("all");
+      flush();
+      list.remove(1, 2);
+      flush();
+      expect(list.items).toHaveLength(0);
+      flush();
+      expect(list.selectedKeys).toEqual(new Set());
+      dispose();
+    });
+  });
+
+  it("keeps a select-all selection when a later page remains", async () => {
+    await createRoot(async (dispose) => {
+      const list = createAsyncList<Item>({
+        load: async () => ({
+          items: [
+            { id: 1, name: "One" },
+            { id: 2, name: "Two" },
+          ],
+          cursor: "page-2",
+        }),
+      });
+
+      await waitForIdle(list);
+      list.setSelectedKeys("all");
+      flush();
+      list.remove(1, 2);
+      flush();
+      expect(list.items).toHaveLength(0);
+      flush();
+      expect(list.selectedKeys).toBe("all");
+      dispose();
+    });
+  });
+
   it("setFilterText triggers filtering", async () => {
     let lastFilterText = "";
     await createRoot(async (dispose) => {

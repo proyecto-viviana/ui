@@ -340,8 +340,14 @@ export function createAsyncList<T, C = string>(options: AsyncListOptions<T, C>):
 
     insertBefore(key: Key, ...values: T[]) {
       setState((s) => {
-        const index = s.items.findIndex((item) => getKey(item) === key);
-        if (index === -1) return s;
+        let index = s.items.findIndex((item) => getKey(item) === key);
+        if (index === -1) {
+          if (s.items.length === 0) {
+            index = 0;
+          } else {
+            return s;
+          }
+        }
         return {
           ...s,
           items: [...s.items.slice(0, index), ...values, ...s.items.slice(index)],
@@ -351,8 +357,14 @@ export function createAsyncList<T, C = string>(options: AsyncListOptions<T, C>):
 
     insertAfter(key: Key, ...values: T[]) {
       setState((s) => {
-        const index = s.items.findIndex((item) => getKey(item) === key);
-        if (index === -1) return s;
+        let index = s.items.findIndex((item) => getKey(item) === key);
+        if (index === -1) {
+          if (s.items.length === 0) {
+            index = 0;
+          } else {
+            return s;
+          }
+        }
         return {
           ...s,
           items: [...s.items.slice(0, index + 1), ...values, ...s.items.slice(index + 1)],
@@ -379,6 +391,9 @@ export function createAsyncList<T, C = string>(options: AsyncListOptions<T, C>):
             newSelection.delete(key);
           }
           selectedKeys = newSelection;
+        }
+        if (s.cursor == null && items.length === 0) {
+          selectedKeys = new Set();
         }
         return { ...s, items, selectedKeys };
       });
