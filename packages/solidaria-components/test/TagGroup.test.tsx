@@ -13,6 +13,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
 import { createSignal, flush, Show } from "solid-js";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
+import { Button } from "../src/Button";
 import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { SelectionIndicator } from "../src/SelectionIndicator";
@@ -888,6 +889,66 @@ describe("TagGroup", () => {
       await waitFor(() => {
         expect(document.querySelectorAll(".solidaria-TagRemoveButton").length).toBe(0);
       });
+    });
+  });
+
+  describe("Button remove slot", () => {
+    it("removes from a Button in the remove slot, and an unslotted button does not", async () => {
+      const onRemove = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList items={[{ id: "1", name: "News" }]} aria-label="Test" onRemove={onRemove}>
+            {(item) => (
+              <Tag id={item.id}>
+                {item.name}
+                <Button slot="remove">x</Button>
+                <Button>Keep</Button>
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const row = screen.getByRole("row");
+      const remove = screen.getByText("x").closest("button");
+      expect(remove).toBeInstanceOf(HTMLButtonElement);
+      expect(remove).toHaveAttribute("aria-label", "Remove");
+      expect(remove).toHaveAttribute("aria-labelledby", `${remove!.id} ${row.id}`);
+      const keep = screen.getByRole("button", { name: "Keep" });
+      expect(keep).not.toHaveAttribute("aria-label", "Remove");
+
+      await user.click(keep);
+      expect(onRemove).not.toHaveBeenCalled();
+
+      await user.click(remove!);
+      expect(onRemove).toHaveBeenCalledTimes(1);
+      expect(onRemove).toHaveBeenCalledWith(new Set(["1"]));
+    });
+
+    it("does not remove a disabled tag from the Button", async () => {
+      const onRemove = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={[{ id: "1", name: "News" }]}
+            aria-label="Test"
+            disabledKeys={["1"]}
+            onRemove={onRemove}
+          >
+            {(item) => (
+              <Tag id={item.id}>
+                {item.name}
+                <Button slot="remove">x</Button>
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const remove = screen.getByText("x").closest("button");
+      expect(remove).toBeDisabled();
+      await user.click(remove!);
+      expect(onRemove).not.toHaveBeenCalled();
     });
   });
 });

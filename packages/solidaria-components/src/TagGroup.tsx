@@ -23,6 +23,7 @@
  */
 
 import { createContext, createMemo, createSignal, useContext, For, Show } from "solid-js";
+import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createButton,
@@ -54,9 +55,11 @@ import {
   mergeRefs,
   assignRef,
   useSlot,
+  Provider,
 } from "./utils";
 import { LabelContext } from "./Label";
 import { TextContext } from "./Text";
+import { ButtonContext, type ButtonProps } from "./Button";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -554,6 +557,33 @@ export function Tag(props: TagProps): JSX.Element {
 
   const domProps = createMemo(() => filterDOMProps(rest, { global: true }));
 
+  // Pin remove props carry no tabIndex. #318 keeps tabIndex -1 on TagRemoveButton.
+  const removeButtonSlot: ButtonProps = {
+    get id() {
+      return tagAria.removeButtonProps.id as string;
+    },
+    get "aria-label"() {
+      return tagAria.removeButtonProps["aria-label"] as string;
+    },
+    get "aria-labelledby"() {
+      return tagAria.removeButtonProps["aria-labelledby"] as string;
+    },
+    get isDisabled() {
+      return Boolean(tagAria.removeButtonProps.isDisabled);
+    },
+    onPress() {
+      const handler = tagAria.removeButtonProps.onPress;
+      if (typeof handler === "function") {
+        handler();
+      }
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      remove: removeButtonSlot,
+    },
+  };
+
   return (
     <SelectionIndicatorContext value={selectionIndicatorContext()}>
       <TagContext
@@ -580,7 +610,11 @@ export function Tag(props: TagProps): JSX.Element {
           data-allows-removing={dataAttr(allowsRemoving())}
         >
           <div {...tagAria.gridCellProps} style={{ display: "contents" }}>
-            {renderProps.renderChildrenStable()}
+            <Provider
+              values={[[ButtonContext, buttonContextValue]] as Array<[Context<unknown>, unknown]>}
+            >
+              {renderProps.renderChildrenStable()}
+            </Provider>
           </div>
         </div>
       </TagContext>
