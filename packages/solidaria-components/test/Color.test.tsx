@@ -1191,6 +1191,39 @@ describe("Color Components", () => {
         });
       });
 
+      it("should step a page of hue when shift is held with an arrow key", () => {
+        const onChangeEnd = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChangeEnd={onChangeEnd}
+          />
+        ));
+
+        const input = screen.getByRole("slider", { name: "Hue wheel" }) as HTMLInputElement;
+
+        fireEvent.keyDown(input, { key: "ArrowRight", shiftKey: true });
+        expect(input.value).toBe("15");
+        expect(onChangeEnd).toHaveBeenCalledTimes(1);
+
+        fireEvent.keyDown(input, { key: "ArrowUp", shiftKey: true });
+        expect(input.value).toBe("30");
+
+        fireEvent.keyDown(input, { key: "ArrowDown", shiftKey: true });
+        expect(input.value).toBe("15");
+
+        fireEvent.keyDown(input, { key: "ArrowLeft", shiftKey: true });
+        expect(input.value).toBe("0");
+
+        fireEvent.keyDown(input, { key: "ArrowLeft", shiftKey: true });
+        expect(input.value).toBe("345");
+
+        fireEvent.keyDown(input, { key: "ArrowRight", shiftKey: true });
+        expect(input.value).toBe("0");
+        expect(onChangeEnd).toHaveBeenCalledTimes(6);
+      });
+
       it("should keep range input mounted across keyboard value changes", () => {
         const onChangeEnd = vi.fn();
         render(() => (

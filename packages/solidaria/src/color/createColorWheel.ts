@@ -199,16 +199,17 @@ export function createColorWheel(
     if (getProps().isDisabled || getState().isDisabled) return;
 
     const s = getState();
+    const step = e.shiftKey ? s.pageStep : undefined;
     let handled = true;
 
     switch (e.key) {
       case "ArrowRight":
       case "ArrowUp":
-        s.increment();
+        s.increment(step);
         break;
       case "ArrowLeft":
       case "ArrowDown":
-        s.decrement();
+        s.decrement(step);
         break;
       case "PageUp":
         s.increment(s.pageStep);
