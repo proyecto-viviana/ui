@@ -607,6 +607,54 @@ describe("Picker (solid-spectrum)", () => {
       "API",
     ]);
   });
+
+  // S2 Picker.tsx: `useSlotId` while `loadingState === 'loading'`, then
+  // `<AriaSelect aria-describedby={spinnerId}>` and the closed-trigger circle
+  // `id={spinnerId}`. `useField` joins that id with the description.
+  it("points a closed loading trigger at the spinner and its description", () => {
+    render(() => (
+      <Picker<SectionItem>
+        label="Docs section"
+        description="Pick a docs anchor"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        loadingState="loading"
+      />
+    ));
+    flush();
+
+    const description = screen.getByText("Pick a docs anchor");
+    const spinner = screen.getByRole("progressbar", { name: "Loading…" });
+    const describedBy =
+      screen.getByRole("button").getAttribute("aria-describedby")?.split(" ") ?? [];
+
+    expect(describedBy).toContain(description.id);
+    expect(describedBy).toContain(spinner.id);
+  });
+
+  it("omits the trigger spinner while a loading picker is open", () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Docs section"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#page-title"
+        loadingState="loading"
+      />
+    ));
+    flush();
+
+    expect(screen.queryByRole("progressbar", { name: "Loading…" })).not.toBeInTheDocument();
+    // The open trigger sits under an aria-hidden root while focus is in the listbox.
+    const trigger = screen.getByRole("button", { expanded: true, hidden: true });
+    const describedBy = trigger.getAttribute("aria-describedby");
+    for (const id of describedBy?.split(" ").filter(Boolean) ?? []) {
+      expect(document.getElementById(id)).not.toBeNull();
+    }
+  });
 });
 
 function mockVirtualizerGeometry(): void {

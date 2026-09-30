@@ -72,7 +72,11 @@ import { IconContext } from "../icon/spectrum-icon";
 import { AvatarContext } from "../avatar";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { mergeProps as mergeAriaProps, createStringFormatter } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps as mergeAriaProps,
+  createStringFormatter,
+  createSlotId,
+} from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
@@ -740,9 +744,10 @@ function pickerValueContent<T>(
   );
 }
 
-function PickerProgressCircle(props: { size: S2PickerSize; "aria-label": string }) {
+function PickerProgressCircle(props: { size: S2PickerSize; "aria-label": string; id?: string }) {
   return (
     <ProgressCircle
+      id={props.id}
       aria-label={props["aria-label"]}
       isIndeterminate
       size="S"
@@ -810,6 +815,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   const isInvalid = () => local.isInvalid === true;
   const isTriggerLoading = () => local.loadingState === "loading";
   const isLoadingMore = () => local.loadingState === "loadingMore";
+  // S2 Picker.tsx: `useSlotId([showButtonSpinner])` where showButtonSpinner is
+  // `loadingState === 'loading'`. Opening the menu hides the circle without
+  // re-probing, so `isOpen` stays out of the dependency list.
+  const spinnerId = createSlotId([() => local.loadingState === "loading"]);
   const propsRecord = () => headlessProps as Record<string, unknown>;
   const isMultiple = () => propsRecord().selectionMode === "multiple";
   const selectedKey = () => propsRecord().selectedKey as Key | null | undefined;
@@ -934,6 +943,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
         }
         aria-label={ariaLabel()}
         aria-labelledby={ariaLabelledBy()}
+        aria-describedby={spinnerId()}
         isInvalid={isInvalid()}
         class={rootClass}
         style={local.UNSAFE_style}
@@ -1026,6 +1036,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                   <Show when={isTriggerLoading() && !triggerProps.isOpen}>
                     <CenterBaseline>
                       <PickerProgressCircle
+                        id={spinnerId()}
                         size={size()}
                         aria-label={stringFormatter().format("table.loading")}
                       />
