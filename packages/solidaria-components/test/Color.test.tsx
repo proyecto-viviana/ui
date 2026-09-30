@@ -1217,6 +1217,37 @@ describe("Color Components", () => {
         expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(270);
       });
 
+      it("should set the hue from the click angle on the outer ring", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChange={onChange}
+          />
+        ));
+
+        const track = document.querySelector(".solidaria-ColorWheel-track") as HTMLElement;
+        track.getBoundingClientRect = () =>
+          ({
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 200,
+            width: 200,
+            height: 200,
+            toJSON: () => ({}),
+          }) as DOMRect;
+
+        // 20° clockwise from 3 o'clock, 99px from the center: on the ring, past the thumb radius.
+        fireEvent.mouseDown(track, { clientX: 193.0296, clientY: 133.86 });
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(20);
+      });
+
       it("should commit keyboard changes through onChangeEnd", async () => {
         const onChangeEnd = vi.fn();
         render(() => (

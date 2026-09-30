@@ -165,6 +165,7 @@ These behaviors match the pin in this checkout.
 - A long press cancels the click that follows it, and a later click still works.
 - A color wheel steps a page of hue when shift is held with an arrow key, and a plain arrow still steps once.
 - A color wheel ignores a secondary or modified mouse press on the ring and thumb, and a touch press still sets the hue.
+- A color wheel sets the hue from the click angle on the outer ring.
 
 **Components**
 

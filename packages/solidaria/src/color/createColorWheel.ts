@@ -87,7 +87,7 @@ export function createColorWheel(
       return false;
     }
 
-    getState().setHueFromPoint(point.x, point.y, thumbRadius());
+    getState().setHueFromPoint(point.x, point.y, requireTrackHit ? distance : thumbRadius());
     return true;
   };
 
