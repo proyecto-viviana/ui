@@ -1612,6 +1612,61 @@ describe("Color Components", () => {
         expect(onChange).not.toHaveBeenCalled();
         expect(input).toHaveValue("#FF0000");
       });
+
+      // useFormattedTextField preventDefault's a beforeinput whose next value
+      // fails hex validate, so the character never enters the field. Undo,
+      // redo, and Enter are allowed through. A composition that ends invalid
+      // is restored to the value from compositionstart.
+      function partialHexField() {
+        render(() => <TestColorField defaultValue={parseColor("#ff0000")} aria-label="Color" />);
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "#0a" } });
+        input.setSelectionRange(input.value.length, input.value.length);
+        return input;
+      }
+
+      function beforeInput(el: HTMLInputElement, inputType: string, data: string | null = null) {
+        const event = new InputEvent("beforeinput", {
+          inputType,
+          data,
+          bubbles: true,
+          cancelable: true,
+        });
+        el.dispatchEvent(event);
+        return event;
+      }
+
+      it("rejects an invalid character on beforeinput", () => {
+        const input = partialHexField();
+        const rejected = beforeInput(input, "insertText", "z");
+
+        expect(rejected.defaultPrevented).toBe(true);
+        expect(input).toHaveValue("#0a");
+      });
+
+      it("lets a valid hex digit through beforeinput", () => {
+        const input = partialHexField();
+        const allowed = beforeInput(input, "insertText", "b");
+
+        expect(allowed.defaultPrevented).toBe(false);
+      });
+
+      it("allows undo, redo, and enter on beforeinput", () => {
+        const input = partialHexField();
+        for (const inputType of ["historyUndo", "historyRedo", "insertLineBreak"]) {
+          const event = beforeInput(input, inputType);
+          expect(event.defaultPrevented).toBe(false);
+        }
+      });
+
+      it("restores the field when a composition ends on an invalid value", () => {
+        const input = partialHexField();
+        fireEvent.compositionStart(input);
+        input.value = "#0az";
+        fireEvent.compositionEnd(input);
+
+        expect(input).toHaveValue("#0a");
+      });
     });
   });
 
