@@ -70,6 +70,7 @@ import {
   OptionContent,
   Provider,
   useRenderProps,
+  useSlot,
   filterDOMProps,
   assignRef,
   dataAttr,
@@ -86,6 +87,7 @@ import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   CollectionRendererContext,
+  HeaderContext,
   Section,
   Group,
   type CollectionEntry,
@@ -1992,9 +1994,31 @@ export function MenuSection(props: MenuSectionProps): JSX.Element {
     },
   };
 
+  // Read children only inside the header provider. Spreading them here would
+  // build the Header before HeaderContext exists, so it would stay a heading
+  // and the group would have nothing to name itself from.
+  const [sectionContent, sectionDom] = splitProps(sectionProps, ["children"]);
+  const headingId = createUniqueId();
+  const [headingRef, hasHeading] = useSlot();
+  const headerContext = {
+    id: headingId,
+    role: "presentation" as const,
+    ref: headingRef,
+  };
+  const SectionChildren = () => {
+    const children = sectionContent.children;
+    return typeof children === "function" && children.length === 0
+      ? (children as () => JSX.Element)()
+      : children;
+  };
+
   return (
     <MenuSectionSelectionContext value={sectionSelection}>
-      <Section {...sectionProps} />
+      <Section {...sectionDom} role="group" aria-labelledby={hasHeading() ? headingId : undefined}>
+        <HeaderContext value={headerContext}>
+          <SectionChildren />
+        </HeaderContext>
+      </Section>
     </MenuSectionSelectionContext>
   );
 }

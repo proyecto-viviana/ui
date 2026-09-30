@@ -25,7 +25,7 @@ import { Button } from "../src/Button";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Separator } from "../src/Separator";
 import { Popover } from "../src/Popover";
-import { CollectionRendererContext } from "../src/Collection";
+import { CollectionRendererContext, Header } from "../src/Collection";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -503,6 +503,69 @@ describe("Menu", () => {
       expect(groups.length).toBeGreaterThanOrEqual(2);
       expect(groups[0].closest(".solidaria-Menu-section")).toBeInTheDocument();
       expect(screen.getByText("Veggies")).toBeInTheDocument();
+    });
+
+    it("should name a static menu section from its header", () => {
+      render(() => (
+        <Menu aria-label="Sandwich contents" selectionMode="multiple">
+          <MenuSection>
+            <Header>Veggies</Header>
+            <MenuItem id="lettuce" textValue="Lettuce">
+              Lettuce
+            </MenuItem>
+            <MenuItem id="tomato" textValue="Tomato">
+              Tomato
+            </MenuItem>
+            <MenuItem id="onion" textValue="Onion">
+              Onion
+            </MenuItem>
+          </MenuSection>
+          <MenuSection>
+            <Header>Protein</Header>
+            <MenuItem id="ham" textValue="Ham">
+              Ham
+            </MenuItem>
+            <MenuItem id="tuna" textValue="Tuna">
+              Tuna
+            </MenuItem>
+            <MenuItem id="tofu" textValue="Tofu">
+              Tofu
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+
+      const groups = screen.getAllByRole("group");
+      expect(groups).toHaveLength(2);
+      expect(groups[0]).toHaveAttribute("data-section");
+      expect(groups[0]).toHaveAttribute("aria-labelledby");
+      expect(document.getElementById(groups[0].getAttribute("aria-labelledby")!)).toHaveTextContent(
+        "Veggies",
+      );
+      expect(groups[1]).toHaveAttribute("aria-labelledby");
+      expect(document.getElementById(groups[1].getAttribute("aria-labelledby")!)).toHaveTextContent(
+        "Protein",
+      );
+      expect(screen.queryByRole("heading", { name: "Veggies" })).not.toBeInTheDocument();
+      expect(screen.getAllByRole("menuitemcheckbox")).toHaveLength(6);
+    });
+
+    it("names a static menu section from aria-label when it has no header", async () => {
+      render(() => (
+        <Menu aria-label="Sandwich contents">
+          <MenuSection aria-label="Protein">
+            <MenuItem id="ham" textValue="Ham">
+              Ham
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+
+      const group = screen.getByRole("group", { name: "Protein" });
+      await waitFor(() => {
+        expect(group).not.toHaveAttribute("aria-labelledby");
+      });
+      expect(group).toHaveAttribute("data-section");
     });
 
     it("should support dynamic collections", () => {

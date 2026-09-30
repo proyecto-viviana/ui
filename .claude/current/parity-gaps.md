@@ -130,6 +130,7 @@ These behaviors match the pin in this checkout.
 - A slider takes its name from a child label, and an explicit aria-label keeps its own name.
 - A checkbox group takes its name from a child label, and an explicit aria-label keeps its own name.
 - A radio group takes its name from a child label, and an explicit aria-label keeps its own name.
+- A static menu section takes its name from a child header, and an aria-label names it when that header is absent.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

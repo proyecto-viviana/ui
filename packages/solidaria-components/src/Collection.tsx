@@ -39,8 +39,10 @@ import {
 import { splitProps, isDevEnv } from "@proyecto-viviana/solidaria/utils";
 import {
   type ClassNameOrFunction,
+  type ContextValue,
   type StyleOrFunction,
   type SlotProps,
+  useContextProps,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
@@ -123,6 +125,14 @@ export interface SectionProps extends SlotProps {
   children?: JSX.Element;
   /** Ref for the section element. */
   ref?: RefLike<HTMLDivElement>;
+  /** DOM id forwarded to the section element. */
+  id?: string;
+  /** ARIA role forwarded to the section element. */
+  role?: JSX.HTMLAttributes<HTMLElement>["role"];
+  /** Accessible name when the section has no naming header. */
+  "aria-label"?: string;
+  /** Id of the element that names the section. */
+  "aria-labelledby"?: string;
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<CollectionPrimitiveRenderProps>;
   /** The inline style for the element. */
@@ -132,6 +142,15 @@ export interface SectionProps extends SlotProps {
 export interface HeaderProps extends SlotProps {
   /** Header contents, usually section title text. */
   children?: JSX.Element;
+  /** Ref for the header element. Context refs merge with this. */
+  ref?: RefLike<HTMLDivElement>;
+  /** DOM id. A menu section assigns this so the group can name itself. */
+  id?: string;
+  /**
+   * ARIA role. Defaults to `heading`. A menu section passes `presentation`
+   * so the title names the group instead of exposing a heading.
+   */
+  role?: JSX.HTMLAttributes<HTMLElement>["role"];
   /** Optional heading level when rendered as a heading role. */
   "aria-level"?: number;
   /** The CSS className for the element. */
@@ -197,7 +216,7 @@ export const CollectionRendererContext =
 export const SelectableCollectionContext = CollectionRendererContext;
 export const SectionContext = createContext<SectionContextValue | null>(null);
 export const GroupContext = createContext<Partial<GroupProps> | null>(null);
-export const HeaderContext = createContext<Partial<HeaderProps> | null>(null);
+export const HeaderContext = createContext<ContextValue<HeaderProps, HTMLDivElement>>(null);
 export const HeadingContext = createContext<Partial<HeaderProps> | null>(null);
 
 export function useCollectionRenderer<T>(): CollectionRendererContextValue<T> | null {
@@ -362,7 +381,15 @@ export function Section(props: SectionProps): JSX.Element {
  * A header/title primitive for collection sections.
  */
 export function Header(props: HeaderProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["children", "class", "style", "slot"]);
+  const [merged, ref] = useContextProps(props, props.ref, HeaderContext);
+  const [local, domProps] = splitProps(merged, [
+    "children",
+    "class",
+    "style",
+    "slot",
+    "ref",
+    "role",
+  ]);
 
   const renderValues = createMemo<CollectionPrimitiveRenderProps>(() => ({
     hasChildren: local.children != null,
@@ -384,8 +411,9 @@ export function Header(props: HeaderProps): JSX.Element {
 
   return (
     <div
+      ref={ref}
       {...filteredDomProps()}
-      role="heading"
+      role={local.role ?? "heading"}
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}
