@@ -197,6 +197,7 @@ These behaviors match the pin in this checkout.
 - A year picker formats a truthy era option as short.
 - A toast region forgets its entry target once focus leaves, so a later dismiss leaves focus where the user moved it.
 - A popover reports when focus enters and leaves it.
+- An interact-outside handler is the one current when the pointer event fires.
 
 **Components**
 

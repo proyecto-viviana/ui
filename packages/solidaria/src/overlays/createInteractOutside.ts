@@ -52,8 +52,6 @@ export function createInteractOutside(props: InteractOutsideProps): void {
       return { disabled, element };
     },
     ({ disabled, element }) => {
-      const { onInteractOutside, onInteractOutsideStart } = props;
-
       if (disabled) {
         return;
       }
@@ -61,19 +59,17 @@ export function createInteractOutside(props: InteractOutsideProps): void {
       const documentObject = getOwnerDocument(element);
       const currentRef = () => overlayEl() ?? props.ref() ?? null;
 
+      // Event-time read: pin useEffectEvent keeps the latest handler without
+      // resubscribing when only the callback changes.
       const onPointerDown = (e: PointerEvent) => {
-        if (onInteractOutside && isValidEvent(e, currentRef)) {
-          if (onInteractOutsideStart) {
-            onInteractOutsideStart(e);
-          }
+        if (props.onInteractOutside && isValidEvent(e, currentRef)) {
+          props.onInteractOutsideStart?.(e);
           isPointerDown = true;
         }
       };
 
       const triggerInteractOutside = (e: PointerEvent) => {
-        if (onInteractOutside) {
-          onInteractOutside(e);
-        }
+        props.onInteractOutside?.(e);
       };
 
       // Use pointer events if available. Otherwise, fall back to mouse and touch events.
@@ -114,33 +110,15 @@ export function createInteractOutside(props: InteractOutsideProps): void {
         isPointerDown = false;
       };
 
-      const onMouseDown = (e: MouseEvent) => {
-        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, currentRef)) {
-          if (onInteractOutsideStart) {
-            onInteractOutsideStart(e as unknown as PointerEvent);
-          }
-          isPointerDown = true;
-        }
-      };
-
-      const onTouchStart = (e: TouchEvent) => {
-        if (onInteractOutside && isValidEvent(e as unknown as PointerEvent, currentRef)) {
-          if (onInteractOutsideStart) {
-            onInteractOutsideStart(e as unknown as PointerEvent);
-          }
-          isPointerDown = true;
-        }
-      };
-
-      documentObject.addEventListener("mousedown", onMouseDown as EventListener, true);
+      documentObject.addEventListener("mousedown", onPointerDown as EventListener, true);
       documentObject.addEventListener("mouseup", onMouseUp as EventListener, true);
-      documentObject.addEventListener("touchstart", onTouchStart as EventListener, true);
+      documentObject.addEventListener("touchstart", onPointerDown as EventListener, true);
       documentObject.addEventListener("touchend", onTouchEnd as EventListener, true);
 
       return () => {
-        documentObject.removeEventListener("mousedown", onMouseDown as EventListener, true);
+        documentObject.removeEventListener("mousedown", onPointerDown as EventListener, true);
         documentObject.removeEventListener("mouseup", onMouseUp as EventListener, true);
-        documentObject.removeEventListener("touchstart", onTouchStart as EventListener, true);
+        documentObject.removeEventListener("touchstart", onPointerDown as EventListener, true);
         documentObject.removeEventListener("touchend", onTouchEnd as EventListener, true);
       };
     },

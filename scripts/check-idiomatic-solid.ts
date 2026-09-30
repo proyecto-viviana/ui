@@ -190,21 +190,6 @@ const ALLOWLIST: Array<{ file: string; snippet: string; why: string }> = [
     snippet: "const { ctx } = props",
     why: "ctx is a stable reference passed via <Show keyed>; fields read reactively via its methods",
   },
-  // Destructure INSIDE a createEffect callback: it re-executes on every effect
-  // run, so it is not the run-once-top-level freeze the guard targets. `163f4377`
-  // moved `isDisabled` out of this destructure and into the effect's tracked
-  // function as `access(props.isDisabled)`, which is what re-runs the handler and
-  // re-reads these two — the snippet below follows it there.
-  // What this still permits, stated rather than left to be discovered: the
-  // tracked function reads `access(props.isDisabled)` and the ref, not the two
-  // handlers, so a consumer that swaps `onInteractOutside` without touching
-  // `isDisabled` or the ref keeps the stale one. Pre-existing, and upstream's
-  // `useInteractOutside` has the same shape.
-  {
-    file: "solidaria/src/overlays/createInteractOutside.ts",
-    snippet: "const { onInteractOutside, onInteractOutsideStart } = props",
-    why: "destructure is inside createEffect's handler → re-read each run, which props.isDisabled/ref drive from the tracked function (Menu/Select pass live getters)",
-  },
   // Init-only / static-caller destructures where the value cannot be reactive by
   // construction and every call site passes a plain literal.
   {

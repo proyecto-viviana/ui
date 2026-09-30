@@ -8,7 +8,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createInteractOutside } from "../src/overlays/createInteractOutside";
-import { createSignal, type Component } from "solid-js";
+import { createSignal, flush, type Component } from "solid-js";
 
 // Helper to create a pointer event
 function pointerEvent(type: string, opts: Partial<PointerEventInit> = {}) {
@@ -137,6 +137,44 @@ describe("createInteractOutside", () => {
       fireEvent.click(document.body);
       expect(onInteractOutside).toHaveBeenCalledTimes(1);
     });
+
+    it("uses the handlers that are current when the pointer event fires", () => {
+      const startFirst = vi.fn();
+      const startSecond = vi.fn();
+      const endFirst = vi.fn();
+      const endSecond = vi.fn();
+      // A function initial value is a writable memo in Solid 2, so the handler
+      // lives in a box. The setter would also treat a function argument as an updater.
+      const [onStart, setOnStart] = createSignal({ fn: startFirst });
+      const [onEnd, setOnEnd] = createSignal({ fn: endFirst });
+
+      const LiveExample: Component = () => {
+        const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+        createInteractOutside({
+          ref: () => ref(),
+          get onInteractOutsideStart() {
+            return onStart().fn;
+          },
+          get onInteractOutside() {
+            return onEnd().fn;
+          },
+        });
+        return <div ref={setRef}>test</div>;
+      };
+
+      render(() => <LiveExample />);
+      setOnStart({ fn: startSecond });
+      setOnEnd({ fn: endSecond });
+      flush();
+
+      fireEvent(document.body, pointerEvent("pointerdown"));
+      expect(startSecond).toHaveBeenCalledTimes(1);
+      expect(startFirst).not.toHaveBeenCalled();
+
+      fireEvent.click(document.body);
+      expect(endSecond).toHaveBeenCalledTimes(1);
+      expect(endFirst).not.toHaveBeenCalled();
+    });
   });
 
   // ============================================
@@ -189,6 +227,42 @@ describe("createInteractOutside", () => {
 
       fireEvent.mouseUp(document.body);
       expect(onInteractOutside).not.toHaveBeenCalled();
+    });
+
+    it("uses the handlers that are current when the mouse event fires", () => {
+      const startFirst = vi.fn();
+      const startSecond = vi.fn();
+      const endFirst = vi.fn();
+      const endSecond = vi.fn();
+      const [onStart, setOnStart] = createSignal({ fn: startFirst });
+      const [onEnd, setOnEnd] = createSignal({ fn: endFirst });
+
+      const LiveExample: Component = () => {
+        const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+        createInteractOutside({
+          ref: () => ref(),
+          get onInteractOutsideStart() {
+            return onStart().fn;
+          },
+          get onInteractOutside() {
+            return onEnd().fn;
+          },
+        });
+        return <div ref={setRef}>test</div>;
+      };
+
+      render(() => <LiveExample />);
+      setOnStart({ fn: startSecond });
+      setOnEnd({ fn: endSecond });
+      flush();
+
+      fireEvent.mouseDown(document.body);
+      expect(startSecond).toHaveBeenCalledTimes(1);
+      expect(startFirst).not.toHaveBeenCalled();
+
+      fireEvent.mouseUp(document.body);
+      expect(endSecond).toHaveBeenCalledTimes(1);
+      expect(endFirst).not.toHaveBeenCalled();
     });
   });
 
