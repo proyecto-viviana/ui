@@ -13,6 +13,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { setInteractionModality } from "@proyecto-viviana/solidaria";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
 import { Button } from "../src/Button";
 import { DateInput, DateSegment } from "../src/DateField";
@@ -94,6 +95,71 @@ describe("DatePicker", () => {
         .map((attribute) => attribute.name)
         .filter((name) => name.startsWith("attr:"));
       expect(namespaced).toEqual([]);
+    });
+  });
+
+  describe("root focus", () => {
+    it("marks focus within the picker, and the hidden autofill input stays unmarked", async () => {
+      render(() => (
+        <DatePicker
+          aria-label="Test Date Picker"
+          name="date"
+          class={(values) =>
+            values.isFocusWithin ? "solidaria-DatePicker is-focus-within" : "solidaria-DatePicker"
+          }
+        >
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          <DatePickerButton>📅</DatePickerButton>
+          <DatePickerContent>
+            <Calendar>
+              <header>
+                <CalendarButton slot="previous">◀</CalendarButton>
+                <CalendarHeading />
+                <CalendarButton slot="next">▶</CalendarButton>
+              </header>
+              <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+            </Calendar>
+          </DatePickerContent>
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const picker = document.querySelector(".solidaria-DatePicker") as HTMLElement;
+      const segment = screen.getAllByRole("spinbutton")[0]!;
+      const hidden = document.querySelector('input[name="date"]') as HTMLInputElement;
+      expect(picker.contains(hidden)).toBe(false);
+      expect(picker).not.toHaveAttribute("data-focus-within");
+      expect(picker).not.toHaveAttribute("data-focus-visible");
+      expect(picker).not.toHaveClass("is-focus-within");
+
+      setInteractionModality("keyboard");
+      segment.focus();
+      await waitFor(() => {
+        expect(picker).toHaveAttribute("data-focus-within", "true");
+        expect(picker).toHaveAttribute("data-focus-visible", "true");
+        expect(picker).toHaveClass("is-focus-within");
+      });
+
+      segment.blur();
+      await waitFor(() => {
+        expect(picker).not.toHaveAttribute("data-focus-within");
+        expect(picker).not.toHaveAttribute("data-focus-visible");
+        expect(picker).not.toHaveClass("is-focus-within");
+      });
+
+      setInteractionModality("pointer");
+      segment.focus();
+      await waitFor(() => {
+        expect(picker).toHaveAttribute("data-focus-within", "true");
+        expect(picker).not.toHaveAttribute("data-focus-visible");
+      });
+
+      hidden.focus();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(hidden);
+        expect(picker).not.toHaveAttribute("data-focus-within");
+        expect(picker).not.toHaveAttribute("data-focus-visible");
+      });
     });
   });
 

@@ -86,6 +86,10 @@ import {
 } from "./DateRangePickerContext";
 
 export interface DatePickerRenderProps {
+  /** Whether an element within the picker is focused. @selector [data-focus-within] */
+  isFocusWithin: boolean;
+  /** Whether an element within the picker is keyboard focused. @selector [data-focus-visible] */
+  isFocusVisible: boolean;
   /** Whether the picker is disabled. */
   isDisabled: boolean;
   /** Whether the picker is read-only. */
@@ -279,6 +283,19 @@ export function useDatePickerContext(): DatePickerContextValue {
  * </DatePicker>
  * ```
  */
+function focusWithinDomProps(
+  focusProps: JSX.HTMLAttributes<HTMLElement>,
+): JSX.HTMLAttributes<HTMLElement> {
+  const { ref: _ref, onFocus, onBlur, ...rest } = focusProps as Record<string, unknown>;
+  // Solid's onFocus/onBlur do not bubble. RAC's within ring listens via React's
+  // bubbling onFocus, so the same handlers attach as onFocusIn/onFocusOut.
+  return {
+    ...rest,
+    onFocusIn: onFocus,
+    onFocusOut: onBlur,
+  } as JSX.HTMLAttributes<HTMLElement>;
+}
+
 export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
@@ -515,7 +532,13 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       Boolean(stateProps.isInvalid),
   );
 
+  // RAC DatePicker root: useFocusRing({within: true}). Solid's onFocus does not
+  // bubble, so the ring listens on onFocusIn/onFocusOut.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing({ within: true });
+
   const renderValues = createMemo<DatePickerRenderProps>(() => ({
+    isFocusWithin: isFocused(),
+    isFocusVisible: isFocusVisible(),
     isDisabled: fieldState.isDisabled(),
     isReadOnly: fieldState.isReadOnly(),
     isRequired: fieldState.isRequired(),
@@ -609,9 +632,12 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
              * (role="presentation" + label/describedby + arrow-nav/press). A
              * described node here would be a spurious AX entry the S2 oracle lacks. */}
             <div
+              {...focusWithinDomProps(focusProps)}
               ref={setFieldRef}
               class={renderProps.class()}
               style={renderProps.style()}
+              data-focus-within={dataAttr(isFocused())}
+              data-focus-visible={dataAttr(isFocusVisible())}
               data-disabled={dataAttr(fieldState.isDisabled())}
               data-readonly={dataAttr(fieldState.isReadOnly())}
               data-required={dataAttr(fieldState.isRequired())}
@@ -942,7 +968,13 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     pickerAria,
   };
 
+  // RAC DateRangePicker root: useFocusRing({within: true}). Solid's onFocus
+  // does not bubble, so the ring listens on onFocusIn/onFocusOut.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing({ within: true });
+
   const renderValues = createMemo<DateRangePickerRenderProps>(() => ({
+    isFocusWithin: isFocused(),
+    isFocusVisible: isFocusVisible(),
     isDisabled: calendarState.isDisabled(),
     isReadOnly: calendarState.isReadOnly(),
     isRequired: isRequired(),
@@ -1006,9 +1038,12 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
            * lacks. The ref scopes the shared segment focus manager across both
            * fields (see createDateRangePicker). */}
           <div
+            {...focusWithinDomProps(focusProps)}
             ref={setFieldRef}
             class={renderProps.class()}
             style={renderProps.style()}
+            data-focus-within={dataAttr(isFocused())}
+            data-focus-visible={dataAttr(isFocusVisible())}
             data-disabled={dataAttr(calendarState.isDisabled())}
             data-readonly={dataAttr(calendarState.isReadOnly())}
             data-required={dataAttr(isRequired())}

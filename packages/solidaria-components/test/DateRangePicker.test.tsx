@@ -4,6 +4,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, cleanup, waitFor, screen, within, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { setInteractionModality } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
   DateRangePicker,
@@ -109,6 +110,51 @@ describe("DateRangePicker", () => {
       .map((attribute) => attribute.name)
       .filter((name) => name.startsWith("attr:"));
     expect(namespaced).toEqual([]);
+  });
+
+  it("marks focus within the range picker, and the hidden autofill inputs stay unmarked", async () => {
+    render(() => (
+      <DateRangePicker
+        aria-label="Range"
+        startName="start"
+        endName="end"
+        class={(values) =>
+          values.isFocusWithin
+            ? "solidaria-DateRangePicker is-focus-within"
+            : "solidaria-DateRangePicker"
+        }
+      >
+        <DateRangePickerButton>Open</DateRangePickerButton>
+      </DateRangePicker>
+    ));
+    await waitForHydration();
+
+    const picker = document.querySelector(".solidaria-DateRangePicker") as HTMLElement;
+    const trigger = document.querySelector(".solidaria-DateRangePickerButton") as HTMLElement;
+    const hidden = document.querySelector('input[name="start"]') as HTMLInputElement;
+    expect(picker.contains(hidden)).toBe(false);
+    expect(picker).not.toHaveAttribute("data-focus-within");
+    expect(picker).not.toHaveAttribute("data-focus-visible");
+
+    setInteractionModality("keyboard");
+    trigger.focus();
+    await waitFor(() => {
+      expect(picker).toHaveAttribute("data-focus-within", "true");
+      expect(picker).toHaveAttribute("data-focus-visible", "true");
+      expect(picker).toHaveClass("is-focus-within");
+    });
+
+    trigger.blur();
+    await waitFor(() => {
+      expect(picker).not.toHaveAttribute("data-focus-within");
+      expect(picker).not.toHaveClass("is-focus-within");
+    });
+
+    hidden.focus();
+    await waitFor(() => {
+      expect(document.activeElement).toBe(hidden);
+      expect(picker).not.toHaveAttribute("data-focus-within");
+    });
   });
 
   it("renders and opens content via trigger button", async () => {
