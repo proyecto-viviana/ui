@@ -906,6 +906,45 @@ describe("Menu", () => {
       expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
+    it("exposes data-selection-mode on menu items", () => {
+      render(() => <TestMenu menuProps={{ selectionMode: "single" }} />);
+      expect(screen.getByRole("menuitemradio", { name: "Cat" })).toHaveAttribute(
+        "data-selection-mode",
+        "single",
+      );
+    });
+
+    it("omits data-selection-mode when selection is none", () => {
+      render(() => <TestMenu />);
+      expect(screen.getByRole("menuitem", { name: "Cat" })).not.toHaveAttribute(
+        "data-selection-mode",
+      );
+    });
+
+    it("exposes multiple as data-selection-mode", () => {
+      render(() => <TestMenu menuProps={{ selectionMode: "multiple" }} />);
+      expect(screen.getByRole("menuitemcheckbox", { name: "Cat" })).toHaveAttribute(
+        "data-selection-mode",
+        "multiple",
+      );
+    });
+
+    it("exposes a menu section selection mode on its items", () => {
+      render(() => (
+        <Menu aria-label="Format">
+          <MenuSection selectionMode="single" defaultSelectedKeys={["bold"]}>
+            <MenuItem id="bold" textValue="Bold">
+              Bold
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+      expect(screen.getByRole("menuitemradio", { name: "Bold" })).toHaveAttribute(
+        "data-selection-mode",
+        "single",
+      );
+    });
+
     it("shows a SelectionIndicator only for the selected menu item", async () => {
       render(() => (
         <Menu<TestItem>

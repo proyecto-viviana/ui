@@ -133,6 +133,7 @@ These behaviors match the pin in this checkout.
 - A static menu section takes its name from a child header, and an aria-label names it when that header is absent.
 - A separator inside a menu is a div, and an explicit hr stays an hr.
 - A table cell marks focus visible within its row, and a class can read that flag.
+- A menu item exposes its selection mode, and omits it when selection is none.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

@@ -1814,6 +1814,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
 
   const dataAttrs = () => {
     const selection = activeSectionSelection();
+    const selectionMode = selection?.selectionMode() ?? itemAria.selectionMode();
     return {
       "data-focused": dataAttr(itemAria.isFocused()),
       "data-focus-visible": dataAttr(itemAria.isFocusVisible()),
@@ -1821,6 +1822,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       "data-hovered": dataAttr(isHovered()),
       "data-disabled": dataAttr(itemAria.isDisabled()),
       "data-selected": dataAttr(selection?.isSelected(local.id) ?? itemAria.isSelected()),
+      "data-selection-mode": selectionMode === "none" ? undefined : selectionMode,
       "data-has-submenu": dataAttr(Boolean(contextProps()["aria-haspopup"])),
       "data-open": dataAttr(isAriaTrue(contextProps()["aria-expanded"])),
       "data-dragging": dataAttr(!!draggableItem()?.isDragging),
