@@ -33,6 +33,7 @@ import type { Accessor } from "solid-js";
 import { createFocusRing } from "../interactions";
 import { createPress } from "../interactions";
 import { createHover } from "../interactions";
+import { createLabels } from "../label/createLabels";
 import { createId } from "../ssr";
 import { useLocale } from "../i18n";
 import { ariaTrueFalse, attrTrue } from "../utils/domAttrs";
@@ -620,12 +621,19 @@ export function createTabPanel<T>(
       },
       role: "tabpanel",
       get "aria-labelledby"() {
+        // An explicit labelledby is kept. Otherwise the tab id labels the panel,
+        // and an aria-label would be ignored while that id is set. createLabels
+        // prepends this panel's id and keeps both.
         if (props["aria-labelledby"]) return props["aria-labelledby"];
         const key = associatedKey();
-        if (state && key !== null) {
-          return generateTabId(state, key);
-        }
-        return undefined;
+        if (!(state && key !== null)) return undefined;
+        const tabId = generateTabId(state, key);
+        if (!props["aria-label"]) return tabId;
+        return createLabels({
+          id: generateTabPanelId(state, key),
+          "aria-label": props["aria-label"],
+          "aria-labelledby": tabId,
+        })["aria-labelledby"];
       },
       "aria-label": props["aria-label"],
       "aria-describedby": props["aria-describedby"],

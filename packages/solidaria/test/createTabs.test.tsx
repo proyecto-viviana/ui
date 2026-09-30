@@ -1011,6 +1011,66 @@ describe("createTabPanel", () => {
     });
   });
 
+  it("includes its own id in aria-labelledby when an aria-label is also set", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: defaultItems,
+        getKey: (item) => item.key,
+      });
+
+      const { tabProps } = createTab({ key: "tab1" }, state);
+      const { tabPanelProps } = createTabPanel(
+        { id: "tab1", "aria-label": "Custom Panel Label" },
+        state,
+      );
+
+      expect(tabPanelProps["aria-label"]).toBe("Custom Panel Label");
+      expect(tabPanelProps["aria-labelledby"]).toBe(`${tabPanelProps.id} ${tabProps.id}`);
+      dispose();
+    });
+  });
+
+  it("keeps an explicit aria-labelledby when an aria-label is also set", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: defaultItems,
+        getKey: (item) => item.key,
+      });
+
+      const { tabPanelProps } = createTabPanel(
+        {
+          id: "tab1",
+          "aria-label": "Custom Panel Label",
+          "aria-labelledby": "external",
+        },
+        state,
+      );
+
+      expect(tabPanelProps["aria-label"]).toBe("Custom Panel Label");
+      expect(tabPanelProps["aria-labelledby"]).toBe("external");
+      dispose();
+    });
+  });
+
+  it("merges an empty aria-labelledby the same way as an omitted one", () => {
+    createRoot((dispose) => {
+      const state = createTabListState({
+        items: defaultItems,
+        getKey: (item) => item.key,
+      });
+
+      const { tabProps } = createTab({ key: "tab1" }, state);
+      const { tabPanelProps } = createTabPanel(
+        { id: "tab1", "aria-label": "Custom Panel Label", "aria-labelledby": "" },
+        state,
+      );
+
+      expect(tabPanelProps["aria-label"]).toBe("Custom Panel Label");
+      expect(tabPanelProps["aria-labelledby"]).toBe(`${tabPanelProps.id} ${tabProps.id}`);
+      dispose();
+    });
+  });
+
   it("supports aria-describedby", () => {
     createRoot((dispose) => {
       const state = createTabListState({
