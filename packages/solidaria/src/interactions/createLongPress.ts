@@ -113,7 +113,23 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
   } = props;
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let followupTimer: ReturnType<typeof setTimeout> | undefined;
+  let clickListener: ((event: Event) => void) | undefined;
+  let contextMenuListener: ((event: Event) => void) | undefined;
+  let followupTarget: EventTarget | undefined;
   const { addGlobalListener } = createGlobalListeners();
+
+  const removeFollowupListeners = () => {
+    if (followupTarget && clickListener) {
+      followupTarget.removeEventListener("click", clickListener);
+    }
+    if (followupTarget && contextMenuListener) {
+      followupTarget.removeEventListener("contextmenu", contextMenuListener);
+    }
+    clickListener = undefined;
+    contextMenuListener = undefined;
+    followupTarget = undefined;
+  };
   const isAcceptedPointerType = (e: PressEvent) =>
     pointerType
       ? e.pointerType === pointerType
@@ -126,9 +142,16 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
       if (isAcceptedPointerType(e)) {
         onLongPressStart?.(createLongPressEvent("longpressstart", e));
 
+        followupTarget = e.target;
         timeoutId = setTimeout(() => {
           // Prevent other press handlers from also handling this event.
           e.target.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true }));
+
+          // The click that follows a long press must not activate a link or button.
+          clickListener = (event: Event) => {
+            event.preventDefault();
+          };
+          e.target.addEventListener("click", clickListener, { once: true });
 
           // Ensure target is focused. On touch devices, browsers typically focus on pointer up.
           if (document.activeElement !== e.target) {
@@ -139,23 +162,25 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
           timeoutId = undefined;
         }, threshold);
 
+        // A long press on touch can open the context menu.
         if (e.pointerType === "touch") {
-          const onContextMenu = (event: Event) => {
+          contextMenuListener = (event: Event) => {
             event.preventDefault();
           };
-          const target = e.target as HTMLElement;
-          target.addEventListener("contextmenu", onContextMenu, { once: true });
-
-          addGlobalListener(
-            "pointerup",
-            () => {
-              setTimeout(() => {
-                target.removeEventListener("contextmenu", onContextMenu);
-              }, 30);
-            },
-            { isWindow: true, once: true },
-          );
+          e.target.addEventListener("contextmenu", contextMenuListener, { once: true });
         }
+
+        addGlobalListener(
+          "pointerup",
+          () => {
+            // Drop the guards if the click or context menu never arrives.
+            followupTimer = setTimeout(() => {
+              removeFollowupListeners();
+              followupTimer = undefined;
+            }, 100);
+          },
+          { isWindow: true, once: true },
+        );
       }
     },
     onPressEnd(e) {
@@ -181,6 +206,11 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
       clearTimeout(timeoutId);
       timeoutId = undefined;
     }
+    if (followupTimer) {
+      clearTimeout(followupTimer);
+      followupTimer = undefined;
+    }
+    removeFollowupListeners();
   });
 
   const longPressProps = mergeProps(pressProps) as JSX.HTMLAttributes<HTMLElement>;

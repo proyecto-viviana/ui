@@ -328,6 +328,52 @@ describe("createLongPress", () => {
     fireEvent.pointerUp(el, { pointerType: "touch" });
   });
 
+  it("prevents the click that follows a long press", () => {
+    render(() => <Example onLongPress={() => {}} />);
+
+    const el = screen.getByText("test");
+    fireEvent.pointerDown(el, { pointerType: "mouse" });
+    vi.advanceTimersByTime(600);
+    fireEvent.pointerUp(el, { pointerType: "mouse" });
+
+    expect(fireEvent.click(el)).toBe(false);
+  });
+
+  it("does not prevent a click when the press ends before the long press", () => {
+    render(() => <Example onLongPress={() => {}} />);
+
+    const el = screen.getByText("test");
+    fireEvent.pointerDown(el, { pointerType: "mouse" });
+    vi.advanceTimersByTime(300);
+    fireEvent.pointerUp(el, { pointerType: "mouse" });
+
+    expect(fireEvent.click(el)).toBe(true);
+  });
+
+  it("allows a click once the long press has finished", () => {
+    render(() => <Example onLongPress={() => {}} />);
+
+    const el = screen.getByText("test");
+    fireEvent.pointerDown(el, { pointerType: "mouse" });
+    vi.advanceTimersByTime(600);
+    fireEvent.pointerUp(el, { pointerType: "mouse" });
+    vi.advanceTimersByTime(150);
+
+    expect(fireEvent.click(el)).toBe(true);
+  });
+
+  it("keeps preventing the touch context menu until the long press has finished", () => {
+    render(() => <Example onLongPress={() => {}} />);
+
+    const el = screen.getByText("test");
+    fireEvent.pointerDown(el, { pointerType: "touch" });
+    vi.advanceTimersByTime(600);
+    fireEvent.pointerUp(el, { pointerType: "touch" });
+    vi.advanceTimersByTime(50);
+
+    expect(fireEvent.contextMenu(el)).toBe(false);
+  });
+
   it("should not fire any events for keyboard interactions", () => {
     const events: LongPressEvent[] = [];
     const addEvent = (e: LongPressEvent) => events.push(e);

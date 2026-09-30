@@ -162,6 +162,7 @@ These behaviors match the pin in this checkout.
 - A collapsed disclosure keeps `hidden` through the hydration walk.
 - The default locale stays `en-US` and `ltr` through the hydration walk, then follows the browser language.
 - A tree selection checkbox, and the spectrum list and tree checkboxes, take their name from the grid catalog.
+- A long press cancels the click that follows it, and a later click still works.
 
 **Components**
 
