@@ -143,6 +143,7 @@ These behaviors match the pin in this checkout.
 - A date picker and a date range picker mark focus within the root, and the hidden autofill input stays unmarked.
 - Tabs mark focus within the root.
 - A toast region marks hover and focus, and a toast marks its own focus.
+- A tag list marks its own focus, and a focused row leaves the list unmarked.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

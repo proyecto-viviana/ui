@@ -17,7 +17,7 @@ import { Button } from "../src/Button";
 import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { SelectionIndicator } from "../src/SelectionIndicator";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -727,6 +727,78 @@ describe("TagGroup", () => {
       const news = screen.getByRole("row", { name: "News" });
       expect(news).toHaveFocus();
       expect(news).toHaveAttribute("data-focus-visible");
+    });
+
+    it("leaves the tag list unmarked while a row is focused", async () => {
+      let seen = { isFocused: true, isFocusVisible: true };
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            class={(renderProps) => {
+              seen = {
+                isFocused: renderProps.isFocused,
+                isFocusVisible: renderProps.isFocusVisible,
+              };
+              return renderProps.isFocusVisible ? "list-focus" : "list-idle";
+            }}
+          >
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const list = screen.getByRole("grid", { name: "Test" });
+      expect(list).not.toHaveAttribute("data-focused");
+      expect(list).not.toHaveAttribute("data-focus-visible");
+      expect(list).toHaveClass("list-idle");
+
+      setInteractionModality("keyboard");
+      await user.tab();
+      const news = screen.getByRole("row", { name: "News" });
+      await waitFor(() => {
+        expect(news).toHaveFocus();
+        expect(news).toHaveAttribute("data-focus-visible", "true");
+        expect(list).not.toHaveAttribute("data-focused");
+        expect(list).not.toHaveAttribute("data-focus-visible");
+        expect(list).toHaveClass("list-idle");
+      });
+      expect(seen.isFocused).toBe(false);
+      expect(seen.isFocusVisible).toBe(false);
+    });
+
+    it("marks an empty tag list when the list itself is focused", async () => {
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={[]}
+            aria-label="Empty"
+            class={(renderProps) => (renderProps.isFocusVisible ? "list-focus" : "list-idle")}
+          >
+            {(item: { id: string; name: string }) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const list = screen.getByRole("group", { name: "Empty" });
+      setInteractionModality("keyboard");
+      list.focus();
+      await waitFor(() => {
+        expect(list).toHaveFocus();
+        expect(list).toHaveAttribute("data-focused", "true");
+        expect(list).toHaveAttribute("data-focus-visible", "true");
+        expect(list).toHaveClass("list-focus");
+      });
+
+      setInteractionModality("pointer");
+      list.blur();
+      list.focus();
+      await waitFor(() => {
+        expect(list).toHaveAttribute("data-focused", "true");
+        expect(list).not.toHaveAttribute("data-focus-visible");
+        expect(list).toHaveClass("list-idle");
+      });
     });
   });
 

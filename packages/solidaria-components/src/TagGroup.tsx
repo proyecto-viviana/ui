@@ -93,8 +93,10 @@ export interface TagGroupProps
 export interface TagListRenderProps {
   /** Whether the tag list is empty. */
   isEmpty: boolean;
-  /** Whether the tag list is focused. */
+  /** Whether the tag list itself is focused. */
   isFocused: boolean;
+  /** Whether the tag list itself is keyboard focused. */
+  isFocusVisible: boolean;
 }
 
 export interface TagListProps<T>
@@ -408,11 +410,14 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
     gridRef,
   );
 
-  const [isFocused, setIsFocused] = createSignal(false);
+  // Self ring: a focused row must not mark the list. Solid onFocus does not
+  // bubble, which matches useFocusRing() with no `within`.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   const renderValues = createMemo<TagListRenderProps>(() => ({
     isEmpty: local.items.length === 0,
     isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
   }));
 
   const renderProps = useRenderProps(
@@ -443,23 +448,19 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
           {...tagGroupAria.gridProps}
           class={renderProps.class()}
           style={renderProps.style()}
-          // Track focus-within via the BUBBLING focusin/focusout pair (not the
-          // non-bubbling focus/blur the hook's trampoline uses) so this render-prop
-          // signal never clobbers `gridProps.onFocus` — the container focus
-          // trampoline that marshals entry onto the first/last row.
-          onFocusIn={() => {
-            setIsFocused(true);
+          // Chain after the grid trampoline. Replacing gridProps.onFocus would
+          // skip the move onto the first or last row.
+          onFocus={(event) => {
+            tagGroupAria.gridProps.onFocus?.(event);
+            focusProps.onFocus?.(event);
           }}
-          onFocusOut={(e) => {
-            const nextTarget = e.relatedTarget as Node | null;
-            if (nextTarget && e.currentTarget.contains(nextTarget)) {
-              return;
-            }
-
-            setIsFocused(false);
+          onBlur={(event) => {
+            tagGroupAria.gridProps.onBlur?.(event);
+            focusProps.onBlur?.(event);
           }}
           data-empty={dataAttr(local.items.length === 0)}
           data-focused={dataAttr(isFocused())}
+          data-focus-visible={dataAttr(isFocusVisible())}
         >
           <SharedElementTransition>
             <Show when={local.items.length > 0} fallback={local.renderEmptyState?.()}>
