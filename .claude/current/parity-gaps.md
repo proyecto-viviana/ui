@@ -204,6 +204,7 @@ These behaviors match the pin in this checkout.
 - A load-more sentinel observes its scroll parent, and the end margin covers the right, bottom, and left of that parent.
 - A load-more sentinel calls onLoadMore for every intersection, including while a load is already in flight.
 - A calendar keeps its visible months inside min and max, and paging stops on that bound.
+- A calendar heading names a multi-month window with the native month range.
 
 **Components**
 

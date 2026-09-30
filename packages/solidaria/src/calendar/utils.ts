@@ -91,6 +91,49 @@ export function formatVisibleRangeDescription(
   return formatLabelRange(dateFormatter, startDate, endDate, timeZone, locale);
 }
 
+/**
+ * Visual title for the visible window. The calendar and grid names stay on
+ * the catalog path; this one uses the native month or date range.
+ */
+export function formatVisibleRangeTitle(
+  startDate: CalendarDate,
+  endDate: CalendarDate,
+  timeZone: string,
+  locale: string,
+): string {
+  const era = getEraFormat(startDate) || getEraFormat(endDate);
+  const monthFormatter = new DateFormatter(locale, {
+    month: "long",
+    year: "numeric",
+    era,
+    calendar: startDate.calendar.identifier,
+    timeZone,
+  } as Intl.DateTimeFormatOptions);
+  const dateFormatter = new DateFormatter(locale, {
+    month: "long",
+    year: "numeric",
+    day: "numeric",
+    era,
+    calendar: startDate.calendar.identifier,
+    timeZone,
+  } as Intl.DateTimeFormatOptions);
+
+  if (isSameDay(startDate, startOfMonth(startDate))) {
+    const startMonth = startDate.calendar.getFormattableMonth?.(startDate) ?? startDate;
+    const endMonth = endDate.calendar.getFormattableMonth?.(endDate) ?? endDate;
+
+    if (isSameDay(endDate, endOfMonth(startDate))) {
+      return monthFormatter.format(startMonth.toDate(timeZone));
+    }
+
+    if (isSameDay(endDate, endOfMonth(endDate))) {
+      return monthFormatter.formatRange(startMonth.toDate(timeZone), endMonth.toDate(timeZone));
+    }
+  }
+
+  return dateFormatter.formatRange(startDate.toDate(timeZone), endDate.toDate(timeZone));
+}
+
 export function formatSelectedDateDescription(state: CalendarState | RangeCalendarState): string {
   const locale = state.locale();
   const timeZone = state.timeZone;

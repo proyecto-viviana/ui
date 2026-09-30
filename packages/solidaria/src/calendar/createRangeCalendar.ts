@@ -32,6 +32,7 @@ import {
   announceVisibleRangeChange,
   formatSelectedDateDescription,
   formatVisibleRangeDescription,
+  formatVisibleRangeTitle,
   setCalendarHookData,
 } from "./utils";
 import { formatCalendarLabel } from "./intl";
@@ -108,8 +109,12 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     () => state.validationState(),
   ]);
 
-  // Title (e.g., "December 2024")
-  const title = createMemo(() => state.title());
+  // Visual title of the visible window. One month is that month; several
+  // months are the native range. The accessible name stays on the catalog.
+  const title = createMemo(() => {
+    const range = state.visibleRange();
+    return formatVisibleRangeTitle(range.start, range.end, state.timeZone, state.locale());
+  });
   const visibleRangeDescription = createMemo(() => {
     const range = state.visibleRange();
     return formatVisibleRangeDescription(range.start, range.end, state.timeZone, state.locale());

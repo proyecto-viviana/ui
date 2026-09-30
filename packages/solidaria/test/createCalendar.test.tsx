@@ -5,7 +5,13 @@
 
 import { describe, it, expect } from "vite-plus/test";
 import { createRoot, flush } from "solid-js";
-import { CalendarDate } from "@internationalized/date";
+import {
+  CalendarDate,
+  DateFormatter,
+  endOfMonth,
+  isSameDay,
+  startOfMonth,
+} from "@internationalized/date";
 import { createCalendarState, createRangeCalendarState } from "@proyecto-viviana/solid-stately";
 import { createCalendar } from "../src/calendar/createCalendar";
 import { createCalendarGrid } from "../src/calendar/createCalendarGrid";
@@ -131,6 +137,84 @@ describe("createCalendar labels", () => {
       const gridId = grid.gridProps.id as string;
       expect(grid.gridProps["aria-labelledby"]).toBe(`${gridId} heading`);
 
+      dispose();
+    });
+  });
+});
+
+function nativeVisibleMonthRange(
+  start: CalendarDate,
+  end: CalendarDate,
+  timeZone: string,
+  locale: string,
+): string {
+  const formatter = new DateFormatter(locale, {
+    month: "long",
+    year: "numeric",
+    calendar: start.calendar.identifier,
+    timeZone,
+  });
+  const startMonth = start.calendar.getFormattableMonth?.(start) ?? start;
+  const endMonth = end.calendar.getFormattableMonth?.(end) ?? end;
+  return formatter.formatRange(startMonth.toDate(timeZone), endMonth.toDate(timeZone));
+}
+
+describe("createCalendar title", () => {
+  it("names one visible month from that month", () => {
+    createRoot((dispose) => {
+      const state = decemberCalendar();
+      flush();
+      const calendar = createCalendar({}, state);
+      flush();
+
+      expect(calendar.title).toBe(state.title());
+      expect(calendar.title).toContain("December 2024");
+      dispose();
+    });
+  });
+
+  it("names a multi-month window with the native month range", () => {
+    createRoot((dispose) => {
+      const state = createCalendarState({
+        locale: "en-US",
+        visibleMonths: 3,
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+      });
+      flush();
+      const calendar = createCalendar({}, state);
+      flush();
+      const range = state.visibleRange();
+
+      expect(isSameDay(range.start, startOfMonth(range.start))).toBe(true);
+      expect(isSameDay(range.end, endOfMonth(range.end))).toBe(true);
+      expect(range.start.month).not.toBe(range.end.month);
+
+      const expected = nativeVisibleMonthRange(range.start, range.end, state.timeZone, "en-US");
+      expect(calendar.title).toBe(expected);
+      expect(String(calendar.calendarProps["aria-label"])).toContain("to");
+      dispose();
+    });
+  });
+
+  it("names a multi-month range calendar with the native month range", () => {
+    createRoot((dispose) => {
+      const state = createRangeCalendarState({
+        locale: "en-US",
+        visibleMonths: 3,
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+      });
+      flush();
+      const calendar = createRangeCalendar({}, state);
+      flush();
+      const range = state.visibleRange();
+
+      expect(isSameDay(range.start, startOfMonth(range.start))).toBe(true);
+      expect(isSameDay(range.end, endOfMonth(range.end))).toBe(true);
+      expect(range.start.month).not.toBe(range.end.month);
+
+      const expected = nativeVisibleMonthRange(range.start, range.end, state.timeZone, "en-US");
+      expect(calendar.title).toBe(expected);
+      expect(String(calendar.calendarProps["aria-label"])).toContain("to");
       dispose();
     });
   });
