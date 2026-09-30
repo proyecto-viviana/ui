@@ -89,8 +89,10 @@ export function createSlider(
   const domProps = () =>
     filterDOMProps(getProps() as unknown as Record<string, unknown>, { labelable: true });
 
-  // Label handling
-  const { labelProps, fieldProps } = createLabel({
+  // Label handling. Keep the returned props live: a slot label flips after
+  // mount, and a one-time destructure would leave aria-labelledby pointing
+  // at a label that was never rendered.
+  const labelAria = createLabel({
     get id() {
       return inputId;
     },
@@ -284,17 +286,18 @@ export function createSlider(
     };
   });
 
-  const labelledBy = () => (fieldProps as { "aria-labelledby"?: string })["aria-labelledby"];
-  const ariaLabel = () => (fieldProps as { "aria-label"?: string })["aria-label"];
+  const labelledBy = () =>
+    (labelAria.fieldProps as { "aria-labelledby"?: string })["aria-labelledby"];
+  const ariaLabel = () => (labelAria.fieldProps as { "aria-label"?: string })["aria-label"];
 
   return {
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return labelAria.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get groupProps() {
       const merged = mergeProps(
         domProps(),
-        fieldProps as Record<string, unknown>,
+        labelAria.fieldProps as Record<string, unknown>,
         {
           role: "group",
           "data-disabled": state.isDisabled || undefined,

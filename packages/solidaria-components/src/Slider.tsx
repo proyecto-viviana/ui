@@ -43,7 +43,9 @@ import {
   filterDOMProps,
   dataAttr,
   coerceDomRecord,
+  useSlot,
 } from "./utils";
+import { LabelContext, type LabelProps } from "./Label";
 import { VisuallyHidden } from "./VisuallyHidden";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -281,8 +283,41 @@ export function Slider(props: SliderProps): JSX.Element {
     inputRef = el;
   };
 
+  const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
+  // A string `label` names the slider through the built-in span. Slot detection
+  // starts only when that string and an explicit aria name are both absent.
+  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel() && !ariaProps.label);
+
   const sliderAria = createSlider(
-    ariaProps,
+    {
+      get label() {
+        return hasExplicitLabel() ? undefined : (ariaProps.label ?? hasLabel());
+      },
+      get "aria-label"() {
+        return ariaProps["aria-label"];
+      },
+      get "aria-labelledby"() {
+        return ariaProps["aria-labelledby"];
+      },
+      get "aria-describedby"() {
+        return ariaProps["aria-describedby"];
+      },
+      get "aria-details"() {
+        return ariaProps["aria-details"];
+      },
+      get isDisabled() {
+        return ariaProps.isDisabled;
+      },
+      get id() {
+        return ariaProps.id;
+      },
+      get name() {
+        return ariaProps.name;
+      },
+      get form() {
+        return ariaProps.form;
+      },
+    },
     state,
     () => trackRef ?? null,
     () => inputRef ?? null,
@@ -343,6 +378,15 @@ export function Slider(props: SliderProps): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  const labelContextValue: LabelProps = {
+    get id() {
+      return hasExplicitLabel() || ariaProps.label
+        ? undefined
+        : (sliderAria.labelProps.id as string | undefined);
+    },
+    ref: labelRef,
+  };
+
   const cleanGroupProps = () => {
     const { ref: _ref, ...rest } = sliderAria.groupProps as Record<string, unknown>;
     return rest;
@@ -387,8 +431,7 @@ export function Slider(props: SliderProps): JSX.Element {
         <Show when={ariaProps.label}>
           <span {...sliderAria.labelProps}>{ariaProps.label}</span>
         </Show>
-
-        {sliderChildren()}
+        <LabelContext value={labelContextValue}>{sliderChildren()}</LabelContext>
       </div>
     </SliderContext>
   );

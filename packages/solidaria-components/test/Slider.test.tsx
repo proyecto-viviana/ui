@@ -15,6 +15,7 @@
 import { createSignal, flush, type JSX } from "solid-js";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
+import { Label } from "../src/Label";
 import { Slider, SliderTrack, SliderThumb, SliderFill, SliderOutput } from "../src/Slider";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -376,6 +377,50 @@ describe("Slider", () => {
       // The group should have the aria-label
       const group = document.querySelector(".solidaria-Slider");
       expect(group).toHaveAttribute("aria-label", "Test Slider");
+    });
+
+    it("names the slider group from a child Label", () => {
+      render(() => (
+        <Slider defaultValue={30}>
+          {() => (
+            <>
+              <Label>Opacity</Label>
+              <SliderTrack>{() => <SliderThumb />}</SliderTrack>
+            </>
+          )}
+        </Slider>
+      ));
+
+      const group = screen.getByRole("group", { name: "Opacity" });
+      const label = screen.getByText("Opacity");
+      expect(label.tagName).toBe("LABEL");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", () => {
+      render(() => (
+        <Slider aria-label="Explicit slider" defaultValue={30}>
+          {() => <Label>Opacity</Label>}
+        </Slider>
+      ));
+
+      const group = screen.getByRole("group");
+      const label = screen.getByText("Opacity");
+      expect(group).toHaveAttribute("aria-label", "Explicit slider");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("does not point an unlabeled slider at a missing label", () => {
+      render(() => (
+        <Slider defaultValue={30}>
+          {() => <SliderTrack>{() => <SliderThumb />}</SliderTrack>}
+        </Slider>
+      ));
+
+      const group = document.querySelector(".solidaria-Slider");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(screen.getByRole("slider")).not.toHaveAttribute("aria-labelledby");
     });
 
     it("should have aria-valuenow", () => {
