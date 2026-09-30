@@ -705,6 +705,28 @@ describe("createNumberFieldState", () => {
       });
     });
 
+    it("reverts a lone minus sign to the current value on commit", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createNumberFieldState({
+          defaultValue: 50,
+          onChange,
+        });
+
+        state.setInputValue("-");
+        state.commit();
+
+        flush();
+        expect(state.numberValue()).toBe(50);
+        flush();
+        expect(state.inputValue()).toBe("50");
+        flush();
+        expect(onChange).not.toHaveBeenCalled();
+
+        dispose();
+      });
+    });
+
     it("should commit an override instead of the current input", () => {
       createRoot((dispose) => {
         const onChange = vi.fn();

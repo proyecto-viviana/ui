@@ -176,6 +176,7 @@ These behaviors match the pin in this checkout.
 - A color wheel track drag continues from the thumb position, so the hue does not jump to the pointer angle.
 - A color wheel keeps the hue of a point outside the radius square, so a drag does not snap to the corner.
 - A number field snaps a negative halfway value away from zero, and an off-step maximum lands on the last in-range step.
+- A number field keeps its current value when the committed text is only a minus sign.
 
 **Components**
 

@@ -373,7 +373,7 @@ export function createNumberFieldState(
     const p = getProps();
     const input = override === undefined ? readNow(inputValue) : override;
 
-    if (input === "" || input === "-") {
+    if (input === "") {
       // Clear value
       setNumberValue(NaN);
       setInputValueInternal(p.value === undefined ? "" : formatNumber(readNow(actualNumberValue)));
