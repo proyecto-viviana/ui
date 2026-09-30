@@ -106,6 +106,7 @@ import {
 } from "./GridList";
 import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 import {
   handleLinkClick,
   type LinkDOMProps,
@@ -1988,14 +1989,13 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;
-      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
       const observer = new IntersectionObserver(
         (entries) => {
           if (entries[0]?.isIntersecting) {
             void triggerLoadMore();
           }
         },
-        { rootMargin: margin },
+        loadMoreSentinelObserverInit(current, scrollOffset),
       );
       observer.observe(current);
       return () => observer.disconnect();

@@ -111,6 +111,7 @@ import { PopoverTriggerContext, RootMenuTriggerStateContext } from "./contexts";
 import { OverlayContext } from "./Popover";
 import { SeparatorContext } from "./Separator";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 
 export interface MenuRenderProps {
   /** Whether the menu is focused. */
@@ -2093,8 +2094,6 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
       if (!current || typeof IntersectionObserver !== "function") return;
 
       const onLoadMore = local.onLoadMore;
-      const margin = 100 * scrollOffset;
-      const rootMargin = `0px ${margin}% ${margin}% ${margin}%`;
       const observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -2103,7 +2102,7 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
             }
           }
         },
-        { rootMargin },
+        loadMoreSentinelObserverInit(current, scrollOffset),
       );
       observer.observe(current);
       return () => observer.disconnect();

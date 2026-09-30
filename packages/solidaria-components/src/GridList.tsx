@@ -87,6 +87,7 @@ import {
 } from "./Checkbox";
 import { useVirtualizerContext, PersistedVirtualItem, type Orientation } from "./Virtualizer";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 import {
   getNormalizedDropTargetKey,
   indexesOutsideRange,
@@ -1105,14 +1106,13 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;
-      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
       const observer = new IntersectionObserver(
         (entries) => {
           if (entries[0]?.isIntersecting) {
             void triggerLoadMore();
           }
         },
-        { rootMargin: margin },
+        loadMoreSentinelObserverInit(current, scrollOffset),
       );
       observer.observe(current);
       return () => observer.disconnect();

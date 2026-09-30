@@ -103,6 +103,7 @@ import {
 } from "./DragAndDrop";
 import { createTreeDropTargetDelegate } from "./Tree";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 
 export interface TableRenderProps {
   /** Whether the table has focus. */
@@ -1634,14 +1635,13 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
     }),
     ({ current, scrollOffset }) => {
       if (!current || typeof IntersectionObserver !== "function") return;
-      const margin = `0px 0px ${100 * scrollOffset}% 0px`;
       const observer = new IntersectionObserver(
         (entries) => {
           if (entries[0]?.isIntersecting) {
             void triggerLoadMore();
           }
         },
-        { rootMargin: margin },
+        loadMoreSentinelObserverInit(current, scrollOffset),
       );
       observer.observe(current);
       return () => observer.disconnect();
