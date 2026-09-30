@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot } from "solid-js";
-import { cleanup } from "@solidjs/testing-library";
+import { createRoot, createSignal, Show, type Accessor } from "solid-js";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createGridState,
   type GridCollection,
@@ -484,6 +484,75 @@ describe("createGridList virtualized column count", () => {
       expect(grid.gridProps["aria-rowcount"]).toBeUndefined();
       dispose();
     });
+  });
+});
+
+function TabStopList(props: { keys: Key[]; hasButton: Accessor<boolean>; disabled?: boolean }) {
+  const [listRef, setListRef] = createSignal<HTMLDivElement>();
+  const collection = createRowCollection(props.keys);
+  const state = createGridState<{ key: Key }>(() => ({
+    collection,
+    selectionMode: "multiple",
+  }));
+  const aria = createGridList(
+    () => ({ "aria-label": "Items", isDisabled: props.disabled }),
+    () => state,
+    listRef,
+  );
+
+  return (
+    <div {...aria.gridProps} ref={setListRef}>
+      <Show when={props.hasButton()}>
+        <button type="button">Continue</button>
+      </Show>
+    </div>
+  );
+}
+
+describe("createGridList empty tab stop", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("yields the tab stop when an empty grid list contains a tabbable control", async () => {
+    let setHasButton!: (value: boolean) => void;
+
+    render(() => {
+      const [hasButton, updateHasButton] = createSignal(false);
+      setHasButton = updateHasButton;
+      return <TabStopList keys={[]} hasButton={hasButton} />;
+    });
+
+    const grid = screen.getByRole("grid");
+    expect(grid).toHaveAttribute("tabindex", "0");
+
+    setHasButton(true);
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "-1"));
+
+    setHasButton(false);
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "0"));
+  });
+
+  it("keeps a populated grid list tabbable while no row is focused", async () => {
+    render(() => {
+      const [hasButton] = createSignal(true);
+      return <TabStopList keys={["a"]} hasButton={hasButton} />;
+    });
+
+    const grid = screen.getByRole("grid");
+    expect(grid).toHaveAttribute("tabindex", "0");
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "0"));
+  });
+
+  it("omits the tab stop when the grid list is disabled, even if it is empty", async () => {
+    render(() => {
+      const [hasButton] = createSignal(true);
+      return <TabStopList keys={[]} hasButton={hasButton} disabled />;
+    });
+
+    const grid = screen.getByRole("grid");
+    expect(grid).not.toHaveAttribute("tabindex");
+    await waitFor(() => expect(grid).not.toHaveAttribute("tabindex"));
   });
 });
 

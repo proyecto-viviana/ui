@@ -187,6 +187,7 @@ These behaviors match the pin in this checkout.
 - A toast keeps an explicit label, and the title names it when that label is absent.
 - A calendar and its grid include their own id in aria-labelledby when the visible-range name is also set.
 - A tab panel includes its own id in aria-labelledby when an aria-label is also set.
+- An empty grid, table, or grid list yields its tab stop when it already contains a tabbable control.
 
 **Components**
 

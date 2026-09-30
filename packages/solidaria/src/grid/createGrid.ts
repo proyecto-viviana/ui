@@ -28,6 +28,7 @@ import { createStringFormatter, useLocale } from "../i18n";
 import { announce } from "../live-announcer";
 import { createDescription, type DescriptionProps } from "../utils/createDescription";
 import { createInteractionModality } from "../interactions/createInteractionModality";
+import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import { gridIntlStrings } from "./intl";
 
 // Global map to store grid metadata for child components
@@ -483,6 +484,11 @@ export function createGrid<T extends object>(
     () => (props() as GridProps & { getRowText?: (key: Key) => string }).getRowText,
   );
 
+  // An empty grid stays in the tab order unless it already contains a tabbable control.
+  const hasTabbableChild = createHasTabbableChild(ref, {
+    isDisabled: () => state().collection.size !== 0,
+  });
+
   const gridProps = createMemo(() => {
     const p = props();
     const s = state();
@@ -494,7 +500,7 @@ export function createGrid<T extends object>(
       "aria-labelledby": p["aria-labelledby"],
       "aria-describedby": descriptionProps["aria-describedby"] ?? p["aria-describedby"],
       "aria-multiselectable": s.selectionMode === "multiple" ? "true" : undefined,
-      tabIndex: s.collection.size === 0 ? 0 : -1,
+      tabIndex: s.collection.size === 0 ? (hasTabbableChild() ? -1 : 0) : -1,
       onKeyDown,
       onFocus,
       onBlur,

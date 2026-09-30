@@ -27,6 +27,7 @@ import { createStringFormatter, useLocale } from "../i18n";
 import { tableIntlStrings } from "./intl";
 import { announce } from "../live-announcer";
 import { createDescription } from "../utils/createDescription";
+import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 
@@ -661,6 +662,11 @@ export function createTable<T extends object>(
   };
   const sortDescriptionProps = createDescription(sortDescription);
 
+  // An empty table stays in the tab order unless it already contains a tabbable control.
+  const hasTabbableChild = createHasTabbableChild(ref, {
+    isDisabled: () => state().collection.size !== 0,
+  });
+
   const gridProps = createMemo(() => {
     const p = props();
     const s = state();
@@ -676,7 +682,14 @@ export function createTable<T extends object>(
       "aria-labelledby": p["aria-labelledby"],
       "aria-describedby": describedBy,
       "aria-multiselectable": s.selectionMode === "multiple" ? "true" : undefined,
-      tabIndex: s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey) ? -1 : 0,
+      tabIndex:
+        s.collection.size === 0
+          ? hasTabbableChild()
+            ? -1
+            : 0
+          : s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey)
+            ? -1
+            : 0,
       onKeyDown,
       onFocus,
       onBlur,

@@ -10,8 +10,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
-import { cleanup } from "@solidjs/testing-library";
-import { createRoot, type Accessor } from "solid-js";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
+import { createRoot, createSignal, Show, type Accessor } from "solid-js";
 import {
   createTableCollection,
   createTableState,
@@ -131,5 +131,71 @@ describe("createTable role", () => {
       expect(table.gridProps.role).toBe("treegrid");
       dispose();
     });
+  });
+});
+
+function EmptyTableProbe(props: { rows: RowDefinition<Item>[]; hasButton: Accessor<boolean> }) {
+  const [tableRef, setTableRef] = createSignal<HTMLTableElement>();
+  const collection = createTableCollection<Item>({ columns: treeColumns, rows: props.rows });
+  const state = createTableState<Item>(() => ({ collection }));
+  const aria = createTable<Item>(
+    () => ({ "aria-label": "Files" }),
+    () => state,
+    tableRef,
+  );
+
+  return (
+    <table {...aria.gridProps} ref={setTableRef}>
+      <tbody>
+        <tr>
+          <td>
+            <Show when={props.hasButton()}>
+              <button type="button">Continue</button>
+            </Show>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+describe("createTable empty tab stop", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("yields the tab stop when an empty table contains a tabbable control", async () => {
+    let setHasButton!: (value: boolean) => void;
+
+    render(() => {
+      const [hasButton, updateHasButton] = createSignal(false);
+      setHasButton = updateHasButton;
+      return <EmptyTableProbe rows={[]} hasButton={hasButton} />;
+    });
+
+    const grid = screen.getByRole("grid");
+    expect(grid).toHaveAttribute("tabindex", "0");
+
+    setHasButton(true);
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "-1"));
+
+    setHasButton(false);
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "0"));
+  });
+
+  it("keeps a populated table tabbable while no row is focused", async () => {
+    render(() => {
+      const [hasButton] = createSignal(true);
+      return (
+        <EmptyTableProbe
+          rows={[{ key: "a", value: { name: "A", type: "file" } }]}
+          hasButton={hasButton}
+        />
+      );
+    });
+
+    const grid = screen.getByRole("grid");
+    expect(grid).toHaveAttribute("tabindex", "0");
+    await waitFor(() => expect(grid).toHaveAttribute("tabindex", "0"));
   });
 });

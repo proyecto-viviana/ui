@@ -35,6 +35,7 @@ import {
   createGridSelectionAnnouncement,
   createHighlightSelectionDescription,
 } from "../grid/createGrid";
+import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import { access } from "../utils/reactivity";
 
 /**
@@ -490,6 +491,11 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   });
   createGridSelectionAnnouncement(state);
 
+  // An empty grid list stays in the tab order unless it already contains a tabbable control.
+  const hasTabbableChild = createHasTabbableChild(ref, {
+    isDisabled: () => state().collection.size !== 0,
+  });
+
   const gridProps = createMemo(() => {
     const p = props();
     const s = state();
@@ -510,9 +516,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         // real row focus, so it never needs (nor emits) aria-activedescendant.
         tabIndex: p.isDisabled
           ? undefined
-          : s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey)
-            ? -1
-            : 0,
+          : s.collection.size === 0
+            ? hasTabbableChild()
+              ? -1
+              : 0
+            : s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey)
+              ? -1
+              : 0,
         onKeyDown,
         onFocus,
         onBlur,
