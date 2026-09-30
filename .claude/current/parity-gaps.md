@@ -139,6 +139,7 @@ These behaviors match the pin in this checkout.
 - A time field takes its name from a child label, and an explicit aria-label keeps its own name.
 - A color slider takes its name from a child label, and an explicit aria-label keeps its own name.
 - A color field takes its name from a child label, and an explicit aria-label keeps its own name.
+- A calendar cell marks a date outside the visible range, and a date in another visible month stays unmarked.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

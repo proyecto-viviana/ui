@@ -131,6 +131,8 @@ export interface CalendarCellRenderProps {
   isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
+  /** Whether the cell is outside the visible range. */
+  isOutsideVisibleRange: boolean;
   /** Whether the cell represents today. */
   isToday: boolean;
   /** Whether the cell is pressed. */
@@ -690,6 +692,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     isUnavailable: cellAria.isUnavailable,
     isInvalid: cellAria.isInvalid,
     isOutsideMonth: cellAria.isOutsideMonth,
+    isOutsideVisibleRange: cellAria.isOutsideVisibleRange,
     isToday: cellAria.isToday,
     isPressed: cellAria.isPressed,
     isHovered: isHovered(),
@@ -749,6 +752,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
         data-unavailable={dataAttr(cellAria.isUnavailable)}
         data-invalid={dataAttr(cellAria.isInvalid)}
         data-outside-month={dataAttr(cellAria.isOutsideMonth)}
+        data-outside-visible-range={dataAttr(cellAria.isOutsideVisibleRange)}
         data-today={dataAttr(cellAria.isToday)}
         data-pressed={dataAttr(cellAria.isPressed)}
         data-hovered={dataAttr(isHovered())}

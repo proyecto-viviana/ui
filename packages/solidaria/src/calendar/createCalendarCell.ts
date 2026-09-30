@@ -66,6 +66,11 @@ export interface CalendarCellAria {
   isInvalid: boolean;
   /** Whether the cell is outside the visible month. */
   isOutsideMonth: boolean;
+  /**
+   * Whether the cell is outside the visible range.
+   * Padding days before the first visible day or after the last one.
+   */
+  isOutsideVisibleRange: boolean;
   /** Whether the cell represents today. */
   isToday: boolean;
   /** Whether the cell is pressed. */
@@ -110,6 +115,13 @@ export function createCalendarCell<T extends CalendarState>(
   const isOutsideMonth = createMemo(
     () => getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date()),
   );
+  // Pin useCalendarCell compares the cell with visibleRange start and end.
+  // state.isOutsideVisibleRange is month membership and is a different flag.
+  const isOutsideVisibleRange = createMemo(() => {
+    const range = state.visibleRange();
+    const current = date();
+    return current.compare(range.start) < 0 || current.compare(range.end) > 0;
+  });
   // Mirror @react-aria/calendar useCalendarCell: `isCellFocused(date) &&
   // !isOutsideMonth`. isCellFocused is gated on the calendar-level focus flag,
   // so this drives the focusSafely effect (never on mount) — NOT the roving
@@ -348,6 +360,9 @@ export function createCalendarCell<T extends CalendarState>(
     },
     get isOutsideMonth() {
       return isOutsideMonth();
+    },
+    get isOutsideVisibleRange() {
+      return isOutsideVisibleRange();
     },
     get isToday() {
       return isToday();

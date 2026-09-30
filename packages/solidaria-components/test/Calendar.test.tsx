@@ -169,6 +169,50 @@ describe("Calendar", () => {
 
       expect(januaryButton).toBeTruthy();
       expect(januaryButton).toHaveAttribute("data-outside-month");
+      expect(januaryButton).not.toHaveAttribute("data-outside-visible-range");
+    });
+
+    it("should mark dates outside the visible range and keep another visible month unmarked", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Three month calendar"
+          visibleMonths={3}
+          selectionAlignment="start"
+          defaultFocusedValue={new CalendarDate(2024, 1, 15)}
+        >
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <CalendarGrid offset={{ months: 1 }}>
+            {(date) => <CalendarCell date={date} />}
+          </CalendarGrid>
+          <CalendarGrid offset={{ months: 2 }}>
+            {(date) => <CalendarCell date={date} />}
+          </CalendarGrid>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const grids = document.querySelectorAll('table[role="grid"]');
+      expect(grids.length).toBe(3);
+
+      const buttonWith = (grid: Element | undefined, label: string) =>
+        Array.from(grid?.querySelectorAll('div[role="button"]') ?? []).find((button) =>
+          button.getAttribute("aria-label")?.includes(label),
+        );
+
+      const february = buttonWith(grids[1], "February 15");
+      expect(february).toBeTruthy();
+      expect(february).not.toHaveAttribute("data-outside-month");
+      expect(february).not.toHaveAttribute("data-outside-visible-range");
+
+      const december = buttonWith(grids[0], "December");
+      expect(december).toBeTruthy();
+      expect(december).toHaveAttribute("data-outside-month");
+      expect(december).toHaveAttribute("data-outside-visible-range");
+
+      const april = buttonWith(grids[2], "April");
+      expect(april).toBeTruthy();
+      expect(april).toHaveAttribute("data-outside-month");
+      expect(april).toHaveAttribute("data-outside-visible-range");
     });
   });
 
