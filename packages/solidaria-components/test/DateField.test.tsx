@@ -11,7 +11,14 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { DateField, DateFieldErrorMessage, DateInput, DateSegment } from "../src/DateField";
+import {
+  DateField,
+  DateFieldErrorMessage,
+  DateFieldLabel,
+  DateInput,
+  DateSegment,
+} from "../src/DateField";
+import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { CalendarDate } from "@internationalized/date";
@@ -635,6 +642,99 @@ describe("DateField", () => {
       // not the roleless wrapper.
       const group = screen.getByRole("group", { name: "Test Date Field" });
       expect(group).toHaveAttribute("aria-label", "Test Date Field");
+    });
+
+    it("names the date field from a child Label", async () => {
+      render(() => (
+        <DateField>
+          <Label>Appointment</Label>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Appointment" });
+      const label = screen.getByText("Appointment");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+      const spinbuttons = screen.getAllByRole("spinbutton");
+      expect(
+        spinbuttons.some((segment) =>
+          segment.getAttribute("aria-labelledby")?.split(/\s+/).includes(label.id),
+        ),
+      ).toBe(true);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", async () => {
+      render(() => (
+        <DateField aria-label="Test Date Field">
+          <Label>Appointment</Label>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Test Date Field" });
+      const label = screen.getByText("Appointment");
+      expect(group).toHaveAttribute("aria-label", "Test Date Field");
+      expect(group).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+      for (const segment of screen.getAllByRole("spinbutton")) {
+        const labelledBy = segment.getAttribute("aria-labelledby");
+        if (!labelledBy) continue;
+        for (const id of labelledBy.split(/\s+/)) {
+          expect(document.getElementById(id)).not.toBeNull();
+        }
+      }
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", async () => {
+      render(() => (
+        <>
+          <span id="external-date-field-label">External</span>
+          <DateField aria-labelledby="external-date-field-label">
+            <Label>Appointment</Label>
+            <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          </DateField>
+        </>
+      ));
+      await waitForDateFieldHydration();
+
+      const group = screen.getByRole("group");
+      const label = screen.getByText("Appointment");
+      expect(group).toHaveAttribute("aria-labelledby", "external-date-field-label");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("names the date field from its label prop", async () => {
+      render(() => (
+        <DateField label="Appointment">
+          <DateFieldLabel>Appointment</DateFieldLabel>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      const group = screen.getByRole("group", { name: "Appointment" });
+      const label = screen.getByText("Appointment");
+      expect(label.tagName).toBe("SPAN");
+      expect(group).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("does not point an unlabeled date field at a missing label", async () => {
+      render(() => (
+        <DateField>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+        </DateField>
+      ));
+      await waitForDateFieldHydration();
+
+      await waitFor(() => {
+        expect(screen.getByRole("group")).not.toHaveAttribute("aria-labelledby");
+      });
+      for (const segment of screen.getAllByRole("spinbutton")) {
+        expect(segment).not.toHaveAttribute("aria-labelledby");
+      }
     });
 
     it("should have aria-valuenow on segments with values", async () => {

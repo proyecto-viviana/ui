@@ -38,10 +38,10 @@ import { datePickerStrings } from "./intl";
 import { createDatePickerGroup } from "./createDatePickerGroup";
 import type { DateFieldState } from "@proyecto-viviana/solid-stately";
 
-// Shared channel between the field and its segments. Unlike upstream (which stores
-// plain strings and re-runs the hook every render), `ariaDescribedBy` is stored as
-// an accessor so segments pick up the description id once `createDescription`'s
-// deferred effect has appended its hidden node.
+// Shared channel between the field and its segments. Upstream stores plain strings
+// and re-runs the hook every render. These label fields are accessors so a segment
+// drops a label id that settles away, and picks up a description id once
+// `createDescription`'s deferred effect has appended its hidden node.
 export const hookData = new WeakMap<
   object,
   {
@@ -61,8 +61,8 @@ export const focusManagerSymbol = "__focusManager_" + Date.now();
 export interface AriaDateFieldProps {
   /** An ID for the date field. */
   id?: string;
-  /** A visible label for the date field. */
-  label?: string;
+  /** A visible label string, or true when a child label supplies the name. */
+  label?: string | boolean;
   /** An accessible label for the date field. */
   "aria-label"?: string;
   /** The ID of an element that labels the date field. */
@@ -205,11 +205,16 @@ export function createDateField<T extends DateFieldState>(
     isPresentation(),
   );
 
-  // Publish labels and the focus manager to the segments.
-  const labelId = (field.labelProps as Record<string, string | undefined>).id;
+  // Publish labels and the focus manager to the segments. Getters stay live
+  // inside each segment's prop memo.
   hookData.set(state as unknown as object, {
-    ariaLabel: getProps()["aria-label"],
-    ariaLabelledBy: [labelId, getProps()["aria-labelledby"]].filter(Boolean).join(" ") || undefined,
+    get ariaLabel() {
+      return getProps()["aria-label"];
+    },
+    get ariaLabelledBy() {
+      const labelId = (field.labelProps as Record<string, string | undefined>).id;
+      return [labelId, getProps()["aria-labelledby"]].filter(Boolean).join(" ") || undefined;
+    },
     ariaDescribedBy: describedBy,
     focusManager,
   });
