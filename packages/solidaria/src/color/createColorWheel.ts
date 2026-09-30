@@ -47,6 +47,7 @@ export function createColorWheel(
   let cleanupPointerDrag: (() => void) | undefined;
   let cleanupMouseDrag: (() => void) | undefined;
   let dragElement: HTMLElement | null = null;
+  let thumbGrab: { clientX: number; clientY: number; x: number; y: number } | null = null;
 
   const outerRadius = () => getProps().outerRadius ?? 100;
   const innerRadius = () => getProps().innerRadius ?? 74;
@@ -97,7 +98,22 @@ export function createColorWheel(
     return true;
   };
 
+  const beginThumbGrab = (clientX: number, clientY: number) => {
+    const position = getState().getThumbPosition(thumbRadius());
+    thumbGrab = { clientX, clientY, x: position.x, y: position.y };
+  };
+
+  const updateFromThumbGrab = (clientX: number, clientY: number) => {
+    if (!thumbGrab || getProps().isDisabled || getState().isDisabled) return;
+    getState().setHueFromPoint(
+      thumbGrab.x + (clientX - thumbGrab.clientX),
+      thumbGrab.y + (clientY - thumbGrab.clientY),
+      thumbRadius(),
+    );
+  };
+
   const endDrag = () => {
+    thumbGrab = null;
     if (!getState().isDragging) return;
     getState().setDragging(false);
     dragElement = null;
@@ -110,6 +126,10 @@ export function createColorWheel(
 
     const onPointerMove = (e: PointerEvent) => {
       if (!getState().isDragging) return;
+      if (thumbGrab) {
+        updateFromThumbGrab(e.clientX, e.clientY);
+        return;
+      }
       updateFromPoint(e.clientX, e.clientY);
     };
     const onPointerEnd = () => {
@@ -135,6 +155,10 @@ export function createColorWheel(
 
     const onMouseMove = (e: MouseEvent) => {
       if (!getState().isDragging) return;
+      if (thumbGrab) {
+        updateFromThumbGrab(e.clientX, e.clientY);
+        return;
+      }
       updateFromPoint(e.clientX, e.clientY);
     };
     const onMouseEnd = () => {
@@ -160,6 +184,7 @@ export function createColorWheel(
   const onTrackPointerDown = (e: PointerEvent) => {
     if (e.pointerType === "mouse" && (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)) return;
 
+    thumbGrab = null;
     dragElement = e.currentTarget as HTMLElement;
     if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
       dragElement = null;
@@ -174,6 +199,7 @@ export function createColorWheel(
   const onTrackMouseDown = (e: MouseEvent) => {
     if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey) return;
 
+    thumbGrab = null;
     dragElement = e.currentTarget as HTMLElement;
     if (!updateFromPoint(e.clientX, e.clientY, true, dragElement)) {
       dragElement = null;
@@ -189,6 +215,7 @@ export function createColorWheel(
     if (getProps().isDisabled || getState().isDisabled) return;
     if (e.pointerType === "mouse" && (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)) return;
 
+    beginThumbGrab(e.clientX, e.clientY);
     focusInput();
     getState().setDragging(true);
     installPointerDragListeners();
@@ -200,6 +227,7 @@ export function createColorWheel(
     if (getProps().isDisabled || getState().isDisabled) return;
     if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey) return;
 
+    beginThumbGrab(e.clientX, e.clientY);
     focusInput();
     getState().setDragging(true);
     installMouseDragListeners();

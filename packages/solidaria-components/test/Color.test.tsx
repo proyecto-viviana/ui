@@ -1356,6 +1356,49 @@ describe("Color Components", () => {
         expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(20);
       });
 
+      it("keeps the thumb grab offset so an off-center drag does not jump to the pointer angle", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorWheel
+            defaultValue={parseColor("hsl(0, 100%, 50%)")}
+            aria-label="Hue wheel"
+            onChange={onChange}
+          />
+        ));
+
+        const wheel = document.querySelector(".solidaria-ColorWheel") as HTMLElement;
+        const thumb = document.querySelector(".solidaria-ColorWheel-thumb") as HTMLElement;
+        wheel.getBoundingClientRect = () =>
+          ({
+            x: 0,
+            y: 0,
+            left: 0,
+            top: 0,
+            right: 200,
+            bottom: 200,
+            width: 200,
+            height: 200,
+            toJSON: () => ({}),
+          }) as DOMRect;
+
+        // Hue 0 sits at thumb center (187, 100). Press 20px inward, then move 40px down.
+        // The thumb position (87, 0) plus that delta is hue 25. The pointer itself, at
+        // (67, 40) from the center, is hue 31.
+        fireEvent.pointerDown(thumb, {
+          clientX: 167,
+          clientY: 100,
+          button: 0,
+          pointerType: "mouse",
+          pointerId: 1,
+        });
+        expect(onChange).not.toHaveBeenCalled();
+
+        fireEvent.pointerMove(window, { clientX: 167, clientY: 140, pointerId: 1 });
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.lastCall?.[0].getChannelValue("hue")).toBe(25);
+      });
+
       it("supports form reset", () => {
         const [value, setValue] = createSignal(parseColor("hsl(15, 100%, 50%)"));
         render(() => (
