@@ -22,6 +22,7 @@ import {
   SubmenuTrigger,
 } from "../src/Menu";
 import { Button } from "../src/Button";
+import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Separator } from "../src/Separator";
 import { Popover } from "../src/Popover";
 import { CollectionRendererContext } from "../src/Collection";
@@ -810,6 +811,37 @@ describe("Menu", () => {
       expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["dog"]));
     });
 
+    it("shows a SelectionIndicator only for the selected menu item", async () => {
+      render(() => (
+        <Menu<TestItem>
+          aria-label="Test"
+          items={testItems}
+          getKey={(item) => item.id}
+          selectionMode="single"
+          defaultSelectedKeys={["cat"]}
+        >
+          {(item) => (
+            <MenuItem id={item.id}>
+              {item.name}
+              <SelectionIndicator>Mark</SelectionIndicator>
+            </MenuItem>
+          )}
+        </Menu>
+      ));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("menuitemradio", { name: "Cat" })).toContainElement(
+        screen.getByText("Mark"),
+      );
+
+      await user.click(screen.getByRole("menuitemradio", { name: "Dog" }));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("menuitemradio", { name: "Dog" })).toContainElement(
+        screen.getByText("Mark"),
+      );
+    });
+
     it("supports multiple selection semantics and toggling", async () => {
       const onSelectionChange = vi.fn();
       render(() => (
@@ -984,6 +1016,35 @@ describe("Menu", () => {
       expect(right).toHaveAttribute("aria-checked", "true");
       expect(onStyleSelectionChange).toHaveBeenLastCalledWith(new Set(["bold", "italic"]));
       expect(onAlignmentSelectionChange).toHaveBeenLastCalledWith(new Set(["right"]));
+    });
+
+    it("shows a SelectionIndicator for a selected item in a menu section", async () => {
+      render(() => (
+        <Menu aria-label="Format">
+          <MenuSection selectionMode="single" defaultSelectedKeys={["bold"]}>
+            <MenuItem id="bold" textValue="Bold">
+              Bold
+              <SelectionIndicator>Mark</SelectionIndicator>
+            </MenuItem>
+            <MenuItem id="italic" textValue="Italic">
+              Italic
+              <SelectionIndicator>Mark</SelectionIndicator>
+            </MenuItem>
+          </MenuSection>
+        </Menu>
+      ));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("menuitemradio", { name: "Bold" })).toContainElement(
+        screen.getByText("Mark"),
+      );
+
+      await user.click(screen.getByRole("menuitemradio", { name: "Italic" }));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(screen.getByRole("menuitemradio", { name: "Italic" })).toContainElement(
+        screen.getByText("Mark"),
+      );
     });
 
     it("supports controlled static MenuSection selection state", async () => {

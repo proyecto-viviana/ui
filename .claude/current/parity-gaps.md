@@ -122,6 +122,7 @@ These behaviors match the pin in this checkout.
 - A grid list selects from a Checkbox in the selection slot, and an unslotted checkbox does not.
 - A table selects from a Checkbox in the selection slot, a header Checkbox selects every row, and an unslotted checkbox does not.
 - A toggle button shows its selection indicator only while that button is selected.
+- A menu item shows its selection indicator only while that item is selected.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

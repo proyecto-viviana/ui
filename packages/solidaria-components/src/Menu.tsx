@@ -77,6 +77,10 @@ import {
   type RefLike,
 } from "./utils";
 import { KeyboardContext } from "./Keyboard";
+import {
+  SelectionIndicatorContext,
+  type SelectionIndicatorContextValue,
+} from "./SelectionIndicator";
 import { TextContext } from "./Text";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
@@ -1673,6 +1677,15 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       return itemAria.keyboardShortcutProps.id;
     },
   };
+  // Same selected boolean as `data-selected`: a section's own selection wins,
+  // otherwise the menu item's selection. The accessor stays live; Provider
+  // stores this object once.
+  const selectionIndicatorContext: SelectionIndicatorContextValue = {
+    isSelected() {
+      const selection = activeSectionSelection();
+      return selection?.isSelected(local.id) ?? itemAria.isSelected();
+    },
+  };
   // Stamp `[slot]` nodes before `createSlotId` probes (`createTrackedEffect`
   // runs after render effects). Styled items render a span, not `<Text>`.
   createRenderEffect(
@@ -1816,6 +1829,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         [
           [TextContext, itemTextSlots],
           [KeyboardContext, itemKeyboardContext],
+          [SelectionIndicatorContext, selectionIndicatorContext],
         ] as Array<[Context<unknown>, unknown]>
       }
     >
