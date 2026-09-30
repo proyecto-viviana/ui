@@ -548,6 +548,89 @@ describe("createNumberFieldState", () => {
       });
     });
 
+    it("snaps a negative halfway value away from zero", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          step: 5,
+        });
+
+        state.setInputValue("-2.5");
+        state.commit();
+
+        flush();
+        expect(state.numberValue()).toBe(-5);
+
+        dispose();
+      });
+    });
+
+    it("snaps a value above an off-step maximum to the last in-range step", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          maxValue: 5,
+          step: 3,
+        });
+
+        state.setInputValue("6");
+        state.commit();
+
+        flush();
+        expect(state.numberValue()).toBe(3);
+
+        dispose();
+      });
+    });
+
+    it("snaps to the step measured from the minimum when the maximum is off that step", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          minValue: -2.5,
+          maxValue: 100,
+          step: 3,
+        });
+
+        state.setInputValue("106.2");
+        state.commit();
+
+        flush();
+        expect(state.numberValue()).toBe(99.5);
+
+        dispose();
+      });
+    });
+
+    it("stops at the last in-range step when incrementing to an off-step maximum", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          maxValue: 5,
+          step: 3,
+        });
+
+        state.incrementToMax();
+
+        flush();
+        expect(state.numberValue()).toBe(3);
+
+        dispose();
+      });
+    });
+
+    it("starts a decrement on the last in-range step when the maximum is off the step", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          maxValue: 5,
+          step: 3,
+        });
+
+        state.decrement();
+
+        flush();
+        expect(state.numberValue()).toBe(3);
+
+        dispose();
+      });
+    });
+
     it("should clear value when input is empty", () => {
       createRoot((dispose) => {
         const state = createNumberFieldState({

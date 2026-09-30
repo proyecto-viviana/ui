@@ -142,13 +142,60 @@ function clamp(value: number, min?: number, max?: number): number {
 }
 
 /**
- * Snaps a value to the nearest step.
+ * Rounds to the decimal precision implied by a step, including exponential steps.
  */
-function snapToStep(value: number, step: number, min?: number): number {
-  const base = min ?? 0;
-  const diff = value - base;
-  const steps = Math.round(diff / step);
-  return handleDecimalOperation("+", base, steps * step);
+function roundToStepPrecision(value: number, step: number): number {
+  let roundedValue = value;
+  let precision = 0;
+  const stepString = step.toString();
+  const eIndex = stepString.toLowerCase().indexOf("e-");
+  if (eIndex > 0) {
+    precision = Math.abs(Math.floor(Math.log10(Math.abs(step)))) + eIndex;
+  } else {
+    const pointIndex = stepString.indexOf(".");
+    if (pointIndex >= 0) {
+      precision = stepString.length - pointIndex;
+    }
+  }
+  if (precision > 0) {
+    const pow = Math.pow(10, precision);
+    roundedValue = Math.round(roundedValue * pow) / pow;
+  }
+  return roundedValue;
+}
+
+/**
+ * Snaps to the nearest step, then to the last in-range step when that exceeds max.
+ * A negative halfway rounds away from the step base.
+ */
+function snapValueToStep(
+  value: number,
+  min: number | undefined,
+  max: number | undefined,
+  step: number,
+): number {
+  const minNumber = Number(min);
+  const maxNumber = Number(max);
+  const remainder = (value - (isNaN(minNumber) ? 0 : minNumber)) % step;
+  let snappedValue = roundToStepPrecision(
+    Math.abs(remainder) * 2 >= step
+      ? value + Math.sign(remainder) * (step - Math.abs(remainder))
+      : value - remainder,
+    step,
+  );
+
+  if (!isNaN(minNumber)) {
+    if (snappedValue < minNumber) {
+      snappedValue = minNumber;
+    } else if (!isNaN(maxNumber) && snappedValue > maxNumber) {
+      snappedValue =
+        minNumber + Math.floor(roundToStepPrecision((maxNumber - minNumber) / step, step)) * step;
+    }
+  } else if (!isNaN(maxNumber) && snappedValue > maxNumber) {
+    snappedValue = Math.floor(roundToStepPrecision(maxNumber / step, step)) * step;
+  }
+
+  return roundToStepPrecision(snappedValue, step);
 }
 
 function isValidStep(step: number | undefined): step is number {
@@ -213,7 +260,7 @@ export function createNumberFieldState(
     if (isNaN(value)) return NaN;
 
     if (hasCustomStep()) {
-      return clamp(snapToStep(value, step(), p.minValue), p.minValue, p.maxValue);
+      return snapValueToStep(value, p.minValue, p.maxValue, step());
     }
 
     return clamp(value, p.minValue, p.maxValue);
@@ -368,7 +415,7 @@ export function createNumberFieldState(
 
     if (p.maxValue == null) return true;
     return (
-      snapToStep(current, step(), p.minValue) > current ||
+      snapValueToStep(current, p.minValue, p.maxValue, step()) > current ||
       handleDecimalOperation("+", current, step()) <= p.maxValue
     );
   });
@@ -384,7 +431,7 @@ export function createNumberFieldState(
 
     if (p.minValue == null) return true;
     return (
-      snapToStep(current, step(), p.minValue) < current ||
+      snapValueToStep(current, p.minValue, p.maxValue, step()) < current ||
       handleDecimalOperation("-", current, step()) >= p.minValue
     );
   });
@@ -395,16 +442,20 @@ export function createNumberFieldState(
 
     if (isNaN(parsed)) {
       const base = isNaN(minOrMaxValue) ? 0 : minOrMaxValue;
-      return clamp(snapToStep(base, step(), p.minValue), p.minValue, p.maxValue);
+      return snapValueToStep(base, p.minValue, p.maxValue, step());
     }
 
-    const snapped = snapToStep(parsed, step(), p.minValue);
+    const snapped = snapValueToStep(parsed, p.minValue, p.maxValue, step());
     if ((operation === "+" && snapped > parsed) || (operation === "-" && snapped < parsed)) {
-      return clamp(snapped, p.minValue, p.maxValue);
+      return snapped;
     }
 
-    const next = handleDecimalOperation(operation, parsed, step());
-    return clamp(snapToStep(next, step(), p.minValue), p.minValue, p.maxValue);
+    return snapValueToStep(
+      handleDecimalOperation(operation, parsed, step()),
+      p.minValue,
+      p.maxValue,
+      step(),
+    );
   };
 
   // Increment by step
@@ -444,7 +495,7 @@ export function createNumberFieldState(
 
     if (p.maxValue == null) return;
 
-    const snapped = snapToStep(p.maxValue, step(), p.minValue);
+    const snapped = snapValueToStep(p.maxValue, p.minValue, p.maxValue, step());
     setNumberValue(snapped);
     setInputValueInternal(formatNumber(snapped));
     p.onChange?.(snapped);
