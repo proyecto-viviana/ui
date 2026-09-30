@@ -198,6 +198,7 @@ These behaviors match the pin in this checkout.
 - A toast region forgets its entry target once focus leaves, so a later dismiss leaves focus where the user moved it.
 - A popover reports when focus enters and leaves it.
 - An interact-outside handler is the one current when the pointer event fires.
+- Restoring text selection leaves a user-select written during the press, and the iOS page restore waits until transitions end.
 
 **Components**
 

@@ -16,113 +16,86 @@
  * Text selection management utilities.
  * Ported from packages/react-aria/src/interactions/textSelection.ts.
  *
- * On iOS, long press triggers text selection. The only way to prevent this
- * is to set user-select: none on the entire page. On other platforms,
+ * On iOS WebKit, long press triggers text selection. The only way to prevent
+ * this is to set user-select: none on the entire page. On other platforms,
  * we can just set it on the target element.
  */
 
-import { isIOS } from "./platform";
 import { getOwnerDocument } from "./dom";
+import { isIOS, isWebKit } from "./platform";
+import { runAfterTransition } from "./runAfterTransition";
 
 type State = "default" | "disabled" | "restoring";
 
-// Global state to manage text selection across multiple press interactions
+// State matters for iOS page-level selection. Other platforms store each target.
 let state: State = "default";
 let savedUserSelect = "";
-let modifiedElementMap = new WeakMap<HTMLElement, string>();
+const modifiedElementMap = new WeakMap<Element, string>();
+
+function selectionProperty(target: HTMLElement | SVGElement): "userSelect" | "webkitUserSelect" {
+  return "userSelect" in target.style ? "userSelect" : "webkitUserSelect";
+}
 
 /**
  * Disables text selection on the page or element during press.
- * On iOS, applies to the entire document. On other platforms, just the target.
+ * On iOS WebKit, applies to the entire document. On other platforms, just the target.
  */
-export function disableTextSelection(target?: HTMLElement): void {
-  if (isIOS()) {
-    // iOS requires disabling selection on the entire page
+export function disableTextSelection(target?: Element): void {
+  if (isIOS() && isWebKit()) {
     if (state === "default") {
       const documentElement = getOwnerDocument(target).documentElement;
       savedUserSelect = documentElement.style.webkitUserSelect;
       documentElement.style.webkitUserSelect = "none";
     }
+
     state = "disabled";
-  } else if (target) {
-    // On other platforms, just disable on the target
-    const element = target as HTMLElement;
-    if (!modifiedElementMap.has(element)) {
-      modifiedElementMap.set(element, element.style.userSelect);
-      element.style.userSelect = "none";
-    }
+  } else if (target instanceof HTMLElement || target instanceof SVGElement) {
+    const property = selectionProperty(target);
+    modifiedElementMap.set(target, target.style[property]);
+    target.style[property] = "none";
   }
 }
 
 /**
  * Restores text selection after press ends.
- * On iOS, waits 300ms to avoid selection appearing during tap.
+ * On iOS WebKit, waits 300ms, then until in-flight CSS transitions end.
+ * A value written over `none` during the press is left in place.
  */
-export function restoreTextSelection(target?: HTMLElement): void {
-  if (isIOS()) {
-    // Don't restore if another press is active
+export function restoreTextSelection(target?: Element): void {
+  if (isIOS() && isWebKit()) {
+    // Already default, or a restore is already queued.
     if (state !== "disabled") {
       return;
     }
 
     state = "restoring";
 
-    // Wait for iOS to finish any pending selection actions
-    // 300ms is the iOS long-press delay
     setTimeout(() => {
-      // Use runAfterTransition to avoid CSS recomputation during animation
       runAfterTransition(() => {
-        // Only restore if still in 'restoring' state (no new press started)
         if (state === "restoring") {
           const documentElement = getOwnerDocument(target).documentElement;
-          if (savedUserSelect) {
-            documentElement.style.webkitUserSelect = savedUserSelect;
-          } else {
-            documentElement.style.removeProperty("-webkit-user-select");
+          if (documentElement.style.webkitUserSelect === "none") {
+            documentElement.style.webkitUserSelect = savedUserSelect || "";
           }
+
           savedUserSelect = "";
           state = "default";
         }
       });
     }, 300);
-  } else if (target) {
-    // On other platforms, restore immediately
-    const element = target as HTMLElement;
-    const savedValue = modifiedElementMap.get(element);
-    if (savedValue !== undefined) {
-      if (savedValue) {
-        element.style.userSelect = savedValue;
-      } else {
-        element.style.removeProperty("user-select");
+  } else if (target instanceof HTMLElement || target instanceof SVGElement) {
+    if (modifiedElementMap.has(target)) {
+      const savedValue = modifiedElementMap.get(target) ?? "";
+      const property = selectionProperty(target);
+
+      if (target.style[property] === "none") {
+        target.style[property] = savedValue;
       }
-      modifiedElementMap.delete(element);
+
+      if (target.getAttribute("style") === "") {
+        target.removeAttribute("style");
+      }
+      modifiedElementMap.delete(target);
     }
   }
-}
-
-// Tracks pending transitions for runAfterTransition
-const pendingTransitions = new Set<() => void>();
-let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
-
-/**
- * Runs a callback after CSS transitions complete.
- * Batches multiple callbacks to avoid unnecessary layout thrashing.
- */
-function runAfterTransition(callback: () => void): void {
-  // If we haven't started tracking transitions, run immediately
-  pendingTransitions.add(callback);
-
-  // Debounce - wait for any transitions to settle
-  if (transitionTimeout != null) {
-    clearTimeout(transitionTimeout);
-  }
-
-  transitionTimeout = setTimeout(() => {
-    // Run all pending callbacks
-    for (const cb of pendingTransitions) {
-      cb();
-    }
-    pendingTransitions.clear();
-    transitionTimeout = null;
-  }, 0);
 }
