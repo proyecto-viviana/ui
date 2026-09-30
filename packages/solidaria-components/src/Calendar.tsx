@@ -31,6 +31,7 @@ import {
   type AriaCalendarProps,
   type AriaCalendarGridProps,
 } from "@proyecto-viviana/solidaria";
+import type { DateDuration } from "@internationalized/date";
 import {
   createCalendarState,
   type CalendarState,
@@ -41,6 +42,7 @@ import {
   endOfMonth,
   isSameMonth,
 } from "@proyecto-viviana/solid-stately";
+import { calendarHeadingTitle, type CalendarHeadingFormatOptions } from "./calendarHeadingTitle";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -441,6 +443,10 @@ export interface CalendarHeadingProps extends SlotProps {
   class?: string;
   /** The inline style for the element. */
   style?: JSX.CSSProperties;
+  /** Duration added to the start of the visible range. */
+  offset?: DateDuration;
+  /** Overrides the default long month and numeric year. */
+  format?: CalendarHeadingFormatOptions;
 }
 
 /**
@@ -448,8 +454,17 @@ export interface CalendarHeadingProps extends SlotProps {
  */
 export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
   const state = useCalendarContext();
+  const headingTitle = createMemo(() =>
+    calendarHeadingTitle(
+      state.visibleRange().start,
+      props.offset,
+      props.format,
+      state.locale(),
+      state.timeZone,
+    ),
+  );
   const renderValues = createMemo(() => ({
-    title: state.title(),
+    title: headingTitle(),
   }));
   const renderProps = useRenderProps(
     {
@@ -465,7 +480,7 @@ export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
 
   return (
     <h2 class={renderProps.class()} style={renderProps.style()} aria-live="polite">
-      {typeof props.children === "function" ? renderProps.renderChildren() : state.title()}
+      {typeof props.children === "function" ? renderProps.renderChildren() : headingTitle()}
     </h2>
   );
 }

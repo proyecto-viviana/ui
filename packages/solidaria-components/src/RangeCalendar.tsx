@@ -31,6 +31,7 @@ import {
   type AriaRangeCalendarProps,
   type AriaCalendarGridProps,
 } from "@proyecto-viviana/solidaria";
+import type { DateDuration } from "@internationalized/date";
 import {
   createRangeCalendarState,
   type RangeCalendarState,
@@ -41,6 +42,7 @@ import {
   endOfMonth,
   isSameMonth,
 } from "@proyecto-viviana/solid-stately";
+import { calendarHeadingTitle, type CalendarHeadingFormatOptions } from "./calendarHeadingTitle";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -437,6 +439,10 @@ export interface RangeCalendarHeadingProps extends SlotProps {
   class?: string;
   /** The inline style for the element. */
   style?: JSX.CSSProperties;
+  /** Duration added to the start of the visible range. */
+  offset?: DateDuration;
+  /** Overrides the default long month and numeric year. */
+  format?: CalendarHeadingFormatOptions;
 }
 
 /**
@@ -444,6 +450,15 @@ export interface RangeCalendarHeadingProps extends SlotProps {
  */
 export function RangeCalendarHeading(props: RangeCalendarHeadingProps): JSX.Element {
   const state = useRangeCalendarContext();
+  const headingTitle = createMemo(() =>
+    calendarHeadingTitle(
+      state.visibleRange().start,
+      props.offset,
+      props.format,
+      state.locale(),
+      state.timeZone,
+    ),
+  );
 
   return (
     <h2
@@ -451,7 +466,7 @@ export function RangeCalendarHeading(props: RangeCalendarHeadingProps): JSX.Elem
       style={props.style}
       aria-live="polite"
     >
-      {state.title()}
+      {headingTitle()}
     </h2>
   );
 }

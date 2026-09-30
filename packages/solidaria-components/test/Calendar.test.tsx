@@ -214,6 +214,44 @@ describe("Calendar", () => {
       expect(april).toHaveAttribute("data-outside-month");
       expect(april).toHaveAttribute("data-outside-visible-range");
     });
+
+    // Mirrors react-aria-components Calendar.test.js "should support multi-month calendars":
+    // the second heading is one month after the visible range start, not the focused month.
+    it("should name each visible month from the range start", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={new CalendarDate(2026, 4, 1)}
+          visibleMonths={2}
+        >
+          <CalendarHeading />
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <CalendarHeading offset={{ months: 1 }}>{(values) => values.title}</CalendarHeading>
+          <CalendarGrid offset={{ months: 1 }}>
+            {(date) => <CalendarCell date={date} />}
+          </CalendarGrid>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const headings = document.querySelectorAll(".solidaria-CalendarHeading");
+      expect(headings).toHaveLength(2);
+      expect(headings[0]).toHaveTextContent("April 2026");
+      expect(headings[1]).toHaveTextContent("May 2026");
+    });
+
+    it("should format a heading with the requested month style", async () => {
+      render(() => (
+        <Calendar aria-label="Appointment date" defaultFocusedValue={new CalendarDate(2026, 4, 1)}>
+          <CalendarHeading format={{ month: "short" }} />
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      const heading = document.querySelector(".solidaria-CalendarHeading");
+      expect(heading).toHaveTextContent("Apr 2026");
+    });
   });
 
   // ============================================

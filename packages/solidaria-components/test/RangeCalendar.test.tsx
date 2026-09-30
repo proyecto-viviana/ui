@@ -312,6 +312,29 @@ describe("RangeCalendar", () => {
       expect(inMonthLabels(grids[0])).toContain("January 31, 2025");
       expect(inMonthLabels(grids[1])).toContain("February 20, 2025");
     });
+
+    it("should name each visible month from the range start", async () => {
+      render(() => (
+        <RangeCalendar
+          aria-label="Appointment date"
+          defaultFocusedValue={new CalendarDate(2026, 4, 1)}
+          visibleMonths={2}
+        >
+          <RangeCalendarHeading />
+          <RangeCalendarGrid>{(date) => <RangeCalendarCell date={date} />}</RangeCalendarGrid>
+          <RangeCalendarHeading offset={{ months: 1 }} />
+          <RangeCalendarGrid offset={{ months: 1 }}>
+            {(date) => <RangeCalendarCell date={date} />}
+          </RangeCalendarGrid>
+        </RangeCalendar>
+      ));
+      await waitForRangeCalendarHydration();
+
+      const headings = document.querySelectorAll(".solidaria-RangeCalendarHeading");
+      expect(headings).toHaveLength(2);
+      expect(headings[0]).toHaveTextContent("April 2026");
+      expect(headings[1]).toHaveTextContent("May 2026");
+    });
   });
 
   // ============================================
