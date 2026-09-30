@@ -125,6 +125,7 @@ These behaviors match the pin in this checkout.
 - A menu item shows its selection indicator only while that item is selected.
 - A grid list row shows its selection indicator only while that row is selected.
 - A tree row shows its selection indicator only while that row is selected.
+- A table row shows its selection indicator only while that row is selected.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

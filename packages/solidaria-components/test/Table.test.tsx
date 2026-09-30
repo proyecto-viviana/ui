@@ -9,6 +9,7 @@ import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
 import { Checkbox, CheckboxButton, CheckboxField } from "../src/Checkbox";
+import { SelectionIndicator } from "../src/SelectionIndicator";
 import { RouterProvider } from "../src/RouterProvider";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import { TableLayout, Virtualizer } from "../src/Virtualizer";
@@ -2961,6 +2962,67 @@ describe("Table", () => {
       for (const checkbox of document.querySelectorAll('input[type="checkbox"]')) {
         expect(checkbox).toHaveAttribute("tabindex", "-1");
       }
+    });
+
+    it("shows a SelectionIndicator only for the selected row", () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="single"
+          defaultSelectedKeys={new Set([1])}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                <TableColumn id="type">{() => <>Type</>}</TableColumn>
+                <TableColumn id="level">{() => <>Level</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>
+                          {() => (
+                            <>
+                              {item.name}
+                              <SelectionIndicator>Mark</SelectionIndicator>
+                            </>
+                          )}
+                        </TableCell>
+                        <TableCell>{() => <>{item.type}</>}</TableCell>
+                        <TableCell>{() => <>{item.level}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const rowFor = (name: string) => {
+        const row = screen
+          .getAllByRole("row")
+          .find((candidate) => candidate.textContent?.includes(name));
+        expect(row).toBeTruthy();
+        return row as HTMLElement;
+      };
+
+      expect(rowFor("Pikachu")).toHaveAttribute("aria-selected", "true");
+      expect(rowFor("Pikachu")).toHaveAttribute("data-selected", "true");
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(rowFor("Pikachu")).toContainElement(screen.getByText("Mark"));
+
+      pressWithMouse(rowFor("Charizard"));
+
+      expect(screen.getAllByText("Mark")).toHaveLength(1);
+      expect(rowFor("Charizard")).toContainElement(screen.getByText("Mark"));
     });
   });
 
