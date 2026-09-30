@@ -114,6 +114,7 @@ These behaviors match the pin in this checkout.
 - A toast names itself from its description slot.
 - An invalid calendar day names itself from its error message slot.
 - A tag group names itself from its label, description, and error message slots.
+- A disclosure toggles from a Button in the trigger slot, and a button inside the panel is not that trigger.
 - The spectrum single-selection table header takes its hidden name from the table catalog.
 - A drag button takes its name from the drag catalog.
 - A spectrum tag group names its action row from the tag catalog.

@@ -12,6 +12,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { Button } from "../src/Button";
 import { Disclosure, DisclosureTrigger, DisclosurePanel, DisclosureGroup } from "../src/Disclosure";
 import {
   assertNoA11yViolations,
@@ -133,6 +134,78 @@ describe("Disclosure", () => {
 
       await user.click(trigger);
       expect(onExpandedChange).toHaveBeenCalledWith(false);
+    });
+  });
+
+  // ============================================
+  // BUTTON TRIGGER SLOT
+  // ============================================
+
+  describe("Button trigger slot", () => {
+    it("toggles from a Button in the trigger slot and leaves panel buttons alone", () => {
+      render(() => (
+        <Disclosure>
+          <Button slot="trigger">Trigger</Button>
+          <Button>Adjacent</Button>
+          <DisclosurePanel>
+            <p>Content</p>
+            <Button>Inside</Button>
+          </DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Trigger" });
+      const adjacent = screen.getByRole("button", { name: "Adjacent" });
+      const panel = screen.getByRole("group", { hidden: true });
+
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(trigger.getAttribute("aria-controls")).toBe(panel.id);
+      expect(panel.getAttribute("aria-labelledby")).toBe(trigger.id);
+      expect(adjacent).not.toHaveAttribute("aria-expanded");
+
+      firePointerClick(adjacent);
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+      firePointerClick(trigger);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+      expect(panel).not.toHaveAttribute("hidden");
+
+      const inside = screen.getByRole("button", { name: "Inside" });
+      expect(inside).not.toHaveAttribute("aria-expanded");
+      firePointerClick(inside);
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("expands a trigger-slot Button from the keyboard", async () => {
+      render(() => (
+        <Disclosure>
+          <Button slot="trigger">Trigger</Button>
+          <DisclosurePanel>Content</DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Trigger" });
+      trigger.focus();
+      await user.keyboard("{Enter}");
+      expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+      await user.keyboard(" ");
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("does not expand a disabled trigger-slot Button", () => {
+      render(() => (
+        <Disclosure isDisabled>
+          <Button slot="trigger">Trigger</Button>
+          <DisclosurePanel>Content</DisclosurePanel>
+        </Disclosure>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Trigger" });
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(trigger).toBeDisabled();
+      firePointerClick(trigger);
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
     });
   });
 

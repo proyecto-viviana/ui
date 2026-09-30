@@ -36,8 +36,10 @@ import {
   createDisclosureGroup,
   createFocusRing,
   mergeProps,
+  type PressEvent,
 } from "@proyecto-viviana/solidaria";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { ButtonContext, type ButtonProps } from "./Button";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -46,6 +48,7 @@ import {
   filterDOMProps,
   dataAttr,
   coerceDomRecord,
+  DEFAULT_SLOT,
 } from "./utils";
 
 type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
@@ -352,24 +355,62 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
     setPanelRefSignal(el);
   };
 
+  // Button reads this slot object once. Getters keep aria-expanded and
+  // isDisabled current. DisclosureTrigger still spreads buttonProps itself;
+  // this object is only the semantic press the pin puts on slot="trigger".
+  const triggerButtonProps: ButtonProps = {
+    get id() {
+      return (disclosureAria.buttonProps as { id?: string }).id;
+    },
+    get "aria-expanded"() {
+      return state.isExpanded();
+    },
+    get "aria-controls"() {
+      return (disclosureAria.buttonProps as Record<string, unknown>)["aria-controls"] as
+        | string
+        | undefined;
+    },
+    get isDisabled() {
+      return isDisabled();
+    },
+    onPress(event: PressEvent) {
+      if (!isDisabled() && event.pointerType !== "keyboard") {
+        state.toggle();
+      }
+    },
+    onPressStart(event: PressEvent) {
+      if (event.pointerType === "keyboard" && !isDisabled()) {
+        state.toggle();
+      }
+    },
+  };
+  const buttonContextValue = {
+    slots: {
+      [DEFAULT_SLOT]: {},
+      trigger: triggerButtonProps,
+    },
+  };
+
   return (
     <DisclosureStateContext value={state}>
       <DisclosureContext value={contextValue}>
         <DisclosurePanelRefContext value={setPanelRef}>
-          <div
-            ref={(el) => assignRef(local.ref, el)}
-            {...mergeProps(
-              domProps() as Record<string, unknown>,
-              focusWithinProps as Record<string, unknown>,
-            )}
-            class={renderProps.class()}
-            style={renderProps.style()}
-            data-expanded={dataAttr(state.isExpanded())}
-            data-disabled={dataAttr(isDisabled())}
-            data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
-          >
-            {props.children}
-          </div>
+          <ButtonContext value={buttonContextValue}>
+            <div
+              ref={(el) => assignRef(local.ref, el)}
+              {...mergeProps(
+                domProps() as Record<string, unknown>,
+                focusWithinProps as Record<string, unknown>,
+              )}
+              class={renderProps.class()}
+              style={renderProps.style()}
+              data-expanded={dataAttr(state.isExpanded())}
+              data-disabled={dataAttr(isDisabled())}
+              data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
+            >
+              {props.children}
+            </div>
+          </ButtonContext>
         </DisclosurePanelRefContext>
       </DisclosureContext>
     </DisclosureStateContext>
@@ -500,7 +541,7 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
       data-expanded={dataAttr(isExpanded())}
       data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
     >
-      {renderProps.renderChildren()}
+      <ButtonContext value={null}>{renderProps.renderChildren()}</ButtonContext>
     </div>
   );
 }
