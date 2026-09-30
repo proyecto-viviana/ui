@@ -84,9 +84,11 @@ export function createCalendarYearPicker(
     const format = getProps().format;
     return new DateFormatter(locale().locale, {
       year: format?.year ?? "numeric",
+      // Same operator precedence as useCalendarYearPicker: a truthy era option collapses to "short".
       era:
-        format?.era ??
-        (focused.calendar.identifier === "gregory" && focused.era === "BC" ? "short" : undefined),
+        format?.era || (focused.calendar.identifier === "gregory" && focused.era === "BC")
+          ? "short"
+          : undefined,
       calendar: focused.calendar.identifier,
       timeZone: state.timeZone,
     });
