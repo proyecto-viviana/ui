@@ -819,6 +819,82 @@ describe("Color Components", () => {
         expect(inputs[1]).toHaveAttribute("aria-labelledby", "favorite-color-y label-id");
       });
 
+      it("names an unlabeled color area and keeps both sliders exposed on a touch platform", () => {
+        const descriptors = {
+          userAgent: Object.getOwnPropertyDescriptor(window.navigator, "userAgent"),
+          platform: Object.getOwnPropertyDescriptor(window.navigator, "platform"),
+          userAgentData: Object.getOwnPropertyDescriptor(window.navigator, "userAgentData"),
+        };
+        const restoreNavigator = () => {
+          for (const key of ["userAgent", "platform", "userAgentData"] as const) {
+            const descriptor = descriptors[key];
+            if (descriptor) {
+              Object.defineProperty(window.navigator, key, descriptor);
+            } else {
+              Reflect.deleteProperty(window.navigator, key);
+            }
+          }
+        };
+        const setNavigator = (state: {
+          userAgent: string;
+          platform: string;
+          userAgentData?: { platform: string };
+        }) => {
+          Object.defineProperty(window.navigator, "userAgent", {
+            configurable: true,
+            value: state.userAgent,
+          });
+          Object.defineProperty(window.navigator, "platform", {
+            configurable: true,
+            value: state.platform,
+          });
+          Object.defineProperty(window.navigator, "userAgentData", {
+            configurable: true,
+            value: state.userAgentData,
+          });
+        };
+        const expectExposedSliders = () => {
+          const area = screen.getByRole("group", { name: "Color picker" });
+          const inputs = Array.from(area.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+          expect(inputs).toHaveLength(2);
+          for (const input of inputs) {
+            expect(input.hasAttribute("aria-hidden")).toBe(false);
+            expect(input.hasAttribute("tabindex")).toBe(false);
+          }
+        };
+
+        try {
+          setNavigator({
+            userAgent:
+              "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile",
+            platform: "Linux armv8l",
+          });
+          render(() => <TestColorArea defaultValue={parseColor("#ff00ff")} />);
+          expectExposedSliders();
+          cleanup();
+
+          render(() => (
+            <TestColorArea defaultValue={parseColor("#ff00ff")} aria-labelledby="label-id" />
+          ));
+          const labelled = document.querySelector(".solidaria-ColorArea") as HTMLElement;
+          expect(labelled).toHaveAttribute("aria-labelledby", "label-id");
+          expect(labelled).not.toHaveAttribute("aria-label");
+          cleanup();
+
+          setNavigator({
+            userAgent:
+              "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            platform: "iPhone",
+            userAgentData: { platform: "iPhone" },
+          });
+          render(() => <TestColorArea defaultValue={parseColor("#ff00ff")} />);
+          expectExposedSliders();
+        } finally {
+          restoreNavigator();
+          cleanup();
+        }
+      });
+
       it("should apply the generated area gradient on the root", () => {
         render(() => (
           <TestColorArea

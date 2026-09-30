@@ -178,6 +178,7 @@ These behaviors match the pin in this checkout.
 - A number field snaps a negative halfway value away from zero, and an off-step maximum lands on the last in-range step.
 - A number field keeps its current value when the committed text is only a minus sign.
 - A color field steps the hex being typed, and an empty field starts at black.
+- On iOS and Android, an unlabeled color area is named Color picker, and both sliders stay exposed.
 
 **Components**
 

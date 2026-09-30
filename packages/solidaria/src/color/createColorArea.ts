@@ -29,6 +29,7 @@ import { parseColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { focusWithoutScrolling } from "../utils/focus";
+import { isAndroid, isIOS } from "../utils/platform";
 import { createColorStringFormatter } from "./intl";
 import type { AriaColorAreaOptions, ColorAreaAria } from "./types";
 
@@ -47,6 +48,7 @@ export function createColorArea(
   const locale = useLocale();
   const stringFormatter = createColorStringFormatter();
   const isRTL = () => locale().direction === "rtl";
+  const isMobile = () => isIOS() || isAndroid();
   const [focusedInput, setFocusedInput] = createSignal<"x" | "y" | null>(null);
   const [valueChangedViaKeyboard, setValueChangedViaKeyboard] = createSignal(false);
   const [valueChangedViaInputChangeEvent, setValueChangedViaInputChangeEvent] = createSignal(false);
@@ -67,10 +69,13 @@ export function createColorArea(
       : colorPickerLabel();
   };
   // Upstream joins the group label with a literal ", " (useColorArea.ts:488),
-  // NOT the colorInputLabel message.
+  // NOT the colorInputLabel message. With no label of its own, useLabels
+  // supplies the catalog name only on iOS and Android.
   const colorAreaLabel = () => {
     const ariaLabel = getProps()["aria-label"];
-    return ariaLabel ? `${ariaLabel}, ${colorPickerLabel()}` : undefined;
+    if (ariaLabel) return `${ariaLabel}, ${colorPickerLabel()}`;
+    if (getProps()["aria-labelledby"]) return undefined;
+    return isMobile() ? colorPickerLabel() : undefined;
   };
   // Pin useLabels prepends this element's id only when aria-label and aria-labelledby are both set.
   const resolvedLabelledBy = (
@@ -601,14 +606,14 @@ export function createColorArea(
       form: p.form,
       disabled: s.isDisabled || p.isDisabled,
       "aria-hidden":
-        !focusedInput() || focusedInput() === "x" || valueChangedViaKeyboard()
+        isMobile() || !focusedInput() || focusedInput() === "x" || valueChangedViaKeyboard()
           ? undefined
           : ("true" as const),
       onFocus: () => setFocusedInput("x"),
       onKeyDown,
       onInput: (e: Event) => updateFromInput(e, "x"),
       onChange: (e: Event) => updateFromInput(e, "x"),
-      tabIndex: !focusedInput() || focusedInput() === "x" ? undefined : -1,
+      tabIndex: isMobile() || !focusedInput() || focusedInput() === "x" ? undefined : -1,
       style: {
         position: "absolute" as const,
         width: "1px",
@@ -649,12 +654,14 @@ export function createColorArea(
       form: p.form,
       disabled: s.isDisabled || p.isDisabled,
       "aria-hidden":
-        focusedInput() === "y" || valueChangedViaKeyboard() ? undefined : ("true" as const),
+        isMobile() || focusedInput() === "y" || valueChangedViaKeyboard()
+          ? undefined
+          : ("true" as const),
       onFocus: () => setFocusedInput("y"),
       onKeyDown,
       onInput: (e: Event) => updateFromInput(e, "y"),
       onChange: (e: Event) => updateFromInput(e, "y"),
-      tabIndex: focusedInput() === "y" ? undefined : -1,
+      tabIndex: isMobile() || focusedInput() === "y" ? undefined : -1,
       style: {
         position: "absolute" as const,
         width: "1px",
