@@ -424,6 +424,45 @@ describe("RangeCalendar", () => {
       expect(dirGetter).not.toHaveBeenCalled();
       dirGetter.mockRestore();
     });
+
+    it("focuses the calendar when Next becomes disabled while that button is focused", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+            maxValue: new CalendarDate(2024, 7, 10),
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const nextButton = screen.getByText("▶");
+      nextButton.focus();
+
+      await user.click(nextButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /July 10, 2024/i })).toHaveFocus();
+      });
+      expect(nextButton).toBeDisabled();
+    });
+
+    it("keeps focus on Next when the next month stays available", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const nextButton = screen.getByText("▶");
+      nextButton.focus();
+
+      await user.click(nextButton);
+
+      await waitFor(() => {
+        expect(document.querySelector(".solidaria-RangeCalendarHeading")).toHaveTextContent(/July/);
+      });
+      expect(nextButton).toHaveFocus();
+    });
   });
 
   // ============================================

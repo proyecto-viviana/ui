@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell (with range support)
  */
 
-import { createSignal, createMemo, createTrackedEffect } from "solid-js";
+import { createSignal, createMemo, createEffect, createTrackedEffect } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
@@ -438,26 +438,30 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     }
   };
 
-  // RAC uses useEffect (after paint). Solid createEffect is sync, so a
-  // Next/Previous click would steal focus onto the new cell before the
-  // nav button receives click-focus (#279).
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
-
-    const element = ref?.();
-    if (!element || !isFocused()) return;
-    const frame = requestAnimationFrame(() => {
-      if (!isFocused() || ref?.() !== element) return;
-      const navLabel = document.activeElement?.getAttribute("aria-label");
-      if (navLabel === "Next" || navLabel === "Previous") return;
-      focusSafely(element);
-    });
-    _s2Cleanups.push(() => cancelAnimationFrame(frame));
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
-  });
+  // RAC uses useEffect (after paint). A tracked effect reads the settled
+  // focus flag and misses the write that focuses the calendar when Next or
+  // Previous becomes disabled, so this tracks in the compute phase. The move
+  // itself waits a frame: an enabled nav button keeps the click (#279).
+  createEffect(
+    () => {
+      const element = ref?.();
+      return element && isFocused() ? element : null;
+    },
+    (element) => {
+      if (!element) return;
+      const frame = requestAnimationFrame(() => {
+        if (!isFocused() || ref?.() !== element) return;
+        const active = document.activeElement;
+        const navLabel = active?.getAttribute("aria-label");
+        const navDisabled = active?.getAttribute?.("disabled") != null;
+        if ((navLabel === "Next" || navLabel === "Previous") && !navDisabled) {
+          return;
+        }
+        focusSafely(element);
+      });
+      return () => cancelAnimationFrame(frame);
+    },
+  );
 
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({

@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell
  */
 
-import { createSignal, createMemo, createTrackedEffect } from "solid-js";
+import { createSignal, createMemo, createEffect, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
@@ -230,35 +230,38 @@ export function createCalendarCell<T extends CalendarState>(
   };
 
   // Keep DOM focus synchronized with focused date updates.
-  // RAC uses useEffect (after paint). Solid createEffect is sync, so a
-  // Next/Previous click would steal focus onto the new cell before the
-  // nav button receives click-focus (#279). Defer to a frame so a focused
-  // nav button can clear calendar-level isFocused first.
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
+  // RAC uses useEffect (after paint). A tracked effect reads the settled
+  // focus flag and misses the write that focuses the calendar when Next or
+  // Previous becomes disabled, so this tracks in the compute phase. The move
+  // itself waits a frame: an enabled nav button keeps the click (#279).
+  createEffect(
+    () => {
+      const element = ref?.();
+      return element && isFocused() ? element : null;
+    },
+    (element) => {
+      if (!element) return;
+      const frame = requestAnimationFrame(() => {
+        if (!isFocused() || ref?.() !== element) return;
+        const active = document.activeElement;
+        const navLabel = active?.getAttribute("aria-label");
+        const navDisabled = active?.getAttribute?.("disabled") != null;
+        if ((navLabel === "Next" || navLabel === "Previous") && !navDisabled) {
+          return;
+        }
+        focusSafely(element);
 
-    const element = ref?.();
-    if (!element || !isFocused()) return;
-    const frame = requestAnimationFrame(() => {
-      if (!isFocused() || ref?.() !== element) return;
-      const navLabel = document.activeElement?.getAttribute("aria-label");
-      if (navLabel === "Next" || navLabel === "Previous") return;
-      focusSafely(element);
-
-      // Scroll into view if navigating with a keyboard, otherwise try not to
-      // shift the view under the user's mouse/finger. If in an overlay,
-      // scrollIntoViewport only scrolls up to the overlay scroll body. Only
-      // scroll if the cell actually got focused.
-      if (getInteractionModality() !== "pointer" && document.activeElement === element) {
-        scrollIntoViewport(element, { containingElement: getScrollParent(element) });
-      }
-    });
-    _s2Cleanups.push(() => cancelAnimationFrame(frame));
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
-  });
+        // Scroll into view if navigating with a keyboard, otherwise try not to
+        // shift the view under the user's mouse/finger. If in an overlay,
+        // scrollIntoViewport only scrolls up to the overlay scroll body. Only
+        // scroll if the cell actually got focused.
+        if (getInteractionModality() !== "pointer" && document.activeElement === element) {
+          scrollIntoViewport(element, { containingElement: getScrollParent(element) });
+        }
+      });
+      return () => cancelAnimationFrame(frame);
+    },
+  );
 
   // Cell props (for the td element)
   const cellProps = createMemo(() => ({

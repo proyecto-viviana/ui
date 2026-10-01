@@ -492,18 +492,21 @@ export function RangeCalendarButton(props: RangeCalendarButtonProps): JSX.Elemen
   const calendarAria = createRangeCalendar({}, state);
 
   const buttonProps = createMemo(() => {
-    if (props.slot === "previous") {
-      return calendarAria.prevButtonProps;
-    }
-    return calendarAria.nextButtonProps;
+    const source =
+      props.slot === "previous" ? calendarAria.prevButtonProps : calendarAria.nextButtonProps;
+    const { onFocusChange, ...domProps } = source;
+    return {
+      domProps,
+      onFocusChange: onFocusChange as ((focused: boolean) => void) | undefined,
+    };
   });
   const isDisabled = createMemo(
-    () => props.isDisabled || Boolean(buttonProps().disabled) || state.isDisabled(),
+    () => props.isDisabled || Boolean(buttonProps().domProps.disabled) || state.isDisabled(),
   );
 
   return (
     <button
-      {...buttonProps()}
+      {...buttonProps().domProps}
       class={props.class ?? "solidaria-RangeCalendarButton"}
       style={props.style}
       disabled={isDisabled()}
@@ -512,6 +515,8 @@ export function RangeCalendarButton(props: RangeCalendarButtonProps): JSX.Elemen
       // when disabled — so the prev/next buttons appear in the roving tab order
       // exactly as the S2 oracle does.
       tabindex={isDisabled() ? undefined : 0}
+      onFocus={() => buttonProps().onFocusChange?.(true)}
+      onBlur={() => buttonProps().onFocusChange?.(false)}
     >
       {props.children}
     </button>

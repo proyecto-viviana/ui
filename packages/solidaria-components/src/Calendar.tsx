@@ -506,18 +506,21 @@ export function CalendarButton(props: CalendarButtonProps): JSX.Element {
   const calendarAria = createCalendar({}, state);
 
   const buttonProps = createMemo(() => {
-    if (props.slot === "previous") {
-      return calendarAria.prevButtonProps;
-    }
-    return calendarAria.nextButtonProps;
+    const source =
+      props.slot === "previous" ? calendarAria.prevButtonProps : calendarAria.nextButtonProps;
+    const { onFocusChange, ...domProps } = source;
+    return {
+      domProps,
+      onFocusChange: onFocusChange as ((focused: boolean) => void) | undefined,
+    };
   });
 
   const isDisabled = () =>
-    props.isDisabled || Boolean(buttonProps().disabled) || state.isDisabled();
+    props.isDisabled || Boolean(buttonProps().domProps.disabled) || state.isDisabled();
 
   return (
     <button
-      {...buttonProps()}
+      {...buttonProps().domProps}
       class={props.class ?? "solidaria-CalendarButton"}
       style={props.style}
       disabled={isDisabled()}
@@ -525,8 +528,10 @@ export function CalendarButton(props: CalendarButtonProps): JSX.Element {
       // focusable button (0), and drop it entirely when disabled — so the
       // nav buttons appear in the roving tab order exactly as upstream does.
       tabindex={isDisabled() ? undefined : 0}
+      onFocus={() => buttonProps().onFocusChange?.(true)}
+      onBlur={() => buttonProps().onFocusChange?.(false)}
       onClick={(event) => {
-        const click = buttonProps().onClick as
+        const click = buttonProps().domProps.onClick as
           | ((event: MouseEvent & { currentTarget: HTMLButtonElement }) => void)
           | undefined;
         click?.(event);

@@ -219,3 +219,109 @@ describe("createCalendar title", () => {
     });
   });
 });
+
+function focusButton(props: Record<string, unknown>, focused: boolean) {
+  const onFocusChange = props.onFocusChange as ((focused: boolean) => void) | undefined;
+  onFocusChange?.(focused);
+}
+
+describe("createCalendar paging focus", () => {
+  it("focuses the calendar when Next becomes disabled while that button is focused", () => {
+    createRoot((dispose) => {
+      const state = createCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        maxValue: new CalendarDate(2024, 7, 10),
+      });
+      flush();
+      const calendar = createCalendar({ "aria-label": "Event date" }, state);
+      flush();
+
+      expect(state.isNextVisibleRangeInvalid()).toBe(false);
+      focusButton(calendar.nextButtonProps, true);
+      flush();
+      expect(state.isFocused()).toBe(false);
+
+      const click = calendar.nextButtonProps.onClick as () => void;
+      click();
+      flush();
+
+      expect(state.isNextVisibleRangeInvalid()).toBe(true);
+      expect(state.isFocused()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("keeps calendar focus cleared when Next stays enabled", () => {
+    createRoot((dispose) => {
+      const state = createCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        maxValue: new CalendarDate(2025, 6, 15),
+      });
+      flush();
+      const calendar = createCalendar({ "aria-label": "Event date" }, state);
+      flush();
+
+      focusButton(calendar.nextButtonProps, true);
+      flush();
+      const click = calendar.nextButtonProps.onClick as () => void;
+      click();
+      flush();
+
+      expect(state.isNextVisibleRangeInvalid()).toBe(false);
+      expect(state.isFocused()).toBe(false);
+      dispose();
+    });
+  });
+
+  it("focuses the calendar when Previous becomes disabled while that button is focused", () => {
+    createRoot((dispose) => {
+      const state = createCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        minValue: new CalendarDate(2024, 5, 10),
+      });
+      flush();
+      const calendar = createCalendar({ "aria-label": "Event date" }, state);
+      flush();
+
+      expect(state.isPreviousVisibleRangeInvalid()).toBe(false);
+      focusButton(calendar.prevButtonProps, true);
+      flush();
+
+      const click = calendar.prevButtonProps.onClick as () => void;
+      click();
+      flush();
+
+      expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+      expect(state.isFocused()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("focuses a range calendar when Next becomes disabled while that button is focused", () => {
+    createRoot((dispose) => {
+      const state = createRangeCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        maxValue: new CalendarDate(2024, 7, 10),
+      });
+      flush();
+      const calendar = createRangeCalendar({ "aria-label": "Trip dates" }, state);
+      flush();
+
+      expect(state.isNextVisibleRangeInvalid()).toBe(false);
+      focusButton(calendar.nextButtonProps, true);
+      flush();
+
+      const click = calendar.nextButtonProps.onClick as () => void;
+      click();
+      flush();
+
+      expect(state.isNextVisibleRangeInvalid()).toBe(true);
+      expect(state.isFocused()).toBe(true);
+      dispose();
+    });
+  });
+});
