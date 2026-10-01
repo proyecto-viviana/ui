@@ -29,7 +29,7 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
-import { getRowLabelledBy } from "./utils";
+import { getRowLabelledBy, normalizeTableKey } from "./utils";
 import { tableIntlStrings } from "./intl";
 import { createStringFormatter, useLocale } from "../i18n";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
@@ -137,7 +137,7 @@ export function createTableRow<T extends object>(
 
       return {
         key: p.node.key,
-        id: `${tableData?.tableId ?? "table"}-row-${String(p.node.key)}`,
+        id: `${tableData?.tableId ?? "table"}-row-${normalizeTableKey(p.node.key)}`,
         isVirtualized: p.isVirtualized,
         shouldSelectOnPressUp: tableData?.shouldSelectOnPressUp ?? false,
         isDisabled: !!p.isDisabled || s.collection.size === 0,

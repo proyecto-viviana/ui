@@ -21,6 +21,18 @@ import type { Key, GridNode, TableState, TableCollection } from "@proyecto-vivia
 import { getTableData } from "./createTable";
 
 /**
+ * An id referenced by aria-labelledby has to be one token. A key that contains
+ * whitespace would be split into several ids and miss the element. Mirrors
+ * `@react-aria/table`'s `normalizeKey`. Not a package export.
+ */
+export function normalizeTableKey(key: Key): string {
+  if (typeof key === "string") {
+    return key.replace(/\s*/g, "");
+  }
+  return "" + key;
+}
+
+/**
  * A row is labelled by its row-header cells. Mirrors `@react-aria/table`'s
  * `getRowLabelledBy`, which joins `getCellId(state, rowKey, columnKey)` across
  * `collection.rowHeaderColumnKeys`. We resolve the actual rowheader cell node
@@ -42,7 +54,7 @@ export function getRowLabelledBy<T extends object>(
     .map((columnKey) => {
       const cell = collection.getCell?.(rowKey, columnKey);
       return cell?.parentKey != null
-        ? `${tableId}-${String(cell.parentKey)}-${String(cell.key)}`
+        ? `${tableId}-${normalizeTableKey(cell.parentKey)}-${normalizeTableKey(cell.key)}`
         : null;
     })
     .filter((id): id is string => id != null)

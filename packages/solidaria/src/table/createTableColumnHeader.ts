@@ -23,6 +23,7 @@ import type { JSX } from "@solidjs/web";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableColumnHeaderProps, TableColumnHeaderAria } from "./types";
 import { getTableData } from "./createTable";
+import { normalizeTableKey } from "./utils";
 import { createDescription } from "../utils/createDescription";
 import { createStringFormatter } from "../i18n";
 import { tableIntlStrings } from "./intl";
@@ -170,7 +171,7 @@ export function createTableColumnHeader<T extends object>(
 
     const baseProps: Record<string, unknown> = {
       role: "columnheader",
-      id: tableData ? `${tableData.tableId}-${node.key}` : undefined,
+      id: tableData ? `${tableData.tableId}-${normalizeTableKey(node.key)}` : undefined,
       "aria-sort": ariaSort,
       "aria-describedby": sortDescriptionProps["aria-describedby"],
       tabIndex: shouldDisableFocus ? -1 : isFocused() ? 0 : -1,

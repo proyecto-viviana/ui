@@ -23,6 +23,7 @@ import type { JSX } from "@solidjs/web";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableCellProps, TableCellAria } from "./types";
 import { getTableData } from "./createTable";
+import { normalizeTableKey } from "./utils";
 
 /**
  * Creates accessibility props for a table cell.
@@ -127,7 +128,7 @@ export function createTableCell<T extends object>(
       role,
       id:
         tableData && node.parentKey != null
-          ? `${tableData.tableId}-${node.parentKey}-${node.key}`
+          ? `${tableData.tableId}-${normalizeTableKey(node.parentKey)}-${normalizeTableKey(node.key)}`
           : undefined,
       "aria-disabled": isDisabled() || undefined,
       tabIndex: isFocused() ? 0 : -1,

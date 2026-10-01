@@ -32,6 +32,7 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { createStringFormatter, useLocale } from "../i18n";
 import { getTableData } from "./createTable";
+import { normalizeTableKey } from "./utils";
 import { tableIntlStrings } from "./intl";
 import { createInteractionModality } from "../interactions/createInteractionModality";
 import { createMove } from "../interactions/createMove";
@@ -407,7 +408,7 @@ export function createTableColumnResize(
       if (!tableState) return undefined;
       const tableData = getTableData(tableState);
       if (!tableData) return undefined;
-      return `${inputId} ${tableData.tableId}-${String(getProps().column.key)}`;
+      return `${inputId} ${tableData.tableId}-${normalizeTableKey(getProps().column.key)}`;
     },
     get "aria-orientation"() {
       return "horizontal" as const;
