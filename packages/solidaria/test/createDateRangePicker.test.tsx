@@ -160,6 +160,7 @@ describe("createDateRangePicker", () => {
   it("does not blur when focus moves into the calendar dialog", () => {
     const onFocus = vi.fn();
     const onBlur = vi.fn();
+    const onFocusChange = vi.fn();
 
     function FocusRangePicker() {
       const aria = createDateRangePicker(
@@ -167,6 +168,7 @@ describe("createDateRangePicker", () => {
           "aria-label": "Range",
           onFocus,
           onBlur,
+          onFocusChange,
         }),
         createMockRangeState() as any,
         {
@@ -200,19 +202,24 @@ describe("createDateRangePicker", () => {
 
     screen.getByTestId("segment").focus();
     expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onFocusChange).toHaveBeenCalledWith(true);
     expect(onBlur).not.toHaveBeenCalled();
 
+    onFocusChange.mockClear();
     screen.getByTestId("day").focus();
     expect(onBlur).not.toHaveBeenCalled();
+    expect(onFocusChange).not.toHaveBeenCalled();
 
     // The calendar move already left the group. Focus has to return to the
     // field before a later exit can blur it.
     screen.getByTestId("segment").focus();
     expect(onFocus).toHaveBeenCalledTimes(1);
     expect(onBlur).not.toHaveBeenCalled();
+    expect(onFocusChange).not.toHaveBeenCalled();
 
     screen.getByTestId("outside").focus();
     expect(onBlur).toHaveBeenCalledTimes(1);
+    expect(onFocusChange).toHaveBeenCalledWith(false);
   });
 
   it("segment advance skips the calendar button", () => {

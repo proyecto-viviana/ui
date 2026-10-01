@@ -81,6 +81,8 @@ export interface AriaDateRangePickerProps {
   validationBehavior?: "aria" | "native";
   /** Auto focus the start field. */
   autoFocus?: boolean;
+  /** Callback when focus changes. */
+  onFocusChange?: (isFocused: boolean) => void;
   /** Callback when the field group is focused. */
   onFocus?: (e: FocusEvent) => void;
   /** Callback when the field group is blurred. */
@@ -217,12 +219,14 @@ export function createDateRangePicker<T extends RangeCalendarState>(
       if (!nodeContains(dialog, e.relatedTarget as Element | null)) {
         isFocused = false;
         getProps().onBlur?.(e);
+        getProps().onFocusChange?.(false);
       }
     },
     onFocusWithin(e) {
       if (!isFocused) {
         isFocused = true;
         getProps().onFocus?.(e);
+        getProps().onFocusChange?.(true);
       }
     },
   });

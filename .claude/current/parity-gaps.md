@@ -237,6 +237,7 @@ These behaviors match the pin in this checkout.
 - A calendar marked isInvalid marks the selected day aria-invalid.
 - A range calendar marked isInvalid marks the selected days aria-invalid.
 - A calendar cell does not open a context menu on long press.
+- A date range picker's focus-change callback reports true on the field and false when focus leaves, and does not report a change when focus moves into the calendar.
 
 **Components**
 
