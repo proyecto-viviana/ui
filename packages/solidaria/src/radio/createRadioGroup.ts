@@ -25,6 +25,7 @@ import { createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";
+import { createKeyboard } from "../interactions/createKeyboard";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { getEventTarget, getFocusableTreeWalker, getOwnerWindow } from "../utils";
@@ -234,47 +235,43 @@ export function createRadioGroup(
     return false;
   };
 
-  const onKeyDown: JSX.EventHandler<HTMLDivElement, KeyboardEvent> = (e) => {
-    let nextDir: "next" | "prev" | null = null;
-    const currentOrientation = orientation();
-    const isHorizontal = currentOrientation !== "vertical";
-    const isRTL = locale().direction === "rtl" && isHorizontal;
-
-    switch (e.key) {
-      case "ArrowRight":
-        nextDir = isRTL ? "prev" : "next";
-        break;
-      case "ArrowLeft":
-        nextDir = isRTL ? "next" : "prev";
-        break;
-      case "ArrowDown":
-        nextDir = "next";
-        break;
-      case "ArrowUp":
-        nextDir = "prev";
-        break;
-      default:
-        return;
-    }
-
-    if (nextDir && getNextElement(nextDir, e)) {
-      e.preventDefault();
-    }
-  };
+  // Pin useKeyboard: a shortcut that returns true prevents default and stops
+  // propagation. Returning false (no radio to move to) lets the arrow bubble.
+  const { keyboardProps } = createKeyboard({
+    allowRepeats: true,
+    shortcuts: {
+      ArrowRight: (e) => {
+        const nextDir: "next" | "prev" =
+          locale().direction === "rtl" && orientation() !== "vertical" ? "prev" : "next";
+        return getNextElement(nextDir, e);
+      },
+      ArrowLeft: (e) => {
+        const nextDir: "next" | "prev" =
+          locale().direction === "rtl" && orientation() !== "vertical" ? "next" : "prev";
+        return getNextElement(nextDir, e);
+      },
+      ArrowDown: (e) => getNextElement("next", e),
+      ArrowUp: (e) => getNextElement("prev", e),
+    },
+  });
 
   return {
     get radioGroupProps() {
-      return mergeProps(domProps(), focusWithinProps as unknown as Record<string, unknown>, {
-        role: "radiogroup",
-        onKeyDown,
-        "aria-invalid": isInvalid() || undefined,
-        "aria-errormessage": getProps()["aria-errormessage"],
-        "aria-readonly": isReadOnly() || undefined,
-        "aria-required": isRequired() || undefined,
-        "aria-disabled": isDisabled() || undefined,
-        "aria-orientation": orientation(),
-        ...field.fieldProps,
-      }) as JSX.HTMLAttributes<HTMLDivElement>;
+      return mergeProps(
+        domProps(),
+        focusWithinProps as unknown as Record<string, unknown>,
+        {
+          role: "radiogroup",
+          "aria-invalid": isInvalid() || undefined,
+          "aria-errormessage": getProps()["aria-errormessage"],
+          "aria-readonly": isReadOnly() || undefined,
+          "aria-required": isRequired() || undefined,
+          "aria-disabled": isDisabled() || undefined,
+          "aria-orientation": orientation(),
+          ...field.fieldProps,
+        },
+        keyboardProps,
+      ) as JSX.HTMLAttributes<HTMLDivElement>;
     },
     get labelProps() {
       return field.labelProps as JSX.HTMLAttributes<HTMLElement>;

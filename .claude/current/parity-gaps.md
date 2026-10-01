@@ -232,6 +232,7 @@ These behaviors match the pin in this checkout.
 - A date range field does not advance focus onto the calendar button.
 - A disabled date range picker marks its field group aria-disabled.
 - A disabled date picker marks its field group aria-disabled.
+- A radio group arrow that selects the next radio does not reach a parent.
 
 **Components**
 

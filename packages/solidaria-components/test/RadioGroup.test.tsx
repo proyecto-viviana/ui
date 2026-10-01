@@ -1129,6 +1129,37 @@ describe("RadioGroup", () => {
       expect(document.activeElement).toBe(radios[0]);
     });
 
+    it("does not let an arrow that selects the next radio reach a parent", async () => {
+      const onParentKeyDown = vi.fn();
+      render(() => (
+        <div onKeyDown={onParentKeyDown}>
+          <RadioGroup aria-label="Options">
+            <Radio value="a">A</Radio>
+            <Radio value="b">B</Radio>
+          </RadioGroup>
+        </div>
+      ));
+
+      const radios = screen.getAllByRole("radio");
+      await user.tab();
+      expect(document.activeElement).toBe(radios[0]);
+
+      await user.keyboard("[ArrowDown]");
+      expect(document.activeElement).toBe(radios[1]);
+      expect(radios[1]).toBeChecked();
+      expect(
+        onParentKeyDown.mock.calls.some(
+          ([event]) => event.type === "keydown" && event.key === "ArrowDown",
+        ),
+      ).toBe(false);
+
+      onParentKeyDown.mockClear();
+      await user.keyboard("x");
+      expect(
+        onParentKeyDown.mock.calls.some(([event]) => event.type === "keydown" && event.key === "x"),
+      ).toBe(true);
+    });
+
     it("should not navigate within the group using Tab", async () => {
       render(() => (
         <>
