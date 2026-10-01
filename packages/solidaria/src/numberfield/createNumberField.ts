@@ -196,10 +196,11 @@ export function createNumberField(
       return getProps().label;
     },
     get "aria-label"() {
-      return getProps()["aria-label"];
+      // Upstream passes `props['aria-label'] || undefined` into the text field.
+      return getProps()["aria-label"] || undefined;
     },
     get "aria-labelledby"() {
-      return getProps()["aria-labelledby"];
+      return getProps()["aria-labelledby"] || undefined;
     },
     // Upstream react-aria `useNumberField` → `useField` → `useLabel` with the DEFAULT
     // `labelElementType: 'label'`: the S2 NumberField label is a native `<label htmlFor>`
@@ -621,8 +622,14 @@ export function createNumberField(
       const isDisabled = p.isDisabled ?? state.isDisabled();
       const isReadOnly = p.isReadOnly ?? state.isReadOnly();
 
+      // The labelable DOM filter already copied these. An empty string is a
+      // value, and a later undefined from createLabel does not clear it.
+      const labelableProps: Record<string, unknown> = { ...domProps() };
+      if (!p["aria-label"]) delete labelableProps["aria-label"];
+      if (!p["aria-labelledby"]) delete labelableProps["aria-labelledby"];
+
       return mergeProps(
-        domProps(),
+        labelableProps,
         fieldProps as Record<string, unknown>,
         {
           id: inputId,

@@ -218,6 +218,7 @@ These behaviors match the pin in this checkout.
 - A heading breadcrumb does not take a link role, tab stop, or press.
 - A breadcrumb nav uses the catalog label when aria-label is empty.
 - A calendar omits an empty description and details id.
+- A number field omits an empty label and labelledby.
 
 **Components**
 

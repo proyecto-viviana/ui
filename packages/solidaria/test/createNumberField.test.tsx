@@ -26,6 +26,7 @@ function TestNumberField(props: {
   validationBehavior?: "aria" | "native";
   commitBehavior?: "snap" | "validate";
   "aria-label"?: string;
+  "aria-labelledby"?: string;
   decrementAriaLabel?: string;
   incrementAriaLabel?: string;
   label?: string;
@@ -65,6 +66,7 @@ function TestNumberField(props: {
   const field = createNumberField(
     () => ({
       "aria-label": props["aria-label"],
+      "aria-labelledby": props["aria-labelledby"],
       decrementAriaLabel: props.decrementAriaLabel,
       incrementAriaLabel: props.incrementAriaLabel,
       label: props.label,
@@ -173,6 +175,22 @@ describe("createNumberField", () => {
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-label", "Custom amount");
+    });
+
+    it("omits an empty aria-label and aria-labelledby", () => {
+      render(() => <TestNumberField aria-label="" aria-labelledby="" />);
+
+      const input = screen.getByTestId("input");
+      expect(input).not.toHaveAttribute("aria-label");
+      expect(input).not.toHaveAttribute("aria-labelledby");
+    });
+
+    it("keeps a provided aria-labelledby", () => {
+      render(() => <TestNumberField aria-labelledby="amount-label" />);
+
+      const input = screen.getByTestId("input");
+      expect(input).toHaveAttribute("aria-labelledby", "amount-label");
+      expect(input).not.toHaveAttribute("aria-label");
     });
 
     it("supports description", () => {
