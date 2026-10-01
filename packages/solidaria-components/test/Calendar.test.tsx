@@ -889,7 +889,7 @@ describe("Calendar", () => {
       expect(day.closest("td")).not.toHaveAttribute("aria-selected");
     });
 
-    it("does not mark an unavailable calendar value as selected", async () => {
+    it("marks an unavailable calendar value as selected and invalid", async () => {
       render(() => (
         <TestCalendar
           calendarProps={{
@@ -901,10 +901,35 @@ describe("Calendar", () => {
       await waitForCalendarHydration();
 
       const day = screen.getByText("15");
+      const calendar = document.querySelector(".solidaria-Calendar");
       expect(day).toHaveAttribute("aria-disabled", "true");
+      expect(day).toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day.getAttribute("aria-label") ?? "").toContain("selected");
+      expect(day.closest("td")).toHaveAttribute("aria-selected", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+      expect(calendar).toHaveAttribute("data-invalid", "true");
+    });
+
+    it("marks a calendar value outside min or max as invalid", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            value: new CalendarDate(2024, 6, 5),
+            minValue: new CalendarDate(2024, 6, 10),
+            defaultFocusedValue: new CalendarDate(2024, 6, 15),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByRole("button", { name: /June 5, 2024/i });
+      const calendar = document.querySelector(".solidaria-Calendar");
       expect(day).not.toHaveAttribute("data-selected");
-      expect(day.getAttribute("aria-label") ?? "").not.toContain("selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
       expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+      expect(calendar).toHaveAttribute("data-invalid", "true");
     });
 
     it("marks an unavailable invalid calendar value as selected", async () => {

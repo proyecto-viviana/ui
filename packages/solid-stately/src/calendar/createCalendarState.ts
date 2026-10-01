@@ -366,7 +366,26 @@ export function createCalendarState<
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
-  const isValueInvalid = createMemo(() => validationState() === "invalid");
+  // A selected date is invalid when it is unavailable or outside min/max.
+  // Mirrors useCalendarState. props.isInvalid stays on the aria hook.
+  const isInvalidSelection = createMemo(() => {
+    const current = value();
+    if (current == null) return false;
+    const dates = Array.isArray(current) ? current : [current];
+    const min = access(props.minValue);
+    const max = access(props.maxValue);
+    const minCal = min != null ? toDisplayCalendarDate(min) : null;
+    const maxCal = max != null ? toDisplayCalendarDate(max) : null;
+    return dates.some((date) => {
+      const cal = toDisplayCalendarDate(date);
+      return (
+        Boolean(props.isDateUnavailable?.(cal)) ||
+        (minCal != null && cal.compare(minCal) < 0) ||
+        (maxCal != null && cal.compare(maxCal) > 0)
+      );
+    });
+  });
+  const isValueInvalid = createMemo(() => validationState() === "invalid" || isInvalidSelection());
 
   // Visible range based on the paged range start. Function (not memo) so
   // onFocusChange snapshots see the live page after a same-turn write.
