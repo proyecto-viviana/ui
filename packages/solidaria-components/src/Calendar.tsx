@@ -362,6 +362,7 @@ function CalendarInner<
       "selectionAlignment",
       "isDateDisabled",
       "validationState",
+      "isInvalid",
       "errorMessage",
       "firstDayOfWeek",
     ],

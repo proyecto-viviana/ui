@@ -932,6 +932,27 @@ describe("Calendar", () => {
       expect(calendar).toHaveAttribute("data-invalid", "true");
     });
 
+    it("marks the selected day invalid when isInvalid is set", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            value: new CalendarDate(2024, 6, 15),
+            isInvalid: true,
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByText("15");
+      const calendar = document.querySelector(".solidaria-Calendar");
+      expect(day).toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day).not.toHaveAttribute("aria-describedby");
+      expect(day.closest("td")).toHaveAttribute("aria-selected", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+      expect(calendar).toHaveAttribute("data-invalid", "true");
+    });
+
     it("marks an unavailable invalid calendar value as selected", async () => {
       render(() => (
         <TestCalendar

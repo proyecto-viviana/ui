@@ -102,6 +102,8 @@ export interface CalendarStateProps<
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */
   validationState?: MaybeAccessor<ValidationState | undefined>;
+  /** Whether the current selection is invalid according to application logic. */
+  isInvalid?: boolean;
   /** Error message. */
   errorMessage?: string;
   /** The first day of the week (0 = Sunday, 1 = Monday, etc.). */
@@ -366,8 +368,8 @@ export function createCalendarState<
   const isDisabled = createMemo(() => access(props.isDisabled) ?? false);
   const isReadOnly = createMemo(() => access(props.isReadOnly) ?? false);
   const validationState = createMemo(() => access(props.validationState));
-  // A selected date is invalid when it is unavailable or outside min/max.
-  // Mirrors useCalendarState. props.isInvalid stays on the aria hook.
+  // A value is invalid when the caller says so, validationState is invalid,
+  // or a selected date is unavailable or outside min/max. Mirrors useCalendarState.
   const isInvalidSelection = createMemo(() => {
     const current = value();
     if (current == null) return false;
@@ -385,7 +387,10 @@ export function createCalendarState<
       );
     });
   });
-  const isValueInvalid = createMemo(() => validationState() === "invalid" || isInvalidSelection());
+  const isValueInvalid = createMemo(
+    () =>
+      Boolean(access(props.isInvalid)) || validationState() === "invalid" || isInvalidSelection(),
+  );
 
   // Visible range based on the paged range start. Function (not memo) so
   // onFocusChange snapshots see the live page after a same-turn write.

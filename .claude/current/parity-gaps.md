@@ -234,6 +234,7 @@ These behaviors match the pin in this checkout.
 - A disabled date picker marks its field group aria-disabled.
 - A radio group arrow that selects the next radio does not reach a parent.
 - A calendar treats an unavailable or out-of-range value as invalid, and keeps the unavailable day selected.
+- A calendar marked isInvalid marks the selected day aria-invalid.
 
 **Components**
 
