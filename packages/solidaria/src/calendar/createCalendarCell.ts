@@ -338,6 +338,10 @@ export function createCalendarCell<T extends CalendarState>(
         onPointerDown: handlePointerDown,
         onPointerUp: handlePointerUp,
         onPointerLeave: handlePointerUp,
+        onContextMenu: (event: MouseEvent) => {
+          // Pin useCalendarCell: a long press must not open the context menu.
+          event.preventDefault();
+        },
         onFocus: () => {
           // Only update if this cell isn't already the focused date.
           // This prevents infinite loops when focus is programmatically set.

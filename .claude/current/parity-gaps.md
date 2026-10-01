@@ -236,6 +236,7 @@ These behaviors match the pin in this checkout.
 - A calendar treats an unavailable or out-of-range value as invalid, and keeps the unavailable day selected.
 - A calendar marked isInvalid marks the selected day aria-invalid.
 - A range calendar marked isInvalid marks the selected days aria-invalid.
+- A calendar cell does not open a context menu on long press.
 
 **Components**
 

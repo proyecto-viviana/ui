@@ -1056,6 +1056,16 @@ describe("Calendar", () => {
       const gridcells = screen.getAllByRole("gridcell");
       expect(gridcells.length).toBeGreaterThan(0);
     });
+
+    it("does not open a context menu from a day cell", async () => {
+      render(() => (
+        <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByRole("button", { name: /June 15, 2024/i });
+      expect(fireEvent.contextMenu(day)).toBe(false);
+    });
   });
 
   describe("selectDate", () => {

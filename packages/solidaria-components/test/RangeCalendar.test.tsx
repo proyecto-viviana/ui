@@ -1128,6 +1128,16 @@ describe("RangeCalendar", () => {
       const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
       expect(day15).not.toHaveAttribute("aria-describedby");
     });
+
+    it("does not open a context menu from a day cell", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day = screen.getByRole("button", { name: /June 15, 2024/i });
+      expect(fireEvent.contextMenu(day)).toBe(false);
+    });
   });
 
   // ============================================

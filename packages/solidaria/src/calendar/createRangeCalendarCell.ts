@@ -548,6 +548,10 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
         onPointerLeave: handlePointerLeave,
         onPointerCancel: handlePointerCancel,
         onPointerEnter: handlePointerEnter,
+        onContextMenu: (event: MouseEvent) => {
+          // Pin useCalendarCell: a long press must not open the context menu.
+          event.preventDefault();
+        },
         onFocus: () => {
           if (!state.isCellFocused(d)) {
             state.setFocusedDate(d);
