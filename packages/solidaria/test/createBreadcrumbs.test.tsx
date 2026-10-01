@@ -93,4 +93,9 @@ describe("createBreadcrumbItem", () => {
     render(() => <TestBreadcrumbItem href="/products" isDisabled />);
     expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("aria-disabled", "true");
   });
+
+  it("gives a current item tabIndex -1 when autoFocus is set", () => {
+    render(() => <TestBreadcrumbItem isCurrent autoFocus />);
+    expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("tabindex", "-1");
+  });
 });

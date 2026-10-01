@@ -185,12 +185,17 @@ export function createBreadcrumbItem(
     // Start with link props, forwarding id if provided
     let baseProps: Record<string, unknown> = p.id ? mergeProps(linkProps, { id: p.id }) : linkProps;
 
-    // Add aria-current for current page
+    // Add aria-current for current page. isCurrent disables the link, which
+    // drops tabIndex; put -1 back so autoFocus can still move focus here.
     if (current) {
       const ariaCurrent = p["aria-current"] ?? "page";
-      baseProps = mergeProps(baseProps, {
-        "aria-current": ariaCurrent,
-      });
+      baseProps = mergeProps(
+        baseProps,
+        {
+          "aria-current": ariaCurrent,
+        },
+        p.autoFocus ? { tabIndex: -1 } : {},
+      );
     }
 
     // Add aria-disabled for disabled items

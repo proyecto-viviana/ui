@@ -214,6 +214,7 @@ These behaviors match the pin in this checkout.
 - A sortable column header on Android describes the sort direction instead of setting aria-sort.
 - A menu item puts an external aria-describedby ahead of its description and keyboard shortcut.
 - A table puts the long-press selection hint after its sort description, in place of an external id.
+- A current breadcrumb restores tabIndex -1 when autoFocus is set, so focus can land on it.
 
 **Components**
 
