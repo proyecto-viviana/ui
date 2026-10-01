@@ -3,6 +3,7 @@ import { createRoot } from "solid-js";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDatePickerGroup } from "../src/datepicker/createDatePickerGroup";
 import { createPress } from "../src/interactions/createPress";
+import { I18nProvider } from "../src/i18n";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
 describe("createDatePickerGroup", () => {
@@ -200,5 +201,94 @@ describe("createDatePickerGroup nested trigger press", () => {
     fireMousePointerDown(screen.getByTestId("chrome"));
 
     expect(document.activeElement).toBe(screen.getByTestId("day"));
+  });
+});
+
+function stubLeft(element: HTMLElement, left: number) {
+  vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
+    x: left,
+    y: 0,
+    left,
+    top: 0,
+    right: left + 20,
+    bottom: 20,
+    width: 20,
+    height: 20,
+    toJSON() {
+      return {};
+    },
+  });
+}
+
+/** DOM order is the reverse of visual order, which is the RTL segment case. */
+function RtlSegmentGroup() {
+  let groupEl: HTMLDivElement | undefined;
+  const groupProps = createDatePickerGroup({ setOpen: () => {} }, () => groupEl ?? null);
+  return (
+    <div
+      ref={(el) => {
+        groupEl = el;
+      }}
+      {...groupProps()}
+      data-testid="group"
+    >
+      <span role="spinbutton" tabIndex={0} data-testid="dom0">
+        yyyy
+      </span>
+      <span role="spinbutton" tabIndex={0} data-testid="dom1">
+        dd
+      </span>
+      <span role="spinbutton" tabIndex={0} data-testid="dom2">
+        mm
+      </span>
+    </div>
+  );
+}
+
+function keyOn(element: HTMLElement, key: string) {
+  const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+  element.dispatchEvent(event);
+  return event;
+}
+
+describe("createDatePickerGroup RTL arrows", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("does not consume an RTL arrow that has no segment in that direction", () => {
+    render(() => (
+      <I18nProvider locale="he-IL">
+        <RtlSegmentGroup />
+      </I18nProvider>
+    ));
+
+    const dom0 = screen.getByTestId("dom0");
+    const dom1 = screen.getByTestId("dom1");
+    const dom2 = screen.getByTestId("dom2");
+    // Visual positions run opposite the DOM: dom2 is the leftmost segment.
+    stubLeft(dom0, 200);
+    stubLeft(dom1, 100);
+    stubLeft(dom2, 0);
+
+    dom1.focus();
+    const towardLeft = keyOn(dom1, "ArrowLeft");
+    expect(towardLeft.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(dom2);
+
+    dom2.focus();
+    const towardRight = keyOn(dom2, "ArrowRight");
+    expect(towardRight.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(dom1);
+
+    dom2.focus();
+    const pastLeft = keyOn(dom2, "ArrowLeft");
+    expect(pastLeft.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(dom2);
+
+    dom0.focus();
+    const pastRight = keyOn(dom0, "ArrowRight");
+    expect(pastRight.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(dom0);
   });
 });

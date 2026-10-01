@@ -226,6 +226,7 @@ These behaviors match the pin in this checkout.
 - A calendar does not mark a disabled or unavailable day as selected.
 - An unavailable day inside an invalid date range stays selected.
 - A date field group click focuses the first empty segment.
+- An RTL date field does not consume an arrow that has no segment in that direction.
 
 **Components**
 

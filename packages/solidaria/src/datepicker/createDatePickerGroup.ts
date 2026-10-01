@@ -72,31 +72,39 @@ export function createDatePickerGroup(
     const direction = localeInfo().direction;
     switch (e.key) {
       case "ArrowLeft": {
-        e.preventDefault();
-        e.stopPropagation();
         const root = ref();
         if (direction === "rtl") {
           if (root) {
             const target = getEventTarget(e) as HTMLElement;
             const prev = findNextSegment(root, target.getBoundingClientRect().left, -1);
-            prev?.focus();
+            if (prev) {
+              e.preventDefault();
+              e.stopPropagation();
+              prev.focus();
+            }
           }
         } else {
+          e.preventDefault();
+          e.stopPropagation();
           focusManager.focusPrevious();
         }
         break;
       }
       case "ArrowRight": {
-        e.preventDefault();
-        e.stopPropagation();
         const root = ref();
         if (direction === "rtl") {
           if (root) {
             const target = getEventTarget(e) as HTMLElement;
             const next = findNextSegment(root, target.getBoundingClientRect().left, 1);
-            next?.focus();
+            if (next) {
+              e.preventDefault();
+              e.stopPropagation();
+              next.focus();
+            }
           }
         } else {
+          e.preventDefault();
+          e.stopPropagation();
           focusManager.focusNext();
         }
         break;
