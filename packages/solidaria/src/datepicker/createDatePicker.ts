@@ -39,6 +39,8 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import { useLocale } from "../i18n";
 import { createPress } from "../interactions/createPress";
+import { createFocusWithin } from "../interactions/createFocusWithin";
+import { nodeContains } from "../utils/dom";
 import { datePickerStrings } from "./intl";
 import { createDatePickerGroup } from "./createDatePickerGroup";
 import { roleSymbol } from "./createDateField";
@@ -249,8 +251,33 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
     false,
   );
 
+  // Focus callbacks live on the field group. Moving into the calendar dialog
+  // is not a blur, and tracking is off while the popover is open.
+  let isFocused = false;
+  const { focusWithinProps } = createFocusWithin({
+    get isDisabled() {
+      return overlayState.isOpen;
+    },
+    onBlurWithin(e) {
+      // Ignore when focus moves into the popover.
+      const dialog = document.getElementById(dialogId);
+      if (!nodeContains(dialog, e.relatedTarget as Element | null)) {
+        isFocused = false;
+        getProps().onBlur?.(e);
+        getProps().onFocusChange?.(false);
+      }
+    },
+    onFocusWithin(e) {
+      if (!isFocused) {
+        isFocused = true;
+        getProps().onFocus?.(e);
+        getProps().onFocusChange?.(true);
+      }
+    },
+  });
+
   const groupProps = createMemo(() =>
-    mergeProps(outerGroup(), {
+    mergeProps(outerGroup(), focusWithinProps, {
       role: "group" as const,
       "aria-disabled": getProps().isDisabled || undefined,
       "aria-labelledby": labelledBy(),

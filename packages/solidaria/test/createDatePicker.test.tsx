@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vite-plus/test";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { createDatePicker } from "../src/datepicker/createDatePicker";
 import { I18nProvider } from "../src/i18n";
@@ -131,5 +131,65 @@ describe("createDatePicker", () => {
     expect(group).toHaveAttribute("aria-disabled", "true");
     expect(group).not.toHaveAttribute("aria-required");
     expect(group).not.toHaveAttribute("aria-invalid");
+  });
+
+  it("does not blur when focus moves into the calendar dialog", () => {
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+    const onFocusChange = vi.fn();
+
+    function FocusPicker() {
+      const aria = createDatePicker(
+        () => ({
+          "aria-label": "Date",
+          onFocus,
+          onBlur,
+          onFocusChange,
+        }),
+        createMockFieldState() as any,
+        createMockOverlayState(),
+      );
+
+      return (
+        <>
+          <div data-testid="group" {...aria.groupProps}>
+            <button type="button" data-testid="segment">
+              segment
+            </button>
+          </div>
+          <div data-testid="dialog" {...aria.dialogProps}>
+            <button type="button" data-testid="day">
+              day
+            </button>
+          </div>
+          <button type="button" data-testid="outside">
+            outside
+          </button>
+        </>
+      );
+    }
+
+    render(() => <FocusPicker />);
+
+    screen.getByTestId("segment").focus();
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onFocusChange).toHaveBeenCalledWith(true);
+    expect(onBlur).not.toHaveBeenCalled();
+
+    onFocusChange.mockClear();
+    screen.getByTestId("day").focus();
+    expect(onBlur).not.toHaveBeenCalled();
+    expect(onFocusChange).not.toHaveBeenCalled();
+
+    // The calendar move already left the group. Focus has to return to the
+    // field before a later exit can blur it.
+    screen.getByTestId("segment").focus();
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onBlur).not.toHaveBeenCalled();
+    expect(onFocusChange).not.toHaveBeenCalled();
+
+    screen.getByTestId("outside").focus();
+    expect(onBlur).toHaveBeenCalledTimes(1);
+    expect(onFocusChange).toHaveBeenCalledWith(false);
   });
 });
