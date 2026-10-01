@@ -217,6 +217,7 @@ These behaviors match the pin in this checkout.
 - A current breadcrumb restores tabIndex -1 when autoFocus is set, so focus can land on it.
 - A heading breadcrumb does not take a link role, tab stop, or press.
 - A breadcrumb nav uses the catalog label when aria-label is empty.
+- A calendar omits an empty description and details id.
 
 **Components**
 

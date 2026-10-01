@@ -215,8 +215,8 @@ export function createCalendar<T extends CalendarState>(
       }),
       {
         role: "application" as const,
-        "aria-describedby": p["aria-describedby"],
-        "aria-details": p["aria-details"],
+        "aria-describedby": p["aria-describedby"] || undefined,
+        "aria-details": p["aria-details"] || undefined,
       },
     );
   });

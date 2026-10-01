@@ -140,6 +140,44 @@ describe("createCalendar labels", () => {
       dispose();
     });
   });
+
+  it("omits an empty aria-describedby and aria-details", () => {
+    createRoot((dispose) => {
+      const state = decemberCalendar();
+      flush();
+      const calendar = createCalendar(
+        { id: "cal", "aria-describedby": "", "aria-details": "" },
+        state,
+      );
+      flush();
+
+      expect(calendar.calendarProps["aria-describedby"]).toBeUndefined();
+      expect(calendar.calendarProps["aria-details"]).toBeUndefined();
+
+      const rangeState = createRangeCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 12, 1),
+      });
+      flush();
+      const range = createRangeCalendar(
+        { id: "range", "aria-describedby": "", "aria-details": "" },
+        rangeState,
+      );
+      flush();
+
+      expect(range.calendarProps["aria-describedby"]).toBeUndefined();
+      expect(range.calendarProps["aria-details"]).toBeUndefined();
+
+      const named = createCalendar(
+        { id: "named", "aria-describedby": "desc", "aria-details": "more" },
+        state,
+      );
+      flush();
+      expect(named.calendarProps["aria-describedby"]).toBe("desc");
+      expect(named.calendarProps["aria-details"]).toBe("more");
+      dispose();
+    });
+  });
 });
 
 function nativeVisibleMonthRange(
