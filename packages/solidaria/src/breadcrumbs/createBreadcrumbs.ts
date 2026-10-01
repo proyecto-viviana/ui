@@ -180,10 +180,13 @@ export function createBreadcrumbItem(
     const p = getProps();
     const current = isCurrent();
     // Read fresh each call so elementType-driven role/tabIndex stay reactive.
-    const linkProps = linkAria.linkProps;
+    // h1–h6 are headings, not links, so they do not take link props.
+    const heading = /^h[1-6]$/.test(elementType());
+    const linkProps = heading ? {} : linkAria.linkProps;
 
     // Start with link props, forwarding id if provided
-    let baseProps: Record<string, unknown> = p.id ? mergeProps(linkProps, { id: p.id }) : linkProps;
+    let baseProps: Record<string, unknown> =
+      !heading && p.id ? mergeProps(linkProps, { id: p.id }) : linkProps;
 
     // Add aria-current for current page. isCurrent disables the link, which
     // drops tabIndex; put -1 back so autoFocus can still move focus here.

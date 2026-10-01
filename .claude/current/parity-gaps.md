@@ -215,6 +215,7 @@ These behaviors match the pin in this checkout.
 - A menu item puts an external aria-describedby ahead of its description and keyboard shortcut.
 - A table puts the long-press selection hint after its sort description, in place of an external id.
 - A current breadcrumb restores tabIndex -1 when autoFocus is set, so focus can land on it.
+- A heading breadcrumb does not take a link role, tab stop, or press.
 
 **Components**
 

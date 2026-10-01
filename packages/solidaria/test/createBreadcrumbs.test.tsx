@@ -24,6 +24,15 @@ function TestBreadcrumbItem(props: AriaBreadcrumbItemProps) {
   );
 }
 
+function TestBreadcrumbHeading(props: AriaBreadcrumbItemProps) {
+  const { itemProps } = createBreadcrumbItem(props);
+  return (
+    <h2 data-testid="breadcrumb-heading" {...itemProps}>
+      Section
+    </h2>
+  );
+}
+
 describe("createBreadcrumbs", () => {
   it("applies default aria-label when no label props are provided", () => {
     render(() => <TestBreadcrumbsNav />);
@@ -97,5 +106,15 @@ describe("createBreadcrumbItem", () => {
   it("gives a current item tabIndex -1 when autoFocus is set", () => {
     render(() => <TestBreadcrumbItem isCurrent autoFocus />);
     expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("does not expose a heading breadcrumb as a link", () => {
+    const onPress = vi.fn();
+    render(() => <TestBreadcrumbHeading elementType="h2" href="/section" onPress={onPress} />);
+    const item = screen.getByTestId("breadcrumb-heading");
+    expect(item).not.toHaveAttribute("role");
+    expect(item).not.toHaveAttribute("tabindex");
+    fireEvent.click(item);
+    expect(onPress).not.toHaveBeenCalled();
   });
 });
