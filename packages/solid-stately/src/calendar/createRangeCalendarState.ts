@@ -361,8 +361,11 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return constrainVisibleRangeStart(date, rawAlignStart(date).subtract({ months: offset }));
   };
 
+  // A controlled null is a cleared selection. Pin useControlledState treats
+  // `value !== undefined` as controlled, so null must not fall through to defaultValue.
   const defaultSelectionAlignment = (): RangeCalendarSelectionAlignment => {
-    const currentValue = access(props.value) ?? props.defaultValue;
+    const controlled = access(props.value);
+    const currentValue = controlled !== undefined ? controlled : props.defaultValue;
     if (!currentValue?.start || !currentValue?.end) {
       return "center";
     }
@@ -394,10 +397,11 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       return toDisplayCalendarDate(props.defaultFocusedValue);
     }
     const controlledValue = access(props.value);
-    if (controlledValue?.start) {
-      return toDisplayCalendarDate(controlledValue.start);
-    }
-    if (props.defaultValue?.start) {
+    if (controlledValue !== undefined) {
+      if (controlledValue?.start) {
+        return toDisplayCalendarDate(controlledValue.start);
+      }
+    } else if (props.defaultValue?.start) {
       return toDisplayCalendarDate(props.defaultValue.start);
     }
     return intlToCalendar(today(timeZone), calendar());

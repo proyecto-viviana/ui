@@ -895,6 +895,39 @@ describe("createRangeCalendarState", () => {
         dispose();
       });
     });
+
+    it("keeps a controlled null value centered on today instead of defaultValue", () => {
+      createRoot((dispose) => {
+        const defaultValue = {
+          start: new CalendarDate(2020, 1, 1),
+          end: new CalendarDate(2020, 6, 15),
+        };
+        const state = createRangeCalendarState({
+          value: null,
+          defaultValue,
+          visibleMonths: 3,
+        });
+
+        flush();
+        expect(state.value()).toBe(null);
+        const todayDate = today(timeZone);
+        const focused = state.focusedDate();
+        expect(focused.year).toBe(todayDate.year);
+        expect(focused.month).toBe(todayDate.month);
+        expect(focused.day).toBe(todayDate.day);
+
+        // visibleMonths 3 centers on the focused month: one month before through one after.
+        const centerStart = new CalendarDate(todayDate.year, todayDate.month, 1).subtract({
+          months: 1,
+        });
+        expect(state.visibleRange().start).toEqual(centerStart);
+        expect(state.visibleRange().end).toEqual(
+          centerStart.add({ months: 3 }).subtract({ days: 1 }),
+        );
+
+        dispose();
+      });
+    });
   });
 
   describe("focus state", () => {
