@@ -498,6 +498,78 @@ describe("createNumberFieldState", () => {
       });
     });
 
+    it("reports the parsed input as numberValue while typing", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({ defaultValue: 50 });
+
+        state.setInputValue("42");
+        flush();
+        expect(state.numberValue()).toBe(42);
+        flush();
+        expect(state.inputValue()).toBe("42");
+
+        state.setInputValue("-");
+        flush();
+        expect(state.numberValue()).toBeNaN();
+        flush();
+        expect(state.inputValue()).toBe("-");
+
+        dispose();
+      });
+    });
+
+    it("keeps a controlled step on the current value until the prop updates", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createNumberFieldState({ value: 50, onChange });
+
+        state.increment();
+        flush();
+        expect(onChange).toHaveBeenCalledWith(51);
+        flush();
+        expect(state.numberValue()).toBe(50);
+        flush();
+        expect(state.inputValue()).toBe("50");
+
+        dispose();
+      });
+    });
+
+    it("does not replace a controlled input when setNumberValue is not accepted", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createNumberFieldState({ value: 12, onChange });
+
+        state.setNumberValue(30);
+        flush();
+        expect(onChange).toHaveBeenCalledWith(30);
+        flush();
+        expect(state.inputValue()).toBe("12");
+        flush();
+        expect(state.numberValue()).toBe(12);
+
+        dispose();
+      });
+    });
+
+    it("refreshes the input when a step lands on the same controlled number", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({ value: 5 });
+
+        state.setInputValue("4");
+        flush();
+        expect(state.numberValue()).toBe(4);
+
+        state.increment();
+        flush();
+        expect(state.inputValue()).toBe("5");
+        flush();
+        expect(state.numberValue()).toBe(5);
+
+        dispose();
+      });
+    });
+
     it("should commit valid input value", () => {
       createRoot((dispose) => {
         const onChange = vi.fn();

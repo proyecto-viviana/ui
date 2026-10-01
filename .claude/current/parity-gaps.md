@@ -238,6 +238,7 @@ These behaviors match the pin in this checkout.
 - A range calendar marked isInvalid marks the selected days aria-invalid.
 - A calendar cell does not open a context menu on long press.
 - A date range picker's focus-change callback reports true on the field and false when focus leaves, and does not report a change when focus moves into the calendar.
+- A number field reports the parsed input as its number value while typing, and a controlled step does not change that text until the value prop updates.
 
 **Components**
 

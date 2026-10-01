@@ -74,7 +74,10 @@ export interface NumberFieldStateProps {
 export interface NumberFieldState extends FormValidationState {
   /** The current input value as a string. */
   inputValue: Accessor<string>;
-  /** The current numeric value. */
+  /**
+   * The currently parsed number value, or NaN if the input could not be parsed.
+   * Updated from the input text as the user types.
+   */
   numberValue: Accessor<number>;
   /** Whether the value can be incremented. */
   canIncrement: Accessor<boolean>;
@@ -458,6 +461,17 @@ export function createNumberFieldState(
     );
   };
 
+  // Pin reformats the text when the committed number changes. A controlled
+  // step leaves the text alone until `value` updates, unless the step lands
+  // on that same number and has to replace what the user typed.
+  const commitSteppedNumber = (next: number, refreshWhenUnchanged: boolean) => {
+    const committed = readNow(actualNumberValue);
+    setNumberValue(next);
+    if (getProps().value === undefined || (refreshWhenUnchanged && next === committed)) {
+      setInputValueInternal(formatNumber(next));
+    }
+  };
+
   // Increment by step
   const increment = () => {
     ensureInitialized();
@@ -466,8 +480,7 @@ export function createNumberFieldState(
     if (p.isDisabled || p.isReadOnly) return;
 
     const current = safeNextStep("+", p.minValue);
-    setNumberValue(current);
-    setInputValueInternal(formatNumber(current));
+    commitSteppedNumber(current, true);
     p.onChange?.(current);
     validation.commitValidation();
   };
@@ -480,8 +493,7 @@ export function createNumberFieldState(
     if (p.isDisabled || p.isReadOnly) return;
 
     const current = safeNextStep("-", p.maxValue);
-    setNumberValue(current);
-    setInputValueInternal(formatNumber(current));
+    commitSteppedNumber(current, true);
     p.onChange?.(current);
     validation.commitValidation();
   };
@@ -496,13 +508,12 @@ export function createNumberFieldState(
     if (p.maxValue == null) return;
 
     const snapped = snapValueToStep(p.maxValue, p.minValue, p.maxValue, step());
-    setNumberValue(snapped);
-    setInputValueInternal(formatNumber(snapped));
+    commitSteppedNumber(snapped, false);
     p.onChange?.(snapped);
     validation.commitValidation();
   };
 
-  // Set to min
+  // Set to min. Pin sets the raw minimum, not a snapped step.
   const decrementToMin = () => {
     ensureInitialized();
     syncControlledValue();
@@ -511,16 +522,14 @@ export function createNumberFieldState(
 
     if (p.minValue == null) return;
 
-    setNumberValue(p.minValue);
-    setInputValueInternal(formatNumber(p.minValue));
+    commitSteppedNumber(p.minValue, false);
     p.onChange?.(p.minValue);
     validation.commitValidation();
   };
 
   const setNumberValuePublic = (value: number) => {
     ensureInitialized();
-    setNumberValue(value);
-    setInputValueInternal(formatNumber(value));
+    commitSteppedNumber(value, false);
     getProps().onChange?.(value);
   };
 
@@ -535,8 +544,9 @@ export function createNumberFieldState(
       syncControlledValue();
       return inputValue;
     },
+    // Parsed text. Form validation reads the committed number separately.
     get numberValue() {
-      return actualNumberValue;
+      return parsedInputValue;
     },
     canIncrement,
     canDecrement,
