@@ -155,6 +155,64 @@ describe("createDateRangePicker", () => {
 
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
+
+  it("does not blur when focus moves into the calendar dialog", () => {
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+
+    function FocusRangePicker() {
+      const aria = createDateRangePicker(
+        () => ({
+          "aria-label": "Range",
+          onFocus,
+          onBlur,
+        }),
+        createMockRangeState() as any,
+        {
+          isOpen: false,
+          open: () => {},
+          close: () => {},
+          toggle: () => {},
+        },
+      );
+
+      return (
+        <>
+          <div data-testid="group" {...aria.groupProps}>
+            <button type="button" data-testid="segment">
+              segment
+            </button>
+          </div>
+          <div data-testid="dialog" {...aria.dialogProps}>
+            <button type="button" data-testid="day">
+              day
+            </button>
+          </div>
+          <button type="button" data-testid="outside">
+            outside
+          </button>
+        </>
+      );
+    }
+
+    render(() => <FocusRangePicker />);
+
+    screen.getByTestId("segment").focus();
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onBlur).not.toHaveBeenCalled();
+
+    screen.getByTestId("day").focus();
+    expect(onBlur).not.toHaveBeenCalled();
+
+    // The calendar move already left the group. Focus has to return to the
+    // field before a later exit can blur it.
+    screen.getByTestId("segment").focus();
+    expect(onFocus).toHaveBeenCalledTimes(1);
+    expect(onBlur).not.toHaveBeenCalled();
+
+    screen.getByTestId("outside").focus();
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
 });
 
 function InvalidRangeTrigger(props: { isInvalid?: boolean }) {

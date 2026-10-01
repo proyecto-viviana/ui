@@ -228,6 +228,7 @@ These behaviors match the pin in this checkout.
 - A date field group click focuses the first empty segment.
 - An RTL date field does not consume an arrow that has no segment in that direction.
 - A date picker does not blur when focus moves into its calendar.
+- A date range picker does not blur when focus moves into its calendar.
 
 **Components**
 

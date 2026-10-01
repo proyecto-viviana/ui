@@ -43,7 +43,9 @@ import { createStringFormatter } from "../i18n";
 import { useLocale } from "../i18n";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
+import { nodeContains } from "../utils/dom";
 import { createPress } from "../interactions/createPress";
+import { createFocusWithin } from "../interactions/createFocusWithin";
 import { datePickerStrings } from "./intl";
 import { createDatePickerGroup } from "./createDatePickerGroup";
 import { roleSymbol, focusManagerSymbol } from "./createDateField";
@@ -79,6 +81,10 @@ export interface AriaDateRangePickerProps {
   validationBehavior?: "aria" | "native";
   /** Auto focus the start field. */
   autoFocus?: boolean;
+  /** Callback when the field group is focused. */
+  onFocus?: (e: FocusEvent) => void;
+  /** Callback when the field group is blurred. */
+  onBlur?: (e: FocusEvent) => void;
   /** Callback for key down (forwarded when the popover is closed). */
   onKeyDown?: (e: KeyboardEvent) => void;
   /** Callback for key up (forwarded when the popover is closed). */
@@ -195,8 +201,31 @@ export function createDateRangePicker<T extends RangeCalendarState>(
     false,
   );
 
+  // Focus callbacks live on the field group. Moving into the calendar dialog
+  // is not a blur, and tracking is off while the popover is open.
+  let isFocused = false;
+  const { focusWithinProps } = createFocusWithin({
+    get isDisabled() {
+      return overlayState.isOpen;
+    },
+    onBlurWithin(e) {
+      // Ignore when focus moves into the popover.
+      const dialog = document.getElementById(dialogId);
+      if (!nodeContains(dialog, e.relatedTarget as Element | null)) {
+        isFocused = false;
+        getProps().onBlur?.(e);
+      }
+    },
+    onFocusWithin(e) {
+      if (!isFocused) {
+        isFocused = true;
+        getProps().onFocus?.(e);
+      }
+    },
+  });
+
   const groupProps = createMemo(() =>
-    mergeProps(outerGroup(), {
+    mergeProps(outerGroup(), focusWithinProps, {
       role: "group" as const,
       "aria-disabled": getProps().isDisabled || undefined,
       "aria-labelledby": labelledBy(),
