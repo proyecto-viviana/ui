@@ -279,7 +279,8 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
   const groupProps = createMemo(() =>
     mergeProps(outerGroup(), focusWithinProps, {
       role: "group" as const,
-      "aria-disabled": getProps().isDisabled || undefined,
+      // The component keeps isDisabled on field state, same as the fields.
+      "aria-disabled": getProps().isDisabled || state.isDisabled() || undefined,
       "aria-labelledby": labelledBy(),
       "aria-describedby": ariaDescribedBy(),
       onKeyDown(e: KeyboardEvent) {

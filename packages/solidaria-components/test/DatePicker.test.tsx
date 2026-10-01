@@ -19,6 +19,7 @@ import {
   DatePickerButton,
   DatePickerContent,
   DatePickerLabel,
+  useDatePickerContext,
 } from "../src/DatePicker";
 import { Button } from "../src/Button";
 import { Label } from "../src/Label";
@@ -49,6 +50,11 @@ async function waitForDatePickerHydration() {
 }
 
 // Helper component for testing DatePicker
+function DateGroupProbe() {
+  const context = useDatePickerContext();
+  return <div data-testid="field-group" {...context.pickerAria.groupProps} />;
+}
+
 function TestDatePicker(props: { pickerProps?: Partial<Parameters<typeof DatePicker>[0]> }) {
   return (
     <DatePicker aria-label="Test Date Picker" {...props.pickerProps}>
@@ -742,6 +748,20 @@ describe("DatePicker", () => {
       // Calendar should not open
       const content = document.querySelector(".solidaria-DatePickerContent");
       expect(content).not.toBeInTheDocument();
+    });
+
+    it("marks the field group aria-disabled when the date picker is disabled", async () => {
+      render(() => (
+        <DatePicker aria-label="Event date" isDisabled>
+          <DatePickerLabel>Event date</DatePickerLabel>
+          <DateGroupProbe />
+        </DatePicker>
+      ));
+      await waitForDatePickerHydration();
+
+      const group = screen.getByTestId("field-group");
+      expect(group).toHaveAttribute("role", "group");
+      expect(group).toHaveAttribute("aria-disabled", "true");
     });
   });
 
