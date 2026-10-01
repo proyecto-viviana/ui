@@ -831,6 +831,34 @@ describe("createCalendarState", () => {
       });
     });
 
+    it("keeps a controlled null value centered on today instead of defaultValue", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          value: null,
+          defaultValue: new CalendarDate(2020, 1, 15),
+          visibleMonths: 3,
+        });
+
+        flush();
+        expect(state.value()).toBe(null);
+        const todayDate = today(timeZone);
+        const focused = state.focusedDate();
+        expect(focused.year).toBe(todayDate.year);
+        expect(focused.month).toBe(todayDate.month);
+        expect(focused.day).toBe(todayDate.day);
+
+        const centerStart = new CalendarDate(todayDate.year, todayDate.month, 1).subtract({
+          months: 1,
+        });
+        expect(state.visibleRange().start).toEqual(centerStart);
+        expect(state.visibleRange().end).toEqual(
+          centerStart.add({ months: 3 }).subtract({ days: 1 }),
+        );
+
+        dispose();
+      });
+    });
+
     it("should align to the start when selectionAlignment is 'start'", () => {
       createRoot((dispose) => {
         const focusDate = new CalendarDate(2024, 6, 15);

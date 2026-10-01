@@ -321,16 +321,21 @@ export function createCalendarState<
     if (props.defaultFocusedValue) {
       return toDisplayCalendarDate(props.defaultFocusedValue);
     }
+    // A controlled null is a cleared selection. Pin useControlledState treats
+    // `value !== undefined` as controlled, so null must not fall through to defaultValue.
     const controlledValue = access(props.value);
-    const controlledFirst = Array.isArray(controlledValue) ? controlledValue[0] : controlledValue;
-    if (controlledFirst) {
-      return toDisplayCalendarDate(controlledFirst);
-    }
-    const defaultFirst = Array.isArray(props.defaultValue)
-      ? props.defaultValue[0]
-      : props.defaultValue;
-    if (defaultFirst) {
-      return toDisplayCalendarDate(defaultFirst);
+    if (controlledValue !== undefined) {
+      const controlledFirst = Array.isArray(controlledValue) ? controlledValue[0] : controlledValue;
+      if (controlledFirst) {
+        return toDisplayCalendarDate(controlledFirst);
+      }
+    } else {
+      const defaultFirst = Array.isArray(props.defaultValue)
+        ? props.defaultValue[0]
+        : props.defaultValue;
+      if (defaultFirst) {
+        return toDisplayCalendarDate(defaultFirst);
+      }
     }
     return intlToCalendar(today(timeZone), calendar());
   };
