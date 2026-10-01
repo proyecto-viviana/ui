@@ -224,6 +224,7 @@ These behaviors match the pin in this checkout.
 - A date range picker restores its default range on native form reset.
 - A date picker restores its default date on native form reset.
 - A calendar does not mark a disabled or unavailable day as selected.
+- An unavailable day inside an invalid date range stays selected.
 
 **Components**
 

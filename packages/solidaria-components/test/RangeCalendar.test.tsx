@@ -1021,6 +1021,75 @@ describe("RangeCalendar", () => {
       );
     });
 
+    it("does not mark an unavailable day inside a valid range as selected", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            defaultFocusedValue: new CalendarDate(2024, 6, 10),
+            isDateUnavailable: (date) => date.day === 12,
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day = screen.getByText("12");
+      expect(day).toHaveAttribute("data-unavailable");
+      expect(day).not.toHaveAttribute("data-selected");
+      expect(day).not.toHaveAttribute("aria-invalid");
+      expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+    });
+
+    it("marks an unavailable day inside an invalid range as selected", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            defaultFocusedValue: new CalendarDate(2024, 6, 10),
+            validationState: "invalid",
+            isDateUnavailable: (date) => date.day === 12,
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day = screen.getByText("12");
+      expect(day).toHaveAttribute("data-unavailable");
+      expect(day).toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day.getAttribute("aria-label") ?? "").toContain("selected");
+      expect(day.closest("td")).toHaveAttribute("aria-selected", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("does not mark a disabled invalid range as selected", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            isDisabled: true,
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            validationState: "invalid",
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day = screen.getByText("12");
+      expect(day).not.toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+    });
+
     it("should omit range prompt descriptions when read only", async () => {
       render(() => (
         <TestRangeCalendar

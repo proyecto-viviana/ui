@@ -102,7 +102,6 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   const date = createMemo(() => getProps().date as CalendarDate);
 
   // Check states
-  const isSelected = createMemo(() => state.isSelected(date()));
   const isSelectionStart = createMemo(() => state.isSelectionStart(date()));
   const isSelectionEnd = createMemo(() => state.isSelectionEnd(date()));
   const isInvalid = createMemo(() => {
@@ -121,6 +120,12 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   });
   const isUnavailable = createMemo(() => state.isCellUnavailable(date()));
   const isSelectable = createMemo(() => !isDisabled() && !isUnavailable());
+  // Pin useCalendarCell forces selection on an invalid day unless that day is disabled.
+  const isSelected = createMemo(() => {
+    const selected = state.isSelected(date()) && isSelectable();
+    if (isInvalid() && !isDisabled()) return true;
+    return selected;
+  });
   const isOutsideMonth = createMemo(() => {
     return getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date());
   });
