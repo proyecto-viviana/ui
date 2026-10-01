@@ -385,7 +385,9 @@ export function createNumberField(
         state.incrementToMax();
         break;
       case "Enter":
+        // Enter commits validation even when the number did not change.
         state.commit();
+        state.commitValidation();
         break;
     }
 

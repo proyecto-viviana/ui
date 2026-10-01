@@ -419,6 +419,28 @@ describe("createNumberField", () => {
 
       expect(onChange).not.toHaveBeenCalled();
     });
+
+    it("shows an already committed over-max value as invalid on Enter", () => {
+      render(() => (
+        <TestNumberField
+          aria-label="Amount"
+          minValue={0}
+          maxValue={10}
+          defaultValue={15}
+          commitBehavior="validate"
+          step={1}
+        />
+      ));
+
+      const input = screen.getByRole("textbox");
+      expect(input).not.toHaveAttribute("aria-invalid");
+
+      fireEvent.blur(input);
+      expect(input).not.toHaveAttribute("aria-invalid");
+
+      fireEvent.keyDown(input, { key: "Enter" });
+      expect(input).toHaveAttribute("aria-invalid", "true");
+    });
   });
 
   describe("button interactions", () => {
