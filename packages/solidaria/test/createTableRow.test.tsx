@@ -194,6 +194,30 @@ describe("createTableRow (tree grid)", () => {
       });
     });
 
+    it("names the expand button with its own label and the row header cell", () => {
+      createRoot((dispose) => {
+        const state = createTreeGridState<Item>(() => ({
+          columns: treeColumns,
+          rows: treeRows,
+        }));
+        const row = rowFor(state, "projects");
+        const buttonId = String(row.expandButtonProps.id ?? "");
+        const labelledBy = String(row.expandButtonProps["aria-labelledby"] ?? "");
+        const tokens = labelledBy.split(" ").filter(Boolean);
+
+        expect(row.expandButtonProps["aria-label"]).toBe("Expand");
+        expect(buttonId).not.toBe("");
+        expect(tokens[0]).toBe(buttonId);
+        expect(tokens).toContain("table-projects-projects-name");
+        expect(row.expandButtonProps.id).toBe(buttonId);
+        expect(row.expandButtonProps["aria-labelledby"]).toBe(
+          `${buttonId} table-projects-projects-name`,
+        );
+
+        dispose();
+      });
+    });
+
     it("names the expand button from the table catalog", () => {
       render(() => (
         <I18nProvider locale="es-ES">

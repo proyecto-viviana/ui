@@ -31,6 +31,8 @@ import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types
 import { getTableData } from "./createTable";
 import { getRowLabelledBy, normalizeTableKey } from "./utils";
 import { tableIntlStrings } from "./intl";
+import { createLabels } from "../label/createLabels";
+import { createId } from "../ssr";
 import { createStringFormatter, useLocale } from "../i18n";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
@@ -54,6 +56,9 @@ export function createTableRow<T extends object>(
 ): TableRowAria {
   const locale = useLocale();
   const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
+  // Stable for the life of the row. useLabels includes this id in aria-labelledby
+  // so the expand/collapse word stays part of the accessible name.
+  const expandButtonId = createId();
 
   const hasChildRows = createMemo(() => props().node.isExpandable ?? false);
 
@@ -261,13 +266,22 @@ export function createTableRow<T extends object>(
       return rowProps();
     },
     get expandButtonProps() {
+      // useLabels keeps both the expand/collapse word and the row-header cell.
+      // aria-labelledby would otherwise drop aria-label.
+      const labels = createLabels({
+        id: expandButtonId,
+        "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
+        "aria-labelledby": getRowLabelledBy(state(), props().node.key) || undefined,
+      });
       return {
         isDisabled: isDisabled(),
         onPress: onExpandPress,
         excludeFromTabOrder: true,
         preventFocusOnPress: true,
         "data-react-aria-prevent-focus": true,
-        "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
+        id: labels.id,
+        "aria-label": labels["aria-label"],
+        "aria-labelledby": labels["aria-labelledby"],
       } as ExpandButtonProps;
     },
     get isSelected() {
