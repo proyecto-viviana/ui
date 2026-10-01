@@ -71,6 +71,20 @@ describe("createBreadcrumbItem", () => {
     expect(item).not.toHaveAttribute("href");
   });
 
+  it("uses page when a current item's aria-current is empty or false", () => {
+    const { unmount } = render(() => <TestBreadcrumbItem isCurrent aria-current="" />);
+    expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("aria-current", "page");
+    unmount();
+
+    render(() => <TestBreadcrumbItem isCurrent aria-current={false} />);
+    expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("aria-current", "page");
+  });
+
+  it("keeps a current item's aria-current token", () => {
+    render(() => <TestBreadcrumbItem isCurrent aria-current="step" />);
+    expect(screen.getByTestId("breadcrumb-item")).toHaveAttribute("aria-current", "step");
+  });
+
   it("forwards id and labeling props", () => {
     render(() => (
       <TestBreadcrumbItem

@@ -219,6 +219,7 @@ These behaviors match the pin in this checkout.
 - A breadcrumb nav uses the catalog label when aria-label is empty.
 - A calendar omits an empty description and details id.
 - A number field omits an empty label and labelledby.
+- A current breadcrumb treats an empty or false aria-current as page.
 
 **Components**
 

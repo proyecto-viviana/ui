@@ -192,7 +192,8 @@ export function createBreadcrumbItem(
     // Add aria-current for current page. isCurrent disables the link, which
     // drops tabIndex; put -1 back so autoFocus can still move focus here.
     if (current) {
-      const ariaCurrent = p["aria-current"] ?? "page";
+      // Upstream uses `ariaCurrent || 'page'`, so false and "" are page.
+      const ariaCurrent = p["aria-current"] || "page";
       baseProps = mergeProps(
         baseProps,
         {
