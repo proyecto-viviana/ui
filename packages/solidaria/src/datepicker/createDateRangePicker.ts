@@ -187,8 +187,11 @@ export function createDateRangePicker<T extends RangeCalendarState>(
 
   // Shared focus manager scoped to the whole group element, handed to BOTH fields
   // via focusManagerSymbol so auto-advance and programmatic focus (label click,
-  // autoFocus) walk across the start/end field boundary.
-  const sharedFocusManager = createFocusManager(ref);
+  // autoFocus) walk across the start/end field boundary. The calendar button
+  // stays out of that walk.
+  const sharedFocusManager = createFocusManager(ref, {
+    accept: (element) => element.id !== buttonId,
+  });
 
   // FieldGroup shell. Faithful to useDateRangePicker `groupProps.role === 'group'`;
   // the label association, describedby, `aria-disabled` and the arrow-navigation /

@@ -229,6 +229,7 @@ These behaviors match the pin in this checkout.
 - An RTL date field does not consume an arrow that has no segment in that direction.
 - A date picker does not blur when focus moves into its calendar.
 - A date range picker does not blur when focus moves into its calendar.
+- A date range field does not advance focus onto the calendar button.
 
 **Components**
 

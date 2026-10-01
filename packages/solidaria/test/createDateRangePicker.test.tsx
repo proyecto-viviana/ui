@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDateRangePicker } from "../src/datepicker/createDateRangePicker";
+import { focusManagerSymbol } from "../src/datepicker/createDateField";
 import { I18nProvider } from "../src/i18n";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -212,6 +213,52 @@ describe("createDateRangePicker", () => {
 
     screen.getByTestId("outside").focus();
     expect(onBlur).toHaveBeenCalledTimes(1);
+  });
+
+  it("segment advance skips the calendar button", () => {
+    let focusNext: (() => HTMLElement | null) | undefined;
+
+    function RangeWithButton() {
+      let groupEl: HTMLDivElement | undefined;
+      const aria = createDateRangePicker(
+        () => ({ "aria-label": "Range" }),
+        createMockRangeState() as any,
+        {
+          isOpen: false,
+          open: () => {},
+          close: () => {},
+          toggle: () => {},
+        },
+        () => groupEl ?? null,
+      );
+      const manager = aria.startFieldProps[focusManagerSymbol] as {
+        focusNext: () => HTMLElement | null;
+      };
+      focusNext = () => manager.focusNext();
+
+      return (
+        <div
+          ref={(el) => {
+            groupEl = el;
+          }}
+          data-testid="group"
+        >
+          <button type="button" data-testid="segment">
+            segment
+          </button>
+          <button type="button" {...aria.buttonProps} data-testid="calendar">
+            calendar
+          </button>
+        </div>
+      );
+    }
+
+    render(() => <RangeWithButton />);
+
+    const segment = screen.getByTestId("segment");
+    segment.focus();
+    expect(focusNext!()).toBeNull();
+    expect(document.activeElement).toBe(segment);
   });
 });
 
