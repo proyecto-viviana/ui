@@ -1533,6 +1533,58 @@ describe("createRangeCalendarState", () => {
       });
     });
 
+    it("advances a keyboard range start into the next month when that day is allowed", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 28),
+        });
+
+        flush();
+        state.selectDate(new CalendarDate(2025, 2, 28));
+        state.focusNearestAvailableDate(new CalendarDate(2025, 2, 28));
+        flush();
+        expect(state.focusedDate().toString()).toBe("2025-03-01");
+        expect(state.visibleRange().start).toEqual(new CalendarDate(2025, 3, 1));
+
+        dispose();
+      });
+    });
+
+    it("advances onto an unavailable day when non-contiguous ranges are allowed", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 9),
+          allowsNonContiguousRanges: true,
+          isDateUnavailable: (date) => date.month === 6 && date.day === 10,
+        });
+
+        flush();
+        state.selectDate(new CalendarDate(2024, 6, 9));
+        state.focusNearestAvailableDate(new CalendarDate(2024, 6, 9));
+        flush();
+        expect(state.focusedDate().toString()).toBe("2024-06-10");
+
+        dispose();
+      });
+    });
+
+    it("skips an unavailable neighbor while a contiguous range is anchored", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 9),
+          isDateUnavailable: (date) => date.month === 6 && date.day === 10,
+        });
+
+        flush();
+        state.selectDate(new CalendarDate(2024, 6, 9));
+        state.focusNearestAvailableDate(new CalendarDate(2024, 6, 9));
+        flush();
+        expect(state.focusedDate().toString()).toBe("2024-06-08");
+
+        dispose();
+      });
+    });
+
     it("updates visibleRange and cell disabled states reactively when visibleMonths changes", async () => {
       let dispose!: () => void;
       const [visibleMonths, setVisibleMonths] = createSignal(1);

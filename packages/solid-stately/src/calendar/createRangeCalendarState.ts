@@ -898,9 +898,18 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   const focusNearestAvailableDate = (anchor: CalendarDate) => {
-    // RAC `useRangeCalendarState.ts:261-273`: prefer anchor+1, else −1, skip invalid.
-    const isDateInvalid = (candidate: CalendarDate) =>
-      isInvalid(candidate) || isDateOutsideAllowedRange(candidate);
+    // RAC `useRangeCalendarState.ts:261-273`: prefer anchor+1, else −1.
+    // Invalid is outside min/max or this anchor's contiguous span. A day in
+    // the next month, or an unavailable day when non-contiguous ranges are
+    // allowed, is still a valid focus target.
+    const passedRange = getAvailableRange(anchor);
+    const isDateInvalid = (candidate: CalendarDate) => {
+      if (isDateOutsideAllowedRange(candidate)) return true;
+      const calDate = toDisplayCalendarDate(candidate);
+      if (passedRange?.start && calDate.compare(passedRange.start) < 0) return true;
+      if (passedRange?.end && calDate.compare(passedRange.end) > 0) return true;
+      return false;
+    };
     let nextDay = anchor.add({ days: 1 });
     if (isDateInvalid(nextDay)) {
       nextDay = anchor.subtract({ days: 1 });
