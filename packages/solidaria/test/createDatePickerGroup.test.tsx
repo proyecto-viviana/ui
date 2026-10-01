@@ -141,6 +141,36 @@ function PickerGroupWithTrigger() {
   );
 }
 
+/** Month filled, day and year still placeholders, then chrome and the calendar button. */
+function PartialPickerGroup() {
+  let groupEl: HTMLDivElement | undefined;
+  const groupProps = createDatePickerGroup({ setOpen: () => {} }, () => groupEl ?? null);
+  const trigger = createPress();
+  return (
+    <div
+      ref={(el) => {
+        groupEl = el;
+      }}
+      {...groupProps()}
+      data-testid="group"
+    >
+      <span role="spinbutton" tabIndex={0} data-testid="month">
+        06
+      </span>
+      <span role="spinbutton" tabIndex={0} data-placeholder="" data-testid="day">
+        dd
+      </span>
+      <span role="spinbutton" tabIndex={0} data-placeholder="" data-testid="year">
+        yyyy
+      </span>
+      <span data-testid="chrome">field</span>
+      <button type="button" {...trigger.pressProps} data-testid="trigger">
+        calendar
+      </button>
+    </div>
+  );
+}
+
 describe("createDatePickerGroup nested trigger press", () => {
   afterEach(() => {
     cleanup();
@@ -162,5 +192,13 @@ describe("createDatePickerGroup nested trigger press", () => {
     fireMousePointerDown(screen.getByTestId("chrome"));
 
     expect(document.activeElement).toHaveAttribute("role", "spinbutton");
+  });
+
+  it("focuses the first trailing placeholder when field chrome is pressed", () => {
+    render(() => <PartialPickerGroup />);
+
+    fireMousePointerDown(screen.getByTestId("chrome"));
+
+    expect(document.activeElement).toBe(screen.getByTestId("day"));
   });
 });

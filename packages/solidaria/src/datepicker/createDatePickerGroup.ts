@@ -2,7 +2,7 @@
  * createDatePickerGroup hook for Solidaria
  *
  * Provides keyboard (arrow navigation between segments) and pointer (focus the
- * last non-placeholder segment on press) behavior for the date field group.
+ * first placeholder segment from the end on press) behavior for the date field group.
  * Faithful port of @react-aria/datepicker `useDatePickerGroup`: LTR arrow
  * navigation goes through the focus manager, RTL uses geometric segment lookup,
  * and alt+ArrowDown/Up opens the popover only when the state exposes `setOpen`
@@ -104,18 +104,16 @@ export function createDatePickerGroup(
     }
   };
 
-  // Focus the last non-placeholder segment on press within the field.
-  const focusLast = (clickedTarget?: HTMLElement | null) => {
+  // Focus the first placeholder segment from the end on mouse down/touch up in the field.
+  const focusLast = () => {
     const root = ref();
     if (!root) {
       return;
     }
     // Try to find the segment prior to the element that was clicked on.
-    let target =
-      clickedTarget ??
-      ((typeof window !== "undefined"
-        ? (window.event as Event | undefined)?.target
-        : null) as HTMLElement | null);
+    let target = (
+      typeof window !== "undefined" && window.event ? getEventTarget(window.event) : null
+    ) as HTMLElement | null;
     const walker = getFocusableTreeWalker(root, { tabbable: true });
     if (target) {
       walker.currentNode = target;
@@ -131,13 +129,10 @@ export function createDatePickerGroup(
         }
       } while (last);
     }
-    // Now go backwards until we find a segment that is not a placeholder.
-    while (
-      target &&
-      (target.hasAttribute("data-placeholder") || target.getAttribute("role") !== "spinbutton")
-    ) {
+    // Now go backwards until we find an element that is not a placeholder.
+    while (target?.hasAttribute("data-placeholder")) {
       const prev = walker.previousNode() as HTMLElement | null;
-      if (prev) {
+      if (prev && prev.hasAttribute("data-placeholder")) {
         target = prev;
       } else {
         break;
@@ -151,12 +146,12 @@ export function createDatePickerGroup(
     allowTextSelectionOnPress: true,
     onPressStart(e) {
       if (e.pointerType === "mouse") {
-        focusLast(e.target as HTMLElement | null);
+        focusLast();
       }
     },
     onPress(e) {
       if (e.pointerType === "touch" || e.pointerType === "pen") {
-        focusLast(e.target as HTMLElement | null);
+        focusLast();
       }
     },
   });

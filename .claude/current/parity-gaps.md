@@ -225,6 +225,7 @@ These behaviors match the pin in this checkout.
 - A date picker restores its default date on native form reset.
 - A calendar does not mark a disabled or unavailable day as selected.
 - An unavailable day inside an invalid date range stays selected.
+- A date field group click focuses the first empty segment.
 
 **Components**
 
