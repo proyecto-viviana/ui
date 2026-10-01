@@ -235,6 +235,7 @@ These behaviors match the pin in this checkout.
 - A radio group arrow that selects the next radio does not reach a parent.
 - A calendar treats an unavailable or out-of-range value as invalid, and keeps the unavailable day selected.
 - A calendar marked isInvalid marks the selected day aria-invalid.
+- A range calendar marked isInvalid marks the selected days aria-invalid.
 
 **Components**
 

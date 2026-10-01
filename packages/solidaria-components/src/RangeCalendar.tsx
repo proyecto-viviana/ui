@@ -356,6 +356,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
       "selectionAlignment",
       "isDateDisabled",
       "validationState",
+      "isInvalid",
       "allowsNonContiguousRanges",
       "firstDayOfWeek",
     ],

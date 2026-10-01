@@ -1021,6 +1021,30 @@ describe("RangeCalendar", () => {
       );
     });
 
+    it("marks the selected range invalid when isInvalid is set", async () => {
+      render(() => (
+        <TestRangeCalendar
+          calendarProps={{
+            value: {
+              start: new CalendarDate(2024, 6, 10),
+              end: new CalendarDate(2024, 6, 15),
+            },
+            isInvalid: true,
+          }}
+        />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day = screen.getByRole("button", { name: /June 12, 2024/i });
+      const calendar = document.querySelector(".solidaria-RangeCalendar");
+      expect(day).toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day).not.toHaveAttribute("aria-describedby");
+      expect(day.closest("td")).toHaveAttribute("aria-selected", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+      expect(calendar).toHaveAttribute("data-invalid", "true");
+    });
+
     it("does not mark an unavailable day inside a valid range as selected", async () => {
       render(() => (
         <TestRangeCalendar

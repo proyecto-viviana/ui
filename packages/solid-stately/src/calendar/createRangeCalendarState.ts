@@ -107,6 +107,8 @@ export interface RangeCalendarStateProps<T extends DateValue = DateValue> {
   isDateDisabled?: (date: DateValue) => boolean;
   /** Validation state. */
   validationState?: MaybeAccessor<ValidationState | undefined>;
+  /** Whether the current selection is invalid according to application logic. */
+  isInvalid?: boolean;
   /** Whether to allow selecting the same date for start and end. */
   allowsNonContiguousRanges?: boolean;
   /** The first day of the week (0 = Sunday, 1 = Monday, etc.). */
@@ -455,7 +457,10 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       isDateOutsideRange(toDisplayCalendarDate(v.end), minCal, maxCal)
     );
   });
-  const isValueInvalid = createMemo(() => validationState() === "invalid" || isInvalidSelection());
+  const isValueInvalid = createMemo(
+    () =>
+      Boolean(access(props.isInvalid)) || validationState() === "invalid" || isInvalidSelection(),
+  );
 
   // Highlighted range during selection
   const highlightedRange = createMemo<RangeValue<CalendarDate> | null>(() => {
