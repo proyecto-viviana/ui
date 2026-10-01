@@ -46,6 +46,8 @@ export interface AriaMenuItemProps {
   isDisabled?: boolean;
   /** An accessible label for the menu item. */
   "aria-label"?: string;
+  /** Identifies the element(s) that describe the menu item. */
+  "aria-describedby"?: string;
   /** Element controlled by this menu item, for submenu triggers. */
   "aria-controls"?: string;
   /** Whether this menu item opens a submenu or subdialog. */
@@ -364,7 +366,9 @@ export function createMenuItem<T>(
         "aria-checked": mode !== "none" && !trigger ? (selected ? "true" : "false") : undefined,
         "aria-label": ariaLabel,
         "aria-labelledby": !ariaLabel ? labelId : undefined,
-        "aria-describedby": [descriptionId(), keyboardId()].filter(Boolean).join(" ") || undefined,
+        "aria-describedby":
+          [p["aria-describedby"], descriptionId(), keyboardId()].filter(Boolean).join(" ") ||
+          undefined,
         "aria-controls": p["aria-controls"],
         "aria-haspopup": p["aria-haspopup"],
         "aria-expanded": p["aria-expanded"],

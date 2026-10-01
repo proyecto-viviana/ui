@@ -1588,6 +1588,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       get "aria-label"() {
         return ariaProps["aria-label"] ?? local.textValue;
       },
+      get "aria-describedby"() {
+        return ariaProps["aria-describedby"];
+      },
       get "aria-controls"() {
         return contextProps()["aria-controls"] as string | undefined;
       },
@@ -1770,9 +1773,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
-  const domProps = createMemo(() =>
-    filterDOMProps(ariaProps as Record<string, unknown>, { global: true }),
-  );
+  const domProps = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+    // createMenuItem already joins this id with the description and keyboard
+    // slot ids. A later defined string would replace that join.
+    delete filtered["aria-describedby"];
+    return filtered;
+  });
   const draggableItem = createMemo(() => {
     if (!menuContext?.dragAndDropHooks?.useDraggableItem || !menuContext.dragState)
       return undefined;

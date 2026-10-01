@@ -212,6 +212,7 @@ These behaviors match the pin in this checkout.
 - A table expand button keeps its label and the row header in its name.
 - A table cell exposes its column index, and a virtualized cell falls back to its node index.
 - A sortable column header on Android describes the sort direction instead of setting aria-sort.
+- A menu item puts an external aria-describedby ahead of its description and keyboard shortcut.
 
 **Components**
 

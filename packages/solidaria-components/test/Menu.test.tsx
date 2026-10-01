@@ -24,6 +24,7 @@ import {
 import { Button } from "../src/Button";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Separator } from "../src/Separator";
+import { Text } from "../src/Text";
 import { Popover } from "../src/Popover";
 import { CollectionRendererContext, Header } from "../src/Collection";
 import { useDragAndDrop } from "../src/useDragAndDrop";
@@ -249,6 +250,32 @@ describe("Menu", () => {
 
       const items = screen.getAllByRole("menuitem");
       expect(items[0]).not.toHaveAttribute("aria-describedby");
+    });
+
+    it("joins an external aria-describedby ahead of the description slot", () => {
+      render(() => (
+        <Menu<{ id: string; name: string }>
+          aria-label="Test"
+          items={[{ id: "copy", name: "Copy" }]}
+          getKey={(item) => item.id}
+        >
+          {(item) => (
+            <MenuItem id={item.id} aria-describedby="ext-desc">
+              {item.name}
+              <Text slot="description">More about copy</Text>
+            </MenuItem>
+          )}
+        </Menu>
+      ));
+      flush();
+
+      const menuitem = screen.getByRole("menuitem", { name: /Copy/ });
+      const details = screen.getByText("More about copy");
+      const describedBy = menuitem.getAttribute("aria-describedby") ?? "";
+      const parts = describedBy.split(/\s+/).filter(Boolean);
+      expect(parts[0]).toBe("ext-desc");
+      expect(details.id).not.toBe("");
+      expect(parts).toContain(details.id);
     });
 
     it("passes locale direction into the droppable ListDropTargetDelegate", () => {

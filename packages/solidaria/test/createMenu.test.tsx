@@ -704,6 +704,53 @@ describe("createMenuItem", () => {
       dispose();
     });
   });
+
+  it("joins an external aria-describedby ahead of the description slot id", () => {
+    render(() => {
+      const items = [{ key: "copy", label: "Copy" }];
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const item = createMenuItem({ key: "copy", "aria-describedby": "ext-desc" }, state);
+      return (
+        <div {...item.menuItemProps}>
+          <span {...item.labelProps}>Copy</span>
+          <span {...item.descriptionProps}>More about copy</span>
+        </div>
+      );
+    });
+    flush();
+
+    const menuitem = screen.getByRole("menuitem", { name: "Copy" });
+    const details = screen.getByText("More about copy");
+    const describedBy = menuitem.getAttribute("aria-describedby") ?? "";
+    const parts = describedBy.split(/\s+/).filter(Boolean);
+    expect(parts[0]).toBe("ext-desc");
+    expect(parts).toContain(details.id);
+  });
+
+  it("keeps an external aria-describedby when no description slot is mounted", () => {
+    render(() => {
+      const items = [{ key: "copy", label: "Copy" }];
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const item = createMenuItem({ key: "copy", "aria-describedby": "ext-desc" }, state);
+      return (
+        <div {...item.menuItemProps}>
+          <span {...item.labelProps}>Copy</span>
+        </div>
+      );
+    });
+    flush();
+
+    expect(screen.getByRole("menuitem", { name: "Copy" })).toHaveAttribute(
+      "aria-describedby",
+      "ext-desc",
+    );
+  });
 });
 
 describe("createMenu - disabled key navigation", () => {
