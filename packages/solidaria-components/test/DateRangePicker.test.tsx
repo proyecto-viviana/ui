@@ -53,6 +53,11 @@ function DateRangeFields() {
   );
 }
 
+function DateRangeGroupProbe() {
+  const context = useDateRangePickerContext();
+  return <div data-testid="field-group" {...context.pickerAria.groupProps} />;
+}
+
 function DateRangeSegmentFields() {
   return (
     <div>
@@ -210,6 +215,20 @@ describe("DateRangePicker", () => {
 
     const picker = document.querySelector(".solidaria-DateRangePicker");
     expect(picker).toHaveAttribute("data-disabled");
+  });
+
+  it("marks the field group aria-disabled when the picker is disabled", async () => {
+    render(() => (
+      <DateRangePicker aria-label="Range" isDisabled>
+        <DateRangePickerLabel>Trip dates</DateRangePickerLabel>
+        <DateRangeGroupProbe />
+      </DateRangePicker>
+    ));
+    await waitForHydration();
+
+    const group = screen.getByTestId("field-group");
+    expect(group).toHaveAttribute("role", "group");
+    expect(group).toHaveAttribute("aria-disabled", "true");
   });
 
   it("sets data-readonly when isReadOnly is true", async () => {

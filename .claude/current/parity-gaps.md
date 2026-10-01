@@ -230,6 +230,7 @@ These behaviors match the pin in this checkout.
 - A date picker does not blur when focus moves into its calendar.
 - A date range picker does not blur when focus moves into its calendar.
 - A date range field does not advance focus onto the calendar button.
+- A disabled date range picker marks its field group aria-disabled.
 
 **Components**
 
