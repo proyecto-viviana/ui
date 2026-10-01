@@ -27,7 +27,7 @@ import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
-import { focusSafely, getEventTarget } from "../utils";
+import { getEventTarget, getFocusableTreeWalker, getOwnerWindow } from "../utils";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { type MaybeAccessor, access } from "../utils/reactivity";
@@ -194,15 +194,46 @@ export function createRadioGroup(
   updateRadioGroupData();
   createTrackedEffect(updateRadioGroupData);
 
-  const getNavigableRadios = (root: HTMLElement): HTMLInputElement[] => {
-    return Array.from(root.querySelectorAll('input[type="radio"]')).filter(
-      (el): el is HTMLInputElement => {
-        return el instanceof HTMLInputElement && !el.matches(":disabled");
-      },
-    );
+  const getNextElement = (nextDir: "next" | "prev", e: KeyboardEvent): boolean => {
+    const root = e.currentTarget;
+    if (!(root instanceof HTMLElement)) {
+      return false;
+    }
+
+    const walker = getFocusableTreeWalker(root, {
+      from: getEventTarget<Element>(e) ?? undefined,
+      accept: (node) =>
+        node instanceof getOwnerWindow(node).HTMLInputElement &&
+        (node as HTMLInputElement).type === "radio",
+    });
+
+    let nextElem: Node | null;
+    if (nextDir === "next") {
+      nextElem = walker.nextNode();
+      if (!nextElem) {
+        walker.currentNode = root;
+        nextElem = walker.firstChild();
+      }
+    } else {
+      nextElem = walker.previousNode();
+      if (!nextElem) {
+        walker.currentNode = root;
+        nextElem = walker.lastChild();
+      }
+    }
+
+    if (
+      nextElem instanceof getOwnerWindow(nextElem).HTMLInputElement &&
+      nextElem.type === "radio"
+    ) {
+      // Native focus so keyboard navigation scrolls the radio into view.
+      nextElem.focus();
+      state.setSelectedValue(nextElem.value);
+      return true;
+    }
+    return false;
   };
 
-  // Keyboard navigation parity with React Aria.
   const onKeyDown: JSX.EventHandler<HTMLDivElement, KeyboardEvent> = (e) => {
     let nextDir: "next" | "prev" | null = null;
     const currentOrientation = orientation();
@@ -226,45 +257,9 @@ export function createRadioGroup(
         return;
     }
 
-    e.preventDefault();
-
-    const root = e.currentTarget;
-    if (!(root instanceof HTMLElement)) {
-      return;
+    if (nextDir && getNextElement(nextDir, e)) {
+      e.preventDefault();
     }
-
-    const radios = getNavigableRadios(root);
-    if (radios.length === 0) {
-      return;
-    }
-
-    const eventTarget = getEventTarget<Element>(e);
-    const activeElement = root.ownerDocument.activeElement;
-
-    const currentRadio =
-      eventTarget instanceof HTMLInputElement && eventTarget.type === "radio"
-        ? eventTarget
-        : activeElement instanceof HTMLInputElement && activeElement.type === "radio"
-          ? activeElement
-          : null;
-
-    const currentIndex = currentRadio ? radios.indexOf(currentRadio) : -1;
-
-    let nextIndex: number;
-    if (nextDir === "next") {
-      nextIndex = currentIndex >= 0 ? (currentIndex + 1) % radios.length : 0;
-    } else {
-      nextIndex =
-        currentIndex >= 0 ? (currentIndex - 1 + radios.length) % radios.length : radios.length - 1;
-    }
-
-    const nextRadio = radios[nextIndex];
-    if (!nextRadio) {
-      return;
-    }
-
-    focusSafely(nextRadio);
-    state.setSelectedValue(nextRadio.value);
   };
 
   return {

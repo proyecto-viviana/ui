@@ -206,6 +206,7 @@ These behaviors match the pin in this checkout.
 - A calendar keeps its visible months inside min and max, and paging stops on that bound.
 - A calendar heading names a multi-month window with the native month range.
 - A calendar moves focus to the focused date when Next or Previous becomes disabled.
+- A radio group arrow focuses the next focusable radio so it can scroll into view.
 
 **Components**
 

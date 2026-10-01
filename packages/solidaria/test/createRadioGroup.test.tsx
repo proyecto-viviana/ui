@@ -877,6 +877,75 @@ describe("Radio Group", () => {
       expect(radios[2].checked).toBe(true);
       expect(radios[1].checked).toBe(false);
     });
+
+    it("focuses the next radio with the browser default so it can scroll into view", () => {
+      render(() => (
+        <RadioGroup aria-label="favorite pet" defaultValue="dogs">
+          {(state) => (
+            <>
+              <Radio radioGroupState={state} value="dogs">
+                Dogs
+              </Radio>
+              <Radio radioGroupState={state} value="cats">
+                Cats
+              </Radio>
+              <Radio radioGroupState={state} value="dragons">
+                Dragons
+              </Radio>
+            </>
+          )}
+        </RadioGroup>
+      ));
+
+      const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+      const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
+      try {
+        radios[0].focus();
+        fireEvent.keyDown(radios[0], { key: "ArrowRight" });
+
+        expect(document.activeElement).toBe(radios[1]);
+        expect(radios[1].checked).toBe(true);
+        const nextCalls = focusSpy.mock.instances
+          .map((instance, index) => ({ instance, args: focusSpy.mock.calls[index] }))
+          .filter((call) => call.instance === radios[1]);
+        expect(nextCalls.length).toBeGreaterThan(0);
+        expect(nextCalls.every((call) => call.args[0]?.preventScroll !== true)).toBe(true);
+      } finally {
+        focusSpy.mockRestore();
+      }
+    });
+
+    it("skips a radio that is not focusable", () => {
+      render(() => (
+        <RadioGroup aria-label="favorite pet" defaultValue="dogs">
+          {(state) => (
+            <>
+              <Radio radioGroupState={state} value="dogs">
+                Dogs
+              </Radio>
+              <div hidden>
+                <Radio radioGroupState={state} value="cats">
+                  Cats
+                </Radio>
+              </div>
+              <Radio radioGroupState={state} value="dragons">
+                Dragons
+              </Radio>
+            </>
+          )}
+        </RadioGroup>
+      ));
+
+      const radios = screen.getAllByRole("radio", { hidden: true }) as HTMLInputElement[];
+      expect(radios).toHaveLength(3);
+
+      radios[0].focus();
+      fireEvent.keyDown(radios[0], { key: "ArrowRight" });
+
+      expect(document.activeElement).toBe(radios[2]);
+      expect(radios[2].checked).toBe(true);
+      expect(radios[1].checked).toBe(false);
+    });
   });
 
   describe("roving tabIndex", () => {
