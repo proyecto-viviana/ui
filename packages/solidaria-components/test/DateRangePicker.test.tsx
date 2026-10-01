@@ -16,6 +16,7 @@ import {
   useDateRangePickerContext,
 } from "../src/DatePicker";
 import { Button } from "../src/Button";
+import { Form } from "../src/Form";
 import { Label } from "../src/Label";
 import { DateInput, DateSegment } from "../src/DateField";
 import { RangeCalendar, RangeCalendarGrid, RangeCalendarCell } from "../src/RangeCalendar";
@@ -410,6 +411,90 @@ describe("DateRangePicker", () => {
     expect(endInput).toBeInTheDocument();
     expect(endInput.type).toBe("hidden");
     expect(endInput.value).toBe("2025-02-14T17:30:30-05:00[America/New_York]");
+  });
+
+  // Pin useDateRangePicker passes state.defaultValue.start/end into the two
+  // date fields. That default is props.defaultValue when it is set, including
+  // when a controlled value is also set, and the initial controlled range
+  // otherwise. Each field's useFormReset restores that part.
+  describe("native form reset", () => {
+    it("restores defaultValue when a controlled range is also set", async () => {
+      const initial = {
+        start: new CalendarDate(2024, 3, 10),
+        end: new CalendarDate(2024, 3, 20),
+      };
+      const fallback = {
+        start: new CalendarDate(2024, 1, 2),
+        end: new CalendarDate(2024, 1, 9),
+      };
+      const [value, setValue] = createSignal(initial);
+
+      render(() => (
+        <Form aria-label="Trip form">
+          <DateRangePicker
+            aria-label="Range"
+            value={value()}
+            defaultValue={fallback}
+            onChange={setValue}
+          >
+            <DateRangeSegmentFields />
+          </DateRangePicker>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+      await waitForHydration();
+
+      const startDay = () =>
+        within(screen.getByTestId("start-input")).getByRole("spinbutton", { name: /day/i });
+      const endDay = () =>
+        within(screen.getByTestId("end-input")).getByRole("spinbutton", { name: /day/i });
+      expect(startDay()).toHaveAttribute("aria-valuenow", "10");
+      expect(endDay()).toHaveAttribute("aria-valuenow", "20");
+
+      fireEvent.keyDown(startDay(), { key: "ArrowUp" });
+      await waitFor(() => {
+        expect(startDay()).toHaveAttribute("aria-valuenow", "11");
+      });
+
+      fireEvent.reset(screen.getByRole("form", { name: "Trip form" }));
+      await waitFor(() => {
+        expect(startDay()).toHaveAttribute("aria-valuenow", "2");
+        expect(endDay()).toHaveAttribute("aria-valuenow", "9");
+      });
+    });
+
+    it("restores the initial controlled range when defaultValue is omitted", async () => {
+      const initial = {
+        start: new CalendarDate(2024, 3, 10),
+        end: new CalendarDate(2024, 3, 20),
+      };
+      const [value, setValue] = createSignal(initial);
+
+      render(() => (
+        <Form aria-label="Trip form">
+          <DateRangePicker aria-label="Range" value={value()} onChange={setValue}>
+            <DateRangeSegmentFields />
+          </DateRangePicker>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+      await waitForHydration();
+
+      const startDay = () =>
+        within(screen.getByTestId("start-input")).getByRole("spinbutton", { name: /day/i });
+      fireEvent.keyDown(startDay(), { key: "ArrowUp" });
+      await waitFor(() => {
+        expect(startDay()).toHaveAttribute("aria-valuenow", "11");
+      });
+
+      fireEvent.reset(screen.getByRole("form", { name: "Trip form" }));
+      await waitFor(() => {
+        expect(startDay()).toHaveAttribute("aria-valuenow", "10");
+        expect(
+          within(screen.getByTestId("end-input")).getByRole("spinbutton", { name: /day/i }),
+        ).toHaveAttribute("aria-valuenow", "20");
+      });
+    });
   });
 
   it("marks focus within the focused range field and leaves the other field unmarked", async () => {

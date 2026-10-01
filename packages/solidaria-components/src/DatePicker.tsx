@@ -34,6 +34,7 @@ import {
   createDateField,
   createDateRangePicker,
   createFocusRing,
+  createFormReset,
   createHover,
   mergeProps,
   type AriaDatePickerProps,
@@ -903,6 +904,9 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     },
     value: startFieldValue,
     onChange: (value) => setRangeFieldValue("start", value),
+    // Pin useDateRangePickerState: defaultValue ?? the initial controlled range.
+    // An omitted default falls through inside createDateFieldState.
+    defaultValue: stateProps.defaultValue?.start,
   });
 
   const endFieldState = createDateFieldState<T>({
@@ -912,7 +916,29 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     },
     value: endFieldValue,
     onChange: (value) => setRangeFieldValue("end", value),
+    defaultValue: stateProps.defaultValue?.end,
   });
+
+  // useFormReset listens on each date field's input. createDateField would also
+  // attach native validation to that ref, so these unnamed inputs are reset
+  // targets only and are not submitted.
+  // Each field's setValue publishes through setRangeFieldValue, which reads the
+  // other part's signal. Those writes are not visible to the second listener in
+  // the same reset event, so the committed range kept the edited start. Apply
+  // both captured defaults, then commit that pair once.
+  const [startResetInput, setStartResetInput] = createSignal<HTMLInputElement>();
+  const [endResetInput, setEndResetInput] = createSignal<HTMLInputElement>();
+  const resetRangeToDefault = () => {
+    const start = (startFieldState.defaultValue ?? null) as T | null;
+    const end = (endFieldState.defaultValue ?? null) as T | null;
+    setStartFieldValue(() => start);
+    setEndFieldValue(() => end);
+    startFieldState.setValue(start);
+    endFieldState.setValue(end);
+    setCommittedRangeValue(start && end ? ({ start, end } as RangeValue<T>) : null);
+  };
+  createFormReset(startResetInput, startFieldState.defaultValue, resetRangeToDefault);
+  createFormReset(endResetInput, endFieldState.defaultValue, resetRangeToDefault);
 
   const hasExplicitName = () =>
     Boolean(
@@ -1131,6 +1157,8 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
               {props.children}
             </Provider>
           </div>
+          <input ref={setStartResetInput} type="hidden" tabindex={-1} aria-hidden="true" />
+          <input ref={setEndResetInput} type="hidden" tabindex={-1} aria-hidden="true" />
           <Show when={(rest as Record<string, unknown>).startName}>
             <HiddenDateInput
               name={(rest as Record<string, unknown>).startName as string | undefined}
