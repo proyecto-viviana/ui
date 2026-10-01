@@ -920,4 +920,142 @@ describe("DateRangePicker", () => {
       });
     });
   });
+
+  // Pin useDateRangePickerState commits a calendar range with placeholder time
+  // when the field has hour, minute, or second granularity. Midnight is the
+  // fallback. A placeholderValue that already has a clock time wins. While
+  // shouldCloseOnSelect is false and no time is committed yet, the range stays
+  // on the calendar until the popover closes.
+  describe("placeholder time", () => {
+    async function clickDay(name: RegExp) {
+      const day = await screen.findByRole("button", { name });
+      await user.click(day);
+    }
+
+    function expectClock(
+      value: { year: number; month: number; day: number; hour?: number; minute?: number } | null,
+      year: number,
+      month: number,
+      day: number,
+      hour: number,
+      minute: number,
+    ) {
+      expect(value).toMatchObject({ year, month, day, hour, minute });
+    }
+
+    it("fills a calendar range with midnight when the granularity has time", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateRangePicker
+          pickerProps={{
+            granularity: "minute",
+            defaultFocusedValue: new CalendarDate(2025, 2, 3),
+            defaultOpen: true,
+            onChange,
+          }}
+        />
+      ));
+      await waitForHydration();
+
+      await clickDay(/February 3, 2025/i);
+      await clickDay(/February 5, 2025/i);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const range = onChange.mock.calls[0]?.[0] as {
+        start: { year: number; month: number; day: number; hour?: number; minute?: number };
+        end: { year: number; month: number; day: number; hour?: number; minute?: number };
+      };
+      expectClock(range.start, 2025, 2, 3, 0, 0);
+      expectClock(range.end, 2025, 2, 5, 0, 0);
+    });
+
+    it("uses the placeholder clock time when no granularity is set", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateRangePicker
+          pickerProps={{
+            placeholderValue: new CalendarDateTime(2025, 1, 1, 9, 15),
+            defaultFocusedValue: new CalendarDate(2025, 2, 3),
+            defaultOpen: true,
+            onChange,
+          }}
+        />
+      ));
+      await waitForHydration();
+
+      await clickDay(/February 3, 2025/i);
+      await clickDay(/February 5, 2025/i);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const range = onChange.mock.calls[0]?.[0] as {
+        start: { year: number; month: number; day: number; hour?: number; minute?: number };
+        end: { year: number; month: number; day: number; hour?: number; minute?: number };
+      };
+      expectClock(range.start, 2025, 2, 3, 9, 15);
+      expectClock(range.end, 2025, 2, 5, 9, 15);
+    });
+
+    it("holds the calendar range until close when selection does not close the popover", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateRangePicker
+          pickerProps={{
+            granularity: "minute",
+            shouldCloseOnSelect: false,
+            defaultFocusedValue: new CalendarDate(2025, 2, 3),
+            defaultOpen: true,
+            onChange,
+          }}
+        />
+      ));
+      await waitForHydration();
+
+      await clickDay(/February 3, 2025/i);
+      await clickDay(/February 5, 2025/i);
+
+      expect(onChange).not.toHaveBeenCalled();
+
+      await user.keyboard("{Escape}");
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledTimes(1);
+      });
+      const range = onChange.mock.calls[0]?.[0] as {
+        start: { year: number; month: number; day: number; hour?: number; minute?: number };
+        end: { year: number; month: number; day: number; hour?: number; minute?: number };
+      };
+      expectClock(range.start, 2025, 2, 3, 0, 0);
+      expectClock(range.end, 2025, 2, 5, 0, 0);
+    });
+
+    it("keeps an already committed time when a new calendar range is selected", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateRangePicker
+          pickerProps={{
+            granularity: "minute",
+            defaultValue: {
+              start: new CalendarDateTime(2025, 2, 1, 8, 45),
+              end: new CalendarDateTime(2025, 2, 2, 17, 30),
+            },
+            defaultFocusedValue: new CalendarDate(2025, 2, 10),
+            defaultOpen: true,
+            onChange,
+          }}
+        />
+      ));
+      await waitForHydration();
+
+      await clickDay(/February 10, 2025/i);
+      await clickDay(/February 12, 2025/i);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const range = onChange.mock.calls[0]?.[0] as {
+        start: { year: number; month: number; day: number; hour?: number; minute?: number };
+        end: { year: number; month: number; day: number; hour?: number; minute?: number };
+      };
+      expectClock(range.start, 2025, 2, 10, 8, 45);
+      expectClock(range.end, 2025, 2, 12, 17, 30);
+    });
+  });
 });

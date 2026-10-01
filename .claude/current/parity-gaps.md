@@ -242,6 +242,7 @@ These behaviors match the pin in this checkout.
 - A range calendar with a controlled null value focuses today and centers the visible months.
 - A calendar with a controlled null value focuses today and centers the visible months.
 - A range calendar keyboard range start focuses the next allowed day, including a day in the next month and an unavailable day when non-contiguous ranges are allowed.
+- A date range picker commits placeholder time for a calendar range, midnight when none is set, and holds that range until the popover closes when selection stays open.
 
 **Components**
 

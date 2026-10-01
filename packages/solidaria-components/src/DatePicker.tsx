@@ -59,6 +59,9 @@ import {
   type DateValue,
   type RangeCalendarStateProps,
   type RangeValue,
+  TimeClass,
+  toCalendarDateTime,
+  toZoned,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -732,6 +735,40 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   );
 }
 
+function rangePlaceholderTime(placeholder: DateValue | null | undefined) {
+  if (placeholder && "hour" in placeholder) {
+    return placeholder;
+  }
+  return new TimeClass();
+}
+
+function applyRangeEndpointTime(
+  date: DateValue,
+  existing: DateValue | null | undefined,
+  placeholder: DateValue | null | undefined,
+): DateValue {
+  if ("hour" in date) {
+    return date;
+  }
+  const time = existing && "hour" in existing ? existing : rangePlaceholderTime(placeholder);
+  const combined = toCalendarDateTime(date, time);
+  if ("timeZone" in time) {
+    return toZoned(combined, time.timeZone);
+  }
+  return combined;
+}
+
+function applyRangeTime<T extends DateValue>(
+  range: RangeValue<T>,
+  committed: RangeValue<DateValue> | null,
+  placeholder: DateValue | null | undefined,
+): RangeValue<T> {
+  return {
+    start: applyRangeEndpointTime(range.start, committed?.start, placeholder) as T,
+    end: applyRangeEndpointTime(range.end, committed?.end, placeholder) as T,
+  };
+}
+
 export function DateRangePicker<T extends DateValue = CalendarDate>(
   props: DateRangePickerProps<T>,
 ): JSX.Element {
@@ -775,7 +812,13 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
 
   const [internalOpen, setInternalOpen] = createSignal(overlayProps.defaultOpen ?? false);
   const isOpen = () => access(overlayProps.isOpen) ?? internalOpen();
+  // Assigned once the range granularity memo exists. Closing commits a calendar
+  // range that was held because selection does not close the popover.
+  let commitPendingRange = () => {};
   const setOpen = (open: boolean) => {
+    if (!open) {
+      commitPendingRange();
+    }
     if (access(overlayProps.isOpen) === undefined) {
       setInternalOpen(open);
     }
@@ -804,11 +847,39 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     const controlled = access(stateProps.value);
     return controlled !== undefined ? controlled : internalRangeValue();
   });
+  // A complete calendar range with time, kept on the calendar until close when
+  // no clock is committed yet and selection does not close the popover.
+  const [pendingDateRange, setPendingDateRange] = createSignal<RangeValue<T> | null>(null);
   const setCommittedRangeValue = (value: RangeValue<T> | null) => {
+    setPendingDateRange(null);
     if (access(stateProps.value) === undefined) {
       setInternalRangeValue(() => value);
     }
     stateProps.onChange?.(value);
+  };
+  const rangeGranularity = createMemo<"day" | "hour" | "minute" | "second">(() => {
+    if (stateProps.granularity) {
+      return stateProps.granularity;
+    }
+    const value = currentRangeValue()?.start ?? currentRangeValue()?.end;
+    if (value && "hour" in value) {
+      return "second" in value ? "second" : "minute";
+    }
+    const placeholder = stateProps.placeholderValue;
+    if (!value && placeholder && "minute" in placeholder) {
+      return "minute";
+    }
+    return "day";
+  });
+  const hasRangeTime = () => {
+    const granularity = rangeGranularity();
+    return granularity === "hour" || granularity === "minute" || granularity === "second";
+  };
+  const committedEndsHaveTime = () => {
+    const committed = currentRangeValue();
+    return Boolean(
+      committed?.start && committed.end && "hour" in committed.start && "hour" in committed.end,
+    );
   };
 
   const calendarState = createRangeCalendarState({
@@ -816,12 +887,35 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     get locale() {
       return access(stateProps.locale);
     },
-    value: currentRangeValue,
-    onChange: (value) => {
-      setCommittedRangeValue(value);
-      if (local.shouldCloseOnSelect !== false && value?.start && value?.end) {
-        setOpen(false);
+    value: () => {
+      const pending = pendingDateRange();
+      if (pending?.start && pending.end) {
+        return pending;
       }
+      return currentRangeValue();
+    },
+    // Pin useDateRangePickerState.setDateRange: a time field commits placeholder
+    // time (midnight when none is set). Until a clock is committed, a range
+    // chosen while the popover stays open is held and committed on close.
+    onChange: (value) => {
+      const shouldClose = local.shouldCloseOnSelect !== false;
+      if (!value?.start || !value.end || !hasRangeTime()) {
+        setCommittedRangeValue(value);
+        if (value?.start && value.end && shouldClose) {
+          setOpen(false);
+        }
+        return;
+      }
+      if (shouldClose || committedEndsHaveTime()) {
+        setCommittedRangeValue(
+          applyRangeTime(value, currentRangeValue(), stateProps.placeholderValue),
+        );
+        if (shouldClose) {
+          setOpen(false);
+        }
+        return;
+      }
+      setPendingDateRange(value);
     },
   });
 
@@ -852,16 +946,17 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   const [endFieldValue, setEndFieldValue] = createSignal(
     (currentRangeValue()?.end ?? null) as never,
   ) as unknown as Signal<T | null>;
-  const rangeGranularity = createMemo<"day" | "hour" | "minute" | "second">(() => {
-    if (stateProps.granularity) {
-      return stateProps.granularity;
+  commitPendingRange = () => {
+    const pending = pendingDateRange();
+    if (!pending?.start || !pending.end || !hasRangeTime()) {
+      return;
     }
-    const value = currentRangeValue()?.start ?? currentRangeValue()?.end;
-    if (value && "hour" in value) {
-      return "second" in value ? "second" : "minute";
+    const committed = currentRangeValue();
+    if (committed?.start && committed.end) {
+      return;
     }
-    return "day";
-  });
+    setCommittedRangeValue(applyRangeTime(pending, committed, stateProps.placeholderValue));
+  };
 
   createTrackedEffect(() => {
     const value = currentRangeValue();
