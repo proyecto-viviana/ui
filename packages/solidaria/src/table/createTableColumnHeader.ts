@@ -26,6 +26,7 @@ import { getTableData } from "./createTable";
 import { normalizeTableKey } from "./utils";
 import { createDescription } from "../utils/createDescription";
 import { createStringFormatter } from "../i18n";
+import { isAndroid } from "../utils/platform";
 import { tableIntlStrings } from "./intl";
 
 /**
@@ -64,13 +65,21 @@ export function createTableColumnHeader<T extends object>(
     },
   );
 
-  // A sortable column header is described as "sortable column" — mirrors
-  // `useTableColumnHeader`'s `useDescription(stringFormatter.format('sortable'))`.
-  // Backed by a shared hidden element (ref-counted) and referenced via
-  // aria-describedby.
-  const sortDescriptionProps = createDescription(() =>
-    props().allowsSorting ? stringFormatter().format("sortable") : undefined,
-  );
+  // TalkBack ignores aria-sort, so a sorted column on Android appends the
+  // direction to the "sortable column" description instead.
+  const sortDescriptionProps = createDescription(() => {
+    if (!props().allowsSorting) {
+      return undefined;
+    }
+    const sortable = stringFormatter().format("sortable");
+    const sortDescriptor = state().sortDescriptor;
+    const direction =
+      sortDescriptor?.column === props().node.key ? sortDescriptor.direction : undefined;
+    if (direction && isAndroid()) {
+      return `${sortable}, ${stringFormatter().format(direction)}`;
+    }
+    return sortable;
+  });
 
   const sortColumn = () => {
     const s = state();
@@ -155,9 +164,9 @@ export function createTableColumnHeader<T extends object>(
     const node = p.node;
     const tableData = getTableData(s);
 
-    // Determine sort state
+    // TalkBack does not support aria-sort.
     let ariaSort: "none" | "ascending" | "descending" | undefined = undefined;
-    if (p.allowsSorting) {
+    if (p.allowsSorting && !isAndroid()) {
       const sortDescriptor = s.sortDescriptor;
       if (sortDescriptor?.column === node.key) {
         ariaSort = sortDescriptor.direction;
