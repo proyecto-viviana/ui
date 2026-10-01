@@ -210,6 +210,7 @@ These behaviors match the pin in this checkout.
 - A checkbox group keeps an item disabled or read-only when that item passes false.
 - A table id strips whitespace so a row label points at one header cell.
 - A table expand button keeps its label and the row header in its name.
+- A table cell exposes its column index, and a virtualized cell falls back to its node index.
 
 **Components**
 

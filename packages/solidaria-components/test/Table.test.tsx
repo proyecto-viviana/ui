@@ -1946,8 +1946,8 @@ describe("Table", () => {
       const row = screen.getByRole("row", { name: /Pikachu/ });
       const cells = row.querySelectorAll('[role="rowheader"], [role="gridcell"]');
       expect(cells).toHaveLength(2);
-      expect(cells[0]).not.toHaveAttribute("aria-colindex");
-      expect(cells[1]).not.toHaveAttribute("aria-colindex");
+      expect(cells[0]).toHaveAttribute("aria-colindex", "1");
+      expect(cells[1]).toHaveAttribute("aria-colindex", "2");
     });
 
     it("exposes the header row index on a virtualized table", () => {

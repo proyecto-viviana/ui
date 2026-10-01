@@ -139,9 +139,16 @@ export function createTableCell<T extends object>(
       onPointerUp,
     };
 
-    // Add aria-colindex for virtualized tables
-    if (p.isVirtualized && node.column != null) {
-      baseProps["aria-colindex"] = node.column + 1; // 1-based
+    // aria-colindex is 1-based. A known column is exposed even when the
+    // table is not virtualized. Virtualized cells fall back to the node index.
+    if (node.column != null) {
+      baseProps["aria-colindex"] = node.column + 1;
+    }
+    if (p.isVirtualized) {
+      const columnIndex = node.column ?? node.index;
+      if (columnIndex != null) {
+        baseProps["aria-colindex"] = columnIndex + 1;
+      }
     }
 
     // Add colspan if present
