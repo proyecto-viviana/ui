@@ -79,11 +79,12 @@ export function createBreadcrumbs(
       // Getter so a `const { navProps }` snapshot still reads the active locale.
       get "aria-label"() {
         const current = getProps();
-        // Only apply a default label when no other label source exists.
-        return (
-          current["aria-label"] ??
-          (current["aria-labelledby"] ? undefined : stringFormatter().format("breadcrumbs"))
-        );
+        const label = current["aria-label"];
+        // An empty label is not a name. A labelledby-only nav stays unlabeled
+        // here; otherwise fall back to the catalog.
+        if (label) return label;
+        if (current["aria-labelledby"]) return label;
+        return stringFormatter().format("breadcrumbs");
       },
       "aria-details": p["aria-details"],
     });

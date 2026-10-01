@@ -56,6 +56,11 @@ describe("createBreadcrumbs", () => {
     render(() => <TestBreadcrumbsNav aria-label="Breadcrumb trail" />);
     expect(screen.getByTestId("breadcrumbs-nav")).toHaveAttribute("aria-label", "Breadcrumb trail");
   });
+
+  it("uses the catalog label when aria-label is empty", () => {
+    render(() => <TestBreadcrumbsNav aria-label="" />);
+    expect(screen.getByTestId("breadcrumbs-nav")).toHaveAttribute("aria-label", "Breadcrumbs");
+  });
 });
 
 describe("createBreadcrumbItem", () => {
