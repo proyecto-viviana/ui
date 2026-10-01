@@ -213,6 +213,7 @@ These behaviors match the pin in this checkout.
 - A table cell exposes its column index, and a virtualized cell falls back to its node index.
 - A sortable column header on Android describes the sort direction instead of setting aria-sort.
 - A menu item puts an external aria-describedby ahead of its description and keyboard shortcut.
+- A table puts the long-press selection hint after its sort description, in place of an external id.
 
 **Components**
 

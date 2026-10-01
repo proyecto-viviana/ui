@@ -27,6 +27,7 @@ import { createStringFormatter, useLocale } from "../i18n";
 import { tableIntlStrings } from "./intl";
 import { announce } from "../live-announcer";
 import { createDescription } from "../utils/createDescription";
+import { createHighlightSelectionDescription } from "../grid/createGrid";
 import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
@@ -661,6 +662,12 @@ export function createTable<T extends object>(
     return stringFormatter().format(`${direction}Sort`, { columnName });
   };
   const sortDescriptionProps = createDescription(sortDescription);
+  // useTable merges this id from useGrid. It replaces a caller description.
+  const highlightProps = createHighlightSelectionDescription({
+    selectionMode: () => state().selectionMode,
+    selectionBehavior: () => state().selectionBehavior,
+    hasItemActions: () => !!(props().onRowAction || props().onCellAction),
+  });
 
   // An empty table stays in the tab order unless it already contains a tabbable control.
   const hasTabbableChild = createHasTabbableChild(ref, {
@@ -671,8 +678,9 @@ export function createTable<T extends object>(
     const p = props();
     const s = state();
 
+    const gridDescribedBy = highlightProps["aria-describedby"] ?? p["aria-describedby"];
     const describedBy =
-      [sortDescriptionProps["aria-describedby"], p["aria-describedby"]].filter(Boolean).join(" ") ||
+      [sortDescriptionProps["aria-describedby"], gridDescribedBy].filter(Boolean).join(" ") ||
       undefined;
 
     const baseProps: Record<string, unknown> = {

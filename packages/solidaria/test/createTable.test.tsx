@@ -199,3 +199,82 @@ describe("createTable empty tab stop", () => {
     await waitFor(() => expect(grid).toHaveAttribute("tabindex", "0"));
   });
 });
+
+const LONG_PRESS = "Long press to enter selection mode.";
+const ASCENDING_NAME = "sorted by column Name in ascending order";
+
+function LongPressTableProbe(props: { describedBy?: string; sorted?: boolean }) {
+  const [tableRef, setTableRef] = createSignal<HTMLTableElement>();
+  const collection = createTableCollection<Item>({
+    columns: treeColumns,
+    rows: [{ key: "a", value: { name: "A", type: "file" } }],
+  });
+  const state = createTableState<Item>(() => ({
+    collection,
+    selectionMode: "multiple",
+    selectionBehavior: "replace",
+    sortDescriptor: props.sorted ? { column: "name", direction: "ascending" } : undefined,
+  }));
+  const aria = createTable<Item>(
+    () => ({
+      "aria-label": "Files",
+      "aria-describedby": props.describedBy,
+      onRowAction: () => {},
+    }),
+    () => state,
+    tableRef,
+  );
+
+  return <table {...aria.gridProps} ref={setTableRef} />;
+}
+
+function withTouch<T>(run: () => Promise<T> | T): Promise<T> {
+  const touchDescriptor = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+  window.ontouchstart = null;
+  const restore = () => {
+    if (touchDescriptor) {
+      Object.defineProperty(window, "ontouchstart", touchDescriptor);
+    } else {
+      delete window.ontouchstart;
+    }
+  };
+  return Promise.resolve().then(run).finally(restore);
+}
+
+describe("createTable long press description", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("puts the long-press hint after the sort description and drops an external id", async () => {
+    await withTouch(async () => {
+      render(() => <LongPressTableProbe describedBy="ext-desc" sorted />);
+      const grid = screen.getByRole("grid");
+
+      await waitFor(() => {
+        const ids = (grid.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+        const texts = ids.map((id) => document.getElementById(id)?.textContent);
+        expect(texts).toContain(LONG_PRESS);
+      });
+
+      const ids = (grid.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+      const texts = ids.map((id) => document.getElementById(id)?.textContent);
+      expect(texts[0]).toBe(ASCENDING_NAME);
+      expect(texts[1]).toBe(LONG_PRESS);
+      expect(ids).not.toContain("ext-desc");
+    });
+  });
+
+  it("keeps an external aria-describedby when the long-press hint is absent", () => {
+    const touchDescriptor = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+    delete window.ontouchstart;
+    try {
+      render(() => <LongPressTableProbe describedBy="ext-desc" />);
+      expect(screen.getByRole("grid")).toHaveAttribute("aria-describedby", "ext-desc");
+    } finally {
+      if (touchDescriptor) {
+        Object.defineProperty(window, "ontouchstart", touchDescriptor);
+      }
+    }
+  });
+});
