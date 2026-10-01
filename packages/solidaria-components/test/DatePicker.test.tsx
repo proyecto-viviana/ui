@@ -1062,4 +1062,70 @@ describe("DatePicker", () => {
       });
     });
   });
+
+  // Pin useDatePicker puts state.defaultValue on the date field, and
+  // useDateField resets that field from its input. The default is
+  // props.defaultValue when set, including when a controlled value is also
+  // set, and the initial controlled date otherwise.
+  describe("native form reset", () => {
+    it("restores defaultValue when a controlled date is also set", async () => {
+      const initial = new CalendarDate(2024, 3, 10);
+      const fallback = new CalendarDate(2024, 1, 2);
+      const [value, setValue] = createSignal(initial);
+
+      render(() => (
+        <Form aria-label="Appointment form">
+          <DatePicker
+            aria-label="Appointment"
+            value={value()}
+            defaultValue={fallback}
+            onChange={setValue}
+          >
+            <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          </DatePicker>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+      await waitForDatePickerHydration();
+
+      const day = () => screen.getByRole("spinbutton", { name: /day/i });
+      expect(day()).toHaveAttribute("aria-valuenow", "10");
+
+      fireEvent.keyDown(day(), { key: "ArrowUp" });
+      await waitFor(() => {
+        expect(day()).toHaveAttribute("aria-valuenow", "11");
+      });
+
+      fireEvent.reset(screen.getByRole("form", { name: "Appointment form" }));
+      await waitFor(() => {
+        expect(day()).toHaveAttribute("aria-valuenow", "2");
+      });
+    });
+
+    it("restores the initial controlled date when defaultValue is omitted", async () => {
+      const initial = new CalendarDate(2024, 3, 10);
+      const [value, setValue] = createSignal(initial);
+
+      render(() => (
+        <Form aria-label="Appointment form">
+          <DatePicker aria-label="Appointment" value={value()} onChange={setValue}>
+            <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
+          </DatePicker>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+      await waitForDatePickerHydration();
+
+      const day = () => screen.getByRole("spinbutton", { name: /day/i });
+      fireEvent.keyDown(day(), { key: "ArrowUp" });
+      await waitFor(() => {
+        expect(day()).toHaveAttribute("aria-valuenow", "11");
+      });
+
+      fireEvent.reset(screen.getByRole("form", { name: "Appointment form" }));
+      await waitFor(() => {
+        expect(day()).toHaveAttribute("aria-valuenow", "10");
+      });
+    });
+  });
 });

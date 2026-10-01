@@ -222,6 +222,7 @@ These behaviors match the pin in this checkout.
 - A current breadcrumb treats an empty or false aria-current as page.
 - A controlled radio group keeps its initial value, including null, as the reset default.
 - A date range picker restores its default range on native form reset.
+- A date picker restores its default date on native form reset.
 
 **Components**
 

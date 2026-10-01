@@ -523,6 +523,14 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     () => fieldRef(),
   );
 
+  // useDateField resets through the field input. Passing that ref into
+  // createDateField would also attach native validation, so this unnamed
+  // input is a reset target only and is not submitted.
+  const [resetInput, setResetInput] = createSignal<HTMLInputElement>();
+  createFormReset(resetInput, fieldState.defaultValue, () => {
+    fieldState.setValue((fieldState.defaultValue ?? null) as T | null);
+  });
+
   const contextValue: DatePickerContextValue = {
     fieldState: fieldState as unknown as DateFieldState<DateValue>,
     datePickerState: datePickerState as unknown as DatePickerState<DateValue>,
@@ -698,6 +706,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                 {props.children}
               </Provider>
             </div>
+            <input ref={setResetInput} type="hidden" tabindex={-1} aria-hidden="true" />
             <Show when={(rest as Record<string, unknown>).name}>
               <HiddenDateInput
                 name={(rest as Record<string, unknown>).name as string | undefined}
