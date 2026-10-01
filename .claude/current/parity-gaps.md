@@ -220,6 +220,7 @@ These behaviors match the pin in this checkout.
 - A calendar omits an empty description and details id.
 - A number field omits an empty label and labelledby.
 - A current breadcrumb treats an empty or false aria-current as page.
+- A controlled radio group keeps its initial value, including null, as the reset default.
 
 **Components**
 

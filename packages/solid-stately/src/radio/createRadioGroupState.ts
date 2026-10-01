@@ -220,7 +220,10 @@ export function createRadioGroupState(props: MaybeAccessor<RadioGroupProps> = {}
   const state: RadioGroupState = {
     name,
     selectedValue,
-    defaultSelectedValue: initialProps.defaultValue ?? null,
+    // useRadioGroupState.ts:125 — a controlled value, including null, is the
+    // reset default. defaultValue applies only while uncontrolled.
+    defaultSelectedValue:
+      initialProps.value !== undefined ? initialProps.value : (initialProps.defaultValue ?? null),
     setSelectedValue,
     lastFocusedValue,
     setLastFocusedValue,

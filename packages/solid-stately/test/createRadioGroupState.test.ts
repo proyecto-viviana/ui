@@ -402,6 +402,45 @@ describe("createRadioGroupState", () => {
         dispose();
       });
     });
+
+    it("should keep the initial controlled value when defaultValue is also set", () => {
+      createRoot((dispose) => {
+        const state = createRadioGroupState({
+          value: "controlled",
+          defaultValue: "fallback",
+        });
+
+        flush();
+        expect(state.defaultSelectedValue).toBe("controlled");
+
+        dispose();
+      });
+    });
+
+    it("should keep a null controlled value ahead of defaultValue", () => {
+      createRoot((dispose) => {
+        const state = createRadioGroupState({
+          value: null,
+          defaultValue: "fallback",
+        });
+
+        flush();
+        expect(state.defaultSelectedValue).toBe(null);
+
+        dispose();
+      });
+    });
+
+    it("should use the controlled value when defaultValue is omitted", () => {
+      createRoot((dispose) => {
+        const state = createRadioGroupState({ value: "only" });
+
+        flush();
+        expect(state.defaultSelectedValue).toBe("only");
+
+        dispose();
+      });
+    });
   });
 
   describe("reactivity with signal props", () => {
