@@ -207,6 +207,7 @@ These behaviors match the pin in this checkout.
 - A calendar heading names a multi-month window with the native month range.
 - A calendar moves focus to the focused date when Next or Previous becomes disabled.
 - A radio group arrow focuses the next focusable radio so it can scroll into view.
+- A checkbox group keeps an item disabled or read-only when that item passes false.
 
 **Components**
 

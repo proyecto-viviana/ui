@@ -137,8 +137,8 @@ export function createCheckboxGroupItem(
 
     const next: AriaCheckboxProps = {
       ...p,
-      isReadOnly: p.isReadOnly ?? state.isReadOnly,
-      isDisabled: p.isDisabled ?? state.isDisabled,
+      isReadOnly: p.isReadOnly || state.isReadOnly,
+      isDisabled: p.isDisabled || state.isDisabled,
       name: p.name ?? groupData?.name,
       form: p.form ?? groupData?.form,
       isRequired: p.isRequired ?? state.isRequired(),

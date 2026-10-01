@@ -390,6 +390,24 @@ describe("createCheckboxGroup", () => {
     expect(checkboxes[2]).not.toHaveAttribute("disabled");
   });
 
+  it("keeps a group-disabled checkbox disabled when the item passes isDisabled false", () => {
+    render(() => (
+      <CheckboxGroup
+        groupProps={{ label: "Favorite Pet", isDisabled: true }}
+        checkboxProps={[
+          { value: "dogs", children: "Dogs", isDisabled: false },
+          { value: "cats", children: "Cats" },
+          { value: "dragons", children: "Dragons" },
+        ]}
+      />
+    ));
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes[0]).toHaveAttribute("disabled");
+    expect(checkboxes[1]).toHaveAttribute("disabled");
+    expect(checkboxes[2]).toHaveAttribute("disabled");
+  });
+
   it('sets aria-readonly="true" on each checkbox when group is readonly', async () => {
     const groupOnChangeSpy = vi.fn();
     const checkboxOnChangeSpy = vi.fn();
@@ -417,6 +435,24 @@ describe("createCheckboxGroup", () => {
     expect(groupOnChangeSpy).toHaveBeenCalledTimes(0);
     expect(checkboxOnChangeSpy).toHaveBeenCalledTimes(0);
     expect(checkboxes[2].checked).toBeFalsy();
+  });
+
+  it("keeps a group-readonly checkbox readonly when the item passes isReadOnly false", () => {
+    render(() => (
+      <CheckboxGroup
+        groupProps={{ label: "Favorite Pet", isReadOnly: true }}
+        checkboxProps={[
+          { value: "dogs", children: "Dogs", isReadOnly: false },
+          { value: "cats", children: "Cats" },
+          { value: "dragons", children: "Dragons" },
+        ]}
+      />
+    ));
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes[0]).toHaveAttribute("aria-readonly", "true");
+    expect(checkboxes[1]).toHaveAttribute("aria-readonly", "true");
+    expect(checkboxes[2]).toHaveAttribute("aria-readonly", "true");
   });
 
   it("should not update state for readonly checkbox", async () => {
