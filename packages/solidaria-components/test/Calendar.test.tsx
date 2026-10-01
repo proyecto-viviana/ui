@@ -872,6 +872,79 @@ describe("Calendar", () => {
       expect(selectedDate).toHaveAttribute("aria-label", expect.stringContaining("selected"));
     });
 
+    it("does not mark a disabled calendar value as selected", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            isDisabled: true,
+            value: new CalendarDate(2024, 6, 15),
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByText("15");
+      expect(day).not.toHaveAttribute("data-selected");
+      expect(day.getAttribute("aria-label") ?? "").not.toContain("selected");
+      expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+    });
+
+    it("does not mark an unavailable calendar value as selected", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            value: new CalendarDate(2024, 6, 15),
+            isDateUnavailable: (date) => date.day === 15,
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByText("15");
+      expect(day).toHaveAttribute("aria-disabled", "true");
+      expect(day).not.toHaveAttribute("data-selected");
+      expect(day.getAttribute("aria-label") ?? "").not.toContain("selected");
+      expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+    });
+
+    it("marks an unavailable invalid calendar value as selected", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            value: new CalendarDate(2024, 6, 15),
+            validationState: "invalid",
+            isDateUnavailable: (date) => date.day === 15,
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByText("15");
+      expect(day).toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-selected", "true");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("keeps a disabled invalid calendar value unselected", async () => {
+      render(() => (
+        <TestCalendar
+          calendarProps={{
+            isDisabled: true,
+            value: new CalendarDate(2024, 6, 15),
+            validationState: "invalid",
+          }}
+        />
+      ));
+      await waitForCalendarHydration();
+
+      const day = screen.getByText("15");
+      expect(day).not.toHaveAttribute("data-selected");
+      expect(day).toHaveAttribute("aria-invalid", "true");
+      expect(day.closest("td")).not.toHaveAttribute("aria-selected");
+      expect(day.closest("td")).toHaveAttribute("aria-invalid", "true");
+    });
+
     it("should mark invalid selected cells and link them to the error message id", async () => {
       render(() => (
         <Calendar

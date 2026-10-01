@@ -105,13 +105,27 @@ export function createCalendarCell<T extends CalendarState>(
   // Get the date from props
   const date = createMemo(() => getProps().date as CalendarDate);
 
-  // Check states
-  const isSelected = createMemo(() => state.isSelected(date()));
-  const isInvalid = createMemo(() => state.isValueInvalid() && isSelected());
+  // Pin useCalendarCell: a disabled or unavailable day is not selected.
+  // An invalid value still is, unless the day itself is disabled.
   const isDisabled = createMemo(() => {
     return getProps().isDisabled || state.isCellDisabled(date()) || !!getProps().isOutsideMonth;
   });
   const isUnavailable = createMemo(() => state.isCellUnavailable(date()));
+  const isSelectable = createMemo(() => !isDisabled() && !isUnavailable());
+  const isInvalid = createMemo(() => {
+    if (!state.isValueInvalid()) return false;
+    const current = date();
+    const selected: unknown = state.value();
+    if (Array.isArray(selected)) {
+      return selected.some((entry) => entry != null && isSameDay(entry as DateValue, current));
+    }
+    return selected != null && isSameDay(selected as DateValue, current);
+  });
+  const isSelected = createMemo(() => {
+    const selected = state.isSelected(date()) && isSelectable();
+    if (isInvalid() && !isDisabled()) return true;
+    return selected;
+  });
   const isOutsideMonth = createMemo(
     () => getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date()),
   );
