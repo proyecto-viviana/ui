@@ -169,7 +169,9 @@ export type DatePickerProps<T extends DateValue = DateValue> = Omit<
 export interface DateRangePickerProps<T extends DateValue = DateValue>
   extends
     Omit<AriaDateRangePickerProps, "id" | "isDisabled" | "isReadOnly">,
-    Omit<RangeCalendarStateProps<T>, "locale">,
+    // Field focus stays the boolean `onFocusChange` from the picker props.
+    // The calendar's focused-date callback is not a picker prop.
+    Omit<RangeCalendarStateProps<T>, "locale" | "onFocusChange">,
     SlotProps {
   children?: JSX.Element;
   class?: ClassNameOrFunction<DateRangePickerRenderProps>;
@@ -792,7 +794,6 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
       "isReadOnly",
       "focusedValue",
       "defaultFocusedValue",
-      "onFocusChange",
       "locale",
       "granularity",
       "hourCycle",
