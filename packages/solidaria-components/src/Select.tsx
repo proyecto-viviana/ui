@@ -79,10 +79,17 @@ import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
-import { ListBoxLoadMoreItem } from "./ListBox";
+import { ListBoxLoadMoreItem, ListBoxStateContext } from "./ListBox";
 import { VirtualizerItem } from "./Virtualizer";
 import { TextContext } from "./Text";
 import { useCollectionRenderer, useCollectionRoot } from "./Collection";
+import {
+  StaticSelectCollectionContext,
+  StaticSelectProbeContext,
+  StaticSelectProbeItem,
+  type StaticSelectCollectionContextValue,
+  type StaticSelectCollectionItem,
+} from "./staticSelectCollection";
 import { racIntlStrings } from "./intl";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -134,7 +141,7 @@ export interface SelectRenderProps {
 
 export interface SelectProps<T> extends Omit<AriaSelectProps, "children">, SlotProps {
   /** The items to render in the select. */
-  items: T[];
+  items?: T[];
   /** Function to get the key from an item. */
   getKey?: (item: T) => Key;
   /** Function to get the text value from an item. */
@@ -239,7 +246,7 @@ export interface SelectListBoxRenderProps {
 
 export interface SelectListBoxProps<T> extends SlotProps {
   /** The children of the listbox. A function may be provided to render each item. */
-  children?: (item: T) => JSX.Element;
+  children?: JSX.Element | ((item: T) => JSX.Element);
   /** Content to display when the listbox has no items. */
   renderEmptyState?: () => JSX.Element;
   /** Called when the load more sentinel becomes visible. */
@@ -307,7 +314,7 @@ interface SelectContextValue<T> {
   isPressed: Accessor<boolean>;
   isDisabled: Accessor<boolean>;
   placeholder?: string;
-  items: T[];
+  items?: T[];
   renderItem?: (item: T) => JSX.Element;
   slots?: Record<string, Partial<SelectProps<T>>>;
   autoFocus?: boolean;
@@ -374,18 +381,59 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return !!disabled;
   };
 
+  // Static JSX children register descriptors here. `items` stays the caller's
+  // array when it is passed; the getter below only reads this signal then.
+  const [staticItems, setStaticItems] = createSignal<StaticSelectCollectionItem[]>([], {
+    ownedWrite: true,
+  });
+  const staticItemMap = new Map<Key, StaticSelectCollectionItem>();
+  const syncStaticItems = () => {
+    setStaticItems(Array.from(staticItemMap.values()));
+  };
+  const staticCollectionContext: StaticSelectCollectionContextValue | null =
+    stateProps.items == null
+      ? {
+          registerItem(item) {
+            const previous = staticItemMap.get(item.id);
+            if (
+              previous &&
+              previous.textValue === item.textValue &&
+              previous.isDisabled === item.isDisabled
+            ) {
+              return;
+            }
+            staticItemMap.set(item.id, item);
+            syncStaticItems();
+          },
+          unregisterItem(id) {
+            if (staticItemMap.delete(id)) {
+              syncStaticItems();
+            }
+          },
+        }
+      : null;
+
   const state = createSelectState<T>({
     get items() {
-      return stateProps.items;
+      const items = stateProps.items;
+      return items == null ? (staticItems() as T[]) : items;
     },
     get getKey() {
-      return stateProps.getKey;
+      return stateProps.items == null
+        ? (item: T) => (item as StaticSelectCollectionItem).id
+        : stateProps.getKey;
     },
     get getTextValue() {
-      return stateProps.getTextValue;
+      return stateProps.items == null
+        ? (item: T) =>
+            (item as StaticSelectCollectionItem).textValue ??
+            String((item as StaticSelectCollectionItem).id)
+        : stateProps.getTextValue;
     },
     get getDisabled() {
-      return stateProps.getDisabled;
+      return stateProps.items == null
+        ? (item: T) => Boolean((item as StaticSelectCollectionItem).isDisabled)
+        : stateProps.getDisabled;
     },
     get disabledKeys() {
       return stateProps.disabledKeys;
@@ -811,48 +859,50 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   };
 
   return (
-    <SelectContext
-      value={
-        {
-          state,
-          rootRef: () => rootRef ?? null,
-          triggerRef: () => triggerRef,
-          setTriggerRef,
-          get triggerProps() {
-            return triggerPropsWithValidation();
-          },
-          get valueProps() {
-            return selectHook.valueProps;
-          },
-          get labelProps() {
-            return selectHook.labelProps;
-          },
-          get menuProps() {
-            return selectHook.menuProps;
-          },
-          get errorMessageProps() {
-            return selectHook.errorMessageProps;
-          },
-          get validation() {
-            return composedValidation();
-          },
-          isOpen,
-          isFocused,
-          isFocusVisible,
-          isPressed,
-          isDisabled: resolveDisabled,
-          placeholder: ariaProps.placeholder,
-          items: stateProps.items,
-          autoFocus: !!ariaProps.autoFocus,
-        } as SelectContextValue<unknown>
-      }
-    >
-      <SelectStateContext value={state}>
-        <FieldErrorContext value={fieldErrorContext}>
-          <RootContent />
-        </FieldErrorContext>
-      </SelectStateContext>
-    </SelectContext>
+    <StaticSelectCollectionContext value={staticCollectionContext}>
+      <SelectContext
+        value={
+          {
+            state,
+            rootRef: () => rootRef ?? null,
+            triggerRef: () => triggerRef,
+            setTriggerRef,
+            get triggerProps() {
+              return triggerPropsWithValidation();
+            },
+            get valueProps() {
+              return selectHook.valueProps;
+            },
+            get labelProps() {
+              return selectHook.labelProps;
+            },
+            get menuProps() {
+              return selectHook.menuProps;
+            },
+            get errorMessageProps() {
+              return selectHook.errorMessageProps;
+            },
+            get validation() {
+              return composedValidation();
+            },
+            isOpen,
+            isFocused,
+            isFocusVisible,
+            isPressed,
+            isDisabled: resolveDisabled,
+            placeholder: ariaProps.placeholder,
+            items: stateProps.items,
+            autoFocus: !!ariaProps.autoFocus,
+          } as SelectContextValue<unknown>
+        }
+      >
+        <SelectStateContext value={state}>
+          <FieldErrorContext value={fieldErrorContext}>
+            <RootContent />
+          </FieldErrorContext>
+        </SelectStateContext>
+      </SelectContext>
+    </StaticSelectCollectionContext>
   );
 }
 
@@ -1064,6 +1114,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   if (!context) {
     throw new Error("SelectListBox must be used within a Select");
   }
+  // Compiled static JSX is a children getter. A render prop stays a data property.
+  const staticJsxChildren = Object.getOwnPropertyDescriptor(props, "children")?.get != null;
+  const usesStaticChildren = staticJsxChildren && context.items == null;
   const { menuProps, rootRef, state: selectState, isOpen } = context;
   const state = selectState as SelectState<T>;
 
@@ -1118,6 +1171,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   // upstream flips it to `-1`. Reading `listBoxHook.listBoxProps` per access keeps
   // it reactive.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
+  const listState = createSelectListStateAdapter(state);
   const listBoxHook = createListBox(
     {
       ...(menuProps as unknown as AriaListBoxProps),
@@ -1134,7 +1188,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
         return parentCollectionRenderer?.isVirtualized;
       },
     },
-    createSelectListStateAdapter(state),
+    listState,
   );
 
   const {
@@ -1201,6 +1255,22 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   };
 
   const items = () => Array.from(state.collection());
+  // Static JSX is a children getter, so the closed list keeps one registration
+  // copy mounted and renders a second copy while open. Only the registration
+  // copy writes the collection.
+  const resolveStaticChild = (child: unknown): JSX.Element | undefined => {
+    if (typeof child === "function" && child.length === 0) {
+      return (child as () => JSX.Element | undefined)();
+    }
+    return child as JSX.Element | undefined;
+  };
+  const renderStaticChildren = (): JSX.Element => {
+    const staticChildren: unknown = props.children;
+    if (Array.isArray(staticChildren)) {
+      return <>{staticChildren.map(resolveStaticChild)}</>;
+    }
+    return <>{resolveStaticChild(staticChildren)}</>;
+  };
   createTrackedEffect(() => {
     if (!isOpen()) return;
     const focusedKey = state.focusedKey();
@@ -1246,30 +1316,41 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       >
         <CollectionRoot collection={items()} scrollRef={() => listBoxEl()}>
           <Show
-            when={local.children}
+            when={usesStaticChildren}
             fallback={
-              <For each={items()}>
-                {(node, index) => {
-                  const item = <SelectOption id={node.key}>{node.textValue}</SelectOption>;
-                  return isVirtualized() ? (
-                    <VirtualizerItem index={index()}>{item}</VirtualizerItem>
-                  ) : (
-                    item
-                  );
-                }}
-              </For>
+              <Show
+                when={local.children}
+                fallback={
+                  <For each={items()}>
+                    {(node, index) => {
+                      const item = <SelectOption id={node.key}>{node.textValue}</SelectOption>;
+                      return isVirtualized() ? (
+                        <VirtualizerItem index={index()}>{item}</VirtualizerItem>
+                      ) : (
+                        item
+                      );
+                    }}
+                  </For>
+                }
+              >
+                <For each={items()}>
+                  {(node, index) => {
+                    const renderItem = local.children;
+                    const child =
+                      node.value != null && typeof renderItem === "function"
+                        ? renderItem(node.value)
+                        : null;
+                    return isVirtualized() ? (
+                      <VirtualizerItem index={index()}>{child}</VirtualizerItem>
+                    ) : (
+                      child
+                    );
+                  }}
+                </For>
+              </Show>
             }
           >
-            <For each={items()}>
-              {(node, index) => {
-                const child = node.value != null ? local.children!(node.value) : null;
-                return isVirtualized() ? (
-                  <VirtualizerItem index={index()}>{child}</VirtualizerItem>
-                ) : (
-                  child
-                );
-              }}
-            </For>
+            <ListBoxStateContext value={listState}>{renderStaticChildren()}</ListBoxStateContext>
           </Show>
         </CollectionRoot>
         {state.collection().size === 0 && local.renderEmptyState ? (
@@ -1291,18 +1372,23 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   );
 
   return (
-    <Show when={isOpen()}>
-      <Show
-        when={local.isInPopover}
-        fallback={
-          <FocusScope restoreFocus autoFocus>
-            {listBox()}
-          </FocusScope>
-        }
-      >
-        {listBox()}
+    <>
+      <Show when={usesStaticChildren}>
+        <StaticSelectProbeContext value={true}>{renderStaticChildren()}</StaticSelectProbeContext>
       </Show>
-    </Show>
+      <Show when={isOpen()}>
+        <Show
+          when={local.isInPopover}
+          fallback={
+            <FocusScope restoreFocus autoFocus>
+              {listBox()}
+            </FocusScope>
+          }
+        >
+          {listBox()}
+        </Show>
+      </Show>
+    </>
   );
 }
 
@@ -1310,6 +1396,23 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
  * An option in a select listbox.
  */
 export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
+  const probe = useContext(StaticSelectProbeContext);
+  if (probe) {
+    return (
+      <StaticSelectProbeItem
+        id={props.id}
+        textValue={props.textValue}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </StaticSelectProbeItem>
+    );
+  }
+  return <SelectOptionElement {...props} />;
+}
+
+function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",

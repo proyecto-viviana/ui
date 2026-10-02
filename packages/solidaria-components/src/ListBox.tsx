@@ -72,6 +72,7 @@ import {
   OptionContent,
   Provider,
   useRenderProps,
+  useSlot,
   filterDOMProps,
   dataAttr,
 } from "./utils";
@@ -96,7 +97,13 @@ import type { ItemDropTarget } from "@proyecto-viviana/solid-stately";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 import {
+  StaticSelectCollectionContext,
+  StaticSelectProbeContext,
+  StaticSelectProbeItem,
+} from "./staticSelectCollection";
+import {
   CollectionRendererContext,
+  HeaderContext,
   Section,
   Group,
   type CollectionEntry,
@@ -1199,6 +1206,23 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
  * An item in a listbox.
  */
 export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
+  const probe = useContext(StaticSelectProbeContext);
+  if (probe) {
+    return (
+      <StaticSelectProbeItem
+        id={props.id}
+        textValue={props.textValue}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </StaticSelectProbeItem>
+    );
+  }
+  return <ListBoxItemElement {...props} />;
+}
+
+function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
@@ -1483,11 +1507,56 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
   );
 }
 
+/** A section child can be a zero-arg accessor, which runs under HeaderContext. */
+function isDeferredSectionChild(children: unknown): children is () => JSX.Element {
+  return typeof children === "function" && children.length === 0;
+}
+
+function StaticSelectProbeSection(props: { children?: JSX.Element }): JSX.Element {
+  const children = props.children;
+  return <>{isDeferredSectionChild(children) ? children() : children}</>;
+}
+
+/**
+ * Static select sections name the group from a Header, the same way MenuSection
+ * does. A plain ListBox stays a Section until it is inside that collection.
+ */
+function StaticSelectListBoxSection(props: ListBoxSectionProps): JSX.Element {
+  const [sectionContent, sectionDom] = splitProps(props, ["children"]);
+  const headingId = createUniqueId();
+  const [headingRef, hasHeading] = useSlot();
+  const headerContext = {
+    id: headingId,
+    role: "presentation" as const,
+    ref: headingRef,
+  };
+  const SectionChildren = () => {
+    const children = sectionContent.children;
+    return isDeferredSectionChild(children) ? children() : children;
+  };
+
+  return (
+    <Section {...sectionDom} role="group" aria-labelledby={hasHeading() ? headingId : undefined}>
+      <HeaderContext value={headerContext}>
+        <SectionChildren />
+      </HeaderContext>
+    </Section>
+  );
+}
+
 /**
  * Section primitive alias for ListBox composition parity.
  */
 export function ListBoxSection(props: ListBoxSectionProps): JSX.Element {
-  return <Section {...props} />;
+  const collection = useContext(StaticSelectCollectionContext);
+  const probe = useContext(StaticSelectProbeContext);
+  if (collection == null) {
+    return <Section {...props} />;
+  }
+  if (probe) {
+    return <StaticSelectProbeSection>{props.children}</StaticSelectProbeSection>;
+  }
+  return <StaticSelectListBoxSection {...props} />;
 }
 
 /**

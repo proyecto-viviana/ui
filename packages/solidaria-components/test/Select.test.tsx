@@ -33,6 +33,8 @@ import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Dialog } from "../src/Dialog";
 import { Text } from "../src/Text";
 import { Virtualizer } from "../src/Virtualizer";
+import { ListBoxItem, ListBoxSection } from "../src/ListBox";
+import { Header } from "../src/Collection";
 
 // Setup userEvent
 const user = setupUser();
@@ -1651,6 +1653,119 @@ describe("Select", () => {
       ));
 
       expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+  });
+
+  // Static collection children. Upstream RAC builds the options from
+  // ListBoxItem JSX and leaves `items` off:
+  //   react-spectrum/packages/react-aria-components/test/Select.test.js
+  //     TestSelect fixture, lines 27–43
+  //     "provides slots" opens and clicks options[1] (Dog), lines 84–96
+  //     "supports items with render props" defaultSelectedKey "cat" shows "Cat", lines 132–150
+  //     "select can select an option via keyboard" selects Kangaroo, lines 523–537
+  // Select.test.js has no ListBoxSection. The group assertion mirrors
+  // react-spectrum/packages/react-aria-components/test/ListBox.test.js
+  // "should support sections", lines 242–273 (a Header labels the group;
+  // a section with only aria-label uses aria-label).
+  describe("static children", () => {
+    function StaticAnimalSelect(props: { defaultSelectedKey?: string; defaultOpen?: boolean }) {
+      return (
+        <Select
+          aria-label="Favorite Animal"
+          defaultSelectedKey={props.defaultSelectedKey}
+          defaultOpen={props.defaultOpen}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectListBox>
+            <ListBoxItem id="cat">Cat</ListBoxItem>
+            <ListBoxItem id="dog">Dog</ListBoxItem>
+            <ListBoxItem id="kangaroo">Kangaroo</ListBoxItem>
+          </SelectListBox>
+        </Select>
+      );
+    }
+
+    it("renders static ListBoxItem children as options", () => {
+      render(() => <StaticAnimalSelect defaultOpen />);
+
+      const options = screen.getAllByRole("option");
+      expect(options).toHaveLength(3);
+      expect(options.map((option) => option.textContent)).toEqual(["Cat", "Dog", "Kangaroo"]);
+    });
+
+    it("selects a static option by click and fills the value", async () => {
+      render(() => <StaticAnimalSelect />);
+
+      const trigger = screen.getByRole("button");
+      await user.click(trigger);
+      const options = screen.getAllByRole("option");
+      expect(options).toHaveLength(3);
+
+      await user.click(options[1]);
+      expect(trigger).toHaveTextContent("Dog");
+    });
+
+    it("fills the value from a static collection before the list opens", () => {
+      render(() => <StaticAnimalSelect defaultSelectedKey="cat" />);
+
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    });
+
+    it("selects a static option via keyboard and fills the value", async () => {
+      render(() => <StaticAnimalSelect />);
+
+      const trigger = screen.getByRole("button");
+      await user.tab();
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{Enter}");
+
+      expect(trigger).toHaveTextContent("Kangaroo");
+    });
+
+    it("renders a ListBoxSection group labelled by its Header", () => {
+      render(() => (
+        <Select aria-label="Sandwich contents" defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectListBox>
+            <ListBoxSection>
+              <Header>Veggies</Header>
+              <ListBoxItem id="lettuce">Lettuce</ListBoxItem>
+              <ListBoxItem id="tomato">Tomato</ListBoxItem>
+              <ListBoxItem id="onion">Onion</ListBoxItem>
+            </ListBoxSection>
+            <ListBoxSection aria-label="Protein">
+              <ListBoxItem id="ham">Ham</ListBoxItem>
+              <ListBoxItem id="tuna">Tuna</ListBoxItem>
+              <ListBoxItem id="tofu">Tofu</ListBoxItem>
+            </ListBoxSection>
+          </SelectListBox>
+        </Select>
+      ));
+
+      const groups = screen.getAllByRole("group");
+      expect(groups).toHaveLength(2);
+      expect(groups[0]).toHaveAttribute("data-section");
+      expect(groups[0]).toHaveAttribute("aria-labelledby");
+      expect(document.getElementById(groups[0].getAttribute("aria-labelledby")!)).toHaveTextContent(
+        "Veggies",
+      );
+      expect(groups[1]).toHaveAttribute("aria-label", "Protein");
+      expect(groups[1]).not.toHaveAttribute("aria-labelledby");
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+        "Lettuce",
+        "Tomato",
+        "Onion",
+        "Ham",
+        "Tuna",
+        "Tofu",
+      ]);
     });
   });
 });

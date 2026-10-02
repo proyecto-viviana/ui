@@ -25,6 +25,7 @@
  */
 
 import { createContext, createMemo, useContext, For } from "solid-js";
+import { StaticSelectProbeContext } from "./staticSelectCollection";
 import type { JSX } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { DragTypes, DropOperation, DropTarget } from "@proyecto-viviana/solid-stately";
@@ -381,6 +382,7 @@ export function Section(props: SectionProps): JSX.Element {
  * A header/title primitive for collection sections.
  */
 export function Header(props: HeaderProps): JSX.Element {
+  const probe = useContext(StaticSelectProbeContext);
   const [merged, ref] = useContextProps(props, props.ref, HeaderContext);
   const [local, domProps] = splitProps(merged, [
     "children",
@@ -408,6 +410,9 @@ export function Header(props: HeaderProps): JSX.Element {
   );
 
   const filteredDomProps = createMemo(() => filterDOMProps(domProps, { global: true }));
+
+  // The registration copy of a static select must not paint a heading.
+  if (probe) return <></>;
 
   return (
     <div
