@@ -23,7 +23,8 @@
  */
 
 import { createLabel } from "../label/createLabel";
-import { NumberFormatter, useLocale } from "../i18n";
+import { useLocale } from "../i18n/locale";
+import { NumberFormatter } from "@internationalized/number";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
