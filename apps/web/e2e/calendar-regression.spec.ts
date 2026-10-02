@@ -164,14 +164,17 @@ test.describe("Playground Calendar Regression", () => {
     const rangeCalendarSection = page.locator(RANGE_CALENDAR_SECTION);
     await expect(rangeCalendarSection).toBeVisible();
 
+    // useCalendarCell anchors on press start and commits the range on press up.
     const start = rangeCalendarSection
       .locator('[role="button"][aria-label*="June 10, 2024"]')
       .first();
     await start.dispatchEvent("pointerdown");
+    await start.dispatchEvent("pointerup");
     const end = rangeCalendarSection
       .locator('[role="button"][aria-label*="June 15, 2024"]')
       .first();
     await end.dispatchEvent("pointerdown");
+    await end.dispatchEvent("pointerup");
 
     await expect(rangeCalendarSection.getByText("Range: 2024-06-10 - 2024-06-15")).toBeVisible();
     await checkNoRuntimeErrors(errors);
