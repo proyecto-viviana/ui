@@ -33,6 +33,13 @@ export interface TextProps extends JSX.HTMLAttributes<HTMLElement>, SlotProps {
  */
 export const TextContext = createContext<ContextValue<TextProps, HTMLElement>>({});
 
+function readDataRspSlot(props: object): string | undefined {
+  const descriptor = Object.getOwnPropertyDescriptor(props, "data-rsp-slot");
+  if (!descriptor) return undefined;
+  const value = descriptor.get ? descriptor.get.call(props) : descriptor.value;
+  return typeof value === "string" ? value : undefined;
+}
+
 /**
  * A piece of text, typically a label, description, or error message inside a
  * field. It adapts the pinned `Text` component and consumes its slot from
@@ -46,12 +53,16 @@ export function Text(props: TextProps): JSX.Element {
   const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "ref"]);
   const slotValue = useSlotValue(() => (typeof merged.slot === "string" ? merged.slot : undefined));
   const slotName = () => slotValue()["data-rsp-slot"];
+  // SlotContext names the slot when it has one. An authored `data-rsp-slot`
+  // stays otherwise: writing `undefined` here would strip it. Upstream S2
+  // `Text` always renders `data-rsp-slot="text"`; RAC `Text` spreads the prop.
+  const dataRspSlot = () => slotName() ?? readDataRspSlot(domProps);
   return (
     <ElementTag
       class={joinSlotClass(local.class ?? "solidaria-Text", slotValue().class)}
       {...filterDOMProps(domProps, { global: true })}
       slot={merged.slot}
-      data-rsp-slot={slotName()}
+      data-rsp-slot={dataRspSlot()}
       // last, so a stray `tag` in the spread can never redirect the element
       tag={local.elementType ?? "span"}
     >
