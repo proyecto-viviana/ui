@@ -19,7 +19,7 @@
  * Port of react-aria-components/src/ProgressBar.tsx
  */
 
-import { createContext, createMemo, useContext } from "solid-js";
+import { createContext, createMemo, untrack, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   createProgressBar,
@@ -99,8 +99,9 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const isIndeterminate = () => ariaProps.isIndeterminate ?? false;
   const hasExplicitLabel = () => Boolean(ariaProps["aria-label"] || ariaProps["aria-labelledby"]);
   // A string `label` names the bar. Slot detection starts only when that string
-  // and an explicit aria name are both absent.
-  const [labelRef, hasLabel] = useSlot(!hasExplicitLabel() && !ariaProps.label);
+  // and an explicit aria name are both absent. Upstream `useState` reads this
+  // once; `untrack` keeps that and stays quiet when `aria-label` is reactive.
+  const [labelRef, hasLabel] = useSlot(untrack(() => !hasExplicitLabel() && !ariaProps.label));
 
   const progressAria = createProgressBar({
     get id() {
