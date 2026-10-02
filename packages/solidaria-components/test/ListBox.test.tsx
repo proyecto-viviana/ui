@@ -675,8 +675,18 @@ describe("ListBox", () => {
         await waitFor(() => {
           expect(describedByText(document.getElementById("write"))).toBe(dropDescription);
         });
+        // beginDragging publishes the session, and this description, before the
+        // frame that installs the Escape listener and mounts drop indicators.
+        // The indicator label is localized; the element is the signal that
+        // Escape will reach DragManager. Escaping earlier leaks the session.
+        await waitFor(() => {
+          expect(document.querySelector(".solidaria-DropIndicator")).toBeTruthy();
+        });
       } finally {
         await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(document.getElementById("write")).not.toHaveAttribute("aria-hidden");
+        });
       }
     });
 
