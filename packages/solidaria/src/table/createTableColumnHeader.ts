@@ -198,8 +198,8 @@ export function createTableColumnHeader<T extends object>(
       baseProps.style = { cursor: "pointer" };
     }
 
-    // Header nodes always carry a column index.
-    if (node.column != null) {
+    // A plain header's column is the DOM order. Virtualized headers name it.
+    if (p.isVirtualized && node.column != null) {
       baseProps["aria-colindex"] = node.column + 1; // 1-based
     }
 

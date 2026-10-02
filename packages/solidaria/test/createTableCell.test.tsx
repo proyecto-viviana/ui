@@ -42,8 +42,8 @@ describe("createTableCell", () => {
     expect(readCell({ index: 2, isVirtualized: true })).toBe(3);
   });
 
-  it("exposes the column index when the cell is not virtualized", () => {
-    expect(readCell({ index: 4, column: 1 })).toBe(2);
+  it("omits the column index when the cell is not virtualized", () => {
+    expect(readCell({ index: 4, column: 1 })).toBeUndefined();
   });
 
   it("omits the column index when a non-virtualized cell has none", () => {

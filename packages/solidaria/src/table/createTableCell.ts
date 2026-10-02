@@ -139,11 +139,8 @@ export function createTableCell<T extends object>(
       onPointerUp,
     };
 
-    // aria-colindex is 1-based. A known column is exposed even when the
-    // table is not virtualized. Virtualized cells fall back to the node index.
-    if (node.column != null) {
-      baseProps["aria-colindex"] = node.column + 1;
-    }
+    // aria-colindex is 1-based. A plain cell's column is the DOM order.
+    // Virtualized cells fall back to the node index (upstream useGridCell).
     if (p.isVirtualized) {
       const columnIndex = node.column ?? node.index;
       if (columnIndex != null) {

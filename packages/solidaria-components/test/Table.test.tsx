@@ -1899,7 +1899,7 @@ describe("Table", () => {
       expect(cells[1]).toHaveAttribute("aria-colindex", "2");
     });
 
-    it("exposes each column index on a table header", () => {
+    it("omits aria-colindex on a plain table header and cell", () => {
       const rows = [
         { id: 1, name: "Pikachu", type: "Electric" },
         { id: 2, name: "Bulbasaur", type: "Grass" },
@@ -1940,14 +1940,14 @@ describe("Table", () => {
 
       const headers = screen.getAllByRole("columnheader");
       expect(headers).toHaveLength(2);
-      expect(headers[0]).toHaveAttribute("aria-colindex", "1");
-      expect(headers[1]).toHaveAttribute("aria-colindex", "2");
+      expect(headers[0]).not.toHaveAttribute("aria-colindex");
+      expect(headers[1]).not.toHaveAttribute("aria-colindex");
 
       const row = screen.getByRole("row", { name: /Pikachu/ });
       const cells = row.querySelectorAll('[role="rowheader"], [role="gridcell"]');
       expect(cells).toHaveLength(2);
-      expect(cells[0]).toHaveAttribute("aria-colindex", "1");
-      expect(cells[1]).toHaveAttribute("aria-colindex", "2");
+      expect(cells[0]).not.toHaveAttribute("aria-colindex");
+      expect(cells[1]).not.toHaveAttribute("aria-colindex");
     });
 
     it("exposes the header row index on a virtualized table", () => {
