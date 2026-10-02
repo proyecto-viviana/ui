@@ -83,7 +83,9 @@ export function Text(props: TextProps): JSX.Element {
       {...getContentDomProps(merged())}
       id={id()}
       ref={mergeContextRefs(contextProps()?.ref, props.ref, inertRef)}
-      class={className()}
+      // S2 Text always assigns className to a string (`UNSAFE_className + styles`).
+      // That string is empty when nothing is styled. Omitting the attribute is not that.
+      class={className() ?? ""}
       style={skeletonStyle()}
       slot={local.slot || undefined}
       data-rsp-slot={slotValue()["data-rsp-slot"] ?? "text"}
