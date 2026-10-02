@@ -208,7 +208,12 @@ export function SSRProvider(props: SSRProviderProps & { prefix?: string }): JSX.
  * ```
  */
 export function createHydrationState(): Accessor<boolean> {
-  const [isHydrating, setIsHydrating] = createSignal(isServer || sharedConfig.hydrating);
+  // The client effect below clears this flag. A flush inside the owner that
+  // created it (a test root, or any owner draining its own effects) is still
+  // an owned scope, so the write is opted in.
+  const [isHydrating, setIsHydrating] = createSignal(isServer || sharedConfig.hydrating, {
+    ownedWrite: true,
+  });
 
   // Register the same owner on server and client. Client-source effects wait
   // for the hydration snapshot to release, unlike a plain mount callback.
@@ -301,7 +306,9 @@ export function createBrowserEffect(fn: () => void | (() => void)): void {
 export function createBrowserValue<T>(fn: () => T, fallback: T): Accessor<T> {
   // Solid 2 treats function initializers as computations. Wrap the value so a
   // function-valued fallback is stored, never invoked as browser work on SSR.
-  const [value, setValue] = createSignal(() => fallback) as Signal<T>;
+  // Same owned-scope flush as createHydrationState: the client effect writes
+  // the computed value while its owner may still be on the stack.
+  const [value, setValue] = createSignal(() => fallback, { ownedWrite: true }) as Signal<T>;
 
   createEffect(
     () => true,
