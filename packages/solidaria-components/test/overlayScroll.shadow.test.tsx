@@ -69,7 +69,9 @@ describe("Overlay close on scroll in nested Shadow DOM", () => {
     };
   }
 
-  it("closes Popover when its scrollable ancestor inside a nested shadow root scrolls", async () => {
+  it("keeps a modal DialogTrigger popover open when a nested shadow ancestor scrolls", async () => {
+    // usePopover passes onClose null unless isNonModal, and useCloseOnScroll
+    // returns before the trigger's onCloseMap fallback.
     const { mountPoint, scrollContainer2 } = createNestedShadowMount();
     const onOpenChange = vi.fn();
 
@@ -98,7 +100,43 @@ describe("Overlay close on scroll in nested Shadow DOM", () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(true);
 
-    // Scroll the ancestor scrollable container in the nested shadow root
+    scrollContainer2.dispatchEvent(new Event("scroll"));
+
+    expect(document.querySelector('[data-testid="popover-content"]')).toBeTruthy();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it("closes a non-modal popover when its scrollable ancestor inside a nested shadow root scrolls", async () => {
+    // ComboBox.browser.test.tsx: an isNonModal popover closes when a shadow
+    // ancestor of the trigger scrolls.
+    const { mountPoint, scrollContainer2 } = createNestedShadowMount();
+    const onOpenChange = vi.fn();
+
+    render(
+      () => (
+        <DialogTrigger onOpenChange={onOpenChange}>
+          <Button data-testid="popover-btn">Open Popover</Button>
+          <Popover isNonModal data-testid="popover-content">
+            <Dialog>
+              <p>Popover Inside Shadow DOM</p>
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
+      ),
+      { container: mountPoint },
+    );
+
+    const triggerBtn = mountPoint.querySelector('[data-testid="popover-btn"]') as HTMLButtonElement;
+    expect(triggerBtn).toBeTruthy();
+
+    fireEvent.click(triggerBtn);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-testid="popover-content"]')).toBeTruthy();
+    });
+
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+
     scrollContainer2.dispatchEvent(new Event("scroll"));
 
     await waitFor(() => {
@@ -108,7 +146,38 @@ describe("Overlay close on scroll in nested Shadow DOM", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("does not close Popover when a non-ancestor container scrolls", async () => {
+  it("does not close a non-modal popover when a non-ancestor container scrolls", async () => {
+    const { mountPoint, siblingContainer } = createNestedShadowMount();
+    const onOpenChange = vi.fn();
+
+    render(
+      () => (
+        <DialogTrigger onOpenChange={onOpenChange}>
+          <Button data-testid="popover-btn">Open Popover</Button>
+          <Popover isNonModal data-testid="popover-content">
+            <Dialog>
+              <p>Popover Inside Shadow DOM</p>
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
+      ),
+      { container: mountPoint },
+    );
+
+    const triggerBtn = mountPoint.querySelector('[data-testid="popover-btn"]') as HTMLButtonElement;
+    fireEvent.click(triggerBtn);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-testid="popover-content"]')).toBeTruthy();
+    });
+
+    siblingContainer.dispatchEvent(new Event("scroll"));
+
+    expect(document.querySelector('[data-testid="popover-content"]')).toBeTruthy();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it("does not close a modal popover when a non-ancestor container scrolls", async () => {
     const { mountPoint, siblingContainer } = createNestedShadowMount();
     const onOpenChange = vi.fn();
 
