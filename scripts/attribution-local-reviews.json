@@ -597,7 +597,7 @@
   {
     "localPath": "packages/solid-stately/src/combobox/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "c4ed750a31537dacf9ca7295eb44b36ac809b59bf499de76b0c0204b7892d8d6"
+    "contentSha256": "69498b85096ed562dc2d2dbb3cc9ed94c7b05a752c88cc41a66afca4e0d010e8"
   },
   {
     "localPath": "packages/solid-stately/src/data/index.ts",
@@ -632,7 +632,7 @@
   {
     "localPath": "packages/solid-stately/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "40a95d80a01ccf85e6f3eb79fd76a0a06a5f4e897e5a2df70bd05587ecf664c2"
+    "contentSha256": "a85f67137d75302ca63898b04240065611b736cd9f8d777cb74669afa116412a"
   },
   {
     "localPath": "packages/solid-stately/src/menu/index.ts",
@@ -732,7 +732,7 @@
   {
     "localPath": "packages/solidaria-components/src/contexts.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "16eabf4a145235aea4cb4d2537726bf9079ad4a23963f1e00cc328a7db111a41"
+    "contentSha256": "01647f72e7115b26cf2fafd596279a2fc4a180cd8e7297404e0e90cbf01c5d6e"
   },
   {
     "localPath": "packages/solidaria-components/src/DateRangePickerContext.tsx",
@@ -747,12 +747,12 @@
   {
     "localPath": "packages/solidaria-components/src/Icon.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "458bfcff0b27bc441ee387f82335df3c030d7f415c079f68a32aea0f33e73fa2"
+    "contentSha256": "84f8ca65cdef19d329ce38fe2a4d026a6e24f44facbaf502db78e20c17d00f79"
   },
   {
     "localPath": "packages/solidaria-components/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "b16cb58b9248cf9fe5254b4b41dcf5f07dadef7bd7dd506e076082f37c1f00f2"
+    "contentSha256": "4adacf8988858b587dcf3d9d78fb697ff39d7b7d27ca62d27869e36a691c2350"
   },
   {
     "localPath": "packages/solidaria-components/src/Landmark.tsx",
@@ -827,7 +827,7 @@
   {
     "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "0902c1e3583be98543cdd05fed9bc05d6c4cbf97505d36c373621588f3ae96bd"
+    "contentSha256": "bbd60dd3c63bb66ce5a9b5d76c17ed75ce86f06d36b0c8a069d4564fc7585906"
   },
   {
     "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
@@ -867,7 +867,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "f6faae18247cbde13c4555ae9c64c61dc102b88996611713ae0fee5b30dc0858"
+    "contentSha256": "d813df7bb2ca5454ecb0250fe7a3aaee313b77b9ce2e4523e66f53a837a7ae60"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
@@ -912,12 +912,12 @@
   {
     "localPath": "packages/solidaria/src/numberfield/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "a95afaa1e9db12e0a3c3a90096794550b499fd4429e32a0913a69890d2098b16"
+    "contentSha256": "701f3ad98d007623697f41f1171f76ec2154f51af25e417be9dea02b1a1405a9"
   },
   {
     "localPath": "packages/solidaria/src/overlays/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "a8d63b8a8d77b8e7b762bf6cbc35d7c3f1e3005651b69eeb79e344c2ba8e5e32"
+    "contentSha256": "d22bfb1428ac751fc84e8285439e3dab004c02a71d7b70fafec64e29fa17e8c4"
   },
   {
     "localPath": "packages/solidaria/src/popover/index.ts",
@@ -967,7 +967,7 @@
   {
     "localPath": "packages/solidaria/src/steplist/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "a734b4cf3cfd4ef8bd6da5ae34e27bea20224ca55f54c21b983ccbc9cfda77e4"
+    "contentSha256": "eee7997f286d8ea3fa897af114b8f93aaf16f4b974d964bf169e7d48f7f2ead4"
   },
   {
     "localPath": "packages/solidaria/src/switch/index.ts",
@@ -1022,12 +1022,12 @@
   {
     "localPath": "packages/solidaria/src/utils/env.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "081aa321f411157b71ac76c470d3d7b38aa1a0d81c9fd7dc262e9ee2af8a5101"
+    "contentSha256": "01b53c7baab2670e8b4dbf0f9b660bb805ec0dc765e263be8c18b06f78398f58"
   },
   {
     "localPath": "packages/solidaria/src/utils/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "9e644b51332c15a244d7cfa8a971109cc416845ecc36ad6110c64f8b20109afd"
+    "contentSha256": "e78abe522fd8e547fab87642d8d156d66f84fa9af4084e0c5781972826c78cf7"
   },
   {
     "localPath": "packages/solidaria/src/utils/reactivity.ts",
