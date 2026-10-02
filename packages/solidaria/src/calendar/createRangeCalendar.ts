@@ -109,14 +109,13 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // An explicit id stays a stable string. createSlotId cannot take a default,
   // and styled calendars pass their own id and mount the message themselves.
   const explicitErrorMessageId = getProps().errorMessageId || undefined;
-  // useCalendarBase uses useSlotId: the id is linked only after an element
-  // with it is in the DOM. Cells read this through a getter so the probe can
-  // clear a dangling id.
-  const slotErrorMessageId = createSlotId([
-    () => Boolean(getProps().errorMessage),
-    () => Boolean(getProps().isInvalid) || state.isValueInvalid(),
-    () => state.validationState(),
-  ]);
+  // useCalendarBase reads these during render, then passes them to useSlotId.
+  // A JSX prop's first read creates a memo, which the probe effect cannot do,
+  // so the memos are born here. The id still links only once the message is mounted.
+  const errorMessageDep = createMemo(() => Boolean(getProps().errorMessage));
+  const invalidDep = createMemo(() => Boolean(getProps().isInvalid) || state.isValueInvalid());
+  const validationStateDep = createMemo(() => state.validationState());
+  const slotErrorMessageId = createSlotId([errorMessageDep, invalidDep, validationStateDep]);
 
   // Visual title of the visible window. One month is that month; several
   // months are the native range. The accessible name stays on the catalog.
