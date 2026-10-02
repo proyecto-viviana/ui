@@ -22,7 +22,8 @@
  * Based on @react-aria/tag useTagGroup
  */
 
-import { onCleanup, createTrackedEffect } from "solid-js";
+import { onCleanup, createSignal, createTrackedEffect } from "solid-js";
+import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -236,26 +237,49 @@ export function createTagGroup<T>(
     }
   });
 
+  // useTagGroup.ts:137-150. aria-live is polite only while focus is within.
+  // The first run records the mounted size, so an empty mount does not focus.
+  const [isFocusWithin, setFocusWithin] = createSignal(false);
+  const { focusWithinProps } = createFocusWithin({
+    onFocusWithinChange: setFocusWithin,
+  });
+  let prevCount = -1;
+  createTrackedEffect(() => {
+    const size = state.collection().size;
+    const el = getRef();
+    if (el && prevCount > 0 && size === 0 && isFocusWithin()) {
+      el.focus();
+    }
+    prevCount = size;
+  });
+
   return {
     get gridProps() {
       const p = getProps();
       const hasItems = state.collection().size > 0;
 
-      return mergeProps(domProps(), labeling.fieldProps as Record<string, unknown>, {
-        id,
-        role: hasItems ? "grid" : "group",
-        "aria-multiselectable": hasItems && state.selectionMode() === "multiple" ? true : undefined,
-        "aria-atomic": false,
-        "aria-relevant": "additions",
-        "aria-describedby": getAriaDescribedBy(),
-        "aria-disabled": p.isDisabled || undefined,
-        // Roving container tabIndex mirrors useSelectableCollection: the container
-        // is tabbable (0) only while nothing is focused, then rolls to -1 once a
-        // row takes focus so Tab exits the group.
-        tabIndex: p.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
-        onFocus,
-        onBlur,
-      });
+      return mergeProps(
+        domProps(),
+        labeling.fieldProps as Record<string, unknown>,
+        focusWithinProps,
+        {
+          id,
+          role: hasItems ? "grid" : "group",
+          "aria-multiselectable":
+            hasItems && state.selectionMode() === "multiple" ? true : undefined,
+          "aria-atomic": false,
+          "aria-relevant": "additions",
+          "aria-live": isFocusWithin() ? "polite" : "off",
+          "aria-describedby": getAriaDescribedBy(),
+          "aria-disabled": p.isDisabled || undefined,
+          // Roving container tabIndex mirrors useSelectableCollection: the container
+          // is tabbable (0) only while nothing is focused, then rolls to -1 once a
+          // row takes focus so Tab exits the group.
+          tabIndex: p.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
+          onFocus,
+          onBlur,
+        },
+      );
     },
     get labelProps() {
       return labeling.labelProps as Record<string, unknown>;

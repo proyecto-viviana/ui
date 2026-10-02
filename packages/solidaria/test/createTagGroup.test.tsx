@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
-import { flush, For } from "solid-js";
+import { createSignal, flush, For } from "solid-js";
 import { createListState, type Key, type SelectionMode } from "@proyecto-viviana/solid-stately";
 import { createTagGroup, createTag } from "../src/tag";
 import { I18nProvider } from "../src/i18n";
@@ -240,6 +240,70 @@ describe("createTagGroup/createTag", () => {
       </I18nProvider>
     ));
     expect(descriptionOf("Alpha")).toBe("Auf „Löschen“ drücken, um das Tag zu entfernen.");
+    cleanup();
+  });
+
+  it("sets aria-live while focus is within and focuses the group when the last tag is removed", () => {
+    // useTagGroup.ts:137-159. aria-live is "polite" while focus is within the
+    // grid and "off" otherwise. The group takes focus when the collection
+    // goes from a positive size to 0 while focus is within. A mount that is
+    // already empty does not take focus.
+    const [items, setItems] = createSignal<Item[]>(sampleItems);
+    const outside = document.createElement("button");
+    document.body.appendChild(outside);
+
+    function LiveRegionList() {
+      let ref: HTMLDivElement | undefined;
+      const state = createListState({
+        get items() {
+          return items();
+        },
+        getKey: (item) => item.id,
+      });
+      const tagGroupAria = createTagGroup({ "aria-label": "Hook tags" }, state, () => ref ?? null);
+      return (
+        <div ref={ref} {...tagGroupAria.gridProps}>
+          <For each={items()}>{(item) => <HookTag item={item} state={state} />}</For>
+        </div>
+      );
+    }
+
+    render(() => <LiveRegionList />);
+    const grid = screen.getByRole("grid", { name: "Hook tags" });
+    expect(grid).toHaveAttribute("aria-live", "off");
+
+    screen.getByRole("option", { name: "Alpha" }).focus();
+    flush();
+    expect(grid).toHaveAttribute("aria-live", "polite");
+
+    outside.focus();
+    flush();
+    expect(grid).toHaveAttribute("aria-live", "off");
+
+    screen.getByRole("option", { name: "Alpha" }).focus();
+    flush();
+    setItems([]);
+    flush();
+    const group = screen.getByRole("group", { name: "Hook tags" });
+    expect(document.activeElement).toBe(group);
+    expect(group).toHaveAttribute("aria-live", "polite");
+    cleanup();
+
+    outside.focus();
+    render(() => <LiveRegionList />);
+    flush();
+    expect(document.activeElement).toBe(outside);
+    expect(screen.getByRole("group", { name: "Hook tags" })).toHaveAttribute("aria-live", "off");
+    cleanup();
+
+    setItems(sampleItems);
+    render(() => <LiveRegionList />);
+    outside.focus();
+    flush();
+    setItems([]);
+    flush();
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
     cleanup();
   });
 });
