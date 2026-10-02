@@ -647,7 +647,7 @@ test.describe("Playground Page", () => {
     await checkNoHydrationErrors(errors);
   });
 
-  test("tooltip section opens with role=tooltip and stays open on non-press keys", async ({
+  test("tooltip section opens with role=tooltip and closes on a non-press key", async ({
     page,
   }) => {
     const errors = await setupErrorCapture(page);
@@ -662,9 +662,12 @@ test.describe("Playground Page", () => {
       .first();
     await expect(tooltip).toBeVisible();
 
+    // useTooltipTrigger wires onKeyDown to the press-start close, so ArrowRight dismisses.
     await trigger.focus();
     await page.keyboard.press("ArrowRight");
-    await expect(tooltip).toBeVisible();
+    await expect(
+      page.locator('[role="tooltip"]', { hasText: "This tooltip has a 500ms delay" }),
+    ).toHaveCount(0);
 
     await checkNoHydrationErrors(errors);
   });
