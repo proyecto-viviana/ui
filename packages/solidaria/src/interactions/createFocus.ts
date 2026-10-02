@@ -50,8 +50,15 @@ export interface CreateFocusProps extends FocusEvents {
 }
 
 export interface FocusResult {
-  /** Props to spread onto the target element. */
-  focusProps: JSX.HTMLAttributes<HTMLElement>;
+  /**
+   * Props to spread onto the target element. Upstream `focusProps` is
+   * DOMAttributes: `onFocus` and `onBlur` are plain functions. Solid's
+   * `JSX.HTMLAttributes` union also includes a non-callable bound handler.
+   */
+  focusProps: {
+    onFocus?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onBlur?: JSX.EventHandler<HTMLElement, FocusEvent>;
+  };
 }
 
 /**

@@ -40,8 +40,17 @@ export interface FocusWithinProps {
 }
 
 export interface FocusWithinResult {
-  /** Props to spread onto the target element. */
-  focusWithinProps: JSX.HTMLAttributes<HTMLElement>;
+  /**
+   * Props to spread onto the target element. The handlers are plain functions,
+   * matching upstream DOMAttributes. Solid's `JSX.HTMLAttributes` union also
+   * includes a non-callable bound handler.
+   */
+  focusWithinProps: {
+    onFocus?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onBlur?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onFocusIn?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onFocusOut?: JSX.EventHandler<HTMLElement, FocusEvent>;
+  };
 }
 
 function getActiveElement(doc: Document): Element | null {

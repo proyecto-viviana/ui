@@ -33,8 +33,16 @@ export interface FocusRingResult {
   isFocused: Accessor<boolean>;
   /** Whether the focus ring should be visible. */
   isFocusVisible: Accessor<boolean>;
-  /** Props to spread on the element to track focus. */
-  focusProps: JSX.HTMLAttributes<HTMLElement>;
+  /**
+   * Props to spread on the element to track focus. Upstream `focusProps` is
+   * DOMAttributes, whose focus handlers are plain functions.
+   */
+  focusProps: {
+    onFocus?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onBlur?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onFocusIn?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onFocusOut?: JSX.EventHandler<HTMLElement, FocusEvent>;
+  };
 }
 
 /**
@@ -99,8 +107,6 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
   return {
     isFocused,
     isFocusVisible,
-    focusProps: (within
-      ? focusWithinResult.focusWithinProps
-      : focusResult.focusProps) as JSX.HTMLAttributes<HTMLElement>,
+    focusProps: within ? focusWithinResult.focusWithinProps : focusResult.focusProps,
   };
 }

@@ -58,8 +58,15 @@ export interface AriaTagGroupProps {
 }
 
 export interface TagGroupAria {
-  /** Props for the tag group container element. */
-  gridProps: Record<string, unknown>;
+  /**
+   * Props for the tag group container element. Upstream `gridProps` is
+   * DOMAttributes, so focus handlers are plain functions. A string index
+   * alone types `onFocus` as `{}`, which cannot be called.
+   */
+  gridProps: {
+    onFocus?: (event: FocusEvent) => void;
+    onBlur?: (event: FocusEvent) => void;
+  } & Record<string, unknown>;
   /** Props for the tag group's visible label (if any). */
   labelProps: Record<string, unknown>;
   /** Props for the tag group description element, if any. */
