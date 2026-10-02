@@ -722,6 +722,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
           "name": "item",
           "type": "NonNullable<T>",
           "required": false,
@@ -734,17 +745,6 @@
           "required": false,
           "description": "The text value of the option (for typeahead).",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "isVirtualized",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the option is contained in a virtual scrolling listbox.",
-          "origin": "solidaria"
         },
         {
           "name": "shouldSelectOnPressUp",
@@ -960,6 +960,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
           "name": "item",
           "type": "NonNullable<T>",
           "required": false,
@@ -972,17 +983,6 @@
           "required": false,
           "description": "The text value of the option (for typeahead).",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "isVirtualized",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the option is contained in a virtual scrolling listbox.",
-          "origin": "solidaria"
         },
         {
           "name": "shouldSelectOnPressUp",
@@ -1068,6 +1068,107 @@
           "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
           "required": false,
           "description": "Ref for the section element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "DOM id forwarded to the section element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible name when the section has no naming header.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that names the section.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "role",
+          "type": "false | \"group\" | \"region\" | \"none\" | \"form\" | \"menu\" | \"listbox\" | \"tree\" | \"grid\" | \"dialog\" | \"button\" | \"alert\" | \"alertdialog\" | \"application\" | \"article\" | \"banner\" | \"cell\" | \"checkbox\" | \"columnheader\" | \"combobox\" | \"complementary\" | \"contentinfo\" | \"definition\" | \"directory\" | \"document\" | \"feed\" | \"figure\" | \"gridcell\" | \"heading\" | \"img\" | \"link\" | \"list\" | \"listitem\" | \"log\" | \"main\" | \"marquee\" | \"math\" | \"menubar\" | \"menuitem\" | \"menuitemcheckbox\" | \"menuitemradio\" | \"meter\" | \"navigation\" | \"note\" | \"option\" | \"presentation\" | \"progressbar\" | \"radio\" | \"radiogroup\" | \"row\" | \"rowgroup\" | \"rowheader\" | \"scrollbar\" | \"search\" | \"searchbox\" | \"separator\" | \"slider\" | \"spinbutton\" | \"status\" | \"switch\" | \"tab\" | \"table\" | \"tablist\" | \"tabpanel\" | \"term\" | \"textbox\" | \"timer\" | \"toolbar\" | \"tooltip\" | \"treegrid\" | \"treeitem\"",
+          "values": [
+            "false",
+            "'group'",
+            "'region'",
+            "'none'",
+            "'form'",
+            "'menu'",
+            "'listbox'",
+            "'tree'",
+            "'grid'",
+            "'dialog'",
+            "'button'",
+            "'alert'",
+            "'alertdialog'",
+            "'application'",
+            "'article'",
+            "'banner'",
+            "'cell'",
+            "'checkbox'",
+            "'columnheader'",
+            "'combobox'",
+            "'complementary'",
+            "'contentinfo'",
+            "'definition'",
+            "'directory'",
+            "'document'",
+            "'feed'",
+            "'figure'",
+            "'gridcell'",
+            "'heading'",
+            "'img'",
+            "'link'",
+            "'list'",
+            "'listitem'",
+            "'log'",
+            "'main'",
+            "'marquee'",
+            "'math'",
+            "'menubar'",
+            "'menuitem'",
+            "'menuitemcheckbox'",
+            "'menuitemradio'",
+            "'meter'",
+            "'navigation'",
+            "'note'",
+            "'option'",
+            "'presentation'",
+            "'progressbar'",
+            "'radio'",
+            "'radiogroup'",
+            "'row'",
+            "'rowgroup'",
+            "'rowheader'",
+            "'scrollbar'",
+            "'search'",
+            "'searchbox'",
+            "'separator'",
+            "'slider'",
+            "'spinbutton'",
+            "'status'",
+            "'switch'",
+            "'tab'",
+            "'table'",
+            "'tablist'",
+            "'tabpanel'",
+            "'term'",
+            "'textbox'",
+            "'timer'",
+            "'toolbar'",
+            "'tooltip'",
+            "'treegrid'",
+            "'treeitem'"
+          ],
+          "required": false,
+          "description": "ARIA role forwarded to the section element.",
           "origin": "solidaria-components"
         }
       ]

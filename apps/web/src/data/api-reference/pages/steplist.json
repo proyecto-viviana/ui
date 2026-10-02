@@ -36,6 +36,13 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "ref",
+          "type": "() => HTMLElement | null",
+          "required": false,
+          "description": "Ref accessor for the step list container element.",
+          "origin": "solidaria"
+        },
+        {
           "name": "onSelectionChange",
           "type": "(key: Key) => void",
           "required": false,
@@ -68,11 +75,35 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "\"vertical\"",
+          "description": "Primary orientation of the step list items.",
+          "origin": "solidaria"
+        },
+        {
           "name": "items",
           "type": "T[]",
           "required": true,
           "description": "The step items.",
           "origin": "solidaria-components"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether typeahead navigation is disabled.",
+          "origin": "solidaria"
         },
         {
           "name": "disabledKeys",

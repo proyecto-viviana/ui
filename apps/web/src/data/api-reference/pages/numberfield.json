@@ -321,17 +321,6 @@
           "origin": "solidaria"
         },
         {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the number field is required.",
-          "origin": "solidaria"
-        },
-        {
           "name": "isInvalid",
           "type": "boolean",
           "values": [
@@ -340,6 +329,17 @@
           ],
           "required": false,
           "description": "Whether the number field is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the number field is required.",
           "origin": "solidaria"
         },
         {
@@ -373,6 +373,27 @@
           "origin": "solidaria"
         },
         {
+          "name": "decrementAriaLabel",
+          "type": "string",
+          "required": false,
+          "description": "A custom aria-label for the decrement button. If not provided, the localized string \"Decrease\" is used.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "incrementAriaLabel",
+          "type": "string",
+          "required": false,
+          "description": "A custom aria-label for the increment button. If not provided, the localized string \"Increase\" is used.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions",
+          "required": false,
+          "description": "Number format options.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "commitBehavior",
           "type": "\"validate\" | \"snap\"",
           "values": [
@@ -383,13 +404,6 @@
           "default": "\"snap\"",
           "description": "Controls blur commit: `'snap'` clamps to min/max/step, `'validate'` leaves the value and reports native range/step validity.",
           "origin": "solidaria"
-        },
-        {
-          "name": "formatOptions",
-          "type": "Intl.NumberFormatOptions",
-          "required": false,
-          "description": "Number format options.",
-          "origin": "solidaria-components"
         }
       ]
     }

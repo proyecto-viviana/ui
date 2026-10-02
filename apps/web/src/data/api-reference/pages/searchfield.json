@@ -273,6 +273,33 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "aria-activedescendant",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the currently active element when focus is on the textbox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-autocomplete",
+          "type": "\"none\" | \"list\" | \"inline\" | \"both\"",
+          "values": [
+            "'none'",
+            "'list'",
+            "'inline'",
+            "'both'"
+          ],
+          "required": false,
+          "description": "How predictions of the user's intended value are presented.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-controls",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element whose contents or presence the text field controls.",
+          "origin": "solidaria"
+        },
+        {
           "name": "aria-describedby",
           "type": "string",
           "required": false,
@@ -284,6 +311,31 @@
           "type": "string",
           "required": false,
           "description": "Identifies the element (or elements) that provide a detailed, extended description for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-errormessage",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element that provides an error message for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-haspopup",
+          "type": "boolean | \"true\" | \"false\" | \"menu\" | \"listbox\" | \"tree\" | \"grid\" | \"dialog\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'",
+            "'menu'",
+            "'listbox'",
+            "'tree'",
+            "'grid'",
+            "'dialog'"
+          ],
+          "required": false,
+          "description": "The kind of popup the text field can open.",
           "origin": "solidaria"
         },
         {
@@ -398,17 +450,6 @@
           "origin": "solidaria"
         },
         {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the input is required.",
-          "origin": "solidaria"
-        },
-        {
           "name": "isInvalid",
           "type": "boolean",
           "values": [
@@ -417,6 +458,17 @@
           ],
           "required": false,
           "description": "Whether the input value is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is required.",
           "origin": "solidaria"
         },
         {
@@ -482,11 +534,11 @@
         },
         {
           "name": "inputMode",
-          "type": "\"none\" | \"text\" | \"search\" | \"url\" | \"tel\" | \"email\" | \"numeric\" | \"decimal\"",
+          "type": "\"none\" | \"search\" | \"text\" | \"url\" | \"tel\" | \"email\" | \"numeric\" | \"decimal\"",
           "values": [
             "'none'",
-            "'text'",
             "'search'",
+            "'text'",
             "'url'",
             "'tel'",
             "'email'",

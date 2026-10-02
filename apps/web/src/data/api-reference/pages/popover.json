@@ -308,6 +308,27 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "onFocusWithin",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the popover or a descendant receives focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onBlurWithin",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the popover and all descendants lose focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocusWithinChange",
+          "type": "(isFocusWithin: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the popover's focus-within state changes.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "isEntering",
           "type": "boolean",
           "values": [

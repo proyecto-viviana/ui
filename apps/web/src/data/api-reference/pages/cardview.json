@@ -308,6 +308,20 @@
           "origin": "solidaria"
         },
         {
+          "name": "keyboardDelegate",
+          "type": "KeyboardDelegate",
+          "required": false,
+          "description": "An optional keyboard delegate implementation for type to select, to override the default.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "layoutDelegate",
+          "type": "LayoutDelegate",
+          "required": false,
+          "description": "A delegate object that provides layout information for items in the collection. By default this uses the DOM, but this can be overridden to implement things like virtualized scrolling.",
+          "origin": "solidaria"
+        },
+        {
           "name": "shouldSelectOnPressUp",
           "type": "boolean",
           "values": [
@@ -320,10 +334,10 @@
         },
         {
           "name": "keyboardNavigationBehavior",
-          "type": "\"arrow\" | \"tab\"",
+          "type": "\"tab\" | \"arrow\"",
           "values": [
-            "'arrow'",
-            "'tab'"
+            "'tab'",
+            "'arrow'"
           ],
           "required": false,
           "default": "\"arrow\"",

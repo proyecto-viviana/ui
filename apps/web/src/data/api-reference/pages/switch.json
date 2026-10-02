@@ -72,6 +72,20 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying field (root `<div>`) element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "inputRef",
+          "type": "HTMLInputElement | ((el: HTMLInputElement) => void) | { current?: HTMLInputElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying input element.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "description",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
@@ -295,6 +309,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Backward-compatible controlled validation state.",
+          "origin": "solidaria"
+        },
+        {
           "name": "isReadOnly",
           "type": "boolean",
           "values": [
@@ -303,17 +328,6 @@
           ],
           "required": false,
           "description": "Whether the element is read only.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the element is required.",
           "origin": "solidaria"
         },
         {
@@ -328,6 +342,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is required.",
+          "origin": "solidaria"
+        },
+        {
           "name": "validationBehavior",
           "type": "\"aria\" | \"native\"",
           "values": [
@@ -337,6 +362,13 @@
           "required": false,
           "default": "\"native\"",
           "description": "`\"native\"` sets the `required` attribute and omits `aria-required`. `\"aria\"` does the reverse. S2 Checkbox default is native.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "ValidationFunction<boolean>",
+          "required": false,
+          "description": "Custom validation for the toggle's selected state.",
           "origin": "solidaria"
         }
       ]
@@ -451,6 +483,20 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying field (root `<div>`) element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "inputRef",
+          "type": "HTMLInputElement | ((el: HTMLInputElement) => void) | { current?: HTMLInputElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying input element.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "description",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
@@ -674,6 +720,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Backward-compatible controlled validation state.",
+          "origin": "solidaria"
+        },
+        {
           "name": "isReadOnly",
           "type": "boolean",
           "values": [
@@ -682,17 +739,6 @@
           ],
           "required": false,
           "description": "Whether the element is read only.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the element is required.",
           "origin": "solidaria"
         },
         {
@@ -707,6 +753,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is required.",
+          "origin": "solidaria"
+        },
+        {
           "name": "validationBehavior",
           "type": "\"aria\" | \"native\"",
           "values": [
@@ -716,6 +773,13 @@
           "required": false,
           "default": "\"native\"",
           "description": "`\"native\"` sets the `required` attribute and omits `aria-required`. `\"aria\"` does the reverse. S2 Checkbox default is native.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "ValidationFunction<boolean>",
+          "required": false,
+          "description": "Custom validation for the toggle's selected state.",
           "origin": "solidaria"
         }
       ]

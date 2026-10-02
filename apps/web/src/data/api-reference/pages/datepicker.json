@@ -335,13 +335,6 @@
           "origin": "solidaria-components"
         },
         {
-          "name": "isRequired",
-          "type": "MaybeAccessor<boolean>",
-          "required": false,
-          "description": "Whether the field is required.",
-          "origin": "solid-stately"
-        },
-        {
           "name": "isInvalid",
           "type": "boolean",
           "values": [
@@ -351,6 +344,13 @@
           "required": false,
           "description": "Whether the date picker is invalid. Whether the value is invalid (controlled).",
           "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "MaybeAccessor<boolean>",
+          "required": false,
+          "description": "Whether the field is required.",
+          "origin": "solid-stately"
         },
         {
           "name": "validationBehavior",

@@ -77,11 +77,43 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "routerOptions",
+          "type": "RouterOptions",
+          "required": false,
+          "description": "Router options forwarded to client router navigation, when href is provided.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "download",
           "type": "string | boolean",
           "required": false,
           "description": "",
           "origin": "viviana-ui"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
         },
         {
           "name": "onAction",

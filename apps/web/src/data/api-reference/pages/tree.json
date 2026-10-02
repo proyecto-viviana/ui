@@ -258,10 +258,10 @@
         },
         {
           "name": "keyboardNavigationBehavior",
-          "type": "\"arrow\" | \"tab\"",
+          "type": "\"tab\" | \"arrow\"",
           "values": [
-            "'arrow'",
-            "'tab'"
+            "'tab'",
+            "'arrow'"
           ],
           "required": false,
           "default": "\"arrow\"",
@@ -885,10 +885,10 @@
         },
         {
           "name": "keyboardNavigationBehavior",
-          "type": "\"arrow\" | \"tab\"",
+          "type": "\"tab\" | \"arrow\"",
           "values": [
-            "'arrow'",
-            "'tab'"
+            "'tab'",
+            "'arrow'"
           ],
           "required": false,
           "default": "\"arrow\"",

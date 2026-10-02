@@ -253,6 +253,13 @@
           "required": false,
           "description": "A description for the radio.",
           "origin": "solidaria-components"
+        },
+        {
+          "name": "onClickCapture",
+          "type": "JSX.EventHandlerUnion<HTMLLabelElement, MouseEvent, JSX.EventHandler<HTMLLabelElement, MouseEvent>>",
+          "required": false,
+          "description": "Handler called when clicking the label in capture phase.",
+          "origin": "solidaria-components"
         }
       ]
     },
@@ -541,17 +548,6 @@
           "origin": "solidaria"
         },
         {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the radio group is required.",
-          "origin": "solidaria"
-        },
-        {
           "name": "isInvalid",
           "type": "boolean",
           "values": [
@@ -560,6 +556,17 @@
           ],
           "required": false,
           "description": "Whether the radio group is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio group is required.",
           "origin": "solidaria"
         },
         {

@@ -85,11 +85,46 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; } | RefLike<HTMLElement>[]",
+          "required": false,
+          "description": "Optional ref for the toast root element.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "id",
           "type": "string",
           "required": false,
           "description": "DOM id for the toast root.",
           "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide a detailed, extended description for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
         },
         {
           "name": "toast",
@@ -136,6 +171,13 @@
           "required": false,
           "description": "Additional CSS class name.",
           "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; } | RefLike<HTMLElement>[]",
+          "required": false,
+          "description": "Optional ref for the region element.",
+          "origin": "solidaria-components"
         },
         {
           "name": "aria-label",
@@ -221,6 +263,13 @@
           "required": false,
           "description": "Additional CSS class name.",
           "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; } | RefLike<HTMLElement>[]",
+          "required": false,
+          "description": "Optional ref for the region element.",
+          "origin": "solidaria-components"
         },
         {
           "name": "aria-label",

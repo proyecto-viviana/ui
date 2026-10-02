@@ -213,5 +213,12 @@
       ]
     }
   ],
-  "divergence": {}
+  "divergence": {
+    "ProviderProps": [
+      {
+        "prop": "router",
+        "kind": "only-there"
+      }
+    ]
+  }
 }

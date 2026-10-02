@@ -528,6 +528,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
           "name": "item",
           "type": "NonNullable<T>",
           "required": false,
@@ -540,17 +551,6 @@
           "required": false,
           "description": "The text value of the option (for typeahead).",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "isVirtualized",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the option is contained in a virtual scrolling listbox.",
-          "origin": "solidaria"
         },
         {
           "name": "shouldSelectOnPressUp",

@@ -98,6 +98,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The unique identifier for the element.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "onBlur",
           "type": "(e: FocusEvent) => void",
           "required": false,

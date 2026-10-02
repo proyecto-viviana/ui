@@ -405,10 +405,10 @@
         },
         {
           "name": "focusMode",
-          "type": "\"row\" | \"cell\"",
+          "type": "\"cell\" | \"row\"",
           "values": [
-            "'row'",
-            "'cell'"
+            "'cell'",
+            "'row'"
           ],
           "required": false,
           "description": "Focus mode: 'row' or 'cell'.",
@@ -2099,10 +2099,10 @@
         },
         {
           "name": "focusMode",
-          "type": "\"row\" | \"cell\"",
+          "type": "\"cell\" | \"row\"",
           "values": [
-            "'row'",
-            "'cell'"
+            "'cell'",
+            "'row'"
           ],
           "required": false,
           "description": "Focus mode: 'row' or 'cell'.",

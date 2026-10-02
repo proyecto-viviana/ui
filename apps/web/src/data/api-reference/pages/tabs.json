@@ -252,6 +252,20 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the tab.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides more details for the tab.",
+          "origin": "solidaria"
+        },
+        {
           "name": "aria-label",
           "type": "string",
           "required": false,
@@ -454,6 +468,13 @@
           "type": "string",
           "required": false,
           "description": "ID of element that describes the tab panel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides more details for the tab panel.",
           "origin": "solidaria"
         },
         {

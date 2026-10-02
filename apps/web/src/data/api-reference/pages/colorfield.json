@@ -243,17 +243,6 @@
           "origin": "solidaria"
         },
         {
-          "name": "isRequired",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the field is required.",
-          "origin": "solidaria"
-        },
-        {
           "name": "isInvalid",
           "type": "boolean",
           "values": [
@@ -262,6 +251,17 @@
           ],
           "required": false,
           "description": "Whether the field is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the field is required.",
           "origin": "solidaria"
         },
         {

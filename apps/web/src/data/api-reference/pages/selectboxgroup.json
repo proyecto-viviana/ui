@@ -283,6 +283,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the listbox uses virtual scrolling.",
+          "origin": "solidaria"
+        },
+        {
           "name": "isLoading",
           "type": "boolean",
           "values": [
@@ -294,14 +305,17 @@
           "origin": "solidaria-components"
         },
         {
-          "name": "isVirtualized",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
+          "name": "keyboardDelegate",
+          "type": "KeyboardDelegate",
           "required": false,
-          "description": "Whether the listbox uses virtual scrolling.",
+          "description": "An optional keyboard delegate implementation for type to select, to override the default.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "layoutDelegate",
+          "type": "LayoutDelegate",
+          "required": false,
+          "description": "A delegate object that provides layout information for items in the collection. By default this uses the DOM, but this can be overridden to implement things like virtualized scrolling.",
           "origin": "solidaria"
         },
         {
@@ -532,6 +546,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
           "name": "item",
           "type": "unknown",
           "required": false,
@@ -544,17 +569,6 @@
           "required": false,
           "description": "The text value of the option (for typeahead).",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "isVirtualized",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the option is contained in a virtual scrolling listbox.",
-          "origin": "solidaria"
         },
         {
           "name": "shouldSelectOnPressUp",

@@ -92,11 +92,25 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Callback when the field group is blurred.",
+          "origin": "solidaria"
+        },
+        {
           "name": "onChange",
           "type": "(value: RangeValue<T> | null) => void",
           "required": false,
           "description": "Handler called when the value changes.",
           "origin": "solid-stately"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Callback when the field group is focused.",
+          "origin": "solidaria"
         },
         {
           "name": "onKeyDown",
@@ -167,10 +181,10 @@
         },
         {
           "name": "onFocusChange",
-          "type": "(date: CalendarDate) => void",
+          "type": "(isFocused: boolean) => void",
           "required": false,
-          "description": "Handler called when the focused date changes.",
-          "origin": "solid-stately"
+          "description": "Callback when focus changes.",
+          "origin": "solidaria"
         },
         {
           "name": "shouldCloseOnSelect",
@@ -311,7 +325,7 @@
           "origin": "solid-stately"
         },
         {
-          "name": "isRequired",
+          "name": "isInvalid",
           "type": "boolean",
           "values": [
             "false",
@@ -322,7 +336,7 @@
           "origin": "solidaria"
         },
         {
-          "name": "isInvalid",
+          "name": "isRequired",
           "type": "boolean",
           "values": [
             "false",
