@@ -570,10 +570,15 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const textContextValue = (renderProps: MenuItemRenderProps) => ({
     slots: {
       default: {
+        // Carry the headless label-slot id so the item's `aria-labelledby`
+        // resolves to this element (upstream RAC `TextContext`, which the
+        // styled slot context would otherwise replace).
+        id: attrString(renderProps.labelProps?.id),
         styles: () => menuItemLabel({ size }),
         "data-rsp-slot": "text",
       },
       label: {
+        id: attrString(renderProps.labelProps?.id),
         styles: () => menuItemLabel({ size }),
         "data-rsp-slot": "text",
       },

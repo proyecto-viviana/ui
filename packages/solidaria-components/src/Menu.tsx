@@ -192,6 +192,13 @@ export interface MenuItemRenderProps {
   /** Whether the submenu is currently open. */
   isOpen: boolean;
   /**
+   * Internal: props (carrying the slot `id` the item's `aria-labelledby`
+   * references) for the item's label text element. Threaded to the styled
+   * `Text slot="label"` so it receives the id — mirrors upstream's
+   * `TextContext` label-slot delegation.
+   */
+  labelProps?: JSX.HTMLAttributes<HTMLElement>;
+  /**
    * Internal: props (carrying the slot `id` the item's `aria-describedby`
    * references) for the item's description text element. Threaded to the styled
    * `Text slot="description"` so it receives the id — mirrors upstream's
@@ -1647,6 +1654,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       isDisabled: itemAria.isDisabled(),
       hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
       isOpen: isAriaTrue(contextProps()["aria-expanded"]),
+      labelProps: itemAria.labelProps,
       descriptionProps: itemAria.descriptionProps,
       keyboardShortcutProps: itemAria.keyboardShortcutProps,
     };
