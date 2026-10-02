@@ -40,6 +40,13 @@ export interface IconContextValue {
 export const IconContext = createContext<IconContextValue>({});
 export const IllustrationContext = createContext<IconContextValue>({});
 
+function readDataRspSlot(props: object): string | undefined {
+  const descriptor = Object.getOwnPropertyDescriptor(props, "data-rsp-slot");
+  if (!descriptor) return undefined;
+  const value = descriptor.get ? descriptor.get.call(props) : descriptor.value;
+  return typeof value === "string" ? value : undefined;
+}
+
 export interface SpectrumIconProps extends Omit<
   JSX.SvgSVGAttributes<SVGSVGElement>,
   "aria-hidden"
@@ -226,7 +233,10 @@ function createIconForBase(
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
-        data-rsp-slot={slotValue()["data-rsp-slot"]}
+        // SlotContext names the slot when it has one. An authored
+        // `data-rsp-slot` stays otherwise: writing `undefined` here would
+        // strip it. Upstream `createIcon` spreads remaining props.
+        data-rsp-slot={slotValue()["data-rsp-slot"] ?? readDataRspSlot(rest)}
         class={mergedClass()}
         style={local.style}
       />
@@ -298,7 +308,7 @@ export function createIllustration(Component: Component<SpectrumSvgComponentProp
         aria-label={local["aria-label"]}
         aria-hidden={ariaHidden()}
         data-slot={slot()}
-        data-rsp-slot={slotValue()["data-rsp-slot"]}
+        data-rsp-slot={slotValue()["data-rsp-slot"] ?? readDataRspSlot(rest)}
         class={mergedClass()}
         style={local.style}
       />
