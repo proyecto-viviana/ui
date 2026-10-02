@@ -70,7 +70,7 @@ describe("Toast (solid-spectrum)", () => {
         addToast({ title: "Through a transition", type: "info" });
 
         expect(calls.length).toBeGreaterThan(0);
-        expect(screen.getByRole("region", { name: "Notifications" })).toBeInTheDocument();
+        expect(screen.getByRole("region", { name: "1 notification." })).toBeInTheDocument();
       } finally {
         delete (document as { startViewTransition?: unknown }).startViewTransition;
       }
@@ -115,7 +115,7 @@ describe("Toast (solid-spectrum)", () => {
 
       ToastQueue.neutral("Queued from S2 API");
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "1 notification." });
       expect(region).toHaveAttribute("data-placement", "bottom");
       expect(screen.getByText("Queued from S2 API")).toBeInTheDocument();
     });
@@ -125,7 +125,7 @@ describe("Toast (solid-spectrum)", () => {
 
       ToastQueue.neutral("Centered by S2 class");
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "1 notification." });
       const inlineStyle = region.getAttribute("style") ?? "";
 
       expect(region.className).toContain("macro-dynamic");
@@ -172,7 +172,7 @@ describe("Toast (solid-spectrum)", () => {
       ToastQueue.info("Second toast");
       ToastQueue.negative("Third toast");
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "3 notifications." });
       expect(screen.getByText("Third toast")).toBeInTheDocument();
       expect(screen.queryByText("Second toast")).not.toBeInTheDocument();
       expect(region.querySelectorAll("[data-solid-spectrum-toast-background-item]")).toHaveLength(
@@ -205,7 +205,7 @@ describe("Toast (solid-spectrum)", () => {
       fireEvent.click(screen.getByRole("button", { name: /Show all/ }));
       fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
 
-      expect(screen.queryByRole("region", { name: "Notifications" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("region", { name: "2 notifications." })).not.toBeInTheDocument();
       expect(screen.queryByText("First toast")).not.toBeInTheDocument();
       expect(onClose).not.toHaveBeenCalled();
     });
@@ -734,7 +734,7 @@ describe("Toast (solid-spectrum)", () => {
       ToastQueue.info("Second toast");
       ToastQueue.negative("Third toast");
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "3 notifications." });
       const backgroundItems = region.querySelectorAll<HTMLElement>(
         "[data-solid-spectrum-toast-background-item]",
       );
@@ -754,7 +754,7 @@ describe("Toast (solid-spectrum)", () => {
       ToastQueue.info("Second toast");
       ToastQueue.negative("Third toast");
 
-      const region = screen.getByRole("region", { name: "Notifications" });
+      const region = screen.getByRole("region", { name: "3 notifications." });
       const backgroundItems = region.querySelectorAll<HTMLElement>(
         "[data-solid-spectrum-toast-background-item]",
       );

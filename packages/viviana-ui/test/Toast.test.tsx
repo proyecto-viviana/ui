@@ -50,7 +50,7 @@ describe("Toast (viviana-ui) view transitions", () => {
       addToast({ title: "Through a transition", type: "info" });
 
       expect(calls.length).toBeGreaterThan(0);
-      expect(screen.getByRole("region", { name: "Notifications" })).toBeInTheDocument();
+      expect(screen.getByRole("region", { name: "1 notification." })).toBeInTheDocument();
     } finally {
       delete (document as { startViewTransition?: unknown }).startViewTransition;
     }
