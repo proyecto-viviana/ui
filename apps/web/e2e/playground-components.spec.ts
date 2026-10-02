@@ -588,8 +588,10 @@ test.describe("Playground Page", () => {
 
     await section.getByRole("button", { name: "Success Toast" }).first().click();
 
-    const region = page.getByRole("region", { name: "Notifications" }).first();
+    // useToastRegion labels the landmark with the catalog plural ("1 notification.").
+    const region = page.getByRole("region", { name: /^\d+ notifications?\.$/ }).first();
     await expect(region).toBeVisible();
+    await expect(region).toHaveAccessibleName("1 notification.");
 
     // The first toast shows on its own. Wait for it to render before queuing the
     // next so both register (one click per animation frame, as a user would).
@@ -601,6 +603,7 @@ test.describe("Playground Page", () => {
     // presentational slivers until the front toast's "Show all" control expands
     // them.
     await section.getByRole("button", { name: "Error Toast" }).first().click();
+    await expect(region).toHaveAccessibleName("2 notifications.");
     await expect(region.getByRole("alertdialog")).toHaveCount(1);
     await expect(region).toContainText("Something went wrong. Please try again.");
 
