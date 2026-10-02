@@ -23,8 +23,10 @@
 
 import { createMemo } from "solid-js";
 import { createFocusRing } from "../interactions/createFocusRing";
+import { createInteractionModality } from "../interactions/createInteractionModality";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
+import { createDescription } from "../utils/createDescription";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createStringFormatter } from "../i18n";
@@ -84,6 +86,21 @@ export function createTag<T>(
 
   // Get shared data from tag group
   const getData = () => getTagGroupData(state);
+
+  const { modality } = createInteractionModality();
+  // useTag.ts: the row describes Delete only when removal is allowed and the
+  // modality is keyboard or virtual. Virtual on a touch device is pointer.
+  const descriptionProps = createDescription(() => {
+    let current = modality();
+    if (current === "virtual" && typeof window !== "undefined" && "ontouchstart" in window) {
+      current = "pointer";
+    }
+    const onRemove = getData()?.onRemove;
+    if (!onRemove || (current !== "keyboard" && current !== "virtual")) {
+      return undefined;
+    }
+    return stringFormatter().format("removeDescription");
+  });
 
   // Get key
   const key = () => getProps().key;
@@ -352,6 +369,7 @@ export function createTag<T>(
           "aria-disabled": isDisabled() || undefined,
           onKeyDown: handleKeyDown,
         },
+        descriptionProps,
       );
     },
     get gridCellProps() {

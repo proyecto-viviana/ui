@@ -115,6 +115,7 @@ These behaviors match the pin in this checkout.
 - A toast names itself from its description slot.
 - An invalid calendar day names itself from its error message slot.
 - A tag group names itself from its label, description, and error message slots.
+- A removable tag row describes Delete from the tag catalog when the modality is keyboard or virtual.
 - A disclosure toggles from a Button in the trigger slot, and a button inside the panel is not that trigger.
 - A number field steps from a Button in the increment and decrement slots, and an unslotted button does not.
 - A search field clears from a Button, and a slotted button does not.
@@ -290,7 +291,6 @@ These behaviors match the pin in this checkout.
 | ----------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------ |
 | Slider focus target     | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`.     | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role.                              | #74    |
 | Closed Select shortcuts | Home and End select. ArrowLeft and ArrowRight still replace the selection when the mode is multiple. | `useSelect.ts` returns false for those arrows when selection is multiple. That shortcut map has no Home or End.      | #125   |
-| Tag remove description  | The row `aria-label` is `textValue` alone.                                                           | `useTag.ts` adds the `removeDescription` catalog string on the row.                                                  | #54    |
 | Tag group live region   | No `aria-live`, and removing the last tag does not focus the group.                                  | `useTagGroup.ts` sets `aria-live` to `polite` while the grid is focused, and focuses the group when the size hits 0. | #54    |
 
 ## Components — `react-aria-components`

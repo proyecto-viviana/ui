@@ -2,11 +2,12 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { For } from "solid-js";
+import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { flush, For } from "solid-js";
 import { createListState, type Key, type SelectionMode } from "@proyecto-viviana/solid-stately";
 import { createTagGroup, createTag } from "../src/tag";
 import { I18nProvider } from "../src/i18n";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 
 interface Item {
   id: string;
@@ -185,5 +186,60 @@ describe("createTagGroup/createTag", () => {
       </I18nProvider>
     ));
     expect(screen.getByTestId("remove")).toHaveAttribute("aria-label", "Entfernen");
+  });
+
+  it("adds the tag catalog remove description on the row when removal is allowed", () => {
+    // useTag.ts:96-104 and 131-134. The row carries removeDescription through
+    // aria-describedby only when onRemove is set and the modality is keyboard
+    // or virtual. A virtual modality on a touch device is treated as pointer.
+    const descriptionOf = (name: string) => {
+      flush();
+      const row = screen.getByRole("option", { name });
+      const id = row.getAttribute("aria-describedby");
+      return id ? document.getElementById(id)?.textContent : null;
+    };
+
+    setInteractionModality("keyboard");
+    render(() => <HookTagList onRemove={() => {}} />);
+    expect(descriptionOf("Alpha")).toBe("Press Delete to remove tag.");
+    cleanup();
+
+    render(() => <HookTagList />);
+    expect(descriptionOf("Alpha")).toBeNull();
+    cleanup();
+
+    setInteractionModality("pointer");
+    render(() => <HookTagList onRemove={() => {}} />);
+    expect(descriptionOf("Alpha")).toBeNull();
+    cleanup();
+
+    const touchDescriptor = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+    delete window.ontouchstart;
+    try {
+      setInteractionModality("virtual");
+      render(() => <HookTagList onRemove={() => {}} />);
+      expect(descriptionOf("Alpha")).toBe("Press Delete to remove tag.");
+      cleanup();
+
+      window.ontouchstart = null;
+      render(() => <HookTagList onRemove={() => {}} />);
+      expect(descriptionOf("Alpha")).toBeNull();
+      cleanup();
+    } finally {
+      if (touchDescriptor) {
+        Object.defineProperty(window, "ontouchstart", touchDescriptor);
+      } else {
+        delete window.ontouchstart;
+      }
+    }
+
+    setInteractionModality("keyboard");
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <HookTagList onRemove={() => {}} />
+      </I18nProvider>
+    ));
+    expect(descriptionOf("Alpha")).toBe("Auf „Löschen“ drücken, um das Tag zu entfernen.");
+    cleanup();
   });
 });
