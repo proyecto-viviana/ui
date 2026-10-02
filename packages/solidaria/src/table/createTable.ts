@@ -23,7 +23,7 @@ import type { JSX } from "@solidjs/web";
 import { createId } from "@proyecto-viviana/solid-stately";
 import type { TableState, TableCollection, Key, GridNode } from "@proyecto-viviana/solid-stately";
 import type { AriaTableProps, TableAria } from "./types";
-import { createStringFormatter, useLocale } from "../i18n";
+import { createCollator, createStringFormatter, useLocale } from "../i18n";
 import { tableIntlStrings } from "./intl";
 import { announce } from "../live-announcer";
 import { createDescription } from "../utils/createDescription";
@@ -88,6 +88,104 @@ function isNavigationDisabled<T>(state: TableState<T, TableCollection<T>>, key: 
   return state.isDisabled(key) && state.disabledBehavior === "all";
 }
 
+// useTypeSelect clears the buffer after one second (`TYPEAHEAD_DEBOUNCE_WAIT_MS`).
+const TYPEAHEAD_DEBOUNCE_MS = 1000;
+
+/**
+ * Upstream leaves a row's `textValue` empty unless the row authored one, then
+ * matches that string as a whole. This collection copies the joined cell text
+ * onto the row instead, and that join includes the selection checkbox label.
+ * Treat the copy as absent so typeahead searches each row header on its own.
+ */
+function authoredRowText<T>(collection: TableCollection<T>, row: GridNode<T>): string | undefined {
+  const text = row.textValue;
+  if (!text) {
+    return undefined;
+  }
+  const joined = getChildCells(collection, row.key)
+    .map((cell) => cell.textValue)
+    .join(" ");
+  return text === joined ? undefined : text;
+}
+
+function searchMatches(text: string, search: string, collator: Intl.Collator): boolean {
+  return collator.compare(text.slice(0, search.length), search) === 0;
+}
+
+/**
+ * The next body row, skipping keys that keyboard navigation skips.
+ * Mirrors GridKeyboardDelegate.findNextKey from TableKeyboardDelegate.getKeyBelow.
+ */
+function nextTypeaheadRow<T>(state: TableState<T, TableCollection<T>>, fromKey: Key): Key | null {
+  const collection = state.collection;
+  let key = collection.getKeyAfter(fromKey);
+  while (key != null && isNavigationDisabled(state, key)) {
+    key = collection.getKeyAfter(key);
+  }
+  return key;
+}
+
+/**
+ * Mirrors TableKeyboardDelegate.getKeyForSearch. The search starts at the
+ * focused row (a focused cell searches from its row). An authored row
+ * textValue matches as a whole; otherwise each row-header cell matches on
+ * its own. A match reached from a cell focuses that cell.
+ */
+function getKeyForSearch<T>(
+  state: TableState<T, TableCollection<T>>,
+  search: string,
+  fromKey: Key | null,
+  collator: Intl.Collator,
+): Key | null {
+  const collection = state.collection;
+  let key = fromKey ?? collection.getFirstKey();
+  if (key == null) {
+    return null;
+  }
+
+  const origin = collection.getItem(fromKey ?? key);
+  const startedOnCell = isCell(origin);
+  if (isCell(collection.getItem(key))) {
+    key = collection.getItem(key)?.parentKey ?? null;
+  }
+  if (key == null) {
+    return null;
+  }
+
+  let hasWrapped = false;
+  while (key != null) {
+    const item = collection.getItem(key);
+    if (!item) {
+      return null;
+    }
+
+    const authored = authoredRowText(collection, item);
+    if (authored && searchMatches(authored, search, collator)) {
+      return item.key;
+    }
+
+    for (const cell of getChildCells(collection, item.key)) {
+      const column = collection.columns[cell.index];
+      if (
+        column &&
+        collection.rowHeaderColumnKeys.has(column.key) &&
+        cell.textValue &&
+        searchMatches(cell.textValue, search, collator)
+      ) {
+        return startedOnCell ? cell.key : item.key;
+      }
+    }
+
+    key = nextTypeaheadRow(state, key);
+    if (key == null && !hasWrapped) {
+      key = collection.getFirstKey();
+      hasWrapped = true;
+    }
+  }
+
+  return null;
+}
+
 function findNextNavigableKey<T>(
   state: TableState<T, TableCollection<T>>,
   _collection: TableCollection<T>,
@@ -117,6 +215,7 @@ export function createTable<T extends object>(
   const id = createId(props().id);
   const locale = useLocale();
   const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
+  const collator = createCollator({ usage: "search", sensitivity: "base" });
 
   // Track previous sort descriptor for announcements
   let prevSortDescriptor: { column: Key; direction: "ascending" | "descending" } | null = null;
@@ -179,7 +278,7 @@ export function createTable<T extends object>(
     const setFocusedKey = (key: Key) => {
       s.setFocusedKey(key);
     };
-    const runTypeahead = (focusedKey: Key, focusedItem: GridNode<T>) => {
+    const runTypeahead = (focusedKey: Key) => {
       if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) {
         return false;
       }
@@ -192,35 +291,26 @@ export function createTable<T extends object>(
         return false;
       }
 
-      typeaheadBuffer += e.key.toLocaleLowerCase();
+      typeaheadBuffer += e.key;
       if (typeaheadTimeout) {
         clearTimeout(typeaheadTimeout);
-      }
-      typeaheadTimeout = setTimeout(() => {
-        typeaheadBuffer = "";
         typeaheadTimeout = undefined;
-      }, 500);
+      }
 
-      const rows = Array.from(collection).filter((node) => !s.isDisabled(node.key));
-      if (rows.length === 0) {
+      const match = getKeyForSearch(s, typeaheadBuffer, focusedKey, collator());
+      if (match == null) {
+        // useTypeSelect drops the buffer when nothing matches, so the next
+        // character starts a new search instead of extending the miss.
+        typeaheadBuffer = "";
         return true;
       }
 
-      const currentRowKey =
-        isCell(focusedItem) && focusedItem.parentKey != null ? focusedItem.parentKey : focusedKey;
-      const currentIndex = rows.findIndex((node) => node.key === currentRowKey);
-      const orderedRows =
-        currentIndex >= 0
-          ? [...rows.slice(currentIndex + 1), ...rows.slice(0, currentIndex + 1)]
-          : rows;
-      const match = orderedRows.find((node) =>
-        collection.getTextValue(node.key).toLocaleLowerCase().startsWith(typeaheadBuffer),
-      );
-
-      if (match) {
-        e.preventDefault();
-        setFocusedKey(match.key);
-      }
+      e.preventDefault();
+      setFocusedKey(match);
+      typeaheadTimeout = setTimeout(() => {
+        typeaheadBuffer = "";
+        typeaheadTimeout = undefined;
+      }, TYPEAHEAD_DEBOUNCE_MS);
 
       return true;
     };
@@ -526,11 +616,16 @@ export function createTable<T extends object>(
 
       case "a":
       case "A": {
+        // Mod+A selects every row. A plain "a" is typeahead, same as any other letter.
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
           if (s.selectionMode === "multiple") {
             s.selectAll();
           }
+          return;
+        }
+        if (runTypeahead(focusedKey)) {
+          return;
         }
         return;
       }
@@ -543,7 +638,7 @@ export function createTable<T extends object>(
       // the type-ahead path below, which ignores a leading Space and bails on Enter.
 
       default:
-        if (runTypeahead(focusedKey, focusedItem)) {
+        if (runTypeahead(focusedKey)) {
           return;
         }
         return;
