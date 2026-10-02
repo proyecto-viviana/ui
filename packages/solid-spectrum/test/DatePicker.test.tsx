@@ -235,10 +235,14 @@ describe("DatePicker (solid-spectrum)", () => {
       (cell) => cell.textContent?.trim() ?? "",
     );
     expect(weekdayLabels).toEqual(["M", "T", "W", "T", "F", "S", "S"]);
-    expect(screen.getByRole("button", { name: /Sunday, February 2, 2025/ })).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    // visibleMonths 2 and maxValue in February pull the window back to
+    // January–February (alignCenter + constrainStart). February 2 is the
+    // trailing outside day in January and an in-month day in February.
+    const februarySecond = screen.getAllByRole("button", { name: /Sunday, February 2, 2025/ });
+    expect(februarySecond).toHaveLength(2);
+    for (const cell of februarySecond) {
+      expect(cell).toHaveAttribute("aria-disabled", "true");
+    }
     expect(screen.getByRole("button", { name: /Monday, February 10, 2025/ })).toHaveAttribute(
       "aria-disabled",
       "true",
