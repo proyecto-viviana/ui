@@ -342,7 +342,10 @@ export function createSelect<T>(
         break;
 
       case "ArrowRight":
-        // ArrowRight: Select next option (for horizontal keyboard navigation pattern)
+        // useSelect.ts:154-165 — multiple mode returns false and does not select.
+        if (state.selectionMode() === "multiple") {
+          break;
+        }
         if (!state.isOpen()) {
           e.preventDefault();
           const nextKey = findNextKey(currentKey, "forward");
@@ -353,34 +356,15 @@ export function createSelect<T>(
         break;
 
       case "ArrowLeft":
-        // ArrowLeft: Select previous option (for horizontal keyboard navigation pattern)
+        // useSelect.ts:142-152 — multiple mode returns false and does not select.
+        if (state.selectionMode() === "multiple") {
+          break;
+        }
         if (!state.isOpen()) {
           e.preventDefault();
           const prevKey = findNextKey(currentKey, "backward");
           if (prevKey != null) {
             state.setSelectedKey(prevKey);
-          }
-        }
-        break;
-
-      case "Home":
-        // Home: Select first option
-        if (!state.isOpen()) {
-          e.preventDefault();
-          const firstKey = findNextKey(null, "forward");
-          if (firstKey != null) {
-            state.setSelectedKey(firstKey);
-          }
-        }
-        break;
-
-      case "End":
-        // End: Select last option
-        if (!state.isOpen()) {
-          e.preventDefault();
-          const lastKey = findNextKey(null, "backward");
-          if (lastKey != null) {
-            state.setSelectedKey(lastKey);
           }
         }
         break;

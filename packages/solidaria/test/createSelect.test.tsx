@@ -301,7 +301,7 @@ describe("createSelect", () => {
       unmount();
     });
 
-    it("selects first option on Home when closed", () => {
+    it("does not select on Home or End when closed", () => {
       const { getByRole, unmount } = render(() => {
         const state = createTestState({ defaultSelectedKey: "c" });
         const { triggerProps, selectedItem } = createSelect({}, state);
@@ -316,29 +316,38 @@ describe("createSelect", () => {
       const trigger = getByRole("button");
       expect(trigger.textContent).toBe("Cherry");
 
-      fireEvent.keyDown(trigger, { key: "Home" });
-      expect(trigger.textContent).toBe("Apple");
+      // useSelect.ts shortcut map has no Home or End, so neither key selects.
+      expect(fireEvent.keyDown(trigger, { key: "Home" })).toBe(true);
+      expect(trigger.textContent).toBe("Cherry");
+      expect(fireEvent.keyDown(trigger, { key: "End" })).toBe(true);
+      expect(trigger.textContent).toBe("Cherry");
 
       unmount();
     });
 
-    it("selects last option on End when closed", () => {
+    it("does not replace the selection on ArrowLeft or ArrowRight when the mode is multiple", () => {
       const { getByRole, unmount } = render(() => {
-        const state = createTestState({ defaultSelectedKey: "a" });
-        const { triggerProps, selectedItem } = createSelect({}, state);
+        const state = createTestState({
+          selectionMode: "multiple",
+          defaultSelectedKeys: ["a", "c"],
+        });
+        const { triggerProps } = createSelect({}, state);
 
         return (
-          <button {...triggerProps} data-testid="trigger">
-            {selectedItem()?.value?.label || "None"}
+          <button {...triggerProps}>
+            {state.selectedKeys() === "all" ? "all" : Array.from(state.selectedKeys()).join(",")}
           </button>
         );
       });
 
       const trigger = getByRole("button");
-      expect(trigger.textContent).toBe("Apple");
+      expect(trigger.textContent).toBe("a,c");
 
-      fireEvent.keyDown(trigger, { key: "End" });
-      expect(trigger.textContent).toBe("Cherry");
+      // useSelect.ts:142-157 returns false for these arrows in multiple mode.
+      expect(fireEvent.keyDown(trigger, { key: "ArrowRight" })).toBe(true);
+      expect(trigger.textContent).toBe("a,c");
+      expect(fireEvent.keyDown(trigger, { key: "ArrowLeft" })).toBe(true);
+      expect(trigger.textContent).toBe("a,c");
 
       unmount();
     });

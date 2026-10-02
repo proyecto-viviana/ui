@@ -117,6 +117,7 @@ These behaviors match the pin in this checkout.
 - A tag group names itself from its label, description, and error message slots.
 - A removable tag row describes Delete from the tag catalog when the modality is keyboard or virtual.
 - A tag group sets aria-live to polite while focus is within and off otherwise, and takes focus when the last tag is removed.
+- A closed select trigger does not select on Home or End, and ArrowLeft and ArrowRight do not replace a multiple selection.
 - A disclosure toggles from a Button in the trigger slot, and a button inside the panel is not that trigger.
 - A number field steps from a Button in the increment and decrement slots, and an unslotted button does not.
 - A search field clears from a Button, and a slotted button does not.
@@ -289,10 +290,9 @@ These behaviors match the pin in this checkout.
 
 ## Hooks — `react-aria`
 
-| Gap                     | Ours                                                                                                 | Pinned source                                                                                                   | Ticket |
-| ----------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------ |
-| Slider focus target     | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`.     | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role.                         | #74    |
-| Closed Select shortcuts | Home and End select. ArrowLeft and ArrowRight still replace the selection when the mode is multiple. | `useSelect.ts` returns false for those arrows when selection is multiple. That shortcut map has no Home or End. | #125   |
+| Gap                 | Ours                                                                                             | Pinned source                                                                           | Ticket |
+| ------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | ------ |
+| Slider focus target | The thumb is a focusable `role="slider"`. The range input is `aria-hidden` with `tabIndex={-1}`. | `useSliderThumb.ts` puts `tabIndex: 0` on the range input. The thumb props set no role. | #74    |
 
 ## Components — `react-aria-components`
 
