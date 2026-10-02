@@ -103,7 +103,7 @@ These behaviors match the pin in this checkout.
 - A virtualized table header and cell expose their column index.
 - A virtualized table header row exposes its row index.
 - A virtualized tree grid omits the header row index.
-- A table column header exposes its column index.
+- A virtualized table column header exposes its column index; a plain one omits it.
 - A list box section names its group from the heading.
 - A grid cell exposes its column index, and a virtualized cell falls back to its index.
 - A tab panel forwards its details attribute.
@@ -210,7 +210,7 @@ These behaviors match the pin in this checkout.
 - A checkbox group keeps an item disabled or read-only when that item passes false.
 - A table id strips whitespace so a row label points at one header cell.
 - A table expand button keeps its label and the row header in its name.
-- A table cell exposes its column index, and a virtualized cell falls back to its node index.
+- A virtualized table cell exposes its column index, falling back to its node index; a plain cell omits it.
 - A sortable column header on Android describes the sort direction instead of setting aria-sort.
 - A menu item puts an external aria-describedby ahead of its description and keyboard shortcut.
 - A table puts the long-press selection hint after its sort description, in place of an external id.
