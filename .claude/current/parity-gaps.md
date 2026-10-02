@@ -256,6 +256,7 @@ These behaviors match the pin in this checkout.
 - Menu items keep a label id for element children, and a section names its group from the heading.
 - A SearchField `id` and `validate` function reach the text field.
 - A submenu popover is non-modal, and a keyboard-opened submenu takes focus.
+- A closed submenu trigger sets aria-expanded to false, and a keyboard open focuses the first item.
 - A menu inside a dialog closes with the dialog.
 - A submenu item closes the menu, and closes a dialog that contains that menu. Escape closes only the submenu.
 - A heading outside a dialog defaults to level 3.
@@ -295,11 +296,10 @@ These behaviors match the pin in this checkout.
 
 ## Components — `react-aria-components`
 
-| Gap                    | Ours                                                                                                         | Pinned source                                                                                              | Ticket |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ |
-| Closed submenu trigger | `aria-expanded` is omitted while closed. Open does not focus the first item.                                 | `useSubmenuTrigger.ts` sets `aria-expanded` to `true` or `false`, and opens with `onSubmenuOpen('first')`. | #51    |
-| Tree keyboard drag     | `TreeItem` starts a drag without `hasDragButton` and has no drag-button slot.                                | `Tree.tsx` passes `hasDragButton: true` and renders the drag slot.                                         | #84    |
-| Static picker children | `Select` requires `items`, so static `PickerItem` and `PickerSection` children do not become the collection. | S2 `Picker.tsx` renders `children` unless `children` is a function and `items` is set.                     | #43    |
+| Gap                    | Ours                                                                                                         | Pinned source                                                                          | Ticket |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------ |
+| Tree keyboard drag     | `TreeItem` starts a drag without `hasDragButton` and has no drag-button slot.                                | `Tree.tsx` passes `hasDragButton: true` and renders the drag slot.                     | #84    |
+| Static picker children | `Select` requires `items`, so static `PickerItem` and `PickerSection` children do not become the collection. | S2 `Picker.tsx` renders `children` unless `children` is a function and `items` is set. | #43    |
 
 ## Styled — `@react-spectrum/s2`
 

@@ -744,7 +744,7 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const submenuTrigger = screen.getByRole("menuitem", { name: "More options" });
     expect(submenuTrigger).toHaveAttribute("aria-haspopup", "menu");
-    expect(submenuTrigger).not.toHaveAttribute("aria-expanded");
+    expect(submenuTrigger).toHaveAttribute("aria-expanded", "false");
 
     const descriptor = submenuTrigger.querySelector('[slot="descriptor"]');
     expect(descriptor).toBeInTheDocument();
@@ -930,7 +930,7 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
     expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
-    expect(menuItem).not.toHaveAttribute("aria-expanded");
+    expect(menuItem).toHaveAttribute("aria-expanded", "false");
 
     const descriptorId = menuItem.getAttribute("aria-describedby");
     expect(descriptorId).toBeTruthy();

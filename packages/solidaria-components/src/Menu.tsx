@@ -508,9 +508,9 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     }
   };
 
-  const openSubmenu = () => {
+  const openSubmenu = (focusStrategy?: "first" | "last" | null) => {
     clearHoverTimeout();
-    state.open();
+    state.open(focusStrategy);
   };
 
   const queueOpenSubmenu = () => {
@@ -561,6 +561,10 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
     menuProps: {
       id: menuId,
       "aria-labelledby": triggerId,
+      // useSubmenuTrigger.ts:183 — autoFocus is the stored strategy, or unset.
+      get autoFocus() {
+        return state.focusStrategy() ?? undefined;
+      },
     },
   }));
 
@@ -594,7 +598,8 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       id: triggerId,
       "aria-haspopup": "menu",
       get "aria-expanded"() {
-        return state.isOpen() ? ("true" as const) : undefined;
+        // useSubmenuTrigger.ts:296 — true or false, never omitted.
+        return state.isOpen() ? ("true" as const) : ("false" as const);
       },
       get "aria-controls"() {
         return state.isOpen() ? menuId : undefined;
@@ -612,9 +617,17 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       onKeyDown: (event: KeyboardEvent) => {
         const openKey = locale().direction === "rtl" ? "ArrowLeft" : "ArrowRight";
         const closeKey = locale().direction === "rtl" ? "ArrowRight" : "ArrowLeft";
-        if (event.key === openKey || event.key === "Enter" || event.key === " ") {
+        // useSubmenuTrigger.ts:190-228 opens with 'first' only while closed.
+        // Enter and Space are the keyboard onPressStart path (233-236).
+        if (event.key === openKey) {
+          if (state.isOpen()) {
+            return;
+          }
           event.preventDefault();
-          openSubmenu();
+          openSubmenu("first");
+        } else if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openSubmenu("first");
         } else if (event.key === closeKey && state.isOpen()) {
           event.preventDefault();
           state.close();

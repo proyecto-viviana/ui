@@ -2033,6 +2033,63 @@ describe("MenuTrigger", () => {
     });
   });
 
+  describe("submenu trigger", () => {
+    it("sets aria-expanded false while closed and focuses the first item on ArrowRight", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <Button>Open Menu</Button>
+          <Menu aria-label="Test">
+            <SubmenuTrigger>
+              <MenuItem id="share">Share</MenuItem>
+              <Menu aria-label="Share submenu">
+                <MenuItem id="email">Email</MenuItem>
+                <MenuItem id="sms">SMS</MenuItem>
+              </Menu>
+            </SubmenuTrigger>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const triggerItem = screen.getByRole("menuitem", { name: "Share" });
+      // useSubmenuTrigger.ts:296 — aria-expanded is "true" or "false".
+      expect(triggerItem).toHaveAttribute("aria-expanded", "false");
+      expect(triggerItem).not.toHaveAttribute("data-open");
+      triggerItem.focus();
+      // useSubmenuTrigger.ts:190-194 — ArrowRight (LTR) calls onSubmenuOpen('first').
+      await user.keyboard("{ArrowRight}");
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Email" }));
+      });
+      expect(triggerItem).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("focuses the first item when Enter opens the submenu", async () => {
+      render(() => (
+        <MenuTrigger defaultOpen>
+          <Button>Open Menu</Button>
+          <Menu aria-label="Test">
+            <SubmenuTrigger>
+              <MenuItem id="share">Share</MenuItem>
+              <Menu aria-label="Share submenu">
+                <MenuItem id="email">Email</MenuItem>
+              </Menu>
+            </SubmenuTrigger>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const triggerItem = screen.getByRole("menuitem", { name: "Share" });
+      triggerItem.focus();
+      // useSubmenuTrigger.ts:233-236 — keyboard press starts with onSubmenuOpen('first').
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Email" }));
+      });
+    });
+  });
+
   describe("submenu RTL keyboard", () => {
     it("opens on ArrowLeft under I18nProvider he-IL without document.dir", async () => {
       const dirGetter = vi.spyOn(document, "dir", "get");
@@ -2053,12 +2110,12 @@ describe("MenuTrigger", () => {
       ));
 
       const triggerItem = screen.getByRole("menuitem", { name: "Share" });
-      // Closed submenu omits aria-expanded (useSubmenuTrigger: `state.isOpen || undefined`).
-      expect(triggerItem).not.toHaveAttribute("aria-expanded", "true");
+      // useSubmenuTrigger.ts:296 — closed is "false", never omitted.
+      expect(triggerItem).toHaveAttribute("aria-expanded", "false");
       expect(triggerItem).toHaveAttribute("data-has-submenu", "true");
       triggerItem.focus();
       // Mirrors react-aria useSubmenuTrigger.ts ArrowLeft: opens when direction === 'rtl'
-      // (SubMenuTrigger.test.tsx rtl ArrowKeys case at ar-AE).
+      // (SubMenuTrigger.test.tsx rtl ArrowKeys case at ar-AE) with onSubmenuOpen('first').
       fireEvent.keyDown(triggerItem, { key: "ArrowLeft" });
 
       await waitFor(() => {
@@ -2069,6 +2126,7 @@ describe("MenuTrigger", () => {
           "aria-label",
           "Share submenu",
         );
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Email" }));
       });
       expect(triggerItem).toHaveAttribute("aria-expanded", "true");
       expect(dirGetter).not.toHaveBeenCalled();
