@@ -21,7 +21,7 @@ import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { mergeContextRefs, type RefLike } from "../button/spectrum-context";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components";
 import {
   createIsSkeleton,
   loadingStyle,

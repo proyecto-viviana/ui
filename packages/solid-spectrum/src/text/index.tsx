@@ -26,7 +26,7 @@ import {
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components";
 
 export interface TextProps extends BaseContentProps<HTMLSpanElement> {}
 

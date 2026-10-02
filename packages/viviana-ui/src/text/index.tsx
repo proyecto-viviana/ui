@@ -28,7 +28,7 @@ import {
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
 import { typeRoles } from "./type-roles";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
-import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components/slots";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components";
 
 /* Standalone type-role defaults (Glasselated register, mirror panel 09):
  * Text, Content and Keyboard were pure slot markers — bare elements with an

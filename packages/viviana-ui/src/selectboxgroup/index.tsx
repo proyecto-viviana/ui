@@ -28,6 +28,7 @@ import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ListBox as HeadlessListBox,
   ListBoxOption as HeadlessListBoxOption,
+  SlotProvider,
   type ListBoxOptionProps as HeadlessListBoxOptionProps,
   type ListBoxOptionRenderProps,
   type ListBoxProps as HeadlessListBoxProps,
@@ -36,7 +37,6 @@ import {
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import { baseColor, css, focusRing, lightDark, style } from "../style" with { type: "macro" };
-import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";

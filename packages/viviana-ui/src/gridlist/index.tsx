@@ -34,6 +34,7 @@ import {
   GridListItem as HeadlessGridListItem,
   GridListSelectionCheckbox as HeadlessGridListSelectionCheckbox,
   GridListStateContext as HeadlessGridListStateContext,
+  SlotProvider,
   type GridListItemProps as HeadlessGridListItemProps,
   type GridListItemRenderProps,
   type GridListProps as HeadlessGridListProps,
@@ -58,7 +59,6 @@ import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
 import { baseColor, colorMix, css, focusRing, space, style } from "../style" with { type: "macro" };
-import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {

@@ -34,6 +34,7 @@ import {
   TreeLoadMoreItem as HeadlessTreeLoadMoreItem,
   TreeStateContext as HeadlessTreeStateContext,
   TreeItemContext as HeadlessTreeItemContext,
+  SlotProvider,
   type TreeProps as HeadlessTreeProps,
   type TreeItemProps as HeadlessTreeItemProps,
   type TreeItemContentProps as HeadlessTreeItemContentProps,
@@ -62,7 +63,6 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
 import { baseColor, css, focusRing, space, style } from "../style" with { type: "macro" };
-import { SlotProvider } from "@proyecto-viviana/solidaria-components/slots";
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
