@@ -20,7 +20,7 @@
  */
 
 import {
-  children as resolveChildren,
+  children,
   createContext,
   createMemo,
   createSignal,
@@ -365,43 +365,54 @@ export function Dialog(props: DialogProps): JSX.Element {
   return (
     <DialogContext value={{ close, titleId: titleId(), registerHeading }}>
       {(() => {
-        const rendered = resolveChildren(() => (
-          <Provider
-            values={
-              [
+        // Heading registers while it is created. SSR writes aria-labelledby
+        // before it inserts children, so resolve this tree before the section
+        // and read the memo from the attribute: a later child update re-runs
+        // the label. The memo keeps that read live, where a body snapshot would not.
+        const rendered = createMemo(() => {
+          hasHeading = false;
+          return children(() => (
+            <Provider
+              values={
                 [
-                  TextContext,
-                  {
-                    slots: {
-                      [DEFAULT_SLOT]: {},
-                      get description() {
-                        return contentProps();
+                  [
+                    TextContext,
+                    {
+                      slots: {
+                        [DEFAULT_SLOT]: {},
+                        get description() {
+                          return contentProps();
+                        },
                       },
                     },
-                  },
-                ],
-                [
-                  ButtonContext,
-                  { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } },
-                ],
-              ] as Array<[Context<unknown>, unknown]>
-            }
-          >
-            {renderProps.renderChildren()}
-          </Provider>
-        ))();
+                  ],
+                  [
+                    ButtonContext,
+                    { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } },
+                  ],
+                ] as Array<[Context<unknown>, unknown]>
+              }
+            >
+              {renderProps.renderChildren()}
+            </Provider>
+          ))();
+        });
+        const labelledBy = () => {
+          rendered();
+          return ariaLabelledBy();
+        };
         return (
           <section
             {...triggerContext?.overlayProps}
             {...dialogProps()}
             {...domProps()}
-            aria-labelledby={ariaLabelledBy()}
+            aria-labelledby={labelledBy()}
             ref={setDialogRef}
             class={renderProps.class()}
             style={renderProps.style()}
             slot={local.slot}
           >
-            {rendered}
+            {rendered()}
           </section>
         );
       })()}
