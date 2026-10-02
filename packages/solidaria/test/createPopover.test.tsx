@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import { createSignal, flush } from "solid-js";
 import { createOverlayTriggerState } from "../../solid-stately/src";
+import { createOverlayTrigger } from "../src/overlays/createOverlayTrigger";
 import { createPopover } from "../src/popover/createPopover";
 
 function pointerEvent(type: string, opts: Partial<PointerEventInit> = {}) {
@@ -136,5 +137,40 @@ describe("createPopover", () => {
 
     inside.blur();
     expect(changes).toEqual([true, false]);
+  });
+
+  // RAC usePopover.test.tsx: a modal popover passes onClose null, which
+  // disables the trigger's onCloseMap scroll fallback.
+  it("does not close a modal popover when the body scrolls", () => {
+    const onOpenChange = vi.fn();
+    const state = createOverlayTriggerState({ isOpen: true, onOpenChange });
+
+    render(() => {
+      const [trigger, setTrigger] = createSignal<HTMLDivElement | null>(null, {
+        ownedWrite: true,
+      });
+      const [popover, setPopover] = createSignal<HTMLDivElement | null>(null, {
+        ownedWrite: true,
+      });
+      createOverlayTrigger({ type: "listbox" }, state, trigger);
+      const { popoverProps } = createPopover(
+        {
+          triggerRef: trigger,
+          popoverRef: popover,
+        },
+        state,
+      );
+
+      return (
+        <div>
+          <div ref={setTrigger} />
+          <div ref={setPopover} {...popoverProps} />
+        </div>
+      );
+    });
+
+    flush();
+    fireEvent.scroll(document.body);
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 });

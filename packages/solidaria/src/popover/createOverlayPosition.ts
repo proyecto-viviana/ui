@@ -434,7 +434,9 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
   createCloseOnScroll({
     triggerRef: targetRef,
     isOpen,
-    onClose: onClose() ? close : undefined,
+    // `null` disables the onCloseMap fallback; `undefined` keeps it.
+    // Match useOverlayPosition's `onClose && close`.
+    onClose: onClose() && close,
   });
 
   return {
