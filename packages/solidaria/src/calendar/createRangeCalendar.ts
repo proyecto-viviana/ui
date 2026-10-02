@@ -23,6 +23,7 @@ import { createMemo, createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createId, createSlotId } from "../ssr";
 import { createLabels } from "../label/createLabels";
+import type { AriaLabelingProps, DOMProps } from "../label/createLabel";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import { getEventTarget, isFocusWithin, nodeContains } from "../utils/dom";
@@ -72,8 +73,16 @@ export interface AriaRangeCalendarProps {
 }
 
 export interface RangeCalendarAria {
-  /** Props for the calendar container element. */
-  calendarProps: Record<string, unknown>;
+  /**
+   * Props for the calendar grouping element. Upstream `calendarProps` is
+   * DOMAttributes: id, labels, and `role="application"`, with no string index.
+   */
+  calendarProps: DOMProps &
+    AriaLabelingProps & {
+      role: "application";
+      "aria-describedby"?: string;
+      "aria-details"?: string;
+    };
   /** Props for the previous button. */
   prevButtonProps: Record<string, unknown>;
   /** Props for the next button. */
