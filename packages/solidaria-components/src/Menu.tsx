@@ -1948,6 +1948,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   );
 }
 
+/** A section child can be a zero-arg accessor, which runs under HeaderContext. */
+function isDeferredSectionChild(
+  children: JSX.Element | (() => JSX.Element) | undefined,
+): children is () => JSX.Element {
+  return typeof children === "function" && children.length === 0;
+}
+
 /**
  * Section primitive alias for Menu composition parity.
  */
@@ -2020,9 +2027,7 @@ export function MenuSection(props: MenuSectionProps): JSX.Element {
   };
   const SectionChildren = () => {
     const children = sectionContent.children;
-    return typeof children === "function" && children.length === 0
-      ? (children as () => JSX.Element)()
-      : children;
+    return isDeferredSectionChild(children) ? children() : children;
   };
 
   return (
