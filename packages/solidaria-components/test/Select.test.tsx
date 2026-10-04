@@ -1658,13 +1658,13 @@ describe("Select", () => {
 
   // Static collection children. Upstream RAC builds the options from
   // ListBoxItem JSX and leaves `items` off:
-  //   react-spectrum/packages/react-aria-components/test/Select.test.js
+  //   Upstream RAC: react-aria-components/test/Select.test.js
   //     TestSelect fixture, lines 27–43
   //     "provides slots" opens and clicks options[1] (Dog), lines 84–96
   //     "supports items with render props" defaultSelectedKey "cat" shows "Cat", lines 132–150
   //     "select can select an option via keyboard" selects Kangaroo, lines 523–537
   // Select.test.js has no ListBoxSection. The group assertion mirrors
-  // react-spectrum/packages/react-aria-components/test/ListBox.test.js
+  // Upstream RAC: react-aria-components/test/ListBox.test.js
   // "should support sections", lines 242–273 (a Header labels the group;
   // a section with only aria-label uses aria-label).
   describe("static children", () => {

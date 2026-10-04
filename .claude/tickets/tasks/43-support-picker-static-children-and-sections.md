@@ -4,12 +4,17 @@ type: task
 title: "Support Picker static children and sections"
 created: 2026-08-20
 parent: 33
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "migrated from legacy task picker-static-children-and-sections",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-04,
+      note: "f5b391e7 landed static ListBoxItem children and ListBoxSection groups in Select. select|role|group suspect fact added to upstream test parity baseline under --allow-growth 43.",
     }
 ---
 

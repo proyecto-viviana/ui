@@ -143,6 +143,7 @@
     "select|key|escape",
     "select|role|alert",
     "select|role|form",
+    "select|role|group",
     "select|role|presentation",
     "select|role|progressbar",
     "separator|aria|aria-describedby",
@@ -384,6 +385,15 @@
           "timefield|aria|aria-valuetext",
           "toast|aria|aria-details"
         ],
+        "coverageGaps": [],
+        "upstreamOnly": []
+      }
+    },
+    {
+      "ticket": 43,
+      "at": "2026-10-04",
+      "added": {
+        "suspects": ["select|role|group"],
         "coverageGaps": [],
         "upstreamOnly": []
       }
