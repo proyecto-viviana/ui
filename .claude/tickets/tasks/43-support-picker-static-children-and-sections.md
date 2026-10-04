@@ -16,6 +16,11 @@ history:
       at: 2026-10-04,
       note: "f5b391e7 landed static ListBoxItem children and ListBoxSection groups in Select. select|role|group suspect fact added to upstream test parity baseline under --allow-growth 43.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-04,
+      note: "regenerated api reference pages for picker and select reflecting optional items and JSX children.",
+    }
 ---
 
 Bring `Picker` collection input into parity with React Spectrum.

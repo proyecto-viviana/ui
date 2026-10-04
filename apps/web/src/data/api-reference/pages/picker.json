@@ -350,7 +350,7 @@
         {
           "name": "items",
           "type": "T[]",
-          "required": true,
+          "required": false,
           "description": "The items to render in the select.",
           "origin": "solidaria-components"
         },

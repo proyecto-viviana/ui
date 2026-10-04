@@ -208,7 +208,7 @@
         {
           "name": "items",
           "type": "T[]",
-          "required": true,
+          "required": false,
           "description": "The items to render in the select.",
           "origin": "solidaria-components"
         },
@@ -377,7 +377,7 @@
         },
         {
           "name": "children",
-          "type": "(item: T) => JSX.Element",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement | ((item: T) => JSX.Element)",
           "required": false,
           "description": "The children of the listbox. A function may be provided to render each item.",
           "origin": "solidaria-components"
