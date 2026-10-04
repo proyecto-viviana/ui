@@ -13,22 +13,22 @@ export interface CertifiedSuiteEvidence {
 /**
  * Postcard from the last complete certified suite run that was recorded against
  * an exact checked revision. This is NOT live truth. Ticket #194. The recorded
- * SHA is `151006ff` (2026-09-24, 2168 passed / 0 failed / 4 skipped / 5 waived).
+ * SHA is `08793320` (2026-10-04, 2175 passed / 0 failed / 4 skipped / 2 waived).
  * `validateCertifiedSuiteEvidence` checks arithmetic and skipped-count against
  * the registered `knownDivergences` inventory; `certifiedSuitePostcardCurrency`
  * decides whether the run still speaks for HEAD, and the report blocks when it
  * does not.
  */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
-  revision: "151006ff8bd2564a8d8a8789fdb2c13b9a676db4",
-  runId: 35940000999,
-  jobId: 107449391894,
-  completedAt: "2026-09-24T01:04:25Z",
-  total: 2177,
-  passed: 2168,
+  revision: "08793320540f06c7bdbfb229bbd3cb161b2ba1f5",
+  runId: 37176592599,
+  jobId: 111362935087,
+  completedAt: "2026-10-04T04:36:40Z",
+  total: 2181,
+  passed: 2175,
   failed: 0,
   skipped: 4,
-  waived: 5,
+  waived: 2,
 };
 
 /**
