@@ -4,12 +4,17 @@ type: task
 title: "A certified waiver expires on a typed date, not on the release it is supposed to stand until"
 created: 2026-09-22
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-22,
       note: 'opened from #578''s review, whose fourth problem was that `expires: "2026-12-31"` did not implement the rule the board records. The rule, delegated on 2026-09-21 and written on #578 as the conductor''s accepted default, is that a waiver is "ticket-backed and expiring at the next release"; the date actually written was a round number three months out, chosen by hand, and nothing in the mechanism connected it to a release. Measured before changing anything: `rg -n ''2026-1[12]|releaseDate|release_date'' apps/comparison/scripts apps/comparison/e2e .changeset package.json` finds no release date anywhere in this tree, and `.changeset/` carries no schedule - so a truly release-bound expiry has nothing on disk to read yet, which is why this is its own ticket and not a line in that fix. What landed instead is the honest half: `MAX_WAIVER_HORIZON_DAYS = 60` in `apps/comparison/scripts/certified-waivers.ts`, a new `expires-too-far` problem kind that fails the certified verdict when an entry stands longer than that, and the five tracked entries re-dated `2026-12-31` -> `2026-10-21`. Proved by mutation: with the tracked dates the loader reports 0 problems, and with all five put back to `2026-12-31` it reports 5 `expires-too-far` problems at a horizon of `2026-11-21` (scratch script over the real module, exit 0, today `2026-09-22`). A horizon is a ceiling, not the rule: it stops a waiver outliving a release cycle, and it still lets one outlive the release if the release ships sooner, which is exactly the gap this ticket closes',
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Candidate 1 (Read the release) implemented. The waiver entry replaces hand-typed horizon dates with the field `release` naming the semver version it defers past ('0.8.0-rc.0'). The verdict compares `release` against `packages/viviana-ui/package.json` (or VIVIANA_RELEASE_VERSION) and expires once published past it. All five entries in certified-waivers.json migrated to `release: 0.8.0-rc.0`. Verified via unit tests (38/38) and guard:certified-waiver-tickets.",
     }
 ---
 

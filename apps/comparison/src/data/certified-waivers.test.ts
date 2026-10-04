@@ -22,11 +22,15 @@ import {
   CLOSED_TICKET_STATES,
   TICKET_STATES,
   comparisonRootFrom,
+  compareSemver,
   defaultWaiversPath,
   evaluateCertifiedWaivers,
   failureHaystack,
+  isReleaseTooFar,
   loadCertifiedWaivers,
+  parseSemver,
   parseWaiverEntries,
+  readCurrentRelease,
   readTicketStatus,
   reconcileWaiverTickets,
   repoRootFromComparison,
@@ -58,7 +62,7 @@ function waiver(overrides: Partial<CertifiedWaiver> = {}): CertifiedWaiver {
     pattern:
       "^e2e/certified/combobox\\.certified\\.spec\\.ts D3 pixel diff — ComboBox › default · light$",
     ticket: 240,
-    expires: "2026-10-01",
+    release: "0.8.0-rc.0",
     ticketStatus: "in-progress",
     reason: "the fixture's own row; what a user sees goes here",
     ...overrides,
@@ -125,7 +129,10 @@ const REPORTED_FAILURES: Record<string, CertifiedFailure> = {
  * verdict red and names itself there.
  */
 function trackedClock(waivers: readonly CertifiedWaiver[]): Date {
-  const earliest = waivers.map((entry) => entry.expires).sort()[0];
+  const earliest = waivers
+    .map((entry) => entry.expires)
+    .filter(Boolean)
+    .sort()[0];
   return earliest ? new Date(`${earliest}T00:00:00.000Z`) : now;
 }
 
@@ -170,12 +177,9 @@ describe("certified waivers", () => {
     ).toEqual([]);
     const closed = loaded.waivers.filter((entry) => CLOSED_TICKET_STATES.has(entry.ticketStatus));
     expect(closed).toEqual([]);
-    // The dates are the verdict's to judge, not the loader's: an entry that has
+    // The dates and releases are the verdict's to judge, not the loader's: an entry that has
     // expired, or that stands for longer than a release, is a problem only once
-    // `evaluateCertifiedWaivers` sees it, so the tracked file is put through it
-    // — on the clock above, where no entry has expired yet. What that still
-    // catches is a list that cannot be renewed as one (`expires-too-far` from
-    // its own earliest date) and an entry whose ticket state ends a waiver.
+    // `evaluateCertifiedWaivers` sees it, so the tracked file is put through it.
     expect(
       evaluateCertifiedWaivers({
         waivers: loaded.waivers,
@@ -186,15 +190,15 @@ describe("certified waivers", () => {
   });
 
   // And where expiry does turn red: the certified run, which evaluates this
-  // same file on the real clock. Graded here past every entry, the list waives
-  // nothing and every entry names itself — which is the report the day after
-  // the dates pass, with the shards and the floors still having run.
-  it("stops waiving, and names every entry, once the clock is past the list", () => {
+  // same file against the released packages. Once a release has shipped past the
+  // version named on the waiver, the list waives nothing and every entry names itself (#610).
+  it("stops waiving, and names every entry, once the release has shipped past the list", () => {
     const loaded = loadCertifiedWaivers(defaultWaiversPath(comparisonRootFrom(import.meta.url)));
     const evaluation = evaluateCertifiedWaivers({
       waivers: loaded.waivers,
       failures: Object.values(REPORTED_FAILURES),
       now: new Date(),
+      currentRelease: "0.8.0",
     });
     expect(evaluation.problems.map((problem) => problem.kind)).toEqual(
       loaded.waivers.map(() => "expired"),
@@ -289,7 +293,7 @@ describe("certified waivers", () => {
     );
   });
 
-  it("rejects a waiver file that is not an array of pattern/ticket/expires/ticketStatus", () => {
+  it("rejects a waiver file that is not an array of pattern/ticket/(release|expires)/ticketStatus", () => {
     expect(parseWaiverEntries(waiver()).problems).toEqual([
       expect.objectContaining({
         kind: "invalid-entry",
@@ -302,9 +306,15 @@ describe("certified waivers", () => {
     expect(
       parseWaiverEntries([{ ...waiver(), ticket: "240" as unknown as number }]).problems,
     ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
-    expect(parseWaiverEntries([waiver({ expires: "12-31-2026" })]).problems).toEqual([
+    expect(parseWaiverEntries([waiver({ release: "not-a-semver" })]).problems).toEqual([
       expect.objectContaining({ kind: "invalid-entry" }),
     ]);
+    expect(
+      parseWaiverEntries([waiver({ release: undefined, expires: "12-31-2026" })]).problems,
+    ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
+    expect(
+      parseWaiverEntries([waiver({ release: undefined, expires: undefined })]).problems,
+    ).toEqual([expect.objectContaining({ kind: "invalid-entry" })]);
   });
 
   // The recorded state is what the merged verdict waives on, so an entry
@@ -407,9 +417,63 @@ describe("certified waivers", () => {
     expect(waiverGateFails(evaluation)).toBe(true);
   });
 
-  it("fails the job when a waiver's expires date has passed", () => {
+  it("fails the job when a waiver's release has shipped past it", () => {
     const evaluation = evaluateCertifiedWaivers({
-      waivers: [waiver({ expires: "2026-09-01" })],
+      waivers: [waiver({ release: "0.8.0-rc.0" })],
+      failures: [failure()],
+      now,
+      currentRelease: "0.8.0-rc.1",
+    });
+
+    expect(evaluation.problems).toEqual([
+      expect.objectContaining({
+        kind: "expired",
+        detail: "waiver for ticket #240 expired after release 0.8.0-rc.0 (current is 0.8.0-rc.1)",
+      }),
+    ]);
+    expect(evaluation.waived).toEqual([]);
+    expect(evaluation.unwaived).toEqual([failure()]);
+    expect(waiverGateFails(evaluation)).toBe(true);
+  });
+
+  it("keeps a waiver active when its release has not shipped", () => {
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: [waiver({ release: "0.8.0-rc.0" })],
+      failures: [failure()],
+      now,
+      currentRelease: "0.8.0-rc.0",
+    });
+
+    expect(evaluation.problems).toEqual([]);
+    expect(evaluation.waived).toEqual([
+      { failure: failure(), waiver: waiver({ release: "0.8.0-rc.0" }) },
+    ]);
+    expect(evaluation.unwaived).toEqual([]);
+    expect(waiverGateFails(evaluation)).toBe(false);
+  });
+
+  it("fails the job when a waiver targets a release past the next release cycle", () => {
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: [waiver({ release: "1.0.0" })],
+      failures: [failure()],
+      now,
+      currentRelease: "0.8.0-rc.0",
+    });
+
+    expect(evaluation.problems).toEqual([
+      expect.objectContaining({
+        kind: "expires-too-far",
+        detail: expect.stringContaining("targets release 1.0.0, past next release cycle"),
+      }),
+    ]);
+    expect(evaluation.waived).toEqual([]);
+    expect(evaluation.unwaived).toEqual([failure()]);
+    expect(waiverGateFails(evaluation)).toBe(true);
+  });
+
+  it("fails the job when a legacy date waiver's expires date has passed", () => {
+    const evaluation = evaluateCertifiedWaivers({
+      waivers: [waiver({ release: undefined, expires: "2026-09-01" })],
       failures: [failure()],
       now,
     });
@@ -426,14 +490,9 @@ describe("certified waivers", () => {
     expect(utcDateStamp(now)).toBe("2026-09-02");
   });
 
-  // #578's review, problem 4. The recorded rule is that a waiver expires "at
-  // the next release", and no release date exists anywhere in this tree to
-  // check a date against — #610 owns binding it to the release itself. This is
-  // the stand-in: a waiver may outlive the cut by a cycle, not by a quarter.
-  // The first three entries #578 wrote stood to 2026-12-31 under that rule.
-  it("fails the job when a waiver stands past the horizon a release bounds", () => {
+  it("fails the job when a legacy date waiver stands past the horizon a release bounds", () => {
     const evaluation = evaluateCertifiedWaivers({
-      waivers: [waiver({ expires: "2026-12-31" })],
+      waivers: [waiver({ release: undefined, expires: "2026-12-31" })],
       failures: [failure()],
       now,
     });
@@ -452,7 +511,7 @@ describe("certified waivers", () => {
     // The horizon itself is still inside.
     expect(
       evaluateCertifiedWaivers({
-        waivers: [waiver({ expires: waiverHorizonStamp(now) })],
+        waivers: [waiver({ release: undefined, expires: waiverHorizonStamp(now) })],
         failures: [failure()],
         now,
       }).problems,
@@ -771,6 +830,42 @@ describe("merged certified summary waiver counts", () => {
     );
     expect(applied.totals).toEqual({ passed: 3, failed: 0, skipped: 0, waived: 1, flaky: 0 });
     expect(applied.cells[0]?.failures).toEqual([]);
+  });
+
+  describe("semver and release resolution", () => {
+    it("parses valid semver versions", () => {
+      expect(parseSemver("0.8.0-rc.0")).toEqual({
+        release: [0, 8, 0],
+        pre: ["rc", "0"],
+      });
+      expect(parseSemver("1.2.3")).toEqual({
+        release: [1, 2, 3],
+        pre: [],
+      });
+      expect(parseSemver("invalid")).toBeNull();
+    });
+
+    it("compares semver versions correctly", () => {
+      expect(compareSemver("0.8.0-rc.0", "0.8.0-rc.0")).toBe(0);
+      expect(compareSemver("0.8.0-rc.1", "0.8.0-rc.0")).toBeGreaterThan(0);
+      expect(compareSemver("0.8.0", "0.8.0-rc.0")).toBeGreaterThan(0);
+      expect(compareSemver("0.7.0", "0.8.0-rc.0")).toBeLessThan(0);
+    });
+
+    it("detects when a release target is too far into the future", () => {
+      expect(isReleaseTooFar("0.8.0-rc.0", "0.8.0-rc.0")).toBe(false);
+      expect(isReleaseTooFar("0.8.0-rc.0", "0.8.0")).toBe(false);
+      expect(isReleaseTooFar("0.8.0-rc.0", "0.9.0")).toBe(false);
+      expect(isReleaseTooFar("0.8.0-rc.0", "0.10.0")).toBe(true);
+      expect(isReleaseTooFar("0.8.0-rc.0", "1.0.0")).toBe(true);
+    });
+
+    it("reads the current release version from manifest", () => {
+      const root = repoRootFromComparison(comparisonRootFrom(import.meta.url));
+      const release = readCurrentRelease(root);
+      expect(parseSemver(release)).not.toBeNull();
+      expect(release).toBe("0.8.0-rc.0");
+    });
   });
 });
 

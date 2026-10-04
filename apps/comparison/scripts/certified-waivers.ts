@@ -6,6 +6,69 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const CERTIFIED_SPEC_SUFFIX = ".certified.spec.ts";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export interface SemverVersion {
+  release: [number, number, number];
+  pre: string[];
+}
+
+/** A semver version, or null when it is not one. Build metadata carries no precedence. */
+export function parseSemver(version: string): SemverVersion | null {
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(
+    typeof version === "string" ? version : "",
+  );
+  if (!match) return null;
+  return {
+    release: [Number(match[1]), Number(match[2]), Number(match[3])],
+    pre: match[4] ? match[4].split(".") : [],
+  };
+}
+
+/**
+ * Semver precedence: release triple first, then prerelease sorting below its
+ * own release, then identifier by identifier (numeric numerically, shorter below longer).
+ */
+export function compareSemver(a: string, b: string): number {
+  const left = parseSemver(a);
+  const right = parseSemver(b);
+  if (!left || !right) {
+    throw new Error(`cannot compare invalid semver versions: "${a}" and "${b}"`);
+  }
+  for (let index = 0; index < 3; index += 1) {
+    if (left.release[index] !== right.release[index]) {
+      return left.release[index] - right.release[index];
+    }
+  }
+  if (left.pre.length === 0 || right.pre.length === 0) {
+    return right.pre.length - left.pre.length;
+  }
+  for (let index = 0; index < Math.max(left.pre.length, right.pre.length); index += 1) {
+    const one = left.pre[index];
+    const other = right.pre[index];
+    if (one === undefined) return -1;
+    if (other === undefined) return 1;
+    if (one === other) continue;
+    const oneIsNumber = /^\d+$/.test(one);
+    const otherIsNumber = /^\d+$/.test(other);
+    if (oneIsNumber && otherIsNumber) return Number(one) - Number(other);
+    if (oneIsNumber !== otherIsNumber) return oneIsNumber ? -1 : 1;
+    return one < other ? -1 : 1;
+  }
+  return 0;
+}
+
+/**
+ * A waiver may defer past the immediate release cycle, not far into the future (#610).
+ */
+export function isReleaseTooFar(current: string, target: string): boolean {
+  const cur = parseSemver(current);
+  const tgt = parseSemver(target);
+  if (!cur || !tgt) return false;
+  if (compareSemver(current, target) >= 0) return false;
+  if (tgt.release[0] > cur.release[0]) return true;
+  if (tgt.release[1] > cur.release[1] + 1) return true;
+  return false;
+}
+
 /**
  * The board's lifecycle, and only it: `viviana-projects/spec/ticket-scheme.md`
  * v1, which `.claude/tickets/SCHEME.md` points at. `open → next → in-progress →
@@ -70,7 +133,13 @@ export interface CertifiedWaiver {
    */
   pattern: string;
   ticket: number;
-  expires: string;
+  /**
+   * The release version this waiver defers past (e.g. "0.8.0-rc.0").
+   * Bound to the released package version rather than a hand-typed date (#610).
+   */
+  release?: string;
+  /** Legacy date stamp (YYYY-MM-DD), kept for backwards compatibility. */
+  expires?: string;
   /**
    * The waiver ticket's board state, copied into this file when the waiver is
    * written or renewed, and one of {@link TICKET_STATES}. The certified verdict
@@ -188,6 +257,7 @@ export function parseWaiverEntries(raw: unknown): {
     const record = entry as Record<string, unknown>;
     const pattern = record.pattern;
     const ticket = record.ticket;
+    const release = record.release;
     const expires = record.expires;
     const ticketStatus = record.ticketStatus;
     const reason = record.reason;
@@ -207,11 +277,29 @@ export function parseWaiverEntries(raw: unknown): {
       });
       return;
     }
-    if (typeof expires !== "string" || !DATE_RE.test(expires)) {
+    if (release != null) {
+      if (typeof release !== "string" || parseSemver(release) == null) {
+        problems.push({
+          kind: "invalid-entry",
+          waiver: null,
+          detail: `waivers[${index}].release must be a valid semver version (e.g. 0.8.0-rc.0)`,
+        });
+        return;
+      }
+    } else if (expires != null) {
+      if (typeof expires !== "string" || !DATE_RE.test(expires)) {
+        problems.push({
+          kind: "invalid-entry",
+          waiver: null,
+          detail: `waivers[${index}].expires must be YYYY-MM-DD`,
+        });
+        return;
+      }
+    } else {
       problems.push({
         kind: "invalid-entry",
         waiver: null,
-        detail: `waivers[${index}].expires must be YYYY-MM-DD`,
+        detail: `waivers[${index}] must specify release (semver) or expires (YYYY-MM-DD)`,
       });
       return;
     }
@@ -233,7 +321,14 @@ export function parseWaiverEntries(raw: unknown): {
       });
       return;
     }
-    const waiver: CertifiedWaiver = { pattern, ticket, expires, ticketStatus, reason };
+    const waiver: CertifiedWaiver = {
+      pattern,
+      ticket,
+      ...(release ? { release: release as string } : {}),
+      ...(expires ? { expires: expires as string } : {}),
+      ticketStatus,
+      reason,
+    };
     try {
       new RegExp(pattern);
     } catch (error) {
@@ -316,6 +411,28 @@ export function waiverHorizonStamp(now: Date): string {
 }
 
 /**
+ * Reads the current release version from packages/viviana-ui/package.json
+ * or the VIVIANA_RELEASE_VERSION environment variable (#610).
+ */
+export function readCurrentRelease(repoRoot: string): string {
+  if (process.env.VIVIANA_RELEASE_VERSION) {
+    return process.env.VIVIANA_RELEASE_VERSION;
+  }
+  const uiManifest = join(repoRoot, "packages/viviana-ui/package.json");
+  if (existsSync(uiManifest)) {
+    try {
+      const parsed = JSON.parse(readFileSync(uiManifest, "utf8"));
+      if (typeof parsed.version === "string" && parseSemver(parsed.version)) {
+        return parsed.version;
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return "0.0.0";
+}
+
+/**
  * Reads a ticket's state off the board, normalized to a {@link TicketState}:
  * the scheme says legacy `done` parses as `merged`, and a caller that compared
  * the raw word against a recorded `merged` would read a stale entry as current
@@ -358,28 +475,54 @@ export function evaluateCertifiedWaivers(options: {
   waivers: CertifiedWaiver[];
   failures: readonly CertifiedFailure[];
   now: Date;
+  currentRelease?: string;
+  comparisonRoot?: string;
 }): WaiverEvaluation {
   const problems: WaiverProblem[] = [];
   const today = utcDateStamp(options.now);
   const horizon = waiverHorizonStamp(options.now);
+  const repoRoot = repoRootFromComparison(
+    options.comparisonRoot ?? comparisonRootFrom(import.meta.url),
+  );
+  const currentRelease = options.currentRelease ?? readCurrentRelease(repoRoot);
 
   for (const waiver of options.waivers) {
-    if (waiver.expires < today) {
-      problems.push({
-        kind: "expired",
-        waiver,
-        detail: `waiver for ticket #${waiver.ticket} expired on ${waiver.expires}`,
-      });
-      continue;
-    }
+    if (waiver.release) {
+      if (compareSemver(currentRelease, waiver.release) > 0) {
+        problems.push({
+          kind: "expired",
+          waiver,
+          detail: `waiver for ticket #${waiver.ticket} expired after release ${waiver.release} (current is ${currentRelease})`,
+        });
+        continue;
+      }
 
-    if (waiver.expires > horizon) {
-      problems.push({
-        kind: "expires-too-far",
-        waiver,
-        detail: `waiver for ticket #${waiver.ticket} expires on ${waiver.expires}, past ${horizon}; a waiver stands until the next release, so it may name at most ${MAX_WAIVER_HORIZON_DAYS} days`,
-      });
-      continue;
+      if (isReleaseTooFar(currentRelease, waiver.release)) {
+        problems.push({
+          kind: "expires-too-far",
+          waiver,
+          detail: `waiver for ticket #${waiver.ticket} targets release ${waiver.release}, past next release cycle (current is ${currentRelease}); a waiver stands until the next release`,
+        });
+        continue;
+      }
+    } else if (waiver.expires) {
+      if (waiver.expires < today) {
+        problems.push({
+          kind: "expired",
+          waiver,
+          detail: `waiver for ticket #${waiver.ticket} expired on ${waiver.expires}`,
+        });
+        continue;
+      }
+
+      if (waiver.expires > horizon) {
+        problems.push({
+          kind: "expires-too-far",
+          waiver,
+          detail: `waiver for ticket #${waiver.ticket} expires on ${waiver.expires}, past ${horizon}; a waiver stands until the next release, so it may name at most ${MAX_WAIVER_HORIZON_DAYS} days`,
+        });
+        continue;
+      }
     }
 
     if (CLOSED_TICKET_STATES.has(waiver.ticketStatus)) {
@@ -391,12 +534,19 @@ export function evaluateCertifiedWaivers(options: {
     }
   }
 
-  const active = options.waivers.filter(
-    (waiver) =>
-      waiver.expires >= today &&
-      waiver.expires <= horizon &&
-      !CLOSED_TICKET_STATES.has(waiver.ticketStatus),
-  );
+  const active = options.waivers.filter((waiver) => {
+    if (CLOSED_TICKET_STATES.has(waiver.ticketStatus)) return false;
+    if (waiver.release) {
+      return (
+        compareSemver(currentRelease, waiver.release) <= 0 &&
+        !isReleaseTooFar(currentRelease, waiver.release)
+      );
+    }
+    if (waiver.expires) {
+      return waiver.expires >= today && waiver.expires <= horizon;
+    }
+    return false;
+  });
 
   const waived: WaiverEvaluation["waived"] = [];
   const unwaived: CertifiedFailure[] = [];
