@@ -4,7 +4,7 @@ type: task
 title: "No test can tell the popover's two enter placements apart, and it still enters before it is placed"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Discriminating unit test landed in Popover.test.tsx: forces a flip with placement='bottom start' to top during active enter animation; passes at HEAD (48/48) and fails under 6ad3d12d^ hold (AssertionError: expected 'bottom' to be 'top'). DatePicker and DateRangePicker certified suites pass 114/114. Entering seam documented as a named local deviation in Popover.tsx (Solid createEffect vs React useLayoutEffect). Historical note added to #582.",
     }
 ---
 

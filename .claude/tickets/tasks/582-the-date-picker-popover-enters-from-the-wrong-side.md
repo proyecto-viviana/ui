@@ -4,7 +4,7 @@ type: task
 title: "The date picker popover enters from the wrong side, and it is four certified motion rows"
 created: 2026-09-21
 parent: 544
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-21,
       note: "2026-09-21 round-2 audit, receipt `.agents/audit-2026-09-21/round-2-results.md`. The fix stands and the proof does not reach as far as the message reads. `r2-certified-b/F2`, medium, partly: `6ad3d12d` deletes the exact hold `6383939c` (2026-09-02, #257 #251) added to turn these same four D2 rows green, so both opposite implementations were once certified by the same driver, and the one unit of the seam cannot tell them apart - `packages/solidaria-components/test/Popover.test.tsx:1234` renders `placement=bottom start` where JSDOM measures every rect as 0, so the seed and the measurement are both bottom and the assertion is green either way. The skeptic refuted unproved: this ticket records a mutation, hold restored gives D2 18/8 with exactly those four, and `4f1c8435` (2026-09-15) centres the canvas, which explains the earlier green. What is owed is a test that discriminates. `r2-certified-b/F3`, low, partly: as upstream is half true - RAC gates entering on a resolved placement (`dist/private/Popover.mjs:100,112`) and ours still reports entering while unplaced and substitutes the preferred axis (`Popover.tsx:774-776,789`), so a flipped popover can paint the bottom keyframe for a frame inside a running 200ms translate. That half predates this commit and is documented at `Popover.tsx:760-768`; the painted reversal is unproven because D2 pauses the first frame. The scheme has no backward transition from merged, so this note is the correction and the residue is owned by **#603**, stage S2-h",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Historical record clarified and verified under #603: the 2026-09-02 certification was green under the opposite hold implementation because the comparison walk did not yet centre the canvas (prior to 4f1c8435), so fixture geometry rather than component placement logic decided the sign. Discriminating unit test landed in Popover.test.tsx (green at HEAD, red on 6ad3d12d^ hold) and certified datepicker/daterangepicker specs pass 114/114.",
     }
 ---
 

@@ -1342,6 +1342,83 @@ describe("Popover", () => {
       // then applies the top entering keyframe (certified DatePicker D2).
       expect(popover.getAttribute("data-placement")).toBe("bottom");
     });
+
+    it("updates data-placement to top when positioning flips even while entering", async () => {
+      const originalGetBoundingClientRect = window.HTMLElement.prototype.getBoundingClientRect;
+      const originalOffsetHeight = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        "offsetHeight",
+      );
+
+      Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+        configurable: true,
+        get() {
+          if (this.getAttribute("role") === "dialog") return 200;
+          return 0;
+        },
+      });
+
+      window.HTMLElement.prototype.getBoundingClientRect = function () {
+        if (this.tagName === "BUTTON") {
+          return {
+            top: 700,
+            bottom: 730,
+            left: 10,
+            right: 100,
+            width: 90,
+            height: 30,
+            x: 10,
+            y: 700,
+            toJSON() {
+              return {};
+            },
+          };
+        }
+        if (this.getAttribute("role") === "dialog") {
+          return {
+            top: 0,
+            bottom: 200,
+            left: 0,
+            right: 200,
+            width: 200,
+            height: 200,
+            x: 0,
+            y: 0,
+            toJSON() {
+              return {};
+            },
+          };
+        }
+        return originalGetBoundingClientRect.apply(this);
+      };
+
+      const restoreAnimations = mockGetAnimations(
+        () => [{ finished: new Promise<void>(() => {}) }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover placement="bottom start">Content</Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const popover = await waitFor(() => screen.getByRole("dialog"));
+        expect(popover).toHaveAttribute("data-entering");
+        await waitFor(() => expect(popover.getAttribute("data-placement")).toBe("top"));
+      } finally {
+        restoreAnimations();
+        window.HTMLElement.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+        if (originalOffsetHeight) {
+          Object.defineProperty(HTMLElement.prototype, "offsetHeight", originalOffsetHeight);
+        } else {
+          delete (HTMLElement.prototype as { offsetHeight?: unknown }).offsetHeight;
+        }
+      }
+    });
   });
 
   describe("DismissButton", () => {
