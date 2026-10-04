@@ -3,7 +3,7 @@ id: 544
 type: initiative
 title: "Cut the Solid 2 release candidate and its public face"
 created: 2026-09-20
-status: in-progress
+status: verified
 history:
   - {
       state: in-progress,
@@ -64,6 +64,11 @@ history:
       state: in-progress,
       at: 2026-10-04,
       note: "Public-face branch integrated into main (commit 5ef2307f). Package READMEs, root README.md, CONTRIBUTING.md, CREDITS.md landed. All 5 in-scope packages live on npm on dist-tag rc (-rc.0). Landing page and documentation updated with central NPM_INSTALL_TAG = 'rc' and Solid 2 peer requirements. Verification suites passed clean: check, docs:check, ci:changesets, test:routes (175/175), test:seo (176/176), test:api-reference (4/4), test:ssr and test:hydrate (113/113), test:comparison-ssr and test:comparison-hydrate (175/175). Closed child tasks #548, #549, #600 as verified.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Initiative #544 completed and verified. All required gates passed with 100% green on origin/main at commit 8e5e0bec: Release Readiness (run 37179991269, 5m22s), Certification Gates (run 37179991293, 16m55s, all 41 ladder steps passed, 8/8 certified shards merged and passed), Site Gate (run 37179991287, 19m26s), and triggered Release (run 37180803432, 4m12s). Docs site deployed via wrangler to Worker viviana-ui-docs on custom domain ui.proyectoviviana.org (Version ea3b9cf9-71bb-4201-bd42-8e15097145a1), serving live HTTP 200 with npm install line @proyecto-viviana/ui@rc. All 5 in-scope packages live on npm on dist-tag rc (-rc.0) with latest held on Solid 1. Public READMEs, front door, and documentation landed and verified.",
     }
 ---
 
