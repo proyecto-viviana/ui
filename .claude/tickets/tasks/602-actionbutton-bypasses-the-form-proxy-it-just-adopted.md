@@ -4,7 +4,7 @@ type: task
 title: "ActionButton bypasses the Form proxy it just adopted, so a disabled Form does not disable it"
 created: 2026-09-21
 parent: 544
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-21,
       note: "the review of `1a036710` found two problems; one is real in part, one is real outright, and a third claim inside the first is wrong. Receipt section 8 of `.agents/602-actionbutton-form-disabled-2026-09-21.md`, and the fix is `#602: fix what its review found`. High, confirmed by running it: ToggleButton's `menuTriggerButtonProps()` carried `isDisabled` and was spread after `{...headlessProps}`, so a `MenuTrigger`'s concrete `false` (`packages/solidaria-components/src/Menu.tsx:417`) buried the Form and the Skeleton - a present key wins a spread whatever it evaluates to. Wrong, and left alone: the review's `<ToggleButtonGroup isDisabled>` case already rendered `disabled` and `data-disabled='true'` on the pre-fix source, because the headless group disables its items through its own state rather than this prop. Fixed by taking the flag out of `menuTriggerButtonProps()` and resolving it once after both spreads, `headlessProps.isDisabled ?? menuTriggerContext?.isDisabled?.()` - toward upstream, where RAC's MenuTrigger never sets the flag on its trigger at all (`react-aria-components@1.21.0` Menu.mjs spreads only `menuTriggerProps` through a `PressResponder`). One deliberate behaviour change that follows: `<MenuTrigger isDisabled><ToggleButton isDisabled={false}>` now opts out, as upstream's does. Medium, and a fresh regression of `1a036710`: this ticket's own commit left `notificationBadgeContextValue.isDisabled` on `!!headlessProps.isDisabled`, which stopped seeing `ActionButtonGroup` the moment the group left `groupProps`; measured, the grouped badge's atom equalled the plain badge's, not the disabled one's. Now `!!isDisabled()`, the same resolved value the element gets, which is what upstream's render prop hands it (`@react-spectrum/s2@1.7.0/src/ActionButton.tsx:436` then `:432`). Counts, `vp test run packages/solid-spectrum/test/Form.test.tsx --maxWorkers=2`: 2 failed | 22 passed (24) exit 1 on the pre-fix source, 24 passed exit 0 after. Six mutations of the fixed files, each restored from a scratchpad copy, each exit 1 and each isolating exactly one new assertion; the fourth new ToggleButton assertion is honestly a control, not a bound branch. Regression suites all exit 0: ToggleButton 2, ToggleButtonGroup 5, ActionMenu 34, Menu 32, NotificationBadge 6, ButtonFamilyContext 14, ActionButton 3, ActionBar 26; `vp run typecheck` and `vp check` over the three changed files clean. Correction to the merged note above, and to section 6 of the receipt: Scope 3's sweep said 'no twin needed a fix', and it was measured with the wrong instrument - the `it.each` never paired a button with a MenuTrigger, so ToggleButton's defect could not appear in it. The sweep was redone over JSX spreads rather than over the flag: of the 17 `useFormProps` consumers only ActionButton (`:477-478`) and ToggleButton (`:394-395`) put two spreads on one element, and both are now fixed. Residue, filed as #605 rather than dropped: the same `NotificationBadgeContext` feeds the badge the group-resolved `size()` with an `M` floor where upstream feeds the raw `props.size`. Read from source, not measured - a badge inside a button also carries the context's positioning styles, so the class comparison that settled the `isDisabled` half cannot settle this one. Still `merged` and not `verified`: this seat does not push, so no CI run id backs any of these counts either",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Verified on main at commit 8e5e0bec. All 28 Form test cases pass clean (vp test run packages/solid-spectrum/test/Form.test.tsx). CI Release Readiness (run 37179991269) and Certification Gates (run 37179991293) both passed with success.",
     }
 ---
 
