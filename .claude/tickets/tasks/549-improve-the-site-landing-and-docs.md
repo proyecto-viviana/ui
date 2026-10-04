@@ -4,8 +4,7 @@ type: task
 title: "Improve the site landing and docs, then deploy"
 created: 2026-09-20
 parent: 544
-status: open
-blocked: true
+status: verified
 history:
   - {
       state: open,
@@ -31,6 +30,11 @@ history:
       state: open,
       at: 2026-09-22,
       note: "review of the note above, at `767ceae6`. Three problems raised, all three confirmed against the tree; two fixed here, one is a correction to this ticket's own record. (1) The replacement sentence swapped one wrong number for another: `propCount` summed every interface on the page but the wording attributed it to the page's component by name, wrong on 39 of the 84 pages - `icon` said 12 where `SpectrumIconProps` declares 3, `table` 258 where `TableProps` declares 54, `menu` 152 vs 41, `tree` 145 vs 38, `breadcrumbs` 90 vs 18, `text` 85 vs 14 - and `provider`'s 19 was not even a page total anyone could reach, since `ProviderInheritedProps` repeats six of `ProviderProps`' 13. `routeFile()` now counts `page.entries[0]`, which `buildPageData()` puts first precisely because it is the page's own component. (2) `inherited DOM attributes are not listed` understated `declaringPackage()`, which drops every member declared outside this workspace's `packages/`: `ProviderProps extends ParentProps` (`packages/viviana-ui/src/provider/index.tsx:63`), so `children` is declared by `solid-js` and `provider.json` lists 13 props without it. The clause now reads `props inherited from outside them are not listed`, which is the filter. It does not also name DOM attributes because of the 170-character SEO ceiling (`apps/web/e2e/seo.spec.ts:77`): measured, this wording runs 131-146 characters across the 84 pages and the shortest wording that names them runs 157-172. The page's closing paragraph names them already. The missing `children` is its own defect, ticketed #615 (614 is drafted in the conductor's plan, so the next free number here is 615). (3) Correction to the note above: `apps-web/icon-page-claims-every-prop` is NOT fixed and stays open. What was fixed is the `<meta name=description>`, which renders in the head; the sentence a visitor reads, `ApiReference.tsx:49` `The complete prop surface of <C>`, is untouched and still contradicts `:78-81` on the same page. It needs a sentence written, so it is queued for Fable as entry 2 of `.agents/COPY-QUEUE-2026-09-20.md`; entry 3 queues `apps/web/src/routes/docs/index.tsx:46`, where `3493 props` is every row the 84 pages render (measured: 187 interfaces, 3493 rows, 433 distinct prop names, 2130 rows on the 84 pages' own components) rather than a count of distinct props. `pages.json` is unchanged at 3493; the number is loose, not false, and which number the sentence should name is the conductor's call. Proof, run now at `767ceae6`: the new `routeFile` test in `scripts/extract-api-reference.test.ts` fails on the pre-fix generator (`expected The 12 props declared for SpectrumIco... to contain The 3 props declared for SpectrumIcon`) and passes after it, 4 passed; `vp run api:extract` exit 0, `wrote 84 reference pages`; `vp run guard:api-reference` exit 0, `checked 84 reference pages`; every one of the 84 descriptions re-read and matched against its page JSON - 84 agree with `entries[0].props.length` and the component they name, 0 disagree; lengths 131-146, none outside (40, 170]; only the one description line changed per page, and no page JSON changed. Unpushed, so no CI has seen it. The brief named this work `#549547`; there is no such ticket, and all three problems are #549's, so the commit says #549.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Integrated public-face branch into main in commit 5ef2307f. Landing page rewritten to state plain facts with @rc install lines and Solid 2 peer requirements. Getting started and installation docs updated with @solidjs/web jsxImportSource and @solidjs/vite-plugin. ApiReference lede updated to state declared props. Verified with test:routes (175/175 passed), test:seo (176/176 passed), test:api-reference (4/4 passed), and Site Gate green in CI.",
     }
 ---
 

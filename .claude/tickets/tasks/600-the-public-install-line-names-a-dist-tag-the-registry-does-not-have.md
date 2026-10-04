@@ -4,7 +4,7 @@ type: task
 title: "The public install line names a dist-tag the registry does not have, and the landing page's names the Solid 1 build"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: 'unblocked: the tag call the note above waited on is settled, and it went the way that note''s default did. At ~17:10 the conductor listed its open owner calls, quoting its own message - "the dist-tag (my default is `rc` alone), re-enabling Release Readiness and Site Gate, the waiver list once the census produces it, and the publish" - and the owner answered, verbatim: "can you handle all those? your default is fine", then "also you''re the only one working on this, the previous session was superseded by yours, so you can handle everything, don''t say "oh the other session is running" or whatever". So the tag is **`rc` alone, with no hand-moved `next`** - the conductor''s stated default, accepted, and not owner wording. The two records that disagreed are retired in that direction: #547''s decision section, its Scope step 5 and its Done when are rewritten to `rc` in this commit, and #544''s `next` line goes with them. One reading is now current, so the guard in scope item 2 is writable, and item 2''s `next`/`rc` clause is replaced - there is no `next`, so a `next` on the registry would mean a tag was moved by hand and is itself the failure. `blocked: true` comes off because the reason recorded for it was this call. The live registry read stays an owner-permitted action under the hub rule, which is a permission for one command rather than a block on the ticket, and scope item 2 already offers the recorded-evidence form `scripts/release-prerequisites.json` uses. What still gates the `public-face` merge is #547 publishing, which is scope item 3 and unchanged: today `npm view ''@proyecto-viviana/ui@rc'' version` is still E404, so every `@rc` line on that branch is a promise the registry cannot keep yet. The one source item 1 asks for exists in part already - `NPM_INSTALL_TAG = "rc"` at `apps/web/src/lib/site.ts:29` on the `public-face` branch, not on `main` - and the READMEs and the guard should read that, not a second copy of the string',
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Integrated public-face branch into main in commit 5ef2307f. Verified central install tag NPM_INSTALL_TAG = 'rc' in apps/web/src/lib/site.ts; landing page and all package READMEs install with @rc alone with no hand-moved next tag; Solid 2 peer requirements stated explicitly; all 5 packages live on npm on dist-tag rc with latest preserved, verified by check-release-prerequisites and live npm query.",
     }
 ---
 

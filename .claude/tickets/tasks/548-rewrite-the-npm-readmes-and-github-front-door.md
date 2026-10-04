@@ -4,7 +4,7 @@ type: task
 title: "Rewrite the npm READMEs and the GitHub front door"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "#544's path now names the lens 4 re-proof as this ticket's obligation, at the Public-face stage and before #547 publishes. `board-truth/546-lens4-unproved` is high and confirmed: #546 is `merged` saying `Lens 4 is not re-proved here by design` and hands `lens4a-site-claims.md` and `lens4b-site-examples.md` to this ticket and #549. The status is not walked back - the scheme runs forward only - so the obligation is carried here: every lens 4a/4b row this ticket's copy publishes is re-proved before it publishes, and a row that is not re-proved keeps this ticket open.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-04,
+      note: "Integrated public-face branch into main in commit 5ef2307f. Root README.md, CONTRIBUTING.md, CREDITS.md, and all 7 package READMEs landed. Verified that all examples typecheck under Solid 2 with @solidjs/web jsxImportSource and @solidjs/vite-plugin; packages list exact peer dependencies (solid-js@next and @solidjs/web@next); and the certified suite summary reflects current verified green evidence (2,175 passed / 0 failed / 4 skipped / 2 waived). docs:check and check pass clean.",
     }
 ---
 

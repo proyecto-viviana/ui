@@ -60,6 +60,11 @@ history:
       at: 2026-09-22,
       note: "the newest complete certified run is no longer 35668806426 at `b22a44eb`, which the body above still names. Run 35689146611 at `d6745471`, `certified report` job 106625669687, completed and reports the same `2146 passed, 27 failed, 4 skipped, 0 waived, 0 flaky`, and its per-component table is byte-identical to `b22a44eb`'s - 107 components, 5 with a failing row, 102 green, `diff` of the two tables sliced out of the two job logs is empty. Left as a note rather than an edit: the roster passage is the conductor's and only the run id in it is stale. The `0 waived` both runs report is the defect `cd38e04e` fixes; the reading that can show 5 waived is a `certified report` job at a sha carrying `cd38e04e` and #497's `d997d01f`/`6031691e`, which #578 owns and no seat here can take",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-04,
+      note: "Public-face branch integrated into main (commit 5ef2307f). Package READMEs, root README.md, CONTRIBUTING.md, CREDITS.md landed. All 5 in-scope packages live on npm on dist-tag rc (-rc.0). Landing page and documentation updated with central NPM_INSTALL_TAG = 'rc' and Solid 2 peer requirements. Verification suites passed clean: check, docs:check, ci:changesets, test:routes (175/175), test:seo (176/176), test:api-reference (4/4), test:ssr and test:hydrate (113/113), test:comparison-ssr and test:comparison-hydrate (175/175). Closed child tasks #548, #549, #600 as verified.",
+    }
 ---
 
 Owner direction, 2026-09-20. Spend the remaining Fable and Opus quota on this
