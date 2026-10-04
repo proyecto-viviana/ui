@@ -9,11 +9,11 @@ overrides:
   vite: "catalog:"
   vitest: "catalog:"
   ws: "^8.21.3"
-  fast-uri: "^3.1.6"
+  fast-uri: "^3.1.8"
   browserslist: "^4.28.7"
-  brace-expansion: "^5.0.9"
+  brace-expansion: "^5.0.11"
   yaml: "^2.9.0"
-  undici: "^7.29.0"
+  undici: "^7.29.1"
   js-yaml: "^4.3.2"
   sharp: "^0.35.4"
   svgo: "^4.1.0"
@@ -22,6 +22,7 @@ overrides:
   esbuild: "^0.28.2"
   "@babel/core": "^7.29.6"
   "@tsdown/css": "0.22.14"
+  http-cache-semantics: "^4.3.0"
 
 # Native build hooks are denied unless explicitly trusted here. These three
 # install platform binaries required by the repository's macro, bundler, and
@@ -35,6 +36,7 @@ allowBuilds:
 # otherwise rejects lockfile entries published less than 24 hours ago. Exact
 # selectors preserve the quarantine for every future version of these packages.
 minimumReleaseAgeExclude:
+  - "http-cache-semantics@4.3.0"
   - "@astrojs/internal-helpers@0.10.3"
   - "@astrojs/markdown-satteri@0.3.6"
   - "@astrojs/react@6.0.3"
