@@ -708,7 +708,7 @@ it.each([
   ["cardview", CardView, "row", "Apollo", "Zephyr", "End", true],
   ["gridlist", GridList, "row", "Read", "Write", "ArrowDown", false],
   ["listbox", ListBox, "option", "Read", "Write", "ArrowDown", false],
-  ["selectboxgroup", SelectBoxGroup, "option", "Starter", "Pro", "ArrowRight", false],
+  ["selectboxgroup", SelectBoxGroup, "option", "Starter", "Pro", "ArrowDown", false],
 ] as const)(
   "stage A collections %s moves rendered focus and selection between semantic items",
   async (_component, Fixture, role, firstText, secondText, nextKey, selectionFollowsFocus) => {

@@ -52,7 +52,6 @@ export const stepListDemoDefaults: StepListDemoProps = {
   disabledKeys: "",
   isDisabled: false,
   isReadOnly: false,
-  ariaLabel: undefined,
 };
 
 function isKnownKey(value: string | null | undefined): value is string {
