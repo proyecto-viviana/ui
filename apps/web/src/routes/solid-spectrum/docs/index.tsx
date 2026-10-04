@@ -103,7 +103,8 @@ function GettingStartedPage() {
           "border-left": `3px solid ${colors().blue}`,
         }}
       >
-        <code>{`import { Button } from '@proyecto-viviana/solid-spectrum';
+        <code>{`import { createSignal } from 'solid-js';
+import { Button } from '@proyecto-viviana/solid-spectrum';
 
 function App() {
   const [pressed, setPressed] = createSignal(false);

@@ -21,6 +21,13 @@ export const NPM_ORG_URL = "https://www.npmjs.com/org/proyecto-viviana";
  */
 export const PARENT_APP_URL = "https://proyectoviviana.org";
 
+/**
+ * The npm dist-tag the site's install lines carry. `latest` is still the
+ * Solid 1 line, so a bare `npm i <name>` installs a build this site does not
+ * describe.
+ */
+export const NPM_INSTALL_TAG = "rc";
+
 /** A package's source directory on the default branch. */
 export function repoPackageUrl(dir: string): string {
   return `${REPO_URL}/tree/main/packages/${dir}`;

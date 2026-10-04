@@ -125,11 +125,13 @@ function InstallationPage() {
 
       <SectionHeading color={colors().blue}>Install</SectionHeading>
       <p style={{ "margin-bottom": "0.75rem" }}>
-        <InlineCode>solid-js</InlineCode> is a peer dependency, so install it alongside:
+        <InlineCode>solid-js</InlineCode> and <InlineCode>@solidjs/web</InlineCode> are peer
+        dependencies. The release candidate needs Solid 2, so install the{" "}
+        <InlineCode>next</InlineCode> line of both alongside the <InlineCode>rc</InlineCode> tag:
       </p>
-      <Code>{`npm install @proyecto-viviana/ui solid-js`}</Code>
+      <Code>{`npm install @proyecto-viviana/ui@rc solid-js@next @solidjs/web@next`}</Code>
       <p style={{ "margin-bottom": "0.75rem" }}>Or, for the Spectrum layer on its own:</p>
-      <Code>{`npm install @proyecto-viviana/solid-spectrum solid-js`}</Code>
+      <Code>{`npm install @proyecto-viviana/solid-spectrum@rc solid-js@next @solidjs/web@next`}</Code>
 
       <SectionHeading color={colors().blue}>Import the CSS</SectionHeading>
       <p style={{ "margin-bottom": "0.75rem", "max-width": "62ch" }}>
@@ -223,7 +225,7 @@ export function App() {
       <Code>{`{
   "compilerOptions": {
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    "jsxImportSource": "@solidjs/web",
     "types": ["vite/client"]
   }
 }`}</Code>
@@ -254,18 +256,26 @@ export function App() {
       <Code>{`import { style } from "@proyecto-viviana/ui/style" with { type: "macro" };`}</Code>
       <p style={{ "margin-bottom": "0.75rem" }}>For Vite apps, use the packaged helper:</p>
       <Code>{`import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 import { vivianaMacros } from "@proyecto-viviana/ui/vite";
+
+const packages = [
+  "@proyecto-viviana/ui",
+  "@proyecto-viviana/solid-spectrum",
+  "@proyecto-viviana/solidaria-components",
+  "@proyecto-viviana/solidaria",
+  "@proyecto-viviana/solid-stately",
+];
 
 export default defineConfig({
   plugins: [vivianaMacros(), solid({ ssr: true })],
-  optimizeDeps: {
-    exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
-  },
-  ssr: {
-    noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
-  },
+  optimizeDeps: { exclude: packages },
+  ssr: { noExternal: [/@proyecto-viviana\\/.*/] },
 });`}</Code>
+      <p style={{ "margin-bottom": "0.75rem", "max-width": "62ch" }}>
+        <InlineCode>@solidjs/vite-plugin</InlineCode> is the Solid 2 plugin;{" "}
+        <InlineCode>vite-plugin-solid</InlineCode> targets Solid 1.
+      </p>
       <p style={{ "margin-bottom": "0.75rem" }}>
         <InlineCode>vivianaMacros()</InlineCode> builds on{" "}
         <InlineCode>unplugin-parcel-macros</InlineCode>, an optional peer — add it as a dev

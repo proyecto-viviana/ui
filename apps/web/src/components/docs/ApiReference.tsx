@@ -46,8 +46,8 @@ export function ApiReference(props: ApiReferenceProps) {
       </h1>
 
       <p style={{ "margin-bottom": "1.5rem", "max-width": "62ch" }}>
-        The complete prop surface of{" "}
-        <code style={{ "font-family": FONT_MONO }}>{page().title}</code>, generated from the types{" "}
+        The props declared for <code style={{ "font-family": FONT_MONO }}>{page().title}</code>,
+        generated from the types{" "}
         <code style={{ "font-family": FONT_MONO }}>{page().packageName}</code> ships.
       </p>
 

@@ -23,6 +23,10 @@ The shared foundation, `solid-spectrum`, and the Spectrum-derived part of
 | `@proyecto-viviana/ui`                   | `@react-spectrum/s2`    | Apache-2.0       |
 
 - Source: <https://github.com/adobe/react-spectrum> — Copyright 2019 Adobe.
+- Pinned upstream: `@react-spectrum/s2@1.7.0` and
+  `react-aria-components@1.21.0` at commit `f56660b2`, pinned 2026-09-02. The
+  live value is [`scripts/upstream-pin.json`](scripts/upstream-pin.json), and
+  `guard:upstream-oracle` checks it.
 - Files with verified mappings identify the applicable upstream source. The
   exact per-file mapping audit is not complete.
 - Significant changes (React → SolidJS) are summarized in [`NOTICE`](NOTICE).
@@ -61,13 +65,15 @@ source.
 
 - Source: <https://github.com/cloudflare/kumo> — Copyright 2026 Cloudflare, Inc.
 - Initial source version: `@cloudflare/kumo@2.10.0`.
+- Current source reference: `@cloudflare/kumo@2.11.0`. Kumo 2.11.0 leaves
+  Button unchanged from 2.10.0.
 - License notice: [`packages/kumo/LICENSE-CLOUDFLARE`](packages/kumo/LICENSE-CLOUDFLARE).
 - Current status: experiment with incomplete parity evidence.
 
 ## Inspired by — Vercel Geist (public docs)
 
 `@proyecto-viviana/geist` is a Geist-shaped Button experiment. The public
-API names and rest paint follow https://vercel.com/geist/button. The
+API names and rest paint follow <https://vercel.com/geist/button>. The
 package does not copy `@vercel/geistcn`, which is not on public npm.
 
 - Docs: <https://vercel.com/geist>.
