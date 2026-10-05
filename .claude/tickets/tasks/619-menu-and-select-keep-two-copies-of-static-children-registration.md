@@ -4,12 +4,17 @@ type: task
 title: "Menu and Select keep two copies of static-children registration"
 created: 2026-10-02
 parent: 33
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-10-02,
       note: "Follow-up to #43. Board parent is initiative #33, the parent of #43, because a task cannot parent a task. f5b391e7 added staticSelectCollection.tsx beside Menu's StaticMenuCollectionItem.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "verified: unified static collection item registration in Collection.tsx (createStaticCollectionState, useStaticItemRegistration, StaticCollectionProbeItem, CollectionBuilder static branch); deduplicated Menu and Select implementations; converted staticSelectCollection.tsx into a backward-compatible shim; all Menu, Select, ListBox, and Collection tests pass green",
     }
 ---
 

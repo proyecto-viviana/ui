@@ -354,6 +354,12 @@ export {
 export {
   Collection,
   CollectionBuilder,
+  StaticCollectionContext,
+  StaticCollectionProbeContext,
+  StaticCollectionProbeItem,
+  createStaticCollectionState,
+  useStaticItemRegistration,
+  staticItemText,
   createLeafComponent,
   createBranchComponent,
   CollectionRendererContext,
@@ -379,6 +385,9 @@ export {
   type CollectionRendererContextValue,
   type CollectionPrimitiveRenderProps,
   type ItemRenderProps,
+  type StaticCollectionContextValue,
+  type StaticCollectionItem,
+  type StaticCollectionBuilderProps,
 } from "./Collection";
 
 export {

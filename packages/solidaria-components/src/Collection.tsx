@@ -24,8 +24,16 @@
  * - packages/react-aria-components/src/Header.tsx
  */
 
-import { createContext, createMemo, useContext, For } from "solid-js";
-import { StaticSelectProbeContext } from "./staticSelectCollection";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  useContext,
+  For,
+  type Accessor,
+} from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { DragTypes, DropOperation, DropTarget } from "@proyecto-viviana/solid-stately";
@@ -337,8 +345,169 @@ export const DefaultCollectionRenderer: CollectionRenderer<unknown> = {
   },
 };
 
-export function CollectionBuilder<T>(props: AriaCollectionBuilderProps<T>): unknown {
-  return AriaCollectionBuilder(props);
+export interface StaticCollectionItem {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean;
+}
+
+export interface StaticCollectionContextValue {
+  registerItem(item: StaticCollectionItem): void;
+  unregisterItem(id: Key): void;
+}
+
+export const StaticCollectionContext = createContext<StaticCollectionContextValue | null>(null);
+
+/** True only for the registration/probe copy of static collection children. */
+export const StaticCollectionProbeContext = createContext(false);
+
+/**
+ * Display text for a static collection option. An explicit `textValue` wins,
+ * including an empty string. Otherwise a string aria-label, then string or number
+ * children.
+ */
+export function staticItemText(props: {
+  textValue?: string;
+  "aria-label"?: string;
+  children?: unknown;
+}): string | undefined {
+  if (props.textValue != null) return props.textValue;
+  const label = props["aria-label"];
+  if (typeof label === "string") return label;
+  return textFromNode(props.children);
+}
+
+function textFromNode(node: unknown): string | undefined {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (typeof node === "function" && node.length === 0) {
+    return textFromNode((node as () => unknown)());
+  }
+  if (Array.isArray(node)) {
+    let text = "";
+    let any = false;
+    for (const child of node) {
+      const part = textFromNode(child);
+      if (part != null) {
+        text += part;
+        any = true;
+      }
+    }
+    return any ? text : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Manages item descriptor registration for collections with static JSX children (Menu, Select).
+ */
+export function createStaticCollectionState(): {
+  items: Accessor<StaticCollectionItem[]>;
+  context: StaticCollectionContextValue;
+} {
+  const [items, setItems] = createSignal<StaticCollectionItem[]>([]);
+  const itemMap = new Map<Key, StaticCollectionItem>();
+
+  const syncItems = () => {
+    setItems(Array.from(itemMap.values()));
+  };
+
+  const context: StaticCollectionContextValue = {
+    registerItem(item) {
+      const previous = itemMap.get(item.id);
+      if (
+        previous &&
+        previous.textValue === item.textValue &&
+        previous.isDisabled === item.isDisabled
+      ) {
+        return;
+      }
+
+      itemMap.set(item.id, item);
+      syncItems();
+    },
+    unregisterItem(id) {
+      if (itemMap.delete(id)) {
+        syncItems();
+      }
+    },
+  };
+
+  return { items, context };
+}
+
+/**
+ * Registers an item with the nearest StaticCollectionContext.
+ */
+export function useStaticItemRegistration(props: {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean | (() => boolean);
+  "aria-label"?: string;
+  children?: unknown;
+}): void {
+  const collection = useContext(StaticCollectionContext);
+  let registeredKey: Key | null = null;
+
+  createEffect(
+    () => {
+      if (!collection) return null;
+      const disabled = props.isDisabled;
+      return {
+        id: props.id,
+        textValue: staticItemText(props),
+        isDisabled: typeof disabled === "function" ? Boolean(disabled()) : Boolean(disabled),
+      };
+    },
+    (item) => {
+      if (!collection || !item) return;
+      if (registeredKey != null && registeredKey !== item.id) {
+        collection.unregisterItem(registeredKey);
+      }
+      registeredKey = item.id;
+      collection.registerItem(item);
+    },
+  );
+
+  onCleanup(() => {
+    if (registeredKey != null) {
+      collection?.unregisterItem(registeredKey);
+    }
+  });
+}
+
+/**
+ * Mounted while a collection is probed or closed so the collection exists before
+ * display. Renders nothing.
+ */
+export function StaticCollectionProbeItem(props: {
+  id: Key;
+  textValue?: string;
+  isDisabled?: boolean | (() => boolean);
+  "aria-label"?: string;
+  children?: unknown;
+}): JSX.Element {
+  useStaticItemRegistration(props);
+  return <></>;
+}
+
+export interface StaticCollectionBuilderProps {
+  content?: JSX.Element;
+  children: (items: Accessor<StaticCollectionItem[]>) => JSX.Element;
+}
+
+export function CollectionBuilder<T>(
+  props: AriaCollectionBuilderProps<T> | StaticCollectionBuilderProps,
+): unknown {
+  if ("content" in props && typeof props.children === "function") {
+    const { items, context } = createStaticCollectionState();
+    return (
+      <StaticCollectionContext value={context}>
+        <StaticCollectionProbeContext value={true}>{props.content}</StaticCollectionProbeContext>
+        {(props.children as (items: Accessor<StaticCollectionItem[]>) => JSX.Element)(items)}
+      </StaticCollectionContext>
+    );
+  }
+  return AriaCollectionBuilder(props as AriaCollectionBuilderProps<T>);
 }
 
 export function Collection<T>(props: AriaCollectionProps<T>): unknown {
@@ -423,7 +592,7 @@ export function Section(props: SectionProps): JSX.Element {
  * A header/title primitive for collection sections.
  */
 export function Header(props: HeaderProps): JSX.Element {
-  const probe = useContext(StaticSelectProbeContext);
+  const probe = useContext(StaticCollectionProbeContext);
   const [merged, ref] = useContextProps(props, props.ref, HeaderContext);
   const [local, domProps] = splitProps(merged, [
     "children",

@@ -90,9 +90,13 @@ import {
   HeaderContext,
   Section,
   Group,
+  StaticCollectionContext,
+  createStaticCollectionState,
+  useStaticItemRegistration,
   type CollectionEntry,
   type CollectionRendererContextValue,
   type SectionProps,
+  type StaticCollectionItem,
   useCollectionRenderer,
   flattenCollectionEntries,
   isCollectionSection,
@@ -320,17 +324,6 @@ interface MenuItemContextValue {
   setItemRef?: (el: HTMLElement | null) => void;
 }
 
-interface StaticMenuCollectionItem {
-  id: Key;
-  textValue?: string;
-  isDisabled?: boolean;
-}
-
-interface StaticMenuCollectionContextValue {
-  registerItem(item: StaticMenuCollectionItem): void;
-  unregisterItem(id: Key): void;
-}
-
 interface MenuSectionSelectionContextValue {
   selectionMode: () => SelectionMode;
   isSelected(key: Key): boolean;
@@ -356,7 +349,6 @@ export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
 export { RootMenuTriggerStateContext };
 const MenuItemContext = createContext<MenuItemContextValue | null>(null);
-const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextValue | null>(null);
 const MenuSectionSelectionContext = createContext<MenuSectionSelectionContextValue | null>(null);
 const MenuSectionSelectionRegistryContext =
   createContext<MenuSectionSelectionRegistryContextValue | null>(null);
@@ -749,38 +741,10 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const locale = useLocale();
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
-  const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([], {
-    ownedWrite: true,
-  });
-  const staticItemMap = new Map<Key, StaticMenuCollectionItem>();
+  const { items: staticItems, context: staticCollectionContext } = createStaticCollectionState();
   const sectionSelectionMap = new Map<Key, MenuSectionSelectionContextValue>();
   const itemCloseMap = new Map<Key, () => boolean | undefined>();
   const usesStaticChildren = () => local.staticChildren != null || stateProps.items == null;
-
-  const syncStaticItems = () => {
-    setStaticItems(Array.from(staticItemMap.values()));
-  };
-
-  const staticCollectionContext: StaticMenuCollectionContextValue = {
-    registerItem(item) {
-      const previous = staticItemMap.get(item.id);
-      if (
-        previous &&
-        previous.textValue === item.textValue &&
-        previous.isDisabled === item.isDisabled
-      ) {
-        return;
-      }
-
-      staticItemMap.set(item.id, item);
-      syncStaticItems();
-    },
-    unregisterItem(id) {
-      if (staticItemMap.delete(id)) {
-        syncStaticItems();
-      }
-    },
-  };
   const sectionSelectionRegistry: MenuSectionSelectionRegistryContextValue = {
     registerItem(key, selection) {
       sectionSelectionMap.set(key, selection);
@@ -837,19 +801,18 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     },
     get getKey() {
       return usesStaticChildren()
-        ? (item: T) => (item as StaticMenuCollectionItem).id
+        ? (item: T) => (item as StaticCollectionItem).id
         : stateProps.getKey;
     },
     get getTextValue() {
       return usesStaticChildren()
         ? (item: T) =>
-            (item as StaticMenuCollectionItem).textValue ??
-            String((item as StaticMenuCollectionItem).id)
+            (item as StaticCollectionItem).textValue ?? String((item as StaticCollectionItem).id)
         : stateProps.getTextValue;
     },
     get getDisabled() {
       return usesStaticChildren()
-        ? (item: T) => Boolean((item as StaticMenuCollectionItem).isDisabled)
+        ? (item: T) => Boolean((item as StaticCollectionItem).isDisabled)
         : stateProps.getDisabled;
     },
     get disabledKeys() {
@@ -1379,9 +1342,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       <MenuStateContext value={state}>
         <MenuSectionSelectionRegistryContext value={sectionSelectionRegistry}>
           <MenuItemCloseRegistryContext value={itemCloseRegistry}>
-            <StaticMenuCollectionContext
-              value={usesStaticChildren() ? staticCollectionContext : null}
-            >
+            <StaticCollectionContext value={usesStaticChildren() ? staticCollectionContext : null}>
               <MenuItemContext value={menuItemContextValue()}>
                 <CollectionRendererContext value={collectionRenderer()}>
                   <>
@@ -1416,7 +1377,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                   </>
                 </CollectionRendererContext>
               </MenuItemContext>
-            </StaticMenuCollectionContext>
+            </StaticCollectionContext>
           </MenuItemCloseRegistryContext>
         </MenuSectionSelectionRegistryContext>
       </MenuStateContext>
@@ -1474,7 +1435,6 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   const state = context as MenuState<T>;
   const menuContext = useContext(MenuContext) as MenuContextValue<T> | null;
   const itemContext = useContext(MenuItemContext);
-  const staticCollection = useContext(StaticMenuCollectionContext);
   const sectionSelection = useContext(MenuSectionSelectionContext);
   const sectionSelectionRegistry = useContext(MenuSectionSelectionRegistryContext);
   const itemCloseRegistry = useContext(MenuItemCloseRegistryContext);
@@ -1492,7 +1452,6 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     itemContext?.closeOnSelect;
   const activeSectionSelection = () =>
     sectionSelection && sectionSelection.selectionMode() !== "none" ? sectionSelection : null;
-  let registeredStaticKey: Key | null = null;
   let registeredSectionSelectionKey: Key | null = null;
   let registeredSectionSelection: MenuSectionSelectionContextValue | null = null;
   let registeredCloseKey: Key | null = null;
@@ -1509,30 +1468,12 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     }
   };
 
-  createEffect(
-    () => {
-      if (!staticCollection) return null;
-      return {
-        id: local.id,
-        textValue: local.textValue ?? ariaProps["aria-label"],
-        isDisabled:
-          resolveBoolean(ariaProps.isDisabled) || (sectionSelection?.isDisabled(local.id) ?? false),
-      };
-    },
-    (item) => {
-      if (!staticCollection || !item) return;
-      if (registeredStaticKey != null && registeredStaticKey !== item.id) {
-        staticCollection.unregisterItem(registeredStaticKey);
-      }
-      registeredStaticKey = item.id;
-      staticCollection.registerItem(item);
-    },
-  );
-
-  onCleanup(() => {
-    if (registeredStaticKey != null) {
-      staticCollection?.unregisterItem(registeredStaticKey);
-    }
+  useStaticItemRegistration({
+    id: local.id,
+    textValue: local.textValue,
+    isDisabled: () =>
+      resolveBoolean(ariaProps.isDisabled) || (sectionSelection?.isDisabled(local.id) ?? false),
+    "aria-label": ariaProps["aria-label"],
   });
 
   createEffect(

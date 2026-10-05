@@ -82,14 +82,15 @@ import {
 import { ListBoxLoadMoreItem, ListBoxStateContext } from "./ListBox";
 import { VirtualizerItem } from "./Virtualizer";
 import { TextContext } from "./Text";
-import { useCollectionRenderer, useCollectionRoot } from "./Collection";
 import {
-  StaticSelectCollectionContext,
-  StaticSelectProbeContext,
-  StaticSelectProbeItem,
-  type StaticSelectCollectionContextValue,
-  type StaticSelectCollectionItem,
-} from "./staticSelectCollection";
+  useCollectionRenderer,
+  useCollectionRoot,
+  StaticCollectionContext,
+  StaticCollectionProbeContext,
+  StaticCollectionProbeItem,
+  createStaticCollectionState,
+  type StaticCollectionItem,
+} from "./Collection";
 import { racIntlStrings } from "./intl";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -415,35 +416,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
 
   // Static JSX children register descriptors here. `items` stays the caller's
   // array when it is passed; the getter below only reads this signal then.
-  const [staticItems, setStaticItems] = createSignal<StaticSelectCollectionItem[]>([], {
-    ownedWrite: true,
-  });
-  const staticItemMap = new Map<Key, StaticSelectCollectionItem>();
-  const syncStaticItems = () => {
-    setStaticItems(Array.from(staticItemMap.values()));
-  };
-  const staticCollectionContext: StaticSelectCollectionContextValue | null =
-    stateProps.items == null
-      ? {
-          registerItem(item) {
-            const previous = staticItemMap.get(item.id);
-            if (
-              previous &&
-              previous.textValue === item.textValue &&
-              previous.isDisabled === item.isDisabled
-            ) {
-              return;
-            }
-            staticItemMap.set(item.id, item);
-            syncStaticItems();
-          },
-          unregisterItem(id) {
-            if (staticItemMap.delete(id)) {
-              syncStaticItems();
-            }
-          },
-        }
-      : null;
+  const { items: staticItems, context: staticCollectionContext } = createStaticCollectionState();
 
   const state = createSelectState<T>({
     get items() {
@@ -452,19 +425,18 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     },
     get getKey() {
       return stateProps.items == null
-        ? (item: T) => (item as StaticSelectCollectionItem).id
+        ? (item: T) => (item as StaticCollectionItem).id
         : stateProps.getKey;
     },
     get getTextValue() {
       return stateProps.items == null
         ? (item: T) =>
-            (item as StaticSelectCollectionItem).textValue ??
-            String((item as StaticSelectCollectionItem).id)
+            (item as StaticCollectionItem).textValue ?? String((item as StaticCollectionItem).id)
         : stateProps.getTextValue;
     },
     get getDisabled() {
       return stateProps.items == null
-        ? (item: T) => Boolean((item as StaticSelectCollectionItem).isDisabled)
+        ? (item: T) => Boolean((item as StaticCollectionItem).isDisabled)
         : stateProps.getDisabled;
     },
     get disabledKeys() {
@@ -884,7 +856,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   };
 
   return (
-    <StaticSelectCollectionContext value={staticCollectionContext}>
+    <StaticCollectionContext value={stateProps.items == null ? staticCollectionContext : null}>
       <SelectContext
         value={
           {
@@ -927,7 +899,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           </FieldErrorContext>
         </SelectStateContext>
       </SelectContext>
-    </StaticSelectCollectionContext>
+    </StaticCollectionContext>
   );
 }
 
@@ -1409,7 +1381,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   return (
     <>
       <Show when={usesStaticChildren}>
-        <StaticSelectProbeContext value={true}>{renderStaticChildren()}</StaticSelectProbeContext>
+        <StaticCollectionProbeContext value={true}>
+          {renderStaticChildren()}
+        </StaticCollectionProbeContext>
       </Show>
       <Show when={isOpen()}>
         <Show
@@ -1431,17 +1405,17 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
  * An option in a select listbox.
  */
 export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
-  const probe = useContext(StaticSelectProbeContext);
+  const probe = useContext(StaticCollectionProbeContext);
   if (probe) {
     return (
-      <StaticSelectProbeItem
+      <StaticCollectionProbeItem
         id={props.id}
         textValue={props.textValue}
         isDisabled={props.isDisabled}
         aria-label={props["aria-label"]}
       >
         {props.children}
-      </StaticSelectProbeItem>
+      </StaticCollectionProbeItem>
     );
   }
   return <SelectOptionElement {...props} />;

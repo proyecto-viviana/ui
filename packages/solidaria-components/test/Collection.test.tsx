@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { flush } from "solid-js";
 import {
   Collection,
   CollectionBuilder,
@@ -18,6 +19,11 @@ import {
   flattenCollectionEntries,
   isCollectionSection,
   useCollectionRenderer,
+  createStaticCollectionState,
+  useStaticItemRegistration,
+  StaticCollectionContext,
+  StaticCollectionProbeItem,
+  type StaticCollectionItem,
 } from "../src/Collection";
 
 describe("Collection primitives", () => {
@@ -176,5 +182,72 @@ describe("Collection primitives", () => {
       children: (item: { id: string; label: string }) => ({ label: item.label }),
     }) as Array<Record<string, unknown>>;
     expect((out[0]?.value as { id: string })?.id).toBe("x");
+  });
+
+  it("manages static collection item registration with createStaticCollectionState", () => {
+    const { items, context } = createStaticCollectionState();
+    expect(items()).toEqual([]);
+
+    context.registerItem({ id: "1", textValue: "First" });
+    flush();
+    expect(items()).toEqual([{ id: "1", textValue: "First" }]);
+
+    context.registerItem({ id: "2", textValue: "Second", isDisabled: true });
+    flush();
+    expect(items()).toHaveLength(2);
+
+    context.unregisterItem("1");
+    flush();
+    expect(items()).toEqual([{ id: "2", textValue: "Second", isDisabled: true }]);
+  });
+
+  it("registers items using useStaticItemRegistration and StaticCollectionProbeItem", () => {
+    const { items, context } = createStaticCollectionState();
+
+    function StaticItemComponent(props: { id: string; label: string }) {
+      useStaticItemRegistration({ id: props.id, textValue: props.label });
+      return <div>{props.label}</div>;
+    }
+
+    const { unmount } = render(() => (
+      <StaticCollectionContext value={context}>
+        <StaticItemComponent id="a" label="Item A" />
+        <StaticCollectionProbeItem id="b" textValue="Item B" isDisabled={true} />
+      </StaticCollectionContext>
+    ));
+
+    flush();
+    expect(items()).toEqual([
+      { id: "a", textValue: "Item A", isDisabled: false },
+      { id: "b", textValue: "Item B", isDisabled: true },
+    ]);
+
+    unmount();
+    flush();
+    expect(items()).toEqual([]);
+  });
+
+  it("supports CollectionBuilder static children branch", () => {
+    render(() => (
+      <CollectionBuilder
+        content={
+          <>
+            <StaticCollectionProbeItem id="1" textValue="One" />
+            <StaticCollectionProbeItem id="2" textValue="Two" />
+          </>
+        }
+      >
+        {(items) => (
+          <ul data-testid="built-list">
+            {items().map((item: StaticCollectionItem) => (
+              <li data-testid={`item-${String(item.id)}`}>{item.textValue}</li>
+            ))}
+          </ul>
+        )}
+      </CollectionBuilder>
+    ));
+
+    expect(screen.getByTestId("item-1")).toHaveTextContent("One");
+    expect(screen.getByTestId("item-2")).toHaveTextContent("Two");
   });
 });

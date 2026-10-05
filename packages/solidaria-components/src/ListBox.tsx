@@ -97,11 +97,9 @@ import type { ItemDropTarget } from "@proyecto-viviana/solid-stately";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import { loadMoreSentinelObserverInit } from "./loadMoreSentinel";
 import {
-  StaticSelectCollectionContext,
-  StaticSelectProbeContext,
-  StaticSelectProbeItem,
-} from "./staticSelectCollection";
-import {
+  StaticCollectionContext,
+  StaticCollectionProbeContext,
+  StaticCollectionProbeItem,
   CollectionRendererContext,
   HeaderContext,
   Section,
@@ -1231,17 +1229,17 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
  * An item in a listbox.
  */
 export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
-  const probe = useContext(StaticSelectProbeContext);
+  const probe = useContext(StaticCollectionProbeContext);
   if (probe) {
     return (
-      <StaticSelectProbeItem
+      <StaticCollectionProbeItem
         id={props.id}
         textValue={props.textValue}
         isDisabled={props.isDisabled}
         aria-label={props["aria-label"]}
       >
         {props.children}
-      </StaticSelectProbeItem>
+      </StaticCollectionProbeItem>
     );
   }
   return <ListBoxItemElement {...props} />;
@@ -1580,8 +1578,8 @@ function StaticSelectListBoxSection(props: ListBoxSectionProps): JSX.Element {
  * Section primitive alias for ListBox composition parity.
  */
 export function ListBoxSection(props: ListBoxSectionProps): JSX.Element {
-  const collection = useContext(StaticSelectCollectionContext);
-  const probe = useContext(StaticSelectProbeContext);
+  const collection = useContext(StaticCollectionContext);
+  const probe = useContext(StaticCollectionProbeContext);
   if (collection == null) {
     return <Section {...props} />;
   }
