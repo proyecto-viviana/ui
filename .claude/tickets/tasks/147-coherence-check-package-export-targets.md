@@ -4,9 +4,14 @@ type: task
 title: "Coherence-check package export targets"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "verified: added coherence checks rejecting split CSS conditions and types/JS layout skew in check-package-artifacts.mjs; moved solid-stately flags to src/private/flags/flags.ts eliminating layout skew; added negative contract fixtures in test-ci-guard-contracts.mjs proving both cases exit non-zero",
+    }
 ---
 
 ## Cause

@@ -135,11 +135,9 @@ function sourceOfTarget(dir: string, target: string): string | null {
 
 // The published targets of a subpath, in the order the source mapping should
 // try them. `types` is tsc's output and mirrors `src/` one file to one file;
-// the runtime condition is the bundler's, and a bundler may rename an entry —
-// solid-stately emits `src/flags/flags.ts` as `dist/private/flags/flags.js`,
-// and only its `types` condition still spells the source path. So try the
-// declaration first and the runtime target second. `solid` points at the same
-// graph as `import` in .jsx form, so either maps back to the same module.
+// the runtime condition is the bundler's, and a bundler may rename an entry.
+// Try the declaration first and the runtime target second. `solid` points at
+// the same graph as `import` in .jsx form, so either maps back to the same module.
 function publishedTargets(dir: string, subpath: string): string[] {
   const exports = manifestOf(dir).exports as Record<string, unknown> | undefined;
   const condition = exports?.[subpath];

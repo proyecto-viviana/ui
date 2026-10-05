@@ -32,6 +32,10 @@ function exportTargets(value, condition = "default") {
   return Object.entries(value).flatMap(([key, child]) => exportTargets(child, key));
 }
 
+function targetStem(target) {
+  return target.replace(/\.d\.[cm]?ts$/, "").replace(/\.[cm]?[jt]sx?$/, "");
+}
+
 function codeFiles(directory, extensionPattern) {
   if (!existsSync(directory)) return [];
   const files = [];
@@ -66,6 +70,48 @@ for (const packageDir of publicPackageDirs) {
   }
   for (const [subpath, value] of Object.entries(manifest.exports ?? {})) {
     for (const target of exportTargets(value)) refs.push({ label: subpath, ...target });
+  }
+
+  if (
+    typeof manifest.types === "string" &&
+    (typeof manifest.main === "string" || typeof manifest.module === "string")
+  ) {
+    const jsTarget = manifest.main ?? manifest.module;
+    if (targetStem(manifest.types) !== targetStem(jsTarget)) {
+      problems.push(
+        `${manifest.name} top-level types [${manifest.types}] does not sit alongside JS [${jsTarget}]`,
+      );
+    }
+  }
+
+  for (const [subpath, value] of Object.entries(manifest.exports ?? {})) {
+    const targets = exportTargets(value);
+    const isCss = subpath.endsWith(".css") || targets.some((t) => t.target.endsWith(".css"));
+    if (isCss) {
+      const distinctTargets = new Set(targets.map((t) => t.target));
+      if (distinctTargets.size > 1) {
+        problems.push(
+          `${manifest.name} ${subpath}: split CSS export conditions target different files: ${[...distinctTargets].join(", ")}`,
+        );
+      }
+    }
+
+    const typesTarget = targets.find(
+      (t) => t.condition === "types" || t.target.endsWith(".d.ts"),
+    )?.target;
+    if (typesTarget && !typesTarget.includes("*")) {
+      const typesStem = targetStem(typesTarget);
+      for (const t of targets) {
+        if (t.target === typesTarget || t.target.includes("*")) continue;
+        if (t.target.endsWith(".css") || t.target.endsWith(".json")) continue;
+        const jsStem = targetStem(t.target);
+        if (typesStem !== jsStem) {
+          problems.push(
+            `${manifest.name} ${subpath}: types [${typesTarget}] does not sit alongside JS ${t.condition} [${t.target}]`,
+          );
+        }
+      }
+    }
   }
 
   const mappedAttributionSources = new Set();

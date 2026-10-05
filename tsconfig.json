@@ -23,7 +23,7 @@
       "@solidaria/*": ["./packages/*/src"],
       "@proyecto-viviana/solid-stately": ["./packages/solid-stately/src/index.ts"],
       "@proyecto-viviana/solid-stately/private/flags/flags": [
-        "./packages/solid-stately/src/flags/flags.ts"
+        "./packages/solid-stately/src/private/flags/flags.ts"
       ],
       "@proyecto-viviana/solidaria": ["./packages/solidaria/src/index.ts"],
       "@proyecto-viviana/solidaria/*": ["./packages/solidaria/src/*/index.ts"],

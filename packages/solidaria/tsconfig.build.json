@@ -11,7 +11,7 @@
     "paths": {
       "@proyecto-viviana/solid-stately": ["../solid-stately/dist/index.d.ts"],
       "@proyecto-viviana/solid-stately/private/flags/flags": [
-        "../solid-stately/dist/flags/flags.d.ts"
+        "../solid-stately/dist/private/flags/flags.d.ts"
       ]
     }
   },

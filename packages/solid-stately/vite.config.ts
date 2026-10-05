@@ -6,7 +6,7 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
-      "private/flags/flags": "src/flags/flags.ts",
+      "private/flags/flags": "src/private/flags/flags.ts",
     },
     format: ["esm"],
     platform: "neutral",

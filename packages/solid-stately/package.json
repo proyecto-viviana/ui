@@ -38,7 +38,7 @@
       "default": "./dist/index.js"
     },
     "./private/flags/flags": {
-      "types": "./dist/flags/flags.d.ts",
+      "types": "./dist/private/flags/flags.d.ts",
       "import": "./dist/private/flags/flags.js",
       "default": "./dist/private/flags/flags.js"
     },

@@ -701,6 +701,126 @@ try {
   );
   console.log("PASS: missing package export artifact exits non-zero.");
 
+  const packageCoherenceFixture = path.join(fixtureRoot, "package-export-coherence");
+  mkdirSync(path.join(packageCoherenceFixture, "packages", "example-css", "dist"), {
+    recursive: true,
+  });
+  mkdirSync(path.join(packageCoherenceFixture, "packages", "example-css", "src"), {
+    recursive: true,
+  });
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-css", "package.json"),
+    JSON.stringify({
+      name: "@example/css-split",
+      version: "0.1.0",
+      main: "./dist/index.js",
+      types: "./dist/index.d.ts",
+      exports: {
+        ".": {
+          types: "./dist/index.d.ts",
+          import: "./dist/index.js",
+        },
+        "./theme.css": {
+          import: "./dist/theme.css",
+          default: "./src/theme.css",
+        },
+      },
+    }),
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-css", "dist", "index.js"),
+    "export const ok = true;\n",
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-css", "dist", "index.d.ts"),
+    "export declare const ok: boolean;\n",
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-css", "dist", "theme.css"),
+    "/* dist css */\n",
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-css", "src", "theme.css"),
+    "/* src css */\n",
+  );
+  const splitCssRun = runSync("check-package-artifacts.mjs", packageCoherenceFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example-css",
+  });
+  assert(splitCssRun.status !== 0, "split CSS export conditions unexpectedly passed");
+  assert(
+    combined(splitCssRun).includes("split CSS export conditions target different files"),
+    "package-artifact failure did not identify split CSS export conditions",
+  );
+  console.log("PASS: split CSS export conditions exit non-zero.");
+
+  mkdirSync(path.join(packageCoherenceFixture, "packages", "example-stately", "dist", "flags"), {
+    recursive: true,
+  });
+  mkdirSync(
+    path.join(packageCoherenceFixture, "packages", "example-stately", "dist", "private", "flags"),
+    { recursive: true },
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-stately", "package.json"),
+    JSON.stringify({
+      name: "@example/stately-flags",
+      version: "0.1.0",
+      main: "./dist/index.js",
+      types: "./dist/index.d.ts",
+      exports: {
+        ".": {
+          types: "./dist/index.d.ts",
+          import: "./dist/index.js",
+        },
+        "./private/flags/flags": {
+          types: "./dist/flags/flags.d.ts",
+          import: "./dist/private/flags/flags.js",
+          default: "./dist/private/flags/flags.js",
+        },
+      },
+    }),
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-stately", "dist", "index.js"),
+    "export const ok = true;\n",
+  );
+  writeFileSync(
+    path.join(packageCoherenceFixture, "packages", "example-stately", "dist", "index.d.ts"),
+    "export declare const ok: boolean;\n",
+  );
+  writeFileSync(
+    path.join(
+      packageCoherenceFixture,
+      "packages",
+      "example-stately",
+      "dist",
+      "flags",
+      "flags.d.ts",
+    ),
+    "export declare const flags: boolean;\n",
+  );
+  writeFileSync(
+    path.join(
+      packageCoherenceFixture,
+      "packages",
+      "example-stately",
+      "dist",
+      "private",
+      "flags",
+      "flags.js",
+    ),
+    "export const flags = true;\n",
+  );
+  const statelyFlagsRun = runSync("check-package-artifacts.mjs", packageCoherenceFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example-stately",
+  });
+  assert(statelyFlagsRun.status !== 0, "stately flags types/JS layout skew unexpectedly passed");
+  assert(
+    combined(statelyFlagsRun).includes("does not sit alongside JS"),
+    "package-artifact failure did not identify types/JS layout skew",
+  );
+  console.log("PASS: package export types/JS layout skew exits non-zero.");
+
   const builtHeader = [
     "/" + "*",
     " * Copyright 2024 Adobe. All rights reserved.",
