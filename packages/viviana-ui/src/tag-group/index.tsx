@@ -16,13 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/TagGroup.tsx.
 
-import {
-  children as resolveChildren,
-  createContext,
-  createUniqueId,
-  useContext,
-  Show,
-} from "solid-js";
+import { createContext, createMemo, createUniqueId, useContext, Show } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
@@ -604,8 +598,9 @@ export function Tag(props: TagProps): JSX.Element {
   // explicit textValue is given. This names the row (and cascades to the remove
   // button's `aria-labelledby` and the gridcell's name-from-contents), matching
   // how S2 auto-derives `node.textValue` from string children.
+  const content = createMemo(() => local.children);
   const textValue = () =>
-    local.textValue ?? (typeof local.children === "string" ? local.children : undefined);
+    local.textValue ?? (typeof content() === "string" ? content() : undefined);
   const size = () => normalizeSize(local.size ?? ctx?.size);
   const isEmphasized = () => local.isEmphasized ?? ctx?.isEmphasized ?? false;
   const isLink = () => local.href != null;
@@ -658,7 +653,7 @@ export function Tag(props: TagProps): JSX.Element {
       {(renderProps) => (
         <>
           <div class={resolveStyleClass(tagContentStyle, {})}>
-            <span class={resolveStyleClass(tagTextStyle, {})}>{local.children}</span>
+            <span class={resolveStyleClass(tagTextStyle, {})}>{content()}</span>
           </div>
           <Show when={renderProps.allowsRemoving}>
             <HeadlessTagRemoveButton
@@ -784,15 +779,20 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
       .join(" ");
 
   const renderItem = (item: T) => {
-    const resolved = resolveChildren(() => local.children(item));
-    const rendered = resolved();
-    if (isRenderedTag(rendered)) {
-      return rendered;
+    // Cache or unwrap the authored child without recursively resolving dynamic text.
+    // Solid's children() helper turns mixed text into a snapshot that goes stale
+    // when this branch is hydrated.
+    let raw = local.children(item);
+    while (typeof raw === "function" && (raw as { length?: number }).length === 0) {
+      raw = (raw as () => unknown)();
+    }
+    if (isRenderedTag(raw as JSX.Element)) {
+      return raw as JSX.Element;
     }
 
     return (
       <Tag id={keyForItem(item)} isDisabled={hasKey(local.disabledKeys, keyForItem(item))}>
-        {rendered}
+        {raw as JSX.Element}
       </Tag>
     );
   };

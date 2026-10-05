@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/SegmentedControl.tsx
 
 // Port of packages/@react-spectrum/s2/src/SegmentedControl.tsx.
-import { children as resolveChildren, createContext, onSettled, useContext } from "solid-js";
+import { createContext, createMemo, onSettled, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -369,7 +369,10 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
         let contentElement: HTMLDivElement | undefined;
 
         function ResolvedContent() {
-          const resolvedChildren = resolveChildren(() => local.children);
+          // Cache the authored child value without recursively resolving dynamic members.
+          // Solid's children() helper turns mixed text into a snapshot that goes stale
+          // when this branch is hydrated.
+          const content = createMemo(() => local.children);
 
           return (
             <div
@@ -379,12 +382,12 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
               class={itemContent}
               style={pressScale(() => contentElement)({ isPressed: renderProps.isPressed })}
             >
-              {typeof resolvedChildren() === "string" ? (
+              {typeof content() === "string" ? (
                 <span class={itemText} data-rsp-slot="text">
-                  {resolvedChildren()}
+                  {content()}
                 </span>
               ) : (
-                resolvedChildren()
+                content()
               )}
             </div>
           );

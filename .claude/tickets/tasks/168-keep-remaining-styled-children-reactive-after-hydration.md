@@ -4,9 +4,14 @@ type: task
 title: "Keep remaining styled children reactive after hydration"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "cached styled children with createMemo and unwrapped tag providers shallowly across ActionButton, ToggleButton, LinkButton, Badge, Radio, SegmentedControl, and TagGroup to preserve reactive mixed text across hydration",
+    }
 ---
 
 ## Cause

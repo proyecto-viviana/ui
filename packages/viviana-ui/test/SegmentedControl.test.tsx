@@ -1,3 +1,4 @@
+import { createSignal, flush } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
 import { describe, expect, it } from "vite-plus/test";
 import { createIcon } from "../src/icon";
@@ -28,5 +29,25 @@ describe("SegmentedControl", () => {
     expect(icon?.parentElement).toHaveAttribute("slot", "icon");
     expect(icon?.parentElement?.tagName).toBe("DIV");
     expect(grid.querySelector('[data-rsp-slot="text"]')).not.toBeInTheDocument();
+  });
+
+  it("updates mixed text children reactively without recreating the item", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return (
+        <SegmentedControl aria-label="View mode">
+          <SegmentedControlItem id="item">count: {count()}</SegmentedControlItem>
+        </SegmentedControl>
+      );
+    });
+
+    const item = screen.getByRole("radio");
+    expect(item).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("radio")).toBe(item);
+    expect(item).toHaveTextContent("count: 1");
   });
 });

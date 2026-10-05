@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import { children as resolveChildren, useContext } from "solid-js";
+import { createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -159,8 +159,10 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     };
 
     function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
+      // Cache the authored child value without recursively resolving dynamic members.
+      // Solid's children() helper turns mixed text into a snapshot that goes stale
+      // when this branch is hydrated.
+      const content = createMemo(() => local.children);
       const textChild = () => getSingleTextChild(content());
 
       return (

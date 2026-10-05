@@ -13,7 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionButton.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionButton.tsx.
-import { children as resolveChildren, createEffect, createSignal, useContext } from "solid-js";
+import { createEffect, createMemo, createSignal, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   Button as HeadlessButton,
@@ -399,8 +399,10 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     };
 
     function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
+      // Cache the authored child value without recursively resolving dynamic members.
+      // Solid's children() helper turns mixed text into a snapshot that goes stale
+      // when this branch is hydrated.
+      const content = createMemo(() => local.children);
       const textChild = () => getSingleTextChild(content());
 
       return (

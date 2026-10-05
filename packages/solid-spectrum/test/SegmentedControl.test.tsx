@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import {
@@ -277,5 +277,25 @@ describe("SegmentedControl (solid-spectrum)", () => {
     fireEvent.click(grid);
     expect(innerContent?.style.transform).toBe("");
     expect(grid.style.transform).toBe("");
+  });
+
+  it("updates mixed text children reactively without recreating the item", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return (
+        <SegmentedControl aria-label="View mode">
+          <SegmentedControlItem id="item">count: {count()}</SegmentedControlItem>
+        </SegmentedControl>
+      );
+    });
+
+    const item = screen.getByRole("radio");
+    expect(item).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("radio")).toBe(item);
+    expect(item).toHaveTextContent("count: 1");
   });
 });

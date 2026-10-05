@@ -14,8 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ToggleButton.tsx.
 import {
-  children as resolveChildren,
   createEffect,
+  createMemo,
   createSignal,
   merge,
   onCleanup,
@@ -338,8 +338,10 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     };
 
     function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
+      // Cache the authored child value without recursively resolving dynamic members.
+      // Solid's children() helper turns mixed text into a snapshot that goes stale
+      // when this branch is hydrated.
+      const content = createMemo(() => local.children);
       const textChild = () => getSingleTextChild(content());
 
       return (

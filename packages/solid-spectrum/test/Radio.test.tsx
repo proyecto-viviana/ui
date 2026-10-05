@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { Form } from "../src/form";
 import { RadioGroup, Radio, RadioContext, RadioGroupContext } from "../src/radio";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -725,6 +725,26 @@ describe("RadioGroup", () => {
       const wrapperA = radios[0].closest("label")!;
       expect(wrapperA.querySelector(".scale-0, .scale-100")).toBeNull();
       expect(wrapperA.querySelector("div div")).toBeTruthy();
+    });
+
+    it("updates mixed text children reactively without recreating the radio", () => {
+      let setCount!: (value: number) => void;
+      render(() => {
+        const [count, updateCount] = createSignal(0);
+        setCount = updateCount;
+        return (
+          <RadioGroup aria-label="Test group" defaultValue="a">
+            <Radio value="a">count: {count()}</Radio>
+          </RadioGroup>
+        );
+      });
+      const radio = screen.getByRole("radio");
+      const label = radio.closest("label")!;
+      expect(label).toHaveTextContent("count: 0");
+      setCount(1);
+      flush();
+      expect(radio.closest("label")).toBe(label);
+      expect(label).toHaveTextContent("count: 1");
     });
   });
 });

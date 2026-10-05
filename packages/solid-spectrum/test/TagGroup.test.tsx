@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal, flush } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -276,5 +277,25 @@ describe("TagGroup (solid-spectrum)", () => {
       fireEvent.keyUp(removeBtn, { key: "Enter" });
       expect(removeBtn.style.transform).toBe("");
     });
+  });
+
+  it("updates mixed text children reactively without recreating the tag", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return (
+        <TagGroup aria-label="Tags" items={[{ id: "1", name: "Tag" }]}>
+          {(item) => <Tag id={item.id}>count: {count()}</Tag>}
+        </TagGroup>
+      );
+    });
+
+    const row = screen.getByRole("row");
+    expect(row).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("row")).toBe(row);
+    expect(row).toHaveTextContent("count: 1");
   });
 });

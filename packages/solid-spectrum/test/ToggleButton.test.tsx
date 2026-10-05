@@ -1,3 +1,4 @@
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ToggleButton } from "../src";
@@ -48,5 +49,21 @@ describe("ToggleButton (solid-spectrum)", () => {
     expect(button).not.toHaveAttribute("data-quiet");
     expect(button).not.toHaveAttribute("data-emphasized");
     expect(button.querySelector('[data-slot="icon"]')).not.toBeNull();
+  });
+
+  it("updates mixed text children reactively without recreating the button", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return <ToggleButton>count: {count()}</ToggleButton>;
+    });
+
+    const button = screen.getByRole("button");
+    expect(button).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("button")).toBe(button);
+    expect(button).toHaveTextContent("count: 1");
   });
 });

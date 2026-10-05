@@ -110,4 +110,20 @@ describe("ActionButton", () => {
     expect(plainBadge.className).toBe(groupedBadge.className);
     expect(plainBadge.className).not.toBe(largeBadge.className);
   });
+
+  it("updates mixed text children reactively without recreating the button", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return <ActionButton>count: {count()}</ActionButton>;
+    });
+
+    const button = screen.getByRole("button");
+    expect(button).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(screen.getByRole("button")).toBe(button);
+    expect(button).toHaveTextContent("count: 1");
+  });
 });

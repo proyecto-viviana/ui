@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { Badge, BadgeContext, Text, createIcon } from "../src";
@@ -141,5 +142,21 @@ describe("Badge (solid-spectrum)", () => {
 
     expect(container.firstElementChild).toHaveAttribute("inert", "true");
     expect(container.querySelector('[role="presentation"]')).toBeInTheDocument();
+  });
+
+  it("updates mixed text children reactively without recreating the badge", () => {
+    let setCount!: (value: number) => void;
+    const { container } = render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return <Badge>count: {count()}</Badge>;
+    });
+
+    const badge = container.querySelector('[role="presentation"]');
+    expect(badge).toHaveTextContent("count: 0");
+    setCount(1);
+    flush();
+    expect(container.querySelector('[role="presentation"]')).toBe(badge);
+    expect(badge).toHaveTextContent("count: 1");
   });
 });

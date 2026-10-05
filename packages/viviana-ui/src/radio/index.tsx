@@ -16,13 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/RadioGroup.tsx.
 
-import {
-  children as resolveChildren,
-  Show,
-  createContext,
-  createUniqueId,
-  useContext,
-} from "solid-js";
+import { createMemo, Show, createContext, createUniqueId, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
   RadioGroup as HeadlessRadioGroup,
@@ -687,7 +681,10 @@ export function Radio(props: RadioProps): JSX.Element {
       style={mergedUnsafeStyle()}
     >
       {(renderProps) => {
-        const resolvedChildren = resolveChildren(() =>
+        // Cache the authored child value without recursively resolving dynamic members.
+        // Solid's children() helper turns mixed text into a snapshot that goes stale
+        // when this branch is hydrated.
+        const content = createMemo(() =>
           typeof local.children === "function" ? local.children(renderProps) : local.children,
         );
         const radioCircle = (
@@ -705,7 +702,7 @@ export function Radio(props: RadioProps): JSX.Element {
         return (
           <>
             <CenterBaseline>{radioCircle}</CenterBaseline>
-            <Show when={resolvedChildren()}>{resolvedChildren()}</Show>
+            <Show when={content()}>{content()}</Show>
           </>
         );
       }}

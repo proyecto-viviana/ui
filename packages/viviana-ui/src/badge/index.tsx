@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Badge.tsx.
 
-import { children as resolveChildren, createContext, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
@@ -458,7 +458,7 @@ function normalizeVariant(variant: BadgeVariant | undefined): S2BadgeVariant {
 }
 
 function isTextOnly(value: unknown): boolean {
-  if (typeof value === "string" || typeof value === "number") {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "function") {
     return true;
   }
 
@@ -468,7 +468,8 @@ function isTextOnly(value: unknown): boolean {
         item == null ||
         typeof item === "string" ||
         typeof item === "number" ||
-        typeof item === "boolean",
+        typeof item === "boolean" ||
+        typeof item === "function",
     );
   }
 
@@ -505,10 +506,10 @@ export function Badge(props: BadgeProps): JSX.Element {
   );
 
   function BadgeContent() {
-    const resolvedChildren = resolveChildren(() =>
-      local.count !== undefined ? local.count : local.children,
-    );
-    const content = () => resolvedChildren();
+    // Cache the authored child value without recursively resolving dynamic members.
+    // Solid's children() helper turns mixed text into a snapshot that goes stale
+    // when this branch is hydrated.
+    const content = createMemo(() => (local.count !== undefined ? local.count : local.children));
     return isTextOnly(content()) ? <Text>{content()}</Text> : content();
   }
 

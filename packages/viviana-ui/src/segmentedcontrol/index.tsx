@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/SegmentedControl.tsx.
 
-import { children as resolveChildren, createContext, onSettled, useContext } from "solid-js";
+import { createContext, createMemo, onSettled, useContext } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -442,8 +442,10 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
     };
 
     function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
+      // Cache the authored child value without recursively resolving dynamic members.
+      // Solid's children() helper turns mixed text into a snapshot that goes stale
+      // when this branch is hydrated.
+      const content = createMemo(() => local.children);
 
       return (
         <span class={renderProps.isSelected ? `${itemContent} ${selectedBrackets}` : itemContent}>
