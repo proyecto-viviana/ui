@@ -63,8 +63,12 @@ console.log(`- removed from baseline: ${removals.length}`);
 console.log(`- new or moved directives: ${additions.length}`);
 
 if (removals.length > 0) {
-  console.log("- improvements:");
-  for (const file of removals) console.log(`  - ${file}`);
+  console.error("- stale baseline paths (@ts-nocheck removed):");
+  for (const file of removals) console.error(`  - ${file}`);
+  console.error(
+    "FAIL: the @ts-nocheck allowlist must ratchet down after each removal. Re-run with --write-baseline.",
+  );
+  process.exit(1);
 }
 
 if (additions.length > 0 || current.length > baseline.maxCount) {

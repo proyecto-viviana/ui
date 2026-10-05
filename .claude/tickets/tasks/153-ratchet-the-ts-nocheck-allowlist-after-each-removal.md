@@ -4,9 +4,14 @@ type: task
 title: "Ratchet the ts-nocheck allowlist after each removal"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "Updated scripts/check-ts-nocheck-budget.mjs to fail when baseline contains paths where @ts-nocheck was removed, requiring the baseline to ratchet down via --write-baseline. Added contract test in scripts/test-ci-guard-contracts.mjs asserting that stale @ts-nocheck allowlist entries exit non-zero (67/67 guard contracts pass).",
+    }
 ---
 
 ## Cause

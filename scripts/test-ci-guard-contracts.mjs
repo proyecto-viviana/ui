@@ -589,6 +589,34 @@ try {
   );
   console.log("PASS: new @ts-nocheck directive exits non-zero.");
 
+  const nocheckRemovalFixture = path.join(fixtureRoot, "ts-nocheck-removal");
+  for (const directory of [
+    "packages/solid-stately/src",
+    "packages/solidaria/src",
+    "packages/solidaria-components/src",
+    "packages/kumo/src",
+    "packages/geist/src",
+    "packages/solid-spectrum/src",
+    "packages/viviana-ui/src",
+  ]) {
+    mkdirSync(path.join(nocheckRemovalFixture, directory), { recursive: true });
+  }
+  json(path.join(nocheckRemovalFixture, "scripts", "ts-nocheck-baseline.json"), {
+    maxCount: 1,
+    paths: ["packages/solid-stately/src/cleaned.ts"],
+  });
+  writeFileSync(
+    path.join(nocheckRemovalFixture, "packages", "solid-stately", "src", "cleaned.ts"),
+    "export const cleaned = true;\n",
+  );
+  const nocheckRemoval = runSync("check-ts-nocheck-budget.mjs", nocheckRemovalFixture);
+  assert(nocheckRemoval.status !== 0, "stale @ts-nocheck allowlist path unexpectedly passed");
+  assert(
+    combined(nocheckRemoval).includes("packages/solid-stately/src/cleaned.ts"),
+    "@ts-nocheck removal failure did not identify the stale file",
+  );
+  console.log("PASS: stale @ts-nocheck allowlist entry exits non-zero.");
+
   const sourceArtifactFixture = path.join(fixtureRoot, "source-artifact-growth");
   for (const directory of [
     "packages/solid-stately/src",
