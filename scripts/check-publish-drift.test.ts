@@ -142,6 +142,40 @@ describe("check-publish-drift", () => {
     expect(output).toContain("packages/a/package.json");
   });
 
+  it("fails an export condition edit that no changeset publishes", async () => {
+    // Ticket #149: changing a CSS or condition export in package.json without a changeset
+    writeManifest({
+      ".": "./src/index.ts",
+      "./style.css": {
+        import: "./dist/style.css",
+        default: "./dist/style.css",
+      } as unknown as string,
+    });
+    git("add", "-A");
+    git("commit", "-qm", "export condition edit");
+    const { status, output } = await runGuard();
+    expect(status).toBe(1);
+    expect(output).toContain("packages/a/package.json");
+  });
+
+  it("fails a pack config change that no changeset publishes", async () => {
+    // Ticket #149: changing vite.config.ts pack configuration without a changeset
+    writeFileSync(join(root, "packages", "a", "vite.config.ts"), "export default {};\n");
+    git("add", "-A");
+    git("commit", "-qm", "pack config change");
+    const { status, output } = await runGuard();
+    expect(status).toBe(1);
+    expect(output).toContain("packages/a/vite.config.ts");
+  });
+
+  it("passes a pack config change once a changeset names the package", async () => {
+    writeFileSync(join(root, "packages", "a", "vite.config.ts"), "export default {};\n");
+    changeset("pack-config");
+    git("add", "-A");
+    git("commit", "-qm", "pack config change with changeset");
+    expect((await runGuard()).status).toBe(0);
+  });
+
   it("passes that same subpath once a changeset names the package", async () => {
     writeManifest({ ".": "./src/index.ts", "./extra": "./src/extra.ts" });
     changeset("extra");

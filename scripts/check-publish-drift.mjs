@@ -136,7 +136,7 @@ function commitThatSetVersion(dir, version) {
 function publishedPaths(pkg) {
   const dir = `${PACKAGES_DIR}/${pkg.dir}`;
   if (!pkg.files || pkg.files.length === 0) return [dir];
-  const entries = new Set(["package.json", "README.md", ...pkg.files]);
+  const entries = new Set(["package.json", "vite.config.ts", "README.md", ...pkg.files]);
   return [...entries].map((entry) => `${dir}/${entry.replace(/^\.\/+/, "").replace(/\/+$/, "")}`);
 }
 
