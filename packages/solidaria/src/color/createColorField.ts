@@ -24,7 +24,7 @@ import { createMemo, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
 import { createFormReset } from "../form/createFormReset";
@@ -108,6 +108,21 @@ export function createColorField(
       return getProps()["aria-describedby"];
     },
   });
+
+  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
+  const errorMessageSlotId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => isInvalid(),
+  ]);
+
+  const descriptionId = () =>
+    getProps().description
+      ? (field.descriptionProps.id as string | undefined)
+      : descriptionSlotId();
+  const errorMessageId = () =>
+    getProps().errorMessage
+      ? (field.errorMessageProps.id as string | undefined)
+      : errorMessageSlotId();
 
   const onKeyDown = (e: KeyboardEvent) => {
     const s = getState();
@@ -311,9 +326,13 @@ export function createColorField(
     return parts.join(" ");
   };
 
-  const descriptionProps = () => field.descriptionProps;
+  const descriptionProps = () => ({
+    id: descriptionId(),
+  });
 
-  const errorMessageProps = () => field.errorMessageProps;
+  const errorMessageProps = () => ({
+    id: errorMessageId(),
+  });
 
   const inputProps = createMemo(() => {
     const s = getState();
@@ -344,11 +363,11 @@ export function createColorField(
       spellCheck: "false",
       "aria-label": resolvedAriaLabel(),
       "aria-labelledby": resolvedLabelledBy(),
-      "aria-describedby": field.fieldProps["aria-describedby"],
+      "aria-describedby":
+        [descriptionId(), errorMessageId(), p["aria-describedby"]].filter(Boolean).join(" ") ||
+        undefined,
       "aria-details": p["aria-details"],
-      "aria-errormessage": invalid
-        ? (p["aria-errormessage"] ?? field.errorMessageProps.id)
-        : undefined,
+      "aria-errormessage": invalid ? (p["aria-errormessage"] ?? errorMessageId()) : undefined,
       "aria-invalid": invalid ? ariaTrueFalse(true) : undefined,
       "aria-required": validationBehavior() === "aria" && required ? "true" : undefined,
       role: s.channel ? undefined : ("textbox" as const),

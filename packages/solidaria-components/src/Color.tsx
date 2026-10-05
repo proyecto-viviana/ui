@@ -1500,7 +1500,8 @@ export interface ColorFieldRenderProps {
   channel: ColorChannel | "hex";
 }
 
-export interface ColorFieldProps extends AriaColorFieldOptions, SlotProps {
+export interface ColorFieldProps
+  extends Omit<AriaColorFieldOptions, "description" | "errorMessage">, SlotProps {
   /** The current color value (controlled). */
   value?: Color | string | null;
   /** The default color value (uncontrolled). */
@@ -1515,10 +1516,6 @@ export interface ColorFieldProps extends AriaColorFieldOptions, SlotProps {
   colorFormat?: ColorFormat;
   /** A visible label for the field. */
   label?: JSX.Element;
-  /** Description text for the field. */
-  description?: JSX.Element;
-  /** Error message for the field. */
-  errorMessage?: JSX.Element;
   /** The children of the component. */
   children?: RenderChildren<ColorFieldRenderProps>;
   /** The CSS className for the element. */
@@ -1572,7 +1569,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const pickerContext = useContext(ColorPickerContextInternal);
   const [local, stateProps, ariaProps, rest] = splitProps(
     props,
-    ["children", "class", "style", "slot", "label", "description", "errorMessage"],
+    ["children", "class", "style", "slot", "label"],
     ["value", "defaultValue", "onChange", "channel", "colorSpace", "colorFormat"],
     [
       "id",
@@ -1656,8 +1653,6 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       placeholder: ariaProps.placeholder,
       channel: stateProps.channel,
       colorSpace: stateProps.colorSpace,
-      description: local.description,
-      errorMessage: local.errorMessage,
     }),
     () => state,
     () => inputRef ?? null,
@@ -1756,11 +1751,9 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
       const invalid = ariaProps.isInvalid || state.isInvalid;
-      const errorMessage = local.errorMessage;
-      const validationErrors = invalid && typeof errorMessage === "string" ? [errorMessage] : [];
       return {
         isInvalid: invalid,
-        validationErrors,
+        validationErrors: [],
         validationDetails: invalid
           ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
           : VALID_VALIDITY_STATE,

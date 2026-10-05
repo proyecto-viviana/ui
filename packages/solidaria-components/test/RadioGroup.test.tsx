@@ -18,6 +18,7 @@ import {
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Label } from "../src/Label";
 import { FieldError } from "../src/FieldError";
+import { Text } from "../src/Text";
 import { Button } from "../src/Button";
 import { Dialog, DialogTrigger } from "../src/Dialog";
 import { Modal } from "../src/Modal";
@@ -221,10 +222,12 @@ describe("RadioGroup", () => {
 
     it("should support group and radio help text", () => {
       render(() => (
-        <RadioGroup aria-label="Options" isInvalid description="Pick one" errorMessage="Required">
+        <RadioGroup aria-label="Options" isInvalid>
           <Radio value="a" description="First option" errorMessage="Radio required">
             Option A
           </Radio>
+          <Text slot="description">Pick one</Text>
+          <Text slot="errorMessage">Required</Text>
         </RadioGroup>
       ));
 
@@ -684,8 +687,10 @@ describe("RadioGroup", () => {
 
     it("supports help text", () => {
       render(() => (
-        <RadioGroup aria-label="Test" isInvalid description="Description" errorMessage="Error">
+        <RadioGroup aria-label="Test" isInvalid>
           <Radio value="a">A</Radio>
+          <Text slot="description">Description</Text>
+          <Text slot="errorMessage">Error</Text>
         </RadioGroup>
       ));
 

@@ -168,7 +168,8 @@ export interface SelectRenderProps {
   isSelected?: boolean;
 }
 
-export interface SelectProps<T> extends Omit<AriaSelectProps, "children">, SlotProps {
+export interface SelectProps<T>
+  extends Omit<AriaSelectProps, "children" | "description" | "errorMessage">, SlotProps {
   /** The items to render in the select. */
   items?: T[];
   /** Function to get the key from an item. */

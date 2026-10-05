@@ -114,7 +114,9 @@ export interface CheckboxRenderProps {
 }
 
 export interface CheckboxGroupProps
-  extends Omit<AriaCheckboxGroupProps, "children" | "label">, SlotProps {
+  extends
+    Omit<AriaCheckboxGroupProps, "children" | "label" | "description" | "errorMessage">,
+    SlotProps {
   /** The children of the component. A function may be provided to receive render props. */
   children?: RenderChildren<CheckboxGroupRenderProps>;
   /** The CSS className for the element. */
@@ -123,17 +125,6 @@ export interface CheckboxGroupProps
   style?: StyleOrFunction<CheckboxGroupRenderProps>;
   /** Ref for the checkbox group root element. */
   ref?: RefLike<HTMLDivElement>;
-  /**
-   * Whether this component renders its own description/error-message elements.
-   * A styled layer (e.g. solid-spectrum) that renders its own HelpText via a
-   * `<Text slot>` sets this to `false`: the wiring stays here — the single source
-   * of truth that mints the description/error ids and threads them onto the group
-   * and every item's `aria-describedby` — while the visible node is owned by the
-   * styled layer. Mirrors RAC, where the group provides a `TextContext` slot and
-   * never renders its own description node.
-   * @default true
-   */
-  renderHelpText?: boolean;
 }
 
 export interface CheckboxProps extends Omit<AriaCheckboxProps, "children">, SlotProps {
@@ -186,16 +177,7 @@ export const CheckboxContext = createContext<CheckboxContextValue | null>(null);
  */
 export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const formContext = useContext(FormContext);
-  const [local, ariaProps] = splitProps(props, [
-    "class",
-    "style",
-    "slot",
-    "ref",
-    "description",
-    "errorMessage",
-    "renderHelpText",
-    "children",
-  ]);
+  const [local, ariaProps] = splitProps(props, ["class", "style", "slot", "ref", "children"]);
 
   // Use getters to ensure props are read lazily inside reactive contexts
   const state = createCheckboxGroupState(() => ({
@@ -220,8 +202,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
       ...ariaProps,
       label: hasExplicitLabel() ? undefined : hasLabel(),
       validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
-      description: local.description,
-      errorMessage: local.errorMessage,
     }),
     state,
   );
@@ -263,11 +243,37 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const setGroupRef = (el: HTMLDivElement) => {
     assignRef(local.ref, el);
   };
+  const validation = createMemo(() => state.displayValidation());
+  const fallbackErrorMessageId = createUniqueId();
+  const errorMessageId = () => groupAria.errorMessageProps.id ?? fallbackErrorMessageId;
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return validation();
+    },
+    get errorMessageProps() {
+      return {
+        ...groupAria.errorMessageProps,
+        id: errorMessageId(),
+      } as JSX.HTMLAttributes<HTMLElement>;
+    },
+  };
+
+  const textSlots = {
+    slots: {
+      get description() {
+        return groupAria.descriptionProps;
+      },
+      get errorMessage() {
+        return groupAria.errorMessageProps;
+      },
+    },
+  };
+
   const groupDescribedBy = () => {
     const ids = [
       (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"],
-      local.description ? groupAria.descriptionProps.id : undefined,
-      groupAria.isInvalid && local.errorMessage ? groupAria.errorMessageProps.id : undefined,
+      groupAria.descriptionProps.id,
+      groupAria.isInvalid ? errorMessageId() : undefined,
     ]
       .filter(Boolean)
       .join(" ")
@@ -309,35 +315,26 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
 
   return (
     <CheckboxGroupStateContext value={state}>
-      <div
-        {...domProps()}
-        {...cleanGroupProps()}
-        ref={setGroupRef}
-        aria-describedby={groupDescribedBy()}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-disabled={dataAttr(state.isDisabled)}
-        data-readonly={dataAttr(state.isReadOnly)}
-        data-required={dataAttr(ariaProps.isRequired)}
-        data-invalid={dataAttr(groupAria.isInvalid)}
-      >
-        <LabelContext value={labelContextValue}>
-          <GroupChildren />
-        </LabelContext>
-        {/* A styled layer can own the visible HelpText (renderHelpText={false});
-            the id wiring above still runs so the group and its items stay
-            associated. Default true keeps the bare headless self-sufficient. */}
-        <Show when={(local.renderHelpText ?? true) && local.description}>
-          <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {local.description}
-          </div>
-        </Show>
-        <Show when={(local.renderHelpText ?? true) && groupAria.isInvalid && local.errorMessage}>
-          <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {local.errorMessage}
-          </div>
-        </Show>
-      </div>
+      <FieldErrorContext value={fieldErrorContext}>
+        <div
+          {...domProps()}
+          {...cleanGroupProps()}
+          ref={setGroupRef}
+          aria-describedby={groupDescribedBy()}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-disabled={dataAttr(state.isDisabled)}
+          data-readonly={dataAttr(state.isReadOnly)}
+          data-required={dataAttr(ariaProps.isRequired)}
+          data-invalid={dataAttr(groupAria.isInvalid)}
+        >
+          <LabelContext value={labelContextValue}>
+            <TextContext value={textSlots}>
+              <GroupChildren />
+            </TextContext>
+          </LabelContext>
+        </div>
+      </FieldErrorContext>
     </CheckboxGroupStateContext>
   );
 }

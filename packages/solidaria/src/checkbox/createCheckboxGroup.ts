@@ -23,6 +23,7 @@
 
 import type { JSX } from "@solidjs/web";
 import { createField } from "../label";
+import { createSlotId } from "../ssr";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -137,6 +138,19 @@ export function createCheckboxGroup(
     labelElementType: "span",
   });
 
+  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
+  const errorMessageSlotId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => isInvalid(),
+  ]);
+
+  const descriptionId = () =>
+    getProps().description ? attrString(field.descriptionProps.id) : descriptionSlotId();
+  const errorMessageId = () =>
+    getProps().errorMessage || validationErrors().length > 0
+      ? attrString(field.errorMessageProps.id)
+      : errorMessageSlotId();
+
   // Store reactive group metadata for children to access.
   // Using getters ensures child inputs and styled layers reading descriptionId/errorMessageId
   // track the reactive slot ids directly rather than reading stale WeakMap snapshots.
@@ -148,10 +162,10 @@ export function createCheckboxGroup(
       return getProps().form;
     },
     get descriptionId() {
-      return getProps().description ? attrString(field.descriptionProps.id) : undefined;
+      return descriptionId();
     },
     get errorMessageId() {
-      return getProps().errorMessage ? attrString(field.errorMessageProps.id) : undefined;
+      return errorMessageId();
     },
     get validationBehavior() {
       return getProps().validationBehavior ?? "native";
@@ -177,10 +191,20 @@ export function createCheckboxGroup(
 
   return {
     get groupProps() {
+      const groupDescribedBy =
+        [
+          descriptionId(),
+          isInvalid() ? errorMessageId() : undefined,
+          getProps()["aria-describedby"],
+        ]
+          .filter(Boolean)
+          .join(" ") || undefined;
+
       return mergeProps(domProps(), {
         role: "group",
         "aria-disabled": state.isDisabled || undefined,
         ...field.fieldProps,
+        "aria-describedby": groupDescribedBy,
         ...focusWithinProps,
       }) as JSX.HTMLAttributes<HTMLElement>;
     },
@@ -188,10 +212,14 @@ export function createCheckboxGroup(
       return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return field.descriptionProps;
+      return {
+        id: descriptionId(),
+      };
     },
     get errorMessageProps() {
-      return field.errorMessageProps;
+      return {
+        id: errorMessageId(),
+      };
     },
     get isInvalid() {
       return isInvalid();

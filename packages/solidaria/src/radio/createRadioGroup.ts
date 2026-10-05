@@ -30,7 +30,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { getEventTarget, getFocusableTreeWalker, getOwnerWindow } from "../utils";
 import { useLocale } from "../i18n";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { type RadioGroupState, type ValidityState } from "@proyecto-viviana/solid-stately";
 
@@ -179,16 +179,33 @@ export function createRadioGroup(
   const domProps = () =>
     filterDOMProps(getProps() as unknown as Record<string, unknown>, { labelable: true });
 
+  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
+  const errorMessageSlotId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => isInvalid(),
+  ]);
+
+  const descriptionId = () =>
+    getProps().description
+      ? (field.descriptionProps.id as string | undefined)
+      : descriptionSlotId();
+  const errorMessageId = () =>
+    getProps().errorMessage || validationErrors().length > 0
+      ? (field.errorMessageProps.id as string | undefined)
+      : errorMessageSlotId();
+
   const groupName = getProps().name ?? createId();
 
   const updateRadioGroupData = () => {
     radioGroupData.set(state, {
       name: groupName,
       form: getProps().form,
-      descriptionId:
-        typeof field.descriptionProps.id === "string" ? field.descriptionProps.id : undefined,
-      errorMessageId:
-        typeof field.errorMessageProps.id === "string" ? field.errorMessageProps.id : undefined,
+      get descriptionId() {
+        return descriptionId();
+      },
+      get errorMessageId() {
+        return errorMessageId();
+      },
       validationBehavior: validationBehavior(),
     });
   };
@@ -257,6 +274,15 @@ export function createRadioGroup(
 
   return {
     get radioGroupProps() {
+      const groupDescribedBy =
+        [
+          descriptionId(),
+          isInvalid() ? errorMessageId() : undefined,
+          getProps()["aria-describedby"],
+        ]
+          .filter(Boolean)
+          .join(" ") || undefined;
+
       return mergeProps(
         domProps(),
         focusWithinProps as unknown as Record<string, unknown>,
@@ -269,6 +295,7 @@ export function createRadioGroup(
           "aria-disabled": isDisabled() || undefined,
           "aria-orientation": orientation(),
           ...field.fieldProps,
+          "aria-describedby": groupDescribedBy,
         },
         keyboardProps,
       ) as JSX.HTMLAttributes<HTMLDivElement>;
@@ -277,10 +304,14 @@ export function createRadioGroup(
       return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return field.descriptionProps;
+      return {
+        id: descriptionId(),
+      };
     },
     get errorMessageProps() {
-      return field.errorMessageProps;
+      return {
+        id: errorMessageId(),
+      };
     },
     get isInvalid() {
       return isInvalid();

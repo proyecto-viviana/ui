@@ -586,17 +586,6 @@
           "required": false,
           "description": "Custom validation function.",
           "origin": "solid-stately"
-        },
-        {
-          "name": "renderHelpText",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether this component renders the visible description/error help-text nodes. Defaults to `true`. A styled layer (e.g. solid-spectrum) passes `false` to keep the id-minting and `aria-describedby` wiring here (so child radios inherit the group's shared description via `radioGroupData`) while owning the visible node itself — mirroring RAC, where the group exposes a `TextContext`/`FieldError` slot rather than rendering its own help text.",
-          "origin": "solidaria-components"
         }
       ]
     }

@@ -15,6 +15,7 @@ import {
   type CheckboxGroupRenderProps,
 } from "../src/Checkbox";
 import { Label } from "../src/Label";
+import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import {
   setupUser,
@@ -72,13 +73,10 @@ describe("Checkbox", () => {
 
     it("should support checkbox group description and error message", () => {
       render(() => (
-        <CheckboxGroup
-          aria-label="Options"
-          isInvalid
-          description="Pick at least one"
-          errorMessage="Required"
-        >
+        <CheckboxGroup aria-label="Options" isInvalid>
           <Checkbox value="a">A</Checkbox>
+          <Text slot="description">Pick at least one</Text>
+          <Text slot="errorMessage">Required</Text>
         </CheckboxGroup>
       ));
 

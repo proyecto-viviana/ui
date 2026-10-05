@@ -4,12 +4,17 @@ type: task
 title: "Move group help text to RAC slots"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "migrated from legacy task describedby-slots-group-redesign",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "Removed description and errorMessage props from RAC RadioGroup, CheckboxGroup, Select, and ColorField. Provided TextContext and FieldErrorContext slots instead. Minted reactive slot IDs via createSlotId in createRadioGroup, createCheckboxGroup, createSelect, and createColorField, binding aria-describedby reactively.",
     }
 ---
 

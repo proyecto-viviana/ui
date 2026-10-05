@@ -1,4 +1,5 @@
 import { Radio, RadioGroup } from "../../src/RadioGroup";
+import { Text } from "../../src/Text";
 
 export const PLANS = ["free", "pro", "team"] as const;
 
@@ -11,10 +12,11 @@ export const PLANS = ["free", "pro", "team"] as const;
 export function RadioGroupFixture() {
   return (
     <>
-      <RadioGroup aria-label="Plan" description="Billed monthly" data-testid="described">
+      <RadioGroup aria-label="Plan" data-testid="described">
         {PLANS.map((plan) => (
           <Radio value={plan}>{plan}</Radio>
         ))}
+        <Text slot="description">Billed monthly</Text>
       </RadioGroup>
       <RadioGroup aria-label="Bare" data-testid="bare">
         <Radio value="a">A</Radio>

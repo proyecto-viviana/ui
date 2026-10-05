@@ -1324,8 +1324,6 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   return (
     <HeadlessColorField
       {...headlessProps}
-      description={local.description}
-      errorMessage={local.errorMessage}
       class={rootClassName}
       style={local.UNSAFE_style}
       children={(renderProps) => (

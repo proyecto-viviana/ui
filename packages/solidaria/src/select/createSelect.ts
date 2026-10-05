@@ -27,7 +27,7 @@ import { createField } from "../label/createField";
 import { createTypeSelect } from "../selection/createTypeSelect";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { nodeContains } from "../utils/dom";
 import type { SelectState, CollectionNode } from "@proyecto-viviana/solid-stately";
@@ -181,6 +181,21 @@ export function createSelect<T>(
     },
     labelElementType: "span",
   });
+
+  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
+  const errorMessageSlotId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => Boolean(getProps().isInvalid),
+  ]);
+
+  const descriptionId = () =>
+    getProps().description
+      ? (field.descriptionProps.id as string | undefined)
+      : descriptionSlotId();
+  const errorMessageId = () =>
+    getProps().errorMessage
+      ? (field.errorMessageProps.id as string | undefined)
+      : errorMessageSlotId();
 
   // Focus ring for keyboard focus styling
   const { isFocusVisible, focusProps } = createFocusRing({
@@ -439,6 +454,14 @@ export function createSelect<T>(
           ]
             .filter(Boolean)
             .join(" "),
+          "aria-describedby":
+            [
+              descriptionId(),
+              getProps().isInvalid ? errorMessageId() : undefined,
+              getProps()["aria-describedby"],
+            ]
+              .filter(Boolean)
+              .join(" ") || undefined,
           onKeyDown,
           onFocus: handleFocus,
           onBlur: handleBlur,
@@ -493,10 +516,14 @@ export function createSelect<T>(
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return field.descriptionProps;
+      return {
+        id: descriptionId(),
+      };
     },
     get errorMessageProps() {
-      return field.errorMessageProps;
+      return {
+        id: errorMessageId(),
+      };
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),

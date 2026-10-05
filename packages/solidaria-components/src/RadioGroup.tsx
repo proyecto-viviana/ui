@@ -164,19 +164,6 @@ export interface RadioGroupProps
   ) => JSX.Element;
   /** Ref for the radio group element. */
   ref?: RefLike<HTMLDivElement>;
-  /** A description for the radio group. */
-  description?: JSX.Element;
-  /** An error message for the radio group. */
-  errorMessage?: JSX.Element;
-  /**
-   * Whether this component renders the visible description/error help-text nodes.
-   * Defaults to `true`. A styled layer (e.g. solid-spectrum) passes `false` to keep
-   * the id-minting and `aria-describedby` wiring here (so child radios inherit the
-   * group's shared description via `radioGroupData`) while owning the visible node
-   * itself — mirroring RAC, where the group exposes a `TextContext`/`FieldError`
-   * slot rather than rendering its own help text.
-   */
-  renderHelpText?: boolean;
 }
 
 export interface RadioProps extends Omit<AriaRadioProps, "children">, SlotProps {
@@ -252,7 +239,6 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     "render",
     "ref",
     "slot",
-    "renderHelpText",
     "children",
   ]);
 
@@ -280,8 +266,6 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     () => ({
       ...ariaProps,
       label: hasExplicitLabel() ? undefined : hasLabel(),
-      description: mergedProps.description,
-      errorMessage: mergedProps.errorMessage,
     }),
     state,
   );
@@ -358,8 +342,8 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   const groupDescribedBy = () => {
     const ids = [
       (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"],
-      mergedProps.description ? groupAria.descriptionProps.id : undefined,
-      isInvalid() && (mergedProps.errorMessage || validation().validationErrors.length > 0)
+      groupAria.descriptionProps.id,
+      isInvalid() && (validation().validationErrors.length > 0 || groupAria.errorMessageProps.id)
         ? errorMessageId()
         : undefined,
     ]
@@ -378,6 +362,17 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
         ...groupAria.errorMessageProps,
         id: errorMessageId(),
       } as JSX.HTMLAttributes<HTMLElement>;
+    },
+  };
+
+  const textSlots = {
+    slots: {
+      get description() {
+        return groupAria.descriptionProps;
+      },
+      get errorMessage() {
+        return groupAria.errorMessageProps;
+      },
     },
   };
 
@@ -414,21 +409,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       return childrenOnce;
     };
 
-    return (
-      <>
-        {typeof childrenOnce === "function" ? renderedChildren() : childrenOnce}
-        <Show when={(local.renderHelpText ?? true) && mergedProps.description}>
-          <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {mergedProps.description}
-          </div>
-        </Show>
-        <Show when={(local.renderHelpText ?? true) && isInvalid() && mergedProps.errorMessage}>
-          <div {...(groupAria.errorMessageProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
-            {mergedProps.errorMessage}
-          </div>
-        </Show>
-      </>
-    );
+    return <>{typeof childrenOnce === "function" ? renderedChildren() : childrenOnce}</>;
   };
   const groupEventProps: JSX.HTMLAttributes<HTMLDivElement> = {};
   const customRootProps = () =>
@@ -458,30 +439,32 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   return (
     <RadioGroupStateContext value={state}>
       <FieldErrorContext value={fieldErrorContext}>
-        <RadioGroupDefaultRoot
-          render={local.render}
-          getCustomRootProps={customRootProps}
-          getRenderValues={renderValues}
-          getDomProps={domProps}
-          getCleanGroupProps={cleanGroupProps}
-          groupEventProps={groupEventProps}
-          setGroupRef={setGroupRef}
-          onFocusIn={handleGroupFocusIn}
-          onFocusOut={handleGroupFocusOut}
-          getDescribedBy={groupDescribedBy}
-          getClass={renderProps.class}
-          getStyle={renderProps.style}
-          slot={local.slot}
-          getOrientation={() => (ariaProps.orientation as Orientation) ?? "vertical"}
-          getDisabled={() => state.isDisabled || undefined}
-          getReadOnly={() => state.isReadOnly || undefined}
-          getRequired={() => state.isRequired || undefined}
-          getInvalid={() => isInvalid() || undefined}
-        >
-          <LabelContext value={labelContextValue}>
-            <GroupChildren />
-          </LabelContext>
-        </RadioGroupDefaultRoot>
+        <TextContext value={textSlots}>
+          <RadioGroupDefaultRoot
+            render={local.render}
+            getCustomRootProps={customRootProps}
+            getRenderValues={renderValues}
+            getDomProps={domProps}
+            getCleanGroupProps={cleanGroupProps}
+            groupEventProps={groupEventProps}
+            setGroupRef={setGroupRef}
+            onFocusIn={handleGroupFocusIn}
+            onFocusOut={handleGroupFocusOut}
+            getDescribedBy={groupDescribedBy}
+            getClass={renderProps.class}
+            getStyle={renderProps.style}
+            slot={local.slot}
+            getOrientation={() => (ariaProps.orientation as Orientation) ?? "vertical"}
+            getDisabled={() => state.isDisabled || undefined}
+            getReadOnly={() => state.isReadOnly || undefined}
+            getRequired={() => state.isRequired || undefined}
+            getInvalid={() => isInvalid() || undefined}
+          >
+            <LabelContext value={labelContextValue}>
+              <GroupChildren />
+            </LabelContext>
+          </RadioGroupDefaultRoot>
+        </TextContext>
       </FieldErrorContext>
     </RadioGroupStateContext>
   );

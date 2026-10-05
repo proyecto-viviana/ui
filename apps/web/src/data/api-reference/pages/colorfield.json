@@ -288,6 +288,24 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "isWheelDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether browser wheel events should be ignored.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text.",
+          "origin": "solidaria"
+        },
+        {
           "name": "channel",
           "type": "ColorChannel",
           "values": [
@@ -320,24 +338,6 @@
           "required": false,
           "description": "The color format for parsing/displaying.",
           "origin": "solidaria-components"
-        },
-        {
-          "name": "isWheelDisabled",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether browser wheel events should be ignored.",
-          "origin": "solidaria"
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false,
-          "description": "Placeholder text.",
-          "origin": "solidaria"
         }
       ]
     }

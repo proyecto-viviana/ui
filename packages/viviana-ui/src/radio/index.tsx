@@ -602,13 +602,6 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
         isRequired={headlessProps.isRequired}
         isInvalid={headlessProps.isInvalid}
         orientation={local.orientation}
-        // Pass the help text down so createRadioGroup mints the description/error
-        // ids (shared with every child radio via radioGroupData) and sets the
-        // group's aria-describedby; renderHelpText={false} keeps the visible node
-        // ours (the styled help-text divs above) to match RAC's slot model.
-        description={local.description}
-        errorMessage={local.errorMessage}
-        renderHelpText={false}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
         ref={(element) => assignRootRef(element)}
         slot={local.slot ?? undefined}

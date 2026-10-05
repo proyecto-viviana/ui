@@ -901,13 +901,6 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         isReadOnly={headlessProps.isReadOnly}
         isRequired={headlessProps.isRequired}
         isInvalid={headlessProps.isInvalid}
-        // Pass the field content down so the headless mints the description/error
-        // ids and threads them onto the group and every item's aria-describedby —
-        // the single source of truth. renderHelpText={false} suppresses the
-        // headless's own plain div; we render the styled <Text> above.
-        description={local.description}
-        errorMessage={local.errorMessage}
-        renderHelpText={false}
         aria-labelledby={headlessProps["aria-labelledby"] ?? (local.label ? labelId : undefined)}
         ref={(element) => assignRootRef(element)}
         slot={local.slot ?? undefined}
