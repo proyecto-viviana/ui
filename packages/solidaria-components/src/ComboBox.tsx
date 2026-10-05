@@ -115,7 +115,8 @@ export interface ComboBoxRenderProps {
   inputValue: string;
 }
 
-export interface ComboBoxProps<T> extends Omit<AriaComboBoxProps, "children">, SlotProps {
+export interface ComboBoxProps<T>
+  extends Omit<AriaComboBoxProps, "children" | "description" | "errorMessage">, SlotProps {
   /** The items to render in the combobox. */
   items?: T[];
   /** The default items to render in the combobox when uncontrolled. */

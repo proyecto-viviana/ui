@@ -74,6 +74,7 @@ import {
   useSlot,
 } from "./utils";
 import { TextContext } from "./Text";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { ButtonContext, type ButtonProps } from "./Button";
 import { DateFieldContext } from "./DateField";
 import { LabelContext, type LabelProps } from "./Label";
@@ -132,9 +133,16 @@ export interface DatePickerContextValue {
 
 export type DatePickerProps<T extends DateValue = DateValue> = Omit<
   AriaDatePickerProps,
-  "id" | "isDisabled" | "isReadOnly" | "isRequired" | "minValue" | "maxValue"
+  | "id"
+  | "isDisabled"
+  | "isReadOnly"
+  | "isRequired"
+  | "minValue"
+  | "maxValue"
+  | "description"
+  | "errorMessage"
 > &
-  Omit<DateFieldStateProps<T>, "locale"> &
+  Omit<DateFieldStateProps<T>, "locale" | "description" | "errorMessage"> &
   SlotProps & {
     /** The children of the component. */
     children?: JSX.Element;
@@ -347,8 +355,6 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       "validationState",
       "validationBehavior",
       "validate",
-      "description",
-      "errorMessage",
       "isDateUnavailable",
       "firstDayOfWeek",
       "visibleMonths",
@@ -505,8 +511,6 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   const pickerAria = createDatePicker(
     () => ({
       ...(rest as Record<string, unknown>),
-      description: stateProps.description,
-      errorMessage: stateProps.errorMessage,
       // Keep a string label for DatePickerLabel. An explicit aria name wins over
       // a child Label. Otherwise the slot flag tells createLabel a label exists.
       label: stringLabel() ?? (hasExplicitName() ? undefined : hasLabel()),
@@ -640,6 +644,32 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     elementType: "span",
   };
 
+  const fieldValidation = createMemo(() => ({
+    isInvalid: isInvalid(),
+    validationErrors: pickerAria.validationErrors,
+    validationDetails: pickerAria.validationDetails as unknown as {
+      badInput: boolean;
+      customError: boolean;
+      patternMismatch: boolean;
+      rangeOverflow: boolean;
+      rangeUnderflow: boolean;
+      stepMismatch: boolean;
+      tooLong: boolean;
+      tooShort: boolean;
+      typeMismatch: boolean;
+      valueMissing: boolean;
+      valid: boolean;
+    },
+  }));
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return fieldValidation();
+    },
+    get errorMessageProps() {
+      return pickerAria.errorMessageProps;
+    },
+  };
+
   return (
     <DatePickerStateContext value={fieldState as unknown as DateFieldState<DateValue>}>
       <DatePickerContext value={contextValue}>
@@ -704,6 +734,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
                       },
                     ],
                     [ButtonContext, buttonContextValue],
+                    [FieldErrorContext, fieldErrorContext],
                     [LabelContext, labelContextValue],
                   ] as Array<[Context<unknown>, unknown]>
                 }

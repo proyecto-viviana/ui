@@ -64,14 +64,14 @@
           "name": "description",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
-          "description": "Description text for assistive technology and form help.",
+          "description": "",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,
-          "description": "Error message text for assistive technology and validation feedback.",
+          "description": "",
           "origin": "viviana-ui"
         },
         {

@@ -236,7 +236,7 @@ describe("DateField", () => {
       // <Text slot="description"> picks up the id the group's aria-describedby
       // references — the faithful upstream wiring path.
       render(() => (
-        <DateField aria-label="Test Date Field" description="Help text">
+        <DateField aria-label="Test Date Field">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <Text slot="description">Help text</Text>
         </DateField>
@@ -514,11 +514,7 @@ describe("DateField", () => {
 
     it("should link state-driven error message to aria-describedby", async () => {
       render(() => (
-        <DateField
-          aria-label="Test Date Field"
-          validationState="invalid"
-          errorMessage="Date is required"
-        >
+        <DateField aria-label="Test Date Field" validationState="invalid">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <DateFieldErrorMessage>Date is required</DateFieldErrorMessage>
         </DateField>

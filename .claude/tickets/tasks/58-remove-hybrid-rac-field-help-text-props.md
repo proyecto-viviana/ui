@@ -4,9 +4,19 @@ type: task
 title: "Remove hybrid RAC field help-text props"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task rac-field-prop-divergence" }
+  - {
+      state: in-progress,
+      at: 2026-10-05,
+      note: "starting hybrid field help-text props removal across TextField, SearchField, NumberField, DateField, TimeField, ComboBox, and DatePicker",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "removed description and errorMessage props from all 7 hybrid RAC field components; wired TextContext and FieldErrorContext; full test suite and gates pass",
+    }
 ---
 
 Remove `description` and `errorMessage` props from the seven hybrid RAC field

@@ -140,7 +140,7 @@ describe("SearchField", () => {
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.
       render(() => (
-        <SearchField aria-label="Search" description="Help text">
+        <SearchField aria-label="Search">
           {() => (
             <>
               <SearchFieldInput />
@@ -602,11 +602,11 @@ describe("SearchField", () => {
 
     it("should provide FieldError context", () => {
       render(() => (
-        <SearchField aria-label="Search" isInvalid errorMessage="Search term required">
+        <SearchField aria-label="Search" isInvalid>
           {() => (
             <>
               <SearchFieldInput />
-              <FieldError />
+              <FieldError>Search term required</FieldError>
             </>
           )}
         </SearchField>

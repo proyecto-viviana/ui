@@ -120,7 +120,7 @@ describe("TextField", () => {
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.
       render(() => (
-        <TextField description="Help text">
+        <TextField>
           {() => (
             <>
               <Label>Test</Label>
@@ -412,12 +412,12 @@ describe("TextField", () => {
 
     it("supports validation errors", async () => {
       render(() => (
-        <TextField isInvalid errorMessage="Constraints not satisfied">
+        <TextField isInvalid>
           {() => (
             <>
               <Label>Test</Label>
               <Input />
-              <FieldError />
+              <FieldError>Constraints not satisfied</FieldError>
             </>
           )}
         </TextField>
@@ -457,7 +457,7 @@ describe("TextField", () => {
 
     it("supports customizing validation errors", async () => {
       render(() => (
-        <TextField isInvalid errorMessage="Default error">
+        <TextField isInvalid>
           {() => (
             <>
               <Label>Test</Label>

@@ -73,7 +73,8 @@ export interface TextFieldRenderProps {
   isFocusVisible: boolean;
 }
 
-export interface TextFieldProps extends Omit<AriaTextFieldProps, "children">, SlotProps {
+export interface TextFieldProps
+  extends Omit<AriaTextFieldProps, "children" | "description" | "errorMessage">, SlotProps {
   /** The children of the component. A function may be provided to receive render props. */
   children?: RenderChildren<TextFieldRenderProps>;
   /** The CSS className for the element. */
@@ -478,19 +479,11 @@ export function TextField(props: TextFieldProps): JSX.Element {
   // validationDetails}` into FieldErrorContext (`TextField.tsx:181`). The
   // `errorMessage` prop is omitted at that layer; keep it as a fallback so a
   // string errorMessage still fills FieldError's default children.
-  const fieldValidation = createMemo<ValidationResult>(() => {
-    const isInvalid = textFieldAria.isInvalid;
-    const validationErrors = textFieldAria.validationErrors;
-    const errorMessage = ariaProps.errorMessage;
-    return {
-      isInvalid,
-      validationErrors:
-        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
-          ? [errorMessage]
-          : validationErrors,
-      validationDetails: textFieldAria.validationDetails,
-    };
-  });
+  const fieldValidation = createMemo<ValidationResult>(() => ({
+    isInvalid: textFieldAria.isInvalid,
+    validationErrors: textFieldAria.validationErrors,
+    validationDetails: textFieldAria.validationDetails,
+  }));
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
       return fieldValidation();

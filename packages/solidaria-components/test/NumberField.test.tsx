@@ -96,7 +96,7 @@ describe("NumberField", () => {
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.
       render(() => (
-        <NumberField aria-label="Quantity" description="Help text">
+        <NumberField aria-label="Quantity">
           {() => (
             <>
               <NumberFieldGroup>

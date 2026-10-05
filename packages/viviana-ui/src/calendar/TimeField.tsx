@@ -563,8 +563,6 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
           : (rest as { validationState?: "valid" | "invalid" }).validationState
       }
       label={local.label as string | undefined}
-      description={local.description as string | undefined}
-      errorMessage={local.errorMessage as string | undefined}
       class={rootClassName}
       style={local.UNSAFE_style}
     >

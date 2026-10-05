@@ -453,8 +453,6 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     <HeadlessNumberField
       {...headlessProps}
       label={local.label}
-      description={local.description}
-      errorMessage={local.errorMessage}
       class={rootClassName}
       style={local.UNSAFE_style}
       children={(renderProps: NumberFieldRenderProps) => (

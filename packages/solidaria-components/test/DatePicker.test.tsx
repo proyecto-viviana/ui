@@ -211,7 +211,7 @@ describe("DatePicker", () => {
       // The bare roleless container renders no group shell here, so the
       // DatePickerButton is the observable carrier of the linkage.
       render(() => (
-        <DatePicker aria-label="Test Date Picker" description="Help text">
+        <DatePicker aria-label="Test Date Picker">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <DatePickerButton>📅</DatePickerButton>
           <Text slot="description">Help text</Text>

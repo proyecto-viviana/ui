@@ -396,8 +396,6 @@ export function TextField(props: TextFieldProps): JSX.Element {
     <HeadlessTextField
       {...normalizedHeadlessProps}
       label={local.label}
-      description={local.description}
-      errorMessage={local.errorMessage}
       class={rootClassName}
       style={local.UNSAFE_style}
       children={(renderProps) => (

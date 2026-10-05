@@ -569,8 +569,6 @@ export function DateField<T extends DateValue = CalendarDate>(
           : (rest as { validationState?: "valid" | "invalid" }).validationState
       }
       label={local.label as string | undefined}
-      description={local.description as string | undefined}
-      errorMessage={local.errorMessage as string | undefined}
       class={rootClassName}
       style={local.UNSAFE_style}
     >

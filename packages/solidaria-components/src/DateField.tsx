@@ -81,6 +81,7 @@ import {
 } from "./utils";
 import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
@@ -101,8 +102,11 @@ export interface DateFieldRenderProps {
 
 export interface DateFieldProps<T extends DateValue = DateValue>
   extends
-    Omit<AriaDateFieldProps, "id" | "isDisabled" | "isReadOnly" | "isRequired">,
-    Omit<DateFieldStateProps<T>, "locale">,
+    Omit<
+      AriaDateFieldProps,
+      "id" | "isDisabled" | "isReadOnly" | "isRequired" | "description" | "errorMessage"
+    >,
+    Omit<DateFieldStateProps<T>, "locale" | "description" | "errorMessage">,
     SlotProps {
   /** The children of the component. */
   children?: JSX.Element | ((segment: DateSegmentType) => JSX.Element);
@@ -271,8 +275,6 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
       "validationState",
       "validationBehavior",
       "validate",
-      "description",
-      "errorMessage",
       "isDateUnavailable",
     ],
   );
@@ -316,8 +318,6 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
       // Mirror RAC DateField: validationBehavior ?? formValidationBehavior ??
       // 'native'.
       validationBehavior: resolveValidationBehavior(stateProps.validationBehavior, formContext),
-      description: stateProps.description,
-      errorMessage: stateProps.errorMessage,
       // Form-reset + native constraint validation are wired onto this input by
       // createDateField (see its createFormReset/createFormValidation calls),
       // exactly as RAC's useDateField wires them onto props.inputRef.
@@ -351,6 +351,20 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
       get errorMessage() {
         return fieldAria.errorMessageProps;
       },
+    },
+  };
+
+  const fieldValidation = createMemo(() => ({
+    isInvalid: fieldAria.isInvalid,
+    validationErrors: fieldAria.validationErrors,
+    validationDetails: fieldAria.validationDetails,
+  }));
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return fieldValidation();
+    },
+    get errorMessageProps() {
+      return fieldAria.errorMessageProps;
     },
   };
 
@@ -416,6 +430,7 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
             values={
               [
                 [TextContext, textSlots],
+                [FieldErrorContext, fieldErrorContext],
                 [LabelContext, labelContextValue],
               ] as Array<[Context<unknown>, unknown]>
             }

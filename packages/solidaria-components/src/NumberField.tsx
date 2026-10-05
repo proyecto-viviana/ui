@@ -70,7 +70,8 @@ export interface NumberFieldRenderProps {
   value: number;
 }
 
-export interface NumberFieldProps extends Omit<AriaNumberFieldProps, "label">, SlotProps {
+export interface NumberFieldProps
+  extends Omit<AriaNumberFieldProps, "label" | "description" | "errorMessage">, SlotProps {
   /** The current value (controlled). */
   value?: number;
   /** The default value (uncontrolled). */
@@ -196,8 +197,6 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       "isRequired",
       "isInvalid",
       "isWheelDisabled",
-      "description",
-      "errorMessage",
       "id",
       "autoFocus",
       "name",
@@ -317,12 +316,6 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       },
       get formatOptions() {
         return stateProps.formatOptions;
-      },
-      get description() {
-        return ariaProps.description;
-      },
-      get errorMessage() {
-        return ariaProps.errorMessage;
       },
       get id() {
         return ariaProps.id;
@@ -501,13 +494,9 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const fieldValidation = createMemo<ValidationResult>(() => {
     const isInvalid = numberFieldAria.isInvalid;
     const validationErrors = numberFieldAria.validationErrors;
-    const errorMessage = ariaProps.errorMessage;
     return {
       isInvalid,
-      validationErrors:
-        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
-          ? [errorMessage]
-          : validationErrors,
+      validationErrors,
       validationDetails: numberFieldAria.validationDetails,
     };
   });

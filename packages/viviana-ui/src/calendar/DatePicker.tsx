@@ -635,8 +635,6 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       visibleMonths={visibleMonths()}
       locale={(rest as { locale?: string }).locale ?? locale().locale}
       label={local.label}
-      description={local.description}
-      errorMessage={local.errorMessage}
       isInvalid={isInvalid()}
       class={(renderProps) =>
         [

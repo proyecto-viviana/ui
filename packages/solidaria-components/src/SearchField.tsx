@@ -70,7 +70,8 @@ export interface SearchFieldRenderProps {
   value: string;
 }
 
-export interface SearchFieldProps extends Omit<AriaSearchFieldProps, "label">, SlotProps {
+export interface SearchFieldProps
+  extends Omit<AriaSearchFieldProps, "label" | "description" | "errorMessage">, SlotProps {
   /** The current value (controlled). */
   value?: string;
   /** The default value (uncontrolled). */
@@ -253,8 +254,6 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       "isReadOnly",
       "isRequired",
       "isInvalid",
-      "description",
-      "errorMessage",
       "id",
       "validate",
       "autoFocus",
@@ -343,12 +342,6 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       },
       get "aria-describedby"() {
         return ariaProps["aria-describedby"];
-      },
-      get description() {
-        return ariaProps.description;
-      },
-      get errorMessage() {
-        return ariaProps.errorMessage;
       },
       get placeholder() {
         return ariaProps.placeholder;
@@ -499,13 +492,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   const fieldValidation = createMemo<ValidationResult>(() => {
     const isInvalid = searchFieldAria.isInvalid;
     const validationErrors = searchFieldAria.validationErrors;
-    const errorMessage = ariaProps.errorMessage;
     return {
       isInvalid,
-      validationErrors:
-        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
-          ? [errorMessage]
-          : validationErrors,
+      validationErrors,
       validationDetails: searchFieldAria.validationDetails,
     };
   });

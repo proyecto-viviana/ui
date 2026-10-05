@@ -433,8 +433,6 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     <HeadlessSearchField
       {...headlessProps}
       label={local.label}
-      description={local.description}
-      errorMessage={local.errorMessage}
       ref={(element) => assignRootRef(element)}
       slot={local.slot ?? undefined}
       class={rootClassName}

@@ -139,7 +139,7 @@ describe("TimeField", () => {
       // <Text slot="description"> picks up the id the group's aria-describedby
       // references — the faithful upstream wiring path.
       render(() => (
-        <TimeField aria-label="Test Time" description="Help text">
+        <TimeField aria-label="Test Time">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <Text slot="description">Help text</Text>
         </TimeField>
@@ -359,7 +359,7 @@ describe("TimeField", () => {
   describe("validation", () => {
     it("should support explicit invalid state without a value", async () => {
       render(() => (
-        <TimeField aria-label="Test Time" validationState="invalid" errorMessage="Time is required">
+        <TimeField aria-label="Test Time" validationState="invalid">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <TimeFieldErrorMessage>Time is required</TimeFieldErrorMessage>
         </TimeField>
@@ -753,12 +753,7 @@ describe("TimeField", () => {
 
     it("wires description and error message to aria-describedby", async () => {
       render(() => (
-        <TimeField
-          aria-label="Time"
-          isInvalid
-          description="Choose your preferred time"
-          errorMessage="Time is required"
-        >
+        <TimeField aria-label="Time" isInvalid>
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <TimeFieldDescription>Choose your preferred time</TimeFieldDescription>
           <TimeFieldErrorMessage>Time is required</TimeFieldErrorMessage>

@@ -25,7 +25,7 @@ import type { NumberFieldState, ValidityState } from "@proyecto-viviana/solid-st
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
-import { createId } from "../ssr";
+import { createId, createSlotId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { AriaButtonProps } from "../button/types";
 import type { PressEvent } from "../interactions";
@@ -184,8 +184,13 @@ export function createNumberField(
   const inputId = `${id}-input`;
   const incrementId = `${id}-increment`;
   const decrementId = `${id}-decrement`;
-  const descriptionId = `${id}-description`;
-  const errorMessageId = `${id}-error`;
+  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
+  const errorMessageSlotId = createSlotId([
+    () => Boolean(getProps().errorMessage),
+    () => displayValidation().isInvalid,
+  ]);
+  const descriptionId = () => (getProps().description ? `${id}-description` : descriptionSlotId());
+  const errorMessageId = () => (getProps().errorMessage ? `${id}-error` : errorMessageSlotId());
 
   // Label handling
   const { labelProps, fieldProps } = createLabel({
@@ -601,11 +606,16 @@ export function createNumberField(
   // Build aria-describedby
   const getAriaDescribedBy = () => {
     const p = getProps();
-    const parts: string[] = [];
-    if (p["aria-describedby"]) parts.push(p["aria-describedby"]);
-    if (p.description) parts.push(descriptionId);
-    if (displayValidation().isInvalid && p.errorMessage) parts.push(errorMessageId);
-    return parts.length > 0 ? parts.join(" ") : undefined;
+    const isInvalid = displayValidation().isInvalid;
+    return (
+      [
+        descriptionId(),
+        !p.errorMessage || isInvalid ? errorMessageId() : undefined,
+        p["aria-describedby"],
+      ]
+        .filter(Boolean)
+        .join(" ") || undefined
+    );
   };
 
   return {
@@ -744,12 +754,12 @@ export function createNumberField(
     },
     get descriptionProps() {
       return {
-        id: descriptionId,
+        id: descriptionId(),
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get errorMessageProps() {
       return {
-        id: errorMessageId,
+        id: errorMessageId(),
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get isInvalid() {

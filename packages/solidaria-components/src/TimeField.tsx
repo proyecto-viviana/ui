@@ -51,6 +51,7 @@ import {
 } from "./utils";
 import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
@@ -67,8 +68,11 @@ export interface TimeFieldRenderProps {
 
 export interface TimeFieldProps<T extends TimeValue = TimeValue>
   extends
-    Omit<AriaTimeFieldProps, "id" | "isDisabled" | "isReadOnly" | "isRequired">,
-    Omit<TimeFieldStateProps<T>, "locale">,
+    Omit<
+      AriaTimeFieldProps,
+      "id" | "isDisabled" | "isReadOnly" | "isRequired" | "description" | "errorMessage"
+    >,
+    Omit<TimeFieldStateProps<T>, "locale" | "description" | "errorMessage">,
     SlotProps {
   /** The children of the component. */
   children?: JSX.Element | ((segment: TimeSegmentType) => JSX.Element);
@@ -154,8 +158,6 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
       "validationState",
       "validationBehavior",
       "validate",
-      "description",
-      "errorMessage",
       "placeholderValue",
     ],
   );
@@ -196,8 +198,6 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
       // Standalone default flips the hidden input to type="text" so an empty
       // required value blocks HTML form submission (mirrors DateField).
       validationBehavior: resolveValidationBehavior(stateProps.validationBehavior, formContext),
-      description: stateProps.description,
-      errorMessage: stateProps.errorMessage,
       inputRef: () => validationInputRef() ?? undefined,
     }),
     state as unknown as TimeFieldState<TimeValue>,
@@ -228,6 +228,20 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
       get errorMessage() {
         return fieldAria.errorMessageProps;
       },
+    },
+  };
+
+  const fieldValidation = createMemo(() => ({
+    isInvalid: fieldAria.isInvalid,
+    validationErrors: fieldAria.validationErrors,
+    validationDetails: fieldAria.validationDetails,
+  }));
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return fieldValidation();
+    },
+    get errorMessageProps() {
+      return fieldAria.errorMessageProps;
     },
   };
 
@@ -311,6 +325,7 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
                 values={
                   [
                     [TextContext, textSlots],
+                    [FieldErrorContext, fieldErrorContext],
                     [LabelContext, labelContextValue],
                   ] as Array<[Context<unknown>, unknown]>
                 }

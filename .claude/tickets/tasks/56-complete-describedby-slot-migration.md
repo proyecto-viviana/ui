@@ -4,7 +4,7 @@ type: task
 title: "Complete the aria-describedby slot migration"
 created: 2026-08-20
 parent: 31
-status: in-progress
+status: verified
 history:
   - {
       state: in-progress,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-09-17,
       note: "sweep #541: left in-progress; owner 2026-09-01 kept it until #57 and #58 complete",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "completion criteria met: #57 and #58 are verified with full test and browser evidence",
     }
 ---
 
