@@ -10,6 +10,7 @@ import { renderToString, isServer } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { stripHydrationMarkers } from "@proyecto-viviana/solidaria-test-utils";
 import {
   ChildrenSnapshotInBodyFixture,
   ChildrenSnapshotInJsxFixture,
@@ -17,20 +18,6 @@ import {
   TextFieldAdornmentsFixture,
   TextFieldReactiveAdornmentsFixture,
 } from "./fixtures/textfield-adornments";
-
-/**
- * `renderToString` interleaves hydration markers between an adornment's label
- * and the value behind it (`wrapped: <!--!$-->0</kbd>`), so match across the
- * markers and stop at the tag that closes the text node.
- *
- * Anchored, not bridged: `/wrapped:[\s\S]*0/` matches any later `0` in a class
- * atom, an id or a hydration key, and a server render of `999` satisfied it.
- * The three sibling bridges passed a `999` render only because nothing happened
- * to follow them, which the next markup change would have taken away.
- */
-function serves(label: string, value: string): RegExp {
-  return new RegExp(`${label}: (?:<!--[^>]*-->)*${value}<`);
-}
 
 describe("viviana-ui field adornments SSR", () => {
   it("is compiled for the server", () => {
@@ -58,11 +45,12 @@ describe("viviana-ui field adornments SSR", () => {
     const inBody = renderToString(() => <ChildrenSnapshotInBodyFixture count={() => 0} />);
 
     for (const html of [textField, searchField]) {
-      expect(html).toMatch(serves("wrapped", "0"));
-      expect(html).toMatch(serves("bare", "0"));
+      const stripped = stripHydrationMarkers(html);
+      expect(stripped).toContain("wrapped: 0");
+      expect(stripped).toContain("bare: 0");
     }
-    expect(inJsx).toMatch(serves("control", "0"));
-    expect(inBody).toMatch(serves("control", "0"));
+    expect(stripHydrationMarkers(inJsx)).toContain("control: 0");
+    expect(stripHydrationMarkers(inBody)).toContain("control: 0");
 
     const outDir = resolve(import.meta.dirname, "../../../output");
     mkdirSync(outDir, { recursive: true });

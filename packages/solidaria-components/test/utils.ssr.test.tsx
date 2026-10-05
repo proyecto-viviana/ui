@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
+import { stripHydrationMarkers } from "@proyecto-viviana/solidaria-test-utils";
 import { DynamicFixture, HydrationGateFixture, RenderPropsFixture } from "./fixtures/utils";
 
 const output = resolve(import.meta.dirname, "../../../output");
@@ -27,7 +28,7 @@ describe("utils SSR ownership", () => {
     for (const kind of constructed) {
       expect(html).toMatch(new RegExp(`<span[^>]*id="[^"]+"[^>]*data-gate="${kind}"`));
     }
-    expect(html.replace(/<!--[\s\S]*?-->/g, "")).toContain("gate-context:first");
+    expect(stripHydrationMarkers(html)).toContain("gate-context:first");
     expect(html).not.toContain('data-gate="component-child"');
     expect(html).not.toContain('data-gate="empty-child"');
     expect(html).not.toContain('data-gate="hook-child"');
@@ -38,7 +39,7 @@ describe("utils SSR ownership", () => {
   it("serializes nested dynamic contexts and the conditional fallback", () => {
     const html = renderToString(() => <DynamicFixture />);
     expect(html).toMatch(/\s_hk=/);
-    const withoutMarkers = html.replace(/<!--[\s\S]*?-->/g, "");
+    const withoutMarkers = stripHydrationMarkers(html);
     expect(withoutMarkers).toContain("inner:first:context");
     expect(withoutMarkers).not.toContain("outer:first");
     expect(html).toContain('component="forwarded"');

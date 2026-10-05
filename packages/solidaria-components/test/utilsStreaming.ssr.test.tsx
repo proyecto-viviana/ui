@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderToStream } from "@solidjs/web";
 import { expect, it } from "vite-plus/test";
+import { stripHydrationMarkers } from "@proyecto-viviana/solidaria-test-utils";
 import { StreamingFixture } from "./fixtures/utilsStreaming";
 
 function deferred<T>() {
@@ -63,7 +64,7 @@ it("writes an unresolved shell before its independently delivered resolved fragm
     const tail = chunks.slice(shellCount).join("");
     expect(tail).toMatch(/<template[^>]*id="/);
     expect(tail).toContain('data-stream="resolved"');
-    expect(tail.replace(/<!--[\s\S]*?-->/g, "")).toContain("stream-context:server-value:first");
+    expect(stripHydrationMarkers(tail)).toContain("stream-context:server-value:first");
     expect(tail).toContain("$df(");
     expect(errors).toEqual([]);
     const output = resolve(import.meta.dirname, "../../../output");

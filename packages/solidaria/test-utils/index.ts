@@ -116,3 +116,5 @@ export {
   type FocusRecord,
   type FocusFlowRecorder,
 } from "./focus-flow";
+
+export { stripHydrationMarkers } from "./ssr";

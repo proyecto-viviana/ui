@@ -4,12 +4,17 @@ type: task
 title: "Extract the hydration-marker strip three SSR tests repeat"
 created: 2026-09-22
 parent: 531
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-22,
       note: "opened from the review of #545's commit `358e509c`, which had to assert on server markup and found three copies of the same idiom already in the tree: `html.replace(/<!--[\\s\\S]*?-->/g, \"\")`, at `packages/solidaria-components/test/utils.ssr.test.tsx:30` and `:41` and `packages/solidaria-components/test/utilsStreaming.ssr.test.tsx:66`. `renderToString` interleaves hydration markers between a label and the text behind it (`wrapped: <!--!$-->0`), so every SSR test that asserts on rendered text needs this. #545 added no fourth copy - it anchors on the markers instead (`serves()` in `packages/viviana-ui/test/TextField.ssr.test.tsx`) - but that is a second idiom for the same fact, not a fix. Why it was not extracted there: the obvious home is `packages/solidaria/test-utils`, whose barrel `index.ts` re-exports `hydrate.ts` and the `@solidjs/testing-library` helpers, and no `*.ssr.test.tsx` in the repository imports that barrel today - measured, `grep -rln solidaria-test-utils --include=*.ssr.test.tsx packages/` returns nothing - so importing it from a file that runs under `vitest.ssr.config.ts` is untried. Neither package's manifest needs a change: both `packages/solidaria-components/test` and `packages/viviana-ui/test` already import `@proyecto-viviana/solidaria-test-utils` from their hydrate halves",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "Extracted stripHydrationMarkers into packages/solidaria/test-utils/ssr.ts and re-exported from @proyecto-viviana/solidaria-test-utils. Repointed all four call sites: packages/solidaria-components/test/utils.ssr.test.tsx (2 sites), packages/solidaria-components/test/utilsStreaming.ssr.test.tsx, and replaced serves() in packages/viviana-ui/test/TextField.ssr.test.tsx. Verified barrel resolves cleanly under vitest.ssr.config.ts; vp run test:ssr passed 40/40 files, 108 tests. Vacuity verified: substituting count with 999 failed with AssertionError as required.",
     }
 ---
 
