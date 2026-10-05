@@ -244,27 +244,6 @@ const comboBoxFieldGroup = style<ComboBoxStyleProps>({
   paddingStart: "edge-to-text",
   paddingEnd: "calc(self(height, self(minHeight)) * 3 / 16 - self(borderEndWidth, 2px))",
   transition: "default",
-  borderColor: {
-    default: "well-border",
-    forcedColors: "ButtonBorder",
-    isInvalid: {
-      default: baseColor("negative"),
-      forcedColors: "Mark",
-    },
-    isFocusWithin: {
-      default: "gray-900",
-      isInvalid: "negative-1000",
-      forcedColors: "Highlight",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  backgroundColor: {
-    default: "well",
-    forcedColors: "Field",
-  },
   color: {
     default: baseColor("neutral"),
     forcedColors: "ButtonText",

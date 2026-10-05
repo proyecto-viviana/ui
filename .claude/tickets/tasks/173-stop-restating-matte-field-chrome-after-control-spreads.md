@@ -4,9 +4,14 @@ type: task
 title: "Stop restating matte field chrome after control spreads"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "shared matteWell helper across Picker and ComboBox and field components to eliminate restated chrome maps",
+    }
 ---
 
 ## Cause

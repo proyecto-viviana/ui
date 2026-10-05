@@ -16,7 +16,7 @@
 
 import type { JSX } from "@solidjs/web";
 
-import { fontRelative as internalFontRelative } from "../style/spectrum-theme";
+import { fontRelative as internalFontRelative, baseColor } from "../style/spectrum-theme";
 import { StyleString } from "../style/types";
 
 type CSSProperties = JSX.CSSProperties;
@@ -410,6 +410,79 @@ export const dither = <Tile extends string, Color extends string>(
 
 export const wellScan = () => dither();
 
+export interface MatteWellOptions {
+  /**
+   * Focus mode for the well.
+   * - "within": input field groups where focus is on a child input (`isFocusWithin`).
+   * - "none": button triggers (like Picker) that use `focusRing()` on the trigger itself.
+   * @default "within"
+   */
+  focus?: "within" | "none";
+  /**
+   * Whether the control supports the quiet variant (borderless & transparent background).
+   * @default false
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Viviana UI v2 (Glasselated): shared matte well chrome for fields and triggers.
+ *
+ * Provides the register's 1px solid `--well-border` over `--surface-well`,
+ * the signature `wellScan()` dither, forced-colors mapping, and state variants
+ * (invalid, disabled, quiet, focus-within).
+ */
+export function matteWell(options: MatteWellOptions = {}) {
+  const quiet = options.quiet ?? false;
+  const focus = options.focus ?? "within";
+  const scan = wellScan();
+
+  return {
+    borderWidth: 1 as const,
+    borderStyle: quiet
+      ? ({
+          default: "solid" as const,
+          isQuiet: "none" as const,
+          forcedColors: "solid" as const,
+        } as const)
+      : ("solid" as const),
+    borderColor: {
+      default: "well-border" as const,
+      forcedColors: quiet
+        ? {
+            default: "ButtonText" as const,
+            isDisabled: "GrayText" as const,
+          }
+        : ("ButtonBorder" as const),
+      isInvalid: {
+        default: baseColor("negative"),
+        forcedColors: "Mark" as const,
+      },
+      ...(focus === "within"
+        ? {
+            isFocusWithin: {
+              default: "[var(--border-focus)]" as const,
+              isInvalid: "negative-1000" as const,
+              forcedColors: "Highlight" as const,
+            },
+          }
+        : {}),
+      isDisabled: {
+        default: "disabled" as const,
+        forcedColors: "GrayText" as const,
+      },
+    },
+    backgroundColor: {
+      default: "well" as const,
+      isDisabled: "disabled" as const,
+      ...(quiet ? { isQuiet: "transparent" as const } : {}),
+      forcedColors: "Field" as const,
+    },
+    backgroundImage: scan.backgroundImage,
+    backgroundSize: scan.backgroundSize,
+  };
+}
+
 interface ControlOptions {
   shape?: "default" | "pill";
   wrap?: boolean;
@@ -456,6 +529,16 @@ interface ControlOptions {
    * belongs to the fill rather than to the shape.
    */
   rim?: boolean;
+  /**
+   * Whether the control supports the quiet variant (borderless & transparent background).
+   * Passed to `matteWell()` when `register === "matte"`.
+   */
+  quiet?: boolean;
+  /**
+   * Focus mode when `register === "matte"`.
+   * Defaults to `"within"` (field groups), or `"none"` when focus ring is external.
+   */
+  focus?: "within" | "none";
 }
 
 interface ControlResult {
@@ -468,9 +551,9 @@ interface ControlResult {
   /* `matte` sets all four; `chip` sets the three border ones and paints no surface
    * — see `control()`. */
   borderWidth?: 1;
-  borderStyle?: "solid";
-  borderColor?: "well-border";
-  backgroundColor?: "well";
+  borderStyle?: any;
+  borderColor?: any;
+  backgroundColor?: any;
   /* Only `matte` sets these two, alongside its fill — see `wellScan()`. */
   backgroundImage?: ReturnType<typeof wellScan>["backgroundImage"];
   backgroundSize?: ReturnType<typeof wellScan>["backgroundSize"];
@@ -576,35 +659,19 @@ export function control(options: ControlOptions): ControlResult {
 
   if (register === "matte") {
     /* The matte register paints its own surface, which the other three don't.
-     *
-     * It can, because unlike a button or a menu row, a field's `control()` spread
-     * lands on the element that actually draws the box: nine of the ten matte call
-     * sites followed this spread with a byte-identical `borderWidth: 2; borderStyle:
-     * solid` pair and a `gray-25` fill. That block was the widest piece of copy-paste
-     * left in the library, and it is exactly the thing the handoff disagrees with —
-     * it draws every field at 1px in `--well-border` over `--surface-well`.
-     *
-     * Only the resting values live here. Components still declare their own
-     * `borderColor` for focus/invalid/disabled, which lands after this spread and
-     * wins — those states are per-component semantics, not register-level. */
-    result.borderWidth = 1;
-    result.borderStyle = "solid";
-    result.borderColor = "well-border";
-    result.backgroundColor = "well";
-
-    /* ...and the well's texture, by the same argument as its fill. The handoff draws
-     * no flat well: `<Well>` always opens with `<ScanOverlay />`
-     * (TerminalGlassLab.tsx:280), and the two wells it uses as fields — the search
-     * prompt (:419) and the tutor prompt (:461) — are no exception. Eleven matte
-     * call sites, one texture; hand-rolling an overlay element in each is how the
-     * register drifts.
-     *
-     * A component that overrides `backgroundColor` after this spread replaces only the
-     * fill; the dither is a separate property and survives, painting over whatever
-     * fill wins. */
-    let scan = wellScan();
-    result.backgroundImage = scan.backgroundImage;
-    result.backgroundSize = scan.backgroundSize;
+     * Delegates to matteWell() so all matte call sites share the exact same
+     * resting chrome, forced-colors mapping, state maps, and scan dither without
+     * restating them by hand. */
+    const well = matteWell({
+      quiet: options.quiet,
+      focus: options.focus,
+    });
+    result.borderWidth = well.borderWidth;
+    result.borderStyle = well.borderStyle;
+    result.borderColor = well.borderColor;
+    result.backgroundColor = well.backgroundColor;
+    result.backgroundImage = well.backgroundImage;
+    result.backgroundSize = well.backgroundSize;
   }
 
   if (options.icon) {

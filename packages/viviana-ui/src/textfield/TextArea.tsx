@@ -142,30 +142,6 @@ const fieldGroupStyles = style<TextAreaStyleProps>({
   ...control({ shape: "default", register: "matte" }),
   ...fieldInput(),
   transition: "default",
-  borderColor: {
-    default: "well-border",
-    forcedColors: "ButtonBorder",
-    isInvalid: {
-      default: baseColor("negative"),
-      forcedColors: "Mark",
-    },
-    isFocusWithin: {
-      /* Viviana UI v2 (Glasselated): cyan/blue is the register's STRUCTURE colour, so a
-       * focused well rims in `--border-focus` instead of S2's near-black `gray-900`.
-       * Recolour only — the ring, its width and every other state stay as they were. */
-      default: "[var(--border-focus)]",
-      isInvalid: "negative-1000",
-      forcedColors: "Highlight",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  backgroundColor: {
-    default: "well",
-    forcedColors: "Field",
-  },
   color: {
     default: baseColor("neutral"),
     forcedColors: "ButtonText",

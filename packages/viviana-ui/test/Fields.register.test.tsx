@@ -6,6 +6,8 @@ import { render } from "@solidjs/testing-library";
 import { DropZone } from "../src/dropzone";
 import { Keyboard } from "../src/text/Keyboard";
 import { SearchField } from "../src/searchfield";
+import { Picker, PickerItem } from "../src/picker";
+import { ComboBox, ComboBoxItem } from "../src/combobox";
 
 const sheetPath = ["packages/viviana-ui/dist/styles.css", "dist/styles.css"]
   .map((candidate) => resolve(process.cwd(), candidate))
@@ -89,5 +91,46 @@ describe("DropZone well", () => {
     expect(declarations).toContain("background-color:var(--surface-well)");
     expect(declarations).toContain("repeating-conic-gradient(var(--well-scan)");
     expect(declarations).toContain("border-color:var(--well-border)");
+  });
+});
+
+describe("Matte field chrome — Picker and ComboBox", () => {
+  it("shares 1px solid --well-border over --surface-well with the scan dither", () => {
+    const { container: pickerContainer } = render(() => (
+      <Picker aria-label="Test picker">
+        <PickerItem id="1">Option 1</PickerItem>
+      </Picker>
+    ));
+    const pickerTrigger = pickerContainer.querySelector('button[aria-haspopup="listbox"]')!;
+    const pickerDecs = declarationsOf(pickerTrigger);
+
+    const { container: comboContainer } = render(() => (
+      <ComboBox aria-label="Test combobox">
+        <ComboBoxItem id="1">Option 1</ComboBoxItem>
+      </ComboBox>
+    ));
+    const comboGroup = comboContainer.querySelector("div:has(> input)")!;
+    const comboDecs = declarationsOf(comboGroup);
+
+    // Both share the identical matte well chrome from the helper
+    for (const decs of [pickerDecs, comboDecs]) {
+      expect(decs).toContain("border-top-width:1px");
+      expect(decs).toContain("border-style:solid");
+      expect(decs).toContain("border-color:var(--well-border)");
+      expect(decs).toContain("background-color:var(--surface-well)");
+      expect(decs).toContain("repeating-conic-gradient(var(--well-scan)");
+    }
+  });
+
+  it("applies quiet variant to Picker without restating chrome maps", () => {
+    const { container } = render(() => (
+      <Picker aria-label="Quiet picker" isQuiet>
+        <PickerItem id="1">Option 1</PickerItem>
+      </Picker>
+    ));
+    const pickerTrigger = container.querySelector('button[aria-haspopup="listbox"]')!;
+    const pickerDecs = declarationsOf(pickerTrigger);
+    expect(pickerDecs).toContain("border-style:none");
+    expect(pickerDecs).toMatch(/background-color:(transparent|#0000)/);
   });
 });

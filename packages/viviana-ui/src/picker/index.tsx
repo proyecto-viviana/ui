@@ -225,7 +225,7 @@ const pickerLabel = style<PickerStyleProps>({
 
 const pickerTrigger = style<PickerTriggerStyleProps>({
   ...focusRing(),
-  ...control({ shape: "default", icon: true, register: "matte" }),
+  ...control({ shape: "default", icon: true, register: "matte", quiet: true, focus: "none" }),
   ...fieldInput(),
   outlineStyle: {
     default: "none",
@@ -234,50 +234,10 @@ const pickerTrigger = style<PickerTriggerStyleProps>({
   },
   position: "relative",
   textAlign: "start",
-  // These three keys DUPLICATE what `control({ register: "matte" })` spreads in
-  // above (see the `if (register === "matte")` branch in
-  // ../s2-internal/style-utils.ts, which sets borderWidth/borderStyle/borderColor/
-  // backgroundColor). In a JS object literal the later key wins OUTRIGHT — it does
-  // not merge — so whatever is written here IS the whole value, and the spread's
-  // `solid` / `well-border` / `well` never survived to the macro. That is how the
-  // closed trigger ended up a borderless gray-100 slab next to a ComboBox field
-  // group that renders correctly: `comboBoxFieldGroup` (combobox/index.tsx:196-223)
-  // spreads the identical `control()` and RESTATES the register values instead of
-  // silently erasing them.
-  //
-  // Each key below therefore restates the resting matte field — 1px solid
-  // var(--well-border) over var(--surface-well) (the handoff's `Well`,
-  // TerminalGlassLab.tsx:269-283) — and only then layers on per-component state.
-  // `default: "solid"` is load-bearing: dropping it would leave borderStyle with no
-  // default, which computes to `none` and keeps the border invisible even though
-  // borderWidth survives the spread. `isQuiet: "none"` is equally load-bearing —
-  // without it the quiet variant would newly grow a border it never had.
-  borderStyle: {
-    default: "solid",
-    isQuiet: "none",
-    forcedColors: "solid",
-  },
-  borderColor: {
-    default: "well-border",
-    forcedColors: {
-      default: "ButtonText",
-      isDisabled: "GrayText",
-    },
-  },
   transition: "default",
   paddingX: {
     default: "edge-to-text",
     isQuiet: 0,
-  },
-  // `isOpen: "gray-200"` is deliberately dropped rather than retinted: the handoff
-  // gives the well no open state, and --surface-well has no ramp to step to. The
-  // popover appearing plus focusRing() carry the feedback, as they already do on
-  // the ComboBox. `forcedColors: "Field"` mirrors comboBoxFieldGroup.
-  backgroundColor: {
-    default: "well",
-    isDisabled: "disabled",
-    isQuiet: "transparent",
-    forcedColors: "Field",
   },
   color: {
     default: baseColor("neutral"),

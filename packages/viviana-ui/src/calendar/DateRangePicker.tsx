@@ -187,29 +187,6 @@ const dateRangePickerFieldGroup = style({
   textWrap: "nowrap",
   paddingStart: "edge-to-text",
   paddingEnd: 4,
-  backgroundColor: {
-    // Flat `gray-25` to match S2 `fieldGroupStyles` — see the DatePicker note.
-    // `baseColor("gray-25")` would inject a phantom hover-darkening the field
-    // surface does not have.
-    default: "well",
-    forcedColors: "Field",
-  },
-  borderColor: {
-    default: "well-border",
-    isInvalid: {
-      default: baseColor("negative"),
-      forcedColors: "Mark",
-    },
-    isFocusWithin: {
-      default: "gray-900",
-      isInvalid: "negative-1000",
-      forcedColors: "Highlight",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
   color: {
     default: baseColor("neutral"),
     forcedColors: "ButtonText",

@@ -1124,27 +1124,6 @@ function createColorFieldStyles() {
       ...control({ shape: "default", register: "matte" }),
       ...fieldInput(),
       transition: "default",
-      borderColor: {
-        default: "well-border",
-        forcedColors: "ButtonBorder",
-        isInvalid: {
-          default: baseColor("negative"),
-          forcedColors: "Mark",
-        },
-        isFocusWithin: {
-          default: "gray-900",
-          isInvalid: "negative-1000",
-          forcedColors: "Highlight",
-        },
-        isDisabled: {
-          default: "disabled",
-          forcedColors: "GrayText",
-        },
-      },
-      backgroundColor: {
-        default: "well",
-        forcedColors: "Field",
-      },
       color: {
         default: baseColor("neutral"),
         forcedColors: "ButtonText",

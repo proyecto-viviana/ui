@@ -198,32 +198,6 @@ const datePickerFieldGroup = style({
       XL: "[6px]",
     },
   },
-  backgroundColor: {
-    // S2 `fieldGroupStyles.backgroundColor` (Field.tsx) is a FLAT `gray-25` with
-    // no `isHovered` variant — the field surface does not lighten/darken on hover
-    // (only its `color: baseColor("neutral")` does). Wrapping this in
-    // `baseColor("gray-25")` injected a phantom `gray-25:hovered` that darkened
-    // the field to 248 on hover while S2 stays at 255 (matches certified
-    // DateField/TimeField, which use the flat token).
-    default: "well",
-    forcedColors: "Field",
-  },
-  borderColor: {
-    default: "well-border",
-    isInvalid: {
-      default: baseColor("negative"),
-      forcedColors: "Mark",
-    },
-    isFocusWithin: {
-      default: "gray-900",
-      isInvalid: "negative-1000",
-      forcedColors: "Highlight",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
   color: {
     default: baseColor("neutral"),
     forcedColors: "ButtonText",
