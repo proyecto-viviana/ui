@@ -13,6 +13,8 @@ import {
   GridListSection,
   GridListHeader,
   GridListSelectionCheckbox,
+  type GridListRenderProps,
+  type GridListItemRenderProps,
 } from "../src/GridList";
 import { Checkbox, CheckboxButton, CheckboxField } from "../src/Checkbox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
@@ -1660,6 +1662,51 @@ describe("GridList", () => {
       expect(Array.from(onSelectionChange.mock.calls[0][0])).toEqual([1]);
       expect(selection).toBeChecked();
       expect(row).toHaveAttribute("aria-selected", "true");
+    });
+  });
+
+  describe("render props parity", () => {
+    it("gridlist and item class functions receive RAC render prop fields", () => {
+      let glProps: GridListRenderProps | undefined;
+      let itemProps: GridListItemRenderProps | undefined;
+
+      render(() => (
+        <GridList
+          aria-label="Test GridList"
+          items={[{ id: "item-1", name: "Item 1" }]}
+          class={(rp) => {
+            glProps = rp;
+            return `layout-${rp.layout}`;
+          }}
+        >
+          {(item) => (
+            <GridListItem
+              id={item.id}
+              class={(rp) => {
+                itemProps = rp;
+                return rp.isSelected ? "selected" : "unselected";
+              }}
+            >
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      expect(glProps).toBeDefined();
+      expect(glProps?.layout).toBe("stack");
+      expect(glProps?.isDropTarget).toBe(false);
+      expect(glProps?.state).toBeDefined();
+
+      expect(itemProps).toBeDefined();
+      expect(itemProps?.id).toBe("item-1");
+      expect(itemProps?.selectionMode).toBe("none");
+      expect(itemProps?.selectionBehavior).toBe("toggle");
+      expect(itemProps?.allowsDragging).toBe(false);
+      expect(itemProps?.isDragging).toBe(false);
+      expect(itemProps?.isDropTarget).toBe(false);
+      expect(itemProps?.isFocusVisibleWithin).toBe(false);
+      expect(itemProps?.state).toBeDefined();
     });
   });
 });

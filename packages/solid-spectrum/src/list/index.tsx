@@ -14,4 +14,6 @@ export type {
   GridListSize as ListViewSize,
   GridListVariant as ListViewVariant,
   GridListLayout as ListViewLayout,
+  GridListItemRenderProps,
+  GridListRenderProps,
 } from "../gridlist";

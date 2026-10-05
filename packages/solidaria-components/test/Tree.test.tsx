@@ -19,6 +19,8 @@ import {
   TreeHeader,
   TreeSection,
   TreeSelectionCheckbox,
+  type TreeRenderProps,
+  type TreeItemRenderProps,
 } from "../src/Tree";
 import { Checkbox, CheckboxField, CheckboxButton } from "../src/Checkbox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
@@ -1941,6 +1943,56 @@ describe("Tree", () => {
 
       const tree = screen.getByRole("treegrid");
       expect(tree).toBeTruthy();
+    });
+  });
+
+  describe("render props parity", () => {
+    it("tree and tree item class functions receive RAC render prop fields", () => {
+      let treeProps: TreeRenderProps | undefined;
+      let itemProps: TreeItemRenderProps | undefined;
+
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          class={(rp) => {
+            treeProps = rp;
+            return `empty-${rp.isEmpty}`;
+          }}
+        >
+          {(item) => (
+            <TreeItem
+              id={item.key}
+              class={(rp) => {
+                if (item.key === "item-1") itemProps = rp;
+                return rp.isSelected ? "selected" : "unselected";
+              }}
+            >
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      expect(treeProps).toBeDefined();
+      expect(treeProps?.isEmpty).toBe(false);
+      expect(treeProps?.selectionMode).toBe("none");
+      expect(treeProps?.allowsDragging).toBe(false);
+      expect(treeProps?.isDropTarget).toBe(false);
+      expect(treeProps?.state).toBeDefined();
+
+      expect(itemProps).toBeDefined();
+      expect(itemProps?.id).toBe("item-1");
+      expect(itemProps?.level).toBe(0);
+      expect(itemProps?.selectionMode).toBe("none");
+      expect(itemProps?.selectionBehavior).toBe("toggle");
+      expect(itemProps?.allowsDragging).toBe(false);
+      expect(itemProps?.isDragging).toBe(false);
+      expect(itemProps?.isDropTarget).toBe(false);
+      expect(itemProps?.isFocusVisibleWithin).toBe(false);
+      expect(itemProps?.hasChildItems).toBe(true);
+      expect(itemProps?.isExpandable).toBe(true);
+      expect(itemProps?.state).toBeDefined();
     });
   });
 });

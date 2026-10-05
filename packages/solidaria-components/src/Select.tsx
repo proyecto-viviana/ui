@@ -125,18 +125,47 @@ function getNativeSelectValidation(select: HTMLSelectElement | HTMLInputElement)
 }
 
 export interface SelectRenderProps {
-  /** Whether the select is open. */
-  isOpen: boolean;
-  /** Whether the select is focused. */
+  /**
+   * Whether the select is focused, either via a mouse or keyboard.
+   *
+   * @selector [data-focused]
+   */
   isFocused: boolean;
-  /** Whether the select has keyboard focus. */
+  /**
+   * Whether the select is keyboard focused.
+   *
+   * @selector [data-focus-visible]
+   */
   isFocusVisible: boolean;
-  /** Whether the select is disabled. */
+  /**
+   * Whether the select is disabled.
+   *
+   * @selector [data-disabled]
+   */
   isDisabled: boolean;
-  /** Whether the select is required. */
+  /**
+   * Whether the select is currently open.
+   *
+   * @selector [data-open]
+   */
+  isOpen: boolean;
+  /**
+   * Whether the select is invalid.
+   *
+   * @selector [data-invalid]
+   */
+  isInvalid: boolean;
+  /**
+   * Whether the select is required.
+   *
+   * @selector [data-required]
+   */
   isRequired: boolean;
-  /** Whether a value is selected. */
-  isSelected: boolean;
+  /**
+   * Whether a value is selected.
+   * @deprecated Non-standard RAC property.
+   */
+  isSelected?: boolean;
 }
 
 export interface SelectProps<T> extends Omit<AriaSelectProps, "children">, SlotProps {
@@ -539,6 +568,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     isFocusVisible: isFocusVisibleWithin(),
     isDisabled: resolveDisabled(),
     isRequired: !!ariaProps.isRequired,
+    isInvalid: isInvalid(),
     isSelected:
       state.selectionMode() === "multiple"
         ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
@@ -559,6 +589,9 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     },
     get isRequired() {
       return !!ariaProps.isRequired;
+    },
+    get isInvalid() {
+      return isInvalid();
     },
     get isSelected() {
       return hasSelection();

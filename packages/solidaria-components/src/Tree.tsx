@@ -95,6 +95,7 @@ import {
   type CollectionEntry,
   type CollectionRendererContextValue,
   type SectionProps,
+  type ItemRenderProps,
   useCollectionRenderer,
   useCollectionRoot,
 } from "./Collection";
@@ -127,15 +128,53 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
 }
 
 export interface TreeRenderProps {
-  /** Whether the tree has focus. */
-  isFocused: boolean;
-  /** Whether the tree has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the tree is disabled. */
-  isDisabled: boolean;
-  /** Whether the tree is empty. */
+  /**
+   * Whether the tree has no items and should display its empty state.
+   *
+   * @selector [data-empty]
+   */
   isEmpty: boolean;
+  /**
+   * Whether the tree is currently focused.
+   *
+   * @selector [data-focused]
+   */
+  isFocused: boolean;
+  /**
+   * Whether the tree is currently keyboard focused.
+   *
+   * @selector [data-focus-visible]
+   */
+  isFocusVisible: boolean;
+  /**
+   * Whether the tree is disabled.
+   *
+   * @selector [data-disabled]
+   */
+  isDisabled?: boolean;
+  /**
+   * The type of selection that is allowed in the collection.
+   *
+   * @selector [data-selection-mode="single | multiple"]
+   */
+  selectionMode: "none" | "single" | "multiple";
+  /**
+   * Whether the tree allows dragging.
+   *
+   * @selector [data-allows-dragging]
+   */
+  allowsDragging: boolean;
+  /**
+   * Whether the tree is currently the active drop target.
+   *
+   * @selector [data-drop-target]
+   */
+  isDropTarget: boolean;
+  /** State of the tree. */
+  state: TreeState<unknown>;
 }
+
+export interface TreeEmptyStateRenderProps extends Omit<TreeRenderProps, "isEmpty"> {}
 
 export interface TreeProps<T extends object> extends Omit<AriaTreeProps, "children">, SlotProps {
   /** The hierarchical items to render in the tree. */
@@ -167,7 +206,7 @@ export interface TreeProps<T extends object> extends Omit<AriaTreeProps, "childr
   /** The inline style for the element. */
   style?: StyleOrFunction<TreeRenderProps>;
   /** A function to render when the tree is empty. */
-  renderEmptyState?: () => JSX.Element;
+  renderEmptyState?: (props: TreeEmptyStateRenderProps) => JSX.Element;
   /** Whether there are more items to load. */
   hasMore?: boolean;
   /** Whether additional items are currently loading. */
@@ -197,29 +236,40 @@ export interface TreeRenderItemState {
   level: number;
 }
 
-export interface TreeItemRenderProps {
-  /** Whether the item is selected. */
-  isSelected: boolean;
-  /** Whether the item is focused. */
-  isFocused: boolean;
-  /** Whether the item has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the item is pressed. */
-  isPressed: boolean;
-  /** Whether the item is hovered. */
-  isHovered: boolean;
-  /** Whether the item is disabled. */
-  isDisabled: boolean;
-  /** Whether the item is expanded. */
+export interface TreeItemRenderProps extends ItemRenderProps {
+  /**
+   * Whether the tree item is expanded.
+   *
+   * @selector [data-expanded]
+   */
   isExpanded: boolean;
-  /** Whether the item is expandable (has children). */
+  /**
+   * Whether the tree item has child tree items.
+   *
+   * @selector [data-has-child-items]
+   */
+  hasChildItems: boolean;
+  /**
+   * Whether the item is expandable (has children).
+   * @deprecated Use {@link hasChildItems}.
+   */
   isExpandable: boolean;
-  /** The nesting level (0 = root). */
+  /**
+   * What level the tree item has within the tree.
+   *
+   * @selector [data-level="number"]
+   */
   level: number;
-  /** The selection mode active on the tree. */
-  selectionMode: "none" | "single" | "multiple";
-  /** The selection behavior active on the tree. */
-  selectionBehavior: "toggle" | "replace";
+  /**
+   * Whether the tree item's children have keyboard focus.
+   *
+   * @selector [data-focus-visible-within]
+   */
+  isFocusVisibleWithin: boolean;
+  /** The state of the tree. */
+  state: TreeState<unknown>;
+  /** The unique id of the tree row. */
+  id: Key;
 }
 
 export interface TreeItemProps<T extends object>
@@ -955,40 +1005,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     ref,
   );
 
-  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-
-  const renderValues = createMemo<TreeRenderProps>(() => ({
-    isFocused: state.isFocused || isFocused(),
-    isFocusVisible: isFocusVisible(),
-    isDisabled: ariaProps.isDisabled ?? false,
-    isEmpty: flatItems().length === 0,
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-Tree",
-    },
-    renderValues,
-  );
-
-  const domProps = createMemo(() => {
-    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
-    return filtered;
-  });
-
-  const cleanTreeProps = () => {
-    const { ref: _ref1, ...rest } = treeAria.treeProps as Record<string, unknown>;
-    return rest;
-  };
-  const cleanFocusProps = () => {
-    const { ref: _ref2, ...rest } = focusProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const isEmpty = () => flatItems().length === 0;
-
   const visibleRows = createMemo(() => {
     collectionVersion();
     return state.collection.rows;
@@ -1111,9 +1127,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
           getKeyPageBelow: (key) => state.collection.getKeyAfter(key),
           getKeyPageAbove: (key) => state.collection.getKeyBefore(key),
         },
-        // TreeCollection carries a wider node.type union than the narrow
-        // Collection option but is structurally a valid Collection for
-        // navigate()/focus restoration — cast at the seam.
         get collection() {
           return state.collection as unknown as Collection;
         },
@@ -1160,6 +1173,45 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+
+  const renderValues = createMemo<TreeRenderProps>(() => ({
+    isFocused: state.isFocused || isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isDisabled: ariaProps.isDisabled ?? false,
+    isEmpty: flatItems().length === 0,
+    selectionMode: state.selectionMode,
+    allowsDragging: Boolean(local.dragAndDropHooks),
+    isDropTarget: isRootDropTarget(),
+    state: state as TreeState<unknown>,
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-Tree",
+    },
+    renderValues,
+  );
+
+  const domProps = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+    return filtered;
+  });
+
+  const cleanTreeProps = () => {
+    const { ref: _ref1, ...rest } = treeAria.treeProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const { ref: _ref2, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const isEmpty = () => flatItems().length === 0;
+
   const dndRenderDropIndicator = createMemo(() =>
     useRenderDropIndicator(local.dragAndDropHooks, dropState()),
   );
@@ -1421,7 +1473,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
               {isEmpty() && local.renderEmptyState ? (
                 <div role="row" aria-level={1} style={{ display: "contents" }}>
                   <div role="gridcell" style={{ display: "contents" }}>
-                    {local.renderEmptyState()}
+                    {local.renderEmptyState(renderValues())}
                   </div>
                 </div>
               ) : parentCollectionRenderer?.isVirtualized ? (
@@ -1631,6 +1683,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   });
 
   const { isFocusVisible, focusProps } = createFocusRing();
+  const { isFocusVisible: isFocusVisibleWithin, focusProps: focusWithinProps } = createFocusRing({
+    within: true,
+  });
 
   const isFocused = createMemo(() => state.focusedKey === local.id);
   const draggableItem = createMemo(() => {
@@ -1663,10 +1718,17 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     isHovered: isHovered(),
     isDisabled: isDisabled(),
     isExpanded: isExpanded(),
+    hasChildItems: isExpandable(),
     isExpandable: isExpandable(),
     level: level(),
+    isFocusVisibleWithin: isFocusVisibleWithin(),
     selectionMode: state.selectionMode,
     selectionBehavior: state.selectionBehavior,
+    allowsDragging: Boolean(treeContext?.dragState),
+    isDragging: Boolean(draggableItem()?.isDragging),
+    isDropTarget: Boolean(droppableItem()?.isDropTarget),
+    state: state as TreeState<unknown>,
+    id: local.id,
   }));
 
   const renderProps = useRenderProps(
@@ -1691,6 +1753,10 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   };
   const cleanFocusProps = () => {
     const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusWithinProps = () => {
+    const { ref: _ref4, ...rest } = focusWithinProps as Record<string, unknown>;
     return rest;
   };
 
@@ -1797,6 +1863,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       cleanRowProps(),
       cleanHoverProps(),
       cleanFocusProps(),
+      cleanFocusWithinProps(),
       (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
       (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
     );
@@ -1839,6 +1906,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         data-selected={dataAttr(isSelected())}
         data-focused={dataAttr(isFocused())}
         data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
+        data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
         data-pressed={dataAttr(isPressed())}
         data-hovered={dataAttr(isHovered())}
         data-disabled={dataAttr(isDisabled())}
@@ -1849,6 +1917,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
         data-selection-mode={
           treeContext?.state.selectionMode !== "none" ? treeContext?.state.selectionMode : undefined
         }
+        data-allows-dragging={dataAttr(Boolean(treeContext?.dragState))}
         data-dragging={dataAttr(draggableItem()?.isDragging)}
         data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
       >

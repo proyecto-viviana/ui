@@ -378,6 +378,7 @@ export {
   type CollectionBranchProps,
   type CollectionRendererContextValue,
   type CollectionPrimitiveRenderProps,
+  type ItemRenderProps,
 } from "./Collection";
 
 export {
@@ -843,6 +844,7 @@ export {
   TreeItemContext,
   type TreeProps,
   type TreeRenderProps,
+  type TreeEmptyStateRenderProps,
   type TreeRenderItemState,
   type TreeItemProps,
   type TreeItemRenderProps,

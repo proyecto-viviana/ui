@@ -311,4 +311,9 @@ export const Item = ListBoxOption;
 export const Section = ListBoxSection;
 export const ListBoxBase = ListBox;
 
-export type { Key };
+export type {
+  Key,
+  ListBoxRenderProps,
+  ListBoxOptionRenderProps,
+  ListBoxOptionRenderProps as ListBoxItemRenderProps,
+};

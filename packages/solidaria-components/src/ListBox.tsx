@@ -110,6 +110,7 @@ import {
   type CollectionRendererContextValue,
   type CollectionSection,
   type SectionProps,
+  type ItemRenderProps,
   useCollectionRenderer,
   useCollectionRoot,
   isCollectionSection,
@@ -117,14 +118,50 @@ import {
 } from "./Collection";
 
 export interface ListBoxRenderProps {
-  /** Whether the listbox has focus. */
-  isFocused: boolean;
-  /** Whether the listbox has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the listbox is disabled. */
-  isDisabled: boolean;
-  /** Whether the listbox is empty. */
+  /**
+   * Whether the listbox has no items and should display its empty state.
+   *
+   * @selector [data-empty]
+   */
   isEmpty: boolean;
+  /**
+   * Whether the listbox is currently focused.
+   *
+   * @selector [data-focused]
+   */
+  isFocused: boolean;
+  /**
+   * Whether the listbox is currently keyboard focused.
+   *
+   * @selector [data-focus-visible]
+   */
+  isFocusVisible: boolean;
+  /**
+   * Whether the listbox is disabled.
+   *
+   * @selector [data-disabled]
+   */
+  isDisabled?: boolean;
+  /**
+   * Whether the listbox is currently the active drop target.
+   *
+   * @selector [data-drop-target]
+   */
+  isDropTarget: boolean;
+  /**
+   * Whether the items are arranged in a stack or grid.
+   *
+   * @selector [data-layout="stack | grid"]
+   */
+  layout: "stack" | "grid";
+  /**
+   * The primary orientation of the items.
+   *
+   * @selector [data-orientation="vertical | horizontal"]
+   */
+  orientation: "vertical" | "horizontal";
+  /** State of the listbox. */
+  state: ListState<unknown>;
 }
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
@@ -184,20 +221,7 @@ export interface ListBoxProps<T> extends Omit<AriaListBoxProps, "children">, Slo
   slots?: Record<string, Partial<ListBoxProps<T>>>;
 }
 
-export interface ListBoxOptionRenderProps {
-  /** Whether the option is selected. */
-  isSelected: boolean;
-  /** Whether the option is focused. */
-  isFocused: boolean;
-  /** Whether the option has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the option is pressed. */
-  isPressed: boolean;
-  /** Whether the option is hovered. */
-  isHovered: boolean;
-  /** Whether the option is disabled. */
-  isDisabled: boolean;
-}
+export interface ListBoxOptionRenderProps extends ItemRenderProps {}
 
 export type ListBoxItemProps<T> = ListBoxOptionProps<T>;
 export type ListBoxItemRenderProps = ListBoxOptionRenderProps;
@@ -645,6 +669,87 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     () => listRef(),
   );
 
+  const hasDroppableDnd = createMemo(() => {
+    const hooks = local.dragAndDropHooks;
+    return Boolean(
+      hooks?.useDroppableCollectionState &&
+      hooks.useDroppableCollection &&
+      (hooks.dropTargetDelegate ||
+        parentCollectionRenderer?.dropTargetDelegate ||
+        hooks.ListDropTargetDelegate),
+    );
+  });
+  const dropStateValue = hasDroppableDnd()
+    ? local.dragAndDropHooks?.useDroppableCollectionState?.({
+        get collection() {
+          return state.collection();
+        },
+      })
+    : undefined;
+  const dropState = () => dropStateValue;
+  const hasDraggableDnd = createMemo(() => {
+    const hooks = local.dragAndDropHooks;
+    return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
+  });
+  const dragStateValue = hasDraggableDnd()
+    ? local.dragAndDropHooks?.useDraggableCollectionState?.({
+        items: flatItems(),
+        collection: state.collection(),
+        selectedKeys: state.selectionManager.selectedKeys,
+        isSelected: (key) => state.selectionManager.isSelected(key),
+      })
+    : undefined;
+  const dragState = () => dragStateValue;
+  if (local.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
+    local.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => listRef());
+  }
+  const droppableCollectionValue = (() => {
+    if (!hasDroppableDnd()) return undefined;
+    const hooks = local.dragAndDropHooks;
+    const activeDropState = dropStateValue;
+    if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
+    const dropTargetDelegate =
+      hooks.dropTargetDelegate ??
+      parentCollectionRenderer?.dropTargetDelegate ??
+      (hooks.ListDropTargetDelegate
+        ? new hooks.ListDropTargetDelegate(
+            () => state.collection(),
+            () => listRef(),
+            { layout: "stack", orientation: "vertical", direction: resolveDirection() },
+          )
+        : undefined);
+    if (!dropTargetDelegate) return undefined;
+    return hooks.useDroppableCollection(
+      {
+        dropTargetDelegate,
+        keyboardDelegate: {
+          getFirstKey: () => state.collection().getFirstKey(),
+          getLastKey: () => state.collection().getLastKey(),
+          getKeyBelow: (key) => state.collection().getKeyAfter(key),
+          getKeyAbove: (key) => state.collection().getKeyBefore(key),
+          getKeyPageBelow: (key) => state.collection().getKeyAfter(key),
+          getKeyPageAbove: (key) => state.collection().getKeyBefore(key),
+        },
+        get collection() {
+          return state.collection();
+        },
+        get selectedKeys() {
+          return state.selectionManager.selectedKeys;
+        },
+        setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
+        setFocusedKey: (key) => state.setFocusedKey(key),
+        setFocused: (isFocused) => state.setFocused(isFocused),
+      },
+      activeDropState,
+      () => listRef(),
+    );
+  })();
+  const droppableCollection = () => droppableCollectionValue;
+  const isRootDropTarget = createMemo(() => {
+    return Boolean(dropState()?.target?.type === "root");
+  });
+
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   const renderValues = createMemo<ListBoxRenderProps>(() => ({
@@ -655,6 +760,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     isFocusVisible: isFocusVisible(),
     isDisabled: resolveDisabled(),
     isEmpty: state.collection().size === 0,
+    isDropTarget: isRootDropTarget(),
+    layout: stateProps.layout ?? "stack",
+    orientation: stateProps.orientation ?? "vertical",
+    state: state as ListState<unknown>,
   }));
 
   const renderProps = useRenderProps(
@@ -795,90 +904,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!node) return null;
     return { type: "item", key: node.key, dropPosition: position };
   };
-  const hasDroppableDnd = createMemo(() => {
-    const hooks = local.dragAndDropHooks;
-    return Boolean(
-      hooks?.useDroppableCollectionState &&
-      hooks.useDroppableCollection &&
-      (hooks.dropTargetDelegate ||
-        parentCollectionRenderer?.dropTargetDelegate ||
-        hooks.ListDropTargetDelegate),
-    );
-  });
-  const dropStateValue = hasDroppableDnd()
-    ? local.dragAndDropHooks?.useDroppableCollectionState?.({
-        get collection() {
-          return state.collection();
-        },
-      })
-    : undefined;
-  const dropState = () => dropStateValue;
-  const hasDraggableDnd = createMemo(() => {
-    const hooks = local.dragAndDropHooks;
-    return Boolean(hooks?.useDraggableCollectionState && hooks.useDraggableCollection);
-  });
-  const dragStateValue = hasDraggableDnd()
-    ? local.dragAndDropHooks?.useDraggableCollectionState?.({
-        items: flatItems(),
-        collection: state.collection(),
-        selectedKeys: state.selectionManager.selectedKeys,
-        isSelected: (key) => state.selectionManager.isSelected(key),
-      })
-    : undefined;
-  const dragState = () => dragStateValue;
-  if (local.dragAndDropHooks?.useDraggableCollection && dragStateValue) {
-    local.dragAndDropHooks.useDraggableCollection({}, dragStateValue, () => listRef());
-  }
-  const droppableCollectionValue = (() => {
-    if (!hasDroppableDnd()) return undefined;
-    const hooks = local.dragAndDropHooks;
-    const activeDropState = dropStateValue;
-    if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
-    const dropTargetDelegate =
-      hooks.dropTargetDelegate ??
-      parentCollectionRenderer?.dropTargetDelegate ??
-      (hooks.ListDropTargetDelegate
-        ? new hooks.ListDropTargetDelegate(
-            () => state.collection(),
-            () => listRef(),
-            { layout: "stack", orientation: "vertical", direction: resolveDirection() },
-          )
-        : undefined);
-    if (!dropTargetDelegate) return undefined;
-    return hooks.useDroppableCollection(
-      {
-        dropTargetDelegate,
-        keyboardDelegate: {
-          getFirstKey: () => state.collection().getFirstKey(),
-          getLastKey: () => state.collection().getLastKey(),
-          getKeyBelow: (key) => state.collection().getKeyAfter(key),
-          getKeyAbove: (key) => state.collection().getKeyBefore(key),
-          getKeyPageBelow: (key) => state.collection().getKeyAfter(key),
-          getKeyPageAbove: (key) => state.collection().getKeyBefore(key),
-        },
-        // The real collection drives keyboard drop-target navigation
-        // (`navigate()` walks getKeyAfter/getKeyBefore) and post-drop focus
-        // restoration. Reading it here re-registers the drop target when the
-        // collection changes (mirrors upstream keying its effect on the state).
-        get collection() {
-          return state.collection();
-        },
-        get selectedKeys() {
-          return state.selectionManager.selectedKeys;
-        },
-        setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
-        setFocusedKey: (key) => state.setFocusedKey(key),
-        setFocused: (isFocused) => state.setFocused(isFocused),
-      },
-      activeDropState,
-      () => listRef(),
-    );
-  })();
-  const droppableCollection = () => droppableCollectionValue;
-  const isRootDropTarget = createMemo(() => {
-    return Boolean(dropState()?.target?.type === "root");
-  });
   const dndRenderDropIndicator = createMemo(() =>
     useRenderDropIndicator(local.dragAndDropHooks, dropState()),
   );
@@ -1289,30 +1314,6 @@ function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
     ref,
   );
 
-  const renderValues = createMemo<ListBoxOptionRenderProps>(() => ({
-    isSelected: optionAria.isSelected(),
-    isFocused: optionAria.isFocused(),
-    isFocusVisible: optionAria.isFocusVisible(),
-    isPressed: optionAria.isPressed(),
-    isHovered: optionAria.isHovered(),
-    isDisabled: optionAria.isDisabled(),
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      get children() {
-        return props.children;
-      },
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-ListBox-option",
-    },
-    renderValues,
-  );
-
-  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
-    isSelected: optionAria.isSelected,
-  }));
   const draggableItem = createMemo(() => {
     if (!listContext?.dragAndDropHooks?.useDraggableItem || !listContext.dragState)
       return undefined;
@@ -1337,6 +1338,36 @@ function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
       () => ref(),
     );
   });
+
+  const renderValues = createMemo<ListBoxOptionRenderProps>(() => ({
+    isSelected: optionAria.isSelected(),
+    isFocused: optionAria.isFocused(),
+    isFocusVisible: optionAria.isFocusVisible(),
+    isPressed: optionAria.isPressed(),
+    isHovered: optionAria.isHovered(),
+    isDisabled: optionAria.isDisabled(),
+    selectionMode: state.selectionMode(),
+    selectionBehavior: state.selectionBehavior(),
+    allowsDragging: Boolean(listContext?.dragState),
+    isDragging: Boolean(draggableItem()?.isDragging),
+    isDropTarget: Boolean(droppableItem()?.isDropTarget),
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      get children() {
+        return props.children;
+      },
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-ListBox-option",
+    },
+    renderValues,
+  );
+
+  const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
+    isSelected: optionAria.isSelected,
+  }));
 
   const cleanOptionProps = () => {
     const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
@@ -1407,6 +1438,7 @@ function ListBoxItemElement<T>(props: ListBoxItemProps<T>): JSX.Element {
         data-pressed={dataAttr(optionAria.isPressed())}
         data-hovered={dataAttr(optionAria.isHovered())}
         data-disabled={dataAttr(optionAria.isDisabled())}
+        data-allows-dragging={dataAttr(Boolean(listContext?.dragState))}
         data-dragging={dataAttr(draggableItem()?.isDragging)}
         data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
         data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}

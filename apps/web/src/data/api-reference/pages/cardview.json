@@ -284,7 +284,7 @@
         },
         {
           "name": "renderEmptyState",
-          "type": "() => JSX.Element",
+          "type": "(props: GridListRenderProps) => JSX.Element",
           "required": false,
           "description": "A function to render when the grid list is empty.",
           "origin": "solidaria-components"

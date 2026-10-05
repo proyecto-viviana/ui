@@ -53,6 +53,8 @@ import {
   type GridNode,
   type Key,
   type DropTarget,
+  type ListState,
+  type Collection,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -70,6 +72,7 @@ import {
   CollectionRendererContext,
   type CollectionRendererContextValue,
   type SectionProps,
+  type ItemRenderProps,
   useCollectionRenderer,
   useCollectionRoot,
   renderCollectionDropSlots,
@@ -109,20 +112,50 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
 }
 
 export interface GridListRenderProps {
-  /** Whether the grid list has focus. */
-  isFocused: boolean;
-  /** Whether the grid list has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the grid list is disabled. */
-  isDisabled: boolean;
-  /** Whether the grid list is empty. */
+  /**
+   * Whether the list has no items and should display its empty state.
+   *
+   * @selector [data-empty]
+   */
   isEmpty: boolean;
+  /**
+   * Whether the grid list is currently focused.
+   *
+   * @selector [data-focused]
+   */
+  isFocused: boolean;
+  /**
+   * Whether the grid list is currently keyboard focused.
+   *
+   * @selector [data-focus-visible]
+   */
+  isFocusVisible: boolean;
+  /**
+   * Whether the grid list is disabled.
+   *
+   * @selector [data-disabled]
+   */
+  isDisabled?: boolean;
+  /**
+   * Whether the grid list is currently the active drop target.
+   *
+   * @selector [data-drop-target]
+   */
+  isDropTarget: boolean;
+  /**
+   * Whether the items are arranged in a stack or grid.
+   *
+   * @selector [data-layout="stack | grid"]
+   */
+  layout: "stack" | "grid";
   /**
    * The primary orientation of the items.
    *
    * @selector [data-orientation="vertical | horizontal"]
    */
   orientation: Orientation;
+  /** State of the grid list. */
+  state: ListState<unknown>;
 }
 
 export interface GridListProps<T extends object>
@@ -150,6 +183,12 @@ export interface GridListProps<T extends object>
   /** Handler called when selection changes. */
   onSelectionChange?: (keys: "all" | Set<Key>) => void;
   /**
+   * Whether the items are arranged in a stack or grid.
+   *
+   * @default 'stack'
+   */
+  layout?: "stack" | "grid";
+  /**
    * The primary orientation of the items. Usually this is the direction that the collection
    * scrolls.
    *
@@ -165,7 +204,7 @@ export interface GridListProps<T extends object>
   /** Ref for the grid list root element. */
   ref?: RefLike<HTMLDivElement>;
   /** A function to render when the grid list is empty. */
-  renderEmptyState?: () => JSX.Element;
+  renderEmptyState?: (props: GridListRenderProps) => JSX.Element;
   /** Whether there are more items to load. */
   hasMore?: boolean;
   /** Whether additional items are currently loading. */
@@ -176,23 +215,17 @@ export interface GridListProps<T extends object>
   dragAndDropHooks?: DragAndDropHooks<T>;
 }
 
-export interface GridListItemRenderProps {
-  /** Whether the item is selected. */
-  isSelected: boolean;
-  /** Whether the item is focused. */
-  isFocused: boolean;
-  /** Whether the item has keyboard focus. */
-  isFocusVisible: boolean;
-  /** Whether the item is pressed. */
-  isPressed: boolean;
-  /** Whether the item is hovered. */
-  isHovered: boolean;
-  /** Whether the item is disabled. */
-  isDisabled: boolean;
-  /** The grid list selection mode. */
-  selectionMode: "none" | "single" | "multiple";
-  /** How selection behaves when pressing an item. */
-  selectionBehavior: "replace" | "toggle";
+export interface GridListItemRenderProps extends ItemRenderProps {
+  /** The unique id of the item. */
+  id?: Key;
+  /**
+   * Whether the item's children have keyboard focus.
+   *
+   * @selector [data-focus-visible-within]
+   */
+  isFocusVisibleWithin: boolean;
+  /** State of the grid list. */
+  state: ListState<unknown>;
   /** Id for the item description, to join into the row accessible name. */
   descriptionId?: string;
 }
@@ -492,51 +525,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     ref,
   );
 
-  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-  const renderValues = createMemo<GridListRenderProps>(() => ({
-    isFocused: state.isFocused || isFocused(),
-    isFocusVisible: isFocusVisible(),
-    isDisabled: ariaProps.isDisabled ?? false,
-    isEmpty: stateProps.items.length === 0,
-    orientation: orientation(),
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-GridList",
-    },
-    renderValues,
-  );
-
-  const domProps = createMemo(() => {
-    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
-    return filtered;
-  });
-
-  const cleanGridProps = () => {
-    const { ref: _ref1, ...rest } = gridListAria.gridProps as Record<string, unknown>;
-    return rest;
-  };
-  const cleanFocusProps = () => {
-    const { ref: _ref2, ...rest } = focusProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const isEmpty = () => stateProps.items.length === 0;
-  const virtualizer = useVirtualizerContext();
-  const getItemNodes = createMemo(() =>
-    Array.from(state.collection).filter((node) => node.type === "item"),
-  );
-  const getDropTargetByIndex = (
-    index: number,
-    position: "before" | "after" | "on",
-  ): DropTarget | null => {
-    const node = getItemNodes()[index];
-    if (!node) return null;
-    return { type: "item", key: node.key, dropPosition: position };
-  };
   const hasDroppableDnd = createMemo(() => {
     const hooks = local.dragAndDropHooks;
     return Boolean(
@@ -606,6 +594,15 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           getKeyPageBelow: (key) => state.collection.getKeyAfter?.(key) ?? null,
           getKeyPageAbove: (key) => state.collection.getKeyBefore?.(key) ?? null,
         },
+        get collection() {
+          return state.collection as unknown as Collection;
+        },
+        get selectedKeys() {
+          return state.selectedKeys;
+        },
+        setSelectedKeys: (keys) => state.setSelectedKeys(keys),
+        setFocusedKey: (key) => state.setFocusedKey(key),
+        setFocused: (isFocused) => state.setFocused(isFocused),
       },
       activeDropState,
       () => ref(),
@@ -615,6 +612,55 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const isRootDropTarget = createMemo(() => {
     return Boolean(dropState()?.target?.type === "root");
   });
+
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const renderValues = createMemo<GridListRenderProps>(() => ({
+    isFocused: state.isFocused || isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isDisabled: ariaProps.isDisabled ?? false,
+    isEmpty: stateProps.items.length === 0,
+    isDropTarget: isRootDropTarget(),
+    layout: local.layout ?? "stack",
+    orientation: orientation(),
+    state: state as unknown as ListState<unknown>,
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-GridList",
+    },
+    renderValues,
+  );
+
+  const domProps = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+    return filtered;
+  });
+
+  const cleanGridProps = () => {
+    const { ref: _ref1, ...rest } = gridListAria.gridProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const { ref: _ref2, ...rest } = focusProps as Record<string, unknown>;
+    return rest;
+  };
+
+  const isEmpty = () => stateProps.items.length === 0;
+  const virtualizer = useVirtualizerContext();
+  const getItemNodes = createMemo(() =>
+    Array.from(state.collection).filter((node) => node.type === "item"),
+  );
+  const getDropTargetByIndex = (
+    index: number,
+    position: "before" | "after" | "on",
+  ): DropTarget | null => {
+    const node = getItemNodes()[index];
+    if (!node) return null;
+    return { type: "item", key: node.key, dropPosition: position };
+  };
   const dndRenderDropIndicator = createMemo(() =>
     useRenderDropIndicator(local.dragAndDropHooks, dropState()),
   );
@@ -740,7 +786,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           >
             <SharedElementTransition>
               {isEmpty() && local.renderEmptyState ? (
-                local.renderEmptyState()
+                local.renderEmptyState(renderValues())
               ) : parentCollectionRenderer?.isVirtualized ? (
                 <CollectionRoot
                   collection={virtualRange() ? stateProps.items : []}
@@ -936,6 +982,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   });
 
   const { isFocusVisible, focusProps } = createFocusRing();
+  const { isFocusVisible: isFocusVisibleWithin, focusProps: focusWithinProps } = createFocusRing({
+    within: true,
+  });
 
   const isFocused = createMemo(() => state.focusedKey === local.id);
   const draggableItem = createMemo(() => {
@@ -969,6 +1018,12 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     isDisabled: isDisabled(),
     selectionMode: state.selectionMode,
     selectionBehavior: listContext?.selectionBehavior ?? "toggle",
+    allowsDragging: Boolean(listContext?.dragState),
+    isDragging: Boolean(draggableItem()?.isDragging),
+    isDropTarget: Boolean(droppableItem()?.isDropTarget),
+    id: local.id,
+    isFocusVisibleWithin: isFocusVisibleWithin(),
+    state: state as unknown as ListState<unknown>,
     descriptionId: itemAria.descriptionProps.id,
   }));
 
@@ -996,6 +1051,10 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
     return rest;
   };
+  const cleanFocusWithinProps = () => {
+    const { ref: _ref4, ...rest } = focusWithinProps as Record<string, unknown>;
+    return rest;
+  };
 
   return (
     <div
@@ -1012,6 +1071,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
         cleanRowProps(),
         cleanHoverProps(),
         cleanFocusProps(),
+        cleanFocusWithinProps(),
         (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
         (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
       )}
@@ -1021,9 +1081,11 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       data-selected={dataAttr(isSelected())}
       data-focused={dataAttr(isFocused())}
       data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
+      data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
       data-pressed={dataAttr(isPressed())}
       data-hovered={dataAttr(isHovered())}
       data-disabled={dataAttr(isDisabled())}
+      data-allows-dragging={dataAttr(Boolean(listContext?.dragState))}
       data-dragging={dataAttr(draggableItem()?.isDragging)}
       data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
     >

@@ -442,6 +442,24 @@
       ]
     },
     {
+      "name": "SelectListBoxRenderProps",
+      "component": "SelectListBoxRender",
+      "source": "packages/solidaria-components/src/Select.tsx",
+      "props": [
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the listbox is focused.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
       "name": "SelectOptionProps",
       "component": "SelectOption",
       "source": "packages/viviana-ui/src/select/index.tsx",
@@ -613,6 +631,163 @@
       ]
     },
     {
+      "name": "SelectOptionRenderProps",
+      "component": "SelectOptionRender",
+      "source": "packages/solidaria-components/src/Select.tsx",
+      "props": [
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option is selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option is focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option has keyboard focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option is pressed.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isHovered",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option is hovered.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the option is disabled.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectRenderProps",
+      "component": "SelectRender",
+      "source": "packages/solidaria-components/src/Select.tsx",
+      "props": [
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is focused, either via a mouse or keyboard.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is currently open.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is invalid.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is required.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether a value is selected.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
       "name": "SelectTriggerProps",
       "component": "SelectTrigger",
       "source": "packages/viviana-ui/src/select/index.tsx",
@@ -643,6 +818,90 @@
           "type": "((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
           "required": false,
           "description": "A ref callback/object for the underlying trigger button element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the trigger is pressed. Can be used to override the default press state.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectTriggerRenderProps",
+      "component": "SelectTriggerRender",
+      "source": "packages/solidaria-components/src/Select.tsx",
+      "props": [
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the select is open.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the trigger is focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the trigger has keyboard focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isHovered",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the trigger is hovered.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the trigger is pressed.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the trigger is disabled.",
           "origin": "solidaria-components"
         }
       ]
@@ -678,6 +937,52 @@
           "type": "string",
           "required": false,
           "description": "Placeholder text when no option is selected. Overrides the placeholder from Select.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectValueRenderProps",
+      "component": "SelectValueRender",
+      "source": "packages/solidaria-components/src/Select.tsx",
+      "props": [
+        {
+          "name": "selectedItem",
+          "type": "CollectionNode<T> | null",
+          "required": true,
+          "description": "The selected item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedItems",
+          "type": "CollectionNode<T>[]",
+          "required": true,
+          "description": "The selected items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedText",
+          "type": "string | null",
+          "required": true,
+          "description": "The text value of the selected item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether a value is selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placeholder",
+          "type": "string | undefined",
+          "required": true,
+          "description": "The placeholder text.",
           "origin": "solidaria-components"
         }
       ]

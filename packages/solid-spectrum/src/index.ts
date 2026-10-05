@@ -412,11 +412,21 @@ export type { FlexProps, GridProps } from "./layout";
 
 // ListBox
 export { ListBox, ListBoxOption, ListBoxSection } from "./listbox";
-export type { ListBoxOptionProps, ListBoxProps, ListBoxSectionProps, ListBoxSize } from "./listbox";
+export type {
+  ListBoxItemRenderProps,
+  ListBoxOptionProps,
+  ListBoxOptionRenderProps,
+  ListBoxProps,
+  ListBoxRenderProps,
+  ListBoxSectionProps,
+  ListBoxSize,
+} from "./listbox";
 
 // ListView
 export { ListView, ListViewContext, ListViewItem } from "./list";
 export type {
+  GridListItemRenderProps,
+  GridListRenderProps,
   ListViewItemProps,
   ListViewLayout,
   ListViewLoadingState,
@@ -500,11 +510,16 @@ export type { SelectBoxGroupProps, SelectBoxOrientation, SelectBoxProps } from "
 export { Select, SelectListBox, SelectOption, SelectTrigger, SelectValue } from "./select";
 export type {
   SelectListBoxProps,
+  SelectListBoxRenderProps,
   SelectOptionProps,
+  SelectOptionRenderProps,
   SelectProps,
+  SelectRenderProps,
   SelectSize,
   SelectTriggerProps,
+  SelectTriggerRenderProps,
   SelectValueProps,
+  SelectValueRenderProps,
 } from "./select";
 
 // Skeleton
@@ -701,12 +716,14 @@ export type {
   TreeItemContentProps as TreeViewItemContentProps,
   TreeItemProps,
   TreeItemProps as TreeViewItemProps,
+  TreeItemRenderProps,
   TreeLoadMoreItemProps,
   TreeLoadMoreItemProps as TreeViewLoadMoreItemProps,
   TreeLoadingState,
   TreeProps,
   TreeProps as TreeViewProps,
   TreeRenderItemState,
+  TreeRenderProps,
   TreeSelectionStyle,
 } from "./tree";
 

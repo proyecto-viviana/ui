@@ -447,6 +447,135 @@
       ]
     },
     {
+      "name": "ListBoxItemRenderProps",
+      "component": "ListBoxItemRender",
+      "source": "packages/solidaria-components/src/ListBox.tsx",
+      "props": [
+        {
+          "name": "isHovered",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently hovered with a mouse.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently in a pressed state.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is non-interactive.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": true,
+          "description": "The type of selection that is allowed in the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "\"toggle\" | \"replace\"",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": true,
+          "description": "The selection behavior for the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item allows dragging.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently being dragged.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDropTarget",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently an active drop target.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
       "name": "ListBoxOptionProps",
       "component": "ListBoxOption",
       "source": "packages/viviana-ui/src/listbox/index.tsx",
@@ -628,6 +757,226 @@
           "required": false,
           "description": "Whether press-up may occur without the press starting on this option.",
           "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "ListBoxOptionRenderProps",
+      "component": "ListBoxOptionRender",
+      "source": "packages/solidaria-components/src/ListBox.tsx",
+      "props": [
+        {
+          "name": "isHovered",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently hovered with a mouse.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently in a pressed state.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is non-interactive.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": true,
+          "description": "The type of selection that is allowed in the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "\"toggle\" | \"replace\"",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": true,
+          "description": "The selection behavior for the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item allows dragging.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently being dragged.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDropTarget",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently an active drop target.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ListBoxRenderProps",
+      "component": "ListBoxRender",
+      "source": "packages/solidaria-components/src/ListBox.tsx",
+      "props": [
+        {
+          "name": "isEmpty",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the listbox has no items and should display its empty state.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the listbox is currently focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the listbox is currently keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the listbox is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDropTarget",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the listbox is currently the active drop target.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "layout",
+          "type": "\"grid\" | \"stack\"",
+          "values": [
+            "'grid'",
+            "'stack'"
+          ],
+          "required": true,
+          "description": "Whether the items are arranged in a stack or grid.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": true,
+          "description": "The primary orientation of the items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "state",
+          "type": "ListState<unknown>",
+          "required": true,
+          "description": "State of the listbox.",
+          "origin": "solidaria-components"
         }
       ]
     },

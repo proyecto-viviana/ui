@@ -233,7 +233,7 @@
         },
         {
           "name": "renderEmptyState",
-          "type": "() => JSX.Element",
+          "type": "(props: TreeEmptyStateRenderProps) => JSX.Element",
           "required": false,
           "description": "A function to render when the tree is empty.",
           "origin": "solidaria-components"
@@ -564,6 +564,200 @@
       ]
     },
     {
+      "name": "TreeItemRenderProps",
+      "component": "TreeItemRender",
+      "source": "packages/solidaria-components/src/Tree.tsx",
+      "props": [
+        {
+          "name": "isExpanded",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree item is expanded.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "hasChildItems",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree item has child tree items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isExpandable",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is expandable (has children).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": true,
+          "description": "What level the tree item has within the tree.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisibleWithin",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree item's children have keyboard focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "state",
+          "type": "TreeState<unknown, TreeCollectionInterface<unknown>>",
+          "required": true,
+          "description": "The state of the tree.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique id of the tree row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isHovered",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently hovered with a mouse.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPressed",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently in a pressed state.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is currently keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the item is non-interactive.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": true,
+          "description": "The type of selection that is allowed in the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "\"toggle\" | \"replace\"",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": true,
+          "description": "The selection behavior for the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item allows dragging.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently being dragged.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDropTarget",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the item is currently an active drop target.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
       "name": "TreeLoadMoreItemProps",
       "component": "TreeLoadMoreItem",
       "source": "packages/viviana-ui/src/tree/index.tsx",
@@ -628,6 +822,98 @@
           "required": false,
           "description": "",
           "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "TreeRenderProps",
+      "component": "TreeRender",
+      "source": "packages/solidaria-components/src/Tree.tsx",
+      "props": [
+        {
+          "name": "isEmpty",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree has no items and should display its empty state.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocused",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree is currently focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isFocusVisible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree is currently keyboard focused.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tree is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": true,
+          "description": "The type of selection that is allowed in the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsDragging",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree allows dragging.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDropTarget",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tree is currently the active drop target.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "state",
+          "type": "TreeState<unknown, TreeCollectionInterface<unknown>>",
+          "required": true,
+          "description": "State of the tree.",
+          "origin": "solidaria-components"
         }
       ]
     },
@@ -860,7 +1146,7 @@
         },
         {
           "name": "renderEmptyState",
-          "type": "() => JSX.Element",
+          "type": "(props: TreeEmptyStateRenderProps) => JSX.Element",
           "required": false,
           "description": "A function to render when the tree is empty.",
           "origin": "solidaria-components"

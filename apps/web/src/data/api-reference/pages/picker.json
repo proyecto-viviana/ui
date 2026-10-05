@@ -703,6 +703,13 @@
       "source": "packages/viviana-ui/src/picker/index.tsx",
       "props": [
         {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Optional title for the section header.",
+          "origin": "viviana-ui"
+        },
+        {
           "name": "children",
           "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
           "required": false,

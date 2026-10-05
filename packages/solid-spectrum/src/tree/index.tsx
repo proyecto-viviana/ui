@@ -42,6 +42,7 @@ import {
   type TreeExpandButtonProps as HeadlessTreeExpandButtonProps,
   type TreeRenderProps,
   type TreeItemRenderProps,
+  type TreeEmptyStateRenderProps,
   type TreeRenderItemState,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
@@ -779,8 +780,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const renderEmptyState = () => (
-    <div class={emptyState}>{headlessProps.renderEmptyState?.() ?? "No items"}</div>
+  const renderEmptyState = (emptyProps: TreeEmptyStateRenderProps) => (
+    <div class={emptyState}>{headlessProps.renderEmptyState?.(emptyProps) ?? "No items"}</div>
   );
   const renderItem = (item: TreeItemData<T>, state: TreeRenderItemState) =>
     usesStaticChildren() ? (
@@ -1271,4 +1272,4 @@ export const TreeViewLoadMoreItem = TreeLoadMoreItem;
 export { Collection } from "@proyecto-viviana/solidaria-components";
 export { Text } from "../text";
 
-export type { Key, TreeItemData, TreeRenderItemState };
+export type { Key, TreeItemData, TreeRenderItemState, TreeRenderProps, TreeItemRenderProps };

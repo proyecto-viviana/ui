@@ -53,6 +53,46 @@ export interface CollectionPrimitiveRenderProps {
   hasChildren: boolean;
 }
 
+export interface ItemRenderProps {
+  /** Whether the item is currently hovered with a mouse. */
+  isHovered: boolean;
+  /** Whether the item is currently in a pressed state. */
+  isPressed: boolean;
+  /** Whether the item is currently selected. */
+  isSelected: boolean;
+  /** Whether the item is currently focused. */
+  isFocused: boolean;
+  /** Whether the item is currently keyboard focused. */
+  isFocusVisible: boolean;
+  /** Whether the item is non-interactive. */
+  isDisabled: boolean;
+  /** The type of selection that is allowed in the collection. */
+  selectionMode: "none" | "single" | "multiple";
+  /** The selection behavior for the collection. */
+  selectionBehavior: "toggle" | "replace";
+  /**
+   * Whether the item allows dragging.
+   *
+   * @note This property is only available in collection components that support drag and drop.
+   * @selector [data-allows-dragging]
+   */
+  allowsDragging?: boolean;
+  /**
+   * Whether the item is currently being dragged.
+   *
+   * @note This property is only available in collection components that support drag and drop.
+   * @selector [data-dragging]
+   */
+  isDragging?: boolean;
+  /**
+   * Whether the item is currently an active drop target.
+   *
+   * @note This property is only available in collection components that support drag and drop.
+   * @selector [data-drop-target]
+   */
+  isDropTarget?: boolean;
+}
+
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
 function assignRef<T>(ref: RefLike<T>, el: T): void {
@@ -238,7 +278,8 @@ export function isCollectionSection<T>(entry: CollectionEntry<T>): entry is Coll
   );
 }
 
-export function flattenCollectionEntries<T>(entries: CollectionEntry<T>[]): T[] {
+export function flattenCollectionEntries<T>(entries?: CollectionEntry<T>[]): T[] {
+  if (!entries || !Array.isArray(entries)) return [];
   const flattened: T[] = [];
   for (const entry of entries) {
     if (isCollectionSection(entry)) flattened.push(...entry.items);

@@ -23,6 +23,7 @@ import {
   SelectOption,
   SelectStateContext,
   SelectContext,
+  type SelectRenderProps,
 } from "../src/Select";
 import { Popover } from "../src/Popover";
 import { FieldError } from "../src/FieldError";
@@ -1766,6 +1767,36 @@ describe("Select", () => {
         "Tuna",
         "Tofu",
       ]);
+    });
+  });
+
+  describe("render props parity", () => {
+    it("provides isInvalid and other RAC render prop fields to class function", () => {
+      let renderProps: SelectRenderProps | undefined;
+      render(() => (
+        <Select
+          aria-label="Test Select"
+          isInvalid
+          class={(rp) => {
+            renderProps = rp;
+            return rp.isInvalid ? "invalid-select" : "valid-select";
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectListBox>
+            <SelectOption id="1">Option 1</SelectOption>
+          </SelectListBox>
+        </Select>
+      ));
+
+      expect(renderProps).toBeDefined();
+      expect(renderProps?.isInvalid).toBe(true);
+      expect(renderProps?.isOpen).toBe(false);
+      expect(renderProps?.isDisabled).toBe(false);
+      const selectElement = screen.getByRole("button").closest(".invalid-select");
+      expect(selectElement).toHaveClass("invalid-select");
     });
   });
 });

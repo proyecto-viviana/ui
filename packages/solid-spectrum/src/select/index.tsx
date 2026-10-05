@@ -383,4 +383,11 @@ Select.Value = SelectValue;
 Select.ListBox = SelectListBox;
 Select.Option = SelectOption;
 
-export type { Key };
+export type {
+  Key,
+  SelectRenderProps,
+  SelectTriggerRenderProps,
+  SelectValueRenderProps,
+  SelectListBoxRenderProps,
+  SelectOptionRenderProps,
+};

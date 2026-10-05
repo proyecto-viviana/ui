@@ -19,6 +19,8 @@ import {
   ListBoxOption,
   ListBoxSection,
   ListBoxLoadMoreItem,
+  type ListBoxRenderProps,
+  type ListBoxOptionRenderProps,
 } from "../src/ListBox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
@@ -1860,6 +1862,51 @@ describe("ListBox", () => {
       render(() => <TestListBox listBoxProps={{ selectionMode: "single" }} />);
       const option = screen.getAllByRole("option")[0];
       expect(option).toHaveAttribute("data-selection-mode", "single");
+    });
+  });
+
+  describe("render props parity", () => {
+    it("listbox and option class functions receive RAC render prop fields", () => {
+      let lbProps: ListBoxRenderProps | undefined;
+      let optProps: ListBoxOptionRenderProps | undefined;
+
+      render(() => (
+        <ListBox
+          aria-label="Test ListBox"
+          items={[{ id: "opt-1", name: "Option 1" }]}
+          class={(rp) => {
+            lbProps = rp;
+            return `layout-${rp.layout}`;
+          }}
+        >
+          {(item) => (
+            <ListBoxOption
+              id={item.id}
+              class={(rp) => {
+                optProps = rp;
+                return rp.isSelected ? "selected" : "unselected";
+              }}
+            >
+              {item.name}
+            </ListBoxOption>
+          )}
+        </ListBox>
+      ));
+
+      expect(lbProps).toBeDefined();
+      expect(lbProps?.layout).toBe("stack");
+      expect(lbProps?.orientation).toBe("vertical");
+      expect(lbProps?.isDropTarget).toBe(false);
+      expect(lbProps?.state).toBeDefined();
+
+      expect(optProps).toBeDefined();
+      expect(optProps?.selectionMode).toBe("none");
+      expect(optProps?.selectionBehavior).toBe("toggle");
+      expect(optProps?.allowsDragging).toBe(false);
+      expect(optProps?.isDragging).toBe(false);
+      expect(optProps?.isDropTarget).toBe(false);
+      expect(optProps?.isSelected).toBe(false);
+      expect(optProps?.isFocused).toBe(false);
     });
   });
 });

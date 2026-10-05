@@ -1438,4 +1438,4 @@ export function GridListSelectionCheckbox(props: {
 GridList.Item = GridListItem;
 GridList.SelectionCheckbox = GridListSelectionCheckbox;
 
-export type { Key };
+export type { Key, GridListRenderProps, GridListItemRenderProps };
