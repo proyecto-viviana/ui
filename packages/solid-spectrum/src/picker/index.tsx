@@ -90,7 +90,7 @@ import { getSlottedContextProps, type SpectrumContextValue } from "../button/spe
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
-import { HeaderContext, HeadingContext, TextContext } from "../text";
+import { HeaderContext, HeadingContext, Text, TextContext } from "../text";
 import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   menuItemDescription,
@@ -452,17 +452,6 @@ const pickerOption = style<PickerOptionStyleProps>({
   transition: "transform",
 });
 
-const pickerOptionLabel = style<{ size?: S2PickerSize }>({
-  gridArea: "label",
-  display: "block",
-  flexGrow: 1,
-  font: controlFont(),
-  color: "inherit",
-  fontWeight: "medium",
-  marginTop: "--labelPadding",
-  truncate: true,
-});
-
 // S2 Picker.tsx:289-292 / 542-547 — AvatarContext on PickerItem and SelectValue.
 const pickerAvatar = style({
   gridArea: "icon",
@@ -473,6 +462,13 @@ const pickerAvatarSize = {
   M: 20,
   L: 22,
   XL: 26,
+} as const;
+
+const checkmarkIconSize = {
+  S: "XS",
+  M: "M",
+  L: "L",
+  XL: "XL",
 } as const;
 
 const pickerCheckmark = style<{
@@ -490,7 +486,6 @@ const pickerCheckmark = style<{
   color: baseColor("accent"),
   marginEnd: "text-to-control",
   aspectRatio: "square",
-  flexShrink: 0,
   "--iconPrimary": {
     type: "fill",
     value: {
@@ -550,14 +545,6 @@ function normalizePickerSize(size: PickerSize | undefined): S2PickerSize {
 
 function requiredIconStyle(size: S2PickerSize): JSX.CSSProperties {
   const pixelSize = size === "L" || size === "XL" ? 10 : 8;
-  return {
-    width: `${pixelSize}px`,
-    height: `${pixelSize}px`,
-  };
-}
-
-function pickerCheckmarkIconStyle(size: S2PickerSize): JSX.CSSProperties {
-  const pixelSize = size === "XL" ? 14 : size === "L" ? 12 : 10;
   return {
     width: `${pixelSize}px`,
     height: `${pixelSize}px`,
@@ -952,6 +939,9 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
             <Show when={local.label}>{labelContent(renderProps)}</Show>
             <HeadlessSelectTrigger
               ref={setTriggerEl}
+              // Prevent press scale from sticking while Picker is open (matches
+              // upstream S2 `PickerButton` `isPressed={false}`).
+              isPressed={false}
               class={(triggerProps) =>
                 pickerTrigger({
                   ...triggerProps,
@@ -1246,7 +1236,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     return (
       <>
         <CheckmarkIcon
-          size={size === "S" ? "XS" : size}
+          size={checkmarkIconSize[size]}
           // Mirror upstream S2 `Picker` (Picker.tsx): the checkmark style is
           // applied via `className`, NOT the icon `styles` override. The icon
           // `styles` path filters overrides through `iconAllowedOverrides`,
@@ -1256,20 +1246,13 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
           // every option. Upstream's hand-written ui-icon Checkmark applies
           // the caller's `className` raw; our `class` prop is the raw path.
           class={checkClassName()}
-          style={pickerCheckmarkIconStyle(size)}
           // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
           // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the
           // selected row exposes the checkmark as an `img` node in the AX tree
           // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
           // are pruned from the tree automatically — matching the React oracle.
         />
-        {isTextOnlyChildren(content()) ? (
-          <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
-            {content()}
-          </span>
-        ) : (
-          content()
-        )}
+        {isTextOnlyChildren(content()) ? <Text slot="label">{content()}</Text> : content()}
       </>
     );
   };

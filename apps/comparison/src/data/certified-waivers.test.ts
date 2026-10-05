@@ -245,16 +245,18 @@ describe("certified waivers", () => {
   // the title opens with the Playwright PROJECT, not with the spec path. Both
   // are read off a record a certified report really wrote.
   it("anchors on the declaring file and on the project the title opens with", () => {
-    const reported = REPORTED_FAILURES.pickerKeyboard;
+    const reported = REPORTED_FAILURES.toggleButton;
     const haystack = failureHaystack(reported);
     expect(haystack).toBe(
-      "e2e/drivers/journeys.ts chromium › certified/picker.certified.spec.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only",
+      "e2e/drivers/motion.ts chromium › certified/togglebutton.certified.spec.ts › D2 motion (reduced) — ToggleButton › default · hover-transition",
     );
-    expect(/^certified\/picker\.certified\.spec\.ts .*keyboard-only$/.test(haystack)).toBe(false);
+    expect(/^certified\/togglebutton\.certified\.spec\.ts .*hover-transition$/.test(haystack)).toBe(
+      false,
+    );
     // The shape the first five entries were written to, and the reason none of
     // them waived anything: no project segment, anchored, so it matches nothing.
     expect(
-      /^e2e\/drivers\/journeys\.ts certified\/picker\.certified\.spec\.ts .*keyboard-only$/.test(
+      /^e2e\/drivers\/motion\.ts certified\/togglebutton\.certified\.spec\.ts .*hover-transition$/.test(
         haystack,
       ),
     ).toBe(false);
@@ -262,13 +264,13 @@ describe("certified waivers", () => {
     expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(1);
   });
 
-  // #578, 2026-09-22. The five entries were INERT in CI: each was written
+  // #578, 2026-09-22. The entries were INERT in CI: each was written
   // against a haystack a second builder produced without the project, so run
   // 35689146611 at `d6745471` — the revision that carries them — reported
   // `0 waived` and listed all five under `Unwaived failures`. The fixture is
   // that run's own records, so the list is graded against what a report writes
   // rather than against a title this file builds for it.
-  it("waives the five rows a certified report really wrote, and leaves #497's alone", () => {
+  it("waives the active rows a certified report really wrote, and leaves #497's alone", () => {
     const root = comparisonRootFrom(import.meta.url);
     const loaded = loadCertifiedWaivers(defaultWaiversPath(root));
     expect(loaded.problems).toEqual([]);
@@ -280,12 +282,17 @@ describe("certified waivers", () => {
     });
 
     expect(evaluation.problems).toEqual([]);
-    expect(evaluation.waived.map((entry) => entry.failure.title)).toEqual(
-      reported.filter((row) => row.component !== "combobox-list").map((row) => row.title),
-    );
-    // #497's ComboBox rows are a defect being fixed, never waived, so the gate
-    // stays red on them.
-    expect(evaluation.unwaived).toEqual([REPORTED_FAILURES.comboboxList]);
+    expect(evaluation.waived.map((entry) => entry.failure.title)).toEqual([
+      REPORTED_FAILURES.toggleButton.title,
+      REPORTED_FAILURES.toggleButtonGroup.title,
+      REPORTED_FAILURES.tabs.title,
+    ]);
+    // #497's ComboBox rows and the retired #584 Picker rows stay unwaived.
+    expect(evaluation.unwaived).toEqual([
+      REPORTED_FAILURES.pickerPointer,
+      REPORTED_FAILURES.pickerKeyboard,
+      REPORTED_FAILURES.comboboxList,
+    ]);
     expect(waiverGateFails(evaluation)).toBe(true);
     // One entry, one row: no waiver covers a second reported failure.
     expect(new Set(evaluation.waived.map((entry) => entry.waiver.pattern)).size).toBe(

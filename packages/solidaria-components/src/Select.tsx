@@ -237,6 +237,8 @@ export interface SelectTriggerProps extends SlotProps {
   class?: ClassNameOrFunction<SelectTriggerRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<SelectTriggerRenderProps>;
+  /** Whether the trigger is pressed. Can be used to override the default press state. */
+  isPressed?: boolean;
 }
 
 export interface SelectListBoxRenderProps {
@@ -524,12 +526,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   );
   const { isFocused, isFocusVisible, isOpen, isPressed } = selectHook;
 
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return resolveDisabled();
-    },
-  });
-
   // RAC SelectInner: useFocusRing({within: true}) on the host (Select.tsx:187).
   // data-focused stamps state.isFocused; data-focus-visible comes from this ring.
   // SelectContext / SelectTrigger keep createSelect's trigger-ring accessors.
@@ -586,10 +582,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return filtered;
   });
 
-  const cleanHoverProps = () => {
-    const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
   const cleanFocusProps = () => {
     const { ref: _ref, onFocus, onBlur, ...rest } = focusProps as Record<string, unknown>;
     // Solid's onFocus/onBlur do not bubble. RAC's container ring listens for
@@ -722,10 +714,11 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   });
 
   const RootChildren = () => {
+    const rawChildren = local.children;
     const selectChildren = untrack(() =>
-      typeof local.children === "function"
-        ? (local.children as (values: SelectRenderProps) => JSX.Element)(childRenderValues)
-        : local.children,
+      typeof rawChildren === "function"
+        ? (rawChildren as (values: SelectRenderProps) => JSX.Element)(childRenderValues)
+        : rawChildren,
     );
 
     return (
@@ -815,7 +808,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const baseRootProps = () =>
     ({
       ...domProps(),
-      ...cleanHoverProps(),
       ...cleanFocusProps(),
       ref: setRootRef,
       class: renderProps.class(),
@@ -827,7 +819,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       "data-disabled": dataAttr(resolveDisabled()),
       "data-required": dataAttr(ariaProps.isRequired),
       "data-invalid": dataAttr(isInvalid()),
-      "data-hovered": dataAttr(isHovered()),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
   const RootContent = () => {
     const textSlots = {
@@ -910,13 +901,22 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
  * The trigger button for a select.
  */
 export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "children",
+    "ref",
+    "isPressed",
+  ]);
 
   const context = useContext(SelectContext);
   if (!context) {
     throw new Error("SelectTrigger must be used within a Select");
   }
   const { isOpen, isFocusVisible, isPressed, state } = context;
+  const resolvedIsPressed = () =>
+    local.isPressed !== undefined ? local.isPressed : isOpen() || isPressed();
   // RAC renders the trigger as a Button with its own focus ring, so its
   // data-focused follows the button and clears once the listbox takes focus.
   // The Select's own isFocused (state-level) stays on the root.
@@ -945,7 +945,7 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
     isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isHovered: isHovered(),
-    isPressed: isOpen() || isPressed(),
+    isPressed: resolvedIsPressed(),
     isDisabled: state.isDisabled,
   }));
 
@@ -1002,10 +1002,10 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       data-focused={dataAttr(isFocused())}
       data-focus-visible={dataAttr(isFocusVisible())}
       data-hovered={dataAttr(isHovered())}
-      data-pressed={dataAttr(isOpen() || isPressed())}
+      data-pressed={dataAttr(resolvedIsPressed())}
       data-disabled={dataAttr(state.isDisabled)}
     >
-      {renderProps.renderChildren()}
+      {renderProps.renderChildrenStable()}
     </button>
   );
 }

@@ -115,7 +115,13 @@ export interface PopoverAria {
  * A popover is an overlay element positioned relative to a trigger.
  */
 export function createPopover(props: AriaPopoverProps, state: OverlayTriggerState): PopoverAria {
-  const triggerRef = () => props.triggerRef();
+  const triggerRef = () => {
+    let el = props.triggerRef();
+    while (typeof el === "function") {
+      el = (el as any)();
+    }
+    return el;
+  };
   const popoverRef = () => props.popoverRef();
   const groupRef = () => props.groupRef?.() ?? null;
   const isNonModal = () => props.isNonModal ?? false;
@@ -144,6 +150,10 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
         return isKeyboardDismissDisabled();
       },
       shouldCloseOnInteractOutside: (element: Element) => {
+        const trigger = triggerRef();
+        if (trigger && (trigger === element || trigger.contains(element))) {
+          return false;
+        }
         const filter = shouldCloseOnInteractOutside();
         return filter ? filter(element) : true;
       },

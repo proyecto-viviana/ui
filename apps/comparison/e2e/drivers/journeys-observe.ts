@@ -7,7 +7,7 @@ import {
 } from "./dom-oracle";
 import type { PanelContext } from "./scenario";
 import { layoutBox } from "../comparison-page";
-import { captureLocatorPng } from "../visual-diff";
+import { captureLocatorPng, clonedElementScreenshot } from "../visual-diff";
 
 /**
  * Per-step observation collected from the driven panel. Every field is
@@ -640,7 +640,7 @@ export async function collectStepObservation(
     const target = overlayLocator.first();
     try {
       const box = await layoutBox(target);
-      png = await captureLocatorPng(target);
+      png = await clonedElementScreenshot(target);
       pixel = { width: Math.round(box.width), height: Math.round(box.height) };
     } catch {
       png = null;

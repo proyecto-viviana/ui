@@ -37,6 +37,7 @@ import {
   createEnterAnimation,
   createExitAnimation,
   FocusScope,
+  focusSafely,
   getInteractionModality,
   useIsHidden,
   useLocale,
@@ -351,6 +352,8 @@ export function Popover(props: PopoverProps): JSX.Element {
     "isExiting",
     "shouldSkipAnimation",
   ]);
+
+  let hasOpened = false;
 
   // A reactive ref (not a plain `let`) so the overlay-position effect in
   // createOverlayPosition — which tracks `overlayRef()` as a dependency —
@@ -738,27 +741,21 @@ export function Popover(props: PopoverProps): JSX.Element {
         if (document.activeElement === current || current.contains(document.activeElement)) {
           return;
         }
-        current.focus();
-      };
-
-      const scheduleFocus = () => {
-        timeout = window.setTimeout(focusIfNeeded, 0);
-      };
-
-      if (typeof window.requestAnimationFrame === "function") {
-        frame = window.requestAnimationFrame(scheduleFocus);
-      } else {
-        scheduleFocus();
-      }
-
-      return () => {
-        if (frame !== undefined) {
-          window.cancelAnimationFrame(frame);
+        // If the popover contains an already-focused collection item (e.g. reopening a Select
+        // whose focusedKey is already set), focus that item directly instead of bouncing
+        // through the popover dialog.
+        if (hasOpened) {
+          const focusedItem = current.querySelector<HTMLElement>("[role='option'][tabindex='0']");
+          if (focusedItem) {
+            focusSafely(focusedItem);
+            return;
+          }
         }
-        if (timeout !== undefined) {
-          window.clearTimeout(timeout);
-        }
+        hasOpened = true;
+        focusSafely(current);
       };
+
+      focusIfNeeded();
     },
   );
 

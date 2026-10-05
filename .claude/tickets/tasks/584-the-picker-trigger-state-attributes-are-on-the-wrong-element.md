@@ -4,7 +4,7 @@ type: task
 title: "The picker trigger's state attributes are on the wrong element, and half of them serialise to an empty string"
 created: 2026-09-21
 parent: 544
-status: in-progress
+status: complete
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: in-progress,
       at: 2026-09-24,
       note: "Dropped invented data-open, data-disabled, and data-focus-visible from createSelect's triggerProps and retired pinning test in createSelect.test.tsx. Emitted data-pressed on SelectTrigger while open or pressed, matching RAC Button behavior. Ordered typeSelectProps before baseProps and respected e.defaultPrevented for mid-search Space so typeahead does not trigger menu open. Cleaned onKeyDown from createPress pressProps in triggerProps. Select 89/89 passed, Select+ComboBox+Picker 218/218 passed.",
+    }
+  - {
+      state: complete,
+      at: 2026-10-04,
+      note: "All 62 certified cases passed with 0 failed and 0 waived. Retired both D13 journey waivers ('open-arrow-enter-reopen-scroll-escape' and 'keyboard-only') from apps/comparison/e2e/certified-waivers.json. Fixed initial open vs reopen focus lifecycle in Popover to match React Aria (dialog focused on initial open, option focused on reopen); stabilized SelectTrigger children rendering; aligned Picker trigger isPressed to prevent stuck pressScale; and matched overlay snapshot rendering.",
     }
 ---
 

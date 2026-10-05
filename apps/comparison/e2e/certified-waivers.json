@@ -1,19 +1,5 @@
 [
   {
-    "pattern": "^e2e/drivers/journeys\\.ts chromium › certified/picker\\.certified\\.spec\\.ts › D13 journeys — Picker trigger › D13 journey — open-arrow-enter-reopen-scroll-escape$",
-    "ticket": 584,
-    "release": "0.8.0-rc.0",
-    "ticketStatus": "in-progress",
-    "reason": "Opening the Picker by pointer leaves focus on the popover dialog where upstream leaves it on the selected option (`role: dialog`, `tabindex: -1` against `role: option`, name `Pro`, `tabindex: 0`): the next arrow press starts from the top of the list instead of from the current choice, and a screen reader announces the popover rather than the selection. Every option stays reachable. Two further causes are on this row and are waived with it, latent only because the journey stops at step 0 before they are compared: the popover's entry motion, read mid-flight at opacity 0.41 and dy 34 where React reads 1 and 36 (same family as #582), and a trigger that emits no `data-pressed` while the popover is open, where RAC's does — `data-pressed` is in this journey's compared attribute allowlist."
-  },
-  {
-    "pattern": "^e2e/drivers/journeys\\.ts chromium › certified/picker\\.certified\\.spec\\.ts › D13 journeys — Picker trigger › D13 journey — keyboard-only$",
-    "ticket": 584,
-    "release": "0.8.0-rc.0",
-    "ticketStatus": "in-progress",
-    "reason": "Opening the Picker with ArrowDown reaches the right option, but by a different route: upstream moves through the popover dialog and emits the `focusin`/`focusout` pair on it, and ours focuses the option directly, so the compared event log differs at step 1. What a user hears differs, not where they land. The missing `data-pressed` on the trigger is on this row too and is waived with it, latent because the journey stops at step 1 before the open popover is compared."
-  },
-  {
     "pattern": "^e2e/drivers/motion\\.ts chromium › certified/togglebutton\\.certified\\.spec\\.ts › D2 motion \\(reduced\\) — ToggleButton › default · hover-transition$",
     "ticket": 583,
     "release": "0.8.0-rc.0",
