@@ -4,9 +4,14 @@ type: task
 title: "Pin the Release job npm install to an exact version"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "Verified that .github/workflows/release.yml installs exact npm version 11.19.1 with the non-floating comment. Guarded by scripts/check-workflow-pins.mjs and tested by scripts/check-workflow-pins.test.ts (7/7 tests pass).",
+    }
 ---
 
 ## Cause
