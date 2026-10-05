@@ -1114,9 +1114,10 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   if (!context) {
     throw new Error("SelectListBox must be used within a Select");
   }
-  // Compiled static JSX is a children getter. A render prop stays a data property.
-  const staticJsxChildren = Object.getOwnPropertyDescriptor(props, "children")?.get != null;
-  const usesStaticChildren = staticJsxChildren && context.items == null;
+  // Static JSX children: context.items is not provided. We must not read
+  // props.children here outside a provider, as child getters would evaluate
+  // without StaticSelectProbeContext or ListBoxStateContext.
+  const usesStaticChildren = context.items == null;
   const { menuProps, rootRef, state: selectState, isOpen } = context;
   const state = selectState as SelectState<T>;
 

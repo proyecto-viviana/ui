@@ -1728,7 +1728,7 @@ describe("Select", () => {
     });
 
     it("renders a ListBoxSection group labelled by its Header", () => {
-      render(() => (
+      const res = render(() => (
         <Select aria-label="Sandwich contents" defaultOpen>
           <SelectTrigger>
             <SelectValue />

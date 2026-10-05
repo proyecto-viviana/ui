@@ -45,6 +45,8 @@ import {
   type SelectListBoxRenderProps,
   type SelectOptionProps as HeadlessSelectOptionProps,
   type SelectOptionRenderProps,
+  StaticSelectProbeContext,
+  StaticSelectProbeItem,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
@@ -90,7 +92,7 @@ import { getSlottedContextProps, type SpectrumContextValue } from "../button/spe
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { FieldContextualHelp } from "../form/FieldContextualHelp";
-import { HeaderContext, HeadingContext, Text, TextContext } from "../text";
+import { Header, HeaderContext, HeadingContext, Text, TextContext } from "../text";
 import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   menuItemDescription,
@@ -1116,7 +1118,9 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                           ) : undefined
                         }
                       >
-                        {listBoxChildren}
+                        {typeof local.children === "function" || headlessProps.items != null
+                          ? listBoxChildren
+                          : local.children}
                       </HeadlessSelectListBox>
                     </Virtualizer>
                   </TextContext>
@@ -1140,7 +1144,21 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   ]);
   const size = useContext(PickerSizeContext);
   const insideValue = useContext(InsidePickerValueContext);
+  const probe = useContext(StaticSelectProbeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
+
+  if (probe) {
+    return (
+      <StaticSelectProbeItem
+        id={headlessProps.id}
+        textValue={headlessProps.textValue}
+        isDisabled={headlessProps.isDisabled}
+        aria-label={(headlessProps as Record<string, unknown>)["aria-label"] as string | undefined}
+      >
+        {local.children}
+      </StaticSelectProbeItem>
+    );
+  }
 
   // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
   // are the selected item's *content* (`item.props.children`), not a rendered
@@ -1296,7 +1314,10 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
 export interface PickerSectionProps<T> extends Omit<
   HeadlessListBoxSectionProps,
   "style" | "class" | "render"
-> {}
+> {
+  /** Optional title for the section header. */
+  title?: string;
+}
 
 /**
  * A section within a `<Picker>`, mirroring React S2's `PickerSection`. Renders a
@@ -1304,10 +1325,21 @@ export interface PickerSectionProps<T> extends Omit<
  * read from the internal picker context.
  */
 export function PickerSection<T>(props: PickerSectionProps<T>): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["title"]);
   const size = useContext(PickerSizeContext);
+  const probe = useContext(StaticSelectProbeContext);
+  const sectionContent = () => (
+    <>
+      {local.title ? <Header>{local.title}</Header> : null}
+      {headlessProps.children}
+    </>
+  );
+  if (probe) {
+    return <HeadlessListBoxSection {...headlessProps}>{sectionContent()}</HeadlessListBoxSection>;
+  }
   return (
     <>
-      <HeadlessListBoxSection {...props}>{props.children}</HeadlessListBoxSection>
+      <HeadlessListBoxSection {...headlessProps}>{sectionContent()}</HeadlessListBoxSection>
       <Divider size={size} />
     </>
   );

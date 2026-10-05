@@ -1,9 +1,5 @@
 /* Panel — pickers. Choose-one-from-many: Picker, the composed low-level Select
-   assembly, ComboBox, and the Autocomplete headless provider. The Solid surface
-   is items-driven: collections come from `items`/`defaultItems` plus a render
-   function — static option JSX isn't part of the API (children evaluate before
-   the collection context exists), and the flat collection has no sections
-   (PickerSection/ComboBoxSection are composed-listbox primitives only). */
+   assembly, ComboBox, and the Autocomplete headless provider. */
 import { createFileRoute } from "@tanstack/solid-router";
 import {
   Picker,

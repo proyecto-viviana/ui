@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { createSignal, flush } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
-import { Picker, PickerItem } from "../src/picker";
+import { Picker, PickerItem, PickerSection } from "../src/picker";
 import { Button } from "../src/button";
 import { Header, Heading, Text } from "../src";
 import { Popover, PopoverTrigger } from "../src/popover";
@@ -855,5 +855,57 @@ describe("Picker listbox virtualization (solid-spectrum)", () => {
         delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
       }
     }
+  });
+
+  it("renders static PickerItem children", () => {
+    render(() => (
+      <Picker aria-label="Plan" defaultOpen defaultSelectedKey="pro">
+        <PickerItem id="free">Free</PickerItem>
+        <PickerItem id="pro">Pro</PickerItem>
+        <PickerItem id="team">Team</PickerItem>
+      </Picker>
+    ));
+    expect(screen.getAllByRole("option")).toHaveLength(3);
+    expect(screen.getByRole("option", { name: "Pro" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("renders static PickerSection children with Header", () => {
+    render(() => (
+      <Picker aria-label="Plan" defaultOpen disabledKeys={["enterprise"]}>
+        <PickerSection>
+          <Header>Personal</Header>
+          <PickerItem id="free">Free</PickerItem>
+          <PickerItem id="pro">Pro</PickerItem>
+        </PickerSection>
+        <PickerSection>
+          <Header>Organization</Header>
+          <PickerItem id="team">Team</PickerItem>
+          <PickerItem id="enterprise">Enterprise</PickerItem>
+        </PickerSection>
+      </Picker>
+    ));
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+    expect(screen.getAllByRole("option")).toHaveLength(4);
+    expect(screen.getByRole("option", { name: "Enterprise" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+  });
+
+  it("renders static PickerSection children with title prop", () => {
+    render(() => (
+      <Picker aria-label="Plan" defaultOpen>
+        <PickerSection title="Personal">
+          <PickerItem id="free">Free</PickerItem>
+          <PickerItem id="pro">Pro</PickerItem>
+        </PickerSection>
+        <PickerSection title="Organization">
+          <PickerItem id="team">Team</PickerItem>
+          <PickerItem id="enterprise">Enterprise</PickerItem>
+        </PickerSection>
+      </Picker>
+    ));
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+    expect(screen.getAllByRole("option")).toHaveLength(4);
   });
 });

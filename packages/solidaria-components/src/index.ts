@@ -317,6 +317,14 @@ export {
 } from "./Select";
 
 export {
+  StaticSelectCollectionContext,
+  StaticSelectProbeContext,
+  StaticSelectProbeItem,
+  type StaticSelectCollectionContextValue,
+  type StaticSelectCollectionItem,
+} from "./staticSelectCollection";
+
+export {
   Tabs,
   TabList,
   Tab,

@@ -4,7 +4,7 @@ type: task
 title: "Support Picker static children and sections"
 created: 2026-08-20
 parent: 33
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: in-progress,
       at: 2026-10-04,
       note: "regenerated api reference pages for picker and select reflecting optional items and JSX children.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "Completed full static items and sections support in Picker across solid-spectrum and viviana-ui. Uses deferred children evaluation to prevent context breaks; supports PickerSection with Header and title prop. Restored docs examples and removed limitation sections. 27/27 Picker tests and 94/94 Select tests passing.",
     }
 ---
 
