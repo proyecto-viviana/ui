@@ -9,7 +9,7 @@ import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { BreadcrumbsPathFixture } from "./fixtures/breadcrumbs";
+import { BreadcrumbsPathFixture, StaticReactiveBreadcrumbsFixture } from "./fixtures/breadcrumbs";
 
 describe("Breadcrumbs SSR", () => {
   it("renders the path without the hidden measurement copy", () => {
@@ -26,5 +26,19 @@ describe("Breadcrumbs SSR", () => {
     expect(html).not.toContain("data-rsp-breadcrumbs-measure");
 
     writeFileSync(resolve(outDir, "spectrum-breadcrumbs-ssr.html"), html, "utf8");
+  });
+
+  it("renders static breadcrumbs with initial signal value", () => {
+    const outDir = resolve(import.meta.dirname, "../../../output");
+    mkdirSync(outDir, { recursive: true });
+
+    const html = renderToString(() => <StaticReactiveBreadcrumbsFixture count={() => 1} />);
+
+    expect(html).toContain("Root");
+    expect(html).toContain("Documents 1");
+    expect(html).toContain("Invoice.pdf");
+    expect(html).not.toContain("data-rsp-breadcrumbs-measure");
+
+    writeFileSync(resolve(outDir, "spectrum-breadcrumbs-static-reactive-ssr.html"), html, "utf8");
   });
 });

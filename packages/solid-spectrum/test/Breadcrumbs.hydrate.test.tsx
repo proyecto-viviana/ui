@@ -11,11 +11,12 @@
  * threw `Hydration Mismatch. Unable to find DOM nodes for hydration key`, which is what
  * killed `/solid-spectrum/docs/components/breadcrumbs` and `/showcase/navigation`.
  */
+import { createSignal, flush } from "solid-js";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
-import { BreadcrumbsPathFixture } from "./fixtures/breadcrumbs";
+import { BreadcrumbsPathFixture, StaticReactiveBreadcrumbsFixture } from "./fixtures/breadcrumbs";
 
 const ssrHtml = readFileSync(
   resolve(import.meta.dirname, "../../../output/spectrum-breadcrumbs-ssr.html"),
@@ -59,5 +60,36 @@ describe("Breadcrumbs hydration over SSR markup", () => {
       if (ownDescriptor) Object.defineProperty(window.navigator, "userAgent", ownDescriptor);
       else Reflect.deleteProperty(window.navigator, "userAgent");
     }
+  });
+
+  it("updates reactive labels inside static Breadcrumb items after hydration", async () => {
+    const staticSsrHtml = readFileSync(
+      resolve(import.meta.dirname, "../../../output/spectrum-breadcrumbs-static-reactive-ssr.html"),
+      "utf8",
+    );
+    const [count, setCount] = createSignal(1);
+    let serverOl: HTMLElement | null = null;
+    let serverLis: HTMLElement[] = [];
+    const container = await hydrateOverSsr(
+      staticSsrHtml,
+      () => <StaticReactiveBreadcrumbsFixture count={count} />,
+      {
+        beforeHydrate(container) {
+          serverOl = container.querySelector("ol");
+          serverLis = Array.from(container.querySelectorAll("li"));
+          serverNodes = Array.from(container.querySelectorAll('a, [aria-current="page"]'));
+          expect(serverNodes).toHaveLength(3);
+          expect(container.textContent).toContain("Documents 1");
+        },
+      },
+    );
+
+    const hydratedNodes = Array.from(container.querySelectorAll('a, [aria-current="page"]'));
+    expect(hydratedNodes).toHaveLength(3);
+
+    expect(container.textContent).toContain("Documents 1");
+    setCount(2);
+    flush();
+    expect(container.textContent).toContain("Documents 2");
   });
 });

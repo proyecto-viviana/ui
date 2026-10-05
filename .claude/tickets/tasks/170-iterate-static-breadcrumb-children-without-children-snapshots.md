@@ -4,9 +4,14 @@ type: task
 title: "Iterate static Breadcrumb children without children snapshots"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "iterated static breadcrumb children shallowly to preserve reactive text across hydration without snapshots",
+    }
 ---
 
 ## Cause

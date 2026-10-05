@@ -29,11 +29,12 @@ import {
   createTrackedEffect,
 } from "solid-js";
 import type { Accessor } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { isServer, type JSX } from "@solidjs/web";
 import {
   BreadcrumbItem as HeadlessBreadcrumbItem,
   BreadcrumbItemContext as HeadlessBreadcrumbItemContext,
   Breadcrumbs as HeadlessBreadcrumbs,
+  BreadcrumbsContext as HeadlessBreadcrumbsContext,
   type BreadcrumbItemProps as HeadlessBreadcrumbItemProps,
   type BreadcrumbItemRenderProps,
   type BreadcrumbsProps as HeadlessBreadcrumbsProps,
@@ -820,14 +821,24 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const assignRefs = mergeContextRefs(props.ref);
   const mergedStyles = () => mergeContextStyles(undefined, local.styles);
   const size = () => context.size();
+  const headlessBreadcrumbsContext = useContext(HeadlessBreadcrumbsContext);
   const itemContext = useContext(HeadlessBreadcrumbItemContext);
+  const staticIndex = itemContext ? null : headlessBreadcrumbsContext?.registerStaticItem?.();
+  const isLast = () =>
+    itemContext?.isLast() ??
+    (staticIndex !== null &&
+      staticIndex !== undefined &&
+      headlessBreadcrumbsContext?.staticItemCount !== undefined &&
+      headlessBreadcrumbsContext.staticItemCount() > 0 &&
+      staticIndex === headlessBreadcrumbsContext.staticItemCount() - 1);
+
   // Hydration reads the initial signal snapshot before render-prop writes settle.
-  const [isCurrent, setIsCurrent] = createSignal(
-    headlessProps.isCurrent ?? itemContext?.isLast() ?? false,
-    { ownedWrite: true },
-  );
+  const [isCurrent, setIsCurrent] = createSignal(headlessProps.isCurrent ?? isLast(), {
+    ownedWrite: true,
+  });
 
   const syncRenderProps = (renderProps: BreadcrumbItemRenderProps) => {
+    if (isServer) return;
     untrack(() => {
       if (isCurrent() !== renderProps.isCurrent) {
         setIsCurrent(renderProps.isCurrent);
@@ -874,17 +885,24 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
     return content;
   };
 
+  const wrappedItemContext = {
+    itemKey: itemContext?.itemKey ?? null,
+    isLast,
+  };
+
   return (
     <span style={{ display: "contents" }}>
-      <HeadlessBreadcrumbItem
-        {...headlessProps}
-        elementType={isCurrent() ? "div" : headlessProps.elementType}
-        ref={(node: HTMLElement) => assignRefs(node)}
-        isDisabled={headlessProps.isDisabled || context.isDisabled()}
-        class={getClassName}
-        style={getStyle}
-        children={renderChildren}
-      />
+      <HeadlessBreadcrumbItemContext value={wrappedItemContext}>
+        <HeadlessBreadcrumbItem
+          {...headlessProps}
+          elementType={isCurrent() ? "div" : headlessProps.elementType}
+          ref={(node: HTMLElement) => assignRefs(node)}
+          isDisabled={headlessProps.isDisabled || context.isDisabled()}
+          class={getClassName}
+          style={getStyle}
+          children={renderChildren}
+        />
+      </HeadlessBreadcrumbItemContext>
       <Show when={context.showSeparator() && !isCurrent()}>
         <ChevronIcon size="M" class={chevronStyles({ direction: locale().direction })} />
       </Show>

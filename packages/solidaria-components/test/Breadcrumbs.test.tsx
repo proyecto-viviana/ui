@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
-import { flush } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { Breadcrumbs, BreadcrumbItem } from "../src/Breadcrumbs";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -105,6 +105,23 @@ describe("Breadcrumbs", () => {
       expect(screen.getByRole("list", { name: "Static breadcrumbs" })).toBeInTheDocument();
       expect(screen.getAllByRole("listitem")).toHaveLength(3);
       expect(screen.getByText("Category")).toHaveAttribute("aria-current", "page");
+    });
+
+    it("should update reactive labels inside static Breadcrumb items", () => {
+      const [count, setCount] = createSignal(1);
+      render(() => (
+        <Breadcrumbs aria-label="Static reactive breadcrumbs">
+          <BreadcrumbItem id="home" href="/">
+            Home {count()}
+          </BreadcrumbItem>
+          <BreadcrumbItem id="category">Category</BreadcrumbItem>
+        </Breadcrumbs>
+      ));
+
+      expect(screen.getByText("Home 1")).toBeInTheDocument();
+      setCount(2);
+      flush();
+      expect(screen.getByText("Home 2")).toBeInTheDocument();
     });
 
     it("should render with custom class", () => {

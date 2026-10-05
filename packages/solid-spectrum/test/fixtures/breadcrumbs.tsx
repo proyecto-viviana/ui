@@ -35,3 +35,15 @@ export function BreadcrumbsPathFixture(): JSX.Element {
     </Provider>
   );
 }
+
+export function StaticReactiveBreadcrumbsFixture(props: { count: () => number }): JSX.Element {
+  return (
+    <Provider background="base" colorScheme="light">
+      <Breadcrumbs aria-label="Static reactive breadcrumbs">
+        <Breadcrumb href="#root">Root</Breadcrumb>
+        <Breadcrumb href="#docs">Documents {props.count()}</Breadcrumb>
+        <Breadcrumb>Invoice.pdf</Breadcrumb>
+      </Breadcrumbs>
+    </Provider>
+  );
+}

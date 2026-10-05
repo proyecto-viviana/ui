@@ -23,13 +23,13 @@ import {
   createContext,
   createMemo,
   createSignal,
-  children as resolveChildren,
+  createUniqueId,
   useContext,
   For,
   Show,
+  type Accessor,
 } from "solid-js";
-import type { Accessor } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { isServer, renderToString, type JSX } from "@solidjs/web";
 import { ElementTag } from "./ElementTag";
 import { handleLinkClick, useRouter } from "./RouterProvider";
 import {
@@ -171,11 +171,54 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   const hasCollectionItems = () => local.items !== undefined;
   const getItemKey = (item: T, index: number): string | number =>
     local.getKey?.(item) ?? defaultItemKey(item, index);
-  const [staticItemCount, setStaticItemCount] = createSignal(0, { ownedWrite: true });
+  const breadcrumbsId = createUniqueId();
+  let serverStaticCount = 0;
+  if (isServer && !hasCollectionItems()) {
+    let probeIndex = 0;
+    renderToString(() => (
+      <BreadcrumbsContext
+        value={{
+          isDisabled,
+          registerStaticItem: () => probeIndex++,
+          staticItemCount: () => 0,
+          resetStaticItems: () => {
+            probeIndex = 0;
+          },
+          setStaticItemCount: () => {},
+        }}
+      >
+        {local.children as JSX.Element}
+      </BreadcrumbsContext>
+    ));
+    serverStaticCount = probeIndex;
+  }
+  let clientInitialCount = 0;
+  if (!isServer && !hasCollectionItems() && typeof document !== "undefined") {
+    const el = document.querySelector(`[data-rsp-breadcrumbs-id="${breadcrumbsId}"]`);
+    if (el) {
+      const countAttr = el.getAttribute("data-rsp-breadcrumbs-count");
+      if (countAttr) {
+        clientInitialCount = parseInt(countAttr, 10) || 0;
+      }
+    }
+  }
+  const [clientStaticCount, setClientStaticCount] = createSignal(clientInitialCount, {
+    ownedWrite: true,
+  });
+  const staticItemCount = () => (isServer ? serverStaticCount : clientStaticCount());
   let nextStaticIndex = 0;
   const resetStaticItems = () => {
     nextStaticIndex = 0;
-    setStaticItemCount(0);
+    if (!isServer) {
+      setClientStaticCount(0);
+    }
+  };
+  const setStaticItemCount = (count: number) => {
+    if (isServer) {
+      serverStaticCount = count;
+    } else {
+      setClientStaticCount(count);
+    }
   };
   const registerStaticItem = () => {
     const index = nextStaticIndex;
@@ -241,6 +284,8 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
       <ol
         {...navProps}
         {...domProps()}
+        data-rsp-breadcrumbs-id={!hasCollectionItems() ? breadcrumbsId : undefined}
+        data-rsp-breadcrumbs-count={serverStaticCount > 0 ? serverStaticCount : undefined}
         ref={(element) => assignRef(local.ref, element)}
         class={renderProps.class()}
         style={renderProps.style()}
@@ -271,19 +316,48 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
   );
 }
 
+function walkStaticChildren(children: unknown): unknown[] {
+  const result: unknown[] = [];
+  function walk(node: unknown): void {
+    if (node == null || typeof node === "boolean") {
+      return;
+    }
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        walk(item);
+      }
+      return;
+    }
+    if (typeof node === "function" && (node as Function).length === 0) {
+      walk((node as () => unknown)());
+      return;
+    }
+    result.push(node);
+  }
+  walk(children);
+  return result;
+}
+
 function StaticBreadcrumbItems(props: { children?: JSX.Element }): JSX.Element {
   const context = useContext(BreadcrumbsContext);
-  const staticChildren = resolveChildren(() => props.children);
   const childArray = createMemo(() => {
     context?.resetStaticItems?.();
-    const array = staticChildren.toArray();
-    context?.setStaticItemCount?.(array.length);
+    const array = walkStaticChildren(props.children);
+    if (!isServer) {
+      context?.setStaticItemCount?.(array.length);
+    }
     return array;
   });
 
+  const indices = createMemo(() => Array.from({ length: childArray().length }, (_, i) => i));
+
   return (
-    <For each={childArray()}>
-      {(child) => <li style={{ display: "flex", "align-items": "center" }}>{child}</li>}
+    <For each={indices()}>
+      {(index) => (
+        <li style={{ display: "flex", "align-items": "center" }}>
+          {childArray()[index] as JSX.Element}
+        </li>
+      )}
     </For>
   );
 }
