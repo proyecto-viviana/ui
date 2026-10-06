@@ -17,13 +17,13 @@ import {
   children as resolveChildren,
   createContext,
   createMemo,
+  createRenderEffect,
+  createSignal,
   onCleanup,
   Show,
-  createSignal,
   useContext,
-  createTrackedEffect,
 } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { isServer, type JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   ListBox as HeadlessListBox,
@@ -449,12 +449,18 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   const orientation = (): SelectBoxOrientation => local.orientation ?? "vertical";
   const selectionMode = (): "single" | "multiple" =>
     local.selectionMode === "multiple" ? "multiple" : "single";
-  const [staticItems, setStaticItems] = createSignal<StaticSelectBoxItem[]>([], {
+  let staticItems: StaticSelectBoxItem[] = [];
+  const [registrationVersion, setRegistrationVersion] = createSignal(0, {
     ownedWrite: true,
   });
   const staticItemMap = new Map<Key, StaticSelectBoxItem>();
   const usesStaticChildren = () => headlessProps.items == null;
-  const syncStaticItems = () => setStaticItems(Array.from(staticItemMap.values()));
+  const syncStaticItems = () => {
+    staticItems = Array.from(staticItemMap.values());
+    if (!isServer) {
+      setRegistrationVersion((version) => version + 1);
+    }
+  };
   const staticCollectionContext: StaticSelectBoxCollectionContextValue = {
     registerItem(item) {
       const previous = staticItemMap.get(item.id);
@@ -503,9 +509,11 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const collectionItems = createMemo(() =>
-    usesStaticChildren() ? (staticItems() as unknown as T[]) : headlessProps.items,
-  );
+  const collectionItems = () => {
+    if (!usesStaticChildren()) return headlessProps.items ?? [];
+    registrationVersion();
+    return staticItems as unknown as T[];
+  };
   const getKey = () =>
     usesStaticChildren() ? (item: T) => (item as StaticSelectBoxItem).id : headlessProps.getKey;
   const getTextValue = () =>
@@ -523,22 +531,21 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
     ) : typeof local.children === "function" ? (
       local.children(item)
     ) : null;
-  const staticRegistrationChildren = () => {
-    if (!usesStaticChildren()) {
-      return null;
+  let registrationOutput: JSX.Element = null;
+  if (usesStaticChildren()) {
+    registrationOutput = (
+      <StaticSelectBoxCollectionContext value={staticCollectionContext}>
+        {resolveChildren(() => local.children as JSX.Element)()}
+      </StaticSelectBoxCollectionContext>
+    );
+    if (typeof registrationOutput === "function") {
+      registrationOutput = (registrationOutput as () => JSX.Element)();
     }
-
-    const resolved = resolveChildren(() => local.children as JSX.Element);
-    return resolved();
-  };
+  }
 
   return (
     <SelectBoxContext value={contextValue}>
-      <StaticSelectBoxCollectionContext
-        value={usesStaticChildren() ? staticCollectionContext : null}
-      >
-        {staticRegistrationChildren()}
-      </StaticSelectBoxCollectionContext>
+      {registrationOutput}
       <HeadlessListBox
         {...headlessProps}
         ref={(element) => assignGroupRefs(element)}
@@ -576,24 +583,18 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
     "class",
     "ref",
   ]);
-  createTrackedEffect(() => {
-    if (!staticCollection) {
-      return;
-    }
-
+  if (staticCollection) {
     staticCollection.registerItem({
       id: props.id,
       textValue: headlessProps.textValue ?? headlessProps["aria-label"],
       isDisabled: !!headlessProps.isDisabled,
       props,
     });
-  });
 
-  onCleanup(() => {
-    staticCollection?.unregisterItem(props.id);
-  });
+    onCleanup(() => {
+      staticCollection.unregisterItem(props.id);
+    });
 
-  if (staticCollection) {
     return null;
   }
 
@@ -636,18 +637,15 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
       };
     };
 
-    // Resolve authored children under the provider. Doing it in SelectBoxContent
-    // would own them outside SlotContext, so Text and Illustration would miss it.
-    // The read stays in JSX so a later children change still subscribes.
-    function SlottedChildren() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      return <>{resolvedChildren()}</>;
-    }
+    const renderChildren = () => {
+      const children = local.children;
+      return typeof children === "function" ? (children as any)(renderProps) : children;
+    };
 
     return (
-      <SlotProvider slots={slots}>
+      <>
         <div class={selectBoxSelectionIndicator} aria-hidden="true">
-          <Show when={!renderProps.isDisabled && selectionMode() === "multiple"}>
+          {!renderProps.isDisabled && selectionMode() === "multiple" ? (
             <div class={selectBoxCheckboxBox(renderProps)} data-rsp-slot="selection-indicator">
               <Checkmark
                 size="S"
@@ -663,10 +661,10 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
                 }}
               />
             </div>
-          </Show>
+          ) : null}
         </div>
-        <SlottedChildren />
-      </SlotProvider>
+        <SlotProvider slots={slots}>{renderChildren()}</SlotProvider>
+      </>
     );
   }
 

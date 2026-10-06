@@ -19,6 +19,7 @@ import {
   RadioFixture,
   SegmentedControlFixture,
   TagGroupFixture,
+  SelectBoxFixture,
 } from "./fixtures/styled-children";
 
 function readSsr(name: string): string {
@@ -120,6 +121,17 @@ describe("Styled children hydration reactivity (solid-spectrum)", () => {
       "s2-taggroup-finegrained-ssr.html",
       '[role="row"]',
       TagGroupFixture,
+    );
+    expect(r.before).toContain("count: 0");
+    expect(r.after).toContain("count: 1");
+    expect(r.afterElement).toBe(r.serverElement);
+  });
+
+  it("SelectBox re-binds fine-grained text without recreating host", async () => {
+    const r = await hydrateAndFlip(
+      "s2-selectbox-finegrained-ssr.html",
+      '[role="option"]',
+      SelectBoxFixture,
     );
     expect(r.before).toContain("count: 0");
     expect(r.after).toContain("count: 1");

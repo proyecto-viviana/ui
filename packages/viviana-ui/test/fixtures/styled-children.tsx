@@ -5,6 +5,8 @@ import { Badge } from "../../src/badge";
 import { Radio, RadioGroup } from "../../src/radio";
 import { SegmentedControl, SegmentedControlItem } from "../../src/segmentedcontrol";
 import { Tag, TagGroup } from "../../src/tag-group";
+import { SelectBox, SelectBoxGroup } from "../../src/selectboxgroup";
+import { Text } from "../../src/text";
 
 export function ActionButtonFixture(props: { count: () => number }): JSX.Element {
   return (
@@ -64,6 +66,18 @@ export function TagGroupFixture(props: { count: () => number }): JSX.Element {
       <TagGroup aria-label="Tags" items={[{ id: "1" }]}>
         {(item) => <Tag id={item.id}>count: {props.count()}</Tag>}
       </TagGroup>
+    </Provider>
+  );
+}
+
+export function SelectBoxFixture(props: { count: () => number }): JSX.Element {
+  return (
+    <Provider background="base" colorScheme="dark">
+      <SelectBoxGroup aria-label="Plans">
+        <SelectBox id="opt1">
+          <Text slot="label">count: {props.count()}</Text>
+        </SelectBox>
+      </SelectBoxGroup>
     </Provider>
   );
 }

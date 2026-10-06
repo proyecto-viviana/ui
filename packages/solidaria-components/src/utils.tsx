@@ -257,11 +257,11 @@ export interface OptionContentProps {
  */
 export function OptionContent(props: OptionContentProps): JSX.Element {
   const content = createMemo(() => props.render());
-  const isPrimitive = () => {
-    const value = content();
-    return typeof value === "string" || typeof value === "number";
-  };
-  return <>{isPrimitive() ? <span {...props.labelProps}>{content()}</span> : content()}</>;
+  const value = content();
+  if (typeof value !== "string" && typeof value !== "number") {
+    return value;
+  }
+  return <span {...props.labelProps}>{content()}</span>;
 }
 
 /** A Solid ref target: a callback, a mutable `{ current }` object, or undefined. */

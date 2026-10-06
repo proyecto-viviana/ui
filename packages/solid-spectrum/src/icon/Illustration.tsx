@@ -16,6 +16,7 @@
 import type { JSX } from "@solidjs/web";
 import { style } from "../style" with { type: "macro" };
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
+import { joinSlotClass, useSlotValue } from "@proyecto-viviana/solidaria-components";
 
 export type IllustrationSize = "sm" | "md" | "lg";
 
@@ -28,6 +29,8 @@ export interface IllustrationProps {
   children?: JSX.Element;
   /** Accessibility label. */
   "aria-label"?: string;
+  /** Slot name when used in a slotted container. */
+  slot?: string | null;
 }
 
 // Centered container for a decorative illustration, tinted with the muted
@@ -47,15 +50,22 @@ const illustrationStyles = style<{ size: IllustrationSize }>({
  * A styled container for decorative illustrations.
  */
 export function Illustration(props: IllustrationProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["size", "class", "children"]);
+  const [local, rest] = splitProps(props, ["size", "class", "children", "slot"]);
+  const slotValue = useSlotValue(
+    () => (typeof local.slot === "string" ? local.slot : "illustration"),
+    { named: true },
+  );
 
   return (
     <div
       {...rest}
       role={rest["aria-label"] ? "img" : "presentation"}
-      class={[illustrationStyles({ size: local.size ?? "md" }), local.class]
-        .filter(Boolean)
-        .join(" ")}
+      class={joinSlotClass(
+        [illustrationStyles({ size: local.size ?? "md" }), local.class].filter(Boolean).join(" "),
+        slotValue().class,
+      )}
+      slot={local.slot || undefined}
+      data-rsp-slot={slotValue()["data-rsp-slot"] ?? "illustration"}
     >
       {local.children}
     </div>

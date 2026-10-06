@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { SelectBox, SelectBoxGroup, SelectBoxGroupContext, Text } from "../src";
@@ -406,5 +406,31 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
     expect(listbox).toHaveStyle({ margin: "1px" });
     expect(screen.getByRole("option", { name: "Pro" })).toHaveAttribute("data-selected", "true");
     expect(ref).toHaveBeenCalledWith(listbox);
+  });
+
+  it("keeps mixed text children reactive without recreating host (#169)", () => {
+    let setCount!: (value: number) => void;
+    render(() => {
+      const [count, updateCount] = createSignal(0);
+      setCount = updateCount;
+      return (
+        <SelectBoxGroup aria-label="Plans">
+          <SelectBox id="opt1">
+            <Text slot="label">Count: {count()}</Text>
+          </SelectBox>
+        </SelectBoxGroup>
+      );
+    });
+
+    const option = screen.getByRole("option");
+    const label = screen.getByText(/Count:/);
+    expect(label).toHaveAttribute("data-rsp-slot", "label");
+    expect(label).toHaveTextContent("Count: 0");
+
+    setCount(1);
+    flush();
+
+    expect(label).toHaveTextContent("Count: 1");
+    expect(screen.getByRole("option")).toBe(option);
   });
 });

@@ -17,6 +17,7 @@ import {
   RadioFixture,
   SegmentedControlFixture,
   TagGroupFixture,
+  SelectBoxFixture,
 } from "./fixtures/styled-children";
 
 describe("Styled components SSR with reactive children (solid-spectrum)", () => {
@@ -63,5 +64,11 @@ describe("Styled components SSR with reactive children (solid-spectrum)", () => 
     const html = renderToString(() => <TagGroupFixture count={() => 0} />);
     expect(html).toMatch(/count:[\s\S]*0/);
     writeFileSync(resolve(outDir, "s2-taggroup-finegrained-ssr.html"), html, "utf8");
+  });
+
+  it("renders SelectBox with fine-grained count", () => {
+    const html = renderToString(() => <SelectBoxFixture count={() => 0} />);
+    expect(html).toMatch(/count:[\s\S]*0/);
+    writeFileSync(resolve(outDir, "s2-selectbox-finegrained-ssr.html"), html, "utf8");
   });
 });

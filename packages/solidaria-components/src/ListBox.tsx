@@ -34,7 +34,7 @@ import {
   onCleanup,
 } from "solid-js";
 import type { Context, Accessor } from "solid-js";
-import type { JSX } from "@solidjs/web";
+import { isServer, type JSX } from "@solidjs/web";
 import {
   createListBox,
   createOption,
@@ -526,6 +526,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   });
 
   const setItemDisabled = (key: Key, disabled: boolean) => {
+    if (isServer) return;
     setItemDisabledKeys((prev) => {
       const has = prev.has(key);
       if (has === disabled) return prev;
