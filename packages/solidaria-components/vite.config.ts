@@ -40,6 +40,24 @@ const entry: Record<string, string> = { index: "src/index.ts" };
             : null;
     if (file) entry[rel] = file;
   }
+  const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+  if (pkg.exports) {
+    for (const key of Object.keys(pkg.exports)) {
+      if (key === ".") continue;
+      const rel = key.replace(/^\.\//, "");
+      const base = join("src", rel);
+      const file = existsSync(`${base}.tsx`)
+        ? `${base}.tsx`
+        : existsSync(`${base}.ts`)
+          ? `${base}.ts`
+          : existsSync(join(base, "index.tsx"))
+            ? join(base, "index.tsx")
+            : existsSync(join(base, "index.ts"))
+              ? join(base, "index.ts")
+              : null;
+      if (file) entry[rel] = file;
+    }
+  }
 }
 
 // Standard Solid-library JSX-preserve layout: JSX-preserved `solid` entry (consumer compiles per-env,

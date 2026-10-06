@@ -4,9 +4,14 @@ type: task
 title: "Split solidaria-components Color.tsx to match upstream files"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-06,
+      note: "split Color.tsx into ColorArea, ColorField, ColorPicker, ColorSlider, ColorSwatch, ColorSwatchPicker, ColorThumb, and ColorWheel matching upstream RAC layout; all tests pass and package artifacts verified",
+    }
 ---
 
 ## Cause

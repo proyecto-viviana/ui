@@ -10,13 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
-// Ported to SolidJS for Proyecto Viviana; re-export barrel matching RAC file layout
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorThumb.tsx
 
-export * from "./ColorPicker";
-export * from "./ColorSlider";
-export * from "./ColorThumb";
-export * from "./ColorArea";
-export * from "./ColorWheel";
-export * from "./ColorField";
-export * from "./ColorSwatch";
-export * from "./ColorSwatchPicker";
+export {
+  ColorSliderThumb as ColorThumb,
+  type ColorSliderThumbProps as ColorThumbProps,
+  type ColorSliderThumbRenderProps as ColorThumbRenderProps,
+} from "./ColorSlider";

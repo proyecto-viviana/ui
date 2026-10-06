@@ -872,7 +872,6 @@ export {
   ColorSliderOutput,
   ColorSliderTrack,
   ColorSliderThumb,
-  ColorThumb,
   ColorSliderContext,
   ColorSliderStateContext,
   type ColorSliderProps,
@@ -883,6 +882,11 @@ export {
   type ColorSliderTrackRenderProps,
   type ColorSliderThumbProps,
   type ColorSliderThumbRenderProps,
+} from "./ColorSlider";
+
+export { ColorThumb, type ColorThumbProps, type ColorThumbRenderProps } from "./ColorThumb";
+
+export {
   ColorArea,
   ColorAreaGradient,
   ColorAreaThumb,
@@ -894,6 +898,9 @@ export {
   type ColorAreaGradientRenderProps,
   type ColorAreaThumbProps,
   type ColorAreaThumbRenderProps,
+} from "./ColorArea";
+
+export {
   ColorWheel,
   ColorWheelTrack,
   ColorWheelThumb,
@@ -906,31 +913,47 @@ export {
   type ColorWheelTrackRenderProps,
   type ColorWheelThumbProps,
   type ColorWheelThumbRenderProps,
+} from "./ColorWheel";
+
+export {
   ColorField,
   ColorFieldInput,
   ColorFieldContext,
   ColorFieldStateContext,
-  ColorPicker,
-  ColorPickerContext,
-  ColorPickerStateContext,
   type ColorFieldProps,
   type ColorFieldRenderProps,
   type ColorFieldInputProps,
   type ColorFieldInputRenderProps,
+} from "./ColorField";
+
+export {
+  ColorPicker,
+  ColorPickerContext,
+  ColorPickerStateContext,
   type ColorPickerProps,
   type ColorPickerRenderProps,
+  type ColorPickerChannelContextValue,
+  type ColorPickerStateContextValue,
+} from "./ColorPicker";
+
+export {
   ColorSwatch,
   ColorSwatchContext,
+  type ColorSwatchProps,
+  type ColorSwatchRenderProps,
+} from "./ColorSwatch";
+
+export {
   ColorSwatchPicker,
   ColorSwatchPickerItem,
   ColorSwatchPickerContext,
-  type ColorSwatchProps,
-  type ColorSwatchRenderProps,
   type ColorSwatchPickerProps,
   type ColorSwatchPickerRenderProps,
   type ColorSwatchPickerItemProps,
   type ColorSwatchPickerItemRenderProps,
-} from "./Color";
+  type ColorSwatchPickerItemData,
+  type ColorSwatchPickerContextValue,
+} from "./ColorSwatchPicker";
 
 export {
   ContextualHelpTrigger,

@@ -103,11 +103,59 @@
       "import": "./dist/Color.js",
       "default": "./dist/Color.js"
     },
+    "./ColorArea": {
+      "types": "./dist/ColorArea.d.ts",
+      "solid": "./dist/ColorArea.jsx",
+      "import": "./dist/ColorArea.js",
+      "default": "./dist/ColorArea.js"
+    },
     "./ColorEditor": {
       "types": "./dist/ColorEditor.d.ts",
       "solid": "./dist/ColorEditor.jsx",
       "import": "./dist/ColorEditor.js",
       "default": "./dist/ColorEditor.js"
+    },
+    "./ColorField": {
+      "types": "./dist/ColorField.d.ts",
+      "solid": "./dist/ColorField.jsx",
+      "import": "./dist/ColorField.js",
+      "default": "./dist/ColorField.js"
+    },
+    "./ColorPicker": {
+      "types": "./dist/ColorPicker.d.ts",
+      "solid": "./dist/ColorPicker.jsx",
+      "import": "./dist/ColorPicker.js",
+      "default": "./dist/ColorPicker.js"
+    },
+    "./ColorSlider": {
+      "types": "./dist/ColorSlider.d.ts",
+      "solid": "./dist/ColorSlider.jsx",
+      "import": "./dist/ColorSlider.js",
+      "default": "./dist/ColorSlider.js"
+    },
+    "./ColorSwatch": {
+      "types": "./dist/ColorSwatch.d.ts",
+      "solid": "./dist/ColorSwatch.jsx",
+      "import": "./dist/ColorSwatch.js",
+      "default": "./dist/ColorSwatch.js"
+    },
+    "./ColorSwatchPicker": {
+      "types": "./dist/ColorSwatchPicker.d.ts",
+      "solid": "./dist/ColorSwatchPicker.jsx",
+      "import": "./dist/ColorSwatchPicker.js",
+      "default": "./dist/ColorSwatchPicker.js"
+    },
+    "./ColorThumb": {
+      "types": "./dist/ColorThumb.d.ts",
+      "solid": "./dist/ColorThumb.jsx",
+      "import": "./dist/ColorThumb.js",
+      "default": "./dist/ColorThumb.js"
+    },
+    "./ColorWheel": {
+      "types": "./dist/ColorWheel.d.ts",
+      "solid": "./dist/ColorWheel.jsx",
+      "import": "./dist/ColorWheel.js",
+      "default": "./dist/ColorWheel.js"
     },
     "./ComboBox": {
       "types": "./dist/ComboBox.d.ts",
