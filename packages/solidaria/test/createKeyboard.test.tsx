@@ -677,6 +677,29 @@ describe("createKeyboard", () => {
       expect(action).not.toHaveBeenCalled();
       expect(stopPropagation).not.toHaveBeenCalled();
     });
+
+    it("executes shortcuts when a child handler replaces the target mid-bubble", () => {
+      const action = vi.fn();
+      const currentTarget = document.createElement("div");
+      const detachedTarget = document.createElement("button");
+      const stopPropagation = vi.fn();
+      const preventDefault = vi.fn();
+      const event = {
+        key: "a",
+        currentTarget,
+        target: detachedTarget,
+        composedPath: () => [detachedTarget, currentTarget],
+        stopPropagation,
+        preventDefault,
+      } as unknown as globalThis.KeyboardEvent;
+      const result = createKeyboard({ shortcuts: { a: action } });
+
+      (result.keyboardProps.onKeyDown as (event: globalThis.KeyboardEvent) => void)(event);
+
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(stopPropagation).toHaveBeenCalledTimes(1);
+      expect(preventDefault).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ============================================

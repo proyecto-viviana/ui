@@ -26,7 +26,7 @@ import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isTestEnv } from "../utils/env";
-import { createGlobalListeners, nodeContains } from "../utils";
+import { createGlobalListeners, nodeContains, eventPathContains } from "../utils";
 
 export interface HoverEvent {
   /** The type of hover event being fired. */
@@ -154,16 +154,11 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
     },
   );
 
-  function triggerHoverStart(
-    target: Element,
-    pointerType: "mouse" | "pen",
-    eventTarget: Element | null,
-  ) {
+  function triggerHoverStart(target: Element, pointerType: "mouse" | "pen", event: Event) {
     const p = getProps();
     state.pointerType = pointerType;
 
-    const isOverTarget = eventTarget instanceof Element ? target.contains(eventTarget) : true;
-    if (p.isDisabled || state.isHovered || !isOverTarget) {
+    if (p.isDisabled || state.isHovered || !eventPathContains(target, event)) {
       return;
     }
 
@@ -173,11 +168,7 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
     addGlobalListener(
       "pointerover",
       (event: PointerEvent) => {
-        if (
-          state.isHovered &&
-          state.target &&
-          !nodeContains(state.target, event.target as Element)
-        ) {
+        if (state.isHovered && state.target && !eventPathContains(state.target, event)) {
           triggerHoverEnd(state.target, event.pointerType as "mouse" | "pen");
         }
       },
@@ -229,15 +220,11 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
             if (e.pointerType === "touch") {
               return;
             }
-            triggerHoverStart(
-              e.currentTarget as Element,
-              e.pointerType as "mouse" | "pen",
-              e.target as Element,
-            );
+            triggerHoverStart(e.currentTarget as Element, e.pointerType as "mouse" | "pen", e);
           },
           onPointerLeave: (e: PointerEvent) => {
             const p = getProps();
-            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+            if (!p.isDisabled && eventPathContains(e.currentTarget as Element, e)) {
               triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
             }
           },
@@ -248,17 +235,13 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
             if (e.pointerType === "touch") {
               return;
             }
-            triggerHoverStart(
-              e.currentTarget as Element,
-              e.pointerType as "mouse" | "pen",
-              e.target as Element,
-            );
+            triggerHoverStart(e.currentTarget as Element, e.pointerType as "mouse" | "pen", e);
           },
           onPointerOut: (e: PointerEvent) => {
             const p = getProps();
             if (
               !p.isDisabled &&
-              (e.currentTarget as Element).contains(e.target as Element) &&
+              eventPathContains(e.currentTarget as Element, e) &&
               !nodeContains(e.currentTarget as Element, e.relatedTarget as Node | null)
             ) {
               triggerHoverEnd(e.currentTarget as Element, e.pointerType as "mouse" | "pen");
@@ -271,13 +254,13 @@ export function createHover(props: MaybeAccessor<CreateHoverProps> = {}): HoverR
           },
           onMouseEnter: (e: MouseEvent) => {
             if (!state.ignoreEmulatedMouseEvents && !globalIgnoreEmulatedMouseEvents) {
-              triggerHoverStart(e.currentTarget as Element, "mouse", e.target as Element);
+              triggerHoverStart(e.currentTarget as Element, "mouse", e);
             }
             state.ignoreEmulatedMouseEvents = false;
           },
           onMouseLeave: (e: MouseEvent) => {
             const p = getProps();
-            if (!p.isDisabled && (e.currentTarget as Element).contains(e.target as Element)) {
+            if (!p.isDisabled && eventPathContains(e.currentTarget as Element, e)) {
               triggerHoverEnd(e.currentTarget as Element, "mouse");
             }
           },

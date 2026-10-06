@@ -16,7 +16,7 @@ import { useLocale } from "../i18n";
 import { createPress } from "../interactions/createPress";
 import { createFocusManager } from "../focus/FocusScope";
 import { getFocusableTreeWalker } from "../utils/dom";
-import { nodeContains, getEventTarget } from "../utils";
+import { nodeContains, getEventTarget, eventPathContains } from "../utils";
 
 export interface DatePickerGroupState {
   setOpen?: (isOpen: boolean) => void;
@@ -57,7 +57,7 @@ export function createDatePickerGroup(
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (!nodeContains(e.currentTarget as Node | null, getEventTarget(e) as Node | null)) {
+    if (!eventPathContains(e.currentTarget as Node | null, e)) {
       return;
     }
     // Open the popover on alt + arrow down (date pickers only).

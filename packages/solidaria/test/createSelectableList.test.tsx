@@ -13,7 +13,7 @@
 import { describe, it, expect, afterEach } from "vite-plus/test";
 import { createSignal, flush } from "solid-js";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
-import { render, cleanup, fireEvent } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { FOCUS_EVENT } from "../src/selection/constants";
 import {
   createSelectableList,
@@ -716,5 +716,51 @@ describe("createSelectableCollection — virtual focus", () => {
 
     expect(state.selectionManager.focusedKey).toBe("a");
     expect(document.activeElement).toBe(inputEl);
+  });
+
+  it("treats focusin as in-target when child replaces target mid-bubble", () => {
+    let container!: HTMLUListElement;
+    let state!: ListState<Item>;
+    let api!: SelectableListAria;
+    const [replaced, setReplaced] = createSignal(false);
+
+    render(() => {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "single",
+      });
+      api = createSelectableList<Item>({
+        selectionManager: state.selectionManager,
+        ref: () => container,
+      });
+      return (
+        <ul ref={container} {...api.listProps}>
+          <li
+            data-key="a"
+            tabIndex={0}
+            onFocusIn={() => {
+              setReplaced(true);
+            }}
+          >
+            {replaced() ? (
+              <span data-testid="rep">Replaced</span>
+            ) : (
+              <span data-testid="target">Target</span>
+            )}
+          </li>
+        </ul>
+      );
+    });
+
+    expect(state.selectionManager.isFocused).toBe(false);
+
+    const target = screen.getByTestId("target");
+    target.focus();
+    fireEvent.focusIn(target);
+
+    expect(screen.queryByTestId("target")).toBeNull();
+    expect(screen.getByTestId("rep")).toBeInTheDocument();
+    expect(state.selectionManager.isFocused).toBe(true);
   });
 });

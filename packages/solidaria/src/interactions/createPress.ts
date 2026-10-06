@@ -22,6 +22,7 @@
 import {
   nodeContains,
   getEventTarget,
+  eventPathContains,
   isValidKeyboardEvent,
   isHTMLAnchorLink,
   shouldPreventDefaultKeyboard,
@@ -100,28 +101,6 @@ function isPressedValue(isPressed: Accessor<boolean> | boolean | undefined): boo
     return isPressed();
   }
   return isPressed ?? false;
-}
-
-function eventPathContains(parent: EventTarget | null | undefined, event: Event): boolean {
-  if (!parent) {
-    return false;
-  }
-
-  const target = getEventTarget(event);
-  if (
-    typeof Node !== "undefined" &&
-    parent instanceof Node &&
-    target instanceof Node &&
-    nodeContains(parent, target)
-  ) {
-    return true;
-  }
-
-  if (typeof event.composedPath === "function") {
-    return event.composedPath().includes(parent);
-  }
-
-  return false;
 }
 
 // Marks the keyup event a link was already opened from, so several press

@@ -34,6 +34,7 @@ export {
   getOwnerWindow,
   nodeContains,
   getEventTarget,
+  eventPathContains,
   isFocusable,
   isTabbable,
   isElementVisible,

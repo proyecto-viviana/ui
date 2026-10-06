@@ -4,9 +4,14 @@ type: task
 title: "Use eventPathContains for remaining Solid press-timing ownership checks"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-06,
+      note: "Exported eventPathContains from solidaria utils/dom.ts and utils/index.ts, migrated createHover, createActionGroup onKeyDown, createKeyboard shortcut handlers, createDatePickerGroup onKeyDown, createSelectableCollection onFocusIn, and createCollectionRowInteraction shouldIgnoreRowEvent to eventPathContains. Added regression tests across all ownership check areas verifying in-target handling when a child replaces the target mid-bubble.",
+    }
 ---
 
 ## Cause

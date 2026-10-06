@@ -24,6 +24,7 @@ import {
   getEventTarget,
   mergeProps,
   nodeContains,
+  eventPathContains,
   isFocusable,
   focusSafely,
   onOwnedCleanup,
@@ -145,7 +146,7 @@ export function createActionGroup<T>(
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
     const root = groupRef;
     if (!root || isActionGroupDisabled(props, state)) return;
-    if (!nodeContains(e.currentTarget, getEventTarget(e))) return;
+    if (!eventPathContains(e.currentTarget, e)) return;
 
     const flipDirection = locale().direction === "rtl";
 

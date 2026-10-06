@@ -49,6 +49,7 @@ import {
   isFocusWithin,
   isTabbable,
   nodeContains,
+  eventPathContains,
 } from "../utils/dom";
 import { dispatchVirtualFocus, moveVirtualFocus } from "../focus/virtualFocus";
 import { useRouter } from "../utils/openLink";
@@ -409,14 +410,14 @@ export function createSelectableCollection<T = unknown>(
     const currentTarget = e.currentTarget as Element;
     if (manager.isFocused) {
       // If a focus event bubbled through a portal, reset focus state.
-      if (!nodeContains(currentTarget, getEventTarget(e) as Node)) {
+      if (!eventPathContains(currentTarget, e)) {
         manager.setFocused(false);
       }
       return;
     }
 
     // Focus events can bubble through portals. Ignore these events.
-    if (!nodeContains(currentTarget, getEventTarget(e) as Node)) {
+    if (!eventPathContains(currentTarget, e)) {
       return;
     }
 

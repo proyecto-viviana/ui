@@ -362,4 +362,47 @@ describe("createActionGroup", () => {
     expect(group).toHaveAttribute("role", "group");
     expect(group).not.toHaveAttribute("aria-orientation");
   });
+
+  it("navigates with arrow keys when a child handler replaces the target mid-bubble", () => {
+    const state = createListState({
+      selectionMode: "none",
+      items: [
+        { id: "a", label: "A" },
+        { id: "b", label: "B" },
+      ],
+      getKey: (item) => item.id,
+      getTextValue: (item) => item.label,
+    });
+
+    const [replaced, setReplaced] = createSignal(false);
+    const { actionGroupProps } = createActionGroup({ "aria-label": "Actions" }, state);
+    const itemA = createActionGroupItem({ key: "a" }, state);
+    const itemB = createActionGroupItem({ key: "b" }, state);
+
+    render(() => (
+      <div {...actionGroupProps} data-testid="action-group">
+        <button
+          {...itemA.buttonProps}
+          onKeyDown={(e) => {
+            itemA.buttonProps.onKeyDown?.(e);
+            setReplaced(true);
+          }}
+        >
+          {replaced() ? <span data-testid="rep">A-rep</span> : <span data-testid="orig">A</span>}
+        </button>
+        <button {...itemB.buttonProps}>B</button>
+      </div>
+    ));
+
+    const buttonA = screen.getByRole("button", { name: "A" });
+    buttonA.focus();
+
+    const orig = screen.getByTestId("orig");
+    fireEvent.keyDown(orig, { key: "ArrowRight" });
+
+    expect(screen.queryByTestId("orig")).toBeNull();
+    expect(screen.getByTestId("rep")).toBeInTheDocument();
+    const buttonB = screen.getByRole("button", { name: "B" });
+    expect(document.activeElement).toBe(buttonB);
+  });
 });

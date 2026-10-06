@@ -734,6 +734,52 @@ describe("createHover", () => {
         { type: "hoverchange", isHovering: false },
       ]);
     });
+
+    it("keeps parent hover active when a child pointer handler replaces the target element", () => {
+      const onHoverStart = vi.fn();
+      const onHoverChange = vi.fn();
+
+      const ReplacingChild: Component = () => {
+        const [replaced, setReplaced] = createSignal(false);
+        const { hoverProps, isHovered } = createHover({
+          onHoverStart,
+          onHoverChange,
+        });
+
+        return (
+          <div {...hoverProps} data-testid="parent" data-hovered={isHovered() ? "true" : undefined}>
+            <button
+              type="button"
+              onPointerOver={() => setReplaced(true)}
+              onPointerEnter={() => setReplaced(true)}
+            >
+              {replaced() ? (
+                <span data-testid="replacement">replacement</span>
+              ) : (
+                <span data-testid="target">target</span>
+              )}
+            </button>
+          </div>
+        );
+      };
+
+      render(() => <ReplacingChild />);
+
+      const target = screen.getByTestId("target");
+      fireEvent(target, new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }));
+
+      expect(screen.queryByTestId("target")).toBeNull();
+      expect(screen.getByTestId("replacement")).toBeInTheDocument();
+      expect(onHoverStart).toHaveBeenCalledTimes(1);
+      expect(onHoverStart).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "hoverstart",
+          pointerType: "mouse",
+        }),
+      );
+      expect(onHoverChange).toHaveBeenCalledWith(true);
+      expect(screen.getByTestId("parent")).toHaveAttribute("data-hovered", "true");
+    });
   });
 
   // ============================================

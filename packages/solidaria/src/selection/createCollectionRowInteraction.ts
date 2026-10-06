@@ -21,6 +21,7 @@ import {
   getScrollParent,
   isFocusable,
   nodeContains,
+  eventPathContains,
 } from "../utils/dom";
 import { focusSafely } from "../utils/focus";
 import { scrollIntoViewport } from "../utils/scrollIntoView";
@@ -96,10 +97,9 @@ function redispatchCollectionArrowKey(row: HTMLElement, event: KeyboardEvent): v
 }
 
 function shouldIgnoreRowEvent(event: Event, row: HTMLElement): boolean {
-  const target = getEventTarget<Element>(event);
   const currentTarget = event.currentTarget as Element | null;
   return (
-    !target || !currentTarget || !nodeContains(currentTarget, target) || !nodeContains(row, target)
+    !currentTarget || !eventPathContains(currentTarget, event) || !eventPathContains(row, event)
   );
 }
 

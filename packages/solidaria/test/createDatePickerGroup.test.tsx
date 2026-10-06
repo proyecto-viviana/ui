@@ -68,6 +68,24 @@ describe("createDatePickerGroup", () => {
     expect(state.setOpen).toHaveBeenCalledWith(true);
   });
 
+  it("handles keydown when child replaces target mid-bubble", () => {
+    const groupProps = makeGroup();
+    const detached = document.createElement("span");
+    const event = new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      altKey: true,
+      bubbles: true,
+    });
+    Object.defineProperty(event, "currentTarget", { value: mockRef, writable: false });
+    Object.defineProperty(event, "target", { value: detached, writable: false });
+    Object.defineProperty(event, "composedPath", {
+      value: () => [detached, mockRef, document.body],
+      writable: false,
+    });
+    (groupProps().onKeyDown as (e: KeyboardEvent) => void)(event);
+    expect(state.setOpen).toHaveBeenCalledWith(true);
+  });
+
   it("ArrowRight moves focus to next segment in LTR", () => {
     const segments = mockRef.querySelectorAll<HTMLElement>('[role="spinbutton"]');
     segments[0].focus();

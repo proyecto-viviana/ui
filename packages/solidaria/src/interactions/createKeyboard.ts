@@ -20,7 +20,7 @@
 
 import type { JSX } from "@solidjs/web";
 import { chain } from "../utils/events";
-import { getEventTarget, nodeContains } from "../utils/dom";
+import { getEventTarget, nodeContains, eventPathContains } from "../utils/dom";
 import { access, type MaybeAccessor } from "../utils";
 import {
   createKeyboardShortcutHandler,
@@ -110,7 +110,7 @@ export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult 
   if (props.shortcuts) {
     const shortcutHandler = createKeyboardShortcutHandler(props.shortcuts);
     const shortcutOnKeyDown = createEventHandler((event) => {
-      if (!nodeContains(event.currentTarget as Node | null, getEventTarget<Node>(event))) {
+      if (!eventPathContains(event.currentTarget as Node | null, event)) {
         event.continuePropagation();
         return;
       }
@@ -126,7 +126,7 @@ export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult 
       shortcutHandler(event);
     });
     const shortcutOnKeyUp = createEventHandler((event) => {
-      if (!nodeContains(event.currentTarget as Node | null, getEventTarget<Node>(event))) {
+      if (!eventPathContains(event.currentTarget as Node | null, event)) {
         event.continuePropagation();
         return;
       }

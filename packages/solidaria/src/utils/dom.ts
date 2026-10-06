@@ -312,6 +312,34 @@ export function getEventTarget<T extends EventTarget>(event: Event): T | null {
   return event.target as T | null;
 }
 
+/**
+ * Checks whether an event path contains the given parent node.
+ * Uses live nodeContains first, then falls back to event.composedPath().
+ * This handles cases where a child handler replaces or removes the target node
+ * mid-bubble before ancestor handlers run (F-SOLID-010).
+ */
+export function eventPathContains(parent: EventTarget | null | undefined, event: Event): boolean {
+  if (!parent) {
+    return false;
+  }
+
+  const target = getEventTarget(event);
+  if (
+    typeof Node !== "undefined" &&
+    parent instanceof Node &&
+    target instanceof Node &&
+    nodeContains(parent, target)
+  ) {
+    return true;
+  }
+
+  if (typeof event.composedPath === "function") {
+    return event.composedPath().includes(parent);
+  }
+
+  return false;
+}
+
 // Ports @react-aria/utils `isElementVisible`/`isFocusable`/`isTabbable` (v3.34.1,
 // the version paired with our pinned RAC 1.19.0) so focusability matches upstream:
 // a candidate must match the focusable selector AND not be inside an `inert`
