@@ -4,9 +4,14 @@ type: task
 title: "SSR-test createDisclosure through renderToString"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: verified,
+      at: 2026-10-06,
+      note: "createDisclosure SSR and hydration are tested via renderToString in createDisclosure.ssr.test.tsx and hydrateOverSsr in createDisclosure.hydrate.test.tsx.",
+    }
 ---
 
 ## Cause
