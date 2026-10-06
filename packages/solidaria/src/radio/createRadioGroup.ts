@@ -30,7 +30,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { getEventTarget, getFocusableTreeWalker, getOwnerWindow } from "../utils";
 import { useLocale } from "../i18n";
-import { createId, createSlotId } from "../ssr";
+import { createId } from "../ssr";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { type RadioGroupState, type ValidityState } from "@proyecto-viviana/solid-stately";
 
@@ -98,8 +98,6 @@ export interface RadioGroupAria {
 interface RadioGroupData {
   name: string;
   form: string | undefined;
-  descriptionId: string | undefined;
-  errorMessageId: string | undefined;
   validationBehavior: "aria" | "native";
 }
 
@@ -179,20 +177,8 @@ export function createRadioGroup(
   const domProps = () =>
     filterDOMProps(getProps() as unknown as Record<string, unknown>, { labelable: true });
 
-  const descriptionSlotId = createSlotId([() => Boolean(getProps().description)]);
-  const errorMessageSlotId = createSlotId([
-    () => Boolean(getProps().errorMessage),
-    () => isInvalid(),
-  ]);
-
-  const descriptionId = () =>
-    getProps().description
-      ? (field.descriptionProps.id as string | undefined)
-      : descriptionSlotId();
-  const errorMessageId = () =>
-    getProps().errorMessage || validationErrors().length > 0
-      ? (field.errorMessageProps.id as string | undefined)
-      : errorMessageSlotId();
+  const descriptionId = () => field.descriptionProps.id as string | undefined;
+  const errorMessageId = () => field.errorMessageProps.id as string | undefined;
 
   const groupName = getProps().name ?? createId();
 
@@ -200,12 +186,6 @@ export function createRadioGroup(
     radioGroupData.set(state, {
       name: groupName,
       form: getProps().form,
-      get descriptionId() {
-        return descriptionId();
-      },
-      get errorMessageId() {
-        return errorMessageId();
-      },
       validationBehavior: validationBehavior(),
     });
   };

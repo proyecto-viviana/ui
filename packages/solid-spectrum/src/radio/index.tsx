@@ -21,6 +21,7 @@ import type { JSX } from "@solidjs/web";
 import {
   RadioGroup as HeadlessRadioGroup,
   Radio as HeadlessRadio,
+  TextContext as HeadlessTextContext,
   type RadioGroupProps as HeadlessRadioGroupProps,
   type RadioProps as HeadlessRadioProps,
   type RadioGroupRenderProps,
@@ -30,7 +31,7 @@ import {
 // createRadioGroup mints them (via createField) and threads them onto both the
 // group node and every child radio's aria-describedby; the styled help-text
 // nodes below read the same ids back so the associations resolve identically.
-import { mergeProps, radioGroupData } from "@proyecto-viviana/solidaria";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
 import {
@@ -408,107 +409,113 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const renderChildren = (renderProps: RadioGroupRenderProps) => (
-    <>
-      <Show when={local.label}>
+  const renderChildren = (renderProps: RadioGroupRenderProps) => {
+    const headlessText = useContext(HeadlessTextContext);
+    const helpTextContextValue = {
+      slots: {
+        get description() {
+          return headlessText?.slots?.description;
+        },
+        get errorMessage() {
+          return headlessText?.slots?.errorMessage;
+        },
+      },
+    };
+
+    return (
+      <>
+        <Show when={local.label}>
+          <div
+            class={radioGroupLabelWrapper({
+              ...renderProps,
+              size: size(),
+              labelPosition: labelPosition(),
+              labelAlign: labelAlign(),
+              // Upstream always renders the group label as a quiet FieldLabel.
+              isQuiet: true,
+            })}
+          >
+            <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
+              {local.label}
+              <Show when={headlessProps.isRequired || necessityIndicator() === "label"}>
+                <span class={radioGroupNoWrap}>
+                  &nbsp;
+                  <Show
+                    when={necessityIndicator() === "icon"}
+                    fallback={
+                      <span aria-hidden={headlessProps.isRequired ? true : undefined}>
+                        {stringFormatter().format(
+                          headlessProps.isRequired ? "label.(required)" : "label.(optional)",
+                        )}
+                      </span>
+                    }
+                  >
+                    <AsteriskIcon
+                      size={size() === "S" ? "M" : size()}
+                      class={radioGroupRequiredIcon}
+                      style={requiredIconStyle(size())}
+                      aria-hidden="true"
+                    />
+                  </Show>
+                </span>
+              </Show>
+            </span>
+            <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
+          </div>
+        </Show>
         <div
-          class={radioGroupLabelWrapper({
+          class={radioGroupItems({
             ...renderProps,
             size: size(),
-            labelPosition: labelPosition(),
-            labelAlign: labelAlign(),
-            // Upstream always renders the group label as a quiet FieldLabel.
-            isQuiet: true,
+            orientation: local.orientation,
           })}
         >
-          <span id={labelId} class={radioGroupLabel({ ...renderProps, size: size() })}>
-            {local.label}
-            <Show when={headlessProps.isRequired || necessityIndicator() === "label"}>
-              <span class={radioGroupNoWrap}>
-                &nbsp;
-                <Show
-                  when={necessityIndicator() === "icon"}
-                  fallback={
-                    <span aria-hidden={headlessProps.isRequired ? true : undefined}>
-                      {stringFormatter().format(
-                        headlessProps.isRequired ? "label.(required)" : "label.(optional)",
-                      )}
-                    </span>
-                  }
-                >
-                  <AsteriskIcon
-                    size={size() === "S" ? "M" : size()}
-                    class={radioGroupRequiredIcon}
-                    style={requiredIconStyle(size())}
-                    aria-hidden="true"
-                  />
-                </Show>
-              </span>
-            </Show>
-          </span>
-          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
-        </div>
-      </Show>
-      <div
-        class={radioGroupItems({
-          ...renderProps,
-          size: size(),
-          orientation: local.orientation,
-        })}
-      >
-        <FormContext
-          value={{
-            ...(formContext ?? {}),
-            get size() {
-              return size();
-            },
-            isRequired: undefined,
-          }}
-        >
-          <RadioContext
+          <FormContext
             value={{
-              get isEmphasized() {
-                return local.isEmphasized;
+              ...(formContext ?? {}),
+              get size() {
+                return size();
               },
+              isRequired: undefined,
             }}
           >
-            {local.children}
-          </RadioContext>
-        </FormContext>
-      </div>
-      <TextContext value={null}>
-        {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
-            RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
-            the single-source id minted by the headless createRadioGroup (also
-            threaded onto the group node and every child radio's aria-describedby). */}
-        <Show when={local.description && !renderProps.isInvalid}>
-          <Text
-            slot="description"
-            id={radioGroupData.get(renderProps.state)?.descriptionId}
-            styles={radioGroupHelpText({ ...renderProps, size: size() })}
-          >
-            {local.description}
-          </Text>
-        </Show>
-        {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
-            is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
-            (RAC FieldError carries no alert role; the group's `aria-describedby`
-            points here for the association). */}
-        <Show when={local.errorMessage && renderProps.isInvalid}>
-          <Text
-            slot="errorMessage"
-            id={radioGroupData.get(renderProps.state)?.errorMessageId}
-            styles={radioGroupHelpText({ ...renderProps, size: size() })}
-          >
-            <CenterBaseline>
-              <AlertTriangleIcon aria-hidden="true" />
-            </CenterBaseline>
-            <span>{local.errorMessage}</span>
-          </Text>
-        </Show>
-      </TextContext>
-    </>
-  );
+            <RadioContext
+              value={{
+                get isEmphasized() {
+                  return local.isEmphasized;
+                },
+              }}
+            >
+              {local.children}
+            </RadioContext>
+          </FormContext>
+        </div>
+        <TextContext value={helpTextContextValue}>
+          {/* Byte-faithful to upstream Field.tsx HelpText: the description renders a
+              RAC `<Text slot="description">` (a `<span>`), not a `<div>`. The id is
+              the single-source id minted by the headless createRadioGroup (also
+              threaded onto the group node and every child radio's aria-describedby). */}
+          <Show when={local.description && !renderProps.isInvalid}>
+            <Text slot="description" styles={radioGroupHelpText({ ...renderProps, size: size() })}>
+              {local.description}
+            </Text>
+          </Show>
+          {/* Upstream renders the invalid message through a RAC `<FieldError>`, which
+              is a `<Text slot="errorMessage">` (a `<span>`) with NO `role="alert"`
+              (RAC FieldError carries no alert role; the group's `aria-describedby`
+              points here for the association). */}
+          <Show when={local.errorMessage && renderProps.isInvalid}>
+            <Text slot="errorMessage" styles={radioGroupHelpText({ ...renderProps, size: size() })}>
+              <CenterBaseline>
+                <AlertTriangleIcon aria-hidden="true" />
+              </CenterBaseline>
+              <span>{local.errorMessage}</span>
+            </Text>
+          </Show>
+        </TextContext>
+      </>
+    );
+  };
 
   return (
     <RadioStyleContext

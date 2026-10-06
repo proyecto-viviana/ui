@@ -279,8 +279,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
   };
   const isInvalid = createMemo(() => state.isInvalid);
   const validation = createMemo(() => state.displayValidation());
-  const fallbackErrorMessageId = createUniqueId();
-  const errorMessageId = () => groupAria.errorMessageProps.id ?? fallbackErrorMessageId;
+  const errorMessageId = () => groupAria.errorMessageProps.id as string | undefined;
 
   const renderValues = createMemo<RadioGroupRenderProps>(() => ({
     orientation: (ariaProps.orientation as Orientation) ?? "vertical",
@@ -339,29 +338,14 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     invalid: handleGroupInvalidCapture as EventListener,
     change: handleGroupChangeCapture as EventListener,
   });
-  const groupDescribedBy = () => {
-    const ids = [
-      (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"],
-      groupAria.descriptionProps.id,
-      isInvalid() && (validation().validationErrors.length > 0 || groupAria.errorMessageProps.id)
-        ? errorMessageId()
-        : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .split(" ")
-      .filter(Boolean);
-    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
-  };
+  const groupDescribedBy = () =>
+    (cleanGroupProps() as { "aria-describedby"?: string })["aria-describedby"];
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
       return validation();
     },
     get errorMessageProps() {
-      return {
-        ...groupAria.errorMessageProps,
-        id: errorMessageId(),
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return groupAria.errorMessageProps as JSX.HTMLAttributes<HTMLElement>;
     },
   };
 
@@ -563,6 +547,29 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     "onHoverEnd",
     "onHoverChange",
   ]);
+  const textContext = useContext(TextContext);
+  const groupDescriptionId = () => {
+    if (
+      textContext &&
+      typeof textContext === "object" &&
+      "slots" in textContext &&
+      textContext.slots
+    ) {
+      return (textContext.slots.description as { id?: string } | undefined)?.id;
+    }
+    return undefined;
+  };
+  const groupErrorMessageId = () => {
+    if (
+      textContext &&
+      typeof textContext === "object" &&
+      "slots" in textContext &&
+      textContext.slots
+    ) {
+      return (textContext.slots.errorMessage as { id?: string } | undefined)?.id;
+    }
+    return undefined;
+  };
   const descriptionId = createUniqueId();
   const errorMessageId = createUniqueId();
   const describedBy = () => {
@@ -570,8 +577,14 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       ariaProps["aria-describedby"],
       local.description ? descriptionId : undefined,
       state.isInvalid && local.errorMessage ? errorMessageId : undefined,
-    ].filter(Boolean);
-    return ids.length ? ids.join(" ") : undefined;
+      state.isInvalid ? groupErrorMessageId() : undefined,
+      groupDescriptionId(),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .split(" ")
+      .filter(Boolean);
+    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
   };
   const inputAriaProps = createMemo(() => {
     const clean: Record<string, unknown> = {};
@@ -990,9 +1003,47 @@ function RadioFieldImpl(props: {
     return clean as typeof ariaProps;
   });
 
+  const textContext = useContext(TextContext);
+  const groupDescriptionId = () => {
+    if (
+      textContext &&
+      typeof textContext === "object" &&
+      "slots" in textContext &&
+      textContext.slots
+    ) {
+      return (textContext.slots.description as { id?: string } | undefined)?.id;
+    }
+    return undefined;
+  };
+  const groupErrorMessageId = () => {
+    if (
+      textContext &&
+      typeof textContext === "object" &&
+      "slots" in textContext &&
+      textContext.slots
+    ) {
+      return (textContext.slots.errorMessage as { id?: string } | undefined)?.id;
+    }
+    return undefined;
+  };
+
+  const fieldDescribedBy = () => {
+    const ids = [
+      ariaProps["aria-describedby"],
+      state.isInvalid ? groupErrorMessageId() : undefined,
+      groupDescriptionId(),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .split(" ")
+      .filter(Boolean);
+    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
+  };
+
   const radioAria = createRadio(
     () => ({
       ...inputAriaProps(),
+      "aria-describedby": fieldDescribedBy(),
       // The hook reads `children` only to decide if an aria-label is needed; the
       // visible label lives in the RadioButton, so report presence as a literal.
       children: true,

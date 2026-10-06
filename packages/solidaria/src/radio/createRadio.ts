@@ -23,7 +23,6 @@
 
 import { Accessor, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { isServer } from "@solidjs/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -315,23 +314,12 @@ export function createRadio(
   // this id is rendered (e.g. a `<Text slot="description">` child).
   const descriptionId = createSlotId();
 
-  // The group's ids reach the radio through the `radioGroupData` WeakMap, a
-  // snapshot rather than a signal, so the radio probes the DOM itself the way
-  // `useSlotId` does (#258 replaces this path with group-level TextContext
-  // slots). The probe is client-only: on the server the slot id is emitted as
-  // is — `useSlotId` yields the raw id before its layout effect runs, and the
-  // client probe patches the attribute after hydration. `document` does not
-  // exist on the server; reading it there threw inside `renderToString` and the
-  // route's error boundary rendered instead of the RadioGroup.
-  const slotIdInDom = (id: string): boolean => isServer || document.getElementById(id) !== null;
-
   const inputDescribedBy: Accessor<string | undefined> = () => {
     const p = getProps();
-    const groupData = getGroupData();
 
     // Order mirrors upstream useRadio: the user's aria-describedby, then the
-    // radio's own description, then the group's error message (when invalid)
-    // and the group's shared description.
+    // radio's own description. Group description/error ids reach the radio
+    // through TextContext in RadioGroup/RadioField without a WeakMap.
     const describedByIds: string[] = [];
     if (p["aria-describedby"]) {
       describedByIds.push(p["aria-describedby"]);
@@ -339,12 +327,6 @@ export function createRadio(
     const ownDescriptionId = descriptionId();
     if (ownDescriptionId) {
       describedByIds.push(ownDescriptionId);
-    }
-    if (state.isInvalid && groupData?.errorMessageId && slotIdInDom(groupData.errorMessageId)) {
-      describedByIds.push(groupData.errorMessageId);
-    }
-    if (groupData?.descriptionId && slotIdInDom(groupData.descriptionId)) {
-      describedByIds.push(groupData.descriptionId);
     }
     return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
   };

@@ -1833,5 +1833,84 @@ describe("RadioGroup", () => {
         expect(renderPropsReceived).toBe(false);
       });
     });
+
+    it("ensures radio with no group description has no dangling aria-describedby (#258)", async () => {
+      const { container } = render(() => (
+        <RadioGroup aria-label="Choices">
+          <Radio value="1">One</Radio>
+          <Radio value="2">Two</Radio>
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup");
+      const radios = screen.getAllByRole("radio");
+
+      expect(group).not.toHaveAttribute("aria-describedby");
+      for (const radio of radios) {
+        expect(radio).not.toHaveAttribute("aria-describedby");
+      }
+      assertAriaIdIntegrity(container);
+    });
+
+    it("threads group-level TextContext slots for description and error without dangling IDs on invalid toggle (#258)", async () => {
+      const [isInvalid, setIsInvalid] = createSignal(false);
+
+      const { container } = render(() => (
+        <RadioGroup aria-label="Choices" isInvalid={isInvalid()}>
+          <Radio value="1">One</Radio>
+          <Radio value="2">Two</Radio>
+          <Text slot="description">Please select a choice</Text>
+          <FieldError>Selection is required</FieldError>
+        </RadioGroup>
+      ));
+
+      const group = screen.getByRole("radiogroup");
+      const radios = screen.getAllByRole("radio");
+      const description = container.querySelector('[slot="description"]');
+
+      // Valid state: description slot ID is referenced, no error ID
+      expect(description).not.toBeNull();
+      const descId = description?.id;
+      expect(descId).toBeTruthy();
+
+      expect(group.getAttribute("aria-describedby")).toBe(descId);
+      for (const radio of radios) {
+        expect(radio.getAttribute("aria-describedby")).toBe(descId);
+      }
+      assertAriaIdIntegrity(container);
+
+      // Flip to invalid: error message is displayed and receives error slot ID
+      setIsInvalid(true);
+
+      await waitFor(() => {
+        expect(group).toHaveAttribute("data-invalid", "true");
+      });
+
+      const errEl = container.querySelector(".solidaria-FieldError");
+      expect(errEl).not.toBeNull();
+      const errId = errEl?.id;
+      expect(errId).toBeTruthy();
+      expect(errId).not.toBe(descId);
+
+      // Both group and radios reference error ID, no dangling IDs
+      expect(group.getAttribute("aria-describedby")).toContain(errId);
+      for (const radio of radios) {
+        expect(radio.getAttribute("aria-describedby")).toContain(errId);
+      }
+      assertAriaIdIntegrity(container);
+
+      // Flip back to valid
+      setIsInvalid(false);
+
+      await waitFor(() => {
+        expect(group).not.toHaveAttribute("data-invalid");
+      });
+
+      expect(group.getAttribute("aria-describedby")).toBe(descId);
+      for (const radio of radios) {
+        expect(radio.getAttribute("aria-describedby")).toBe(descId);
+      }
+      assertAriaIdIntegrity(container);
+    });
   });
 });

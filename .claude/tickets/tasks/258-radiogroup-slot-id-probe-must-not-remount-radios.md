@@ -4,7 +4,7 @@ type: task
 title: "RadioGroup group-level TextContext must carry description/error slots"
 created: 2026-09-02
 parent: 136
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 radiogroup functional pass: live isInvalid after mount swaps the visible HelpText slot on both (not #345) but Solid group aria-describedby becomes dangling cl-229 MISSING, errorId stays null, and every radio keeps solidaria-cl-226 MISSING. Live off and URL-invalid-then-live-off leave the description text visible with descId/groupDescribed/radio describedby all null. URL ?isInvalid=true remount already threads the error id on both. WeakMap snapshot + DOM probe is still the remaining work. No new id.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-05,
+      note: "wired group-level TextContext slots for description and errorMessage in RadioGroup without parallel WeakMap or DOM probe; bridged HeadlessTextContext into styled TextContext in solid-spectrum and viviana-ui; radios track group slot IDs reactively with zero dangling aria-describedby references",
     }
 ---
 
