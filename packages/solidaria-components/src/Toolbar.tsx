@@ -27,7 +27,7 @@ import {
   type AriaToolbarProps,
   type Orientation,
 } from "@proyecto-viviana/solidaria";
-import { type SlotProps, filterDOMProps } from "./utils";
+import { type SlotProps, filterDOMProps, evaluateRenderChildren } from "./utils";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface ToolbarRenderProps {
@@ -128,13 +128,7 @@ export function Toolbar(props: ToolbarProps): JSX.Element {
     return style;
   });
 
-  const resolvedChildren = createMemo(() => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return (children as (props: ToolbarRenderProps) => JSX.Element)(renderValues());
-    }
-    return children;
-  });
+  const resolvedChildren = createMemo(() => evaluateRenderChildren(props.children, renderValues()));
 
   const filteredDOMProps = createMemo(() => filterDOMProps(domProps, { global: true }));
 

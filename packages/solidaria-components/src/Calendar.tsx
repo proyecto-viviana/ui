@@ -481,7 +481,7 @@ export function CalendarHeading(props: CalendarHeadingProps): JSX.Element {
 
   return (
     <h2 class={renderProps.class()} style={renderProps.style()} aria-live="polite">
-      {typeof props.children === "function" ? renderProps.renderChildren() : headingTitle()}
+      {renderProps.renderChildren() ?? headingTitle()}
     </h2>
   );
 }
@@ -747,12 +747,7 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
   // Determine children content - avoid Show for SSR hydration compatibility.
   // `renderChildrenStable` keeps the inner fill node across isFocusVisible flips
   // so Chromium interpolates selected-default → isFocusVisible (D2 open-enter).
-  const getChildren = () => {
-    if (typeof props.children === "function") {
-      return renderProps.renderChildrenStable();
-    }
-    return cellAria.formattedDate;
-  };
+  const getChildren = () => renderProps.renderChildrenStable() ?? cellAria.formattedDate;
 
   return (
     <td

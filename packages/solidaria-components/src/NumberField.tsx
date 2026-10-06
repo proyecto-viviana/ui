@@ -52,6 +52,7 @@ import {
   attrTrue,
   attrString,
   callEventHandler,
+  evaluateRenderChildren,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
@@ -408,10 +409,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     },
   };
 
-  const fieldChildren = () => {
-    const children = local.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  const fieldChildren = () => evaluateRenderChildren(local.children, childRenderValues);
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),

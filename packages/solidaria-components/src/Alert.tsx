@@ -18,6 +18,7 @@ import {
   type SlotProps,
   filterDOMProps,
   dataAttr,
+  evaluateRenderChildren,
 } from "./utils";
 import { Button, type ButtonProps } from "./Button";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -123,9 +124,7 @@ export function Alert(props: AlertProps): JSX.Element {
         data-variant={variant()}
         data-dismissible={dataAttr(isDismissible())}
       >
-        {typeof local.children === "function"
-          ? (local.children as (props: AlertRenderProps) => JSX.Element)(renderValues())
-          : local.children}
+        {evaluateRenderChildren(local.children, renderValues())}
       </div>
     </AlertContext>
   );

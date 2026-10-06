@@ -68,6 +68,7 @@ import {
   filterDOMProps,
   dataAttr,
   DEFAULT_SLOT,
+  evaluateRenderChildren,
 } from "./utils";
 import {
   CheckboxContext,
@@ -1974,12 +1975,7 @@ export function TreeExpandButton(props: TreeExpandButtonProps): JSX.Element {
 
   const isExpanded = createMemo(() => state.isExpanded(itemContext.node.key));
 
-  const renderChildren = () => {
-    if (typeof props.children === "function") {
-      return props.children({ isExpanded: isExpanded() });
-    }
-    return props.children;
-  };
+  const renderChildren = () => evaluateRenderChildren(props.children, { isExpanded: isExpanded() });
 
   return (
     <Show when={itemContext.isExpandable}>

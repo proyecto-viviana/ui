@@ -60,6 +60,7 @@ import {
   filterDOMProps,
   dataAttr,
   useIsHydrated,
+  evaluateRenderChildren,
 } from "./utils";
 import {
   DialogTriggerContext,
@@ -895,18 +896,13 @@ export function Popover(props: PopoverProps): JSX.Element {
     />
   );
 
-  const hiddenChildren = () => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return children({
-        trigger: resolvedTrigger() ?? null,
-        placement: "bottom",
-        isEntering: false,
-        isExiting: false,
-      });
-    }
-    return children;
-  };
+  const hiddenChildren = () =>
+    evaluateRenderChildren(props.children, {
+      trigger: resolvedTrigger() ?? null,
+      placement: "bottom",
+      isEntering: false,
+      isExiting: false,
+    });
 
   return (
     <Show when={!isHidden()} fallback={hiddenChildren()}>

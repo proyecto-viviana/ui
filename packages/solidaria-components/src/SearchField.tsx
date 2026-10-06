@@ -49,6 +49,7 @@ import {
   useSlot,
   dataAttr,
   attrString,
+  evaluateRenderChildren,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
@@ -538,10 +539,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
     setInputRef,
   };
-  const fieldChildren = () => {
-    const children = local.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  const fieldChildren = () => evaluateRenderChildren(local.children, childRenderValues);
   // Provide the description / errorMessage props as `TextContext` slots (mirrors
   // react-aria-components' SearchField), so a `<Text slot="description">` /
   // `<Text slot="errorMessage">` child picks up the `id` its `aria-describedby`

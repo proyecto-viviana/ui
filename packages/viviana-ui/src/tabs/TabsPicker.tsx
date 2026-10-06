@@ -282,14 +282,17 @@ function TabsPickerOption(props: HeadlessSelectOptionProps<TabsPickerItem>): JSX
               })}
               aria-hidden="true"
             />
-            <Show
-              when={typeof local.children === "string" || typeof local.children === "number"}
-              fallback={local.children}
-            >
-              <span class={menuItemLabel({ size: "M" })} data-rsp-slot="text">
-                {local.children}
-              </span>
-            </Show>
+            {(() => {
+              const child = local.children;
+              if (typeof child === "string" || typeof child === "number") {
+                return (
+                  <span class={menuItemLabel({ size: "M" })} data-rsp-slot="text">
+                    {child}
+                  </span>
+                );
+              }
+              return child;
+            })()}
           </TextContext>
         </IconContext>
       )}

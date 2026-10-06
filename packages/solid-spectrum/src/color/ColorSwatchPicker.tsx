@@ -25,6 +25,7 @@ import {
   type ColorSwatchPickerItemRenderProps,
   type ColorSwatchPickerProps as HeadlessColorSwatchPickerProps,
   type ColorSwatchPickerRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type { Color } from "@proyecto-viviana/solid-stately";
 import { focusRing, space, style } from "../style" with { type: "macro" };
@@ -309,29 +310,20 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
   const size = () => pickerContext?.size ?? "M";
   const rounding = () => pickerContext?.rounding ?? "none";
 
-  const renderChildren = (renderProps: ColorSwatchPickerItemRenderProps) => {
-    const children = local.children;
-
-    if (typeof children === "function") {
-      return children(renderProps);
-    }
-
-    return (
-      children ?? (
-        <HeadlessColorSwatch
-          color={local.color}
-          class={(swatchRenderProps) =>
-            pickerColorSwatchRoot({
-              ...swatchRenderProps,
-              size: size(),
-              rounding: rounding(),
-            })
-          }
-          style={getColorSwatchStyle}
-        />
-      )
+  const renderChildren = (renderProps: ColorSwatchPickerItemRenderProps) =>
+    evaluateRenderChildren(local.children, renderProps) ?? (
+      <HeadlessColorSwatch
+        color={local.color}
+        class={(swatchRenderProps) =>
+          pickerColorSwatchRoot({
+            ...swatchRenderProps,
+            size: size(),
+            rounding: rounding(),
+          })
+        }
+        style={getColorSwatchStyle}
+      />
     );
-  };
 
   return (
     <HeadlessColorSwatchPickerItem

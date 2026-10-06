@@ -264,6 +264,24 @@ export function OptionContent(props: OptionContentProps): JSX.Element {
   return <span {...props.labelProps}>{content()}</span>;
 }
 
+/**
+ * Evaluates `children` once, invoking it if it is a render-prop function
+ * or returning it directly if it is a JSX element or primitive.
+ *
+ * Prevents the probe-then-render pattern (`typeof props.children === "function" ? props.children(...) : props.children`)
+ * from reading a compiled JSX children getter twice during SSR, which causes hydration-key drift.
+ */
+export function evaluateRenderChildren<TArgs extends any[] = []>(
+  children: ((...args: TArgs) => JSX.Element) | JSX.Element | undefined,
+  ...args: TArgs
+): JSX.Element {
+  const child = children;
+  if (typeof child === "function") {
+    return (child as (...args: TArgs) => JSX.Element)(...args);
+  }
+  return child;
+}
+
 /** A Solid ref target: a callback, a mutable `{ current }` object, or undefined. */
 export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
 

@@ -57,6 +57,7 @@ import {
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  evaluateRenderChildren,
 } from "./utils";
 import { TextContext } from "./Text";
 import { assignRef, splitProps, type RefLike } from "@proyecto-viviana/solidaria/utils";
@@ -134,6 +135,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     "slot",
     "description",
     "errorMessage",
+    "children",
   ]);
   const descriptionId = createUniqueId();
   const errorMessageId = createUniqueId();
@@ -146,10 +148,12 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
     isReadOnly: ariaProps.isReadOnly,
   }));
 
+  let switchChildrenNode: JSX.Element;
+
   const switchAria = createSwitch(
     () => ({
       ...ariaProps,
-      children: typeof props.children === "function" ? true : props.children,
+      children: switchChildrenNode != null ? true : undefined,
     }),
     state,
     inputElement,
@@ -186,7 +190,7 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       get children() {
-        return props.children;
+        return local.children;
       },
       class: local.class,
       style: local.style,
@@ -251,10 +255,8 @@ export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   // it on a reactive update re-clones its templates and, mid-hydration, throws a
   // Hydration Mismatch. The children keep fine-grained reactivity via the
   // childRenderValues getters + <Show>s.
-  const switchChildren = untrack(() => {
-    const children = props.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  });
+  const switchChildren = untrack(() => evaluateRenderChildren(local.children, childRenderValues));
+  switchChildrenNode = switchChildren;
 
   const setLabelRef = (el: HTMLLabelElement) => {
     assignRef(local.ref, el);
@@ -493,10 +495,9 @@ function SwitchButtonImpl(props: {
   // Resolve the render-prop children ONCE (untracked) — see ToggleSwitch above.
   // The button's own children are leaf visuals (they don't consume context), so
   // untrack is safe and keeps fine-grained reactivity via the getters + <Show>s.
-  const switchChildren = untrack(() => {
-    const children = props.buttonProps.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  });
+  const switchChildren = untrack(() =>
+    evaluateRenderChildren(props.buttonProps.children, childRenderValues),
+  );
 
   const setButtonRef = (el: HTMLLabelElement) => {
     assignRef(props.buttonProps.ref, el);
@@ -697,10 +698,9 @@ export function SwitchField(props: SwitchFieldProps): JSX.Element {
         return state;
       },
     };
-    const renderedChildren = createMemo(() => {
-      const children = merged.children;
-      return typeof children === "function" ? children(childRenderValues) : children;
-    });
+    const renderedChildren = createMemo(() =>
+      evaluateRenderChildren(merged.children, childRenderValues),
+    );
     return <>{renderedChildren()}</>;
   };
 

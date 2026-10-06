@@ -58,6 +58,7 @@ import {
   type TableRenderProps,
   type TableRowProps as HeadlessTableRowProps,
   type TableRowRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type {
   ColumnDefinition,
@@ -1548,9 +1549,10 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
               isDisabled={renderProps.isDisabled}
             />
           ) : null}
-          {typeof local.children === "function"
-            ? (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderProps)
-            : local.children}
+          {evaluateRenderChildren(
+            local.children as ((renderProps: TableRowRenderProps) => JSX.Element) | JSX.Element,
+            renderProps,
+          )}
         </>
       )}
     </HeadlessTableRow>
@@ -1731,12 +1733,13 @@ export function EditableCell(props: EditableCellProps): JSX.Element {
         action={local.action}
         ariaLabel={(props as { "aria-label"?: string })["aria-label"]}
         renderChildren={() => {
-          if (typeof local.children !== "function") {
-            return local.children;
+          const child = local.children;
+          if (typeof child !== "function") {
+            return child;
           }
           // `latestRenderProps` is a plain capture, not a signal, so reading it does not make
           // the children reactive to the cell's hover/press churn.
-          return latestRenderProps ? local.children(latestRenderProps) : null;
+          return latestRenderProps ? child(latestRenderProps) : null;
         }}
       />
     )) as JSX.Element;

@@ -51,6 +51,7 @@ import {
   Provider,
   useSlot,
   dataAttr,
+  evaluateRenderChildren,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
@@ -548,10 +549,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   // the hydration window). The children carry their own fine-grained reactivity
   // (render-value getters + <Show>s), so they update without being re-created.
   const FieldChildren = () =>
-    untrack(() => {
-      const children = local.children;
-      return typeof children === "function" ? children(childRenderValues) : children;
-    });
+    untrack(() => evaluateRenderChildren(local.children, childRenderValues));
   // Provide the description / errorMessage props as `TextContext` slots (mirrors
   // react-aria-components' TextField), so a `<Text slot="description">` /
   // `<Text slot="errorMessage">` child picks up the `id` its `aria-describedby`

@@ -33,6 +33,7 @@ import {
   type ListBoxOptionRenderProps,
   type ListBoxProps as HeadlessListBoxProps,
   type ListBoxRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
@@ -637,10 +638,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
       };
     };
 
-    const renderChildren = () => {
-      const children = local.children;
-      return typeof children === "function" ? (children as any)(renderProps) : children;
-    };
+    const renderChildren = () => evaluateRenderChildren(local.children, renderProps);
 
     return (
       <>

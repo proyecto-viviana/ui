@@ -33,6 +33,7 @@ export {
   createDataAttributes,
   dataAttr,
   callEventHandler,
+  evaluateRenderChildren,
   type SolidEventHandlerUnion,
 } from "./utils";
 

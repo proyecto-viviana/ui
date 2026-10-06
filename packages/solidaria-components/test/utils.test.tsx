@@ -28,6 +28,7 @@ import {
   useRenderProps,
   OptionContent,
   callEventHandler,
+  evaluateRenderChildren,
 } from "../src/utils";
 
 describe("utils — context/slot machinery", () => {
@@ -670,6 +671,38 @@ describe("utils — context/slot machinery", () => {
       const event = new Event("click");
       expect(() => callEventHandler(undefined, event)).not.toThrow();
       expect(() => callEventHandler(null, event)).not.toThrow();
+    });
+  });
+
+  describe("evaluateRenderChildren", () => {
+    it("invokes a render function with arguments and returns the result", () => {
+      const renderFn = (val: { count: number }) => `count is ${val.count}`;
+      const result = evaluateRenderChildren(renderFn, { count: 42 });
+      expect(result).toBe("count is 42");
+    });
+
+    it("returns static elements and primitives directly", () => {
+      expect(evaluateRenderChildren("plain text")).toBe("plain text");
+      expect(evaluateRenderChildren(123)).toBe(123);
+      expect(evaluateRenderChildren(undefined)).toBeUndefined();
+      expect(evaluateRenderChildren(null)).toBeNull();
+
+      const element = <span>static element</span>;
+      expect(evaluateRenderChildren(element)).toBe(element);
+    });
+
+    it("evaluates a getter passed as children exactly once", () => {
+      let readCount = 0;
+      const props = {
+        get children() {
+          readCount++;
+          return <span data-testid="item">Item {readCount}</span>;
+        },
+      };
+
+      const evaluated = evaluateRenderChildren(props.children);
+      expect(readCount).toBe(1);
+      expect(evaluated).toBeDefined();
     });
   });
 });

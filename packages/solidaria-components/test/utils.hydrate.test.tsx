@@ -6,6 +6,7 @@ import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { cleanupHydrationRoots } from "../../solidaria/test-utils/hydrate";
 import {
   DynamicFixture,
+  EvaluateRenderChildrenFixture,
   HydrationGateFixture,
   RenderPropsFixture,
   type DynamicControls,
@@ -262,5 +263,38 @@ describe("utils hydration ownership", () => {
     expect(container.querySelector('[data-fixture="conditional"]')).toHaveTextContent("second");
     expect(container.querySelector('[data-fixture="render-prop"]')).toBe(renderProp);
     expect(renders).toBe(1);
+  });
+
+  it("hydrates evaluateRenderChildren without double-reading or key drift", async () => {
+    let serverNodes: Element[] = [];
+    const container = await hydrateOverSsr(
+      readFixture("evaluate-children"),
+      () => <EvaluateRenderChildrenFixture />,
+      {
+        beforeHydrate(container) {
+          serverNodes = [
+            container.querySelector('[data-fixture="static-child"]')!,
+            container.querySelector('[data-fixture="function-child"]')!,
+            container.querySelector('[data-fixture="switch-label"]')!,
+            container.querySelector('[data-fixture="checkbox-label"]')!,
+          ];
+        },
+      },
+    );
+
+    const staticChild = container.querySelector('[data-fixture="static-child"]')!;
+    const functionChild = container.querySelector('[data-fixture="function-child"]')!;
+    const switchLabel = container.querySelector('[data-fixture="switch-label"]')!;
+    const checkboxLabel = container.querySelector('[data-fixture="checkbox-label"]')!;
+
+    expect(staticChild).toBe(serverNodes[0]);
+    expect(functionChild).toBe(serverNodes[1]);
+    expect(switchLabel).toBe(serverNodes[2]);
+    expect(checkboxLabel).toBe(serverNodes[3]);
+
+    expect(staticChild).toHaveTextContent("Static compiled JSX child");
+    expect(functionChild).toHaveTextContent("rendered-arg");
+    expect(switchLabel).toHaveTextContent("Switch compiled child");
+    expect(checkboxLabel).toHaveTextContent("Checkbox compiled child");
   });
 });

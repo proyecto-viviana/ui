@@ -24,6 +24,7 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
+  untrack,
   useContext,
   Show,
 } from "solid-js";
@@ -63,6 +64,7 @@ import {
   dataAttr,
   callEventHandler,
   useSlot,
+  evaluateRenderChildren,
 } from "./utils";
 import { LabelContext, type LabelProps } from "./Label";
 import { TextContext } from "./Text";
@@ -381,19 +383,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
         return state;
       },
     };
-    // `props.children` is `() => <Radio />` — every read is a new instance.
-    // Snapshot once so a `createSlotId` update cannot recreate the radios.
-    const childrenOnce = local.children;
-    const renderedChildren = () => {
-      if (typeof childrenOnce === "function") {
-        return childrenOnce.length > 0
-          ? childrenOnce(childRenderValues)
-          : (childrenOnce as unknown as () => JSX.Element)();
-      }
-      return childrenOnce;
-    };
-
-    return <>{typeof childrenOnce === "function" ? renderedChildren() : childrenOnce}</>;
+    return <>{evaluateRenderChildren(local.children, childRenderValues)}</>;
   };
   const groupEventProps: JSX.HTMLAttributes<HTMLDivElement> = {};
   const customRootProps = () =>
@@ -546,6 +536,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     "onHoverStart",
     "onHoverEnd",
     "onHoverChange",
+    "children",
   ]);
   const textContext = useContext(TextContext);
   const groupDescriptionId = () => {
@@ -596,12 +587,19 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     return clean as typeof ariaProps;
   });
 
+  const hasChildren = () => {
+    if (!radioProps || !("children" in radioProps)) return false;
+    const desc = Object.getOwnPropertyDescriptor(radioProps, "children");
+    if (desc && (desc.get || desc.set)) return true;
+    return radioProps.children != null;
+  };
+
   // Create radio aria props
   const radioAria = createRadio(
     () => ({
       ...inputAriaProps(),
       "aria-describedby": describedBy(),
-      children: typeof radioProps.children === "function" ? true : radioProps.children,
+      children: hasChildren() ? true : undefined,
     }),
     state,
     inputElement,
@@ -634,7 +632,9 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
 
   const renderProps = useRenderProps(
     {
-      children: radioProps.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Radio",
@@ -1139,10 +1139,9 @@ function RadioFieldImpl(props: {
         return state.isRequired;
       },
     };
-    const renderedChildren = createMemo(() => {
-      const children = fieldProps.children;
-      return typeof children === "function" ? children(childRenderValues) : children;
-    });
+    const renderedChildren = createMemo(() =>
+      evaluateRenderChildren(fieldProps.children, childRenderValues),
+    );
     return <>{renderedChildren()}</>;
   };
 

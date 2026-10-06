@@ -35,6 +35,7 @@ import {
   type MenuItemRenderProps,
   type MenuTriggerRenderProps,
   usePopoverTrigger,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import {
   mergeProps as mergeAriaProps,
@@ -444,9 +445,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     >
       {(renderProps) => (
         <>
-          {typeof props.children === "function"
-            ? (props.children as (values: ButtonRenderProps) => JSX.Element)(renderProps)
-            : (props.children as JSX.Element)}
+          {evaluateRenderChildren(props.children, renderProps)}
           <ChevronIcon class={menuButtonChevronStyles({ size, isOpen: isOpen() })} />
         </>
       )}
@@ -712,10 +711,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
   });
   const MenuItemContents = (contentProps: { renderProps: MenuItemRenderProps }) => {
-    const children =
-      typeof local.children === "function"
-        ? (local.children as (props: MenuItemRenderProps) => JSX.Element)(contentProps.renderProps)
-        : local.children;
+    const children = evaluateRenderChildren(local.children, contentProps.renderProps);
 
     return (
       <>

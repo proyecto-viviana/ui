@@ -1058,7 +1058,8 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       isOpen: renderProps.isOpen,
     });
 
-  const listBoxChildren = typeof local.children === "function" ? local.children : undefined;
+  const child = local.children;
+  const listBoxChildren = typeof child === "function" ? child : undefined;
 
   return (
     <ComboBoxSizeContext value={size()}>

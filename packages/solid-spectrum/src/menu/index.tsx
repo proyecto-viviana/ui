@@ -30,6 +30,7 @@ import {
   type MenuRenderProps,
   type MenuItemRenderProps,
   usePopoverTrigger,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import {
   mergeProps as mergeAriaProps,
@@ -603,10 +604,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     styles: () => menuItemKeyboard(itemStyleProps(renderProps)),
   });
   const MenuItemContents = (contentProps: { renderProps: MenuItemRenderProps }) => {
-    const children =
-      typeof local.children === "function"
-        ? (local.children as (props: MenuItemRenderProps) => JSX.Element)(contentProps.renderProps)
-        : local.children;
+    const children = evaluateRenderChildren(local.children, contentProps.renderProps);
 
     return (
       <>

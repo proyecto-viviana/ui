@@ -74,8 +74,9 @@ function applyCollectionMetadata<T>(
  * For Solid, this is a lightweight mapper over item arrays.
  */
 export function CollectionBuilder<T>(props: CollectionBuilderProps<T>): unknown {
-  if (typeof props.children === "function" && props.items) {
-    const children = props.children as (item: T) => unknown;
+  const child = props.children;
+  if (typeof child === "function" && props.items) {
+    const children = child as (item: T) => unknown;
     const mapped: unknown[] = [];
     let index = 0;
 
@@ -93,7 +94,7 @@ export function CollectionBuilder<T>(props: CollectionBuilderProps<T>): unknown 
 
     return mapped;
   }
-  return props.children ?? null;
+  return child ?? null;
 }
 
 export function Collection<T>(props: CollectionProps<T>): unknown {
@@ -199,8 +200,9 @@ export function useCachedChildren<T>(
       lastGetKey = resolvedGetKey;
     }
 
-    if (typeof resolved.children === "function" && resolved.items) {
-      const children = resolved.children as (item: T) => unknown;
+    const child = resolved.children;
+    if (typeof child === "function" && resolved.items) {
+      const children = child as (item: T) => unknown;
       const rendered: unknown[] = [];
       let index = 0;
 
@@ -211,30 +213,29 @@ export function useCachedChildren<T>(
         }
         const key =
           resolvedIdScope != null ? `${String(resolvedIdScope)}:${String(baseKey)}` : baseKey;
-        let child: unknown;
+        let itemChild: unknown;
 
         if (typeof item === "object" && item !== null) {
-          child = objectCache.get(item as object);
-          if (child === undefined) {
-            child = applyCollectionMetadata(children(item), item, key, resolvedAddIdAndValue);
-            objectCache.set(item as object, child);
+          itemChild = objectCache.get(item as object);
+          if (itemChild === undefined) {
+            itemChild = applyCollectionMetadata(children(item), item, key, resolvedAddIdAndValue);
+            objectCache.set(item as object, itemChild);
           }
         } else {
           if (primitiveCache.has(key)) {
-            child = primitiveCache.get(key);
+            itemChild = primitiveCache.get(key);
           } else {
-            child = applyCollectionMetadata(children(item), item, key, resolvedAddIdAndValue);
-            primitiveCache.set(key, child);
+            itemChild = applyCollectionMetadata(children(item), item, key, resolvedAddIdAndValue);
+            primitiveCache.set(key, itemChild);
           }
         }
 
-        rendered.push(child);
+        rendered.push(itemChild);
         index += 1;
       }
 
       return rendered;
     }
-    const child = resolved.children;
     return child == null ? [] : [child];
   });
 }

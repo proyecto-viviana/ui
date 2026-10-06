@@ -25,6 +25,7 @@ import {
   GridListSelectionCheckbox,
   Link as HeadlessLink,
   filterDOMProps,
+  evaluateRenderChildren,
   type GridListItemProps as HeadlessGridListItemProps,
   type GridListItemRenderProps,
   type LinkRenderProps,
@@ -609,7 +610,7 @@ function renderCardChildren(
   children: CardProps["children"],
   renderProps: CardRenderProps,
 ): JSX.Element {
-  return typeof children === "function" ? children(renderProps) : children;
+  return evaluateRenderChildren(children, renderProps);
 }
 
 function CardProviders(props: {

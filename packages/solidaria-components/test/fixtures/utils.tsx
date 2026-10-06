@@ -7,13 +7,17 @@ import {
   useContext,
   type Context,
 } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { ElementTag } from "../../src/ElementTag";
+import { ToggleSwitch } from "../../src/Switch";
+import { Checkbox } from "../../src/Checkbox";
 import {
   ClientOnly,
   OptionContent,
   Provider,
   useIsHydrated,
   useRenderProps,
+  evaluateRenderChildren,
 } from "../../src/utils";
 
 const LabelContext = createContext("outside");
@@ -212,5 +216,42 @@ export function HydrationGateFixture(props: HydrationGateProbe) {
         <GateContent {...props} kind="following" label={label()} />
       </section>
     </Provider>
+  );
+}
+
+export function EvaluateRenderChildrenProbe<TArgs extends any[] = []>(props: {
+  children?: ((...args: TArgs) => JSX.Element) | JSX.Element;
+  renderArgs?: TArgs;
+  id?: string;
+}) {
+  return (
+    <div data-fixture="evaluated-wrapper" id={props.id}>
+      {evaluateRenderChildren(props.children, ...((props.renderArgs ?? []) as TArgs))}
+    </div>
+  );
+}
+
+export function EvaluateRenderChildrenFixture(props: { renderPropValue?: string }) {
+  return (
+    <section data-fixture="evaluate-render-children-section">
+      <EvaluateRenderChildrenProbe id="static-probe">
+        <span data-fixture="static-child">Static compiled JSX child</span>
+      </EvaluateRenderChildrenProbe>
+      <EvaluateRenderChildrenProbe<[{ value: string }]>
+        id="function-probe"
+        renderArgs={[{ value: props.renderPropValue ?? "rendered-arg" }]}
+      >
+        {(vals) => <span data-fixture="function-child">{vals.value}</span>}
+      </EvaluateRenderChildrenProbe>
+      <EvaluateRenderChildrenProbe id="primitive-probe">
+        {"Primitive text child"}
+      </EvaluateRenderChildrenProbe>
+      <ToggleSwitch>
+        <span data-fixture="switch-label">Switch compiled child</span>
+      </ToggleSwitch>
+      <Checkbox>
+        <span data-fixture="checkbox-label">Checkbox compiled child</span>
+      </Checkbox>
+    </section>
   );
 }

@@ -26,6 +26,7 @@ import {
   type RadioProps as HeadlessRadioProps,
   type RadioGroupRenderProps,
   type RadioRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 // Single source of truth for the group's description/error ids: the headless
 // createRadioGroup mints them (via createField) and threads them onto both the
@@ -693,9 +694,7 @@ export function Radio(props: RadioProps): JSX.Element {
         // Cache the authored child value without recursively resolving dynamic members.
         // Solid's children() helper turns mixed text into a snapshot that goes stale
         // when this branch is hydrated.
-        const content = createMemo(() =>
-          typeof local.children === "function" ? local.children(renderProps) : local.children,
-        );
+        const content = createMemo(() => evaluateRenderChildren(local.children, renderProps));
         const radioCircle = (
           <div
             ref={circleElement}

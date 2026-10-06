@@ -44,6 +44,7 @@ import {
   type TreeItemRenderProps,
   type TreeEmptyStateRenderProps,
   type TreeRenderItemState,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
 import { ActionButtonGroupContext } from "../button/group-context";
@@ -998,7 +999,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() =>
-        typeof local.children === "function" ? local.children(renderProps) : local.children,
+        evaluateRenderChildren(local.children, renderProps),
       );
       const childrenValue = () => resolvedChildren();
       const isTextOnly = () => isTextOnlyChildren(childrenValue());
@@ -1160,11 +1161,9 @@ export function TreeExpandButton(
         onMouseUp={stopPlaceholderExpansion}
         data-rsp-slot="expand-button"
       >
-        {typeof local.children === "function"
-          ? local.children(renderState())
-          : (local.children ?? (
-              <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded: false })} />
-            ))}
+        {evaluateRenderChildren(local.children, renderState()) ?? (
+          <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded: false })} />
+        )}
       </button>
     );
   }

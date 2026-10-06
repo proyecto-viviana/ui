@@ -64,6 +64,7 @@ import {
   dataAttr,
   useRenderProps,
   filterDOMProps,
+  evaluateRenderChildren,
 } from "./utils";
 import { racIntlStrings } from "./intl";
 import { SharedElementTransition } from "./SharedElementTransition";
@@ -920,8 +921,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   // the row). So invoke it with an untracked snapshot of the render values — the insert
   // below stays stable across focus changes while children still see current values at
   // creation. Render values for collection structure are not reactive in practice.
-  const tableChildren = () =>
-    typeof props.children === "function" ? props.children(untrack(renderValues)) : props.children;
+  const tableChildren = () => evaluateRenderChildren(props.children, untrack(renderValues));
   const tableProps = () =>
     ({
       ref: (el: HTMLTableElement) => {
@@ -1599,12 +1599,13 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
       class={renderProps.class()}
       style={renderProps.style()}
     >
-      <Show
-        when={local.items && typeof local.children === "function"}
-        fallback={local.children as JSX.Element}
-      >
-        <For each={items()}>{(item) => (local.children as (item: T) => JSX.Element)(item)}</For>
-      </Show>
+      {(() => {
+        const child = local.children;
+        if (local.items && typeof child === "function") {
+          return <For each={items()}>{(item) => (child as (item: T) => JSX.Element)(item)}</For>;
+        }
+        return child as JSX.Element;
+      })()}
     </TableHost>
   );
 }
@@ -2101,23 +2102,24 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
                   // their column by render order (see getCellColumnKey), so reset the registry once before
                   // this single pass.
                   registeredCellIds.length = 0;
+                  const rowChildren = local.children;
                   const rowChildrenContent =
-                    typeof local.children === "function" ? (
+                    typeof rowChildren === "function" ? (
                       local.columns ? (
                         <For each={local.columns}>
                           {(column) =>
-                            (local.children as (column: TableColumnDefinition<T>) => JSX.Element)(
+                            (rowChildren as (column: TableColumnDefinition<T>) => JSX.Element)(
                               column,
                             )
                           }
                         </For>
                       ) : (
-                        (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(
+                        (rowChildren as (renderProps: TableRowRenderProps) => JSX.Element)(
                           childRenderProps,
                         )
                       )
                     ) : (
-                      local.children
+                      rowChildren
                     );
                   const tableRowProps = () =>
                     ({
@@ -2646,9 +2648,7 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
           }}
         />
       </Show>
-      {typeof local.children === "function"
-        ? (local.children as (props: ColumnResizerRenderProps) => JSX.Element)(renderValues())
-        : local.children}
+      {evaluateRenderChildren(local.children, renderValues())}
     </div>
   );
 }

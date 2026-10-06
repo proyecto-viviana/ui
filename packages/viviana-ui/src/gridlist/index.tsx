@@ -39,6 +39,7 @@ import {
   type GridListItemRenderProps,
   type GridListProps as HeadlessGridListProps,
   type GridListRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { ActionButtonGroupContext } from "../button/group-context";
@@ -1265,13 +1266,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     };
 
     function ResolvedItemContent() {
-      const resolvedChildren = resolveChildren(() => {
-        // Share the authored-child value for classification and insertion here.
-        // Keep evaluation under this owner; repeated construction is not a
-        // universal getter-read rule or a global hydration-counter model.
-        const rawChildren = local.children;
-        return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
-      });
+      const resolvedChildren = resolveChildren(() =>
+        evaluateRenderChildren(local.children, renderProps),
+      );
       const childrenValue = () => resolvedChildren();
       const isTextOnly = () => isTextOnlyChildren(childrenValue());
 

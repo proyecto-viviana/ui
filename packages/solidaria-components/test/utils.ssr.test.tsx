@@ -3,7 +3,12 @@ import { resolve } from "node:path";
 import { renderToString } from "@solidjs/web";
 import { describe, expect, it } from "vite-plus/test";
 import { stripHydrationMarkers } from "@proyecto-viviana/solidaria-test-utils";
-import { DynamicFixture, HydrationGateFixture, RenderPropsFixture } from "./fixtures/utils";
+import {
+  DynamicFixture,
+  EvaluateRenderChildrenFixture,
+  HydrationGateFixture,
+  RenderPropsFixture,
+} from "./fixtures/utils";
 
 const output = resolve(import.meta.dirname, "../../../output");
 
@@ -62,5 +67,17 @@ describe("utils SSR ownership", () => {
     expect(html).not.toContain('id="also-unused"');
     mkdirSync(output, { recursive: true });
     writeFileSync(resolve(output, "utils-render-props-ssr.html"), html, "utf8");
+  });
+
+  it("serializes evaluateRenderChildren static, function, and component children without key drift", () => {
+    const html = renderToString(() => <EvaluateRenderChildrenFixture />);
+    expect(html).toMatch(/\s_hk=/);
+    expect(html).toContain("Static compiled JSX child");
+    expect(html).toContain("rendered-arg");
+    expect(html).toContain("Primitive text child");
+    expect(html).toContain("Switch compiled child");
+    expect(html).toContain("Checkbox compiled child");
+    mkdirSync(output, { recursive: true });
+    writeFileSync(resolve(output, "utils-evaluate-children-ssr.html"), html, "utf8");
   });
 });

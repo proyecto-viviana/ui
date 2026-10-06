@@ -48,6 +48,7 @@ import {
   filterDOMProps,
   dataAttr,
   useIsHydrated,
+  evaluateRenderChildren,
 } from "./utils";
 import {
   DialogTriggerContext,
@@ -308,13 +309,7 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
   // Resolve children - handle both static JSX and render functions
   // IMPORTANT: We access props.children directly (not local.children) to preserve
   // lazy evaluation inside context providers
-  const resolveChildren = () => {
-    const children = props.children;
-    if (typeof children === "function") {
-      return (children as (props: ModalRenderProps) => JSX.Element)(renderValues());
-    }
-    return children;
-  };
+  const resolveChildren = () => evaluateRenderChildren(props.children, renderValues());
 
   return (
     <Show when={isHydrated() && (isOpen() || combinedExiting())}>

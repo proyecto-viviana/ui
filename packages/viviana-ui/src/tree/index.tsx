@@ -44,6 +44,7 @@ import {
   type TreeItemRenderProps,
   type TreeEmptyStateRenderProps,
   type TreeRenderItemState,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
 import { ActionButtonGroupContext } from "../button/group-context";
@@ -1023,13 +1024,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     };
 
     function ResolvedItemContent() {
-      const resolvedChildren = resolveChildren(() => {
-        // Share the authored-child value for classification and insertion here.
-        // Keep evaluation under this owner; repeated construction is not a
-        // universal getter-read rule or a global hydration-counter model.
-        const rawChildren = local.children;
-        return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
-      });
+      const resolvedChildren = resolveChildren(() =>
+        evaluateRenderChildren(local.children, renderProps),
+      );
       const childrenValue = () => resolvedChildren();
       const isTextOnly = () => isTextOnlyChildren(childrenValue());
 
@@ -1190,22 +1187,11 @@ export function TreeExpandButton(
         onMouseUp={stopPlaceholderExpansion}
         data-rsp-slot="expand-button"
       >
-        {(() => {
-          // Share the authored-child value for classification and insertion here.
-          // Keep evaluation under this owner; repeated construction is not a
-          // universal getter-read rule or a global hydration-counter model.
-          const rawChildren = local.children;
-          return typeof rawChildren === "function"
-            ? rawChildren(renderState())
-            : (rawChildren ?? (
-                <span
-                  aria-hidden="true"
-                  class={treeExpandMark({ ...renderState(), isExpanded: false })}
-                >
-                  {">"}
-                </span>
-              ));
-        })()}
+        {evaluateRenderChildren(local.children, renderState()) ?? (
+          <span aria-hidden="true" class={treeExpandMark({ ...renderState(), isExpanded: false })}>
+            {">"}
+          </span>
+        )}
       </button>
     );
   }

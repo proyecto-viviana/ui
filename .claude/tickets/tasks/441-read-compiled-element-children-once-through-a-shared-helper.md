@@ -4,12 +4,17 @@ type: task
 title: "Read compiled element children once through a shared helper"
 created: 2026-09-03
 parent: 136
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #256 Virtualizer/ListBox hydrate note: ~40 probe-then-render children sites; only sites with hydrate fixtures are proven",
+    }
+  - {
+      state: verified,
+      at: 2026-10-06,
+      note: "Implemented evaluateRenderChildren shared helper in solidaria-components/src/utils.tsx and migrated all probe-then-render children sites across solidaria-components, solid-spectrum, and viviana-ui. Added SSR and hydration tests verifying single read and zero hydration key drift. Explicit exceptions remaining for typeof ...children === 'function' are dynamic collection item renderers (ActionMenu, Picker, SelectBoxGroup, GridList, Tree) where non-function children do not fall back to children, and dynamic collection branch inspection in Collection.tsx.",
     }
 ---
 

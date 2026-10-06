@@ -74,6 +74,7 @@ import {
   type ColorWheelThumbRenderProps,
   type ColorFieldRenderProps,
   type ColorSwatchRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import type {
   Color,
@@ -436,20 +437,22 @@ function ColorSliderThumb(props: ColorSliderThumbProps = {}): JSX.Element {
         ...local.UNSAFE_style,
       })}
     >
-      {(renderProps: ColorSliderThumbRenderProps) =>
-        typeof local.children === "function" ? (
-          local.children(renderProps)
-        ) : (
+      {(renderProps: ColorSliderThumbRenderProps) => {
+        const child = local.children;
+        if (typeof child === "function") {
+          return child(renderProps);
+        }
+        return (
           <>
-            {local.children ?? <div class={colorAreaThumbRing} />}
+            {child ?? <div class={colorAreaThumbRing} />}
             <ColorAreaLoupe
               isOpen={renderProps.isDragging}
               color={renderProps.color}
               anchor={() => thumbElement}
             />
           </>
-        )
-      }
+        );
+      }}
     </HeadlessColorSliderThumb>
   );
 }
@@ -646,20 +649,22 @@ function ColorAreaThumb(props: ColorAreaThumbProps = {}): JSX.Element {
         ...local.UNSAFE_style,
       })}
     >
-      {(renderProps: ColorAreaThumbRenderProps) =>
-        typeof local.children === "function" ? (
-          local.children(renderProps)
-        ) : (
+      {(renderProps: ColorAreaThumbRenderProps) => {
+        const child = local.children;
+        if (typeof child === "function") {
+          return child(renderProps);
+        }
+        return (
           <>
-            {local.children ?? <div class={colorAreaThumbRing} />}
+            {child ?? <div class={colorAreaThumbRing} />}
             <ColorAreaLoupe
               isOpen={renderProps.isDragging}
               color={renderProps.color}
               anchor={() => thumbElement}
             />
           </>
-        )
-      }
+        );
+      }}
     </HeadlessColorAreaThumb>
   );
 }
@@ -908,22 +913,14 @@ export function ColorWheel(props: ColorWheelProps): JSX.Element {
   const outerRadius = () => Math.max(authoredSize(), 175) / 2;
   const innerRadius = () => outerRadius() - thickness;
 
-  const renderChildren = (renderProps: ColorWheelRenderProps) => {
-    const children = local.children;
-    return children ? (
-      typeof children === "function" ? (
-        children(renderProps)
-      ) : (
-        children
-      )
-    ) : (
+  const renderChildren = (renderProps: ColorWheelRenderProps) =>
+    evaluateRenderChildren(local.children, renderProps) ?? (
       <>
         <ColorWheelTrack />
         <div class={colorWheelInnerBorder(renderProps)} />
         <ColorWheelThumb />
       </>
     );
-  };
 
   return (
     <HeadlessColorWheel
@@ -1053,20 +1050,22 @@ export function ColorWheelThumb(props: ColorWheelThumbProps = {}): JSX.Element {
         ...local.UNSAFE_style,
       })}
     >
-      {(renderProps: ColorWheelThumbRenderProps) =>
-        typeof local.children === "function" ? (
-          local.children(renderProps)
-        ) : (
+      {(renderProps: ColorWheelThumbRenderProps) => {
+        const child = local.children;
+        if (typeof child === "function") {
+          return child(renderProps);
+        }
+        return (
           <>
-            {local.children ?? <div class={colorAreaThumbRing} />}
+            {child ?? <div class={colorAreaThumbRing} />}
             <ColorAreaLoupe
               isOpen={renderProps.isDragging}
               color={renderProps.color}
               anchor={() => thumbElement}
             />
           </>
-        )
-      }
+        );
+      }}
     </HeadlessColorWheelThumb>
   );
 }

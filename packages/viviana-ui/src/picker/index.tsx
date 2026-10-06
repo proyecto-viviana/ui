@@ -1116,9 +1116,12 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                           ) : undefined
                         }
                       >
-                        {typeof local.children === "function" || headlessProps.items != null
-                          ? listBoxChildren
-                          : local.children}
+                        {(() => {
+                          const child = local.children;
+                          return typeof child === "function" || headlessProps.items != null
+                            ? listBoxChildren
+                            : child;
+                        })()}
                       </HeadlessSelectListBox>
                     </Virtualizer>
                   </TextContext>

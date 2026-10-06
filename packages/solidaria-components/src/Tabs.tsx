@@ -518,7 +518,8 @@ export function Tab(props: TabProps): JSX.Element {
   const [tabRef, setTabRef] = createSignal<HTMLDivElement | null>(null);
   const textValue = () => {
     if (ariaProps["aria-label"]) return ariaProps["aria-label"];
-    return typeof props.children === "string" ? props.children : undefined;
+    const child = props.children;
+    return typeof child === "string" ? child : undefined;
   };
 
   createEffect(

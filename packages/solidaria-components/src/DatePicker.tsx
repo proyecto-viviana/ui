@@ -1369,12 +1369,7 @@ export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
   );
 
   // Determine children content - avoid Show for SSR hydration compatibility
-  const getChildren = () => {
-    if (typeof props.children === "function") {
-      return renderProps.renderChildren();
-    }
-    return props.children ?? "📅";
-  };
+  const getChildren = () => renderProps.renderChildren() ?? "📅";
 
   const buttonProps = createMemo(() =>
     mergeProps(
@@ -1447,12 +1442,7 @@ export function DateRangePickerButton(props: DateRangePickerButtonProps): JSX.El
     renderValues,
   );
 
-  const getChildren = () => {
-    if (typeof props.children === "function") {
-      return renderProps.renderChildren();
-    }
-    return props.children ?? "📅";
-  };
+  const getChildren = () => renderProps.renderChildren() ?? "📅";
 
   const buttonProps = createMemo(() =>
     mergeProps(

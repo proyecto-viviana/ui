@@ -71,6 +71,7 @@ import {
   Provider,
   dataAttr,
   callEventHandler,
+  evaluateRenderChildren,
 } from "./utils";
 import { TextContext } from "./Text";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
@@ -601,10 +602,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     return filtered;
   });
 
-  const ComboBoxChildren = () =>
-    typeof local.children === "function"
-      ? (local.children as (values: ComboBoxRenderProps) => JSX.Element)(renderValues())
-      : local.children;
+  const ComboBoxChildren = () => evaluateRenderChildren(local.children, renderValues());
 
   const textSlots = {
     slots: {

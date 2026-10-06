@@ -44,6 +44,7 @@ import {
   dataAttr,
   coerceDomRecord,
   useSlot,
+  evaluateRenderChildren,
 } from "./utils";
 import { LabelContext, type LabelProps } from "./Label";
 import { VisuallyHidden } from "./VisuallyHidden";
@@ -369,10 +370,7 @@ export function Slider(props: SliderProps): JSX.Element {
     },
   };
 
-  const sliderChildren = () => {
-    const children = props.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  const sliderChildren = () => evaluateRenderChildren(props.children, childRenderValues);
 
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
@@ -752,13 +750,7 @@ export function SliderOutput(props: SliderOutputProps): JSX.Element {
     return rest;
   };
 
-  const renderedChildren = () => {
-    // Check if raw children prop exists before calling renderChildren
-    if (renderProps.children === undefined || renderProps.children === null) {
-      return state.getFormattedValue();
-    }
-    return renderProps.renderChildren();
-  };
+  const renderedChildren = () => renderProps.renderChildren() ?? state.getFormattedValue();
 
   return (
     <output

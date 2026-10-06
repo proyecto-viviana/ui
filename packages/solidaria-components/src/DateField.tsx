@@ -716,12 +716,7 @@ export function DateSegment(props: DateSegmentProps): JSX.Element {
   );
 
   // Determine children content - avoid Show for SSR hydration compatibility
-  const getChildren = () => {
-    if (typeof props.children === "function") {
-      return renderProps.renderChildren();
-    }
-    return props.segment.text;
-  };
+  const getChildren = () => renderProps.renderChildren() ?? props.segment.text;
 
   // Mirror upstream's `mergeProps(filterDOMProps(otherProps), segmentProps,
   // focusProps, hoverProps)`: the segment's behavior/style props (caretColor +

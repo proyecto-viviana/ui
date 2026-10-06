@@ -123,6 +123,7 @@ import {
   Provider,
   dataAttr,
   attrString,
+  evaluateRenderChildren,
 } from "./utils";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { LabelContext, type LabelProps } from "./Label";
@@ -488,9 +489,7 @@ export function ColorSliderOutput(props: ColorSliderOutputProps): JSX.Element {
   }));
 
   const children = () =>
-    typeof local.children === "function"
-      ? local.children(renderValues())
-      : (local.children ?? renderValues().valueLabel);
+    evaluateRenderChildren(local.children, renderValues()) ?? renderValues().valueLabel;
 
   return (
     <output {...domProps} {...context.outputProps} class={local.class}>
@@ -856,10 +855,7 @@ export function ColorArea(props: ColorAreaProps): JSX.Element {
     },
   };
 
-  const colorAreaChildren = () => {
-    const children = props.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  const colorAreaChildren = () => evaluateRenderChildren(props.children, childRenderValues);
 
   const renderProps = useRenderProps(
     {
@@ -1720,9 +1716,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   let renderedChildren: JSX.Element;
   const renderChildren = () => {
     if (!hasRenderedChildren) {
-      const children = local.children;
-      renderedChildren =
-        typeof children === "function" ? untrack(() => children(childRenderValues)) : children;
+      renderedChildren = untrack(() => evaluateRenderChildren(local.children, childRenderValues));
       hasRenderedChildren = true;
     }
     return renderedChildren;
@@ -2670,7 +2664,7 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
           },
         }}
       >
-        {renderProps.children ? renderProps.renderChildren() : <ColorSwatch />}
+        {renderProps.renderChildren() ?? <ColorSwatch />}
       </ColorSwatchContextInternal>
     </div>
   );

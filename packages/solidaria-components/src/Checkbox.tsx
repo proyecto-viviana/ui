@@ -25,6 +25,7 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
+  untrack,
   Show,
 } from "solid-js";
 import type { Context, Accessor } from "solid-js";
@@ -59,6 +60,7 @@ import {
   isAriaTrue,
   callEventHandler,
   useSlot,
+  evaluateRenderChildren,
 } from "./utils";
 import { LabelContext, type LabelProps } from "./Label";
 import { FormContext, resolveValidationBehavior } from "./Form";
@@ -300,15 +302,9 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
         return state;
       },
     };
-    const renderedChildren = createMemo(() => {
-      const children = local.children;
-      if (typeof children === "function") {
-        return children.length > 0
-          ? children(childRenderValues)
-          : (children as unknown as () => JSX.Element)();
-      }
-      return children;
-    });
+    const renderedChildren = createMemo(() =>
+      evaluateRenderChildren(local.children, childRenderValues),
+    );
 
     return <>{renderedChildren()}</>;
   };
@@ -390,6 +386,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     "onHoverStart",
     "onHoverEnd",
     "onHoverChange",
+    "children",
   ]);
   const descriptionId = createUniqueId();
   const errorMessageId = createUniqueId();
@@ -413,6 +410,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   let isInvalid: Accessor<boolean>;
   let labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   let inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  let checkboxChildrenNode: JSX.Element;
 
   if (groupState) {
     const itemAria = createCheckboxGroupItem(
@@ -422,7 +420,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         // props ?? group ?? native). Form fallback only.
         validationBehavior: ariaProps.validationBehavior ?? formContext?.validationBehavior,
         value: inputAriaProps().value ?? "",
-        children: typeof mergedProps.children === "function" ? true : mergedProps.children,
+        children: checkboxChildrenNode != null ? true : undefined,
       }),
       groupState,
       inputElement,
@@ -445,7 +443,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
         ...inputAriaProps(),
         validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
         isIndeterminate: local.isIndeterminate,
-        children: typeof mergedProps.children === "function" ? true : mergedProps.children,
+        children: checkboxChildrenNode != null ? true : undefined,
       }),
       state,
       inputElement,
@@ -498,7 +496,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      children: mergedProps.children,
+      get children() {
+        return local.children;
+      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-Checkbox",
@@ -537,10 +537,8 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       return ariaProps.isRequired ?? false;
     },
   };
-  const checkboxChildren = () => {
-    const children = mergedProps.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  checkboxChildrenNode = untrack(() => evaluateRenderChildren(local.children, childRenderValues));
+  const checkboxChildren = () => checkboxChildrenNode;
 
   const domProps = createMemo(() => {
     const filtered = filterDOMProps(ariaProps, { global: true });
@@ -592,22 +590,19 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       assignRef(ref, el);
     }
   };
-  const hiddenInput = (
-    <VisuallyHidden>
-      <input
-        ref={setInputRef}
-        {...cleanInputProps()}
-        {...cleanFocusProps()}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        aria-describedby={describedBy()}
-      />
-    </VisuallyHidden>
-  );
   const labelChildren = () => (
     <>
-      {hiddenInput}
-      {checkboxChildren()}
+      <VisuallyHidden>
+        <input
+          ref={setInputRef}
+          {...cleanInputProps()}
+          {...cleanFocusProps()}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          aria-describedby={describedBy()}
+        />
+      </VisuallyHidden>
+      {checkboxChildrenNode}
       <Show when={local.description}>
         <span id={descriptionId} slot="description">
           {local.description}
@@ -670,7 +665,27 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
       data-invalid={dataAttr(isInvalid())}
       data-required={dataAttr(ariaProps.isRequired)}
     >
-      {labelChildren()}
+      <VisuallyHidden>
+        <input
+          ref={setInputRef}
+          {...cleanInputProps()}
+          {...cleanFocusProps()}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          aria-describedby={describedBy()}
+        />
+      </VisuallyHidden>
+      {checkboxChildrenNode}
+      <Show when={local.description}>
+        <span id={descriptionId} slot="description">
+          {local.description}
+        </span>
+      </Show>
+      <Show when={isInvalid() && local.errorMessage}>
+        <span id={errorMessageId} slot="errorMessage">
+          {local.errorMessage}
+        </span>
+      </Show>
     </label>
   );
 }
@@ -980,10 +995,9 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
         return isRequired();
       },
     };
-    const renderedChildren = createMemo(() => {
-      const children = mergedProps.children;
-      return typeof children === "function" ? children(childRenderValues) : children;
-    });
+    const renderedChildren = createMemo(() =>
+      evaluateRenderChildren(mergedProps.children, childRenderValues),
+    );
     return <>{renderedChildren()}</>;
   };
 
@@ -1141,10 +1155,8 @@ function CheckboxButtonImpl(props: {
     assignRef(props.buttonProps.ref, el);
   };
 
-  const buttonChildren = () => {
-    const children = props.buttonProps.children;
-    return typeof children === "function" ? children(childRenderValues) : children;
-  };
+  const buttonChildren = () =>
+    evaluateRenderChildren(props.buttonProps.children, childRenderValues);
 
   return (
     <label

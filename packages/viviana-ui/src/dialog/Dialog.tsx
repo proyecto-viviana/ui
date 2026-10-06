@@ -42,6 +42,7 @@ import {
   type ButtonRenderProps,
   type DialogProps as HeadlessDialogProps,
   type ModalRenderProps,
+  evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import CrossIcon from "../icon/ui-icons/Cross";
@@ -814,9 +815,7 @@ function renderDialogChildren(
   children: DialogChildren | undefined,
   renderProps: DialogRenderProps,
 ): JSX.Element {
-  return typeof children === "function"
-    ? (children as (props: DialogRenderProps) => JSX.Element)(renderProps)
-    : children;
+  return evaluateRenderChildren(children, renderProps);
 }
 
 function resolveDialogClose(
