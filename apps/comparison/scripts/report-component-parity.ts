@@ -9,6 +9,7 @@ import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
 import {
   inventoryVisualStateEvidence,
   inventoryCertifiedObligations,
+  inventoryUnmatchedDriverFixmes,
   inventoryValidationNotes,
   isCompleteAcceptanceNote,
   isCurrentVisualState,
@@ -390,6 +391,9 @@ const visualEvidenceSummary = summarizeVisualStateEvidence(visualEvidenceInvento
 const certifiedObligations = inventoryCertifiedObligations(
   fileURLToPath(new URL("../e2e/certified/", import.meta.url)),
 );
+const unmatchedDriverFixmes = inventoryUnmatchedDriverFixmes(
+  fileURLToPath(new URL("../e2e/drivers/", import.meta.url)),
+);
 function currentHeadSha(): string | null {
   try {
     return execFileSync("git", ["rev-parse", "HEAD"], {
@@ -446,6 +450,11 @@ const certifiedSuiteEvidenceGaps: Gap[] = [
     slug: "certified-suite",
     title: "Last full certified suite evidence",
     detail: problem,
+  })),
+  ...unmatchedDriverFixmes.map((site) => ({
+    slug: "certified-suite",
+    title: "Driver fixme outside the skipped inventory",
+    detail: `${site.file}:${site.line} ${site.call} is not bound to a knownDivergence the spec inventory registers. Ticket #194.`,
   })),
   ...(certifiedSuitePostcardCurrent
     ? []

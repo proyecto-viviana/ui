@@ -6,7 +6,12 @@ import {
   emptyTotals,
   loadCertifiedRunBudgets,
 } from "../../scripts/certified-summary";
-import { extractCertifiedFixmeSites, inventoryCertifiedObligations } from "./acceptance-inventory";
+import {
+  extractCertifiedFixmeSites,
+  extractUnmatchedDriverFixmes,
+  inventoryCertifiedObligations,
+  inventoryUnmatchedDriverFixmes,
+} from "./acceptance-inventory";
 
 const comparisonRoot = join(import.meta.dirname, "..", "..");
 const budgets = { skippedCeiling: 4, flakyBudget: 0 };
@@ -89,5 +94,63 @@ describe("extractCertifiedFixmeSites", () => {
 
   it("finds nothing in a spec that registers no gap", () => {
     expect(extractCertifiedFixmeSites("const spec = { ax: { cases: ['default'] } };")).toEqual([]);
+  });
+});
+
+describe("extractUnmatchedDriverFixmes", () => {
+  it("keeps a fixme whose reason is the knownDivergences binding", () => {
+    const source = `
+      const divergence = config.knownDivergences?.[caseTitle];
+      if (divergence && !process.env.VALIDITY_RAW) {
+        test.fixme(true, divergence);
+      }
+    `;
+    expect(extractUnmatchedDriverFixmes(source)).toEqual([]);
+  });
+
+  it("keeps a fixme whose reason is a knownDivergence property", () => {
+    const source = `
+      if (trigger.knownDivergence) {
+        test.fixme(true, trigger.knownDivergence);
+      }
+    `;
+    expect(extractUnmatchedDriverFixmes(source)).toEqual([]);
+  });
+
+  it("ignores a comment that only mentions test.fixme", () => {
+    const source = `
+      /**
+       * knownDivergences / test.fixme is reserved for harness artifacts.
+       */
+      const spec = { ax: { cases: ["default"] } };
+    `;
+    expect(extractUnmatchedDriverFixmes(source)).toEqual([]);
+  });
+
+  it("names a literal driver fixme the spec inventory does not register", () => {
+    const source = `
+      const divergence = config.knownDivergences?.[caseTitle];
+      if (divergence) {
+        test.fixme(true, divergence);
+      }
+      test.fixme(true, "slider-thumb-native-input-semantics");
+    `;
+    expect(extractUnmatchedDriverFixmes(source)).toEqual([
+      { line: 6, call: 'test.fixme(true, "slider-thumb-native-input-semantics")' },
+    ]);
+  });
+
+  it("names a divergence binding that does not read knownDivergences", () => {
+    const source = `
+      const divergence = "always skip";
+      test.fixme(true, divergence);
+    `;
+    expect(extractUnmatchedDriverFixmes(source)).toEqual([
+      { line: 3, call: "test.fixme(true, divergence)" },
+    ]);
+  });
+
+  it("finds no unbound driver fixme in the live drivers", () => {
+    expect(inventoryUnmatchedDriverFixmes(join(comparisonRoot, "e2e", "drivers"))).toEqual([]);
   });
 });

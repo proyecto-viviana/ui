@@ -67,6 +67,11 @@ history:
       at: 2026-09-28,
       note: "two local runs at 78af41c1 died before a summary. Unsharded workers=1 reached test 500/2181 and Playwright was terminated as headless Chrome aborted (signal 5, int3, same binary offset) at 01:35:20. Shard 1/8 workers=1 then exited 143 at test 85/323 on ActionMenu list D3 at 01:48:59, same Chrome abort, certified-summary.1.json missing. That second signal is the same second a visualmode shell started kill_tree on pid 3809160 and then launched its own Playwright test. earlyoom logged no kill. No assertion mismatch was printed. Postcard stays 151006ff. The ceiling commit stands. The record that speaks for HEAD is still open",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "a driver test.fixme that is not the knownDivergence binding fails strict parity. The calls that pass divergence from knownDivergences, or trigger.knownDivergence, stay matched to the spec inventory; a literal or unbound call is a gap. Held by certified-run-budgets.test.ts. The postcard still does not speak for HEAD, so the full certified run stays open",
+    }
 ---
 
 ## Cause

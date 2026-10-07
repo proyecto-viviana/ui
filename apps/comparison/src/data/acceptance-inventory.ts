@@ -359,3 +359,254 @@ export function inventoryCertifiedObligations(certifiedDir: string): {
 
   return { expectedFixmes, deferredComments };
 }
+
+export interface UnmatchedDriverFixme {
+  file: string;
+  line: number;
+  call: string;
+}
+
+/**
+ * A driver `test.fixme` is already in the skipped inventory when its reason is
+ * the binding a certified spec registers: `divergence` assigned from
+ * `knownDivergences`, or a `knownDivergence` property. Any other call skips a
+ * case `report:parity --strict` would not otherwise see.
+ */
+export function extractUnmatchedDriverFixmes(source: string): { line: number; call: string }[] {
+  const unmatched: { line: number; call: string }[] = [];
+  for (const call of scanDriverFixmeCalls(source)) {
+    if (driverFixmeReasonMatchesInventory(call.reason, source.slice(0, call.index))) {
+      continue;
+    }
+    unmatched.push({ line: lineNumberAt(source, call.index), call: call.text });
+  }
+  return unmatched;
+}
+
+export function inventoryUnmatchedDriverFixmes(driversDir: string): UnmatchedDriverFixme[] {
+  const unmatched: UnmatchedDriverFixme[] = [];
+  for (const name of readdirSync(driversDir).sort()) {
+    if (!name.endsWith(".ts") || name.endsWith(".d.ts")) {
+      continue;
+    }
+    const source = readFileSync(path.join(driversDir, name), "utf8");
+    for (const site of extractUnmatchedDriverFixmes(source)) {
+      unmatched.push({ file: name, line: site.line, call: site.call });
+    }
+  }
+  return unmatched;
+}
+
+function lineNumberAt(source: string, index: number): number {
+  return source.slice(0, index).split("\n").length;
+}
+
+function driverFixmeReasonMatchesInventory(reason: string | null, before: string): boolean {
+  if (reason == null) {
+    return false;
+  }
+  const compact = reason
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "")
+    .replace(/\s+/g, "");
+  if (/^(?:[A-Za-z_$][\w$]*\.)+knownDivergence$/.test(compact)) {
+    return true;
+  }
+  if (compact !== "divergence") {
+    return false;
+  }
+  const assigns = [...before.matchAll(/\bdivergence\s*=\s*([^;\n]+)/g)];
+  const last = assigns.at(-1);
+  return last != null && last[1].includes("knownDivergences");
+}
+
+interface ScannedDriverFixme {
+  index: number;
+  reason: string | null;
+  text: string;
+}
+
+function scanDriverFixmeCalls(source: string): ScannedDriverFixme[] {
+  const found: ScannedDriverFixme[] = [];
+  let state: "code" | "line" | "block" | "sq" | "dq" | "tpl" = "code";
+  for (let i = 0; i < source.length; i += 1) {
+    const next = source[i + 1];
+    if (state === "line") {
+      if (source[i] === "\n") state = "code";
+      continue;
+    }
+    if (state === "block") {
+      if (source[i] === "*" && next === "/") {
+        state = "code";
+        i += 1;
+      }
+      continue;
+    }
+    if (state === "sq" || state === "dq" || state === "tpl") {
+      const quote = state === "sq" ? "'" : state === "dq" ? '"' : "`";
+      if (source[i] === "\\") {
+        i += 1;
+        continue;
+      }
+      if (source[i] === quote) state = "code";
+      continue;
+    }
+    if (source[i] === "/" && next === "/") {
+      state = "line";
+      i += 1;
+      continue;
+    }
+    if (source[i] === "/" && next === "*") {
+      state = "block";
+      i += 1;
+      continue;
+    }
+    if (source[i] === "'") {
+      state = "sq";
+      continue;
+    }
+    if (source[i] === '"') {
+      state = "dq";
+      continue;
+    }
+    if (source[i] === "`") {
+      state = "tpl";
+      continue;
+    }
+    if (!isDriverFixmeCallStart(source, i)) {
+      continue;
+    }
+    let open = i + "test.fixme".length;
+    while (open < source.length && /\s/.test(source[open])) open += 1;
+    if (source[open] !== "(") {
+      continue;
+    }
+    const end = endOfCall(source, open);
+    if (end == null) {
+      continue;
+    }
+    const args = splitTopLevelArgs(source.slice(open + 1, end));
+    found.push({
+      index: i,
+      reason: driverFixmeDescription(args),
+      text: source.slice(i, end + 1).replace(/\s+/g, " "),
+    });
+    i = end;
+  }
+  return found;
+}
+
+function isDriverFixmeCallStart(source: string, index: number): boolean {
+  if (!source.startsWith("test.fixme", index)) {
+    return false;
+  }
+  if (index === 0) {
+    return true;
+  }
+  return !/[A-Za-z0-9_$.]/.test(source[index - 1]);
+}
+
+function endOfCall(source: string, openParen: number): number | null {
+  let depth = 0;
+  let state: "code" | "line" | "block" | "sq" | "dq" | "tpl" = "code";
+  for (let i = openParen; i < source.length; i += 1) {
+    const next = source[i + 1];
+    if (state === "line") {
+      if (source[i] === "\n") state = "code";
+      continue;
+    }
+    if (state === "block") {
+      if (source[i] === "*" && next === "/") {
+        state = "code";
+        i += 1;
+      }
+      continue;
+    }
+    if (state === "sq" || state === "dq" || state === "tpl") {
+      const quote = state === "sq" ? "'" : state === "dq" ? '"' : "`";
+      if (source[i] === "\\") {
+        i += 1;
+        continue;
+      }
+      if (source[i] === quote) state = "code";
+      continue;
+    }
+    if (source[i] === "/" && next === "/") {
+      state = "line";
+      i += 1;
+      continue;
+    }
+    if (source[i] === "/" && next === "*") {
+      state = "block";
+      i += 1;
+      continue;
+    }
+    if (source[i] === "'") {
+      state = "sq";
+      continue;
+    }
+    if (source[i] === '"') {
+      state = "dq";
+      continue;
+    }
+    if (source[i] === "`") {
+      state = "tpl";
+      continue;
+    }
+    if (source[i] === "(") depth += 1;
+    else if (source[i] === ")") {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return null;
+}
+
+function splitTopLevelArgs(args: string): string[] {
+  const parts: string[] = [];
+  let start = 0;
+  let depth = 0;
+  let state: "code" | "sq" | "dq" | "tpl" = "code";
+  for (let i = 0; i < args.length; i += 1) {
+    if (state === "sq" || state === "dq" || state === "tpl") {
+      const quote = state === "sq" ? "'" : state === "dq" ? '"' : "`";
+      if (args[i] === "\\") {
+        i += 1;
+        continue;
+      }
+      if (args[i] === quote) state = "code";
+      continue;
+    }
+    if (args[i] === "'") {
+      state = "sq";
+      continue;
+    }
+    if (args[i] === '"') {
+      state = "dq";
+      continue;
+    }
+    if (args[i] === "`") {
+      state = "tpl";
+      continue;
+    }
+    if (args[i] === "(" || args[i] === "[" || args[i] === "{") depth += 1;
+    else if (args[i] === ")" || args[i] === "]" || args[i] === "}") depth -= 1;
+    else if (args[i] === "," && depth === 0) {
+      parts.push(args.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(args.slice(start));
+  return parts;
+}
+
+function driverFixmeDescription(args: string[]): string | null {
+  const cleaned = args.map((arg) => arg.trim()).filter((arg) => arg.length > 0);
+  if (cleaned.length === 0) {
+    return null;
+  }
+  if (cleaned.length === 1 && (cleaned[0] === "true" || cleaned[0] === "false")) {
+    return null;
+  }
+  return cleaned[cleaned.length - 1];
+}
