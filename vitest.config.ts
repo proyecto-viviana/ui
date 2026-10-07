@@ -20,6 +20,17 @@ export default defineConfig({
       "scripts/**/*.test.ts",
     ],
   },
+  // `__vitest_vm__` is the vmThreads client. Root optimizeDeps is copied onto
+  // the client environment only, and Vitest returns before it disables this
+  // one. Without the bound below, the cold scan globs every HTML file.
+  environments: {
+    __vitest_vm__: {
+      optimizeDeps: {
+        noDiscovery: true,
+        include: [],
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,
