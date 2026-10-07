@@ -4,12 +4,17 @@ type: task
 title: "Document the selectable-item link-model adaptation"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "migrated from press-path gap 4 before the legacy debt ledger was retired",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Kept the prop-threaded link model, the omitted getItemProps press and click chain, and the structural grid, tree, and table adapters. parity-gaps.md names each adaptation and the createSelectableItem tests that cover linkBehavior none, option and manager href resolution, unchained press handlers, and adapter canSelectItem.",
     }
 ---
 

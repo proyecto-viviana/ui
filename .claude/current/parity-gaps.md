@@ -325,3 +325,39 @@ These rows cannot move a component off the pin. They are docs, agent setup, or C
 The board-order claim was rejected. The start list puts the live-docs index first, and that index opens `status.md` before the ticket board.
 
 FileTrigger's structure differs and the claimed bug does not. `react-aria-components` `FileTrigger.tsx` merges press into the child with `PressResponder`. Our `FileTrigger.tsx` listens with `createPress` on a wrapping `<span>`. The claimed failure, a disabled child still opening the picker, is not in either file. Our handler checks FileTrigger's own `disabled`, and a native disabled button does not bubble the pointer events that span listens for. Moving the press onto the child would match `PressResponder`. It would not be repairing a bug the pin also has.
+
+## Approved boundaries
+
+These rows are kept on purpose. They are not source gaps to port.
+
+### Selectable item link model (#97)
+
+Upstream `useSelectableItem` (`react-aria/src/selection/useSelectableItem.ts`) treats a link as `manager.isLink(key)` plus `manager.getItemProps(key).href` and `routerOptions`, then opens it through the router. The same `getItemProps` object is chained onto the item for `onPressStart`, `onPress`, `onPressEnd`, `onPressChange`, `onPressUp`, and `onClick`. `MultipleSelectionManager` requires `isLink` and `getItemProps`. React Aria Components stores those press handlers on the collection node.
+
+`packages/solidaria/src/selection/createSelectableItem.ts` keeps three adaptations. No new public manager method is added.
+
+**Link model.** `isLink`, `href`, `routerOptions`, and `linkBehavior` (`action`, `selection`, `override`, `none`; default `action`) are item options. `isLink` falls back to `manager.isLink`, then `manager.selectionManager.isLink`, when the option omits both `isLink` and `href`. Navigation calls `useRouter().open`. `href` resolves as the option, then `manager.getItemProps(key).href`, then `selectionManager.getItemProps(key).href`, then the anchor element's `href`. `routerOptions` resolves the same way, with no anchor fallback. `selection` navigates and restores the previous selection. `override` is not selectable and navigates on Enter. `action` selects on Space and navigates on Enter. `none` does not select, does not client-navigate, and does not `preventDefault` the click.
+
+**Item props.** `getItemProps` is read only for `href` and `routerOptions`. Press and click handlers on that object are not called. Local nodes do not carry them:
+
+- List (`createOption`) passes `ListState` and does not pass `isLink`, `href`, or `routerOptions`. `ListBoxItem` has no `href` and no item press handler. `SelectionManager.isLink` and `getItemProps` already read `node.props`, and current list nodes do not store a link or a press handler there.
+- Grid (`createGridListItem`) passes a structural adapter and threads `isLink`, `href`, and `routerOptions` from the item or from the fallback node's link fields (`href`, `routerOptions`, `target`, `rel`, `download`, `ping`, `referrerPolicy`). That node does not store press handlers.
+- Tree (`createTreeItem`) passes a structural adapter and `onAction` only. A tree link navigates through `handleLinkClick` on the row, outside this hook.
+- Table (`createTableRow`) passes a structural adapter. A row `href` becomes `onAction`, which calls `onLinkAction`, which calls `router.open`. The row node does not store `href` or a press handler.
+- Menu (`createMenuItem`) passes `isLink`, `href`, and `linkBehavior: "none"`, then performs its own action. This hook does not navigate and does not cancel the click.
+- Tag and step list call `createSelectableItem` without `isLink`, `href`, or `linkBehavior`.
+
+**Manager shape.** Grid, tree, and table pass an adapter with the observable selection surface, including `canSelectItem`, and omit `selectionManager`. List passes `ListState`, whose `selectionManager` is the real `SelectionManager`. `canSelectItem` false on the adapter blocks selection while a link or `onAction` still runs. `createSelectableCollection` takes that real `SelectionManager`: `navigateToKey` reads `isLink` and optional `getItemProps` for `href` and `routerOptions` only, and `override` returns before selection on focus. It does not chain press handlers.
+
+Regression coverage is `packages/solidaria/test/createSelectableItem.test.tsx`:
+
+- `navigates exactly once when Space activates a role-overridden link` covers `selection`.
+- `navigates on Enter and not on Space under linkBehavior 'override'` covers `override`.
+- `navigates on Enter and selects on Space under linkBehavior 'action'` covers `action`.
+- `linkBehavior 'none' does not select, client-navigate, or cancel the click` covers `none`.
+- `sends option href and routerOptions to the client router ahead of getItemProps` covers the option link fields.
+- `reads href and routerOptions from manager.getItemProps and does not call its press handlers` covers the manager item-prop fallback and the omitted press chain.
+- `reads href and routerOptions from selectionManager.getItemProps when the manager omits them` covers the list-manager fallback.
+- `falls back to the anchor href when options and item props omit one` covers the anchor fallback.
+- `a structural adapter blocks selection through canSelectItem and still opens the option link` and `a structural adapter selects on Space when canSelectItem allows it` cover the grid, tree, and table adapter shape.
+- `disabledBehavior "selection" blocks selection without disabling actions` covers that check on the real list `SelectionManager`.

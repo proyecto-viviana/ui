@@ -18,7 +18,9 @@ import {
   type CreateSelectableItemOptions,
   type LinkBehavior,
   type SelectableItemAria,
+  type SelectableItemState,
 } from "../src/selection/createSelectableItem";
+import { RouterProvider } from "../src/utils/openLink";
 
 const pointerEvent = createPointerEvent;
 
@@ -466,6 +468,290 @@ describe("createSelectableItem — link activation", () => {
     // runs `performAction`'s `openLink`.
     expect(activate("action", " ")).toEqual({ total: 1, opened: 0, selected: true });
     expect(activate("action", "Enter")).toEqual({ total: 1, opened: 1, selected: false });
+  });
+});
+
+describe("createSelectableItem — approved link boundary", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.runAllTimers();
+    vi.useRealTimers();
+  });
+
+  function pressHandlers() {
+    return {
+      onPressStart: vi.fn(),
+      onPress: vi.fn(),
+      onPressEnd: vi.fn(),
+      onPressChange: vi.fn(),
+      onPressUp: vi.fn(),
+      onClick: vi.fn(),
+    };
+  }
+
+  function expectUnused(handlers: Record<string, ReturnType<typeof vi.fn>>) {
+    for (const handler of Object.values(handlers)) {
+      expect(handler).not.toHaveBeenCalled();
+    }
+  }
+
+  function pressKey(el: HTMLElement, key: string) {
+    el.focus();
+    fireEvent.keyDown(el, { key });
+    fireEvent.keyUp(el, { key });
+  }
+
+  function firePointer(el: HTMLElement) {
+    const at = { pointerId: 1, pointerType: "mouse" as const, clientX: 2, clientY: 2 };
+    fireEvent(el, pointerEvent("pointerdown", at));
+    fireEvent(el, pointerEvent("pointerup", at));
+    fireEvent.click(el);
+  }
+
+  function managerWithItemProps(
+    state: ListState<Item>,
+    itemProps: Record<string, unknown>,
+  ): SelectableItemState<Item> {
+    return new Proxy(state, {
+      get(target, prop, receiver) {
+        if (prop === "getItemProps") return () => itemProps;
+        if (prop === "isLink") return () => true;
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    }) as unknown as SelectableItemState<Item>;
+  }
+
+  /** Grid, tree, and table pass this shape: selection surface, no SelectionManager. */
+  function structuralAdapter(
+    state: ListState<Item>,
+    canSelect: boolean,
+  ): SelectableItemState<Item> {
+    return {
+      collection: () => state.collection(),
+      isFocused: () => state.isFocused(),
+      setFocused: (focused) => state.setFocused(focused),
+      focusedKey: () => state.focusedKey(),
+      childFocusStrategy: () => state.childFocusStrategy(),
+      setFocusedKey: (key, strategy) => state.setFocusedKey(key, strategy),
+      selectionMode: () => state.selectionMode(),
+      selectionBehavior: () => state.selectionBehavior(),
+      disallowEmptySelection: () => state.disallowEmptySelection(),
+      selectedKeys: () => state.selectedKeys(),
+      disabledKeys: () => state.disabledKeys(),
+      disabledBehavior: () => state.disabledBehavior(),
+      isEmpty: () => state.isEmpty(),
+      isSelectAll: () => state.isSelectAll(),
+      isSelected: (key) => state.isSelected(key),
+      isDisabled: (key) => state.isDisabled(key),
+      canSelectItem: () => canSelect,
+      setSelectionBehavior: (behavior) => state.setSelectionBehavior(behavior),
+      toggleSelection: (key) => state.toggleSelection(key),
+      replaceSelection: (key) => state.replaceSelection(key),
+      setSelectedKeys: (keys) => state.setSelectedKeys(keys),
+      selectAll: () => state.selectAll(),
+      clearSelection: () => state.clearSelection(),
+      toggleSelectAll: () => state.toggleSelectAll(),
+      extendSelection: (toKey) => state.extendSelection(toKey),
+    };
+  }
+
+  function renderRouted(args: {
+    options: CreateSelectableItemOptions;
+    stateProps?: Partial<ListStateProps<Item>>;
+    navigate?: (href: string, routerOptions?: Record<string, unknown>) => void;
+    manager?: (state: ListState<Item>) => SelectableItemState<Item>;
+    anchorHref?: string;
+  }) {
+    const navigate = args.navigate ?? vi.fn();
+    let state!: ListState<Item>;
+    let el!: HTMLElement;
+
+    function Row() {
+      state = createListState<Item>({
+        items,
+        getKey: (item) => item.key,
+        selectionMode: "multiple",
+        ...args.stateProps,
+      });
+      const manager = args.manager?.(state) ?? state;
+      const api = createSelectableItem(
+        () => args.options,
+        manager,
+        () => el,
+      );
+      if (args.anchorHref != null) {
+        return (
+          <a ref={(node) => (el = node)} href={args.anchorHref} role="option" {...api.itemProps}>
+            {String(args.options.key)}
+          </a>
+        );
+      }
+      return (
+        <div ref={(node) => (el = node)} {...api.itemProps}>
+          {String(args.options.key)}
+        </div>
+      );
+    }
+
+    render(() => (
+      <RouterProvider navigate={navigate}>
+        <Row />
+      </RouterProvider>
+    ));
+
+    return {
+      navigate,
+      get state() {
+        return state;
+      },
+      get el() {
+        return el;
+      },
+    };
+  }
+
+  it("linkBehavior 'none' does not select, client-navigate, or cancel the click", () => {
+    const navigate = vi.fn();
+    const clicks: MouseEvent[] = [];
+    const record = (event: Event) => clicks.push(event as MouseEvent);
+    document.addEventListener("click", record, true);
+    try {
+      const { el, state } = renderRouted({
+        navigate,
+        anchorHref: "#target",
+        options: { key: "a", isLink: true, href: "#target", linkBehavior: "none" },
+      });
+      pressKey(el, " ");
+      pressKey(el, "Enter");
+      expect(state.isSelected("a")).toBe(false);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(clicks.length).toBeGreaterThan(0);
+      expect(clicks.every((event) => !event.defaultPrevented)).toBe(true);
+    } finally {
+      document.removeEventListener("click", record, true);
+    }
+  });
+
+  it("sends option href and routerOptions to the client router ahead of getItemProps", () => {
+    const navigate = vi.fn();
+    const handlers = pressHandlers();
+    const { el } = renderRouted({
+      navigate,
+      options: {
+        key: "a",
+        isLink: true,
+        href: "/from-options",
+        routerOptions: { replace: true, source: "options" },
+        linkBehavior: "action",
+      },
+      manager: (state) =>
+        managerWithItemProps(state, {
+          href: "/from-manager",
+          routerOptions: { replace: false, source: "manager" },
+          ...handlers,
+        }),
+    });
+    firePointer(el);
+    pressKey(el, "Enter");
+    expect(navigate).toHaveBeenCalledWith("/from-options", { replace: true, source: "options" });
+    expectUnused(handlers);
+  });
+
+  it("reads href and routerOptions from manager.getItemProps and does not call its press handlers", () => {
+    const navigate = vi.fn();
+    const handlers = pressHandlers();
+    const { el } = renderRouted({
+      navigate,
+      options: { key: "a", linkBehavior: "action" },
+      manager: (state) =>
+        managerWithItemProps(state, {
+          href: "/from-manager",
+          routerOptions: { replace: true, source: "manager" },
+          ...handlers,
+        }),
+    });
+    firePointer(el);
+    pressKey(el, "Enter");
+    expect(navigate.mock.calls.length).toBeGreaterThan(0);
+    for (const call of navigate.mock.calls) {
+      expect(call).toEqual(["/from-manager", { replace: true, source: "manager" }]);
+    }
+    expectUnused(handlers);
+  });
+
+  it("reads href and routerOptions from selectionManager.getItemProps when the manager omits them", () => {
+    const navigate = vi.fn();
+    const handlers = pressHandlers();
+    const { el, state } = renderRouted({
+      navigate,
+      options: { key: "a", linkBehavior: "selection" },
+      manager: (list) => {
+        list.selectionManager.isLink = () => true;
+        list.selectionManager.getItemProps = () => ({
+          href: "/from-selection-manager",
+          routerOptions: { replace: true, source: "selectionManager" },
+          ...handlers,
+        });
+        return list as unknown as SelectableItemState<Item>;
+      },
+    });
+    pressKey(el, " ");
+    expect(state.isSelected("a")).toBe(false);
+    expect(navigate).toHaveBeenCalledWith("/from-selection-manager", {
+      replace: true,
+      source: "selectionManager",
+    });
+    expectUnused(handlers);
+  });
+
+  it("falls back to the anchor href when options and item props omit one", () => {
+    const navigate = vi.fn();
+    const { el, state } = renderRouted({
+      navigate,
+      anchorHref: "#target",
+      options: { key: "a", isLink: true, linkBehavior: "selection" },
+    });
+    pressKey(el, " ");
+    expect(state.isSelected("a")).toBe(false);
+    expect(navigate).toHaveBeenCalledWith((el as HTMLAnchorElement).href, undefined);
+  });
+
+  it("a structural adapter blocks selection through canSelectItem and still opens the option link", () => {
+    const navigate = vi.fn();
+    const onAction = vi.fn();
+    const { el, state } = renderRouted({
+      navigate,
+      options: {
+        key: "a",
+        isLink: true,
+        href: "/from-adapter",
+        routerOptions: { replace: true },
+        linkBehavior: "action",
+        onAction,
+      },
+      manager: (list) => structuralAdapter(list, false),
+    });
+    pressKey(el, " ");
+    expect(state.isSelected("a")).toBe(false);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(onAction).not.toHaveBeenCalled();
+    pressKey(el, "Enter");
+    expect(state.isSelected("a")).toBe(false);
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith("/from-adapter", { replace: true });
+  });
+
+  it("a structural adapter selects on Space when canSelectItem allows it", () => {
+    const { el, state } = renderRouted({
+      options: { key: "a" },
+      manager: (list) => structuralAdapter(list, true),
+    });
+    pressKey(el, " ");
+    expect(state.isSelected("a")).toBe(true);
   });
 });
 
