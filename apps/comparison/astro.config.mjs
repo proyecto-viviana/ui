@@ -518,7 +518,8 @@ export default defineConfig({
     }),
     solid({
       // Align dev island compilation with the paired hydration harness.
-      // Runtime restart parity remains a separate #543 investigation.
+      // The demonstrated I18n restart key drift is repaired in solidaria's
+      // locale registry. Refresh stays off; other HMR causes stay open.
       refresh: { disabled: true },
       include: [
         "src/components/solid/**/*",

@@ -30,14 +30,20 @@ vp run comparison:dev
 ```
 
 Use `/components/button/` for the side-by-side manual viewer and `/d12/button/`
-for the real SSR island. Other component pages still require their owning
-migration/behavior checks. The panel tests in the client lane exercise actual
-CSR loading/error/disposal semantics, not panel SSR hydration.
+for the real SSR island. The paired adapter tests render that JSX island and
+check its original button node, one mouse click, and one Enter. Styled fixtures
+authored with runtime `h()` stay client-rendered; those tests do not SSR them.
+Other component pages still require their owning migration/behavior checks. The
+panel tests in the client lane exercise actual CSR loading/error/disposal
+semantics, not panel SSR hydration.
 
-Solid refresh is disabled to align dev compilation with the paired hydration
-harness. A clean dev process passes the focused browser proof; an automatic
-Vite restart has also exposed unresolved key drift. Refresh itself has not
-been isolated as the cause: the early comparison also restarted the process.
-Restart the process if that occurs, and retain the diagnostics. Do not suppress
-warnings or treat this workaround as full dev-server/route acceptance. Ticket
-#543 tracks these limits and the remaining build/route gates.
+Solid refresh stays disabled so dev island compilation matches the paired
+hydration harness. The demonstrated restart key drift was a stale I18n context:
+`packages/solidaria/src/i18n/locale.tsx` keys its registry by the actual
+`createContext` factory, so a dev-server restart does not reuse a prior
+runtime's provider. That repair keeps the D12 button and wrapper keys, the
+original nodes, and one mouse plus one Enter action across a controlled
+in-process Vite restart. Refresh itself was not the cause, and other HMR or
+restart failures stay open. Do not suppress warnings or treat a process restart
+as full dev-server or route acceptance. Viewer strict-read diagnostics and the
+remaining route gates stay open on ticket #543.

@@ -8,6 +8,11 @@ status: in-progress
 history:
   - {
       state: in-progress,
+      at: 2026-10-07,
+      note: "paired adapter proof renders the real D12 Solid button island through the private renderer. Fresh app SSR config passes 9/9 and the full app hydrate config passes 176/176, including that island's original button node, one mouse click, and one Enter, with no console warn or error on the island path. Styled runtime-h fixtures stay client-rendered. Adapter guidance records the proved I18n restart registry and keeps refresh disabled. Viewer strict diagnostics, fixture-generation SSR/hydration, browser collection/async navigation, and the broader build/route gates stay open; #543 stays in-progress",
+    }
+  - {
+      state: in-progress,
       at: 2026-09-20,
       note: "root accepts the collections/async Stage A20 and Stage B10 generation. A fresh actual-Spectrum-Picker ownership case fails only at the real-focus handoff, then passes after the minimal Select keyboard-modality exception; pointer behavior, whole Select86, whole Picker22 and Tree16 controls pass. The complete shared hydrate file passes139/139, root typecheck exits0 and the final cleanup census is0 registrations/0 files. Strict diagnostics, actual-island and browser gates remain open; #543/#531 stay in-progress and #532 remains merged-not-verified",
     }
