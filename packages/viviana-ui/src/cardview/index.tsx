@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -55,7 +53,7 @@ export type CardViewLoadingState = "idle" | "loading" | "loadingMore" | "sorting
 
 export interface CardViewProps<T extends object> extends Omit<
   HeadlessGridListProps<T>,
-  "class" | "style" | "children" | "selectionBehavior" | "isLoading"
+  "class" | "style" | "children" | "selectionBehavior" | "isLoading" | "ref" | "layout"
 > {
   /** The cards contained within the CardView. */
   children: (item: T) => JSX.Element;
@@ -226,7 +224,6 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
     "UNSAFE_style",
     "class",
     "ref",
-    "isLoading",
     "hasMore",
     "onLoadMore",
   ]);
@@ -235,8 +232,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
   const variant = (): CardViewVariant => local.variant ?? "primary";
   const layout = (): CardViewLayout => local.layout ?? "grid";
   const selectionStyle = (): CardViewSelectionStyle => local.selectionStyle ?? "checkbox";
-  const isLoading = () =>
-    local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
+  const isLoading = () => local.loadingState === "loading" || local.loadingState === "loadingMore";
   const [maxSizeIndex, setMaxSizeIndex] = createSignal(SIZES.length - 1, { ownedWrite: true });
   const [viewportWidth, setViewportWidth] = createSignal(0, { ownedWrite: true });
   let rootElement: HTMLDivElement | undefined;
@@ -361,7 +357,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
 
   return (
     <Show when={Boolean(local.renderActionBar)} fallback={cardView}>
-      <div class={wrapperStyles({}, local.styles)} style={local.UNSAFE_style}>
+      <div class={wrapperStyles(null, local.styles)} style={local.UNSAFE_style}>
         {cardView}
         {local.renderActionBar?.(actionSelectedKeys())}
       </div>

@@ -4,7 +4,7 @@ type: task
 title: "Burn down the ts-nocheck surface"
 created: 2026-08-01
 parent: 24
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
   - {
@@ -17,11 +17,16 @@ history:
       at: 2026-09-01,
       note: "owner 2026-09-01: do not enable noUncheckedIndexedAccess or exactOptionalPropertyTypes repo-wide until this burn-down shrinks; that is a later phase of this ticket, public API first",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "Dropped @ts-nocheck from CardView, button/s2-progress-circle-styles.ts, and s2-internal/page.macro.ts in both solid-spectrum and viviana-ui. guard:ts-nocheck-budget is 53/53. CardView omits ref and layout from the headless props, and loading follows loadingState, matching upstream. Public component modules still carry the pragma, so this is not verified. noUncheckedIndexedAccess and exactOptionalPropertyTypes stay off.",
+    }
 ---
 
-**59 files carrying `@ts-nocheck`, covering 38,091 lines** — in the design system every product
-in the hub imports. Type errors in those files are not errors; they are invisible, including in
-the public API surface consumers rely on.
+**53 files still carry `@ts-nocheck`.** The 2026-08-01 audit counted 59 files and 38,091 lines.
+The ceiling is 53. Type errors in the files that remain are invisible, including in the public
+API surface consumers rely on.
 
 ## Scope
 
@@ -32,11 +37,10 @@ worked).
 
 The current inventory is tracked path-by-path in
 `scripts/ts-nocheck-baseline.json`. `guard:ts-nocheck-budget` runs blocking in
-Certification Gates: deleting a pragma is allowed; adding or moving one fails.
-This is containment, not resolution — the 59 baselined files remain unchecked.
-Removals are logged; the path list does not shrink, so putting `@ts-nocheck`
-back on a cleaned path still passes. A ratchet (drop the path from `allowed`
-on removal) is the remaining gate work.
+Certification Gates. #577 already made this a ratchet: a path that loses the
+pragma fails as stale until `--write-baseline` drops it, and that writer
+refuses growth. The ceiling is 53. Public component modules still carry the
+pragma; this burn-down is not finished.
 
 ## Done when
 
