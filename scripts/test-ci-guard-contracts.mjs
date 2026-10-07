@@ -544,11 +544,12 @@ try {
   );
 
   const oracleFixture = path.join(fixtureRoot, "missing-oracle");
+  // Tags match scripts/upstream-pin.json. This fixture is a missing oracle tree, not a version snapshot.
   json(path.join(oracleFixture, "scripts", "upstream-pin.json"), {
     commit: "1111111111111111111111111111111111111111",
     tags: {
-      "@react-spectrum/s2": "1.5.1",
-      "react-aria-components": "1.19.0",
+      "@react-spectrum/s2": "1.7.0",
+      "react-aria-components": "1.21.0",
     },
   });
   const missingOracle = runSync("check-upstream-oracle.mjs", oracleFixture);

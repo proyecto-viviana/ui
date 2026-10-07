@@ -14,6 +14,10 @@
  * component in the render tree. Provider and Context wrappers are transparent.
  * Upstream stays keyed by filename. A printed suspect names the file each
  * value came from. Baseline keys stay component|category|value.
+ * A role queried for a fixture the same render mounts is not filed on the host.
+ * A raw or imported form owns role form, a raw textarea owns role textbox, and
+ * an imported Dialog, ContextualHelp, or ContextualHelpTrigger owns role dialog.
+ * The host keeps the role when the host is that owner.
  *
  * …then reports, per component:
  *   - WE-ONLY  roles/aria/keys  → prime suspects: we assert a shape upstream
@@ -79,6 +83,7 @@ interface GrowthEntry {
   ticket: number;
   at: string;
   added: Floor;
+  reasons?: Record<string, string>;
 }
 
 interface BaselineFile extends Floor {
@@ -966,6 +971,73 @@ function vocabText(sf: ts.SourceFile, node: ts.Node): string {
   return out + text.slice(cursor);
 }
 
+interface RenderMarks {
+  intrinsics: Set<string>;
+  imported: Set<string>;
+}
+
+function noteJsxTag(tag: ts.JsxTagNameExpression, ctx: AttrCtx, marks: RenderMarks): void {
+  if (ts.isIdentifier(tag)) {
+    if (/^[a-z]/.test(tag.text)) {
+      marks.intrinsics.add(tag.text);
+      return;
+    }
+    const imported = ctx.imports.get(tag.text);
+    if (imported) marks.imported.add(imported);
+    return;
+  }
+  if (ts.isPropertyAccessExpression(tag)) {
+    const left = leftmostIdentifier(tag);
+    if (left) {
+      const imported = ctx.imports.get(left.text);
+      if (imported) marks.imported.add(imported);
+    }
+  }
+}
+
+/** Every tag in the render tree, including tags inside the outermost component. Local helpers are followed; the subject walk still stops at the outermost import. */
+function collectRenderMarks(
+  node: ts.Node,
+  ctx: AttrCtx,
+  marks: RenderMarks,
+  seen: Set<ts.Node>,
+): void {
+  if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
+    const tag = ts.isJsxElement(node) ? node.openingElement.tagName : node.tagName;
+    noteJsxTag(tag, ctx, marks);
+    if (ts.isIdentifier(tag) && /^[A-Z]/.test(tag.text) && !ctx.imports.has(tag.text)) {
+      const fn = resolveLocal(tag.text, node, ctx.locals);
+      if (fn && !seen.has(fn)) {
+        seen.add(fn);
+        collectRenderMarks(fn, ctx, marks, seen);
+      }
+    }
+  } else if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+    const fn = resolveLocal(node.expression.text, node, ctx.locals);
+    if (fn && !seen.has(fn)) {
+      seen.add(fn);
+      collectRenderMarks(fn, ctx, marks, seen);
+    }
+  }
+  ts.forEachChild(node, (child) => collectRenderMarks(child, ctx, marks, seen));
+}
+
+function omitFixtureRoles(vocab: Vocab, marks: RenderMarks, subject: string): void {
+  if (subject !== "form" && (marks.intrinsics.has("form") || marks.imported.has("form"))) {
+    vocab.roles.delete("form");
+  }
+  if (subject !== "textarea" && marks.intrinsics.has("textarea")) {
+    vocab.roles.delete("textbox");
+  }
+  const ownsDialog =
+    marks.imported.has("dialog") ||
+    marks.imported.has("contextualhelp") ||
+    marks.imported.has("contextualhelptrigger");
+  if (ownsDialog && subject !== "dialog" && subject !== "contextualhelp") {
+    vocab.roles.delete("dialog");
+  }
+}
+
 function attributeFile(
   sf: ts.SourceFile,
   rel: string,
@@ -995,7 +1067,12 @@ function attributeFile(
     const subjects: string[] = [];
     for (const arg of renderArgs) subjects.push(...subjectsFromRenderArg(arg, ctx));
     const key = attributeKey(subjects, filenameKey, vocab);
-    if (key) contribute(byKey, key, rel, vocab);
+    if (!key) continue;
+    const marks: RenderMarks = { intrinsics: new Set(), imported: new Set() };
+    const seenMarks = new Set<ts.Node>();
+    for (const arg of renderArgs) collectRenderMarks(arg, ctx, marks, seenMarks);
+    omitFixtureRoles(vocab, marks, key);
+    contribute(byKey, key, rel, vocab);
   }
 }
 

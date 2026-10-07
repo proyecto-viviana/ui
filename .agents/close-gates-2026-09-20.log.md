@@ -2231,3 +2231,84 @@ seven. Merged.
   at 2.34 light; `#3b82f6`/white fails combobox at 3.67 both schemes.
 - `/docs/components/tree` passes alone; its crash was memory pressure.
 - Full 174 still owed: the harness stopped it at 24/174 for machine memory.
+
+## 2026-10-07 — #597 the thirty facts, classified, and the nine fixture roles gone
+
+The #573 stop above still stands. `2b444a89` absorbed the thirty, and
+`34064bae` had classified fourteen of them. This note classifies the sixteen,
+records the re-measure, and drops the fixture roles the rendered-component
+pairing still allowed. It does not rewrite the stop, the #579 growth entry, or
+ticket 618's added list.
+
+### Before and after
+
+Post-#579 floor, before this omit: suspects 242, coverageGaps 44, upstreamOnly 11.
+After the fixture-role omit, against that same baseline: suspects 242 → 234
+(Δ-8), coverageGaps 44 → 44, upstreamOnly 11 → 11, PASS, no new measured fact.
+The eight that left the live floor: `combobox|role|form`, `numberfield|role|form`,
+`radiogroup|role|form`, `searchfield|role|dialog`, `searchfield|role|form`,
+`select|role|form`, `tabs|role|textbox`, `textfield|role|form`.
+`checkbox|role|form` was already gone from the suspects array; the test renders
+an imported Form, so the grip files as `form|role|form`.
+
+The suspects array then dropped those eight (242 → 234). Second run, baseline
+matching the measurement: suspects 234 → 234 (Δ0), coverageGaps 44 → 44 (Δ0),
+upstreamOnly 11 → 11 (Δ0), PASS. The nine known-bogus pairs are absent from the
+suspects array, not allowlisted.
+
+### Pairing
+
+#579 pairs by the outermost rendered component. This consumer omits a
+fixture-owned role instead of moving it onto another component. A raw or
+imported form owns role form unless the subject is form. A raw textarea owns
+role textbox unless the subject is textarea. An imported Dialog, ContextualHelp,
+or ContextualHelpTrigger owns role dialog unless the subject is dialog or
+contextualhelp. `form|role|form`, `searchfield|role|textbox`, `combobox|role|presentation`,
+and `select|role|presentation` stay.
+
+### The sixteen
+
+| fact | our test asserts the wrong thing? | what it actually is |
+| --- | --- | --- |
+| `colorfield\|key\|pageup` | no | PageUp steps the color spinbutton, `solid-spectrum/test/ColorField.test.tsx:108-116`. `react-aria/src/spinbutton/useSpinButton.ts:78`. RAC `ColorField.test.js` sends Enter at 143 and 157, not PageUp. S2 ColorField tests send no PageUp. |
+| `colorfield\|key\|pagedown` | no | PageDown steps that field back in the same test. `useSpinButton.ts:96`. RAC ColorField tests do not send PageDown. |
+| `numberfield\|key\|pageup` | no | PageUp steps 5 to 6, `solid-spectrum/test/NumberField.test.tsx:44-50`. RAC `NumberField.test.js` sends Enter and asserts `aria-invalid` at 539, not PageUp. |
+| `numberfield\|key\|pagedown` | no | PageDown steps 6 to 5 in that same test. RAC NumberField tests do not send PageDown. |
+| `colorswatchpicker\|key\|pageup` | no | Roving tabindex PageUp without changing selection, `solid-spectrum/test/ColorSwatchPicker.test.tsx:178-221`. `useSelectableCollection.ts:425`. RAC `ColorSwatchPicker.test.js` sends Enter at 175 only. |
+| `colorswatchpicker\|key\|pagedown` | no | PageDown in that same test, including the disabled-swatch skip. `useSelectableCollection.ts:424`. |
+| `combobox\|key\|end` | no | End moves to the last open option and keeps `aria-labelledby` resolved. `solid-spectrum/test/ComboBox.test.tsx:579-604` and `solidaria-components/test/ComboBox.test.tsx:385`. `useSelectableCollection.ts:433`. RAC `ComboBox.test.js:883` sends Escape, Enter, and Tab, not End. |
+| `previewtrigger\|key\|tab` | no | `user.keyboard("{Tab}")` moves focus into the preview, `solidaria-components/test/PreviewTrigger.test.tsx:189-232`. RAC `PreviewTrigger.test.js` is the upstream pair; its many `user.tab()` calls are not scored by the key regex, and it does send `keyboard('{Escape}')` at 218. |
+| `rangecalendar\|key\|enter` | no | Enter sets the range start and advances focus to the next day, `solid-spectrum/test/RangeCalendar.test.tsx:248-264` and `solidaria-components/test/RangeCalendar.test.tsx:656` and `:680`. RAC `RangeCalendar.test.tsx` has no Enter; line 557 is `aria-invalid`. No S2 RangeCalendar test. |
+| `taggroup\|key\|escape` | no | Escape clears selection, `solidaria-components/test/TagGroup.test.tsx:882-901`. `useSelectableCollection.ts:360-366` and `:435`. RAC `TagGroup.test.js` sends Enter at 814, 827, 854, and 884, not Escape. |
+| `taggroup\|key\|tab` | no | Shift+Tab through the tag and its remove button, `solidaria-components/test/TagGroup.test.tsx:693-721`. RAC `TagGroup.test.js:689` and `:694` comment on Tab and do not score it. |
+| `datepicker\|aria\|aria-valuenow` | no | Segment spinbuttons expose `aria-valuenow`, `solid-spectrum/test/DatePicker.test.tsx:314-331`. RAC `DatePicker.test.js:376` asserts that `aria-expanded` is absent, not `aria-valuenow`. No S2 DatePicker test. |
+| `dialog\|aria\|aria-controls` | no | Already absent from the suspects array after #579. `solidaria-components/test/Dialog.test.tsx:191-219` proves the trigger's `aria-controls` inside an outermost `DialogTrigger`, so the assertion files under `dialogtrigger` and is not scored. Trigger scaffolding, not a wrong assertion. |
+| `form\|aria\|aria-invalid` | no | Asserted on the input after a blocked required submit, `solid-spectrum/test/Form.test.tsx:488-508`. Filed under form because Form is outermost. RAC `Form.test.js` never mentions `aria-invalid`. Kept. |
+| `searchfield\|aria\|aria-expanded` | no | ContextualHelp trigger expanded state at `solid-spectrum/test/SearchField.test.tsx:280`, same test as the dialog fixture. The attribute is the help button. Kept. |
+| `table\|aria\|aria-multiselectable` | no | The grid sets it when `selectionMode` is multiple, `solidaria-components/test/Table.test.tsx:3078-3088`. `useGrid.ts:225`. RAC Table tests do not assert it. RAC Select and ComboBox assert it on the listbox, a different key. |
+
+Zero of the sixteen is our test asserting a shape the component should not have.
+
+### growthLog
+
+Ticket 573 still names the absorption. Its `added.suspects` list goes from the
+original thirty to the eighteen that survive, and the entry gains `reasons`
+for those eighteen. Dropped from that list only: `checkbox|role|form`,
+`checkbox|role|img` (re-keyed to `checkboxgroup|role|img` by #579),
+`combobox|role|form`, `dialog|aria|aria-controls`, `numberfield|role|form`,
+`radiogroup|role|form`, `searchfield|role|dialog`, `searchfield|role|form`,
+`select|role|form`, `switch|aria|aria-checked` (now under `tabswitch`),
+`tabs|role|textbox`, `textfield|role|form`. Tickets 201, 252, 248, 257, 256,
+618, 43, and 579 are untouched. `datepicker|role|form` and
+`daterangepicker|role|form` remain on ticket 618.
+
+### Pin
+
+The tree pin in `scripts/upstream-pin.json` is unchanged: S2 1.7.0 / RAC 1.21.0.
+`.claude/current/upstream-sync.md` already says that. `.agents/audit-2026-09-21/OWNERS.md`
+already records the brief correction. The only in-repo quotation still on
+1.5.1 / 1.19.0 was the synthetic missing-oracle fixture at
+`scripts/test-ci-guard-contracts.mjs`; those tags are now 1.7.0 / 1.21.0.
+The fixture asserts a missing oracle tree, not the version strings. Comparison
+comments, changelogs, and #82 stay dated history. #601 is a separate ticket
+and is not closed here.
