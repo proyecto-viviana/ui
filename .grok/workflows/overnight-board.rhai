@@ -194,9 +194,9 @@ fn impl_prompt(label, mode, extra) {
 }
 
 fn skeptic_prompt(label, mode, row) {
-    let p = "You are a read-only skeptic for /home/emoporemilio/projects/viviana-hub/ui. Do not edit, commit, or push.\n";
+    let p = "You are the skeptic for /home/emoporemilio/projects/viviana-hub/ui. Run git and the named tests. Do not edit, commit, or push.\n";
     p += "Use git diff and git status --porcelain. Open the ticket with rg --no-ignore -g '*.md' under .claude/tickets. A missing file read is pass false.\n";
-    p += "pass is true only when the diff does this slice, the named tests were run, and you saw the result. The worker summary is not evidence. evidence quotes a path and a command result.\n";
+    p += "Run the commands in Tests and quote each command with its result. pass is true only when the diff does this slice, the named tests were run, and you saw the result. The worker summary is not evidence. evidence quotes a path and a command result.\n";
     p += "dirty_beyond is true when git status shows a product change that is not in the worker paths and is not one of the seven pre-existing Heading or Dialog paths. Those seven paths count as dirty_beyond only when the slice is not 208.\n";
     p += "Slice: ";
     p += label;
@@ -332,6 +332,25 @@ fn commit_once(label, mode, row, schema, prior_error) {
     out
 }
 
+fn read_skeptic(sk) {
+    let out = #{
+        pass: false,
+        dirty: false,
+        reason: "",
+    };
+    if sk != () && type_of(sk) == "map" && sk.success == true && sk.output != () && type_of(sk.output) == "map" {
+        let evidence = trimmed(sk.output.evidence);
+        if sk.output.pass == true && evidence != "" {
+            out.pass = true;
+        }
+        if sk.output.dirty_beyond == true {
+            out.dirty = true;
+        }
+        out.reason = cap(sk.output.reason, 300);
+    }
+    out
+}
+
 fn run_slice(label, mode, extra, impl_schema_value, skeptic_schema_value, commit_schema_value) {
     let impl = agent(impl_prompt(label, mode, extra), #{
         label: "impl-" + label,
@@ -365,21 +384,26 @@ fn run_slice(label, mode, extra, impl_schema_value, skeptic_schema_value, commit
     }
     let sk = agent(skeptic_prompt(label, mode, row), #{
         label: "skeptic-" + label,
-        capability_mode: "read-only",
+        capability_mode: "execute",
         output_schema: skeptic_schema_value,
     });
-    let sk_pass = false;
-    let sk_dirty = false;
-    let sk_reason = "";
-    if sk != () && type_of(sk) == "map" && sk.success == true && sk.output != () && type_of(sk.output) == "map" {
-        let evidence = trimmed(sk.output.evidence);
-        if sk.output.pass == true && evidence != "" {
-            sk_pass = true;
+    let verdict = read_skeptic(sk);
+    let sk_pass = verdict.pass;
+    let sk_dirty = verdict.dirty;
+    let sk_reason = verdict.reason;
+    if sk_pass != true && sk_dirty != true {
+        log("skeptic retry " + label);
+        let sk_retry = agent(skeptic_prompt(label, mode, row), #{
+            label: "skeptic-" + label + "-retry",
+            capability_mode: "execute",
+            output_schema: skeptic_schema_value,
+        });
+        verdict = read_skeptic(sk_retry);
+        sk_pass = verdict.pass;
+        sk_dirty = verdict.dirty;
+        if verdict.reason != "" {
+            sk_reason = verdict.reason;
         }
-        if sk.output.dirty_beyond == true {
-            sk_dirty = true;
-        }
-        sk_reason = cap(sk.output.reason, 300);
     }
     if mode == "repair" && trimmed(row.status_change) == "verified" {
         sk_pass = false;
@@ -440,27 +464,27 @@ fn take_row(bucket, row) {
     let outcome = trimmed(row.outcome);
     if outcome == "done" {
         bucket.closed_rows.push(row);
-        return false;
+        return #{ bucket: bucket, stopped: false };
     }
     if outcome == "blocked" {
         bucket.blocked_rows.push(row);
-        return false;
+        return #{ bucket: bucket, stopped: false };
     }
     if outcome == "dirty-stop" || outcome == "agent-failed" {
         bucket.failed_rows.push(row);
-        return true;
+        return #{ bucket: bucket, stopped: true };
     }
     if outcome == "failed" {
         bucket.failed_rows.push(row);
-        return false;
+        return #{ bucket: bucket, stopped: false };
     }
     let reason = lower(row.hold_reason);
     if reason.contains("public-face") || reason.contains("other seat") {
         bucket.seat_rows.push(row);
-        return false;
+        return #{ bucket: bucket, stopped: false };
     }
     bucket.held_rows.push(row);
-    false
+    #{ bucket: bucket, stopped: false }
 }
 
 fn walk(ids, extra, impl_schema_value, skeptic_schema_value, commit_schema_value) {
@@ -479,7 +503,9 @@ fn walk(ids, extra, impl_schema_value, skeptic_schema_value, commit_schema_value
         log("slice " + label);
         let row = run_slice(label, mode_for(id), extra, impl_schema_value, skeptic_schema_value, commit_schema_value);
         log("slice " + label + " " + trimmed(row.outcome));
-        stopped = take_row(bucket, row);
+        let placed = take_row(bucket, row);
+        bucket = placed.bucket;
+        stopped = placed.stopped;
         if stopped {
             return #{
                 stopped: true,
@@ -509,6 +535,7 @@ fn merge_part(into, part) {
     for row in part.blocked_rows { into.blocked_rows.push(row); }
     for row in part.failed_rows { into.failed_rows.push(row); }
     for row in part.seat_rows { into.seat_rows.push(row); }
+    into
 }
 
 fn bullet(row) {
@@ -608,8 +635,16 @@ fn holds_text() {
 }
 
 let smoke_flag = ();
+let skip_208 = false;
 if args != () {
     smoke_flag = args.smoke;
+    try {
+        if args.skip_208 == true {
+            skip_208 = true;
+        }
+    } catch (miss) {
+        skip_208 = false;
+    }
 }
 if smoke_flag == true {
     phase("Checkpoint");
@@ -640,12 +675,27 @@ let release_note = "not run";
 let layer_note = "not run";
 
 phase("Checkpoint");
-log("slice 208");
-let heading = run_slice("208", "heading", "", impl_schema, skeptic_schema, commit_schema);
-log("slice 208 " + trimmed(heading.outcome));
-if take_row(book, heading) {
-    stopped = true;
-    next_label = "208";
+if skip_208 == true {
+    log("slice 208 already committed");
+    book.closed_rows.push(#{
+        label: "208",
+        outcome: "done",
+        hold_reason: "already committed as cd3b1a2c",
+        summary: "",
+        tests: "",
+        sha: "cd3b1a2c",
+        status_change: "verified",
+    });
+} else {
+    log("slice 208");
+    let heading = run_slice("208", "heading", "", impl_schema, skeptic_schema, commit_schema);
+    log("slice 208 " + trimmed(heading.outcome));
+    let placed = take_row(book, heading);
+    book = placed.bucket;
+    if placed.stopped == true {
+        stopped = true;
+        next_label = "208";
+    }
 }
 
 if stopped == false {
@@ -737,7 +787,9 @@ if stopped == false {
             log("slice fix-" + defect.sha);
             let row = run_slice("fix-" + defect.sha, "defect", extra, impl_schema, skeptic_schema, commit_schema);
             log("slice fix-" + defect.sha + " " + trimmed(row.outcome));
-            if take_row(book, row) {
+            let placed = take_row(book, row);
+            book = placed.bucket;
+            if placed.stopped == true {
                 stopped = true;
             }
         }
@@ -791,7 +843,9 @@ if stopped == false {
         log("slice nightly");
         let row = run_slice("nightly", "nightly", nightly_note, impl_schema, skeptic_schema, commit_schema);
         log("slice nightly " + trimmed(row.outcome));
-        if take_row(book, row) {
+        let placed = take_row(book, row);
+        book = placed.bucket;
+        if placed.stopped == true {
             stopped = true;
             next_label = "nightly";
         }
@@ -812,7 +866,7 @@ if stopped == false {
     phase("Campaign");
     next_label = "583";
     let part = walk([583, 609, 552, 551, 554, 562, 575, 577, 579, 580, 597, 601, 604, 615, 616], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, part);
+    book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
         next_label = part.next_label;
@@ -823,7 +877,7 @@ if stopped == false {
     phase("Foundation");
     next_label = "543";
     let part = walk([543, 533, 194], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, part);
+    book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
         next_label = part.next_label;
@@ -834,7 +888,7 @@ if stopped == false {
     phase("Census");
     next_label = "90";
     let hygiene = walk([90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, hygiene);
+    book = merge_part(book, hygiene);
     if hygiene.stopped == true {
         stopped = true;
         next_label = hygiene.next_label;
@@ -855,7 +909,7 @@ if stopped == false {
     log(layer_note);
     let extra = "Layer-import inventory, context only, not a skip list:\n" + layer_note;
     let part = walk([50, 51, 52, 53, 54, 55, 60, 61, 64, 65, 66, 67, 68, 69, 70, 74, 75, 76, 84, 85], extra, impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, part);
+    book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
         next_label = part.next_label;
@@ -865,7 +919,7 @@ if stopped == false {
 if stopped == false {
     next_label = "206";
     let part = walk([206, 256, 154, 251, 257, 252, 229, 270, 190, 144, 155, 161, 163, 176, 178, 179, 180, 181, 197, 202, 207, 210, 211, 212, 225, 226, 255, 511, 137], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, part);
+    book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
         next_label = part.next_label;
@@ -875,7 +929,7 @@ if stopped == false {
 if stopped == false {
     next_label = "244";
     let d13 = walk([244, 248, 245], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, d13);
+    book = merge_part(book, d13);
     if d13.stopped == true {
         stopped = true;
         next_label = d13.next_label;
@@ -894,7 +948,7 @@ if stopped == false {
         if ready == true {
             next_label = "246";
             let follower = walk([246], "", impl_schema, skeptic_schema, commit_schema);
-            merge_part(book, follower);
+            book = merge_part(book, follower);
             if follower.stopped == true {
                 stopped = true;
                 next_label = follower.next_label;
@@ -917,7 +971,7 @@ if stopped == false {
     phase("Remainder");
     next_label = "5";
     let part = walk([5, 37, 41, 44, 45, 49, 77, 79, 80, 83, 133, 146, 162, 221, 223, 227, 228, 263, 329, 333, 336, 379, 380, 387, 419, 420, 424, 429, 487, 488, 490, 515, 516, 517, 518, 519, 521, 620], "", impl_schema, skeptic_schema, commit_schema);
-    merge_part(book, part);
+    book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
         next_label = part.next_label;
@@ -931,7 +985,7 @@ if stopped == false {
         if ready == true {
             next_label = "509";
             let follower = walk([509], "Follow #490. This is not a silent API deletion ahead of the ticket.", impl_schema, skeptic_schema, commit_schema);
-            merge_part(book, follower);
+            book = merge_part(book, follower);
             if follower.stopped == true {
                 stopped = true;
                 next_label = follower.next_label;
