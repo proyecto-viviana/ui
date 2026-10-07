@@ -7,11 +7,12 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { JSX, createRoot } from "solid-js";
+import { JSX, createRoot, createSignal, flush } from "solid-js";
 import {
   createRadioGroup,
   createRadio,
   createRadioGroupState,
+  radioGroupData,
   I18nProvider,
   type RadioGroupState,
   type AriaRadioGroupProps,
@@ -988,6 +989,27 @@ describe("Radio Group", () => {
       expect(radios[0]).toHaveAttribute("tabIndex", "-1");
       expect(radios[1]).toHaveAttribute("tabIndex", "0");
       expect(radios[2]).toHaveAttribute("tabIndex", "-1");
+    });
+  });
+
+  it("writes the form prop into radioGroupData and updates it when the prop changes", () => {
+    createRoot((dispose) => {
+      const [form, setForm] = createSignal<string | undefined>("alpha", { ownedWrite: true });
+      const state = createRadioGroupState({});
+      createRadioGroup(
+        () => ({
+          "aria-label": "favorite pet",
+          form: form(),
+          validationBehavior: "native",
+        }),
+        state,
+      );
+      expect(radioGroupData.get(state)?.form).toBe("alpha");
+
+      setForm("beta");
+      flush();
+      expect(radioGroupData.get(state)?.form).toBe("beta");
+      dispose();
     });
   });
 });

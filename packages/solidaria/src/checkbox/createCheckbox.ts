@@ -22,7 +22,7 @@
  * This is a 1:1 port of @react-aria/checkbox's useCheckbox hook.
  */
 
-import { Accessor, createTrackedEffect } from "solid-js";
+import { Accessor, createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
@@ -89,16 +89,23 @@ export function createCheckbox(
   const toggleResult = createToggle(props, state, inputRef);
   const { labelProps: baseLabelProps, isSelected, isPressed } = toggleResult;
 
-  // Handle indeterminate state
-  createTrackedEffect(() => {
-    const input = inputRef();
-    const isIndeterminate = getProps().isIndeterminate;
-    if (input) {
-      // indeterminate is a property, but it can only be set via javascript
-      // https://css-tricks.com/indeterminate-checkboxes/
-      input.indeterminate = !!isIndeterminate;
-    }
-  });
+  // Indeterminate is a DOM property, not an attribute. The compute tracks
+  // the prop and the ref signal. The effect reads the ref again: a plain
+  // let is assigned later in this render, after the compute pass.
+  createEffect(
+    () => ({
+      input: inputRef(),
+      isIndeterminate: !!getProps().isIndeterminate,
+    }),
+    ({ isIndeterminate }) => {
+      const input = inputRef();
+      if (input) {
+        // indeterminate is a property, but it can only be set via javascript
+        // https://css-tricks.com/indeterminate-checkboxes/
+        input.indeterminate = isIndeterminate;
+      }
+    },
+  );
 
   // Reset validation state on label press for checkbox with a hidden input.
   const { pressProps } = createPress({

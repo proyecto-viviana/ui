@@ -259,6 +259,10 @@ jobs:
         id: guard_s2_cleanups
         run: pnpm run guard:s2-cleanups
 
+      - name: guard tracked-effect
+        id: guard_tracked_effect
+        run: pnpm run guard:tracked-effect
+
       - name: guard upstream-test-parity
         id: guard_upstream_test_parity
         run: pnpm run guard:upstream-test-parity
@@ -364,6 +368,7 @@ jobs:
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_JSX_REF_DEAD_CODE: ${{ steps.guard_jsx_ref_dead_code.outcome }}
           O_GUARD_S2_CLEANUPS: ${{ steps.guard_s2_cleanups.outcome }}
+          O_GUARD_TRACKED_EFFECT: ${{ steps.guard_tracked_effect.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
@@ -424,6 +429,7 @@ jobs:
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:jsx-ref-dead-code\` | $(icon "$O_GUARD_JSX_REF_DEAD_CODE") |"
             echo "| \`guard:s2-cleanups\` | $(icon "$O_GUARD_S2_CLEANUPS") |"
+            echo "| \`guard:tracked-effect\` | $(icon "$O_GUARD_TRACKED_EFFECT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"

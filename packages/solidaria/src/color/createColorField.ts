@@ -20,7 +20,7 @@
  * Ported from packages/react-aria/src/color/useColorField.ts.
  */
 
-import { createMemo, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
@@ -48,14 +48,22 @@ export function createColorField(
   const generatedInputId = createId();
   const labelId = createId();
 
+  // didAutoFocus is a plain let. Reading it in the compute keeps autoFocus
+  // unsubscribed after the latch, matching the old short-circuit, and the
+  // latch is set before focus() so a synchronous re-entry sees it.
   let didAutoFocus = false;
-  createTrackedEffect(() => {
-    const input = inputRef();
-    if (!didAutoFocus && getProps().autoFocus && input) {
+  createEffect(
+    () => {
+      const input = inputRef();
+      if (didAutoFocus) return null;
+      return getProps().autoFocus && input ? input : null;
+    },
+    (input) => {
+      if (!input) return;
       didAutoFocus = true;
       input.focus();
-    }
-  });
+    },
+  );
 
   const isDisabled = () => getProps().isDisabled || getState().isDisabled;
   const isReadOnly = () => getProps().isReadOnly || getState().isReadOnly;

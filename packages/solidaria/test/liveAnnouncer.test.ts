@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { announce, clearAnnouncer, destroyAnnouncer } from "../src/live-announcer";
+import { createRoot, flush } from "solid-js";
+import { announce, clearAnnouncer, destroyAnnouncer, useAnnouncer } from "../src/live-announcer";
 
 // Mark as test environment for immediate announcements
 (globalThis as Record<string, unknown>).IS_SOLIDARIA_TEST = true;
@@ -225,6 +226,22 @@ describe("liveAnnouncer", () => {
 
       const logs = document.querySelectorAll('[role="log"]');
       expect(logs.length).toBe(2);
+    });
+  });
+
+  describe("useAnnouncer", () => {
+    it("creates one announcer when the hook settles and announces through it", () => {
+      createRoot((dispose) => {
+        useAnnouncer();
+        const announcer = useAnnouncer();
+        flush();
+        expect(document.querySelectorAll("[data-live-announcer]")).toHaveLength(1);
+        announcer.announce("Results ready");
+        expect(document.querySelector('[aria-live="assertive"]')?.textContent).toBe(
+          "Results ready",
+        );
+        dispose();
+      });
     });
   });
 });

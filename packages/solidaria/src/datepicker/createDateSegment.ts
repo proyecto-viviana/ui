@@ -32,7 +32,7 @@ import {
   getActiveElement,
   getOwnerDocument,
 } from "../utils";
-import { createMemo, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, createTrackedEffect } from "solid-js";
 import { toCalendar, CalendarDate } from "@internationalized/date";
 import { NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -407,9 +407,14 @@ export function createDateSegment<T extends DateFieldState>(
 
   // If the focused segment is removed, focus the previous one, or the next one if there was no previous one.
   let focusedElement: HTMLElement | null = null;
-  createTrackedEffect(() => {
-    focusedElement = ref();
-  });
+  // The compute subscribes when ref is a signal. The effect reads it
+  // again so a plain let assigned later in this render is visible.
+  createEffect(
+    () => ref(),
+    () => {
+      focusedElement = ref();
+    },
+  );
   onOwnedCleanup(() => {
     if (typeof document !== "undefined" && document.activeElement === focusedElement) {
       const prev = focusManager?.focusPrevious();

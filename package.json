@@ -113,6 +113,7 @@
     "guard:package-sourcemaps": "node scripts/check-package-macro-sourcemaps.mjs",
     "guard:jsx-ref-dead-code": "vp exec tsx scripts/check-jsx-ref-dead-code.ts",
     "guard:s2-cleanups": "vp exec tsx scripts/check-s2-cleanups-strand.ts",
+    "guard:tracked-effect": "vp exec tsx scripts/check-tracked-effect.ts",
     "guard:injected-style-nonce": "vp exec tsx scripts/check-injected-style-nonce.ts",
     "guard:source-artifacts": "node scripts/check-source-artifacts.mjs",
     "guard:package-artifacts": "node scripts/check-package-artifacts.mjs",

@@ -143,6 +143,10 @@
       "leg": null,
       "why": "guard:s2-cleanups runs in Certification Gates, outside ci:release-readiness."
     },
+    "certification-gates / guard tracked-effect": {
+      "leg": null,
+      "why": "guard:tracked-effect runs in Certification Gates, outside ci:release-readiness."
+    },
     "certification-gates / guard upstream-test-parity": {
       "leg": null,
       "why": "guard:upstream-test-parity runs in Certification Gates, outside ci:release-readiness."

@@ -25,7 +25,7 @@
  * will only be created when running in the browser.
  */
 
-import { createTrackedEffect } from "solid-js";
+import { onSettled } from "solid-js";
 import { isServer } from "@solidjs/web";
 
 export type Assertiveness = "assertive" | "polite";
@@ -251,10 +251,12 @@ export interface UseAnnouncerResult {
  * function SearchResults(props) {
  *   const announcer = useAnnouncer();
  *
- *   createTrackedEffect(() => {
- *     const count = props.results.length;
- *     announcer.announce(`${count} results found`, 'polite');
- *   });
+ *   createEffect(
+ *     () => props.results.length,
+ *     (count) => {
+ *       announcer.announce(`${count} results found`, 'polite');
+ *     },
+ *   );
  *
  *   return <ul>...</ul>;
  * }
@@ -288,8 +290,8 @@ export function useAnnouncer(): UseAnnouncerResult {
   }
 
   // Ensure the announcer is initialized
-  createTrackedEffect(() => {
-    // Initialize on first use
+  // No signal reads: settle once in this owner and build the node.
+  onSettled(() => {
     if (!liveAnnouncer) {
       liveAnnouncer = new LiveAnnouncer();
     }

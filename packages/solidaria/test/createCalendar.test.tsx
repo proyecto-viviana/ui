@@ -362,4 +362,29 @@ describe("createCalendar paging focus", () => {
       dispose();
     });
   });
+
+  it("focuses a range calendar when Previous becomes disabled while that button is focused", () => {
+    createRoot((dispose) => {
+      const state = createRangeCalendarState({
+        locale: "en-US",
+        defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        minValue: new CalendarDate(2024, 5, 10),
+      });
+      flush();
+      const calendar = createRangeCalendar({ "aria-label": "Trip dates" }, state);
+      flush();
+
+      expect(state.isPreviousVisibleRangeInvalid()).toBe(false);
+      focusButton(calendar.prevButtonProps, true);
+      flush();
+
+      const click = calendar.prevButtonProps.onClick as () => void;
+      click();
+      flush();
+
+      expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+      expect(state.isFocused()).toBe(true);
+      dispose();
+    });
+  });
 });

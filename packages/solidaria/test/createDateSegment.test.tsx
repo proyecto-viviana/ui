@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
+import { flush } from "solid-js";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { GregorianCalendar } from "@internationalized/date";
 import { createDateSegment } from "../src/datepicker/createDateSegment";
@@ -144,6 +145,16 @@ describe("createDateSegment", () => {
     expect(segment).toHaveAttribute("contenteditable", "true");
     // Composed from the localized part name ("day") via useDisplayNames.
     expect(segment.getAttribute("aria-label")).toMatch(/day/i);
+  });
+
+  it("moves focus to the previous segment when the focused segment unmounts", () => {
+    const { focusManager } = renderSegment();
+    const segment = screen.getByTestId("segment");
+    flush();
+    segment.focus();
+    expect(document.activeElement).toBe(segment);
+    cleanup();
+    expect(focusManager.focusPrevious).toHaveBeenCalled();
   });
 
   it("threads the field label from hookData into each segment's aria-label", () => {

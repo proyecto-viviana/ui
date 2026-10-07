@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useRangeCalendar
  */
 
-import { createMemo, createSignal, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, createSignal, createTrackedEffect } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createId, createSlotId } from "../ssr";
 import { createLabels } from "../label/createLabels";
@@ -166,20 +166,30 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   // disabled button cannot hold focus, so move it to the calendar body.
   const [previousFocused, setPreviousFocused] = createSignal(false, { ownedWrite: true });
   const [nextFocused, setNextFocused] = createSignal(false, { ownedWrite: true });
-  createTrackedEffect(() => {
-    const pagingDisabled = getProps().isDisabled || state.isPreviousVisibleRangeInvalid();
-    if (pagingDisabled && previousFocused()) {
-      setPreviousFocused(false);
-      state.setFocused(true);
-    }
-  });
-  createTrackedEffect(() => {
-    const pagingDisabled = getProps().isDisabled || state.isNextVisibleRangeInvalid();
-    if (pagingDisabled && nextFocused()) {
-      setNextFocused(false);
-      state.setFocused(true);
-    }
-  });
+  createEffect(
+    () => {
+      const pagingDisabled = getProps().isDisabled || state.isPreviousVisibleRangeInvalid();
+      return pagingDisabled && previousFocused();
+    },
+    (moveFocus) => {
+      if (moveFocus) {
+        setPreviousFocused(false);
+        state.setFocused(true);
+      }
+    },
+  );
+  createEffect(
+    () => {
+      const pagingDisabled = getProps().isDisabled || state.isNextVisibleRangeInvalid();
+      return pagingDisabled && nextFocused();
+    },
+    (moveFocus) => {
+      if (moveFocus) {
+        setNextFocused(false);
+        state.setFocused(true);
+      }
+    },
+  );
 
   // Previous button props
   const prevButtonProps = createMemo(() => {

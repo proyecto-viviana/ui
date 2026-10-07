@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/radio's useRadioGroup hook.
  */
 
-import { createTrackedEffect } from "solid-js";
+import { createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";
@@ -182,15 +182,23 @@ export function createRadioGroup(
 
   const groupName = getProps().name ?? createId();
 
-  const updateRadioGroupData = () => {
+  const updateRadioGroupData = (form: string | undefined, behavior: "aria" | "native") => {
     radioGroupData.set(state, {
       name: groupName,
-      form: getProps().form,
-      validationBehavior: validationBehavior(),
+      form,
+      validationBehavior: behavior,
     });
   };
-  updateRadioGroupData();
-  createTrackedEffect(updateRadioGroupData);
+  updateRadioGroupData(getProps().form, validationBehavior());
+  createEffect(
+    () => ({
+      form: getProps().form,
+      validationBehavior: validationBehavior(),
+    }),
+    ({ form, validationBehavior: behavior }) => {
+      updateRadioGroupData(form, behavior);
+    },
+  );
 
   const getNextElement = (nextDir: "next" | "prev", e: KeyboardEvent): boolean => {
     const root = e.currentTarget;
