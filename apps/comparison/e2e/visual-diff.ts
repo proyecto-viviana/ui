@@ -196,6 +196,96 @@ async function assertPngPainted(page: Page, png: Buffer, label: string) {
 }
 
 /**
+ * Move the D3 frame to a device pixel at the viewport origin and the clone's
+ * border box to that origin plus the frame pad. Both panels then rasterize
+ * glyphs at the same x phase. Press-scale `matrix3d` is left alone: correcting
+ * it would erase the pressed projection.
+ */
+async function alignClonedPixelPhase(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const identityTransform = (value: string) => {
+      if (!value || value === "none") {
+        return true;
+      }
+      const match = /^matrix\(([^)]+)\)$/.exec(value);
+      if (!match) {
+        return false;
+      }
+      const nums = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+      if (nums.length !== 6 || nums.some((num) => !Number.isFinite(num))) {
+        return false;
+      }
+      const [a, b, c, d, tx, ty] = nums;
+      return (
+        Math.abs(a - 1) < 1e-4 &&
+        Math.abs(b) < 1e-4 &&
+        Math.abs(c) < 1e-4 &&
+        Math.abs(d - 1) < 1e-4 &&
+        Math.abs(tx) < 1e-4 &&
+        Math.abs(ty) < 1e-4
+      );
+    };
+    const identityTranslate = (value: string) => {
+      if (!value || value === "none") {
+        return true;
+      }
+      return value
+        .trim()
+        .split(/\s+/)
+        .every((part) => {
+          const amount = Number.parseFloat(part);
+          return Number.isFinite(amount) && Math.abs(amount) < 1e-4;
+        });
+    };
+
+    const frame = document.querySelector("[data-comparison-pixel-frame]");
+    const clone = document.querySelector("[data-comparison-pixel-clone]");
+    if (!(frame instanceof HTMLElement) || !(clone instanceof HTMLElement)) {
+      return false;
+    }
+    const pad = Number(frame.dataset.comparisonPixelPad ?? "");
+    if (!Number.isFinite(pad)) {
+      return false;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+    const snap = (value: number) => Math.round(value * dpr) / dpr;
+    let moved = false;
+
+    const frameComputed = getComputedStyle(frame);
+    if (
+      identityTransform(frameComputed.getPropertyValue("transform")) &&
+      identityTranslate(frameComputed.getPropertyValue("translate"))
+    ) {
+      const frameRect = frame.getBoundingClientRect();
+      const frameDx = snap(0) - frameRect.x;
+      const frameDy = snap(0) - frameRect.y;
+      if (Math.abs(frameDx) >= 1e-4 || Math.abs(frameDy) >= 1e-4) {
+        frame.style.translate = `${frameDx}px ${frameDy}px`;
+        moved = true;
+      }
+    }
+
+    const cloneComputed = getComputedStyle(clone);
+    if (
+      !identityTransform(cloneComputed.getPropertyValue("transform")) ||
+      !identityTranslate(cloneComputed.getPropertyValue("translate"))
+    ) {
+      return moved;
+    }
+    const frameRect = frame.getBoundingClientRect();
+    const cloneRect = clone.getBoundingClientRect();
+    const dx = snap(frameRect.x + pad) - cloneRect.x;
+    const dy = snap(frameRect.y + pad) - cloneRect.y;
+    if (Math.abs(dx) < 1e-4 && Math.abs(dy) < 1e-4) {
+      return moved;
+    }
+    clone.style.translate = `${dx}px ${dy}px`;
+    return true;
+  });
+}
+
+/**
  * Screenshot without Playwright's stable-frame wait. `locator.screenshot`
  * scrolls-into-view then waits for two compositor frames; that is the D3
  * 15s "element to be stable" deadlock.
@@ -216,7 +306,6 @@ export async function captureLocatorPng(
   }
 
   await scrollLocatorIntoView(target);
-  const box = await layoutBox(target);
   const page = target.page();
   const animations = options.animations ?? "disabled";
 
@@ -240,6 +329,14 @@ export async function captureLocatorPng(
     });
     await waitForPaintSettle(page, postAnimationPaintBudgetMs);
   }
+
+  // Freeze first, then pin. A running toast slide would otherwise leave the
+  // two panels on different x phases, and the crop must use the pinned box.
+  const aligned = await alignClonedPixelPhase(page);
+  if (aligned) {
+    await waitForPaintSettle(page, postAnimationPaintBudgetMs);
+  }
+  const box = await layoutBox(target);
 
   const session = await page.context().newCDPSession(page);
   try {
@@ -416,8 +513,8 @@ export type ClonedScreenshotOptions = {
 
 /**
  * Pixel-evidence capture for the pair drivers: screenshots an inert clone of
- * the target inside a top-layer frame pinned at an integer viewport position
- * over a uniform backdrop.
+ * the target inside a top-layer frame pinned to the same device pixel on
+ * both panels, over a uniform backdrop.
  *
  * Why a clone instead of repositioning the element itself
  * (`normalizedElementScreenshot`): the frameworks own the live element, so
@@ -487,6 +584,12 @@ export async function clonedElementScreenshot(
     frame.style.insetInlineStart = "0px";
     frame.style.insetBlockEnd = "auto";
     frame.style.insetInlineEnd = "auto";
+    // Physical edges last, so a copied or UA `inset: 0` cannot center the frame.
+    frame.style.left = "0px";
+    frame.style.top = "0px";
+    frame.style.right = "auto";
+    frame.style.bottom = "auto";
+    frame.dataset.comparisonPixelPad = String(pad);
     frame.style.width = `${Math.ceil(rect.width) + pad * 2}px`;
     frame.style.height = `${Math.ceil(rect.height) + pad * 2}px`;
     frame.style.margin = "0";
@@ -502,6 +605,14 @@ export async function clonedElementScreenshot(
       descendant.removeAttribute("id");
     }
     clone.style.position = "absolute";
+    // Drop copied overlay `left`/`top` before the logical pin. Last write wins
+    // between a physical inset and its logical pair.
+    clone.style.left = "auto";
+    clone.style.right = "auto";
+    clone.style.top = "auto";
+    clone.style.bottom = "auto";
+    clone.style.insetBlockEnd = "auto";
+    clone.style.insetInlineEnd = "auto";
     clone.style.insetBlockStart = `${pad}px`;
     clone.style.insetInlineStart = `${pad}px`;
     clone.style.margin = "0";

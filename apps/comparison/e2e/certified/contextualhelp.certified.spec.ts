@@ -114,30 +114,8 @@ const closeHelp = async (ctx: PanelContext) => {
 
 /** Scenario 1 — the closed icon-only quiet trigger across variant × size. The
  *  default allowlist covers the button color/bg/border/radius/padding/size/
- *  transform/transition; the variant glyph is a named part.
- *
- *  D3 SUB-PIXEL WAIVER (help-xs, info-xs, info-s) — proven not a port divergence.
- *  The trigger is the CP9.2-certified quiet `ActionButton` carrying a workflow
- *  icon whose SVG path data is byte-identical to the vendored upstream asset
- *  (`S2_Icon_{Help,Info}Circle_20_N.svg`). A geometry probe confirmed the port's
- *  button box, padding (1px,0,1px,0), border (0), min-width, box-sizing, the
- *  rendered icon size (17.14px @S / 15.70px @XS), AND the icon's offset within
- *  the button are all byte-identical between the React and Solid panels. The only
- *  difference is that the Solid comparison panel is laid out at a half-pixel
- *  viewport x (e.g. 651.5 vs React's integer 409), so the two byte-identical
- *  glyphs rasterize at different sub-pixel phases (.42 vs .92). `help-s` survives
- *  that phase mismatch byte-exact (kept under strict zero-tolerance below), and
- *  ActionMenu's identical icon-only quiet trigger (CP9.33, `More` glyph, S/M/L)
- *  needed no waiver — only the phase-sensitive `?`/`i` edges at these sizes drift,
- *  ≤7/7056 px (0.1%) in a ≤2px sliver at the glyph edge, theme-independent and
- *  visually invisible. Closing it to byte-exact needs the comparison harness to
- *  snap both panels to the same sub-pixel x-phase (a shared measurement-layer
- *  concern, not this component) — tracked by ticket #105. The waiver is scoped
- *  to the three observed cases so any regression
- *  on `help-s` (or beyond ~10px on the others) still fails. */
-const glyphSubpixel = { maxMismatchRatio: 0.0015, maxDimensionDelta: 0, pixelThreshold: 0 };
-const glyphSubpixelReason =
-  "contextualhelp-trigger-glyph-subpixel: byte-identical workflow-icon glyph (proven-identical ActionButton geometry) drifts ≤7/7056px at the edge under the comparison panels' sub-pixel x-phase mismatch";
+ *  transform/transition; the variant glyph is a named part. D3 is exact-pair:
+ *  the shared clone pins both panels to the same device-pixel x phase (#105). */
 const triggerScenario: DriverScenario = {
   slug: "contextualhelp",
   title: "ContextualHelp trigger",
@@ -152,31 +130,6 @@ const triggerScenario: DriverScenario = {
   ],
   parts: {
     icon: triggerIcon,
-  },
-  pixel: {
-    waivers: [
-      {
-        caseId: "help-xs",
-        state: "*",
-        theme: "*",
-        threshold: glyphSubpixel,
-        reason: glyphSubpixelReason,
-      },
-      {
-        caseId: "info-xs",
-        state: "*",
-        theme: "*",
-        threshold: glyphSubpixel,
-        reason: glyphSubpixelReason,
-      },
-      {
-        caseId: "info-s",
-        state: "*",
-        theme: "*",
-        threshold: glyphSubpixel,
-        reason: glyphSubpixelReason,
-      },
-    ],
   },
 };
 
