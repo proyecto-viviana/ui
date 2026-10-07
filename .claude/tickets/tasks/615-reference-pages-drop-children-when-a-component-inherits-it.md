@@ -4,12 +4,17 @@ type: task
 title: "Reference pages drop `children` when the component inherits it"
 created: 2026-09-22
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-22,
       note: "opened from the review of #549's `f4feeae2`. `declaringPackage()` (`scripts/extract-api-reference.ts:191-196`) keeps a member only when its first declaration file sits under this workspace's `packages/` and outside `node_modules`, so a prop a component inherits from `solid-js` is dropped with the DOM attributes. Measured at `767ceae6`: `ProviderProps extends ParentProps, ProviderInheritedProps` (`packages/viviana-ui/src/provider/index.tsx:63`), `apps/web/src/data/api-reference/pages/provider.json` lists 13 props and `children` is not one of them - `node -e` over the committed page: `provider primary has children? false`. `<Provider>` without children renders nothing, so this is the one omitted prop a reader cannot guess. It is not general: a component that declares `children` itself, like `Table` or `CenterBaseline`, lists it. Two candidate fixes: keep a member named `children` whatever declares it, or let `declaringPackage()` fall through for a small allowlist. Why this is its own ticket and not a same-commit fix: the pages that already list `children` render it two ways - measured over the committed data, `JSX.Element` 15 times and the expanded `number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement` union 64 times - so an inherited `children` has to land on one of those renderings rather than a third, and that is a rendering decision, not a filter tweak.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "provider.json lists children on ProviderProps as `number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement`, required false, origin solid-js. ToolbarProps inherits the same ParentProps slot and lists it the same way; DOM children stays dropped. vp test run scripts/extract-api-reference.test.ts passes 7. vp run api:extract wrote 84 pages and propCount is 3691. vp run guard:api-reference exits 0. The longest generated description is 155 characters, and the sentence now names DOM attributes because inherited children is listed.",
     }
 ---
 

@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/switch")({
     seo({
       title: "Switch props",
       description:
-        "The 44 props declared for Switch in @proyecto-viviana/ui and the packages under it — props inherited from outside them are not listed.",
+        "The 44 props declared for Switch in @proyecto-viviana/ui and the packages under it — DOM attributes inherited from outside them are not listed.",
       path: "/docs/components/switch",
     }),
   component: () => <ApiReference page={page} />,

@@ -4,8 +4,14 @@ import { join } from "node:path";
 import ts from "typescript";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
+import * as path from "node:path";
 import type { ApiPageData } from "./extract-api-reference";
-import { renderType, routeFile } from "./extract-api-reference";
+import {
+  inheritedChildrenOrigin,
+  renderInheritedChildren,
+  renderType,
+  routeFile,
+} from "./extract-api-reference";
 
 const roots: string[] = [];
 
@@ -159,5 +165,43 @@ describe("routeFile", () => {
 
     expect(description).toContain("The 3 props declared for SpectrumIcon");
     expect(description).not.toContain("12");
+    expect(description).toContain("DOM attributes inherited from outside them are not listed.");
+    expect(description.length).toBeLessThanOrEqual(170);
+  });
+});
+
+describe("inherited children", () => {
+  // #615: ParentProps declares children in solid-js, which the package filter
+  // drops with the DOM attributes. The JSX namespace's children stays out.
+  it("keeps children inherited from solid-js and not from the JSX namespace", () => {
+    const parent = path.join(
+      "/node_modules/.pnpm/solid-js@2.0.0-rc.9/node_modules/solid-js/types/client/component.d.ts",
+    );
+    const server = path.join("/node_modules/solid-js/types/server/component.d.ts");
+    const dom = path.join(
+      "/node_modules/.pnpm/@solidjs+web@2.0.0-rc.9_solid-js@2.0.0-rc.9/node_modules/@solidjs/web/types/jsx.d.ts",
+    );
+
+    expect(inheritedChildrenOrigin(parent, "children")).toBe("solid-js");
+    expect(inheritedChildrenOrigin(server, "children")).toBe("solid-js");
+    expect(inheritedChildrenOrigin(dom, "children")).toBeUndefined();
+    expect(inheritedChildrenOrigin(parent, "ref")).toBeUndefined();
+  });
+
+  // The same source prints SolidElement without Node | JSX.ArrayElement.
+  // Optional JSX.Element on the committed pages is the wider union, so the
+  // inherited slot uses that spelling instead of a third one.
+  it("renders ParentProps children as the optional JSX.Element the pages already use", () => {
+    const raw =
+      'number | boolean | import("../types.js").RenderedElement | import("../types.js").ArrayElement | (string & {})';
+
+    expect(renderInheritedChildren(raw)).toBe(
+      "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
+    );
+    expect(renderInheritedChildren("JSX.Element")).toBe("JSX.Element");
+  });
+
+  it("fails rather than shipping a third children spelling", () => {
+    expect(() => renderInheritedChildren("SolidElement")).toThrow(/third type/);
   });
 });

@@ -188,11 +188,47 @@ function buildPages(entries: ApiEntry[]): ApiPage[] {
  * arrives through `extends JSX.HTMLAttributes<T>` and belongs in one sentence
  * of prose, not in 500 table rows.
  */
+function declarationFile(symbol: ts.Symbol): string | undefined {
+  return symbol.declarations?.[0]?.getSourceFile().fileName;
+}
+
 function declaringPackage(symbol: ts.Symbol): string | undefined {
-  const file = symbol.declarations?.[0]?.getSourceFile().fileName;
+  const file = declarationFile(symbol);
   if (!file || file.includes("/node_modules/")) return undefined;
   const [, tail] = file.split(`${path.sep}packages${path.sep}`);
   return tail?.split(path.sep)[0];
+}
+
+/**
+ * `children` inherited from `solid-js`'s `ParentProps` (or `FlowProps`) is the
+ * component slot. Its declaration is `solid-js/types/.../component.d.ts`, so
+ * `declaringPackage` would drop it with the DOM attributes. DOM `children` on
+ * `JSX.CustomAttributes` is `jsx.d.ts` and stays dropped.
+ */
+export function inheritedChildrenOrigin(fileName: string, memberName: string): string | undefined {
+  if (memberName !== "children") return undefined;
+  if (!fileName.includes(`${path.sep}solid-js${path.sep}`)) return undefined;
+  if (!fileName.endsWith(`${path.sep}component.d.ts`)) return undefined;
+  return "solid-js";
+}
+
+/** Optional `children?: JSX.Element` already prints as this, once import paths are gone. */
+const OPTIONAL_JSX_CHILDREN =
+  "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement";
+
+/** `ParentProps` prints `SolidElement` as that union without the JSX tail. */
+const SOLID_ELEMENT_CHILDREN = "number | boolean | RenderedElement | ArrayElement | (string & {})";
+
+/**
+ * Printed from `solid-js`, inherited `children` is a third spelling. Pages that
+ * declare optional `JSX.Element` already use the wider union, and required
+ * `JSX.Element` already prints as the alias, so land on one of those two.
+ */
+export function renderInheritedChildren(rendered: string): string {
+  const bare = renderType(rendered, "children");
+  if (bare === "JSX.Element" || bare === OPTIONAL_JSX_CHILDREN) return bare;
+  if (bare === SOLID_ELEMENT_CHILDREN) return OPTIONAL_JSX_CHILDREN;
+  throw new Error(`Inherited children renders as a third type: ${bare}`);
 }
 
 /** Optional props type as `T | undefined`; the table shows `T` and a flag. */
@@ -281,7 +317,9 @@ function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
 
     const props: ApiProp[] = [];
     for (const member of checker.getApparentType(declared).getProperties()) {
-      const origin = declaringPackage(member);
+      const file = declarationFile(member);
+      const owned = declaringPackage(member);
+      const origin = owned ?? (file ? inheritedChildrenOrigin(file, member.getName()) : undefined);
       if (!origin) continue;
       const site = member.declarations?.[0];
       if (!site) continue;
@@ -292,12 +330,12 @@ function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
       const defaultTag = member.getJsDocTags().find((tag) => tag.name === "default");
 
       const values = literalValues(display, checker);
+      const rendered = checker.typeToString(display, site, ts.TypeFormatFlags.NoTruncation);
       props.push({
         name: member.getName(),
-        type: renderType(
-          checker.typeToString(display, site, ts.TypeFormatFlags.NoTruncation),
-          `${name}.${member.getName()}`,
-        ),
+        type: owned
+          ? renderType(rendered, `${name}.${member.getName()}`)
+          : renderInheritedChildren(rendered),
         ...(values ? { values } : {}),
         required,
         ...(defaultTag ? { default: ts.displayPartsToString(defaultTag.text).trim() } : {}),
@@ -444,11 +482,11 @@ const ROUTES_BASE_PATH = "/docs/components";
  * component. A page-wide sum is a different number — the icon page carries
  * three interfaces, so it read "12 props declared for SpectrumIcon" where
  * `SpectrumIconProps` declares three — and on pages like `table` the two are
- * 54 and 258. The clause after the dash is the whole of what `declaringPackage`
- * drops: a member whose declaration file is outside this workspace's
- * `packages/`, which is DOM attributes but also `children` inherited from
- * `solid-js`. Props inherited from `solidaria` and the rest of the chain are
- * listed, so the clause has to say *outside*, not *inherited*.
+ * 54 and 258. The clause after the dash is what still stays out: DOM attributes
+ * whose declaration file is outside this workspace's `packages/`. `children`
+ * inherited from `solid-js` is listed, so the clause names DOM attributes
+ * rather than every outside prop. Props inherited from `solidaria` and the
+ * rest of the chain are listed too.
  *
  * Keep it under 170 characters: `apps/web/e2e/seo.spec.ts` fails a description
  * a search result would truncate, and the longest title spends 18 of them.
@@ -456,7 +494,7 @@ const ROUTES_BASE_PATH = "/docs/components";
 export function routeFile(page: ApiPageData): string {
   const propCount = page.entries[0].props.length;
   const title = `${page.title} props`;
-  const description = `The ${propCount} props declared for ${page.title} in ${page.packageName} and the packages under it — props inherited from outside them are not listed.`;
+  const description = `The ${propCount} props declared for ${page.title} in ${page.packageName} and the packages under it — DOM attributes inherited from outside them are not listed.`;
   return `// Generated by \`vp run api:extract\`. Do not edit; change the package's types instead.
 import { createFileRoute } from "@tanstack/solid-router";
 import { ApiReference } from "@/components/docs";

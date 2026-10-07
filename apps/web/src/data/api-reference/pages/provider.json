@@ -72,6 +72,13 @@
           "origin": "viviana-ui"
         },
         {
+          "name": "children",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
+          "required": false,
+          "description": "",
+          "origin": "solid-js"
+        },
+        {
           "name": "isQuiet",
           "type": "boolean",
           "values": [

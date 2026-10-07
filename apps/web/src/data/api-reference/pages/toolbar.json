@@ -53,6 +53,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "children",
+          "type": "number | boolean | RenderedElement | ArrayElement | (string & {}) | Node | JSX.ArrayElement",
+          "required": false,
+          "description": "",
+          "origin": "solid-js"
+        },
+        {
           "name": "slot",
           "type": "string | false",
           "required": false,
