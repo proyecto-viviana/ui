@@ -4,12 +4,17 @@ type: task
 title: "Render collection slot styles on the server"
 created: 2026-08-20
 parent: 32
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "recovered from the Glasselated ListView mirror during the live-document audit",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Slot classes for label, description, icon, and actions are already applied during render in solid-spectrum and viviana-ui ListView and Tree. SSR markup carries those classes, and a JavaScript-disabled browser check shows the row as a grid with those four areas on the first painted frame. Slotted ListView rows hydrate and toggle selection in both packages; the slotted viviana-ui Tree does too. Existing Tree and collection hydration tests stay green. solid-spectrum Tree still builds the unused framed branch, so that document's hydration key miss stays with #44.",
     }
 ---
 
