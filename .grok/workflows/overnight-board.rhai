@@ -538,6 +538,47 @@ fn merge_part(into, part) {
     into
 }
 
+fn seed_done(bucket, label, sha, summary) {
+    bucket.closed_rows.push(#{
+        label: label,
+        outcome: "done",
+        hold_reason: "already committed",
+        summary: summary,
+        tests: "",
+        sha: sha,
+        status_change: "",
+    });
+    bucket
+}
+
+fn seed_held(bucket, label, reason, summary) {
+    bucket.held_rows.push(#{
+        label: label,
+        outcome: "held",
+        hold_reason: reason,
+        summary: summary,
+        tests: "",
+        sha: "",
+        status_change: "",
+    });
+    bucket
+}
+
+fn from_id(ids, start) {
+    let out = [];
+    let keep = false;
+    let target = trimmed(start);
+    for id in ids {
+        if keep == false && id.to_string() == target {
+            keep = true;
+        }
+        if keep {
+            out.push(id);
+        }
+    }
+    out
+}
+
 fn bullet(row) {
     let line = "- #" + trimmed(row.label) + " " + trimmed(row.outcome);
     let reason = trimmed(row.hold_reason);
@@ -637,6 +678,7 @@ fn holds_text() {
 let smoke_flag = ();
 let skip_208 = false;
 let skip_checkpoint = false;
+let skip_landed = false;
 if args != () {
     smoke_flag = args.smoke;
     try {
@@ -652,6 +694,14 @@ if args != () {
         }
     } catch (miss) {
         skip_checkpoint = false;
+    }
+    try {
+        if args.skip_landed == true {
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_landed = false;
     }
 }
 if smoke_flag == true {
@@ -893,7 +943,31 @@ if skip_checkpoint == false && stopped == false {
     }
 }
 
-if stopped == false {
+if skip_landed == true {
+    log("landed slices already recorded, census resumes at 3");
+    next_label = "3";
+    book = seed_done(book, "583", "dba3c32b", "Recorded the per-stack reduced-motion contract");
+    book = seed_done(book, "609", "7f839994", "Tabs regression reads the roving tabindex during focusout and focusin");
+    book = seed_done(book, "552", "dfde9b13", "Fresh clone reinstalls the Vite+ pre-commit dispatcher");
+    book = seed_done(book, "551", "d0a05c53", "CI fails when a workflow leaves GitHub-hosted runners or names Blacksmith");
+    book = seed_done(book, "554", "3d01bd8e", "Nine createTrackedEffect sites moved to createEffect or onSettled");
+    book = seed_done(book, "562", "01bbe7ab", "Recorded why vmThreads stays load-bearing and the SSR pool is forks");
+    book = seed_done(book, "575", "e699fc83", "Theme commit keeps the light-scheme Create fill on the CTA colour");
+    book = seed_done(book, "577", "27e15f8c", "Source ratchets name a stale record and refuse an unexplained re-bless");
+    book = seed_done(book, "579", "ba25ae46", "Upstream-test-parity follows the component a test renders");
+    book = seed_held(book, "580", "Owner must approve the seam before the two toast modules can collapse. No new package, dependency, or public name.", "Toast modules stay two copies.");
+    book = seed_done(book, "597", "33efaf3b", "Classified the sixteen unexamined parity facts");
+    book = seed_done(book, "601", "ffca19c8", "ButtonGroup overflow is measured when a child changes size in place");
+    book = seed_done(book, "604", "654e2698", "A commit that changes a rendered ticket field cannot leave the generated board stale");
+    book = seed_done(book, "615", "0d4f997b", "Reference pages list children inherited from solid-js");
+    book = seed_done(book, "616", "067775b3", "Gate-coverage guard sees scripts, advisory steps, and the publish summary");
+    book = seed_done(book, "543", "e2056cf5", "D12 Solid button island goes through the private Solid adapter. Ticket stays in-progress.");
+    book = seed_done(book, "533", "0f7186f6", "Collection props resolve once. Ticket stays in-progress.");
+    book = seed_done(book, "194", "f2a2288f", "Repair only. Ticket stays in-progress. No certified suite and no #537.");
+    book = seed_done(book, "90", "d84a33fc", "Tested response-security headers are stamped. Ticket stays in-progress.");
+}
+
+if stopped == false && skip_landed == false {
     phase("Campaign");
     next_label = "583";
     let part = walk([583, 609, 552, 551, 554, 562, 575, 577, 579, 580, 597, 601, 604, 615, 616], "", impl_schema, skeptic_schema, commit_schema);
@@ -904,7 +978,7 @@ if stopped == false {
     }
 }
 
-if stopped == false {
+if stopped == false && skip_landed == false {
     phase("Foundation");
     next_label = "543";
     let part = walk([543, 533, 194], "", impl_schema, skeptic_schema, commit_schema);
@@ -917,12 +991,22 @@ if stopped == false {
 
 if stopped == false {
     phase("Census");
-    next_label = "90";
-    let hygiene = walk([90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127], "", impl_schema, skeptic_schema, commit_schema);
-    book = merge_part(book, hygiene);
-    if hygiene.stopped == true {
+    let hygiene_ids = [90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127];
+    if skip_landed == true {
+        hygiene_ids = from_id(hygiene_ids, "3");
+    }
+    if hygiene_ids.len() == 0 {
         stopped = true;
-        next_label = hygiene.next_label;
+        next_label = "3";
+        log("census resume missed 3");
+    } else {
+        next_label = hygiene_ids[0].to_string();
+        let hygiene = walk(hygiene_ids, "", impl_schema, skeptic_schema, commit_schema);
+        book = merge_part(book, hygiene);
+        if hygiene.stopped == true {
+            stopped = true;
+            next_label = hygiene.next_label;
+        }
     }
 }
 
