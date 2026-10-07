@@ -16,6 +16,11 @@ history:
       at: 2026-09-21,
       note: "item 22 is rewritten in place, from #544's review round. The half that was a shape complaint stands; what it did not say is that the shape pressure had already produced a false attribution. `b6ea736a` rewrote the last bullet of `ui/AGENTS.md` to grant, `by the owner's word dated on #544`, read-only agents plus a local, untracked worktree `.claude/worktrees/measure` (example) - and no owner sentence on #544 says either: the only two recorded there are the soft-launch cut and `also if we can parallelize more and better, let's do that. we can use one or two more grok workers or an opus one`, which is staffing, not a seat. The hub `AGENTS.md` campaign-#544 exception, authority 2 against a repo `AGENTS.md`'s 4, names exactly one extra seat, the `public-face` writer, and says the main writer keeps everything else - so a repo file was granting seats to itself from below. The clause is removed here and the bullet points at the hub grant instead; `wc -l ui/AGENTS.md` is 50 of a 50-line cap and `node vivianastack/scripts/audit/doc-shape-lint.mjs ui/AGENTS.md` EXIT=0 before and after. This seat cannot supply the missing grant: it may not write the hub file, and inventing an owner sentence is the thing being fixed. So the residue is the owner's, and it is item 22's last clause",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "item 1's fresh-clone residue is the root prepare script `vp config --no-agent`. `npm_lifecycle_event=prepare vp config --no-agent` exits 0 with the dispatcher at `.vite-hooks/_`. The same command prints `skip install (git hooks disabled)` under `VP_GIT_HOOKS=0`, and `skip install (hooks disabled; run vp hooks enable to re-enable)` while local `vp.hooks.disabled` is true. That preference was unset afterward and `core.hooksPath` stayed `.vite-hooks/_`",
+    }
 ---
 
 ## Scope
@@ -29,8 +34,13 @@ that removes it. Prefer removing a collision to adding a rule or an exception.
    repository's old location, a directory that no longer exists, so
    `vp staged` never ran. That is how `163f4377` put a syntax error and 373
    unformatted files on main. Repointed to the relative `.vite-hooks/_`.
-   Open: nothing reinstalls it on a fresh clone; add a `prepare` script or a
-   `guard:git-hooks` in `pr:check:fast`.
+   A fresh clone reinstalls that dispatcher through the root `prepare`
+   script `vp config --no-agent`. That is Vite+'s lifecycle install: it
+   refreshes `.vite-hooks/_`, skips when `VP_GIT_HOOKS=0` or `vp hooks
+disable` is set, and does not rewrite agent instruction files. A
+   `guard:git-hooks` step in `pr:check:fast` was the other option and was
+   not added, because it would only fail a check and that script does not
+   run on the install a fresh clone actually does.
 2. **Receipts against the formatter.** A receipt may not be edited after its
    day, but the format gate covered `.agents/`, so a receipt not formatted on
    its day became a permanent CI failure. `.agents/**` left the formatter

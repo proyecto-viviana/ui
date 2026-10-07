@@ -150,6 +150,7 @@
     "ci:site": "vp run build && vp run a11y:check && vp run test:routes && vp run test:seo && vp run test:api-reference",
     "pr:check:fast": "vp run ci:changesets && vp run ci:release-readiness",
     "pr:check": "vp run pr:check:fast && vp run ci:site",
+    "prepare": "vp config --no-agent",
     "release:prepare": "vp run changeset:version && vp run ci:release-readiness",
     "release:npm": "vp run changeset:publish",
     "release:publish": "vp run release:npm",
