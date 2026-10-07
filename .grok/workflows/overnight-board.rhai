@@ -636,6 +636,7 @@ fn holds_text() {
 
 let smoke_flag = ();
 let skip_208 = false;
+let skip_checkpoint = false;
 if args != () {
     smoke_flag = args.smoke;
     try {
@@ -644,6 +645,13 @@ if args != () {
         }
     } catch (miss) {
         skip_208 = false;
+    }
+    try {
+        if args.skip_checkpoint == true {
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_checkpoint = false;
     }
 }
 if smoke_flag == true {
@@ -675,7 +683,30 @@ let release_note = "not run";
 let layer_note = "not run";
 
 phase("Checkpoint");
-if skip_208 == true {
+if skip_checkpoint == true {
+    log("checkpoint already recorded");
+    next_label = "583";
+    book.closed_rows.push(#{
+        label: "208",
+        outcome: "done",
+        hold_reason: "already committed as cd3b1a2c",
+        summary: "",
+        tests: "",
+        sha: "cd3b1a2c",
+        status_change: "verified",
+    });
+    book.closed_rows.push(#{
+        label: "fix-0f7b7d6b",
+        outcome: "done",
+        hold_reason: "already committed as 47dc259d",
+        summary: "TextField tutor fill lives inside matteWell, before forcedColors",
+        tests: "vp exec tsx -e matteWell/control backgroundColor key-order assertions — 7 passed, 0 failed",
+        sha: "47dc259d",
+        status_change: "",
+    });
+    review_note = "1 confirmed, 0 dropped, 0 reviewer failures";
+    nightly_note = "Recorded on the prior run and not re-run. Reproduced on 47dc259d, seed 20261006, budget 180000ms, maxSteps 16, both specs 3/3. Picker minimized to touchDown trigger (1 step). ComboBox minimized to focus input then type mc (2 steps). Generated minimized JSON was removed. D13 stays in census order.";
+} else if skip_208 == true {
     log("slice 208 already committed");
     book.closed_rows.push(#{
         label: "208",
@@ -698,7 +729,7 @@ if skip_208 == true {
     }
 }
 
-if stopped == false {
+if skip_checkpoint == false && stopped == false {
     next_label = "review 9c92f721";
     let waves = [
         [ #{ sha: "9c92f721", ticket: "175" }, #{ sha: "9ddc120a", ticket: "171" }, #{ sha: "a6bf3825", ticket: "441" }, #{ sha: "08979ee8", ticket: "164" } ],
@@ -796,7 +827,7 @@ if stopped == false {
     }
 }
 
-if stopped == false {
+if skip_checkpoint == false && stopped == false {
     next_label = "nightly 37469399093";
     let diagnose = agent(
         "Read-only. In /home/emoporemilio/projects/viviana-hub/ui, inspect GitHub Actions run 37469399093 on origin/main 9a477baa. Failed jobs are journey-fuzz for e2e/certified/picker.certified.spec.ts and e2e/certified/combobox.certified.spec.ts. Use gh run view. Do not rerun, push, or edit. summary is the failing assertion in under 800 characters. If gh is not authenticated, say so in summary.",
