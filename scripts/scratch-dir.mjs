@@ -1,6 +1,8 @@
 // The directories the pack scripts `rmSync` come from the environment, so an
 // override is checked rather than trusted: it must sit strictly under the OS
-// temp directory and must neither hold nor sit inside the repository.
+// temp directory, must neither hold nor sit inside the repository, and its
+// last segment must be a name these scripts own. `tmpdir()` follows
+// TMPDIR/TMP/TEMP, so a widened temp root is not enough on its own.
 import { existsSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -38,5 +40,15 @@ export function scratchDir(variable, fallbackName, { repoRoot, env = process.env
   if (!isInside(path, tmpRoot)) refuse(`not inside the temp directory ${tmpRoot}`);
   if (path === repo || isInside(repo, path)) refuse(`it contains the repository ${repo}`);
   if (isInside(path, repo)) refuse(`it is inside the repository ${repo}`);
+  const name = basename(path);
+  const owned =
+    name === "viviana-ui-packs-chain" ||
+    name === "viviana-ui-consume-smoke" ||
+    name.startsWith("viviana-ui-pack-stage-");
+  if (!owned) {
+    refuse(
+      "its name is not one of viviana-ui-packs-chain, viviana-ui-consume-smoke, viviana-ui-pack-stage-*",
+    );
+  }
   return path;
 }

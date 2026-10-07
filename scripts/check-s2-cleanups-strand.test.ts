@@ -3,7 +3,7 @@
  * the shape `Virtualizer.tsx` had before #555 item 8 and the shape it has now.
  */
 import { describe, expect, it } from "vite-plus/test";
-import { findStrandedCleanupReturns } from "./check-s2-cleanups-strand";
+import { cleanupBodies, findStrandedCleanupReturns } from "./check-s2-cleanups-strand";
 
 const STRANDED = `
 createTrackedEffect(() => {
@@ -71,6 +71,38 @@ describe("findStrandedCleanupReturns", () => {
 
   it("ignores returns inside nested functions, which are other calls", () => {
     expect(findStrandedCleanupReturns(NESTED_RETURNS)).toEqual([]);
+  });
+
+  it("flags a body that pushes and then falls off the end", () => {
+    const fallsOff = `
+createTrackedEffect(() => {
+  const _s2Cleanups: Array<() => void> = [];
+  const frame = requestAnimationFrame(measure);
+  _s2Cleanups.push(() => cancelAnimationFrame(frame));
+});
+`;
+    expect(findStrandedCleanupReturns(fallsOff)).toEqual([
+      { line: 6, pushLine: 5, fallsOff: true },
+    ]);
+  });
+
+  it("counts function bodies, not files", () => {
+    const twoBodies = `
+function first() {
+  const _s2Cleanups: Array<() => void> = [];
+  return () => {
+    for (const c of _s2Cleanups) c();
+  };
+}
+function second() {
+  const _s2Cleanups: Array<() => void> = [];
+  return () => {
+    for (const c of _s2Cleanups) c();
+  };
+}
+`;
+    expect(cleanupBodies(twoBodies)).toBe(2);
+    expect(findStrandedCleanupReturns(twoBodies)).toEqual([]);
   });
 
   it("reads the real Virtualizer as clean", async () => {

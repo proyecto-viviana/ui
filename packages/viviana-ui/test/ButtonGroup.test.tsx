@@ -110,4 +110,28 @@ describe("ButtonGroup overflow (viviana-ui)", () => {
     await settle();
     expect(group.className).toBe(overflowed);
   });
+
+  it("re-measures when a child changes width in place", async () => {
+    const [width, setWidth] = createSignal(40);
+    const { container } = render(() => (
+      <ButtonGroup data-offset-width="100">
+        <button data-offset-left="0" data-offset-width="50">
+          Save
+        </button>
+        <button data-offset-left="50" data-offset-width={width()}>
+          Cancel
+        </button>
+      </ButtonGroup>
+    ));
+    const group = container.firstElementChild as HTMLElement;
+    const overflowed = verticalClass();
+    await settle();
+    expect(group.className).not.toBe(overflowed);
+
+    // Same child, same label. Only its width attribute changes, which is the
+    // case a childList/characterData observer does not see.
+    setWidth(120);
+    await settle();
+    expect(group.className).toBe(overflowed);
+  });
 });

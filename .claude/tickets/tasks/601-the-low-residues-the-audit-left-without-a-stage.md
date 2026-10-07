@@ -4,7 +4,7 @@ type: task
 title: "The low residues the 2026-09-21 audit left without a stage"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "all ten closed. 1: both ButtonGroup twins re-measure when a child changes size in place, and ignore the group's own attribute records; ButtonGroup.test.tsx 3 passed in solid-spectrum and 3 passed in viviana-ui. 2 and 3: the cleanup guard counts function bodies and reports a body that is still armed when the walk ends; check-s2-cleanups-strand.test.ts 7 passed. A throw on the way to a later runner stays a known gap. 4: the dom.ts and focus.ts cycle is already gone, so it was not split. focus.ts reaches dom.ts and no file reaches focus.ts back; openLink imports ./dom. 5: the Popover display:contents group is still rendered beside the FocusScope comment that cites RAC Overlay.tsx:76-81, and RAC Popover.tsx:375 still uses display:contents, so the comment was left. 6: the solid-js and @solidjs/web wildcards stay. pnpm 11.22 filterPeerDependencyIssues drops a peer when semver.satisfies(foundVersion, allowedRange) with no includePrerelease. satisfies(2.0.0-rc.9, *) is false, so today's wildcard does not hide the 17 apps/web unmet solid-js rows, and satisfies(2.0.0-rc.9, >=2.0.0-rc.9 <3) is true, so narrowing the wildcards to the pinned RC range would silence those rows. check-peers fails on an unexpected unmet peer and on a stale expected entry, so those 17 rows stay. 7: the live pin documents already quote S2 1.7.0 / RAC 1.21.0 / react-aria 3.52.0 / react-stately 3.50.0 (the catalog, upstream-sync.md, upstream-pin.json, and the guard fixture). The installed-comparison-deps-lag-pin memory description already names that pin. Remaining 1.5.1 and 1.19.0 strings are dated history or the version a check was written against (#82, the changelogs, certified specs, a few source comments, and the radiogroup sd151 class hook) and were left. 8: deleted the unused ORACLE_IGNORED_DATA_ATTRIBUTES export and folded its paragraph into the RAC_STATE_DATA_ATTRIBUTES comment. 9 and 10: scratchDir refuses a last segment these scripts do not own, and an unset pack stage is deleted at exit unless --keep-stage; scratch-dir.test.ts 12 passed",
     }
 ---
 
@@ -97,3 +102,18 @@ Child of #544. Off the RC path: nothing here gates a gate. It exists so that
 "no finding without an owner" stays true without ten more board rows. Items 9
 and 10 are the residue of #139, which is merged and carries the note that points
 here.
+
+## Closeout
+
+2026-10-07.
+
+1. Landed in both ButtonGroup twins. `vp test run packages/solid-spectrum/test/ButtonGroup.test.tsx` 3 passed. `vp test run packages/viviana-ui/test/ButtonGroup.test.tsx` 3 passed.
+2. The guard counts `_s2Cleanups` function bodies. `vp test run scripts/check-s2-cleanups-strand.test.ts` 7 passed.
+3. The same run reports a body that pushes and then falls off the end. A throw is still not an exit.
+4. Not split. On 2026-10-07 `dom.ts` does not reach `focus.ts`, nothing imports `focus.ts` back, and `openLink` imports `./dom`.
+5. Not edited. On 2026-10-07 the `display:contents` group is live in `Popover.tsx`, the comment matches RAC `Overlay.tsx:76-81`, and upstream `Popover.tsx:375` still uses `display:contents`.
+6. Not narrowed. On 2026-10-07 pnpm 11.22 treats `*` as not satisfying `2.0.0-rc.9`, and the pinned RC range as satisfying it, so the edit would hide the 17 `apps/web` unmet `solid-js` rows that `check-peers` still has to keep.
+7. Confirmed, not rewritten. On 2026-10-07 the catalog, `upstream-sync.md`, `scripts/upstream-pin.json`, and the guard fixture already quote the current train, and the memory description already names it. Older 1.5.1 / 1.19.0 citations stay where they record history or a class suffix.
+8. Landed. The unused ignore constant is gone and the allowlist comment carries the rule.
+9. Landed. A temp path whose last segment is not `viviana-ui-packs-chain`, `viviana-ui-consume-smoke`, or `viviana-ui-pack-stage-*` is refused before any delete.
+10. Landed. An ephemeral stage is created once and removed at exit, and kept when `VIVIANA_PACK_STAGE` is set or `--keep-stage` is passed. `vp test run scripts/scratch-dir.test.ts` 12 passed.

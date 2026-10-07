@@ -17,10 +17,14 @@ import { scratchDir } from "./scratch-dir.mjs";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
 const outDir = scratchDir("VIVIANA_PACK_OUT", "viviana-ui-packs-chain", { repoRoot });
-// Unset, the stage is a directory this run creates, so it is ours to delete.
-const stageRoot = process.env.VIVIANA_PACK_STAGE
+// Unset, the stage is a directory this run creates and deletes. A supplied
+// path stays, and --keep-stage leaves the ephemeral one for inspection.
+const keepStageFlag = process.argv.includes("--keep-stage");
+const stageSupplied = Boolean(process.env.VIVIANA_PACK_STAGE);
+const stageRoot = stageSupplied
   ? scratchDir("VIVIANA_PACK_STAGE", "", { repoRoot })
   : mkdtempSync(join(tmpdir(), "viviana-ui-pack-stage-"));
+const keepStage = stageSupplied || keepStageFlag;
 
 const packages = [
   { name: "@proyecto-viviana/solid-stately", dir: "packages/solid-stately" },
@@ -127,43 +131,56 @@ function printJson(title, value) {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-rmSync(outDir, { recursive: true, force: true });
-rmSync(stageRoot, { recursive: true, force: true });
-mkdirSync(outDir, { recursive: true });
-mkdirSync(stageRoot, { recursive: true });
+// scratchDir has already refused a bad path. The deletes below run only after
+// that, so a refusal never removes the caller's directory.
+try {
+  rmSync(outDir, { recursive: true, force: true });
+  mkdirSync(outDir, { recursive: true });
+  // An ephemeral mkdtemp is already empty. Clearing it again only races the
+  // directory this run owns. A caller-supplied stage may hold a previous run.
+  if (stageSupplied) {
+    rmSync(stageRoot, { recursive: true, force: true });
+    mkdirSync(stageRoot, { recursive: true });
+  }
 
-const tarballs = {};
+  const tarballs = {};
 
-for (const pkg of packages) {
-  const stageDir = copyPackage(pkg);
-  rewriteWorkspaceDependencies(pkg, stageDir);
-  assertDist(pkg, stageDir);
-  tarballs[pkg.name] = pack(stageDir);
+  for (const pkg of packages) {
+    const stageDir = copyPackage(pkg);
+    rewriteWorkspaceDependencies(pkg, stageDir);
+    assertDist(pkg, stageDir);
+    tarballs[pkg.name] = pack(stageDir);
+  }
+
+  const overrideSpecs = Object.fromEntries(
+    packages.map((pkg) => [pkg.name, fileSpec(tarballs[pkg.name])]),
+  );
+
+  printJson("Packed tarballs", tarballs);
+  printJson("pnpm.overrides for consumers", overrideSpecs);
+  printJson("Pokeforos dependency", {
+    "@proyecto-viviana/ui": fileSpec(tarballs["@proyecto-viviana/ui"]),
+  });
+  printJson("Kumo dependency", {
+    "@proyecto-viviana/kumo": fileSpec(tarballs["@proyecto-viviana/kumo"]),
+  });
+  printJson("Geist dependency", {
+    "@proyecto-viviana/geist": fileSpec(tarballs["@proyecto-viviana/geist"]),
+  });
+  printJson("Comparison dependencies", {
+    "@proyecto-viviana/solid-stately": fileSpec(tarballs["@proyecto-viviana/solid-stately"]),
+    "@proyecto-viviana/solidaria": fileSpec(tarballs["@proyecto-viviana/solidaria"]),
+    "@proyecto-viviana/solidaria-components": fileSpec(
+      tarballs["@proyecto-viviana/solidaria-components"],
+    ),
+    "@proyecto-viviana/solid-spectrum": fileSpec(tarballs["@proyecto-viviana/solid-spectrum"]),
+  });
+
+  process.stdout.write(`Output directory: ${outDir}\n`);
+} finally {
+  if (!keepStage) {
+    rmSync(stageRoot, { recursive: true, force: true });
+  } else {
+    process.stdout.write(`\nStage directory: ${stageRoot}\n`);
+  }
 }
-
-const overrideSpecs = Object.fromEntries(
-  packages.map((pkg) => [pkg.name, fileSpec(tarballs[pkg.name])]),
-);
-
-printJson("Packed tarballs", tarballs);
-printJson("pnpm.overrides for consumers", overrideSpecs);
-printJson("Pokeforos dependency", {
-  "@proyecto-viviana/ui": fileSpec(tarballs["@proyecto-viviana/ui"]),
-});
-printJson("Kumo dependency", {
-  "@proyecto-viviana/kumo": fileSpec(tarballs["@proyecto-viviana/kumo"]),
-});
-printJson("Geist dependency", {
-  "@proyecto-viviana/geist": fileSpec(tarballs["@proyecto-viviana/geist"]),
-});
-printJson("Comparison dependencies", {
-  "@proyecto-viviana/solid-stately": fileSpec(tarballs["@proyecto-viviana/solid-stately"]),
-  "@proyecto-viviana/solidaria": fileSpec(tarballs["@proyecto-viviana/solidaria"]),
-  "@proyecto-viviana/solidaria-components": fileSpec(
-    tarballs["@proyecto-viviana/solidaria-components"],
-  ),
-  "@proyecto-viviana/solid-spectrum": fileSpec(tarballs["@proyecto-viviana/solid-spectrum"]),
-});
-
-process.stdout.write(`\nStage directory: ${stageRoot}\n`);
-process.stdout.write(`Output directory: ${outDir}\n`);

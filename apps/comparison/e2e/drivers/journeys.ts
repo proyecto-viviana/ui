@@ -67,9 +67,13 @@ export { serializeStep, performStep, overlay, targets } from "./journeys-steps";
  *   does not emit `data-key` (ListBox.tsx:616-640), but a port that does would
  *   compare unequal even when the option's role/name/aria-selected match.
  * - `id`, `for`, `data-hk` — generated ids and Solid hydration keys.
- * - `data-rac` (utils.tsx:278, useRenderProps) — a framework identity marker on
- *   every RAC host, not user-observable state; a port that emitted it would be
- *   claiming to be React Aria Components, so it is neither required nor compared.
+ * - `data-rac` (react-aria-components `utils.tsx:278`, `useRenderProps`) — a
+ *   framework identity marker written onto every RAC host, not user-observable
+ *   state. Solid must not emit it. Journey snapshots keep it out because an
+ *   attribute is recorded only when it is listed in `RAC_STATE_DATA_ATTRIBUTES`,
+ *   so the stacks compare as equal; no other `data-*` is ignored by a separate
+ *   denylist. A port that emitted it would be claiming to be React Aria
+ *   Components, so it is neither required nor compared.
  */
 export const RAC_STATE_DATA_ATTRIBUTES = [
   "data-focused",

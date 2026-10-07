@@ -165,9 +165,20 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     // box when a child is added, removed or relabelled, so no ResizeObserver
     // fires; the rendered DOM is what changed. Same shape as the breadcrumbs
     // overflow observer (`../breadcrumbs/index.tsx`).
+    // A child that changes size in place (class, style, or another attribute)
+    // does not add a node or change text, so childList and characterData miss
+    // it. Upstream's `children` dependency covers that case. The group's own
+    // class and style flip when overflow is applied; those records are ignored
+    // so the measurement does not reschedule itself.
     if (typeof MutationObserver !== "undefined" && groupElement) {
-      mutationObserver = new MutationObserver(scheduleOverflowCheck);
+      mutationObserver = new MutationObserver((records) => {
+        const childChanged = records.some(
+          (record) => record.type !== "attributes" || record.target !== groupElement,
+        );
+        if (childChanged) scheduleOverflowCheck();
+      });
       mutationObserver.observe(groupElement, {
+        attributes: true,
         childList: true,
         subtree: true,
         characterData: true,

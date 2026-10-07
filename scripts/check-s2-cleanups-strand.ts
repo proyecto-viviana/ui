@@ -13,9 +13,15 @@
  * in source order, ignoring nested function bodies; a `_s2Cleanups.push(...)`
  * arms the body, a `return` whose expression mentions `_s2Cleanups` is the
  * runner and disarms it, and any other `return` taken while armed is a
- * stranded cleanup. A body may fill and run the array more than once, which
- * Virtualizer does, so this is a state machine and not "is there a return
- * anywhere between the first push and the last runner".
+ * stranded cleanup. A body that is still armed when the walk finishes has
+ * fallen off the end without a runner, and that is a strand too. A body may
+ * fill and run the array more than once, which Virtualizer does, so this is a
+ * state machine and not "is there a return anywhere between the first push
+ * and the last runner".
+ *
+ * A `throw` is a known gap. The walk is source order, not a control-flow
+ * graph, so a throw on the way to a later runner is not an exit and is not
+ * reported on its own.
  *
  * Expected answer on a clean tree: zero.
  */
@@ -30,10 +36,12 @@ const SOURCE_ROOTS = ["packages"];
 const CLEANUPS = "_s2Cleanups";
 
 export interface StrandedReturn {
-  /** 1-based line of the `return` that leaves cleanups stranded. */
+  /** 1-based line of the `return`, or of the body's end when it falls off. */
   line: number;
   /** 1-based line of the `_s2Cleanups.push(...)` it strands. */
   pushLine: number;
+  /** The body ended still armed, with no bare `return` already reported for this stretch. */
+  fallsOff?: true;
 }
 
 function mentionsCleanups(node: ts.Node, source: ts.SourceFile): boolean {
@@ -67,17 +75,41 @@ function isFunctionLike(node: ts.Node): boolean {
  * Every `return` that leaves a `_s2Cleanups` body with cleanups pushed and not
  * run, in source order.
  */
-export function findStrandedCleanupReturns(
-  sourceText: string,
-  fileName = "input.tsx",
-): StrandedReturn[] {
-  const source = ts.createSourceFile(
+function parseSource(sourceText: string, fileName: string): ts.SourceFile {
+  return ts.createSourceFile(
     fileName,
     sourceText,
     ts.ScriptTarget.ESNext,
     true,
     fileName.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
+}
+
+/** Function bodies that declare `_s2Cleanups`, in source order. */
+export function cleanupBodies(sourceText: string, fileName = "input.tsx"): number {
+  const source = parseSource(sourceText, fileName);
+  const owners: ts.Node[] = [];
+  const findOwners = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === CLEANUPS
+    ) {
+      let owner: ts.Node | undefined = node.parent;
+      while (owner && !isFunctionLike(owner)) owner = owner.parent;
+      if (owner && !owners.includes(owner)) owners.push(owner);
+    }
+    ts.forEachChild(node, findOwners);
+  };
+  findOwners(source);
+  return owners.length;
+}
+
+export function findStrandedCleanupReturns(
+  sourceText: string,
+  fileName = "input.tsx",
+): StrandedReturn[] {
+  const source = parseSource(sourceText, fileName);
   const stranded: StrandedReturn[] = [];
 
   const lineOf = (node: ts.Node): number =>
@@ -103,6 +135,7 @@ export function findStrandedCleanupReturns(
     if (!body) continue;
 
     let armedAt: number | null = null;
+    let reportedWhileArmed = false;
     const walk = (node: ts.Node): void => {
       // A nested function is a different call, not a path out of this body.
       if (node !== body && isFunctionLike(node)) return;
@@ -112,14 +145,24 @@ export function findStrandedCleanupReturns(
       } else if (ts.isReturnStatement(node)) {
         if (node.expression && mentionsCleanups(node.expression, source)) {
           armedAt = null; // the runner
+          reportedWhileArmed = false;
         } else if (armedAt != null) {
           stranded.push({ line: lineOf(node), pushLine: armedAt });
+          reportedWhileArmed = true;
         }
         return;
       }
       ts.forEachChild(node, walk);
     };
     walk(body);
+    if (armedAt != null && !reportedWhileArmed) {
+      const end = Math.max(0, body.getEnd() - 1);
+      stranded.push({
+        line: source.getLineAndCharacterOfPosition(end).line + 1,
+        pushLine: armedAt,
+        fallsOff: true,
+      });
+    }
   }
 
   return stranded.sort((a, b) => a.line - b.line);
@@ -154,17 +197,18 @@ function main(): void {
     return statSync(absolute).isDirectory() ? walkSources(absolute) : [];
   });
 
-  let scanned = 0;
+  let bodies = 0;
   const failures: string[] = [];
   for (const file of files) {
     const text = readFileSync(file, "utf8");
     if (!text.includes(CLEANUPS)) continue;
-    scanned += 1;
+    bodies += cleanupBodies(text, file);
     const relative = path.relative(ROOT, file).split(path.sep).join("/");
-    for (const { line, pushLine } of findStrandedCleanupReturns(text, file)) {
+    for (const site of findStrandedCleanupReturns(text, file)) {
+      const how = site.fallsOff ? "ends" : "returns";
       failures.push(
-        `- ${relative}:${line} returns without running ${CLEANUPS}, ` +
-          `stranding the cleanup pushed at line ${pushLine}`,
+        `- ${relative}:${site.line} ${how} without running ${CLEANUPS}, ` +
+          `stranding the cleanup pushed at line ${site.pushLine}`,
       );
     }
   }
@@ -177,7 +221,7 @@ function main(): void {
   );
 
   process.stdout.write(
-    `guard:s2-cleanups — PASS: ${scanned} ${CLEANUPS} bodies, no stranded cleanup.\n`,
+    `guard:s2-cleanups — PASS: ${bodies} ${CLEANUPS} bodies, no stranded cleanup.\n`,
   );
 }
 
