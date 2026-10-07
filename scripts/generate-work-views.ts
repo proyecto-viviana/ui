@@ -5,14 +5,18 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { type DocsPayload, collectDocs } from "../apps/web/src/app/admin/server/data";
+import { splitFrontmatter } from "../apps/web/src/app/admin/server/frontmatter";
 import {
   TICKET_DIRECTORIES,
   TICKET_STATUSES,
+  type Problem,
   type TicketStatus,
   type TicketType,
   type WorkTicket,
   parseTicket,
+  validateTicketBoard,
 } from "../apps/web/src/app/admin/server/tickets";
+import { validateStableDocs } from "../apps/web/src/app/admin/server/validate";
 
 const root = process.cwd();
 const boardRoot = path.join(root, ".claude", "tickets");
@@ -80,8 +84,9 @@ function renderedFieldsOf(entry: BoardEntry): unknown {
  * What that costs, stated plainly: the stamp names the board the views were
  * rendered from, not the ticket text. A reworded history note, a corrected
  * `created`, and any body edit all leave it alone. A status, title, parent or
- * blocked change still moves it, so a transition written after the generator
- * ran is still a stale view — that residue is #604, not this function.
+ * blocked change still moves it. `.vite-hooks/pre-commit` runs
+ * `vp run guard:generated-views` after `vp staged` and refuses that commit
+ * (#604). This function only names the board.
  */
 export function boardRevisionOf(entries: Iterable<BoardEntry>): string {
   const records = [...entries]
@@ -277,17 +282,96 @@ ${groupCounts(roadmap)}.
 `;
 }
 
-export function generatedWorkViews(): Record<string, string> {
-  const data = collectDocs();
-  if (data.problems.length > 0) {
-    const detail = data.problems.map((problem) => `${problem.doc}: ${problem.message}`).join("\n");
-    throw new Error(`Cannot generate work views from an invalid board:\n${detail}`);
-  }
-  const revision = boardRevision();
+function requireValidBoard(data: DocsPayload): void {
+  if (data.problems.length === 0) return;
+  const detail = data.problems.map((problem) => `${problem.doc}: ${problem.message}`).join("\n");
+  throw new Error(`Cannot generate work views from an invalid board:\n${detail}`);
+}
+
+function renderViews(data: DocsPayload, revision: string): Record<string, string> {
   return {
     ".claude/current/roadmap.md": renderRoadmap(data, revision),
     ".claude/current/status.md": renderStatus(data, revision),
   };
+}
+
+export function generatedWorkViews(): Record<string, string> {
+  const data = collectDocs();
+  requireValidBoard(data);
+  return renderViews(data, boardRevision());
+}
+
+const TICKET_ROOT = ".claude/tickets/";
+
+function byPath(a: BoardEntry, b: BoardEntry): number {
+  return a.path < b.path ? -1 : a.path > b.path ? 1 : 0;
+}
+
+/**
+ * Views for one board snapshot. `tickets` are the files under the three
+ * ticket directories; `currentDocs` are the markdown files under
+ * `.claude/current`. A ticket directory counts as present when the snapshot
+ * has a file under it, including a `.gitkeep` in an otherwise empty
+ * directory. Only top-level markdown is stamped, the same files
+ * `ticketFiles()` would read.
+ */
+export function generatedWorkViewsFromBoard(source: {
+  tickets: readonly BoardEntry[];
+  currentDocs: readonly BoardEntry[];
+}): Record<string, string> {
+  const grouped = new Map<string, BoardEntry[]>();
+  for (const directory of TICKET_DIRECTORIES) grouped.set(directory, []);
+  for (const entry of source.tickets) {
+    const directory = TICKET_DIRECTORIES.find((candidate) =>
+      entry.path.startsWith(`${TICKET_ROOT}${candidate}/`),
+    );
+    if (!directory) continue;
+    grouped.get(directory)?.push(entry);
+  }
+
+  const present = new Set<string>();
+  const stampEntries: BoardEntry[] = [];
+  const tickets: WorkTicket[] = [];
+  const ticketProblems: Problem[] = [];
+  for (const directory of TICKET_DIRECTORIES) {
+    const entries = (grouped.get(directory) ?? []).sort(byPath);
+    if (entries.length > 0) present.add(directory);
+    const prefix = `${TICKET_ROOT}${directory}/`;
+    for (const entry of entries) {
+      const rest = entry.path.slice(prefix.length);
+      if (!rest.endsWith(".md")) continue;
+      if (!rest.includes("/")) stampEntries.push(entry);
+      const parsed = parseTicket(entry.content, entry.path);
+      if (parsed.ticket) tickets.push(parsed.ticket);
+      ticketProblems.push(...parsed.problems);
+    }
+  }
+
+  const currentDocs = source.currentDocs
+    .filter((entry) => entry.path.startsWith(".claude/current/") && entry.path.endsWith(".md"))
+    .sort(byPath);
+  const data: DocsPayload = {
+    docs: [],
+    tasks: tickets.filter((ticket) => ticket.type === "task"),
+    roadmap: tickets.filter((ticket) => ticket.type !== "task"),
+    problems: [
+      ...validateStableDocs(
+        currentDocs.map((entry) => ({
+          path: entry.path,
+          tier: "current",
+          frontmatter: splitFrontmatter(entry.content).data,
+        })),
+        true,
+      ),
+      ...validateTicketBoard(tickets, ticketProblems, present),
+    ],
+  };
+  requireValidBoard(data);
+  return renderViews(data, boardRevisionOf(stampEntries));
+}
+
+export function staleGeneratedViewMessage(relative: string): string {
+  return `${relative} is stale; run vp run docs:generate`;
 }
 
 export function checkGeneratedWorkViews(): string[] {
@@ -295,7 +379,7 @@ export function checkGeneratedWorkViews(): string[] {
   for (const [relative, expected] of Object.entries(generatedWorkViews())) {
     const absolute = path.join(root, relative);
     const actual = existsSync(absolute) ? readFileSync(absolute, "utf8") : null;
-    if (actual !== expected) failures.push(`${relative} is stale; run vp run docs:generate`);
+    if (actual !== expected) failures.push(staleGeneratedViewMessage(relative));
   }
   return failures;
 }

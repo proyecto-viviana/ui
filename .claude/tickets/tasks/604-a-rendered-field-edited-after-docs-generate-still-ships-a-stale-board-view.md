@@ -4,7 +4,7 @@ type: task
 title: "A rendered ticket field edited after docs:generate still ships a stale board view, and CI is the only detector"
 created: 2026-09-21
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "The pre-commit hook runs vp staged and then vp run guard:generated-views. The guard reads the index and refuses a rendered-field edit that leaves the views stale. In a clean temporary repository that git commit exits 1 and names .claude/current/status.md and .claude/current/roadmap.md. vp test run scripts/guard-generated-views.test.ts scripts/generate-work-views.test.ts passes 20 tests.",
     }
 ---
 

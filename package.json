@@ -80,6 +80,7 @@
     "test:ci-guard-contracts": "node scripts/test-ci-guard-contracts.mjs",
     "generate:solid-spectrum-icons": "node scripts/generate-solid-spectrum-icons.mjs",
     "guard:generated-icons": "node scripts/generate-solid-spectrum-icons.mjs --check",
+    "guard:generated-views": "vp exec tsx scripts/guard-generated-views.ts",
     "generate:theme-base": "node scripts/generate-theme-base.mjs",
     "guard:theme-base": "node scripts/generate-theme-base.mjs --check",
     "test:routes": "VIVIANA_GATE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/route-sweep.spec.ts --reporter=line",
