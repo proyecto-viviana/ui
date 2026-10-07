@@ -18,7 +18,7 @@
  * list this repository would refuse to track. The tracked file held `[]` until
  * #578 carried three behaviour-class certified reds as waivers, and every CI
  * run of this guard reached no branch of `reconcileWaiverTickets` while it did;
- * now it reconciles #583, #584 and #609 against the board. The refusals still
+ * now it reconciles #609 against the board. The refusals still
  * need a fixture, so `certified-waivers.test.ts` runs this script over one
  * holding a stale and an off-board ticket. CI passes no `--waivers` and
  * `test-ci-guard-contracts.mjs` holds the package script to that.

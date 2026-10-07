@@ -79,8 +79,10 @@ const toggleButtonGroupScenario: DriverScenario = {
     ],
   },
   // D2: the shared `transition: 'default'` on the action-button style animates
-  // the item background/color on hover. Port and upstream carry the same token,
-  // so the captured transition must match — a positive control.
+  // the item background and text color on hover. Normal motion stays an exact
+  // parity contract against pinned upstream; reduced motion records upstream's
+  // unchanged behavior separately from Viviana's stricter owner accessibility
+  // budget (ticket #484).
   motion: {
     cases: ["default"],
     triggers: [
@@ -93,10 +95,16 @@ const toggleButtonGroupScenario: DriverScenario = {
             durationMs: 150,
           },
           reduced: {
+            // Pinned React Spectrum retains its normal transition set under
+            // reduced motion. Record that upstream behavior without making it
+            // Viviana's accessibility budget.
             react: {
               transitionProperties: ["background-color", "color"],
               durationMs: 150,
             },
+            // Viviana's owner contract removes nonessential ToggleButtonGroup
+            // transition motion. A zero-duration CSS transition creates no
+            // WAAPI entry.
             solid: {
               transitionProperties: [],
               durationMs: 0,

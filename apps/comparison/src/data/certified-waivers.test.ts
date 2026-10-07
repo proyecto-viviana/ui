@@ -261,7 +261,11 @@ describe("certified waivers", () => {
       ),
     ).toBe(false);
     const tracked = loadCertifiedWaivers(join(here, "../../e2e/certified-waivers.json")).waivers;
-    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(1);
+    // #583 retired this ToggleButton row. The historical haystack stays so the
+    // declaring-file shape is still graded, and it must match nothing.
+    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(0);
+    const tabsHaystack = failureHaystack(REPORTED_FAILURES.tabs);
+    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(tabsHaystack)).length).toBe(1);
   });
 
   // #578, 2026-09-22. The entries were INERT in CI: each was written
@@ -283,14 +287,15 @@ describe("certified waivers", () => {
 
     expect(evaluation.problems).toEqual([]);
     expect(evaluation.waived.map((entry) => entry.failure.title)).toEqual([
-      REPORTED_FAILURES.toggleButton.title,
-      REPORTED_FAILURES.toggleButtonGroup.title,
       REPORTED_FAILURES.tabs.title,
     ]);
-    // #497's ComboBox rows and the retired #584 Picker rows stay unwaived.
+    // #497's ComboBox rows, the retired #584 Picker rows, and the retired #583
+    // ToggleButton rows stay unwaived.
     expect(evaluation.unwaived).toEqual([
       REPORTED_FAILURES.pickerPointer,
       REPORTED_FAILURES.pickerKeyboard,
+      REPORTED_FAILURES.toggleButton,
+      REPORTED_FAILURES.toggleButtonGroup,
       REPORTED_FAILURES.comboboxList,
     ]);
     expect(waiverGateFails(evaluation)).toBe(true);
