@@ -4,7 +4,7 @@ type: task
 title: "Five example screens lose their filled + Create ask in light scheme only, so a11y:smoke is red"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: 'diagnosed by the close-gates writer. The button really is a different colour, so the gate is right and the helper stays. It is not the lightningcss hypothesis. Sampling `/examples/lesson` under `pv-theme=light` every ~60ms: `+ Create` first paints `rgb(255, 79, 195)`, the dark `--fuchsia-500`, while the probe already resolves the light `rgb(217, 18, 143)`. It is mid-transition at ~760ms (`rgb(222, 27, 150)`, its own 0.15s `background-color` transition, with `getAnimations()` listing it) and settles by ~830ms. Dark never moves. Cause: `__root.tsx:110`''s pre-paint script sets `<html data-color-scheme>` from `pv-theme`, but `useTheme`''s signal starts at `"dark"` (`apps/web/src/utils/theme.ts:22`) and reads storage only in `onSettled` (`initGlobalTheme`). The examples tree is client-rendered (the server HTML carries only `<html data-color-scheme="dark">`), so `ExamplesShell`''s `<Provider colorScheme={theme()}>` mounts dark under a light `<html>` and flips after settle, and the transition animates the flip: a light-scheme user sees the dark palette flash on every load. The test measures as soon as `h1` exists, so it lands inside that window. Which screens miss is a race: at HEAD, `vp run a11y:smoke` is 71/3 with explore-empty, lesson and playground failing, while explore and profile made it this time. Fix site: `apps/web/src/utils/theme.ts`, starting the client signal from the scheme the pre-paint script already resolved (one owner, per `ThemeToggle.tsx:3`). That is under `apps/web/src/**`, so, as this ticket asks, the boundary goes to the conductor before any edit. Not fixed here',
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "the button was a genuinely different colour, so the gate was right and the helper stays. Sampling `/examples/lesson` under `pv-theme=light`: while the root Provider was still dark, the probe and `+ Create` both computed `rgb(255, 79, 195)`. At the flip the probe resolved the light CTA `rgb(217, 18, 143)` and the button was still `rgb(255, 79, 195)`, with `getAnimations()` listing a running `background-color` transition; the midpoint was `rgb(222, 27, 150)`, and both settled on `rgb(217, 18, 143)`. Not two spellings of one colour, and not lightningcss. The signal stays on the server dark value through hydration, because a same-value set would not rewrite the hydrated Provider class, then `initGlobalTheme` commits the scheme the pre-paint script already put on `<html>`, with transitions held across that flush so the fill jumps. Fix is `apps/web/src/utils/theme.ts`, not the examples shell. `vp run a11y:smoke` exited 0, 74 passed, the five `+ Create` screens included, both schemes. The helper was not loosened, so the scratch button-removal was not run",
     }
 ---
 

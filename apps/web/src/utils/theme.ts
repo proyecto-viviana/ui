@@ -1,5 +1,5 @@
 import { createThemeTransition } from "@proyecto-viviana/ui";
-import { createRoot, createSignal, onSettled } from "solid-js";
+import { createRoot, createSignal, flush, onSettled } from "solid-js";
 
 export type Theme = "dark" | "light";
 
@@ -40,13 +40,41 @@ function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute("data-color-scheme", theme);
 }
 
+function paintedTheme(): Theme {
+  const painted = document.documentElement.getAttribute("data-color-scheme");
+  if (painted === "dark" || painted === "light") return painted;
+  return resolveTheme();
+}
+
+/* Hydration will not rewrite a Provider attribute that already matches the
+   server render, and a later set of the same value does not write the class
+   either. The signal therefore stays on the server's `"dark"` until here.
+   The pre-paint script may already have marked `<html>` light; this set is
+   the change that moves the Providers. It lands in this flush's continuation,
+   after `onSettled` returns, so the hold has to outlive the callback. Without
+   it the create button's `background-color` transition interpolates the
+   jump and the examples gate samples the in-between colour. */
 function initGlobalTheme(): void {
   if (initialized) return;
   if (typeof document === "undefined") return;
   initialized = true;
-  const theme = resolveTheme();
+  const theme = paintedTheme();
+  const hold = document.createElement("style");
+  hold.setAttribute("data-pv-theme-hold", "");
+  hold.textContent = "*,*::before,*::after{transition:none!important}";
+  document.head.appendChild(hold);
   setGlobalTheme(theme);
   applyTheme(theme);
+  queueMicrotask(() => {
+    try {
+      flush();
+      document.documentElement.getBoundingClientRect();
+    } finally {
+      requestAnimationFrame(() => {
+        hold.remove();
+      });
+    }
+  });
 }
 
 export function useTheme() {
