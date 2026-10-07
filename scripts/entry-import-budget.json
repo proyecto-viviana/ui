@@ -44,7 +44,7 @@
     }
   ],
   "rootBarrelInventory": {
-    "description": "Frozen inventory of source files importing the @proyecto-viviana/solidaria root barrel. Removing entries is allowed; adding one fails.",
+    "description": "Frozen inventory of source files importing the @proyecto-viviana/solidaria root barrel. A path that no longer imports it is a stale record and fails until removed. Adding one fails.",
     "maxCount": 154,
     "paths": [
       "packages/solid-spectrum/src/actionbar/index.tsx",

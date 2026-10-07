@@ -72,14 +72,16 @@ export function diffTrackedEffectCounts(
         `+ ${file} has ${got} createTrackedEffect ${callsWord(got)} and is not in the baseline`,
       );
     } else if (got === 0) {
-      failures.push(`- ${file} has no createTrackedEffect calls; baseline still lists ${want}`);
+      failures.push(
+        `- ${file} has no createTrackedEffect calls; this record no longer matches the tree (baseline still lists ${want})`,
+      );
     } else if (got > want) {
       failures.push(
         `+ ${file} has ${got} createTrackedEffect ${callsWord(got)}; baseline allows ${want}`,
       );
     } else {
       failures.push(
-        `- ${file} has ${got} createTrackedEffect ${callsWord(got)}; baseline still lists ${want}`,
+        `- ${file} has ${got} createTrackedEffect ${callsWord(got)}; this record no longer matches the tree (baseline still lists ${want})`,
       );
     }
   }

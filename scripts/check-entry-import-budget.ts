@@ -31,14 +31,17 @@
  *    survives into what a consumer loads, and `dist/` excluded both by
  *    construction. See `specifiersOf`.
  * 2. A frozen inventory of the source files that still import the solidaria
- *    root barrel. It may only shrink. This half needs no build, and it covers
- *    the entries that have no ceiling yet.
+ *    root barrel. A path that no longer imports it is a stale record and fails
+ *    until removed. Adding one fails, and `--write-baseline` refuses to absorb
+ *    that growth. This half needs no build, and it covers the entries that
+ *    have no ceiling yet.
  *
- * Regenerate both with `--write-baseline` after an intentional change. It
+ * Regenerate ceilings with `--write-baseline` after an intentional change. It
  * writes every number in the file, including each entry's `measuredAt`, and
  * refuses to carry an entry's `why` forward once the counts that sentence
  * states disagree with what it just measured: a ceiling and the derivation
- * beside it move together or not at all.
+ * beside it move together or not at all. It will shrink the root-barrel
+ * inventory and will not grow it.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -329,6 +332,20 @@ if (WRITE_BASELINE) {
   const existing: Budget | null = existsSync(BUDGET_PATH)
     ? JSON.parse(readFileSync(BUDGET_PATH, "utf8"))
     : null;
+  if (existing) {
+    const inventoried = existing.rootBarrelInventory?.paths ?? [];
+    const grown = rootBarrelImporters.filter((file) => !inventoried.includes(file));
+    if (grown.length > 0) {
+      console.error(
+        `Refusing to absorb ${grown.length} new file(s) that import the ${ROOT_BARREL} root barrel:`,
+      );
+      for (const file of grown) console.error(`  ${file}`);
+      console.error(
+        "Import the narrow subpath, or record why the inventory should grow, before --write-baseline.",
+      );
+      process.exit(1);
+    }
+  }
   const entries = (existing?.entries ?? []).map((entry) => {
     const measured = measure(entry);
     if (!measured)
@@ -365,7 +382,7 @@ if (WRITE_BASELINE) {
       "Distinct source modules reachable from the source file an entry's `exports` target is emitted from, by static import/export specifiers, workspace packages resolved through their own `exports` maps. Type-only and build-time macro imports are not counted; neither reaches a consumer.",
     entries,
     rootBarrelInventory: {
-      description: `Frozen inventory of source files importing the ${ROOT_BARREL} root barrel. Removing entries is allowed; adding one fails.`,
+      description: `Frozen inventory of source files importing the ${ROOT_BARREL} root barrel. A path that no longer imports it is a stale record and fails until removed. Adding one fails.`,
       maxCount: rootBarrelImporters.length,
       paths: rootBarrelImporters,
     },
@@ -468,12 +485,12 @@ console.log(
   `- root-barrel importers: ${rootBarrelImporters.length} (ceiling ${budget.rootBarrelInventory.maxCount})`,
 );
 
-// A narrowed file is the point of the exercise — say so, and keep the inventory
-// honest by requiring the baseline to be rewritten once it shrinks.
 if (removals.length > 0) {
-  console.log(`- narrowed off the root barrel since the baseline: ${removals.length}`);
-  for (const file of removals) console.log(`    ${file}`);
-  console.log("  Re-freeze with: vp run guard:entry-import-budget -- --write-baseline");
+  failures.push(
+    `this record no longer matches the tree: ${removals.length} root-barrel inventory path(s) no longer import ${ROOT_BARREL}:\n${removals
+      .map((file) => `    ${file}`)
+      .join("\n")}`,
+  );
 }
 
 if (improvements.length > 0) {

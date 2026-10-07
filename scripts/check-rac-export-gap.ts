@@ -96,7 +96,7 @@ async function main(): Promise<void> {
     }
     for (const entry of gap.stalePresent) {
       console.error(
-        `FAIL: ${entry.symbol} is listed as pending on #${entry.ticket} but is now exported — stale pending entry, remove it.`,
+        `FAIL: this record no longer matches the tree: ${entry.symbol} is listed as pending on #${entry.ticket} but is now exported — remove the pending entry.`,
       );
     }
     process.exit(1);

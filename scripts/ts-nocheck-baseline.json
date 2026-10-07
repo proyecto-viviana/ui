@@ -1,5 +1,5 @@
 {
-  "description": "Frozen @ts-nocheck inventory for the public package source trees. Removing entries is allowed; adding or moving a directive fails.",
+  "description": "Frozen @ts-nocheck inventory for the public package source trees. A path that no longer carries the directive is a stale record and fails until --write-baseline drops it. Adding or moving a directive fails, and --write-baseline refuses to absorb that growth.",
   "maxCount": 59,
   "paths": [
     "packages/solid-spectrum/src/button/s2-action-button-styles.ts",

@@ -206,6 +206,20 @@ describe("check-entry-import-budget", () => {
     expect(output).toContain("packages/viviana-ui/src/barrel.ts");
   });
 
+  it("fails when a root-barrel inventory path no longer imports the barrel", () => {
+    const budget = JSON.parse(
+      readFileSync(join(root, "scripts", "entry-import-budget.json"), "utf8"),
+    );
+    budget.rootBarrelInventory.paths = ["packages/viviana-ui/src/gone.ts"];
+    budget.rootBarrelInventory.maxCount = 1;
+    writeFileSync(join(root, "scripts", "entry-import-budget.json"), JSON.stringify(budget));
+    const { status, output } = runGuard();
+    expect(status).toBe(1);
+    expect(output).toContain("this record no longer matches the tree");
+    expect(output).toContain("packages/viviana-ui/src/gone.ts");
+    expect(output).not.toContain("new file(s) import");
+  });
+
   it("fails a budgeted entry whose published target maps to no source file, instead of skipping it", () => {
     removeSource("viviana-ui", "Provider.ts");
     const { status, output } = runGuard();

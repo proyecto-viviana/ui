@@ -38,7 +38,7 @@ describe("diffTrackedEffectCounts", () => {
 
   it("fails when a baselined file loses every call", () => {
     expect(diffTrackedEffectCounts({}, { "packages/old/src/Old.tsx": 2 })).toEqual([
-      "- packages/old/src/Old.tsx has no createTrackedEffect calls; baseline still lists 2",
+      "- packages/old/src/Old.tsx has no createTrackedEffect calls; this record no longer matches the tree (baseline still lists 2)",
     ]);
   });
 
@@ -52,7 +52,7 @@ describe("diffTrackedEffectCounts", () => {
     expect(
       diffTrackedEffectCounts({ "packages/old/src/Old.tsx": 1 }, { "packages/old/src/Old.tsx": 3 }),
     ).toEqual([
-      "- packages/old/src/Old.tsx has 1 createTrackedEffect call; baseline still lists 3",
+      "- packages/old/src/Old.tsx has 1 createTrackedEffect call; this record no longer matches the tree (baseline still lists 3)",
     ]);
   });
 });

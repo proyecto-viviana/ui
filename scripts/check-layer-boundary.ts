@@ -10,10 +10,15 @@
  *   - A path present in both trees that is not in the baseline → FAIL
  *     (unbaselined dual copy / dual path).
  *
- * Improvements are allowed without rewriting the baseline:
- *   - identical → single-tree (path removed from one side)
- *   - diverged → identical (re-synced, still dual — note only)
- *   - diverged content change (intentional branding) — not tracked here
+ * Ticket #577: a stale row fails as a stale record. `--write-baseline` never
+ * grows reasonExempt (the pre-2026-09-20 diverged set with no reason).
+ *   - A path that enters diverged needs a recorded reason first.
+ *   - diverged → identical (re-synced) fails: this record no longer matches
+ *     the tree. Hashes prove identity, so `--write-baseline` may drop it.
+ *   - A baselined path that leaves the shared set fails the same way.
+ *     `--write-baseline` needs a departures acknowledgement first.
+ *   - A reason that names a path no longer diverged fails the same way.
+ *   - Diverged content change (intentional branding) is not tracked here.
  *
  * Usage:
  *   vp exec tsx scripts/check-layer-boundary.ts
@@ -52,6 +57,17 @@ interface Baseline {
    * move after it does, and `--write-baseline` refuses to make one without it.
    */
   reasons?: Record<string, string>;
+  /**
+   * Diverged paths frozen before 2026-09-20 that have no reason. A normal run
+   * treats them as grandfathered. `--write-baseline` never grows this list.
+   * An entry that is no longer diverged is a stale record (#577).
+   */
+  reasonExempt?: string[];
+  /**
+   * Acknowledgement that a baselined path left the shared set. `--write-baseline`
+   * consumes it. A lift with no acknowledgement is a stale record (#577).
+   */
+  departures?: Record<string, string>;
 }
 
 function walkRelHashes(srcRoot: string): Map<string, string> {
@@ -101,18 +117,32 @@ function inventory() {
   };
 }
 
+const DESCRIPTION =
+  "Frozen dual-tree inventory for packages/solid-spectrum/src vs packages/viviana-ui/src. Ticket #2: fail on new forks of previously-identical Spectrum authority into viviana-ui, and on unbaselined dual paths. Ticket #1 owns reconciling the identical-copy backlog. Ticket #577: reasonExempt is the pre-2026-09-20 diverged set that has no reason, and --write-baseline never grows it. A re-synced or lifted row is a stale record. A path that enters diverged needs a reason first. A path that leaves the shared set needs a departures acknowledgement first.";
+
+function hasReason(reasons: Record<string, string>, rel: string): boolean {
+  return Boolean(reasons[rel]?.trim());
+}
+
 function buildBaseline(
   inv: ReturnType<typeof inventory>,
   reasons: Record<string, string>,
+  reasonExempt: string[],
+  departures: Record<string, string>,
 ): Baseline {
+  const diverged = new Set(inv.diverged);
+  const shared = new Set(inv.shared);
   const kept = Object.fromEntries(
-    Object.entries(reasons).filter(([p]) => inv.diverged.includes(p)),
+    Object.entries(reasons).filter(([p, reason]) => diverged.has(p) && reason.trim()),
+  );
+  const keptExempt = reasonExempt.filter((p) => diverged.has(p) && !hasReason(reasons, p));
+  const keptDepartures = Object.fromEntries(
+    Object.entries(departures).filter(([p, reason]) => shared.has(p) && reason.trim()),
   );
   return {
     version: 1,
     generated: new Date().toISOString().slice(0, 10),
-    description:
-      "Frozen dual-tree inventory for packages/solid-spectrum/src vs packages/viviana-ui/src. Ticket #2: fail on new forks of previously-identical Spectrum authority into viviana-ui, and on unbaselined dual paths. Ticket #1 owns reconciling the identical-copy backlog.",
+    description: DESCRIPTION,
     roots: {
       spectrum: "packages/solid-spectrum/src",
       ui: "packages/viviana-ui/src",
@@ -125,6 +155,8 @@ function buildBaseline(
     identical: inv.identical,
     diverged: inv.diverged,
     ...(Object.keys(kept).length > 0 ? { reasons: kept } : {}),
+    ...(keptExempt.length > 0 ? { reasonExempt: keptExempt } : {}),
+    ...(Object.keys(keptDepartures).length > 0 ? { departures: keptDepartures } : {}),
   };
 }
 
@@ -145,21 +177,42 @@ if (writeBaseline) {
     ? (JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Baseline)
     : null;
   const carriedReasons = previous?.reasons ?? {};
-  const unexplained = (previous?.identical ?? [])
-    .filter((p) => inv.diverged.includes(p))
-    .filter((p) => !carriedReasons[p])
-    .sort();
-  if (unexplained.length > 0) {
-    console.error(
-      `Refusing to re-bless ${unexplained.length} path(s) that moved identical → diverged with no recorded reason:`,
-    );
-    for (const p of unexplained) console.error(`  - ${p}`);
-    console.error(
-      '  Add each to "reasons" in the baseline first — what diverged and which commit did it — then re-run.',
-    );
-    process.exit(1);
+  if (previous) {
+    const previousDiverged = new Set(previous.diverged);
+    const previousExempt = new Set(previous.reasonExempt ?? []);
+    const entered = inv.diverged
+      .filter((p) => !previousDiverged.has(p))
+      .filter((p) => !hasReason(carriedReasons, p) && !previousExempt.has(p))
+      .sort();
+    if (entered.length > 0) {
+      console.error(
+        `Refusing to re-bless ${entered.length} path(s) that entered diverged with no recorded reason:`,
+      );
+      for (const p of entered) console.error(`  - ${p}`);
+      console.error(
+        '  Add each to "reasons" in the baseline first — what diverged and which commit did it — then re-run.',
+      );
+      process.exit(1);
+    }
+    const previousShared = new Set([...previous.identical, ...previous.diverged]);
+    const previousDepartures = previous.departures ?? {};
+    const liftedNow = [...previousShared].filter((p) => !inv.shared.includes(p)).sort();
+    const unacked = liftedNow.filter((p) => !previousDepartures[p]?.trim());
+    if (unacked.length > 0) {
+      console.error(
+        `Refusing to drop ${unacked.length} path(s) that left the shared set with no departures acknowledgement:`,
+      );
+      for (const p of unacked) console.error(`  - ${p}`);
+      console.error(
+        '  Add each to "departures" in the baseline first — why it left — then re-run.',
+      );
+      process.exit(1);
+    }
   }
-  const next = buildBaseline(inv, carriedReasons);
+  const nextExempt = (previous?.reasonExempt ?? []).filter(
+    (p) => inv.diverged.includes(p) && !hasReason(carriedReasons, p),
+  );
+  const next = buildBaseline(inv, carriedReasons, nextExempt, previous?.departures ?? {});
   writeFileSync(BASELINE_PATH, `${JSON.stringify(next, null, 2)}\n`);
   console.log(`Wrote baseline → ${path.relative(ROOT, BASELINE_PATH)}`);
   console.log(
@@ -199,20 +252,6 @@ console.log(`- NEW forks (identical → diverged):     ${newForks.length}`);
 console.log(`- unbaselined dual paths:               ${unbaselinedDual.length}`);
 console.log("");
 
-if (reSynced.length > 0) {
-  console.log("Note: paths that re-synced to identical (progress or accidental re-copy):");
-  for (const p of reSynced.slice(0, 20)) console.log(`  - ${p}`);
-  if (reSynced.length > 20) console.log(`  - ... (${reSynced.length - 20} more)`);
-  console.log("");
-}
-
-if (lifted.length > 0) {
-  console.log("Note: baselined dual paths no longer shared (good for ticket #1):");
-  for (const p of lifted.slice(0, 20)) console.log(`  - ${p}`);
-  if (lifted.length > 20) console.log(`  - ... (${lifted.length - 20} more)`);
-  console.log("");
-}
-
 let failed = false;
 
 if (newForks.length > 0) {
@@ -227,6 +266,24 @@ if (newForks.length > 0) {
   console.log("");
 }
 
+if (reSynced.length > 0) {
+  failed = true;
+  console.log(
+    `FAIL: this record no longer matches the tree: ${reSynced.length} baselined-diverged path(s) re-synced to identical:`,
+  );
+  for (const p of reSynced) console.log(`  - ${p}`);
+  console.log("");
+}
+
+if (lifted.length > 0) {
+  failed = true;
+  console.log(
+    `FAIL: this record no longer matches the tree: ${lifted.length} baselined path(s) left the shared set:`,
+  );
+  for (const p of lifted) console.log(`  - ${p}`);
+  console.log("");
+}
+
 const recordedReasons = baseline.reasons ?? {};
 const strayReasons = Object.keys(recordedReasons)
   .filter((p) => !baseDiverged.has(p) || !recordedReasons[p]?.trim())
@@ -235,12 +292,39 @@ const strayReasons = Object.keys(recordedReasons)
 if (strayReasons.length > 0) {
   failed = true;
   console.log(
-    `FAIL: ${strayReasons.length} recorded divergence reason(s) name a path that is not baselined as diverged, or are empty:`,
+    `FAIL: this record no longer matches the tree: ${strayReasons.length} recorded divergence reason(s) name a path that is not baselined as diverged, or are empty:`,
   );
   for (const p of strayReasons) console.log(`  - ${p}`);
   console.log(
     "  A reason outlives its path only by being wrong; delete it when the path re-syncs.",
   );
+  console.log("");
+}
+
+const reasonExempt = baseline.reasonExempt ?? [];
+const staleExempt = reasonExempt
+  .filter((p) => !baseDiverged.has(p) || !currentDiverged.has(p))
+  .sort();
+if (staleExempt.length > 0) {
+  failed = true;
+  console.log(
+    `FAIL: this record no longer matches the tree: ${staleExempt.length} reasonExempt path(s) are no longer a diverged row:`,
+  );
+  for (const p of staleExempt) console.log(`  - ${p}`);
+  console.log("");
+}
+
+const unexplainedFrozen = [...baseDiverged]
+  .filter(
+    (p) => currentDiverged.has(p) && !hasReason(recordedReasons, p) && !reasonExempt.includes(p),
+  )
+  .sort();
+if (unexplainedFrozen.length > 0) {
+  failed = true;
+  console.log(
+    `FAIL: ${unexplainedFrozen.length} diverged path(s) have no recorded reason and are not in reasonExempt:`,
+  );
+  for (const p of unexplainedFrozen) console.log(`  - ${p}`);
   console.log("");
 }
 

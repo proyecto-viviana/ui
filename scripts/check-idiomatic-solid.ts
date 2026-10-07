@@ -36,7 +36,8 @@
  *    probe are allowed. False positives and the still-open #168 / #169 sites
  *    live in `scripts/idiomatic-solid-children-baseline.json`. The baseline
  *    ratchets both ways: a new site fails, and a baselined site that disappears
- *    fails until its entry is removed (same shape as `guard:layer-boundary`).
+ *    fails until its entry is removed by a hand edit (same shape as
+ *    `guard:layer-boundary`). `--write-baseline` refuses to add or drop a key.
  *    Sites are keyed by `file:ident#ordinal` (the n-th binding of that name in
  *    the file), never by line, so unrelated edits above a site do not trip it;
  *    `line` in the baseline is informational.
@@ -201,11 +202,6 @@ const ALLOWLIST: Array<{ file: string; snippet: string; why: string }> = [
     file: "solidaria/src/interactions/createMove.ts",
     snippet: "onMoveStart, onMove, onMoveEnd } = props",
     why: "move callbacks are invoke-only (never compared for identity); no callers in-repo — low-severity reference capture",
-  },
-  {
-    file: "solidaria-components/src/utils.tsx",
-    snippet: 'class: className, style, defaultClassName = "" } = props',
-    why: "useRenderProps: all 131 call sites pass plain class/style values; shape deliberately avoids the getter pattern (SSR note at :106)",
   },
   {
     file: "solidaria/src/interactions/createLongPress.ts",
@@ -682,7 +678,26 @@ function main(): void {
       (allowed ? ` (${allowed} reviewed-benign destructure(s) allowlisted)` : ""),
   );
 
+  const unresolvedAllowlist = ALLOWLIST.filter((entry) => {
+    const matches = files.filter((file) => {
+      const rel = file.replace(`${ROOT}/`, "").replace(/\\/g, "/");
+      return rel.endsWith(entry.file);
+    });
+    if (matches.length === 0) return true;
+    return !matches.some((file) =>
+      readFileSync(file, "utf8").replace(/\s+/g, " ").includes(entry.snippet),
+    );
+  });
+
   let failed = false;
+
+  if (unresolvedAllowlist.length > 0) {
+    failed = true;
+    console.error(
+      `\nguard:idiomatic-solid — FAIL: this record no longer matches the tree: ${unresolvedAllowlist.length} ALLOWLIST snippet(s) resolve to nothing:`,
+    );
+    for (const entry of unresolvedAllowlist) console.error(`  ${entry.file}`);
+  }
 
   if (destructureOffenders.length > 0) {
     failed = true;
@@ -728,11 +743,42 @@ function main(): void {
   }
 
   if (writeBaseline) {
+    if (existsSync(CHILDREN_BASELINE_PATH)) {
+      const previous = JSON.parse(readFileSync(CHILDREN_BASELINE_PATH, "utf8")) as ChildrenBaseline;
+      const previousKeys = new Set(previous.sites.map((s) => siteKey(s.file, s.ident, s.ordinal)));
+      const currentKeys = new Set(childrenSites.map((s) => siteKey(s.file, s.ident, s.ordinal)));
+      const added = childrenSites.filter(
+        (s) => !previousKeys.has(siteKey(s.file, s.ident, s.ordinal)),
+      );
+      const dropped = previous.sites.filter(
+        (s) => !currentKeys.has(siteKey(s.file, s.ident, s.ordinal)),
+      );
+      if (added.length > 0 || dropped.length > 0) {
+        if (added.length > 0) {
+          console.error(
+            `Refusing to bless ${added.length} new children() snapshot site(s) with no recorded reason:`,
+          );
+          for (const s of added) console.error(`  ${s.file} ${s.ident}#${s.ordinal}`);
+        }
+        if (dropped.length > 0) {
+          console.error(
+            `Refusing to drop ${dropped.length} baselined site(s). This record no longer matches the tree:`,
+          );
+          for (const s of dropped) {
+            console.error(`  ${s.file} ${s.ident}#${s.ordinal} (#${s.ticket})`);
+          }
+        }
+        console.error(
+          "Hand-edit scripts/idiomatic-solid-children-baseline.json so its keys match the tree, with the ticket that explains the move, then re-run --write-baseline to refresh lines.",
+        );
+        process.exit(1);
+      }
+    }
     const baseline: ChildrenBaseline = {
       version: 1,
       generated: new Date().toISOString().slice(0, 10),
       description:
-        "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
+        "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail. A baselined site that disappears is a stale record (this record no longer matches the tree) and fails until removed by a hand edit. --write-baseline refuses to add or drop a key. #168 / #169 own the styled-wrapper fixes.",
       sites: childrenSites.map((s) => ({
         file: s.file,
         ident: s.ident,
@@ -783,7 +829,7 @@ function main(): void {
     if (staleSites.length > 0) {
       failed = true;
       console.error(
-        `\nguard:idiomatic-solid — FAIL: ${staleSites.length} baselined site(s) no longer render a children() snapshot (fixed) — remove them from the baseline:`,
+        `\nguard:idiomatic-solid — FAIL: this record no longer matches the tree: ${staleSites.length} baselined site(s) no longer render a children() snapshot:`,
       );
       for (const s of staleSites) {
         console.error(`  ${s.file} ${s.ident}#${s.ordinal} (#${s.ticket})`);

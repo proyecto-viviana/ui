@@ -19,6 +19,7 @@
  * A missing capability is therefore a blocker to report against the library,
  * never something to work around here.
  */
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -124,6 +125,14 @@ async function listSourceFiles(dir: string): Promise<string[]> {
 function isAllowedImport(specifier: string, file: string): boolean {
   if (ALLOWED_IMPORTS.some((pattern) => pattern.test(specifier))) return true;
   return (IMPORT_EXCEPTIONS.get(file) ?? []).some((pattern) => pattern.test(specifier));
+}
+
+for (const file of IMPORT_EXCEPTIONS.keys()) {
+  if (!existsSync(file)) {
+    failures.push(
+      `${file}: this record no longer matches the tree: IMPORT_EXCEPTIONS names a file that is gone`,
+    );
+  }
 }
 
 for (const dir of SOURCE_DIRS) {

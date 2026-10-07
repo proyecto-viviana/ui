@@ -102,7 +102,7 @@ if (knownLarge.length > 0) {
 const resolved = [...KNOWN_LARGE].filter((f) => !knownLarge.some((k) => k.file === f));
 if (resolved.length > 0) {
   console.error(
-    `jsx deopt-size guard FAILED: these are now under ${kb(DEOPT_LIMIT)} — remove them from KNOWN_LARGE:`,
+    `jsx deopt-size guard FAILED: this record no longer matches the tree — these are now under ${kb(DEOPT_LIMIT)} — remove them from KNOWN_LARGE:`,
   );
   for (const file of resolved) console.error(`  ${file}`);
   process.exit(1);

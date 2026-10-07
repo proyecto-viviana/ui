@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generated": "2026-09-24",
-  "description": "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
+  "description": "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail. A baselined site that disappears is a stale record (this record no longer matches the tree) and fails until removed by a hand edit. --write-baseline refuses to add or drop a key. #168 / #169 own the styled-wrapper fixes.",
   "sites": [
     {
       "file": "packages/solidaria-components/src/Focusable.tsx",

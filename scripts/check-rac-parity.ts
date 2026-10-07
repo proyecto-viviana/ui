@@ -94,9 +94,11 @@ async function main(): Promise<void> {
   );
 
   if (missingInRac.length > 0) {
-    console.log("");
-    console.log("Warning: tracked symbols export missing in RAC index (check tracker list):");
-    console.log(formatPresence(missingInRac, false));
+    console.error("");
+    console.error(
+      `FAIL: this record no longer matches the tree: REQUIRED_SYMBOLS names ${missingInRac.join(", ")} which ${RAC_INDEX} does not export as a value.`,
+    );
+    process.exit(1);
   }
 
   if (missingRequiredInSolidaria.length > 0) {

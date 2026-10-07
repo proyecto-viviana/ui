@@ -123,7 +123,7 @@ export function checkPeers() {
   }
   for (const row of stale) {
     console.error(
-      `stale allowlist entry: ${row.peer}@${row.wantedRange} required by ${row.declaredBy} ` +
+      `this record no longer matches the tree: stale allowlist entry: ${row.peer}@${row.wantedRange} required by ${row.declaredBy} ` +
         `(via ${row.rootDependency}, ${row.workspace}) is no longer unmet — delete the entry ` +
         `from scripts/expected-unmet-peers.json.`,
     );

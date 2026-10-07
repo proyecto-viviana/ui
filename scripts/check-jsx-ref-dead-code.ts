@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -36,7 +36,7 @@ const SAFE_DIRECT_REFS = new Map<string, RegExp>([
   ["packages/solid-spectrum/src/slider/index.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
   [
     "packages/solid-spectrum/src/switch/ToggleSwitch.tsx#handleElement",
-    /switchHandlePressStyle\(handleElement/,
+    /switchHandlePressStyle\(\s*handleElement/,
   ],
   ["packages/viviana-ui/src/checkbox/index.tsx#boxElement", /checkboxPressScaleStyle\(boxElement/],
   [
@@ -51,23 +51,17 @@ const SAFE_DIRECT_REFS = new Map<string, RegExp>([
   ["packages/viviana-ui/src/slider/index.tsx#thumbElement", /pressScaleStyle\(thumbElement/],
   [
     "packages/viviana-ui/src/switch/ToggleSwitch.tsx#handleElement",
-    /switchHandlePressStyle\(handleElement/,
+    /switchHandlePressStyle\(\s*handleElement/,
   ],
 ]);
 
 const REQUIRED_BEHAVIOR = [
   {
-    // The `setAttribute("aria-labelledby", trigger.id)` marker that stood beside
-    // this one was retired with #572, not re-pointed. `70a8d478` (#555) made the
-    // labelling declarative — `aria-labelledby={ariaLabelledBy()}` at Dialog.tsx:295
-    // — so the regex matched nothing and reported it as the build dropping code.
-    // The behaviour it stood for is asserted directly at Dialog.test.tsx:339,
-    // which reads the attribute off the rendered node and so fails for a rewrite
-    // that ate the binding. A source-text copy of coverage a behavioural test
-    // already owns is the weaker copy. The marker below has no such twin: it
-    // guards the id-adoption path at Dialog.tsx:361.
+    // Id adoption is `aria-labelledby={labelledBy()}` in Dialog.tsx. #572/#555
+    // retired the setAttribute marker. A marker the source no longer has is a
+    // stale record (#577), not a dropped transform.
     file: "packages/solidaria-components/src/Dialog.tsx",
-    markers: [/closest\([^)]*alertdialog/],
+    markers: [/aria-labelledby=\{labelledBy\(\)\}/],
   },
   {
     file: "packages/solidaria-components/src/GridList.tsx",
@@ -114,6 +108,41 @@ function walk(directory: string): string[] {
 function normalize(file: string): string {
   return path.relative(ROOT, file).split(path.sep).join("/");
 }
+
+function sourceText(file: string): string | null {
+  try {
+    return readFileSync(path.join(ROOT, file), "utf8");
+  } catch {
+    return null;
+  }
+}
+
+function markerInSource(source: string, marker: RegExp): boolean {
+  marker.lastIndex = 0;
+  return marker.test(source);
+}
+
+const staleSourceRecords: string[] = [];
+for (const [key, marker] of SAFE_DIRECT_REFS) {
+  const file = key.slice(0, key.lastIndexOf("#"));
+  const source = sourceText(file);
+  if (source == null || !markerInSource(source, marker)) {
+    staleSourceRecords.push(
+      `${key}: this record no longer matches the tree (#572, #555). The marker is absent from source, so this is a stale ratchet, not a dropped transform`,
+    );
+  }
+}
+for (const { file, markers } of REQUIRED_BEHAVIOR) {
+  const source = sourceText(file);
+  for (const marker of markers) {
+    if (source == null || !markerInSource(source, marker)) {
+      staleSourceRecords.push(
+        `${file} ${marker}: this record no longer matches the tree (#572, #555). The marker is absent from source, so this is a stale ratchet, not a dropped transform`,
+      );
+    }
+  }
+}
+assert.equal(staleSourceRecords.length, 0, staleSourceRecords.join("\n"));
 
 const sourceFiles = PUBLIC_SOURCE_ROOTS.flatMap((directory) => walk(path.join(ROOT, directory)));
 const program = ts.createProgram(sourceFiles, {
@@ -178,7 +207,7 @@ assert.deepEqual(
 assert.deepEqual(
   stale,
   [],
-  `Remove resolved entries from SAFE_DIRECT_REFS:\n${stale.map((key) => `- ${key}`).join("\n")}`,
+  `this record no longer matches the tree: SAFE_DIRECT_REFS still names a direct ref the AST does not see (#577):\n${stale.map((key) => `- ${key}`).join("\n")}`,
 );
 
 const rootRequire = createRequire(import.meta.url);

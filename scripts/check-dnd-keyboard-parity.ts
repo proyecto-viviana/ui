@@ -90,6 +90,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const localPaths = [LOCAL_CORE, LOCAL_NAV, ...COMPONENT_PATHS];
+  const missingLocal = localPaths.filter((filePath) => !existsSync(filePath));
+  if (missingLocal.length > 0) {
+    console.log("DnD keyboard-walk guard");
+    console.error(`FAIL: this record no longer matches the tree: ${missingLocal.join(", ")}`);
+    process.exit(1);
+  }
+
   const [upstreamCore, upstreamNav, localCore, localNav, ...componentSources] = await Promise.all([
     readFile(UPSTREAM_CORE, "utf8"),
     readFile(UPSTREAM_NAV, "utf8"),

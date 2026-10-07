@@ -63,6 +63,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const localPaths = [VIRTUALIZER, TREE, LIST_DELEGATE, TESTS];
+  const missingLocal = localPaths.filter((filePath) => !existsSync(filePath));
+  if (missingLocal.length > 0) {
+    console.log("Virtualizer keyboard-walk guard");
+    console.error(`FAIL: this record no longer matches the tree: ${missingLocal.join(", ")}`);
+    process.exit(1);
+  }
+
   const [
     upstreamCore,
     upstreamNav,

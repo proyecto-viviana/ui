@@ -170,7 +170,7 @@ export function checkCertifiedCaseFloor({ write = false } = {}) {
 
   for (const row of missing) {
     console.error(
-      `certified spec gone: ${row.file} discovered ${row.expected} cases and now discovers none — ` +
+      `certified spec gone: this record no longer matches the tree: ${row.file} discovered ${row.expected} cases and now discovers none — ` +
         `restore it, or drop its line from apps/comparison/e2e/certified-case-floor.json in the ` +
         `commit that removes the component.`,
     );

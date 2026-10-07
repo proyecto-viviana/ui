@@ -33,9 +33,23 @@ const current = PUBLIC_PACKAGES.flatMap((directory) => walk(path.join(ROOT, dire
   .sort();
 
 if (WRITE_BASELINE) {
+  const previous = existsSync(BASELINE_PATH)
+    ? JSON.parse(readFileSync(BASELINE_PATH, "utf8"))
+    : null;
+  if (previous) {
+    const allowed = new Set(previous.paths ?? []);
+    const additions = current.filter((file) => !allowed.has(file));
+    if (additions.length > 0 || current.length > previous.maxCount) {
+      console.error(
+        "Refusing to absorb @ts-nocheck growth. Adding or moving a directive fails, and --write-baseline will not raise the ceiling.",
+      );
+      for (const file of additions) console.error(`  - ${file}`);
+      process.exit(1);
+    }
+  }
   const baseline = {
     description:
-      "Frozen @ts-nocheck inventory for the public package source trees. Removing entries is allowed; adding or moving a directive fails.",
+      "Frozen @ts-nocheck inventory for the public package source trees. A path that no longer carries the directive is a stale record and fails until --write-baseline drops it. Adding or moving a directive fails, and --write-baseline refuses to absorb that growth.",
     maxCount: current.length,
     paths: current,
   };
@@ -63,11 +77,10 @@ console.log(`- removed from baseline: ${removals.length}`);
 console.log(`- new or moved directives: ${additions.length}`);
 
 if (removals.length > 0) {
-  console.error("- stale baseline paths (@ts-nocheck removed):");
-  for (const file of removals) console.error(`  - ${file}`);
   console.error(
-    "FAIL: the @ts-nocheck allowlist must ratchet down after each removal. Re-run with --write-baseline.",
+    "FAIL: this record no longer matches the tree. The @ts-nocheck baseline still names a file that no longer carries the directive. Re-run with --write-baseline to drop it.",
   );
+  for (const file of removals) console.error(`  - ${file}`);
   process.exit(1);
 }
 
