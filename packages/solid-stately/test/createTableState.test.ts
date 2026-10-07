@@ -739,4 +739,53 @@ describe("createTableState", () => {
       });
     });
   });
+
+  it("accepts a props object and leaves onSortChange a field", () => {
+    createRoot((dispose) => {
+      const onSortChange = vi.fn();
+      const collection = createTableCollection({
+        columns: testColumns,
+        rows: testData,
+        getKey: (item) => item.id,
+      });
+      const state = createTableState({
+        collection,
+        onSortChange,
+      });
+
+      flush();
+      expect(state.collection.size).toBe(3);
+      expect(onSortChange).not.toHaveBeenCalled();
+
+      state.sort("name");
+      expect(onSortChange).toHaveBeenCalledTimes(1);
+      expect(onSortChange).toHaveBeenCalledWith({ column: "name", direction: "ascending" });
+      dispose();
+    });
+  });
+
+  it("reads a replacement collection from a standard accessor", () => {
+    const [rows, setRows] = createSignal(testData.slice(0, 1));
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createTableState<Person>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createTableState(() => ({
+        collection: createTableCollection({
+          columns: testColumns,
+          rows: rows(),
+          getKey: (item) => item.id,
+        }),
+      }));
+    });
+
+    flush();
+    expect(state.collection.size).toBe(1);
+
+    setRows(testData);
+    flush();
+    expect(state.collection.size).toBe(3);
+    dispose();
+  });
 });

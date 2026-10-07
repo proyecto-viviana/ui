@@ -19,7 +19,7 @@
 
 import { createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
-import { createInternalSignal, access, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection } from "../collections/types";
@@ -134,7 +134,7 @@ export interface SelectState<T = unknown> extends FormValidationState {
 export function createSelectState<T = unknown>(
   props: MaybeAccessor<SelectStateProps<T>>,
 ): SelectState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
   const selectionMode: Accessor<"single" | "multiple"> = () => getProps().selectionMode ?? "single";
 
   // Overlay trigger state for open/close

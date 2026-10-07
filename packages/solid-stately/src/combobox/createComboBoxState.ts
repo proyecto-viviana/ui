@@ -22,7 +22,7 @@
 
 import { createMemo, createEffect, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
-import { createInternalSignal, access, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 import { createListState, type ListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
 import { ListCollection } from "../collections/ListCollection";
@@ -202,7 +202,7 @@ export const defaultContainsFilter: FilterFn = (textValue, inputValue) => {
 export function createComboBoxState<T = unknown>(
   props: MaybeAccessor<ComboBoxStateProps<T>>,
 ): ComboBoxState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Extract options with defaults
   const menuTrigger = () => getProps().menuTrigger ?? "input";

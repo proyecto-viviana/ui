@@ -4,19 +4,18 @@
  */
 
 import { createEffect, createMemo } from "solid-js";
-import type { Accessor } from "solid-js";
 import type { GridState, GridStateOptions, GridCollection, GridNode } from "./types";
 import type { Key, FocusStrategy, SelectionBehavior, Selection } from "../collections/types";
-import { createInternalSignal } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 
 /**
  * Creates state management for a grid component.
  * Handles row selection, focus management, and keyboard navigation state.
  */
 export function createGridState<T extends object, C extends GridCollection<T> = GridCollection<T>>(
-  options: Accessor<GridStateOptions<T, C>>,
+  options: MaybeAccessor<GridStateOptions<T, C>>,
 ): GridState<T, C> {
-  const getOptions = () => options();
+  const getOptions = propsAccessor(options);
 
   const disabledKeys = createMemo(() => {
     const keys = getOptions().disabledKeys;

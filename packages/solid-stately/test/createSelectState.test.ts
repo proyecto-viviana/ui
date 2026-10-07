@@ -475,4 +475,35 @@ describe("createSelectState", () => {
       });
     });
   });
+
+  it("tracks items from a standard accessor without calling getKey as the props bag", () => {
+    const [itemList, setItemList] = createSignal([{ key: "a", label: "Apple" }]);
+    const getKey = (item: { key: string; label: string }) => {
+      if (item == null || item.key == null) {
+        throw new Error("getKey called as the props bag");
+      }
+      return item.key;
+    };
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createSelectState<{ key: string; label: string }>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createSelectState(() => ({
+        items: itemList(),
+        getKey,
+      }));
+    });
+
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["a"]);
+
+    setItemList([
+      { key: "a", label: "Apple" },
+      { key: "b", label: "Banana" },
+    ]);
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["a", "b"]);
+    dispose();
+  });
 });

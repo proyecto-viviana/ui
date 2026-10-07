@@ -922,6 +922,45 @@ describe("createComboBoxState", () => {
       });
     });
   });
+
+  it("tracks items from a standard accessor and leaves defaultFilter a field", () => {
+    const [rows, setRows] = createSignal<TestItem[]>([{ id: "1", name: "Apple" }]);
+    const defaultFilter = (text: string, input: string) => {
+      if (text == null || input == null) {
+        throw new Error("defaultFilter called as the props bag");
+      }
+      return text.toLowerCase().includes(input.toLowerCase());
+    };
+    const getKey = (item: TestItem) => {
+      if (item == null || item.id == null) {
+        throw new Error("getKey called as the props bag");
+      }
+      return item.id;
+    };
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createComboBoxState<TestItem>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createComboBoxState(() => ({
+        items: rows(),
+        getKey,
+        getTextValue: (item) => item.name,
+        defaultFilter,
+      }));
+    });
+
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["1"]);
+
+    setRows([
+      { id: "1", name: "Apple" },
+      { id: "2", name: "Banana" },
+    ]);
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["1", "2"]);
+    dispose();
+  });
 });
 
 describe("defaultContainsFilter", () => {

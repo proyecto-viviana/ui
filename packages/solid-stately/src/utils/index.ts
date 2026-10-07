@@ -2,6 +2,7 @@ export {
   access,
   createInternalSignal,
   isAccessor,
+  propsAccessor,
   readNow,
   type MaybeAccessor,
   type MaybeAccessorValue,

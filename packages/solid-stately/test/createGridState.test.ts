@@ -811,4 +811,35 @@ describe("createGridState", () => {
       });
     });
   });
+
+  it("accepts a props object and reads disabled keys from a standard accessor", () => {
+    const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);
+
+    createRoot((dispose) => {
+      const state = createGridState({ collection });
+      flush();
+      expect(state.collection).toBe(collection);
+      dispose();
+    });
+
+    const [disabled, setDisabled] = createSignal<Key[]>([]);
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createGridState>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createGridState(() => ({
+        collection,
+        disabledKeys: disabled(),
+      }));
+    });
+
+    flush();
+    expect(state.disabledKeys.size).toBe(0);
+
+    setDisabled(["row1"]);
+    flush();
+    expect(state.disabledKeys.has("row1")).toBe(true);
+    dispose();
+  });
 });

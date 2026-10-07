@@ -252,4 +252,35 @@ describe("createTabListState", () => {
       dispose();
     });
   });
+
+  it("tracks items from a standard accessor without calling getKey as the props bag", () => {
+    const [items, setItems] = createSignal([{ key: "tab1", label: "Tab 1" }]);
+    const getKey = (item: { key: string; label: string }) => {
+      if (item == null || item.key == null) {
+        throw new Error("getKey called as the props bag");
+      }
+      return item.key;
+    };
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createTabListState<{ key: string; label: string }>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createTabListState(() => ({
+        items: items(),
+        getKey,
+      }));
+    });
+
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["tab1"]);
+
+    setItems([
+      { key: "tab1", label: "Tab 1" },
+      { key: "tab2", label: "Tab 2" },
+    ]);
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["tab1", "tab2"]);
+    dispose();
+  });
 });

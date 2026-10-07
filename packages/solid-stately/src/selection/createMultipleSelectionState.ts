@@ -25,7 +25,7 @@
 
 import { createMemo, createEffect } from "solid-js";
 import type { Accessor } from "solid-js";
-import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, readNow, type MaybeAccessor } from "../utils";
 import type { SelectionStateProps } from "../collections/createSelectionState";
 import type {
   DisabledBehavior,
@@ -114,7 +114,7 @@ function convertSelection(
 export function createMultipleSelectionState(
   props: MaybeAccessor<SelectionStateProps> = {},
 ): MultipleSelectionState {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Focus is a plain signal in Solid; upstream needs a ref + state pair only
   // because React requires both a synchronous read and a re-render trigger.

@@ -18,7 +18,7 @@
  */
 
 import { createMemo } from "solid-js";
-import type { Accessor } from "solid-js";
+import { propsAccessor, type MaybeAccessor } from "../utils";
 import { createGridState } from "../grid/createGridState";
 import type { Key } from "../collections/types";
 import type {
@@ -41,8 +41,8 @@ const OPPOSITE_SORT_DIRECTION: Record<SortDirection, SortDirection> = {
 export function createTableState<
   T extends object,
   C extends TableCollection<T> = TableCollection<T>,
->(options: Accessor<TableStateOptions<T, C>>): TableState<T, C> {
-  const getOptions = () => options();
+>(options: MaybeAccessor<TableStateOptions<T, C>>): TableState<T, C> {
+  const getOptions = propsAccessor(options);
 
   // Create the underlying grid state
   const gridState = createGridState<T, C>(() => ({

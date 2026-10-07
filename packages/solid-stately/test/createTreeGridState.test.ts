@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { createSignal, flush, createRoot } from "solid-js";
 import {
   createTreeGridState,
   createTableCollection,
@@ -376,5 +376,56 @@ describe("createTreeGridState", () => {
 
       dispose();
     });
+  });
+
+  it("accepts a props object and keeps getKey a field on a standard accessor", () => {
+    createRoot((dispose) => {
+      const state = createTreeGridState<Item>({
+        columns: treeColumns,
+        rows: treeRows,
+      });
+
+      flush();
+      expect(keysOf(state.collection)).toEqual(["projects", "documents"]);
+      dispose();
+    });
+
+    interface RawRow {
+      id: string;
+      name: string;
+      type: string;
+    }
+    const [rows, setRows] = createSignal<RawRow[]>([{ id: "a", name: "A", type: "file" }]);
+    const getKey = (item: RawRow) => {
+      if (item == null || item.id == null) {
+        throw new Error("getKey called as the props bag");
+      }
+      return item.id;
+    };
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createTreeGridState<RawRow>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createTreeGridState<RawRow>(() => ({
+        columns: [
+          { key: "name", name: "Name", isRowHeader: true },
+          { key: "type", name: "Type" },
+        ],
+        rows: rows(),
+        getKey,
+      }));
+    });
+
+    flush();
+    expect(keysOf(state.collection)).toEqual(["a"]);
+
+    setRows([
+      { id: "a", name: "A", type: "file" },
+      { id: "b", name: "B", type: "file" },
+    ]);
+    flush();
+    expect(keysOf(state.collection)).toEqual(["a", "b"]);
+    dispose();
   });
 });

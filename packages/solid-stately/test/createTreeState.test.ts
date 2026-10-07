@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vite-plus/test";
-import { flush, createRoot } from "solid-js";
+import { createSignal, flush, createRoot } from "solid-js";
 import { createTreeState, TreeCollection, createTreeCollection } from "../src/tree";
 import type {
   TreeItemData,
@@ -723,5 +723,45 @@ describe("createTreeState", () => {
       flush();
       expect(item2?.isExpanded).toBe(false);
     });
+  });
+});
+
+describe("createTreeState — standard accessor", () => {
+  it("accepts a props object without calling collectionFactory as the bag", () => {
+    createRoot((dispose) => {
+      const items = createTestItems();
+      const state = createTreeState<TestItem>({
+        collectionFactory: (expandedKeys) => createTreeCollection(items, expandedKeys),
+      });
+
+      flush();
+      expect([...state.collection.getKeys()]).toEqual(["1", "2", "3"]);
+      dispose();
+    });
+  });
+
+  it("rebuilds the collection when a standard accessor changes", () => {
+    const [includeRest, setIncludeRest] = createSignal(false);
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createTreeState<TestItem>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createTreeState<TestItem>(() => ({
+        collectionFactory: (expandedKeys) =>
+          createTreeCollection(
+            includeRest() ? createTestItems() : createTestItems().slice(0, 1),
+            expandedKeys,
+          ),
+      }));
+    });
+
+    flush();
+    expect(state.collection.size).toBe(1);
+
+    setIncludeRest(true);
+    flush();
+    expect([...state.collection.getKeys()]).toEqual(["1", "2", "3"]);
+    dispose();
   });
 });

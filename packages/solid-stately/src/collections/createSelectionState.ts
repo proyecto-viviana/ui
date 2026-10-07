@@ -22,7 +22,7 @@
 
 import { createMemo } from "solid-js";
 import type { Accessor } from "solid-js";
-import { access, createInternalSignal, readNow, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, readNow, type MaybeAccessor } from "../utils";
 import type {
   Collection,
   DisabledBehavior,
@@ -117,7 +117,7 @@ export interface SelectionPressEvent {
 export function createSelectionState(
   props: MaybeAccessor<SelectionStateProps> = {},
 ): SelectionState {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Selection behavior state
   const [internalBehavior, setInternalBehavior] = createInternalSignal<SelectionBehavior>("toggle");

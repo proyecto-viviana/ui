@@ -365,6 +365,32 @@ describe("createSelectionState", () => {
       dispose();
     });
   });
+
+  it("tracks selected keys from a standard accessor and leaves onSelectionChange a field", () => {
+    const onSelectionChange = vi.fn();
+    const [selected, setSelected] = createSignal<string[]>(["a"]);
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createSelectionState>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createSelectionState(() => ({
+        selectionMode: "multiple",
+        selectedKeys: selected(),
+        onSelectionChange,
+      }));
+    });
+
+    flush();
+    expect(state.selectedKeys().has("a")).toBe(true);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    setSelected(["a", "b"]);
+    flush();
+    expect(state.selectedKeys().has("b")).toBe(true);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    dispose();
+  });
 });
 
 describe("selection module compatibility aliases", () => {
@@ -685,6 +711,37 @@ describe("createMenuState", () => {
       expect(onClose).toHaveBeenCalled();
       dispose();
     });
+  });
+
+  it("tracks items from a standard accessor without calling getKey as the props bag", () => {
+    const [menuItems, setMenuItems] = createSignal([{ key: "copy", label: "Copy" }]);
+    const getKey = (item: { key: string; label: string }) => {
+      if (item == null || item.key == null) {
+        throw new Error("getKey called as the props bag");
+      }
+      return item.key;
+    };
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createMenuState<{ key: string; label: string }>>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createMenuState(() => ({
+        items: menuItems(),
+        getKey,
+      }));
+    });
+
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["copy"]);
+
+    setMenuItems([
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ]);
+    flush();
+    expect([...state.collection()].map((node) => node.key)).toEqual(["copy", "paste"]);
+    dispose();
   });
 });
 

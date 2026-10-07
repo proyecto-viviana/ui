@@ -138,8 +138,8 @@ export interface TreeGridStateOptions<
 > extends Omit<TableStateOptions<T, C>, "collection"> {
   /** Column definitions. */
   columns: ColumnDefinition<T>[];
-  /** Row definitions (may contain `childRows` for nested rows). */
-  rows: RowDefinition<T>[];
+  /** Row definitions (may contain `childRows`) or raw data items keyed by `getKey`. */
+  rows: RowDefinition<T>[] | T[];
   /** Function to get the key from a data item. */
   getKey?: (item: T) => Key;
   /** Function to get the text value from a data item. */

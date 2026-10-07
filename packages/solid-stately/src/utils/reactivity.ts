@@ -37,6 +37,14 @@ export function isAccessor<T>(value: MaybeAccessor<T>): value is Accessor<T> {
 }
 
 /**
+ * Resolve a props bag once. Later reads call the accessor directly, so a
+ * function-valued field such as `getKey` is never treated as the bag.
+ */
+export function propsAccessor<T extends object>(props: MaybeAccessor<T>): Accessor<T> {
+  return typeof props === "function" ? props : () => props;
+}
+
+/**
  * Headless state is written from factory setup and from public setters that
  * tests (and some call sites) invoke inside `createRoot` / a component body.
  * Solid 2 throws on those writes unless the signal opts into `ownedWrite`.

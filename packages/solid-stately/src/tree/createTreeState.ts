@@ -20,19 +20,18 @@
  */
 
 import { createEffect, createMemo } from "solid-js";
-import type { Accessor } from "solid-js";
 import type { TreeState, TreeStateOptions, TreeCollection } from "./types";
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
-import { createInternalSignal } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 
 /**
  * Creates state management for a tree component.
  * Handles expansion, selection, focus management, and keyboard navigation state.
  */
 export function createTreeState<T extends object, C extends TreeCollection<T> = TreeCollection<T>>(
-  options: Accessor<TreeStateOptions<T, C>>,
+  options: MaybeAccessor<TreeStateOptions<T, C>>,
 ): TreeState<T, C> {
-  const getOptions = () => options();
+  const getOptions = propsAccessor(options);
 
   // Disabled keys as a Set
   const disabledKeys = createMemo(() => {

@@ -19,7 +19,7 @@
 
 import { createEffect, createMemo, onCleanup } from "solid-js";
 import type { Accessor } from "solid-js";
-import { createInternalSignal, access, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 import { ListCollection } from "../collections/ListCollection";
 import type {
   Collection,
@@ -94,7 +94,7 @@ export interface TabListState<T = unknown> {
 export function createTabListState<T = unknown>(
   props: MaybeAccessor<TabListStateProps<T>>,
 ): TabListState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   const collection: Accessor<Collection<T>> = createMemo(() => {
     const p = getProps();

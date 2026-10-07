@@ -19,7 +19,7 @@
  * - createTableState
  */
 
-import { describe, it, expect } from "vite-plus/test";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, flush } from "solid-js";
 import { createSignal } from "./owned-signal";
 import { createMultipleSelectionState } from "../src/selection/createMultipleSelectionState";
@@ -170,6 +170,36 @@ describe("createMultipleSelectionState — selectionBehavior", () => {
 
       dispose();
     });
+  });
+});
+
+describe("createMultipleSelectionState — standard accessor", () => {
+  it("reads selectionMode from a standard accessor and leaves onSelectionChange a field", () => {
+    const onSelectionChange = vi.fn();
+    const [mode, setMode] = createSignal<"single" | "multiple">("single");
+    let dispose!: () => void;
+    let state!: ReturnType<typeof createMultipleSelectionState>;
+
+    createRoot((done) => {
+      dispose = done;
+      state = createMultipleSelectionState(() => ({
+        selectionMode: mode(),
+        onSelectionChange,
+      }));
+    });
+
+    expect(state.selectionMode).toBe("single");
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    setMode("multiple");
+    flush();
+    expect(state.selectionMode).toBe("multiple");
+
+    state.setSelectedKeys(new Selection(["a"]));
+    flush();
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    expect(state.selectedKeys.has("a")).toBe(true);
+    dispose();
   });
 });
 

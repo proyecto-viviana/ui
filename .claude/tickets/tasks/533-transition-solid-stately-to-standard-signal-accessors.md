@@ -16,6 +16,11 @@ history:
       at: 2026-09-27,
       note: "createListState and createSingleSelectListState resolve a props object or accessor once. Later reads call that accessor, so getKey stays a field. A standard accessor updates the collection. collections.test.ts passes 45/45 and direct list callers pass 170/170. Table, tree, and the rest of MaybeAccessor remain",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "Collection state resolves a props object or accessor once. Grid, table, tree, tree grid, menu, selection, select, combobox, and tabs keep getKey, filters, and callbacks as fields, and a standard accessor updates the collection. vp test run of the nine touched solid-stately files passes 277/277. Calendar field accessors and the remaining bag-level access() calls stay open",
+    }
 ---
 
 ## Cause

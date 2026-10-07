@@ -20,7 +20,7 @@
  * createMenuState is a local composition of the separately attributed list state.
  */
 
-import { access, createInternalSignal, type MaybeAccessor } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 
 import { createOverlayTriggerState, type OverlayTriggerProps } from "../overlays";
 import { createListState, type ListState, type ListStateProps } from "./createListState";
@@ -45,7 +45,7 @@ export interface MenuState<T = unknown> extends ListState<T> {
 export function createMenuState<T = unknown>(
   props: MaybeAccessor<MenuStateProps<T>>,
 ): MenuState<T> {
-  const getProps = () => access(props);
+  const getProps = propsAccessor(props);
 
   // Menus default to action-only items, but can opt into single or multiple selection.
   const listState = createListState<T>({

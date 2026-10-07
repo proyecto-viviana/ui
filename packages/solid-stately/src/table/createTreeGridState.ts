@@ -21,8 +21,7 @@
  */
 
 import { createMemo } from "solid-js";
-import type { Accessor } from "solid-js";
-import { createInternalSignal } from "../utils";
+import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 
 import { createTableState } from "./createTableState";
 import { createTableCollection, TableCollection } from "./TableCollection";
@@ -36,8 +35,8 @@ import type { TreeGridState, TreeGridStateOptions } from "./types";
 export function createTreeGridState<
   T extends object,
   C extends TableCollection<T> = TableCollection<T>,
->(options: Accessor<TreeGridStateOptions<T, C>>): TreeGridState<T, C> {
-  const getOptions = () => options();
+>(options: MaybeAccessor<TreeGridStateOptions<T, C>>): TreeGridState<T, C> {
+  const getOptions = propsAccessor(options);
 
   // Expanded keys: controlled via `UNSTABLE_expandedKeys`, otherwise the internal signal
   // seeded from `UNSTABLE_defaultExpandedKeys`.
