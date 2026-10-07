@@ -26,7 +26,6 @@ import { Accessor, createEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createToggle, type AriaToggleProps } from "../toggle";
 import { type ToggleState } from "@proyecto-viviana/solid-stately";
-import { createPress } from "../interactions/createPress";
 import { mergeProps } from "../utils/mergeProps";
 import { attrTrue } from "../utils/domAttrs";
 import { type MaybeAccessor, access } from "../utils/reactivity";
@@ -107,21 +106,11 @@ export function createCheckbox(
     },
   );
 
-  // Reset validation state on label press for checkbox with a hidden input.
-  const { pressProps } = createPress({
-    onPress() {
-      // Validation state reset would be handled here if we had form validation
-      // For now, this is a no-op placeholder matching React-Aria's pattern
-    },
-    get isDisabled() {
-      return toggleResult.isDisabled || toggleResult.isReadOnly;
-    },
-  });
-
   return {
+    // useCheckbox merges only the mousedown guard. A second press on the same
+    // label disables text selection twice and the restore writes "none" back.
     labelProps: mergeProps(
       baseLabelProps as unknown as Record<string, unknown>,
-      pressProps as unknown as Record<string, unknown>,
       {
         // Prevent label from being focused when mouse down on it.
         // Note, this does not prevent the input from being focused in the `click` event.

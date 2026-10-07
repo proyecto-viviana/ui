@@ -373,6 +373,10 @@ export function createToggle(
     }) as JSX.LabelHTMLAttributes<HTMLLabelElement>,
     get inputProps() {
       const p = getProps();
+      // Read inside the getter so press handlers stay current with this snapshot.
+      // A later object key would replace interactions.onClick before mergeProps
+      // can chain it, so the 80ms fallback click toggles and leaves the press stuck.
+      const { onClick: pressClick, ...inputInteractions } = interactions;
       return mergeProps(domProps(), {
         "aria-invalid": isInvalid() || undefined,
         "aria-errormessage": p["aria-errormessage"],
@@ -389,10 +393,15 @@ export function createToggle(
         name: p.name,
         form: p.form,
         type: "checkbox" as const,
-        ...interactions,
-        // Stop click propagation to prevent labelProps.onClick from calling preventDefault
-        // which would prevent the checkbox from toggling in JSDOM/testing-library environments
-        onClick: (e: MouseEvent) => e.stopPropagation(),
+        ...inputInteractions,
+        // stopPropagation still blocks label preventDefault from swallowing the
+        // native toggle in JSDOM. Call the press handler first.
+        onClick: (e: MouseEvent) => {
+          if (typeof pressClick === "function") {
+            (pressClick as (event: MouseEvent) => void)(e);
+          }
+          e.stopPropagation();
+        },
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get descriptionProps() {

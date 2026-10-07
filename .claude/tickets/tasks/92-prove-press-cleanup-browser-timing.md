@@ -4,9 +4,14 @@ type: task
 title: "Prove press-cleanup browser timing"
 created: 2026-08-20
 parent: 24
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from adversarial finding A-027" }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Paired Chromium traces on the checkbox and switch comparison routes dispatch a real-size pointer (width and height 1) on the label and the native input, both stacks stay pressed across pointerup, then clear press, restore user-select, and toggle once, on the click or on the 80ms fallback, and package press regressions stay in place.",
+    }
 ---
 
 Checkbox and Switch package regressions now observe transient native-click
