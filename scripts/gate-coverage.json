@@ -1,14 +1,18 @@
 {
   "plumbing": [
-    "Checkout",
-    "Setup pnpm",
-    "Setup Node.js",
-    "Install dependencies",
-    "Cache Playwright browsers",
-    "Install Playwright Chromium",
-    "Upload Playwright artifacts",
-    "Publish summary",
-    "Publish floor summary"
+    "certification-gates / Install dependencies",
+    "certification-gates / Install Playwright Chromium",
+    "certification-gates / Publish summary",
+    "comparison evidence build / Install dependencies",
+    "comparison floors: pair budgets / Install dependencies",
+    "comparison floors: pair budgets / Install Playwright Chromium",
+    "comparison floors: pair budgets / Publish floor summary",
+    "comparison floors: contracts / Install dependencies",
+    "comparison floors: contracts / Install Playwright Chromium",
+    "comparison floors: contracts / Publish floor summary",
+    "certified (${{ matrix.shard }}/8) / Install dependencies",
+    "certified (${{ matrix.shard }}/8) / Install Playwright Chromium",
+    "certified report / Install dependencies"
   ],
   "steps": {
     "certification-gates / Checkout": {

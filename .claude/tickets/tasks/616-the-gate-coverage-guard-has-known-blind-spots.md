@@ -4,12 +4,17 @@ type: task
 title: "The gate-coverage guard has known blind spots"
 created: 2026-09-22
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-22,
       note: "opened while landing the #568 follow-up on main. The guard now reads every script a step runs, allowlists Publish floor summary, and names guard:entry-import-budget in the Publish summary table. The lines below are the blind spots that review named and this change leaves. The moved paragraph is the old #568 Followups section, with the jobBlock line brought to where the function sits after that edit.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "The behavioral blind spots are closed. Plumbing keys are full step keys and the five inert uses: names are gone. || true is advisory, with && and || keeping their precedence. The run scanner honors quotes, comments, heredocs, env prefixes, and &, |, and parentheses, and a string leg matches by command equality after one pnpm exec. A stale second coverage sentence fails. Publish summary's O_* bindings and rows must name the same certification-gates gates. A nameless blocking step names its job and index. countCoverage is the counting test's source. A null leg still acknowledges a pure run of scripts the chain does not reach, and fails when that step mixes in anything else. jobBlock stays duplicated: test-ci-guard-contracts.mjs runs its suite on import and exports nothing, and the other workflow readers do not slice jobs, so extracting it is not one move.",
     }
 ---
 
