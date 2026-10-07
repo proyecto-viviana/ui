@@ -423,6 +423,12 @@ export interface MatteWellOptions {
    * @default false
    */
   quiet?: boolean;
+  /**
+   * Fold `surface: "tutor"` into the background map, before `forcedColors`.
+   * A later `backgroundColor` key would replace this map, including `isDisabled`.
+   * @default false
+   */
+  tutor?: boolean;
 }
 
 /**
@@ -476,6 +482,15 @@ export function matteWell(options: MatteWellOptions = {}) {
       default: "well" as const,
       isDisabled: "disabled" as const,
       ...(quiet ? { isQuiet: "transparent" as const } : {}),
+      /* Before `forcedColors` so forced colors keep the last word.
+       * TextField asks for this instead of restating `backgroundColor`. */
+      ...(options.tutor
+        ? {
+            surface: {
+              tutor: "well-tutor" as const,
+            },
+          }
+        : {}),
       forcedColors: "Field" as const,
     },
     backgroundImage: scan.backgroundImage,
@@ -539,6 +554,10 @@ interface ControlOptions {
    * Defaults to `"within"` (field groups), or `"none"` when focus ring is external.
    */
   focus?: "within" | "none";
+  /**
+   * Passed to `matteWell()` when `register === "matte"`. See `MatteWellOptions.tutor`.
+   */
+  tutor?: boolean;
 }
 
 interface ControlResult {
@@ -665,6 +684,7 @@ export function control(options: ControlOptions): ControlResult {
     const well = matteWell({
       quiet: options.quiet,
       focus: options.focus,
+      tutor: options.tutor,
     });
     result.borderWidth = well.borderWidth;
     result.borderStyle = well.borderStyle;

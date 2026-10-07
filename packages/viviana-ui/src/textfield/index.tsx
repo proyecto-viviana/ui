@@ -145,18 +145,11 @@ const textFieldLabel = style<TextFieldStyleProps>({
 
 const fieldGroupStyles = style<TextFieldStyleProps>({
   ...focusRing(),
-  ...control({ shape: "default", register: "matte" }),
+  /* Tutor fill is inside the matte map. A `backgroundColor` key here would
+   * replace that map and drop `isDisabled`. */
+  ...control({ shape: "default", register: "matte", tutor: true }),
   ...fieldInput(),
   transition: "default",
-  backgroundColor: {
-    default: "well",
-    /* The AI-lane surface (register panel 02). `surface` sits before
-     * `forcedColors` so forced colors keep the last word. */
-    surface: {
-      tutor: "well-tutor",
-    },
-    forcedColors: "Field",
-  },
   color: {
     default: baseColor("neutral"),
     /* The tutor well carries its own ink token (brighter in dark, where the
