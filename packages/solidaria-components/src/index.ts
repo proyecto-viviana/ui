@@ -368,7 +368,6 @@ export {
   DefaultCollectionRenderer,
   GroupContext,
   HeaderContext,
-  HeadingContext,
   Section,
   Header,
   Group,
@@ -528,13 +527,12 @@ export {
   DialogContext,
   DialogTriggerContext,
   useDialogTrigger,
-  Heading,
-  DialogHeading,
   type DialogProps,
   type DialogRenderProps,
   type DialogTriggerProps,
-  type HeadingProps,
 } from "./Dialog";
+
+export { Heading, HeadingContext, type HeadingProps } from "./Heading";
 
 export {
   Modal,

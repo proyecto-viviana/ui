@@ -41,10 +41,20 @@ describe("Dialog", () => {
     expect(screen.getByRole("heading", { level: 3, name: "Section" })).toBeInTheDocument();
   });
 
-  it("titles a dialog as level 2", () => {
+  it("defaults to level 3 inside a dialog when unslotted", () => {
+    render(() => (
+      <Dialog aria-label="Dialog">
+        <Heading>Section</Heading>
+      </Dialog>
+    ));
+
+    expect(screen.getByRole("heading", { level: 3, name: "Section" })).toBeInTheDocument();
+  });
+
+  it("titles a dialog as level 2 with slot='title'", () => {
     render(() => (
       <Dialog>
-        <Heading>Title</Heading>
+        <Heading slot="title">Title</Heading>
       </Dialog>
     ));
 
@@ -54,7 +64,7 @@ describe("Dialog", () => {
   it("should have a base default set of attributes", () => {
     render(() => (
       <Dialog>
-        <Heading>Title</Heading>
+        <Heading slot="title">Title</Heading>
       </Dialog>
     ));
 
@@ -76,7 +86,7 @@ describe("Dialog", () => {
   it("should render dialog with aria-labelledby from Heading", () => {
     render(() => (
       <Dialog>
-        <Heading>My Dialog Title</Heading>
+        <Heading slot="title">My Dialog Title</Heading>
         <p>Content</p>
       </Dialog>
     ));
@@ -148,7 +158,7 @@ describe("Dialog", () => {
       <Dialog onClose={closeFn}>
         {({ close }) => (
           <>
-            <Heading>Test</Heading>
+            <Heading slot="title">Test</Heading>
             <button onClick={() => close()}>Close</button>
           </>
         )}
@@ -225,7 +235,7 @@ describe("DialogTrigger", () => {
           <Dialog role="alertdialog" data-test="dialog">
             {({ close }) => (
               <>
-                <Heading>Alert</Heading>
+                <Heading slot="title">Alert</Heading>
                 <Button onPress={close}>Close</Button>
               </>
             )}
@@ -315,7 +325,7 @@ describe("DialogTrigger", () => {
             <Dialog role="alertdialog" data-test="dialog">
               {({ close }) => (
                 <>
-                  <Heading>Alert</Heading>
+                  <Heading slot="title">Alert</Heading>
                   <Button onPress={close}>Close</Button>
                 </>
               )}
@@ -873,7 +883,7 @@ describe("Dialog a11y focus & ARIA integrity", () => {
   it("ARIA ID integrity: dialog aria-labelledby resolves", () => {
     render(() => (
       <Dialog>
-        <Heading>My Dialog Title</Heading>
+        <Heading slot="title">My Dialog Title</Heading>
         <p>Content</p>
       </Dialog>
     ));
@@ -885,7 +895,7 @@ describe("Dialog a11y focus & ARIA integrity", () => {
     render(() => (
       <Modal isOpen>
         <Dialog>
-          <Heading>Modal Title</Heading>
+          <Heading slot="title">Modal Title</Heading>
           <p>Content</p>
         </Dialog>
       </Modal>

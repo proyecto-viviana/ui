@@ -4,7 +4,7 @@ type: task
 title: "Restore RAC Heading and DialogTrigger state wiring"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
   - {
@@ -17,15 +17,18 @@ history:
       at: 2026-09-28,
       note: "A heading outside a dialog defaults to level 3. Inside a dialog the heading is still the title at level 2, because the styled dialog legacy title renders it without a slot. The public HeadingContext export is still the collection context.",
     }
+  - {
+      state: verified,
+      at: 2026-10-06,
+      note: "Heading lives in Heading.tsx, defaults to level 3, and publishes the RAC heading context. An unslotted heading inside a dialog stays level 3; only the title slot is level 2, and the styled legacy title uses that slot. DialogTrigger still provides root menu-trigger state, so a menu inside a dialog closes with the dialog. DialogHeading is not exported.",
+    }
 ---
 
 ## Cause
 
-A heading outside a dialog now defaults to level 3, and `DialogTrigger` provides root menu-trigger state.
+`Heading` lived in `Dialog.tsx` and defaulted to level 2 inside a dialog, including when it was not the title. RAC keeps an unslotted heading at level 3 and uses level 2 only for `slot="title"`. The styled dialog legacy title rendered that heading without the slot. The public `HeadingContext` export was the collection header context.
 
-`Heading` still lives in `Dialog.tsx`. Inside a dialog every `Heading` is the title and defaults to level 2. RAC's unsloated `Heading` inside a dialog stays level 3; only `slot="title"` is level 2. The styled dialog legacy title renders this heading without that slot, so the inside default stays 2.
-
-The public `HeadingContext` export is the collection header context, not RAC's heading slot context. `DialogProps.onClose` has no RAC counterpart.
+`DialogProps.onClose` has no RAC counterpart and is unchanged.
 
 ## Work
 

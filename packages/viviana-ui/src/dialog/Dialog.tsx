@@ -897,7 +897,7 @@ export function Dialog(props: DialogProps): JSX.Element {
                     <>
                       <div class={dialogTop({ isDismissible: isDismissible() })}>
                         <div class={dialogHeaderWrapper}>
-                          <HeadlessDialogHeading level={2} class={dialogHeading}>
+                          <HeadlessDialogHeading slot="title" class={dialogHeading}>
                             {local.title}
                           </HeadlessDialogHeading>
                         </div>

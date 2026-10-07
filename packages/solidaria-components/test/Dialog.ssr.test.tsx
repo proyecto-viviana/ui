@@ -85,7 +85,7 @@ describe("Dialog SSR aria-labelledby resolution", () => {
       <DialogTrigger isOpen>
         <Button>Open Dialog</Button>
         <Dialog>
-          <Heading>SSR Dialog Title</Heading>
+          <Heading slot="title">SSR Dialog Title</Heading>
           <p>Dialog Content</p>
         </Dialog>
       </DialogTrigger>

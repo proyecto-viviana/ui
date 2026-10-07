@@ -26,8 +26,6 @@ import {
   createSignal,
   createUniqueId,
   useContext,
-  Switch,
-  Match,
   createTrackedEffect,
 } from "solid-js";
 import type { Context } from "solid-js";
@@ -52,6 +50,7 @@ import {
 import { OverlayContext } from "./Popover";
 import { ButtonContext } from "./Button";
 import { TextContext } from "./Text";
+import { HeadingContext } from "./Heading";
 import { isDevEnv, splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   DEFAULT_SLOT,
@@ -376,6 +375,21 @@ export function Dialog(props: DialogProps): JSX.Element {
               values={
                 [
                   [
+                    HeadingContext,
+                    {
+                      slots: {
+                        [DEFAULT_SLOT]: {},
+                        get title() {
+                          hasHeading = true;
+                          return {
+                            ...titleProps(),
+                            level: 2,
+                          };
+                        },
+                      },
+                    },
+                  ],
+                  [
                     TextContext,
                     {
                       slots: {
@@ -420,87 +434,4 @@ export function Dialog(props: DialogProps): JSX.Element {
   );
 }
 
-export interface HeadingProps {
-  /** The children of the heading. */
-  children: JSX.Element;
-  /** The CSS className. */
-  class?: string;
-  /** The heading level (1-6). Defaults to 3, or 2 when this heading titles a dialog. */
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-  /** The slot to render into. */
-  slot?: string;
-}
-
-/**
- * Heading element for dialog title.
- * When rendered inside a Dialog, automatically gets the titleProps.
- */
-export function Heading(props: HeadingProps): JSX.Element {
-  const dialogContext = useContext(DialogContext);
-  dialogContext?.registerHeading?.();
-  // RAC Heading defaults to level 3. A heading rendered in a dialog is the
-  // title slot here, and that title is level 2.
-  const level = () => props.level ?? (dialogContext ? 2 : 3);
-  const id = () => dialogContext?.titleId;
-  let headingRef: HTMLHeadingElement | undefined;
-  const setHeadingRef = (element: HTMLHeadingElement) => {
-    headingRef = element;
-  };
-
-  createTrackedEffect(() => {
-    const el = headingRef;
-    if (!el) return;
-
-    const contextId = id();
-    if (contextId) {
-      el.id = contextId;
-      return;
-    }
-
-    if (!el.id) {
-      const dialog = el.closest('[role="dialog"],[role="alertdialog"]');
-      const labelledBy = dialog?.getAttribute("aria-labelledby");
-      if (labelledBy && !el.ownerDocument.getElementById(labelledBy)) {
-        el.id = labelledBy;
-      }
-    }
-  });
-
-  return (
-    <Switch>
-      <Match when={level() === 1}>
-        <h1 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h1>
-      </Match>
-      <Match when={level() === 2}>
-        <h2 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h2>
-      </Match>
-      <Match when={level() === 3}>
-        <h3 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h3>
-      </Match>
-      <Match when={level() === 4}>
-        <h4 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h4>
-      </Match>
-      <Match when={level() === 5}>
-        <h5 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h5>
-      </Match>
-      <Match when={level() === 6}>
-        <h6 ref={setHeadingRef} id={id()} class={props.class}>
-          {props.children}
-        </h6>
-      </Match>
-    </Switch>
-  );
-}
-
-// Keep backward compatibility
-export { Heading as DialogHeading };
+export { Heading, type HeadingProps } from "./Heading";

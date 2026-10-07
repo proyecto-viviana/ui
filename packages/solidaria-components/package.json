@@ -235,6 +235,12 @@
       "import": "./dist/GridList.js",
       "default": "./dist/GridList.js"
     },
+    "./Heading": {
+      "types": "./dist/Heading.d.ts",
+      "solid": "./dist/Heading.jsx",
+      "import": "./dist/Heading.js",
+      "default": "./dist/Heading.js"
+    },
     "./Icon": {
       "types": "./dist/Icon.d.ts",
       "solid": "./dist/Icon.jsx",
