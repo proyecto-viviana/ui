@@ -4,12 +4,17 @@ type: task
 title: '`pool: "vmThreads"` is load-bearing and undocumented, and the next memory fix will reach for it'
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-20,
       note: "left open deliberately when #556 merged, rather than buried in a merged ticket's note. #556 cost a whole shift - four multi-hour whole-suite attempts, all killed - and the obvious-looking lever throughout was the pool. It is the wrong lever, and the reason is measured and on disk, but nothing in the tree says so",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Recorded the three pool reasons in docs/adr/0002-vitest-pool.md and on each config's pool line. Classified the 2026-09-20 threads receipt rather than re-running it: 120 failed, of which 113 are jsdom rejecting MouseEvent view as a foreign Window (112 from FakePointerEvent in vitest.setup.ts, 1 from createVirtualClick) and the other 7 are document isolation, a stuck focus-visible class, a leftover fake timer, a read-only requestAnimationFrame, and two Table link-selection failures with an empty error body. That is not a pile of shape-vs-identity assertions, so the pools stay and vmMemoryLimit stays the memory lever. Under that ceiling, leg-test-run.out.txt at 18:10 is 351 files passed, 6697 passed / 1 expected fail / 6 skipped in 60.82s. The worker deaths were a condition, since fixed, and not a standing property of the pool.",
     }
 ---
 

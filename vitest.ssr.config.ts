@@ -24,6 +24,9 @@ export default defineConfig({
     name: "ssr",
     environment: "node",
     globals: true,
+    // Node SSR compile: no jsdom Window and no vitest.setup.ts, so the unit
+    // project's realm constraint does not apply. forks is process isolation
+    // for the server build. #562 / ADR 0002.
     pool: "forks",
     include: ["packages/**/test/**/*.ssr.test.{ts,tsx}"],
   },

@@ -40,6 +40,9 @@ export default defineConfig({
     name: "hydrate",
     environment: "jsdom",
     globals: true,
+    // Same jsdom environment and vitest.setup.ts as the unit project, so
+    // the same realm constraint. #562 / ADR 0002. No separate threads receipt;
+    // do not swap this pool on a hunch.
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
     include: ["packages/**/test/**/*.hydrate.test.{ts,tsx}"],

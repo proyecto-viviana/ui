@@ -23,13 +23,18 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // #562 / ADR 0002: vmThreads is load-bearing. The same run with
+    // `--pool=threads` failed 120 tests on 2026-09-20
+    // (.agents/chain-walk-2026-09-20/pool-threads.out.txt). The ceiling below
+    // is the memory lever. Do not swap the pool.
     pool: "vmThreads",
     // #556 item 2: over the whole discovered set the VM workers take the main
     // process to ~10 GiB and earlyoom kills it. Vitest 4's default ceiling is
     // `1 / maxWorkers` of total memory *per worker* (~1 GB each here), which in
     // aggregate is the whole box; this recycles a worker much sooner. It is a
     // memory ceiling, not a worker-count ceiling — parallelism is untouched, so
-    // it is not the fail-open #556 item 3 forbids.
+    // it is not the fail-open #556 item 3 forbids. A later kill is still this
+    // ceiling, not `pool` (ADR 0002).
     vmMemoryLimit: "400MB",
     setupFiles: ["./vitest.setup.ts"],
     include: [
