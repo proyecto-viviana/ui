@@ -450,11 +450,10 @@ describe("TimeField", () => {
       expect(spinbuttons[1]).toHaveFocus();
     });
 
-    // Skipped: RTL segment navigation resolves the visual-next segment
-    // geometrically via getBoundingClientRect (matching upstream
-    // useDatePickerGroup), which returns all-zeros in jsdom's layout-less DOM,
-    // so no segment is ever found. Certified in the real-browser pair-oracle spec.
-    it.skip("should follow RTL segment navigation with ArrowRight", async () => {
+    // RTL ArrowRight chooses the visual neighbor from getBoundingClientRect.
+    // jsdom reports a zero box, so the segments get an explicit left edge here.
+    // Real layout stays in the timefield certified spec.
+    it("should follow RTL segment navigation with ArrowRight", async () => {
       render(() => (
         <I18nProvider locale="he-IL">
           <TestTimeField fieldProps={{ defaultValue: new Time(10, 30) }} />
@@ -464,10 +463,27 @@ describe("TimeField", () => {
 
       const spinbuttons = screen.getAllByRole("spinbutton");
       expect(spinbuttons.length).toBeGreaterThan(1);
+      expect(spinbuttons[0].style.direction).toBe("ltr");
+      expect(spinbuttons[0].style.getPropertyValue("unicode-bidi")).toBe("embed");
 
-      spinbuttons[1].focus();
-      fireEvent.keyDown(spinbuttons[1], { key: "ArrowRight" });
-      expect(spinbuttons[0]).toHaveFocus();
+      const leftByElement = new Map<Element, number>();
+      spinbuttons.forEach((segment, index) => {
+        leftByElement.set(segment, (spinbuttons.length - index) * 24);
+      });
+      const rectSpy = vi
+        .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+        .mockImplementation(function (this: HTMLElement) {
+          const left = leftByElement.get(this);
+          return new DOMRect(left ?? 0, 0, left == null ? 0 : 16, left == null ? 0 : 16);
+        });
+
+      try {
+        spinbuttons[1].focus();
+        fireEvent.keyDown(spinbuttons[1], { key: "ArrowRight" });
+        expect(spinbuttons[0]).toHaveFocus();
+      } finally {
+        rectSpy.mockRestore();
+      }
     });
 
     it("should increment with ArrowUp", async () => {
@@ -521,26 +537,31 @@ describe("TimeField", () => {
       });
     });
 
-    // Skipped here: typed digits (including full-width) reach the value model
-    // through the contenteditable's onBeforeInput → onInput path (matching
-    // upstream useDateSegment), not onKeyDown. jsdom does not synthesize that
-    // contenteditable path from a keyDown. The parser branch is held by
-    // solidaria's createDateSegment beforeinput regression, while the certified
-    // browser pair proves the component's ASCII typed-input wiring. There is no
-    // browser-level full-width integration claim yet.
-    it.skip("should accept full-width digits in numeric input", async () => {
+    // Full-width digits use the segment's native beforeinput listener.
+    // keyDown never reaches that parser, in jsdom or in the browser.
+    it("should accept full-width digits in numeric input", async () => {
       const onChange = vi.fn();
       render(() => <TestTimeField fieldProps={{ defaultValue: new Time(10, 30), onChange }} />);
       await waitForTimeFieldHydration();
 
-      const spinbuttons = screen.getAllByRole("spinbutton");
-      const hourSegment = spinbuttons[0];
+      const hourSegment = document.querySelector('[data-type="hour"]') as HTMLElement;
+      expect(hourSegment).toHaveAttribute("role", "spinbutton");
       hourSegment.focus();
-      fireEvent.keyDown(hourSegment, { key: "１" });
+      hourSegment.dispatchEvent(
+        new InputEvent("beforeinput", {
+          data: "５",
+          inputType: "insertText",
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
 
       await waitFor(() => {
         expect(onChange).toHaveBeenCalled();
       });
+      const next = onChange.mock.calls.at(-1)?.[0] as Time;
+      expect(next.hour).toBe(5);
+      expect(next.minute).toBe(30);
     });
   });
 

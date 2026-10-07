@@ -1796,8 +1796,55 @@ describe("Table", () => {
       expect(screen.queryByText("Pokemon 25")).toBeNull();
     });
 
-    it.skip("accepts a user defined scrollRef", () => {
-      // Upstream currently skips this title; keep it mirrored so the parity script does not track it as a Solid gap.
+    // Upstream skips this title: scrollRef never attached before TableBody mounted.
+    // Load-more here is the IntersectionObserver sentinel, not that caller ref.
+    // This record stays out of the certified fixme and deferred-acceptance lists.
+    it("accepts a user defined scrollRef", () => {
+      const onLoadMore = vi.fn();
+      const observer = setupIntersectionObserverMock();
+      const bodyRef: { current: HTMLTableSectionElement | null } = { current: null };
+
+      try {
+        render(() => (
+          <Table
+            items={testData}
+            columns={testColumns}
+            getKey={(item: any) => item.id}
+            aria-label="Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                </TableHeader>
+                <TableBody hasMore onLoadMore={onLoadMore} ref={bodyRef}>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+
+        const sentinel = screen.getByTestId("loadMoreSentinel");
+        const grid = screen.getByRole("grid", { name: "Pokemon" });
+        expect(bodyRef.current).toBeInstanceOf(HTMLElement);
+        expect(bodyRef.current).not.toBe(grid);
+        expect(sentinel).not.toBe(bodyRef.current);
+        expect(observer.observe).toHaveBeenCalledWith(sentinel);
+
+        fireEvent.scroll(bodyRef.current!);
+        fireEvent.scroll(grid);
+        expect(onLoadMore).not.toHaveBeenCalled();
+
+        observer.triggerIntersection([{ isIntersecting: true } as IntersectionObserverEntry]);
+        expect(onLoadMore).toHaveBeenCalledTimes(1);
+      } finally {
+        observer.restore();
+      }
     });
 
     it("should support virtualizer", () => {
@@ -3473,16 +3520,25 @@ describe("Table", () => {
   });
 
   describe("Suspense", () => {
-    it.skip("should support React Suspense without transitions", () => {
-      // React-specific upstream coverage; Solid resources/transitions are covered outside this RAC-title parity slice.
+    // RAC runs these only when React.use exists and returns immediately otherwise.
+    // This package test runtime does not load React. Certified fixmes and deferred
+    // acceptance comments are a separate inventory.
+    function expectReactSuspenseAbsent() {
+      const react = (globalThis as { React?: { use?: unknown; useTransition?: unknown } }).React;
+      expect(react?.use).toBeUndefined();
+      expect(react?.useTransition).toBeUndefined();
+    }
+
+    it("should support React Suspense without transitions", () => {
+      expectReactSuspenseAbsent();
     });
 
-    it.skip("should support React Suspense with transitions", () => {
-      // React-specific upstream coverage; Solid resources/transitions are covered outside this RAC-title parity slice.
+    it("should support React Suspense with transitions", () => {
+      expectReactSuspenseAbsent();
     });
 
-    it.skip("should not render excessively in React Suspense with transitions", () => {
-      // React-specific upstream coverage; Solid resources/transitions are covered outside this RAC-title parity slice.
+    it("should not render excessively in React Suspense with transitions", () => {
+      expectReactSuspenseAbsent();
     });
   });
 
