@@ -17,23 +17,15 @@ import { expect } from "@playwright/test";
  * description, keyboard shortcut, icon) — across the three menu `size`s
  * (S/M/L), opened from its `MenuTrigger`.
  *
- * WHY THE `role="menu"` LIST IS THE TARGET (not the popover surface). The port
- * hand-rolls the menu's popover surface (`menuPopover` + `menuFrame`) instead of
- * reusing the certified S2 `Popover` the way upstream does (upstream Menu.tsx
- * renders `<Popover padding="none" hideArrow><div className={wrappingDiv}>` around
- * `<AriaMenu className={menu({size, isPopover})}>`). That surface-component reuse
- * — different nesting depth (port 2 divs vs upstream Popover-surface + inner
- * content div + wrappingDiv), the missing `maxWidth: calc(100vw - 24px)` surface
- * cap, and the outline/elevation details — is a REAL self-inflicted divergence,
- * but it lives OUTSIDE the `role="menu"` box and is tracked by ticket #106.
- * Targeting the role-addressable list
- * makes this unit independent of that surface depth: the padding around the
- * items is 8px in BOTH stacks (`menuFrame` ≡ upstream `wrappingDiv`: both
- * `display:flex; size:full`; the port's `menuPopover` `padding:0` ≡ upstream's
- * `padding="none"` inner div, and `menu` carries the `padding:8`), and the
- * `layer-2` background behind the list's transparent padding is identical, so the
- * element screenshot of the list matches even though the surrounding surface
- * chrome does not yet.
+ * The `role="menu"` list stays the item-paint target (grid, padding 8,
+ * max-width 320, item parts). The overlay around it is the shared S2 `Popover`
+ * (`hideArrow`, `padding="none"`): dialog surface, inner content div, then the
+ * `menuFrame` wrapping div around the menu — the same nesting as upstream
+ * `Menu.tsx`. That dialog carries the viewport cap
+ * (`max-width: calc(100vw - 24px)`) and the Popover opacity/translate
+ * enter/exit. It is its own D1/D3 scenario (#106), not folded into the list:
+ * item parts, the #107 `outline-color` channel, and the roving-tabindex trail
+ * stay on the menu, and the dialog's dismiss buttons stay out of that trail.
  *
  * OVERLAY PATTERN (mirrors popover.certified.spec.ts): the menu portals to a
  * page-level container, so targets resolve from `page`, NOT `canvas`. Both panels
@@ -96,8 +88,11 @@ const menuName = "Layer actions";
 const triggerButton: TargetResolver = ({ canvas }) =>
   canvas.getByRole("button", { name: triggerLabel }).first();
 
-/** The `ul[role="menu"]` list — the D1/D3/AX/contrast root. */
+/** The `role="menu"` list — the list D1/D3/AX/contrast root. */
 const menuList: TargetResolver = ({ page }) => page.getByRole("menu", { name: menuName });
+
+/** The shared Popover dialog around the menu (accessible name is the trigger). */
+const menuSurface: TargetResolver = ({ page }) => page.getByRole("dialog", { name: menuName });
 
 /** The first `role="menuitem"` ("Copy") — its subgrid + `transition` map. */
 const firstItem = (page: Page) =>
@@ -189,8 +184,8 @@ const listScenario: DriverScenario = {
     root: menuList,
   },
   // D5: arrow-key roving through the open menu. `root: menuList` scopes the
-  // roving-tabindex snapshot to the `role="menu"` list, so the deferred popover
-  // surface (dialog wrapper + Dismiss button) does not fold into the trail.
+  // roving-tabindex snapshot to the `role="menu"` list. The dialog surface is
+  // certified on `surfaceScenario`; its dismiss buttons stay out of this trail.
   focus: {
     cases: ["size-m"],
     root: menuList,
@@ -227,16 +222,87 @@ registerFocusTrailDriver(listScenario);
 registerAxTreeDriver(listScenario);
 
 /**
+ * The shared Popover dialog. Sizes follow the list (content-sized width; the
+ * menu `size` changes the dialog's height). Placements pin `shouldFlip` so
+ * each axis stays where it was requested: top, left, right, and bottom/end.
+ * D1 adds the surface `max-width` cap and `box-sizing`. No arrow parts
+ * (`hideArrow`). D5/D6/D7 stay on the list — dismiss buttons and the menu AX
+ * tree are not re-certified here. Outline-color on the menu list stays #107.
+ */
+const surfaceScenario: DriverScenario = {
+  slug: "menu",
+  title: "Menu popover surface",
+  beforePanel: openMenu,
+  afterPanel: closeMenu,
+  target: menuSurface,
+  pixelTarget: menuSurface,
+  states: ["default"],
+  settleMs: 500,
+  cases: [
+    { id: "size-s", params: { size: "S", selectionMode: "none" } },
+    { id: "size-m", params: { size: "M", selectionMode: "none" } },
+    { id: "size-l", params: { size: "L", selectionMode: "none" } },
+    {
+      id: "placement-top",
+      params: {
+        size: "M",
+        selectionMode: "none",
+        direction: "top",
+        align: "start",
+        shouldFlip: "false",
+      },
+    },
+    {
+      id: "placement-left",
+      params: {
+        size: "M",
+        selectionMode: "none",
+        direction: "left",
+        align: "start",
+        shouldFlip: "false",
+      },
+    },
+    {
+      id: "placement-right",
+      params: {
+        size: "M",
+        selectionMode: "none",
+        direction: "right",
+        align: "start",
+        shouldFlip: "false",
+      },
+    },
+    {
+      id: "placement-end",
+      params: {
+        size: "M",
+        selectionMode: "none",
+        direction: "bottom",
+        align: "end",
+        shouldFlip: "false",
+      },
+    },
+  ],
+  styleProps: {
+    add: ["max-width", "box-sizing"],
+  },
+};
+
+registerStateMatrixDriver(surfaceScenario);
+registerPixelDriver(surfaceScenario);
+
+/**
  * D2 — the popover enter motion. No `beforePanel`; the trigger opens the menu
  * while the freezer is already running, so the transient enter transition (S2
  * `Popover` opacity/translate via `useEnterAnimation`) is caught and paused on
- * its first frame, captured from the `overlay` scope only.
+ * its first frame, captured from the `overlay` scope only. The filmstrip
+ * target is the dialog surface.
  */
 const menuMotionScenario: DriverScenario = {
   slug: "menu",
   title: "Menu motion",
   target: triggerButton,
-  pixelTarget: menuList,
+  pixelTarget: menuSurface,
   cases: [{ id: "open", params: { size: "M", selectionMode: "none" } }],
   motion: {
     triggers: [

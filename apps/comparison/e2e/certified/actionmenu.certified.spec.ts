@@ -23,13 +23,13 @@ import { expect } from "@playwright/test";
  *      `ActionMenu` trigger. The trigger is always rendered, so this scenario
  *      measures the canvas button directly — no open.
  *
- *   2. LIST (opened) — proves ActionMenu composes the ALREADY-CERTIFIED Menu
- *      faithfully. ActionMenu reuses the exact `s2-menu-styles.ts` (`menuPopover`,
- *      `menuFrame`, `menu`, `MenuItem`) certified in CP9.32 (Menu), driven by its
- *      `menuSize` prop, and hand-rolls the same popover surface. So this scenario
- *      re-runs the Menu list drivers against ActionMenu's `menuSize` S/M/L to catch
- *      any `menuSize`-passthrough or Popover-wiring divergence, and it inherits
- *      CP9.32's tracked artifacts verbatim (see SCOPE).
+ *   2. LIST (opened) — the `role="menu"` list, driven by `menuSize` S/M/L.
+ *      It re-runs the Menu list drivers and keeps the list's tracked
+ *      `outline-color` removal (#107).
+ *
+ *   3. SURFACE (opened) — the shared S2 `Popover` dialog ActionMenu renders
+ *      (`hideArrow`, `padding="none"`, viewport cap, Popover enter/exit),
+ *      across `menuSize` and the placement axes (#106).
  *
  * OVERLAY PATTERN (mirrors menu.certified.spec.ts): the menu portals to a
  * page-level container, so LIST targets resolve from `page`, not `canvas`. Both
@@ -67,8 +67,11 @@ const triggerButton: TargetResolver = ({ canvas }) =>
 const triggerIcon: TargetResolver = ({ canvas }) =>
   canvas.getByRole("button", { name: triggerName }).first().locator("svg").first();
 
-/** The `ul[role="menu"]` list (accessible name inherits the trigger label). */
+/** The `role="menu"` list (accessible name inherits the trigger label). */
 const menuList: TargetResolver = ({ page }) => page.getByRole("menu", { name: menuName });
+
+/** The shared Popover dialog around the menu (accessible name is the trigger). */
+const menuSurface: TargetResolver = ({ page }) => page.getByRole("dialog", { name: menuName });
 
 /** The first `role="menuitem"` ("Copy"). */
 const firstItem = (page: Page) =>
@@ -155,8 +158,8 @@ const listScenario: DriverScenario = {
   },
   // D5: arrow-key roving through the open list — the same roving-tabindex
   // contract certified on Menu. `root: menuList` scopes the snapshot to the
-  // `role="menu"` list (the deferred popover surface — dialog wrapper + Dismiss
-  // button — stays out of the trail). `entry: "keyboard"` drives the real
+  // `role="menu"` list. The dialog surface is certified on `surfaceScenario`;
+  // its dismiss buttons stay out of this trail. `entry: "keyboard"` drives the real
   // keyboard path both stacks share (`beforePanel` opens the menu and its
   // FocusScope autoFocus already holds focus), instead of a synthetic `.focus()`
   // that seeds `focusedKey` divergently.
@@ -194,16 +197,61 @@ registerFocusTrailDriver(listScenario);
 registerAxTreeDriver(listScenario);
 
 /**
+ * The shared Popover dialog. `menuSize` follows the list. Placements pin
+ * `shouldFlip` so each axis stays where it was requested. D1 adds the surface
+ * `max-width` cap and `box-sizing`. No arrow parts (`hideArrow`). D5/D6/D7
+ * stay on the list. Outline-color on the menu list stays #107.
+ */
+const surfaceScenario: DriverScenario = {
+  slug: "actionmenu",
+  title: "ActionMenu popover surface",
+  beforePanel: openMenu,
+  afterPanel: closeMenu,
+  target: menuSurface,
+  pixelTarget: menuSurface,
+  states: ["default"],
+  settleMs: 500,
+  cases: [
+    { id: "size-s", params: { menuSize: "S" } },
+    { id: "size-m", params: { menuSize: "M" } },
+    { id: "size-l", params: { menuSize: "L" } },
+    {
+      id: "placement-top",
+      params: { menuSize: "M", direction: "top", align: "start", shouldFlip: "false" },
+    },
+    {
+      id: "placement-left",
+      params: { menuSize: "M", direction: "left", align: "start", shouldFlip: "false" },
+    },
+    {
+      id: "placement-right",
+      params: { menuSize: "M", direction: "right", align: "start", shouldFlip: "false" },
+    },
+    {
+      id: "placement-end",
+      params: { menuSize: "M", direction: "bottom", align: "end", shouldFlip: "false" },
+    },
+  ],
+  styleProps: {
+    add: ["max-width", "box-sizing"],
+  },
+};
+
+registerStateMatrixDriver(surfaceScenario);
+registerPixelDriver(surfaceScenario);
+
+/**
  * D2 — the popover enter motion. No `beforePanel`; the trigger opens the menu
  * while the freezer is already running, so the transient enter transition (S2
  * `Popover` opacity/translate via `useEnterAnimation`) is caught and paused on
- * its first frame, captured from the `overlay` scope only.
+ * its first frame, captured from the `overlay` scope only. The filmstrip
+ * target is the dialog surface.
  */
 const actionMenuMotionScenario: DriverScenario = {
   slug: "actionmenu",
   title: "ActionMenu motion",
   target: triggerButton,
-  pixelTarget: menuList,
+  pixelTarget: menuSurface,
   cases: [{ id: "open", params: { size: "M" } }],
   motion: {
     triggers: [
