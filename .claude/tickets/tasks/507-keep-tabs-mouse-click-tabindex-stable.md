@@ -21,6 +21,11 @@ history:
       at: 2026-09-08,
       note: "createTabListState copies selectedKey onto focusedKey from requestAnimationFrame after createEffect subscribe, same RAC predicate including init. Same-turn setSelectedKey does not move focusedKey. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: createTabListState.test 12 passed (new same-turn red on createComputed then green); comparison:build pass; Tabs D4 horizontal-regular mouse-click 1 passed; touch-tap + arrow-next-from-selected 2 passed; D5 arrow-roving 1 passed. Waivers []. Did not start #504/#511. Did not write mouseClickGesture or createTab press.",
     }
+  - {
+      state: merged,
+      at: 2026-10-07,
+      note: "Restated for #609; status stays merged. The mechanism stabilised here is createTabListState copying selectedKey onto focusedKey from requestAnimationFrame, so a mouse click still reads tabindex -1 at pointerup and click. #609 does not change that copy; it writes the roving tabindex in createTabs handleKeyDown before focus moves. The arrow-next-from-selected pass in the 2026-09-08 note did not lock that keyboard ordering: capture of focusout and focusin on the gesture still saw the previous tab as the stop.",
+    }
 ---
 
 Certification Gates run 34155176389 on `0d84b016`: **1** unwaived D4 title.

@@ -331,8 +331,31 @@ describe("createTabs", () => {
       expect(tabs[0]).toHaveAttribute("tabindex", "0");
       expect(tabs[1]).toHaveAttribute("tabindex", "-1");
 
-      fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+      // Capture phase matches the D4 oracle. tabindex after keydown returns
+      // is already correct on the pre-fix tree and does not hold this order.
+      const seen: Array<{ type: string; name: string | null; tabindex: string | null }> = [];
+      const record = (event: Event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || target.getAttribute("role") !== "tab") return;
+        seen.push({
+          type: event.type,
+          name: target.textContent,
+          tabindex: target.getAttribute("tabindex"),
+        });
+      };
+      document.addEventListener("focusout", record, true);
+      document.addEventListener("focusin", record, true);
+      try {
+        fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+      } finally {
+        document.removeEventListener("focusout", record, true);
+        document.removeEventListener("focusin", record, true);
+      }
 
+      expect(seen).toEqual([
+        { type: "focusout", name: "Tab 1", tabindex: "-1" },
+        { type: "focusin", name: "Tab 2", tabindex: "0" },
+      ]);
       expect(tabs[0]).toHaveAttribute("tabindex", "-1");
       expect(tabs[1]).toHaveAttribute("tabindex", "0");
       expect(document.activeElement).toBe(tabs[1]);

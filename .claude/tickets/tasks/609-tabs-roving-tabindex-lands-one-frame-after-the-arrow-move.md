@@ -21,6 +21,11 @@ history:
       at: 2026-09-24,
       note: "Synchronized the roving tabindex attributes in createTabs handleKeyDown immediately before calling nextEl.focus(), matching React's post-reconciliation layout-effect timing. Both focusout on the prior tab and focusin on the target tab now observe tabindex='-1' and tabindex='0' respectively. D4 event sequence arrow-next-from-selected passes 100% and full tabs certified suite (23/23 tests) is green. Added regression unit test in createTabs.test.tsx. Awaiting CI certified report to remove waiver.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "The 2026-09-24 regression read tabindex after keydown returned, which is already correct on the pre-fix tree. It now reads tabindex in the capture phase of focusout and focusin, and that assertion fails when the attributes are not written before nextEl.focus(): the leaving tab is still 0 and the entering tab is still -1. With the write in place, vp test run packages/solidaria/test/createTabs.test.tsx is 60 passed. The certified tabs spec was not re-run on this host, so the waiver stays until a certified report shows arrow-next-from-selected passing. #507's requestAnimationFrame selected-to-focused copy is untouched, and that ticket now says its 2026-09-08 arrow-next pass did not lock this ordering.",
+    }
 ---
 
 ## Scope
