@@ -4,7 +4,7 @@ type: task
 title: "The upstream-test-parity oracle attributes every fact by filename, so one component's vocabulary is filed under another's name"
 created: 2026-09-20
 parent: 544
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: open,
       at: 2026-09-21,
       note: "deferred to the release after the RC by the owner's soft-launch cut, see #544; the ticket keeps its owner and nothing here is waived or closed",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Our facts are attributed by the outermost rendered component, and each printed suspect names the file that produced the value. switch|aria|aria-checked no longer appears under switch; the TabSwitch radio assertions file under tabswitch. Genuine cross-suite aliases stay (including treeble and the Switch keyword folds). The filename folds togglebuttongroup and checkboxgroup are removed. Baseline rewritten with --allow-growth 579: 217 facts kept, 44 removed.",
     }
 ---
 
