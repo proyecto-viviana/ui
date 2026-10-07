@@ -4,9 +4,14 @@ type: task
 title: "Remove generated-detail snapshot coupling"
 created: 2026-08-20
 parent: 24
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from adversarial finding A-025" }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Regression snapshots already rewrite generated classes and drop empty style attributes. TextArea Chrome baseline coverage now checks that Chrome adds field classes, and the comparison page checks computed ::before padding and textarea alignment against React.",
+    }
 ---
 
 Toolchain migration changed generated S2 class names and empty serialized style

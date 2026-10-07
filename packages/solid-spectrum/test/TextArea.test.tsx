@@ -190,27 +190,57 @@ describe("TextArea (solid-spectrum)", () => {
   });
 
   describe("Chrome baseline top-padding workaround", () => {
-    it("applies centerBaselineBefore and Chrome ::before top-padding rule on field group when isChrome", () => {
+    // Dev macro ids follow the runtime condition. The Chrome rule adds a behavior class beside them.
+    function behaviorClassTokens(className: string): Set<string> {
+      return new Set(
+        className.split(/\s+/).filter((token) => token.length > 0 && !token.startsWith("-macro-")),
+      );
+    }
+
+    function renderFieldClassNames(userAgent: string): { group: string; textarea: string } {
       const originalUserAgent = navigator.userAgent;
+      Object.defineProperty(navigator, "userAgent", {
+        value: userAgent,
+        configurable: true,
+      });
       try {
-        Object.defineProperty(navigator, "userAgent", {
-          value:
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          configurable: true,
-        });
-
-        const { container } = render(() => <TextArea aria-label="Notes" />);
-        const group = container.querySelector('[role="presentation"]') as HTMLElement;
-        const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-
-        expect(group.className).toContain("TSO4kUbZsXLs17");
-        expect(textarea.className).toContain("_de17");
+        const { container, unmount } = render(() => <TextArea aria-label="Notes" />);
+        const group = container.querySelector('[role="presentation"]');
+        const textarea = container.querySelector("textarea");
+        if (!(group instanceof HTMLElement) || !(textarea instanceof HTMLTextAreaElement)) {
+          throw new Error("TextArea field group or textarea missing");
+        }
+        const classNames = { group: group.className, textarea: textarea.className };
+        unmount();
+        return classNames;
       } finally {
         Object.defineProperty(navigator, "userAgent", {
           value: originalUserAgent,
           configurable: true,
         });
       }
+    }
+
+    function expectChromeAddsBehaviorClass(sharedClassName: string, chromeClassName: string): void {
+      const shared = behaviorClassTokens(sharedClassName);
+      const chrome = behaviorClassTokens(chromeClassName);
+      expect(shared.size).toBeGreaterThan(0);
+      for (const token of shared) {
+        expect(chrome.has(token)).toBe(true);
+      }
+      expect([...chrome].some((token) => !shared.has(token))).toBe(true);
+    }
+
+    it("adds Chrome baseline classes on top of the shared field classes", () => {
+      const shared = renderFieldClassNames(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+      );
+      const chrome = renderFieldClassNames(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      );
+
+      expectChromeAddsBehaviorClass(shared.group, chrome.group);
+      expectChromeAddsBehaviorClass(shared.textarea, chrome.textarea);
     });
   });
 });

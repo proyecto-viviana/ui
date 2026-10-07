@@ -249,10 +249,30 @@ test.describe("comparison site chrome", () => {
     const solidHeight = await solidGroup.evaluate((el) => el.getBoundingClientRect().height);
     expect(Math.abs(solidHeight - reactHeight)).toBeLessThanOrEqual(1);
 
-    // Verify S2 Chrome ::before top-padding rule class is present on both
-    const reactClasses = await reactGroup.evaluate((el) => el.className);
-    const solidClasses = await solidGroup.evaluate((el) => el.className);
-    expect(reactClasses).toContain("TSO4kUbZsXLs17");
-    expect(solidClasses).toContain("TSO4kUbZsXLs17");
+    // The Chrome baseline contract is the computed ::before padding and textarea alignment.
+    const baseline = async (group: ReturnType<typeof page.locator>) =>
+      group.evaluate((el) => {
+        const before = window.getComputedStyle(el, "::before");
+        const textarea = el.querySelector("textarea");
+        return {
+          content: before.content,
+          paddingTop: Number.parseFloat(before.paddingTop),
+          width: before.width,
+          visibility: before.visibility,
+          alignSelf: textarea ? window.getComputedStyle(textarea).alignSelf : "",
+        };
+      });
+    const reactBaseline = await baseline(reactGroup);
+    const solidBaseline = await baseline(solidGroup);
+    expect(solidBaseline.content).toBe(reactBaseline.content);
+    expect(solidBaseline.visibility).toBe(reactBaseline.visibility);
+    expect(solidBaseline.width).toBe(reactBaseline.width);
+    expect(solidBaseline.alignSelf).toBe(reactBaseline.alignSelf);
+    expect(reactBaseline.content).not.toBe("none");
+    expect(reactBaseline.visibility).toBe("hidden");
+    expect(reactBaseline.width).toBe("0px");
+    expect(reactBaseline.alignSelf).not.toBe("auto");
+    expect(reactBaseline.paddingTop).toBeGreaterThan(0);
+    expect(Math.abs(solidBaseline.paddingTop - reactBaseline.paddingTop)).toBeLessThanOrEqual(1);
   });
 });
