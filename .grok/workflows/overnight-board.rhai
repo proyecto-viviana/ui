@@ -303,16 +303,28 @@ fn read_impl(label, result) {
     row
 }
 
+fn review_agent(opts) {
+    opts.model = "grok-4.7";
+    opts.effort = "xhigh";
+    opts
+}
+
+fn grunt_agent(opts) {
+    opts.model = "grok-4.7";
+    opts.effort = "medium";
+    opts
+}
+
 fn commit_once(label, mode, row, schema, prior_error) {
     let suffix = "0";
     if prior_error != "" {
         suffix = "1";
     }
-    let result = agent(commit_prompt(label, mode, row, prior_error), #{
+    let result = agent(commit_prompt(label, mode, row, prior_error), grunt_agent(#{
         label: "commit-" + label + "-" + suffix,
         capability_mode: "execute",
         output_schema: schema,
-    });
+    }));
     let out = #{
         committed: false,
         sha: "",
@@ -352,11 +364,11 @@ fn read_skeptic(sk) {
 }
 
 fn run_slice(label, mode, extra, impl_schema_value, skeptic_schema_value, commit_schema_value) {
-    let impl = agent(impl_prompt(label, mode, extra), #{
+    let impl = agent(impl_prompt(label, mode, extra), grunt_agent(#{
         label: "impl-" + label,
         capability_mode: "execute",
         output_schema: impl_schema_value,
-    });
+    }));
     let row = read_impl(label, impl);
     if row.eligibility_ok != true {
         row.outcome = "dirty-stop";
@@ -382,22 +394,22 @@ fn run_slice(label, mode, extra, impl_schema_value, skeptic_schema_value, commit
         }
         return row;
     }
-    let sk = agent(skeptic_prompt(label, mode, row), #{
+    let sk = agent(skeptic_prompt(label, mode, row), review_agent(#{
         label: "skeptic-" + label,
         capability_mode: "execute",
         output_schema: skeptic_schema_value,
-    });
+    }));
     let verdict = read_skeptic(sk);
     let sk_pass = verdict.pass;
     let sk_dirty = verdict.dirty;
     let sk_reason = verdict.reason;
     if sk_pass != true && sk_dirty != true {
         log("skeptic retry " + label);
-        let sk_retry = agent(skeptic_prompt(label, mode, row), #{
+        let sk_retry = agent(skeptic_prompt(label, mode, row), review_agent(#{
             label: "skeptic-" + label + "-retry",
             capability_mode: "execute",
             output_schema: skeptic_schema_value,
-        });
+        }));
         verdict = read_skeptic(sk_retry);
         sk_pass = verdict.pass;
         sk_dirty = verdict.dirty;
@@ -564,6 +576,19 @@ fn seed_held(bucket, label, reason, summary) {
     bucket
 }
 
+fn seed_seat(bucket, label, reason, summary) {
+    bucket.seat_rows.push(#{
+        label: label,
+        outcome: "held",
+        hold_reason: reason,
+        summary: summary,
+        tests: "not run",
+        sha: "",
+        status_change: "",
+    });
+    bucket
+}
+
 fn from_id(ids, start) {
     let out = [];
     let keep = false;
@@ -679,8 +704,13 @@ let smoke_flag = ();
 let skip_208 = false;
 let skip_checkpoint = false;
 let skip_landed = false;
+let resume_106 = false;
 if args != () {
-    smoke_flag = args.smoke;
+    try {
+        smoke_flag = args.smoke;
+    } catch (miss) {
+        smoke_flag = ();
+    }
     try {
         if args.skip_208 == true {
             skip_208 = true;
@@ -703,12 +733,21 @@ if args != () {
     } catch (miss) {
         skip_landed = false;
     }
+    try {
+        if args.resume_106 == true {
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        resume_106 = false;
+    }
 }
 if smoke_flag == true {
     phase("Checkpoint");
     let smoke_agent = agent(
         "Read-only smoke check. Run git status --porcelain in /home/emoporemilio/projects/viviana-hub/ui. Reply with one sentence. Do not edit.",
-        #{ label: "smoke", capability_mode: "read-only" },
+        grunt_agent(#{ label: "smoke", capability_mode: "read-only" }),
     );
     let note = "smoke agent failed";
     if smoke_agent != () && type_of(smoke_agent) == "map" && smoke_agent.success == true {
@@ -794,12 +833,12 @@ if skip_checkpoint == false && stopped == false {
     for wave in waves {
         let jobs = [];
         for item in wave {
-            jobs.push(#{
+            jobs.push(review_agent(#{
                 prompt: review_prompt(item.sha, item.ticket),
                 label: "review-" + item.sha,
                 capability_mode: "read-only",
                 output_schema: review_schema,
-            });
+            }));
         }
         let results = parallel(jobs);
         let index = 0;
@@ -835,12 +874,12 @@ if skip_checkpoint == false && stopped == false {
     if candidates.len() > 0 {
         let jobs = [];
         for defect in candidates {
-            jobs.push(#{
+            jobs.push(review_agent(#{
                 prompt: defect_check_prompt(defect.sha, defect.claim, defect.evidence),
                 label: "defect-" + defect.sha,
                 capability_mode: "read-only",
                 output_schema: defect_schema,
-            });
+            }));
         }
         let results = parallel(jobs);
         let index = 0;
@@ -881,7 +920,7 @@ if skip_checkpoint == false && stopped == false {
     next_label = "nightly 37469399093";
     let diagnose = agent(
         "Read-only. In /home/emoporemilio/projects/viviana-hub/ui, inspect GitHub Actions run 37469399093 on origin/main 9a477baa. Failed jobs are journey-fuzz for e2e/certified/picker.certified.spec.ts and e2e/certified/combobox.certified.spec.ts. Use gh run view. Do not rerun, push, or edit. summary is the failing assertion in under 800 characters. If gh is not authenticated, say so in summary.",
-        #{ label: "nightly-diagnose", capability_mode: "read-only", output_schema: text_schema },
+        review_agent(#{ label: "nightly-diagnose", capability_mode: "read-only", output_schema: text_schema }),
     );
     let diagnosed = "diagnose failed";
     if diagnose != () && type_of(diagnose) == "map" && diagnose.success == true && diagnose.output != () {
@@ -889,7 +928,7 @@ if skip_checkpoint == false && stopped == false {
     }
     let repro = agent(
         "In /home/emoporemilio/projects/viviana-hub/ui, reproduce Journey Fuzz run 37469399093 on HEAD. Read apps/comparison/COMPONENT_PLAYBOOK.md and run only e2e/certified/picker.certified.spec.ts and e2e/certified/combobox.certified.spec.ts. Do not run the rest of the certified suite. Do not edit, commit, or push. Set failing true only if a spec fails. Set dirty true if you changed any file. tests is the exact command. summary is the result in under 500 characters.",
-        #{ label: "nightly-repro", capability_mode: "execute", output_schema: text_schema },
+        grunt_agent(#{ label: "nightly-repro", capability_mode: "execute", output_schema: text_schema }),
     );
     let failing = false;
     let repro_dirty = true;
@@ -944,8 +983,13 @@ if skip_checkpoint == false && stopped == false {
 }
 
 if skip_landed == true {
-    log("landed slices already recorded, census resumes at 3");
-    next_label = "3";
+    if resume_106 == true {
+        log("landed slices already recorded, census resumes at 106");
+        next_label = "106";
+    } else {
+        log("landed slices already recorded, census resumes at 3");
+        next_label = "3";
+    }
     book = seed_done(book, "583", "dba3c32b", "Recorded the per-stack reduced-motion contract");
     book = seed_done(book, "609", "7f839994", "Tabs regression reads the roving tabindex during focusout and focusin");
     book = seed_done(book, "552", "dfde9b13", "Fresh clone reinstalls the Vite+ pre-commit dispatcher");
@@ -965,6 +1009,18 @@ if skip_landed == true {
     book = seed_done(book, "533", "0f7186f6", "Collection props resolve once. Ticket stays in-progress.");
     book = seed_done(book, "194", "f2a2288f", "Repair only. Ticket stays in-progress. No certified suite and no #537.");
     book = seed_done(book, "90", "d84a33fc", "Tested response-security headers are stamped. Ticket stays in-progress.");
+    if resume_106 == true {
+        book = seed_done(book, "3", "73c33c4e", "CardView and two internal modules typecheck without ts-nocheck. Ticket stays in-progress.");
+        book = seed_done(book, "91", "31fd831a", "TimeField and Table skips replaced.");
+        book = seed_done(book, "92", "52c7c742", "Checkbox and Switch press cleanup matches upstream.");
+        book = seed_done(book, "94", "0d99f9c4", "Dependency ceilings stay at jest-dom 6.9.1, jsdom 29.1.1, and typescript 6.0.3.");
+        book = seed_done(book, "95", "56e45076", "Vite Plus cold scan reads only declared test inputs.");
+        book = seed_done(book, "96", "b1dd4eaa", "TextArea Chrome baseline follows field structure and computed padding.");
+        book = seed_done(book, "97", "74f0de70", "Selectable-item link model stays the approved boundary.");
+        book = seed_done(book, "102", "600edb91", "ListView and Tree slot classes are in the server markup and the first painted grid.");
+        book = seed_done(book, "105", "f98ad825", "D3 clones share one device-pixel phase. ContextualHelp and Toast glyph waivers are gone.");
+        book = seed_seat(book, "103", "public-face seat; remaining API choices still need an owner ruling before any new public name", "Ticket #103 cannot close here: the parity mirror and route that must drop the stale gap notes live under apps/web/src.");
+    }
 }
 
 if stopped == false && skip_landed == false {
@@ -992,14 +1048,32 @@ if stopped == false && skip_landed == false {
 if stopped == false {
     phase("Census");
     let hygiene_ids = [90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127];
-    if skip_landed == true {
+    if resume_106 == true {
+        log("slice 106");
+        let extra106 = "Slice 106 already has uncommitted work from the previous worker of this same slice. These paths belong to this slice. Finish them. Do not discard them. Do not treat them as foreign dirt.\n";
+        extra106 += "apps/comparison/e2e/certified/menu.certified.spec.ts\n";
+        extra106 += "apps/comparison/e2e/certified/actionmenu.certified.spec.ts\n";
+        extra106 += "apps/comparison/e2e/certified-case-floor.json\n";
+        extra106 += ".claude/tickets/tasks/106-compose-menu-with-the-shared-popover-surface.md\n";
+        extra106 += "The previous attempt was rejected because the diff adds certified dialog comparisons and the named tests were not run. Run only the menu and actionmenu certified specs this slice changed. Do not run the rest of the certified suite. Do not claim done while tests is not run.\n";
+        let row106 = run_slice("106", "ticket", extra106, impl_schema, skeptic_schema, commit_schema);
+        log("slice 106 " + trimmed(row106.outcome));
+        let placed106 = take_row(book, row106);
+        book = placed106.bucket;
+        if placed106.stopped == true {
+            stopped = true;
+            next_label = "106";
+        } else {
+            hygiene_ids = from_id(hygiene_ids, "107");
+        }
+    } else if skip_landed == true {
         hygiene_ids = from_id(hygiene_ids, "3");
     }
-    if hygiene_ids.len() == 0 {
+    if stopped == false && hygiene_ids.len() == 0 {
         stopped = true;
-        next_label = "3";
-        log("census resume missed 3");
-    } else {
+        next_label = "107";
+        log("census resume missed the next hygiene id");
+    } else if stopped == false {
         next_label = hygiene_ids[0].to_string();
         let hygiene = walk(hygiene_ids, "", impl_schema, skeptic_schema, commit_schema);
         book = merge_part(book, hygiene);
@@ -1014,7 +1088,7 @@ if stopped == false {
     next_label = "layer-imports";
     let layer = agent(
         "Read-only. In /home/emoporemilio/projects/viviana-hub/ui run vp run report:layer-imports. Do not edit. The report is an inventory, not a verdict. summary is under 800 characters and names the lowest-layer open work inside tickets 50, 51, 52, 53, 54, 55, 60, 61, 64, 65, 66, 67, 68, 69, 70, 74, 75, 76, 84, and 85. ids lists only those ticket numbers the report actually mentions. #86 stays blocked and must not appear.",
-        #{ label: "layer-imports", capability_mode: "read-only", output_schema: text_schema },
+        review_agent(#{ label: "layer-imports", capability_mode: "read-only", output_schema: text_schema }),
     );
     if layer != () && type_of(layer) == "map" && layer.success == true && layer.output != () {
         layer_note = cap(layer.output.summary, 800);
@@ -1124,7 +1198,7 @@ if stopped == false {
     next_label = "release evidence";
     let release = agent(
         "Read-only release evidence for /home/emoporemilio/projects/viviana-hub/ui. Read .claude/current/release-policy.md and the changesets. Do not push, tag, publish, deploy, or edit. Do not run npm publish. summary names which releasable packages already have local pack or export proof and which next step would be a push or a publish. Stop before that step. Under 800 characters.",
-        #{ label: "release-evidence", capability_mode: "read-only", output_schema: text_schema },
+        review_agent(#{ label: "release-evidence", capability_mode: "read-only", output_schema: text_schema }),
     );
     if release != () && type_of(release) == "map" && release.success == true && release.output != () {
         release_note = cap(release.output.summary, 800);
