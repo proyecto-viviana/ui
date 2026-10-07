@@ -1,11 +1,17 @@
-// Custom server entry point for Cloudflare Workers
-// Wraps TanStack Start handler
-
+import { AsyncLocalStorage } from "node:async_hooks";
 import handler, { createServerEntry } from "@tanstack/solid-start/server-entry";
+import { installNonceStore } from "./csp-nonce";
+import { createRequestNonce, stampWebSecurityHeaders } from "./security-headers";
 
-// Default export for the worker's fetch handler
+// Wrangler main points at this module. The package server-entry is the handler
+// wrapped here; getRouter reads the nonce from this store during the fetch.
+const nonceStore = new AsyncLocalStorage<string>();
+installNonceStore(nonceStore);
+
 export default createServerEntry({
-  fetch(request) {
-    return handler.fetch(request);
+  async fetch(request, requestOptions) {
+    const nonce = createRequestNonce();
+    const response = await nonceStore.run(nonce, () => handler.fetch(request, requestOptions));
+    return stampWebSecurityHeaders(response, nonce);
   },
 });

@@ -7,7 +7,9 @@
   "name": "viviana-ui-docs",
   "compatibility_date": "2025-12-01",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/solid-start/server-entry",
+  // This file wraps the package server-entry. main has to be this file so the
+  // deployed Worker runs the wrapper; the package entry alone stamps nothing.
+  "main": "./src/server.ts",
   // The docs site's own hostname. `custom_domain` makes wrangler create and own
   // the DNS record on first deploy, so the zone and the Worker cannot drift.
   // SITE_URL in src/seo.ts must agree — every canonical and the sitemap derive
