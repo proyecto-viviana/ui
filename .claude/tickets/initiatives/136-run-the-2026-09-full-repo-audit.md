@@ -201,7 +201,7 @@ Branch is `main`, ahead of `origin/main`. Do not push unless the owner asks.
 
 | Ticket     | Decision                                                                                                                                                   | Status      |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| #140       | Blacksmith is accepted for evidence jobs. Provenance publish stays on GitHub-hosted runners.                                                               | verified    |
+| #140       | Superseded by #551. No Blacksmith. CI is GitHub-hosted runners and local checks only.                                                                      | verified    |
 | #143       | Both styled packages pin `@adobe/spectrum-tokens` to the S2 oracle (14.0.0). Theming stays in `viviana-tokens.css`. Guard watches both.                    | verified    |
 | #145 / #62 | Delete `packages/viviana-ui/archive/`. Comparison is the S2 harness. Current work is the Solid Spectrum API, not new viviana-native components.            | verified    |
 | #148       | Delete rotting benches. Live size evidence is `guard:jsx-deopt-size`.                                                                                      | verified    |

@@ -162,8 +162,12 @@ unpublished changesets exist, it creates or updates the version PR. When that
 PR merges, it publishes the changed npm packages.
 
 Every workflow runs on GitHub-hosted runners. Owner 2026-09-17: the
-third-party runner is removed on cost, reversing the #140 trade. Provenance
-publish already required a GitHub-hosted runner and is unchanged.
+third-party runner is removed on cost, reversing the #140 trade. Owner
+2026-09-20 (#551): that reversal is the whole policy. No Blacksmith. Only
+GitHub-hosted runners and local checks. `guard:github-hosted-runners` runs
+in `pr:check:fast` and fails a workflow whose `runs-on` is not a
+GitHub-hosted label, or that names Blacksmith. Provenance publish already
+required a GitHub-hosted runner and is unchanged.
 
 The workflow publishes via **npm trusted publishing (OIDC)** — `id-token: write`,
 npm `>=11.5.1`, **no `NPM_TOKEN` secret** — and the release job runs on a

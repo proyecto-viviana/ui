@@ -657,6 +657,9 @@ jobs:
   # are the ticketed React 1.7.0 pin until #240). 4 vCPU (ubuntu-latest)
   # caps workers at 2 beside the preview server. n=8 keeps
   # each shard at or under 10 minutes.
+  # Re-measured on ubuntu-latest, run 37198709467 (2026-10-04): the slowest
+  # of the eight shards was 14.5 minutes at --workers=2. That is inside the
+  # 25 minute cap, so the shard count stays (#551).
   certified:
     name: certified (${{ matrix.shard }}/8)
     needs: comparison-build

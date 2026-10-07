@@ -18,6 +18,11 @@ history:
       at: 2026-09-17,
       note: "superseded: owner 2026-09-17 removed the third-party runner on cost; every workflow is ubuntu-latest",
     }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "superseded by #551: owner 2026-09-20, no Blacksmith at all. CI is GitHub-hosted runners and local checks. The 2026-09-01 acceptance is not an option.",
+    }
 ---
 
 ## Cause
@@ -29,13 +34,16 @@ every blocking evidence job except publish. That choice is not written down.
 
 ## Decision
 
-Owner 2026-09-01: Blacksmith is an accepted CI trust boundary for evidence
-jobs. Provenance publish stays on a GitHub-hosted runner. Recorded in
-`release-policy.md`.
+Superseded by #551. Owner 2026-09-20: no Blacksmith at all. CI is
+GitHub-hosted runners and local checks only. The acceptance below is not
+an option.
 
-Superseded. Owner 2026-09-17: remove the third-party runner. The trade was
+Owner 2026-09-01: Blacksmith was accepted for evidence jobs. Provenance
+publish stayed on a GitHub-hosted runner. Recorded in `release-policy.md`.
+
+Owner 2026-09-17: the third-party runner came off on cost. The trade was
 speed against cost, and the runs it was buying speed for were failing. Every
-workflow now runs on `ubuntu-latest`; this repository is public, so those
+workflow runs on `ubuntu-latest`; this repository is public, so those
 runners are free. The provenance rule is unchanged because it never depended
 on the trade.
 
