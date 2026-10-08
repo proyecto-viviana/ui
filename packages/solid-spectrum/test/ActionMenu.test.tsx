@@ -605,17 +605,18 @@ describe("ActionMenu (solid-spectrum)", () => {
 
     expect(bold).toHaveAttribute("aria-checked", "true");
     expect(bold).toHaveAttribute("data-selected", "true");
-    expect(bold.querySelector('[data-rsp-slot="selection-indicator"] svg')).toBeInTheDocument();
+    expect(bold.querySelector(":scope > div:first-child > svg:first-child")).toBeInTheDocument();
     expect(italic).toHaveAttribute("aria-checked", "false");
+    expect(italic).not.toHaveAttribute("data-selected");
     expect(italic).toHaveAttribute("aria-disabled", "true");
     expect(italic).toHaveAttribute("data-disabled");
-    expect(
-      italic.querySelector('[data-rsp-slot="selection-indicator"] svg'),
-    ).not.toBeInTheDocument();
+    expect(italic.querySelector(":scope > div:first-child > svg:first-child")).toBeInTheDocument();
 
     await user.click(bold);
 
     expect(bold).toHaveAttribute("aria-checked", "false");
+    expect(bold).not.toHaveAttribute("data-selected");
+    expect(bold.querySelector(":scope > div:first-child > svg:first-child")).toBeInTheDocument();
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 

@@ -86,6 +86,11 @@ history:
       at: 2026-10-08,
       note: "Admit three test-only paths after #638 source acceptance at bc1dd87b; preserve all behavior assertions and leave full SSR/hydration/certification qualification open.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "bounded styled owning continuation at d8649863: cleanup-only 87/91 with four stale indicator failures; pinned direct SVG/DIV and explicit bare-icon ARIA assertions pass restored combined 91/91. Cleanup-removed control fails 14/91; final bytes restored. Root typecheck exactly matches 24 inherited #638 diagnostics. Await conductor acceptance and owned stop; full SSR/hydration and candidate gates remain open.",
+    }
 ---
 
 ## Scope
@@ -253,3 +258,51 @@ There is no generation to prompt or stop for that failed request (delivery
 312cdb6f-4aa2-4520-b1b7-516bccb17146). Use the shorter registered name above;
 exact write scope and normal controls stay unchanged. This is a launch repair,
 not source acceptance.
+
+## Styled owning-test worker evidence — 2026-10-08
+
+Registered generation `cb65ecd8-c918-4c54-bfc3-69535449c41f` started from clean
+`d8649863a55f14d601c6ceefb86edcdd68577a16` after the recorded #638 closed stop
+and accepted `bc1dd87b` source commit. Only the three admitted tests changed.
+Tabs and Menu now own explicit cleanup; all Tabs behavior assertions remain
+unchanged. Menu and ActionMenu query the pinned first-child SVG or DIV/SVG,
+retain selected/idle/disabled semantics, and keep idle icons mounted as S2 does.
+
+The first corrected-selector run (89/91) exposed two further stale
+`aria-hidden="true"` assertions. Pinned Checkmark source and installed S2 1.7.0
+ESM/CJS SVGs have neither `role` nor `aria-hidden`; explicit absence assertions
+now preserve that bare-icon contract. This is not a product accessibility fix
+or evidence of painted CSS visibility. #107 source and styles are unchanged.
+
+Cleanup-only combined: 87/91, exactly four stale indicator failures. One bounded
+cleanup-removed control: 77/91, fourteen Tabs failures including multiple roots
+and seventeen panels instead of two. Final bytes were restored by hash; the
+original four-file command passes 91/91 with no unhandled errors. Root typecheck
+reports exactly the same 24 diagnostics as #638, with no additions; its config
+does not include these ordinary test files. No browser/build/SSR/hydrate run,
+product change, Changeset, commit, push, version or publication was performed.
+
+Full exact commands, isolated/static/docs outcomes, inherited #632 provenance,
+SHA256 digests and actual diff are referenced by
+`/tmp/ui-styled-owning-worker-result-2026-10-08.md`. Conductor CI read at 18:46:48
+reported main Journey Fuzz runs 37784092746 and 37627411989 successful; the
+worker's unauthenticated `gh` read is not a CI verdict. Full #542 requirements,
+#639 candidate qualification and #557 native focus debt remain open. This
+worker evidence awaits conductor acceptance after exact-generation owned stop.
+
+## Styled owning-test slice accepted — 2026-10-08
+
+The conductor read the final diff, raw restored-combined log, exact checks,
+inherited failures, restoration receipt and independent static review. All 45
+recorded hashes match; only the three admitted tests and this ticket changed.
+Exact generation `cb65ecd8-c918-4c54-bfc3-69535449c41f` returned `closed: true`
+before integration, recorded in `/tmp/ui-styled-owning-stop-2026-10-08.json`.
+Accept this test-only slice: restored combined 91/91, isolated Tabs 21/21,
+Menu 33/33 and ActionMenu 34/34, with zero unhandled errors. The final comment
+refinement changes no executable assertion. Product bytes remain unchanged.
+
+This acceptance resolves the inherited owning-test cleanup and stale indicator
+assertions; it does not close #542's remaining SSR/hydration requirements.
+The 24 inherited type diagnostics, #557 native accessor debt and separate
+#632 Escape-focus qualification remain pending. The sandbox-limited ecosystem
+audit remains a failed audit, rather than a release verdict.

@@ -1,10 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
 import type { JSX } from "solid-js";
 import { createSignal } from "solid-js";
-import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton, ToggleButton } from "../src";
 import { Button } from "../src/button";
@@ -24,6 +24,8 @@ import {
   Text,
   UnavailableMenuItemTrigger,
 } from "../src/menu";
+
+afterEach(cleanup);
 
 /** Minimal menu items for testing. */
 const items = [
@@ -683,19 +685,25 @@ describe("Menu (solid-spectrum)", () => {
 
       const selectedItem = screen.getByRole("menuitemradio", { name: "Edit" });
       const idleItem = screen.getByRole("menuitemradio", { name: "Duplicate" });
-      const selectedIndicator = selectedItem.querySelector('[data-rsp-slot="selection-indicator"]');
-      const idleIndicator = idleItem.querySelector('[data-rsp-slot="selection-indicator"]');
+      // Pinned S2 keeps the first-child indicator mounted; CSS controls its visibility.
+      const selectedIndicator = selectedItem.querySelector(":scope > svg:first-child");
+      const idleIndicator = idleItem.querySelector(":scope > svg:first-child");
 
       expect(selectedItem).toHaveAttribute("aria-checked", "true");
       expect(selectedItem).toHaveAttribute("data-selected", "true");
       expect(selectedIndicator).toBeInTheDocument();
       expect(selectedIndicator?.tagName.toLowerCase()).toBe("svg");
-      expect(selectedIndicator).toHaveAttribute("aria-hidden", "true");
+      // S2 UI icons are bare SVGs, without the workflow-icon ARIA wrapper.
+      expect(selectedIndicator).not.toHaveAttribute("aria-hidden");
+      expect(selectedIndicator).not.toHaveAttribute("role");
       expect(selectedIndicator?.getAttribute("class")).toContain("-macro-dynamic");
 
       expect(idleItem).toHaveAttribute("aria-checked", "false");
+      expect(idleItem).not.toHaveAttribute("data-selected");
       expect(idleIndicator).toBeInTheDocument();
       expect(idleIndicator?.tagName.toLowerCase()).toBe("svg");
+      expect(idleIndicator).not.toHaveAttribute("aria-hidden");
+      expect(idleIndicator).not.toHaveAttribute("role");
     });
 
     it("renders S2 checkbox indicators for multiple selection menus", () => {
@@ -716,20 +724,31 @@ describe("Menu (solid-spectrum)", () => {
 
       const selectedItem = screen.getByRole("menuitemcheckbox", { name: "Edit" });
       const idleItem = screen.getByRole("menuitemcheckbox", { name: "Duplicate" });
-      const selectedIndicator = selectedItem.querySelector('[data-rsp-slot="selection-indicator"]');
-      const idleIndicator = idleItem.querySelector('[data-rsp-slot="selection-indicator"]');
+      // Pinned S2 keeps the first-child indicator mounted; CSS controls its selected appearance.
+      const selectedIndicator = selectedItem.querySelector(":scope > div:first-child");
+      const idleIndicator = idleItem.querySelector(":scope > div:first-child");
 
       expect(selectedItem).toHaveAttribute("aria-checked", "true");
       expect(selectedItem).toHaveAttribute("data-selected", "true");
       expect(selectedIndicator).toBeInTheDocument();
-      expect(selectedIndicator?.tagName.toLowerCase()).toBe("span");
-      expect(selectedIndicator).toHaveAttribute("aria-hidden", "true");
+      expect(selectedIndicator?.tagName.toLowerCase()).toBe("div");
+      expect(selectedIndicator?.querySelector(":scope > svg:first-child")).not.toHaveAttribute(
+        "aria-hidden",
+      );
+      expect(selectedIndicator?.querySelector(":scope > svg:first-child")).not.toHaveAttribute(
+        "role",
+      );
       expect(selectedIndicator?.getAttribute("class")).toContain("-macro-dynamic");
-      expect(selectedIndicator?.querySelector("svg")).toBeInTheDocument();
+      expect(selectedIndicator?.querySelector(":scope > svg:first-child")).toBeInTheDocument();
 
       expect(idleItem).toHaveAttribute("aria-checked", "false");
+      expect(idleItem).not.toHaveAttribute("data-selected");
       expect(idleIndicator).toBeInTheDocument();
-      expect(idleIndicator?.querySelector("svg")).not.toBeInTheDocument();
+      expect(idleIndicator?.querySelector(":scope > svg:first-child")).toBeInTheDocument();
+      expect(idleIndicator?.querySelector(":scope > svg:first-child")).not.toHaveAttribute(
+        "aria-hidden",
+      );
+      expect(idleIndicator?.querySelector(":scope > svg:first-child")).not.toHaveAttribute("role");
     });
 
     it("renders S2 selection indicators for section-level selection", () => {
@@ -767,18 +786,22 @@ describe("Menu (solid-spectrum)", () => {
       const right = screen.getByRole("menuitemradio", { name: "Right" });
 
       expect(bold).toHaveAttribute("aria-checked", "true");
-      expect(bold.querySelector('[data-rsp-slot="selection-indicator"] svg')).toBeInTheDocument();
+      expect(bold).toHaveAttribute("data-selected", "true");
+      expect(bold.querySelector(":scope > div:first-child > svg:first-child")).toBeInTheDocument();
       expect(italic).toHaveAttribute("aria-checked", "false");
+      expect(italic).not.toHaveAttribute("data-selected");
       expect(italic).toHaveAttribute("aria-disabled", "true");
       expect(italic).toHaveAttribute("data-disabled");
       expect(
-        italic.querySelector('[data-rsp-slot="selection-indicator"] svg'),
-      ).not.toBeInTheDocument();
+        italic.querySelector(":scope > div:first-child > svg:first-child"),
+      ).toBeInTheDocument();
 
       expect(left).toHaveAttribute("aria-checked", "true");
-      expect(left.querySelector('[data-rsp-slot="selection-indicator"]')).toBeInTheDocument();
+      expect(left).toHaveAttribute("data-selected", "true");
+      expect(left.querySelector(":scope > svg:first-child")).toBeInTheDocument();
       expect(right).toHaveAttribute("aria-checked", "false");
-      expect(right.querySelector('[data-rsp-slot="selection-indicator"]')).toBeInTheDocument();
+      expect(right).not.toHaveAttribute("data-selected");
+      expect(right.querySelector(":scope > svg:first-child")).toBeInTheDocument();
     });
   });
 

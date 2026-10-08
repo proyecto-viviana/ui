@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, waitFor } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Tabs, TabList, Tab, TabPanel, TabPanels, Text, TabsContext } from "../src/tabs";
@@ -10,6 +10,8 @@ import { TabsPicker } from "../src/tabs/TabsPicker";
 import { Button } from "../src/button";
 import { Popover, PopoverTrigger } from "../src/popover";
 import { style } from "../src/style";
+
+afterEach(cleanup);
 
 const tabItems = [
   { id: "tab1", label: "First", content: "Content 1" },
