@@ -705,6 +705,7 @@ let skip_208 = false;
 let skip_checkpoint = false;
 let skip_landed = false;
 let resume_106 = false;
+let resume_115 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -741,6 +742,16 @@ if args != () {
         }
     } catch (miss) {
         resume_106 = false;
+    }
+    try {
+        if args.resume_115 == true {
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        resume_115 = false;
     }
 }
 if smoke_flag == true {
@@ -983,7 +994,10 @@ if skip_checkpoint == false && stopped == false {
 }
 
 if skip_landed == true {
-    if resume_106 == true {
+    if resume_115 == true {
+        log("landed slices already recorded, census resumes at 115");
+        next_label = "115";
+    } else if resume_106 == true {
         log("landed slices already recorded, census resumes at 106");
         next_label = "106";
     } else {
@@ -1020,6 +1034,12 @@ if skip_landed == true {
         book = seed_done(book, "102", "600edb91", "ListView and Tree slot classes are in the server markup and the first painted grid.");
         book = seed_done(book, "105", "f98ad825", "D3 clones share one device-pixel phase. ContextualHelp and Toast glyph waivers are gone.");
         book = seed_seat(book, "103", "public-face seat; remaining API choices still need an owner ruling before any new public name", "Ticket #103 cannot close here: the parity mirror and route that must drop the stale gap notes live under apps/web/src.");
+        if resume_115 == true {
+            book = seed_done(book, "106", "07eb928b", "Menu and ActionMenu shared Popover surface certified for sizes, placements, and enter motion.");
+            book = seed_done(book, "107", "1c3e7efc", "Menu selection indicators match upstream and the outline-color exclusion is gone.");
+            book = seed_done(book, "109", "c1dd66db", "FileTrigger click isolation and DropZone native focus proved in the browser.");
+            book = seed_held(book, "114", "Owner-gated by #243: do not mark verified. Scroll and relayout comparison evidence is still required.", "Virtualizer item-size observation already matches RAC useVirtualizerItem. D-scroll is not relayout evidence, so the ticket stays in progress.");
+        }
     }
 }
 
@@ -1048,7 +1068,10 @@ if stopped == false && skip_landed == false {
 if stopped == false {
     phase("Census");
     let hygiene_ids = [90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127];
-    if resume_106 == true {
+    if resume_115 == true {
+        log("slice 115");
+        hygiene_ids = from_id(hygiene_ids, "115");
+    } else if resume_106 == true {
         log("slice 106");
         let extra106 = "Slice 106 already has uncommitted work from the previous worker of this same slice. These paths belong to this slice. Finish them. Do not discard them. Do not treat them as foreign dirt.\n";
         extra106 += "apps/comparison/e2e/certified/menu.certified.spec.ts\n";
