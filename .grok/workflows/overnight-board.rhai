@@ -709,6 +709,7 @@ let resume_115 = false;
 let resume_118 = false;
 let resume_visualmode = false;
 let landed_118 = "";
+let skip_624 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -783,6 +784,19 @@ if args != () {
         landed_118 = trimmed(args.landed_118);
     } catch (miss) {
         landed_118 = "";
+    }
+    try {
+        if args.skip_624 == true {
+            skip_624 = true;
+            resume_visualmode = true;
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_624 = false;
     }
 }
 if smoke_flag == true {
@@ -1026,8 +1040,13 @@ if skip_checkpoint == false && stopped == false {
 
 if skip_landed == true {
     if resume_visualmode == true {
-        log("landed slices already recorded, visualmode queue is next");
-        next_label = "624";
+        if skip_624 == true {
+            log("landed slices already recorded, visualmode queue resumes at 329");
+            next_label = "329";
+        } else {
+            log("landed slices already recorded, visualmode queue is next");
+            next_label = "624";
+        }
     } else if resume_118 == true {
         log("landed slices already recorded, census resumes at 118");
         next_label = "118";
@@ -1084,6 +1103,9 @@ if skip_landed == true {
                 book = seed_held(book, "629", "Owner decides whether Stop, snap, key, and easing icons belong in this package. Do not add glyphs.", "G16 stays an owner question.");
                 if landed_118 != "" {
                     book = seed_done(book, "118", landed_118, "TokenField slice committed before the visualmode queue.");
+                }
+                if skip_624 == true {
+                    book = seed_held(book, "624", "The shorter TreeView row needs an owner-approved public name; #520.", "No prop was minted. Upstream TreeViewStyleProps is only selectionStyle, and both styled trees still hard-code a 40px row. #624 stays open.");
                 }
             }
         }
@@ -1147,13 +1169,21 @@ if stopped == false {
     }
     if stopped == false && resume_visualmode == true {
         log("visualmode queue");
+        let vm_ids = [624, 329, 84, 623, 625, 626, 627, 628];
         next_label = "624";
+        if skip_624 == true {
+            vm_ids = [329, 84, 623, 625, 626, 627, 628];
+            next_label = "329";
+        }
         let vm_extra = "Visualmode queue. It runs before the remaining hygiene tickets.\n";
         vm_extra += "Order: #624 TreeView 24px rows, #329 ActionMenu from a TreeView item, #84 drag and drop, #623 TextField and TextArea unmount write, #625 in-place label edit, #626 second expand control, #627 nested static TreeViewItem children, #628 DragHandle packaging.\n";
         vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
         vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
         vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
-        let vm = walk([624, 329, 84, 623, 625, 626, 627, 628], vm_extra, impl_schema, skeptic_schema, commit_schema);
+        if skip_624 == true {
+            vm_extra += "#624 is already held. Do not retry it and do not mint a name for the 24px row.\n";
+        }
+        let vm = walk(vm_ids, vm_extra, impl_schema, skeptic_schema, commit_schema);
         book = merge_part(book, vm);
         if vm.stopped == true {
             stopped = true;
