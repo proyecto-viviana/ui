@@ -706,6 +706,7 @@ let skip_checkpoint = false;
 let skip_landed = false;
 let resume_106 = false;
 let resume_115 = false;
+let resume_118 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -752,6 +753,17 @@ if args != () {
         }
     } catch (miss) {
         resume_115 = false;
+    }
+    try {
+        if args.resume_118 == true {
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        resume_118 = false;
     }
 }
 if smoke_flag == true {
@@ -994,7 +1006,10 @@ if skip_checkpoint == false && stopped == false {
 }
 
 if skip_landed == true {
-    if resume_115 == true {
+    if resume_118 == true {
+        log("landed slices already recorded, census resumes at 118");
+        next_label = "118";
+    } else if resume_115 == true {
         log("landed slices already recorded, census resumes at 115");
         next_label = "115";
     } else if resume_106 == true {
@@ -1040,6 +1055,10 @@ if skip_landed == true {
             book = seed_done(book, "109", "c1dd66db", "FileTrigger click isolation and DropZone native focus proved in the browser.");
             book = seed_held(book, "114", "Owner-gated by #243: do not mark verified. Scroll and relayout comparison evidence is still required.", "Virtualizer item-size observation already matches RAC useVirtualizerItem. D-scroll is not relayout evidence, so the ticket stays in progress.");
         }
+        if resume_118 == true {
+            book = seed_done(book, "115", "6f5a4213", "ComboBox single and multiple selection follows the upstream value contract. Ticket stays in progress because the public-face site JSON still lists selectedKeys.");
+            book = seed_seat(book, "117", "public-face seat", "Ticket #117 remaining proof is comparison page content under apps/comparison/src, which the public-face seat owns while #550 is open.");
+        }
     }
 }
 
@@ -1068,7 +1087,10 @@ if stopped == false && skip_landed == false {
 if stopped == false {
     phase("Census");
     let hygiene_ids = [90, 3, 91, 92, 94, 95, 96, 97, 102, 103, 105, 106, 107, 109, 114, 115, 117, 118, 125, 126, 127];
-    if resume_115 == true {
+    if resume_118 == true {
+        log("slice 118");
+        hygiene_ids = from_id(hygiene_ids, "118");
+    } else if resume_115 == true {
         log("slice 115");
         hygiene_ids = from_id(hygiene_ids, "115");
     } else if resume_106 == true {
