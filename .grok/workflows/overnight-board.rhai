@@ -707,6 +707,8 @@ let skip_landed = false;
 let resume_106 = false;
 let resume_115 = false;
 let resume_118 = false;
+let resume_visualmode = false;
+let landed_118 = "";
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -764,6 +766,23 @@ if args != () {
         }
     } catch (miss) {
         resume_118 = false;
+    }
+    try {
+        if args.resume_visualmode == true {
+            resume_visualmode = true;
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        resume_visualmode = false;
+    }
+    try {
+        landed_118 = trimmed(args.landed_118);
+    } catch (miss) {
+        landed_118 = "";
     }
 }
 if smoke_flag == true {
@@ -1006,7 +1025,10 @@ if skip_checkpoint == false && stopped == false {
 }
 
 if skip_landed == true {
-    if resume_118 == true {
+    if resume_visualmode == true {
+        log("landed slices already recorded, visualmode queue is next");
+        next_label = "624";
+    } else if resume_118 == true {
         log("landed slices already recorded, census resumes at 118");
         next_label = "118";
     } else if resume_115 == true {
@@ -1058,6 +1080,12 @@ if skip_landed == true {
         if resume_118 == true {
             book = seed_done(book, "115", "6f5a4213", "ComboBox single and multiple selection follows the upstream value contract. Ticket stays in progress because the public-face site JSON still lists selectedKeys.");
             book = seed_seat(book, "117", "public-face seat", "Ticket #117 remaining proof is comparison page content under apps/comparison/src, which the public-face seat owns while #550 is open.");
+            if resume_visualmode == true {
+                book = seed_held(book, "629", "Owner decides whether Stop, snap, key, and easing icons belong in this package. Do not add glyphs.", "G16 stays an owner question.");
+                if landed_118 != "" {
+                    book = seed_done(book, "118", landed_118, "TokenField slice committed before the visualmode queue.");
+                }
+            }
         }
     }
 }
@@ -1114,6 +1142,24 @@ if stopped == false {
     } else if skip_landed == true {
         hygiene_ids = from_id(hygiene_ids, "3");
     }
+    if resume_visualmode == true && landed_118 != "" {
+        hygiene_ids = [125, 126, 127];
+    }
+    if stopped == false && resume_visualmode == true {
+        log("visualmode queue");
+        next_label = "624";
+        let vm_extra = "Visualmode queue. It runs before the remaining hygiene tickets.\n";
+        vm_extra += "Order: #624 TreeView 24px rows, #329 ActionMenu from a TreeView item, #84 drag and drop, #623 TextField and TextArea unmount write, #625 in-place label edit, #626 second expand control, #627 nested static TreeViewItem children, #628 DragHandle packaging.\n";
+        vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
+        vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
+        vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
+        let vm = walk([624, 329, 84, 623, 625, 626, 627, 628], vm_extra, impl_schema, skeptic_schema, commit_schema);
+        book = merge_part(book, vm);
+        if vm.stopped == true {
+            stopped = true;
+            next_label = vm.next_label;
+        }
+    }
     if stopped == false && hygiene_ids.len() == 0 {
         stopped = true;
         next_label = "107";
@@ -1142,7 +1188,11 @@ if stopped == false {
     }
     log(layer_note);
     let extra = "Layer-import inventory, context only, not a skip list:\n" + layer_note;
-    let part = walk([50, 51, 52, 53, 54, 55, 60, 61, 64, 65, 66, 67, 68, 69, 70, 74, 75, 76, 84, 85], extra, impl_schema, skeptic_schema, commit_schema);
+    let layer_ids = [50, 51, 52, 53, 54, 55, 60, 61, 64, 65, 66, 67, 68, 69, 70, 74, 75, 76, 84, 85];
+    if resume_visualmode == true {
+        layer_ids = [50, 51, 52, 53, 54, 55, 60, 61, 64, 65, 66, 67, 68, 69, 70, 74, 75, 76, 85];
+    }
+    let part = walk(layer_ids, extra, impl_schema, skeptic_schema, commit_schema);
     book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
@@ -1204,7 +1254,17 @@ if stopped == false {
 if stopped == false {
     phase("Remainder");
     next_label = "5";
-    let part = walk([5, 37, 41, 44, 45, 49, 77, 79, 80, 83, 133, 146, 162, 221, 223, 227, 228, 263, 329, 333, 336, 379, 380, 387, 419, 420, 424, 429, 487, 488, 490, 515, 516, 517, 518, 519, 521, 620], "", impl_schema, skeptic_schema, commit_schema);
+    let rest_ids = [5, 37, 41, 44, 45, 49, 77, 79, 80, 83, 133, 146, 162, 221, 223, 227, 228, 263, 329, 333, 336, 379, 380, 387, 419, 420, 424, 429, 487, 488, 490, 515, 516, 517, 518, 519, 521, 620];
+    if resume_visualmode == true {
+        let filtered = [];
+        for id in rest_ids {
+            if id != 329 {
+                filtered.push(id);
+            }
+        }
+        rest_ids = filtered;
+    }
+    let part = walk(rest_ids, "", impl_schema, skeptic_schema, commit_schema);
     book = merge_part(book, part);
     if part.stopped == true {
         stopped = true;
