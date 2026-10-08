@@ -714,14 +714,15 @@ export function Select<T, M extends SelectSelectionMode = "single">(
   const hiddenSelectItemNodes = () =>
     Array.from(state.collection()).filter((item) => item.type === "item");
   const nativeSelectValue = (): string | string[] => {
-    const value = state.value();
-    if (Array.isArray(value)) return value.map(String);
-    return value != null ? String(value) : "";
+    const value = state.value() as Key | readonly Key[] | null;
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (value == null) return "";
+    return value.map(String);
   };
   const hiddenSelectFallbackValues = (): Array<Key | null> => {
-    const value = state.value();
-    if (Array.isArray(value)) return value.length === 0 ? [null] : [...value];
-    return [value];
+    const value = state.value() as Key | readonly Key[] | null;
+    if (typeof value === "string" || typeof value === "number" || value == null) return [value];
+    return value.length === 0 ? [null] : [...value];
   };
   createTrackedEffect(() => {
     if (hasSelection() && selectValidation().isInvalid) {

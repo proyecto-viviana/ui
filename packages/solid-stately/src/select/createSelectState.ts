@@ -195,8 +195,10 @@ export interface SelectState<
 
 function convertValue(value: Key | readonly Key[] | null | undefined): readonly Key[] | undefined {
   if (value === undefined) return undefined;
-  if (value === null) return [];
-  return Array.isArray(value) ? value : [value];
+  if (value === null || typeof value === "string" || typeof value === "number") {
+    return value == null ? [] : [value];
+  }
+  return value;
 }
 
 /**
@@ -221,11 +223,13 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
     },
   });
 
-  const resolvedDefault = untrack(() => {
+  const resolvedDefault = untrack((): Key | readonly Key[] | null => {
     const current = getProps();
-    if (current.defaultValue !== undefined) return current.defaultValue;
+    if (current.defaultValue !== undefined) {
+      return current.defaultValue as Key | readonly Key[] | null;
+    }
     const mode = current.selectionMode ?? "single";
-    return (mode === "single" ? (current.defaultSelectedKey ?? null) : []) as SelectValueType<M>;
+    return mode === "single" ? (current.defaultSelectedKey ?? null) : [];
   });
 
   const controlledProp = (): SelectValueType<M> | undefined => {
@@ -237,32 +241,37 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
     return undefined;
   };
 
-  const [internalValue, setInternalValue] =
-    createInternalSignal<SelectValueType<M>>(resolvedDefault);
+  const [internalValue, setInternalValue] = createInternalSignal<Key | readonly Key[] | null>(
+    resolvedDefault,
+  );
+
+  const readControlled = (): Key | readonly Key[] | null | undefined => {
+    const controlled = controlledProp();
+    return controlled === undefined ? undefined : (controlled as Key | readonly Key[] | null);
+  };
 
   let valueRef: Key | readonly Key[] | null = untrack(() => {
-    const controlled = controlledProp();
-    return (controlled !== undefined ? controlled : internalValue()) as Key | readonly Key[] | null;
+    const controlled = readControlled();
+    return controlled !== undefined ? controlled : internalValue();
   });
   let wroteThisTurn = false;
 
   const syncValueRef = () => {
     if (wroteThisTurn) return;
-    const controlled = controlledProp();
-    valueRef = (controlled !== undefined ? controlled : untrack(internalValue)) as
-      | Key
-      | readonly Key[]
-      | null;
+    const controlled = readControlled();
+    valueRef = controlled !== undefined ? controlled : untrack(internalValue);
   };
 
   const displayValue = (): Key | readonly Key[] | null => {
-    const controlled = controlledProp();
-    const raw = (controlled !== undefined ? controlled : internalValue()) as
-      | Key
-      | readonly Key[]
-      | null;
-    if (selectionMode() === "single" && Array.isArray(raw)) {
-      return (raw[0] ?? null) as Key | null;
+    const controlled = readControlled();
+    const raw = controlled !== undefined ? controlled : internalValue();
+    if (
+      selectionMode() === "single" &&
+      raw !== null &&
+      typeof raw !== "string" &&
+      typeof raw !== "number"
+    ) {
+      return raw[0] ?? null;
     }
     return raw;
   };
@@ -271,7 +280,12 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
     syncValueRef();
     const prevDisplay = untrack(displayValue);
     if (selectionMode() === "single") {
-      const key = Array.isArray(next) ? ((next[0] ?? null) as Key | null) : next;
+      const key: Key | null =
+        typeof next === "string" || typeof next === "number"
+          ? next
+          : next === null
+            ? null
+            : (next[0] ?? null);
       if (!Object.is(valueRef, key)) {
         valueRef = key;
         wroteThisTurn = true;
@@ -279,7 +293,7 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
           wroteThisTurn = false;
         });
         if (controlledProp() === undefined) {
-          setInternalValue(key as SelectValueType<M>);
+          setInternalValue(key);
         }
         getProps().onChange?.(key as SelectChangeValueType<M>);
       }
@@ -289,10 +303,9 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
       return;
     }
 
-    let keys: Key[];
-    if (Array.isArray(next)) keys = next as Key[];
-    else if (next != null) keys = [next];
-    else keys = [];
+    // Keep the readonly list for state. `onChange` receives its own mutable copy.
+    const keys: readonly Key[] =
+      typeof next === "string" || typeof next === "number" ? [next] : next === null ? [] : next;
     if (!Object.is(valueRef, keys)) {
       valueRef = keys;
       wroteThisTurn = true;
@@ -300,9 +313,9 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
         wroteThisTurn = false;
       });
       if (controlledProp() === undefined) {
-        setInternalValue(keys as SelectValueType<M>);
+        setInternalValue(keys);
       }
-      getProps().onChange?.(keys as SelectChangeValueType<M>);
+      getProps().onChange?.([...keys] as SelectChangeValueType<M>);
     }
   };
 
@@ -330,7 +343,14 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
   const validation = createFormValidationState({
     get value() {
       const display = displayValue();
-      if (Array.isArray(display) && display.length === 0) return null;
+      if (
+        display !== null &&
+        typeof display !== "string" &&
+        typeof display !== "number" &&
+        display.length === 0
+      ) {
+        return null;
+      }
       return display;
     },
     get isInvalid() {

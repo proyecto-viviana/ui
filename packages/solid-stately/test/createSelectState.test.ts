@@ -6,6 +6,7 @@ import { describe, it, expect, vi } from "vite-plus/test";
 import { createSignal } from "./owned-signal";
 import { flush, createRoot } from "solid-js";
 import { createSelectState } from "../src/select/createSelectState";
+import type { Key } from "../src/collections/types";
 
 describe("createSelectState", () => {
   const items = [
@@ -473,6 +474,80 @@ describe("createSelectState", () => {
         expect(onChange).toHaveBeenCalledWith(["a", "b"]);
         dispose();
       });
+    });
+
+    it("keeps a frozen defaultValue and copies a different list for onChange", () => {
+      const defaultFrozen = Object.freeze(["a", "c"] as const);
+      const nextFrozen = Object.freeze(["a", "b"] as const);
+      const seen: Key[][] = [];
+
+      createRoot((dispose) => {
+        const state = createSelectState({
+          items,
+          getKey: (item) => item.key,
+          selectionMode: "multiple" as const,
+          defaultValue: defaultFrozen,
+          onChange(value) {
+            const next: Key[] = value;
+            next.push("z");
+            seen.push(next);
+          },
+        });
+
+        flush();
+        expect(state.value()).toBe(defaultFrozen);
+        state.setValue(defaultFrozen);
+        flush();
+        expect(seen).toHaveLength(0);
+        expect(state.value()).toBe(defaultFrozen);
+
+        state.setValue(nextFrozen);
+        flush();
+        expect(seen).toHaveLength(1);
+        expect(seen[0]).not.toBe(nextFrozen);
+        expect(seen[0]).toEqual(["a", "b", "z"]);
+        expect(nextFrozen).toEqual(["a", "b"]);
+        expect(state.value()).toBe(nextFrozen);
+        expect(state.value()).toEqual(["a", "b"]);
+        dispose();
+      });
+    });
+  });
+
+  it("keeps a controlled null instead of the internal default", () => {
+    createRoot((dispose) => {
+      const state = createSelectState({
+        items,
+        getKey: (item) => item.key,
+        defaultValue: "a",
+        value: null,
+      });
+
+      flush();
+      expect(state.value()).toBeNull();
+      expect(state.selectedKey()).toBeNull();
+      dispose();
+    });
+  });
+
+  it("keeps a single-mode onChange callback on one key", () => {
+    const seen: Array<Key | null> = [];
+
+    createRoot((dispose) => {
+      const state = createSelectState({
+        items,
+        getKey: (item) => item.key,
+        defaultValue: "a",
+        onChange(value) {
+          const next: Key | null = value;
+          seen.push(next);
+        },
+      });
+
+      state.setValue("b");
+      flush();
+      expect(seen).toEqual(["b"]);
+      dispose();
     });
   });
 

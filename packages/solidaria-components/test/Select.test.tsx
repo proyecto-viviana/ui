@@ -670,6 +670,24 @@ describe("Select", () => {
       expect(onChange).toHaveBeenCalled();
     });
 
+    it("should accept a readonly multiple defaultValue", async () => {
+      const readonlyValue = ["cat", "dog"] as const;
+      render(() => (
+        <TestSelect<"multiple">
+          selectProps={{
+            selectionMode: "multiple",
+            defaultValue: readonlyValue,
+            onChange(value) {
+              const next: Key[] = value;
+              expect(next).toEqual(["cat", "dog"]);
+            },
+          }}
+        />
+      ));
+
+      expect(screen.getByRole("button")).toHaveTextContent("Cat and Dog");
+    });
+
     it("should support deselection in multiple selection mode", async () => {
       const onChange = vi.fn();
       render(() => (

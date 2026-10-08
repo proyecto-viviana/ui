@@ -271,10 +271,10 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
   const collectionSize = () => collection().size;
   const hiddenInputValues = (): Array<Key | null> => {
     const value = currentValue();
-    if (Array.isArray(value)) {
-      return value.length === 0 ? [null] : [...value];
+    if (typeof value === "string" || typeof value === "number" || value == null) {
+      return [value];
     }
-    return [value];
+    return value.length === 0 ? [null] : [...value];
   };
 
   // Mirror RAC HiddenSelect.tsx:172-244: a native <select> inside a <label>
@@ -296,15 +296,15 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
           {props.label}
           <select
             {...selectProps}
-            value={
-              isMultiple()
-                ? Array.isArray(currentValue())
-                  ? (currentValue() as readonly Key[]).map(String)
-                  : []
-                : currentValue() != null && !Array.isArray(currentValue())
-                  ? String(currentValue())
-                  : ""
-            }
+            value={(() => {
+              const value = currentValue();
+              if (isMultiple()) {
+                return typeof value === "string" || typeof value === "number" || value == null
+                  ? []
+                  : value.map(String);
+              }
+              return typeof value === "string" || typeof value === "number" ? String(value) : "";
+            })()}
           >
             <option value="" label={"\u00A0"}>
               {"\u00A0"}
