@@ -9,17 +9,21 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
-import { createRoot, flush } from "solid-js";
+import { createRoot, createSignal, flush } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
 import {
   createSelectableItem,
+  whileItemDOMFocusSuppressed,
   type CreateSelectableItemOptions,
   type LinkBehavior,
   type SelectableItemAria,
   type SelectableItemState,
 } from "../src/selection/createSelectableItem";
+import type { LocalizedStringFormatter } from "@internationalized/string";
+import { beginDragging, isVirtualDragging } from "../src/dnd/DragManager";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import { RouterProvider } from "../src/utils/openLink";
 
 const pointerEvent = createPointerEvent;
@@ -848,4 +852,191 @@ describe("createSelectableItem — virtual focus", () => {
     ]);
     expect(document.activeElement).toBe(inputEl);
   });
+});
+
+describe("createSelectableItem — imperative focus dependencies", () => {
+  it("does not subscribe to native blur reads and still follows manager focus transitions", async () => {
+    const [unrelated, setUnrelated] = createSignal(0);
+    const { state, el } = renderItem({ key: "a" }, { selectionMode: "multiple" });
+    const editor = document.createElement("input");
+    el.append(editor);
+    const blurs: Array<{
+      target: EventTarget | null;
+      currentTarget: EventTarget | null;
+      relatedTarget: EventTarget | null;
+      value: number;
+    }> = [];
+    editor.addEventListener("blur", (event) =>
+      blurs.push({
+        target: event.target,
+        currentTarget: event.currentTarget,
+        relatedTarget: event.relatedTarget,
+        value: unrelated(),
+      }),
+    );
+    editor.focus();
+    state.setFocused(true);
+    state.setFocusedKey("a");
+    flush();
+    expect(document.activeElement).toBe(el);
+    expect(blurs).toEqual([{ target: editor, currentTarget: editor, relatedTarget: el, value: 0 }]);
+    editor.focus();
+    for (const value of [1, 2]) {
+      setUnrelated(value);
+      flush();
+      expect(document.activeElement).toBe(editor);
+      await Promise.resolve();
+      expect(document.activeElement).toBe(editor);
+      expect(blurs).toHaveLength(1);
+    }
+    state.setFocusedKey("b");
+    flush();
+    state.setFocusedKey("a");
+    flush();
+    expect(document.activeElement).toBe(el);
+    state.setFocused(false);
+    flush();
+    editor.focus();
+    state.setFocused(true);
+    flush();
+    expect(document.activeElement).toBe(el);
+    expect(blurs).toHaveLength(3);
+  });
+
+  it("isolates custom callback reads while tracking callback replacement and its receiver", () => {
+    const [unrelated, setUnrelated] = createSignal(0);
+    const calls: Array<{ receiver: unknown; value: number }> = [];
+    const first: CreateSelectableItemOptions = {
+      key: "a",
+      focus() {
+        calls.push({ receiver: this, value: unrelated() });
+      },
+    };
+    const second: CreateSelectableItemOptions = {
+      key: "a",
+      focus() {
+        calls.push({ receiver: this, value: unrelated() });
+      },
+    };
+    const [options, setOptions] = createSignal(first);
+    let state!: ListState<Item>;
+    render(() => {
+      state = createListState<Item>({ items, getKey: (item) => item.key });
+      createSelectableItem(options, state, () => null);
+      return <div />;
+    });
+    state.setFocused(true);
+    state.setFocusedKey("a");
+    flush();
+    expect(calls).toEqual([{ receiver: first, value: 0 }]);
+    setUnrelated(1);
+    flush();
+    expect(calls).toHaveLength(1);
+    setOptions(second);
+    flush();
+    expect(calls).toEqual([
+      { receiver: first, value: 0 },
+      { receiver: second, value: 1 },
+    ]);
+  });
+
+  it("isolates virtual event reads while tracking ref and virtual mode changes", () => {
+    const [unrelated, setUnrelated] = createSignal(0);
+    const [target, setTarget] = createSignal<HTMLElement | null>(null);
+    const [virtual, setVirtual] = createSignal(true);
+    let state!: ListState<Item>;
+    const { container } = render(() => {
+      state = createListState<Item>({ items, getKey: (item) => item.key });
+      createSelectableItem(() => ({ key: "a", shouldUseVirtualFocus: virtual() }), state, target);
+      return (
+        <>
+          <input />
+          <div tabIndex={-1} data-a="" />
+          <div tabIndex={-1} data-b="" />
+        </>
+      );
+    });
+    const input = container.querySelector("input")!;
+    const a = container.querySelector<HTMLElement>("[data-a]")!;
+    const b = container.querySelector<HTMLElement>("[data-b]")!;
+    const events: string[] = [];
+    for (const [name, element] of [
+      ["a", a],
+      ["b", b],
+    ] as const) {
+      element.addEventListener("focus", () => {
+        unrelated();
+        events.push(name);
+      });
+    }
+    input.focus();
+    setTarget(a);
+    state.setFocused(true);
+    state.setFocusedKey("a");
+    flush();
+    expect(events).toEqual(["a"]);
+    expect(document.activeElement).toBe(input);
+    setUnrelated(1);
+    flush();
+    expect(events).toEqual(["a"]);
+    setTarget(b);
+    flush();
+    expect(events).toEqual(["a", "b"]);
+    expect(document.activeElement).toBe(input);
+    setVirtual(false);
+    flush();
+    expect(document.activeElement).toBe(b);
+    setTarget(a);
+    flush();
+    expect(document.activeElement).toBe(a);
+  });
+});
+
+describe("createSelectableItem — focus scheduling guards", () => {
+  it("honors suppression through its microtask and resumes on a real manager transition", async () => {
+    const { state, el } = renderItem({ key: "a" }, { selectionMode: "multiple" });
+    const editor = document.createElement("input");
+    el.append(editor);
+    editor.focus();
+    whileItemDOMFocusSuppressed(() => {
+      state.setFocused(true);
+      state.setFocusedKey("a");
+      flush();
+      expect(document.activeElement).toBe(editor);
+    });
+    await Promise.resolve();
+    expect(document.activeElement).toBe(editor);
+    state.setFocusedKey("b");
+    flush();
+    state.setFocusedKey("a");
+    flush();
+    expect(document.activeElement).toBe(el);
+  });
+});
+
+it("defers row focus during a keyboard drag and resumes after cancellation", async () => {
+  const { state, el } = renderItem({ key: "a" }, { selectionMode: "multiple" });
+  const dragTarget = document.createElement("button");
+  document.body.append(dragTarget);
+  dragTarget.focus();
+  setInteractionModality("keyboard");
+  beginDragging(
+    { element: dragTarget, items: [{ "text/plain": "Apple" }], allowedDropOperations: ["move"] },
+    { format: (key: string) => key } as unknown as LocalizedStringFormatter,
+  );
+  try {
+    await Promise.resolve();
+    expect(document.activeElement).toBe(dragTarget);
+    state.setFocused(true);
+    state.setFocusedKey("a");
+    flush();
+    expect(isVirtualDragging()).toBe(true);
+    expect(document.activeElement).toBe(dragTarget);
+  } finally {
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    flush();
+    dragTarget.remove();
+  }
+  expect(isVirtualDragging()).toBe(false);
+  expect(document.activeElement).toBe(el);
 });

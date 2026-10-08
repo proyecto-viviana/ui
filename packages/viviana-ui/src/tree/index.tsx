@@ -883,14 +883,15 @@ function TreeRenameField(props: { itemKey: Key; initialName: string; class: stri
     },
   );
 
-  const focusInput = () => {
+  const focusInput = (select = false) => {
     if (settled) return;
     const element = field();
     if (!element?.isConnected) return;
     const input = element.querySelector("input");
     if (!(input instanceof HTMLInputElement)) return;
     input.focus();
-    input.select();
+    // Select on entry only; protective refocus must preserve the editing caret.
+    if (select) input.select();
   };
 
   // Focus after the tree's row effect. A synchronous focus inside this effect
@@ -899,7 +900,7 @@ function TreeRenameField(props: { itemKey: Key; initialName: string; class: stri
     () => field(),
     (element) => {
       if (!element) return;
-      queueMicrotask(focusInput);
+      queueMicrotask(() => focusInput(true));
     },
   );
 

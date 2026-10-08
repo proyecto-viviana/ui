@@ -42,7 +42,7 @@
  *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
-import { createUniqueId, createTrackedEffect } from "solid-js";
+import { createUniqueId, createTrackedEffect, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type {
@@ -384,17 +384,21 @@ export function createSelectableItem<T>(
     }
 
     const o = getOptions();
-    if (!shouldUseVirtualFocus()) {
-      if (o.focus) {
-        o.focus();
-      } else {
-        const el = ref();
-        if (el && getOwnerDocument(el).activeElement !== el) {
+    const virtualFocus = shouldUseVirtualFocus();
+    const focus = o.focus;
+    // Track scheduling inputs, but not arbitrary reactive reads made by custom
+    // focus callbacks or by native/virtual focus and blur event handlers.
+    if (!virtualFocus && focus) {
+      untrack(() => focus.call(o));
+    } else {
+      const el = ref();
+      untrack(() => {
+        if (virtualFocus) {
+          moveVirtualFocus(el ?? null);
+        } else if (el && getOwnerDocument(el).activeElement !== el) {
           focusSafely(el);
         }
-      }
-    } else {
-      moveVirtualFocus(ref() ?? null);
+      });
     }
   });
 

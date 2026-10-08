@@ -102,6 +102,7 @@ describe("TreeView onRename", () => {
     const item = row(container, "layer");
     const input = await openWithF2(container);
     input.value = "Layer 2";
+    input.dispatchEvent(new InputEvent("input", { bubbles: true }));
     expect(press(input, "Enter")).toBe(false);
     await tick();
     expect(calls).toEqual([["layer", "Layer 2"]]);
@@ -118,6 +119,7 @@ describe("TreeView onRename", () => {
     const item = row(container, "layer");
     const input = await openWithF2(container);
     input.value = "Discarded";
+    input.dispatchEvent(new InputEvent("input", { bubbles: true }));
     expect(press(input, "Escape")).toBe(false);
     await tick();
     expect(calls).toEqual([]);
@@ -126,20 +128,139 @@ describe("TreeView onRename", () => {
     expect(label(item).textContent).toBe("Layer");
   });
 
-  it("commits on blur", async () => {
+  for (const destination of ["blur", "outside"] as const) {
+    it(`commits on ${destination === "blur" ? "blur" : "focus moving outside"}`, async () => {
+      const calls: Array<[string, string]> = [];
+      const { container } = render(() => (
+        <>
+          <Layers onRename={(key, name) => calls.push([key, name])} />
+          <button data-outside="">Outside</button>
+        </>
+      ));
+      const item = row(container, "layer");
+      const input = await openWithF2(container);
+      expect(document.activeElement).toBe(input);
+      const events: Array<{
+        type: string;
+        target: EventTarget | null;
+        currentTarget: EventTarget | null;
+        relatedTarget: EventTarget | null;
+      }> = [];
+      const capture = (event: FocusEvent) => {
+        events.push({
+          type: event.type,
+          target: event.target,
+          currentTarget: event.currentTarget,
+          relatedTarget: event.relatedTarget,
+        });
+      };
+      input.addEventListener("blur", capture);
+      input.addEventListener("focusout", capture);
+      input.value = "Renamed";
+      input.dispatchEvent(new InputEvent("input", { bubbles: true }));
+      expect(input.isConnected).toBe(true);
+      expect(item.querySelector("[data-tree-rename] input")).toBe(input);
+      expect(document.activeElement).toBe(input);
+      expect(events).toEqual([]);
+      const outside = container.querySelector<HTMLButtonElement>("[data-outside]");
+      if (!outside) throw new Error("outside focus target did not render");
+      if (destination === "blur") input.blur();
+      else outside.focus();
+      expect(events).toEqual(
+        ["blur", "focusout"].map((type) => ({
+          type,
+          target: input,
+          currentTarget: input,
+          relatedTarget: destination === "blur" ? null : outside,
+        })),
+      );
+      await tick();
+      expect(calls).toEqual([["layer", "Renamed"]]);
+      expect(item.querySelector("[data-tree-rename]")).toBeNull();
+      expect(document.activeElement).not.toBe(item);
+      if (destination === "outside") expect(document.activeElement).toBe(outside);
+    });
+  }
+
+  it("keeps uninterrupted edits focused and preserves selection before a settled outside exit", async () => {
+    const calls: Array<[string, string]> = [];
+    const { container } = render(() => (
+      <>
+        <Layers onRename={(key, name) => calls.push([key, name])} />
+        <button data-outside="">Outside</button>
+      </>
+    ));
+    const item = row(container, "layer");
+    const input = await openWithF2(container);
+    for (const [name, start, end] of [
+      ["Renamed", 2, 4],
+      ["Renamed again", 5, 5],
+    ] as const) {
+      input.value = name;
+      input.setSelectionRange(start, end, "backward");
+      input.dispatchEvent(new InputEvent("input", { bubbles: true }));
+      for (const settled of [false, true]) {
+        if (settled) await tick();
+        expect(input.isConnected).toBe(true);
+        expect(item.querySelector("[data-tree-rename] input")).toBe(input);
+        expect(document.activeElement).toBe(input);
+        expect(input.value).toBe(name);
+        expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual([
+          start,
+          end,
+          "backward",
+        ]);
+        expect(calls).toEqual([]);
+      }
+    }
+    const outside = container.querySelector<HTMLButtonElement>("[data-outside]");
+    if (!outside) throw new Error("outside focus target did not render");
+    outside.focus();
+    await tick();
+    expect(calls).toEqual([["layer", "Renamed again"]]);
+    expect(item.querySelector("[data-tree-rename]")).toBeNull();
+    expect(document.activeElement).toBe(outside);
+    input.dispatchEvent(new InputEvent("input", { bubbles: true }));
+    input.blur();
+    await tick();
+    expect(calls).toEqual([["layer", "Renamed again"]]);
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it("protects internal focus and does not refocus an already unfocused editor on input", async () => {
     const calls: Array<[string, string]> = [];
     const { container } = render(() => (
       <Layers onRename={(key, name) => calls.push([key, name])} />
     ));
-    const item = row(container, "layer");
     const input = await openWithF2(container);
-    input.value = "Renamed";
-    input.dispatchEvent(new InputEvent("input", { bubbles: true }));
-    input.blur();
+    const field = input.closest("[data-tree-rename]");
+    if (!field) throw new Error("rename field did not render");
+    const internal = document.createElement("button");
+    field.append(internal);
+    internal.focus();
     await tick();
-    expect(calls).toEqual([["layer", "Renamed"]]);
-    expect(item.querySelector("[data-tree-rename]")).toBeNull();
-    expect(document.activeElement).not.toBe(item);
+    expect(document.activeElement).toBe(internal);
+    expect(calls).toEqual([]);
+    input.value = "Background update";
+    input.dispatchEvent(new InputEvent("input", { bubbles: true }));
+    await tick();
+    expect(document.activeElement).toBe(internal);
+    expect(calls).toEqual([]);
+    expect(input.isConnected).toBe(true);
+  });
+
+  it("protects the editor from row focus without selecting its contents", async () => {
+    const calls: Array<[string, string]> = [];
+    const { container } = render(() => (
+      <Layers onRename={(key, name) => calls.push([key, name])} />
+    ));
+    const input = await openWithF2(container);
+    input.setSelectionRange(2, 2);
+    row(container, "layer").focus();
+    await tick();
+    expect(document.activeElement).toBe(input);
+    expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+    expect(calls).toEqual([]);
   });
 
   it("keeps arrows and type-ahead in the field", async () => {
@@ -181,10 +302,21 @@ describe("TreeView onRename", () => {
   });
 
   it("does not throw when the editor unmounts", async () => {
-    const { container, unmount } = render(() => <Layers onRename={() => {}} />);
-    await openWithF2(container);
+    const calls: Array<[string, string]> = [];
+    const { container, unmount } = render(() => (
+      <Layers onRename={(key, name) => calls.push([key, name])} />
+    ));
+    const input = await openWithF2(container);
+    row(container, "layer").focus();
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    outside.focus();
     expect(() => unmount()).not.toThrow();
     await tick();
     expect(document.querySelector("[data-tree-rename]")).toBeNull();
+    expect(input.isConnected).toBe(false);
+    expect(document.activeElement).toBe(outside);
+    expect(calls).toEqual([]);
+    outside.remove();
   });
 });
