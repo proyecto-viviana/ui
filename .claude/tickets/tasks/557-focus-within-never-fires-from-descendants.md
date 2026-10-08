@@ -4,7 +4,7 @@ type: task
 title: "createFocusWithin never fires from a descendant, so overlays need an invented listener"
 created: 2026-09-20
 parent: 544
-status: verified
+status: in-progress
 history:
   - {
       state: open,
@@ -20,6 +20,16 @@ history:
       state: verified,
       at: 2026-09-24,
       note: "Route focusWithinProps through bubbling onFocusIn and onFocusOut events and normalize event type to focus/blur. Removed invented document-level focusin listener from createOverlay. Added dedicated descendant-focus test in createFocusWithin.test.tsx (all 12 tests green). Popover.test.tsx (all 44 tests green), ToggleButton.test.tsx, Dialog.test.tsx, and all 95 solidaria test files green. vp run check passes across 4493 files.",
+    }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Reopen the bounded native FocusEvent accessor receiver defect reproduced during #632 qualification; preserve the older verified bubbling-transport result as historical evidence.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admit the registered native-accessor continuation after #542 closed stop and accepted 1586cfc3 integration. Exact source, owning-test and existing browser-fixture paths are recorded below; original full certification remains pending.",
     }
 ---
 
@@ -55,3 +65,52 @@ after, and the two contracts above with the listener removed.
 
 Child of #544. Split out of #555 item 3, which lands the rest of `useOverlay`
 parity and leaves the listener in place with a comment pointing here.
+
+## Native accessor continuation admission — 2026-10-08
+
+The 2026-09-24 verified result remains historical bubbling-transport proof.
+Current #632 native qualification encountered Chromium Illegal invocation
+when the normalized FocusEvent Proxy reads native accessors with the Proxy
+receiver. Reopen only this bounded native-accessor owner; the autonomous
+remaining-work instruction authorizes ordinary repair, not silent acceptance
+of the older full contract or an Escape-focus workaround.
+
+After #542 exact-generation stop and accepted integration, register
+`ui-557-native-20261008` in eligible repo:ui main with
+`/tmp/ui-557-dispatch-2026-10-08.md`, which supersedes older proposed runner
+names in the preparation brief. Codex astra low handles this native receiver
+hard slice under Decision040 after the documented Grok quota / AGY manual
+approval limitation. Use normal workspace-write/on-request controls. The
+conductor accepts and commits after exact-generation stop; native reviewers
+write no repository files.
+
+Exact writes:
+
+- `packages/solidaria/src/interactions/createFocusWithin.ts`: native Proxy
+  accessor receiver only, retaining normalized type and bound methods.
+- `packages/solidaria/test/createFocusWithin.test.tsx`: owner regressions.
+- `packages/solidaria-components/test/fixtures/focus-browser/main.tsx`: append
+  native focus owner/descendant/disabled/disposal controls; preserve the
+  existing DropZone/FileTrigger fixture and original tab order.
+- `apps/comparison/e2e/filetrigger-dropzone-focus.browser.ts`: synchronous
+  native accessor assertions and pre-navigation zero-error observations for
+  original and new cases.
+- `.changeset/native-focus-event-accessors.md`: solidaria patch only.
+- This ticket, generated status/roadmap through the standard generator, and
+  `/tmp/ui-557-*` evidence.
+
+The existing tracked filetrigger-dropzone-focus.playwright.config.ts and
+fixture Vite config remain unchanged; no new config, dependency, API, style,
+listener, shared helper, or other product path is admitted. Use the existing
+source-linked fixture in the sole serialized browser lane, with the tooling
+renderer flag on this host. Preserve all four original browser cases and
+record the click-spy's OS-dialog limit. Native final assertions must fail
+against exact base source, then pass after the accessor repair, with
+failure-safe byte/hash restoration. Save raw checks and all final path hashes.
+
+Run focused FocusWithin/Popover and related focus suites, scoped static/docs
+checks and one root typecheck with inherited diagnostics. Full original
+ActionMenu proof, #632 Escape restoration, #630/#639 native identity, broader
+certification and release remain separate pending actual fresh results. No
+blanket untrack, caught native errors, synthetic-event substitute, stale
+server reuse, or revival of createOverlay's document focusin listener.
