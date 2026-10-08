@@ -4,9 +4,14 @@ type: task
 title: "Add missing viviana-ui subpath exports"
 created: 2026-08-20
 parent: 32
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task viviana-ui-subpath-exports" }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Mirrored the 55 solid-spectrum component subpath entries into @proyecto-viviana/ui (package exports, pack entries, identical source). subpath-exports.test.ts closes the inventory. Did not run ui:smoke.",
+    }
 ---
 
 Add the 19 `solid-spectrum` subpath exports that are missing from
