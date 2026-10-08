@@ -341,6 +341,14 @@ export function createToggle(
     }
 
     state.setSelected(e.currentTarget.checked);
+    // The browser has already flipped `checked`. Reset it to the value
+    // `state.isSelected()` reports now. A refusal leaves that accessor
+    // unchanged. An uncontrolled write is already in the live internal
+    // mirror. A synchronous controlled owner write may settle only after
+    // this handler; the `checked` prop applies that acceptance later.
+    if (e.currentTarget.checked !== state.isSelected()) {
+      e.currentTarget.checked = state.isSelected();
+    }
     if (externalValidation()) {
       commitActiveValidation();
     }

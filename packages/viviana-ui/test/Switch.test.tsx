@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { TabSwitch, ToggleSwitch, SwitchContext } from "../src/switch";
 import { SegmentedControl } from "../src/segmentedcontrol";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -145,6 +146,69 @@ describe("ToggleSwitch", () => {
       expect(localFieldEl).toBe(contextFieldEl);
       expect(contextInputEl).toBeInstanceOf(HTMLInputElement);
       expect(localInputEl).toBe(contextInputEl);
+    });
+  });
+
+  describe("controlled DOM restoration", () => {
+    it("keeps native checked false when controlled onChange refuses the click", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => (
+        <ToggleSwitch aria-label="Notifications" isSelected={false} onChange={onChange}>
+          Enable notifications
+        </ToggleSwitch>
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(switchEl);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(false);
+    });
+
+    it("keeps native checked true when a label click is refused", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => (
+        <ToggleSwitch isSelected onChange={onChange}>
+          Enable notifications
+        </ToggleSwitch>
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(screen.getByText("Enable notifications"));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(switchEl.checked).toBe(true);
+    });
+
+    it("keeps an accepted Space toggle and a later external update on the input", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      const [selected, setSelected] = createSignal(false);
+      render(() => (
+        <ToggleSwitch
+          aria-label="Notifications"
+          isSelected={selected()}
+          onChange={(next) => {
+            onChange(next);
+            setSelected(next);
+          }}
+        />
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+      switchEl.focus();
+
+      await user.keyboard(" ");
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(true);
+
+      setSelected(false);
+      flush();
+      expect(switchEl.checked).toBe(false);
     });
   });
 });

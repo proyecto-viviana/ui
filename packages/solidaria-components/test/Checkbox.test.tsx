@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import {
   Checkbox,
   CheckboxContext,
@@ -371,6 +371,65 @@ describe("Checkbox", () => {
 
       await user.click(screen.getByRole("checkbox"));
       expect(onChange).toHaveBeenCalledWith(false);
+    });
+
+    it("keeps native checked false when controlled onChange refuses the click", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <Checkbox isSelected={false} onChange={onChange}>
+          Select row
+        </Checkbox>
+      ));
+      const input = screen.getByRole("checkbox") as HTMLInputElement;
+
+      await user.click(input);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(input.checked).toBe(false);
+    });
+
+    it("keeps native checked true when a label click is refused", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <Checkbox isSelected onChange={onChange}>
+          Select row
+        </Checkbox>
+      ));
+      const input = screen.getByRole("checkbox") as HTMLInputElement;
+
+      await user.click(screen.getByText("Select row"));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(input.checked).toBe(true);
+    });
+
+    it("keeps an accepted controlled update and a later external update on the input", async () => {
+      const onChange = vi.fn();
+      const [selected, setSelected] = createSignal(false);
+      render(() => (
+        <Checkbox
+          isSelected={selected()}
+          onChange={(next) => {
+            onChange(next);
+            setSelected(next);
+          }}
+        >
+          Select row
+        </Checkbox>
+      ));
+      const input = screen.getByRole("checkbox") as HTMLInputElement;
+      input.focus();
+
+      await user.keyboard(" ");
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(input.checked).toBe(true);
+
+      setSelected(false);
+      flush();
+      expect(input.checked).toBe(false);
     });
 
     it("should support selected state", async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { Checkbox, CheckboxContext, CheckboxGroup, CheckboxGroupContext, Form } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { hc } from "../../../apps/comparison/src/components/solid/solid-h";
@@ -71,6 +71,57 @@ describe("Checkbox", () => {
 
       await user.click(checkbox);
       expect(onChangeSpy).toHaveBeenCalledWith(true);
+    });
+
+    it("keeps native checked false when controlled onChange refuses the click", async () => {
+      const onChange = vi.fn();
+      render(() => <Checkbox aria-label="Test checkbox" isSelected={false} onChange={onChange} />);
+      const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
+
+      await user.click(checkbox);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(checkbox.checked).toBe(false);
+    });
+
+    it("keeps native checked true when Space is refused", async () => {
+      const onChange = vi.fn();
+      render(() => <Checkbox aria-label="Test checkbox" isSelected onChange={onChange} />);
+      const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
+      checkbox.focus();
+
+      await user.keyboard(" ");
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(checkbox.checked).toBe(true);
+    });
+
+    it("keeps an accepted label click and a later external update on the input", async () => {
+      const onChange = vi.fn();
+      const [selected, setSelected] = createSignal(true);
+      render(() => (
+        <Checkbox
+          isSelected={selected()}
+          onChange={(next) => {
+            onChange(next);
+            setSelected(next);
+          }}
+        >
+          Enable alerts
+        </Checkbox>
+      ));
+      const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
+
+      await user.click(screen.getByText("Enable alerts"));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(checkbox.checked).toBe(false);
+
+      setSelected(true);
+      flush();
+      expect(checkbox.checked).toBe(true);
     });
 
     it("keeps the controlled hidden input stable while toggling", async () => {

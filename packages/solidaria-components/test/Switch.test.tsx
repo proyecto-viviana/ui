@@ -9,6 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import {
   ToggleSwitch,
   SwitchField,
@@ -322,6 +323,62 @@ describe("ToggleSwitch", () => {
 
       await user.click(screen.getByRole("switch"));
       expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("controlled DOM restoration", () => {
+    it("keeps native checked false when controlled onChange refuses the click", async () => {
+      const onChange = vi.fn();
+      render(() => <ToggleSwitch aria-label="Toggle" isSelected={false} onChange={onChange} />);
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(switchEl);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(false);
+    });
+
+    it("keeps native checked true when controlled onChange refuses the click", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <ToggleSwitch aria-label="Toggle" isSelected onChange={onChange}>
+          Notify
+        </ToggleSwitch>
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(screen.getByText("Notify"));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(switchEl.checked).toBe(true);
+    });
+
+    it("keeps an accepted controlled click and a later external update on the input", async () => {
+      const onChange = vi.fn();
+      const [selected, setSelected] = createSignal(false);
+      render(() => (
+        <ToggleSwitch
+          aria-label="Toggle"
+          isSelected={selected()}
+          onChange={(next) => {
+            onChange(next);
+            setSelected(next);
+          }}
+        />
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+      switchEl.focus();
+
+      await user.keyboard(" ");
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(true);
+
+      setSelected(false);
+      flush();
+      expect(switchEl.checked).toBe(false);
     });
   });
 

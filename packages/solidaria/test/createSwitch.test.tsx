@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { createSignal, flush } from "solid-js";
 import { createSwitch, createToggleState } from "../src";
 import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -188,6 +189,91 @@ describe("createSwitch", () => {
 
       await user.keyboard(" ");
       expect(onChange).toHaveBeenCalled();
+    });
+  });
+
+  describe("controlled DOM restoration", () => {
+    it("keeps native checked false when controlled onChange refuses the click", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => <TestSwitch aria-label="Test switch" isSelected={false} onChange={onChange} />);
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(switchEl);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(false);
+    });
+
+    it("keeps native checked true when controlled onChange refuses the click", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => <TestSwitch aria-label="Test switch" isSelected={true} onChange={onChange} />);
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(switchEl);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(false);
+      expect(switchEl.checked).toBe(true);
+    });
+
+    it("keeps native checked false when Space is refused", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => <TestSwitch aria-label="Test switch" isSelected={false} onChange={onChange} />);
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+      switchEl.focus();
+
+      await user.keyboard(" ");
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(false);
+    });
+
+    it("keeps native checked false when a label click is refused", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      render(() => (
+        <TestSwitch aria-label="Test switch" isSelected={false} onChange={onChange}>
+          Notify
+        </TestSwitch>
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(screen.getByText("Notify"));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(false);
+    });
+
+    it("keeps an accepted controlled click and a later external update on the input", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      const [selected, setSelected] = createSignal(false);
+      render(() => (
+        <TestSwitch
+          aria-label="Test switch"
+          isSelected={selected()}
+          onChange={(next) => {
+            onChange(next);
+            setSelected(next);
+          }}
+        />
+      ));
+      const switchEl = screen.getByRole("switch") as HTMLInputElement;
+
+      await user.click(switchEl);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(switchEl.checked).toBe(true);
+
+      setSelected(false);
+      flush();
+      expect(switchEl.checked).toBe(false);
     });
   });
 });

@@ -5,7 +5,7 @@ title: "Restore a controlled toggle after a refused change"
 created: 2026-10-08
 parent: 24
 priority: high
-status: next
+status: in-progress
 history:
   - {
       state: open,
@@ -16,6 +16,16 @@ history:
       state: next,
       at: 2026-10-08,
       note: "Prioritize controlled-state correctness in the next-RC Visualmode batch; reproduction still required.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admit the registered Grok worker for the shared controlled-toggle DOM repair; conductor alone accepts and commits.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "createToggle restores input.checked from state.isSelected() after setSelected when the browser flip disagrees. Focused suites 229/229. Release, browser, and publish still open.",
     }
 ---
 
@@ -52,3 +62,18 @@ currently restores the input in CanvasEntryPropertyField.tsx. Source request:
 visualmode/visualmode/.agents/ui-requests-2026-10-07/D19-controlled-switch-keeps-a-refused-click.md.
 Patch Changeset belongs to the lowest repaired package; rollback stays within
 toggle behavior. No workaround removal before an installed published fix.
+
+## Admitted paths
+
+Grok is the sole source implementer in the eligible main checkout; the
+external conductor reviews and commits after its exact generation stops.
+Source: `packages/solidaria/src/toggle/createToggle.ts`. Regression paths:
+`packages/solidaria/test/createSwitch.test.tsx`,
+`packages/solidaria/test/createCheckbox.test.tsx`,
+`packages/solidaria-components/test/Switch.test.tsx`,
+`packages/solidaria-components/test/Checkbox.test.tsx`,
+`packages/solid-spectrum/test/Switch.test.tsx`,
+`packages/solid-spectrum/test/Checkbox.test.tsx`, and
+`packages/viviana-ui/test/Switch.test.tsx`. This ticket, generated status and
+roadmap, `.changeset/controlled-toggle-dom-restoration.md`, and
+`/tmp/ui-634-*` evidence are also admitted. No other source paths.
