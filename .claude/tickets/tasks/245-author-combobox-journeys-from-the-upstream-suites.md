@@ -51,7 +51,20 @@ history:
       at: "2026-09-17",
       note: "ComboBox island min-height 280px so the portaled list stays over the island fill. 95d30443 frame CSS unchanged. D13 seeds 2/2 and CB-OC-02 green on :4323. CB-OC-03 still Escape extra onSelectionChange(null). Overlay remainder owner-gated. Do not mark verified.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Owner released checkpoint: resume #114/#251/#252/#256/#257, then #246/#249 in dependency order; existing regression/certification bars remain. #254 remains held.",
+    }
 ---
+
+## Current owner authorization — 2026-10-08
+
+The owner explicitly released this checkpoint for #114, #251, #252, #256,
+#257, then #246 and #249 in dependency order, retaining existing regression
+and certification requirements. #254 remains held. Historical stop language
+below is superseded for these named tasks only. Prerequisites and proof still
+apply; this is work authorization, not ticket verification or a parity waiver.
 
 <!-- doc-shape: over cap because the proof is real command output -->
 

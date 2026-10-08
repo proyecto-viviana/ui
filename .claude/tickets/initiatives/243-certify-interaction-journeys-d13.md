@@ -20,7 +20,20 @@ history:
       at: "2026-09-16",
       note: "Owner-stop checkpoint. #245 in-progress: Solid protocol on the HEAD ComboBox tree, CB-OC-02 registered and green, CB-OC-01/03–08 authored and red (unregistered). Overlay remainder stays owner-gated. Do not start #246/#249/#254.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Owner released checkpoint: resume #114/#251/#252/#256/#257, then #246/#249 in dependency order; existing regression/certification bars remain. #254 remains held.",
+    }
 ---
+
+## Current owner authorization — 2026-10-08
+
+The owner explicitly released this checkpoint for #114, #251, #252, #256,
+#257, then #246 and #249 in dependency order, retaining existing regression
+and certification requirements. #254 remains held. Historical stop language
+below is superseded for these named tasks only. Prerequisites and proof still
+apply; this is work authorization, not ticket verification or a parity waiver.
 
 ## Why
 

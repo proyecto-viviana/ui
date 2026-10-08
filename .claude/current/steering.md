@@ -37,6 +37,14 @@ Dated. Entries marked (owner) were stated by the owner. Entries marked
 2026-09-07 delegation ("why my call? fix them if broken") and stand until the
 owner vetoes them.
 
+- **2026-10-08 — Resume the D13 checkpoint.** (owner) Release the holds on
+  #114, #251, #252, #256, #257, then #246 and #249 in dependency order with
+  existing regression and certification requirements. #254 remains held.
+  Work authorization does not relax parity or verification requirements.
+- **2026-10-08 — Prioritize Visualmode requests.** (owner) Reproduce and fix
+  D17 (#631) and D18 (#632) with regressions, and add G17 (#633) alongside top
+  Visualmode consumer tickets before the next release. Rule on MenuItem from
+  upstream evidence. The new CSS entry name requires the owner's choice.
 - **2026-09-07 — TableView converges on upstream's virtualized grid (#89 →
   #490).** (Rule #2, delegated) S2 TableView has no non-virtualized branch: it
   always renders `div[role="grid"]` through the Virtualizer. The native

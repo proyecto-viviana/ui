@@ -88,6 +88,23 @@ Work through the numbered census below. Do not skip an open item because a later
 item is easier. Where the required sequence leaves work unordered, choose the
 simplest closure-ready ticket.
 
+## 2026-10-08 Visualmode priority and resumed checkpoint
+
+The owner requested D17 (#631), D18 (#632), and G17 (#633) with reproduction,
+regression fixes, and actual release reporting. Finish the active #125 slice
+and restore qualification first. The next-RC consumer batch verifies delivery
+of the already landed #623/#630 safety fixes; repairs #631/#632; ships #633's
+approved font-free entry; and delivers existing #628/#629 icons and #624–#626
+TreeView work. Retain #627's landed nested-children fix and qualification.
+These tickets already record their earlier approvals; do not ask again or
+reimplement them by default. All candidate gates remain. #633's new public
+entry name awaits the owner's choice. Other census work continues afterward.
+
+The owner released #243/#245's checkpoint for #114, #251, #252, #256, #257,
+then #246 and #249 in dependency order with existing regression/certification
+requirements. #254 remains held. Historical stop prose is superseded only
+for these named tasks; partial evidence does not authorize verification.
+
 ## 2026-09-20 fresh-session execution plan
 
 The owner requested that implementation stop at the current checkpoint, the
