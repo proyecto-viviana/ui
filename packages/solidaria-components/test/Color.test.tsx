@@ -2936,3 +2936,32 @@ describe("Color Components", () => {
     });
   });
 });
+
+describe("ColorField D22 attribute parity", () => {
+  it("keeps root and explicit input attributes separate through updates and removals", async () => {
+    const [attributes, setAttributes] = createSignal<{ x?: string; y?: string }>({
+      x: "root",
+      y: "input",
+    });
+    const { container } = render(() => (
+      <ColorField aria-label="Attribute color" defaultValue="#f00" data-x={attributes().x}>
+        {() => <ColorFieldInput data-y={attributes().y} />}
+      </ColorField>
+    ));
+    const root = container.querySelector(".solidaria-ColorField")!;
+    const input = screen.getByRole("textbox", { name: "Attribute color" });
+    const check = (x?: string, y?: string) => {
+      expect(container.querySelector(".solidaria-ColorField")).toBe(root);
+      expect(screen.getByRole("textbox", { name: "Attribute color" })).toBe(input);
+      expect(root.getAttribute("data-x")).toBe(x ?? null);
+      expect(input.getAttribute("data-y")).toBe(y ?? null);
+      expect(root).not.toHaveAttribute("data-y");
+      expect(input).not.toHaveAttribute("data-x");
+    };
+    check("root", "input");
+    setAttributes({ x: "next-root", y: "next-input" });
+    await waitFor(() => check("next-root", "next-input"));
+    setAttributes({});
+    await waitFor(() => check());
+  });
+});

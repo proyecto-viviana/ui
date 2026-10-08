@@ -235,6 +235,9 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
     ),
   );
   const [invalidInput, setInvalidInput] = createInternalSignal(false);
+  // Formatted channel text may round the accepted number. Only user edits
+  // should parse that text back into a new numerical value.
+  let isChannelInputEdited = false;
 
   const channel = createMemo(() => getOptions().channel);
   const colorSpace = createMemo(() => getOptions().colorSpace);
@@ -260,6 +263,7 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
   createEffect(
     () => formatCurrentValue(),
     (formatted) => {
+      isChannelInputEdited = false;
       setInputValueInternal(formatted);
       setInvalidInput(false);
     },
@@ -273,11 +277,13 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
     }
 
     opts.onChange?.(newColor);
+    isChannelInputEdited = false;
     setInputValueInternal(formatCurrentValue(newColor));
     setInvalidInput(false);
   };
 
   const setInputValue = (text: string) => {
+    isChannelInputEdited = true;
     setInputValueInternal(text);
     setInvalidInput(false);
   };
@@ -286,35 +292,52 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
     updateValue(newColor);
   };
 
+  // Methods can run before Solid's value memo observes an earlier write.
+  const currentValue = () => {
+    const opts = getOptions();
+    return opts.value !== undefined ? normalizeNullableColor(opts.value) : readNow(internalValue);
+  };
+
   const commit = () => {
     const text = readNow(inputValue).trim();
     const opts = getOptions();
     const chan = channel();
+    const current = currentValue();
 
     if (!text) {
-      updateValue(null);
-      return;
-    }
-
-    if (chan) {
-      const displayColor = colorValue();
+      if (current !== null) updateValue(null);
+    } else if (chan) {
+      const displayColor = getDisplayColor(current, colorSpace());
       const rawValue = parseChannelValue(text, displayColor, chan);
-      if (rawValue == null) {
-        setInputValueInternal(formatCurrentValue());
-        setInvalidInput(false);
-        return;
+      if (isChannelInputEdited && rawValue !== null) {
+        const next = displayColor.withChannelValue(chan, rawValue);
+        if (current === null || next.getChannelValue(chan) !== displayColor.getChannelValue(chan)) {
+          updateValue(next);
+        }
       }
-
-      updateValue(displayColor.withChannelValue(chan, rawValue));
-      return;
+    } else {
+      try {
+        const next = parseHexValue(text, opts.colorFormat);
+        // Whole hex edits compare RGB; hexa also edits alpha. This is not
+        // the equality policy for channel edits or the public color setter.
+        if (
+          current === null ||
+          next.toHexInt() !== current.toHexInt() ||
+          (opts.colorFormat === "hexa" &&
+            next.getChannelValue("alpha") !== current.getChannelValue("alpha"))
+        ) {
+          updateValue(next);
+        }
+      } catch {
+        // Invalid text rolls back to the accepted color below.
+      }
     }
 
-    try {
-      updateValue(parseHexValue(text, opts.colorFormat));
-    } catch {
-      setInputValueInternal(formatCurrentValue());
-      setInvalidInput(false);
-    }
+    // Read after onChange: a controlled parent may accept or refuse the
+    // request. Later signal acceptance is handled by the formatting effect.
+    isChannelInputEdited = false;
+    setInputValueInternal(formatCurrentValue(currentValue()));
+    setInvalidInput(false);
   };
 
   const incrementHex = (amount: number) => {
@@ -345,17 +368,20 @@ export function createColorFieldState(options: Accessor<ColorFieldStateOptions>)
       return;
     }
 
-    const displayColor = colorValue();
+    const current = currentValue();
+    const displayColor = getDisplayColor(current, colorSpace());
     const range = displayColor.getChannelRange(chan);
-    const currentValue = displayColor.getChannelValue(chan);
+    const currentChannel = displayColor.getChannelValue(chan);
     const nextValue =
       amount === "min"
         ? range.minValue
         : amount === "max"
           ? range.maxValue
-          : Math.min(range.maxValue, Math.max(range.minValue, currentValue + amount));
+          : Math.min(range.maxValue, Math.max(range.minValue, currentChannel + amount));
 
-    updateValue(displayColor.withChannelValue(chan, nextValue));
+    const next = displayColor.withChannelValue(chan, nextValue);
+    if (current !== null && next.getChannelValue(chan) === currentChannel) return;
+    updateValue(next);
   };
 
   const increment = () => {

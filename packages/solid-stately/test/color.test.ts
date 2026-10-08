@@ -1473,3 +1473,422 @@ describe("createColorFieldState", () => {
     });
   });
 });
+
+describe("ColorField D22 commit boundaries", () => {
+  it("commits new hex once without a flush and normalizes equivalent spellings", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#f00",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("0f0");
+      state.commit();
+      state.commit();
+      expect(changes).toHaveLength(1);
+      expect(state.inputValue).toBe("#00FF00");
+      for (const text of ["#0F0", "00ff00", "#00FF00"]) {
+        state.setInputValue(text);
+        state.commit();
+        expect(changes).toHaveLength(1);
+        expect(state.inputValue).toBe("#00FF00");
+      }
+      state.setInputValue("#00f");
+      state.commit();
+      expect(changes).toHaveLength(2);
+      flush();
+      expect(state.value!.toString("hex")).toBe("#0000ff");
+      dispose();
+    });
+  });
+
+  it("restores refused commits and empty input, while deliberate retyping is a fresh request", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        value: "#f00",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("#0f0");
+      state.commit();
+      expect(state.inputValue).toBe("#FF0000");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      state.setInputValue("#0f0");
+      state.commit();
+      expect(changes).toHaveLength(2);
+      flush();
+      state.setInputValue("#0f0");
+      state.commit();
+      expect(changes).toHaveLength(3);
+      state.setInputValue("");
+      state.commit();
+      expect(changes).toHaveLength(4);
+      expect(changes[3]).toBeNull();
+      expect(state.inputValue).toBe("#FF0000");
+      state.commit();
+      expect(changes).toHaveLength(4);
+      flush();
+      expect(state.value!.toString("hex")).toBe("#ff0000");
+      dispose();
+    });
+  });
+
+  for (const accepting of [true, false]) {
+    it(`settles ${accepting ? "synchronously" : "deferred"} accepting signals to current accepted text`, () => {
+      createRoot((dispose) => {
+        const [accepted, setAccepted] = createSignal<Color | null>(parseColor("#f00"));
+        const changes: (Color | null)[] = [];
+        const state = createColorFieldState(() => ({
+          value: accepted(),
+          onChange: (c) => {
+            changes.push(c);
+            if (accepting) setAccepted(c);
+          },
+        }));
+        flush();
+        state.setInputValue("#0f0");
+        state.commit();
+        expect(state.inputValue).toBe("#FF0000");
+        state.commit();
+        expect(changes).toHaveLength(1);
+        flush();
+        expect(state.inputValue).toBe(accepting ? "#00FF00" : "#FF0000");
+        if (!accepting) {
+          setAccepted(changes[0]);
+          flush();
+        }
+        expect(state.value!.toString("hex")).toBe("#00ff00");
+        expect(state.inputValue).toBe("#00FF00");
+        setAccepted(parseColor("#00f"));
+        flush();
+        expect(state.inputValue).toBe("#0000FF");
+        expect(changes).toHaveLength(1);
+        state.commit();
+        expect(changes).toHaveLength(1);
+        dispose();
+      });
+    });
+  }
+
+  it("reads an immediately accepting getter after the callback", () => {
+    createRoot((dispose) => {
+      let accepted: Color | null = parseColor("#f00");
+      let count = 0;
+      const state = createColorFieldState(() => ({
+        value: accepted,
+        onChange: (c) => {
+          accepted = c;
+          count++;
+        },
+      }));
+      flush();
+      state.setInputValue("#0f0");
+      state.commit();
+      expect(state.inputValue).toBe("#00FF00");
+      state.commit();
+      expect(count).toBe(1);
+      dispose();
+    });
+  });
+
+  it("distinguishes controlled null from undefined and normalizes empty and invalid commits", () => {
+    for (const controlled of [true, false])
+      createRoot((dispose) => {
+        const changes: (Color | null)[] = [];
+        const state = createColorFieldState(() => ({
+          value: controlled ? null : undefined,
+          onChange: (c) => changes.push(c),
+        }));
+        flush();
+        state.commit();
+        expect(changes).toHaveLength(0);
+        state.setInputValue("#000");
+        state.commit();
+        state.commit();
+        expect(changes).toHaveLength(1);
+        expect(state.inputValue).toBe(controlled ? "" : "#000000");
+        state.setInputValue("invalid");
+        state.commit();
+        expect(changes).toHaveLength(1);
+        expect(state.inputValue).toBe(controlled ? "" : "#000000");
+        expect(state.isInvalid).toBe(false);
+        state.setInputValue("");
+        state.commit();
+        state.commit();
+        expect(changes).toHaveLength(controlled ? 1 : 2);
+        expect(state.inputValue).toBe("");
+        dispose();
+      });
+  });
+
+  it("compares hexa alpha as well as RGB", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#ff000080",
+        colorFormat: "hexa",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("#ff000040");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      expect(changes[0]!.getChannelValue("alpha")).toBeCloseTo(64 / 255);
+      state.setInputValue("FF000040");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      expect(state.inputValue).toBe("#FF000040");
+      dispose();
+    });
+  });
+
+  it("compares normalized channel values and clamps repeated steps without treating null as zero", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        channel: "red",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("0");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      state.setInputValue("-20");
+      state.commit();
+      state.decrementToMin();
+      state.decrement();
+      expect(changes).toHaveLength(1);
+      state.setInputValue("999");
+      state.commit();
+      state.incrementToMax();
+      state.increment();
+      expect(changes).toHaveLength(2);
+      expect(state.inputValue).toBe("255");
+      dispose();
+    });
+  });
+
+  it("suppresses the same normalized fractional channel but retains a different value", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: createHSLColor(120, 50.25, 50),
+        colorSpace: "hsl",
+        channel: "saturation",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("50.25%");
+      state.commit();
+      expect(changes).toHaveLength(0);
+      state.setInputValue("50.5%");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      state.setInputValue("0.505");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      dispose();
+    });
+  });
+
+  it("builds two same-turn channel steps from live state", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "rgb(10, 20, 30)",
+        channel: "red",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("11");
+      state.commit();
+      state.setInputValue("12");
+      state.commit();
+      state.increment();
+      expect(changes.map((c) => c!.getChannelValue("red"))).toEqual([11, 12, 13]);
+      expect(changes[1]!.getChannelValue("green")).toBe(20);
+      expect(state.inputValue).toBe("13");
+      dispose();
+    });
+  });
+});
+
+describe("ColorField D22 precision countercontrols", () => {
+  it("preserves numeric alpha, fractional HSL/HSB and achromatic hue changes despite identical RGB", () => {
+    for (const [initial, channel, colorSpace, text, expected] of [
+      [createRGBColor(128, 128, 128, 0.5), "alpha", "rgb", "0.6", 0.6],
+      [createHSLColor(120, 0, 50), "hue", "hsl", "120.25", 120.25],
+      [createHSBColor(120, 0, 50), "hue", "hsb", "120.25", 120.25],
+      [createHSLColor(120, 50, 50), "saturation", "hsl", "50.01%", 50.01],
+      [createHSBColor(120, 50, 50), "saturation", "hsb", "50.01%", 50.01],
+    ] as const)
+      createRoot((dispose) => {
+        const changes: (Color | null)[] = [];
+        const state = createColorFieldState(() => ({
+          defaultValue: initial,
+          channel,
+          colorSpace,
+          onChange: (c) => changes.push(c),
+        }));
+        flush();
+        state.setInputValue(text);
+        state.commit();
+        expect(changes).toHaveLength(1);
+        expect(changes[0]!.getChannelValue(channel)).toBeCloseTo(expected);
+        expect(changes[0]!.toHexInt()).toBe(initial.toHexInt());
+        dispose();
+      });
+  });
+
+  it("retains alpha-only hexa requests", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#ff000080",
+        colorFormat: "hexa",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("#ff000040");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      expect(changes[0]!.toHexInt()).toBe(parseColor("#ff000080").toHexInt());
+      expect(changes[0]!.getChannelValue("alpha")).toBeCloseTo(64 / 255);
+      dispose();
+    });
+  });
+
+  it("preserves direct setter callbacks and model representation", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#f00",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      const equivalent = parseColor("#f00");
+      const model = createHSLColor(0, 100, 50, 0.5);
+      state.setColorValue(equivalent);
+      state.setColorValue(model);
+      expect(changes).toEqual([equivalent, model]);
+      expect(changes[1]).toBe(model);
+      flush();
+      expect(state.value).toBe(model);
+      dispose();
+    });
+  });
+
+  it("retains supported format conversion for hex text", () => {
+    createRoot((dispose) => {
+      const changes: (Color | null)[] = [];
+      const state = createColorFieldState(() => ({
+        defaultValue: "#f00",
+        colorFormat: "hsl",
+        onChange: (c) => changes.push(c),
+      }));
+      flush();
+      state.setInputValue("#0f0");
+      state.commit();
+      expect(changes).toHaveLength(1);
+      expect(changes[0]!.getChannelValue("hue")).toBe(120);
+      expect(state.inputValue).toBe(changes[0]!.toString("hsl"));
+      dispose();
+    });
+  });
+});
+
+describe("ColorField D22 untouched fractional display", () => {
+  for (const space of ["hsl", "hsb"] as const) {
+    for (const channel of ["saturation", "hue"] as const) {
+      it(`preserves ${space} ${channel} on untouched repeated commit and initially accepted text`, () => {
+        for (const initiallyFractional of [false, true])
+          createRoot((dispose) => {
+            const make = space === "hsl" ? createHSLColor : createHSBColor;
+            const fraction = channel === "hue" ? 120.25 : 50.01;
+            const initial = make(
+              initiallyFractional && channel === "hue" ? fraction : 120,
+              initiallyFractional && channel === "saturation" ? fraction : 50,
+              50,
+            );
+            const changes: (Color | null)[] = [];
+            const state = createColorFieldState(() => ({
+              defaultValue: initial,
+              colorSpace: space,
+              channel,
+              onChange: (c) => changes.push(c),
+            }));
+            flush();
+            if (!initiallyFractional) {
+              state.setInputValue(channel === "hue" ? "120.25" : "50.01%");
+              state.commit();
+              expect(changes).toHaveLength(1);
+            }
+            const formatted = state.inputValue;
+            state.commit();
+            flush();
+            state.commit();
+            expect(changes).toHaveLength(initiallyFractional ? 0 : 1);
+            expect(state.value!.getChannelValue(channel)).toBe(fraction);
+            expect(state.inputValue).toBe(formatted);
+            // A deliberate numerical edit remains observable even if it formats identically.
+            state.setInputValue(channel === "hue" ? "120.26" : "50.02%");
+            state.commit();
+            expect(changes).toHaveLength(initiallyFractional ? 1 : 2);
+            expect(changes.at(-1)!.getChannelValue(channel)).toBeCloseTo(
+              channel === "hue" ? 120.26 : 50.02,
+              10,
+            );
+            state.setInputValue(channel === "hue" ? "120" : "50%");
+            state.commit();
+            expect(changes).toHaveLength(initiallyFractional ? 2 : 3);
+            expect(changes.at(-1)!.getChannelValue(channel)).toBe(channel === "hue" ? 120 : 50);
+            dispose();
+          });
+      });
+    }
+  }
+});
+
+describe("ColorField D22 controlled fractional display", () => {
+  for (const accepts of [false, true]) {
+    it(`preserves fractional accepted channels with ${accepts ? "acceptance" : "refusal"}`, () => {
+      createRoot((dispose) => {
+        const [value, setValue] = createSignal<Color | null>(createHSLColor(120, 50.01, 50));
+        const changes: (Color | null)[] = [];
+        const state = createColorFieldState(() => ({
+          value: value(),
+          channel: "saturation",
+          colorSpace: "hsl",
+          onChange: (c) => {
+            changes.push(c);
+            if (accepts) setValue(c);
+          },
+        }));
+        flush();
+        state.commit();
+        expect(changes).toHaveLength(0);
+        state.setInputValue("50.02%");
+        state.commit();
+        state.commit();
+        expect(changes).toHaveLength(1);
+        flush();
+        state.commit();
+        expect(changes).toHaveLength(1);
+        expect(state.value!.getChannelValue("saturation")).toBeCloseTo(accepts ? 50.02 : 50.01, 10);
+        expect(state.inputValue).toBe("50%");
+        state.setInputValue("50.03%");
+        state.commit();
+        expect(changes).toHaveLength(2);
+        setValue(null);
+        flush();
+        expect(state.inputValue).toBe("");
+        state.commit();
+        expect(changes).toHaveLength(2);
+        dispose();
+      });
+    });
+  }
+});

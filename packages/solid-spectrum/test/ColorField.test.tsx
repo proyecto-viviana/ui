@@ -3,6 +3,9 @@
  */
 import { afterEach, describe, expect, it } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { createSignal } from "solid-js";
+import type { Color } from "@proyecto-viviana/solid-stately";
 import { ColorField } from "../src/ColorField";
 
 afterEach(() => cleanup());
@@ -163,4 +166,92 @@ describe("ColorField", () => {
     expect(group).toHaveAttribute("data-focused", "true");
     expect(group).not.toHaveAttribute("data-focus-visible");
   });
+});
+
+describe("ColorField D22 interaction", () => {
+  for (const mode of ["uncontrolled", "accepting", "refusing"] as const) {
+    it(`reports typing Enter then blur once (${mode})`, async () => {
+      const changes: (Color | null)[] = [];
+      render(() => {
+        const [value, setValue] = createSignal<Color | string | null>("#ff0000");
+        return (
+          <ColorField
+            label="Commit color"
+            defaultValue="#ff0000"
+            value={mode === "uncontrolled" ? undefined : value()}
+            onChange={(color) => {
+              changes.push(color);
+              if (mode === "accepting") setValue(color);
+            }}
+          />
+        );
+      });
+      const user = setupUser();
+      const input = screen.getByRole("textbox", { name: "Commit color" });
+      await user.clear(input);
+      await user.type(input, "00ff00");
+      await user.keyboard("{Enter}");
+      expect(changes).toHaveLength(1);
+      expect(changes[0]?.toString("hex")).toBe("#00ff00");
+      expect(input).toHaveValue(mode === "refusing" ? "#FF0000" : "#00FF00");
+      await user.tab();
+      expect(changes).toHaveLength(1);
+      expect(input).toHaveValue(mode === "refusing" ? "#FF0000" : "#00FF00");
+      await user.clear(input);
+      await user.type(input, "0f0");
+      await user.keyboard("{Enter}");
+      await user.tab();
+      expect(changes).toHaveLength(mode === "refusing" ? 2 : 1);
+      await user.clear(input);
+      await user.type(input, "00f");
+      await user.keyboard("{Enter}");
+      await user.tab();
+      expect(changes).toHaveLength(mode === "refusing" ? 3 : 2);
+      expect(input).toHaveValue(mode === "refusing" ? "#FF0000" : "#0000FF");
+    });
+  }
+});
+
+describe("ColorField D22 fractional interaction", () => {
+  for (const initiallyFractional of [false, true]) {
+    it(`does not quantize untouched blur (${initiallyFractional ? "initial" : "edited"} fraction)`, async () => {
+      const changes: (Color | null)[] = [];
+      render(() => (
+        <ColorField
+          label="Saturation"
+          defaultValue={initiallyFractional ? "hsl(120, 50.01%, 50%)" : "hsl(120, 50%, 50%)"}
+          channel="saturation"
+          colorSpace="hsl"
+          onChange={(c) => changes.push(c)}
+        />
+      ));
+      const user = setupUser();
+      const input = screen.getByRole("textbox", { name: "Saturation" });
+      if (!initiallyFractional) {
+        await user.clear(input);
+        await user.type(input, "50.01%");
+      } else {
+        await user.click(input);
+      }
+      expect(input).toHaveFocus();
+      await user.keyboard("{Enter}");
+      expect(changes).toHaveLength(initiallyFractional ? 0 : 1);
+      expect(input).toHaveValue("50%");
+      expect(input).toHaveFocus();
+      await user.tab();
+      expect(input).not.toHaveFocus();
+      expect(changes).toHaveLength(initiallyFractional ? 0 : 1);
+      if (!initiallyFractional)
+        expect(changes[0]!.getChannelValue("saturation")).toBeCloseTo(50.01, 10);
+      await user.clear(input);
+      await user.type(input, "50.02%");
+      expect(input).toHaveFocus();
+      await user.keyboard("{Enter}");
+      expect(input).toHaveFocus();
+      await user.tab();
+      expect(input).not.toHaveFocus();
+      expect(changes).toHaveLength(initiallyFractional ? 1 : 2);
+      expect(changes.at(-1)!.getChannelValue("saturation")).toBeCloseTo(50.02, 10);
+    });
+  }
 });
