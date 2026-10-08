@@ -166,3 +166,41 @@ these DOM tests. Independent review records this risk in
 chain and admits no Skeleton/helper repair. Native, full candidate, installed
 consumer and release checks remain open, and this partial acceptance does not
 close #638.
+
+## Native Image qualification admission — 2026-10-08
+
+After the preceding #639 generation is closed and its accepted proof committed,
+register the sole native source worker in eligible repo:ui/main using
+`/tmp/ui-638-native-dispatch-2026-10-08.md`. This proof-only admission qualifies
+the accepted cleanup and hidden-rendering repair bc1dd87b. Codex astra low
+handles the browser/Solid ownership hard slice under the recorded Decision 040
+fallback; the conductor alone accepts and commits after exact-generation stop.
+
+Exact new harness paths are
+`packages/solidaria-components/test/fixtures/image-browser/index.html`,
+`main.tsx`, and `vite.config.ts` in that same directory;
+`apps/comparison/e2e/fixtures/image-react-control.js`;
+`apps/comparison/e2e/image-lifecycle.browser.ts`; and
+`apps/comparison/e2e/image-lifecycle.playwright.config.ts`. This ticket and
+standard generated views are admitted, with /tmp/ui-638-native-* receipts.
+All product sources, shared animation helpers, styles, dependencies, public API,
+other configs, baselines, manifests, attribution and consumer files are read-only.
+No Changeset is needed for this proof-only slice. A reproduced owner failure
+returns with actual evidence before any separately bounded repair admission.
+
+Use an isolated source-linked DEV server on strict port4480, single Chromium
+worker, no retries or server reuse, reusing the existing vivianaMacros wrapper
+before solidPlugin in this new config. Prove source resolution, visible macro
+styles and real loading animation before interpreting lifecycle results.
+The installed React S2 control resolves existing comparison dependencies;
+record its actual versions/paths/hashes separately from pinned source.
+
+Hold and release valid native image responses, retaining real Animation
+references across keyed removal, source replacement, hidden wrapper return,
+reveal and whole-owner disposal in both styled siblings. Compare installed
+React and plain-image controls. Observe errors and passive unhandled rejections
+before navigation; never mock native animation/image properties, read/catch
+finished merely for this hypothesis, or swallow native errors. Shared React
+behavior is an observation requiring a separate divergence decision, not an
+automatic local repair. Any actual rejection needs its causal stack. Full
+candidate, installed-consumer and release qualification remain open.
