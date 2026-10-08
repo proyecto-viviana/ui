@@ -53,9 +53,11 @@ import {
   createSelectionState,
   createMenuState,
   createMenuTriggerState,
+  createSubmenuTriggerState,
   type MenuState,
   type MenuStateProps,
   type MenuTriggerState,
+  type RootMenuTriggerState,
   type Key,
   type DropTarget,
   type SelectionMode,
@@ -467,24 +469,22 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   );
 }
 
-export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
+function isRootMenuTriggerState(state: MenuTriggerState | null): state is RootMenuTriggerState {
+  return state != null && typeof (state as RootMenuTriggerState).openSubmenu === "function";
+}
+
+function SubmenuTriggerLayout(layoutProps: {
+  state: MenuTriggerState;
+  submenuProps: SubmenuTriggerProps;
+}): JSX.Element {
+  const props = layoutProps.submenuProps;
+  const state = layoutProps.state;
   const children = () =>
     (Array.isArray(props.children) ? props.children : [props.children]) as JSX.Element[];
   const trigger = () => children()[0];
   const content = () => children()[1];
   const parentMenuItemContext = useContext(MenuItemContext);
   const locale = useLocale();
-  const state = createMenuTriggerState({
-    get isOpen() {
-      return props.isOpen;
-    },
-    get defaultOpen() {
-      return props.defaultOpen;
-    },
-    get onOpenChange() {
-      return props.onOpenChange;
-    },
-  });
 
   let triggerRef: HTMLElement | null = null;
   const triggerId = createUniqueId();
@@ -638,6 +638,72 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       </MenuTriggerContext>
     </PopoverTriggerContext>
   );
+}
+
+function OverlaySubmenuTrigger(componentProps: { submenuProps: SubmenuTriggerProps }): JSX.Element {
+  const props = componentProps.submenuProps;
+  const state = createMenuTriggerState({
+    get isOpen() {
+      return props.isOpen;
+    },
+    get defaultOpen() {
+      return props.defaultOpen;
+    },
+    get onOpenChange() {
+      return props.onOpenChange;
+    },
+  });
+  return <SubmenuTriggerLayout state={state} submenuProps={props} />;
+}
+
+function StackedSubmenuTrigger(componentProps: {
+  root: RootMenuTriggerState;
+  submenuProps: SubmenuTriggerProps;
+}): JSX.Element {
+  const triggerKey = createUniqueId();
+  const state = createSubmenuTriggerState({ triggerKey }, componentProps.root);
+  let sampled = false;
+  createEffect(() => {
+    const open = state.isOpen();
+    const notify = componentProps.submenuProps.onOpenChange;
+    if (!sampled) {
+      sampled = true;
+      return;
+    }
+    notify?.(open);
+  });
+  const menuState: MenuTriggerState = {
+    isOpen: state.isOpen,
+    focusStrategy: state.focusStrategy,
+    setFocusStrategy() {},
+    setOpen() {},
+    open(strategy) {
+      state.open(strategy);
+    },
+    close() {
+      state.close();
+    },
+    toggle(strategy) {
+      state.toggle(strategy);
+    },
+    point: () => null,
+    setPoint() {},
+  };
+  return <SubmenuTriggerLayout state={menuState} submenuProps={componentProps.submenuProps} />;
+}
+
+export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
+  const rootMenuTriggerState = useContext(RootMenuTriggerStateContext);
+  // DialogTrigger publishes a MenuTriggerState without the submenu stack.
+  // Controlled isOpen or defaultOpen stay on an independent overlay.
+  if (
+    props.isOpen === undefined &&
+    props.defaultOpen === undefined &&
+    isRootMenuTriggerState(rootMenuTriggerState)
+  ) {
+    return <StackedSubmenuTrigger root={rootMenuTriggerState} submenuProps={props} />;
+  }
+  return <OverlaySubmenuTrigger submenuProps={props} />;
 }
 
 export interface MenuSectionProps

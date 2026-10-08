@@ -12,8 +12,10 @@ import {
   getItemCount,
   useMultipleSelectionState,
   useMenuTriggerState,
+  useSubmenuTriggerState,
   createMenuState,
   createMenuTriggerState,
+  createSubmenuTriggerState,
 } from "../src";
 
 // ============================================
@@ -839,6 +841,158 @@ describe("menu module compatibility aliases", () => {
       state.close();
       flush();
       expect(state.isOpen()).toBe(false);
+      dispose();
+    });
+  });
+});
+
+describe("submenu trigger state", () => {
+  it("replaces a sibling submenu and drops deeper keys", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      expect(state.expandedKeysStack()).toEqual([]);
+
+      state.openSubmenu("share", 0);
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+
+      state.openSubmenu("edit", 0);
+      expect(state.expandedKeysStack()).toEqual(["edit"]);
+
+      state.openSubmenu("email", 1);
+      expect(state.expandedKeysStack()).toEqual(["edit", "email"]);
+
+      state.openSubmenu("copy", 0);
+      expect(state.expandedKeysStack()).toEqual(["copy"]);
+      dispose();
+    });
+  });
+
+  it("ignores an open or close that does not match the stack", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      state.openSubmenu("share", 0);
+      const openStack = state.expandedKeysStack();
+
+      state.openSubmenu("too-deep", 2);
+      expect(state.expandedKeysStack()).toBe(openStack);
+
+      state.closeSubmenu("other", 0);
+      expect(state.expandedKeysStack()).toBe(openStack);
+
+      state.closeSubmenu("share", 0);
+      expect(state.expandedKeysStack()).toEqual([]);
+      dispose();
+    });
+  });
+
+  it("clears the stack on close and leaves it in place on open", () => {
+    createRoot((dispose) => {
+      const onOpenChange = vi.fn();
+      const state = createMenuTriggerState({ onOpenChange });
+
+      state.open();
+      state.openSubmenu("share", 0);
+      flush();
+      expect(state.isOpen()).toBe(true);
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+
+      state.open("first");
+      flush();
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+      expect(state.focusStrategy()).toBe("first");
+
+      state.close();
+      flush();
+      expect(state.isOpen()).toBe(false);
+      expect(state.expandedKeysStack()).toEqual([]);
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      dispose();
+    });
+  });
+
+  it("tracks one submenu level against the root stack", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      let triggerKey = "share";
+      const submenu = createSubmenuTriggerState(() => ({ triggerKey }), state);
+
+      expect(submenu.submenuLevel).toBe(0);
+      expect(submenu.isOpen()).toBe(false);
+      expect(submenu.point).toBe(null);
+
+      submenu.open("first");
+      expect(submenu.isOpen()).toBe(true);
+      expect(submenu.focusStrategy()).toBe("first");
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+
+      submenu.open();
+      expect(submenu.focusStrategy()).toBe(null);
+      expect(submenu.isOpen()).toBe(true);
+
+      const nested = createSubmenuTriggerState({ triggerKey: "email" }, state);
+      expect(nested.submenuLevel).toBe(1);
+      nested.open("last");
+      expect(state.expandedKeysStack()).toEqual(["share", "email"]);
+      expect(nested.focusStrategy()).toBe("last");
+      expect(submenu.isOpen()).toBe(true);
+
+      triggerKey = "edit";
+      expect(submenu.isOpen()).toBe(false);
+      expect(nested.isOpen()).toBe(true);
+
+      submenu.close();
+      expect(state.expandedKeysStack()).toEqual(["share", "email"]);
+      nested.close();
+      expect(nested.isOpen()).toBe(false);
+      expect(nested.focusStrategy()).toBe(null);
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+
+      submenu.setOpen();
+      submenu.setPoint();
+      expect(submenu.isOpen()).toBe(false);
+      dispose();
+    });
+  });
+
+  it("toggles a submenu and closeAll closes the root menu", () => {
+    createRoot((dispose) => {
+      const onOpenChange = vi.fn();
+      const state = createMenuTriggerState({ onOpenChange });
+      state.open();
+      const submenu = createSubmenuTriggerState({ triggerKey: "share" }, state);
+
+      submenu.toggle("last");
+      flush();
+      expect(submenu.isOpen()).toBe(true);
+      expect(submenu.focusStrategy()).toBe("last");
+
+      submenu.toggle("first");
+      expect(submenu.isOpen()).toBe(false);
+      expect(submenu.focusStrategy()).toBe(null);
+
+      submenu.open("first");
+      const nested = createSubmenuTriggerState({ triggerKey: "email" }, state);
+      nested.open();
+      nested.closeAll();
+      flush();
+      expect(state.isOpen()).toBe(false);
+      expect(state.expandedKeysStack()).toEqual([]);
+      expect(submenu.isOpen()).toBe(false);
+      expect(nested.isOpen()).toBe(false);
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+      dispose();
+    });
+  });
+
+  it("useSubmenuTriggerState maps to submenu trigger state", () => {
+    createRoot((dispose) => {
+      const state = useMenuTriggerState();
+      const submenu = useSubmenuTriggerState({ triggerKey: "share" }, state);
+      submenu.open("first");
+      expect(submenu.isOpen()).toBe(true);
+      expect(state.expandedKeysStack()).toEqual(["share"]);
+      submenu.close();
+      expect(submenu.isOpen()).toBe(false);
       dispose();
     });
   });

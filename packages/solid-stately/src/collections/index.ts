@@ -46,10 +46,14 @@ export {
 export {
   createMenuState,
   createMenuTriggerState,
+  createSubmenuTriggerState,
   type MenuStateProps,
   type MenuState,
   type MenuTriggerType,
   type MenuTriggerProps,
   type MenuTriggerStateProps,
   type MenuTriggerState,
+  type RootMenuTriggerState,
+  type SubmenuTriggerProps,
+  type SubmenuTriggerState,
 } from "./createMenuState";

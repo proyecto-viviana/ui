@@ -244,6 +244,14 @@
     "requiredText": ["A simple list collection implementation", "BaseCollection.filter"]
   },
   {
+    "localPath": "packages/solid-stately/src/collections/createMenuState.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/menu/useMenuTriggerState.ts",
+      "packages/react-stately/src/menu/useSubmenuTriggerState.ts"
+    ],
+    "requiredText": ["expandedKeysStack", "createSubmenuTriggerState"]
+  },
+  {
     "localPath": "packages/solid-stately/src/collections/types.ts",
     "upstreamPaths": [
       "packages/@react-types/shared/src/collections.d.ts",

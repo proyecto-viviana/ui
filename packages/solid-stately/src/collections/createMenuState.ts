@@ -10,13 +10,28 @@
  * governing permissions and limitations under the License.
  */
 
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/menu/useMenuTriggerState.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/menu/useSubmenuTriggerState.ts
 
 /**
  * State management for menu components.
  *
  * createMenuTriggerState is ported from
  * packages/react-stately/src/menu/useMenuTriggerState.ts.
+ * createSubmenuTriggerState is ported from
+ * packages/react-stately/src/menu/useSubmenuTriggerState.ts.
  * createMenuState is a local composition of the separately attributed list state.
  */
 
@@ -134,15 +149,51 @@ export interface MenuTriggerState {
   setPoint(point: { x: number; y: number }): void;
 }
 
+export interface RootMenuTriggerState extends MenuTriggerState {
+  /** Opens a submenu tied to a menu item at a level. */
+  openSubmenu(triggerKey: Key, level: number): void;
+  /** Closes a submenu tied to a menu item at a level. */
+  closeSubmenu(triggerKey: Key, level: number): void;
+  /**
+   * Open submenu trigger keys. The index matches the submenu level.
+   */
+  readonly expandedKeysStack: () => Key[];
+}
+
 /**
  * Creates state for a menu trigger. Mirrors `@react-stately/menu` `useMenuTriggerState`:
- * overlay open state plus the focus strategy passed through to `createMenu`.
+ * overlay open state, the focus strategy passed through to `createMenu`, and the
+ * expanded submenu stack.
  */
 export function createMenuTriggerState(
   props: MaybeAccessor<MenuTriggerProps> = {},
-): MenuTriggerState {
+): RootMenuTriggerState {
   const overlay = createOverlayTriggerState(props);
   const [focusStrategy, setFocusStrategy] = createInternalSignal<"first" | "last" | null>(null);
+  const [expandedKeysStack, setExpandedKeysStack] = createInternalSignal<Key[]>([]);
+
+  const openSubmenu = (triggerKey: Key, level: number) => {
+    setExpandedKeysStack((oldStack) => {
+      if (level > oldStack.length) {
+        return oldStack;
+      }
+      return [...oldStack.slice(0, level), triggerKey];
+    });
+  };
+
+  const closeSubmenu = (triggerKey: Key, level: number) => {
+    setExpandedKeysStack((oldStack) => {
+      if (oldStack[level] !== triggerKey) {
+        return oldStack;
+      }
+      return oldStack.slice(0, level);
+    });
+  };
+
+  const close = () => {
+    setExpandedKeysStack([]);
+    overlay.close();
+  };
 
   return {
     ...overlay,
@@ -156,5 +207,84 @@ export function createMenuTriggerState(
       setFocusStrategy(strategy);
       overlay.toggle();
     },
+    close,
+    expandedKeysStack,
+    openSubmenu,
+    closeSubmenu,
+  };
+}
+
+export interface SubmenuTriggerProps {
+  /** Key of the trigger item. */
+  triggerKey: Key;
+}
+
+export interface SubmenuTriggerState {
+  /** Whether the submenu is currently open. */
+  readonly isOpen: () => boolean;
+  /** Controls which item will be auto focused when the submenu opens. */
+  readonly focusStrategy: () => "first" | "last" | null;
+  /** The level of the submenu, frozen when the state is created. */
+  readonly submenuLevel: number;
+  /** Opens the submenu. */
+  open(focusStrategy?: "first" | "last" | null): void;
+  /** Closes the submenu. */
+  close(): void;
+  /** Closes the root menu and every submenu in the tree. */
+  closeAll(): void;
+  /** Toggles the submenu. */
+  toggle(focusStrategy?: "first" | "last" | null): void;
+  /** @private Placeholder so this state can sit where an overlay trigger state sits. */
+  setOpen(): void;
+  /** Submenus do not track a cursor point. */
+  readonly point: null;
+  /** @private */
+  setPoint(): void;
+}
+
+/**
+ * Creates state for a submenu trigger. Mirrors `@react-stately/menu`
+ * `useSubmenuTriggerState`: open state is the root stack entry at this level.
+ */
+export function createSubmenuTriggerState(
+  props: MaybeAccessor<SubmenuTriggerProps>,
+  state: RootMenuTriggerState,
+): SubmenuTriggerState {
+  const getProps = propsAccessor(props);
+  const submenuLevel = state.expandedKeysStack().length;
+  const [focusStrategy, setFocusStrategy] = createInternalSignal<"first" | "last" | null>(null);
+
+  const isOpen = () => state.expandedKeysStack()[submenuLevel] === getProps().triggerKey;
+
+  const open = (strategy?: "first" | "last" | null) => {
+    setFocusStrategy(strategy ?? null);
+    state.openSubmenu(getProps().triggerKey, submenuLevel);
+  };
+
+  const close = () => {
+    setFocusStrategy(null);
+    state.closeSubmenu(getProps().triggerKey, submenuLevel);
+  };
+
+  const toggle = (strategy?: "first" | "last" | null) => {
+    setFocusStrategy(strategy ?? null);
+    if (isOpen()) {
+      close();
+    } else {
+      open(strategy);
+    }
+  };
+
+  return {
+    focusStrategy,
+    isOpen,
+    open,
+    close,
+    closeAll: () => state.close(),
+    submenuLevel,
+    setOpen() {},
+    toggle,
+    point: null,
+    setPoint() {},
   };
 }

@@ -78,12 +78,16 @@ export {
   type SingleSelectListState,
   createMenuState,
   createMenuTriggerState,
+  createSubmenuTriggerState,
   type MenuStateProps,
   type MenuState,
   type MenuTriggerType,
   type MenuTriggerProps,
   type MenuTriggerStateProps,
   type MenuTriggerState,
+  type RootMenuTriggerState,
+  type SubmenuTriggerProps,
+  type SubmenuTriggerState,
 } from "./collections";
 
 // Selection (module-compat aliases)
@@ -97,7 +101,7 @@ export {
 } from "./selection";
 
 // Menu (module-compat aliases)
-export { useMenuTriggerState } from "./menu";
+export { useMenuTriggerState, useSubmenuTriggerState } from "./menu";
 
 // Datepicker (module-compat aliases)
 export {
