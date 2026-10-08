@@ -120,7 +120,9 @@ export function createSelectableCollection<T = unknown>(
   const ref = options.ref;
   const scrollRef = options.scrollRef ?? ref;
   const autoFocus = options.autoFocus ?? false;
-  const shouldFocusWrap = options.shouldFocusWrap ?? false;
+  // Event-time read. The body runs once, and callers pass a getter so wrap
+  // follows the current prop (RAC reads shouldFocusWrap on each render).
+  const shouldFocusWrap = (): boolean => options.shouldFocusWrap ?? false;
   const disallowEmptySelection = options.disallowEmptySelection ?? false;
   const disallowSelectAll = options.disallowSelectAll ?? false;
   const escapeKeyBehavior = options.escapeKeyBehavior ?? "clearSelection";
@@ -189,7 +191,7 @@ export function createSelectableCollection<T = unknown>(
     if (d.getKeyBelow) {
       let nextKey =
         manager.focusedKey != null ? d.getKeyBelow(manager.focusedKey) : d.getFirstKey?.();
-      if (nextKey == null && shouldFocusWrap) {
+      if (nextKey == null && shouldFocusWrap()) {
         nextKey = d.getFirstKey?.(manager.focusedKey ?? undefined);
       }
       if (nextKey != null) {
@@ -205,7 +207,7 @@ export function createSelectableCollection<T = unknown>(
     if (d.getKeyAbove) {
       let nextKey =
         manager.focusedKey != null ? d.getKeyAbove(manager.focusedKey) : d.getLastKey?.();
-      if (nextKey == null && shouldFocusWrap) {
+      if (nextKey == null && shouldFocusWrap()) {
         nextKey = d.getLastKey?.(manager.focusedKey ?? undefined);
       }
       if (nextKey != null) {
@@ -242,7 +244,7 @@ export function createSelectableCollection<T = unknown>(
     if (d.getKeyLeftOf) {
       let nextKey =
         manager.focusedKey != null ? d.getKeyLeftOf(manager.focusedKey) : d.getFirstKey?.();
-      if (nextKey == null && shouldFocusWrap) {
+      if (nextKey == null && shouldFocusWrap()) {
         nextKey =
           direction() === "rtl"
             ? d.getFirstKey?.(manager.focusedKey ?? undefined)
@@ -261,7 +263,7 @@ export function createSelectableCollection<T = unknown>(
     if (d.getKeyRightOf) {
       let nextKey =
         manager.focusedKey != null ? d.getKeyRightOf(manager.focusedKey) : d.getFirstKey?.();
-      if (nextKey == null && shouldFocusWrap) {
+      if (nextKey == null && shouldFocusWrap()) {
         nextKey =
           direction() === "rtl"
             ? d.getLastKey?.(manager.focusedKey ?? undefined)

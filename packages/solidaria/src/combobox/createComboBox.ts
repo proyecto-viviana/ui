@@ -18,7 +18,7 @@
  * Based on @react-aria/combobox useComboBox.
  */
 
-import { createEffect, untrack, createTrackedEffect } from "solid-js";
+import { createEffect, createMemo, untrack, createTrackedEffect } from "solid-js";
 import { bindCapture } from "../utils/capture";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -39,9 +39,9 @@ import { mergeProps } from "../utils/mergeProps";
 import { attrString } from "../utils/domAttrs";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import { isAppleDevice, isMac } from "../utils/platform";
+import { isAppleDevice } from "../utils/platform";
 import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
-import { isNonContiguousSelectionModifier } from "../selection/utils";
+import { createSelectableCollection } from "../selection/createSelectableCollection";
 import { getActiveElement, getOwnerDocument, nodeContains } from "../utils/dom";
 import { useRouter } from "../utils/openLink";
 import { dispatchVirtualFocus } from "../focus/virtualFocus";
@@ -62,21 +62,6 @@ function getItemCount(collection: { getKeys(): Iterable<Key> }): number {
     count++;
   }
   return count;
-}
-
-/**
- * Modifier set for `useSelectableCollection`'s `withShiftSel` page bindings.
- * Mac: the key, Shift, Alt, and Shift+Alt. Elsewhere: the key, Shift, Control,
- * and Shift+Control. Meta is never part of that map.
- */
-function isCollectionPageShortcut(e: KeyboardEvent): boolean {
-  if (e.metaKey) {
-    return false;
-  }
-  if (isMac()) {
-    return !e.ctrlKey;
-  }
-  return !e.altKey;
 }
 
 export interface AriaComboBoxProps {
@@ -550,14 +535,44 @@ export function createComboBox<T>(
     state.setInputValue(target.value);
   };
 
-  // Keyboard navigation for input
+  // Arrow, Home, End, and Page go through one list delegate (RAC
+  // useComboBox.ts:156-182). The delegate ref is the listbox so page keys read
+  // menu layout. The collection ref stays null: this hook binds focusin on its
+  // ref, and focusing the input must leave focusedKey null until a navigation
+  // key (useComboBox never spreads collection onFocus onto the input).
+  const keyboardDelegate = createMemo(
+    () =>
+      new ListKeyboardDelegate({
+        collection: state.collection(),
+        disabledKeys: () => state.selectionManager.disabledKeys,
+        disabledBehavior: state.selectionManager.disabledBehavior,
+        ref: () => listBoxRef?.() ?? null,
+      }),
+  );
+
+  const selectableCollection = createSelectableCollection({
+    selectionManager: state.selectionManager,
+    keyboardDelegate,
+    disallowTypeAhead: true,
+    disallowEmptySelection: true,
+    get shouldFocusWrap() {
+      return getProps().shouldFocusWrap ?? false;
+    },
+    ref: () => null,
+    isVirtualized: true,
+  });
+
   const onInputKeyDown: JSX.EventHandler<HTMLInputElement, KeyboardEvent> = (e) => {
     const p = getProps();
     if (p.isDisabled || p.isReadOnly) return;
 
-    const collection = state.collection();
-    const focusedKey = state.focusedKey();
-    const shouldWrap = p.shouldFocusWrap ?? false;
+    // RAC useComboBox.ts:311-318. Collection navigation runs only while open, so
+    // a closed ArrowUp/ArrowDown opens the menu instead of moving focus.
+    // Enter, Escape, Tab, and Backspace stay on this handler: callers invoke it
+    // directly, including events with no currentTarget.
+    if (state.isOpen()) {
+      selectableCollection.collectionProps.onKeyDown?.(e);
+    }
 
     switch (e.key) {
       case "Enter": {
@@ -565,10 +580,12 @@ export function createComboBox<T>(
         // `state.commit()`. With allowsCustomValue and no focused key, commit
         // routes to commitCustomValue and closes (#272).
         const wasOpen = state.isOpen();
+        const focusedKey = state.focusedKey();
         if (wasOpen) {
           e.preventDefault();
         }
         if (wasOpen && focusedKey != null) {
+          const collection = state.collection();
           const collectionItem = collection.getItem(focusedKey);
           const itemHref =
             collectionItem?.props?.href ??
@@ -598,9 +615,8 @@ export function createComboBox<T>(
 
       case "Escape": {
         // RAC useComboBox.ts:236-243 — always revert; do not preventDefault.
-        // `shouldPreventDefault` is omitted so useKeyboard leaves the default
-        // enabled. Continue native propagation unless selection is empty, the
-        // input is non-empty, and custom values are disallowed.
+        // Continue native propagation unless selection is empty, the input is
+        // non-empty, and custom values are disallowed.
         const shouldContinuePropagation =
           !state.selectionManager.isEmpty ||
           state.inputValue() === "" ||
@@ -613,62 +629,25 @@ export function createComboBox<T>(
       }
 
       case "ArrowDown":
+        // Open only while closed. The collection handler already moved focus,
+        // and open() while open re-fires onOpenChange. The caret default stays
+        // enabled (RAC useComboBox.ts:249-251).
         if (!state.isOpen()) {
-          // RAC useComboBox.ts:249-251 — `shouldPreventDefault: false` so the
-          // UA can collapse a Tab-selected value to the caret-at-end.
           state.open("first", "manual");
-        } else {
-          // RAC useSelectableCollection arrowDown: preventDefault only when
-          // there is a next key (undefined return). At the last item it
-          // `return false` so the input caret default stays enabled.
-          let nextKey =
-            focusedKey == null ? collection.getFirstKey() : collection.getKeyAfter(focusedKey);
-          while (nextKey != null && state.isKeyDisabled(nextKey)) {
-            nextKey = collection.getKeyAfter(nextKey);
-          }
-          if (nextKey == null && shouldWrap) {
-            nextKey = collection.getFirstKey();
-            while (nextKey != null && state.isKeyDisabled(nextKey)) {
-              nextKey = collection.getKeyAfter(nextKey);
-            }
-          }
-          if (nextKey != null) {
-            e.preventDefault();
-            state.setFocusedKey(nextKey);
-          }
         }
         break;
 
       case "ArrowUp":
         if (!state.isOpen()) {
-          // RAC useComboBox.ts:253-255 — `shouldPreventDefault: false`.
           state.open("last", "manual");
-        } else {
-          let prevKey =
-            focusedKey == null ? collection.getLastKey() : collection.getKeyBefore(focusedKey);
-          while (prevKey != null && state.isKeyDisabled(prevKey)) {
-            prevKey = collection.getKeyBefore(prevKey);
-          }
-          if (prevKey == null && shouldWrap) {
-            prevKey = collection.getLastKey();
-            while (prevKey != null && state.isKeyDisabled(prevKey)) {
-              prevKey = collection.getKeyBefore(prevKey);
-            }
-          }
-          if (prevKey != null) {
-            e.preventDefault();
-            state.setFocusedKey(prevKey);
-          }
         }
         break;
 
       case "ArrowLeft":
       case "ArrowRight": {
-        // RAC useComboBox.ts:257-264. Unmodified arrows only (not withShiftSel).
-        // A vertical stack deletes getKeyLeftOf/getKeyRightOf, so the open-menu
-        // collection handler no-ops, then these clear the focused key.
-        // shouldPreventDefault is false: the caret default stays. The shortcut
-        // does not continue propagation.
+        // RAC useComboBox.ts:257-264. A vertical stack deletes left/right
+        // delegate methods, so the open-menu collection handler no-ops, then
+        // these clear the focused key. The caret default stays enabled.
         if (e.isComposing || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) {
           break;
         }
@@ -677,79 +656,9 @@ export function createComboBox<T>(
         break;
       }
 
-      case "PageDown":
-      case "PageUp": {
-        // RAC useComboBox.ts:314 chains collection keydown only while the menu
-        // is open. useSelectableCollection.ts:332-349 moves when a key is
-        // focused and ListKeyboardDelegate returns a page target
-        // (useComboBox.ts:160-170). navigateToKey prevents the default only
-        // when Shift extends a multiple selection or selectOnFocus replaces
-        // (selectionBehavior === "replace"). ComboBox defaults to toggle, so
-        // a plain page key leaves the input default enabled.
-        if (
-          e.isComposing ||
-          !isCollectionPageShortcut(e) ||
-          !state.isOpen() ||
-          focusedKey == null
-        ) {
-          break;
-        }
-        const delegate = new ListKeyboardDelegate({
-          collection,
-          disabledKeys: state.selectionManager.disabledKeys,
-          ref: () => listBoxRef?.() ?? null,
-        });
-        const nextKey =
-          e.key === "PageDown"
-            ? delegate.getKeyPageBelow(focusedKey)
-            : delegate.getKeyPageAbove(focusedKey);
-        if (nextKey == null) {
-          break;
-        }
-        state.setFocusedKey(nextKey);
-        const selectOnFocus = state.selectionManager.selectionBehavior === "replace";
-        if (e.shiftKey && state.selectionManager.selectionMode === "multiple") {
-          state.selectionManager.extendSelection(nextKey);
-          e.preventDefault();
-          e.stopPropagation();
-        } else if (selectOnFocus && !isNonContiguousSelectionModifier(e)) {
-          state.selectionManager.replaceSelection(nextKey);
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        break;
-      }
-
-      case "Home":
-        // RAC leaves Home/End default enabled on the input (useComboBox
-        // does not handle them; useSelectableCollection home/end return
-        // false when selectOnFocus is false, as ComboBox is). The caret
-        // still moves; focusedKey still tracks the first/last option.
-        if (state.isOpen()) {
-          let firstKey = collection.getFirstKey();
-          while (firstKey != null && state.isKeyDisabled(firstKey)) {
-            firstKey = collection.getKeyAfter(firstKey);
-          }
-          if (firstKey != null) {
-            state.setFocusedKey(firstKey);
-          }
-        }
-        break;
-
-      case "End":
-        if (state.isOpen()) {
-          let lastKey = collection.getLastKey();
-          while (lastKey != null && state.isKeyDisabled(lastKey)) {
-            lastKey = collection.getKeyBefore(lastKey);
-          }
-          if (lastKey != null) {
-            state.setFocusedKey(lastKey);
-          }
-        }
-        break;
-
       case "Backspace":
-        // In multiple mode, remove last selected key when input is empty
+        // Multiple mode removes the last selected key when the input is empty.
+        // Upstream useComboBox has no Backspace shortcut, so the default stays.
         if (state.selectionMode() === "multiple" && state.inputValue() === "") {
           const keys = state.selectedKeys();
           if (keys.size > 0) {
@@ -760,8 +669,7 @@ export function createComboBox<T>(
         break;
 
       case "Tab":
-        // Commit on Tab if menu is open
-        if (state.isOpen() && focusedKey != null) {
+        if (state.isOpen() && state.focusedKey() != null) {
           state.commit();
         }
         break;
