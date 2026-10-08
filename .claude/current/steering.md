@@ -44,7 +44,11 @@ owner vetoes them.
 - **2026-10-08 — Prioritize Visualmode requests.** (owner) Reproduce and fix
   D17 (#631) and D18 (#632) with regressions, and add G17 (#633) alongside top
   Visualmode consumer tickets before the next release. Rule on MenuItem from
-  upstream evidence. The new CSS entry name requires the owner's choice.
+  upstream evidence. The owner chose `components-no-fonts.css` for both
+  styled packages, containing `theme.css` and `styles.css` without font faces.
+- **2026-10-08 — Add Visualmode D19–D22.** (owner) Queue #634–#637 with the
+  top consumer defects for reproduction, regression repair and release proof.
+  Follow upstream contracts; reported fix sketches do not authorize new APIs.
 - **2026-09-07 — TableView converges on upstream's virtualized grid (#89 →
   #490).** (Rule #2, delegated) S2 TableView has no non-virtualized branch: it
   always renders `div[role="grid"]` through the Virtualizer. The native

@@ -97,8 +97,19 @@ of the already landed #623/#630 safety fixes; repairs #631/#632; ships #633's
 approved font-free entry; and delivers existing #628/#629 icons and #624–#626
 TreeView work. Retain #627's landed nested-children fix and qualification.
 These tickets already record their earlier approvals; do not ask again or
-reimplement them by default. All candidate gates remain. #633's new public
-entry name awaits the owner's choice. Other census work continues afterward.
+reimplement them by default. All candidate gates remain. The owner chose
+`components-no-fonts.css` for #633 in both styled packages. Other census work
+continues afterward.
+
+The owner also added Visualmode D19–D22 on 2026-10-08: #634 controlled
+Switch/Checkbox restoration, #635 duplicate Picker reporting, #636 FileTrigger
+child composition, and #637 equivalent ColorField commits. Finish active #631;
+prioritize #634/#635's state correctness, then #632, #636/#637, and #633's
+approved CSS entry within this consumer batch. Required qualification repairs
+and dependencies precede their consumers. Reproduce every reported defect;
+do not treat the request's fix sketches as established causes. D22's root
+data-attribute placement matches upstream and does not authorize a new input
+prop. All four need tested fixes and actual release reporting.
 
 The owner released #243/#245's checkpoint for #114, #251, #252, #256, #257,
 then #246 and #249 in dependency order with existing regression/certification

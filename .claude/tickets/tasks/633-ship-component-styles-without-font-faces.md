@@ -24,8 +24,8 @@ history:
 UI owns Visualmode G17: an additive CSS entry in both styled Adobe-family
 packages, importing theme.css then styles.css without font-faces.css. Confirm
 source, build/copy, exports, packed artifacts, and installed upstream S2.
-Proposed public name: components-no-fonts.css. Do not create a new public export
-until the owner chooses its name. Existing separate theme.css and styles.css
+Owner-approved public name (2026-10-08): components-no-fonts.css in both packages,
+containing theme.css and styles.css only. Existing separate theme.css and styles.css
 exports are the supported interim composition. Name exact source, export,
 build/test, documentation, and styled-twin paths before dispatch. Preserve
 existing components.css; no dependencies, font changes, or consumer edits.
