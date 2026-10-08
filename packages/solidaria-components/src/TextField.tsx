@@ -25,8 +25,11 @@ import {
   createMemo,
   createSignal,
   createEffect,
+  getOwner,
+  isDisposed,
   onCleanup,
   onSettled,
+  runWithOwner,
   untrack,
 } from "solid-js";
 import type { Context } from "solid-js";
@@ -129,6 +132,13 @@ function clearDelegatedTextEntryHandlers(element: HTMLElement) {
   delete delegatedElement.$$change;
 }
 
+function releaseInputId(context: TextFieldContextValue | null) {
+  const setInputId = context?.setInputId;
+  if (!setInputId) return;
+  // onCleanup still runs under the disposing owner. A signal write there throws.
+  runWithOwner(null, () => setInputId(undefined));
+}
+
 /**
  * An input element that automatically wires up to the parent TextField context.
  * This enables focus tracking, validation, and accessibility props to flow from
@@ -152,7 +162,7 @@ export function Input(props: InputProps): JSX.Element {
   );
 
   onCleanup(() => {
-    context?.setInputId?.(undefined);
+    releaseInputId(context);
   });
 
   // Merge context inputProps with local props (local props take precedence)
@@ -250,7 +260,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
   );
 
   onCleanup(() => {
-    context?.setInputId?.(undefined);
+    releaseInputId(context);
   });
 
   // Merge context inputProps with local props (local props take precedence)
@@ -418,6 +428,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
       return ariaProps.isDisabled;
     },
   });
+  const inputIdOwner = getOwner();
   const [inputIdOverride, setInputIdOverride] = createSignal<string | undefined>();
 
   const renderValues = createMemo<TextFieldRenderProps>(() => ({
@@ -520,6 +531,8 @@ export function TextField(props: TextFieldProps): JSX.Element {
       return inputIdOverride() ?? (textFieldAria.inputProps as { id?: string }).id;
     },
     setInputId(id: string | undefined) {
+      // Whole-field unmount already disposed this owner. Do not write.
+      if (inputIdOwner && isDisposed(inputIdOwner)) return;
       setInputIdOverride(id);
     },
   };

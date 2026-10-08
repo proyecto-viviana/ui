@@ -4,12 +4,17 @@ type: task
 title: "Stop TextField and TextArea from writing their input id during unmount"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-10-08,
       note: "visualmode D01, seen on 0.8.0-rc.0 and still on local main. Input and TextArea onCleanup call setInputId(undefined) and throw REACTIVE_WRITE_IN_OWNED_SCOPE. Blocks visualmode #10144, #10145, #10153, #10154, #10161, #10162, and #10163. #625 waits on this.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "Unmounting Input and TextArea no longer writes the input id while the field is disposed, and no longer throws when only the control leaves.",
     }
 ---
 

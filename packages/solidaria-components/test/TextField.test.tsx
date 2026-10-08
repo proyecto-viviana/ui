@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, flush, Show } from "solid-js";
 import {
   TextField,
   TextFieldContext,
@@ -878,5 +878,63 @@ describe("TextField", () => {
       fireEvent.reset(form);
       expect(input).toHaveValue("alpha");
     });
+  });
+
+  describe("input id unmount", () => {
+    function control(kind: "input" | "textarea") {
+      return kind === "input" ? <Input id="owned" /> : <TextArea id="owned" />;
+    }
+
+    it.each(["input", "textarea"] as const)("drops an unmounted %s id without throwing", (kind) => {
+      const [open, setOpen] = createSignal(true);
+
+      render(() => (
+        <TextField>
+          <Label>Name</Label>
+          <Show when={open()}>{control(kind)}</Show>
+        </TextField>
+      ));
+
+      const label = screen.getByText("Name");
+      expect(screen.getByRole("textbox")).toHaveAttribute("id", "owned");
+      expect(label).toHaveAttribute("for", "owned");
+
+      expect(() => {
+        setOpen(false);
+        flush();
+      }).not.toThrow();
+
+      expect(screen.queryByRole("textbox")).toBeNull();
+      const htmlFor = label.getAttribute("for");
+      expect(htmlFor).toBeTruthy();
+      expect(htmlFor).not.toBe("owned");
+    });
+
+    it.each(["input", "textarea"] as const)(
+      "removes a field that still owns its %s id without writing",
+      (kind) => {
+        const [open, setOpen] = createSignal(true);
+
+        render(() => (
+          <Show when={open()}>
+            <TextField>
+              <Label>Name</Label>
+              {control(kind)}
+            </TextField>
+          </Show>
+        ));
+
+        expect(screen.getByRole("textbox")).toHaveAttribute("id", "owned");
+        expect(screen.getByText("Name")).toHaveAttribute("for", "owned");
+
+        expect(() => {
+          setOpen(false);
+          flush();
+        }).not.toThrow();
+
+        expect(screen.queryByRole("textbox")).toBeNull();
+        expect(screen.queryByText("Name")).toBeNull();
+      },
+    );
   });
 });
