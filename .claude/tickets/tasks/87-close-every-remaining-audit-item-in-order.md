@@ -111,6 +111,16 @@ do not treat the request's fix sketches as established causes. D22's root
 data-attribute placement matches upstream and does not authorize a new input
 prop. All four need tested fixes and actual release reporting.
 
+The owner added D23–D26 on 2026-10-08: #638 Image disposal, #639 MenuItem
+press-content identity, #640 InlineAlert ARIA/status disposition, and #641
+bounded caller-contract checks. Finish prerequisites and active #632, then
+prioritize #638, #639 (after #632), #636/#637, #641's reproduced parity repairs,
+and #633 within this next-RC consumer batch. #640's existing-ARIA proof and
+#641's already-supported contracts can qualify alongside their owning suites;
+public extensions await concrete owner decisions. Required typing/native
+repairs still precede dependent proof. D23 animation and D26 dev diagnostics
+need actual evidence before owner admission; triage invents no public API.
+
 The owner released #243/#245's checkpoint for #114, #251, #252, #256, #257,
 then #246 and #249 in dependency order with existing regression/certification
 requirements. #254 remains held. Historical stop prose is superseded only

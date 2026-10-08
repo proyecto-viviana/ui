@@ -49,6 +49,10 @@ owner vetoes them.
 - **2026-10-08 — Add Visualmode D19–D22.** (owner) Queue #634–#637 with the
   top consumer defects for reproduction, regression repair and release proof.
   Follow upstream contracts; reported fix sketches do not authorize new APIs.
+- **2026-10-08 — Add Visualmode D23–D26.** (owner) Queue #638–#641 beside
+  the top consumer work. Reproduce current-source defects, preserve existing
+  repairs, and report actual release proof. Separate parity repairs from
+  requests that extend upstream; public API choices remain owner-steered.
 - **2026-09-07 — TableView converges on upstream's virtualized grid (#89 →
   #490).** (Rule #2, delegated) S2 TableView has no non-virtualized branch: it
   always renders `div[role="grid"]` through the Virtualizer. The native
