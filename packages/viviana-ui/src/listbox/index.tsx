@@ -207,7 +207,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const defaultEmptyState = () => <li class={emptyStateStyles}>No items</li>;
+  const defaultEmptyState = () => <div class={emptyStateStyles}>No items</div>;
 
   const mergedAriaLabel = (headlessProps as { "aria-label"?: string })["aria-label"];
 

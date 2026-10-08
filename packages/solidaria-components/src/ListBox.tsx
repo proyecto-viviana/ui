@@ -47,10 +47,11 @@ import {
   useLocale,
   FOCUS_EVENT,
   CLEAR_FOCUS_EVENT,
+  createCollator,
+  ListKeyboardDelegate,
   type AriaListBoxProps,
   type AriaOptionProps,
   type LayoutDelegate,
-  type KeyboardDelegate,
 } from "@proyecto-viviana/solidaria";
 import {
   createListState,
@@ -618,6 +619,28 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   // option emits aria-posinset/aria-setsize for the windowed (incomplete) DOM.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const [listRef, setListRef] = createSignal<HTMLElement | null>(null);
+  const collator = createCollator({ usage: "search", sensitivity: "base" });
+  // RAC ListBoxInner builds one ListKeyboardDelegate and passes it to both
+  // useListBox and useDroppableCollection. The delegate snapshots the
+  // collection, so this memo rebuilds when that collection changes.
+  const sharedKeyboardDelegate = createMemo(() => {
+    if (ariaProps.keyboardDelegate) {
+      return ariaProps.keyboardDelegate;
+    }
+    return new ListKeyboardDelegate({
+      collection: state.collection(),
+      collator: collator(),
+      ref: () => listRef(),
+      disabledKeys: state.selectionManager.disabledKeys,
+      disabledBehavior: state.selectionManager.disabledBehavior,
+      layout: stateProps.layout ?? "stack",
+      orientation: stateProps.orientation ?? "vertical",
+      direction: locale().direction,
+      layoutDelegate:
+        ariaProps.layoutDelegate ??
+        (parentCollectionRenderer?.layoutDelegate as LayoutDelegate | undefined),
+    });
+  });
   const listBoxAria = createListBox(
     mergeProps(ariaProps, {
       get isVirtualized() {
@@ -630,7 +653,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         );
       },
       get keyboardDelegate() {
-        return ariaProps.keyboardDelegate;
+        return sharedKeyboardDelegate();
       },
       // Under Autocomplete, the input owns the collection's id (its
       // aria-controls target) and virtual-focus/type-ahead config; prefer
@@ -722,13 +745,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     return hooks.useDroppableCollection(
       {
         dropTargetDelegate,
-        keyboardDelegate: {
-          getFirstKey: () => state.collection().getFirstKey(),
-          getLastKey: () => state.collection().getLastKey(),
-          getKeyBelow: (key) => state.collection().getKeyAfter(key),
-          getKeyAbove: (key) => state.collection().getKeyBefore(key),
-          getKeyPageBelow: (key) => state.collection().getKeyAfter(key),
-          getKeyPageAbove: (key) => state.collection().getKeyBefore(key),
+        // Getter: drop registration must not subscribe to collection identity.
+        get keyboardDelegate() {
+          return sharedKeyboardDelegate();
         },
         get collection() {
           return state.collection();
