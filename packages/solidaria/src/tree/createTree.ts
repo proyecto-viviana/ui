@@ -344,7 +344,10 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     }
 
     const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
-    if (target && target !== active) {
+    // Upstream useSelectableCollection focuses the row only when focus is not
+    // already inside it (`isFocusWithin`). A nested ActionMenu trigger keeps
+    // the key event; pulling focus onto the row closed the menu before Enter.
+    if (target && !target.contains(active)) {
       target.focus();
 
       if (getInteractionModality() !== "pointer") {

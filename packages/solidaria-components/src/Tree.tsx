@@ -1850,7 +1850,8 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
           <CheckboxContext value={checkboxContextValue}>
             <CheckboxFieldContext value={checkboxFieldContextValue}>
               <SelectionIndicatorContext value={selectionIndicatorContext}>
-                {renderProps.renderChildren()}
+                {/* Stable: a hover/press flip must not recreate the item ActionMenu mid-gesture. */}
+                {renderProps.renderChildrenStable()}
               </SelectionIndicatorContext>
             </CheckboxFieldContext>
           </CheckboxContext>
@@ -2131,7 +2132,8 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
     context,
   );
 
-  return <>{renderProps.renderChildren()}</>;
+  // Stable so the item cell (and a slotted ActionMenu) survives hover and press.
+  return <>{renderProps.renderChildrenStable()}</>;
 }
 
 /**

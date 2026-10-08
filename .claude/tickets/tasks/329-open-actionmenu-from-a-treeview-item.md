@@ -4,7 +4,7 @@ type: task
 title: "Open ActionMenu from a TreeView item"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: open,
       at: 2026-10-08,
       note: "visualmode T4 (#10156, #10157) asked for a trailing actions slot. slots actions and actionmenu already render inside a dynamic item (solid-spectrum Tree test). The open failure remains opening ActionMenu from the row. Do not file a second slot ticket. A separate press-must-not-select claim for a ToggleButton or ActionButton in the slot is not evidenced here.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "Item render props stay mounted across hover and press, and tree focus no longer leaves a nested ActionMenu trigger. Pointer, dispatch, and Enter open Copy in the solid-spectrum Tree test.",
     }
 ---
 

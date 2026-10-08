@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { ActionMenu } from "../src/ActionMenu";
+import { MenuItem } from "../src/menu";
 import {
   Text,
   TreeView,
@@ -621,5 +623,53 @@ describe("TreeView (solid-spectrum)", () => {
     const tree = screen.getByRole("treegrid", { name: "Context files" });
     expect(tree).toHaveAttribute("data-selection-style", "highlight");
     expect(ref).toHaveBeenCalledWith(tree);
+  });
+
+  function renderActionMenuTree() {
+    render(() => (
+      <TreeView
+        aria-label="Files"
+        selectionMode="single"
+        items={[{ id: "weekly-report", textValue: "Weekly Report" }]}
+      >
+        {() => (
+          <TreeViewItem id="weekly-report" textValue="Weekly Report">
+            <TreeViewItemContent>
+              <Text slot="label">Weekly Report</Text>
+              <ActionMenu aria-label="Weekly Report menu">
+                <MenuItem id="weekly-report-copy" textValue="Copy">
+                  <Text>Copy</Text>
+                </MenuItem>
+              </ActionMenu>
+            </TreeViewItemContent>
+          </TreeViewItem>
+        )}
+      </TreeView>
+    ));
+    return screen.getByRole("button", { name: "Weekly Report menu" });
+  }
+
+  it("opens an item ActionMenu from a pointer click", async () => {
+    const user = setupUser();
+    const trigger = renderActionMenuTree();
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(await screen.findByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
+  });
+
+  it("opens an item ActionMenu from a dispatched click", async () => {
+    const trigger = renderActionMenuTree();
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, detail: 0 }));
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(await screen.findByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
+  });
+
+  it("opens an item ActionMenu from Enter", async () => {
+    const user = setupUser();
+    const trigger = renderActionMenuTree();
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(await screen.findByRole("menuitem", { name: "Copy" })).toBeInTheDocument();
   });
 });
