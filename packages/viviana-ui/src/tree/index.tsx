@@ -1482,7 +1482,14 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   // The probe must mount nested static items so they can register. The visible
   // row suppresses those same nodes; the collection paints each as its own row.
   if (staticCollection?.mode === "static") {
-    return <StaticTreeParentContext value={props.id}>{local.children}</StaticTreeParentContext>;
+    return (
+      <StaticTreeParentContext value={props.id}>
+        {(() => {
+          const children = local.children;
+          return typeof children === "function" ? null : children;
+        })()}
+      </StaticTreeParentContext>
+    );
   }
 
   if (staticCollection) {

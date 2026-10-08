@@ -96,6 +96,55 @@ function FileTree(props: {
 describe("TreeView (solid-spectrum)", () => {
   afterEach(() => cleanup());
 
+  it("renders static item function children only with live row state", async () => {
+    const user = setupUser();
+    let renderCount = 0;
+    const { getByRole } = render(() => (
+      <TreeView aria-label="Row state" selectionMode="single">
+        <TreeViewItem id="stateful" textValue="Stateful" hasChildItems>
+          {(state) => {
+            renderCount++;
+            expect(state).toBeDefined();
+            expect(state.id).toBe("stateful");
+            expect(state.state).toBeDefined();
+            expect(typeof state.isSelected).toBe("boolean");
+            expect(typeof state.isExpanded).toBe("boolean");
+            return (
+              <TreeViewItemContent>
+                <Text slot="label">
+                  Stateful {state.isSelected ? "selected" : "unselected"}{" "}
+                  {state.isExpanded ? "expanded" : "collapsed"}
+                </Text>
+              </TreeViewItemContent>
+            );
+          }}
+        </TreeViewItem>
+      </TreeView>
+    ));
+    const item = () => getByRole("row", { name: "Stateful" });
+    expect(item()).toHaveTextContent("Stateful unselected collapsed");
+    expect(renderCount).toBeGreaterThan(0);
+    expect(item()).toHaveAttribute("aria-selected", "false");
+    expect(item()).toHaveAttribute("aria-expanded", "false");
+    item().focus();
+    expect(document.activeElement).toBe(item());
+    await user.keyboard(" ");
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected collapsed");
+      expect(item()).toHaveAttribute("aria-selected", "true");
+    });
+    await user.click(item().querySelector('[data-rsp-slot="expand-button"]')!);
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected expanded");
+      expect(item()).toHaveAttribute("aria-expanded", "true");
+    });
+    await user.click(item().querySelector('[data-rsp-slot="expand-button"]')!);
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected collapsed");
+      expect(item()).toHaveAttribute("aria-expanded", "false");
+    });
+  });
+
   it("exports the public TreeView surface and package subpath", () => {
     expect(treeViewSubpath.TreeView).toBe(TreeView);
     expect(treeViewSubpath.TreeViewItem).toBe(TreeViewItem);

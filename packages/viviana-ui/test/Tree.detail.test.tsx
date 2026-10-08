@@ -77,6 +77,86 @@ function Layers(props: {
 }
 
 describe("TreeView detail control", () => {
+  it("registers one nested static child and expands it once", async () => {
+    const user = setupUser();
+    const { getByRole, queryByRole, getAllByRole } = render(() => (
+      <TreeView aria-label="Static layers">
+        <TreeViewItem id="parent" textValue="Parent">
+          <TreeViewItemContent>
+            <Text slot="label">Parent</Text>
+          </TreeViewItemContent>
+          <TreeViewItem id="nested" textValue="Nested">
+            <TreeViewItemContent>
+              <Text slot="label">Nested</Text>
+            </TreeViewItemContent>
+          </TreeViewItem>
+        </TreeViewItem>
+      </TreeView>
+    ));
+    const parent = () => getByRole("row", { name: /Parent/ });
+    expect(parent()).toHaveAttribute("aria-level", "1");
+    expect(parent()).toHaveAttribute("aria-expanded", "false");
+    expect(queryByRole("row", { name: /Nested/ })).toBeNull();
+    await user.click(expandButton(parent()));
+    expect(parent()).toHaveAttribute("aria-expanded", "true");
+    expect(getAllByRole("row", { name: /Nested/ })).toHaveLength(1);
+    expect(getByRole("row", { name: /Nested/ })).toHaveAttribute("aria-level", "2");
+    expect(getAllByRole("row")).toHaveLength(2);
+    await user.click(expandButton(parent()));
+    expect(queryByRole("row", { name: /Nested/ })).toBeNull();
+    await user.click(expandButton(parent()));
+    expect(getAllByRole("row", { name: /Nested/ })).toHaveLength(1);
+  });
+
+  it("renders static item function children only with live row state", async () => {
+    const user = setupUser();
+    let renderCount = 0;
+    const { getByRole } = render(() => (
+      <TreeView aria-label="Row state" selectionMode="single">
+        <TreeViewItem id="stateful" textValue="Stateful" hasChildItems>
+          {(state) => {
+            renderCount++;
+            expect(state).toBeDefined();
+            expect(state.id).toBe("stateful");
+            expect(state.state).toBeDefined();
+            expect(typeof state.isSelected).toBe("boolean");
+            expect(typeof state.isExpanded).toBe("boolean");
+            return (
+              <TreeViewItemContent>
+                <Text slot="label">
+                  Stateful {state.isSelected ? "selected" : "unselected"}{" "}
+                  {state.isExpanded ? "expanded" : "collapsed"}
+                </Text>
+              </TreeViewItemContent>
+            );
+          }}
+        </TreeViewItem>
+      </TreeView>
+    ));
+    const item = () => getByRole("row", { name: "Stateful" });
+    expect(item()).toHaveTextContent("Stateful unselected collapsed");
+    expect(renderCount).toBeGreaterThan(0);
+    expect(item()).toHaveAttribute("aria-selected", "false");
+    expect(item()).toHaveAttribute("aria-expanded", "false");
+    item().focus();
+    expect(document.activeElement).toBe(item());
+    await user.keyboard(" ");
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected collapsed");
+      expect(item()).toHaveAttribute("aria-selected", "true");
+    });
+    await user.click(item().querySelector('[data-rsp-slot="expand-button"]')!);
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected expanded");
+      expect(item()).toHaveAttribute("aria-expanded", "true");
+    });
+    await user.click(item().querySelector('[data-rsp-slot="expand-button"]')!);
+    await waitFor(() => {
+      expect(item()).toHaveTextContent("Stateful selected collapsed");
+      expect(item()).toHaveAttribute("aria-expanded", "false");
+    });
+  });
+
   it("toggles detail state without expanding children or selecting the row", async () => {
     const user = setupUser();
     const detailCalls: string[][] = [];
