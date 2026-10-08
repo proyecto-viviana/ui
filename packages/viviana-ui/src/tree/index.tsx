@@ -94,6 +94,11 @@ export interface TreeProps<T extends object> extends Omit<
   items?: TreeItemData<T>[];
   /** Whether selection is shown with checkboxes or highlighted rows. @default 'checkbox' */
   selectionStyle?: TreeSelectionStyle;
+  /**
+   * Row height. `compact` is the 24px layer-tree row and expand control.
+   * Omitted and `regular` stay the 40px row.
+   */
+  density?: "regular" | "compact";
   /** Loading state forwarded to load-more behavior. */
   loadingState?: TreeLoadingState;
   /** Provides an action bar when items are selected. */
@@ -210,11 +215,13 @@ interface StaticCollectionContextValue {
 
 interface TreeViewContextValue {
   selectionStyle: TreeSelectionStyle;
+  density: "regular" | "compact";
 }
 
 export const TreeViewContext = createContext<SpectrumContextValue<TreeProps<object>>>(null);
 const InternalTreeViewContext = createContext<TreeViewContextValue>({
   selectionStyle: "checkbox",
+  density: "regular",
 });
 const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
 const StaticTreeParentContext = createContext<Key | null>(null);
@@ -280,6 +287,7 @@ const emptyState = style({
 type TreeRowLayerProps = Partial<TreeItemRenderProps> & {
   isLink?: boolean;
   selectionStyle?: TreeSelectionStyle;
+  density?: "regular" | "compact";
 };
 
 const treeViewItem = style<TreeRowLayerProps>({
@@ -310,7 +318,14 @@ const treeViewItem = style<TreeRowLayerProps>({
   },
   columnGap: 0,
   paddingX: 0,
-  minHeight: 40,
+  /* Compact is the layer-tree row. Omitted and regular stay the 40px row. */
+  minHeight: {
+    default: 40,
+    density: {
+      compact: 24,
+      regular: 40,
+    },
+  },
   paddingY: 0,
   boxSizing: "border-box",
   textDecoration: "none",
@@ -428,7 +443,14 @@ const treeExpandButton = style<TreeRowLayerProps>({
   gridArea: "expand-button",
   alignSelf: "center",
   justifySelf: "center",
-  size: 40,
+  /* Same density as the row: compact is 24px, otherwise 40px. */
+  size: {
+    default: 40,
+    density: {
+      compact: 24,
+      regular: 40,
+    },
+  },
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -730,10 +752,13 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     "ref",
     "label",
     "description",
+    "density",
     "hasMore",
     "onLoadMore",
   ]);
   const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
+  const density = (): "regular" | "compact" =>
+    local.density === "compact" ? "compact" : "regular";
   const isLoading = () => local.loadingState === "loading" || local.loadingState === "loadingMore";
   const [staticItems, setStaticItems] = createSignal<StaticTreeItem[]>([], { ownedWrite: true });
   const [registrationVersion, setRegistrationVersion] = createSignal(0, { ownedWrite: true });
@@ -782,6 +807,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   };
   const treeContext = createMemo<TreeViewContextValue>(() => ({
     selectionStyle: selectionStyle(),
+    density: density(),
   }));
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -921,6 +947,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         style={mergedUnsafeStyle()}
         data-tree-view=""
         data-selection-style={selectionStyle()}
+        data-density={density()}
         data-loading-state={local.loadingState ?? undefined}
       >
         {(item: TreeItemData<T>, state: TreeRenderItemState) => renderItem(item, state)}
@@ -1005,6 +1032,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   const getRowLayerProps = (renderProps: TreeItemRenderProps): TreeRowLayerProps => ({
     ...renderProps,
     selectionStyle: context.selectionStyle,
+    density: context.density,
     isLink: !!local.href,
   });
   const getClassName = (renderProps: TreeItemRenderProps): string =>
@@ -1203,12 +1231,14 @@ export function TreeExpandButton(
   props: TreeExpandButtonProps & { renderProps?: TreeItemRenderProps },
 ): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "style", "children", "renderProps"]);
+  const treeContext = useContext(InternalTreeViewContext);
   const itemContext = useContext(HeadlessTreeItemContext);
   const isExpandable = () => Boolean(itemContext?.isExpandable ?? local.renderProps?.isExpandable);
   const renderState = () => ({
     ...(local.renderProps ?? {}),
     isExpandable: isExpandable(),
     isExpanded: Boolean(itemContext?.isExpanded ?? local.renderProps?.isExpanded),
+    density: treeContext.density,
   });
   const className = () => [treeExpandButton(renderState()), local.class].filter(Boolean).join(" ");
   const stopPlaceholderExpansion = (event: Event) => {

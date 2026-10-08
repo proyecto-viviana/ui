@@ -4,7 +4,7 @@ type: task
 title: "Fit TreeView rows to a 24px layer tree"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-10-08,
       note: 'Owner approved density="compact" on viviana-ui TreeView only. Compact is a 24px row and a 24px expand control. Omitted stays the 40px row. Do not change solid-spectrum. This is not a #520 hold.',
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "viviana-ui TreeView density compact computes a 24px row and a 24px expand control. Omitted and regular stay the 40px row. solid-spectrum is unchanged.",
     }
 ---
 
