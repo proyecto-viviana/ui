@@ -5,13 +5,18 @@ title: "Dispose Image coordinator registrations safely"
 created: 2026-10-08
 parent: 24
 priority: high
-status: next
+status: in-progress
 history:
   - { state: open, at: 2026-10-08, note: "Owner added Visualmode D23." }
   - {
       state: next,
       at: 2026-10-08,
       note: "Prioritize Image removal safety in the next-RC consumer batch.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admitted a bounded Solid dev cleanup slice after #632 source acceptance at 36bf8476; native and release qualification stay open.",
     }
 ---
 
@@ -54,3 +59,37 @@ to Solid. #623 is precedent, not Image proof. Browser work is serialized with
 #557 and other qualification. Patch notes cover actual repaired packages;
 rollback stays within registration/confirmed animation ownership. Planning
 evidence: `/tmp/ui-D23-D24-triage-2026-10-08.md`.
+
+## First unit/dev implementation admission — 2026-10-08
+
+The preceding #632 exact generation stopped with closed=true, and its bounded
+source was accepted in 36bf8476. Register `ui-638-image-codex-20261008` as the
+sole OS/herdr implementer in eligible repo:ui main using
+`/tmp/ui-638-dispatch-2026-10-08.md`. Record actual launch generation and base
+HEAD in its result. Codex astra low handles this Solid cleanup ownership hard
+slice under Decision 040 after Grok exhausted its weekly quota and AGY waited
+for manual terminal approval. Retain normal workspace-write/on-request controls.
+The conductor alone accepts and commits after the exact owned stop.
+
+Exact source/test write paths:
+
+- `packages/solid-spectrum/src/image/index.tsx`
+- `packages/viviana-ui/src/image/index.tsx`
+- `packages/solid-spectrum/test/Image.test.tsx`, with private twin imports.
+- `.changeset/image-coordinator-safe-disposal.md`, only for an actual repair.
+- This ticket and generated `.claude/current/status.md` / `roadmap.md` through
+  standard tooling; `/tmp/ui-638-*` evidence.
+
+No shared helper, Skeleton, config, fixture, style, dependency, public API,
+manifest, lockfile, consumer, hash metadata or browser writes. Prove the actual
+client dev runtime and meaningful old-source failure first, using captured
+setters and explicit flush outside patched event dispatch. Cover both siblings'
+keyed pending removal, loaded survivor reveal, whole-group disposal, source and
+hidden transitions, error and timeout with plain/standalone/unchanged controls.
+Preserve synchronous unregister of the captured old registration key. No
+speculative animation promise handler. Save exact check receipts and digests.
+
+This admission covers unit/dev source proof only. Native animation errors and
+unhandled rejection attribution need separate actual stacks and serialized
+browser admission after #557. Root typecheck, certification, installed-consumer
+and release proof remain required; a partial repair does not close #638.
