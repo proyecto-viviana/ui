@@ -25,6 +25,7 @@ import {
 import { Checkbox, CheckboxField, CheckboxButton } from "../src/Checkbox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
+import { Button } from "../src/Button";
 import type {
   TreeItemData,
   DraggableCollectionState,
@@ -434,6 +435,179 @@ describe("Tree", () => {
 
       const rows = screen.getAllByRole("row");
       expect(rows[0]).toHaveAttribute("draggable", "true");
+    });
+
+    function flatLetterItems(disabled: string[] = []): TreeItemData<{ name: string }>[] {
+      return ["A", "B", "C"].map((name) => {
+        const key = name.toLowerCase();
+        return {
+          key,
+          value: { name },
+          textValue: name,
+          isDisabled: disabled.includes(key),
+        };
+      });
+    }
+
+    function renderLetterTree(
+      dragAndDropHooks: ReturnType<typeof useDragAndDrop<{ name: string }>>["dragAndDropHooks"],
+      options?: {
+        disabled?: string[];
+        selectionMode?: "none" | "single" | "multiple";
+        defaultSelectedKeys?: string[];
+      },
+    ) {
+      const items = flatLetterItems(options?.disabled);
+      render(() => (
+        <Tree
+          items={items}
+          aria-label="Letters"
+          selectionMode={options?.selectionMode}
+          defaultSelectedKeys={options?.defaultSelectedKeys}
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+              <Button slot="drag" />
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+    }
+
+    async function startKeyboardDragFromA(label = "Drag A") {
+      const user = setupUser();
+      const row = document.querySelector<HTMLElement>('[data-key="a"]');
+      expect(row).toBeTruthy();
+      row!.focus();
+      await user.keyboard("{ArrowRight}");
+      expect(document.activeElement).toHaveAttribute("aria-label", label);
+      await user.keyboard("{Enter}");
+      return user;
+    }
+
+    it("moves a flat row with the keyboard drag button and reorder indicator", async () => {
+      const onReorder = vi.fn();
+      const { dragAndDropHooks } = useDragAndDrop<{ name: string }>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder,
+      });
+      renderLetterTree(dragAndDropHooks);
+      const user = await startKeyboardDragFromA();
+      try {
+        await waitFor(() => {
+          const indicator = document.querySelector('[aria-label="Insert between A and B"]');
+          expect(indicator).toBeTruthy();
+          const row = indicator!.closest('[role="row"]');
+          expect(row).toHaveClass("solidaria-DropIndicator");
+          expect(row).toHaveAttribute("data-drop-target", "true");
+        });
+        const indicatorNames = [...document.querySelectorAll(".solidaria-DropIndicator")].map(
+          (node) => node.querySelector("[aria-label]")?.getAttribute("aria-label"),
+        );
+        expect(indicatorNames).toEqual([
+          "Insert before A",
+          "Insert between A and B",
+          "Insert between B and C",
+          "Insert after C",
+        ]);
+        await user.keyboard("{ArrowDown}");
+        await waitFor(() => {
+          const active = document.querySelector(
+            '.solidaria-DropIndicator[data-drop-target="true"]',
+          );
+          expect(active?.querySelector('[aria-label="Insert between B and C"]')).toBeTruthy();
+        });
+        await user.keyboard("{Enter}");
+        await waitFor(() => {
+          expect(onReorder).toHaveBeenCalledTimes(1);
+        });
+        const event = onReorder.mock.calls[0][0];
+        expect([...event.keys].map(String)).toEqual(["a"]);
+        expect(event.target).toMatchObject({ type: "item", key: "c", dropPosition: "before" });
+        expect(event.dropOperation).toBe("move");
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("keeps insertion indicators around a disabled middle row", async () => {
+      const { dragAndDropHooks } = useDragAndDrop<{ name: string }>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+      renderLetterTree(dragAndDropHooks, { disabled: ["b"] });
+      const user = await startKeyboardDragFromA();
+      try {
+        await waitFor(() => {
+          const names = [...document.querySelectorAll(".solidaria-DropIndicator")].map((node) =>
+            node.querySelector("[aria-label]")?.getAttribute("aria-label"),
+          );
+          expect(names).toEqual([
+            "Insert before A",
+            "Insert between A and B",
+            "Insert between B and C",
+            "Insert after C",
+          ]);
+        });
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("drops onto another row when onItemDrop is the only drop handler", async () => {
+      const onItemDrop = vi.fn();
+      const { dragAndDropHooks } = useDragAndDrop<{ name: string }>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onItemDrop,
+      });
+      renderLetterTree(dragAndDropHooks);
+      const user = await startKeyboardDragFromA();
+      try {
+        await waitFor(() => {
+          expect(document.querySelector('[aria-label="Drop on A"]')).toBeNull();
+          expect(document.querySelector('[aria-label="Drop on B"]')).toBeTruthy();
+        });
+        await user.keyboard("{Enter}");
+        await waitFor(() => {
+          expect(onItemDrop).toHaveBeenCalledTimes(1);
+        });
+        const event = onItemDrop.mock.calls[0][0];
+        expect(event.target).toMatchObject({ type: "item", key: "b", dropPosition: "on" });
+        expect(event.isInternal).toBe(true);
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("reorders every selected key when the drag starts on the first selected row", async () => {
+      const onReorder = vi.fn();
+      const { dragAndDropHooks } = useDragAndDrop<{ name: string }>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder,
+      });
+      renderLetterTree(dragAndDropHooks, {
+        selectionMode: "multiple",
+        defaultSelectedKeys: ["a", "b"],
+      });
+      const user = await startKeyboardDragFromA("Drag 2 selected items");
+      try {
+        await waitFor(() => {
+          const indicator = document.querySelector('[aria-label="Insert before A"]');
+          expect(indicator).toBeTruthy();
+          expect(indicator!.closest('[role="row"]')).toHaveAttribute("data-drop-target", "true");
+        });
+        await user.keyboard("{Enter}");
+        await waitFor(() => {
+          expect(onReorder).toHaveBeenCalledTimes(1);
+        });
+        const event = onReorder.mock.calls[0][0];
+        expect([...event.keys].map(String).sort()).toEqual(["a", "b"]);
+        expect(event.target.dropPosition).toBe("before");
+      } finally {
+        await user.keyboard("{Escape}");
+      }
     });
 
     it("should prevent self/descendant on-drops for internal tree drags", () => {

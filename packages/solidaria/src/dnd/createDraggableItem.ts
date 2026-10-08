@@ -27,6 +27,7 @@ import { createMemo } from "solid-js";
 import { captureRef } from "../utils/capture";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import type { PressEvent } from "../interactions/PressEvent";
 import type {
   DraggableCollectionState,
   DragPreviewRenderer,
@@ -49,7 +50,7 @@ import {
   setGlobalDraggingCollectionRef,
   setGlobalDraggingKeys,
 } from "./createDraggableCollection";
-import { beginDragging } from "./DragManager";
+import { beginDragging, isVirtualDragging } from "./DragManager";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { dndIntlStrings } from "./intl";
 import { createDescription } from "../utils/createDescription";
@@ -269,63 +270,76 @@ export function createDraggableItem(
     }
   };
 
+  const startKeyboardDrag = (el: HTMLElement) => {
+    const opts = getOptions();
+    if (opts.isDisabled || state.isDisabled) return;
+    // The drag button can still receive Enter after the session exists.
+    // beginDragging throws in that case; the session keyup performs the drop.
+    if (isVirtualDragging()) return;
+
+    const keys = getKeysForDrag();
+    const rect = el.getBoundingClientRect();
+    state.startDrag(keys, rect.x + rect.width / 2, rect.y + rect.height / 2);
+
+    const items = state.getItems(keys);
+    setGlobalDraggingTypes(getTypes(items));
+    // RAC `utils.ts` `globalDndState.draggingCollectionRef` is set before the
+    // keyboard session starts. The collection hook's createEffect writes the
+    // same ref, but that flush can land after `beginDragging` reads
+    // `isInternal`. A false internal flag rejects `onReorder`, the collection
+    // drops out of `validDropTargets`, and focusing the indicator bounces.
+    const collectionEl =
+      el.closest<HTMLElement>(
+        '[role="listbox"], [role="grid"], [role="treegrid"], [role="tree"], [role="menu"]',
+      ) ?? el.parentElement;
+    if (collectionEl) {
+      setGlobalDraggingCollectionRef(collectionEl);
+    }
+    setGlobalDraggingKeys(keys);
+
+    const allowedOps = state.getAllowedDropOperations();
+    let allowed = DROP_OPERATION.all;
+    if (allowedOps.length > 0) {
+      allowed = DROP_OPERATION.none;
+      for (const op of allowedOps) {
+        allowed |= DROP_OPERATION[op] || DROP_OPERATION.none;
+      }
+    }
+    setGlobalAllowedDropOperations(allowed);
+
+    // Hand control to the keyboard DragManager session, which drives
+    // Tab-cycling across drop targets and Enter/Escape drop/cancel.
+    beginDragging(
+      {
+        element: el,
+        items,
+        allowedDropOperations:
+          allowedOps.length > 0 ? allowedOps : (["move", "copy", "link"] as DropOperation[]),
+        onDragEnd: (ev) => {
+          state.endDrag(ev.x, ev.y, ev.dropOperation, false);
+          setGlobalAllowedDropOperations(DROP_OPERATION.none);
+          setGlobalDraggingTypes(new Set());
+          setGlobalDropEffect(undefined);
+        },
+      },
+      stringFormatter(),
+    );
+  };
+
   const onKeyUp = (e: KeyboardEvent) => {
     if (e.key === "Enter" && e.target === e.currentTarget) {
       e.preventDefault();
       e.stopPropagation();
-
-      const opts = getOptions();
-      if (opts.isDisabled || state.isDisabled) return;
-
-      const el = e.currentTarget as HTMLElement;
-      const keys = getKeysForDrag();
-      const rect = el.getBoundingClientRect();
-      state.startDrag(keys, rect.x + rect.width / 2, rect.y + rect.height / 2);
-
-      const items = state.getItems(keys);
-      setGlobalDraggingTypes(getTypes(items));
-      // RAC `utils.ts` `globalDndState.draggingCollectionRef` is set before the
-      // keyboard session starts. The collection hook's createEffect writes the
-      // same ref, but that flush can lose the race with DragManager's rAF
-      // `setup()` — `isInternal` is then false, `onReorder` is rejected, the
-      // collection drops out of `validDropTargets`, and focusing the indicator
-      // bounces to `listbox:Permissions`.
-      const collectionEl =
-        el.closest<HTMLElement>('[role="listbox"], [role="grid"], [role="tree"], [role="menu"]') ??
-        el.parentElement;
-      if (collectionEl) {
-        setGlobalDraggingCollectionRef(collectionEl);
-      }
-      setGlobalDraggingKeys(keys);
-
-      const allowedOps = state.getAllowedDropOperations();
-      let allowed = DROP_OPERATION.all;
-      if (allowedOps.length > 0) {
-        allowed = DROP_OPERATION.none;
-        for (const op of allowedOps) {
-          allowed |= DROP_OPERATION[op] || DROP_OPERATION.none;
-        }
-      }
-      setGlobalAllowedDropOperations(allowed);
-
-      // Hand control to the keyboard DragManager session, which drives
-      // Tab-cycling across drop targets and Enter/Escape drop/cancel.
-      beginDragging(
-        {
-          element: el,
-          items,
-          allowedDropOperations:
-            allowedOps.length > 0 ? allowedOps : (["move", "copy", "link"] as DropOperation[]),
-          onDragEnd: (ev) => {
-            state.endDrag(ev.x, ev.y, ev.dropOperation, false);
-            setGlobalAllowedDropOperations(DROP_OPERATION.none);
-            setGlobalDraggingTypes(new Set());
-            setGlobalDropEffect(undefined);
-          },
-        },
-        stringFormatter(),
-      );
+      startKeyboardDrag(e.currentTarget as HTMLElement);
     }
+  };
+
+  // A drag button's press system stops the Enter keyup before a bubble
+  // listener on the button can see it. Upstream starts that drag from onPress.
+  const onDragButtonPress = (e: PressEvent) => {
+    if (e.pointerType !== "keyboard" && e.pointerType !== "virtual") return;
+    if (!(e.target instanceof HTMLElement)) return;
+    startKeyboardDrag(e.target);
   };
 
   const dragProps = createMemo(() => {
@@ -395,8 +409,7 @@ export function createDraggableItem(
     return {
       type: "button" as const,
       ...(label != null ? { "aria-label": label } : {}),
-      onKeyDown,
-      onKeyUp,
+      onPress: onDragButtonPress,
     };
   });
 

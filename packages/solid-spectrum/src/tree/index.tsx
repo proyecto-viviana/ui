@@ -26,7 +26,10 @@ import {
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
+  Button,
+  DropIndicator,
   Tree as HeadlessTree,
+  TreeContext,
   TreeItem as HeadlessTreeItem,
   TreeItemContent as HeadlessTreeItemContent,
   TreeExpandButton as HeadlessTreeExpandButton,
@@ -46,7 +49,7 @@ import {
   type TreeRenderItemState,
   evaluateRenderChildren,
 } from "@proyecto-viviana/solidaria-components";
-import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
+import type { ItemDropTarget, Key, TreeItemData } from "@proyecto-viviana/solid-stately";
 import { ActionButtonGroupContext } from "../button/group-context";
 import {
   getSlottedContextProps,
@@ -59,6 +62,7 @@ import {
 import { IconContext } from "../icon";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import Chevron from "../icon/ui-icons/Chevron";
+import DragHandle from "../icon/ui-icons/DragHandle";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
@@ -243,7 +247,13 @@ const treeView = style<TreeRenderProps & { isActionBar?: boolean }>(
     boxSizing: "border-box",
     overflow: "auto",
     fontSize: controlFont(),
-    backgroundColor: "transparent",
+    backgroundColor: {
+      default: "transparent",
+      isDropTarget: {
+        default: colorMix("gray-25", "blue-900", 10),
+        forcedColors: "Background",
+      },
+    },
     borderWidth: 0,
     disableTapHighlight: true,
   },
@@ -280,19 +290,37 @@ type TreeRowLayerProps = Partial<TreeItemRenderProps> & {
   selectionStyle?: TreeSelectionStyle;
 };
 
+const rowDropBackground = colorMix("gray-25", "blue-900", 10);
+
 const treeViewItem = style<TreeRowLayerProps>({
-  outlineStyle: "none",
+  outlineStyle: {
+    default: "none",
+    isDropTarget: "solid",
+  },
+  outlineWidth: {
+    isDropTarget: 2,
+  },
+  outlineOffset: {
+    isDropTarget: -2,
+  },
+  outlineColor: {
+    isDropTarget: "blue-800",
+    forcedColors: {
+      isDropTarget: "Highlight",
+    },
+  },
   position: "relative",
   borderRadius: "sm",
   gridColumnStart: 1,
   gridColumnEnd: -1,
   display: "grid",
   gridTemplateAreas: [
-    ". checkbox level-padding expand-button icon label actions actionmenu",
-    ". checkbox level-padding expand-button icon description actions actionmenu",
+    ". drag-handle checkbox level-padding expand-button icon label actions actionmenu",
+    ". drag-handle checkbox level-padding expand-button icon description actions actionmenu",
   ],
   gridTemplateColumns: [
     edgeToText(40),
+    "auto",
     "auto",
     "auto",
     "auto",
@@ -378,6 +406,11 @@ const treeViewRowBackground = style<TreeRowLayerProps>({
           isSelected: "Highlight",
         },
       },
+    },
+    isDropTarget: {
+      default: rowDropBackground,
+      isSelected: rowDropBackground,
+      forcedColors: "Background",
     },
   },
   borderRadius: "sm",
@@ -567,6 +600,131 @@ const treeActionMenu = style({
   alignSelf: "center",
 });
 
+const treeDragButtonContainer = style({
+  gridArea: "drag-handle",
+  gridRowEnd: "span 2",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  alignSelf: "center",
+  width: 10,
+});
+
+const treeDragButton = style({
+  color: "inherit",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 22,
+  width: 10,
+  padding: 0,
+  margin: 0,
+  backgroundColor: "transparent",
+  borderStyle: "none",
+  borderRadius: "sm",
+  outlineStyle: {
+    default: "none",
+    isFocusVisible: "solid",
+  },
+  outlineColor: {
+    default: "focus-ring",
+    forcedColors: "Highlight",
+  },
+  outlineWidth: 2,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const insertionIndicatorWrapper = style<{ isDropTarget?: boolean; isRoot?: boolean }>({
+  position: "absolute",
+  inset: 0,
+  display: "flex",
+  alignItems: "center",
+  marginStart: {
+    default: "[calc((var(--drop-level, 1) - 1) * var(--tree-indent, 16px))]",
+    isRoot: 0,
+  },
+  color: {
+    default: "transparent",
+    isDropTarget: "blue-800",
+    forcedColors: {
+      isDropTarget: "Highlight",
+    },
+  },
+  "--indicator-circle-bg": {
+    type: "backgroundColor",
+    value: {
+      default: "transparent",
+      isDropTarget: "gray-25",
+      forcedColors: {
+        isDropTarget: "Background",
+      },
+    },
+  },
+  forcedColorAdjust: "none",
+});
+
+type TreeDropCollection = {
+  getItem?: (key: Key) => { level?: number } | null | undefined;
+};
+
+function TreeInsertionIndicator(props: { target: ItemDropTarget }): JSX.Element {
+  const tree = useContext(TreeContext);
+  const level = () => {
+    const target = props.target;
+    if (target.type !== "item") return 0;
+    const dropState = tree?.dropState as { collection?: TreeDropCollection } | undefined;
+    return dropState?.collection?.getItem?.(target.key)?.level ?? 0;
+  };
+
+  return (
+    <DropIndicator target={props.target}>
+      {(indicator) => (
+        <div
+          class={insertionIndicatorWrapper({
+            isDropTarget: indicator.isDropTarget,
+            isRoot: level() === 0,
+          })}
+          style={
+            level() > 0 ? ({ "--drop-level": String(level()) } as JSX.CSSProperties) : undefined
+          }
+        >
+          <svg aria-hidden="true" width="100%" height="12">
+            <line x1="0" y1="6" x2="100%" y2="6" stroke-width="2" stroke="currentColor" />
+            <circle
+              cx="6"
+              cy="6"
+              r="5"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="var(--indicator-circle-bg)"
+            />
+            <circle
+              cx="100%"
+              cy="6"
+              r="5"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="var(--indicator-circle-bg)"
+              transform="translate(-6, 0)"
+            />
+          </svg>
+        </div>
+      )}
+    </DropIndicator>
+  );
+}
+
+function TreeDragHandleButton(): JSX.Element {
+  return (
+    <Button slot="drag" class={treeDragButton} data-rsp-slot="drag-handle">
+      <DragHandle size="M" />
+    </Button>
+  );
+}
+
 const treeSlotLayout = css(`
   [slot="icon"], [data-slot="icon"], [data-rsp-slot="icon"] {
     grid-area: icon;
@@ -589,6 +747,18 @@ const treeSlotLayout = css(`
   }
   [slot="description"], [data-slot="description"], [data-rsp-slot="description"] {
     grid-area: description;
+  }
+  [role="row"]:not([data-focus-visible-within="true"]) [data-rsp-slot="drag-handle"] {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    white-space: nowrap;
   }
 `);
 
@@ -827,6 +997,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
     return renderRegistrationItems(local.items ?? []);
   };
+  const dragAndDropHooks = headlessProps.dragAndDropHooks;
+  if (dragAndDropHooks) {
+    dragAndDropHooks.renderDropIndicator = (target) => (
+      <TreeInsertionIndicator target={target as ItemDropTarget} />
+    );
+  }
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const loadMoreContent = () => (
     <div class={treeLoadMore} data-rsp-slot="load-more">
@@ -1045,6 +1221,13 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
                   styles: treeActionMenu,
                 }}
               >
+                <Show when={renderProps.allowsDragging}>
+                  <span class={treeDragButtonContainer}>
+                    <Show when={!renderProps.isDisabled}>
+                      <TreeDragHandleButton />
+                    </Show>
+                  </span>
+                </Show>
                 {shouldShowCheckbox(renderProps) ? (
                   <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
                 ) : null}

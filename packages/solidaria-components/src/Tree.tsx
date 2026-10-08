@@ -27,10 +27,12 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  createUniqueId,
   useContext,
   For,
   Show,
   createTrackedEffect,
+  untrack,
 } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
@@ -42,6 +44,7 @@ import {
   createGridListSection,
   createFocusRing,
   createHover,
+  createVisuallyHidden,
   mergeProps,
   type AriaTreeProps,
   useLocale,
@@ -57,6 +60,7 @@ import {
   type Key,
   type DropTarget,
   type ItemDropTarget,
+  type DroppableCollectionState,
   type Collection,
 } from "@proyecto-viviana/solid-stately";
 import {
@@ -88,6 +92,8 @@ import {
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
+  DropIndicatorContext,
+  type DropIndicatorProps,
 } from "./DragAndDrop";
 import {
   CollectionRendererContext,
@@ -869,6 +875,163 @@ export const TreeStateContext = createContext<TreeState<object, TreeCollection<o
 export const TreeItemContext = createContext<TreeItemContextValue<object> | null>(null);
 const TreeItemContentContext = createContext<Accessor<TreeItemRenderProps> | null>(null);
 
+// Stable identity. A nested render function remounts the indicator and drops
+// DragManager's registered node (same constraint as ListBoxDropIndicatorWrapper).
+const treeDropIndicatorContextValue = {
+  render: (props: DropIndicatorProps) => <TreeCollectionDropIndicator {...props} />,
+};
+
+function treeIndicatorLevel(
+  dropState: DroppableCollectionState | undefined,
+  target: DropIndicatorProps["target"],
+): number {
+  if (dropState && target.type === "item") {
+    const item = dropState.collection?.getItem(target.key) as { level?: number } | null | undefined;
+    return (item?.level || 0) + 1;
+  }
+  return 1;
+}
+
+function TreeCollectionDropIndicator(props: DropIndicatorProps): JSX.Element {
+  const treeContext = useContext(TreeContext);
+  const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+  const { visuallyHiddenProps } = createVisuallyHidden();
+  const dropState = treeContext?.dropState as DroppableCollectionState | undefined;
+  const indicator = treeContext?.dragAndDropHooks?.useDropIndicator?.(
+    { target: props.target },
+    dropState as DroppableCollectionState,
+    el,
+  );
+  const level = () => treeIndicatorLevel(dropState, props.target);
+  const renderedChildren = () => {
+    const children = props.children;
+    const values = { isDropTarget: Boolean(indicator?.isDropTarget) };
+    return typeof children === "function" ? children(values) : children;
+  };
+
+  return (
+    <Show when={indicator && !indicator.isHidden}>
+      <div
+        role="row"
+        aria-level={level()}
+        class="solidaria-DropIndicator"
+        style={{
+          position: "relative",
+          "--tree-item-level": String(level()),
+        }}
+        data-drop-target={dataAttr(indicator?.isDropTarget)}
+      >
+        <div role="gridcell">
+          <div
+            role="button"
+            {...visuallyHiddenProps()}
+            {...indicator?.dropIndicatorProps}
+            ref={setEl}
+          />
+          {renderedChildren()}
+        </div>
+      </div>
+    </Show>
+  );
+}
+
+function TreeRootDropIndicator(): JSX.Element {
+  const treeContext = useContext(TreeContext);
+  const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+  const { visuallyHiddenProps } = createVisuallyHidden();
+  const dropState = treeContext?.dropState as DroppableCollectionState | undefined;
+  const indicator = treeContext?.dragAndDropHooks?.useDropIndicator?.(
+    { target: { type: "root" } },
+    dropState as DroppableCollectionState,
+    el,
+  );
+
+  return (
+    <Show when={indicator && !indicator.isHidden}>
+      <div
+        role="row"
+        aria-level={1}
+        aria-hidden={indicator?.dropIndicatorProps["aria-hidden"]}
+        class="solidaria-DropIndicator"
+        style={{ position: "absolute" }}
+      >
+        <div role="gridcell">
+          <div
+            role="button"
+            {...visuallyHiddenProps()}
+            {...indicator?.dropIndicatorProps}
+            ref={setEl}
+          />
+        </div>
+      </div>
+    </Show>
+  );
+}
+
+function TreeItemOnDropIndicator(props: {
+  itemKey: Key;
+  rowProps: () => Record<string, unknown>;
+  expandProps: () => Record<string, unknown>;
+}): JSX.Element {
+  const treeContext = useContext(TreeContext);
+  const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+  const [activateEl, setActivateEl] = createSignal<HTMLElement | null>(null);
+  const { visuallyHiddenProps } = createVisuallyHidden();
+  const activateId = createUniqueId();
+  const dropState = treeContext?.dropState as DroppableCollectionState | undefined;
+  const target: ItemDropTarget = {
+    type: "item",
+    key: props.itemKey,
+    dropPosition: "on",
+  };
+  const indicator = treeContext?.dragAndDropHooks?.useDropIndicator?.(
+    { target, activateButtonRef: activateEl },
+    dropState as DroppableCollectionState,
+    el,
+  );
+  const ariaLevel = () => props.rowProps()["aria-level"] as number | undefined;
+  const ariaExpanded = () => props.rowProps()["aria-expanded"] as "true" | "false" | undefined;
+  const rowId = () => {
+    const id = props.rowProps().id;
+    return typeof id === "string" ? id : undefined;
+  };
+  const expandLabel = () => {
+    const label = props.expandProps()["aria-label"];
+    return typeof label === "string" ? label : undefined;
+  };
+
+  return (
+    <Show when={indicator && !indicator.isHidden}>
+      <div
+        role="row"
+        aria-level={ariaLevel()}
+        aria-expanded={ariaExpanded()}
+        aria-label={indicator?.dropIndicatorProps["aria-label"] as string | undefined}
+      >
+        <div role="gridcell" aria-colindex={1} style={{ display: "contents" }}>
+          <div
+            role="button"
+            {...visuallyHiddenProps()}
+            {...indicator?.dropIndicatorProps}
+            ref={setEl}
+          />
+          <Show when={ariaExpanded() != null}>
+            <div
+              role="button"
+              {...visuallyHiddenProps()}
+              id={activateId}
+              aria-label={expandLabel()}
+              aria-labelledby={`${activateId} ${rowId() ?? ""}`.trim()}
+              tabIndex={-1}
+              ref={setActivateEl}
+            />
+          </Show>
+        </div>
+      </div>
+    </Show>
+  );
+}
+
 function isTreeItemRecord(value: unknown): value is Record<PropertyKey, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -889,6 +1052,62 @@ function treeItemDataFromNode<T extends object>(node: TreeNode<T>): TreeItemData
         ? node.childNodes.map((child) => treeItemDataFromNode(child))
         : undefined,
   };
+}
+
+type TreeDropPosition = "before" | "after" | "on";
+
+function TreeDropIndicatorSlot(props: {
+  itemIndex: number;
+  position: TreeDropPosition;
+  renderDropIndicator?: (index: number, position: TreeDropPosition) => JSX.Element | undefined;
+}): JSX.Element {
+  return <>{props.renderDropIndicator?.(props.itemIndex, props.position)}</>;
+}
+
+function TreeRenderedItem<T extends object>(props: {
+  node: TreeNode<T>;
+  renderItem: (item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element;
+}): JSX.Element {
+  // Indicator updates must not rebuild the row. A shared fragment that tracks
+  // the drop target disposes the item and drops the keyboard drag.
+  const child = untrack(() => {
+    const node = props.node;
+    const rendered = props.renderItem(treeItemDataFromNode(node), {
+      isExpanded: node.isExpanded ?? false,
+      isExpandable: node.isExpandable ?? false,
+      level: node.level,
+    });
+    return typeof rendered === "function" ? (rendered as () => JSX.Element)() : rendered;
+  });
+  return child as JSX.Element;
+}
+
+function TreeRowWithDropIndicators<T extends object>(props: {
+  node: TreeNode<T>;
+  itemIndex: number;
+  renderItem: (item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element;
+  renderDropIndicator?: (index: number, position: TreeDropPosition) => JSX.Element | undefined;
+  afterIndexes: () => number[];
+}): JSX.Element {
+  return (
+    <>
+      <TreeDropIndicatorSlot
+        itemIndex={props.itemIndex}
+        position="before"
+        renderDropIndicator={props.renderDropIndicator}
+      />
+      <TreeRenderedItem node={props.node} renderItem={props.renderItem} />
+      <For each={props.afterIndexes()}>
+        {(afterIndex) => (
+          <TreeDropIndicatorSlot
+            itemIndex={afterIndex}
+            position="after"
+            renderDropIndicator={props.renderDropIndicator}
+          />
+        )}
+      </For>
+    </>
+  );
 }
 
 /**
@@ -1056,8 +1275,17 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       if (!activeDropState) return;
       const originalGetDropOperation = activeDropState.getDropOperation.bind(activeDropState);
 
-      activeDropState.getDropOperation = (target, types, allowedOperations) => {
-        const currentDraggingKeys = dragState()?.draggingKeys ?? new Set<string | number>();
+      activeDropState.getDropOperation = (
+        target,
+        types,
+        allowedOperations,
+        isInternal = false,
+        draggingKeys = new Set<string | number>(),
+      ) => {
+        const currentDraggingKeys =
+          draggingKeys.size > 0
+            ? draggingKeys
+            : (dragState()?.draggingKeys ?? new Set<string | number>());
         if (target.type === "item" && currentDraggingKeys.size > 0) {
           if (currentDraggingKeys.has(target.key) && target.dropPosition === "on") {
             return "cancel";
@@ -1074,7 +1302,13 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
           }
         }
 
-        return originalGetDropOperation(target, types, allowedOperations);
+        return originalGetDropOperation(
+          target,
+          types,
+          allowedOperations,
+          isInternal,
+          currentDraggingKeys,
+        );
       };
 
       return () => {
@@ -1423,163 +1657,163 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       };
     });
   });
-  const renderTreeRow = (node: TreeNode<T>, itemIndex: number) => {
-    const beforeIndicator = () => collectionRenderer().renderDropIndicator?.(itemIndex, "before");
-    const afterIndicatorIndexes = () => getAfterIndicatorIndexes(itemIndex, renderRange());
-    const itemData = treeItemDataFromNode(node);
-    const itemState: TreeRenderItemState = {
-      isExpanded: node.isExpanded ?? false,
-      isExpandable: node.isExpandable ?? false,
-      level: node.level,
-    };
-    return (
-      <>
-        {beforeIndicator()}
-        {props.children(itemData, itemState)}
-        <For each={afterIndicatorIndexes()}>
-          {(afterIndex) => collectionRenderer().renderDropIndicator?.(afterIndex, "after")}
-        </For>
-      </>
-    );
-  };
+  const renderTreeRow = (node: TreeNode<T>, itemIndex: number) => (
+    <TreeRowWithDropIndicators
+      node={node}
+      itemIndex={itemIndex}
+      renderItem={props.children}
+      renderDropIndicator={(index, position) =>
+        collectionRenderer().renderDropIndicator?.(index, position)
+      }
+      afterIndexes={() => getAfterIndicatorIndexes(itemIndex, renderRange())}
+    />
+  );
+
+  const showRootDropIndicator = Boolean(local.dragAndDropHooks?.useDropIndicator && dropStateValue);
 
   return (
     <TreeContext value={contextValue() as unknown as TreeContextValue<object>}>
       <TreeStateContext value={state as unknown as TreeState<object, TreeCollection<object>>}>
         <CollectionRendererContext value={collectionRenderer()}>
-          <div
-            ref={(element) => {
-              setRef(element);
-              assignRef(local.ref, element);
-            }}
-            {...mergeProps(
-              domProps(),
-              cleanTreeProps(),
-              cleanFocusProps(),
-              (droppableCollection()?.collectionProps as Record<string, unknown> | undefined) ?? {},
-            )}
-            class={renderProps.class()}
-            style={renderProps.style()}
-            data-focused={dataAttr(state.isFocused)}
-            data-focus-visible={dataAttr(isFocusVisible())}
-            data-disabled={dataAttr(ariaProps.isDisabled)}
-            data-empty={dataAttr(isEmpty())}
-            data-drop-target={dataAttr(isRootDropTarget())}
-            data-selection-mode={
-              stateProps.selectionMode !== "none" ? stateProps.selectionMode : undefined
-            }
-            data-allows-dragging={dataAttr(hasDraggableDnd())}
-          >
-            <SharedElementTransition>
-              {isEmpty() && local.renderEmptyState ? (
-                <div role="row" aria-level={1} style={{ display: "contents" }}>
-                  <div role="gridcell" style={{ display: "contents" }}>
-                    {local.renderEmptyState(renderValues())}
-                  </div>
-                </div>
-              ) : parentCollectionRenderer?.isVirtualized ? (
-                <CollectionRoot
-                  collection={virtualRange() ? visibleRows() : []}
-                  scrollRef={() => ref()}
-                  persistedKeys={persistedKeys()}
-                >
-                  <Show
-                    when={hasSections()}
-                    fallback={
-                      <For each={renderableRows()}>
-                        {(row) => renderTreeRow(row.node, row.globalIndex)}
-                      </For>
-                    }
-                  >
-                    <For each={sectionedRenderableRows() ?? []}>
-                      {(entry) => (
-                        <Show when={entry.rows.length > 0}>
-                          <Show
-                            when={entry.type === "section"}
-                            fallback={
-                              <For each={entry.rows}>
-                                {(row) => renderTreeRow(row.node, row.globalIndex)}
-                              </For>
-                            }
-                          >
-                            <TreeSection>
-                              {entry.type === "section" && entry.section.title ? (
-                                <TreeHeader>{entry.section.title}</TreeHeader>
-                              ) : null}
-                              <For each={entry.rows}>
-                                {(row) => renderTreeRow(row.node, row.globalIndex)}
-                              </For>
-                            </TreeSection>
-                          </Show>
-                        </Show>
-                      )}
-                    </For>
-                  </Show>
-                  <For each={persistedOutsideIndexes()}>
-                    {(index) => {
-                      const node = visibleRows()[index];
-                      return node ? (
-                        <PersistedVirtualItem index={index}>
-                          {renderTreeRow(node, index)}
-                        </PersistedVirtualItem>
-                      ) : null;
-                    }}
-                  </For>
-                </CollectionRoot>
-              ) : (
-                <>
-                  <Show
-                    when={hasSections()}
-                    fallback={
-                      <For each={renderableRows()}>
-                        {(row) => renderTreeRow(row.node, row.globalIndex)}
-                      </For>
-                    }
-                  >
-                    <For each={sectionedRenderableRows() ?? []}>
-                      {(entry) => (
-                        <Show when={entry.rows.length > 0}>
-                          <Show
-                            when={entry.type === "section"}
-                            fallback={
-                              <For each={entry.rows}>
-                                {(row) => renderTreeRow(row.node, row.globalIndex)}
-                              </For>
-                            }
-                          >
-                            <TreeSection>
-                              {entry.type === "section" && entry.section.title ? (
-                                <TreeHeader>{entry.section.title}</TreeHeader>
-                              ) : null}
-                              <For each={entry.rows}>
-                                {(row) => renderTreeRow(row.node, row.globalIndex)}
-                              </For>
-                            </TreeSection>
-                          </Show>
-                        </Show>
-                      )}
-                    </For>
-                  </Show>
-                </>
+          <DropIndicatorContext value={treeDropIndicatorContextValue}>
+            <div
+              ref={(element) => {
+                setRef(element);
+                assignRef(local.ref, element);
+              }}
+              {...mergeProps(
+                domProps(),
+                cleanTreeProps(),
+                cleanFocusProps(),
+                (droppableCollection()?.collectionProps as Record<string, unknown> | undefined) ??
+                  {},
               )}
-            </SharedElementTransition>
-            {local.hasMore && local.onLoadMore && (
-              <TreeLoadMoreItem
-                onLoadMore={local.onLoadMore}
-                isLoading={local.isLoading}
-                loadingState={local.loadingState}
-                class={local.loadMoreClass}
-                style={local.loadMoreStyle}
-              >
-                {local.renderLoadMoreItem?.({
-                  isLoading:
-                    !!local.isLoading ||
-                    local.loadingState === "loading" ||
-                    local.loadingState === "loadingMore",
-                })}
-              </TreeLoadMoreItem>
-            )}
-          </div>
+              class={renderProps.class()}
+              style={renderProps.style()}
+              data-focused={dataAttr(state.isFocused)}
+              data-focus-visible={dataAttr(isFocusVisible())}
+              data-disabled={dataAttr(ariaProps.isDisabled)}
+              data-empty={dataAttr(isEmpty())}
+              data-drop-target={dataAttr(isRootDropTarget())}
+              data-selection-mode={
+                stateProps.selectionMode !== "none" ? stateProps.selectionMode : undefined
+              }
+              data-allows-dragging={dataAttr(hasDraggableDnd())}
+            >
+              <Show when={showRootDropIndicator}>
+                <TreeRootDropIndicator />
+              </Show>
+              <SharedElementTransition>
+                {isEmpty() && local.renderEmptyState ? (
+                  <div role="row" aria-level={1} style={{ display: "contents" }}>
+                    <div role="gridcell" style={{ display: "contents" }}>
+                      {local.renderEmptyState(renderValues())}
+                    </div>
+                  </div>
+                ) : parentCollectionRenderer?.isVirtualized ? (
+                  <CollectionRoot
+                    collection={virtualRange() ? visibleRows() : []}
+                    scrollRef={() => ref()}
+                    persistedKeys={persistedKeys()}
+                  >
+                    <Show
+                      when={hasSections()}
+                      fallback={
+                        <For each={renderableRows()}>
+                          {(row) => renderTreeRow(row.node, row.globalIndex)}
+                        </For>
+                      }
+                    >
+                      <For each={sectionedRenderableRows() ?? []}>
+                        {(entry) => (
+                          <Show when={entry.rows.length > 0}>
+                            <Show
+                              when={entry.type === "section"}
+                              fallback={
+                                <For each={entry.rows}>
+                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                </For>
+                              }
+                            >
+                              <TreeSection>
+                                {entry.type === "section" && entry.section.title ? (
+                                  <TreeHeader>{entry.section.title}</TreeHeader>
+                                ) : null}
+                                <For each={entry.rows}>
+                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                </For>
+                              </TreeSection>
+                            </Show>
+                          </Show>
+                        )}
+                      </For>
+                    </Show>
+                    <For each={persistedOutsideIndexes()}>
+                      {(index) => {
+                        const node = visibleRows()[index];
+                        return node ? (
+                          <PersistedVirtualItem index={index}>
+                            {renderTreeRow(node, index)}
+                          </PersistedVirtualItem>
+                        ) : null;
+                      }}
+                    </For>
+                  </CollectionRoot>
+                ) : (
+                  <>
+                    <Show
+                      when={hasSections()}
+                      fallback={
+                        <For each={renderableRows()}>
+                          {(row) => renderTreeRow(row.node, row.globalIndex)}
+                        </For>
+                      }
+                    >
+                      <For each={sectionedRenderableRows() ?? []}>
+                        {(entry) => (
+                          <Show when={entry.rows.length > 0}>
+                            <Show
+                              when={entry.type === "section"}
+                              fallback={
+                                <For each={entry.rows}>
+                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                </For>
+                              }
+                            >
+                              <TreeSection>
+                                {entry.type === "section" && entry.section.title ? (
+                                  <TreeHeader>{entry.section.title}</TreeHeader>
+                                ) : null}
+                                <For each={entry.rows}>
+                                  {(row) => renderTreeRow(row.node, row.globalIndex)}
+                                </For>
+                              </TreeSection>
+                            </Show>
+                          </Show>
+                        )}
+                      </For>
+                    </Show>
+                  </>
+                )}
+              </SharedElementTransition>
+              {local.hasMore && local.onLoadMore && (
+                <TreeLoadMoreItem
+                  onLoadMore={local.onLoadMore}
+                  isLoading={local.isLoading}
+                  loadingState={local.loadingState}
+                  class={local.loadMoreClass}
+                  style={local.loadMoreStyle}
+                >
+                  {local.renderLoadMoreItem?.({
+                    isLoading:
+                      !!local.isLoading ||
+                      local.loadingState === "loading" ||
+                      local.loadingState === "loadingMore",
+                  })}
+                </TreeLoadMoreItem>
+              )}
+            </div>
+          </DropIndicatorContext>
         </CollectionRendererContext>
       </TreeStateContext>
     </TreeContext>
@@ -1695,6 +1929,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     return treeContext.dragAndDropHooks.useDraggableItem(
       {
         key: local.id as string | number,
+        hasDragButton: true,
       },
       treeContext.dragState as Parameters<NonNullable<DragAndDropHooks<T>["useDraggableItem"]>>[1],
     );
@@ -1825,14 +2060,47 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     },
   };
 
+  const dragButtonEl: { current: HTMLButtonElement | null } = { current: null };
+  const dragButtonProps = createMemo<ButtonProps>(() => {
+    const slotProps = (draggableItem()?.dragButtonProps as ButtonProps | undefined) ?? {};
+    return {
+      ...slotProps,
+      ref: dragButtonEl,
+      style: {
+        ...(typeof slotProps.style === "object" ? slotProps.style : {}),
+        "pointer-events": "none",
+      },
+    };
+  });
+  // Stable context: Button snapshots slot props once, and a new object would
+  // remount the row. The drag getter is read at Button creation.
   const buttonContextValue: ButtonContextValue = {
     slots: {
       [DEFAULT_SLOT]: {},
+      get drag() {
+        return dragButtonProps();
+      },
       get chevron() {
         return treeItemAria.expandButtonProps as unknown as ButtonProps;
       },
     },
   };
+  // Solid 2 createEffect needs a compute plus an effect. The ref is assigned
+  // during this render, so the warning waits one microtask.
+  if (treeContext?.dragState) {
+    queueMicrotask(() => {
+      if (!dragButtonEl.current) {
+        console.warn(
+          'Draggable items in a Tree must contain a <Button slot="drag"> element so that keyboard and screen reader users can drag them.',
+        );
+      }
+    });
+  }
+  const showOnDropIndicator = Boolean(
+    treeContext?.dragAndDropHooks?.useDropIndicator && treeContext.dropState,
+  );
+  const onDropRowProps = () => treeItemAria.rowProps as Record<string, unknown>;
+  const onDropExpandProps = () => treeItemAria.expandButtonProps as Record<string, unknown>;
   const selectionIndicatorContext: SelectionIndicatorContextValue = {
     isSelected,
   };
@@ -1897,35 +2165,46 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       : {};
 
   return (
-    <TreeItemContext value={itemContextValue() as unknown as TreeItemContextValue<object>}>
-      <div
-        ref={setItemRef}
-        {...domProps}
-        {...mergedRowProps()}
-        {...linkedRowDomProps()}
-        class={renderProps.class()}
-        style={rowStyle()}
-        data-selected={dataAttr(isSelected())}
-        data-focused={dataAttr(isFocused())}
-        data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
-        data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
-        data-pressed={dataAttr(isPressed())}
-        data-hovered={dataAttr(isHovered())}
-        data-disabled={dataAttr(isDisabled())}
-        data-expanded={dataAttr(isExpanded())}
-        data-expandable={dataAttr(isExpandable())}
-        data-has-child-items={dataAttr(isExpandable())}
-        data-level={level()}
-        data-selection-mode={
-          treeContext?.state.selectionMode !== "none" ? treeContext?.state.selectionMode : undefined
-        }
-        data-allows-dragging={dataAttr(Boolean(treeContext?.dragState))}
-        data-dragging={dataAttr(draggableItem()?.isDragging)}
-        data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
-      >
-        {rowContent()}
-      </div>
-    </TreeItemContext>
+    <>
+      <Show when={showOnDropIndicator}>
+        <TreeItemOnDropIndicator
+          itemKey={local.id as Key}
+          rowProps={onDropRowProps}
+          expandProps={onDropExpandProps}
+        />
+      </Show>
+      <TreeItemContext value={itemContextValue() as unknown as TreeItemContextValue<object>}>
+        <div
+          ref={setItemRef}
+          {...domProps}
+          {...mergedRowProps()}
+          {...linkedRowDomProps()}
+          class={renderProps.class()}
+          style={rowStyle()}
+          data-selected={dataAttr(isSelected())}
+          data-focused={dataAttr(isFocused())}
+          data-focus-visible={dataAttr(isFocusVisible() && isFocused())}
+          data-focus-visible-within={dataAttr(isFocusVisibleWithin())}
+          data-pressed={dataAttr(isPressed())}
+          data-hovered={dataAttr(isHovered())}
+          data-disabled={dataAttr(isDisabled())}
+          data-expanded={dataAttr(isExpanded())}
+          data-expandable={dataAttr(isExpandable())}
+          data-has-child-items={dataAttr(isExpandable())}
+          data-level={level()}
+          data-selection-mode={
+            treeContext?.state.selectionMode !== "none"
+              ? treeContext?.state.selectionMode
+              : undefined
+          }
+          data-allows-dragging={dataAttr(Boolean(treeContext?.dragState))}
+          data-dragging={dataAttr(draggableItem()?.isDragging)}
+          data-drop-target={dataAttr(droppableItem()?.isDropTarget)}
+        >
+          {rowContent()}
+        </div>
+      </TreeItemContext>
+    </>
   );
 }
 

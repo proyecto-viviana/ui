@@ -112,14 +112,24 @@ export function beginDragging(target: DragTarget, stringFormatter: LocalizedStri
 
   dragSession = new DragSession(target, stringFormatter);
   setTrackedDragSession(dragSession);
-  requestAnimationFrame(() => {
-    if (dragSession) {
-      dragSession.setup();
-      if (getDragModality() === "keyboard") {
-        dragSession.next();
-      }
+  // Upstream defers setup to a frame so React can commit drop targets. Solid
+  // has already flushed those registrations in the signal write above, so the
+  // session listens immediately: the drag button is still focused, and a second
+  // Enter would otherwise start another drag. The first-target focus waits
+  // until this keyup returns. aria-hide blurs the button while
+  // currentDropTarget is still null, and onBlur would pull focus back before
+  // the insertion indicator's drop target sticks.
+  if (dragSession) {
+    const session = dragSession;
+    session.setup();
+    if (getDragModality() === "keyboard") {
+      queueMicrotask(() => {
+        if (dragSession === session) {
+          session.next();
+        }
+      });
     }
-  });
+  }
 }
 
 /** Reactive accessor for the active drag session, or null. */

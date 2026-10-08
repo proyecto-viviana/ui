@@ -4,13 +4,18 @@ type: task
 title: "Port the drag-and-drop subsystem"
 created: 2026-08-20
 parent: 25
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task dnd-subsystem-port" }
   - {
       state: open,
       at: 2026-10-08,
       note: "visualmode T1 (#10156, #10157) is this ticket. Styled TreeView leaves dragAndDropHooks on the headless props and spreads them into HeadlessTree. useDragAndDrop is already exported from solidaria-components. The open work is row behavior (reorder, re-parent, drop indicator, keyboard drag, multi-select move), not a second ticket.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Tree rows reorder, reparent, and move a multi-selection from the keyboard, and the styled tree paints the drag handle, insertion line, and drop-target chrome. Touch long-press capture, TableView and GridList consumers, the drag preview card, and real mobile assistive-input evidence remain open.",
     }
 ---
 

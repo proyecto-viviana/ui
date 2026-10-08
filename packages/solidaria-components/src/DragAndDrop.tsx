@@ -29,6 +29,7 @@ import type {
   Key,
 } from "@proyecto-viviana/solid-stately";
 import type { DragAndDropHooks } from "./useDragAndDrop";
+import { createDragSession } from "@proyecto-viviana/solidaria";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -153,6 +154,10 @@ export function useRenderDropIndicator(
   };
 
   return (target: ItemDropTarget) => {
+    // isVirtualDragging() is a module boolean. Reading the session signal
+    // mounts every valid collection gap when a keyboard drag begins, before
+    // DragManager's animation frame records drop targets.
+    const sessionActive = createDragSession()() != null;
     const stateIsDropTarget = dropState?.isDropTarget;
     // RAC `useDroppableCollectionState.ts:207` `isDropTarget(target)` is a
     // per-target predicate. The port exposes `isDropTarget` as a collection-
@@ -168,7 +173,9 @@ export function useRenderDropIndicator(
           ? Boolean(stateIsDropTarget(target))
           : false;
     const isTarget = isTargetFromFn || targetsEqual(dropState?.target, target);
-    const isVirtualDragging = dragAndDropHooks?.isVirtualDragging?.() ?? false;
+    // A hook that returns false must not hide a live session. `??` treats
+    // false as final, so the collection gaps stay unmounted after pickup.
+    const isVirtualDragging = sessionActive || Boolean(dragAndDropHooks?.isVirtualDragging?.());
     if (!isTarget && !isVirtualDragging) return undefined;
     return dragAndDropHooks?.renderDropIndicator ? (
       dragAndDropHooks.renderDropIndicator(target)

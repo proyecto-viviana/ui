@@ -95,7 +95,11 @@ interface DropHooks {
     ref: Accessor<HTMLElement | null>,
   ) => DroppableItemAria;
   useDropIndicator?: (
-    props: { target: DropTarget },
+    props: {
+      target: DropTarget;
+      /** Expand control for an on-item target while a keyboard drag is active. */
+      activateButtonRef?: Accessor<HTMLElement | null>;
+    },
     state: DroppableCollectionState,
     ref: Accessor<HTMLElement | null>,
   ) => {
