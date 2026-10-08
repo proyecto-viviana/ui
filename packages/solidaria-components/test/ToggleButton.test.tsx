@@ -81,6 +81,57 @@ describe("ToggleButton", () => {
     expect(screen.getByRole("button")).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("calls onChange once then onPress once for pointer, Shift-click, and keyboard", async () => {
+    const order: string[] = [];
+    const onChange = vi.fn(() => {
+      order.push("onChange");
+    });
+    const onPress = vi.fn((event: { shiftKey?: boolean; target?: EventTarget | null }) => {
+      order.push(event.shiftKey ? "onPress:shift" : "onPress");
+    });
+    render(() => (
+      <ToggleButton aria-label="Pin" onChange={onChange} onPress={onPress}>
+        Pin
+      </ToggleButton>
+    ));
+    const button = screen.getByRole("button", { name: "Pin" });
+
+    await user.click(button);
+    await user.keyboard("{Shift>}");
+    await user.click(button);
+    await user.keyboard("{/Shift}");
+    button.focus();
+    await user.keyboard("{Enter}");
+    await user.keyboard(" ");
+
+    expect(onChange).toHaveBeenCalledTimes(4);
+    expect(onPress).toHaveBeenCalledTimes(4);
+    expect(order).toEqual([
+      "onChange",
+      "onPress",
+      "onChange",
+      "onPress:shift",
+      "onChange",
+      "onPress",
+      "onChange",
+      "onPress",
+    ]);
+    expect(onPress.mock.calls[1]?.[0]).toMatchObject({ shiftKey: true, target: button });
+  });
+
+  it("does not call onPress when disabled", async () => {
+    const onChange = vi.fn();
+    const onPress = vi.fn();
+    render(() => (
+      <ToggleButton aria-label="Pin" isDisabled onChange={onChange} onPress={onPress}>
+        Pin
+      </ToggleButton>
+    ));
+    await user.click(screen.getByRole("button", { name: "Pin" }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it("does not toggle when disabled", async () => {
     const onChange = vi.fn();
     render(() => (

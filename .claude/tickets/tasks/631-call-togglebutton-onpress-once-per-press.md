@@ -5,7 +5,7 @@ title: "Call ToggleButton onPress once per press"
 created: 2026-10-08
 parent: 24
 priority: high
-status: next
+status: in-progress
 history:
   - {
       state: open,
@@ -16,6 +16,21 @@ history:
       state: next,
       at: 2026-10-08,
       note: "Queued with the top Visualmode consumer work before the next RC, following active source work and qualification blockers.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admit registered worker: packages/solidaria/src/button/createToggleButton.ts; packages/solidaria/test/createButton.test.tsx; packages/solidaria-components/test/ToggleButton.test.tsx; packages/solid-spectrum/test/ToggleButton.test.tsx; one solidaria patch changeset and generated status/roadmap. Reproduce exact callback count before repair; verify pointer, modifiers, keyboard, controlled and disabled behavior. No Viviana UI ToggleButton test file currently exists; use existing owning layers without inventing a source fix in a skin.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Local proof only. createToggleButton replaces onPress instead of chaining it. Focused tests 90/90. vp run typecheck exits 2 with 27 inherited errors and none in this hook. Release gates, publish, and Visualmode install were not run.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Recovery after the owned runtime and earlier proof logs were lost. The worktree hook was still the inherited DOM mergeProps chain. Focused vp test run of the three owning test files failed 7 and passed 83 (90) against that hook, then passed 90/90 after Solid merge last-wins onPress. Root typecheck still exits 2 with 27 inherited errors and none in this hook. Awaiting release. Full candidate, SSR, browser, publish, and Visualmode install were not run. No commit.",
     }
 ---
 

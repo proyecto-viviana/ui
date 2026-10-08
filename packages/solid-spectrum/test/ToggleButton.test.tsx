@@ -26,6 +26,53 @@ describe("ToggleButton (solid-spectrum)", () => {
     expect(button).toHaveAttribute("aria-pressed", "false");
   });
 
+  it("calls onChange once then onPress once through the styled button", async () => {
+    const user = setupUser();
+    const order: string[] = [];
+    const onChange = vi.fn(() => {
+      order.push("onChange");
+    });
+    const onPress = vi.fn(() => {
+      order.push("onPress");
+    });
+    render(() => (
+      <ToggleButton onChange={onChange} onPress={onPress}>
+        Pin
+      </ToggleButton>
+    ));
+    const button = screen.getByRole("button", { name: "Pin" });
+
+    await user.keyboard("{Shift>}");
+    await user.click(button);
+    await user.keyboard("{/Shift}");
+    button.focus();
+    await user.keyboard("{Enter}");
+    await user.keyboard(" ");
+
+    expect(onChange).toHaveBeenCalledTimes(3);
+    expect(onPress).toHaveBeenCalledTimes(3);
+    expect(order).toEqual(["onChange", "onPress", "onChange", "onPress", "onChange", "onPress"]);
+    expect(onPress).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ shiftKey: true, target: button }),
+    );
+    expect(button).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("does not press a disabled styled toggle", async () => {
+    const user = setupUser();
+    const onChange = vi.fn();
+    const onPress = vi.fn();
+    render(() => (
+      <ToggleButton isDisabled onChange={onChange} onPress={onPress}>
+        Pin
+      </ToggleButton>
+    ));
+    await user.click(screen.getByRole("button", { name: "Pin" }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
   it("supports S2 visual props, icon context, and disabled selection state", () => {
     render(() => (
       <ToggleButton

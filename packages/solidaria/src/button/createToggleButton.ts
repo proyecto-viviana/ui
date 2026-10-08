@@ -12,7 +12,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/button/useToggleButton.ts
 
-import { Accessor, createSignal } from "solid-js";
+import { Accessor, createSignal, merge as solidMergeProps } from "solid-js";
 import { createButton } from "./createButton";
 import { mergeProps } from "../utils";
 import type { AriaButtonProps, ButtonAria } from "./types";
@@ -86,16 +86,15 @@ export function createToggleButton(props: AriaToggleButtonProps = {}): ToggleBut
     props.onChange?.(newValue);
   };
 
-  // Create the press handler that toggles selection
-  const onPress = (e: PressEvent) => {
-    toggleSelection();
-    props.onPress?.(e);
-  };
-
-  // Get button props with our custom press handler
+  // DOM mergeProps chains event handlers. Solid merge last-wins lazily, so
+  // this onPress replaces the caller's without reading or copying other props.
+  // Read props.onPress at event time, after onChange (upstream order).
   const { buttonProps: baseButtonProps, isPressed } = createButton(
-    mergeProps(props, {
-      onPress,
+    solidMergeProps(props, {
+      onPress(event: PressEvent) {
+        toggleSelection();
+        props.onPress?.(event);
+      },
     }) as AriaButtonProps,
   );
 

@@ -751,17 +751,163 @@ describe("createToggleButton", () => {
   });
 
   describe("interaction with onPress", () => {
-    it("calls both onChange and onPress", async () => {
+    function pressOrder() {
+      const order: string[] = [];
+      const onChange = vi.fn(() => {
+        order.push("onChange");
+      });
+      const onPress = vi.fn(() => {
+        order.push("onPress");
+      });
+      return { order, onChange, onPress };
+    }
+
+    it("calls onChange once then onPress once for a pointer press", async () => {
       const user = setupUser();
-      const onChange = vi.fn();
-      const onPress = vi.fn();
+      const { order, onChange, onPress } = pressOrder();
       const { buttonProps } = createToggleButton({ onChange, onPress });
 
       render(() => <button {...buttonProps}>Toggle</button>);
-      await user.click(screen.getByText("Toggle"));
+      const button = screen.getByRole("button", { name: "Toggle" });
+      await user.click(button);
 
+      expect(onChange).toHaveBeenCalledTimes(1);
       expect(onChange).toHaveBeenCalledWith(true);
-      expect(onPress).toHaveBeenCalled();
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onPress).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "press", pointerType: "mouse", target: button }),
+      );
+      expect(order).toEqual(["onChange", "onPress"]);
+    });
+
+    it("calls onChange once then onPress once for Shift-click and keeps the modifier", async () => {
+      const user = setupUser();
+      const { order, onChange, onPress } = pressOrder();
+      const { buttonProps } = createToggleButton({ onChange, onPress });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+      const button = screen.getByRole("button", { name: "Toggle" });
+      await user.keyboard("{Shift>}");
+      await user.click(button);
+      await user.keyboard("{/Shift}");
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(onPress).toHaveBeenCalledWith(
+        expect.objectContaining({ shiftKey: true, target: button }),
+      );
+      expect(order).toEqual(["onChange", "onPress"]);
+    });
+
+    it("calls onChange once then onPress once for Enter and Space", async () => {
+      const user = setupUser();
+      const { order, onChange, onPress } = pressOrder();
+      const { buttonProps } = createToggleButton({ onChange, onPress });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+      const button = screen.getByRole("button", { name: "Toggle" });
+      button.focus();
+
+      await user.keyboard("{Enter}");
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(order).toEqual(["onChange", "onPress"]);
+
+      await user.keyboard(" ");
+      expect(onChange).toHaveBeenCalledTimes(2);
+      expect(onPress).toHaveBeenCalledTimes(2);
+      expect(order).toEqual(["onChange", "onPress", "onChange", "onPress"]);
+      expect(onPress).toHaveBeenLastCalledWith(
+        expect.objectContaining({ pointerType: "keyboard", key: " ", target: button }),
+      );
+    });
+
+    it("uses the current signal-backed onPress and isDisabled after mount", async () => {
+      const user = setupUser();
+      const order: string[] = [];
+      const first = vi.fn(() => {
+        order.push("first");
+      });
+      const second = vi.fn(() => {
+        order.push("second");
+      });
+      const [onPress, setOnPress] = createSignal<typeof first>(() => first);
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      const onChange = vi.fn(() => {
+        order.push("onChange");
+      });
+      const { buttonProps } = createToggleButton({
+        get onPress() {
+          return onPress();
+        },
+        get isDisabled() {
+          return isDisabled();
+        },
+        onChange,
+      });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+      const button = screen.getByRole("button", { name: "Toggle" });
+      await user.click(button);
+
+      expect(first).toHaveBeenCalledTimes(1);
+      expect(second).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(order).toEqual(["onChange", "first"]);
+
+      setOnPress(() => second);
+      setIsDisabled(true);
+      flush();
+      expect(button).toBeDisabled();
+      await user.click(button);
+
+      expect(first).toHaveBeenCalledTimes(1);
+      expect(second).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(order).toEqual(["onChange", "first"]);
+
+      setIsDisabled(false);
+      flush();
+      expect(button).toBeEnabled();
+      await user.click(button);
+
+      expect(first).toHaveBeenCalledTimes(1);
+      expect(second).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledTimes(2);
+      expect(order).toEqual(["onChange", "first", "onChange", "second"]);
+    });
+
+    it("does not call onPress when disabled", async () => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      const onPress = vi.fn();
+      const { buttonProps } = createToggleButton({ onChange, onPress, isDisabled: true });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+      await user.click(screen.getByRole("button", { name: "Toggle" }));
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onPress).not.toHaveBeenCalled();
+    });
+
+    it("keeps a controlled value and still notifies onChange then onPress once", async () => {
+      const user = setupUser();
+      const { order, onChange, onPress } = pressOrder();
+      const [isSelected] = createSignal(false);
+      const { buttonProps, isSelected: resultSelected } = createToggleButton({
+        isSelected,
+        onChange,
+        onPress,
+      });
+
+      render(() => <button {...buttonProps}>Toggle</button>);
+      await user.click(screen.getByRole("button", { name: "Toggle" }));
+
+      expect(resultSelected()).toBe(false);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(true);
+      expect(onPress).toHaveBeenCalledTimes(1);
+      expect(order).toEqual(["onChange", "onPress"]);
     });
   });
 
