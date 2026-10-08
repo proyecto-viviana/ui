@@ -710,6 +710,7 @@ let resume_118 = false;
 let resume_visualmode = false;
 let landed_118 = "";
 let skip_624 = false;
+let skip_625 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -797,6 +798,20 @@ if args != () {
         }
     } catch (miss) {
         skip_624 = false;
+    }
+    try {
+        if args.skip_625 == true {
+            skip_625 = true;
+            skip_624 = true;
+            resume_visualmode = true;
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_625 = false;
     }
 }
 if smoke_flag == true {
@@ -1040,7 +1055,10 @@ if skip_checkpoint == false && stopped == false {
 
 if skip_landed == true {
     if resume_visualmode == true {
-        if skip_624 == true {
+        if skip_625 == true {
+            log("landed slices already recorded, visualmode queue resumes at 626");
+            next_label = "626";
+        } else if skip_624 == true {
             log("landed slices already recorded, visualmode queue resumes at 329");
             next_label = "329";
         } else {
@@ -1107,6 +1125,12 @@ if skip_landed == true {
                 if skip_624 == true {
                     book = seed_held(book, "624", "The shorter TreeView row needs an owner-approved public name; #520.", "No prop was minted. Upstream TreeViewStyleProps is only selectionStyle, and both styled trees still hard-code a 40px row. #624 stays open.");
                 }
+                if skip_625 == true {
+                    book = seed_done(book, "329", "d49bd450", "ActionMenu stays mounted on a TreeView item. Pointer, dispatch, and Enter open it. Ticket is verified.");
+                    book = seed_done(book, "84", "1fb7ec6f", "Keyboard reorder, reparent, and multi-selection landed, with the styled drag handle, insertion line, and drop-target chrome. Ticket stays in-progress. Touch long-press, TableView, GridList, drag preview, and mobile AT evidence remain.");
+                    book = seed_done(book, "623", "fa778c56", "Input and TextArea clear their input id outside the disposing owner and skip the write once the TextField owner is already disposed. Ticket is verified.");
+                    book = seed_held(book, "625", "F2, double press, commit, and cancel need a public edit-mode name the ticket does not approve. The name decision is #520.", "#625 stays open. #623 is on main. No edit-mode prop was minted.");
+                }
             }
         }
     }
@@ -1171,7 +1195,10 @@ if stopped == false {
         log("visualmode queue");
         let vm_ids = [624, 329, 84, 623, 625, 626, 627, 628];
         next_label = "624";
-        if skip_624 == true {
+        if skip_625 == true {
+            vm_ids = [626, 627, 628];
+            next_label = "626";
+        } else if skip_624 == true {
             vm_ids = [329, 84, 623, 625, 626, 627, 628];
             next_label = "329";
         }
@@ -1180,7 +1207,10 @@ if stopped == false {
         vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
         vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
         vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
-        if skip_624 == true {
+        if skip_625 == true {
+            vm_extra += "#624 and #625 are already held. Do not retry them and do not mint a name.\n";
+            vm_extra += "#329, #84, and #623 are already committed. Do not redo them. #84 stays in progress.\n";
+        } else if skip_624 == true {
             vm_extra += "#624 is already held. Do not retry it and do not mint a name for the 24px row.\n";
         }
         let vm = walk(vm_ids, vm_extra, impl_schema, skeptic_schema, commit_schema);
