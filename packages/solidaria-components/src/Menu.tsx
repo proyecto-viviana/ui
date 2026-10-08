@@ -1811,7 +1811,10 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       }
     >
       <OptionContent
-        render={renderProps.renderChildren}
+        // Snapshot children stay on the open-time render props, so the
+        // selection checkmark never picks up isFocusVisible. The stable view
+        // re-reads those props the way ListBox options do.
+        render={renderProps.renderChildrenStable}
         labelProps={itemAria.labelProps as JSX.HTMLAttributes<HTMLSpanElement>}
       />
     </Provider>

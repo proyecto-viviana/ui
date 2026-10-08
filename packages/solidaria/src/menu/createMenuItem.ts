@@ -22,7 +22,10 @@ import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "../interactions/createPress";
 import { createHover } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
-import { setInteractionModality } from "../interactions/createInteractionModality";
+import {
+  isFocusVisible as isGlobalFocusVisible,
+  setInteractionModality,
+} from "../interactions/createInteractionModality";
 import { createSelectableItem } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
@@ -320,8 +323,17 @@ export function createMenuItem<T>(
     },
   });
 
-  // Handle focus ring
-  const { isFocusVisible, focusProps } = createFocusRing();
+  // Handle focus ring. The ring follows the DOM node; menu-item
+  // `isFocusVisible` follows useMenuItem: collection focus, the global
+  // modality (virtual counts), and not an expanded trigger.
+  const { focusProps } = createFocusRing();
+  const isTriggerExpanded = () => {
+    if (!isTrigger()) return false;
+    const expanded = getProps()["aria-expanded"];
+    return expanded === true || expanded === "true";
+  };
+  const menuItemIsFocusVisible = () =>
+    isFocused() && isGlobalFocusVisible() && !isTriggerExpanded();
 
   // Generate unique IDs for label and description. The description + keyboard
   // ids use `createSlotId` (a 1:1 port of upstream `useSlotId`): each resolves
@@ -376,7 +388,7 @@ export function createMenuItem<T>(
         "aria-setsize": ariaSetSize,
         "data-selected": selected ? "true" : undefined,
         "data-focused": isFocused() ? "true" : undefined,
-        "data-focus-visible": isFocusVisible() ? "true" : undefined,
+        "data-focus-visible": menuItemIsFocusVisible() ? "true" : undefined,
         "data-pressed": isPressed() ? "true" : undefined,
         "data-disabled": isDisabled() ? "true" : undefined,
       };
@@ -414,7 +426,7 @@ export function createMenuItem<T>(
       return { id: keyboardId(), "aria-hidden": "true" as const };
     },
     isFocused,
-    isFocusVisible: () => isFocused() && isFocusVisible(),
+    isFocusVisible: menuItemIsFocusVisible,
     isPressed,
     isDisabled,
     isSelected,

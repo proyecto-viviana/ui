@@ -145,36 +145,54 @@ export const menuItemIconCenterWrapper = style({
   gridArea: "icon",
 });
 
-export const menuItemCheckmark = style<Pick<S2MenuItemStyleProps, "isSelected" | "isDisabled">>({
-  gridArea: "checkmark",
-  display: "block",
-  alignSelf: "center",
-  justifySelf: "center",
-  size: fontRelative(12),
-  marginEnd: "text-to-control",
+export const menuItemCheckmark = style<{
+  isSelected?: boolean;
+  isDisabled?: boolean;
+  isFocused?: boolean;
+  size?: S2MenuSize;
+}>({
   visibility: {
     default: "hidden",
     isSelected: "visible",
   },
+  gridArea: "checkmark",
+  color: baseColor("accent"),
   "--iconPrimary": {
     type: "fill",
     value: {
-      default: baseColor("accent"),
-      isDisabled: "gray-400",
-      forcedColors: "Highlight",
+      default: "currentColor",
+      forcedColors: {
+        default: "Highlight",
+        isFocused: "HighlightText",
+      },
     },
   },
+  marginEnd: "text-to-control",
+  aspectRatio: "square",
 });
 
-export const menuItemCheckbox = style<
-  Pick<S2MenuItemStyleProps, "isSelected" | "isFocused" | "isDisabled">
->({
-  ...controlBorderRadius("sm"),
+export const menuItemCheckbox = style({
   gridArea: "checkmark",
-  alignSelf: "center",
-  justifySelf: "center",
-  size: controlSize("sm"),
   marginEnd: "text-to-control",
+});
+
+// Upstream Menu merges Checkbox `box` at the call site. That helper stays
+// private on Checkbox, so the same recipe lives here.
+export const menuItemCheckboxBox = style<{
+  isSelected?: boolean;
+  isDisabled?: boolean;
+  isFocused?: boolean;
+  isFocusVisible?: boolean;
+  isIndeterminate?: boolean;
+  isReadOnly?: boolean;
+  isInvalid?: boolean;
+  isRequired?: boolean;
+  isEmphasized?: boolean;
+  size?: S2MenuSize;
+}>({
+  ...focusRing(),
+  ...controlBorderRadius("sm"),
+  size: controlSize("sm"),
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
@@ -188,8 +206,13 @@ export const menuItemCheckbox = style<
     default: "gray-25",
     forcedColors: "Background",
     isSelected: {
-      default: baseColor("accent-900"),
+      default: baseColor("neutral"),
+      isEmphasized: baseColor("accent-900"),
       forcedColors: "Highlight",
+      isInvalid: {
+        default: baseColor("negative-900"),
+        forcedColors: "Mark",
+      },
       isDisabled: {
         default: "gray-400",
         forcedColors: "GrayText",
@@ -199,6 +222,10 @@ export const menuItemCheckbox = style<
   borderColor: {
     default: baseColor("gray-800"),
     forcedColors: "ButtonBorder",
+    isInvalid: {
+      default: baseColor("negative"),
+      forcedColors: "Mark",
+    },
     isDisabled: {
       default: "gray-400",
       forcedColors: "GrayText",

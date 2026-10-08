@@ -72,6 +72,26 @@ import { createDragSession } from "../dnd/DragManager";
  */
 export const ITEM_ACTION_EVENT = "solidaria:item-action";
 
+/**
+ * Mouse-open menus keep DOM focus on the collection while the selected item
+ * stays the focused key. The item effect below would otherwise call
+ * `focusSafely` on that key. Not a package export.
+ */
+let itemDOMFocusSuppressed = 0;
+
+export function whileItemDOMFocusSuppressed(run: () => void): void {
+  itemDOMFocusSuppressed += 1;
+  try {
+    run();
+  } finally {
+    // createTrackedEffect flushes on a microtask queued by the write.
+    // Drop the flag on a later microtask so that flush still sees it.
+    queueMicrotask(() => {
+      itemDOMFocusSuppressed -= 1;
+    });
+  }
+}
+
 /** How links in the collection behave relative to selection and actions. */
 export type LinkBehavior = "action" | "selection" | "override" | "none";
 
@@ -356,6 +376,10 @@ export function createSelectableItem<T>(
     }
 
     if (key() !== manager.focusedKey() || !manager.isFocused()) {
+      return;
+    }
+
+    if (itemDOMFocusSuppressed > 0) {
       return;
     }
 

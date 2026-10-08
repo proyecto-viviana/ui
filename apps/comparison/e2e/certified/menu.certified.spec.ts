@@ -24,8 +24,8 @@ import { expect } from "@playwright/test";
  * `Menu.tsx`. That dialog carries the viewport cap
  * (`max-width: calc(100vw - 24px)`) and the Popover opacity/translate
  * enter/exit. It is its own D1/D3 scenario (#106), not folded into the list:
- * item parts, the #107 `outline-color` channel, and the roving-tabindex trail
- * stay on the menu, and the dialog's dismiss buttons stay out of that trail.
+ * item parts and the roving-tabindex trail stay on the menu, and the dialog's
+ * dismiss buttons stay out of that trail.
  *
  * OVERLAY PATTERN (mirrors popover.certified.spec.ts): the menu portals to a
  * page-level container, so targets resolve from `page`, NOT `canvas`. Both panels
@@ -40,14 +40,10 @@ import { expect } from "@playwright/test";
  * grid areas, fonts, colors, and the byte-copied `transition` map are asserted
  * per size.
  *
- * CASES — `selectionMode:none` (the default) is pinned for all three so items
- * render `role="menuitem"` with NO selection indicator; the `size` S/M/L cases
- * certify the `menuItemGrid` edge-to-text tracks and the size-keyed
- * label/description fonts. The single/multiple selection indicators
- * (`menuItemCheckmark`/`menuItemCheckbox`) carry their own tracked divergences
- * (single checkmark's `aria-hidden`/`data-rsp-slot` + accent style; multiple's
- * hand-rolled checkbox box vs upstream's shared `box`) and are DEFERRED, so no
- * selection case is exercised here.
+ * CASES — `selectionMode:none` is pinned for the list so items render
+ * `role="menuitem"` with no selection indicator and the icon part stays the
+ * content glyph. Single and multiple indicators are the selection scenarios
+ * below (#107).
  *
  * SCOPE — applicable drivers: D1 (list box + item parts), D3 (pixel: the painted
  * list — icon glyphs are byte-identical across the two fixtures, so the strict
@@ -152,30 +148,11 @@ const listScenario: DriverScenario = {
     icon: itemIcon,
   },
   // Default allowlist covers color/bg/border/radius/font/padding/margin/gap/
-  // width/height/display/transform/transition. Add the list box constraints the
-  // `menu` style drives beyond it: `max-width` (the 320 cap) and the
-  // `overflow-x`/`overflow-y` pair (upstream's popover `overflow:auto` on both
-  // axes).
-  //
-  // REMOVE `outline-color`: it is an UNOBSERVABLE computed-style channel, not an
-  // independent style bug. Both stacks now render the menu as `<div role="menu">`
-  // (the ul→div element-type refactor landed) and
-  // NEITHER element carries ANY outline-color CSS rule; both compute
-  // `outline-style: none`, so nothing paints. Chromium still reports a computed
-  // `outline-color`: upstream resolves it to a theme-invariant value
-  // (`rgb(16,16,16)`), the port to `currentColor` (the neutral menu text color,
-  // `light-dark(rgb(41,41,41), rgb(219,219,219))`). This is a `color`-INHERITANCE
-  // delta, NOT the `<ul>`-vs-`<div>` UA quirk it was first charged to: the div↔div
-  // refactor did NOT retire it (verified empirically — dropping this removal fails
-  // 12 D1 cases with `outline-color` `rgb(16,16,16)`↔`currentColor`). `outline-style`
-  // + `outline-width` STAY in the comparison (both `none`/`0` on both stacks), so
-  // the "menu list paints no outline" contract is still certified; only the
-  // unpainted `outline-color` channel is excluded. Closing it for real means
-  // aligning the menu root's inherited `color` so `currentColor` matches upstream's
-  // value — tracked by ticket #107, zero paint effect.
+  // width/height/display/transform/transition, including `outline-color`.
+  // Add the list box constraints the `menu` style drives beyond it:
+  // `max-width` (the 320 cap) and the `overflow-x`/`overflow-y` pair.
   styleProps: {
     add: ["max-width", "overflow-x", "overflow-y"],
-    remove: ["outline-color"],
   },
   // D7: the item label + description copy on the `layer-2` menu surface, both
   // themes. Size-independent, so one case is the whole contrast surface.
@@ -227,7 +204,7 @@ registerAxTreeDriver(listScenario);
  * each axis stays where it was requested: top, left, right, and bottom/end.
  * D1 adds the surface `max-width` cap and `box-sizing`. No arrow parts
  * (`hideArrow`). D5/D6/D7 stay on the list — dismiss buttons and the menu AX
- * tree are not re-certified here. Outline-color on the menu list stays #107.
+ * tree are not re-certified here.
  */
 const surfaceScenario: DriverScenario = {
   slug: "menu",
@@ -324,3 +301,102 @@ const menuMotionScenario: DriverScenario = {
 };
 
 registerMotionDriver(menuMotionScenario);
+
+/** An item by accessible name: action, radio (single), or checkbox (multiple). */
+const menuItemNamed = (page: Page, name: string) => {
+  const menu = page.getByRole("menu", { name: menuName });
+  return menu
+    .getByRole("menuitem", { name })
+    .or(menu.getByRole("menuitemradio", { name }))
+    .or(menu.getByRole("menuitemcheckbox", { name }));
+};
+
+const selectedIndicator = (page: Page) => menuItemNamed(page, "Copy").locator("svg").first();
+const unselectedIndicator = (page: Page) => menuItemNamed(page, "Delete").locator("svg").first();
+/** Selected "Copy" indicator. Single mode hides the other rows' checkmarks. */
+const checkmarkSelected: TargetResolver = ({ page }) => selectedIndicator(page);
+/** Unselected "Delete" indicator (hidden checkmark, or the empty checkbox). */
+const checkmarkUnselected: TargetResolver = ({ page }) => unselectedIndicator(page);
+/** Multiple-mode checkbox box around the selected "Copy" icon. */
+const checkboxSelected: TargetResolver = ({ page }) => selectedIndicator(page).locator("..");
+/** Multiple-mode checkbox box around the unselected "Delete" icon. */
+const checkboxUnselected: TargetResolver = ({ page }) => unselectedIndicator(page).locator("..");
+
+const selectionStyleProps = {
+  add: ["max-width", "overflow-x", "overflow-y", "visibility", "aspect-ratio"],
+};
+
+/** Single selection. Copy is selected; Delete's checkmark stays hidden. */
+const singleSelectionScenario: DriverScenario = {
+  slug: "menu",
+  title: "Menu single selection",
+  beforePanel: openMenu,
+  afterPanel: closeMenu,
+  target: menuList,
+  pixelTarget: menuList,
+  states: ["default"],
+  settleMs: 500,
+  cases: [
+    { id: "size-s", params: { size: "S", selectionMode: "single" } },
+    { id: "size-m", params: { size: "M", selectionMode: "single" } },
+    { id: "size-l", params: { size: "L", selectionMode: "single" } },
+  ],
+  parts: {
+    checkmarkSelected,
+    checkmarkUnselected,
+  },
+  styleProps: selectionStyleProps,
+  contrast: {
+    cases: ["size-m"],
+    root: menuList,
+  },
+  ax: {
+    cases: ["size-m"],
+    roots: {
+      menu: menuList,
+    },
+  },
+};
+
+/** Multiple selection. Copy and Duplicate are selected; Delete is not. */
+const multipleSelectionScenario: DriverScenario = {
+  slug: "menu",
+  title: "Menu multiple selection",
+  beforePanel: openMenu,
+  afterPanel: closeMenu,
+  target: menuList,
+  pixelTarget: menuList,
+  states: ["default"],
+  settleMs: 500,
+  cases: [
+    { id: "size-s", params: { size: "S", selectionMode: "multiple" } },
+    { id: "size-m", params: { size: "M", selectionMode: "multiple" } },
+    { id: "size-l", params: { size: "L", selectionMode: "multiple" } },
+  ],
+  parts: {
+    checkmarkSelected,
+    checkmarkUnselected,
+    checkboxSelected,
+    checkboxUnselected,
+  },
+  styleProps: selectionStyleProps,
+  contrast: {
+    cases: ["size-m"],
+    root: menuList,
+  },
+  ax: {
+    cases: ["size-m"],
+    roots: {
+      menu: menuList,
+    },
+  },
+};
+
+registerStateMatrixDriver(singleSelectionScenario);
+registerPixelDriver(singleSelectionScenario);
+registerContrastDriver(singleSelectionScenario);
+registerAxTreeDriver(singleSelectionScenario);
+registerStateMatrixDriver(multipleSelectionScenario);
+registerPixelDriver(multipleSelectionScenario);
+registerContrastDriver(multipleSelectionScenario);
+registerAxTreeDriver(multipleSelectionScenario);

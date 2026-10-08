@@ -24,8 +24,7 @@ import { expect } from "@playwright/test";
  *      measures the canvas button directly — no open.
  *
  *   2. LIST (opened) — the `role="menu"` list, driven by `menuSize` S/M/L.
- *      It re-runs the Menu list drivers and keeps the list's tracked
- *      `outline-color` removal (#107).
+ *      It re-runs the Menu list drivers with the same computed-style allowlist.
  *
  *   3. SURFACE (opened) — the shared S2 `Popover` dialog ActionMenu renders
  *      (`hideArrow`, `padding="none"`, viewport cap, Popover enter/exit),
@@ -49,12 +48,8 @@ import { expect } from "@playwright/test";
  *   own press transition never leaks in. No `beforePanel`: the freezer is
  *   already running when the trigger opens the menu.
  *
- * The LIST scenario carries CP9.32's tracked/deferred artifacts UNCHANGED:
- *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style channel
- *     (both stacks now `<div role="menu">`; `outline-style:none` on both, zero paint).
- *     A `color`-inheritance delta, NOT retired by the ul→div refactor (see CP9.37).
- *   - D4/D8 (open-on-press, type-ahead, `onAction`, hit-area) are
- *     `MenuTrigger`/collection/interaction behaviors, not paint — trigger unit.
+ * D4/D8 (open-on-press, type-ahead, `onAction`, hit-area) are
+ * `MenuTrigger`/collection/interaction behaviors, not paint — trigger unit.
  */
 
 const triggerName = "More actions";
@@ -120,8 +115,7 @@ const triggerScenario: DriverScenario = {
 };
 
 /** Scenario 2 — the opened list, proving faithful composition of the certified
- *  Menu across ActionMenu's `menuSize`. Mirrors menu.certified.spec.ts exactly,
- *  including the tracked `outline-color` removal (CP9.32). */
+ *  Menu across ActionMenu's `menuSize`. */
 const listScenario: DriverScenario = {
   slug: "actionmenu",
   title: "ActionMenu list",
@@ -144,13 +138,9 @@ const listScenario: DriverScenario = {
     icon: itemIcon,
   },
   // Add the list-box constraints beyond the default allowlist (`max-width` cap +
-  // both `overflow` axes); remove the unobservable `outline-color` channel — a
-  // `color`-inheritance delta (both stacks now `<div role="menu">`;
-  // `outline-style:none` on both, zero paint; `outline-style`/`outline-width` stay
-  // asserted). NOT retired by the ul→div refactor (CP9.37); tracked separately.
+  // both `overflow` axes). `outline-color` stays in the default allowlist.
   styleProps: {
     add: ["max-width", "overflow-x", "overflow-y"],
-    remove: ["outline-color"],
   },
   contrast: {
     cases: ["size-m"],
@@ -200,7 +190,7 @@ registerAxTreeDriver(listScenario);
  * The shared Popover dialog. `menuSize` follows the list. Placements pin
  * `shouldFlip` so each axis stays where it was requested. D1 adds the surface
  * `max-width` cap and `box-sizing`. No arrow parts (`hideArrow`). D5/D6/D7
- * stay on the list. Outline-color on the menu list stays #107.
+ * stay on the list.
  */
 const surfaceScenario: DriverScenario = {
   slug: "actionmenu",

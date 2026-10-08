@@ -4,9 +4,14 @@ type: task
 title: "Certify Menu selection visuals"
 created: 2026-08-20
 parent: 24
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the completed Menu recertification record" }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "single and multiple selection indicators match upstream; outline-color stays in the allowlist; Menu and ActionMenu D1, D3, D6, and D7 pass",
+    }
 ---
 
 Close the remaining Menu and ActionMenu list-style exclusions.

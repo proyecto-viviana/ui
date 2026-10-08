@@ -25,6 +25,7 @@ import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { createTypeSelect } from "../selection/createTypeSelect";
+import { whileItemDOMFocusSuppressed } from "../selection/createSelectableItem";
 import { selectItem } from "../selection/selectItem";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -270,19 +271,31 @@ export function createMenu<T>(
     autoFocusDone = true;
     cancelAutoFocus = runAfterPaint(() => {
       cancelAutoFocus = undefined;
+      const focusMenuRoot = () => {
+        const el = ref?.();
+        if (el) {
+          // Mouse-open focuses the menu root. Chromium's used outline for
+          // `outline-style: none` is the 1px unspecified sentinel only while
+          // that element is `document.activeElement`.
+          focusSafely(el, { focusVisible: true });
+        }
+      };
+      // Boolean `autoFocus` is the pointer open. A selection keeps the item
+      // as the focused key (tabindex 0, data-focused) but DOM focus stays on
+      // the menu, matching the published React menu. "first" / "last" still
+      // move real focus onto the item.
+      if (autoFocus === true && focusedKey != null) {
+        whileItemDOMFocusSuppressed(() => {
+          state.setFocused(true);
+          state.setFocusedKey(focusedKey);
+          focusMenuRoot();
+        });
+        return;
+      }
       state.setFocused(true);
       state.setFocusedKey(focusedKey);
       if (focusedKey == null) {
-        const el = ref?.();
-        if (el) {
-          // Mouse-open (`autoFocus: true`) focuses the menu root. React's
-          // useEffect-timed `focusSafely` lands CSS `:focus-visible` on that
-          // tabindex=0 collection, so D1 `outline-width` is the UA 1px even
-          // though author CSS sets `outline-style: none`. Solid's after-paint
-          // focus otherwise stays outside `:focus-visible` (UA medium 3px).
-          // Request `focusVisible` so the collection root matches.
-          focusSafely(el, { focusVisible: true });
-        }
+        focusMenuRoot();
       }
     });
   });

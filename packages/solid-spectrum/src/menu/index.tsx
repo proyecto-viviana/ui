@@ -66,6 +66,7 @@ import {
   menuItemDescriptorIcon,
   menuItem as s2MenuItem,
   menuItemCheckbox,
+  menuItemCheckboxBox,
   menuItemCheckboxIcon,
   menuItemCheckmark,
   menuItemDescription,
@@ -109,11 +110,11 @@ const linkOutIconSize: Record<S2MenuSize, "M" | "L" | "XL"> = {
   L: "XL",
   XL: "XL",
 };
-const selectionIconSize: Record<S2MenuSize, "XS" | "S" | "M" | "L"> = {
+const checkmarkIconSize: Record<S2MenuSize, "XS" | "M" | "L" | "XL"> = {
   S: "XS",
-  M: "S",
-  L: "M",
-  XL: "L",
+  M: "M",
+  L: "L",
+  XL: "XL",
 };
 
 export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class" | "style"> {
@@ -615,9 +616,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
           }
         >
           <CheckmarkIcon
-            aria-hidden="true"
-            data-rsp-slot="selection-indicator"
-            size={selectionIconSize[size]}
+            size={checkmarkIconSize[size]}
             class={menuItemCheckmark(itemStyleProps(contentProps.renderProps))}
           />
         </Show>
@@ -627,18 +626,23 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
             !contentProps.renderProps.hasSubmenu
           }
         >
-          <span
-            aria-hidden="true"
-            data-rsp-slot="selection-indicator"
-            class={menuItemCheckbox(itemStyleProps(contentProps.renderProps))}
+          <div
+            class={mergeStyles(
+              menuItemCheckbox,
+              menuItemCheckboxBox({
+                ...contentProps.renderProps,
+                size,
+                isFocused: false,
+                isFocusVisible: false,
+                isIndeterminate: false,
+                isReadOnly: false,
+                isInvalid: false,
+                isRequired: false,
+              }),
+            )}
           >
-            <Show when={contentProps.renderProps.isSelected}>
-              <CheckmarkIcon
-                size={selectionIconSize[size]}
-                class={menuItemCheckboxIcon as unknown as string}
-              />
-            </Show>
-          </span>
+            <CheckmarkIcon size={size} class={menuItemCheckboxIcon} />
+          </div>
         </Show>
         {local.icon?.()}
         {isTextOnlyChildren(children) ? <Text slot="label">{children}</Text> : children}
