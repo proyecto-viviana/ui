@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { cleanup, render, screen, within } from "@solidjs/testing-library";
+import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Breadcrumb, BreadcrumbItem, Breadcrumbs, BreadcrumbsContext } from "../src/breadcrumbs";
 import * as BreadcrumbsSubpath from "../src/Breadcrumbs";
@@ -187,5 +187,103 @@ describe("Breadcrumbs (solid-spectrum)", () => {
     expect(currentItem).toHaveAttribute("aria-current", "page");
     // Non-current items are links
     expect(screen.getAllByRole("link")).toHaveLength(2);
+  });
+
+  it("tabs through links, activates the focused crumb, and announces the current page", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <Breadcrumbs
+        items={crumbItems}
+        getKey={(item) => item.id}
+        onAction={onAction}
+        aria-label="Project location"
+      >
+        {(item) => <Breadcrumb href={item.href}>{item.label}</Breadcrumb>}
+      </Breadcrumbs>
+    ));
+
+    const list = screen.getByRole("list", { name: "Project location" });
+    expect(list).toHaveAttribute("aria-label", "Project location");
+
+    const home = screen.getByRole("link", { name: "Home" });
+    const spectrum = screen.getByRole("link", { name: "React Spectrum" });
+    const current = screen.getByText("Breadcrumbs");
+    expect(current).toHaveAttribute("aria-current", "page");
+    expect(current).not.toHaveAttribute("tabindex");
+    expect(screen.queryByRole("link", { name: "Breadcrumbs" })).not.toBeInTheDocument();
+
+    home.focus();
+    expect(home).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(onAction).toHaveBeenCalledWith("home");
+
+    await user.tab();
+    expect(spectrum).toHaveFocus();
+    await user.tab();
+    expect(current).not.toHaveFocus();
+  });
+
+  it("keeps a disabled breadcrumb out of the tab order and ignores keyboard activation", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <Breadcrumbs
+        items={crumbItems}
+        getKey={(item) => item.id}
+        isDisabled
+        onAction={onAction}
+        aria-label="Disabled breadcrumbs"
+      >
+        {(item) => <Breadcrumb href={item.href}>{item.label}</Breadcrumb>}
+      </Breadcrumbs>
+    ));
+
+    const home = screen.getByText("Home");
+    expect(home).toHaveAttribute("aria-disabled", "true");
+    expect(home).not.toHaveAttribute("tabindex", "0");
+    home.focus();
+    expect(home).not.toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it("opens the overflow menu from the keyboard and restores focus on Escape", async () => {
+    const user = setupUser();
+    const onAction = vi.fn();
+    render(() => (
+      <Breadcrumbs
+        items={overflowItems}
+        getKey={(item) => item.id}
+        onAction={onAction}
+        aria-label="Overflow breadcrumbs"
+      >
+        {(item) => <Breadcrumb href={item.href}>{item.label}</Breadcrumb>}
+      </Breadcrumbs>
+    ));
+
+    const trigger = screen.getByRole("button", { name: "More items" });
+    expect(trigger).toHaveAttribute("aria-label", "More items");
+    trigger.focus();
+    await user.keyboard("{ArrowDown}");
+
+    const menu = await screen.findByRole("menu", { name: "More items" });
+    const files = within(menu).getByRole("menuitem", { name: "Files" });
+    await waitFor(() => expect(files).toHaveFocus());
+
+    await user.keyboard("{Enter}");
+    expect(onAction).toHaveBeenCalledWith("files");
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    trigger.focus();
+    await user.keyboard("{ArrowDown}");
+    const reopened = await screen.findByRole("menu", { name: "More items" });
+    await waitFor(() =>
+      expect(within(reopened).getByRole("menuitem", { name: "Files" })).toHaveFocus(),
+    );
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
   });
 });

@@ -93,6 +93,14 @@
 - [x] Focused package tests:
       `vp test run packages/solid-spectrum/test/Breadcrumbs.test.tsx packages/solidaria-components/test/Breadcrumbs.test.tsx`
       (`38` passed).
+- [x] Keyboard, focus, and current-page contract (#50):
+      `vp test run packages/solid-spectrum/test/Breadcrumbs.test.tsx`
+      (`11` passed). Tab stays on links, Enter activates the focused crumb,
+      the current item exposes `aria-current="page"` and is not a tab stop,
+      a disabled crumb leaves the tab order, and the overflow menu opens from
+      ArrowDown, selects on Enter, and restores focus on Escape. The
+      announcement surface is the list name, the current page, and the
+      `More items` menu name.
 - [x] Package build:
       `vp run --filter @proyecto-viviana/solid-spectrum build`.
 - [x] Comparison build:
