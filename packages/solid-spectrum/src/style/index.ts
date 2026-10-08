@@ -26,6 +26,7 @@ import type { MacroContext } from "@parcel/macros";
 
 export { baseColor, color, lightDark, colorMix, size, style } from "./spectrum-theme";
 export { css } from "./style-macro";
+export { prose } from "./prose";
 export { centerPadding, setColorScheme } from "../s2-internal/style-utils";
 export type { StyleString } from "./types";
 
