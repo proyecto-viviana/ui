@@ -4,7 +4,8 @@ type: task
 title: "Stop Card and TableCell from rebuilding their content on hover, press, and focus"
 created: 2026-10-08
 parent: 24
-status: verified
+status: in-progress
+blocked: true
 history:
   - {
       state: open,
@@ -15,6 +16,11 @@ history:
       state: verified,
       at: 2026-10-08,
       note: "Chromium: a TextField in a TableCell keeps its text and focus when the pointer moves onto the next cell, and that cell reports hovered. An open menu in a Card stays open across hover, press, and focus. Mounts stay at 1 for solid-spectrum and viviana-ui. A pre-existing focus-within proxy throws on that focus and does not dismiss the menu.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Paired runtime experiment reopens qualification: current destructured booleans stay stale; tracked callback reruns dispose fresh stateful children. Exact source/test restoration leaves the inherited red unchanged. Owner compatibility/design disposition is pending.",
     }
 ---
 
@@ -108,3 +114,69 @@ compiled transforms, superseded blocker receipts, and final identities are
 bound by `/tmp/ui-630-evidence-manifest.json`. Independent conductor review
 and exact-generation owned stop remain pending; no full-ticket/native/release
 closure is claimed.
+
+## Paired runtime experiment admission — 2026-10-08
+
+Registered source implementer `f321f8ac-9826-4b51-9050-c1d10ba8b978` on base
+`a424db2065017ce447bd66317a1df0e348b38364`; prior #54 owned stop reports closed.
+Eligibility matches canonical policy; initial tracked inventory is clean.
+Owner-authorized Codex fallback runs the bounded reversible experiment. Only
+Table.tsx and Table.test.tsx may change temporarily, under double byte restoration;
+final writes are this ticket and generated status/roadmap. Conductor owns
+acceptance, owned stop and commit. No browser/build/compiler rerun or durable
+regression change is authorized by this experiment. Evidence uses
+`/tmp/ui-630-runtime-*`.
+
+### Measured runtime boundary and decision debt
+
+Initial full owning Table command, on the admitted source/test hashes:
+`vp test run packages/solidaria-components/test/Table.test.tsx --maxWorkers=1`
+reports **169 passed / 1 failed**, exit 1. The unchanged destructured header
+focus assertion passes; the cell expects `Foo (focused)` and receives `Foo`
+at line 3932. This is a new measurement, not a reused historical count.
+
+Four temporary paired controls cover default/custom hosts and fresh/retained
+stateful children. Identical final experimental tests give current **4 failed**,
+trial **2 passed / 2 failed**, restored source **4 failed**; each skips the 170
+original tests and exits 1. The restored observations exactly match current.
+Attempt 1 and its preliminary triple are archived with hashes. The valid effect
+cleanup correction is retained; a conductor-requested producer observation
+correction separates live getters from custom-host snapshot attributes.
+No temporary assertion, source change, or extra red test remains in the suite.
+
+Current source invokes each callback once. Both child compositions retain one
+mount, zero disposals, original connected nodes, input value, backward selection
+and local button state. Focus/hover destructured text stays false. The temporary
+one-line tracked insertion makes callback values current but fresh children
+reach five mounts/four disposals: the first cell-focus transition already
+replaces input/button and prevents returning focus to the original input.
+Later hover observations retain that failure; they do not isolate an independent
+hover-only replacement. The original detached button no longer updates its DOM.
+
+Both retained controls pass the trial, with seven callbacks but one mount/zero
+disposals, live independent effects, text, caret and focus intact. Captured live
+child getters confirm focus/hover producers on both hosts and source variants.
+The callback still destructures those getters into booleans inside its body.
+Default-host state attributes are asserted. Custom-host spread attributes remain
+frozen and are recorded separately; they are not evidence of producer failure.
+This existing custom-render limitation was not repaired and host ordering was
+not changed. Real DOM dispatch observations are untrusted jsdom events, not
+browser native proof. This is an experiment, not an accepted product fix or a
+passing release gate.
+
+Both source and tests were restored in `finally`, byte-identically to admission;
+their final git diff is empty. Full baseline is bound to those same hashes.
+Accepted #54 compiler qualification is reused: generation
+`01d2dec7-aa09-4584-bd17-93841b552f9b`, qualified typecheck exit 2, 15 inherited
+script diagnostics. Exact accepted source/compiler inputs match. No compiler
+rerun or runtime-correctness claim follows from that receipt.
+
+Owner choices are now concrete: deliberately narrow consumer compatibility to
+reactive getter reads; scope a compiler/reconciliation design separately; or
+hold. The tested rerun does not meet original stateful-identity acceptance.
+Neither boolean assertions nor public contracts have been amended. These
+installed-runtime results do not exhaust compiler transformations or specialized
+compositions. A later approved repair must add durable passing regressions;
+original Card/Table browser qualification remains open. Handoff, executable
+patches, raw logs, observations, restoration and manifests use the authorized
+`ui-630-runtime-` evidence prefix in the external temporary directory.
