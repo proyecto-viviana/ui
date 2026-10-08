@@ -212,7 +212,7 @@ retained the same four indicator failures on both sources. This evidence is
 not a green consumption check or permission to change product styling.
 
 After #638's exact generation stopped with closed=true and its accepted repair
-was committed in bc1dd87b, register `ui-542-styled-owning-codex-20261008` as
+was committed in bc1dd87b, register `ui-542-styled-20261008` as
 sole OS/herdr worker in eligible repo:ui main using
 `/tmp/ui-styled-owning-dispatch-2026-10-08.md`. Codex astra low handles the
 Solid deferred-cleanup hard slice under Decision 040 after Grok quota and AGY
@@ -245,3 +245,11 @@ SSR/hydration requirements or repair #557 native focus debt. Save actual base
 HEAD/generation, exact check receipts and all changed-path digests in
 `/tmp/ui-styled-owning-worker-result-2026-10-08.md`; broader candidate gates
 remain open.
+
+Launch-name correction: the first requested name exceeded the terminal engine's
+32-character bound. The start returned invalid_agent_name before startSession
+side effects or launch registration; a fresh engine list returned no agents.
+There is no generation to prompt or stop for that failed request (delivery
+312cdb6f-4aa2-4520-b1b7-516bccb17146). Use the shorter registered name above;
+exact write scope and normal controls stay unchanged. This is a launch repair,
+not source acceptance.
