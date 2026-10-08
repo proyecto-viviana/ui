@@ -16,7 +16,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Card.tsx.
 
-import { Show, createContext, useContext } from "solid-js";
+import { Show, createContext, createSignal, getOwner, runWithOwner, useContext } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
@@ -790,10 +790,76 @@ export function Card(props: CardProps): JSX.Element {
   const itemKey = () => local.id as Key | undefined;
   const children = () => (
     <CardProviders size={size} layout={layout} isSkeleton={isSkeleton}>
-      {renderCardChildren(local.children, { size: size() })}
+      {renderCardChildren(local.children, {
+        get size() {
+          return size();
+        },
+      })}
     </CardProviders>
   );
   const press = () => pressScale(() => rootElement, local.UNSAFE_style);
+  // The grid and link render callbacks re-run on hover, press, and focus.
+  // Build the card body once under this Card, and publish those flags as
+  // signal reads on one context object. A new context value each run would
+  // be invisible to children that already captured the first one, and a new
+  // element each run is what drops an open menu.
+  const cardOwner = getOwner();
+  // The grid/link callback runs inside the item render computation. These
+  // signals mirror that snapshot for children; ownedWrite is the supported
+  // opt-in for a write that has to happen there.
+  const [hovered, setHovered] = createSignal(false, { ownedWrite: true });
+  const [pressed, setPressed] = createSignal(false, { ownedWrite: true });
+  const [focusVisible, setFocusVisible] = createSignal(false, { ownedWrite: true });
+  const [selected, setSelected] = createSignal(false, { ownedWrite: true });
+  const [checkboxSelection, setCheckboxSelection] = createSignal(false, { ownedWrite: true });
+  const interactionContext: InternalCardContextValue = {
+    get isQuiet() {
+      return isQuiet();
+    },
+    get size() {
+      return size();
+    },
+    get itemKey() {
+      return itemKey();
+    },
+    get isSelected() {
+      return selected();
+    },
+    get isHovered() {
+      return hovered();
+    },
+    get isFocusVisible() {
+      return focusVisible();
+    },
+    get isPressed() {
+      return pressed();
+    },
+    get isCheckboxSelection() {
+      return checkboxSelection();
+    },
+  };
+  const applyInteraction = (renderProps: {
+    isHovered: boolean;
+    isPressed: boolean;
+    isFocusVisible: boolean;
+    isSelected?: boolean;
+    selectionMode?: string;
+    selectionBehavior?: string;
+  }) => {
+    setHovered(renderProps.isHovered);
+    setPressed(renderProps.isPressed);
+    setFocusVisible(renderProps.isFocusVisible);
+    setSelected(renderProps.isSelected ?? false);
+    setCheckboxSelection(
+      renderProps.selectionMode !== "none" && renderProps.selectionBehavior === "toggle",
+    );
+  };
+  const mountOnce = (build: () => JSX.Element): JSX.Element =>
+    cardOwner ? runWithOwner(cardOwner, build) : build();
+  let linkSurface: JSX.Element | undefined;
+  let linkBuilt = false;
+  let gridSurface: JSX.Element | undefined;
+  let gridBuilt = false;
 
   const linkCard = () => (
     <HeadlessLink
@@ -818,20 +884,16 @@ export function Card(props: CardProps): JSX.Element {
       data-density={density()}
       data-variant={variant()}
     >
-      {(renderProps: LinkRenderProps) => (
-        <InternalCardContext
-          value={toInternalCardContext({
-            size: size(),
-            itemKey: itemKey(),
-            isQuiet: isQuiet(),
-            isHovered: renderProps.isHovered,
-            isFocusVisible: renderProps.isFocusVisible,
-            isPressed: renderProps.isPressed,
-          })}
-        >
-          {children()}
-        </InternalCardContext>
-      )}
+      {(renderProps: LinkRenderProps) => {
+        applyInteraction(renderProps);
+        if (!linkBuilt) {
+          linkBuilt = true;
+          linkSurface = mountOnce(() => (
+            <InternalCardContext value={interactionContext}>{children()}</InternalCardContext>
+          ));
+        }
+        return linkSurface;
+      }}
     </HeadlessLink>
   );
 
@@ -886,26 +948,22 @@ export function Card(props: CardProps): JSX.Element {
       data-variant={variant()}
     >
       {(renderProps: GridListItemRenderProps) => {
-        const isCheckboxSelection =
-          renderProps.selectionMode !== "none" && renderProps.selectionBehavior === "toggle";
-        return (
-          <InternalCardContext
-            value={toInternalCardContext({
-              size: size(),
-              itemKey: itemKey(),
-              isQuiet: isQuiet(),
-              isSelected: renderProps.isSelected,
-              isHovered: renderProps.isHovered,
-              isFocusVisible: renderProps.isFocusVisible,
-              isPressed: renderProps.isPressed,
-              isCheckboxSelection,
-            })}
-          >
-            {!isQuiet() && <SelectionIndicator />}
-            {!isQuiet() && isCheckboxSelection && <CardCheckbox />}
-            <div class={displayContents}>{children()}</div>
-          </InternalCardContext>
-        );
+        applyInteraction(renderProps);
+        if (!gridBuilt) {
+          gridBuilt = true;
+          gridSurface = mountOnce(() => (
+            <InternalCardContext value={interactionContext}>
+              <Show when={!isQuiet()}>
+                <SelectionIndicator />
+              </Show>
+              <Show when={!isQuiet() && checkboxSelection()}>
+                <CardCheckbox />
+              </Show>
+              <div class={displayContents}>{children()}</div>
+            </InternalCardContext>
+          ));
+        }
+        return gridSurface;
       }}
     </HeadlessGridListItem>
   );

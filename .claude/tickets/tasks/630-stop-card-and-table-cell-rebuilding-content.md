@@ -4,12 +4,17 @@ type: task
 title: "Stop Card and TableCell from rebuilding their content on hover, press, and focus"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-10-08,
       note: "D16: a Card in a CardView and a TableCell rebuild their content on hover, press and focus, which drops state held inside (an open menu, typed text). Found in a real browser on 0.8.0-rc.0; happy-dom does not show it.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "Chromium: a TextField in a TableCell keeps its text and focus when the pointer moves onto the next cell, and that cell reports hovered. An open menu in a Card stays open across hover, press, and focus. Mounts stay at 1 for solid-spectrum and viviana-ui. A pre-existing focus-within proxy throws on that focus and does not dismiss the menu.",
     }
 ---
 

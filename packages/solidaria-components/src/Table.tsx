@@ -2338,9 +2338,49 @@ export function TableCell(props: TableCellProps): JSX.Element {
     return rest;
   };
 
+  // Getter view, same shape as the row's childRenderProps. A function child is
+  // invoked once; later hover, press, and focus updates flow through these
+  // reads instead of rebuilding the cell.
+  const childRenderProps: TableCellRenderProps = {
+    get isFocused() {
+      return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible() && isFocused();
+    },
+    get isFocusVisibleWithinRow() {
+      return rowFocus.isFocusVisibleWithinRow;
+    },
+    get columnIndex() {
+      return cellColumnIndex() ?? 0;
+    },
+    get isPressed() {
+      return isPressed();
+    },
+    get isHovered() {
+      return isHovered();
+    },
+    get isTreeColumn() {
+      return isTreeColumn();
+    },
+    get isExpanded() {
+      return cellIsExpanded();
+    },
+    get hasChildItems() {
+      return cellHasChildItems();
+    },
+    get level() {
+      return cellLevel();
+    },
+  };
+
   const cellChildren = () => {
     const rawChildren = local.children;
-    return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
+    // Zero-arg functions are accessors. Return them so insertion unwraps them.
+    if (typeof rawChildren !== "function" || rawChildren.length === 0) {
+      return rawChildren;
+    }
+    return rawChildren(childRenderProps);
   };
   const cellAttrs = () =>
     ({
@@ -2367,15 +2407,16 @@ export function TableCell(props: TableCellProps): JSX.Element {
     }) as JSX.TdHTMLAttributes<HTMLTableCellElement>;
 
   if (local.render) {
-    return local.render({ ...cellAttrs(), children: cellChildren() }, renderValues());
+    return local.render({ ...cellAttrs(), children: untrack(cellChildren) }, renderValues());
   }
 
   // JSX children, not an eager `children` entry in the spread object — see
   // TableColumn: the element's hydration key must precede its children on
-  // both the server and the client.
+  // both the server and the client. untrack keeps this insert from
+  // subscribing to hover, press, or focus, so the child is created once.
   return (
     <TableHost hostTag="td" virtualized={tableContext.isVirtualized} {...cellAttrs()}>
-      {cellChildren()}
+      {untrack(cellChildren)}
     </TableHost>
   );
 }
