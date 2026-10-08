@@ -469,6 +469,47 @@ describe("TreeView (solid-spectrum)", () => {
     expect(screen.getByRole("row", { name: "Archive" })).toHaveAttribute("data-selected", "true");
   });
 
+  it("registers nested static TreeViewItem children as child rows", async () => {
+    const user = setupUser();
+    render(() => (
+      <TreeView aria-label="Static files">
+        <TreeViewItem id="projects" textValue="Projects">
+          <TreeViewItemContent>
+            <Text slot="label">Projects</Text>
+          </TreeViewItemContent>
+          <TreeViewItem id="brief" textValue="Project brief">
+            <TreeViewItemContent>
+              <Text slot="label">Project brief</Text>
+            </TreeViewItemContent>
+            <TreeViewItem id="notes" textValue="Notes">
+              <TreeViewItemContent>
+                <Text slot="label">Notes</Text>
+              </TreeViewItemContent>
+            </TreeViewItem>
+          </TreeViewItem>
+        </TreeViewItem>
+        <TreeViewItem id="archive" textValue="Archive">
+          Archive
+        </TreeViewItem>
+      </TreeView>
+    ));
+
+    const projects = screen.getByRole("row", { name: /Projects/ });
+    expect(projects).toHaveAttribute("aria-expanded", "false");
+    expect(projects).toHaveAttribute("aria-level", "1");
+    expect(screen.queryByRole("row", { name: /Project brief/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Archive/ })).toHaveAttribute("aria-level", "1");
+
+    await user.click(projects.querySelector('button[data-rsp-slot="expand-button"]')!);
+    const brief = screen.getByRole("row", { name: /Project brief/ });
+    expect(brief).toHaveAttribute("aria-level", "2");
+    expect(brief).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("row", { name: /Notes/ })).not.toBeInTheDocument();
+
+    await user.click(brief.querySelector('button[data-rsp-slot="expand-button"]')!);
+    expect(screen.getByRole("row", { name: /Notes/ })).toHaveAttribute("aria-level", "3");
+  });
+
   it("normalizes icon, actions, and action menu slots inside item content", () => {
     render(() => (
       <TreeView aria-label="Slotted files" items={[files[0]]}>

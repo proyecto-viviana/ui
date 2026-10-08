@@ -4,12 +4,17 @@ type: task
 title: "Register nested static TreeViewItem children"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-10-08,
       note: "visualmode T6. Source-confirmed on local main and in 0.8.0-rc.0. No red test. Static TreeItem returns null before nested children mount, and treeItemFromStatic copies no children. The data form keeps hierarchy, so visualmode is not blocked. Do not close as unreproduced.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "A static TreeViewItem nested inside another static TreeViewItem mounts as a child row. The two-sibling static test still passes, and the dynamic items path is unchanged.",
     }
 ---
 

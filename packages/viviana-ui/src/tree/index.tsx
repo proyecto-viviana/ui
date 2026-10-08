@@ -185,14 +185,17 @@ export interface TreeLoadMoreItemProps {
 
 type StaticTreeItem = {
   id: Key;
+  parentId?: Key;
   textValue?: string;
   isDisabled?: boolean;
   hasChildItems?: boolean;
   props: TreeItemProps<object>;
+  children?: StaticTreeItem[];
 };
 
 type ItemRegistration = {
   id: Key;
+  parentId?: Key;
   textValue?: string;
   isDisabled?: boolean;
   hasChildItems?: boolean;
@@ -214,6 +217,8 @@ const InternalTreeViewContext = createContext<TreeViewContextValue>({
   selectionStyle: "checkbox",
 });
 const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
+const StaticTreeParentContext = createContext<Key | null>(null);
+const SuppressNestedTreeItems = createContext(false);
 
 const treeViewWrapper = style(
   {
@@ -640,14 +645,34 @@ function isTextOnlyChildren(value: unknown): boolean {
 }
 
 function treeItemFromStatic(item: StaticTreeItem): TreeItemData<object> {
+  const children = item.children?.map(treeItemFromStatic);
   return {
     id: item.id,
     key: item.id,
     value: item.props as object,
     textValue: item.textValue ?? String(item.id),
     isDisabled: item.isDisabled,
-    hasChildItems: item.hasChildItems,
+    hasChildItems: item.hasChildItems || Boolean(children?.length),
+    children: children?.length ? children : undefined,
   };
+}
+
+function nestStaticTreeItems(items: StaticTreeItem[]): StaticTreeItem[] {
+  const byParent = new Map<Key | null, StaticTreeItem[]>();
+  for (const item of items) {
+    const parentKey = item.parentId ?? null;
+    const group = byParent.get(parentKey);
+    if (group) group.push(item);
+    else byParent.set(parentKey, [item]);
+  }
+  const seen = new Set<Key>();
+  const nest = (item: StaticTreeItem): StaticTreeItem => {
+    if (seen.has(item.id)) return item;
+    seen.add(item.id);
+    const children = byParent.get(item.id)?.map(nest);
+    return children?.length ? { ...item, children } : item;
+  };
+  return (byParent.get(null) ?? []).map(nest);
 }
 
 function mergeRegisteredTreeItems<T extends object>(
@@ -720,6 +745,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         .filter((item) => item.props)
         .map((item) => ({
           id: item.id,
+          parentId: item.parentId,
           textValue: item.textValue,
           isDisabled: item.isDisabled,
           hasChildItems: item.hasChildItems,
@@ -736,6 +762,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       const previous = registeredItems.get(item.id);
       if (
         previous &&
+        previous.parentId === item.parentId &&
         previous.textValue === item.textValue &&
         previous.isDisabled === item.isDisabled &&
         previous.hasChildItems === item.hasChildItems &&
@@ -766,7 +793,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   const collectionItems = createMemo(() => {
     registrationVersion();
     if (usesStaticChildren()) {
-      return staticItems().map(treeItemFromStatic) as TreeItemData<T>[];
+      return nestStaticTreeItems(staticItems()).map(treeItemFromStatic) as TreeItemData<T>[];
     }
 
     return (local.items ?? []) as TreeItemData<T>[];
@@ -917,8 +944,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 }
 
 export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {
+  if (useContext(SuppressNestedTreeItems)) {
+    return null;
+  }
   const context = useContext(InternalTreeViewContext);
   const staticCollection = useContext(StaticTreeCollectionContext);
+  const staticParentId = useContext(StaticTreeParentContext);
   const collectionState = useContext(HeadlessTreeStateContext);
   const [local, headlessProps] = splitProps(props, [
     "children",
@@ -948,6 +979,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
 
     staticCollection.registerItem({
       id: props.id,
+      parentId: staticParentId ?? undefined,
       textValue: attrString(headlessProps.textValue ?? headlessProps["aria-label"]),
       isDisabled: !!local.isDisabled,
       hasChildItems: !!local.hasChildItems,
@@ -958,6 +990,12 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   onCleanup(() => {
     staticCollection?.unregisterItem(props.id);
   });
+
+  // The probe must mount nested static items so they can register. The visible
+  // row suppresses those same nodes; the collection paints each as its own row.
+  if (staticCollection?.mode === "static") {
+    return <StaticTreeParentContext value={props.id}>{local.children}</StaticTreeParentContext>;
+  }
 
   if (staticCollection) {
     return null;
@@ -1123,12 +1161,19 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       data-target={local.target || undefined}
       data-has-child-items={local.hasChildItems || undefined}
     >
-      {(renderProps: TreeItemRenderProps) => <ItemChildren {...renderProps} />}
+      {(renderProps: TreeItemRenderProps) => (
+        <SuppressNestedTreeItems value={true}>
+          <ItemChildren {...renderProps} />
+        </SuppressNestedTreeItems>
+      )}
     </HeadlessTreeItem>
   );
 }
 
 export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
+  if (useContext(StaticTreeCollectionContext)) {
+    return null;
+  }
   const [local, headlessProps] = splitProps(props, ["children", "class", "style"]);
 
   return (
