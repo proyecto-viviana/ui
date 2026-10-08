@@ -60,6 +60,7 @@ import {
   ariaTrueFalse,
   attrTrue,
   type SolidEventHandlerUnion,
+  callEventHandler,
 } from "./utils";
 import {
   SelectionIndicator,
@@ -602,23 +603,6 @@ export function Tab(props: TabProps): JSX.Element {
     return filtered;
   });
 
-  // Use Solid's [fn, data] contract without giving the tuple to fn as `this`.
-  const callTabHandler = (handler: SolidEventHandlerUnion<Event> | undefined, event: Event) => {
-    if (
-      handler &&
-      typeof handler === "object" &&
-      0 in handler &&
-      typeof handler[0] === "function"
-    ) {
-      const fn = handler[0];
-      fn(handler[1], event);
-    } else if (typeof handler === "function") {
-      handler(event);
-    } else if (handler && "handleEvent" in handler) {
-      handler.handleEvent(event);
-    }
-  };
-
   const eventProps = createMemo(() => {
     const managed = { ...tabAria.tabProps, ...hoverProps };
     const events: Record<string, (event: Event) => void> = {};
@@ -627,9 +611,9 @@ export function Tab(props: TabProps): JSX.Element {
       events[key] = (event) => {
         // Read the live caller handler; Solid bound tuples are [fn, data].
         if (key !== "onClick") {
-          callTabHandler(callerDom()[key] as SolidEventHandlerUnion<Event>, event);
+          callEventHandler(callerDom()[key] as SolidEventHandlerUnion<Event>, event);
         }
-        callTabHandler(
+        callEventHandler(
           managed[key as keyof typeof managed] as SolidEventHandlerUnion<Event>,
           event,
         );

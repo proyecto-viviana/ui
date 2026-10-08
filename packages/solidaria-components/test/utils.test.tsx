@@ -617,14 +617,53 @@ describe("utils — context/slot machinery", () => {
   });
 
   describe("callEventHandler", () => {
+    for (const shape of ["mutable", "readonly", "indexed"] as const) {
+      for (const payload of [{ token: true }, undefined]) {
+        it(`bare-calls ${shape} canonical handler with ${payload === undefined ? "undefined" : "object"} data`, () => {
+          const calls: Array<{ receiver: unknown; data: unknown; event: Event }> = [];
+          function callback(this: unknown, data: unknown, event: Event) {
+            calls.push({ receiver: this, data, event });
+          }
+          const mutable: [typeof callback, typeof payload] = [callback, payload];
+          const readonly = [callback, payload] as const;
+          const indexed = { 0: callback, 1: payload };
+          const handler = shape === "mutable" ? mutable : shape === "readonly" ? readonly : indexed;
+          const event = new Event("click");
+          callEventHandler(handler, event);
+          expect(calls).toHaveLength(1);
+          expect(calls[0].data).toBe(payload);
+          expect(calls[0].event).toBe(event);
+          expect(calls[0].receiver).toBeUndefined();
+        });
+      }
+    }
+
+    it("prefers the canonical callback when both entries are callable", () => {
+      const calls: Array<{ receiver: unknown; data: unknown; event: Event }> = [];
+      function callback(this: unknown, data: unknown, event: Event) {
+        calls.push({ receiver: this, data, event });
+      }
+      const data = vi.fn();
+      const event = new Event("click");
+      callEventHandler([callback, data], event);
+      expect(data).not.toHaveBeenCalled();
+      expect(calls).toHaveLength(1);
+      expect(calls[0].data).toBe(data);
+      expect(calls[0].event).toBe(event);
+      expect(calls[0].receiver).toBeUndefined();
+    });
+
     it("calls a standard function handler with the event", () => {
       let received: Event | undefined;
-      const fn = (e: Event) => {
+      const receivers: unknown[] = [];
+      function fn(this: unknown, e: Event) {
+        receivers.push(this);
         received = e;
-      };
+      }
       const event = new Event("click");
       callEventHandler(fn, event);
       expect(received).toBe(event);
+      expect(receivers).toEqual([undefined]);
     });
 
     it("calls a Solid bound tuple [fn, data] with data and event", () => {
@@ -644,27 +683,33 @@ describe("utils — context/slot machinery", () => {
     it("handles defensive fallback for inverted tuple [data, fn]", () => {
       let receivedData: unknown;
       let receivedEvent: Event | undefined;
-      const fn = (data: unknown, e: Event) => {
+      const receivers: unknown[] = [];
+      function fn(this: unknown, data: unknown, e: Event) {
+        receivers.push(this);
         receivedData = data;
         receivedEvent = e;
-      };
+      }
       const event = new Event("keydown");
       const invertedTuple = ["payload", fn] as unknown as [typeof fn, string];
       callEventHandler(invertedTuple, event);
       expect(receivedData).toBe("payload");
       expect(receivedEvent).toBe(event);
+      expect(receivers).toEqual([undefined]);
     });
 
     it("calls handleEvent on an EventListenerObject", () => {
       let received: Event | undefined;
+      const receivers: unknown[] = [];
       const listener: EventListenerObject = {
         handleEvent(e: Event) {
+          receivers.push(this);
           received = e;
         },
       };
       const event = new Event("focus");
       callEventHandler(listener, event);
       expect(received).toBe(event);
+      expect(receivers).toEqual([listener]);
     });
 
     it("safely handles undefined and null handlers", () => {

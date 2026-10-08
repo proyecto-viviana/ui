@@ -650,8 +650,9 @@ export type SolidEventHandlerUnion<E extends Event = Event> =
 
 /**
  * Safely calls a Solid EventHandlerUnion (function, [fn, data] bound tuple, or EventListenerObject).
- * In Solid, a bound event handler tuple has the structure `[fn, data]`,
- * invoked as `fn(data, event)`.
+ * Preserves Solid tuple order, but deliberately calls callbacks bare rather than
+ * binding the tuple (or the DOM node as native Solid dispatch does).
+ * EventListenerObject methods retain their listener receiver.
  */
 export function callEventHandler<E extends Event>(
   handler: SolidEventHandlerUnion<E> | undefined | null,
@@ -662,10 +663,12 @@ export function callEventHandler<E extends Event>(
     (handler as (e: E) => void)(event);
   } else if (typeof handler === "object") {
     if (0 in handler && typeof handler[0] === "function") {
-      (handler[0] as (data: unknown, e: E) => void)(handler[1], event);
+      const callback = handler[0] as (data: unknown, e: E) => void;
+      callback(handler[1], event);
     } else if (1 in handler && typeof handler[1] === "function") {
       // Defensive fallback if callers inverted tuple order [data, fn]
-      (handler[1] as (data: unknown, e: E) => void)(handler[0], event);
+      const callback = handler[1] as (data: unknown, e: E) => void;
+      callback(handler[0], event);
     } else if (
       "handleEvent" in handler &&
       typeof (handler as { handleEvent?: unknown }).handleEvent === "function"
