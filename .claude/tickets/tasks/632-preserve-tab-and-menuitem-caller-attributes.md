@@ -115,3 +115,80 @@ acceptance exists. Preserve those paths and saved control. The conductor may
 register a supported replacement under the same exact admission after checking
 eligibility/inventory. The ticket remains in-progress; a coordination commit
 does not accept or ship the unfinished repair.
+
+Replacement admission: register `ui-632-resume-agy-20261008` as the sole AGY
+implementer using `/tmp/ui-632-resume-worker-2026-10-08.md` on coordination
+base 928feaee. The exact source/test/note scope above remains unchanged. Read
+the independent partial review before continuing: correct false-popup DOM
+expectations, restore Tab caller-event composition and repeat corrected
+negative controls. Conductor alone accepts and commits after owned stop.
+
+AGY generation `ae539858-223d-437e-b433-d13d53555712` stopped with closed=true
+while waiting for a manual terminal approval. No source changed; all six
+transfer digests matched. Do not answer its terminal prompt through automation.
+Register `ui-632-resume-codex-20261008` through OS/herdr with the same brief and
+exact paths. This bounded event-composition/ARIA slice uses Codex astra under
+Decision 040's hard-slice allowance after both default workers were unavailable
+(Grok quota, AGY operator input). Retain normal worker approval controls and
+independent review. No broader source or publication authority follows.
+
+## Replacement implementation evidence — 2026-10-08
+
+Codex generation `d9785781-c6b5-48a3-ab54-17042616751e`, delivery
+`f340943e-f1cb-43b6-993b-7b03504db2b1`, resumed at
+`928feaeef33743fb617c7f9fc834aca06dd5a6d6` after both prior owned stops.
+All six transfer digests matched. The bounded patch preserves caller globals,
+composes live Tab handlers with bare Solid bound-tuple invocation, and resolves
+raw MenuItem popup values before hook/render/DOM serialization. Changeset covers
+solidaria-components and solidaria. Shared helpers and focus owners are unchanged.
+
+Corrected old-source controls report 7 failures, 11 passes, 271 skipped; the
+managed false-popup failure is now the incorrect submenu marker, not false ARIA
+serialization. Separate transfer-event and tuple-receiver controls each fail
+one test. Raw commands, exits, exact control digests and final check receipts
+are in `/tmp/ui-632-worker-result-2026-10-08.md` and its linked evidence.
+The original `/tmp/ui-632-pre-fix.log` is retained but its invalid managed
+false-popup assertion is not accepted proof.
+
+Inherited qualification debt remains: a direct-menu Escape focus-return probe
+fails on base source with focus on body, matching the final-source probe.
+`/tmp/ui-632-baseline-native-focus-exact.log` and its exact source/test digests
+retain this failure. Default Popover and styled-options Popover probes also
+failed; those are recorded limitations, not passing native-focus evidence.
+The runnable caller regression retains override, undefined restoration,
+managed controls removal, menu close and same-trigger identity. No skip or
+focus/Popover source repair was added. Root typecheck reports out-of-scope
+diagnostics. Native #557, full certification, serialized SSR/hydration/build,
+candidate qualification, acceptance and release remain open. Ticket stays
+in-progress; conductor alone accepts and commits after owned stop.
+
+Final owning/hook suites pass 350 tests. The combined styled command fails
+18/91 on final source and 16/91 on base with a different accumulation pattern;
+it remains a failed consumption check, not an inherited-pass claim. Matching
+standalone controls pass Spectrum Tabs 21/21 on both sources; Spectrum Menu
+fails the same three selection-indicator tests (30 pass) on both, and
+ActionMenu fails the same section-indicator test (33 pass) on both.
+Root typecheck fails with 24 diagnostics outside admitted files. Scoped lint,
+format and docs checks pass. The standard docs generator's tsx CLI failed at
+Unix-pipe setup; the identical generator and docs checker pass via
+`node --import tsx`. Generated-view guard and hub audit hit sandbox child-git
+EPERM; CI status is unavailable without gh authentication. No check failure
+is waived. Raw receipts and digests retain the exact source/control distinction.
+
+## Conductor acceptance of bounded repair — 2026-10-08
+
+Read the complete handoff, independent source review, commands and raw results.
+All 117 manifest path digests matched; all three old-source control digests
+matched their exact base objects at 928feaee. Owned stop of generation
+`d9785781-c6b5-48a3-ab54-17042616751e` returned ok=true and closed=true.
+The conductor accepts the bounded caller repair and 350 passing owning/hook
+tests for a scoped implementation commit. No source changed after those tests.
+
+The failed combined styled consumption check is still unresolved, not waived
+or accepted as a pass. Its isolated indicator failures and lifecycle
+contamination now have a prepared test-owner follow-up under #542/#107;
+`/tmp/ui-styled-owning-qualification-2026-10-08.md` names the proposed scope.
+#159 was reopened in 96515385 for shared receiver-safe dispatch consolidation.
+The existing Escape focus failure remains #557 qualification debt. Root
+typecheck, full candidate checks and publication still gate release. This
+partial implementation acceptance does not close the ticket or certify a port.

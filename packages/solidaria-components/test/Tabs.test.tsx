@@ -1052,4 +1052,159 @@ describe("Tabs", () => {
       expect(screen.getByRole("dialog", { name: "Filters" })).toBeInTheDocument();
     });
   });
+
+  describe("caller attributes", () => {
+    it("forwards static data and global markers", () => {
+      render(() => (
+        <Tabs defaultSelectedKey="a">
+          <TabList aria-label="Docs">
+            <Tab id="a" data-marker="alpha" title="Hint" lang="en">
+              Alpha
+            </Tab>
+            <Tab id="b">Beta</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="a">A</TabPanel>
+            <TabPanel id="b">B</TabPanel>
+          </TabPanels>
+        </Tabs>
+      ));
+
+      const tab = screen.getByRole("tab", { name: "Alpha" });
+      expect(tab).toHaveAttribute("data-marker", "alpha");
+      expect(tab).toHaveAttribute("title", "Hint");
+      expect(tab).toHaveAttribute("lang", "en");
+    });
+
+    it("updates and removes a signal marker on the same tab node", () => {
+      const [marker, setMarker] = createSignal<string | undefined>("A");
+      render(() => (
+        <Tabs defaultSelectedKey="a">
+          <TabList aria-label="Docs">
+            <Tab id="a" data-marker={marker()}>
+              Alpha
+            </Tab>
+            <Tab id="b">Beta</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="a">A</TabPanel>
+            <TabPanel id="b">B</TabPanel>
+          </TabPanels>
+        </Tabs>
+      ));
+
+      const tab = screen.getByRole("tab", { name: "Alpha" });
+      expect(tab).toHaveAttribute("data-marker", "A");
+      setMarker("B");
+      flush();
+      expect(tab).toHaveAttribute("data-marker", "B");
+      expect(screen.getByRole("tab", { name: "Alpha" })).toBe(tab);
+      setMarker(undefined);
+      flush();
+      expect(tab).not.toHaveAttribute("data-marker");
+      setMarker("A");
+      flush();
+      expect(tab).toHaveAttribute("data-marker", "A");
+      expect(screen.getByRole("tab", { name: "Alpha" })).toBe(tab);
+    });
+
+    it("composes live caller function and bound events before managed tab behavior", async () => {
+      const focus = vi.fn();
+      const key = vi.fn();
+      const replacement = vi.fn();
+      const pointer = vi.fn(function (this: unknown, _data: unknown, _event: PointerEvent) {
+        return this;
+      });
+      const hover = vi.fn();
+      const click = vi.fn();
+      const token = { caller: true };
+      const [handler, setHandler] = createSignal<typeof key | undefined>(key);
+      render(() => (
+        <Tabs defaultSelectedKey="a">
+          <TabList aria-label="Events">
+            <Tab id="a">Alpha</Tab>
+            <Tab
+              id="b"
+              onFocus={focus}
+              onKeyDown={handler()}
+              onPointerDown={[pointer, token]}
+              onPointerOver={hover}
+              onClick={click}
+            >
+              Beta
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="a">A</TabPanel>
+            <TabPanel id="b">B</TabPanel>
+          </TabPanels>
+        </Tabs>
+      ));
+      const alpha = screen.getByRole("tab", { name: "Alpha" });
+      const beta = screen.getByRole("tab", { name: "Beta" });
+      focus.mockImplementation(() => expect(beta).not.toHaveAttribute("data-focused"));
+      beta.focus();
+      flush();
+      expect(focus).toHaveBeenCalledTimes(1);
+      expect(beta).toHaveAttribute("data-focused");
+      fireEvent.keyDown(beta, { key: "Shift" });
+      expect(key).toHaveBeenCalledTimes(1);
+      setHandler(() => replacement);
+      flush();
+      await user.keyboard("{ArrowLeft}");
+      expect(replacement).toHaveBeenCalledTimes(1);
+      expect(key).toHaveBeenCalledTimes(1);
+      expect(alpha).toHaveFocus();
+      expect(alpha).toHaveAttribute("aria-selected", "true");
+      setHandler(undefined);
+      flush();
+      fireEvent.keyDown(beta, { key: "Shift" });
+      expect(replacement).toHaveBeenCalledTimes(1);
+      expect(key).toHaveBeenCalledTimes(1);
+      hover.mockImplementation(() => expect(beta).not.toHaveAttribute("data-hovered"));
+      fireEvent.pointerOver(beta, { pointerType: "mouse" });
+      expect(hover).toHaveBeenCalledTimes(1);
+      expect(beta).toHaveAttribute("data-hovered");
+      focus.mockImplementation(() => {});
+      hover.mockImplementation(() => {});
+      let originalPointerEvent: PointerEvent | undefined;
+      beta.addEventListener(
+        "pointerdown",
+        (event) => {
+          originalPointerEvent = event;
+        },
+        { once: true, capture: true },
+      );
+      await user.click(beta);
+      expect(pointer).toHaveBeenCalledTimes(1);
+      expect(pointer.mock.calls[0][0]).toBe(token);
+      expect(pointer.mock.calls[0][1]).toBe(originalPointerEvent);
+      expect(pointer.mock.results[0].value).toBeUndefined();
+      expect(click).not.toHaveBeenCalled();
+      expect(beta).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("keeps managed role, id, tabindex, and selection over caller values", () => {
+      render(() => (
+        <Tabs defaultSelectedKey="a">
+          <TabList aria-label="Docs">
+            <Tab id="a" role="button" tabIndex={-1} aria-selected={false}>
+              Alpha
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="a">A</TabPanel>
+          </TabPanels>
+        </Tabs>
+      ));
+
+      const tab = screen.getByRole("tab", { name: "Alpha" });
+      expect(tab).toHaveAttribute("role", "tab");
+      expect(tab).toHaveAttribute("aria-selected", "true");
+      expect(tab.tabIndex).toBe(0);
+      expect(tab.id).not.toBe("");
+      expect(tab.id).not.toBe("a");
+      expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", tab.id);
+    });
+  });
 });

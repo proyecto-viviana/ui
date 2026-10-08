@@ -29,7 +29,7 @@ import { Popover } from "../src/Popover";
 import { CollectionRendererContext, Header } from "../src/Collection";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-test-utils";
 
 // Setup userEvent
@@ -2570,7 +2570,217 @@ describe("MenuTrigger", () => {
   });
 });
 
-describe("Menu async loading", () => {
+describe("MenuItem caller popup attributes", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  function Probe(props: {
+    popup?: string | boolean;
+    expanded?: boolean | "true" | "false";
+    controls?: string;
+  }) {
+    return (
+      <Menu aria-label="Probe">
+        <MenuItem
+          id="item"
+          aria-haspopup={props.popup}
+          aria-expanded={props.expanded}
+          aria-controls={props.controls}
+        >
+          {(renderProps) => (
+            <span data-testid="render">
+              {`${renderProps.hasSubmenu ? "sub" : "plain"}:${renderProps.isOpen ? "open" : "closed"}`}
+            </span>
+          )}
+        </MenuItem>
+      </Menu>
+    );
+  }
+
+  it("omits popup attributes on an ordinary item", () => {
+    render(() => <Probe />);
+    const item = screen.getByRole("menuitem", { name: "plain:closed" });
+    expect(item).not.toHaveAttribute("aria-haspopup");
+    expect(item).not.toHaveAttribute("aria-expanded");
+    expect(item).not.toHaveAttribute("aria-controls");
+    expect(item).not.toHaveAttribute("data-has-submenu");
+    expect(item).not.toHaveAttribute("data-open");
+  });
+
+  it("forwards menu and dialog popup values and removes them on the same node", () => {
+    const [popup, setPopup] = createSignal<string | boolean | undefined>("menu");
+    const [expanded, setExpanded] = createSignal<boolean | "true" | "false" | undefined>(undefined);
+    const [controls, setControls] = createSignal<string | undefined>("submenu");
+    render(() => <Probe popup={popup()} expanded={expanded()} controls={controls()} />);
+
+    const item = screen.getByRole("menuitem");
+    expect(item).toHaveAttribute("aria-haspopup", "menu");
+    expect(item).toHaveAttribute("aria-controls", "submenu");
+    expect(item).toHaveAttribute("data-has-submenu", "true");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("render")).toHaveTextContent("sub:closed");
+
+    setPopup("dialog");
+    setExpanded("false");
+    flush();
+    expect(item).toHaveAttribute("aria-haspopup", "dialog");
+    expect(item).toHaveAttribute("aria-expanded", "false");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("render")).toHaveTextContent("sub:closed");
+
+    setExpanded(true);
+    flush();
+    expect(item).toHaveAttribute("aria-expanded", "true");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("render")).toHaveTextContent("sub:closed");
+
+    setExpanded("true");
+    flush();
+    expect(item).toHaveAttribute("data-open", "true");
+    expect(screen.getByTestId("render")).toHaveTextContent("sub:open");
+
+    setPopup(false);
+    setExpanded(undefined);
+    setControls(undefined);
+    flush();
+    expect(item).toHaveAttribute("aria-haspopup", "false");
+    expect(item).not.toHaveAttribute("aria-expanded");
+    expect(item).not.toHaveAttribute("aria-controls");
+    expect(item).not.toHaveAttribute("data-has-submenu");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("render")).toHaveTextContent("plain:closed");
+    expect(screen.getByRole("menuitem")).toBe(item);
+
+    setPopup(undefined);
+    flush();
+    expect(item).not.toHaveAttribute("aria-haspopup");
+    expect(screen.getByRole("menuitem")).toBe(item);
+
+    setPopup("false");
+    flush();
+    expect(item).toHaveAttribute("aria-haspopup", "false");
+    expect(item).toHaveAttribute("data-has-submenu", "true");
+    expect(screen.getByTestId("render")).toHaveTextContent("sub:closed");
+  });
+
+  it("keeps the keyboard focus ring for boolean true and hides it for the string true", async () => {
+    const [expanded, setExpanded] = createSignal<boolean | "true">(true);
+    render(() => <Probe popup="menu" expanded={expanded()} />);
+    setInteractionModality("keyboard");
+    const menu = screen.getByRole("menu");
+    menu.focus();
+    await user.keyboard("{ArrowDown}");
+    const item = screen.getByRole("menuitem");
+    expect(item).toHaveAttribute("aria-expanded", "true");
+    expect(item).toHaveAttribute("data-focus-visible", "true");
+    expect(item).not.toHaveAttribute("data-open");
+
+    setExpanded("true");
+    flush();
+    expect(item).not.toHaveAttribute("data-focus-visible");
+    expect(item).toHaveAttribute("data-open", "true");
+  });
+
+  it("does not open a managed submenu from caller popup attributes", async () => {
+    const onAction = vi.fn();
+    render(() => (
+      <Menu aria-label="Probe" onAction={onAction}>
+        <MenuItem id="item" aria-haspopup="menu" aria-expanded="false" onAction={onAction}>
+          Share
+        </MenuItem>
+      </Menu>
+    ));
+
+    const item = screen.getByRole("menuitem", { name: "Share" });
+    item.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getAllByRole("menu")).toHaveLength(1);
+    await user.keyboard("{Enter}");
+    expect(onAction).toHaveBeenCalled();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+  });
+
+  it("lets a defined caller value override submenu context and restores it when undefined", async () => {
+    const [expanded, setExpanded] = createSignal<boolean | "true" | "false" | undefined>(false);
+    const [popup, setPopup] = createSignal<string | boolean | undefined>(false);
+    const [controls, setControls] = createSignal<string | undefined>(undefined);
+    render(() => (
+      <MenuTrigger defaultOpen>
+        <Button>Open Menu</Button>
+        <Menu aria-label="Test">
+          <SubmenuTrigger>
+            <MenuItem
+              id="share"
+              aria-haspopup={popup()}
+              aria-expanded={expanded()}
+              aria-controls={controls()}
+            >
+              {(renderProps) => (
+                <span data-testid="share-state">
+                  {`${renderProps.hasSubmenu ? "sub" : "plain"}:${renderProps.isOpen ? "open" : "closed"}`}
+                </span>
+              )}
+            </MenuItem>
+            <Menu aria-label="Share submenu">
+              <MenuItem id="email">Email</MenuItem>
+            </Menu>
+          </SubmenuTrigger>
+        </Menu>
+      </MenuTrigger>
+    ));
+
+    const item = screen.getByRole("menuitem");
+    expect(item).toHaveAttribute("aria-haspopup", "false");
+    expect(item).toHaveAttribute("aria-expanded", "false");
+    expect(item).not.toHaveAttribute("data-has-submenu");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("share-state")).toHaveTextContent("plain:closed");
+
+    setPopup(undefined);
+    setExpanded(undefined);
+    flush();
+    expect(item).toHaveAttribute("aria-haspopup", "menu");
+    expect(item).toHaveAttribute("aria-expanded", "false");
+    expect(item).toHaveAttribute("data-has-submenu", "true");
+    expect(screen.getByTestId("share-state")).toHaveTextContent("sub:closed");
+
+    item.focus();
+    await user.keyboard("{ArrowRight}");
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: "Email" })).toHaveFocus();
+    });
+    expect(item).toHaveAttribute("aria-expanded", "true");
+    expect(item).toHaveAttribute("data-open", "true");
+    expect(item).toHaveAttribute("aria-controls");
+    expect(screen.getByTestId("share-state")).toHaveTextContent("sub:open");
+    const managedControls = item.getAttribute("aria-controls");
+    expect(document.getElementById(managedControls!)).toHaveAttribute("role", "menu");
+    setControls("caller-controls");
+    setExpanded(false);
+    flush();
+    expect(item).toHaveAttribute("aria-controls", "caller-controls");
+    expect(item).toHaveAttribute("aria-expanded", "false");
+    expect(item).not.toHaveAttribute("data-open");
+    expect(screen.getByTestId("share-state")).toHaveTextContent("sub:closed");
+    expect(document.getElementById(managedControls!)).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "sub:closed" })).toBe(item);
+    setControls(undefined);
+    setExpanded(undefined);
+    flush();
+    expect(item).toHaveAttribute("aria-controls", managedControls);
+    expect(item).toHaveAttribute("data-open", "true");
+    expect(screen.getByRole("menuitem", { name: "sub:open" })).toBe(item);
+    screen.getByRole("menuitem", { name: "Email" }).focus();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(document.getElementById(managedControls!)).not.toBeInTheDocument());
+    expect(item).not.toHaveAttribute("aria-controls");
+    expect(item).toHaveAttribute("aria-expanded", "false");
+    expect(item).not.toHaveAttribute("data-open");
+    // Native focus restoration remains qualification work (#557); this probe
+    // verifies the live trigger identity and managed attributes after close.
+    expect(screen.getByRole("menuitem", { name: "sub:closed" })).toBe(item);
+  });
   const asyncItems = [{ name: "Foo" }, { name: "Bar" }, { name: "Baz" }];
 
   function AsyncMenu(props: {

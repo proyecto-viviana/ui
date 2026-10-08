@@ -76,7 +76,6 @@ import {
   filterDOMProps,
   assignRef,
   dataAttr,
-  isAriaTrue,
   type RefLike,
 } from "./utils";
 import { KeyboardContext } from "./Keyboard";
@@ -1515,6 +1514,32 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
   // items) so roving focus can be moved onto it imperatively.
   const [ref, setRef] = createSignal<HTMLElement | null>(null);
   const contextProps = () => itemContext?.props?.() ?? {};
+  // Raw context-then-caller resolution. mergeProps would coerce boolean true
+  // to the DOM string "true" and hide the pinned open-state distinction.
+  const resolvedPopup = (key: "aria-haspopup" | "aria-expanded" | "aria-controls") => {
+    const caller = (ariaProps as Record<string, unknown>)[key];
+    return caller !== undefined ? caller : (contextProps() as Record<string, unknown>)[key];
+  };
+  const hasSubmenu = () => Boolean(resolvedPopup("aria-haspopup"));
+  const isPopupOpen = () => resolvedPopup("aria-expanded") === "true";
+  const contextBehaviorProps = () => {
+    const source = contextProps() as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
+    for (const key in source) {
+      if (key === "aria-haspopup" || key === "aria-expanded" || key === "aria-controls") continue;
+      const descriptor = Object.getOwnPropertyDescriptor(source, key);
+      if (descriptor?.get) {
+        Object.defineProperty(result, key, {
+          enumerable: true,
+          configurable: true,
+          get: () => descriptor.get!.call(source),
+        });
+      } else {
+        result[key] = source[key];
+      }
+    }
+    return result;
+  };
   const combinedOnAction = () => {
     local.onAction?.();
     itemContext?.onAction?.();
@@ -1626,13 +1651,13 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         return ariaProps["aria-describedby"];
       },
       get "aria-controls"() {
-        return contextProps()["aria-controls"] as string | undefined;
+        return resolvedPopup("aria-controls") as string | undefined;
       },
       get "aria-haspopup"() {
-        return contextProps()["aria-haspopup"] as string | boolean | undefined;
+        return resolvedPopup("aria-haspopup") as string | boolean | undefined;
       },
       get "aria-expanded"() {
-        return contextProps()["aria-expanded"] as boolean | "true" | "false" | undefined;
+        return resolvedPopup("aria-expanded") as boolean | "true" | "false" | undefined;
       },
       get onAction() {
         return combinedOnAction;
@@ -1679,8 +1704,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       isPressed: itemAria.isPressed(),
       isHovered: isHovered(),
       isDisabled: itemAria.isDisabled(),
-      hasSubmenu: Boolean(contextProps()["aria-haspopup"]),
-      isOpen: isAriaTrue(contextProps()["aria-expanded"]),
+      hasSubmenu: hasSubmenu(),
+      isOpen: isPopupOpen(),
       labelProps: itemAria.labelProps,
       descriptionProps: itemAria.descriptionProps,
       keyboardShortcutProps: itemAria.keyboardShortcutProps,
@@ -1813,6 +1838,9 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     // createMenuItem already joins this id with the description and keyboard
     // slot ids. A later defined string would replace that join.
     delete filtered["aria-describedby"];
+    delete filtered["aria-haspopup"];
+    delete filtered["aria-expanded"];
+    delete filtered["aria-controls"];
     return filtered;
   });
   const draggableItem = createMemo(() => {
@@ -1866,8 +1894,8 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       "data-disabled": dataAttr(itemAria.isDisabled()),
       "data-selected": dataAttr(selection?.isSelected(local.id) ?? itemAria.isSelected()),
       "data-selection-mode": selectionMode === "none" ? undefined : selectionMode,
-      "data-has-submenu": dataAttr(Boolean(contextProps()["aria-haspopup"])),
-      "data-open": dataAttr(isAriaTrue(contextProps()["aria-expanded"])),
+      "data-has-submenu": dataAttr(hasSubmenu()),
+      "data-open": dataAttr(isPopupOpen()),
       "data-dragging": dataAttr(!!draggableItem()?.isDragging),
       "data-drop-target": dataAttr(!!droppableItem()?.isDropTarget),
     };
@@ -1905,7 +1933,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
       ref: setResolvedItemRef,
       ...mergeProps(
         cleanItemProps(),
-        contextProps() as Record<string, unknown>,
+        contextBehaviorProps(),
         domProps(),
         cleanHoverProps(),
         (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
@@ -1920,7 +1948,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
     ({
       ...mergeProps(
         cleanItemPropsForLink(),
-        contextProps() as Record<string, unknown>,
+        contextBehaviorProps(),
         domProps(),
         cleanHoverProps(),
         linkDomProps(),
@@ -1945,7 +1973,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
           ref={setResolvedItemRef}
           {...mergeProps(
             cleanItemProps(),
-            contextProps() as Record<string, unknown>,
+            contextBehaviorProps(),
             domProps(),
             cleanHoverProps(),
             (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
@@ -1968,7 +1996,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
           ref={setResolvedItemRef}
           {...mergeProps(
             cleanItemPropsForLink(),
-            contextProps() as Record<string, unknown>,
+            contextBehaviorProps(),
             domProps(),
             cleanHoverProps(),
             linkDomProps(),

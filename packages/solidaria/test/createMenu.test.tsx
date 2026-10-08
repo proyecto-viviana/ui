@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
-import { createRoot, flush } from "solid-js";
+import { createRoot, createSignal, flush } from "solid-js";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createMenuState,
@@ -860,6 +860,43 @@ describe("createMenuItem", () => {
       "aria-describedby",
       "ext-desc",
     );
+  });
+
+  it("does not treat boolean aria-expanded true as the pinned open string", () => {
+    setInteractionModality("keyboard");
+    const items = [{ key: "copy", label: "Copy" }];
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+    });
+    state.setFocused(true);
+    state.setFocusedKey("copy");
+    const [expanded, setExpanded] = createSignal<boolean | "true">(true);
+    let item!: ReturnType<typeof createMenuItem>;
+    render(() => {
+      item = createMenuItem(
+        {
+          key: "copy",
+          "aria-haspopup": "menu",
+          get "aria-expanded"() {
+            return expanded();
+          },
+        },
+        state,
+      );
+      return <div {...item.menuItemProps}>Copy</div>;
+    });
+    flush();
+
+    const menuitem = screen.getByRole("menuitem", { name: "Copy" });
+    expect(menuitem).toHaveAttribute("aria-expanded", "true");
+    expect(item.isFocusVisible()).toBe(true);
+    expect(menuitem).toHaveAttribute("data-focus-visible", "true");
+
+    setExpanded("true");
+    flush();
+    expect(item.isFocusVisible()).toBe(false);
+    expect(menuitem).not.toHaveAttribute("data-focus-visible");
   });
 });
 

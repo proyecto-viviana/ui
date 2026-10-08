@@ -330,7 +330,9 @@ export function createMenuItem<T>(
   const isTriggerExpanded = () => {
     if (!isTrigger()) return false;
     const expanded = getProps()["aria-expanded"];
-    return expanded === true || expanded === "true";
+    // Pinned useMenuItem: only the raw string "true" is expanded. Boolean
+    // true still serializes to the DOM token "true" and is not this state.
+    return expanded === "true";
   };
   const menuItemIsFocusVisible = () =>
     isFocused() && isGlobalFocusVisible() && !isTriggerExpanded();

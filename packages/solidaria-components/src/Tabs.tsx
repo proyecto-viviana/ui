@@ -59,6 +59,7 @@ import {
   dataAttr,
   ariaTrueFalse,
   attrTrue,
+  type SolidEventHandlerUnion,
 } from "./utils";
 import {
   SelectionIndicator,
@@ -592,8 +593,54 @@ export function Tab(props: TabProps): JSX.Element {
     isSelected: tabAria.isSelected,
   }));
 
+  // Caller globals land before managed identity. RAC drops id and onClick so
+  // the hook owns both; later attributes keep role, selection, and tabindex.
+  const callerDom = createMemo(() => {
+    const filtered = filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+    delete filtered.id;
+    delete filtered.onClick;
+    return filtered;
+  });
+
+  // Use Solid's [fn, data] contract without giving the tuple to fn as `this`.
+  const callTabHandler = (handler: SolidEventHandlerUnion<Event> | undefined, event: Event) => {
+    if (
+      handler &&
+      typeof handler === "object" &&
+      0 in handler &&
+      typeof handler[0] === "function"
+    ) {
+      const fn = handler[0];
+      fn(handler[1], event);
+    } else if (typeof handler === "function") {
+      handler(event);
+    } else if (handler && "handleEvent" in handler) {
+      handler.handleEvent(event);
+    }
+  };
+
+  const eventProps = createMemo(() => {
+    const managed = { ...tabAria.tabProps, ...hoverProps };
+    const events: Record<string, (event: Event) => void> = {};
+    for (const key of Object.keys(managed)) {
+      if (!/^on[A-Z]/.test(key)) continue;
+      events[key] = (event) => {
+        // Read the live caller handler; Solid bound tuples are [fn, data].
+        if (key !== "onClick") {
+          callTabHandler(callerDom()[key] as SolidEventHandlerUnion<Event>, event);
+        }
+        callTabHandler(
+          managed[key as keyof typeof managed] as SolidEventHandlerUnion<Event>,
+          event,
+        );
+      };
+    }
+    return events;
+  });
+
   return (
     <div
+      {...callerDom()}
       ref={setTabRef}
       id={tabAria.tabProps.id}
       role={tabAria.tabProps.role}
@@ -607,14 +654,7 @@ export function Tab(props: TabProps): JSX.Element {
       tabindex={tabAria.tabProps.tabIndex}
       class={renderProps.class()}
       style={renderProps.style()}
-      onKeyDown={tabAria.tabProps.onKeyDown}
-      onMouseDown={tabAria.tabProps.onMouseDown}
-      onPointerDown={tabAria.tabProps.onPointerDown}
-      onClick={tabAria.tabProps.onClick}
-      onFocus={tabAria.tabProps.onFocus}
-      onFocusIn={tabAria.tabProps.onFocusIn}
-      onBlur={tabAria.tabProps.onBlur}
-      {...hoverProps}
+      {...eventProps()}
       data-selected={dataAttr(tabAria.isSelected())}
       data-focused={dataAttr(tabAria.isFocused())}
       data-focus-visible={dataAttr(tabAria.isFocusVisible())}
