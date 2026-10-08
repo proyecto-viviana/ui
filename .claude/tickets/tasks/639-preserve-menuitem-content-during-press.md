@@ -102,3 +102,54 @@ latest once-only action, disabled inertness and legitimate final close.
 Headless native proof is bounded; full styled-native, candidate, release and
 installed-consumer gates remain separate. Passing current source receives
 honest proof-only evidence and no fabricated red or duplicate Changeset.
+
+## Bounded current-source proof — 2026-10-08
+
+Worker generation `38a5600f-00bd-4913-a003-ade252218973` qualified clean
+`de2b27fcb5209208a3c531d735cde2b5d14633af` after accepted #557 commit
+`182b57e0` and its closed owned stop. Current source passes: no product repair,
+negative source substitution or Changeset. The reported built `0.8.0-rc.0`
+consumer failure was not rerun and remains distinct from this source proof.
+
+The three owning Menu suites pass 201 tests, including 24 added cases for
+stable primitive/slotted/render-prop/stateful content, external updates,
+latest callbacks, disabled items and managed action close. Standalone Enter
+retains original children; managed close permits unmount. Existing #632
+popup precedence and #542 indicator assertions remain intact.
+
+The unchanged strict native runner passes all 12 cases (eight retained,
+four added). Real nested-label mouse down yields one capture and one later
+framework-root observation per control. Original targets remain connected
+and contained in both captured menu and framework roots, with pressed and
+live-pressed positive before mouse up. Document bubble counts are plain 1,
+React 0, Solid 0. Both frameworks activate once on release, report close at
+that stage, and retain standalone nodes after Enter. Every case records zero
+console errors, page errors and unhandled rejections. Solid development
+`STRICT_READ_UNTRACKED` warnings remain visible, not suppressed.
+
+Installed React/ReactDOM 19.2.8 and RAC 1.21.0 are runtime controls; the
+source oracle remains `f56660b234bd588751c9f35b85d6fe6e17e45ccf`, with no
+claim of byte identity. Root typecheck exits 2 with the same 24 diagnostics
+as #557, all in unchanged files; its scope excludes these test files.
+
+Handoff: `/tmp/ui-639-worker-result-2026-10-08.md`, checks/digests JSON,
+raw logs and actual diff. Await conductor review and exact-generation stop.
+Full styled-native, candidate, release and installed-consumer proof remains
+pending, as does separate #632 Escape-focus debt. This bounded result does
+not close #639 or certify the Menu family.
+
+## Conductor acceptance of bounded proof — 2026-10-08
+
+The conductor read the final handoff, checks, actual diff and independent
+review; verified all recorded source, changed-path, raw-log and receipt
+digests; and closed generation `38a5600f-00bd-4913-a003-ade252218973`
+with an owned stop returning `ok:true`, `closed:true`. The accepted evidence
+is 201 owning unit tests and 12 native cases, with no product change or
+Changeset. The independent review includes the corrected standalone Enter
+identity assertions. Root typecheck still has 24 inherited diagnostics;
+252 development warnings and the hub audit's 13 failed checks remain
+recorded limitations, rather than green gates. Full styled-native, candidate,
+release and installed-consumer qualification, plus separate #632 Escape
+focus debt, remain open. Acceptance receipts are
+`/tmp/ui-639-conductor-verification-2026-10-08.json` and
+`/tmp/ui-639-owned-stop-2026-10-08.json`.

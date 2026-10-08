@@ -61,7 +61,7 @@ function boundary(type: "focus" | "blur", target: string, owner = "owner") {
   };
 }
 
-test.afterEach(async ({ page, nativeErrors }) => {
+test.afterEach(async ({ page, nativeErrors }, testInfo) => {
   const rejections = await page.evaluate(() => {
     const observed = (window as FocusWindow).__nativeRejections;
     if (!Array.isArray(observed)) throw new Error("missing rejection observer");
@@ -69,6 +69,10 @@ test.afterEach(async ({ page, nativeErrors }) => {
   });
   expect.soft(nativeErrors, "uncaught native errors (observers precede navigation)").toEqual([]);
   expect.soft(rejections, "unhandled native promise rejections").toEqual([]);
+  console.log(
+    "native-error-evidence",
+    JSON.stringify({ case: testInfo.title, errors: nativeErrors, rejections }),
+  );
 });
 
 test.beforeEach(async ({ page }) => {
@@ -239,4 +243,188 @@ test("native focus callbacks do not survive root disposal", async ({ page }) => 
   await page.locator("#outside-next").focus();
   await expect(page.locator("#outside-next")).toBeFocused();
   expect(await focusLog(page)).toEqual(disposed);
+});
+
+type MenuSnapshot = {
+  sameEvent: boolean;
+  sameTarget: boolean;
+  sameLabel: boolean;
+  sameChild: boolean;
+  targetConnected: boolean;
+  menuConnected: boolean;
+  frameworkConnected: boolean;
+  menuContains: boolean;
+  frameworkContains: boolean;
+  pressed: boolean;
+  hovered: boolean;
+  focused: boolean;
+  livePressed: string | null;
+  mounts: number;
+  cleanups: number;
+  actions: string[];
+  closes: number;
+  sequence: string[];
+  path: string[];
+};
+type MenuProbe = {
+  capture: MenuSnapshot[];
+  boundary: MenuSnapshot[];
+  bubble: MenuSnapshot[];
+  snapshot: () => MenuSnapshot;
+  dispose: () => void;
+};
+type MenuWindow = Window & {
+  __menuFixture: {
+    arm: (kind: "solid" | "react" | "plain") => MenuProbe;
+    updateSolid: () => void;
+    updateReact: () => void;
+    disposeReact: () => void;
+    reactCounts: { mounts: number; cleanups: number };
+  };
+  __menuProbe: MenuProbe;
+};
+function connected(snapshot: MenuSnapshot) {
+  for (const key of [
+    "sameEvent",
+    "sameTarget",
+    "sameLabel",
+    "sameChild",
+    "targetConnected",
+    "menuConnected",
+    "frameworkConnected",
+    "menuContains",
+    "frameworkContains",
+  ] as const) {
+    expect(snapshot[key], key).toBe(true);
+  }
+  expect(snapshot.mounts).toBe(1);
+  expect(snapshot.cleanups).toBe(0);
+}
+async function menuRead(page: Page) {
+  return page.evaluate(() => {
+    const probe = (window as MenuWindow).__menuProbe;
+    if (!probe || !Array.isArray(probe.boundary) || !Array.isArray(probe.bubble))
+      throw new Error("missing menu probe");
+    return {
+      capture: probe.capture,
+      boundary: probe.boundary,
+      bubble: probe.bubble,
+      now: probe.snapshot(),
+    };
+  });
+}
+
+test("MenuItem retains the native target after delegated primary down on Solid and React", async ({
+  page,
+}, testInfo) => {
+  const records: Record<string, Awaited<ReturnType<typeof menuRead>>> = {};
+  for (const kind of ["plain", "react", "solid"] as const) {
+    const label = page.locator(`#${kind}-label`);
+    await expect(label).toBeVisible();
+    await page.evaluate((kind) => {
+      const fixture = (window as MenuWindow).__menuFixture;
+      if (!fixture || typeof fixture.arm !== "function") throw new Error("missing menu fixture");
+      (window as MenuWindow).__menuProbe = fixture.arm(kind);
+      if (kind === "solid") fixture.updateSolid();
+      if (kind === "react") fixture.updateReact();
+    }, kind);
+    if (kind !== "plain")
+      await expect(label).toHaveText(`${kind === "solid" ? "Solid" : "React"} updated`);
+    const box = await label.boundingBox();
+    if (!box) throw new Error("missing label coordinates");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    if (kind !== "plain") {
+      await expect(page.locator(`#${kind}-live`)).toHaveAttribute("data-live-hovered", "true");
+      expect((await menuRead(page)).now.hovered).toBe(true);
+    }
+    await page.mouse.down();
+    const down = await menuRead(page);
+    records[kind] = down;
+    console.log("menu-down-evidence", kind, JSON.stringify(down));
+    await testInfo.attach(`${kind}-down`, {
+      body: JSON.stringify(down, null, 2),
+      contentType: "application/json",
+    });
+    expect(down.capture).toHaveLength(1);
+    expect(down.boundary).toHaveLength(1);
+    connected(down.boundary[0]);
+    expect(down.boundary[0].pressed).toBe(true);
+    expect(down.capture[0].pressed).toBe(false);
+    expect(down.boundary[0].sequence).toEqual(
+      kind === "plain" ? ["capture", "managed", "boundary"] : ["capture", "boundary"],
+    );
+    connected(down.now);
+    expect(down.now.pressed).toBe(true);
+    expect(down.now.actions).toEqual([]);
+    expect(down.now.closes).toBe(0);
+    if (kind !== "plain") {
+      expect(down.boundary[0].livePressed).toBe("true");
+      expect(down.now.livePressed).toBe("true");
+      expect(down.now.focused).toBe(true);
+    }
+    for (const received of down.bubble) connected(received);
+    await page.mouse.up();
+    await expect.poll(async () => (await menuRead(page)).now.pressed).toBe(false);
+    const up = await menuRead(page);
+    console.log("menu-up-evidence", kind, JSON.stringify(up.now));
+    connected(up.now);
+    if (kind !== "plain") {
+      expect(up.now.actions).toEqual(["latest"]);
+      expect(up.now.closes).toBe(1);
+      expect(up.now.livePressed).toBe("false");
+    }
+    await page.evaluate(() => (window as MenuWindow).__menuProbe.dispose());
+  }
+  expect(records.plain.bubble).toHaveLength(1);
+  expect(records.solid.bubble.length).toBe(records.react.bubble.length);
+  await testInfo.attach("document-delivery", {
+    body: JSON.stringify(records, null, 2),
+    contentType: "application/json",
+  });
+});
+
+for (const kind of ["solid", "react"] as const) {
+  test(`${kind} native keyboard activation retains focused item until the action close notification`, async ({
+    page,
+  }) => {
+    const label = page.locator(`#${kind}-label`);
+    await expect(label).toBeVisible();
+    await page.evaluate((kind) => {
+      const fixture = (window as MenuWindow).__menuFixture;
+      if (!fixture) throw new Error("missing menu fixture");
+      (window as MenuWindow).__menuProbe = fixture.arm(kind);
+      if (kind === "solid") fixture.updateSolid();
+      else fixture.updateReact();
+    }, kind);
+    await expect(label).toHaveText(`${kind === "solid" ? "Solid" : "React"} updated`);
+    const item = page
+      .getByRole("menu", { name: `${kind === "solid" ? "Solid" : "React"} identity` })
+      .getByRole("menuitem");
+    await item.focus();
+    await expect(item).toBeFocused();
+    await expect(page.locator(`#${kind}-live`)).toHaveAttribute("data-live-focused", "true");
+    connected((await menuRead(page)).now);
+    await page.keyboard.press("Enter");
+    const activated = (await menuRead(page)).now;
+    console.log("menu-keyboard-evidence", kind, JSON.stringify(activated));
+    connected(activated);
+    expect(activated.actions).toEqual(["latest"]);
+    expect(activated.closes).toBe(1);
+    // Standalone controls observe close notifications; they have no popup to unmount.
+    await expect(item).toBeFocused();
+    await page.evaluate(() => (window as MenuWindow).__menuProbe.dispose());
+  });
+}
+
+test("React control explicitly unmounts its stateful child", async ({ page }) => {
+  await expect(page.locator("#react-child")).toHaveText("retained child state");
+  const counts = await page.evaluate(() => {
+    const fixture = (window as MenuWindow).__menuFixture;
+    if (!fixture) throw new Error("missing menu fixture");
+    fixture.disposeReact();
+    return fixture.reactCounts;
+  });
+  expect(counts.mounts).toBe(1);
+  expect(counts.cleanups).toBe(1);
+  await expect(page.locator("#react-child")).toHaveCount(0);
 });
