@@ -4,7 +4,7 @@ type: task
 title: "Audit solidaria event timing against Solid 2 scheduler"
 created: 2026-09-13
 parent: 531
-status: verified
+status: in-progress
 history:
   - {
       state: open,
@@ -55,6 +55,11 @@ history:
       state: verified,
       at: 2026-09-27,
       note: "Press, hover, focus, modality, long-press, and menu tests pass 433/433 across 17 files. Space and Enter restore keyboard modality after the virtual click. A different-origin release selects once. eventPathContains stays. One FocusScope mount case prints FLUSH_IN_EFFECT_CALLBACK while its assertion passes",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Reopened for the current-tree Menu effect and canonical bound-event tuple qualification slice before #632. Historical 433/433 proof is preserved. Admission supplies no new passing proof or release acceptance.",
     }
 ---
 
@@ -183,3 +188,57 @@ under the Solid 2.0 scheduler.
 ## Relationship
 
 Child of #531. Sibling of #532 and #533.
+
+## 2026-10-08 bounded qualification admission
+
+Register `ui-534-menu-events-20261008`, Grok source implementer in eligible
+repo:ui main, using `/tmp/ui-534-worker-2026-10-08.md`. The previous #635
+generation has stopped and its accepted repair is committed. The conductor
+alone reviews, stops the exact generation and commits. No worker commit,
+push, publication, extra writer, dependencies or public names are admitted.
+
+Source paths:
+
+- `packages/solidaria-components/src/Menu.tsx`: only StackedSubmenuTrigger's
+  obsolete one-argument effect. Track open state separately from untracked
+  notification, suppress initial sample and read the latest callback on real
+  transitions. Preserve sibling/root close and disposal. #51 stays verified.
+- `packages/solidaria/src/menu/createMenu.ts`
+- `packages/solidaria/src/tabs/createTabs.ts`
+- `packages/solidaria/src/combobox/createComboBox.ts`
+- Private `packages/solidaria/src/utils/callEventHandler.ts`: canonical
+  `[handler, data]` calls handler(data, event), including undefined data;
+  plain functions receive event. No public barrel export or upward import.
+
+Tests:
+
+- `packages/solidaria/test/createMenu.test.tsx`
+- `packages/solidaria/test/createTabs.test.tsx`
+- `packages/solidaria/test/createComboBox.test.tsx`
+- `packages/solidaria/test/callEventHandler.test.ts`
+- `packages/solidaria-components/test/Menu.test.tsx`
+- `packages/solidaria-components/test/Tabs.test.tsx`
+- `packages/solidaria-components/test/ComboBox.test.tsx`
+
+Also admitted: this ticket, `.changeset/menu-solid2-event-adapters.md`
+covering actual changed owners, `/tmp/ui-534-*` evidence, and generated
+`.claude/current/status.md` / `.claude/current/roadmap.md` through standard
+tooling. Preserve all unrelated work and earlier receipts.
+
+Shared `packages/solidaria/src/selection/createSelectableCollection.ts` is
+not admitted for automatic edits. First prove a native rendered tabindex or
+focus-movement failure and obtain conductor path extension. A casing type
+error alone does not justify a shared public tabIndex migration.
+
+Require old-source controls and focused final passes. The Menu effect test
+settles mount, opens once, swaps callbacks without notification, closes through
+the latest callback, and checks absence/disposal. Actual hook producer tuples
+must exercise Menu/Tabs forwarding; helper-only tests are insufficient.
+Retain keyboard/typeahead, Escape and disabled guards, Tabs focus-in ordering,
+ComboBox open/closed/read-only behavior, eventPathContains and modality proof.
+Bound the potentially hanging old Menu test to 35 seconds plus 5 seconds
+termination grace; timeout is a hang result, never a pass. Run scoped
+format/lint, actual root typecheck and generated-doc checks. Record exact
+generation, HEAD, file digests, commands, exits, counts and limitations in
+`/tmp/ui-534-worker-result-2026-10-08.md`. Keep broader scheduler and candidate
+qualification open; no full audit or release claim follows from this slice.

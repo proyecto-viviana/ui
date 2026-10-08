@@ -89,12 +89,17 @@ tester protocols. The per-component inventory lives in
 
 ## Current
 
-**#245** is `in-progress`. D13 seeds 2/2 and CB-OC-02 are green on `:4323`
-with the `95d30443` canvas CSS (ComboBox island 280px). CB-OC-03 is
-registered; type/filter green, Escape extra `onSelectionChange(null)`.
-CB-OC-01/04–08 authored and red (not registered). Overlay remainder
-#248/#244/#251/#257/#270/#252/#114/#256/#229 stays owner-gated. #246 / #249
-wait on ComboBox OC. #254 is an owner decision — do not start.
+**#245** remains in-progress. Historical checkpoints record D13 seeds and
+CB-OC-02 green, CB-OC-03 registered with a selection-log divergence, and
+CB-OC-01/04–08 authored but unregistered/red. These are not current-tree
+certification. The 2026-10-08 owner authorization releases #114, #251, #252,
+#256 and #257, followed by #246 and #249 in dependency order. Existing
+prerequisites, regressions and certification bars still apply; #254 stays
+held. Reconcile current ComboBox journey registration and exact divergent
+steps, qualify the authorized overlay prerequisites, then execute Picker and
+remaining-overlay journeys with current artifacts. D13 completion still
+requires its gate, first-divergent-step reporting, nightly seeded fuzz evidence
+and overlay-family coverage. This correction claims no new passing proof.
 
 ## Done when
 
