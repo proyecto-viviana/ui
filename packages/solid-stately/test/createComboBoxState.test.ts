@@ -267,6 +267,39 @@ describe("createComboBoxState", () => {
       });
     });
 
+    it("does not mutate a frozen multiple input and gives onChange its own array", () => {
+      createRoot((dispose) => {
+        const frozen = Object.freeze(["1", "2"]);
+        let reported: string[] = [];
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          selectionMode: "multiple",
+          defaultValue: frozen,
+          onChange: (value) => {
+            reported = value;
+            value.push("9");
+          },
+        });
+
+        flush();
+        expect(frozen).toEqual(["1", "2"]);
+
+        const next = Object.freeze(["2", "3"]);
+        state.setValue(next);
+        flush();
+        expect(next).toEqual(["2", "3"]);
+        expect(Object.isFrozen(next)).toBe(true);
+        expect(reported).toEqual(["2", "3", "9"]);
+        expect(reported).not.toBe(next);
+        expect(state.value()).toEqual(["2", "3"]);
+        expect(state.value()).not.toBe(reported);
+        expect(state.value()).not.toBe(next);
+        dispose();
+      });
+    });
+
     it("keeps a controlled single value and still fires onChange", () => {
       createRoot((dispose) => {
         const onChange = vi.fn();

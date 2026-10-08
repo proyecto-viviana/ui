@@ -237,7 +237,7 @@ export interface ComboBoxState<
   /** Select a key and close the menu (for ListState compatibility). */
   select(key: Key): void;
   /** The selection mode. */
-  readonly selectionMode: Accessor<ComboBoxSelectionMode>;
+  readonly selectionMode: Accessor<M>;
   /** Check if a key is selected. */
   isSelected(key: Key): boolean;
   /** Whether the combobox is disabled. */
@@ -345,33 +345,29 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
     return controlled !== undefined ? controlled : internalValue();
   };
 
-  const displayValue = (): ComboBoxValueType<M> => {
+  // `Array.isArray` narrows `readonly Key[]` to `any[]` and then fails to
+  // exclude that array from the scalar branch. A string/number check keeps
+  // the caller's readonly list intact.
+  const displayValue = (): Key | readonly Key[] | null => {
     const current = storedValue();
     if (!isMultiple()) {
-      if (Array.isArray(current)) {
-        return (current[0] ?? null) as ComboBoxValueType<M>;
-      }
-      return (current ?? null) as ComboBoxValueType<M>;
+      return isKeyList(current) ? (current[0] ?? null) : current;
     }
-    if (Array.isArray(current)) {
-      return current as ComboBoxValueType<M>;
-    }
-    if (current == null) {
-      return EMPTY_COMBOBOX_KEYS as unknown as ComboBoxValueType<M>;
-    }
-    return [current] as unknown as ComboBoxValueType<M>;
+    if (isKeyList(current)) return current;
+    if (current == null) return EMPTY_COMBOBOX_KEYS;
+    return [current];
   };
 
   const selectedKey: Accessor<Key | null> = () => {
     if (isMultiple()) return null;
     const current = displayValue();
-    return (Array.isArray(current) ? (current[0] ?? null) : current) as Key | null;
+    return isKeyList(current) ? (current[0] ?? null) : current;
   };
 
   const selectedKeys: Accessor<Set<Key>> = () => {
     const current = displayValue();
-    if (Array.isArray(current)) return new Set(current);
-    return current == null ? new Set() : new Set([current as Key]);
+    if (isKeyList(current)) return new Set(current);
+    return current == null ? new Set() : new Set([current]);
   };
 
   const setValue = (next: Key | readonly Key[] | null) => {
@@ -379,7 +375,12 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
     // onSelectionChange that updates the value then inputValue settles in
     // one flush instead of closing then auto-opening.
     if (!isMultiple()) {
-      const key = Array.isArray(next) ? (next[0] ?? null) : next;
+      const key: Key | null =
+        typeof next === "string" || typeof next === "number"
+          ? next
+          : next === null
+            ? null
+            : (next[0] ?? null);
       const previous = untrack(selectedKey);
       if (!isValueControlled()) {
         setInternalValue(key);
@@ -391,18 +392,19 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
       return;
     }
 
-    let keys: Key[];
-    if (Array.isArray(next)) {
-      keys = [...next];
-    } else if (next != null) {
-      keys = [next];
-    } else {
-      keys = [];
-    }
+    // Copy into state so the caller's list is never stored or mutated.
+    // `onChange` gets a second array, so a callback can mutate its argument
+    // without changing state or the input.
+    const keys: Key[] =
+      typeof next === "string" || typeof next === "number"
+        ? [next]
+        : next === null
+          ? []
+          : [...next];
     if (!isValueControlled()) {
       setInternalValue(keys);
     }
-    getProps().onChange?.(keys as ComboBoxChangeValueType<M>);
+    getProps().onChange?.([...keys] as ComboBoxChangeValueType<M>);
   };
 
   const setSelectedKey = (key: Key | null) => {
@@ -425,12 +427,12 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
 
   const validationValue = createMemo<ComboBoxValidationValue<M> | null>(() => {
     const dVal = displayValue();
-    if (Array.isArray(dVal) && dVal.length === 0) {
+    if (isKeyList(dVal) && dVal.length === 0) {
       return null;
     }
     return {
       inputValue: inputValue(),
-      value: (Array.isArray(dVal) ? [...dVal] : dVal) as ComboBoxValidationType<M>,
+      value: (isKeyList(dVal) ? [...dVal] : dVal) as ComboBoxValidationType<M>,
       selectedKey: selectedKey(),
     };
   });
@@ -704,7 +706,7 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
         getProps().onSelectionChange?.(key);
         const current = displayValue();
         const changeValue = (
-          Array.isArray(current) ? [...current] : current
+          isKeyList(current) ? [...current] : current
         ) as ComboBoxChangeValueType<M>;
         getProps().onChange?.(changeValue);
       }
@@ -949,7 +951,7 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
     setValue([...selectedKeys()].filter((selected) => selected !== key));
   };
 
-  const selectionMode: Accessor<ComboBoxSelectionMode> = () => getProps().selectionMode ?? "single";
+  const selectionMode: Accessor<M> = () => (getProps().selectionMode ?? "single") as M;
 
   const isSelected = (key: Key) => selectedKeys().has(key);
 
@@ -969,7 +971,7 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
     defaultSelectedKey,
     selectedItem,
     setSelectedKey,
-    value: displayValue,
+    value: () => displayValue() as ComboBoxValueType<M>,
     defaultValue,
     setValue,
     selectedKeys,
@@ -1004,9 +1006,14 @@ export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode
   };
 }
 
-function convertValue(value: Key | readonly Key[] | null | undefined): Key[] {
+function isKeyList(value: Key | readonly Key[] | null): value is readonly Key[] {
+  return value !== null && typeof value !== "string" && typeof value !== "number";
+}
+
+function convertValue(value: Key | readonly Key[] | null | undefined): readonly Key[] {
   if (value == null) return [];
-  return Array.isArray(value) ? [...value] : [value];
+  if (typeof value === "string" || typeof value === "number") return [value];
+  return value;
 }
 
 /**

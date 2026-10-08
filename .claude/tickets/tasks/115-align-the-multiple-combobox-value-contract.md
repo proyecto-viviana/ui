@@ -12,6 +12,16 @@ history:
       at: 2026-10-07,
       note: "value, defaultValue, and onChange match upstream for single and multiple; the site combobox JSON stays on the public-face seat and still lists selectedKeys",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admit bounded qualification repair: packages/solid-stately/src/combobox/createComboBoxState.ts, packages/solidaria/src/combobox/createComboBox.ts, packages/solidaria-components/src/ComboBox.tsx; owning createComboBoxState, createComboBox and ComboBox tests; packages/solidaria-components/test-utils/combobox-props.typecheck.ts; one patch changeset and generated status/roadmap. Preserve the already approved public single/multiple contract; remaining full certification stays open.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Review: a frozen multiple input is not mutated and is not stored by identity. setValue copies into state and gives onChange a second mutable Key[]. Open-menu keydown forwards Solid's [handler, data] tuple as handler(data, event). The runtime test passes that order. Full upstream, forms, docs, and styled acceptance stays open.",
+    }
 ---
 
 Match the current upstream multiple-selection value type.

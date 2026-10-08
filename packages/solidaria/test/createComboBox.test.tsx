@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { createRoot, createSignal, onMount, onSettled } from "solid-js";
 import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
+import * as selectableCollection from "../src/selection/createSelectableCollection";
 import { I18nProvider } from "../src/i18n";
 import { createComboBoxState } from "@proyecto-viviana/solid-stately";
 import * as liveAnnouncer from "../src/live-announcer";
@@ -1347,6 +1348,59 @@ describe("createComboBox", () => {
         expect(state.selectedKey()).toBe("1");
 
         openLinkSpy.mockRestore();
+        dispose();
+      });
+    });
+
+    it("forwards a bound collection onKeyDown tuple while the menu is open", () => {
+      createRoot((dispose) => {
+        const data = { id: "collection-data" };
+        const seen: Array<{ data: unknown; key: string }> = [];
+        const real = selectableCollection.createSelectableCollection;
+        const spy = vi
+          .spyOn(selectableCollection, "createSelectableCollection")
+          .mockImplementation((options) => {
+            const created = real(options);
+            return {
+              get collectionProps() {
+                const current = created.collectionProps;
+                const inner = current.onKeyDown;
+                return {
+                  ...current,
+                  onKeyDown: [
+                    (bound: unknown, event: KeyboardEvent) => {
+                      seen.push({ data: bound, key: event.key });
+                      if (typeof inner === "function") {
+                        inner(event);
+                      }
+                    },
+                    data,
+                  ],
+                };
+              },
+            };
+          });
+
+        let inputRef: HTMLInputElement | null = null;
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+        const comboBox = createComboBox({ label: "Fruit" }, state, () => inputRef);
+        state.open(null, "manual");
+
+        const onKeyDown = comboBox.inputProps.onKeyDown as (e: KeyboardEvent) => void;
+        onKeyDown({
+          key: "ArrowDown",
+          preventDefault: vi.fn(),
+          stopPropagation: vi.fn(),
+        } as unknown as KeyboardEvent);
+
+        expect(spy).toHaveBeenCalled();
+        expect(seen).toEqual([{ data, key: "ArrowDown" }]);
+
+        spy.mockRestore();
         dispose();
       });
     });

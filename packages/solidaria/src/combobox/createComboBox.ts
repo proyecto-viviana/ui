@@ -25,6 +25,7 @@ import type { JSX } from "@solidjs/web";
 import { isServer } from "@solidjs/web";
 import {
   createFormValidationState,
+  type ComboBoxSelectionMode,
   type ComboBoxState,
   type CollectionNode,
   type Key,
@@ -154,16 +155,18 @@ interface ComboBoxData {
   listBoxId: string;
 }
 
-export function getComboBoxData(state: ComboBoxState<unknown>): ComboBoxData | undefined {
+export function getComboBoxData(
+  state: ComboBoxState<unknown, ComboBoxSelectionMode>,
+): ComboBoxData | undefined {
   return comboBoxData.get(state);
 }
 
 /**
  * Provides the behavior and accessibility implementation for a combobox component.
  */
-export function createComboBox<T>(
+export function createComboBox<T, M extends ComboBoxSelectionMode = "single">(
   props: MaybeAccessor<AriaComboBoxProps>,
-  state: ComboBoxState<T>,
+  state: ComboBoxState<T, M>,
   inputRef: () => HTMLInputElement | null,
   buttonRef?: () => HTMLElement | null,
   listBoxRef?: () => HTMLElement | null,
@@ -562,6 +565,21 @@ export function createComboBox<T>(
     isVirtualized: true,
   });
 
+  // `@solidjs/web` BoundEventHandler is `{ 0: (data, event) => void; 1: data }`.
+  // Invoke `handler(data, event)`. This hook does not import the component helper.
+  const callHandler = <E extends Event>(handler: unknown, event: E) => {
+    if (typeof handler === "function") {
+      (handler as (e: E) => void)(event);
+      return;
+    }
+    if (handler !== null && typeof handler === "object") {
+      const bound = handler as { 0?: unknown; 1?: unknown };
+      if (typeof bound[0] === "function") {
+        (bound[0] as (data: unknown, e: E) => void)(bound[1], event);
+      }
+    }
+  };
+
   const onInputKeyDown: JSX.EventHandler<HTMLInputElement, KeyboardEvent> = (e) => {
     const p = getProps();
     if (p.isDisabled || p.isReadOnly) return;
@@ -571,7 +589,7 @@ export function createComboBox<T>(
     // Enter, Escape, Tab, and Backspace stay on this handler: callers invoke it
     // directly, including events with no currentTarget.
     if (state.isOpen()) {
-      selectableCollection.collectionProps.onKeyDown?.(e);
+      callHandler(selectableCollection.collectionProps.onKeyDown, e);
     }
 
     switch (e.key) {

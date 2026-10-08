@@ -275,7 +275,7 @@ export interface ComboBoxValueRenderProps {
   isPlaceholder: boolean;
   selectedItems: unknown[];
   selectedText: string;
-  state: ComboBoxState<unknown>;
+  state: ComboBoxState<unknown, ComboBoxSelectionMode>;
 }
 
 export interface ComboBoxValueProps extends SlotProps {
@@ -361,8 +361,8 @@ export interface ComboBoxOptionProps<T>
   onAction?: () => void;
 }
 
-interface ComboBoxContextValue<T> {
-  state: ComboBoxState<T>;
+interface ComboBoxContextValue<T, M extends ComboBoxSelectionMode = "single"> {
+  state: ComboBoxState<T, M>;
   listState: ListState<T>;
   inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
   buttonProps: () => JSX.HTMLAttributes<HTMLElement>;
@@ -386,7 +386,7 @@ interface ComboBoxContextValue<T> {
   setPopoverRef: (el: HTMLElement | null) => void;
   registerOptionAction: (key: Key, action: (() => void) | undefined) => void;
   runOptionAction: (key: Key) => void;
-  slots?: Record<string, Partial<ComboBoxProps<T>>>;
+  slots?: Record<string, Partial<ComboBoxProps<T, M>>>;
 }
 
 type InputKeyboardEvent = KeyboardEvent & {
@@ -394,8 +394,14 @@ type InputKeyboardEvent = KeyboardEvent & {
   target: Element;
 };
 
-export const ComboBoxContext = createContext<ComboBoxContextValue<unknown> | null>(null);
-export const ComboBoxStateContext = createContext<ComboBoxState<unknown> | null>(null);
+export const ComboBoxContext = createContext<ComboBoxContextValue<
+  unknown,
+  ComboBoxSelectionMode
+> | null>(null);
+export const ComboBoxStateContext = createContext<ComboBoxState<
+  unknown,
+  ComboBoxSelectionMode
+> | null>(null);
 export const ComboBoxValueContext = ComboBoxContext;
 
 /**
@@ -404,7 +410,7 @@ export const ComboBoxValueContext = ComboBoxContext;
 export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
   props: ComboBoxProps<T, M>,
 ): JSX.Element {
-  const parentContext = useContext(ComboBoxContext) as ComboBoxContextValue<T> | null;
+  const parentContext = useContext(ComboBoxContext) as ComboBoxContextValue<T, M> | null;
   const contextSlotProps =
     parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const mergedComboBoxProps = contextSlotProps
@@ -564,7 +570,7 @@ export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
     return cleanProps as AriaComboBoxProps;
   });
 
-  const comboBoxAria = createComboBox<T>(
+  const comboBoxAria = createComboBox<T, M>(
     () => ({
       ...comboBoxAriaProps(),
       get name() {
@@ -708,10 +714,10 @@ export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
           },
           runOptionAction,
           slots: local.slots,
-        } as ComboBoxContextValue<unknown>
+        } as ComboBoxContextValue<unknown, ComboBoxSelectionMode>
       }
     >
-      <ComboBoxStateContext value={state}>
+      <ComboBoxStateContext value={state as ComboBoxState<unknown, ComboBoxSelectionMode>}>
         <div
           {...domProps()}
           ref={(el) => {
@@ -948,7 +954,7 @@ export function ComboBoxValue(props: ComboBoxValueProps): JSX.Element {
       isPlaceholder: isPlaceholder(),
       selectedItems: selectedItems(),
       selectedText: selectedText(),
-      state: state as ComboBoxState<unknown>,
+      state: state as ComboBoxState<unknown, ComboBoxSelectionMode>,
     }),
   );
 
@@ -1322,11 +1328,11 @@ export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   if (!stateContext || !comboBoxContext) {
     throw new Error("ComboBoxItem must be used within a ComboBox");
   }
-  const state = stateContext as ComboBoxState<T>;
-  const listState = (comboBoxContext as ComboBoxContextValue<T>).listState;
+  const state = stateContext as ComboBoxState<T, ComboBoxSelectionMode>;
+  const listState = (comboBoxContext as ComboBoxContextValue<T, ComboBoxSelectionMode>).listState;
   const [ref, setRef] = createSignal<HTMLElement | null>(null);
   const optionId = () => {
-    const listBoxId = getComboBoxData(state as ComboBoxState<unknown>)?.listBoxId;
+    const listBoxId = getComboBoxData(state)?.listBoxId;
     return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
   };
 
@@ -1602,7 +1608,9 @@ ComboBox.Tag = ComboBoxTag;
 
 export { defaultContainsFilter };
 
-function createComboBoxListStateAdapter<T>(state: ComboBoxState<T>): ListState<T> {
+function createComboBoxListStateAdapter<T, M extends ComboBoxSelectionMode = "single">(
+  state: ComboBoxState<T, M>,
+): ListState<T> {
   const selectedKeys = createMemo(() => {
     if (state.selectionMode() === "multiple") {
       return state.selectedKeys();
