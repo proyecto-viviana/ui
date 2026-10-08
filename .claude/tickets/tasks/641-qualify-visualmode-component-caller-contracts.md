@@ -256,3 +256,90 @@ These are DOM simulation results, not browser or release qualification.
 Handoff and sealed manifests: `/tmp/ui-641-focusable-worker-result-2026-10-08.md`.
 Conductor review, exact-generation stop and normal-hook integration remain
 pending. Umbrella #641 and other D26 allegations remain open.
+
+## Focus repair acceptance and AlertDialog admission — 2026-10-08
+
+The final focus r3 handoff supersedes the earlier 90-test checkpoint above.
+Independent review accepted current-disability getters and native handler
+receiver preservation; all 92 final focus/Card/Link tests pass. Exact-base
+controls fail ten direct reactive cases and one initially-disabled Card case,
+while two receiver preservation controls pass. All 19 final repository and 24
+evidence records match; the 45-record immutable checkpoint is
+`/tmp/ui-641-focusable-r3-checkpoint-2026-10-08/archive-map.json`.
+Generation 649d2889-9fea-4000-97ca-3e5475b14720 is owned-stopped with
+closed=true. Normal hooks retained accepted hashes in commit
+48af500b6755f6e6a0d55670e6c96fa9c825d8c9; main is clean. Canonical
+eligibility passes. Root's authenticated CI read remains available: the
+worker's unauthenticated gh limit is local to that worker, not the conductor.
+The 24 inherited compiler errors, native/installed and release proof remain open.
+
+Admit the next serial OS/herdr source task through
+`/tmp/ui-641-dialog-dispatch-2026-10-08.md`. Decision 040 permits Codex astra
+low for reactive label forwarding and compiler/SSR boundaries. Admit existing
+`packages/solid-spectrum/test/Dialog.test.tsx` and
+`packages/solid-spectrum/test/Dialog.ssr.test.tsx`, new focused
+`packages/viviana-ui/test/Dialog.test.tsx` and
+`packages/viviana-ui/test/Dialog.ssr.test.tsx`. Only after actual caller-contract
+failures admit `packages/solid-spectrum/src/dialog/AlertDialog.tsx` and
+`packages/viviana-ui/src/dialog/AlertDialog.tsx`. Extend only dual AlertDialog
+assertions in existing private
+`packages/solidaria-components/test-utils/d26-caller-props.typecheck.ts`,
+preserving all Card assertions. An actual repair admits
+`.changeset/alertdialog-caller-attributes.md` for changed styled packages.
+This ticket, generated views and `/tmp/ui-641-dialog-*` evidence are admitted.
+
+Match pinned S2 DOMProps/AriaLabelingProps using the actual existing exported
+label types. Preserve live filtered id/data/label/reference values across
+removal and reintroduction, accessible naming precedence, generated title/content
+fallbacks, child/focus identity and fixed alertdialog role. aria-details is
+metadata, not accessible description text. Keep action ordering and dedicated
+SSR behavior. Lower Dialog/createDialog/filter/config, inherited Card owners,
+shared helpers, styles, manifests, dependencies, public names and consumers
+remain read-only. Focused exact-owner controls retain final tests and restore
+sources in finally. Record canonical compiler debt honestly; no hydration,
+native or release claim from this slice and no umbrella closure.
+
+## AlertDialog caller forwarding r2 — 2026-10-08
+
+Generation `7e823f83-b124-4251-be1d-7ba5732e05eb`, exact base
+`48af500b6755f6e6a0d55670e6c96fa9c825d8c9`. Twin AlertDialog sources now
+extend exported DOMProps/AriaLabelingProps and forward labelable DOM props
+through the existing accessor boundary before fixed role. Lower Dialog,
+createDialog, Heading, filters, merges and SSR primitives remain unchanged;
+revoked lower admission required no restoration because no edits were made.
+
+Final twin unit suites pass 25 tests; dedicated SSR suites pass 7. Caller
+id/data and four ARIA values traverse undefined/A/B/removal/reintroduction on
+the same root, child and focused input. Real external references prove naming,
+description and separate aria-details metadata. Explicit external naming wins;
+removal exposes the still-present live explicit label. Initially-undefined
+labels restore valid generated title/content associations. Existing action
+assertions plus close-before-action and disabled controls pass, without action
+wiring changes. SSR honestly characterizes modal deferral with retained triggers
+and external nodes; original five Spectrum assertions remain. No inline or
+hydration claim.
+
+The failed checkpoint is frozen at
+`/tmp/ui-641-dialog-worker-result-2026-10-08.md` with original logs/manifests.
+Its initial-label removal recovery requirement exceeded installed upstream:
+React/ReactDOM 19.2.8 and React Aria Components 1.21.0 reproduce missing generated
+title recovery. This is an upstream limitation, not a second established
+Solid-only defect. Exact isolated harness snapshot SHA256
+`fcb9a35bc11a17af773009d48c4d49fbcf56576d746c2b3567b29171e27ff7fb`;
+raw log SHA256
+`de6da5dae19525dd0c4d0bae79e390d3ace51d46be09d76565e00f244490ce5e`.
+Snapshots: `/tmp/ui-641-dialog-r2-upstream-probe.cjs` and
+`/tmp/ui-641-dialog-r2-upstream-probe.log`. This standalone RAC control does not
+certify installed S2 AlertDialog. Invalid inline SSR reds are likewise preserved
+as failed test-design evidence, not product defects.
+
+Revised exact-base twin source controls isolate actual caller forwarding failures
+and restore in finally with source/test hashes. Canonical typecheck already
+reports exactly 24 inherited diagnostics, no new ones; relevant sources and
+included private type fixture are unchanged since that run, so no redundant
+compiler rerun. Existing Card assertions remain byte-identical. Scoped r2
+format/lint/docs/diff receipts and final manifests bind the reviewable result.
+The two styled packages have a patch Changeset. No lower changeset, commit,
+push, native/build/browser, release or full-reactivity certification. #641 stays
+open; conductor owns acceptance and exact-generation stop. Final r2 handoff:
+`/tmp/ui-641-dialog-r2-worker-result-2026-10-08.md`.

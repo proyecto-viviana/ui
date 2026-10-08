@@ -15,7 +15,12 @@
 // Port of packages/@react-spectrum/s2/src/AlertDialog.tsx.
 import { Show } from "solid-js";
 import type { JSX } from "@solidjs/web";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import {
+  createStringFormatter,
+  filterDOMProps,
+  type AriaLabelingProps,
+  type DOMProps,
+} from "@proyecto-viviana/solidaria";
 import { Button, type ButtonVariant } from "../button";
 import { ButtonGroup } from "../buttongroup";
 import { IconContext } from "../icon";
@@ -35,7 +40,7 @@ export type AlertDialogVariant =
   | "error"
   | "warning";
 
-export interface AlertDialogProps {
+export interface AlertDialogProps extends DOMProps, AriaLabelingProps {
   /** The title of the alert dialog. */
   title: string;
   /** The content/message of the alert dialog. */
@@ -112,7 +117,7 @@ function runAction(close: () => void, action: (() => void) | undefined) {
  * A dialog that requires user acknowledgement before proceeding.
  */
 export function AlertDialog(props: AlertDialogProps): JSX.Element {
-  const [local] = splitProps(props, [
+  const [local, rest] = splitProps(props, [
     "title",
     "children",
     "trigger",
@@ -140,8 +145,11 @@ export function AlertDialog(props: AlertDialogProps): JSX.Element {
   const isDismissible = () => local.isDismissible ?? local.isDismissable ?? false;
   const primaryActionLabel = () => local.primaryActionLabel ?? "Confirm";
 
+  const domProps = () => filterDOMProps(rest, { labelable: true });
+
   const dialog = () => (
     <Dialog
+      {...domProps()}
       role="alertdialog"
       size={local.size ?? "M"}
       isDismissible={isDismissible()}
