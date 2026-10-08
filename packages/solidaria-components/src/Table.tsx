@@ -2374,11 +2374,20 @@ export function TableCell(props: TableCellProps): JSX.Element {
     },
   };
 
+  function isCellAccessor(
+    child: (props: TableCellRenderProps) => JSX.Element,
+  ): child is () => JSX.Element {
+    return child.length === 0;
+  }
+
   const cellChildren = () => {
     const rawChildren = local.children;
-    // Zero-arg functions are accessors. Return them so insertion unwraps them.
-    if (typeof rawChildren !== "function" || rawChildren.length === 0) {
+    if (typeof rawChildren !== "function") {
       return rawChildren;
+    }
+    // Keep zero-arg accessors in a renderer-owned reactive insertion.
+    if (isCellAccessor(rawChildren)) {
+      return <>{rawChildren()}</>;
     }
     return rawChildren(childRenderProps);
   };

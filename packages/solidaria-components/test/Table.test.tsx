@@ -3816,6 +3816,76 @@ describe("Table", () => {
       expect(renderRow.mock.calls[0][0]).not.toHaveProperty("isSelected");
     });
 
+    it.each([false, true])(
+      "keeps live zero-argument cell accessors and retained state (custom render: %s)",
+      (customRender) => {
+        const [value, setValue] = createSignal("before");
+        const argumentCounts: number[] = [];
+        let mounts = 0;
+        function StatefulContent() {
+          mounts++;
+          const [count, setCount] = createSignal(0);
+          return (
+            <>
+              <input aria-label="Retained input" />
+              <button onClick={() => setCount(count() + 1)}>Count {count()}</button>
+            </>
+          );
+        }
+        render(() => (
+          <Table items={[testData[0]]} columns={[testColumns[0]]} getKey={(item) => item.id}>
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">Name</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => {
+                        const retained = <StatefulContent />;
+                        function cellAccessor() {
+                          argumentCounts.push(arguments.length);
+                          return [value(), retained];
+                        }
+                        return (
+                          <TableCell
+                            render={customRender ? (props) => <td {...props} /> : undefined}
+                          >
+                            {cellAccessor}
+                          </TableCell>
+                        );
+                      }}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+        const input = screen.getByRole("textbox", { name: "Retained input" });
+        const cell = input.closest("td");
+        const button = screen.getByRole("button", { name: "Count 0" });
+        fireEvent.click(button);
+        fireEvent.input(input, { target: { value: "typed" } });
+        input.focus();
+        expect(document.activeElement).toBe(input);
+        expect(cell).toHaveTextContent("before");
+        setValue("after");
+        flush();
+        expect(input.closest("td")).toBe(cell);
+        expect(screen.getByRole("textbox", { name: "Retained input" })).toBe(input);
+        expect(screen.getByRole("button", { name: "Count 1" })).toBe(button);
+        expect(input).toHaveValue("typed");
+        expect(document.activeElement).toBe(input);
+        expect(cell).toHaveTextContent("after");
+        expect(cell).not.toHaveTextContent("before");
+        expect(mounts).toBe(1);
+        expect(argumentCounts.length).toBeGreaterThanOrEqual(2);
+        expect(argumentCounts.every((count) => count === 0)).toBe(true);
+      },
+    );
+
     it("should support cell render props", () => {
       render(() => (
         <Table
