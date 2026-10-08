@@ -23,6 +23,7 @@ import {
   getInteractionModality,
   setInteractionModality,
 } from "../src/interactions/createInteractionModality";
+import * as selectableList from "../src/selection/createSelectableList";
 
 function mountMenu<T extends { key: string; label: string }>(
   state: MenuState<T>,
@@ -370,6 +371,103 @@ describe("createMenu", () => {
       expect(onClose).toHaveBeenCalled();
       dispose();
     });
+  });
+
+  it("forwards a bound list onKeyDown tuple and moves focus once", () => {
+    const data = { id: "menu-list" };
+    const seen: Array<{ data: unknown; event: KeyboardEvent }> = [];
+    const real = selectableList.createSelectableList;
+    const spy = vi.spyOn(selectableList, "createSelectableList").mockImplementation((options) => {
+      const created = real(options);
+      return {
+        get listProps() {
+          const current = created.listProps;
+          const inner = current.onKeyDown;
+          return {
+            ...current,
+            onKeyDown: [
+              (bound: unknown, event: KeyboardEvent) => {
+                seen.push({ data: bound, event });
+                if (typeof inner === "function") inner(event);
+              },
+              data,
+            ],
+          };
+        },
+      };
+    });
+
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+    });
+    const menu = mountMenu(state, { "aria-label": "Actions" }, items);
+    try {
+      const event = pressKey(menu, "ArrowDown");
+
+      expect(seen).toEqual([{ data, event }]);
+      expect(state.focusedKey()).toBe("copy");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("does not delegate Escape or a disabled menu key to the list handler", () => {
+    const data = { id: "menu-list" };
+    const seen: KeyboardEvent[] = [];
+    const real = selectableList.createSelectableList;
+    const spy = vi.spyOn(selectableList, "createSelectableList").mockImplementation((options) => {
+      const created = real(options);
+      return {
+        get listProps() {
+          const current = created.listProps;
+          return {
+            ...current,
+            onKeyDown: [
+              (_bound: unknown, event: KeyboardEvent) => {
+                seen.push(event);
+              },
+              data,
+            ],
+          };
+        },
+      };
+    });
+
+    try {
+      const items = [{ key: "copy", label: "Copy" }];
+      const onClose = vi.fn();
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const menu = mountMenu(state, { onClose, "aria-label": "Actions" }, items);
+      const escape = pressKey(menu, "Escape");
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(escape.defaultPrevented).toBe(true);
+      expect(seen).toEqual([]);
+      expect(state.focusedKey()).toBeNull();
+
+      cleanup();
+      const disabled = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      const disabledMenu = mountMenu(
+        disabled,
+        { isDisabled: true, "aria-label": "Actions" },
+        items,
+      );
+      pressKey(disabledMenu, "ArrowDown");
+      expect(seen).toEqual([]);
+      expect(disabled.focusedKey()).toBeNull();
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("wires visible label props via aria-labelledby", () => {

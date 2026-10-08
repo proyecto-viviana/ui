@@ -61,6 +61,26 @@ history:
       at: 2026-10-08,
       note: "Reopened for the current-tree Menu effect and canonical bound-event tuple qualification slice before #632. Historical 433/433 proof is preserved. Admission supplies no new passing proof or release acceptance.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Bounded slice at HEAD d1195428: StackedSubmenuTrigger uses two-phase createEffect (initial sample, latest callback, same-state guard). Private callEventHandler calls handler(data, event). Menu, tabs, and combobox use it. Collection untouched; menuProps.tabIndex getter stays. Old Menu ArrowRight failed in 71ms with MISSING_EFFECT_FN (exit 1, not a hang). Hook suites 188/188. New stacked notification test passed under the 35s bound (exit 0). Five Menu Enter activation failures also fail on HEAD sources and stay inherited. Root typecheck exits 2; the createMenu tabIndex HTMLAttributes error is on HEAD, and the old onKeyDown not-callable error is gone. docs:generate and docs:check passed. Full audit, SSR, browser, and release remain open. #557 still blocks candidate qualification.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Review gap: createTab now records bound tuples from the real createFocusRing and createPress producers for onFocus, onBlur, onKeyDown, onMouseDown, onPointerDown, and onClick, including undefined data, and still records focusin roving order on ArrowRight. HEAD createTabs fails that test with focusCalls []. Spies restore in finally, and createTab plus createComboBox restoreAllMocks in afterEach. ComboBox open ArrowDown still delegates once; closed, read-only, and disabled do not. Focused hook files 189/189. Typecheck still exits 2. docs:check passed. No source scope added. Audit and release remain open.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Direction before fixture change: five inherited Menu failures fire Enter on the menu root. createMenu.ts delegates item Enter/Space to createMenuItem, matching pinned useMenuItem, and does not activate from the root handler. Named groups are individual closeOnSelect=false, static MenuSection selection, static section disabled/close, section radio, and section checkbox. One focused-item user.keyboard Enter control must pass with activeElement and exact action/selection/close assertions before those five event targets are corrected. No root-activation product behavior. The createMenu tabIndex diagnostic stays a local listProps boundary; the public camelCase getter and native mapping stay, with no collection migration.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Precontrol log /tmp/ui-534-menu-enter-precontrol.log: the five titles fail on fireEvent Enter at the menu root (menu still mounted, Bold stays checked, onAction not called, radio and checkbox stay unchecked). The static MenuSection control then passes with menu.focus, user.keyboard ArrowDown, activeElement on Italic, and Enter selecting Italic. The other four fixtures use that same focused-item path. Root-activation titles are renamed to focused keyboard activation. Disabled Archive is skipped. close and no-close outcomes stay. createMenu strips the list's camelCase tabIndex through a local boundary and keeps the reactive getter. Typecheck still exits 2 with no createMenu diagnostic. No collection migration and no root-activation product behavior. Audit and release remain open.",
+    }
 ---
 
 ## Cause
@@ -242,3 +262,25 @@ format/lint, actual root typecheck and generated-doc checks. Record exact
 generation, HEAD, file digests, commands, exits, counts and limitations in
 `/tmp/ui-534-worker-result-2026-10-08.md`. Keep broader scheduler and candidate
 qualification open; no full audit or release claim follows from this slice.
+
+## 2026-10-08 bounded acceptance
+
+The conductor read the final diff, saved controls and final logs in
+`/tmp/ui-534-worker-result-2026-10-08.md`, independently matched all 14 recorded
+path digests, and accepted this bounded repair. The owned Grok generation
+`3ece5827-5500-4ad9-8ec0-5c8f0cc94426` was stopped through OS/herdr with
+`closed: true` before integration. Independent read-only review accepted the
+event adapters, local list-props boundary, effect and focused-item fixtures.
+
+The three saved old-source controls fail on the obsolete Menu effect, bound
+Menu keydown dispatch and bound Tabs dispatch. Final owning tests pass 328/328
+across five files. Scoped format and lint and generated-doc checks pass.
+Root typecheck exits 2 with 24 inherited diagnostics and none in the admitted
+source. The five inherited root-Enter fixtures now focus the intended item
+and assert activeElement before Enter; their selection, action and close
+assertions remain. This adds no root-activation product behavior.
+
+This acceptance covers source and focused local proof. Existing effect-flush
+diagnostic traces remain; SSR, hydration, builds, native browser #557 and
+candidate/release qualification were not run in this slice. The remaining
+scheduler audit and this ticket stay in progress.

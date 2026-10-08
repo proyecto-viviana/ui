@@ -31,6 +31,7 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { focusSafely, runAfterPaint } from "../utils/focus";
 import { createId } from "../ssr";
+import { callEventHandler } from "../utils/callEventHandler";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
 import type { MenuState, Key } from "@proyecto-viviana/solid-stately";
@@ -280,7 +281,7 @@ export function createMenu<T>(
       getProps().onClose?.();
       return;
     }
-    selectableList.listProps.onKeyDown?.(e);
+    callEventHandler(selectableList.listProps.onKeyDown, e);
   };
 
   return {
@@ -289,11 +290,13 @@ export function createMenu<T>(
     },
     get menuProps() {
       const p = getProps();
-      const {
-        onKeyDown: _listKeyDown,
-        tabIndex: _listTabIndex,
-        ...listRest
-      } = p.isDisabled ? {} : selectableList.listProps;
+      // collectionProps is typed as HTMLAttributes, whose DOM name is `tabindex`.
+      // The list still publishes a camelCase `tabIndex` value. Strip that frozen
+      // value here so the reactive getter below is the only public mapping.
+      const listSource: JSX.HTMLAttributes<HTMLElement> & { tabIndex?: number } = p.isDisabled
+        ? {}
+        : selectableList.listProps;
+      const { onKeyDown: _listKeyDown, tabIndex: _listTabIndex, ...listRest } = listSource;
 
       return mergeProps(
         domProps(),

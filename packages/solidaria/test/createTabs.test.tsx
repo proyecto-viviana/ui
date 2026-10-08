@@ -17,6 +17,7 @@ import {
 } from "../src/tabs";
 import { createTabListState, type TabListStateProps } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "../src/i18n";
+import * as interactions from "../src/interactions";
 
 afterEach(cleanup);
 
@@ -1127,6 +1128,10 @@ describe("createTabPanel", () => {
 });
 
 describe("createTab", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("forwards aria-describedby and aria-details", () => {
     createRoot((dispose) => {
       const state = createTabListState({
@@ -1147,5 +1152,137 @@ describe("createTab", () => {
       expect(tabProps["aria-details"]).toBe("tab-details");
       dispose();
     });
+  });
+
+  it("invokes each bound press and focus tuple as handler(data, event)", () => {
+    const focusData = { slot: "focus" };
+    const blurData: undefined = undefined;
+    const keyData = { slot: "keydown" };
+    const mouseData = { slot: "mousedown" };
+    const pointerData: undefined = undefined;
+    const clickData = { slot: "click" };
+    const focusCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const blurCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const keyCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const mouseCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const pointerCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const clickCalls: Array<{ data: unknown; event: Event; thisValue: unknown }> = [];
+    const realFocus = interactions.createFocusRing;
+    const realPress = interactions.createPress;
+    const focusSpy = vi.spyOn(interactions, "createFocusRing").mockImplementation((props) => {
+      const created = realFocus(props);
+      return {
+        ...created,
+        focusProps: {
+          ...created.focusProps,
+          onFocus: [
+            function (this: unknown, bound: unknown, event: FocusEvent) {
+              focusCalls.push({ data: bound, event, thisValue: this });
+              const inner = created.focusProps.onFocus;
+              if (typeof inner === "function") inner(event);
+            },
+            focusData,
+          ],
+          onBlur: [
+            function (this: unknown, bound: unknown, event: FocusEvent) {
+              blurCalls.push({ data: bound, event, thisValue: this });
+              const inner = created.focusProps.onBlur;
+              if (typeof inner === "function") inner(event);
+            },
+            blurData,
+          ],
+        },
+      };
+    });
+    const pressSpy = vi.spyOn(interactions, "createPress").mockImplementation((props) => {
+      const created = realPress(props);
+      const wrap = <E extends Event>(
+        read: () => ((event: E) => void) | undefined,
+        sink: Array<{ data: unknown; event: Event; thisValue: unknown }>,
+        data: unknown,
+      ) =>
+        [
+          function (this: unknown, bound: unknown, event: E) {
+            sink.push({ data: bound, event, thisValue: this });
+            const inner = read();
+            if (typeof inner === "function") inner(event);
+          },
+          data,
+        ] as const;
+      return {
+        ...created,
+        pressProps: {
+          ...created.pressProps,
+          onKeyDown: wrap(() => created.pressProps.onKeyDown, keyCalls, keyData),
+          onMouseDown: wrap(() => created.pressProps.onMouseDown, mouseCalls, mouseData),
+          onPointerDown: wrap(() => created.pressProps.onPointerDown, pointerCalls, pointerData),
+          onClick: wrap(() => created.pressProps.onClick, clickCalls, clickData),
+        },
+      };
+    });
+
+    try {
+      const { getByRole, unmount } = render(() => <TestTabs />);
+      const tabs = [getByRole("tab", { name: "Tab 1" }), getByRole("tab", { name: "Tab 2" })];
+      tabs[0].focus();
+      focusCalls.length = 0;
+
+      const focusEvent = new FocusEvent("focus", { bubbles: true });
+      tabs[0].dispatchEvent(focusEvent);
+      expect(focusCalls).toEqual([{ data: focusData, event: focusEvent, thisValue: undefined }]);
+
+      const blurEvent = new FocusEvent("blur", { bubbles: true });
+      tabs[0].dispatchEvent(blurEvent);
+      expect(blurCalls).toEqual([{ data: blurData, event: blurEvent, thisValue: undefined }]);
+
+      const mouseEvent = new MouseEvent("mousedown", { bubbles: true });
+      tabs[0].dispatchEvent(mouseEvent);
+      expect(mouseCalls).toEqual([{ data: mouseData, event: mouseEvent, thisValue: undefined }]);
+
+      const pointerEvent = new PointerEvent("pointerdown", { bubbles: true });
+      tabs[0].dispatchEvent(pointerEvent);
+      expect(pointerCalls).toEqual([
+        { data: pointerData, event: pointerEvent, thisValue: undefined },
+      ]);
+
+      const clickEvent = new MouseEvent("click", { bubbles: true });
+      tabs[0].dispatchEvent(clickEvent);
+      expect(clickCalls).toEqual([{ data: clickData, event: clickEvent, thisValue: undefined }]);
+
+      keyCalls.length = 0;
+      const seen: Array<{ type: string; name: string | null; tabindex: string | null }> = [];
+      const record = (event: Event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement) || target.getAttribute("role") !== "tab") return;
+        seen.push({
+          type: event.type,
+          name: target.textContent,
+          tabindex: target.getAttribute("tabindex"),
+        });
+      };
+      document.addEventListener("focusout", record, true);
+      document.addEventListener("focusin", record, true);
+      const keyEvent = new KeyboardEvent("keydown", {
+        key: "ArrowRight",
+        bubbles: true,
+        cancelable: true,
+      });
+      try {
+        tabs[0].dispatchEvent(keyEvent);
+      } finally {
+        document.removeEventListener("focusout", record, true);
+        document.removeEventListener("focusin", record, true);
+      }
+      expect(keyCalls).toEqual([{ data: keyData, event: keyEvent, thisValue: undefined }]);
+      expect(seen).toEqual([
+        { type: "focusout", name: "Tab 1", tabindex: "-1" },
+        { type: "focusin", name: "Tab 2", tabindex: "0" },
+      ]);
+      expect(document.activeElement).toBe(tabs[1]);
+      unmount();
+    } finally {
+      focusSpy.mockRestore();
+      pressSpy.mockRestore();
+    }
   });
 });

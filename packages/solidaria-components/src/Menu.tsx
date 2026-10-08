@@ -663,15 +663,22 @@ function StackedSubmenuTrigger(componentProps: {
   const triggerKey = createUniqueId();
   const state = createSubmenuTriggerState({ triggerKey }, componentProps.root);
   let sampled = false;
-  createEffect(() => {
-    const open = state.isOpen();
-    const notify = componentProps.submenuProps.onOpenChange;
-    if (!sampled) {
-      sampled = true;
-      return;
-    }
-    notify?.(open);
-  });
+  let notified: boolean | undefined;
+  // Compute tracks open state. The effect is untracked, so a new callback
+  // identity does not notify. The first flush is the initial sample.
+  createEffect(
+    () => state.isOpen(),
+    (open) => {
+      if (!sampled) {
+        sampled = true;
+        notified = open;
+        return;
+      }
+      if (notified === open) return;
+      notified = open;
+      componentProps.submenuProps.onOpenChange?.(open);
+    },
+  );
   const menuState: MenuTriggerState = {
     isOpen: state.isOpen,
     focusStrategy: state.focusStrategy,

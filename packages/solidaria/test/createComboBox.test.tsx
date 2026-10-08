@@ -24,6 +24,10 @@ const items: TestItem[] = [
 ];
 
 describe("createComboBox", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe("input props", () => {
     it("should provide correct ARIA attributes for input", () => {
       createRoot((dispose) => {
@@ -1397,12 +1401,94 @@ describe("createComboBox", () => {
           stopPropagation: vi.fn(),
         } as unknown as KeyboardEvent);
 
-        expect(spy).toHaveBeenCalled();
-        expect(seen).toEqual([{ data, key: "ArrowDown" }]);
-
-        spy.mockRestore();
-        dispose();
+        try {
+          expect(spy).toHaveBeenCalled();
+          expect(seen).toEqual([{ data, key: "ArrowDown" }]);
+        } finally {
+          spy.mockRestore();
+          dispose();
+        }
       });
+    });
+
+    it("does not delegate a bound collection tuple when closed, read-only, or disabled", () => {
+      const data = { id: "collection-data" };
+      const seen: string[] = [];
+      const real = selectableCollection.createSelectableCollection;
+      const spy = vi
+        .spyOn(selectableCollection, "createSelectableCollection")
+        .mockImplementation((options) => {
+          const created = real(options);
+          return {
+            get collectionProps() {
+              const current = created.collectionProps;
+              return {
+                ...current,
+                onKeyDown: [
+                  (_bound: unknown, event: KeyboardEvent) => {
+                    seen.push(event.key);
+                  },
+                  data,
+                ],
+              };
+            },
+          };
+        });
+
+      const arrow = () =>
+        ({
+          key: "ArrowDown",
+          preventDefault: vi.fn(),
+          stopPropagation: vi.fn(),
+        }) as unknown as KeyboardEvent;
+
+      try {
+        createRoot((dispose) => {
+          const state = createComboBoxState({
+            items,
+            getKey: (item) => item.id,
+            getTextValue: (item) => item.name,
+          });
+          const comboBox = createComboBox({ label: "Fruit" }, state, () => null);
+          expect(state.isOpen()).toBe(false);
+          (comboBox.inputProps.onKeyDown as (e: KeyboardEvent) => void)(arrow());
+          expect(seen).toEqual([]);
+          expect(state.isOpen()).toBe(true);
+          dispose();
+        });
+
+        seen.length = 0;
+        createRoot((dispose) => {
+          const state = createComboBoxState({
+            items,
+            getKey: (item) => item.id,
+            getTextValue: (item) => item.name,
+          });
+          state.open(null, "manual");
+          const comboBox = createComboBox({ label: "Fruit", isReadOnly: true }, state, () => null);
+          (comboBox.inputProps.onKeyDown as (e: KeyboardEvent) => void)(arrow());
+          expect(seen).toEqual([]);
+          expect(state.focusedKey()).toBeNull();
+          dispose();
+        });
+
+        seen.length = 0;
+        createRoot((dispose) => {
+          const state = createComboBoxState({
+            items,
+            getKey: (item) => item.id,
+            getTextValue: (item) => item.name,
+          });
+          state.open(null, "manual");
+          const comboBox = createComboBox({ label: "Fruit", isDisabled: true }, state, () => null);
+          (comboBox.inputProps.onKeyDown as (e: KeyboardEvent) => void)(arrow());
+          expect(seen).toEqual([]);
+          expect(state.focusedKey()).toBeNull();
+          dispose();
+        });
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it("does not preventDefault Escape when a selection is present", () => {

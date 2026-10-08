@@ -35,6 +35,7 @@ import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { createField } from "../label/createField";
 import { createLabels } from "../label/createLabels";
+import { callEventHandler } from "../utils/callEventHandler";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { attrString } from "../utils/domAttrs";
@@ -565,21 +566,6 @@ export function createComboBox<T, M extends ComboBoxSelectionMode = "single">(
     isVirtualized: true,
   });
 
-  // `@solidjs/web` BoundEventHandler is `{ 0: (data, event) => void; 1: data }`.
-  // Invoke `handler(data, event)`. This hook does not import the component helper.
-  const callHandler = <E extends Event>(handler: unknown, event: E) => {
-    if (typeof handler === "function") {
-      (handler as (e: E) => void)(event);
-      return;
-    }
-    if (handler !== null && typeof handler === "object") {
-      const bound = handler as { 0?: unknown; 1?: unknown };
-      if (typeof bound[0] === "function") {
-        (bound[0] as (data: unknown, e: E) => void)(bound[1], event);
-      }
-    }
-  };
-
   const onInputKeyDown: JSX.EventHandler<HTMLInputElement, KeyboardEvent> = (e) => {
     const p = getProps();
     if (p.isDisabled || p.isReadOnly) return;
@@ -589,7 +575,7 @@ export function createComboBox<T, M extends ComboBoxSelectionMode = "single">(
     // Enter, Escape, Tab, and Backspace stay on this handler: callers invoke it
     // directly, including events with no currentTarget.
     if (state.isOpen()) {
-      callHandler(selectableCollection.collectionProps.onKeyDown, e);
+      callEventHandler(selectableCollection.collectionProps.onKeyDown, e);
     }
 
     switch (e.key) {

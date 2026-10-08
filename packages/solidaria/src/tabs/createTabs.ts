@@ -36,6 +36,7 @@ import { createHover } from "../interactions";
 import { createLabels } from "../label/createLabels";
 import { createId } from "../ssr";
 import { useLocale } from "../i18n";
+import { callEventHandler } from "../utils/callEventHandler";
 import { ariaTrueFalse, attrTrue } from "../utils/domAttrs";
 import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
@@ -462,23 +463,12 @@ export function createTab<T>(
   const tabId = generateTabId(state, key());
   const tabPanelId = generateTabPanelId(state, key());
 
-  // Helper to safely call event handlers that may be bound tuples
-  const callHandler = <E extends Event>(handler: unknown, event: E) => {
-    if (typeof handler === "function") {
-      (handler as (e: E) => void)(event);
-      return;
-    }
-    if (Array.isArray(handler) && handler.length >= 2 && typeof handler[1] === "function") {
-      (handler[1] as (this: unknown, e: E) => void).call(handler[0], event);
-    }
-  };
-
   // Focus management. The focus ring reacts to the native `focus` event, but the
   // roving-tabindex commit is deliberately bound to `focusin` (see
   // handleFocusIn) so its DOM reflection lands one event later — matching React,
   // whose `onFocus` is a `focusin`-delegated listener at the app root.
   const handleFocus = (e: FocusEvent) => {
-    callHandler(focusProps.onFocus, e);
+    callEventHandler(focusProps.onFocus, e);
   };
 
   // Roving-tabindex commit (D4 event-ordering). React's `onFocus` is delegated
@@ -504,24 +494,24 @@ export function createTab<T>(
   };
 
   const handleBlur = (e: FocusEvent) => {
-    callHandler(focusProps.onBlur, e);
+    callEventHandler(focusProps.onBlur, e);
   };
 
   // Combine all handlers
   const handleKeyDown = (e: KeyboardEvent) => {
-    callHandler(pressProps.onKeyDown, e);
+    callEventHandler(pressProps.onKeyDown, e);
   };
 
   const handleMouseDown = (e: MouseEvent) => {
-    callHandler(pressProps.onMouseDown, e);
+    callEventHandler(pressProps.onMouseDown, e);
   };
 
   const handlePointerDown = (e: PointerEvent) => {
-    callHandler(pressProps.onPointerDown, e);
+    callEventHandler(pressProps.onPointerDown, e);
   };
 
   const handleClick = (e: MouseEvent) => {
-    callHandler(pressProps.onClick, e);
+    callEventHandler(pressProps.onClick, e);
   };
 
   // Keep DOM focus aligned with focusedKey updates from keyboard navigation.
