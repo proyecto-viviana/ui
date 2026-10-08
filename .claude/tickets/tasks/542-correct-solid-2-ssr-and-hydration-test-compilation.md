@@ -4,7 +4,7 @@ type: task
 title: "Correct Solid 2 SSR and hydration test compilation"
 created: 2026-09-19
 parent: 531
-status: verified
+status: in-progress
 history:
   - {
       state: open,
@@ -75,6 +75,16 @@ history:
       state: verified,
       at: 2026-09-20,
       note: "independent own-scope acceptance verifies the committed repair through 7b370277. The final durable receipt records fresh single-worker SSR49/49, hydrate57/57 and owning214/214 with all migrated server-node identity and behavior assertions retained; typecheck, documentation-current checks and source/test review are accepted. Earlier incomplete identity runs remain historical. This verifies #542 only: #531 stays in-progress and no sibling, build, attribution, certification or release gate is inferred",
+    }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "D18 consumption proof exposed retained fixtures in Spectrum Tabs/Menu and stale selection-indicator assertions after #107; reopen the bounded owning-test qualification.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Admit three test-only paths after #638 source acceptance at bc1dd87b; preserve all behavior assertions and leave full SSR/hydration/certification qualification open.",
     }
 ---
 
@@ -192,3 +202,46 @@ Child of #531 and the harness/evidence prerequisite for #536. Independent of
 #535. It does not satisfy #536's remaining complex conditional/render-prop
 coverage or inventory and removal of eligible Solid 1 one-read/context-ID
 workarounds.
+
+## Styled owning-test continuation admission — 2026-10-08
+
+#632's bounded caller repair is committed in 36bf8476. Its combined styled
+consumption check failed 18/91 on final source and 16/91 on base with differing
+fixture accumulation; standalone Tabs passed 21/21 on both. Menu and ActionMenu
+retained the same four indicator failures on both sources. This evidence is
+not a green consumption check or permission to change product styling.
+
+After #638's exact generation stopped with closed=true and its accepted repair
+was committed in bc1dd87b, register `ui-542-styled-owning-codex-20261008` as
+sole OS/herdr worker in eligible repo:ui main using
+`/tmp/ui-styled-owning-dispatch-2026-10-08.md`. Codex astra low handles the
+Solid deferred-cleanup hard slice under Decision 040 after Grok quota and AGY
+operator-only terminal approval made the default workers unavailable. Keep
+normal workspace-write/on-request controls; the conductor alone accepts and
+commits after exact-generation stop.
+
+Exact writes:
+
+- `packages/solid-spectrum/test/Tabs.test.tsx`: explicit afterEach(cleanup).
+- `packages/solid-spectrum/test/Menu.test.tsx`: explicit cleanup and bounded
+  indicator expectations aligned with #107's actual pinned structure.
+- `packages/solid-spectrum/test/ActionMenu.test.tsx`: the stale section
+  indicator expectation only; retain its existing cleanup.
+- This ticket and generated `.claude/current/status.md` / `roadmap.md` through
+  standard tooling; `/tmp/ui-styled-owning-*` proof.
+
+No product source, helper, config, styles, fixtures, manifests, browser/build
+work or Changeset. Add cleanup first and save the unchanged combined run before
+correcting the four stale marker/wrapper/mounted-icon assertions. Preserve
+selected, idle, disabled, action/order and semantic ARIA checks; use item-local
+pinned direct SVG/DIV structure without claiming jsdom painted visibility.
+Record a bounded cleanup-removed negative control and restore final bytes.
+The original four-file 91-test command must pass before acceptance, with scoped
+static/docs checks and honest root typecheck debt.
+
+This is the prerequisite owning-test follow-up for #632/#639, related to #107's
+already accepted visual repair. It does not reverify historical full #542
+SSR/hydration requirements or repair #557 native focus debt. Save actual base
+HEAD/generation, exact check receipts and all changed-path digests in
+`/tmp/ui-styled-owning-worker-result-2026-10-08.md`; broader candidate gates
+remain open.
