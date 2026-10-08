@@ -11,6 +11,11 @@ history:
       at: 2026-10-08,
       note: "visualmode T2. The layer tree is the left column of the timeline and needs 24px rows. treeViewItem minHeight and treeExpandButton size are 40 in both styled trees, on local main and in 0.8.0-rc.0. Waiting visualmode #10156 and #10157. The public name that selects the shorter row is owner-steered; do not mint one.",
     }
+  - {
+      state: open,
+      at: 2026-10-07,
+      note: "Held. Upstream TreeViewStyleProps is only selectionStyle, and neither styled TreeProps has a size or density field. The 24px row has no approved public name, so density, compact, and any other new prop were not minted. The name decision is #520. The 40px row is unchanged.",
+    }
 ---
 
 The layer tree needs rows whose computed height is 24px, including the expand
