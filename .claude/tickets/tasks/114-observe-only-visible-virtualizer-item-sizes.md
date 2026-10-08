@@ -27,6 +27,11 @@ history:
       at: "2026-09-16",
       note: "Owner-gated morning stop. Observation landed; D-scroll 2/2 recorded locally. Do not mark verified. Successor work is #245, not remainder closeout.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "Rechecked against RAC useVirtualizerItem. shouldObserveItemSize, the hidden-element guard, and observation-off already live in VirtualizerItem with unit coverage. D-scroll is not relayout proof. #243 still owner-gates this ticket; do not mark verified.",
+    }
 ---
 
 Port `shouldObserveItemSize` and the hidden-element measurement guard.
