@@ -24,58 +24,16 @@ import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
-import { createTypeSelect } from "../selection/createTypeSelect";
 import { whileItemDOMFocusSuppressed } from "../selection/createSelectableItem";
-import { selectItem } from "../selection/selectItem";
+import { createSelectableList } from "../selection/createSelectableList";
+import { ListKeyboardDelegate } from "../selection/ListKeyboardDelegate";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { focusSafely, runAfterPaint } from "../utils/focus";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
-import type { MenuState, Key, Collection } from "@proyecto-viviana/solid-stately";
-
-/**
- * Default number of items to skip for page up/down when DOM measurement is not available.
- */
-const DEFAULT_PAGE_SIZE = 10;
-
-/**
- * Find the next non-disabled key in a collection.
- */
-function findNextNonDisabledKey<T>(
-  collection: Collection<T>,
-  currentKey: Key | null,
-  direction: "next" | "prev",
-  isDisabled: (key: Key) => boolean,
-  wrap: boolean,
-): Key | null {
-  const getNextKey =
-    direction === "next"
-      ? (key: Key) => collection.getKeyAfter(key)
-      : (key: Key) => collection.getKeyBefore(key);
-
-  const getFirstKey =
-    direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
-
-  let nextKey = currentKey != null ? getNextKey(currentKey) : getFirstKey();
-
-  // Skip disabled keys
-  while (nextKey != null && isDisabled(nextKey)) {
-    nextKey = getNextKey(nextKey);
-  }
-
-  // If we've reached the end and wrapping is enabled
-  if (nextKey == null && wrap) {
-    nextKey = getFirstKey();
-    // Skip disabled keys from the start
-    while (nextKey != null && isDisabled(nextKey)) {
-      nextKey = getNextKey(nextKey);
-    }
-  }
-
-  return nextKey;
-}
+import type { MenuState, Key } from "@proyecto-viviana/solid-stately";
 
 export interface AriaMenuProps<T = unknown> {
   /** An ID for the menu. */
@@ -145,6 +103,7 @@ export function createMenu<T>(
 ): MenuAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
+  const elementRef = ref ?? (() => null);
 
   // Development-time warning for missing accessibility labels
   if (isDevEnv()) {
@@ -216,23 +175,26 @@ export function createMenu<T>(
     labelElementType: "span",
   });
 
-  // Type-to-select
-  const { typeSelectProps } = createTypeSelect({
-    collection: () => state.collection(),
-    focusedKey: () => state.focusedKey(),
-    onFocusedKeyChange: (key) => state.setFocusedKey(key),
-    isKeyDisabled: (key) => state.isDisabled(key),
-    get isDisabled() {
+  // Arrow, Home/End, Page, and typeahead go through the shared list delegate.
+  // Escape stays here: the collection's Escape clears selection, and a menu
+  // closes instead. Item Enter/Space is createMenuItem, matching useMenuItem.
+  // autoFocus is not forwarded. Pointer open focuses the menu root after paint
+  // with focusVisible; the collection effect would focus immediately without it.
+  const selectableList = createSelectableList<T>({
+    selectionManager: state.selectionManager,
+    ref: elementRef,
+    get shouldFocusWrap() {
+      return getProps().shouldFocusWrap ?? true;
+    },
+    get disallowTypeAhead() {
       return getProps().disallowTypeAhead ?? false;
     },
-    ref,
+    linkBehavior: "override",
   });
 
   // Auto-focus the menu (or its first/last/selected item) when `autoFocus` is
-  // set. Mirrors useMenu → useSelectableCollection: mouse open passes `true`
-  // (focus the menu root); ArrowDown/ArrowUp pass `"first"`/`"last"`.
-  const isNavDisabled = (key: Key) => state.isDisabled(key) && state.disabledBehavior() === "all";
-
+  // set. Mouse open passes `true` (focus the menu root); ArrowDown/ArrowUp
+  // pass `"first"`/`"last"`.
   let autoFocusDone = false;
   let cancelAutoFocus: (() => void) | undefined;
   createTrackedEffect(() => {
@@ -247,10 +209,14 @@ export function createMenu<T>(
     }
 
     let focusedKey: Key | null = null;
-    if (autoFocus === "first") {
-      focusedKey = findNextNonDisabledKey(collection, null, "next", isNavDisabled, false);
-    } else if (autoFocus === "last") {
-      focusedKey = findNextNonDisabledKey(collection, null, "prev", isNavDisabled, false);
+    if (autoFocus === "first" || autoFocus === "last") {
+      const delegate = new ListKeyboardDelegate({
+        collection,
+        disabledKeys: state.selectionManager.disabledKeys,
+        disabledBehavior: state.selectionManager.disabledBehavior,
+        ref: elementRef,
+      });
+      focusedKey = autoFocus === "first" ? delegate.getFirstKey() : delegate.getLastKey();
     }
 
     const selectedKeys = state.selectionManager.rawSelection;
@@ -263,7 +229,7 @@ export function createMenu<T>(
       }
     }
 
-    const root = ref?.();
+    const root = elementRef();
     if (focusedKey == null && !root) {
       return;
     }
@@ -272,7 +238,7 @@ export function createMenu<T>(
     cancelAutoFocus = runAfterPaint(() => {
       cancelAutoFocus = undefined;
       const focusMenuRoot = () => {
-        const el = ref?.();
+        const el = elementRef();
         if (el) {
           // Mouse-open focuses the menu root. Chromium's used outline for
           // `outline-style: none` is the 1px unspecified sentinel only while
@@ -284,6 +250,8 @@ export function createMenu<T>(
       // as the focused key (tabindex 0, data-focused) but DOM focus stays on
       // the menu, matching the published React menu. "first" / "last" still
       // move real focus onto the item.
+      // setFocused before the root receives focus so the collection focusin
+      // listener does not move focus onto the first item.
       if (autoFocus === true && focusedKey != null) {
         whileItemDOMFocusSuppressed(() => {
           state.setFocused(true);
@@ -303,264 +271,16 @@ export function createMenu<T>(
     cancelAutoFocus?.();
   });
 
-  // Keyboard navigation
-  const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
+  const onKeyDown = (e: KeyboardEvent) => {
     if (getProps().isDisabled) return;
-
-    const collection = state.collection();
-    const p = getProps();
-    const wrap = p.shouldFocusWrap ?? true;
-
-    // Disabled keys only block keyboard navigation under disabledBehavior "all"
-    // (the default); under "selection" they stay focusable while their selection
-    // remains blocked. Mirrors ListKeyboardDelegate.isDisabled in React Aria,
-    // which gates the navigation skip on the resolved disabledBehavior.
-    const isDisabled = (key: Key) => state.isDisabled(key) && state.disabledBehavior() === "all";
-
-    switch (e.key) {
-      case "ArrowDown": {
-        // Only consume the key once a target exists, mirroring
-        // useSelectableCollection (ArrowDown, 211-225): preventDefault is called
-        // inside `if (nextKey != null)`, so at the last item without wrap the
-        // arrow bubbles instead of being swallowed.
-        const currentKey = state.focusedKey();
-        const nextKey = findNextNonDisabledKey(collection, currentKey, "next", isDisabled, wrap);
-        if (nextKey != null) {
-          e.preventDefault();
-          state.setFocusedKey(nextKey);
-        }
-        break;
-      }
-      case "ArrowUp": {
-        const currentKey = state.focusedKey();
-        const prevKey = findNextNonDisabledKey(collection, currentKey, "prev", isDisabled, wrap);
-        if (prevKey != null) {
-          e.preventDefault();
-          state.setFocusedKey(prevKey);
-        }
-        break;
-      }
-      case "Home": {
-        // Mirror useSelectableCollection (Home, 283-285): with nothing focused,
-        // Shift+Home has no anchor to extend from, so leave the event alone.
-        if (state.focusedKey() == null && e.shiftKey) break;
-        e.preventDefault();
-        // Find first non-disabled key
-        let firstKey = collection.getFirstKey();
-        while (firstKey != null && isDisabled(firstKey)) {
-          firstKey = collection.getKeyAfter(firstKey);
-        }
-        if (firstKey != null) {
-          state.setFocusedKey(firstKey);
-        }
-        break;
-      }
-      case "End": {
-        // Mirror useSelectableCollection (End, 300-302): same anchor guard as Home.
-        if (state.focusedKey() == null && e.shiftKey) break;
-        e.preventDefault();
-        // Find last non-disabled key
-        let lastKey = collection.getLastKey();
-        while (lastKey != null && isDisabled(lastKey)) {
-          lastKey = collection.getKeyBefore(lastKey);
-        }
-        if (lastKey != null) {
-          state.setFocusedKey(lastKey);
-        }
-        break;
-      }
-      case " ":
-      case "Enter": {
-        if (e.target !== e.currentTarget) break;
-        e.preventDefault();
-        const focusedKey = state.focusedKey();
-        // Activation is gated on the navigation-disabled check, not the raw
-        // one: under disabledBehavior "selection" a focusable disabled item
-        // still fires onAction (and closes), mirroring useSelectableItem's
-        // allowsActions (manager.isDisabled is gated on "all"). Selection stays
-        // blocked independently — state.select self-guards on the raw disabled
-        // check (SelectionManager.canSelectItem).
-        if (focusedKey != null && !isDisabled(focusedKey)) {
-          // Route through the aria-layer onSelect so the platform-aware modifier
-          // resolution (isCtrlKeyPressed / non-contiguous modifier) and the
-          // shift-extend path are applied. Keyboard activation carries
-          // pointerType "keyboard".
-          selectItem(
-            state,
-            focusedKey,
-            {
-              pointerType: "keyboard",
-              shiftKey: e.shiftKey,
-              ctrlKey: e.ctrlKey,
-              metaKey: e.metaKey,
-              altKey: e.altKey,
-            },
-            collection,
-          );
-          // Pass the activated item's value as the second arg, mirroring
-          // useMenuItem performAction: onAction(key, item?.value).
-          p.onAction?.(focusedKey, collection.getItem(focusedKey)?.value as T);
-          const item = collection.getItem(focusedKey);
-          const isLink = !!item?.props?.href;
-          const shouldClose =
-            p.shouldCloseOnSelect ??
-            (e.key === "Enter" || state.selectionMode() === "none" || isLink);
-          if (shouldClose) {
-            p.onClose?.();
-          }
-        }
-        break;
-      }
-      case "Escape": {
-        e.preventDefault();
-        p.onClose?.();
-        break;
-      }
-      case "PageDown": {
-        // Mirror useSelectableCollection (PageDown, 324-332): only consume the
-        // key when an item is focused. A non-empty collection always yields a
-        // page target via getKeyPageBelow, so a focused key means focus moves
-        // and the event is swallowed; with nothing focused, leave it alone to
-        // bubble (e.g. to scroll an enclosing region).
-        const currentKey = state.focusedKey();
-        if (currentKey == null) break;
-        e.preventDefault();
-        const el = ref?.();
-
-        if (el) {
-          // Use DOM measurements to calculate how many items fit in a page
-          const visibleHeight = el.clientHeight;
-          let traveled = 0;
-          let targetKey = currentKey;
-
-          while (targetKey != null && traveled < visibleHeight) {
-            const nextKey = collection.getKeyAfter(targetKey);
-            if (nextKey == null) break;
-
-            // Try to measure the item height
-            const itemElement = el.querySelector(`[data-key="${targetKey}"]`);
-            traveled += itemElement?.clientHeight ?? 32;
-
-            // Skip disabled items
-            if (!isDisabled(nextKey)) {
-              targetKey = nextKey;
-            } else {
-              // Skip over disabled items without counting them
-              const afterDisabled = findNextNonDisabledKey(
-                collection,
-                nextKey,
-                "next",
-                isDisabled,
-                false,
-              );
-              if (afterDisabled != null) {
-                targetKey = afterDisabled;
-              } else {
-                break;
-              }
-            }
-          }
-
-          if (targetKey != null && targetKey !== currentKey) {
-            state.setFocusedKey(targetKey);
-          }
-        } else {
-          // Fallback: move by DEFAULT_PAGE_SIZE items
-          let count = DEFAULT_PAGE_SIZE;
-          let targetKey = currentKey;
-
-          while (count > 0 && targetKey != null) {
-            const nextKey = findNextNonDisabledKey(
-              collection,
-              targetKey,
-              "next",
-              isDisabled,
-              false,
-            );
-            if (nextKey == null) break;
-            targetKey = nextKey;
-            count--;
-          }
-
-          if (targetKey != null) {
-            state.setFocusedKey(targetKey);
-          }
-        }
-        break;
-      }
-      case "PageUp": {
-        // Mirror useSelectableCollection (PageUp, 333-341): only consume the key
-        // when an item is focused. A non-empty collection always yields a page
-        // target via getKeyPageAbove, so a focused key means focus moves and the
-        // event is swallowed; with nothing focused, leave it alone to bubble
-        // (e.g. to scroll an enclosing region).
-        const currentKey = state.focusedKey();
-        if (currentKey == null) break;
-        e.preventDefault();
-        const el = ref?.();
-
-        if (el) {
-          // Use DOM measurements to calculate how many items fit in a page
-          const visibleHeight = el.clientHeight;
-          let traveled = 0;
-          let targetKey = currentKey;
-
-          while (targetKey != null && traveled < visibleHeight) {
-            const prevKey = collection.getKeyBefore(targetKey);
-            if (prevKey == null) break;
-
-            // Try to measure the item height
-            const itemElement = el.querySelector(`[data-key="${targetKey}"]`);
-            traveled += itemElement?.clientHeight ?? 32;
-
-            // Skip disabled items
-            if (!isDisabled(prevKey)) {
-              targetKey = prevKey;
-            } else {
-              // Skip over disabled items without counting them
-              const beforeDisabled = findNextNonDisabledKey(
-                collection,
-                prevKey,
-                "prev",
-                isDisabled,
-                false,
-              );
-              if (beforeDisabled != null) {
-                targetKey = beforeDisabled;
-              } else {
-                break;
-              }
-            }
-          }
-
-          if (targetKey != null && targetKey !== currentKey) {
-            state.setFocusedKey(targetKey);
-          }
-        } else {
-          // Fallback: move by DEFAULT_PAGE_SIZE items
-          let count = DEFAULT_PAGE_SIZE;
-          let targetKey = currentKey;
-
-          while (count > 0 && targetKey != null) {
-            const prevKey = findNextNonDisabledKey(
-              collection,
-              targetKey,
-              "prev",
-              isDisabled,
-              false,
-            );
-            if (prevKey == null) break;
-            targetKey = prevKey;
-            count--;
-          }
-
-          if (targetKey != null) {
-            state.setFocusedKey(targetKey);
-          }
-        }
-        break;
-      }
+    // Do not forward Escape. useMenu suppresses the list handler so selection
+    // is not cleared; this port also closes, which the overlay owns upstream.
+    if (e.key === "Escape") {
+      e.preventDefault();
+      getProps().onClose?.();
+      return;
     }
+    selectableList.listProps.onKeyDown?.(e);
   };
 
   return {
@@ -569,11 +289,17 @@ export function createMenu<T>(
     },
     get menuProps() {
       const p = getProps();
+      const {
+        onKeyDown: _listKeyDown,
+        tabIndex: _listTabIndex,
+        ...listRest
+      } = p.isDisabled ? {} : selectableList.listProps;
 
-      const baseProps = mergeProps(
+      return mergeProps(
         domProps(),
         focusWithinProps as Record<string, unknown>,
         fieldProps as Record<string, unknown>,
+        listRest as Record<string, unknown>,
         {
           role: "menu",
           // Roving tabindex: the menu container is tab-reachable (0) only while no
@@ -596,17 +322,7 @@ export function createMenu<T>(
           "aria-disabled": p.isDisabled || undefined,
           onKeyDown,
         } as Record<string, unknown>,
-      );
-
-      // Add type-select props if enabled
-      if (!p.disallowTypeAhead) {
-        return mergeProps(
-          baseProps,
-          typeSelectProps as Record<string, unknown>,
-        ) as JSX.HTMLAttributes<HTMLElement>;
-      }
-
-      return baseProps as JSX.HTMLAttributes<HTMLElement>;
+      ) as JSX.HTMLAttributes<HTMLElement>;
     },
   };
 }

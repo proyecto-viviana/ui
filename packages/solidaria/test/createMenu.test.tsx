@@ -15,6 +15,7 @@ import {
   createMenu,
   createMenuItem,
   createMenuTrigger,
+  type AriaMenuProps,
   type AriaMenuTriggerProps,
 } from "../src/menu";
 import { PressEvent } from "../src/interactions/createPress";
@@ -22,6 +23,52 @@ import {
   getInteractionModality,
   setInteractionModality,
 } from "../src/interactions/createInteractionModality";
+
+function mountMenu<T extends { key: string; label: string }>(
+  state: MenuState<T>,
+  props: AriaMenuProps<T>,
+  items?: readonly T[],
+): HTMLElement {
+  let menuEl: HTMLElement | null = null;
+  render(() => {
+    const { menuProps } = createMenu(props, state, () => menuEl);
+    return (
+      <div
+        ref={(el) => {
+          menuEl = el;
+        }}
+        {...menuProps}
+      >
+        {items?.map((item) => {
+          let itemEl: HTMLDivElement | undefined;
+          const menuItem = createMenuItem({ key: item.key }, state, () => itemEl ?? null);
+          return (
+            <div
+              ref={(el) => {
+                itemEl = el;
+              }}
+              {...menuItem.menuItemProps}
+            >
+              <span {...menuItem.labelProps}>{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  });
+  return screen.getByRole("menu");
+}
+
+function pressKey(target: HTMLElement, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
+  const event = new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
 
 describe("createMenu", () => {
   afterEach(() => {
@@ -213,128 +260,93 @@ describe("createMenu", () => {
   });
 
   it("calls onAction when Enter is pressed", () => {
-    createRoot((dispose) => {
-      const onAction = vi.fn();
-      const items = [
-        { key: "copy", label: "Copy" },
-        { key: "paste", label: "Paste" },
-      ];
+    const onAction = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      state.setFocusedKey("copy");
-
-      const { menuProps } = createMenu({ onAction, "aria-label": "Actions" }, state);
-
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(onAction).toHaveBeenCalledWith("copy", items[0]);
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    state.setFocusedKey("copy");
+    mountMenu(state, { onAction, "aria-label": "Actions" }, items);
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Copy" }), { key: "Enter" });
+
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
   });
 
   it("passes the activated item's value as the second onAction argument", () => {
-    createRoot((dispose) => {
-      const onAction = vi.fn();
-      const items = [
-        { key: "copy", label: "Copy", data: 1 },
-        { key: "paste", label: "Paste", data: 2 },
-      ];
+    const onAction = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy", data: 1 },
+      { key: "paste", label: "Paste", data: 2 },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      state.setFocusedKey("paste");
-
-      const { menuProps } = createMenu({ onAction, "aria-label": "Actions" }, state);
-
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Mirrors useMenuItem performAction onAction(key, item?.value): the value
-      // is the collection node's original data object.
-      expect(onAction).toHaveBeenCalledWith("paste", items[1]);
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    state.setFocusedKey("paste");
+    mountMenu(state, { onAction, "aria-label": "Actions" }, items);
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Paste" }), { key: "Enter" });
+
+    // Mirrors useMenuItem performAction onAction(key, item?.value): the value
+    // is the collection node's original data object.
+    expect(onAction).toHaveBeenCalledWith("paste", items[1]);
   });
 
   it("does not call onClose for keyboard activation when shouldCloseOnSelect is false", () => {
-    createRoot((dispose) => {
-      const onAction = vi.fn();
-      const onClose = vi.fn();
-      const items = [
-        { key: "copy", label: "Copy" },
-        { key: "paste", label: "Paste" },
-      ];
+    const onAction = vi.fn();
+    const onClose = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      state.setFocusedKey("copy");
-
-      const { menuProps } = createMenu(
-        { onAction, onClose, shouldCloseOnSelect: false, "aria-label": "Actions" },
-        state,
-      );
-
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(onAction).toHaveBeenCalledWith("copy", items[0]);
-      expect(onClose).not.toHaveBeenCalled();
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    state.setFocusedKey("copy");
+    mountMenu(
+      state,
+      { onAction, onClose, shouldCloseOnSelect: false, "aria-label": "Actions" },
+      items,
+    );
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Copy" }), { key: "Enter" });
+
+    expect(onAction).toHaveBeenCalledWith("copy", items[0]);
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("updates selection when Enter is pressed in selection mode", () => {
-    createRoot((dispose) => {
-      const onSelectionChange = vi.fn();
-      const items = [
-        { key: "copy", label: "Copy" },
-        { key: "paste", label: "Paste" },
-      ];
+    const onSelectionChange = vi.fn();
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        selectionMode: "single",
-        defaultSelectedKeys: ["paste"],
-        onSelectionChange,
-      });
-
-      state.setFocusedKey("copy");
-
-      const { menuProps } = createMenu({ "aria-label": "Actions" }, state);
-
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.isSelected("copy")).toBe(true);
-      expect(state.isSelected("paste")).toBe(false);
-      // onSelectionChange receives a `Selection` (Set subclass); compare contents.
-      expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["copy"]));
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      selectionMode: "single",
+      defaultSelectedKeys: ["paste"],
+      onSelectionChange,
     });
+
+    state.setFocusedKey("copy");
+    mountMenu(state, { "aria-label": "Actions" }, items);
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Copy" }), { key: "Enter" });
+
+    expect(state.isSelected("copy")).toBe(true);
+    expect(state.isSelected("paste")).toBe(false);
+    // onSelectionChange receives a `Selection` (Set subclass); compare contents.
+    expect(new Set(onSelectionChange.mock.lastCall?.[0])).toEqual(new Set(["copy"]));
   });
 
   it("calls onClose when Escape is pressed", () => {
@@ -759,291 +771,201 @@ describe("createMenu - disabled key navigation", () => {
   });
 
   it("skips disabled keys when navigating with ArrowDown", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-        { key: "item4", label: "Item 4" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+      { key: "item4", label: "Item 4" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item2", "item3"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item1
-      state.setFocusedKey("item1");
-      expect(state.focusedKey()).toBe("item1");
-
-      // Press ArrowDown - should skip item2 and item3, land on item4
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "ArrowDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item4");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item2", "item3"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
+    state.setFocusedKey("item1");
+    expect(state.focusedKey()).toBe("item1");
+
+    pressKey(menu, "ArrowDown");
+
+    expect(state.focusedKey()).toBe("item4");
   });
 
   it("skips disabled keys when navigating with ArrowUp", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-        { key: "item4", label: "Item 4" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+      { key: "item4", label: "Item 4" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item2", "item3"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item4
-      state.setFocusedKey("item4");
-      expect(state.focusedKey()).toBe("item4");
-
-      // Press ArrowUp - should skip item3 and item2, land on item1
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "ArrowUp",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item1");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item2", "item3"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
+    state.setFocusedKey("item4");
+    expect(state.focusedKey()).toBe("item4");
+
+    pressKey(menu, "ArrowUp");
+
+    expect(state.focusedKey()).toBe("item1");
   });
 
   it("skips disabled keys when navigating to Home", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item1"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item3
-      state.setFocusedKey("item3");
-
-      // Press Home - should skip item1, land on item2
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Home",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item2");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item1"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
+    state.setFocusedKey("item3");
+
+    pressKey(menu, "Home");
+
+    expect(state.focusedKey()).toBe("item2");
   });
 
   it("skips disabled keys when navigating to End", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item3"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item1
-      state.setFocusedKey("item1");
-
-      // Press End - should skip item3, land on item2
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "End",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item2");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item3"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
+    state.setFocusedKey("item1");
+
+    pressKey(menu, "End");
+
+    expect(state.focusedKey()).toBe("item2");
   });
 
   it("does not activate disabled items on Enter", () => {
-    createRoot((dispose) => {
-      const onAction = vi.fn();
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-      ];
+    const onAction = vi.fn();
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item1"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu", onAction }, state);
-
-      // Focus disabled item1
-      state.setFocusedKey("item1");
-
-      // Press Enter - should NOT call onAction
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(onAction).not.toHaveBeenCalled();
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item1"],
     });
+
+    mountMenu(state, { "aria-label": "Test menu", onAction }, items);
+    state.setFocusedKey("item1");
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Item 1" }), { key: "Enter" });
+
+    expect(onAction).not.toHaveBeenCalled();
   });
 
   it("wraps to first non-disabled key when shouldFocusWrap is true", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item1"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu", shouldFocusWrap: true }, state);
-
-      // Start at item3 (last item)
-      state.setFocusedKey("item3");
-
-      // Press ArrowDown - should wrap and skip item1, land on item2
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "ArrowDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item2");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item1"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu", shouldFocusWrap: true });
+    state.setFocusedKey("item3");
+
+    pressKey(menu, "ArrowDown");
+
+    expect(state.focusedKey()).toBe("item2");
   });
 
   it("wraps from the last item by default, matching RAC useMenu", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "copy", label: "Copy" },
-        { key: "cut", label: "Cut" },
-        { key: "paste", label: "Paste" },
-      ];
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "cut", label: "Cut" },
+      { key: "paste", label: "Paste" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Actions" }, state);
-      state.setFocusedKey("paste");
-
-      const preventDefault = vi.fn();
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "ArrowDown",
-        preventDefault,
-      } as unknown as KeyboardEvent);
-
-      expect(preventDefault).toHaveBeenCalled();
-      expect(state.focusedKey()).toBe("copy");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    const menu = mountMenu(state, { "aria-label": "Actions" });
+    state.setFocusedKey("paste");
+
+    const event = pressKey(menu, "ArrowDown");
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(state.focusedKey()).toBe("copy");
   });
 
   it("does not skip disabled keys under disabledBehavior 'selection'", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+      { key: "item3", label: "Item 3" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item2"],
-        disabledBehavior: "selection",
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      state.setFocusedKey("item1");
-
-      // item2 is disabled for selection only, so ArrowDown stays on it.
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "ArrowDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBe("item2");
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item2"],
+      disabledBehavior: "selection",
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
+    state.setFocusedKey("item1");
+
+    pressKey(menu, "ArrowDown");
+
+    expect(state.focusedKey()).toBe("item2");
   });
 
   it("fires onAction but does not select a disabled-for-selection item on Enter", () => {
-    createRoot((dispose) => {
-      const onAction = vi.fn();
-      const onSelectionChange = vi.fn();
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-      ];
+    const onAction = vi.fn();
+    const onSelectionChange = vi.fn();
+    const items = [
+      { key: "item1", label: "Item 1" },
+      { key: "item2", label: "Item 2" },
+    ];
 
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        selectionMode: "single",
-        disabledKeys: ["item2"],
-        disabledBehavior: "selection",
-        onSelectionChange,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu", onAction }, state);
-
-      // item2 is focusable under "selection": activating it fires onAction
-      // (allowsActions is gated on the "all" behavior) but never selects it
-      // (canSelectItem keeps selection blocked).
-      state.setFocusedKey("item2");
-
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(onAction).toHaveBeenCalledWith("item2", items[1]);
-      expect(state.isSelected("item2")).toBe(false);
-      expect(onSelectionChange).not.toHaveBeenCalled();
-      dispose();
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      selectionMode: "single",
+      disabledKeys: ["item2"],
+      disabledBehavior: "selection",
+      onSelectionChange,
     });
+
+    mountMenu(state, { "aria-label": "Test menu", onAction }, items);
+    state.setFocusedKey("item2");
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Item 2" }), { key: "Enter" });
+
+    expect(onAction).toHaveBeenCalledWith("item2", items[1]);
+    expect(state.isSelected("item2")).toBe(false);
+    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 });
 
@@ -1059,91 +981,60 @@ describe("createMenu - navigation-key consumption", () => {
   ];
 
   it("prevents default on an arrow key that moves focus", () => {
-    createRoot((dispose) => {
-      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+    const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
 
-      state.setFocusedKey("item1");
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "ArrowDown", preventDefault } as unknown as KeyboardEvent);
+    state.setFocusedKey("item1");
+    const event = pressKey(menu, "ArrowDown");
 
-      expect(state.focusedKey()).toBe("item2");
-      expect(preventDefault).toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBe("item2");
+    expect(event.defaultPrevented).toBe(true);
   });
 
   it("leaves ArrowDown alone at the last item when wrapping is off", () => {
-    createRoot((dispose) => {
-      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu(
-        { "aria-label": "Test menu", shouldFocusWrap: false },
-        state,
-      );
+    const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu", shouldFocusWrap: false });
 
-      state.setFocusedKey("item3");
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "ArrowDown", preventDefault } as unknown as KeyboardEvent);
+    state.setFocusedKey("item3");
+    const event = pressKey(menu, "ArrowDown");
 
-      // No target: the key must bubble instead of being swallowed.
-      expect(state.focusedKey()).toBe("item3");
-      expect(preventDefault).not.toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBe("item3");
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("leaves ArrowUp alone at the first item when wrapping is off", () => {
-    createRoot((dispose) => {
-      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu(
-        { "aria-label": "Test menu", shouldFocusWrap: false },
-        state,
-      );
+    const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu", shouldFocusWrap: false });
 
-      state.setFocusedKey("item1");
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "ArrowUp", preventDefault } as unknown as KeyboardEvent);
+    state.setFocusedKey("item1");
+    const event = pressKey(menu, "ArrowUp");
 
-      expect(state.focusedKey()).toBe("item1");
-      expect(preventDefault).not.toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBe("item1");
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("leaves Shift+Home alone when nothing is focused", () => {
-    createRoot((dispose) => {
-      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+    const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
 
-      expect(state.focusedKey()).toBeNull();
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "Home", shiftKey: true, preventDefault } as unknown as KeyboardEvent);
+    expect(state.focusedKey()).toBeNull();
+    const event = pressKey(menu, "Home", { shiftKey: true });
 
-      expect(state.focusedKey()).toBeNull();
-      expect(preventDefault).not.toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
   });
 
-  it("still moves to the first item on Home with no focus and no shift", () => {
-    createRoot((dispose) => {
-      const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+  it("moves to the first item on Home without preventing default when selection stays put", () => {
+    const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" });
 
-      expect(state.focusedKey()).toBeNull();
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "Home", preventDefault } as unknown as KeyboardEvent);
+    expect(state.focusedKey()).toBeNull();
+    const event = pressKey(menu, "Home");
 
-      // The guard is shift-specific: plain Home still enters at the first item.
-      expect(state.focusedKey()).toBe("item1");
-      expect(preventDefault).toHaveBeenCalled();
-      dispose();
-    });
+    // Shared collection Home returns false unless selectOnFocus replaces the
+    // selection, so the key still moves focus and is left to bubble.
+    expect(state.focusedKey()).toBe("item1");
+    expect(event.defaultPrevented).toBe(false);
   });
 });
 
@@ -1152,236 +1043,133 @@ describe("createMenu - page navigation", () => {
     cleanup();
   });
 
+  const pageItems = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      key: `item${i + 1}`,
+      label: `Item ${i + 1}`,
+    }));
+
   it("moves focus down by multiple items on PageDown", () => {
-    createRoot((dispose) => {
-      // Create 15 items to test page navigation
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
-
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item1
-      state.setFocusedKey("item1");
-      expect(state.focusedKey()).toBe("item1");
-
-      // Press PageDown - should move forward by multiple items
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "PageDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Should have moved past item1 (exact number depends on fallback page size)
-      const focused = state.focusedKey();
-      expect(focused).not.toBe("item1");
-      // Should be somewhere in the middle or end
-      const focusedIndex = items.findIndex((i) => i.key === focused);
-      expect(focusedIndex).toBeGreaterThan(0);
-      dispose();
+    const items = pageItems(15);
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
+    state.setFocusedKey("item1");
+    expect(state.focusedKey()).toBe("item1");
+
+    pressKey(menu, "PageDown");
+
+    const focused = state.focusedKey();
+    expect(focused).not.toBe("item1");
+    const focusedIndex = items.findIndex((i) => i.key === focused);
+    expect(focusedIndex).toBeGreaterThan(0);
   });
 
   it("moves focus up by multiple items on PageUp", () => {
-    createRoot((dispose) => {
-      // Create 15 items to test page navigation
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
-
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at last item
-      state.setFocusedKey("item15");
-      expect(state.focusedKey()).toBe("item15");
-
-      // Press PageUp - should move backward by multiple items
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "PageUp",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Should have moved before item15
-      const focused = state.focusedKey();
-      expect(focused).not.toBe("item15");
-      // Should be somewhere in the middle or beginning
-      const focusedIndex = items.findIndex((i) => i.key === focused);
-      expect(focusedIndex).toBeLessThan(14);
-      dispose();
+    const items = pageItems(15);
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
+    state.setFocusedKey("item15");
+    expect(state.focusedKey()).toBe("item15");
+
+    pressKey(menu, "PageUp");
+
+    const focused = state.focusedKey();
+    expect(focused).not.toBe("item15");
+    const focusedIndex = items.findIndex((i) => i.key === focused);
+    expect(focusedIndex).toBeLessThan(14);
   });
 
   it("skips disabled items on PageDown", () => {
-    createRoot((dispose) => {
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
-
-      // Disable several consecutive items
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-        disabledKeys: ["item2", "item3", "item4", "item5"],
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item1
-      state.setFocusedKey("item1");
-
-      // Press PageDown
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "PageDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Should have skipped disabled items
-      const focused = state.focusedKey();
-      expect(["item2", "item3", "item4", "item5"]).not.toContain(focused);
-      dispose();
+    const items = pageItems(15);
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
+      disabledKeys: ["item2", "item3", "item4", "item5"],
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
+    state.setFocusedKey("item1");
+
+    pressKey(menu, "PageDown");
+
+    const focused = state.focusedKey();
+    expect(["item2", "item3", "item4", "item5"]).not.toContain(focused);
   });
 
   it("stops at last item on PageDown when near end", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
-
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item2
-      state.setFocusedKey("item2");
-
-      // Press PageDown with only 1 item below
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "PageDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Should be at the last item
-      expect(state.focusedKey()).toBe("item3");
-      dispose();
+    const items = pageItems(3);
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
+    state.setFocusedKey("item2");
+
+    pressKey(menu, "PageDown");
+
+    expect(state.focusedKey()).toBe("item3");
   });
 
   it("stops at first item on PageUp when near beginning", () => {
-    createRoot((dispose) => {
-      const items = [
-        { key: "item1", label: "Item 1" },
-        { key: "item2", label: "Item 2" },
-        { key: "item3", label: "Item 3" },
-      ];
-
-      const state = createMenuState({
-        items,
-        getKey: (item) => item.key,
-      });
-
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
-
-      // Start at item2
-      state.setFocusedKey("item2");
-
-      // Press PageUp with only 1 item above
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      onKeyDown({
-        key: "PageUp",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      // Should be at the first item
-      expect(state.focusedKey()).toBe("item1");
-      dispose();
+    const items = pageItems(3);
+    const state = createMenuState({
+      items,
+      getKey: (item) => item.key,
     });
+
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
+    state.setFocusedKey("item2");
+
+    pressKey(menu, "PageUp");
+
+    expect(state.focusedKey()).toBe("item1");
   });
 
-  it("prevents default on PageDown that moves focus", () => {
-    createRoot((dispose) => {
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
+  it("does not prevent default on PageDown that only moves focus", () => {
+    const items = pageItems(15);
+    const state = createMenuState({ items, getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
 
-      const state = createMenuState({ items, getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+    state.setFocusedKey("item1");
+    const event = pressKey(menu, "PageDown");
 
-      state.setFocusedKey("item1");
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "PageDown", preventDefault } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).not.toBe("item1");
-      expect(preventDefault).toHaveBeenCalled();
-      dispose();
-    });
+    // Page navigation returns the shared navigateToKey result. Menu selection
+    // does not follow focus, so the move does not call preventDefault.
+    expect(state.focusedKey()).not.toBe("item1");
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("leaves PageDown alone when nothing is focused", () => {
-    createRoot((dispose) => {
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
+    const items = pageItems(15);
+    const state = createMenuState({ items, getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
 
-      const state = createMenuState({ items, getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+    expect(state.focusedKey()).toBeNull();
+    const event = pressKey(menu, "PageDown");
 
-      // Mirror useSelectableCollection: with no focused key the Page key is left
-      // alone (no focus move, no preventDefault) so it can scroll an enclosing region.
-      expect(state.focusedKey()).toBeNull();
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "PageDown", preventDefault } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBeNull();
-      expect(preventDefault).not.toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("leaves PageUp alone when nothing is focused", () => {
-    createRoot((dispose) => {
-      const items = Array.from({ length: 15 }, (_, i) => ({
-        key: `item${i + 1}`,
-        label: `Item ${i + 1}`,
-      }));
+    const items = pageItems(15);
+    const state = createMenuState({ items, getKey: (item) => item.key });
+    const menu = mountMenu(state, { "aria-label": "Test menu" }, items);
 
-      const state = createMenuState({ items, getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+    expect(state.focusedKey()).toBeNull();
+    const event = pressKey(menu, "PageUp");
 
-      expect(state.focusedKey()).toBeNull();
-      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
-      const preventDefault = vi.fn();
-      onKeyDown({ key: "PageUp", preventDefault } as unknown as KeyboardEvent);
-
-      expect(state.focusedKey()).toBeNull();
-      expect(preventDefault).not.toHaveBeenCalled();
-      dispose();
-    });
+    expect(state.focusedKey()).toBeNull();
+    expect(event.defaultPrevented).toBe(false);
   });
 });
 
