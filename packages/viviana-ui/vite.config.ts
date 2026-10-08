@@ -73,13 +73,21 @@ const subpathEntries = [
 // Barrel targets deliberately left inlined rather than promoted to their own
 // entry. `src/icon/index.tsx` re-exports `* as s2wfIcons`. Promoting that file
 // roots the namespace in one chunk and defeats tree-shaking, so it stays
-// inlined. Each workflow icon, its barrel, and DragHandle are their own
-// entries: the public `./icon/s2wf-icons/*` and `./icon/ui-icons/DragHandle`
-// subpaths then ship JS instead of a declaration with nothing to run.
+// inlined. Each workflow icon, its barrel, each extra editor icon, its barrel,
+// and DragHandle are their own entries: the public `./icon/s2wf-icons/*`,
+// `./icon/extra-icons/*`, and `./icon/ui-icons/DragHandle` subpaths then ship
+// JS instead of a declaration with nothing to run.
 const inlineIntoBarrel = new Set(["src/icon/index.tsx"]);
 
 function workflowIconEntries(): string[] {
   const dir = "src/icon/s2wf-icons";
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".tsx") || name === "index.ts")
+    .map((name) => `${dir}/${name}`);
+}
+
+function extraIconEntries(): string[] {
+  const dir = "src/icon/extra-icons";
   return readdirSync(dir)
     .filter((name) => name.endsWith(".tsx") || name === "index.ts")
     .map((name) => `${dir}/${name}`);
@@ -109,6 +117,7 @@ const entry = [
     ...subpathEntries,
     ...barrelTargets("src/index.ts"),
     ...workflowIconEntries(),
+    ...extraIconEntries(),
     "src/icon/ui-icons/DragHandle.tsx",
   ]),
 ];

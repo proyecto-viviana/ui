@@ -240,6 +240,12 @@
       "import": "./dist/icon/s2wf-icons/*.js",
       "default": "./dist/icon/s2wf-icons/*.js"
     },
+    "./icon/extra-icons/*": {
+      "types": "./dist/icon/extra-icons/*.d.ts",
+      "solid": "./dist/icon/extra-icons/*.jsx",
+      "import": "./dist/icon/extra-icons/*.js",
+      "default": "./dist/icon/extra-icons/*.js"
+    },
     "./icon/ui-icons/DragHandle": {
       "types": "./dist/icon/ui-icons/DragHandle.d.ts",
       "solid": "./dist/icon/ui-icons/DragHandle.jsx",

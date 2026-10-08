@@ -4,7 +4,7 @@ type: task
 title: "Decide where Stop, snap, key, and easing icons live"
 created: 2026-10-08
 parent: 33
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-10-08,
       note: "Owner placed the glyphs in packages/viviana-ui/src/icon/extra-icons/. Names: StopIcon, SnapIcon, KeyframeIcon, EasingHoldIcon, EasingLinearIcon, EasingInIcon, EasingOutIcon, EasingInOutIcon. Not s2wf-icons, not pixel-icons, and not solid-spectrum. Public import follows the #628 icon subpath. DragHandle stays #628.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "StopIcon, SnapIcon, KeyframeIcon, EasingHoldIcon, EasingLinearIcon, EasingInIcon, EasingOutIcon, and EasingInOutIcon resolve from ./icon/extra-icons/*. The S2 workflow set, pixel-icons, solid-spectrum, and DragHandle stay unchanged.",
     }
 ---
 
