@@ -8,6 +8,7 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  onCleanup,
   runWithOwner,
   Show,
   untrack,
@@ -274,6 +275,10 @@ export function Image(props: ImageProps): JSX.Element {
   const [loadTime, setLoadTime] = createSignal(0, { ownedWrite: true });
   const isSkeleton = createIsSkeleton();
   let imageElement: HTMLImageElement | undefined;
+  let active = true;
+  onCleanup(() => {
+    active = false;
+  });
 
   if (local.alt == null && isDevEnv()) {
     console.warn(
@@ -284,6 +289,7 @@ export function Image(props: ImageProps): JSX.Element {
   const hidden = () => local.hidden === true;
   const srcProp = () => local.src ?? "";
   const cacheKey = createMemo(() => sourceCacheKey(local.src));
+  const isPicture = createMemo(() => Array.isArray(srcProp()));
   const revealed = () => state() === "revealed" && !isSkeleton();
   const transitioning = () => revealed() && loadTime() > 200;
   const animating = () => isSkeleton() || state() === "loading" || state() === "loaded";
@@ -326,30 +332,56 @@ export function Image(props: ImageProps): JSX.Element {
   );
 
   createEffect(
-    () => ({ hidden: hidden(), loading: state() === "loading" }),
-    ({ hidden, loading }) => {
+    () => ({ hidden: hidden(), loading: state() === "loading", key: cacheKey() }),
+    ({ hidden, loading, key }) => {
       if (hidden) return;
       const image = imageElement;
+      let cancelled = false;
       if (loading && image?.complete) {
         queueMicrotask(() => {
+          // Cleanup invalidates queued work even for A-to-B-to-A source changes.
+          if (
+            cancelled ||
+            !isCurrentImage(image) ||
+            cacheKey() !== key ||
+            state() !== "loading" ||
+            !image.complete
+          )
+            return;
           if (image.naturalWidth === 0 && image.naturalHeight === 0) {
-            handleError();
+            completeError(key);
           } else {
-            handleLoad();
+            completeLoad(key);
           }
         });
       }
+      return () => {
+        cancelled = true;
+      };
     },
   );
 
-  const handleLoad = () => {
-    imageGroup.load(cacheKey());
+  const isCurrentImage = (image: EventTarget | null) =>
+    active && !hidden() && image === imageElement;
+
+  const completeLoad = (key: string) => {
+    imageGroup.load(key);
     setState("loaded");
   };
 
-  const handleError = () => {
+  const completeError = (key: string) => {
     setState("error");
-    imageGroup.unregister(cacheKey());
+    imageGroup.unregister(key);
+  };
+
+  const handleLoad = (event: Event) => {
+    if (isCurrentImage(event.currentTarget) && state() === "loading") {
+      completeLoad(cacheKey());
+    }
+  };
+
+  const handleError = (event: Event) => {
+    if (isCurrentImage(event.currentTarget)) completeError(cacheKey());
   };
 
   const slot = () => (local.slot === null ? undefined : (local.slot ?? contextProps?.slot));
@@ -418,7 +450,7 @@ export function Image(props: ImageProps): JSX.Element {
   );
 
   const imageContent = () => {
-    if (Array.isArray(srcProp())) {
+    if (isPicture()) {
       return (
         <picture class={pictureStyles}>
           {sources().map((source) => {

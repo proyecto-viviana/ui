@@ -272,8 +272,9 @@ for (const kind of kinds)
           await capturePending("removed", "source-old-A");
           const switched = await change({ source: "B" }, "source-A-to-B");
           barrier(switched);
-          // Wrapper identity is retained; native img replacement is recorded independently.
+          // Scalar source changes retain both native nodes.
           expect(switched.rows.find((row) => row.id === "removed")?.retainedWrapper).toBe(1);
+          expect.soft(switched.rows.find((row) => row.id === "removed")?.retainedImage).toBe(1);
           await expect
             .poll(() => routes.filter((r) => r.request().url().endsWith("-B.png")).length)
             .toBe(1);

@@ -297,3 +297,53 @@ with failure-safe restoration and candidate hash verification, then all owning
 Image tests and the serialized native matrix. Save actual raw commands, errors,
 event timelines and digests. Root typecheck debt and full candidate, certified,
 installed-consumer and release qualification remain separately open.
+
+## Source replacement result awaiting conductor review — 2026-10-08
+
+Both Image twins now select scalar/picture structure through a boolean memo,
+retaining the native scalar image while its src attribute updates. Native
+completion checks the current image, visibility and owner lifetime. Cached
+completion captures its image/key and is cancelled by effect cleanup across
+source, loading and visibility changes, including A-to-B-to-A. Focused tests
+reproduce detached load/error writes and obsolete queued completion before
+these guards; no shared helper, style, API or configuration changed.
+
+The owning suite passes 50 tests, retaining all 32 prior cases. Final assertions
+against exact launch source fail 16 cases and pass 34; candidate restoration is
+verified by SHA256 in finally. The bounded old-source native control fails both
+local source cases (identity and barrier), with React/plain passing. Final
+serialized native proof passes all 24 cases with real responses and animation;
+all page-error, console-error and passive rejection arrays are empty. Both
+local scalar images/wrappers retain identity and B/survivor remain hidden until
+B loads. Shared detached hidden-wrapper animation remains observational and
+unchanged. Synthetic unit events are distinct from native network proof.
+
+Generation `e469530a-e29a-41d2-960f-fbc9be9854f6`, delivery
+`4042a128-d56a-4257-bb7a-0a3b3bbadb1d`, base `0e5f42ac`.
+Raw checks, controls, restoration and path/artifact hashes accompany
+`/tmp/ui-638-source-result-2026-10-08.md`. The accepted native archive remains
+unchanged (196 hashes verified). Root typecheck retains 24 outside-scope
+errors; the hub audit fails in the sandbox. Full candidate, certification,
+installed-consumer and release qualification remain open. The conductor alone
+reviews, stops this exact generation, accepts and commits.
+
+## Conductor acceptance of source replacement repair — 2026-10-08
+
+Read the full handoff, bounded source diff and independent review. All 155
+inventoried paths/receipts, 990 final source-graph file hashes and 196 preserved
+native-checkpoint archive hashes match disk. All 24 final native case records
+complete with empty assertion, page-error, console-error and rejection arrays.
+Exact owned stop of generation `e469530a-e29a-41d2-960f-fbc9be9854f6`
+returned ok=true and closed=true. Accept the bounded six-path implementation
+for conductor integration: 50 owning tests pass, exact old source fails 16 of
+those assertions, and the bounded native old-source control fails both local
+source cases while React/plain pass. Candidate restoration hashes match.
+
+Scoped formatting, lint and generated-view checks pass. Root typecheck retains
+24 outside-scope errors; the sandbox hub audit is not green. Cached successful
+bitmap completion has no separate deterministic unit regression; native current
+load/reveal is covered. Shared detached hidden-wrapper animation remains an
+observation, with no helper repair or rejection suppression. Full candidate,
+certification, installed-consumer and release proof remain open; #638 stays
+in-progress. Acceptance receipts are under `/tmp/ui-638-source-evidence/` and
+`/tmp/ui-638-source-conductor-verification-2026-10-08.json`.

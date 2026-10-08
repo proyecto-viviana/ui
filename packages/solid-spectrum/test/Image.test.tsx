@@ -1,7 +1,17 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { Image, ImageContext, ImageCoordinator, Provider } from "../src";
-import { DEV, createRoot, createSignal, createEffect, flush, For, Show } from "solid-js";
+import { Provider as UIProvider } from "../../viviana-ui/src/provider";
+import {
+  DEV,
+  createContext,
+  createRoot,
+  createSignal,
+  createEffect,
+  flush,
+  For,
+  Show,
+} from "solid-js";
 
 import {
   Image as UIImage,
@@ -241,9 +251,9 @@ describe("Image", () => {
   });
 });
 
-for (const [name, TwinImage, Coordinator, Context] of [
-  ["Spectrum", Image, ImageCoordinator, ImageContext],
-  ["UI", UIImage, UICoordinator, UIContext],
+for (const [name, TwinImage, Coordinator, Context, TwinProvider] of [
+  ["Spectrum", Image, ImageCoordinator, ImageContext, Provider],
+  ["UI", UIImage, UICoordinator, UIContext, UIProvider],
 ] as const) {
   describe(`${name} Image lifecycle`, () => {
     async function drain() {
@@ -324,7 +334,8 @@ for (const [name, TwinImage, Coordinator, Context] of [
         </Coordinator>
       ));
       await drain();
-      const wrapper = img("changing").parentElement!;
+      const original = img("changing");
+      const wrapper = original.parentElement!;
       const pending = wrapper.className;
       const sibling = img("sibling");
       const siblingPending = sibling.parentElement!.className;
@@ -332,7 +343,9 @@ for (const [name, TwinImage, Coordinator, Context] of [
       await drain();
       expect(sibling.parentElement!.className).toBe(siblingPending);
       change(() => setSrc(`/${name}-source-B.png`));
+      expect(img("changing")).toBe(original);
       expect(img("changing")).toHaveAttribute("src", `/${name}-source-B.png`);
+      expect(sibling.parentElement!.className).toBe(siblingPending);
       expect(img("changing").parentElement).toBe(wrapper);
       expect(wrapper.className).toBe(pending);
       fireEvent.load(img("changing"));
@@ -341,6 +354,183 @@ for (const [name, TwinImage, Coordinator, Context] of [
       expect(sibling.parentElement!.className).not.toBe(siblingPending);
       view.unmount();
       await drain();
+    });
+
+    it.each(["hidden", "disposed"])("ignores retained events after owner is %s", (ending) => {
+      const value = { revealAll: true, register: vi.fn(), unregister: vi.fn(), load: vi.fn() };
+      const group = createContext(value);
+      const [hidden, setHidden] = createSignal(false);
+      const view = render(() => (
+        <Context
+          value={{
+            get hidden() {
+              return hidden();
+            },
+          }}
+        >
+          <TwinImage group={group} src={`/${name}-ending.png`} alt="ending" />
+        </Context>
+      ));
+      const retained = img("ending");
+      change(() => (ending === "hidden" ? setHidden(true) : view.unmount()));
+      const unregisters = value.unregister.mock.calls.length;
+      fireEvent.load(retained);
+      fireEvent.error(retained);
+      flush();
+      expect(value.load).not.toHaveBeenCalled();
+      expect(value.unregister).toHaveBeenCalledTimes(unregisters);
+      if (ending === "hidden") view.unmount();
+    });
+
+    it("accepts the active image in a detached container and loads once", () => {
+      const value = { revealAll: true, register: vi.fn(), unregister: vi.fn(), load: vi.fn() };
+      const group = createContext(value);
+      const container = document.createElement("div");
+      const [src, setSrc] = createSignal(`/${name}-detached-A.png`);
+      const view = render(() => <TwinImage group={group} src={src()} alt="active" />, {
+        container,
+      });
+      const active = container.querySelector("img")!;
+      expect(active.isConnected).toBe(false);
+      change(() => setSrc(`/${name}-detached-B.png`));
+      expect(container.querySelector("img")).toBe(active);
+      fireEvent.load(active);
+      fireEvent.load(active);
+      flush();
+      expect(value.load).toHaveBeenCalledExactlyOnceWith(`/${name}-detached-B.png`);
+      view.unmount();
+    });
+
+    it("updates picture sources and provider color scheme reactively", () => {
+      const [scheme, setScheme] = createSignal<"light" | "dark" | "light dark">("dark");
+      const [suffix, setSuffix] = createSignal("A");
+      const view = render(() => (
+        <TwinProvider colorScheme={scheme()}>
+          <TwinImage
+            alt="picture"
+            src={[
+              { colorScheme: "light", srcSet: `/light-${suffix()}.png` },
+              {
+                colorScheme: "dark",
+                srcSet: `/dark-${suffix()}.png`,
+                media: "(min-width: 1px)",
+                sizes: "100vw",
+                type: "image/png",
+                width: 320,
+                height: 180,
+              },
+            ]}
+          />
+        </TwinProvider>
+      ));
+      expect(view.container.querySelectorAll("source")).toHaveLength(1);
+      expect(view.container.querySelector("source")).toHaveAttribute("srcset", "/dark-A.png");
+      change(() => setSuffix("B"));
+      expect(view.container.querySelector("source")).toHaveAttribute("srcset", "/dark-B.png");
+      expect(view.container.querySelector("source")).toHaveAttribute("sizes", "100vw");
+      expect(view.container.querySelector("source")).toHaveAttribute("width", "320");
+      change(() => setScheme("light"));
+      expect(view.container.querySelector("source")).toHaveAttribute("srcset", "/light-B.png");
+      change(() => setScheme("light dark"));
+      expect(view.container.querySelectorAll("source")).toHaveLength(2);
+      expect(view.container.querySelectorAll("source")[1]).toHaveAttribute(
+        "media",
+        "(min-width: 1px) and (prefers-color-scheme: dark)",
+      );
+      view.unmount();
+    });
+
+    it.each(["load", "error"])(
+      "ignores detached scalar %s after switching to picture",
+      async (event) => {
+        const [src, setSrc] = createSignal<string | { srcSet: string }[]>(`/${name}-old.png`);
+        const view = render(() => (
+          <Coordinator>
+            <TwinImage src={src()} alt="changing" renderError={() => <span>obsolete error</span>} />
+            <TwinImage src={`/${name}-survivor.png`} alt="survivor" />
+          </Coordinator>
+        ));
+        await drain();
+        const old = img("changing");
+        const wrapper = old.parentElement!;
+        const survivor = img("survivor");
+        const pending = survivor.parentElement!.className;
+        fireEvent.load(survivor);
+        await drain();
+        change(() => setSrc([{ srcSet: `/${name}-picture.png` }]));
+        const current = img("changing");
+        expect(current).not.toBe(old);
+        expect(old.isConnected).toBe(false);
+        expect(current.parentElement?.tagName).toBe("PICTURE");
+        expect(current.parentElement?.parentElement).toBe(wrapper);
+        expect(view.container.querySelector("source")).toHaveAttribute(
+          "srcset",
+          `/${name}-picture.png`,
+        );
+        // JSDOM does not fetch picture sources; inspect event writes before its empty-image cached task.
+        fireEvent[event](old);
+        flush();
+        expect(screen.queryByText("obsolete error")).toBeNull();
+        expect(survivor.parentElement!.className).toBe(pending);
+        fireEvent.load(current);
+        await drain();
+        expect(survivor.parentElement!.className).not.toBe(pending);
+        change(() => setSrc(`/${name}-recovered.png`));
+        fireEvent.error(img("changing"));
+        await drain();
+        expect(screen.getByText("obsolete error")).toBeInTheDocument();
+        change(() => setSrc(`/${name}-recovery.png`));
+        fireEvent.load(img("changing"));
+        await drain();
+        expect(screen.queryByText("obsolete error")).toBeNull();
+        view.unmount();
+      },
+    );
+
+    it.each(["B", "B-to-A"])(
+      "invalidates queued cached completion across A-to-%s",
+      async (next) => {
+        const queued: VoidFunction[] = [];
+        const queue = vi
+          .spyOn(globalThis, "queueMicrotask")
+          .mockImplementation((task) => queued.push(task));
+        const [src, setSrc] = createSignal("");
+        let view: ReturnType<typeof render> | undefined;
+        try {
+          view = render(() => (
+            <TwinImage src={src()} alt="cached" renderError={() => <span>cached error</span>} />
+          ));
+          flush();
+          const cached = img("cached") as HTMLImageElement;
+          expect(cached.complete).toBe(true);
+          expect(cached.naturalWidth).toBe(0);
+          expect(queued.length).toBeGreaterThan(0);
+          const tasks = queued.splice(0);
+          change(() => setSrc(`/${name}-pending.png`));
+          if (next === "B-to-A") change(() => setSrc(""));
+          const pending = img("cached").parentElement!.className;
+          tasks.forEach((task) => task());
+          flush();
+          expect(screen.queryByText("cached error")).toBeNull();
+          expect(img("cached").parentElement!.className).toBe(pending);
+          fireEvent.load(img("cached"));
+          flush();
+          expect(img("cached").parentElement!.className).not.toBe(pending);
+        } finally {
+          view?.unmount();
+          queue.mockRestore();
+        }
+        await drain();
+      },
+    );
+
+    it("accepts current cached empty-source error", async () => {
+      const view = render(() => (
+        <TwinImage src="" alt="cached" renderError={() => <span>current cached error</span>} />
+      ));
+      await drain();
+      expect(screen.getByText("current cached error")).toBeInTheDocument();
+      view.unmount();
     });
 
     it("unregisters hidden rows and registers their visible loading return", async () => {
