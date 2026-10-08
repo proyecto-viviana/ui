@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "ActionMenu inside TreeView still does not open from pointer, dispatch, or Enter. Nested row stopPropagation is landed; the press path is not.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "visualmode T4 (#10156, #10157) asked for a trailing actions slot. slots actions and actionmenu already render inside a dynamic item (solid-spectrum Tree test). The open failure remains opening ActionMenu from the row. Do not file a second slot ticket. A separate press-must-not-select claim for a ToggleButton or ActionButton in the slot is not evidenced here.",
+    }
 ---
 
 TreeView item `ActionMenu` opens from pointer press, a dispatched

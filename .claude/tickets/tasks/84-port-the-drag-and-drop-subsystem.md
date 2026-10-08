@@ -7,6 +7,11 @@ parent: 25
 status: open
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task dnd-subsystem-port" }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "visualmode T1 (#10156, #10157) is this ticket. Styled TreeView leaves dragAndDropHooks on the headless props and spreads them into HeadlessTree. useDragAndDrop is already exported from solidaria-components. The open work is row behavior (reorder, re-parent, drop indicator, keyboard drag, multi-select move), not a second ticket.",
+    }
 ---
 
 Port the shared drag-and-drop subsystem before the collection certification
