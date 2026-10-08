@@ -17,19 +17,20 @@
  * Ported from packages/react-aria/src/select/HiddenSelect.tsx.
  */
 
-import { For, Show, createRenderEffect, createSignal, createTrackedEffect } from "solid-js";
+import { For, Show, createRenderEffect, createSignal } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createFormValidation } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 import { visuallyHiddenStyles } from "../visually-hidden/createVisuallyHidden";
-import type { SelectState, Key } from "@proyecto-viviana/solid-stately";
+import type { SelectState, SelectSelectionMode, Key } from "@proyecto-viviana/solid-stately";
 
 export type ValidationBehavior = "aria" | "native";
 
-export interface AriaHiddenSelectProps<T> {
+export interface AriaHiddenSelectProps<T, M extends SelectSelectionMode = "single"> {
   /** The state object for the select. */
-  state: SelectState<T>;
+  state: SelectState<T, M>;
   /** The name attribute for the hidden select. */
   name?: string;
   /** Whether the select is disabled. */
@@ -59,8 +60,8 @@ export interface HiddenSelectAria {
  * Provides the accessibility implementation for a hidden select.
  * This is used for native form submission and accessibility on mobile devices.
  */
-export function createHiddenSelect<T>(
-  props: MaybeAccessor<AriaHiddenSelectProps<T>>,
+export function createHiddenSelect<T, M extends SelectSelectionMode = "single">(
+  props: MaybeAccessor<AriaHiddenSelectProps<T, M>>,
 ): HiddenSelectAria {
   const getProps = () => access(props);
 
@@ -84,25 +85,13 @@ export function createHiddenSelect<T>(
     () => selectEl(),
   );
 
+  const readValue = (): Key | readonly Key[] | null =>
+    getProps().state.value() as Key | readonly Key[] | null;
+
   const nativeSelectValue = (): string | string[] => {
-    const p = getProps();
-    const state = p.state;
-    const selectedKey = state.selectedKey();
-    const isMultiple =
-      typeof state.selectionMode === "function" && state.selectionMode() === "multiple";
-    if (isMultiple) {
-      const selectedKeys =
-        typeof state.selectedKeys === "function"
-          ? state.selectedKeys()
-          : selectedKey != null
-            ? new Set([selectedKey])
-            : new Set<Key>();
-      if (selectedKeys === "all") {
-        return Array.from(state.collection()).map((item) => String(item.key));
-      }
-      return Array.from(selectedKeys).map(String);
-    }
-    return selectedKey != null ? String(selectedKey) : "";
+    const value = readValue();
+    if (Array.isArray(value)) return value.map(String);
+    return value != null ? String(value) : "";
   };
 
   // RAC HiddenSelect.tsx:144 — `value: state.value`. React applies that after
@@ -123,33 +112,14 @@ export function createHiddenSelect<T>(
     },
   );
 
-  // Set up form reset handler
-  createTrackedEffect(() => {
-    const _s2Cleanups: Array<() => void> = [];
-
-    const p = getProps();
-    const el = selectEl();
-    if (!el) return;
-
-    const form = el.form;
-    if (!form) return;
-
-    const handleReset = () => {
-      // Reset to default selected key (first key or null)
-      const defaultKey = p.state.collection().getFirstKey();
-      p.state.setSelectedKey(defaultKey);
-    };
-
-    form.addEventListener("reset", handleReset);
-
-    _s2Cleanups.push(() => {
-      form.removeEventListener("reset", handleReset);
-    });
-
-    return () => {
-      for (const c of _s2Cleanups) c();
-    };
-  });
+  // RAC HiddenSelect uses useFormReset(selectRef, state.defaultValue, state.setValue).
+  createFormReset(
+    () => selectEl(),
+    getProps().state.defaultValue,
+    (value) => {
+      getProps().state.setValue(value as Key | readonly Key[] | null);
+    },
+  );
 
   return {
     get containerProps() {
@@ -168,31 +138,16 @@ export function createHiddenSelect<T>(
     get selectProps() {
       const p = getProps();
       const state = p.state;
-      const selectedKey = state.selectedKey();
-      const selectedKeys =
-        typeof state.selectedKeys === "function"
-          ? state.selectedKeys()
-          : selectedKey != null
-            ? new Set([selectedKey])
-            : new Set<Key>();
+      const current = state.value() as Key | readonly Key[] | null;
       const validationBehavior = p.validationBehavior ?? "aria";
-      const isMultiple =
-        typeof state.selectionMode === "function" && state.selectionMode() === "multiple";
-      const multipleValue =
-        selectedKeys === "all"
-          ? Array.from(state.collection()).map((item) => String(item.key))
-          : Array.from(selectedKeys).map(String);
+      const isMultiple = state.selectionMode() === "multiple";
+      const multipleValue = Array.isArray(current) ? current.map(String) : [];
       const applyNativeSelectChange = (e: Event) => {
         const target = e.target as HTMLSelectElement;
         if (isMultiple) {
-          if (typeof state.setSelectedKeys === "function") {
-            state.setSelectedKeys(Array.from(target.selectedOptions).map((o) => o.value as Key));
-          } else {
-            const first = target.selectedOptions[0]?.value;
-            state.setSelectedKey((first ?? null) as Key | null);
-          }
+          state.setValue(Array.from(target.selectedOptions).map((o) => o.value as Key));
         } else {
-          state.setSelectedKey(target.value as Key);
+          state.setValue(target.value as Key);
         }
       };
 
@@ -208,7 +163,11 @@ export function createHiddenSelect<T>(
         form: p.form,
         // Add required attribute for native form validation
         required: validationBehavior === "native" && p.isRequired,
-        value: isMultiple ? multipleValue : selectedKey != null ? String(selectedKey) : "",
+        value: isMultiple
+          ? multipleValue
+          : current != null && !Array.isArray(current)
+            ? String(current)
+            : "",
         // RAC HiddenSelect.tsx:145-146 — autofill writes through `input` as well as `change`.
         onChange: applyNativeSelectChange,
         onInput: applyNativeSelectChange,
@@ -231,7 +190,8 @@ export function createHiddenSelect<T>(
     get inputProps() {
       const p = getProps();
       const state = p.state;
-      const selectedKey = state.selectedKey();
+      const current = state.value() as Key | readonly Key[] | null;
+      const selectedKey = Array.isArray(current) ? (current[0] ?? null) : current;
       const validationBehavior = p.validationBehavior ?? "aria";
 
       // For native validation with required, use type="text" with display:none
@@ -253,7 +213,7 @@ export function createHiddenSelect<T>(
 
 export interface HiddenSelectProps<T> {
   /** The state object for the select. */
-  state: SelectState<T>;
+  state: SelectState<T, SelectSelectionMode>;
   /** The name attribute for the hidden select. */
   name?: string;
   /** Whether the select is disabled. */
@@ -305,26 +265,16 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
   });
 
   const collection = () => props.state.collection();
-  const selectedKey = () => props.state.selectedKey();
-  const selectedKeys = () =>
-    typeof props.state.selectedKeys === "function"
-      ? props.state.selectedKeys()
-      : selectedKey() != null
-        ? new Set([selectedKey() as Key])
-        : new Set<Key>();
-  const isMultiple = () =>
-    typeof props.state.selectionMode === "function" && props.state.selectionMode() === "multiple";
+  const currentValue = (): Key | readonly Key[] | null =>
+    props.state.value() as Key | readonly Key[] | null;
+  const isMultiple = () => props.state.selectionMode() === "multiple";
   const collectionSize = () => collection().size;
   const hiddenInputValues = (): Array<Key | null> => {
-    if (isMultiple()) {
-      const keys = selectedKeys();
-      if (keys === "all") {
-        return Array.from(collection()).map((item) => item.key);
-      }
-      const listed = Array.from(keys as Set<Key>);
-      return listed.length === 0 ? [null] : listed;
+    const value = currentValue();
+    if (Array.isArray(value)) {
+      return value.length === 0 ? [null] : [...value];
     }
-    return [selectedKey()];
+    return [value];
   };
 
   // Mirror RAC HiddenSelect.tsx:172-244: a native <select> inside a <label>
@@ -348,11 +298,11 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
             {...selectProps}
             value={
               isMultiple()
-                ? selectedKeys() === "all"
-                  ? Array.from(collection()).map((item) => String(item.key))
-                  : Array.from(selectedKeys() as Set<Key>).map(String)
-                : selectedKey() != null
-                  ? String(selectedKey())
+                ? Array.isArray(currentValue())
+                  ? (currentValue() as readonly Key[]).map(String)
+                  : []
+                : currentValue() != null && !Array.isArray(currentValue())
+                  ? String(currentValue())
                   : ""
             }
           >

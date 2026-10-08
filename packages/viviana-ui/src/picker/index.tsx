@@ -48,7 +48,7 @@ import {
   StaticSelectProbeContext,
   StaticSelectProbeItem,
 } from "@proyecto-viviana/solidaria-components";
-import type { Key } from "@proyecto-viviana/solid-stately";
+import type { Key, SelectSelectionMode } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import {
   baseColor,
@@ -88,7 +88,7 @@ import { getSlottedContextProps, type SpectrumContextValue } from "../button/spe
 import { listboxHeader, LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
 import { Header, HeaderContext, HeadingContext, TextContext } from "../text";
-import { mergeProps, splitProps } from "@proyecto-viviana/solidaria/utils";
+import { splitProps } from "@proyecto-viviana/solidaria/utils";
 import {
   menuItemDescription,
   menuItemIcon,
@@ -112,8 +112,8 @@ export type PickerLoadingState =
   | "filtering"
   | "error";
 
-export interface PickerProps<T> extends Omit<
-  HeadlessSelectProps<T>,
+export interface PickerProps<T, M extends SelectSelectionMode = "single"> extends Omit<
+  HeadlessSelectProps<T, M>,
   "class" | "style" | "children"
 > {
   size?: PickerSize;
@@ -752,8 +752,10 @@ function PickerProgressCircle(props: { size: S2PickerSize; "aria-label": string 
   );
 }
 
-export function Picker<T>(props: PickerProps<T>): JSX.Element {
-  const defaultProps: Partial<PickerProps<T>> = {
+export function Picker<T, M extends SelectSelectionMode = "single">(
+  props: PickerProps<T, M>,
+): JSX.Element {
+  const defaultProps: Partial<PickerProps<T, M>> = {
     labelPosition: "top",
     labelAlign: "start",
     necessityIndicator: "icon",
@@ -811,37 +813,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   const isInvalid = () => local.isInvalid === true;
   const isTriggerLoading = () => local.loadingState === "loading";
   const isLoadingMore = () => local.loadingState === "loadingMore";
-  const propsRecord = () => headlessProps as Record<string, unknown>;
-  const isMultiple = () => propsRecord().selectionMode === "multiple";
-  const selectedKey = () => propsRecord().selectedKey as Key | null | undefined;
-  const defaultSelectedKey = () => propsRecord().defaultSelectedKey as Key | null | undefined;
-  const selectedKeys = () => propsRecord().selectedKeys as "all" | Iterable<Key> | undefined;
-  const defaultSelectedKeys = () =>
-    propsRecord().defaultSelectedKeys as "all" | Iterable<Key> | undefined;
-  const onSelectionChange = () =>
-    propsRecord().onSelectionChange as ((key: Key | null) => void) | undefined;
-  const onSelectionChangeKeys = () =>
-    propsRecord().onSelectionChangeKeys as ((keys: "all" | Set<Key>) => void) | undefined;
-  const selectProps = mergeProps(headlessProps, {
-    get selectedKey() {
-      return isMultiple() ? undefined : selectedKey();
-    },
-    get defaultSelectedKey() {
-      return isMultiple() ? undefined : defaultSelectedKey();
-    },
-    get selectedKeys() {
-      return isMultiple() ? selectedKeys() : propsRecord().selectedKeys;
-    },
-    get defaultSelectedKeys() {
-      return isMultiple() ? defaultSelectedKeys() : propsRecord().defaultSelectedKeys;
-    },
-    get onSelectionChange() {
-      return isMultiple() ? undefined : onSelectionChange();
-    },
-    get onSelectionChangeKeys() {
-      return isMultiple() ? onSelectionChangeKeys() : undefined;
-    },
-  });
   const labelId = createUniqueId();
   const [triggerEl, setTriggerEl] = createSignal<HTMLButtonElement | null>(null);
 
@@ -928,7 +899,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   return (
     <PickerSizeContext value={size()}>
       <HeadlessSelect
-        {...selectProps}
+        {...headlessProps}
         placeholder={
           (headlessProps as { placeholder?: string }).placeholder ??
           stringFormatter().format("picker.placeholder")

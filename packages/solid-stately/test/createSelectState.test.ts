@@ -416,13 +416,13 @@ describe("createSelectState", () => {
   });
 
   describe("multiple selection mode", () => {
-    it("supports defaultSelectedKeys", () => {
+    it("supports defaultValue", () => {
       createRoot((dispose) => {
         const state = createSelectState({
           items,
           getKey: (item) => item.key,
-          selectionMode: "multiple",
-          defaultSelectedKeys: ["a", "c"],
+          selectionMode: "multiple" as const,
+          defaultValue: ["a", "c"],
         });
 
         flush();
@@ -435,42 +435,42 @@ describe("createSelectState", () => {
       });
     });
 
-    it("supports controlled selectedKeys", () => {
+    it("supports controlled value", () => {
       createRoot((dispose) => {
-        const [selectedKeys, setSelectedKeys] = createSignal(new Set(["a"]));
+        const [value, setValue] = createSignal(["a"]);
 
         const state = createSelectState({
           items,
           getKey: (item) => item.key,
-          selectionMode: "multiple",
-          get selectedKeys() {
-            return selectedKeys();
+          selectionMode: "multiple" as const,
+          get value() {
+            return value();
           },
         });
 
         flush();
         expect(state.selectedKeys()).toEqual(new Set(["a"]));
-        setSelectedKeys(new Set(["b", "c"]));
+        setValue(["b", "c"]);
         flush();
         expect(state.selectedKeys()).toEqual(new Set(["b", "c"]));
         dispose();
       });
     });
 
-    it("calls onSelectionChangeKeys for list interactions", () => {
-      const onSelectionChangeKeys = vi.fn();
+    it("calls onChange for selection changes", () => {
+      const onChange = vi.fn();
 
       createRoot((dispose) => {
         const state = createSelectState({
           items,
           getKey: (item) => item.key,
-          selectionMode: "multiple",
-          onSelectionChangeKeys,
+          selectionMode: "multiple" as const,
+          onChange,
         });
 
         state.setSelectedKeys(["a", "b"]);
         flush();
-        expect(onSelectionChangeKeys).toHaveBeenCalledWith(new Set(["a", "b"]));
+        expect(onChange).toHaveBeenCalledWith(["a", "b"]);
         dispose();
       });
     });

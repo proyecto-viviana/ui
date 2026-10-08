@@ -30,7 +30,11 @@ import { mergeProps } from "../utils/mergeProps";
 import { createId, createSlotId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { nodeContains } from "../utils/dom";
-import type { SelectState, CollectionNode } from "@proyecto-viviana/solid-stately";
+import type {
+  SelectState,
+  SelectSelectionMode,
+  CollectionNode,
+} from "@proyecto-viviana/solid-stately";
 
 export interface AriaSelectProps {
   /** An ID for the select. */
@@ -111,16 +115,16 @@ interface SelectData {
   id: string;
 }
 
-export function getSelectData(state: SelectState): SelectData | undefined {
+export function getSelectData(state: object): SelectData | undefined {
   return selectData.get(state);
 }
 
 /**
  * Provides the behavior and accessibility implementation for a select component.
  */
-export function createSelect<T>(
+export function createSelect<T, M extends SelectSelectionMode = "single">(
   props: MaybeAccessor<AriaSelectProps>,
-  state: SelectState<T>,
+  state: SelectState<T, M>,
   _ref?: () => HTMLElement | null,
 ): SelectAria<T> {
   const getProps = () => access(props);
@@ -289,8 +293,12 @@ export function createSelect<T>(
     },
     isKeyDisabled,
     get isDisabled() {
+      // useSelect.ts — multiple mode disables typeahead.
       return Boolean(
-        (getProps().disallowTypeAhead ?? false) || getProps().isDisabled || state.isDisabled,
+        (getProps().disallowTypeAhead ?? false) ||
+        getProps().isDisabled ||
+        state.isDisabled ||
+        state.selectionMode() === "multiple",
       );
     },
     ref: _ref,
@@ -470,7 +478,7 @@ export function createSelect<T>(
 
       // Add type-select props if enabled (mirrors upstream useSelect:
       // triggerProps = mergeProps(typeSelectProps, menuTriggerProps, fieldProps))
-      if (!p.disallowTypeAhead) {
+      if (!p.disallowTypeAhead && state.selectionMode() !== "multiple") {
         return mergeProps(
           typeSelectProps as Record<string, unknown>,
           baseProps,

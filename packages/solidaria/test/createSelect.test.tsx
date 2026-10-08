@@ -329,15 +329,11 @@ describe("createSelect", () => {
       const { getByRole, unmount } = render(() => {
         const state = createTestState({
           selectionMode: "multiple",
-          defaultSelectedKeys: ["a", "c"],
+          defaultValue: ["a", "c"],
         });
         const { triggerProps } = createSelect({}, state);
 
-        return (
-          <button {...triggerProps}>
-            {state.selectedKeys() === "all" ? "all" : Array.from(state.selectedKeys()).join(",")}
-          </button>
-        );
+        return <button {...triggerProps}>{Array.from(state.selectedKeys()).join(",")}</button>;
       });
 
       const trigger = getByRole("button");

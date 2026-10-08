@@ -73,8 +73,19 @@ function createMockState<T>({
     },
     validationBehavior: "native",
   });
+  const setValue = (value: Key | readonly Key[] | null) => {
+    if (Array.isArray(value)) {
+      setSelectedKey((value[0] as Key | undefined) ?? null);
+      return;
+    }
+    setSelectedKey(value);
+  };
 
   return {
+    value: selectedKey,
+    defaultValue: initialSelectedKey,
+    setValue,
+    selectionMode: () => "single" as const,
     realtimeValidation: validation.realtimeValidation,
     displayValidation: validation.displayValidation,
     updateValidation: validation.updateValidation,
@@ -230,8 +241,8 @@ describe("createHiddenSelect", () => {
       const form = screen.getByTestId("form") as HTMLFormElement;
       fireEvent.reset(form);
 
-      // Should reset to first key
-      expect(state.selectedKey()).toBe("cat");
+      // Restores the default value captured when the hidden select was created.
+      expect(state.selectedKey()).toBe("dog");
     });
 
     it("should reset selection when the select mounts after the first effect", () => {
@@ -265,7 +276,7 @@ describe("createHiddenSelect", () => {
       const form = screen.getByTestId("form") as HTMLFormElement;
       fireEvent.reset(form);
 
-      expect(state.selectedKey()).toBe("cat");
+      expect(state.selectedKey()).toBe("dog");
     });
   });
 

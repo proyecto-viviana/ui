@@ -214,19 +214,19 @@ describe("Picker (solid-spectrum)", () => {
     expect(chevron).not.toHaveAttribute("aria-hidden");
   });
 
-  it("supports multiple selection with selectedKeys/defaultSelectedKeys/onSelectionChangeKeys", async () => {
+  it("supports multiple selection with value and onChange", async () => {
     const user = setupUser();
-    const onSelectionChangeKeys = vi.fn();
+    const onChange = vi.fn();
     const { unmount } = render(() => (
-      <Picker<SectionItem>
+      <Picker<SectionItem, "multiple">
         aria-label="Table of contents"
         selectionMode="multiple"
         defaultOpen
         items={sections}
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}
-        selectedKeys={["#page-title"]}
-        onSelectionChangeKeys={onSelectionChangeKeys}
+        value={["#page-title"]}
+        onChange={onChange}
       />
     ));
 
@@ -234,18 +234,18 @@ describe("Picker (solid-spectrum)", () => {
 
     await user.click(screen.getByRole("option", { name: "API" }));
 
-    expect(onSelectionChangeKeys).toHaveBeenLastCalledWith(new Set(["#page-title", "#api"]));
+    expect(onChange).toHaveBeenLastCalledWith(["#page-title", "#api"]);
 
     unmount();
 
     render(() => (
-      <Picker<SectionItem>
+      <Picker<SectionItem, "multiple">
         aria-label="Table of contents"
         selectionMode="multiple"
         items={sections}
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}
-        defaultSelectedKeys={["#page-title", "#api"]}
+        defaultValue={["#page-title", "#api"]}
         renderValue={(items) => <span>{items.map((item) => item.label).join(" + ")}</span>}
       />
     ));
@@ -492,11 +492,11 @@ describe("Picker (solid-spectrum)", () => {
   it("submits multiple selected values as FormData entries of the hidden select", () => {
     render(() => (
       <form data-testid="form">
-        <Picker<SectionItem>
+        <Picker<SectionItem, "multiple">
           aria-label="Docs section"
           selectionMode="multiple"
           name="section"
-          defaultSelectedKeys={["#page-title", "#api"]}
+          defaultValue={["#page-title", "#api"]}
           items={sections}
           getKey={(item) => item.href}
           getTextValue={(item) => item.label}

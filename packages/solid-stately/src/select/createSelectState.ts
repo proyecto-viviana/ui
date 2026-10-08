@@ -17,13 +17,12 @@
  * Based on @react-stately/select useSelectState.
  */
 
-import { createMemo } from "solid-js";
+import { createMemo, untrack } from "solid-js";
 import type { Accessor } from "solid-js";
 import { createInternalSignal, propsAccessor, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
-import type { Key, CollectionNode, Collection } from "../collections/types";
-import type { SelectionMode, Selection } from "../collections/types";
+import type { Key, CollectionNode, Collection, FocusStrategy } from "../collections/types";
 import type { SelectionManager } from "../selection/SelectionManager";
 import {
   createFormValidationState,
@@ -31,7 +30,22 @@ import {
   type ValidationFunction,
 } from "../form";
 
-export interface SelectStateProps<T = unknown> {
+/** Select never uses the collection `"none"` mode. */
+export type SelectSelectionMode = "single" | "multiple";
+
+/** Single mode is `Key | null`. Multiple mode is `readonly Key[]`. */
+export type SelectValueType<M extends SelectSelectionMode> = M extends "single"
+  ? Key | null
+  : readonly Key[];
+
+/** `onChange` receives a mutable `Key[]` in multiple mode. */
+export type SelectChangeValueType<M extends SelectSelectionMode> = M extends "single"
+  ? Key | null
+  : Key[];
+
+type SelectValidationType<M extends SelectSelectionMode> = M extends "single" ? Key : Key[];
+
+export interface SelectStateProps<T = unknown, M extends SelectSelectionMode = "single"> {
   /** The items to display in the select. */
   items: T[];
   /** Function to get the key for an item. */
@@ -42,26 +56,48 @@ export interface SelectStateProps<T = unknown> {
   getDisabled?: (item: T) => boolean;
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
-  /** The currently selected key (controlled). */
+  /**
+   * Whether single or multiple selection is enabled.
+   * @default 'single'
+   */
+  selectionMode?: M;
+  /**
+   * The current value (controlled).
+   * Single mode is `Key | null`. Multiple mode is `readonly Key[]`.
+   */
+  value?: SelectValueType<M>;
+  /** The default value (uncontrolled). */
+  defaultValue?: SelectValueType<M>;
+  /** Handler called when the value changes. */
+  onChange?: (value: SelectChangeValueType<M>) => void;
+  /**
+   * The currently selected key in the collection (controlled).
+   * @deprecated Use `value`.
+   */
   selectedKey?: Key | null;
-  /** The default selected key (uncontrolled). */
+  /**
+   * The initial selected key in the collection (uncontrolled).
+   * @deprecated Use `defaultValue`.
+   */
   defaultSelectedKey?: Key | null;
-  /** The selected keys (controlled, for multiple selection mode). */
-  selectedKeys?: "all" | Iterable<Key>;
-  /** Default selected keys (uncontrolled, for multiple selection mode). */
-  defaultSelectedKeys?: "all" | Iterable<Key>;
-  /** Handler called when the selection changes. */
+  /**
+   * Handler that is called when the selection changes.
+   * @deprecated Use `onChange`.
+   */
   onSelectionChange?: (key: Key | null) => void;
-  /** Handler called when selected keys change. */
-  onSelectionChangeKeys?: (keys: Selection) => void;
-  /** Selection mode for the select. */
-  selectionMode?: Extract<SelectionMode, "single" | "multiple">;
   /** Whether the select is open (controlled). */
   isOpen?: boolean;
   /** Whether the select is open by default (uncontrolled). */
   defaultOpen?: boolean;
   /** Handler called when the open state changes. */
   onOpenChange?: (isOpen: boolean) => void;
+  /**
+   * Whether the Select should close when an item is selected. Defaults to true
+   * when selectionMode is single, false otherwise.
+   */
+  shouldCloseOnSelect?: boolean;
+  /** Whether the select should be allowed to be open when the collection is empty. */
+  allowsEmptyCollection?: boolean;
   /** Whether the select is disabled. */
   isDisabled?: boolean;
   /** Whether the select is required. */
@@ -71,7 +107,7 @@ export interface SelectStateProps<T = unknown> {
   /** @deprecated Use isInvalid instead. */
   validationState?: "valid" | "invalid";
   /** Custom validation function. */
-  validate?: ValidationFunction<Key | null | Selection>;
+  validate?: ValidationFunction<SelectValidationType<M> | null>;
   /**
    * Whether to use native HTML form validation or ARIA validation semantics.
    * @default "native"
@@ -81,7 +117,10 @@ export interface SelectStateProps<T = unknown> {
   name?: string | string[];
 }
 
-export interface SelectState<T = unknown> extends FormValidationState {
+export interface SelectState<
+  T = unknown,
+  M extends SelectSelectionMode = "single",
+> extends FormValidationState {
   /** The collection of items. */
   readonly collection: Accessor<Collection<T>>;
   /**
@@ -92,23 +131,48 @@ export interface SelectState<T = unknown> extends FormValidationState {
   /** Whether the select dropdown is open. */
   readonly isOpen: Accessor<boolean>;
   /** Open the select dropdown. */
-  open(): void;
+  open(focusStrategy?: FocusStrategy | null): void;
   /** Close the select dropdown. */
   close(): void;
   /** Toggle the select dropdown. */
-  toggle(): void;
-  /** The currently selected key. */
+  toggle(focusStrategy?: FocusStrategy | null): void;
+  /** Controls which item will be auto focused when the menu opens. */
+  readonly focusStrategy: Accessor<FocusStrategy | null>;
+  /**
+   * The key for the first selected item.
+   * @deprecated Use `value`.
+   */
   readonly selectedKey: Accessor<Key | null>;
-  /** The selected keys. */
-  readonly selectedKeys: Accessor<Selection>;
-  /** The currently selected item. */
-  readonly selectedItem: Accessor<CollectionNode<T> | null>;
-  /** The currently selected items. */
-  readonly selectedItems: Accessor<CollectionNode<T>[]>;
-  /** Set the selected key. */
+  /**
+   * The default selected key.
+   * @deprecated Use `defaultValue`.
+   */
+  readonly defaultSelectedKey: Key | null;
+  /**
+   * Sets the selected key.
+   * @deprecated Use `setValue`.
+   */
   setSelectedKey(key: Key | null): void;
-  /** Set selected keys. */
+  /** The current select value. */
+  readonly value: Accessor<SelectValueType<M>>;
+  /** The default select value. */
+  readonly defaultValue: SelectValueType<M>;
+  /** Sets the select value. */
+  setValue(value: Key | readonly Key[] | null): void;
+  /**
+   * Selected keys derived from `value`.
+   * Kept for list and hidden-select adapters. Never `"all"`.
+   */
+  readonly selectedKeys: Accessor<Set<Key>>;
+  /** Replace the selected keys. */
   setSelectedKeys(keys: Iterable<Key>): void;
+  /**
+   * The value of the first selected item.
+   * @deprecated Use `selectedItems`.
+   */
+  readonly selectedItem: Accessor<CollectionNode<T> | null>;
+  /** The value of the selected items. */
+  readonly selectedItems: Accessor<CollectionNode<T>[]>;
   /** The currently focused key. */
   readonly focusedKey: Accessor<Key | null>;
   /** Set the focused key. */
@@ -124,20 +188,27 @@ export interface SelectState<T = unknown> extends FormValidationState {
   /** Whether the select is required. */
   readonly isRequired: boolean;
   /** The selection mode. */
-  readonly selectionMode: Accessor<"single" | "multiple">;
+  readonly selectionMode: Accessor<M>;
+  /** Whether selecting an item closes the menu. */
+  readonly shouldCloseOnSelect: Accessor<boolean>;
+}
+
+function convertValue(value: Key | readonly Key[] | null | undefined): readonly Key[] | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return [];
+  return Array.isArray(value) ? value : [value];
 }
 
 /**
  * Creates state for a select component.
  * Combines list state with overlay trigger state for dropdown behavior.
  */
-export function createSelectState<T = unknown>(
-  props: MaybeAccessor<SelectStateProps<T>>,
-): SelectState<T> {
+export function createSelectState<T = unknown, M extends SelectSelectionMode = "single">(
+  props: MaybeAccessor<SelectStateProps<T, M>>,
+): SelectState<T, M> {
   const getProps = propsAccessor(props);
-  const selectionMode: Accessor<"single" | "multiple"> = () => getProps().selectionMode ?? "single";
+  const selectionMode: Accessor<M> = () => (getProps().selectionMode ?? "single") as M;
 
-  // Overlay trigger state for open/close
   const overlayState = createOverlayTriggerState({
     get isOpen() {
       return getProps().isOpen;
@@ -150,85 +221,117 @@ export function createSelectState<T = unknown>(
     },
   });
 
-  // Track selected key
-  const isControlledSingle = () => getProps().selectedKey !== undefined;
-  const isControlledMultiple = () => getProps().selectedKeys !== undefined;
-  const [internalSelectedKey, setInternalSelectedKey] = createInternalSignal<Key | null>(
-    getProps().defaultSelectedKey ?? null,
-  );
-  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Selection>(
-    getProps().defaultSelectedKeys === "all"
-      ? "all"
-      : new Set(getProps().defaultSelectedKeys ?? []),
-  );
+  const resolvedDefault = untrack(() => {
+    const current = getProps();
+    if (current.defaultValue !== undefined) return current.defaultValue;
+    const mode = current.selectionMode ?? "single";
+    return (mode === "single" ? (current.defaultSelectedKey ?? null) : []) as SelectValueType<M>;
+  });
 
-  const selectedKey: Accessor<Key | null> = () => {
-    if (selectionMode() === "multiple") {
-      const keys = selectedKeys();
-      if (keys === "all") return null;
-      return keys.size > 0 ? Array.from(keys)[0] : null;
+  const controlledProp = (): SelectValueType<M> | undefined => {
+    const current = getProps();
+    if (current.value !== undefined) return current.value;
+    if (selectionMode() === "single" && current.selectedKey !== undefined) {
+      return (current.selectedKey ?? null) as SelectValueType<M>;
     }
-
-    return isControlledSingle() ? (getProps().selectedKey ?? null) : internalSelectedKey();
+    return undefined;
   };
 
-  const setSelectedKey = (key: Key | null) => {
-    if (selectionMode() === "multiple") {
-      if (key == null) {
-        if (!isControlledMultiple()) {
-          setInternalSelectedKeys(new Set<Key>());
+  const [internalValue, setInternalValue] =
+    createInternalSignal<SelectValueType<M>>(resolvedDefault);
+
+  let valueRef: Key | readonly Key[] | null = untrack(() => {
+    const controlled = controlledProp();
+    return (controlled !== undefined ? controlled : internalValue()) as Key | readonly Key[] | null;
+  });
+  let wroteThisTurn = false;
+
+  const syncValueRef = () => {
+    if (wroteThisTurn) return;
+    const controlled = controlledProp();
+    valueRef = (controlled !== undefined ? controlled : untrack(internalValue)) as
+      | Key
+      | readonly Key[]
+      | null;
+  };
+
+  const displayValue = (): Key | readonly Key[] | null => {
+    const controlled = controlledProp();
+    const raw = (controlled !== undefined ? controlled : internalValue()) as
+      | Key
+      | readonly Key[]
+      | null;
+    if (selectionMode() === "single" && Array.isArray(raw)) {
+      return (raw[0] ?? null) as Key | null;
+    }
+    return raw;
+  };
+
+  const setValue = (next: Key | readonly Key[] | null) => {
+    syncValueRef();
+    const prevDisplay = untrack(displayValue);
+    if (selectionMode() === "single") {
+      const key = Array.isArray(next) ? ((next[0] ?? null) as Key | null) : next;
+      if (!Object.is(valueRef, key)) {
+        valueRef = key;
+        wroteThisTurn = true;
+        queueMicrotask(() => {
+          wroteThisTurn = false;
+        });
+        if (controlledProp() === undefined) {
+          setInternalValue(key as SelectValueType<M>);
         }
-        getProps().onSelectionChangeKeys?.(new Set<Key>());
-        getProps().onSelectionChange?.(null);
-      } else {
-        const next = new Set([key]);
-        if (!isControlledMultiple()) {
-          setInternalSelectedKeys(next);
-        }
-        getProps().onSelectionChangeKeys?.(next);
+        getProps().onChange?.(key as SelectChangeValueType<M>);
+      }
+      if (key !== prevDisplay) {
         getProps().onSelectionChange?.(key);
       }
       return;
     }
 
-    if (!isControlledSingle()) {
-      setInternalSelectedKey(key);
-    }
-    getProps().onSelectionChange?.(key);
-    getProps().onSelectionChangeKeys?.(key != null ? new Set([key]) : new Set<Key>());
-  };
-
-  const selectedKeys: Accessor<Selection> = createMemo(() => {
-    if (selectionMode() === "multiple") {
-      if (isControlledMultiple()) {
-        const keys = getProps().selectedKeys;
-        return keys === "all" ? "all" : new Set<Key>(keys ?? []);
+    let keys: Key[];
+    if (Array.isArray(next)) keys = next as Key[];
+    else if (next != null) keys = [next];
+    else keys = [];
+    if (!Object.is(valueRef, keys)) {
+      valueRef = keys;
+      wroteThisTurn = true;
+      queueMicrotask(() => {
+        wroteThisTurn = false;
+      });
+      if (controlledProp() === undefined) {
+        setInternalValue(keys as SelectValueType<M>);
       }
-      return internalSelectedKeys();
+      getProps().onChange?.(keys as SelectChangeValueType<M>);
     }
-
-    const key = selectedKey();
-    return key != null ? new Set<Key>([key]) : new Set<Key>();
-  });
+  };
 
   const setSelectedKeys = (keys: Iterable<Key>) => {
-    const next = new Set(keys);
     if (selectionMode() === "multiple") {
-      if (!isControlledMultiple()) {
-        setInternalSelectedKeys(next);
-      }
-      getProps().onSelectionChangeKeys?.(next);
-      getProps().onSelectionChange?.(next.size > 0 ? Array.from(next)[0] : null);
+      setValue([...keys]);
       return;
     }
-
-    const key = next.size > 0 ? Array.from(next)[0] : null;
-    setSelectedKey(key);
+    let key: Key | null = null;
+    for (const item of keys) {
+      key = item;
+      break;
+    }
+    setValue(key);
   };
+
+  const initialDisplay = untrack(displayValue);
+  const stateDefaultValue = (resolvedDefault ?? initialDisplay) as SelectValueType<M>;
+  const defaultSelectedKey =
+    untrack(() => getProps().defaultSelectedKey) ??
+    (untrack(() => getProps().selectionMode) === "single" ? (initialDisplay as Key) : null);
+
+  const shouldCloseOnSelect = () => getProps().shouldCloseOnSelect ?? selectionMode() === "single";
 
   const validation = createFormValidationState({
     get value() {
-      return selectionMode() === "multiple" ? selectedKeys() : selectedKey();
+      const display = displayValue();
+      if (Array.isArray(display) && display.length === 0) return null;
+      return display;
     },
     get isInvalid() {
       return getProps().isInvalid;
@@ -237,7 +340,7 @@ export function createSelectState<T = unknown>(
       return getProps().validationState;
     },
     get validate() {
-      return getProps().validate;
+      return getProps().validate as ValidationFunction<unknown> | undefined;
     },
     get name() {
       return getProps().name;
@@ -247,7 +350,6 @@ export function createSelectState<T = unknown>(
     },
   });
 
-  // Create list state with select selection mode
   const listState = createListState<T>({
     get items() {
       return getProps().items;
@@ -274,39 +376,32 @@ export function createSelectState<T = unknown>(
     },
     allowDuplicateSelectionEvents: true,
     get selectedKeys() {
-      const keys = selectedKeys();
-      if (keys === "all") return "all";
-      return keys;
+      return convertValue(displayValue()) ?? [];
     },
     onSelectionChange(keys) {
-      if (selectionMode() === "multiple") {
-        if (!isControlledMultiple()) {
-          setInternalSelectedKeys(keys);
-        }
-        getProps().onSelectionChangeKeys?.(keys);
-        if (keys !== "all") {
-          getProps().onSelectionChange?.(keys.size > 0 ? Array.from(keys)[0] : null);
-        }
-        validation.commitValidation();
-        return;
-      }
-
-      // Get the first (and only) selected key
       if (keys === "all") return;
-      const key = keys.size > 0 ? Array.from(keys)[0] : null;
-      setSelectedKey(key);
-      overlayState.close();
+      if (selectionMode() === "single") {
+        setValue(keys.values().next().value ?? null);
+      } else {
+        setValue([...keys]);
+      }
+      if (shouldCloseOnSelect()) {
+        overlayState.close();
+      }
       validation.commitValidation();
     },
   });
 
+  const [focusStrategy, setFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
   // The select's own focus state (the trigger), separate from the collection's
   // focus-within state on the selection manager — upstream useSelectState keeps
   // these apart with a dedicated useState. Sharing the manager's signal makes
   // trigger focus re-arm the item roving-focus effect and steal focus back.
   const [isFocused, setFocused] = createInternalSignal(false);
 
-  // Get the selected item from the collection (memoized)
+  const selectedKey: Accessor<Key | null> = () => listState.selectionManager.firstSelectedKey;
+  const selectedKeys: Accessor<Set<Key>> = () => new Set(convertValue(displayValue()) ?? []);
+
   const selectedItem: Accessor<CollectionNode<T> | null> = createMemo(() => {
     const key = selectedKey();
     if (key == null) return null;
@@ -314,18 +409,16 @@ export function createSelectState<T = unknown>(
   });
 
   const selectedItems: Accessor<CollectionNode<T>[]> = createMemo(() => {
-    const keys = selectedKeys();
-    if (keys === "all") {
-      return Array.from(listState.collection());
-    }
-
     const items: CollectionNode<T>[] = [];
-    for (const key of keys) {
+    for (const key of listState.selectionManager.selectedKeys) {
       const item = listState.collection().getItem(key);
       if (item) items.push(item);
     }
     return items;
   });
+
+  const canOpenMenu = () =>
+    listState.collection().size !== 0 || getProps().allowsEmptyCollection === true;
 
   return {
     realtimeValidation: validation.realtimeValidation,
@@ -333,29 +426,36 @@ export function createSelectState<T = unknown>(
     updateValidation: validation.updateValidation,
     resetValidation: validation.resetValidation,
     commitValidation: validation.commitValidation,
-    // Collection
     collection: listState.collection,
     selectionManager: listState.selectionManager,
-
-    // Focus management
     focusedKey: listState.focusedKey,
     setFocusedKey: listState.setFocusedKey,
     isFocused,
     setFocused,
-
-    // Overlay state
     isOpen: overlayState.isOpen,
-    open: overlayState.open,
+    open(strategy: FocusStrategy | null = null) {
+      if (!canOpenMenu()) return;
+      setFocusStrategy(strategy);
+      overlayState.open();
+    },
     close: overlayState.close,
-    toggle: overlayState.toggle,
-
-    // Select-specific
+    toggle(strategy: FocusStrategy | null = null) {
+      if (!canOpenMenu()) return;
+      setFocusStrategy(strategy);
+      overlayState.toggle();
+    },
+    focusStrategy,
     selectionMode,
+    shouldCloseOnSelect,
+    value: () => displayValue() as SelectValueType<M>,
+    defaultValue: stateDefaultValue,
+    setValue,
     selectedKey,
+    defaultSelectedKey,
+    setSelectedKey: setValue,
     selectedKeys,
     selectedItem,
     selectedItems,
-    setSelectedKey,
     setSelectedKeys,
     isKeyDisabled: (key: Key) => listState.isDisabled(key),
     get isDisabled() {

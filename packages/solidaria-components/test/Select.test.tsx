@@ -53,13 +53,13 @@ const testItems: TestItem[] = [
 ];
 
 // Helper component for testing Select
-function TestSelect(props: {
-  selectProps?: Partial<Parameters<typeof Select<TestItem>>[0]>;
+function TestSelect<M extends "single" | "multiple" = "single">(props: {
+  selectProps?: Partial<Parameters<typeof Select<TestItem, M>>[0]>;
   items?: TestItem[];
 }) {
   const items = props.items || testItems;
   return (
-    <Select<TestItem>
+    <Select<TestItem, M>
       aria-label="Test Select"
       items={items}
       getKey={(item) => item.id}
@@ -649,14 +649,14 @@ describe("Select", () => {
     });
 
     it("should support multiple selection", async () => {
-      const onSelectionChangeKeys = vi.fn();
+      const onChange = vi.fn();
       render(() => (
-        <TestSelect
+        <TestSelect<"multiple">
           selectProps={{
             selectionMode: "multiple",
             defaultOpen: true,
-            defaultSelectedKeys: ["cat"],
-            onSelectionChangeKeys,
+            defaultValue: ["cat"],
+            onChange,
           }}
         />
       ));
@@ -667,18 +667,18 @@ describe("Select", () => {
 
       expect(screen.getByRole("button")).toHaveTextContent("Cat and Dog");
       expect(screen.getByRole("listbox")).toBeInTheDocument();
-      expect(onSelectionChangeKeys).toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalled();
     });
 
     it("should support deselection in multiple selection mode", async () => {
-      const onSelectionChangeKeys = vi.fn();
+      const onChange = vi.fn();
       render(() => (
-        <TestSelect
+        <TestSelect<"multiple">
           selectProps={{
             selectionMode: "multiple",
             defaultOpen: true,
-            defaultSelectedKeys: ["cat", "dog"],
-            onSelectionChangeKeys,
+            defaultValue: ["cat", "dog"],
+            onChange,
           }}
         />
       ));
@@ -695,14 +695,14 @@ describe("Select", () => {
       await user.click(dogOption);
       expect(catOption).toHaveAttribute("aria-selected", "false");
       expect(dogOption).toHaveAttribute("aria-selected", "false");
-      expect(onSelectionChangeKeys).toHaveBeenLastCalledWith(new Set());
+      expect(onChange).toHaveBeenLastCalledWith([]);
     });
 
     it("should support multiple selection form integration with many items", async () => {
       const manyItems = Array.from({ length: 320 }, (_, id) => ({ id, name: `item${id}` }));
       render(() => (
         <form data-testid="form" onSubmit={(event) => event.preventDefault()}>
-          <Select
+          <Select<{ id: number; name: string }, "multiple">
             data-testid="select"
             aria-label="Select"
             name="select"
@@ -753,10 +753,10 @@ describe("Select", () => {
 
     it("should support controlled multi-selection", async () => {
       render(() => (
-        <TestSelect
+        <TestSelect<"multiple">
           selectProps={{
             selectionMode: "multiple",
-            selectedKeys: ["dog", "kangaroo"],
+            value: ["dog", "kangaroo"],
             defaultOpen: true,
           }}
         />
@@ -778,10 +778,10 @@ describe("Select", () => {
       ];
 
       render(() => (
-        <Select
+        <Select<{ id: number; name: string }, "multiple">
           aria-label="Favorite Animal"
           selectionMode="multiple"
-          defaultSelectedKeys={[1]}
+          defaultValue={[1]}
           items={items}
           getKey={(item) => item.id}
           getTextValue={(item) => item.name}
@@ -1438,10 +1438,10 @@ describe("Select", () => {
     it("formats a multi-select value with the provider locale conjunction", () => {
       render(() => (
         <I18nProvider locale="es-ES">
-          <Select
+          <Select<TestItem, "multiple">
             aria-label="Test Select"
             selectionMode="multiple"
-            defaultSelectedKeys={["cat", "dog"]}
+            defaultValue={["cat", "dog"]}
             items={testItems}
             getKey={(item) => item.id}
             getTextValue={(item) => item.name}

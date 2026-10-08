@@ -54,6 +54,9 @@ import {
   createSelectState,
   type ListState,
   type SelectState,
+  type SelectSelectionMode,
+  type SelectValueType,
+  type SelectChangeValueType,
   type Key,
   type CollectionNode,
   DEFAULT_VALIDATION_RESULT,
@@ -169,7 +172,7 @@ export interface SelectRenderProps {
   isSelected?: boolean;
 }
 
-export interface SelectProps<T>
+export interface SelectProps<T, M extends SelectSelectionMode = "single">
   extends Omit<AriaSelectProps, "children" | "description" | "errorMessage">, SlotProps {
   /** The items to render in the select. */
   items?: T[];
@@ -182,19 +185,30 @@ export interface SelectProps<T>
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
   /** Selection mode. */
-  selectionMode?: "single" | "multiple";
-  /** The currently selected key (controlled). */
+  selectionMode?: M;
+  /**
+   * The currently selected key (controlled).
+   * @deprecated Use `value`.
+   */
   selectedKey?: Key | null;
-  /** The default selected key (uncontrolled). */
+  /**
+   * The default selected key (uncontrolled).
+   * @deprecated Use `defaultValue`.
+   */
   defaultSelectedKey?: Key | null;
-  /** Currently selected keys (controlled, for multiple selection). */
-  selectedKeys?: "all" | Iterable<Key>;
-  /** Default selected keys (uncontrolled, for multiple selection). */
-  defaultSelectedKeys?: "all" | Iterable<Key>;
-  /** Handler called when selection changes. */
+  /** The current value (controlled). */
+  value?: SelectValueType<M>;
+  /** The default value (uncontrolled). */
+  defaultValue?: SelectValueType<M>;
+  /**
+   * Handler called when the selected key changes.
+   * @deprecated Use `onChange`.
+   */
   onSelectionChange?: (key: Key | null) => void;
-  /** Handler called when selected keys change. */
-  onSelectionChangeKeys?: (keys: "all" | Set<Key>) => void;
+  /** Handler called when the value changes. */
+  onChange?: (value: SelectChangeValueType<M>) => void;
+  /** Whether the menu closes after a selection. */
+  shouldCloseOnSelect?: boolean;
   /** Whether the select is open (controlled). */
   isOpen?: boolean;
   /** Whether the select is open by default (uncontrolled). */
@@ -331,7 +345,7 @@ export interface SelectOptionProps<T> extends Omit<AriaOptionProps, "children" |
 }
 
 interface SelectContextValue<T> {
-  state: SelectState<T>;
+  state: SelectState<T, SelectSelectionMode>;
   rootRef: Accessor<HTMLElement | null>;
   triggerRef: Accessor<HTMLElement | null>;
   setTriggerRef: (el: HTMLElement | null) => void;
@@ -349,12 +363,14 @@ interface SelectContextValue<T> {
   placeholder?: string;
   items?: T[];
   renderItem?: (item: T) => JSX.Element;
-  slots?: Record<string, Partial<SelectProps<T>>>;
+  slots?: Record<string, Partial<SelectProps<T, SelectSelectionMode>>>;
   autoFocus?: boolean;
 }
 
 export const SelectContext = createContext<SelectContextValue<unknown> | null>(null);
-export const SelectStateContext = createContext<SelectState<unknown> | null>(null);
+export const SelectStateContext = createContext<SelectState<unknown, SelectSelectionMode> | null>(
+  null,
+);
 export const SelectValueContext = SelectContext;
 
 /** True when this SelectListBox is the overlay list (Picker / Popover). */
@@ -372,14 +388,16 @@ const selectRootLabelProps = new Set([
 /**
  * A select displays a collapsible list of options and allows a user to select one of them.
  */
-export function Select<T>(props: SelectProps<T>): JSX.Element {
+export function Select<T, M extends SelectSelectionMode = "single">(
+  props: SelectProps<T, M>,
+): JSX.Element {
   const parentContext = useContext(SelectContext) as SelectContextValue<T> | null;
   const contextSlotProps = parentContext?.slots?.[
     typeof props.slot === "string" ? props.slot : "default"
-  ] as Partial<SelectProps<T>> | undefined;
+  ] as Partial<SelectProps<T, M>> | undefined;
   const mergedSelectProps = (
     contextSlotProps ? mergeProps(contextSlotProps, props) : props
-  ) as SelectProps<T>;
+  ) as SelectProps<T, M>;
   const [local, stateProps, ariaProps] = splitProps(
     mergedSelectProps,
     ["class", "style", "render", "ref", "slot", "children"],
@@ -392,10 +410,11 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       "selectionMode",
       "selectedKey",
       "defaultSelectedKey",
-      "selectedKeys",
-      "defaultSelectedKeys",
+      "value",
+      "defaultValue",
       "onSelectionChange",
-      "onSelectionChangeKeys",
+      "onChange",
+      "shouldCloseOnSelect",
       "isOpen",
       "defaultOpen",
       "onOpenChange",
@@ -418,7 +437,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   // array when it is passed; the getter below only reads this signal then.
   const { items: staticItems, context: staticCollectionContext } = createStaticCollectionState();
 
-  const state = createSelectState<T>({
+  const state = createSelectState<T, M>({
     get items() {
       const items = stateProps.items;
       return items == null ? (staticItems() as T[]) : items;
@@ -451,17 +470,23 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     get defaultSelectedKey() {
       return stateProps.defaultSelectedKey;
     },
-    get selectedKeys() {
-      return stateProps.selectedKeys;
+    get value() {
+      return stateProps.value;
     },
-    get defaultSelectedKeys() {
-      return stateProps.defaultSelectedKeys;
+    get defaultValue() {
+      return stateProps.defaultValue;
     },
     get onSelectionChange() {
       return stateProps.onSelectionChange;
     },
-    get onSelectionChangeKeys() {
-      return stateProps.onSelectionChangeKeys;
+    get onChange() {
+      return stateProps.onChange;
+    },
+    get shouldCloseOnSelect() {
+      return stateProps.shouldCloseOnSelect;
+    },
+    get allowsEmptyCollection() {
+      return ariaProps.allowsEmptyCollection;
     },
     get isOpen() {
       return stateProps.isOpen;
@@ -519,7 +544,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   // RAC `useSelect` feeds `state.displayValidation.isInvalid` into `useField`;
   // pass the composed invalid flag so `createSlotId` re-probes when native
   // validation mounts the error slot.
-  const selectHook = createSelect<T>(
+  const selectHook = createSelect<T, M>(
     () => ({
       ...selectAriaProps(),
       isInvalid: isInvalid(),
@@ -542,10 +567,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     isDisabled: resolveDisabled(),
     isRequired: !!ariaProps.isRequired,
     isInvalid: isInvalid(),
-    isSelected:
-      state.selectionMode() === "multiple"
-        ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
-        : state.selectedKey() != null,
+    isSelected: (() => {
+      const value = state.value();
+      return Array.isArray(value) ? value.length > 0 : value != null;
+    })(),
   }));
   const childRenderValues: SelectRenderProps = {
     get isOpen() {
@@ -619,10 +644,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const focusTrigger = () => {
     triggerRef?.focus();
   };
-  const hasSelection = () =>
-    state.selectionMode() === "multiple"
-      ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
-      : state.selectedKey() != null;
+  const hasSelection = () => {
+    const value = state.value();
+    return Array.isArray(value) ? value.length > 0 : value != null;
+  };
   const hasNativeValidation = () => (ariaProps.validationBehavior ?? "native") === "native";
   const getSelectValidation = (select: HTMLSelectElement | HTMLInputElement): ValidationResult => {
     if (ariaProps.isRequired && !hasSelection()) {
@@ -656,7 +681,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     containerProps,
     selectProps: hiddenSelectProps,
     inputProps: hiddenInputProps,
-  } = createHiddenSelect({
+  } = createHiddenSelect<T, M>({
     state,
     name: stateProps.name,
     form: ariaProps.form,
@@ -689,26 +714,14 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const hiddenSelectItemNodes = () =>
     Array.from(state.collection()).filter((item) => item.type === "item");
   const nativeSelectValue = (): string | string[] => {
-    if (state.selectionMode() === "multiple") {
-      const selectedKeys = state.selectedKeys();
-      if (selectedKeys === "all") {
-        return hiddenSelectItemNodes().map((item) => String(item.key));
-      }
-      return Array.from(selectedKeys as Set<Key>).map(String);
-    }
-    const key = state.selectedKey();
-    return key != null ? String(key) : "";
+    const value = state.value();
+    if (Array.isArray(value)) return value.map(String);
+    return value != null ? String(value) : "";
   };
   const hiddenSelectFallbackValues = (): Array<Key | null> => {
-    if (state.selectionMode() === "multiple") {
-      const keys = state.selectedKeys();
-      if (keys === "all") {
-        return hiddenSelectItemNodes().map((item) => item.key);
-      }
-      const listed = Array.from(keys as Set<Key>);
-      return listed.length === 0 ? [null] : listed;
-    }
-    return [state.selectedKey()];
+    const value = state.value();
+    if (Array.isArray(value)) return value.length === 0 ? [null] : [...value];
+    return [value];
   };
   createTrackedEffect(() => {
     if (hasSelection() && selectValidation().isInvalid) {
@@ -748,20 +761,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           when={state.collection().size <= 300}
           fallback={
             <Show when={stateProps.name}>
-              <For
-                each={(() => {
-                  // RAC HiddenSelect.tsx:205-208: always render at least one
-                  // hidden input so a required empty field still participates
-                  // in native form validation / FormData.
-                  const keys =
-                    state.selectionMode() === "multiple"
-                      ? state.selectedKeys() === "all"
-                        ? Array.from(state.collection()).map((item) => item.key)
-                        : Array.from(state.selectedKeys() as Set<Key>)
-                      : [state.selectedKey()];
-                  return keys.length === 0 ? [null] : keys;
-                })()}
-              >
+              <For each={hiddenSelectFallbackValues()}>
                 {(key) => (
                   <input
                     {...hiddenInputProps}
@@ -860,7 +860,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       <SelectContext
         value={
           {
-            state,
+            state: state as SelectState<unknown, SelectSelectionMode>,
             rootRef: () => rootRef ?? null,
             triggerRef: () => triggerRef,
             setTriggerRef,
@@ -893,7 +893,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           } as SelectContextValue<unknown>
         }
       >
-        <SelectStateContext value={state}>
+        <SelectStateContext value={state as SelectState<unknown, SelectSelectionMode>}>
           <FieldErrorContext value={fieldErrorContext}>
             <RootContent />
           </FieldErrorContext>
@@ -1038,7 +1038,7 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
     throw new Error("SelectValue must be used within a Select");
   }
   const { valueProps, placeholder: contextPlaceholder } = context;
-  const state = context.state as SelectState<T>;
+  const state = context.state as SelectState<T, SelectSelectionMode>;
   const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
   const listFormatter = createListFormatter({ style: "long", type: "conjunction" });
 
@@ -1050,12 +1050,9 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
     const selectedItem =
       state.selectedKey() == null ? null : collection.getItem(state.selectedKey() as Key);
     const selectedKeys = state.selectedKeys();
-    const selectedItems =
-      selectedKeys === "all"
-        ? Array.from(collection)
-        : Array.from(selectedKeys as Set<Key>)
-            .map((key) => collection.getItem(key))
-            .filter((item): item is CollectionNode<T> => item != null);
+    const selectedItems = Array.from(selectedKeys)
+      .map((key) => collection.getItem(key))
+      .filter((item): item is CollectionNode<T> => item != null);
     const selectedText =
       state.selectionMode() === "multiple"
         ? selectedItems.length > 0
@@ -1125,7 +1122,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   // without StaticSelectProbeContext or ListBoxStateContext.
   const usesStaticChildren = context.items == null;
   const { menuProps, rootRef, state: selectState, isOpen } = context;
-  const state = selectState as SelectState<T>;
+  const state = selectState as SelectState<T, SelectSelectionMode>;
 
   createTrackedEffect(() => {
     if (!isOpen()) {
@@ -1436,7 +1433,7 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
   if (!context) {
     throw new Error("SelectOption must be used within a Select");
   }
-  const state = context as SelectState<T>;
+  const state = context as SelectState<T, SelectSelectionMode>;
   const selectContext = useContext(SelectContext) as SelectContextValue<T> | null;
   const [ref, setRefSignal] = createSignal<HTMLDivElement | null>(null);
   const setRef = (el: HTMLDivElement | null) => {
@@ -1481,32 +1478,28 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
       ...createSelectListStateAdapter(state),
       select: (key: Key) => {
         if (state.selectionMode() === "multiple") {
-          const keys = state.selectedKeys();
-          if (keys === "all") return;
-          state.setSelectedKeys(new Set([...keys, key]));
-          return;
+          const next = new Set(state.selectedKeys());
+          next.add(key);
+          state.setSelectedKeys(next);
+        } else {
+          state.setSelectedKey(key);
         }
-        state.setSelectedKey(key);
-        state.close();
+        if (state.shouldCloseOnSelect()) state.close();
       },
       toggleSelection: (key: Key) => {
         if (state.selectionMode() === "multiple") {
-          const keys = state.selectedKeys();
-          if (keys === "all") return;
-          const next = new Set(keys);
+          const next = new Set(state.selectedKeys());
           if (next.has(key)) next.delete(key);
           else next.add(key);
           state.setSelectedKeys(next);
-          return;
+        } else {
+          state.setSelectedKey(key);
         }
-        state.setSelectedKey(key);
-        state.close();
+        if (state.shouldCloseOnSelect()) state.close();
       },
       replaceSelection: (key: Key) => {
         state.setSelectedKey(key);
-        if (state.selectionMode() !== "multiple") {
-          state.close();
-        }
+        if (state.shouldCloseOnSelect()) state.close();
       },
     },
     () => ref(),
@@ -1595,16 +1588,14 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
       return;
     }
     if (state.selectionMode() === "multiple") {
-      const keys = state.selectedKeys();
-      if (keys === "all") return;
-      const next = new Set(keys);
+      const next = new Set(state.selectedKeys());
       if (next.has(local.id)) next.delete(local.id);
       else next.add(local.id);
       state.setSelectedKeys(next);
-      return;
+    } else {
+      state.setSelectedKey(local.id);
     }
-    state.setSelectedKey(local.id);
-    state.close();
+    if (state.shouldCloseOnSelect()) state.close();
   };
 
   return (
@@ -1635,11 +1626,8 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
   );
 }
 
-function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {
-  const selectedKeys = createMemo(() => {
-    const keys = state.selectedKeys();
-    return keys === "all" ? new Set(Array.from(state.collection()).map((item) => item.key)) : keys;
-  });
+function createSelectListStateAdapter<T>(state: SelectState<T, SelectSelectionMode>): ListState<T> {
+  const selectedKeys = createMemo(() => state.selectedKeys());
 
   const disabledKeys = createMemo(() => {
     const keys = new Set<Key>();
@@ -1667,7 +1655,7 @@ function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {
     disabledKeys,
     disabledBehavior: () => "all",
     isEmpty: () => selectedKeys().size === 0,
-    isSelectAll: () => state.selectedKeys() === "all",
+    isSelectAll: () => false,
     isSelected: (key) => selectedKeys().has(key),
     isDisabled: state.isKeyDisabled,
     setSelectionBehavior: (behavior) => state.selectionManager.setSelectionBehavior(behavior),
