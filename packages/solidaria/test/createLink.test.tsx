@@ -2,11 +2,13 @@
  * @vitest-environment jsdom
  */
 import { createSignal, flush } from "solid-js";
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
+import { cleanup, render, screen, fireEvent } from "@solidjs/testing-library";
 import { Dynamic } from "@solidjs/web";
 import { createLink } from "../src/link";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+
+afterEach(cleanup);
 
 // Test component that uses createLink
 function TestLink(props: {

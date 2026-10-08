@@ -149,11 +149,30 @@ export function createFocusable(
     onKeyUp: props.onKeyUp,
   });
 
-  // Merge focus and keyboard interactions
-  const interactions = mergeProps(focusProps, keyboardProps);
+  // mergeProps reads event handlers eagerly. Keep a stable callable for each
+  // existing event key, resolving both disability and the handler at dispatch.
+  // Ordinary getters preserve the existing merge fallback and special-key policy.
+  const liveProps = (source: Record<string, unknown>) => {
+    const result: Record<string, unknown> = {};
+    for (const key in source) {
+      if (key.startsWith("on") && key[2] === key[2]?.toUpperCase()) {
+        result[key] = function (this: unknown, ...args: unknown[]) {
+          if (isDisabledValue(props.isDisabled)) return;
+          const handler = source[key];
+          if (typeof handler === "function") return handler.apply(this, args);
+        };
+      } else {
+        Object.defineProperty(result, key, {
+          enumerable: true,
+          get: () => (isDisabledValue(props.isDisabled) ? undefined : source[key]),
+        });
+      }
+    }
+    return result;
+  };
 
-  // Get context props (from FocusableProvider if present)
-  const interactionProps = isDisabledValue(props.isDisabled) ? {} : context.props;
+  const interactions = mergeProps(liveProps(focusProps), liveProps(keyboardProps));
+  const interactionProps = liveProps(context.props);
 
   // Handle autoFocus
   onSettled(() => {

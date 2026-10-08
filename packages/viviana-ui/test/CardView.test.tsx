@@ -1,6 +1,7 @@
-import { createSignal } from "solid-js";
-import { describe, expect, it, vi } from "vite-plus/test";
-import { render, screen, within } from "@solidjs/testing-library";
+import { FocusableContext } from "@proyecto-viviana/solidaria/interactions";
+import { createSignal, flush } from "solid-js";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { cleanup, render, screen, within } from "@solidjs/testing-library";
 import {
   Card,
   CardPreview,
@@ -13,6 +14,8 @@ import {
 import * as cardSubpath from "../src/Card";
 import * as cardViewSubpath from "../src/CardView";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+
+afterEach(cleanup);
 
 interface ProjectCard {
   id: string;
@@ -85,6 +88,223 @@ function renderProjects(layout?: "grid" | "waterfall") {
 }
 
 describe("CardView (viviana-ui)", () => {
+  it.each([false, true])(
+    "forwards standalone caller tabindex to the final root (link=%s)",
+    async (link) => {
+      const user = setupUser();
+      const [tabindex, setTabindex] = createSignal<number | undefined>(link ? -1 : 0);
+      const rootRef = vi.fn();
+      const childRef = vi.fn();
+      render(() => (
+        <>
+          <button data-testid="before">Before</button>
+          <Card
+            id="caller-card"
+            href={link ? "#target" : undefined}
+            tabindex={tabindex()}
+            ref={rootRef}
+            data-testid="caller-card"
+          >
+            <span ref={childRef}>Stable child</span>
+            {!link && <input aria-label="Draft" />}
+          </Card>
+          <button data-testid="after">After</button>
+        </>
+      ));
+      const root = screen.getByTestId("caller-card");
+      const child = screen.getByText("Stable child");
+      expect(root.tagName).toBe(link ? "A" : "DIV");
+      expect(root).toHaveAttribute("tabindex", link ? "-1" : "0");
+      root.focus();
+      expect(root).toHaveFocus();
+      expect(root).not.toHaveAttribute("aria-selected");
+      expect(root).not.toHaveAttribute("data-selected");
+      const input = link ? undefined : screen.getByRole("textbox", { name: "Draft" });
+      if (input) {
+        await user.type(input, "retained");
+      }
+      for (const value of [0, -1, undefined, 0]) {
+        setTabindex(value);
+        flush();
+        expect(screen.getByTestId("caller-card")).toBe(root);
+        expect(screen.getByText("Stable child")).toBe(child);
+        if (value === undefined && !link) expect(root).not.toHaveAttribute("tabindex");
+        else if (value === undefined) expect(root.tabIndex).toBe(0);
+        else expect(root).toHaveAttribute("tabindex", String(value));
+        if (input) {
+          expect(screen.getByRole("textbox", { name: "Draft" })).toBe(input);
+          expect(input).toHaveValue("retained");
+          expect(input).toHaveFocus();
+        }
+      }
+      expect(rootRef).toHaveBeenCalledTimes(1);
+      expect(rootRef).toHaveBeenCalledWith(root);
+      expect(childRef).toHaveBeenCalledTimes(1);
+      // user-event models tab order here; native-browser proof is a separate lane.
+      screen.getByTestId("before").focus();
+      await user.tab();
+      expect(root).toHaveFocus();
+      for (const value of [-1, undefined]) {
+        setTabindex(value);
+        flush();
+        if (value === -1) {
+          root.focus();
+          expect(root).toHaveFocus();
+        }
+        screen.getByTestId("before").focus();
+        await user.tab();
+        expect(
+          link ? (value === undefined ? root : screen.getByTestId("after")) : input,
+        ).toHaveFocus();
+      }
+    },
+  );
+
+  it.each([false, true])(
+    "preserves caller tabindex through linked Card disability cycles (initiallyDisabled=%s)",
+    (initiallyDisabled) => {
+      const [disabled, setDisabled] = createSignal(initiallyDisabled);
+      render(() => (
+        <Card
+          id="disabled-link"
+          href="#target"
+          isDisabled={disabled()}
+          tabindex={-1}
+          data-testid="disabled-link"
+        >
+          <span>Disabled link child</span>
+        </Card>
+      ));
+      for (const value of [initiallyDisabled, true, false, true, false]) {
+        setDisabled(value);
+        flush();
+        // Link intentionally changes anchor/span roots when disability changes.
+        const root = screen.getByTestId("disabled-link");
+        if (value) {
+          expect(root).toHaveAttribute("aria-disabled", "true");
+          expect(root).not.toHaveAttribute("tabindex");
+          root.focus();
+          expect(root).not.toHaveFocus();
+        } else {
+          expect(root).not.toHaveAttribute("aria-disabled");
+          expect(root).toHaveAttribute("tabindex", "-1");
+          root.focus();
+          expect(root).toHaveFocus();
+        }
+      }
+    },
+  );
+
+  it("preserves live outer focus context precedence, ref and events", async () => {
+    const user = setupUser();
+    const [outerIndex, setOuterIndex] = createSignal<number | undefined>(0);
+    const [callerIndex, setCallerIndex] = createSignal<number | undefined>(-1);
+    const firstKey = vi.fn();
+    const nextKey = vi.fn();
+    const [keyHandler, setKeyHandler] = createSignal(firstKey);
+    const outerRef = vi.fn();
+    const cardRef = vi.fn();
+    const childRef = vi.fn();
+    const context = {
+      get tabIndex() {
+        return outerIndex();
+      },
+      get onKeyDown() {
+        return keyHandler();
+      },
+      ref: outerRef,
+    };
+    render(() => (
+      <FocusableContext value={context}>
+        <Card
+          id="context-card"
+          href="#target"
+          tabindex={callerIndex()}
+          ref={cardRef}
+          data-testid="context-card"
+        >
+          <span ref={childRef}>Context child</span>
+        </Card>
+      </FocusableContext>
+    ));
+    const root = screen.getByTestId("context-card");
+    const child = screen.getByText("Context child");
+    expect(root.tabIndex).toBe(0);
+    root.focus();
+    await user.keyboard("a");
+    expect(firstKey).toHaveBeenCalledTimes(1);
+    setKeyHandler(() => nextKey);
+    setCallerIndex(0);
+    setOuterIndex(-1);
+    flush();
+    expect(root.tabIndex).toBe(-1);
+    await user.keyboard("b");
+    expect(firstKey).toHaveBeenCalledTimes(1);
+    expect(nextKey).toHaveBeenCalledTimes(1);
+    setCallerIndex(-1);
+    setOuterIndex(undefined);
+    flush();
+    expect(root.tabIndex).toBe(-1);
+    setCallerIndex(undefined);
+    flush();
+    expect(root.tabIndex).toBe(0);
+    expect(screen.getByTestId("context-card")).toBe(root);
+    expect(screen.getByText("Context child")).toBe(child);
+    expect(root).toHaveFocus();
+    expect(outerRef).toHaveBeenCalledExactlyOnceWith(root);
+    expect(cardRef).toHaveBeenCalledExactlyOnceWith(root);
+    expect(childRef).toHaveBeenCalledExactlyOnceWith(child);
+  });
+
+  it.each([false, true])("keeps standalone cards nonselectable (link=%s)", async (link) => {
+    const user = setupUser();
+    render(() => (
+      <Card id="standalone" href={link ? "#target" : undefined} data-testid="standalone">
+        <Text slot="title">Standalone</Text>
+      </Card>
+    ));
+    const root = screen.getByTestId("standalone");
+    await user.click(root);
+    expect(root).not.toHaveAttribute("aria-selected");
+    expect(root).not.toHaveAttribute("data-selected");
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+
+  it("keeps managed roving tabindex authoritative over conflicting caller values", async () => {
+    const user = setupUser();
+    render(() => (
+      <CardView
+        aria-label="Managed cards"
+        items={projects}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.title}
+        selectionMode="single"
+        selectionStyle="highlight"
+        defaultSelectedKeys={["apollo"]}
+      >
+        {(item) => (
+          <Card id={item.id} textValue={item.title} tabindex={item.id === "apollo" ? -1 : 0}>
+            <Text slot="title">{item.title}</Text>
+          </Card>
+        )}
+      </CardView>
+    ));
+    const first = screen.getByRole("row", { name: "Apollo" });
+    const second = screen.getByRole("row", { name: "Zephyr" });
+    first.focus();
+    flush();
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("tabindex", "0");
+    expect(second).toHaveAttribute("tabindex", "-1");
+    expect(first).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{ArrowDown}");
+    expect(second).toHaveFocus();
+    expect(first).toHaveAttribute("tabindex", "-1");
+    expect(second).toHaveAttribute("tabindex", "0");
+    expect(first).toHaveAttribute("aria-selected", "false");
+    expect(second).toHaveAttribute("aria-selected", "true");
+  });
+
   it("exports the public Card and CardView subpath surfaces", () => {
     expect(cardSubpath.Card).toBe(Card);
     expect(cardSubpath.CardPreview).toBe(CardPreview);

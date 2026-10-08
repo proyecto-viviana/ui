@@ -27,6 +27,7 @@ import {
 } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import { FocusableContext } from "@proyecto-viviana/solidaria/interactions";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridListItem as HeadlessGridListItem,
@@ -965,6 +966,7 @@ function toInternalCardContext(input: {
  * A Card summarizes an object that a user can select or navigate to.
  */
 export function Card(props: CardProps): JSX.Element {
+  const outerFocusableContext = useContext(FocusableContext);
   const providerProps = useProviderProps(props);
   const [flags] = splitProps(providerProps, [
     "isQuiet",
@@ -1131,45 +1133,56 @@ export function Card(props: CardProps): JSX.Element {
   let gridSurface: JSX.Element | undefined;
   let gridBuilt = false;
 
+  // Keep the caller fallback out of disabled links; outer context retains precedence.
+  const linkFocusableContext = mergeProps(
+    {
+      get tabIndex() {
+        return local.isDisabled ? undefined : otherProps.tabindex;
+      },
+    },
+    outerFocusableContext ?? {},
+  );
   if (ElementType === "div" && !isSkeleton() && local.href) {
     return (
-      <HeadlessLink
-        {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
-        href={local.href}
-        download={local.download}
-        target={local.target}
-        rel={local.rel}
-        isDisabled={local.isDisabled}
-        ref={(element: HTMLElement) => assignRootRef(element)}
-        class={(renderProps) =>
-          cardClassName(local, {
-            ...renderProps,
-            size: size(),
-            density: density(),
-            variant: variant(),
-            isCardView: false,
-            isLink: true,
-            mesh: meshVariant(),
-            hasMesh: meshVariant() != null,
-          })
-        }
-        style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
-        data-size={size()}
-        data-density={density()}
-        data-variant={variant()}
-        data-mesh={meshVariant()}
-      >
-        {(renderProps: LinkRenderProps) => {
-          applyInteraction(renderProps);
-          if (!linkBuilt) {
-            linkBuilt = true;
-            linkSurface = mountOnce(() => (
-              <InternalCardContext value={interactionContext}>{children()}</InternalCardContext>
-            ));
+      <FocusableContext value={linkFocusableContext}>
+        <HeadlessLink
+          {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+          href={local.href}
+          download={local.download}
+          target={local.target}
+          rel={local.rel}
+          isDisabled={local.isDisabled}
+          ref={(element: HTMLElement) => assignRootRef(element)}
+          class={(renderProps) =>
+            cardClassName(local, {
+              ...renderProps,
+              size: size(),
+              density: density(),
+              variant: variant(),
+              isCardView: false,
+              isLink: true,
+              mesh: meshVariant(),
+              hasMesh: meshVariant() != null,
+            })
           }
-          return linkSurface;
-        }}
-      </HeadlessLink>
+          style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
+          data-size={size()}
+          data-density={density()}
+          data-variant={variant()}
+          data-mesh={meshVariant()}
+        >
+          {(renderProps: LinkRenderProps) => {
+            applyInteraction(renderProps);
+            if (!linkBuilt) {
+              linkBuilt = true;
+              linkSurface = mountOnce(() => (
+                <InternalCardContext value={interactionContext}>{children()}</InternalCardContext>
+              ));
+            }
+            return linkSurface;
+          }}
+        </HeadlessLink>
+      </FocusableContext>
     );
   }
 
@@ -1177,6 +1190,7 @@ export function Card(props: CardProps): JSX.Element {
     return (
       <div
         {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+        tabindex={otherProps.tabindex}
         id={local.id != null ? String(local.id) : undefined}
         ref={(element) => assignRootRef(element)}
         class={cardClassName(local, {

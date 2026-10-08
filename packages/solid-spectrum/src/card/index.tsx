@@ -19,6 +19,7 @@
 import { Show, createContext, createSignal, getOwner, runWithOwner, useContext } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { JSX } from "@solidjs/web";
+import { FocusableContext } from "@proyecto-viviana/solidaria/interactions";
 import { mergeProps } from "@proyecto-viviana/solidaria/utils";
 import {
   GridListItem as HeadlessGridListItem,
@@ -736,6 +737,7 @@ function toInternalCardContext(input: {
  * A Card summarizes an object that a user can select or navigate to.
  */
 export function Card(props: CardProps): JSX.Element {
+  const outerFocusableContext = useContext(FocusableContext);
   const providerProps = useProviderProps(props);
   const [flags] = splitProps(providerProps, [
     "isQuiet",
@@ -861,45 +863,57 @@ export function Card(props: CardProps): JSX.Element {
   let gridSurface: JSX.Element | undefined;
   let gridBuilt = false;
 
+  // Honor Card's declared Solid tabindex while retaining managed focus precedence.
+  const linkFocusableContext = mergeProps(
+    {
+      get tabIndex() {
+        return otherProps.tabindex;
+      },
+    },
+    outerFocusableContext ?? {},
+  );
   const linkCard = () => (
-    <HeadlessLink
-      {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
-      href={local.href}
-      download={local.download}
-      target={local.target}
-      rel={local.rel}
-      ref={(element: HTMLElement) => assignRootRef(element)}
-      class={(renderProps) =>
-        cardClassName(local, {
-          ...renderProps,
-          size: size(),
-          density: density(),
-          variant: variant(),
-          isCardView: false,
-          isLink: true,
-        })
-      }
-      style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
-      data-size={size()}
-      data-density={density()}
-      data-variant={variant()}
-    >
-      {(renderProps: LinkRenderProps) => {
-        applyInteraction(renderProps);
-        if (!linkBuilt) {
-          linkBuilt = true;
-          linkSurface = mountOnce(() => (
-            <InternalCardContext value={interactionContext}>{children()}</InternalCardContext>
-          ));
+    <FocusableContext value={linkFocusableContext}>
+      <HeadlessLink
+        {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+        href={local.href}
+        download={local.download}
+        target={local.target}
+        rel={local.rel}
+        ref={(element: HTMLElement) => assignRootRef(element)}
+        class={(renderProps) =>
+          cardClassName(local, {
+            ...renderProps,
+            size: size(),
+            density: density(),
+            variant: variant(),
+            isCardView: false,
+            isLink: true,
+          })
         }
-        return linkSurface;
-      }}
-    </HeadlessLink>
+        style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
+        data-size={size()}
+        data-density={density()}
+        data-variant={variant()}
+      >
+        {(renderProps: LinkRenderProps) => {
+          applyInteraction(renderProps);
+          if (!linkBuilt) {
+            linkBuilt = true;
+            linkSurface = mountOnce(() => (
+              <InternalCardContext value={interactionContext}>{children()}</InternalCardContext>
+            ));
+          }
+          return linkSurface;
+        }}
+      </HeadlessLink>
+    </FocusableContext>
   );
 
   const staticCard = () => (
     <div
       {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+      tabindex={otherProps.tabindex}
       id={local.id != null ? String(local.id) : undefined}
       ref={(element) => assignRootRef(element)}
       class={cardClassName(local, {
