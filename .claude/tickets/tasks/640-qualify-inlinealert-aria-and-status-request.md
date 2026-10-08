@@ -18,8 +18,10 @@ history:
 ## Scope
 
 UI owns D25 classification and regression proof in both styled InlineAlerts.
-Pinned S2 fixes role to alert; local twins match. Local filtering appears to
-forward aria-label/aria-live already. Prove this before attributing a defect.
+Pinned S2 fixes role to alert and uses default DOM filtering, which excludes
+caller labeling and aria-live; local twins match this runtime contract.
+Their broad JSX declaration accepts these props syntactically but does not
+make them effective. Prove and record this distinction before any extension.
 Name exact paths before dispatch. A real supported-attribute failure permits
 separately admitted parity repair. No role override, Status export, dependency
 or new styling product is authorized.
@@ -46,4 +48,8 @@ Request: `visualmode/visualmode/.agents/ui-requests-2026-10-07/D25-inlinealert-t
 Verified #177 distinguishes the existing headless Alert and forbids minting a
 second Alert or folding it into S2 InlineAlert/AlertDialog. Do not claim existing
 Alert supplies status without proof. Future extensions need owner-steered scope.
-Planning evidence: `/tmp/ui-D25-D26-triage-2026-10-08.md`.
+The earlier `/tmp/ui-D25-D26-triage-2026-10-08.md` forwarding claim used
+the wrong helper. Corrected import-chain evidence and executable proof plan:
+`/tmp/ui-640-worker-2026-10-08.md`. Both twins import the solidaria filter,
+whose default accepts id/data without labelable attributes. No product
+repair, fixing release or status extension is claimed by this correction.

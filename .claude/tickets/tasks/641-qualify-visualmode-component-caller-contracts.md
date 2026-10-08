@@ -58,7 +58,7 @@ report published versions and installed-consumer verification.
 ## Relationship
 
 Child of #24, prioritized by #87. Producer for Visualmode #10151/#10153/#10154.
-Request: `visualmode/visualmode/.agents/ui-requests-2026-10-07/D26-button-card-dropzone-and-alertdialog-lack-props.md`.
+Request: `visualmode/visualmode/.agents/ui-requests-2026-10-07/D26-button-card-dropzone-and-alertdialog-lack-caller-props.md`.
 #635 owns Picker counts, #246 broader journeys, #636 FileTrigger, #557 native
 focus and #534 confirmed scheduler work. Preserve those independent boundaries.
 Each slice has a bounded commit/rollback scope and actual package Changeset.
