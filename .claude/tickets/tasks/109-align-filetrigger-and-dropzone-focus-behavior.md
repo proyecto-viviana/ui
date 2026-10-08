@@ -4,7 +4,7 @@ type: task
 title: "Align FileTrigger and DropZone focus behavior"
 created: 2026-08-20
 parent: 31
-status: in-progress
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-62" }
   - {
@@ -16,6 +16,11 @@ history:
       state: in-progress,
       at: 2026-09-27,
       note: "FileTrigger stops the hidden input click at the element. DropZone already calls native focus() with no preventScroll, and package tests cover that click, the zone click, and Tab onto the hidden button. No assistive-tech harness covers this pair, and scroll position was not proven in a browser, so the ticket stays in progress.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-07,
+      note: "Browser regressions prove the hidden file input click stops at the element, a zone click restores focus with native focus() and moves the scrollport, Enter on the trigger opens the picker, and the accessibility tree exposes the drop and upload buttons without the file input.",
     }
 ---
 
