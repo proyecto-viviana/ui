@@ -20,9 +20,13 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  getOwner,
+  isDisposed,
   onCleanup,
+  runWithOwner,
   useContext,
   createTrackedEffect,
+  type Owner,
 } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -73,6 +77,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { Text, TextContext } from "../text";
+import { TextField } from "../textfield";
 import { attrString, splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export type TreeSelectionStyle = "checkbox" | "highlight";
@@ -119,6 +124,11 @@ export interface TreeProps<T extends object> extends Omit<
   label?: JSX.Element;
   /** Legacy description helper. */
   description?: JSX.Element;
+  /**
+   * Commits an in-place label edit. Passing it enables F2 or a double press
+   * on the label. Enter commits, Escape cancels, and blur commits.
+   */
+  onRename?: (key: Key, name: string) => void;
 }
 
 export interface TreeItemProps<T extends object> extends Omit<
@@ -213,15 +223,46 @@ interface StaticCollectionContextValue {
   unregisterItem(id: Key): void;
 }
 
+interface TreeRenameFieldSession {
+  commit: (name: string) => void;
+  cancel: () => void;
+}
+
+interface TreeRenameController {
+  enabled: () => boolean;
+  editingKey: () => Key | null;
+  initialName: (key: Key) => string;
+  begin: (key: Key, name: string) => void;
+  commit: (key: Key, name: string) => void;
+  cancel: (key: Key) => void;
+  restoreRowFocus: (key: Key) => void;
+  register: (element: HTMLElement, session: TreeRenameFieldSession) => void;
+  unregister: (element: HTMLElement) => void;
+}
+
 interface TreeViewContextValue {
   selectionStyle: TreeSelectionStyle;
   density: "regular" | "compact";
+  rename: TreeRenameController;
 }
+
+const idleTreeRename: TreeRenameController = {
+  enabled: () => false,
+  editingKey: () => null,
+  initialName: () => "",
+  begin() {},
+  commit() {},
+  cancel() {},
+  restoreRowFocus() {},
+  register() {},
+  unregister() {},
+};
 
 export const TreeViewContext = createContext<SpectrumContextValue<TreeProps<object>>>(null);
 const InternalTreeViewContext = createContext<TreeViewContextValue>({
   selectionStyle: "checkbox",
   density: "regular",
+  rename: idleTreeRename,
 });
 const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
 const StaticTreeParentContext = createContext<Key | null>(null);
@@ -636,6 +677,11 @@ const treeSlotLayout = css(`
   [slot="description"], [data-slot="description"], [data-rsp-slot="description"] {
     grid-area: description;
   }
+  [data-renaming] [slot="label"],
+  [data-renaming] [data-slot="label"],
+  [data-renaming] [data-rsp-slot="label"] {
+    display: none;
+  }
 `);
 
 const treeLoadMore = style({
@@ -645,6 +691,202 @@ const treeLoadMore = style({
   justifyContent: "center",
   color: "neutral-subdued",
 });
+
+const renameFieldSessions = new WeakMap<HTMLElement, TreeRenameFieldSession>();
+let renameKeyListenerCount = 0;
+
+function renameSessionFromEvent(
+  event: Event,
+): { field: HTMLElement; session: TreeRenameFieldSession } | null {
+  const target = event.target;
+  if (!(target instanceof Node)) return null;
+  let element: Element | null = target instanceof Element ? target : target.parentElement;
+  while (element) {
+    if (element instanceof HTMLElement) {
+      const session = renameFieldSessions.get(element);
+      if (session) return { field: element, session };
+    }
+    element = element.parentElement;
+  }
+  return null;
+}
+
+// Document capture is ahead of the row arrow walk and the tree typeahead.
+// Stopping here keeps the key in the input and leaves the browser default
+// (caret movement, inserted text) intact.
+function onDocumentRenameKeyDown(event: KeyboardEvent) {
+  const match = renameSessionFromEvent(event);
+  if (!match) return;
+  if (event.isComposing || event.keyCode === 229) {
+    event.stopImmediatePropagation();
+    return;
+  }
+  if (event.key === "Enter") {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const input = match.field.querySelector("input");
+    match.session.commit(input instanceof HTMLInputElement ? input.value : "");
+    return;
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    match.session.cancel();
+    return;
+  }
+  event.stopImmediatePropagation();
+}
+
+function rowIsDisabled(row: HTMLElement): boolean {
+  return row.dataset.disabled != null || row.getAttribute("aria-disabled") === "true";
+}
+
+function renameLabelText(row: HTMLElement): string {
+  const label = row.querySelector<HTMLElement>(
+    "[data-rsp-slot='label'], [slot='label'], [data-slot='label']",
+  );
+  const visible = label && !label.closest("[data-tree-rename]") ? label.textContent : null;
+  const text = visible ?? row.getAttribute("aria-label") ?? "";
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function isRenameLabelTarget(row: HTMLElement, target: EventTarget | null): boolean {
+  if (!(target instanceof Element) || !row.contains(target)) return false;
+  if (
+    target.closest(
+      "[data-tree-rename], [data-rsp-slot='expand-button'], [data-rsp-slot='selection-indicator'], [data-rsp-slot='actionmenu'], [data-rsp-slot='actions'], input, textarea, button, a",
+    )
+  ) {
+    return false;
+  }
+  const label = target.closest("[data-rsp-slot='label'], [slot='label'], [data-slot='label']");
+  return label instanceof Element && row.contains(label);
+}
+
+function hideRenameLabels(row: HTMLElement, editing: boolean) {
+  row.toggleAttribute("data-renaming", editing);
+  const labels = row.querySelectorAll<HTMLElement>(
+    "[data-rsp-slot='label'], [slot='label'], [data-slot='label']",
+  );
+  for (const label of labels) {
+    if (label.closest("[data-tree-rename]")) continue;
+    label.hidden = editing;
+  }
+}
+
+function writeUnlessDisposed(owner: Owner | null, write: () => void) {
+  if (owner && isDisposed(owner)) return;
+  runWithOwner(null, write);
+}
+
+function TreeRenameField(props: { itemKey: Key; initialName: string; class: string }): JSX.Element {
+  const { rename } = useContext(InternalTreeViewContext);
+  const [value, setValue] = createSignal(props.initialName);
+  const [field, setField] = createSignal<HTMLDivElement | undefined>(undefined, {
+    ownedWrite: true,
+  });
+  const fieldOwner = getOwner();
+  let settled = false;
+
+  const currentName = () => {
+    const input = field()?.querySelector("input");
+    return input instanceof HTMLInputElement ? input.value : value();
+  };
+
+  const commit = (name: string, restore: boolean) => {
+    if (settled) return;
+    settled = true;
+    if (fieldOwner && isDisposed(fieldOwner)) return;
+    rename.commit(props.itemKey, name);
+    if (restore) rename.restoreRowFocus(props.itemKey);
+  };
+
+  const cancel = () => {
+    if (settled) return;
+    settled = true;
+    if (fieldOwner && isDisposed(fieldOwner)) return;
+    rename.cancel(props.itemKey);
+    rename.restoreRowFocus(props.itemKey);
+  };
+
+  createEffect(
+    () => field(),
+    (element) => {
+      if (!element) return;
+      rename.register(element, {
+        commit: (name) => commit(name, true),
+        cancel,
+      });
+      return () => {
+        settled = true;
+        rename.unregister(element);
+      };
+    },
+  );
+
+  const focusInput = () => {
+    if (settled) return;
+    const element = field();
+    if (!element?.isConnected) return;
+    const input = element.querySelector("input");
+    if (!(input instanceof HTMLInputElement)) return;
+    input.focus();
+    input.select();
+  };
+
+  // Focus after the tree's row effect. A synchronous focus inside this effect
+  // lets that effect take the row and blur the field into a commit.
+  createEffect(
+    () => field(),
+    (element) => {
+      if (!element) return;
+      queueMicrotask(focusInput);
+    },
+  );
+
+  const stop = (event: Event) => {
+    event.stopPropagation();
+  };
+
+  return (
+    <div
+      ref={setField}
+      class={props.class}
+      data-tree-rename=""
+      onPointerDown={stop}
+      onMouseDown={stop}
+      onClick={stop}
+      onDblClick={stop}
+    >
+      <TextField
+        aria-label={props.initialName}
+        size="S"
+        value={value()}
+        onChange={setValue}
+        onBlur={(event) => {
+          if (settled) return;
+          const element = field();
+          if (!element?.isConnected) return;
+          const next = event.relatedTarget;
+          if (next instanceof Node && element.contains(next)) return;
+          const row = element.closest("[data-tree-view-item]");
+          const active = document.activeElement;
+          const staysOnRow =
+            (next instanceof Node && !!row?.contains(next)) ||
+            (active instanceof Node &&
+              active !== element &&
+              !element.contains(active) &&
+              !!row?.contains(active));
+          if (staysOnRow) {
+            queueMicrotask(focusInput);
+            return;
+          }
+          commit(currentName(), false);
+        }}
+      />
+    </div>
+  );
+}
 
 function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
   if (keys === "all") {
@@ -755,6 +997,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     "density",
     "hasMore",
     "onLoadMore",
+    "onRename",
   ]);
   const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
   const density = (): "regular" | "compact" =>
@@ -805,9 +1048,78 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       }
     },
   };
+  const treeOwner = getOwner();
+  const [editingKey, setEditingKey] = createSignal<Key | null>(null);
+  const initialNames = new Map<Key, string>();
+  let renameFrame: HTMLDivElement | undefined;
+  const writeEditingKey = (key: Key | null) => {
+    // Blur can commit while this tree is disposing (#623).
+    writeUnlessDisposed(treeOwner, () => setEditingKey(key));
+  };
+  const restoreRowFocus = (key: Key) => {
+    queueMicrotask(() => {
+      if (treeOwner && isDisposed(treeOwner)) return;
+      const root = renameFrame;
+      if (!root) return;
+      const row = root.querySelector<HTMLElement>(
+        `[data-tree-view-item][data-key="${CSS.escape(String(key))}"]`,
+      );
+      row?.focus();
+    });
+  };
+  const rename: TreeRenameController = {
+    enabled: () => local.onRename != null,
+    editingKey,
+    initialName(key) {
+      return initialNames.get(key) ?? "";
+    },
+    begin(key, name) {
+      if (local.onRename == null || editingKey() === key) return;
+      initialNames.set(key, name);
+      writeEditingKey(key);
+    },
+    commit(key, name) {
+      const callback = local.onRename;
+      if (editingKey() === key) {
+        writeEditingKey(null);
+        initialNames.delete(key);
+      }
+      if (treeOwner && isDisposed(treeOwner)) return;
+      callback?.(key, name);
+    },
+    cancel(key) {
+      if (editingKey() !== key) return;
+      writeEditingKey(null);
+      initialNames.delete(key);
+    },
+    restoreRowFocus,
+    register(element, session) {
+      renameFieldSessions.set(element, session);
+    },
+    unregister(element) {
+      renameFieldSessions.delete(element);
+    },
+  };
+  createEffect(
+    () => local.onRename != null,
+    (enabled) => {
+      if (!enabled) return;
+      if (renameKeyListenerCount === 0) {
+        document.addEventListener("keydown", onDocumentRenameKeyDown, true);
+      }
+      renameKeyListenerCount += 1;
+      return () => {
+        renameKeyListenerCount -= 1;
+        if (renameKeyListenerCount === 0) {
+          document.removeEventListener("keydown", onDocumentRenameKeyDown, true);
+        }
+      };
+    },
+  );
   const treeContext = createMemo<TreeViewContextValue>(() => ({
     selectionStyle: selectionStyle(),
     density: density(),
+    rename,
   }));
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -959,6 +1271,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
   return (
     <div
+      ref={renameFrame}
       class={hasChrome() ? treeViewWrapper(null, mergedStyles()) : undefined}
       style={hasChrome() ? mergedUnsafeStyle() : { display: "contents" }}
     >
@@ -1017,6 +1330,59 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
   onCleanup(() => {
     staticCollection?.unregisterItem(props.id);
   });
+
+  const itemOwner = getOwner();
+  let renameRow: HTMLElement | undefined;
+  let detachRenameRow: (() => void) | undefined;
+  const [renameRowVersion, setRenameRowVersion] = createSignal(0, { ownedWrite: true });
+  onCleanup(() => detachRenameRow?.());
+  createEffect(
+    () => [renameRowVersion(), context.rename.editingKey()] as const,
+    ([, editingKey]) => {
+      const row = renameRow;
+      if (!row) return;
+      hideRenameLabels(row, editingKey === props.id);
+    },
+  );
+
+  function bindRenameRow(row: HTMLElement | null) {
+    detachRenameRow?.();
+    detachRenameRow = undefined;
+    renameRow = row ?? undefined;
+    if (!row || (itemOwner && isDisposed(itemOwner))) return;
+    let lastLabelAt = -1;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "F2" || !context.rename.enabled() || rowIsDisabled(row)) return;
+      const target = event.target;
+      if (!(target instanceof Node) || !row.contains(target)) return;
+      if (target instanceof Element && target.closest("[data-tree-rename], input, textarea")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      context.rename.begin(props.id, renameLabelText(row));
+    };
+    const onPointer = (event: MouseEvent) => {
+      if (!context.rename.enabled() || rowIsDisabled(row)) return;
+      if (!isRenameLabelTarget(row, event.target)) return;
+      const now = event.timeStamp;
+      const repeated = lastLabelAt >= 0 && now - lastLabelAt < 500;
+      if (event.type === "click") lastLabelAt = now;
+      if (event.type !== "dblclick" && event.detail < 2 && !repeated) return;
+      event.preventDefault();
+      event.stopPropagation();
+      context.rename.begin(props.id, renameLabelText(row));
+    };
+    row.addEventListener("keydown", onKeyDown);
+    row.addEventListener("click", onPointer);
+    row.addEventListener("dblclick", onPointer);
+    detachRenameRow = () => {
+      row.removeEventListener("keydown", onKeyDown);
+      row.removeEventListener("click", onPointer);
+      row.removeEventListener("dblclick", onPointer);
+    };
+    writeUnlessDisposed(itemOwner, () => setRenameRowVersion((version) => version + 1));
+  }
 
   // The probe must mount nested static items so they can register. The visible
   // row suppresses those same nodes; the collection paints each as its own row.
@@ -1113,56 +1479,67 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       );
     }
 
+    const editing = () => context.rename.editingKey() === props.id;
+
     return (
-      <SlotProvider slots={slots}>
-        <TextContext value={textContext(renderProps) as SpectrumContextValue<any>}>
-          <IconContext
-            value={{
-              slot: "icon",
-              styles: treeSlotIcon,
-            }}
-          >
-            <ActionButtonGroupContext
+      <>
+        {editing() ? (
+          <TreeRenameField
+            itemKey={props.id}
+            initialName={context.rename.initialName(props.id)}
+            class={treeLabel(getRowLayerProps(renderProps))}
+          />
+        ) : null}
+        <SlotProvider slots={slots}>
+          <TextContext value={textContext(renderProps) as SpectrumContextValue<any>}>
+            <IconContext
               value={{
-                slot: "actions",
-                size: "S",
-                styles: treeActions,
+                slot: "icon",
+                styles: treeSlotIcon,
               }}
             >
-              <ActionMenuContext
+              <ActionButtonGroupContext
                 value={{
-                  slot: "actionmenu",
+                  slot: "actions",
                   size: "S",
-                  menuSize: "S",
-                  styles: treeActionMenu,
+                  styles: treeActions,
                 }}
               >
-                {shouldShowCheckbox(renderProps) ? (
-                  <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
-                ) : null}
-                <div
-                  class={treeViewRowBackground(getRowLayerProps(renderProps))}
-                  aria-hidden="true"
-                />
-                {renderProps.isFocusVisible ? (
+                <ActionMenuContext
+                  value={{
+                    slot: "actionmenu",
+                    size: "S",
+                    menuSize: "S",
+                    styles: treeActionMenu,
+                  }}
+                >
+                  {shouldShowCheckbox(renderProps) ? (
+                    <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
+                  ) : null}
                   <div
-                    class={treeViewRowFocusRing(getRowLayerProps(renderProps))}
+                    class={treeViewRowBackground(getRowLayerProps(renderProps))}
                     aria-hidden="true"
                   />
-                ) : null}
-                <span class={treeLevelPadding} aria-hidden="true" />
-                <TreeExpandButton renderProps={renderProps} />
-                {local.icon ? (
-                  <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
-                    {local.icon()}
-                  </span>
-                ) : null}
-                <ResolvedItemContent />
-              </ActionMenuContext>
-            </ActionButtonGroupContext>
-          </IconContext>
-        </TextContext>
-      </SlotProvider>
+                  {renderProps.isFocusVisible ? (
+                    <div
+                      class={treeViewRowFocusRing(getRowLayerProps(renderProps))}
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <span class={treeLevelPadding} aria-hidden="true" />
+                  <TreeExpandButton renderProps={renderProps} />
+                  {local.icon ? (
+                    <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
+                      {local.icon()}
+                    </span>
+                  ) : null}
+                  <ResolvedItemContent />
+                </ActionMenuContext>
+              </ActionButtonGroupContext>
+            </IconContext>
+          </TextContext>
+        </SlotProvider>
+      </>
     );
   }
 
@@ -1170,7 +1547,11 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     <HeadlessTreeItem
       {...headlessProps}
       id={props.id}
-      ref={(element) => assignItemRef(element)}
+      ref={(element) => {
+        assignItemRef(element);
+        bindRenameRow(element instanceof HTMLElement ? element : null);
+      }}
+      data-renaming={context.rename.editingKey() === props.id ? "" : undefined}
       hasChildItems={local.hasChildItems}
       isDisabled={local.isDisabled}
       href={local.href}

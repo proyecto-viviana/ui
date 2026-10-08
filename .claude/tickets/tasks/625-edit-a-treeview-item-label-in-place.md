@@ -4,7 +4,7 @@ type: task
 title: "Edit a TreeView item label in place"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-10-08,
       note: "Owner approved onRename(key, name) on viviana-ui TreeView only. Passing it enables F2 or double-press to edit, Enter to commit, Escape to cancel, and blur to commit. Arrows and type-ahead stay in the field. Do not change solid-spectrum. A row-menu Rename item is not this ticket. This is not a #520 hold.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "onRename on viviana-ui TreeView opens an internal TextField on F2 or a double press. Enter and blur commit, Escape cancels, and arrows and type-ahead stay in the field. Unmount does not throw.",
     }
 ---
 
