@@ -204,3 +204,96 @@ finished merely for this hypothesis, or swallow native errors. Shared React
 behavior is an observation requiring a separate divergence decision, not an
 automatic local repair. Any actual rejection needs its causal stack. Full
 candidate, installed-consumer and release qualification remain open.
+
+## Native qualification result awaiting conductor review — 2026-10-08
+
+The isolated source-linked Chromium matrix at admission HEAD 372f0d36 finishes
+22 passing cases and two failing source A-to-B cases, one per local twin.
+The final assertions require the loaded survivor to remain hidden while B is
+pending. A trusted native load on the retained, detached old-A image instead
+reveals pending B and the survivor in both twins. Installed React retains the
+barrier under the same response timing. The local target image is replaced on
+source change; its wrapper and unchanged survivor retain identity. This is
+actual bounded failure evidence, not authorization to repair another owner.
+No product, Skeleton, helper, style, dependency or Changeset changed.
+
+Both source twins, source macro wrapper, actual development runtime and installed
+React resolution are recorded with hashes. Initial visible pending wrappers
+have real running animations and macro styling; UI loads its existing source
+theme and qualifies its pseudo-element shimmer. Keyed removal, initial hidden
+return, response/reveal and local whole-owner cancellation pass. Pending hidden
+return leaves the retained animation running on detached W1 with no replacement
+wrapper animation on W2 in both twins and installed React. This shared result
+requires an owner decision, not an automatic local regression repair. Installed
+React pending-owner disposal retains its animation; local disposal cancels it.
+
+All 24 cases record zero page errors, console errors and passive unhandled
+rejections. No finished promise is consumed; this does not exclude other
+consumer rejection paths. The exact runner owns and terminates its exclusive
+4480 server. Earlier sandbox startup and harness-sanity failures remain in raw
+logs. Formatting passes; scoped lint exits zero with two warnings. Root typecheck
+still reports 24 outside-scope diagnostics. Hub audit is not green in this
+sandbox. The handoff and detailed receipts are
+`/tmp/ui-638-native-result-2026-10-08.md` and
+`/tmp/ui-638-native-evidence-2026-10-08.json`. Worker generation
+`c2bef12f-2851-4b1d-8941-c97f4fcd8139` awaits conductor review and exact owned stop;
+full candidate, installed-consumer and release qualification remain open.
+
+## Conductor acceptance of failing native checkpoint — 2026-10-08
+
+Read the full handoff, exact sources and independent final review. All 191
+inventoried artifact hashes, 26 admitted/protected path hashes and 990 source
+graph module hashes matched disk. Exact owned stop of generation
+`c2bef12f-2851-4b1d-8941-c97f4fcd8139` returned ok=true and closed=true.
+The conductor accepts the six proof files as a failing diagnostic checkpoint:
+22 cases pass and the two local scalar-source cases fail three coordinator
+barrier assertions each. This is no native-green or closure acceptance.
+
+Accepted artifacts are preserved, with original-to-archive hash mapping, under
+`/tmp/ui-638-native-checkpoint-2026-10-08/`. Subsequent native runs must keep
+this archive intact and save separate control/final receipts. Root typecheck
+still has 24 outside-scope diagnostics; full candidate, certification,
+installed-consumer and release proof remain open. Shared detached hidden-wrapper
+animation behavior stays observational; no divergence repair is proposed or
+needed to proceed with the reproduced local source defect.
+
+## Source replacement repair admission — 2026-10-08
+
+The proof-only native matrix reproduced a local parity failure. Both twins
+replace a pending native image on scalar source A-to-B while retaining its
+wrapper. A trusted load on the detached old A image then precedes premature
+reveal of the still-incomplete B image and its loaded survivor. Installed React
+retains the native image and holds both behind the coordinator barrier. The
+conductor reviewed actual per-case snapshots, passive retained-image event
+timelines and independent source analysis; animation rejection remains
+unreproduced and shared hidden-wrapper animation behavior stays observational.
+
+After the native worker's verified exact owned stop and accepted diagnostic checkpoint,
+register a sole OS/herdr implementer in eligible repo:ui/main using
+`/tmp/ui-638-source-replacement-dispatch-2026-10-08.md`. Codex astra low handles
+this native image lifecycle hard slice under the recorded Decision 040 fallback.
+The conductor alone reviews, stops the exact generation, accepts and commits.
+
+Admit only both `packages/solid-spectrum/src/image/index.tsx` and
+`packages/viviana-ui/src/image/index.tsx`; the existing twin owning
+`packages/solid-spectrum/test/Image.test.tsx`; the existing
+`apps/comparison/e2e/image-lifecycle.browser.ts` for strengthened scalar-source
+identity assertions; `.changeset/image-coordinator-safe-disposal.md`; this
+ticket and standard generated views. Other harness files and all Skeleton,
+shared animation helpers, styles, API, dependencies, consumers, configuration,
+baselines and attribution metadata remain read-only.
+
+Preserve scalar image identity while updating its live source, supported
+scalar/picture structural switching, source/theme rendering, existing captured
+key ownerless cleanup, hidden lifecycle, error and timeout behavior. Reproduce
+any obsolete-event or cached-microtask guard with focused tests before adding
+it; validate the current image/request/lifecycle rather than a broad document
+connection assumption. No global diagnostic suppression or speculative helper
+repair. Preserve corrected native coordinator-barrier assertions and compare
+the same real-response timing against React/plain controls.
+
+Run meaningful exact-base source controls against final corrected assertions
+with failure-safe restoration and candidate hash verification, then all owning
+Image tests and the serialized native matrix. Save actual raw commands, errors,
+event timelines and digests. Root typecheck debt and full candidate, certified,
+installed-consumer and release qualification remain separately open.
