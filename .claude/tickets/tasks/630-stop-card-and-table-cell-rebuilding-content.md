@@ -22,6 +22,11 @@ history:
       at: 2026-10-08,
       note: "Paired runtime experiment reopens qualification: current destructured booleans stay stale; tracked callback reruns dispose fresh stateful children. Exact source/test restoration leaves the inherited red unchanged. Owner compatibility/design disposition is pending.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "Owner approved TableCell reactive getter authoring and its React destructuring compatibility consequence. Bounded comments and durable getter preservation controls are qualified; native original-node/caret/Card-menu and installed final-candidate proof remain open.",
+    }
 ---
 
 A `Card` in a `CardView` and a `TableCell` call their content again each time
@@ -180,3 +185,56 @@ compositions. A later approved repair must add durable passing regressions;
 original Card/Table browser qualification remains open. Handoff, executable
 patches, raw logs, observations, restoration and manifests use the authorized
 `ui-630-runtime-` evidence prefix in the external temporary directory.
+
+## Approved getter contract admission — 2026-10-08
+
+Owner approved reactive TableCell getter reads and the React callback/destructuring
+compatibility consequence. Registered source implementer generation
+`cd663182-dece-4deb-a12d-f628c80f80a3` starts on base
+`25e6a6ec547ee8860c8476819e1373d10cad4da3`; #19 owned stop is closed,
+the checkout is clean, and canonical eligibility passes. Codex fallback is
+explicitly authorized while the saved Grok/AGY quota failures persist.
+Only Table.tsx comments, Table.test.tsx, the named components patch note, this
+ticket and generated status/roadmap are admitted. Runtime, public types, shared
+helpers, custom attributes and styled sources stay unchanged. Native original-node,
+caret, Card-menu and installed final-candidate qualification remain separate;
+this slice cannot close #630. Conductor owns review, exact owned stop and commit.
+
+### Bounded getter results
+
+The actual launch full Table run reports 169 passed / 1 failed, exit 1; the
+existing cell destructuring assertion is the failure. Under the explicit approval,
+only that cell callback now reads `state.isFocused` inside JSX. Header destructuring
+and every existing expectation stay intact. Table.tsx changes are comments only;
+TypeScript printing with comments removed is identical before and after.
+
+Two durable default/custom-host controls create a fresh inline StatefulChild in
+an argument-taking callback. Focus/hover text and the independently captured
+producer getters update through entry/removal while original connected cell,
+input, button and event targets survive. Typed value, backward caret, appropriate
+focus and independent local state survive; one callback/mount, zero owner disposals
+before unmount, and separate effect rerun/cleanup counts are asserted. Explicit
+unmount produces one owner disposal and the final returned Solid 2 effect cleanup.
+Default managed attributes are live. Custom spread attributes remain the existing
+snapshot limitation; no custom attribute repair or header contract is implied.
+These are jsdom untrusted-event controls, not native browser proof.
+
+The exact admitted old source passes both final controls (2 passed / 170 skipped,
+exit 0), honestly establishing preservation. A temporary snapshot-destructuring
+mutant fails both at the intended focused live-text assertion (exit 1). Final source
+and tests are restored byte-for-byte with SHA256 receipts; the final full owning
+command `vp test run packages/solidaria-components/test/Table.test.tsx --maxWorkers=1`
+passes 172/172, exit 0. The previously measured tracked-callback experiment already
+showed fresh-child disposal; it was not rerun. The new changeset documents Solid
+getter authoring and the React callback/destructuring difference, not a runtime fix.
+No duplicate TableCell getter contract note was found.
+
+Canonical `vp run typecheck` was run on the actual launch and final source: both
+exit 2 with the same 15 script diagnostics, zero additions/removals. Scoped lint
+passes. Formatting and owning generated-doc checks are recorded in the sealed
+`/tmp/ui-630-getter-*` evidence with commands, exits, manifests and restoration.
+Worker GitHub auth is unavailable; conductor's old green main run is not candidate
+qualification. No browser, build or packed-consumer qualification was performed.
+Native original-node/caret/Card-menu proof and installed final-candidate evidence
+remain separately admitted debt; #630 stays in progress. Conductor independently
+reviews, owned-stops and integrates; worker does not commit, push or publish.

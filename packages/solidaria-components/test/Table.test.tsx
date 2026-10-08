@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
-import { createSignal, flush, For } from "solid-js";
+import { createSignal, flush, For, createEffect, onCleanup } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider, setInteractionModality } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
@@ -14,6 +14,7 @@ import { RouterProvider } from "../src/RouterProvider";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import { TableLayout, Virtualizer } from "../src/Virtualizer";
 import {
+  type TableCellRenderProps,
   Table,
   TableHeader,
   TableColumn,
@@ -3886,6 +3887,187 @@ describe("Table", () => {
       },
     );
 
+    it.each([false, true])(
+      "keeps reactive cell getter reads and fresh child state (custom render: %s)",
+      async (customRender) => {
+        let callbacks = 0;
+        let mounts = 0;
+        let disposals = 0;
+        let effects = 0;
+        let effectCleanups = 0;
+        let producer: TableCellRenderProps | undefined;
+        function StatefulChild(props: { state: TableCellRenderProps }) {
+          mounts++;
+          const [count, setCount] = createSignal(0);
+          onCleanup(() => disposals++);
+          createEffect(count, () => {
+            effects++;
+            return () => {
+              effectCleanups++;
+            };
+          });
+          return (
+            <>
+              <span data-cell-state>
+                {`focused=${props.state.isFocused};hovered=${props.state.isHovered}`}
+              </span>
+              <input aria-label="Getter input" />
+              <button onClick={() => setCount(count() + 1)}>Local {count()}</button>
+            </>
+          );
+        }
+        const view = render(() => (
+          <Table items={[testData[0]]} columns={testColumns.slice(0, 2)} getKey={(item) => item.id}>
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">Name</TableColumn>
+                  <TableColumn id="type">Type</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => (
+                        <>
+                          <TableCell
+                            id="name"
+                            render={customRender ? (props) => <td {...props} /> : undefined}
+                          >
+                            {(state) => {
+                              producer = state;
+                              callbacks++;
+                              return <StatefulChild state={state} />;
+                            }}
+                          </TableCell>
+                          <TableCell id="type">Other</TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+        flush();
+        const input = screen.getByRole("textbox", { name: "Getter input" }) as HTMLInputElement;
+        const button = screen.getByRole("button", { name: "Local 0" });
+        const cell = input.closest("td")!;
+        const other = screen.getByText("Other").closest("td")!;
+        const text = cell.querySelector("[data-cell-state]")!;
+        const originalProducer = producer;
+        const events: EventTarget[] = [];
+        const dispatch = (target: HTMLElement, event: Event) => {
+          const listener = (received: Event) => {
+            expect(received.target).toBe(target);
+            expect(target.isConnected).toBe(true);
+            expect(input.isConnected).toBe(true);
+            expect(button.isConnected).toBe(true);
+            events.push(received.target!);
+          };
+          document.addEventListener(event.type, listener, { once: true });
+          const before = events.length;
+          try {
+            target.dispatchEvent(event);
+            expect(events.length).toBe(before + 1);
+          } finally {
+            document.removeEventListener(event.type, listener);
+          }
+          flush();
+        };
+        const check = async (
+          focused: boolean,
+          hovered: boolean,
+          active: Element,
+          count: number,
+        ) => {
+          flush();
+          await vi.waitFor(() => {
+            expect(text, "live getter text").toHaveTextContent(
+              `focused=${focused};hovered=${hovered}`,
+            );
+            expect(effects).toBe(count + 1);
+          });
+          expect(producer).toBe(originalProducer);
+          expect(producer?.isFocused).toBe(focused);
+          expect(producer?.isHovered).toBe(hovered);
+          // Custom render spreads a snapshot of cellAttrs. Only the default host
+          // manages live attributes; the independent getter object is live in both.
+          if (!customRender) {
+            expect(cell.hasAttribute("data-focused")).toBe(focused);
+            expect(cell.hasAttribute("data-hovered")).toBe(hovered);
+          }
+          expect(cell.isConnected).toBe(true);
+          expect(input.isConnected).toBe(true);
+          expect(button.isConnected).toBe(true);
+          expect(input.closest("td")).toBe(cell);
+          expect(cell.querySelector("input")).toBe(input);
+          expect(cell.querySelector("button")).toBe(button);
+          expect(cell.querySelector("[data-cell-state]")).toBe(text);
+          expect(document.activeElement).toBe(active);
+          expect(input.value).toBe("typed value");
+          expect([input.selectionStart, input.selectionEnd, input.selectionDirection]).toEqual([
+            2,
+            7,
+            "backward",
+          ]);
+          expect(button).toHaveTextContent(`Local ${count}`);
+          expect(callbacks).toBe(1);
+          expect(mounts).toBe(1);
+          expect(disposals).toBe(0);
+          expect(effectCleanups).toBe(count);
+        };
+        expect(text).toHaveTextContent("focused=false;hovered=false");
+        expect(producer?.isFocused).toBe(false);
+        expect(producer?.isHovered).toBe(false);
+        input.value = "typed value";
+        dispatch(input, new Event("input", { bubbles: true }));
+        input.setSelectionRange(2, 7, "backward");
+        // Untrusted DOM dispatch tests original targets in jsdom, not native browser input.
+        dispatch(button, new MouseEvent("click", { bubbles: true }));
+        setInteractionModality("keyboard");
+        cell.focus();
+        await check(true, false, cell, 1);
+        input.focus();
+        await check(true, false, input, 1);
+        dispatch(
+          cell,
+          pointerEvent("pointerover", {
+            pointerType: "mouse",
+            pointerId: 1,
+            bubbles: true,
+          }),
+        );
+        await check(true, true, input, 1);
+        // A local update during hover must retain the focused input and its caret.
+        dispatch(button, new MouseEvent("click", { bubbles: true }));
+        await check(true, true, input, 2);
+        dispatch(
+          cell,
+          pointerEvent("pointerout", {
+            pointerType: "mouse",
+            pointerId: 1,
+            bubbles: true,
+            relatedTarget: other,
+          }),
+        );
+        await check(true, false, input, 2);
+        other.focus();
+        await check(false, false, other, 2);
+        dispatch(button, new MouseEvent("click", { bubbles: true }));
+        await check(false, false, other, 3);
+        expect(events).toEqual([input, button, cell, button, cell, button]);
+        view.unmount();
+        flush();
+        expect(mounts).toBe(1);
+        expect(disposals).toBe(1);
+        expect(effects).toBe(4);
+        expect(effectCleanups).toBe(4);
+        expect(input.isConnected).toBe(false);
+        expect(button.isConnected).toBe(false);
+      },
+    );
+
     it("should support cell render props", () => {
       render(() => (
         <Table
@@ -3908,7 +4090,7 @@ describe("Table", () => {
                     {() => (
                       <>
                         <TableCell id="name">
-                          {({ isFocused }) => <>Foo{isFocused ? " (focused)" : ""}</>}
+                          {(state) => <>Foo{state.isFocused ? " (focused)" : ""}</>}
                         </TableCell>
                         <TableCell id="type">{() => <>Bar</>}</TableCell>
                       </>

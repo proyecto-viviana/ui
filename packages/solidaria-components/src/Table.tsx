@@ -482,6 +482,12 @@ export interface TableRowProps<T> extends SlotProps {
   ) => JSX.Element;
 }
 
+/**
+ * Cell render state. An argument-taking TableCell children callback receives a
+ * stable object with live getters, including its boolean state properties.
+ * Read those properties inside reactive JSX expressions to observe updates;
+ * destructuring outside a reactive expression snapshots the primitive values.
+ */
 export interface TableCellRenderProps {
   /** Whether the cell is focused. */
   isFocused: boolean;
@@ -526,7 +532,14 @@ export interface TableCellProps extends SlotProps {
   id?: Key;
   /** Number of columns spanned by the cell. */
   colSpan?: number;
-  /** The children of the cell. */
+  /**
+   * The children of the cell. For an argument-taking callback, read live getters
+   * in reactive JSX, e.g. `(state) => <span>{state.isFocused ? "Focused" : ""}</span>`.
+   * Unlike React callback rerenders, state changes do not rerun this callback to
+   * refresh destructured booleans. Destructuring outside reactive JSX snapshots
+   * values. This does not guarantee callback-once behavior across remounts or
+   * deliberate host-kind changes, and does not define header child behavior.
+   */
   children?: RenderChildren<TableCellRenderProps>;
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<TableCellRenderProps>;
@@ -2338,9 +2351,9 @@ export function TableCell(props: TableCellProps): JSX.Element {
     return rest;
   };
 
-  // Getter view, same shape as the row's childRenderProps. A function child is
-  // invoked once; later hover, press, and focus updates flow through these
-  // reads instead of rebuilding the cell.
+  // Stable getter view for argument-taking children. Reactive JSX reads track
+  // hover, press, and focus without rebuilding the child for those updates.
+  // Destructuring in the untracked callback body snapshots primitive values.
   const childRenderProps: TableCellRenderProps = {
     get isFocused() {
       return isFocused();
@@ -2389,6 +2402,8 @@ export function TableCell(props: TableCellProps): JSX.Element {
     if (isCellAccessor(rawChildren)) {
       return <>{rawChildren()}</>;
     }
+    // The host calls cellChildren under untrack; the returned JSX owns live
+    // getter subscriptions. Remounts may create a new child and getter object.
     return rawChildren(childRenderProps);
   };
   const cellAttrs = () =>
