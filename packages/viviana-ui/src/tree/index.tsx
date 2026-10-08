@@ -64,7 +64,7 @@ import { IconContext } from "../icon";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
-import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
+import { createButton, mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
@@ -129,6 +129,13 @@ export interface TreeProps<T extends object> extends Omit<
    * on the label. Enter commits, Escape cancels, and blur commits.
    */
   onRename?: (key: Key, name: string) => void;
+  /**
+   * Keys whose detail control is open. Child rows stay on expandedKeys.
+   * Omit it to keep the detail state inside the tree.
+   */
+  detailExpandedKeys?: Iterable<Key>;
+  /** Called when the detail control toggles a key. */
+  onDetailExpandedChange?: (keys: Set<Key>) => void;
 }
 
 export interface TreeItemProps<T extends object> extends Omit<
@@ -143,6 +150,11 @@ export interface TreeItemProps<T extends object> extends Omit<
   isDisabled?: boolean;
   /** Whether this item has children that may not be loaded yet. */
   hasChildItems?: boolean;
+  /**
+   * Shows the detail control. It toggles detailExpandedKeys only.
+   * Child rows stay on the tree expandedKeys control.
+   */
+  hasDetail?: boolean;
   /** Link target metadata. */
   href?: HeadlessTreeItemProps<T>["href"];
   target?: HeadlessTreeItemProps<T>["target"];
@@ -214,6 +226,7 @@ type ItemRegistration = {
   textValue?: string;
   isDisabled?: boolean;
   hasChildItems?: boolean;
+  hasDetail?: boolean;
   props?: TreeItemProps<object>;
 };
 
@@ -240,10 +253,16 @@ interface TreeRenameController {
   unregister: (element: HTMLElement) => void;
 }
 
+interface TreeDetailController {
+  isExpanded: (key: Key) => boolean;
+  toggle: (key: Key) => void;
+}
+
 interface TreeViewContextValue {
   selectionStyle: TreeSelectionStyle;
   density: "regular" | "compact";
   rename: TreeRenameController;
+  detail: TreeDetailController;
 }
 
 const idleTreeRename: TreeRenameController = {
@@ -258,11 +277,17 @@ const idleTreeRename: TreeRenameController = {
   unregister() {},
 };
 
+const idleTreeDetail: TreeDetailController = {
+  isExpanded: () => false,
+  toggle() {},
+};
+
 export const TreeViewContext = createContext<SpectrumContextValue<TreeProps<object>>>(null);
 const InternalTreeViewContext = createContext<TreeViewContextValue>({
   selectionStyle: "checkbox",
   density: "regular",
   rename: idleTreeRename,
+  detail: idleTreeDetail,
 });
 const StaticTreeCollectionContext = createContext<StaticCollectionContextValue | null>(null);
 const StaticTreeParentContext = createContext<Key | null>(null);
@@ -339,9 +364,10 @@ const treeViewItem = style<TreeRowLayerProps>({
   gridColumnEnd: -1,
   display: "grid",
   gridTemplateAreas: [
-    ". checkbox level-padding expand-button icon label actions actionmenu",
-    ". checkbox level-padding expand-button icon description actions actionmenu",
+    ". checkbox level-padding expand-button icon label actions actionmenu detail-button",
+    ". checkbox level-padding expand-button icon description actions actionmenu detail-button",
   ],
+  /* Empty when the row has no detail control, so the label start stays put. */
   gridTemplateColumns: [
     edgeToText(40),
     "auto",
@@ -350,6 +376,7 @@ const treeViewItem = style<TreeRowLayerProps>({
     "auto",
     "minmax(0,1fr)",
     "minmax(0,auto)",
+    "auto",
     "auto",
   ],
   gridTemplateRows: "1fr auto",
@@ -509,6 +536,38 @@ const treeExpandButton = style<TreeRowLayerProps>({
     default: "hidden",
     isExpandable: "visible",
   },
+  cursor: {
+    default: "default",
+    isDisabled: "not-allowed",
+  },
+  disableTapHighlight: true,
+});
+
+/* Same hit target as the child chevron. It does not use that button's slot. */
+const treeDetailButton = style<TreeRowLayerProps>({
+  gridArea: "detail-button",
+  alignSelf: "center",
+  justifySelf: "center",
+  size: {
+    default: 40,
+    density: {
+      compact: 24,
+      regular: 40,
+    },
+  },
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 0,
+  backgroundColor: "transparent",
+  color: {
+    default: "inherit",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  borderRadius: "default",
   cursor: {
     default: "default",
     isDisabled: "not-allowed",
@@ -998,6 +1057,8 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     "hasMore",
     "onLoadMore",
     "onRename",
+    "detailExpandedKeys",
+    "onDetailExpandedChange",
   ]);
   const selectionStyle = (): TreeSelectionStyle => local.selectionStyle ?? "checkbox";
   const density = (): "regular" | "compact" =>
@@ -1034,6 +1095,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
         previous.textValue === item.textValue &&
         previous.isDisabled === item.isDisabled &&
         previous.hasChildItems === item.hasChildItems &&
+        previous.hasDetail === item.hasDetail &&
         previous.props === item.props
       ) {
         return;
@@ -1116,10 +1178,37 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       };
     },
   );
+  const [uncontrolledDetailKeys, setUncontrolledDetailKeys] = createSignal<Set<Key>>(new Set(), {
+    ownedWrite: true,
+  });
+  const detailExpandedSet = createMemo(() => {
+    const provided = local.detailExpandedKeys;
+    if (provided != null) return new Set<Key>(provided);
+    return uncontrolledDetailKeys();
+  });
+  const toggleDetail = (key: Key) => {
+    const next = new Set(detailExpandedSet());
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    if (local.detailExpandedKeys == null) {
+      writeUnlessDisposed(treeOwner, () => setUncontrolledDetailKeys(next));
+    }
+    if (treeOwner && isDisposed(treeOwner)) return;
+    local.onDetailExpandedChange?.(next);
+  };
+  const detail: TreeDetailController = {
+    isExpanded(key) {
+      return detailExpandedSet().has(key);
+    },
+    toggle(key) {
+      toggleDetail(key);
+    },
+  };
   const treeContext = createMemo<TreeViewContextValue>(() => ({
     selectionStyle: selectionStyle(),
     density: density(),
     rename,
+    detail,
   }));
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -1295,6 +1384,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     "children",
     "isDisabled",
     "hasChildItems",
+    "hasDetail",
     "href",
     "target",
     "download",
@@ -1312,6 +1402,10 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     "ref",
   ]);
 
+  // A derived hasDetail installs its memo on read. Do that under this memo,
+  // not inside the registration effect.
+  const hasDetail = createMemo(() => !!local.hasDetail);
+
   createTrackedEffect(() => {
     if (!staticCollection) {
       return;
@@ -1323,6 +1417,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       textValue: attrString(headlessProps.textValue ?? headlessProps["aria-label"]),
       isDisabled: !!local.isDisabled,
       hasChildItems: !!local.hasChildItems,
+      hasDetail: hasDetail(),
       props: staticCollection.mode === "static" ? (props as TreeItemProps<object>) : undefined,
     });
   });
@@ -1528,6 +1623,9 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
                   ) : null}
                   <span class={treeLevelPadding} aria-hidden="true" />
                   <TreeExpandButton renderProps={renderProps} />
+                  {hasDetail() ? (
+                    <TreeDetailButton itemKey={props.id} isDisabled={!!renderProps.isDisabled} />
+                  ) : null}
                   {local.icon ? (
                     <span slot="icon" class={treeSlotIcon} data-rsp-slot="icon">
                       {local.icon()}
@@ -1569,6 +1667,8 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
       data-href={local.href || undefined}
       data-target={local.target || undefined}
       data-has-child-items={local.hasChildItems || undefined}
+      data-has-detail={hasDetail() ? "" : undefined}
+      data-detail-expanded={context.detail.isExpanded(props.id) ? "" : undefined}
     >
       {(renderProps: TreeItemRenderProps) => (
         <SuppressNestedTreeItems value={true}>
@@ -1605,6 +1705,46 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
         );
       }}
     </HeadlessTreeItemContent>
+  );
+}
+
+function TreeDetailButton(props: { itemKey: Key; isDisabled: boolean }): JSX.Element {
+  const treeContext = useContext(InternalTreeViewContext);
+  const expanded = () => treeContext.detail.isExpanded(props.itemKey);
+  const renderState = (): TreeRowLayerProps => ({
+    isDisabled: props.isDisabled,
+    isExpanded: expanded(),
+    isExpandable: true,
+    density: treeContext.density,
+    selectionStyle: treeContext.selectionStyle,
+  });
+  const { buttonProps } = createButton({
+    elementType: "button",
+    get isDisabled() {
+      return props.isDisabled;
+    },
+    excludeFromTabOrder: true,
+    preventFocusOnPress: true,
+    onPress: () => {
+      if (props.isDisabled) return;
+      treeContext.detail.toggle(props.itemKey);
+    },
+  });
+
+  return (
+    <button
+      {...buttonProps}
+      class={treeDetailButton(renderState())}
+      data-rsp-slot="detail-button"
+      data-expanded={expanded() ? "" : undefined}
+      data-react-aria-prevent-focus=""
+      aria-expanded={expanded() ? "true" : "false"}
+      aria-label={expanded() ? "Hide details" : "Show details"}
+    >
+      <span aria-hidden="true" class={treeExpandMark({ ...renderState(), isExpanded: false })}>
+        {expanded() ? "–" : "+"}
+      </span>
+    </button>
   );
 }
 

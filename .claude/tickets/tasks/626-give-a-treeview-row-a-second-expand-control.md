@@ -4,7 +4,7 @@ type: task
 title: "Give a TreeView row a second expand control"
 created: 2026-10-08
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-10-08,
       note: "Owner accepted the second expand control on viviana-ui TreeView only. Child rows stay on expandedKeys. The second control is hasDetail on the item and detailExpandedKeys / onDetailExpandedChange on the tree. Each control toggles only its own state. Do not change solid-spectrum. This is not a #520 hold.",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "viviana-ui TreeView keeps child rows on expandedKeys. hasDetail with detailExpandedKeys and onDetailExpandedChange toggles only the detail control, does not select the row, and leaves the expand button ArrowLeft and ArrowRight path alone.",
     }
 ---
 
