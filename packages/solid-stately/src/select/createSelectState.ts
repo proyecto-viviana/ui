@@ -278,7 +278,6 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
 
   const setValue = (next: Key | readonly Key[] | null) => {
     syncValueRef();
-    const prevDisplay = untrack(displayValue);
     if (selectionMode() === "single") {
       const key: Key | null =
         typeof next === "string" || typeof next === "number"
@@ -286,6 +285,11 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
           : next === null
             ? null
             : (next[0] ?? null);
+      // Both callbacks follow this request, not a comparison with displayValue.
+      // A refused controlled value stays stale for the turn, so a second
+      // same-key call would notify the legacy callback again. React Stately
+      // still compares displayValue; this is the Solid same-turn adaptation.
+      // A later turn resyncs valueRef, and a different key is its own request.
       if (!Object.is(valueRef, key)) {
         valueRef = key;
         wroteThisTurn = true;
@@ -296,8 +300,6 @@ export function createSelectState<T = unknown, M extends SelectSelectionMode = "
           setInternalValue(key);
         }
         getProps().onChange?.(key as SelectChangeValueType<M>);
-      }
-      if (key !== prevDisplay) {
         getProps().onSelectionChange?.(key);
       }
       return;

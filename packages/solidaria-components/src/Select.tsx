@@ -1535,20 +1535,11 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
   }));
 
   const cleanOptionProps = () => {
+    // Press-up and virtual click already select through optionProps. A second
+    // onClick selection looks unchanged when a controlled value is refused, so
+    // it would report that choice again. Upstream ListBox merges optionProps
+    // with no click fallback.
     const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
-    const onClick = rest.onClick as ((event: MouseEvent) => void) | undefined;
-    rest.onClick = ((event: MouseEvent) => {
-      const wasSelected = optionAria.isSelected();
-      onClick?.(event);
-      if (typeof PointerEvent === "undefined") {
-        return;
-      }
-      queueMicrotask(() => {
-        if (state.selectionMode() !== "multiple" || optionAria.isSelected() === wasSelected) {
-          selectOption();
-        }
-      });
-    }) as JSX.EventHandler<HTMLDivElement, MouseEvent>;
     return rest;
   };
 
@@ -1584,21 +1575,6 @@ function SelectOptionElement<T>(props: SelectOptionProps<T>): JSX.Element {
       }
     },
   );
-  const selectOption = () => {
-    if (optionAria.isDisabled()) {
-      return;
-    }
-    if (state.selectionMode() === "multiple") {
-      const next = new Set(state.selectedKeys());
-      if (next.has(local.id)) next.delete(local.id);
-      else next.add(local.id);
-      state.setSelectedKeys(next);
-    } else {
-      state.setSelectedKey(local.id);
-    }
-    if (state.shouldCloseOnSelect()) state.close();
-  };
-
   return (
     <SelectionIndicatorContext value={selectionIndicatorContext()}>
       {/* `<div role="option">`, not `<li>` — see the SelectListBox note; upstream

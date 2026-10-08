@@ -12,7 +12,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { createSignal, useContext } from "solid-js";
+import { createSignal, flush, useContext } from "solid-js";
 import h from "@solidjs/h";
 import { hc, renderProp } from "../../../apps/comparison/src/components/solid/solid-h";
 import {
@@ -39,6 +39,14 @@ import { Header } from "../src/Collection";
 
 // Setup userEvent
 const user = setupUser();
+
+/** Wait out the selection state's same-turn guard, then flush Solid. */
+async function settleSelectionTurn(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    queueMicrotask(() => resolve());
+  });
+  flush();
+}
 
 // Test data
 interface TestItem {
@@ -426,6 +434,211 @@ describe("Select", () => {
       await user.click(options[0]);
 
       expect(onSelectionChange).toHaveBeenCalledWith("cat");
+      expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports one native input and change pair once", () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestSelect
+          selectProps={{
+            name: "plan",
+            selectedKey: "cat",
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+      fireEvent.input(select);
+      fireEvent.change(select);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      select.value = "dog";
+      fireEvent.input(select);
+      fireEvent.change(select);
+      expect(onChange.mock.calls).toEqual([["dog"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["dog"]]);
+
+      // Same turn as the dog pair: request dedupe only. A later fresh refusal
+      // is covered on createSelectState, where it must notify again.
+      onChange.mockClear();
+      onSelectionChange.mockClear();
+      select.value = "dog";
+      fireEvent.input(select);
+      fireEvent.change(select);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    it("reports one listbox click and one keyboard choice", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestSelect
+          selectProps={{
+            defaultOpen: true,
+            defaultSelectedKey: "cat",
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      await settleSelectionTurn();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("option", { name: "Dog" }));
+      await settleSelectionTurn();
+      expect(onChange.mock.calls).toEqual([["dog"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["dog"]]);
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+      onChange.mockClear();
+      onSelectionChange.mockClear();
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
+      await user.keyboard("{Enter}");
+      await settleSelectionTurn();
+      expect(onChange.mock.calls).toEqual([["kangaroo"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["kangaroo"]]);
+      expect(trigger).toHaveTextContent("Kangaroo");
+    });
+
+    it("reports one controlled listbox click while the value stays refused", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestSelect
+          selectProps={{
+            defaultOpen: true,
+            selectedKey: "cat",
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      await settleSelectionTurn();
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("option", { name: "Dog" }));
+      await settleSelectionTurn();
+      expect(onChange.mock.calls).toEqual([["dog"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["dog"]]);
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
+
+      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("option", { name: "Dog" }));
+      await settleSelectionTurn();
+      expect(onChange.mock.calls).toEqual([["dog"], ["dog"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["dog"], ["dog"]]);
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
+    });
+
+    it("reports one virtual click while the controlled value stays refused", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TestSelect
+          selectProps={{
+            defaultOpen: true,
+            selectedKey: "cat",
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      const option = screen.getByRole("option", { name: "Dog" });
+      option.click();
+      await settleSelectionTurn();
+      expect(onChange.mock.calls).toEqual([["dog"]]);
+      expect(onSelectionChange.mock.calls).toEqual([["dog"]]);
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
+    });
+
+    it("reports one mutable array for each accepted multiple toggle", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      const frozen = Object.freeze([] as const);
+      render(() => (
+        <TestSelect<"multiple">
+          selectProps={{
+            selectionMode: "multiple",
+            defaultOpen: true,
+            defaultValue: frozen,
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      await settleSelectionTurn();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const selected = onChange.mock.calls[0]?.[0] as Key[];
+      expect(selected).toEqual(["cat"]);
+      expect(Object.isFrozen(selected)).toBe(false);
+      expect(frozen).toEqual([]);
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+
+      onChange.mockClear();
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      await settleSelectionTurn();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0]?.[0]).toEqual([]);
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+    });
+
+    it("reports one refused controlled multiple choice and a later retry", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      const frozen = Object.freeze(["cat"] as const);
+      render(() => (
+        <TestSelect<"multiple">
+          selectProps={{
+            selectionMode: "multiple",
+            defaultOpen: true,
+            value: frozen,
+            onChange,
+            onSelectionChange,
+          }}
+        />
+      ));
+
+      await user.click(screen.getByRole("option", { name: "Dog" }));
+      await settleSelectionTurn();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const requested = onChange.mock.calls[0]?.[0] as Key[];
+      expect(requested).toEqual(["cat", "dog"]);
+      expect(Object.isFrozen(requested)).toBe(false);
+      requested.push("z");
+      expect(frozen).toEqual(["cat"]);
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+
+      await user.click(screen.getByRole("option", { name: "Dog" }));
+      await settleSelectionTurn();
+      expect(onSelectionChange).not.toHaveBeenCalled();
+      expect(onChange).toHaveBeenCalledTimes(2);
+      expect(onChange.mock.calls[1]?.[0]).toEqual(["cat", "dog"]);
+      expect(frozen).toEqual(["cat"]);
+      expect(screen.getByRole("button")).toHaveTextContent("Cat");
     });
 
     it("keeps the named hidden select in sync after selection changes", async () => {

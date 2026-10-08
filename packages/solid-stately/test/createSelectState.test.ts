@@ -225,6 +225,138 @@ describe("createSelectState", () => {
         dispose();
       });
     });
+
+    const settleTurn = () => new Promise((resolve) => queueMicrotask(() => resolve(undefined)));
+
+    it("notifies each scalar callback once for a repeated refused controlled request", async () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      let dispose = () => {};
+      try {
+        const state = createRoot((done) => {
+          dispose = done;
+          return createSelectState({
+            items,
+            getKey: (item) => item.key,
+            selectedKey: "a",
+            onChange,
+            onSelectionChange,
+          });
+        });
+
+        state.setSelectedKey("b");
+        state.setSelectedKey("b");
+        expect(state.selectedKey()).toBe("a");
+        expect(onChange.mock.calls).toEqual([["b"]]);
+        expect(onSelectionChange.mock.calls).toEqual([["b"]]);
+
+        // A later turn is a fresh refusal and must notify again. The same-turn
+        // repeat above is the only request that stays silent.
+        await settleTurn();
+        state.setSelectedKey("b");
+        expect(onChange.mock.calls).toEqual([["b"], ["b"]]);
+        expect(onSelectionChange.mock.calls).toEqual([["b"], ["b"]]);
+        expect(state.selectedKey()).toBe("a");
+      } finally {
+        dispose();
+      }
+    });
+
+    it("notifies once for an uncontrolled change and ignores the same key", () => {
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+
+      createRoot((dispose) => {
+        const state = createSelectState({
+          items,
+          getKey: (item) => item.key,
+          defaultSelectedKey: "a",
+          onChange,
+          onSelectionChange,
+        });
+
+        state.setSelectedKey("a");
+        expect(onChange).not.toHaveBeenCalled();
+        expect(onSelectionChange).not.toHaveBeenCalled();
+
+        state.setSelectedKey("b");
+        state.setSelectedKey("b");
+        expect(onChange.mock.calls).toEqual([["b"]]);
+        expect(onSelectionChange.mock.calls).toEqual([["b"]]);
+        flush();
+        expect(state.selectedKey()).toBe("b");
+        dispose();
+      });
+    });
+
+    it("keeps two different same-turn keys and a controlled acceptance", () => {
+      const refused = vi.fn();
+      const accepted = vi.fn();
+
+      createRoot((dispose) => {
+        const state = createSelectState({
+          items,
+          getKey: (item) => item.key,
+          selectedKey: "a",
+          onChange: refused,
+          onSelectionChange: refused,
+        });
+
+        state.setSelectedKey("b");
+        state.setSelectedKey("c");
+        expect(refused.mock.calls.map((call) => call[0])).toEqual(["b", "b", "c", "c"]);
+        expect(state.selectedKey()).toBe("a");
+        dispose();
+      });
+
+      createRoot((dispose) => {
+        const [selectedKey, setSelectedKey] = createSignal<string | null>("a");
+        const state = createSelectState({
+          items,
+          getKey: (item) => item.key,
+          get selectedKey() {
+            return selectedKey();
+          },
+          onChange(key) {
+            accepted(key);
+            setSelectedKey(key);
+          },
+          onSelectionChange: accepted,
+        });
+
+        state.setSelectedKey("b");
+        flush();
+        state.setSelectedKey("b");
+        expect(state.selectedKey()).toBe("b");
+        expect(accepted.mock.calls).toEqual([["b"], ["b"]]);
+        dispose();
+      });
+    });
+
+    it("counts a reentrant selection from onChange as its own request", () => {
+      const order: string[] = [];
+
+      createRoot((dispose) => {
+        const state = createSelectState({
+          items,
+          getKey: (item) => item.key,
+          defaultSelectedKey: "a",
+          onChange(key) {
+            order.push(`change:${String(key)}`);
+            if (key === "b") state.setSelectedKey("c");
+          },
+          onSelectionChange(key) {
+            order.push(`legacy:${String(key)}`);
+          },
+        });
+
+        state.setSelectedKey("b");
+        expect(order).toEqual(["change:b", "change:c", "legacy:c", "legacy:b"]);
+        flush();
+        expect(state.selectedKey()).toBe("c");
+        dispose();
+      });
+    });
   });
 
   describe("collection", () => {

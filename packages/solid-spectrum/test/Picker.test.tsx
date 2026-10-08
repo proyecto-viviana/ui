@@ -28,6 +28,7 @@ const sections: SectionItem[] = [
 describe("Picker (solid-spectrum)", () => {
   it("uses getKey for generated options from object-backed items", async () => {
     const user = setupUser();
+    const onChange = vi.fn();
     const onSelectionChange = vi.fn();
 
     render(() => (
@@ -38,13 +39,68 @@ describe("Picker (solid-spectrum)", () => {
         getKey={(item) => item.href}
         getTextValue={(item) => item.label}
         selectedKey="#page-title"
+        onChange={onChange}
         onSelectionChange={onSelectionChange}
       />
     ));
 
     await user.click(screen.getByRole("option", { name: "API" }));
+    await new Promise<void>((resolve) => {
+      queueMicrotask(() => resolve());
+    });
+    flush();
 
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("#api");
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
     expect(onSelectionChange).toHaveBeenCalledWith("#api");
+  });
+
+  it("reports one native input and change pair for a controlled Picker", async () => {
+    const onChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    const [selectedKey, setSelectedKey] = createSignal<string | null>("#page-title");
+
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey={selectedKey()}
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+      />
+    ));
+    flush();
+
+    const select = document.querySelector("select") as HTMLSelectElement;
+    fireEvent.input(select);
+    fireEvent.change(select);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    select.value = "#api";
+    fireEvent.input(select);
+    fireEvent.change(select);
+    expect(onChange.mock.calls).toEqual([["#api"]]);
+    expect(onSelectionChange.mock.calls).toEqual([["#api"]]);
+    expect(selectedKey()).toBe("#page-title");
+    await new Promise((resolve) => queueMicrotask(() => resolve(undefined)));
+    flush();
+
+    onChange.mockClear();
+    onSelectionChange.mockClear();
+    onChange.mockImplementation((key) => {
+      setSelectedKey(key);
+    });
+    select.value = "#api";
+    fireEvent.input(select);
+    fireEvent.change(select);
+    flush();
+    expect(selectedKey()).toBe("#api");
+    expect(onChange.mock.calls).toEqual([["#api"]]);
+    expect(onSelectionChange.mock.calls).toEqual([["#api"]]);
   });
 
   it("provides S2 listbox header, heading, and description slot contexts", async () => {

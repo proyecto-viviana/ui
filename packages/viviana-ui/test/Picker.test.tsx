@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal, flush } from "solid-js";
 import { Picker, PickerItem } from "../src/picker";
 import { Header, Heading, Text } from "../src";
@@ -13,6 +14,69 @@ interface SectionItem {
 const accordion: SectionItem = { href: "#page-title", label: "Accordion" };
 
 describe("Picker", () => {
+  it("reports one listbox choice", async () => {
+    const user = setupUser();
+    const onChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={[accordion, { href: "#api", label: "API" }]}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        defaultSelectedKey="#page-title"
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <PickerItem id={item.href}>{item.label}</PickerItem>}
+      </Picker>
+    ));
+
+    await user.click(screen.getByRole("option", { name: "API" }));
+    await new Promise<void>((resolve) => {
+      queueMicrotask(() => resolve());
+    });
+    flush();
+    expect(onChange.mock.calls).toEqual([["#api"]]);
+    expect(onSelectionChange.mock.calls).toEqual([["#api"]]);
+  });
+
+  it("reports one controlled listbox choice while the value stays refused", async () => {
+    const user = setupUser();
+    const onChange = vi.fn();
+    const onSelectionChange = vi.fn();
+    const { container } = render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={[accordion, { href: "#api", label: "API" }]}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#page-title"
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => <PickerItem id={item.href}>{item.label}</PickerItem>}
+      </Picker>
+    ));
+
+    await user.click(screen.getByRole("option", { name: "Accordion" }));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onSelectionChange).not.toHaveBeenCalled();
+
+    const trigger = container.querySelector('button[aria-haspopup="listbox"]');
+    expect(trigger).not.toBeNull();
+    await user.click(trigger as HTMLElement);
+    await user.click(screen.getByRole("option", { name: "API" }));
+    await new Promise<void>((resolve) => {
+      queueMicrotask(() => resolve());
+    });
+    flush();
+    expect(onChange.mock.calls).toEqual([["#api"]]);
+    expect(onSelectionChange.mock.calls).toEqual([["#api"]]);
+  });
+
   it("updates direct reactive item children in the option and the trigger value", () => {
     // `<PickerItem>{label()}</PickerItem>` compiles to a `children` getter
     // returning the current string. An untracked setup-time read would freeze
