@@ -417,4 +417,93 @@ describe("createFocusWithin", () => {
     expect(onBlurWithin).toHaveBeenCalledTimes(1);
     expect(onFocusWithinChange).toHaveBeenCalledWith(false);
   });
+  it("snapshots normalized native accessors and composedPath during descendant dispatch", () => {
+    const events: unknown[] = [];
+    const record = (event: FocusEvent) => {
+      events.push({
+        type: event.type,
+        target: event.target,
+        currentTarget: event.currentTarget,
+        relatedTarget: event.relatedTarget,
+        path: event.composedPath(),
+      });
+    };
+    render(() => (
+      <>
+        <Example
+          onFocusWithin={record}
+          onBlurWithin={record}
+          onFocusWithinChange={(value) => events.push(value)}
+        >
+          <button data-testid="native-a">A</button>
+          <button data-testid="native-b">B</button>
+        </Example>
+        <button data-testid="native-outside">Outside</button>
+      </>
+    ));
+    const owner = screen.getByTestId("example");
+    const a = screen.getByTestId("native-a");
+    const b = screen.getByTestId("native-b");
+    const outside = screen.getByTestId("native-outside");
+    outside.focus();
+    events.length = 0;
+    a.focus();
+    const entry = {
+      type: "focus",
+      target: a,
+      currentTarget: owner,
+      relatedTarget: outside,
+      path: expect.arrayContaining([a, owner]),
+    };
+    expect(events).toEqual([entry, true]);
+    b.focus();
+    expect(events).toEqual([entry, true]);
+    outside.focus();
+    expect(events).toEqual([
+      entry,
+      true,
+      {
+        type: "blur",
+        target: b,
+        currentTarget: owner,
+        relatedTarget: outside,
+        path: expect.arrayContaining([b, owner]),
+      },
+      false,
+    ]);
+  });
+
+  it("does not retain focus callbacks after disposing a focused root", async () => {
+    const onFocusWithin = vi.fn();
+    const onBlurWithin = vi.fn();
+    const onFocusWithinChange = vi.fn();
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    try {
+      const view = render(() => (
+        <Example
+          onFocusWithin={onFocusWithin}
+          onBlurWithin={onBlurWithin}
+          onFocusWithinChange={onFocusWithinChange}
+        >
+          <button data-testid="disposed-child">Child</button>
+        </Example>
+      ));
+      screen.getByTestId("disposed-child").focus();
+      expect(onFocusWithin).toHaveBeenCalledTimes(1);
+      expect(onFocusWithinChange).toHaveBeenCalledWith(true);
+      view.unmount();
+      await Promise.resolve();
+      const blurCount = onBlurWithin.mock.calls.length;
+      const changeCount = onFocusWithinChange.mock.calls.length;
+      outside.focus();
+      expect(document.activeElement).toBe(outside);
+      await Promise.resolve();
+      expect(onBlurWithin).toHaveBeenCalledTimes(blurCount);
+      expect(onFocusWithinChange).toHaveBeenCalledTimes(changeCount);
+      expect(onFocusWithin).toHaveBeenCalledTimes(1);
+    } finally {
+      outside.remove();
+    }
+  });
 });

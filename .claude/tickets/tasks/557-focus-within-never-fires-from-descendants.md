@@ -114,3 +114,54 @@ ActionMenu proof, #632 Escape restoration, #630/#639 native identity, broader
 certification and release remain separate pending actual fresh results. No
 blanket untrack, caught native errors, synthetic-event substitute, stale
 server reuse, or revival of createOverlay's document focusin listener.
+
+## Bounded native accessor worker evidence — 2026-10-08
+
+Registered Codex generation `0da26703-33b8-49a6-8c15-2a630d9df263` started
+from clean main `897f6dcba0b0ca7863fb51b73d1d76866eab8607`, after #542's
+closed stop and accepted `1586cfc3` integration. Eligibility matched canonical
+policy. The only product change makes the native event the explicit receiver
+of `Reflect.get`; normalized type, target-bound methods and existing focus
+transport/listener behavior remain intact.
+
+The final browser assertions fail against that exact base source: 2 failed,
+6 passed, with raw Chromium Illegal invocation stacks at the native accessor.
+The final source is restored byte-for-byte under a finally block and SHA256
+check. Restored final source passes all 8 native cases, including the lowercase
+tabindex fixture correction. Synchronous callback snapshots cover target/currentTarget/relatedTarget
+and nonempty native composedPath, descendant A→B→outside without reentry,
+direct-owner focus, disabled controls and no later callbacks after disposal.
+The original four browser cases are byte-identical; all eight assert errors
+and unhandled rejections observed before navigation. The click spy proves
+file-click isolation, not opening an OS file dialog. The new fixture uses
+Solid lowercase tabindex; both existing configs remain unchanged.
+
+Final ordinary suites: FocusWithin and Popover 62/62; related focus 50/50.
+The old-source unit suite also passed 14/14: only the native control reproduces
+this accessor defect. Root typecheck fails with exactly the same 24 diagnostics
+as the accepted #542 receipt, no additions. That root config excludes ordinary
+tests and browser fixtures. No Popover failure required base attribution.
+
+The requested root vp exec command could not resolve playwright; the admitted
+installed apps/comparison executable runs the same tracked config. Sandbox
+startup failed with listen EPERM on 127.0.0.1:4479, so native runs used approved
+host execution, the existing browser cache and --disable-software-rasterizer.
+No install, new runner, dependency, server reuse or package build was used.
+
+Exact final native/static/docs outcomes, commands, cwd, exits, counts, raw logs,
+source restoration and all admitted-path hashes are in
+`/tmp/ui-557-worker-result-2026-10-08.md` and its JSON receipts. Worker evidence
+awaits conductor acceptance and exact-generation stop; no commit or push.
+Original #557 ActionMenu proof, #632 Escape restoration, #630/#639 native
+qualification, candidate/release gates and full certification remain open.
+
+## Conductor acceptance — 2026-10-08
+
+Accepted the bounded native-accessor slice after reading its actual diff,
+raw old/final Chromium controls, restored source, 112 ordinary passes,
+independent review and all ten admitted-path hashes. Exact owned generation
+`0da26703-33b8-49a6-8c15-2a630d9df263` stopped with `closed: true`; receipt:
+`/tmp/ui-557-owned-stop-2026-10-08.json`. The review's final append is a dated
+snapshot after worker sealing; no source or test hash changed. Root typecheck
+still has 24 inherited diagnostics, and hub audit remains failed 13/38; neither
+is reported green. Full #557, dependent qualification and release remain open.

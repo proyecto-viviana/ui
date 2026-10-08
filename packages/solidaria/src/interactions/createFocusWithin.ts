@@ -120,11 +120,12 @@ function createFocusWithinEvent(event: FocusEvent, type: "focus" | "blur"): Focu
     return event;
   }
   return new Proxy(event, {
-    get(target, prop, receiver) {
+    get(target, prop) {
       if (prop === "type") {
         return type;
       }
-      const value = Reflect.get(target, prop, receiver);
+      // Native Event accessors require the event itself as their receiver.
+      const value = Reflect.get(target, prop, target);
       return typeof value === "function" ? value.bind(target) : value;
     },
   });
