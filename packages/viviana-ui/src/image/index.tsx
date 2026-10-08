@@ -8,6 +8,7 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  runWithOwner,
   Show,
   untrack,
   useContext,
@@ -326,7 +327,7 @@ export function Image(props: ImageProps): JSX.Element {
     (key) => {
       if (key == null) return;
       imageGroup.register(key);
-      return () => imageGroup.unregister(key);
+      return () => runWithOwner(null, () => imageGroup.unregister(key));
     },
   );
 
@@ -467,26 +468,24 @@ export function Image(props: ImageProps): JSX.Element {
     return img();
   };
 
-  if (hidden()) {
-    return null as unknown as JSX.Element;
-  }
-
   return (
-    <div
-      ref={mergeContextRefs(
-        (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
-        props.ref,
-        (element) => {
-          loadingAnimationRef(element);
-        },
-      )}
-      slot={slot() ?? undefined}
-      style={wrapperStyle()}
-      class={wrapperClass()}
-    >
-      <Show when={!errorState()} fallback={errorState()}>
-        {imageContent()}
-      </Show>
-    </div>
+    <Show when={!hidden()}>
+      <div
+        ref={mergeContextRefs(
+          (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+          props.ref,
+          (element) => {
+            loadingAnimationRef(element);
+          },
+        )}
+        slot={slot() ?? undefined}
+        style={wrapperStyle()}
+        class={wrapperClass()}
+      >
+        <Show when={!errorState()} fallback={errorState()}>
+          {imageContent()}
+        </Show>
+      </div>
+    </Show>
   );
 }

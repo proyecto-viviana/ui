@@ -1,6 +1,38 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { Image, ImageContext, ImageCoordinator, Provider } from "../src";
+import { DEV, createRoot, createSignal, createEffect, flush, For, Show } from "solid-js";
+
+import {
+  Image as UIImage,
+  ImageCoordinator as UICoordinator,
+  ImageContext as UIContext,
+} from "../../viviana-ui/src/image";
+
+describe("Image lifecycle runtime", () => {
+  it("uses client development reactivity", () => {
+    expect(DEV, "Image lifecycle proof requires the client development runtime").toBeDefined();
+    let dispose = () => {};
+    let setValue!: (value: number) => void;
+    const observed: number[] = [];
+    createRoot((cleanup) => {
+      dispose = cleanup;
+      const [value, write] = createSignal(0);
+      setValue = write;
+      createEffect(value, (next) => {
+        observed.push(next);
+      });
+    });
+    try {
+      flush();
+      setValue(1);
+      flush();
+      expect(observed).toEqual([0, 1]);
+    } finally {
+      dispose();
+    }
+  });
+});
 
 describe("Image", () => {
   it("renders the S2 wrapper and native image attributes", async () => {
@@ -208,3 +240,266 @@ describe("Image", () => {
     expect(wrapper).toHaveStyle({ margin: "4px", padding: "1px" });
   });
 });
+
+for (const [name, TwinImage, Coordinator, Context] of [
+  ["Spectrum", Image, ImageCoordinator, ImageContext],
+  ["UI", UIImage, UICoordinator, UIContext],
+] as const) {
+  describe(`${name} Image lifecycle`, () => {
+    async function drain() {
+      await Promise.resolve();
+      expect(() => flush()).not.toThrow();
+      await Promise.resolve();
+    }
+    function change(action: () => void) {
+      expect(() => {
+        action();
+        flush();
+      }).not.toThrow();
+    }
+    function img(alt: string) {
+      return screen.getByRole("img", { name: alt });
+    }
+
+    for (const loadedFirst of [false, true]) {
+      it(`removes a pending keyed row with survivor loaded=${loadedFirst}`, async () => {
+        expect(DEV).toBeDefined();
+        const [rows, setRows] = createSignal(["survivor", "removed"]);
+        const view = render(() => (
+          <Coordinator>
+            <For each={rows()}>
+              {(row) => <TwinImage src={`/${name}-${loadedFirst}-${row}.png`} alt={row} />}
+            </For>
+          </Coordinator>
+        ));
+        await drain();
+        const survivor = img("survivor");
+        const wrapper = survivor.parentElement!;
+        const pending = wrapper.className;
+        if (loadedFirst) {
+          fireEvent.load(survivor);
+          await drain();
+        }
+        expect(wrapper.className).toBe(pending);
+        change(() => setRows(["survivor"]));
+        expect(screen.queryByRole("img", { name: "removed" })).toBeNull();
+        expect(img("survivor")).toBe(survivor);
+        if (!loadedFirst) {
+          expect(wrapper.className).toBe(pending);
+          fireEvent.load(survivor);
+        }
+        await drain();
+        expect(wrapper.className).not.toBe(pending);
+        change(() => setRows([]));
+        expect(view.container.querySelectorAll("img")).toHaveLength(0);
+        view.unmount();
+        await drain();
+      });
+    }
+
+    it.each(["group", "root"])("disposes the whole %s after registration", async (kind) => {
+      const [open, setOpen] = createSignal(true);
+      const view = render(() => (
+        <Show when={open()}>
+          <Coordinator>
+            <TwinImage src={`/${name}-${kind}-one.png`} alt="one" />
+            <TwinImage src={`/${name}-${kind}-two.png`} alt="two" />
+          </Coordinator>
+        </Show>
+      ));
+      await drain();
+      expect(view.container.querySelectorAll("img")).toHaveLength(2);
+      change(() => (kind === "group" ? setOpen(false) : view.unmount()));
+      expect(view.container.querySelectorAll("img")).toHaveLength(0);
+      if (kind === "group") view.unmount();
+      await drain();
+    });
+
+    it("replaces source A with B without stale membership or premature reveal", async () => {
+      const [src, setSrc] = createSignal(`/${name}-source-A.png`);
+      const view = render(() => (
+        <Coordinator>
+          <TwinImage src={src()} alt="changing" />
+          <TwinImage src={`/${name}-source-sibling.png`} alt="sibling" />
+        </Coordinator>
+      ));
+      await drain();
+      const wrapper = img("changing").parentElement!;
+      const pending = wrapper.className;
+      const sibling = img("sibling");
+      const siblingPending = sibling.parentElement!.className;
+      fireEvent.load(sibling);
+      await drain();
+      expect(sibling.parentElement!.className).toBe(siblingPending);
+      change(() => setSrc(`/${name}-source-B.png`));
+      expect(img("changing")).toHaveAttribute("src", `/${name}-source-B.png`);
+      expect(img("changing").parentElement).toBe(wrapper);
+      expect(wrapper.className).toBe(pending);
+      fireEvent.load(img("changing"));
+      await drain();
+      expect(wrapper.className).not.toBe(pending);
+      expect(sibling.parentElement!.className).not.toBe(siblingPending);
+      view.unmount();
+      await drain();
+    });
+
+    it("unregisters hidden rows and registers their visible loading return", async () => {
+      const [hidden, setHidden] = createSignal(false);
+      const view = render(() => (
+        <Coordinator>
+          <Context
+            value={{
+              get hidden() {
+                return hidden();
+              },
+            }}
+          >
+            <TwinImage src={`/${name}-hidden.png`} alt="toggle" />
+          </Context>
+          <TwinImage src={`/${name}-hidden-sibling.png`} alt="sibling" />
+        </Coordinator>
+      ));
+      await drain();
+      const before = img("toggle");
+      const pending = before.parentElement!.className;
+      const sibling = img("sibling");
+      const siblingPending = sibling.parentElement!.className;
+      fireEvent.load(sibling);
+      await drain();
+      expect(sibling.parentElement!.className).toBe(siblingPending);
+      change(() => setHidden(true));
+      expect(screen.queryByRole("img", { name: "toggle" })).toBeNull();
+      expect(sibling.parentElement!.className).not.toBe(siblingPending);
+      change(() => setHidden(false));
+      const returned = img("toggle");
+      expect(returned.parentElement!.className).toBe(pending);
+      fireEvent.load(returned);
+      await drain();
+      expect(returned.parentElement!.className).not.toBe(pending);
+      view.unmount();
+      await drain();
+    });
+
+    it("registers an initially hidden image when it becomes visible", async () => {
+      const [hidden, setHidden] = createSignal(true);
+      const view = render(() => (
+        <Coordinator>
+          <Context
+            value={{
+              get hidden() {
+                return hidden();
+              },
+            }}
+          >
+            <TwinImage src={`/${name}-initial-hidden.png`} alt="initially hidden" />
+          </Context>
+          <TwinImage src={`/${name}-initial-hidden-sibling.png`} alt="sibling" />
+        </Coordinator>
+      ));
+      await drain();
+      expect(screen.queryByRole("img", { name: "initially hidden" })).toBeNull();
+      const sibling = img("sibling");
+      const pending = sibling.parentElement!.className;
+      change(() => setHidden(false));
+      const visible = img("initially hidden");
+      const visiblePending = visible.parentElement!.className;
+      fireEvent.load(sibling);
+      await drain();
+      expect(sibling.parentElement!.className).toBe(pending);
+      expect(visible.parentElement!.className).toBe(visiblePending);
+      fireEvent.load(visible);
+      await drain();
+      expect(sibling.parentElement!.className).not.toBe(pending);
+      expect(visible.parentElement!.className).not.toBe(visiblePending);
+      view.unmount();
+      await drain();
+    });
+
+    it("unregisters errors and permits subsequent registrations", async () => {
+      const [rows, setRows] = createSignal(["failed", "survivor"]);
+      const view = render(() => (
+        <Coordinator>
+          <For each={rows()}>
+            {(row) => (
+              <TwinImage
+                src={`/${name}-error-${row}.png`}
+                alt={row}
+                renderError={() => <span>image failure</span>}
+              />
+            )}
+          </For>
+        </Coordinator>
+      ));
+      await drain();
+      const survivor = img("survivor");
+      const pending = survivor.parentElement!.className;
+      fireEvent.load(survivor);
+      await drain();
+      expect(survivor.parentElement!.className).toBe(pending);
+      fireEvent.error(img("failed"));
+      await drain();
+      expect(screen.getByText("image failure")).toBeInTheDocument();
+      expect(survivor.parentElement!.className).not.toBe(pending);
+      change(() => setRows(["survivor", "new"]));
+      const added = img("new");
+      const addedPending = added.parentElement!.className;
+      fireEvent.load(added);
+      await drain();
+      expect(added.parentElement!.className).not.toBe(addedPending);
+      view.unmount();
+      await drain();
+    });
+
+    it("delays unchanged groups until the configured timeout", async () => {
+      vi.useFakeTimers();
+      try {
+        const view = render(() => (
+          <Coordinator timeout={100}>
+            <TwinImage src={`/${name}-timeout-one.png`} alt="one" />
+            <TwinImage src={`/${name}-timeout-two.png`} alt="two" />
+          </Coordinator>
+        ));
+        await drain();
+        const one = img("one");
+        const pending = one.parentElement!.className;
+        fireEvent.load(one);
+        await drain();
+        expect(one.parentElement!.className).toBe(pending);
+        change(() => vi.advanceTimersByTime(99));
+        expect(one.parentElement!.className).toBe(pending);
+        change(() => vi.advanceTimersByTime(1));
+        expect(one.parentElement!.className).not.toBe(pending);
+        view.unmount();
+        await drain();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it.each(["plain", "standalone"])(
+      "removes %s keyed images without a coordinator",
+      async (kind) => {
+        const [rows, setRows] = createSignal(["one", "two"]);
+        const view = render(() => (
+          <For each={rows()}>
+            {(row) =>
+              kind === "plain" ? (
+                <img src={`/${name}-plain-${row}.png`} alt={row} />
+              ) : (
+                <TwinImage src={`/${name}-standalone-${row}.png`} alt={row} />
+              )
+            }
+          </For>
+        ));
+        await drain();
+        const survivor = img("one");
+        change(() => setRows(["one"]));
+        expect(img("one")).toBe(survivor);
+        expect(screen.queryByRole("img", { name: "two" })).toBeNull();
+        change(() => setRows([]));
+        view.unmount();
+        await drain();
+      },
+    );
+  });
+}

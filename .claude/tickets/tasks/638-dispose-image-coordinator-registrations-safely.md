@@ -93,3 +93,76 @@ This admission covers unit/dev source proof only. Native animation errors and
 unhandled rejection attribution need separate actual stacks and serialized
 browser admission after #557. Root typecheck, certification, installed-consumer
 and release proof remain required; a partial repair does not close #638.
+
+## Preliminary unit/dev result — 2026-10-08
+
+At the first handoff the slice was incomplete. Both independently imported styled
+twins reproduce the owned-scope-write error during keyed pending-row removal
+with original source. The bounded cleanup change runs synchronous unregister
+with no owner and retains the captured key. Client DEV and reactive effects
+execute; the original failure stack reaches the installed signals dev runtime.
+
+The preliminary candidate matrix passed 28 of 30 tests, including all nine existing tests.
+Both hidden-transition cases failed: changing context hidden from false to true
+leaves the native image in the DOM. The worker stopped source implementation
+at this contradictory rendering proof rather than broadening the repair. The
+hidden return assertions were then unqualified. A preliminary Show cleanup probe
+did not throw; the actual For row-removal cases reproduce the exact diagnostic.
+No runtime configuration, animation, shared helper or attribution metadata changed.
+
+Exact-generation handoff, raw checks and path digests are under
+`/tmp/ui-638-worker-result-2026-10-08.md` and
+`/tmp/ui-638-evidence-2026-10-08.json`. Conductor review and owned stop precede
+integration. Native, animation, installed-consumer and release proof remain open.
+
+## Conductor continuation admission — 2026-10-08
+
+The conductor explicitly continued the same owned generation and exact paths
+after the 28/30 candidate result. Both modules used a static component-body
+hidden return; pinned S2 evaluates its hidden return on React rerender. The
+conductor admitted the minimal reactive hidden rendering repair in both
+already admitted Image sources and the same test/note/ticket/generated views.
+Preserve hooks, registration ownership, captured old-key cleanup, initially
+hidden behavior, visible return registration, survivor reveal and source
+semantics. Keep the hidden regressions and add initially hidden-to-visible
+proof. No helper, style, API, configuration or path expansion; animation and
+native qualification remain outside this slice. No worker commit or push.
+
+## Final unit/dev source result — 2026-10-08
+
+After the explicit continuation, both twins render their existing wrapper
+through a reactive Show keyed by visibility. The captured-key ownerless
+unregister remains synchronous; hooks stay at component scope. The full owning
+Image suite passes all 32 tests, preserving the nine existing tests and adding
+client-dev sanity plus independent twin lifecycle coverage. Exact launch-byte
+controls fail four pending-row removal cases with the owned-write diagnostic
+and two initially-hidden-to-visible cases with the image absent. Final source
+passes both controls. No native image property override was needed.
+
+Scoped formatting and lint and generated-view documentation checks are recorded
+in the worker evidence. Root typecheck remains a separate blocker with errors
+outside the admitted Image source/test paths; no unrelated repairs were made.
+This completes the admitted unit/dev behavior work, not the whole ticket:
+native animation/rejection attribution, certification, installed consumer and
+release qualification remain open. The conductor owns acceptance, exact-generation
+stop and integration.
+
+## Conductor acceptance of unit/dev repair — 2026-10-08
+
+Read the full worker handoff and independent source review. All 46 recorded
+file/artifact/log digests matched; launch-source hashes matched the exact base
+objects at 62c8f506. Owned stop of generation
+`54fca66a-bb20-46dd-affd-2a14f57e5340` returned ok=true and closed=true.
+The conductor accepts the two Image source repairs and 32 passing owning tests
+for a bounded implementation commit. Scoped format/lint/docs pass; root
+typecheck has 24 outside-scope diagnostics. Source/tests are unchanged after
+these checks.
+
+Native qualification must also exercise animation cancellation and target
+rebinding across hidden wrapper removal/return: the component-owned loading
+animation retains its target, and ref-null cleanup was not demonstrated by
+these DOM tests. Independent review records this risk in
+`/tmp/ui-638-independent-review-2026-10-08.md`; it proves no native rejection
+chain and admits no Skeleton/helper repair. Native, full candidate, installed
+consumer and release checks remain open, and this partial acceptance does not
+close #638.
