@@ -11,6 +11,11 @@ history:
       at: 2026-10-08,
       note: "visualmode T5. No edit mode exists on TreeView. Upstream Tree has no equivalent, so the public name is owner-steered. Depends on #623. Waiting visualmode #10156 and #10157.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Held. #623 is on main, and neither TreeProps nor TreeItemProps has an edit field. F2, double press, commit, and cancel have no approved public name, so no edit-mode prop was minted. The name decision is #520.",
+    }
 ---
 
 A TreeView row needs to edit its own label without leaving the row. Nothing
