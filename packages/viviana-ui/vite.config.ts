@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solidPlugin from "@solidjs/vite-plugin";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
@@ -71,12 +71,19 @@ const subpathEntries = [
 // which would shadow the type directory when TypeScript resolves the barrel's
 // `export … from "./provider"` and collapse every re-exported type to `{}`.
 // Barrel targets deliberately left inlined rather than promoted to their own
-// entry. `src/icon/index.tsx` re-exports `* as s2wfIcons` — the full 410-icon set
-// — which the public barrel never re-exports. Promoting it to an entry would root
-// that namespace and defeat tree-shaking (a 631 KB chunk over the deopt limit);
-// inlining its used surface into the barrel lets the unused namespace drop. The
-// individual `./icon/s2wf-icons/<Name>` icons stay their own (tiny) entries.
+// entry. `src/icon/index.tsx` re-exports `* as s2wfIcons`. Promoting that file
+// roots the namespace in one chunk and defeats tree-shaking, so it stays
+// inlined. Each workflow icon, its barrel, and DragHandle are their own
+// entries: the public `./icon/s2wf-icons/*` and `./icon/ui-icons/DragHandle`
+// subpaths then ship JS instead of a declaration with nothing to run.
 const inlineIntoBarrel = new Set(["src/icon/index.tsx"]);
+
+function workflowIconEntries(): string[] {
+  const dir = "src/icon/s2wf-icons";
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".tsx") || name === "index.ts")
+    .map((name) => `${dir}/${name}`);
+}
 
 function barrelTargets(barrelPath: string): string[] {
   const source = readFileSync(barrelPath, "utf8");
@@ -97,7 +104,14 @@ function barrelTargets(barrelPath: string): string[] {
 // every consumer's Solid plugin for nothing.
 const styleEntries = ["src/style/index.ts", "src/style/runtime.ts", "src/vite.ts"];
 
-const entry = [...new Set([...subpathEntries, ...barrelTargets("src/index.ts")])];
+const entry = [
+  ...new Set([
+    ...subpathEntries,
+    ...barrelTargets("src/index.ts"),
+    ...workflowIconEntries(),
+    "src/icon/ui-icons/DragHandle.tsx",
+  ]),
+];
 const jsxEntry = entry.filter((e) => !styleEntries.includes(e));
 
 const deps = {

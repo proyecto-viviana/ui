@@ -234,6 +234,18 @@
       "import": "./dist/GitHubIcon.js",
       "default": "./dist/GitHubIcon.js"
     },
+    "./icon/s2wf-icons/*": {
+      "types": "./dist/icon/s2wf-icons/*.d.ts",
+      "solid": "./dist/icon/s2wf-icons/*.jsx",
+      "import": "./dist/icon/s2wf-icons/*.js",
+      "default": "./dist/icon/s2wf-icons/*.js"
+    },
+    "./icon/ui-icons/DragHandle": {
+      "types": "./dist/icon/ui-icons/DragHandle.d.ts",
+      "solid": "./dist/icon/ui-icons/DragHandle.jsx",
+      "import": "./dist/icon/ui-icons/DragHandle.js",
+      "default": "./dist/icon/ui-icons/DragHandle.js"
+    },
     "./theme.css": "./dist/theme.css",
     "./font-faces.css": "./dist/font-faces.css",
     "./styles.css": "./dist/styles.css",

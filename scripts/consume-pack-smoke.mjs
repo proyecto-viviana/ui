@@ -10,7 +10,7 @@
 // Prereq: run `vp run pack:local-chain` first (or `vp run ui:smoke`, which chains
 // both). This script consumes the tarballs that produced; it does not build them.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scratchDir } from "./scratch-dir.mjs";
@@ -286,14 +286,38 @@ const installedPackages = ["ui", "kumo", "geist"].map((directory) => {
   };
 });
 
+// A pattern export (`./icon/s2wf-icons/*` -> `./dist/icon/s2wf-icons/*.js`) is
+// one map entry and one file per icon. Expand it before the existence check,
+// or the smoke looks for a literal `*.js` and misses the set.
+function expandedExportPaths(installedDir, relPath) {
+  if (!relPath.includes("*")) return [relPath];
+  const star = relPath.indexOf("*");
+  const prefix = relPath.slice(0, star);
+  const suffix = relPath.slice(star + 1);
+  const directory = join(installedDir, prefix);
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory)
+    .filter((name) => name.endsWith(suffix))
+    .map((name) => `${prefix}${name}`)
+    .sort();
+}
+
 // (1) Every referenced file exists on disk.
 const missingFiles = [];
 let fileRefCount = 0;
 const checkFileRef = (pkg, subpath, condition, relPath) => {
   if (typeof relPath !== "string") return;
-  fileRefCount += 1;
-  if (!existsSync(join(pkg.installedDir, relPath))) {
+  const paths = expandedExportPaths(pkg.installedDir, relPath);
+  if (paths.length === 0) {
+    fileRefCount += 1;
     missingFiles.push(`${pkg.name} ${subpath} [${condition}] -> ${relPath}`);
+    return;
+  }
+  for (const concrete of paths) {
+    fileRefCount += 1;
+    if (!existsSync(join(pkg.installedDir, concrete))) {
+      missingFiles.push(`${pkg.name} ${subpath} [${condition}] -> ${concrete}`);
+    }
   }
 };
 for (const pkg of installedPackages) {
@@ -317,19 +341,39 @@ if (missingFiles.length > 0) {
   process.exit(1);
 }
 
+function concreteJsSpecifiers(pkg, key, importTarget) {
+  if (!key.includes("*")) {
+    const subpath = key.replace(/^\.\/?/, "");
+    return [subpath === "" ? pkg.name : `${pkg.name}/${subpath}`];
+  }
+  const files = expandedExportPaths(pkg.installedDir, importTarget);
+  const targetStar = importTarget.indexOf("*");
+  const targetPrefix = importTarget.slice(0, targetStar).replace(/^\.\//, "");
+  const targetSuffix = importTarget.slice(targetStar + 1);
+  const keyStar = key.indexOf("*");
+  const keyPrefix = key.slice(0, keyStar).replace(/^\.\//, "");
+  const keySuffix = key.slice(keyStar + 1);
+  return files.map((relPath) => {
+    const normalized = relPath.replace(/^\.\//, "");
+    const matched = normalized.slice(targetPrefix.length, normalized.length - targetSuffix.length);
+    return `${pkg.name}/${keyPrefix}${matched}${keySuffix}`;
+  });
+}
+
 // (2) Node resolves every JS subpath specifier (the import condition).
 const jsSubpaths = installedPackages.flatMap((pkg) =>
-  Object.entries(pkg.manifest.exports)
-    .filter(
-      ([key, value]) =>
-        key !== "./package.json" &&
-        value &&
-        typeof value === "object" &&
-        typeof value.import === "string" &&
-        value.import.endsWith(".js"),
-    )
-    .map(([key]) => key.replace(/^\.\/?/, ""))
-    .map((subpath) => (subpath === "" ? pkg.name : `${pkg.name}/${subpath}`)),
+  Object.entries(pkg.manifest.exports).flatMap(([key, value]) => {
+    if (
+      key === "./package.json" ||
+      !value ||
+      typeof value !== "object" ||
+      typeof value.import !== "string" ||
+      !value.import.endsWith(".js")
+    ) {
+      return [];
+    }
+    return concreteJsSpecifiers(pkg, key, value.import);
+  }),
 );
 
 const probeSource = `import { existsSync } from "node:fs";

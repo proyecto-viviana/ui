@@ -36,6 +36,21 @@ function targetStem(target) {
   return target.replace(/\.d\.[cm]?ts$/, "").replace(/\.[cm]?[jt]sx?$/, "");
 }
 
+// A public subpath pattern (`./icon/s2wf-icons/*`) is not one file. Expand it
+// against the package so a declaration-only match cannot pass as shipped JS.
+function expandedTargets(packageDir, target) {
+  if (!target.includes("*")) return [target];
+  const star = target.indexOf("*");
+  const prefix = target.slice(0, star);
+  const suffix = target.slice(star + 1);
+  const directory = path.resolve(ROOT, packageDir, prefix);
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory)
+    .filter((name) => name.endsWith(suffix))
+    .map((name) => `${prefix}${name}`)
+    .sort();
+}
+
 function codeFiles(directory, extensionPattern) {
   if (!existsSync(directory)) return [];
   const files = [];
@@ -99,7 +114,29 @@ for (const packageDir of publicPackageDirs) {
     const typesTarget = targets.find(
       (t) => t.condition === "types" || t.target.endsWith(".d.ts"),
     )?.target;
-    if (typesTarget && !typesTarget.includes("*")) {
+    if (typesTarget?.includes("*")) {
+      const typeFiles = expandedTargets(packageDir, typesTarget);
+      if (typeFiles.length === 0) {
+        problems.push(
+          `${manifest.name} ${subpath}: wildcard types matched nothing (${typesTarget})`,
+        );
+      }
+      const typeStems = new Set(typeFiles.map((file) => targetStem(file)));
+      for (const t of targets) {
+        if (!t.target.includes("*") || t.target === typesTarget) continue;
+        if (t.target.endsWith(".css") || t.target.endsWith(".json")) continue;
+        const codeStems = new Set(
+          expandedTargets(packageDir, t.target).map((file) => targetStem(file)),
+        );
+        for (const stem of typeStems) {
+          if (!codeStems.has(stem)) {
+            problems.push(
+              `${manifest.name} ${subpath}: types [${typesTarget}] has ${stem} with no ${t.condition} sibling`,
+            );
+          }
+        }
+      }
+    } else if (typesTarget) {
       const typesStem = targetStem(typesTarget);
       for (const t of targets) {
         if (t.target === typesTarget || t.target.includes("*")) continue;
@@ -190,7 +227,17 @@ for (const packageDir of publicPackageDirs) {
       problems.push(`${manifest.name} ${label} [${condition}] is not package-relative: ${target}`);
       continue;
     }
-    if (target.includes("*")) continue;
+    if (target.includes("*")) {
+      const matches = expandedTargets(packageDir, target);
+      if (matches.length === 0) {
+        problems.push(
+          `${manifest.name} ${label} [${condition}] wildcard matched nothing: ${target}`,
+        );
+      } else {
+        checkedTargets += matches.length - 1;
+      }
+      continue;
+    }
     const absolute = path.resolve(ROOT, packageDir, target);
     const packageRoot = `${path.resolve(ROOT, packageDir)}${path.sep}`;
     if (!absolute.startsWith(packageRoot)) {

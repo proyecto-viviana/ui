@@ -4,12 +4,17 @@ type: task
 title: "Ship the declared workflow icons and DragHandle to installed consumers"
 created: 2026-10-08
 parent: 32
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-10-08,
       note: "visualmode G15, including DragHandle. #72 generated the source icons and is merged; this is the unpublished JavaScript. Installed 0.8.0-rc.0 has 411 s2 workflow declarations and 7 JS files, and DragHandle is .d.ts only. No public icon subpath. Do not add Stop, snap, key, or easing glyphs (#629).",
+    }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "The packed 0.8.0-rc.0 tarball has JS and JSX for all 410 declared workflow icons, their barrel, and DragHandle. Node resolves @proyecto-viviana/ui/icon/s2wf-icons/* and @proyecto-viviana/ui/icon/ui-icons/DragHandle, and the seven root re-exports still resolve. No Stop, snap, key, or easing glyphs added.",
     }
 ---
 
