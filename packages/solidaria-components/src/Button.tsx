@@ -650,7 +650,9 @@ export function Button(props: ButtonProps): JSX.Element {
       style: renderProps.style(),
       slot: local.slot,
       "data-rsp-slot": slotValue()["data-rsp-slot"],
-      disabled: resolvePending() && isPendingFocusable() ? undefined : cleanButtonProps().disabled,
+      // Pending opts out of native focus only when explicitly requested. Keep
+      // base disability authoritative without changing useFocusable's policy.
+      disabled: resolvePending() && !isPendingFocusable() ? true : cleanButtonProps().disabled,
       "aria-labelledby": ariaLabelledBy(),
       "aria-disabled": resolvePending()
         ? "true"

@@ -3,12 +3,15 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite-plus";
 
+import { vivianaMacros } from "../../../../viviana-ui/src/vite";
+
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "../../../../..");
 
 export default defineConfig({
   root: here,
-  plugins: [...solidPlugin()],
+  plugins: [vivianaMacros(), ...solidPlugin()],
+  cacheDir: "/tmp/ui-636-native-vite-cache",
   server: {
     host: "127.0.0.1",
     port: 4479,
@@ -18,9 +21,9 @@ export default defineConfig({
   resolve: {
     conditions: ["development", "browser"],
     dedupe: ["solid-js", "@solidjs/web"],
-    alias: {
-      "@proyecto-viviana/solid-stately": resolve(repoRoot, "packages/solid-stately/src"),
-      "@proyecto-viviana/solidaria": resolve(repoRoot, "packages/solidaria/src"),
-    },
+    alias: ["solid-stately", "solidaria", "solidaria-components"].map((name) => ({
+      find: new RegExp("^@proyecto-viviana/" + name + "(?=/|$)"),
+      replacement: resolve(repoRoot, "packages/" + name + "/src"),
+    })),
   },
 });

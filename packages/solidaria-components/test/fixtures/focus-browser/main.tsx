@@ -7,6 +7,10 @@ import { createFocusWithin } from "../../../../solidaria/src/interactions/create
 import { DropZone } from "../../../src/DropZone";
 import { FileTrigger } from "../../../src/FileTrigger";
 
+import { Button } from "../../../src/Button";
+import { Button as SpectrumButton } from "../../../../solid-spectrum/src/button/Button";
+import { FileTrigger as SpectrumFileTrigger } from "../../../../solid-spectrum/src/filetrigger/index";
+
 function Page() {
   return (
     <>
@@ -47,6 +51,9 @@ function Page() {
         </div>
       </div>
       <div id="react-root" />
+      <ChooserControl kind="headless" />
+      <ChooserControl kind="styled" />
+      <ChooserControl kind="raw" />
     </>
   );
 }
@@ -149,9 +156,134 @@ function SolidMenuControl() {
   );
 }
 
+type ChooserKind = "headless" | "styled" | "raw";
+type ChooserUpdate = {
+  ownerDisabled?: boolean;
+  childDisabled?: boolean;
+  pending?: boolean;
+  pendingFocusable?: boolean;
+  callback?: "A" | "B" | "none";
+  continuation?: boolean;
+};
+const initializeChoosers: Array<() => void> = [];
+const chooserControls: Record<string, unknown> = {};
+(window as unknown as { __chooserFixture: unknown }).__chooserFixture = chooserControls;
+function ChooserControl(props: { kind: ChooserKind }) {
+  const kind = props.kind;
+  const [state, setState] = createSignal<Required<ChooserUpdate>>({
+    ownerDisabled: false,
+    childDisabled: false,
+    pending: false,
+    pendingFocusable: true,
+    callback: "A",
+    continuation: false,
+  });
+  const counts = { mounts: 0, cleanups: 0, child: 0, ancestor: 0, ancestorKeys: 0 };
+  const selections: unknown[] = [];
+  let originalRoot!: HTMLElement;
+  let originalButton!: HTMLButtonElement;
+  let originalInput!: HTMLInputElement;
+  const snapshot = () => ({
+    ...counts,
+    selections: [...selections],
+    sameRoot: document.getElementById(`chooser-${kind}`) === originalRoot,
+    sameButton: document.getElementById(`chooser-${kind}-button`) === originalButton,
+    sameInput: document.getElementById(`chooser-${kind}-input`) === originalInput,
+    value: originalInput.value,
+    files: Array.from(originalInput.files ?? []).map((f) => ({
+      name: f.name,
+      type: f.type,
+      size: f.size,
+    })),
+  });
+  const select = (generation: string) => (files: FileList | null) =>
+    selections.push({
+      generation,
+      isFileList: files instanceof FileList,
+      sameFiles: files === originalInput.files,
+      length: files?.length,
+      files: Array.from(files ?? []).map((f) => ({ name: f.name, type: f.type, size: f.size })),
+    });
+  const callbackA = select("A");
+  const callbackB = select("B");
+  const onSelect = () =>
+    state().callback === "none" ? undefined : state().callback === "A" ? callbackA : callbackB;
+  const childProps = {
+    id: `chooser-${kind}-button`,
+    get isDisabled() {
+      return state().childDisabled;
+    },
+    get isPending() {
+      return state().pending;
+    },
+    onPress(event: { continuePropagation(): void }) {
+      counts.child++;
+      if (state().continuation) event.continuePropagation();
+    },
+  };
+  initializeChoosers.push(() => {
+    counts.mounts++;
+    originalRoot = required(`chooser-${kind}`);
+    const button = required(`chooser-${kind}-button`);
+    const input = required(`chooser-${kind}-input`);
+    if (!(button instanceof HTMLButtonElement) || !(input instanceof HTMLInputElement))
+      throw new Error("invalid chooser nodes");
+    originalButton = button;
+    originalInput = input;
+    chooserControls[kind] = {
+      snapshot,
+      update: (patch: ChooserUpdate) => setState((s) => ({ ...s, ...patch })),
+    };
+  });
+  onCleanup(() => counts.cleanups++);
+  return (
+    <div
+      id={`chooser-${kind}`}
+      onClick={() => counts.ancestor++}
+      onKeyUp={(event) => {
+        if (event.key === "Enter" || event.key === " ") counts.ancestorKeys++;
+      }}
+    >
+      <button id={`chooser-${kind}-before`} type="button">
+        Before {kind}
+      </button>
+      {kind === "styled" ? (
+        <SpectrumFileTrigger
+          id={`chooser-${kind}-input`}
+          class="native-spectrum-wrapper"
+          disabled={state().ownerDisabled}
+          onSelect={onSelect()}
+        >
+          <SpectrumButton {...childProps}>Styled chooser</SpectrumButton>
+        </SpectrumFileTrigger>
+      ) : (
+        <FileTrigger
+          id={`chooser-${kind}-input`}
+          disabled={state().ownerDisabled}
+          onSelect={onSelect()}
+        >
+          {kind === "raw" ? (
+            <button id={childProps.id} type="button" onClick={() => counts.child++}>
+              Raw chooser
+            </button>
+          ) : (
+            <Button {...childProps} isPendingFocusable={state().pendingFocusable}>
+              Headless chooser
+            </Button>
+          )}
+        </FileTrigger>
+      )}
+      <button id={`chooser-${kind}-after`} type="button">
+        After {kind}
+      </button>
+    </div>
+  );
+}
+
 const root = document.getElementById("root");
 if (root) {
   render(() => <Page />, root);
+  for (const initialize of initializeChoosers) initialize();
 }
 
 const focusMount = document.getElementById("focus-mount");

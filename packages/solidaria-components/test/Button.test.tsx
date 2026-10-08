@@ -601,6 +601,65 @@ describe("Button", () => {
   });
 
   describe("pending state", () => {
+    for (const initialFocusable of [undefined, true, false]) {
+      it(`native pending disability honors live focusability from ${initialFocusable}`, async () => {
+        const [pending, setPending] = createSignal(true);
+        const [focusable, setFocusable] = createSignal<boolean | undefined>(initialFocusable);
+        const [disabled, setDisabled] = createSignal(false);
+        const onPress = vi.fn();
+        render(() => (
+          <Button
+            isPending={pending()}
+            isPendingFocusable={focusable()}
+            isDisabled={disabled()}
+            onPress={onPress}
+          >
+            Pending contract
+          </Button>
+        ));
+        const button = screen.getByRole("button") as HTMLButtonElement;
+        expect(button.disabled).toBe(initialFocusable === false);
+        for (const value of [false, true, false, undefined]) {
+          setFocusable(value);
+          flush();
+          expect(screen.getByRole("button")).toBe(button);
+          expect(button.disabled).toBe(value === false);
+          expect(button).toHaveAttribute("aria-disabled", "true");
+          if (value !== false) {
+            button.focus();
+            expect(button).toHaveFocus();
+          }
+          await user.click(button);
+          expect(onPress).not.toHaveBeenCalled();
+        }
+        setFocusable(false);
+        setPending(false);
+        flush();
+        expect(button.disabled).toBe(false);
+        expect(screen.getByRole("button")).toBe(button);
+        await user.click(button);
+        expect(onPress).toHaveBeenCalledTimes(1);
+        setDisabled(true);
+        setPending(true);
+        for (const value of [true, false, undefined]) {
+          setFocusable(value);
+          flush();
+          expect(button.disabled).toBe(true);
+          await user.click(button);
+          expect(onPress).toHaveBeenCalledTimes(1);
+        }
+        setPending(false);
+        flush();
+        expect(button.disabled).toBe(true);
+        setDisabled(false);
+        flush();
+        expect(button.disabled).toBe(false);
+        expect(screen.getByRole("button")).toBe(button);
+        await user.click(button);
+        expect(onPress).toHaveBeenCalledTimes(2);
+      });
+    }
+
     it("should expose pending state via data attribute and render props", () => {
       render(() => (
         <Button

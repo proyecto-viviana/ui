@@ -189,3 +189,154 @@ a general custom usePress responder. Native filechooser/OS behavior, candidate
 build, SSR/hydration, certification, installed-consumer and release gates remain
 conductor-owned and unqualified. No fixing version is claimed; keep consumer
 workarounds until installed release verification. Ticket remains in progress.
+
+## Source acceptance and native admission — 2026-10-08
+
+Conductor accepted the completed repair and final independent review, verified
+all116 manifest hashes and owned-stopped repair generation
+0663d11f-5444-43c5-8d91-91075b28cfb7 with closed=true. Normal-hook source
+commit 5c92a7965aa249470c649be948a6955c216e32f5 preserves all ten accepted path hashes;
+tree was clean. Headless111/styled6 unit passes and exact-base failing controls
+are source/local proof only. Typecheck24 baseline diagnostics, attribution15
+contract failures plus one unmarked private-helper mapping, and ecosystem13/38
+failures remain explicit debts; no native or release claim follows.
+Accepted archive: /tmp/ui-636-source-checkpoint-2026-10-08/archive-map.json.
+
+Register sole next worker ui-636-native-20261008 through OS/herdr in eligible
+repo:ui/main using /tmp/ui-636-native-dispatch-2026-10-08.md; canonical
+eligibility check passed. Admit only existing focus-browser main.tsx/config,
+filetrigger-dropzone-focus.browser.ts, this ticket and standard generated views.
+Fixture config admits existing vivianaMacros before Solid, exactly three
+boundary-anchored stately/aria/components source aliases and private /tmp cache;
+shared Playwright config and all product/API/dependency paths remain read-only.
+Explicitly admit serial exact-pre636 bridge-owner restoration from f7a9bcad
+against SAME final native assertions, including context-file absence, with
+saved candidate bytes/finally restoration/hash verification. This permits no
+source repair. Preserve all original isolation cases; native chooser mode must
+leave real file-input click operational. Prove trusted pointer/Enter/Space,
+exact owned-input/FileList identity and payload, same-file reset, live callbacks,
+disabled/pending guards, continuation and same-node re-enable, with zero
+page/console/rejection errors. Conductor accepts/stops/commits. A Chromium
+filechooser event proves requested selection, not OS-visible dialog appearance.
+Native, candidate, installed-consumer and release gates remain open.
+
+## Native chooser handoff — 2026-10-08
+
+Worker `ui-636-native-20261008`, generation
+`35832d32-ec0e-465b-b920-49ebccd7257e`, delivery
+`70d07d72-11a4-420b-8199-22dcd5689810`, ran the admitted existing serial
+Chromium runner at source commit `5c92a7965aa249470c649be948a6955c216e32f5`.
+Final result: 31 passed / 1 failed (12 original cases pass; 19 of 20 added
+cases pass). Every case records empty pageerror, console-error and rejection
+arrays. Fixture/spec scoped lint, format and whitespace pass. Ecosystem audit
+remains red: 13 of 38 gates fail. GitHub status is unavailable without gh auth.
+
+Headless/styled/raw pointer, Enter and Space each request one actual Chromium
+filechooser per gesture, identify the owned input, deliver its exact FileList
+and deterministic payload, and repeat the same selection. Button own press is
+once; raw DOM click baseline is pointer once / keyboard zero. Live callback
+updates, owner/child disability, supported focusable pending, continuation,
+stable nodes, selection preservation and re-enable are covered. Runtime source
+URLs, one Solid runtime mapping and generated matching styled CSS are recorded.
+Spectrum supports only focusable pending: no unsupported isPendingFocusable
+prop is passed to styled Button; both pending modes are headless-only proof.
+
+Unresolved native contract defect: after headless pending becomes true with
+isPendingFocusable=false, the retained Button has disabled=false, tabindex=0
+and aria-disabled=true. Real Tab from the preceding control lands on it rather
+than skipping it. Both failing assertions remain; picker/own callback blocking,
+selected-file preservation and same-node re-enable still pass. No product
+repair is admitted or made. Conductor must decide the next source slice;
+this handoff does not establish when the focus defect was introduced.
+
+Exact pre-636 bridge-owner combination at f7a9bcad against identical final
+fixtures gives six bounded five-second zero-chooser Button failures with own
+callback once, and three raw positive cases. Finally restoration rechecks all
+three accepted owner hashes and unchanged fixture/spec hashes. No chooser
+spy or import/readiness error accounts for these negative controls.
+
+Evidence entry: `/tmp/ui-636-native-handoff.md`; final raw browser log
+`/tmp/ui-636-native-final.log`, restoration
+`/tmp/ui-636-native-restoration.json`, and SHA inventory
+`/tmp/ui-636-native-manifest.json`. Chromium chooser/FileList delivery does not
+prove an OS-visible dialog, cancellation, permissions or real filesystem access.
+No product patch, Changeset, commit, push, publication or fixing version.
+Conductor owns acceptance, exact-generation stop and later qualification.
+
+## Same-generation pending contract extension — 2026-10-08
+
+Conductor accepts the native 31-pass/1-fail result as a reproduced product
+defect, not completed proof. Continue sole writer generation
+35832d32-ec0e-465b-b920-49ebccd7257e. In addition to native admission, admit only
+packages/solidaria-components/src/Button.tsx,
+packages/solidaria-components/test/Button.test.tsx,
+packages/solidaria-components/test/FileTrigger.test.tsx and existing
+.changeset/filetrigger-child-button-press.md if wording needs correction.
+Preserve native disabled-property and trusted Tab-skip assertions. Correct only
+pending isPendingFocusable=false native disability, honoring live transitions
+and child disability; retain default/focusable pending behavior. No shared
+hook/context/export/style, public API, name or dependency change. Spectrum
+remains focusable pending only. Conductor alone accepts, stops and commits.
+
+Add owning standalone/composed regressions and exact 5c92a796 Button-only
+pre-extension controls against final tests/spec, with saved bytes, finally
+restoration and hashes. Earlier f7a9bcad bridge controls remain separate and
+need rerun only if final fixture/spec hashes change. Run owning headless/styled
+suites, scoped checks and fresh full native suite before revised handoff.
+
+## Revised native handoff after pending extension — 2026-10-08
+
+The admitted Button root expression now sets native disabled when pending and
+isPendingFocusable=false, otherwise preserves base native disability. Shared
+createButton/focus policy and default pending behavior are unchanged. Explicit
+child disability keeps precedence. Three standalone and one FileTrigger owning
+regressions verify live focusability/pending transitions, same nodes, blocked
+callbacks and preserved picker state. Existing Changeset wording records this
+correction. Spectrum is tested only for its supported focusable pending mode;
+both pending modes are covered headlessly. No API or shared-owner expansion.
+
+Final qualification: 115 headless and 6 styled owning tests pass. Fresh full
+Chromium suite passes all 32 cases (all 12 original plus 20 added), including
+unchanged native disabled-property and trusted Tab-skip assertions. All 32 have
+empty error/rejection evidence. Runtime source resolution, one Solid entry,
+generated Spectrum CSS, exact owned FileList identity/payload, repeat selection,
+callback updates, blocked routes and same-node re-enable are recorded in
+`/tmp/ui-636-native-extension-final.log` and extracted observations/runtime/graph
+JSON. Observation windows remain bounded: two browser frames plus 150ms.
+
+Exact pre-extension 5c92a796 Button against these final tests/spec fails all four
+new unit regressions and the native pending nonfocusable case. Candidate bytes
+were restored in finally and all source/test hashes verified before the final
+native run; see `/tmp/ui-636-native-extension-restoration.json`. Separate
+f7a9bcad bridge controls retain six bounded zero-chooser failures and three raw
+positives: fixture/spec hashes are unchanged, so no redundant rerun. Earlier
+failed logs and restoration receipts remain preserved.
+
+Scoped lint, format and whitespace pass. Typecheck retains exactly the same 24
+diagnostics; attribution output is byte-identical to accepted repair debt
+(15 failures and existing unmarked private helper). Earlier ecosystem audit
+retains 13/38 failures; no broad certification claim. Final receipt/manifest and
+under-400-word handoff are `/tmp/ui-636-native-receipt.json`,
+`/tmp/ui-636-native-manifest.json`, `/tmp/ui-636-native-handoff.md`.
+Chromium requested selection and delivered FileList; no OS-visible dialog or
+OS cancellation proof. No commit/push/version/publication. Conductor alone
+accepts, stops this exact generation and integrates.
+
+## Conductor native acceptance — 2026-10-08
+
+Accepted the revised handoff and independent final review at
+`/tmp/ui-636-native-extension-final-independent-review-2026-10-08.md`.
+Conductor independently rehashed all 341 manifest entries with zero mismatches;
+manifest SHA256 is
+`1ec685f5d75d30591fdeb587a48a6f38dd06c43a6b47cd1d19c29db71abf6792`.
+Archived the exact reviewed source and receipts in
+`/tmp/ui-636-native-checkpoint-2026-10-08/archive-map.json` before integration.
+Owned stop for generation `35832d32-ec0e-465b-b920-49ebccd7257e` returned
+`ok=true, closed=true`; the conductor takes the scoped commit handoff.
+
+Accepted source/local/native proof is 115 headless, 6 styled and 32 native
+passes with preserved exact-source negative controls and restoration. Browser
+error/rejection arrays are empty; existing dev warnings remain. The original
+31/1 result remains a diagnostic checkpoint, superseded by the repaired run.
+The ticket stays in progress pending candidate gates, installed-consumer
+verification and actual fixing-version reporting. No release is claimed.

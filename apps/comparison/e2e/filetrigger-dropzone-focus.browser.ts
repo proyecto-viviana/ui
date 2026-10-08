@@ -6,7 +6,8 @@ import { expect, test as base } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 // Each test owns observers installed before navigation, including the original cases.
-const test = base.extend<{ nativeErrors: string[] }>({
+const test = base.extend<{ nativeErrors: string[]; trustedChooser: boolean }>({
+  trustedChooser: [false, { option: true }],
   nativeErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
@@ -75,13 +76,14 @@ test.afterEach(async ({ page, nativeErrors }, testInfo) => {
   );
 });
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
+test.beforeEach(async ({ page, trustedChooser }) => {
+  await page.addInitScript((trustedChooser) => {
     const rejections: string[] = [];
     (window as FocusWindow).__nativeRejections = rejections;
     window.addEventListener("unhandledrejection", (event) => {
       rejections.push(String(event.reason));
     });
+    if (trustedChooser) return;
     // Isolation spy only: this does not prove an OS file dialog opened.
     const clicks = { count: 0 };
     (window as unknown as { __fileClicks: { count: number } }).__fileClicks = clicks;
@@ -93,7 +95,7 @@ test.beforeEach(async ({ page }) => {
       }
       return original.call(this);
     };
-  });
+  }, trustedChooser);
   await page.goto("/");
   await expect(page.locator("#hint")).toBeVisible();
 });
@@ -108,7 +110,7 @@ test("hidden file input click does not reach the DropZone ancestor", async ({ pa
     pair.addEventListener("click", () => {
       ancestorClicks += 1;
     });
-    const input = document.querySelector('input[type="file"]');
+    const input = pair.querySelector('input[type="file"]');
     if (!input) {
       throw new Error("missing file input");
     }
@@ -173,7 +175,7 @@ test("assistive technology exposes the drop and upload buttons, not the file inp
   await expect(page.getByRole("button", { name: "DropZone" })).toHaveCount(1);
   await expect(page.getByRole("button", { name: "Upload" })).toHaveCount(1);
   await expect(page.getByRole("textbox")).toHaveCount(0);
-  await expect(page.locator('input[type="file"]')).toHaveCount(1);
+  await expect(page.locator('#pair input[type="file"]')).toHaveCount(1);
   const snapshot = await page.locator("#pair").ariaSnapshot();
   expect(snapshot).toContain("DropZone");
   expect(snapshot).toContain("Upload");
@@ -427,4 +429,364 @@ test("React control explicitly unmounts its stateful child", async ({ page }) =>
   expect(counts.mounts).toBe(1);
   expect(counts.cleanups).toBe(1);
   await expect(page.locator("#react-child")).toHaveCount(0);
+});
+
+type ChooserKind = "headless" | "styled" | "raw";
+type ChooserPatch = {
+  ownerDisabled?: boolean;
+  childDisabled?: boolean;
+  pending?: boolean;
+  pendingFocusable?: boolean;
+  callback?: "A" | "B" | "none";
+  continuation?: boolean;
+};
+type Selection = {
+  generation: string;
+  isFileList: boolean;
+  sameFiles: boolean;
+  length: number;
+  files: { name: string; type: string; size: number }[];
+};
+type ChooserSnapshot = {
+  mounts: number;
+  cleanups: number;
+  child: number;
+  ancestor: number;
+  ancestorKeys: number;
+  sameRoot: boolean;
+  sameButton: boolean;
+  sameInput: boolean;
+  value: string;
+  files: Selection["files"];
+  selections: Selection[];
+};
+type ChooserWindow = Window & {
+  __chooserFixture: Record<
+    ChooserKind,
+    {
+      snapshot: () => ChooserSnapshot;
+      update: (patch: ChooserPatch) => void;
+    }
+  >;
+};
+async function chooserRead(page: Page, kind: ChooserKind, patch?: ChooserPatch) {
+  return page.evaluate(
+    ({ kind, patch }) => {
+      const fixture = (window as ChooserWindow).__chooserFixture;
+      const control = fixture && fixture[kind];
+      if (
+        !control ||
+        typeof control.snapshot !== "function" ||
+        typeof control.update !== "function"
+      )
+        throw new Error(`missing chooser fixture: ${kind}`);
+      if (patch) control.update(patch);
+      return control.snapshot();
+    },
+    { kind, patch },
+  );
+}
+function stableChooser(snapshot: ChooserSnapshot) {
+  expect(snapshot).toMatchObject({
+    mounts: 1,
+    cleanups: 0,
+    sameRoot: true,
+    sameButton: true,
+    sameInput: true,
+  });
+}
+// Two browser frames plus 150ms is the explicit bounded duplicate/absence window.
+async function chooserSettled(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  await page.waitForTimeout(150);
+}
+const payload = {
+  name: "native-636.txt",
+  mimeType: "text/plain",
+  buffer: Buffer.from("native-636\n"),
+};
+const expectedFile = { name: payload.name, type: payload.mimeType, size: payload.buffer.length };
+type Gesture = "pointer" | "Enter" | "Space";
+async function activateChooser(page: Page, kind: ChooserKind, gesture: Gesture) {
+  const button = page.locator(`#chooser-${kind}-button`);
+  if (gesture === "pointer") await button.click();
+  else {
+    await button.focus();
+    await expect(button).toBeFocused();
+    await page.keyboard.press(gesture);
+  }
+}
+async function choose(
+  page: Page,
+  kind: ChooserKind,
+  gesture: Gesture,
+  generation = "A",
+  continuation = false,
+) {
+  const before = await chooserRead(page, kind);
+  const events: import("@playwright/test").FileChooser[] = [];
+  const collect = (event: import("@playwright/test").FileChooser) => events.push(event);
+  page.on("filechooser", collect);
+  try {
+    // Attach the rejection handler immediately: timeout is bounded even if activation fails.
+    const waiting = page.waitForEvent("filechooser", { timeout: 5000 }).then(
+      (event) => ({ event }),
+      (error) => ({ error }),
+    );
+    await activateChooser(page, kind, gesture);
+    const result = await waiting;
+    if ("error" in result) {
+      console.log(
+        "chooser-timeout-evidence",
+        JSON.stringify({
+          kind,
+          gesture,
+          events: events.length,
+          before,
+          after: await chooserRead(page, kind),
+        }),
+      );
+      throw result.error;
+    }
+    const owned = await result.event
+      .element()
+      .evaluate((input, id) => input === document.getElementById(id), `chooser-${kind}-input`);
+    expect(owned).toBe(true);
+    await result.event.setFiles(payload);
+    await chooserSettled(page);
+    const after = await chooserRead(page, kind);
+    stableChooser(after);
+    expect(events).toHaveLength(1);
+    // Raw wrapper keyboard handling prevents the native button click default.
+    expect(after.child - before.child).toBe(kind === "raw" && gesture !== "pointer" ? 0 : 1);
+    expect(after.selections).toHaveLength(before.selections.length + 1);
+    expect(after.selections.at(-1)).toEqual({
+      generation,
+      isFileList: true,
+      sameFiles: true,
+      length: 1,
+      files: [expectedFile],
+    });
+    if (continuation) {
+      const key = gesture === "pointer" ? "ancestor" : "ancestorKeys";
+      expect(after[key] - before[key]).toBe(1);
+    }
+    console.log(
+      "chooser-evidence",
+      JSON.stringify({
+        kind,
+        gesture,
+        events: events.length,
+        owned,
+        observation: "two frames + 150ms",
+        before,
+        after,
+      }),
+    );
+  } finally {
+    page.off("filechooser", collect);
+  }
+}
+async function blockedChooser(
+  page: Page,
+  kind: "headless" | "styled",
+  mode: "owner" | "child" | "pending" | "nonfocusable",
+) {
+  const before = await chooserRead(page, kind);
+  let events = 0;
+  const collect = () => events++;
+  page.on("filechooser", collect);
+  try {
+    const button = page.locator(`#chooser-${kind}-button`);
+    const unavailable = mode === "child" || mode === "nonfocusable";
+    if (unavailable) {
+      console.log(
+        "chooser-disabled-precondition",
+        JSON.stringify(
+          await button.evaluate((node) => ({
+            html: node.outerHTML,
+            disabled: (node as HTMLButtonElement).disabled,
+          })),
+        ),
+      );
+      await expect(button).toBeDisabled();
+      await expect.soft(button).toHaveJSProperty("disabled", true);
+      await button.scrollIntoViewIfNeeded();
+      const box = await button.boundingBox();
+      if (!box) throw new Error("missing disabled button bounds");
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await page.locator(`#chooser-${kind}-before`).focus();
+      await expect(page.locator(`#chooser-${kind}-before`)).toBeFocused();
+      await page.keyboard.press("Tab");
+      console.log(
+        "chooser-tab-evidence",
+        JSON.stringify(await page.evaluate(() => ({ active: document.activeElement?.outerHTML }))),
+      );
+      await expect.soft(page.locator(`#chooser-${kind}-after`)).toBeFocused();
+    } else {
+      await expect(button).not.toHaveAttribute("disabled", "");
+      if (mode === "pending") await expect(button).toHaveAttribute("aria-disabled", "true");
+      if (mode === "pending") {
+        await button.scrollIntoViewIfNeeded();
+        const box = await button.boundingBox();
+        if (!box) throw new Error("missing pending button bounds");
+        await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      } else await activateChooser(page, kind, "pointer");
+      for (const gesture of ["Enter", "Space"] as const) await activateChooser(page, kind, gesture);
+    }
+    await chooserSettled(page);
+    const after = await chooserRead(page, kind);
+    stableChooser(after);
+    expect(events).toBe(0);
+    expect(after.selections).toEqual(before.selections);
+    expect(after.value).toBe(before.value);
+    expect(after.files).toEqual(before.files);
+    if (mode !== "owner") expect(after.child).toBe(before.child);
+    console.log(
+      "chooser-blocked-evidence",
+      JSON.stringify({
+        kind,
+        mode,
+        events,
+        observation: "completed actions + two frames + 150ms",
+        before,
+        after,
+      }),
+    );
+  } finally {
+    page.off("filechooser", collect);
+  }
+}
+
+test.describe("trusted chooser", () => {
+  test.use({ trustedChooser: true });
+  test("runtime loads source owners, one Solid entry and generated styled CSS", async ({
+    page,
+    browser,
+  }) => {
+    const evidence = await page.evaluate(() => {
+      const button = document.getElementById("chooser-styled-button");
+      if (!(button instanceof HTMLButtonElement)) throw new Error("missing styled button");
+      const urls = performance.getEntriesByType("resource").map((entry) => entry.name);
+      const styles = Array.from(document.querySelectorAll("style[data-vite-dev-id]")).map(
+        (node) => ({
+          id: node.getAttribute("data-vite-dev-id"),
+          bytes: node.textContent?.length ?? 0,
+        }),
+      );
+      const matched: string[] = [];
+      function inspect(rules: CSSRuleList) {
+        for (const rule of Array.from(rules)) {
+          if (rule instanceof CSSStyleRule) {
+            try {
+              if (button!.matches(rule.selectorText)) matched.push(rule.cssText);
+            } catch {
+              /* pseudo selectors */
+            }
+          }
+          if ("cssRules" in rule) inspect((rule as CSSGroupingRule).cssRules);
+        }
+      }
+      for (const sheet of Array.from(document.styleSheets)) inspect(sheet.cssRules);
+      return { urls, styles, matched, className: button.className };
+    });
+    for (const owner of [
+      "solidaria-components/src/Button.tsx",
+      "solidaria-components/src/FileTrigger.tsx",
+      "solidaria-components/src/fileTriggerContext.ts",
+      "solid-spectrum/src/button/Button.tsx",
+      "solid-spectrum/src/filetrigger/index.tsx",
+    ])
+      expect(
+        evidence.urls.some((url) => url.includes(owner)),
+        owner,
+      ).toBe(true);
+    expect(evidence.urls.filter((url) => /\/solid-js\.js(?:\?|$)/.test(url))).toHaveLength(1);
+    expect(
+      evidence.urls.filter((url) =>
+        /packages\/(solidaria-components|solid-spectrum)\/dist\//.test(url),
+      ),
+    ).toEqual([]);
+    expect(evidence.styles.some((style) => style.bytes > 0)).toBe(true);
+    expect(evidence.matched.length).toBeGreaterThan(0);
+    console.log(
+      "chooser-runtime-evidence",
+      JSON.stringify({ chromium: browser.version(), ...evidence }),
+    );
+  });
+  for (const kind of ["headless", "styled", "raw"] as const) {
+    for (const gesture of ["pointer", "Enter", "Space"] as const) {
+      test(`${kind} ${gesture} delivers once and reselects the same file`, async ({ page }) => {
+        stableChooser(await chooserRead(page, kind));
+        if (kind === "styled")
+          await expect(
+            page.locator("#chooser-styled .native-spectrum-wrapper > button"),
+          ).toHaveCount(1);
+        await choose(page, kind, gesture);
+        await choose(page, kind, gesture);
+      });
+    }
+    test(`${kind} live callback updates keep nodes and do not activate`, async ({ page }) => {
+      await choose(page, kind, "pointer");
+      const before = await chooserRead(page, kind);
+      let events = 0;
+      const collect = () => events++;
+      page.on("filechooser", collect);
+      try {
+        for (const callback of ["B", "none", "B"] as const) {
+          await chooserRead(page, kind, { callback });
+          await chooserSettled(page);
+          expect(await chooserRead(page, kind)).toEqual(before);
+        }
+        expect(events).toBe(0);
+      } finally {
+        page.off("filechooser", collect);
+      }
+      await choose(page, kind, "Enter", "B");
+    });
+  }
+  for (const kind of ["headless", "styled"] as const) {
+    test(`${kind} owner disability cycles and child disability preserve the selected file`, async ({
+      page,
+    }) => {
+      await chooserRead(page, kind, { ownerDisabled: true, childDisabled: false });
+      await blockedChooser(page, kind, "owner");
+      await chooserRead(page, kind, { ownerDisabled: false });
+      await choose(page, kind, "pointer");
+      await chooserRead(page, kind, { ownerDisabled: true });
+      await blockedChooser(page, kind, "owner");
+      await chooserRead(page, kind, { ownerDisabled: false, callback: "B" });
+      await choose(page, kind, "Space", "B");
+      await chooserRead(page, kind, { childDisabled: true });
+      await blockedChooser(page, kind, "child");
+      await chooserRead(page, kind, { childDisabled: false });
+      await choose(page, kind, "Enter", "B");
+      await choose(page, "raw", "pointer");
+    });
+    // Spectrum's supported contract always keeps pending Buttons focusable.
+    for (const focusable of kind === "headless" ? [true, false] : [true]) {
+      test(`${kind} pending ${focusable ? "focusable" : "nonfocusable"} blocks and re-enables without remount`, async ({
+        page,
+      }) => {
+        await choose(page, kind, "pointer");
+        await chooserRead(page, kind, { pending: true, pendingFocusable: focusable });
+        await blockedChooser(page, kind, focusable ? "pending" : "nonfocusable");
+        await choose(page, "raw", "Space");
+        await chooserRead(page, kind, { pending: false, callback: "B" });
+        await choose(page, kind, "Enter", "B");
+      });
+    }
+    test(`${kind} continuation reaches ancestor once without a second chooser`, async ({
+      page,
+    }) => {
+      await chooserRead(page, kind, { continuation: true });
+      for (const gesture of ["pointer", "Enter", "Space"] as const)
+        await choose(page, kind, gesture, "A", true);
+    });
+  }
 });

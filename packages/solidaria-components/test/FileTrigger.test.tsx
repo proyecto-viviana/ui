@@ -214,6 +214,84 @@ describe("D21 owning controls", () => {
 });
 
 describe("D21 bridge boundaries", () => {
+  it("native pending disability keeps picker state and live child focusability on the same nodes", async () => {
+    const user = setupUser();
+    const [pending, setPending] = createSignal(true);
+    const [focusable, setFocusable] = createSignal<boolean | undefined>(undefined);
+    const [disabled, setDisabled] = createSignal(false);
+    const own = vi.fn();
+    const select = vi.fn();
+    const { container } = render(() => (
+      <FileTrigger onSelect={select}>
+        <Button
+          isPending={pending()}
+          isPendingFocusable={focusable()}
+          isDisabled={disabled()}
+          onPress={own}
+        >
+          Upload
+        </Button>
+      </FileTrigger>
+    ));
+    const button = container.querySelector("button")!;
+    const input = container.querySelector("input")!;
+    let value = "previous-file";
+    const reset = vi.fn((next: string) => {
+      value = next;
+    });
+    Object.defineProperty(input, "value", { configurable: true, get: () => value, set: reset });
+    const picker = vi.spyOn(input, "click").mockImplementation(() => {
+      expect(value).toBe("");
+    });
+    for (const next of [undefined, false, true, false]) {
+      setFocusable(next);
+      flush();
+      expect(button.disabled).toBe(next === false);
+      expect(button).toHaveAttribute("aria-disabled", "true");
+      expect(container.querySelector("button")).toBe(button);
+      expect(container.querySelector("input")).toBe(input);
+      await user.click(button);
+      expect(own).not.toHaveBeenCalled();
+      expect(picker).not.toHaveBeenCalled();
+      expect(reset).not.toHaveBeenCalled();
+      expect(select).not.toHaveBeenCalled();
+      expect(value).toBe("previous-file");
+    }
+    setPending(false);
+    flush();
+    expect(button.disabled).toBe(false);
+    await user.click(button);
+    expect(own).toHaveBeenCalledTimes(1);
+    expect(picker).toHaveBeenCalledTimes(1);
+    expect(reset).toHaveBeenCalledTimes(1);
+    value = "selected-again";
+    setPending(true);
+    setDisabled(true);
+    for (const next of [true, false]) {
+      setFocusable(next);
+      flush();
+      expect(button.disabled).toBe(true);
+      await user.click(button);
+      expect(own).toHaveBeenCalledTimes(1);
+      expect(picker).toHaveBeenCalledTimes(1);
+      expect(reset).toHaveBeenCalledTimes(1);
+      expect(value).toBe("selected-again");
+    }
+    setPending(false);
+    flush();
+    expect(button.disabled).toBe(true);
+    setDisabled(false);
+    flush();
+    expect(button.disabled).toBe(false);
+    expect(container.querySelector("button")).toBe(button);
+    expect(container.querySelector("input")).toBe(input);
+    await user.click(button);
+    expect(own).toHaveBeenCalledTimes(2);
+    expect(picker).toHaveBeenCalledTimes(2);
+    expect(reset).toHaveBeenCalledTimes(2);
+    expect(select).not.toHaveBeenCalled();
+  });
+
   for (const route of ["pointer", "Enter", "Space", "virtual"] as const) {
     for (const focusable of [true, false]) {
       it(`keeps pending ${focusable} ${route} registered and re-enables without remount`, async () => {
