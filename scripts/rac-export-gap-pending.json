@@ -7,7 +7,6 @@
     { "symbol": "NavigationTreeItem", "ticket": 228 },
     { "symbol": "NavigationTreeItemContent", "ticket": 228 },
     { "symbol": "NavigationTreeItemStateContext", "ticket": 228 },
-    { "symbol": "NavigationTreeSection", "ticket": 228 },
-    { "symbol": "TokenFieldValue", "ticket": 118 }
+    { "symbol": "NavigationTreeSection", "ticket": 228 }
   ]
 }

@@ -145,6 +145,7 @@ export {
   TokenInput,
   Token,
   TokenFieldContext,
+  TokenFieldValue,
   type TokenFieldProps,
   type TokenFieldRenderProps,
   type TokenInputProps,

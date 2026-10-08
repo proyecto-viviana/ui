@@ -20,6 +20,7 @@
 import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { TokenFieldState } from "@proyecto-viviana/solid-stately";
+import { isVirtualClick } from "../utils/events";
 
 export interface TokenProps {}
 
@@ -48,12 +49,12 @@ export function createToken(
     const onSelectionChange = () => {
       const selection = window.getSelection();
       const element = ref();
-      if (!selection || selection.rangeCount === 0 || !element) {
+      if (!selection || !element) {
         return;
       }
 
-      const range = selection.getRangeAt(0);
-      if (!range.collapsed && range.intersectsNode(element)) {
+      const range = selection.rangeCount === 0 ? null : selection.getRangeAt(0);
+      if (range && !range.collapsed && range.intersectsNode(element)) {
         setSelected(true);
       } else {
         setSelected(false);
@@ -75,7 +76,24 @@ export function createToken(
       style: {
         "user-select": "all",
         "-webkit-user-select": "all",
+        "-webkit-tap-highlight-color": "transparent",
       } as JSX.CSSProperties,
+      onClick(e: MouseEvent) {
+        // Select the token when a screen reader clicks on it.
+        if (isSelected() || !isVirtualClick(e)) {
+          return;
+        }
+        const selection = window.getSelection();
+        const wrapper = ref()?.parentElement;
+        if (!selection || !wrapper) {
+          return;
+        }
+        const range = document.createRange();
+        range.setStartBefore(wrapper);
+        range.setEndAfter(wrapper);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      },
     },
     isSelected,
   };

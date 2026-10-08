@@ -632,7 +632,7 @@
   {
     "localPath": "packages/solid-stately/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "a85f67137d75302ca63898b04240065611b736cd9f8d777cb74669afa116412a"
+    "contentSha256": "33bf2d94da8243cc1fc242d3e4455b89e148b1c7aa060527ebeabd6a39a136c6"
   },
   {
     "localPath": "packages/solid-stately/src/menu/index.ts",
@@ -752,7 +752,7 @@
   {
     "localPath": "packages/solidaria-components/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "4adacf8988858b587dcf3d9d78fb697ff39d7b7d27ca62d27869e36a691c2350"
+    "contentSha256": "0445f4a842f94cb8096e787c3c835b51aae476616fc5247fd189b0748e8e4351"
   },
   {
     "localPath": "packages/solidaria-components/src/Landmark.tsx",

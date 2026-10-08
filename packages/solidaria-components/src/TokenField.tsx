@@ -18,7 +18,7 @@
  * A token field allows users to enter text with inline tokens.
  */
 
-import { createContext, createMemo, createSignal, useContext } from "solid-js";
+import { createContext, createMemo, createSignal, onCleanup, useContext } from "solid-js";
 import type { Context } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import {
@@ -28,14 +28,32 @@ import {
   createToken,
   createTokenField,
   mergeProps,
+  setTokenFieldSelection,
+  tokenFieldPositionToDOMRange,
   type AriaTokenFieldProps,
 } from "@proyecto-viviana/solidaria";
 import {
   createTokenFieldState,
   TokenFieldValue,
+  type Position,
+  type SelectedRange,
+  type TextSegment,
+  type TokenFieldSegment,
   type TokenFieldState,
+  type TokenFieldValueOptions,
   type TokenSegment,
 } from "@proyecto-viviana/solid-stately";
+
+export {
+  TokenFieldValue,
+  type Position,
+  type SelectedRange,
+  type TextSegment,
+  type TokenFieldSegment,
+  type TokenFieldValueOptions,
+  type TokenSegment,
+};
+export { setTokenFieldSelection, tokenFieldPositionToDOMRange };
 import { LabelContext } from "./Label";
 import { TextContext } from "./Text";
 import { FieldInputContext, type TextFieldContextValue } from "./TextField";
@@ -120,7 +138,7 @@ export const TokenField = createHideableComponent(function TokenField<
     "onChange",
     "role",
   ]);
-  const [labelRef] = useSlot(!merged["aria-label"] && !merged["aria-labelledby"]);
+  const [labelRef, hasLabel] = useSlot(!merged["aria-label"] && !merged["aria-labelledby"]);
 
   const fieldCtx = useSlottedContext(
     FieldInputContext as unknown as Context<SlottedContextValue<TextFieldContextValue>>,
@@ -146,22 +164,47 @@ export const TokenField = createHideableComponent(function TokenField<
     },
   });
 
-  const aria = createTokenField(
-    {
-      ...merged,
-      get role() {
-        return (
-          local.role ||
-          ((fieldCtx as { inputProps?: { role?: string } } | null)?.inputProps?.role as
-            | AriaTokenFieldProps["role"]
-            | undefined) ||
-          "textbox"
-        );
-      },
-    },
-    state,
-    () => inputRef(),
-  );
+  // Spread reads every getter. Solid children getters instantiate the tree, so
+  // copying `children` here would mount TokenInput before Provider sets context.
+  // `value` / `onChange` stay on the state hook; spreading them into createField
+  // subscribes the render memo and remounts the textbox on every edit.
+  const ariaInput: Record<string, unknown> = {};
+  const skipAriaProp = new Set([
+    "children",
+    "class",
+    "style",
+    "ref",
+    "value",
+    "defaultValue",
+    "onChange",
+  ]);
+  for (const key of Object.keys(merged)) {
+    if (skipAriaProp.has(key)) {
+      continue;
+    }
+    const descriptor = Object.getOwnPropertyDescriptor(merged, key);
+    if (descriptor) {
+      Object.defineProperty(ariaInput, key, descriptor);
+    }
+  }
+  Object.defineProperty(ariaInput, "label", {
+    enumerable: true,
+    configurable: true,
+    // Same internal slot flag RAC passes into useTokenField. Not a public prop.
+    get: () => hasLabel(),
+  });
+  Object.defineProperty(ariaInput, "role", {
+    enumerable: true,
+    configurable: true,
+    get: () =>
+      local.role ||
+      ((fieldCtx as { inputProps?: { role?: string } } | null)?.inputProps?.role as
+        | AriaTokenFieldProps["role"]
+        | undefined) ||
+      "textbox",
+  });
+
+  const aria = createTokenField(ariaInput as AriaTokenFieldProps<T>, state, () => inputRef());
 
   const renderValues = createMemo<TokenFieldRenderProps>(() => ({
     isDisabled: isDisabled(),
@@ -181,6 +224,39 @@ export const TokenField = createHideableComponent(function TokenField<
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
+  // Built outside the JSX memo. Spreading aria.* there subscribes the field
+  // render to slot ids and replaces the hydrated nodes when those ids settle.
+  const labelContextValue = {
+    get id() {
+      return (aria.labelProps as { id?: string }).id;
+    },
+    get onClick() {
+      return (aria.labelProps as { onClick?: () => void }).onClick;
+    },
+    elementType: "span" as const,
+    ref: labelRef,
+  };
+  const textContextValue = {
+    slots: {
+      get description() {
+        return aria.descriptionProps;
+      },
+    },
+  };
+  const tokenInputContextValue = {
+    get tokenFieldProps() {
+      return aria.tokenFieldProps;
+    },
+    state,
+    get isDisabled() {
+      return isDisabled();
+    },
+    get isReadOnly() {
+      return isReadOnly();
+    },
+    autocompleteProps: fieldCtx as JSX.HTMLAttributes<HTMLDivElement> | undefined,
+    setInputRef,
+  };
 
   return (
     <div
@@ -198,33 +274,9 @@ export const TokenField = createHideableComponent(function TokenField<
       <Provider
         values={
           [
-            [
-              LabelContext,
-              {
-                ...aria.labelProps,
-                elementType: "span",
-                ref: labelRef,
-              },
-            ],
-            [
-              TextContext,
-              {
-                slots: {
-                  description: aria.descriptionProps,
-                },
-              },
-            ],
-            [
-              TokenInputContext,
-              {
-                tokenFieldProps: aria.tokenFieldProps,
-                state,
-                isDisabled: isDisabled(),
-                isReadOnly: isReadOnly(),
-                autocompleteProps: fieldCtx as JSX.HTMLAttributes<HTMLDivElement> | undefined,
-                setInputRef,
-              },
-            ],
+            [LabelContext, labelContextValue],
+            [TextContext, textContextValue],
+            [TokenInputContext, tokenInputContextValue],
           ] as Array<[Context<unknown>, unknown]>
         }
       >
@@ -267,6 +319,17 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
   const domProps = createMemo(() =>
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
+  const displayed = createMemo((prev: readonly TokenFieldSegment[] | undefined) => {
+    if (context.state.isComposing() && prev) {
+      return prev;
+    }
+    return context.state.value().segments;
+  });
+  let removeSelectionStyle: (() => void) | undefined;
+  onCleanup(() => {
+    removeSelectionStyle?.();
+    removeSelectionStyle = undefined;
+  });
   const cleanFocusProps = () => {
     const { ref: _ref, ...restFocus } = focusProps as Record<string, unknown>;
     return restFocus;
@@ -284,6 +347,26 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
       ref={(el) => {
         context.setInputRef(el);
         assignRef(local.ref, el);
+        removeSelectionStyle?.();
+        removeSelectionStyle = undefined;
+        if (!el) {
+          return;
+        }
+        // Solid calls the ref before the node is inserted. Installing the
+        // adopted sheet then sees a document-less root and returns. Retry on
+        // a microtask once the node is connected, still from this ref.
+        const install = () => {
+          if (!el.isConnected) {
+            return;
+          }
+          const cleanup = insertSelectionStyle(el);
+          removeSelectionStyle = typeof cleanup === "function" ? cleanup : undefined;
+        };
+        if (el.isConnected) {
+          install();
+        } else {
+          queueMicrotask(install);
+        }
       }}
       slot={local.slot || undefined}
       data-focused={dataAttr(isFocused())}
@@ -296,10 +379,10 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
         ...((context.tokenFieldProps.style as JSX.CSSProperties | undefined) ?? {}),
       }}
     >
-      {context.state.value().segments.map((segment) => {
+      {displayed().map((segment) => {
         if (segment.type === "token") {
           return (
-            <span>
+            <span data-react-aria-token="">
               {"\u200b"}
               {local.children(segment as TokenSegment)}
               {"\u200b"}
@@ -308,7 +391,7 @@ export function TokenInput<T extends TokenFieldValue = TokenFieldValue>(
         }
         return segment.text;
       })}
-      {context.state.value().segments.at(-1)?.text.endsWith("\n") ? <br /> : null}
+      {displayed().at(-1)?.text.endsWith("\n") ? <br /> : null}
     </div>
   );
 }
@@ -376,4 +459,44 @@ export function Token(props: TokenProps): JSX.Element {
       {renderProps.renderChildren()}
     </span>
   );
+}
+
+// Inserts a stylesheet into the document or shadow root that hides native selection on tokens.
+function insertSelectionStyle(el: HTMLDivElement | null): (() => void) | void {
+  if (typeof CSSStyleSheet !== "function" || !el) {
+    return;
+  }
+
+  const root = el.getRootNode();
+  const isDocument = root.nodeType === Node.DOCUMENT_NODE;
+  const isShadow = root.nodeType === Node.DOCUMENT_FRAGMENT_NODE && "host" in root;
+  if (!isDocument && !isShadow) {
+    return;
+  }
+
+  const styleRoot = root as Document | ShadowRoot;
+  if (!styleRoot.adoptedStyleSheets) {
+    return;
+  }
+
+  const sym = Symbol.for("react-aria-token-style");
+  const sheets = styleRoot.adoptedStyleSheets as Array<CSSStyleSheet & Record<symbol, boolean>>;
+  if (sheets.some((sheet) => sheet[sym])) {
+    return;
+  }
+
+  const style = new CSSStyleSheet() as CSSStyleSheet & Record<symbol, boolean>;
+  style[sym] = true;
+  // Firefox ignores a fully transparent selection color, so use a nearly transparent one.
+  style.replaceSync(
+    "[data-react-aria-token]::selection,[data-react-aria-token]>*::selection{background:#ffffff01}",
+  );
+  sheets.push(style);
+
+  return () => {
+    const index = sheets.indexOf(style);
+    if (index >= 0) {
+      sheets.splice(index, 1);
+    }
+  };
 }

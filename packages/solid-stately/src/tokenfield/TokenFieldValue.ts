@@ -33,13 +33,66 @@ export interface Position {
   offset: number;
 }
 
+/** Represents a text selection in a TokenField. */
+export class SelectedRange {
+  /** The anchor position. */
+  anchor: Position;
+  /** The current (i.e. caret) position. */
+  current: Position;
+
+  /**
+   * Creates a new selection range. If only a single position is provided, the selection is
+   * collapsed.
+   */
+  constructor(anchor: Position, current: Position = anchor) {
+    this.anchor = anchor;
+    this.current = current;
+  }
+
+  /** Whether the selection is collapsed to a single caret position. */
+  get isCollapsed() {
+    return this.anchor.index === this.current.index && this.anchor.offset === this.current.offset;
+  }
+
+  /** The side of the selection closest to the start of the value. */
+  get start() {
+    return compare(this.anchor, this.current) < 0 ? this.anchor : this.current;
+  }
+
+  /** The side of the selection closest to the end of the value. */
+  get end() {
+    return compare(this.anchor, this.current) < 0 ? this.current : this.anchor;
+  }
+
+  /** Returns whether this selection is equal to another. */
+  isEqual(other: SelectedRange) {
+    if (this === other) {
+      return true;
+    }
+    return (
+      this.anchor.index === other.anchor.index &&
+      this.anchor.offset === other.anchor.offset &&
+      this.current.index === other.current.index &&
+      this.current.offset === other.current.offset
+    );
+  }
+}
+
+function compare(a: Position, b: Position) {
+  if (a.index === b.index) {
+    return a.offset - b.offset;
+  }
+
+  return a.index - b.index;
+}
+
 enum Direction {
   Forward = 1,
   Backward = -1,
 }
 
 export interface TokenFieldValueOptions {
-  caretPosition?: Position | null;
+  selectedRange?: SelectedRange | null;
 }
 
 /**
@@ -47,11 +100,12 @@ export interface TokenFieldValueOptions {
  */
 export class TokenFieldValue<T = any> {
   static readonly Direction = Direction;
+  static readonly SelectedRange = SelectedRange;
 
   /** The text and token segments in the list. */
   readonly segments: readonly TokenFieldSegment<T>[];
-  /** The caret position. */
-  caretPosition: Position = { index: 0, offset: 0 };
+  /** The selected range. */
+  selectedRange: SelectedRange;
   // Linked list representing the undo/redo history.
   private previous: this | null = null;
   private next: this | null = null;
@@ -60,7 +114,11 @@ export class TokenFieldValue<T = any> {
   /** Create a new list with the given segments. */
   constructor(tokens: readonly TokenFieldSegment<T>[], options?: TokenFieldValueOptions) {
     this.segments = tokens;
-    this.caretPosition = options?.caretPosition ?? { index: 0, offset: 0 };
+    this.selectedRange = options?.selectedRange ?? new SelectedRange({ index: 0, offset: 0 });
+  }
+
+  get caretPosition(): Position {
+    return this.selectedRange.current;
   }
 
   protected createFieldValue(segments: readonly TokenFieldSegment<T>[]): this {
@@ -71,21 +129,23 @@ export class TokenFieldValue<T = any> {
     return new Constructor(segments);
   }
 
-  /** Create a new list with the caret position set to the given position. */
-  withCaretPosition(caretPosition: Position): this {
-    if (
-      this.caretPosition.index === caretPosition.index &&
-      this.caretPosition.offset === caretPosition.offset
-    ) {
+  /** Create a new list with the selected range set to the given range. */
+  withSelectedRange(selectedRange: SelectedRange): this {
+    if (this.selectedRange.isEqual(selectedRange)) {
       return this;
     }
 
     let result = this.createFieldValue(this.segments);
-    result.caretPosition = caretPosition;
+    result.selectedRange = selectedRange;
     result.previous = this.previous;
     result.next = this.next;
     result.isCoalescing = this.isCoalescing;
     return result;
+  }
+
+  /** Create a new list with the caret position set to the given position. */
+  withCaretPosition(position: Position): this {
+    return this.withSelectedRange(new SelectedRange(position));
   }
 
   private splitSegment(
@@ -176,14 +236,14 @@ export class TokenFieldValue<T = any> {
     appendSegments(newSegments, this.segments.slice(end.index + 1));
 
     let segments = this.createFieldValue(newSegments);
-    segments.caretPosition = caret;
+    segments.selectedRange = new SelectedRange(caret);
     segments.isCoalescing = coalesce;
     if (this.isCoalescing && coalesce && this.previous) {
       segments.previous = this.previous;
       segments.previous.next = segments;
     } else {
       segments.previous = this;
-      this.caretPosition = end;
+      this.selectedRange = new SelectedRange(start, end);
       this.next = segments;
     }
     return segments;
@@ -306,8 +366,7 @@ export class TokenFieldValue<T = any> {
       );
     }
 
-    this.caretPosition = position;
-    return this;
+    return this.withSelectedRange(new SelectedRange(position));
   }
 
   /** Delete text to the next or previous line break. */
@@ -326,7 +385,7 @@ export class TokenFieldValue<T = any> {
       );
     }
 
-    return this;
+    return this.withSelectedRange(new SelectedRange(position));
   }
 
   /** Create a new list containing a subset of the segments. */

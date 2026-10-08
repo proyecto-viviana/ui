@@ -24,6 +24,7 @@ export {
   type TextSegment,
   type TokenSegment,
   type Position,
+  type SelectedRange,
   type TokenFieldValueOptions,
 } from "./tokenfield";
 

@@ -4,9 +4,14 @@ type: task
 title: "Port TokenField"
 created: 2026-08-20
 parent: 25
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-82" }
+  - {
+      state: in-progress,
+      at: 2026-10-07,
+      note: "package API/ARIA/forms/validation/SSR/hydration evidence landed; real browser keyboard evidence still open.",
+    }
 ---
 
 Port the pinned RAC TokenField surface: `Token`, `TokenField`,
