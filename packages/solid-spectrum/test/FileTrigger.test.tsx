@@ -1,8 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
+import { Button } from "../src/button";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { FileTrigger } from "../src/filetrigger";
 
 describe("FileTrigger (solid-spectrum)", () => {
@@ -43,3 +45,30 @@ describe("FileTrigger (solid-spectrum)", () => {
     expect(onSelect).toHaveBeenCalled();
   });
 });
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+for (const route of ["pointer", "Enter", "Space"] as const) {
+  it(`D21 styled class wrapper delivers ${route} exactly once`, async () => {
+    const user = setupUser();
+    const own = vi.fn();
+    const { container } = render(() => (
+      <FileTrigger class="upload-wrapper">
+        <Button onPress={own}>Upload</Button>
+      </FileTrigger>
+    ));
+    const button = container.querySelector("button")!;
+    const click = vi.spyOn(container.querySelector("input")!, "click");
+    expect(container.querySelector(".upload-wrapper")?.contains(button)).toBe(true);
+    if (route === "pointer") await user.click(button);
+    else {
+      button.focus();
+      await user.keyboard(route === "Enter" ? "{Enter}" : " ");
+    }
+    expect(own).toHaveBeenCalledTimes(1);
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+}

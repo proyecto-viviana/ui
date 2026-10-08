@@ -22,6 +22,7 @@
 import { createSignal, createTrackedEffect } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import { createPress, type PressEvent } from "@proyecto-viviana/solidaria";
+import { FileTriggerContext } from "./fileTriggerContext";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
 
 export interface FileTriggerProps extends Omit<
@@ -59,6 +60,7 @@ export function FileTrigger(props: FileTriggerProps): JSX.Element {
   const [inputRef, setInputRef] = createSignal<HTMLInputElement | null>(null);
 
   const openFilePicker = () => {
+    if (local.disabled) return;
     const input = inputRef();
     if (!input) return;
     if (input.value) input.value = "";
@@ -73,6 +75,38 @@ export function FileTrigger(props: FileTriggerProps): JSX.Element {
       openFilePicker();
     },
   });
+
+  const registered = new Set<HTMLElement>();
+  const bridge = {
+    open: openFilePicker,
+    register(element: HTMLElement) {
+      registered.add(element);
+      return () => {
+        registered.delete(element);
+      };
+    },
+  };
+  // Filter before createPress sees any native activation entry. Child and
+  // wrapper PressEvents are distinct; pending Buttons also have no onPress.
+  // Skipping delegation leaves continuePropagation and raw siblings intact.
+  const fallbackProps = Object.fromEntries(
+    Object.entries(pressProps).map(([key, handler]) => [
+      key,
+      typeof handler === "function"
+        ? function (this: HTMLElement, event: Event) {
+            const path = event.composedPath();
+            for (const element of registered) {
+              if (
+                path.includes(element) ||
+                (event.target instanceof Node && element.contains(event.target))
+              )
+                return;
+            }
+            return handler.call(this, event);
+          }
+        : handler,
+    ]),
+  ) as JSX.HTMLAttributes<HTMLSpanElement>;
 
   const onInputChange: JSX.EventHandler<HTMLInputElement, Event> = (e) => {
     local.onSelect?.(e.currentTarget.files);
@@ -96,7 +130,9 @@ export function FileTrigger(props: FileTriggerProps): JSX.Element {
 
   return (
     <>
-      <span {...pressProps}>{local.children}</span>
+      <FileTriggerContext value={bridge}>
+        <span {...fallbackProps}>{local.children}</span>
+      </FileTriggerContext>
       <input
         {...inputProps}
         ref={setInputRef}

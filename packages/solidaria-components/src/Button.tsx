@@ -23,6 +23,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  onCleanup,
   createSignal,
   untrack,
   useContext,
@@ -49,6 +50,7 @@ import {
   coerceDomBoolean,
 } from "./utils";
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
+import { FileTriggerContext } from "./fileTriggerContext";
 import { ProgressBarContext } from "./ProgressBar";
 import { joinSlotClass, useSlotValue } from "./slots";
 import { splitProps } from "@proyecto-viviana/solidaria/utils";
@@ -228,6 +230,7 @@ export const ButtonContext = createContext<ButtonContextValue | null>(null);
  * ```
  */
 export function Button(props: ButtonProps): JSX.Element {
+  const fileTrigger = useContext(FileTriggerContext);
   const contextProps = useContext(ButtonContext);
   const contextSlotProps = untrack(
     () => contextProps?.slots?.[typeof props.slot === "string" ? props.slot : "default"],
@@ -285,7 +288,11 @@ export function Button(props: ButtonProps): JSX.Element {
   // a getter that calls `memo()` on every read, so reading it lazily from a native
   // press or hover handler creates that computation with no owner: it warns and is
   // never disposed. A memo pins the read to this component's owner.
-  const resolvePending = createMemo((): boolean => !!local.isPending);
+  const resolvePending = createMemo((): boolean =>
+    fileTrigger
+      ? !!(props.isPending ?? contextSlotProps?.isPending ?? contextProps?.isPending)
+      : !!local.isPending,
+  );
   const isPendingFocusable = () => local.isPendingFocusable !== false;
 
   const [resolvedButtonEl, setResolvedButtonEl] = createSignal<HTMLButtonElement | null>(null, {
@@ -311,7 +318,14 @@ export function Button(props: ButtonProps): JSX.Element {
     if (resolvePending()) {
       return;
     }
-    if (typeof ariaProps.onPress === "function") {
+    if (fileTrigger) {
+      // Read original callbacks at activation time. mergeProps event chains
+      // capture snapshots; calling that chain too would double delivery.
+      contextProps?.onPress?.(e);
+      contextSlotProps?.onPress?.(e);
+      fileTrigger.open();
+      props.onPress?.(e);
+    } else if (typeof ariaProps.onPress === "function") {
       ariaProps.onPress(e);
     }
     // Toggle only when this exact button is the registered trigger element.
@@ -472,8 +486,12 @@ export function Button(props: ButtonProps): JSX.Element {
     return labelledBy;
   });
 
+  let releaseFileTrigger: (() => void) | undefined;
+  onCleanup(() => releaseFileTrigger?.());
   const handleRef = (el: HTMLButtonElement) => {
+    releaseFileTrigger?.();
     setResolvedButtonEl(el);
+    releaseFileTrigger = fileTrigger?.register(el);
     assignRef(local.ref, el);
 
     buttonPropsRef?.(el);

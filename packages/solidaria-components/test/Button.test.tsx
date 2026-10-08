@@ -13,6 +13,8 @@ import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria";
 import { createSignal, flush } from "solid-js";
 import { Button, ButtonContext, type ButtonRenderProps } from "../src/Button";
+import { FileTrigger } from "../src/FileTrigger";
+import { DialogTriggerContext, PopoverTriggerContext } from "../src/contexts";
 import { ProgressBar } from "../src/ProgressBar";
 import { ToggleButton } from "../src/ToggleButton";
 import {
@@ -1063,4 +1065,87 @@ describe("ToggleButton a11y validation", () => {
     render(() => <ToggleButton>Bold</ToggleButton>);
     assertAriaIdIntegrity(document.body);
   });
+});
+
+describe("Button FileTrigger continuation", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+  for (const kind of ["dialog", "popover"] as const) {
+    it(`runs live dispatch then ${kind} continuation exactly once`, async () => {
+      const user = setupUser();
+      const calls: string[] = [];
+      const [version, setVersion] = createSignal("A");
+      const [trigger, setTrigger] = createSignal<HTMLElement | null>(null);
+      const context = {
+        state: {
+          isOpen: () => false,
+          open: vi.fn(),
+          close: vi.fn(),
+          setOpen: vi.fn(),
+          toggle: () => {
+            calls.push("toggle");
+          },
+        },
+        triggerRef: trigger,
+        setTriggerRef: setTrigger,
+        triggerId: "upload-trigger",
+        trigger: "PopoverTrigger",
+        triggerProps:
+          kind === "popover"
+            ? {
+                onPress: () => {
+                  calls.push("toggle");
+                },
+              }
+            : undefined,
+      };
+      const outer = {
+        get onPress() {
+          const value = version();
+          return () => {
+            calls.push(`base-${value}`);
+          };
+        },
+      };
+      const Child = () => (
+        <ButtonContext value={outer}>
+          <FileTrigger>
+            <Button
+              onPress={(() => {
+                const value = version();
+                return () => {
+                  calls.push(`own-${value}`);
+                };
+              })()}
+            >
+              Upload
+            </Button>
+          </FileTrigger>
+        </ButtonContext>
+      );
+      const { container } = render(() =>
+        kind === "dialog" ? (
+          <DialogTriggerContext value={context}>
+            <Child />
+          </DialogTriggerContext>
+        ) : (
+          <PopoverTriggerContext value={context}>
+            <Child />
+          </PopoverTriggerContext>
+        ),
+      );
+      const button = container.querySelector("button")!;
+      vi.spyOn(container.querySelector("input")!, "click").mockImplementation(() => {
+        calls.push("picker");
+      });
+      expect(trigger()).toBe(button);
+      setVersion("B");
+      flush();
+      expect(calls).toEqual([]);
+      await user.click(button);
+      expect(calls).toEqual(["base-B", "picker", "own-B", "toggle"]);
+    });
+  }
 });
