@@ -16,18 +16,25 @@ history:
       at: 2026-10-08,
       note: "Held. #623 is on main, and neither TreeProps nor TreeItemProps has an edit field. F2, double press, commit, and cancel have no approved public name, so no edit-mode prop was minted. The name decision is #520.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Owner approved onRename(key, name) on viviana-ui TreeView only. Passing it enables F2 or double-press to edit, Enter to commit, Escape to cancel, and blur to commit. Arrows and type-ahead stay in the field. Do not change solid-spectrum. A row-menu Rename item is not this ticket. This is not a #520 hold.",
+    }
 ---
 
 A TreeView row needs to edit its own label without leaving the row. Nothing
 in the styled or headless tree starts that edit, commits it, or cancels it.
-Upstream React Spectrum Tree does not have this behavior, so this is an
-extension. Do not mint a public edit-mode prop until the owner names it.
-Stop and record if the name is not already approved.
+Upstream React Spectrum Tree does not have this behavior, so this is a
+viviana-ui extension. Do not change solid-spectrum.
 
-The edit field is a `TextField`. #623 still throws
-`REACTIVE_WRITE_IN_OWNED_SCOPE` when `Input` or `TextArea` unmounts, so this
-ticket waits on #623. It is not `blocked: true`; the dependency is that
-unmount write.
+The owner approved one optional `onRename(key, name)` on the viviana-ui
+TreeView. Passing it enables F2 or a double press to edit. Enter commits,
+Escape cancels, and blur commits. Arrow keys and type-ahead stay in the
+field. The field is an internal TextField. A Rename item in the row menu is
+not this ticket. This is not a #520 hold.
+
+#623 is on main. Unmounting the editor must not throw.
 
 ## Done when
 

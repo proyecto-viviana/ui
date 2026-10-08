@@ -11,26 +11,28 @@ history:
       at: 2026-10-08,
       note: "visualmode G16. Owner question only. Stop, snap, key, and easing shapes are not in the S2 workflow set. They stay visualmode createIcon unless the owner places them here. DragHandle is #628. Do not add glyphs on this ticket. Waiting visualmode #10155, #10157, and #10158.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Owner placed the glyphs in packages/viviana-ui/src/icon/extra-icons/. Names: StopIcon, SnapIcon, KeyframeIcon, EasingHoldIcon, EasingLinearIcon, EasingInIcon, EasingOutIcon, EasingInOutIcon. Not s2wf-icons, not pixel-icons, and not solid-spectrum. Public import follows the #628 icon subpath. DragHandle stays #628.",
+    }
 ---
 
 Visualmode asked where four editor icons belong: Stop, snap, the key
 diamond, and the easing shapes (hold, linear, in, out, in-out). They are
-not in the shipped S2 workflow set. They stay visualmode `createIcon` unless
-the owner says they belong in this package.
+not in the shipped S2 workflow set.
 
-This ticket does not add glyphs, export names, or a new icon component.
-Stop and record until the owner places them. A "no, they stay in visualmode"
-answer closes the question without a package change.
-
-`DragHandle` is a different fact. It is declared and its JS is not in the
-`0.8.0-rc.0` tarball. That packaging hole is #628, not this ticket.
+The owner placed them in a new viviana-ui module,
+`packages/viviana-ui/src/icon/extra-icons/`. The components are `StopIcon`,
+`SnapIcon`, `KeyframeIcon`, `EasingHoldIcon`, `EasingLinearIcon`,
+`EasingInIcon`, `EasingOutIcon`, and `EasingInOutIcon`. They do not join
+`s2wf-icons`, `pixel-icons`, or solid-spectrum. The public import follows the
+icon subpath #628 opened. `DragHandle` stays the #628 path.
 
 ## Done when
 
-The owner has said whether Stop, snap, key, and easing are package icons or
-visualmode icons. If they stay in visualmode, this ticket closes with no
-glyph added. If they move here, the name and the set are the ones the owner
-wrote down, and only then does an implementation ticket exist.
+Those eight glyphs resolve from the extra-icons subpath, and the S2 workflow
+set, pixel-icons, and solid-spectrum are unchanged. DragHandle is not reopened.
 
 ## Relationship
 

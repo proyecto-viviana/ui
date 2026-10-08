@@ -16,13 +16,22 @@ history:
       at: 2026-10-08,
       note: "Held. TreeViewItem renders one TreeExpandButton, and neither TreeItemProps nor TreeExpandButtonProps names a second control. Upstream TreeView has one ExpandableRowChevron and no equivalent, so no second expand control was minted. The name decision is #520.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Owner accepted the second expand control on viviana-ui TreeView only. Child rows stay on expandedKeys. The second control is hasDetail on the item and detailExpandedKeys / onDetailExpandedChange on the tree. Each control toggles only its own state. Do not change solid-spectrum. This is not a #520 hold.",
+    }
 ---
 
 A TreeView row has one expand control, `TreeExpandButton`, rendered once per
-item in `packages/viviana-ui/src/tree/index.tsx` and the solid-spectrum copy.
-The layer tree needs a second control that expands and collapses on its own,
-independent of that button. Upstream Tree does not provide one. Do not mint
-the public name. Stop and record if the owner has not named it.
+item. The second control is a viviana-ui TreeView extension only. Do not
+change solid-spectrum, and do not change the headless tree's existing
+`expandedKeys` path.
+
+The owner accepted the second control. Child rows stay on `expandedKeys`.
+The item takes `hasDetail`. The tree takes `detailExpandedKeys` and
+`onDetailExpandedChange`. Each control toggles only its own state. This is
+not a #520 hold.
 
 The placeholder button on a non-expandable row already stops propagation.
 That is not a second control.

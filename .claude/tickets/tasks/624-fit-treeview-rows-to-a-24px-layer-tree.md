@@ -16,29 +16,30 @@ history:
       at: 2026-10-07,
       note: "Held. Upstream TreeViewStyleProps is only selectionStyle, and neither styled TreeProps has a size or density field. The 24px row has no approved public name, so density, compact, and any other new prop were not minted. The name decision is #520. The 40px row is unchanged.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: 'Owner approved density="compact" on viviana-ui TreeView only. Compact is a 24px row and a 24px expand control. Omitted stays the 40px row. Do not change solid-spectrum. This is not a #520 hold.',
+    }
 ---
 
 The layer tree needs rows whose computed height is 24px, including the expand
 control. Both styled trees set the row to `minHeight: 40` and the expand
-control to `size: 40`:
+control to `size: 40`. The extension lands only in
+`packages/viviana-ui/src/tree/index.tsx` (`treeViewItem` and
+`treeExpandButton`). Leave `packages/solid-spectrum/src/tree/index.tsx` at
+40px.
 
-- `packages/viviana-ui/src/tree/index.tsx` (`treeViewItem` around line 308,
-  `treeExpandButton` around line 426)
-- `packages/solid-spectrum/src/tree/index.tsx` (the same two styles)
-
-`TreeProps` has no size or density field that changes those numbers. The
-installed `0.8.0-rc.0` tarball matches. There is no upstream TreeView answer
-that already names a shorter row.
+The owner approved `density="compact"` on the viviana-ui TreeView. Compact is
+a 24px row and a 24px expand control. Omitted stays the 40px row. Do not add
+`spacious`. This is not a #520 hold.
 
 ## Done when
 
-A layer-tree row and its expand control compute to 24px, and the existing
-40px row still matches upstream when that shorter row is not requested. Proof
-is the computed height, not a screenshot floor.
-
-The public name for the shorter row is owner-steered. Stop and record if that
-name is not already approved. Do not mint `density`, `compact`, or another
-public prop while waiting.
+A viviana-ui layer-tree row and its expand control compute to 24px when
+`density="compact"`, and the existing 40px row still matches when that prop is
+omitted. Proof is the computed height, not a screenshot floor. solid-spectrum
+stays at 40px.
 
 ## Relationship
 
