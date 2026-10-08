@@ -39,10 +39,7 @@ import { useSyntheticLinkProps } from "../utils/openLink";
 /**
  * Creates accessibility props for a grid list item.
  */
-export function createGridListItem<
-  T extends object,
-  C extends GridCollection<T> = GridCollection<T>,
->(
+export function createGridListItem<T, C extends GridCollection<T> = GridCollection<T>>(
   props: Accessor<AriaGridListItemProps>,
   state: Accessor<GridState<T, C>>,
   ref: Accessor<HTMLElement | null>,

@@ -23,6 +23,7 @@
  */
 
 import { onCleanup, createSignal, createTrackedEffect } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
@@ -68,13 +69,12 @@ export interface AriaTagGroupProps {
 
 export interface TagGroupAria {
   /**
-   * Props for the tag group container element. Upstream `gridProps` is
-   * DOMAttributes, so focus handlers are plain functions. A string index
-   * alone types `onFocus` as `{}`, which cannot be called.
+   * Props for the tag group container element. Focus attributes follow Solid
+   * JSX, matching the merged grid and focus-within props.
    */
   gridProps: {
-    onFocus?: (event: FocusEvent) => void;
-    onBlur?: (event: FocusEvent) => void;
+    onFocus?: JSX.EventHandler<HTMLElement, FocusEvent>;
+    onBlur?: JSX.EventHandler<HTMLElement, FocusEvent>;
   } & Record<string, unknown>;
   /** Props for the tag group's visible label (if any). */
   labelProps: Record<string, unknown>;
@@ -151,7 +151,7 @@ function toGridState<T>(state: ListState<T>): GridState<unknown, GridCollection<
     toggleSelection: (key: Key) => state.toggleSelection(key),
     replaceSelection: (key: Key) => state.replaceSelection(key),
     setSelectedKeys: (keys: Iterable<Key>) => state.setSelectedKeys(keys),
-    extendSelection: (toKey: Key) => state.extendSelection(toKey),
+    extendSelection: (toKey: Key) => state.extendSelection(toKey, state.collection()),
     selectAll: () => state.selectAll(),
     clearSelection: () => state.clearSelection(),
     toggleSelectAll: () => state.toggleSelectAll(),

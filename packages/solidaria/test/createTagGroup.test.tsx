@@ -1,13 +1,15 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vite-plus/test";
+import { afterEach, describe, it, expect, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
 import { createSignal, flush, For } from "solid-js";
 import { createListState, type Key, type SelectionMode } from "@proyecto-viviana/solid-stately";
 import { createTagGroup, createTag } from "../src/tag";
 import { I18nProvider } from "../src/i18n";
 import { setInteractionModality } from "../src/interactions/createInteractionModality";
+
+afterEach(cleanup);
 
 interface Item {
   id: string;

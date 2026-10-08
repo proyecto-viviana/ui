@@ -68,7 +68,7 @@ const gridListDataMap = new WeakMap<object, GridListData>();
 /**
  * Gets the grid list data for a given state.
  */
-export function getGridListData<T extends object, C extends GridCollection<T>>(
+export function getGridListData<T, C extends GridCollection<T>>(
   state: GridState<T, C>,
 ): GridListData | undefined {
   return gridListDataMap.get(state);
@@ -80,7 +80,7 @@ export function getGridListData<T extends object, C extends GridCollection<T>>(
  * `"selection"` they remain focusable (selection is still blocked elsewhere).
  * Mirrors `ListKeyboardDelegate.isDisabled` in React Aria.
  */
-function isNavigationDisabled<T extends object, C extends GridCollection<T>>(
+function isNavigationDisabled<T, C extends GridCollection<T>>(
   state: GridState<T, C>,
   key: Key,
 ): boolean {
@@ -94,7 +94,7 @@ function isNavigationDisabled<T extends object, C extends GridCollection<T>>(
  * `getFirstKey`/`getLastKey` boundaries all funnel through this so arrow keys,
  * Home and End land on enabled rows only.
  */
-function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
+function findNextNavigableKey<T, C extends GridCollection<T>>(
   state: GridState<T, C>,
   startKey: Key | null,
   step: (key: Key) => Key | null,
@@ -106,9 +106,7 @@ function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
   return key;
 }
 
-function navigableKeys<T extends object, C extends GridCollection<T>>(
-  state: GridState<T, C>,
-): Key[] {
+function navigableKeys<T, C extends GridCollection<T>>(state: GridState<T, C>): Key[] {
   const keys: Key[] = [];
   let key = state.collection.getFirstKey();
   while (key != null) {
@@ -137,9 +135,7 @@ function gridNeighborKey(
   return keys[nextRow * columns + nextCol] ?? null;
 }
 
-function firstSelectedKey<T extends object, C extends GridCollection<T>>(
-  state: GridState<T, C>,
-): Key | null {
+function firstSelectedKey<T, C extends GridCollection<T>>(state: GridState<T, C>): Key | null {
   let key = state.collection.getFirstKey();
   while (key != null) {
     if (state.isSelected(key)) return key;
@@ -148,9 +144,7 @@ function firstSelectedKey<T extends object, C extends GridCollection<T>>(
   return null;
 }
 
-function lastSelectedKey<T extends object, C extends GridCollection<T>>(
-  state: GridState<T, C>,
-): Key | null {
+function lastSelectedKey<T, C extends GridCollection<T>>(state: GridState<T, C>): Key | null {
   let key = state.collection.getLastKey();
   while (key != null) {
     if (state.isSelected(key)) return key;
@@ -167,7 +161,7 @@ function queryCollectionItem(root: HTMLElement, key: Key): HTMLElement | null {
 /**
  * Creates accessibility props for a grid list.
  */
-export function createGridList<T extends object, C extends GridCollection<T> = GridCollection<T>>(
+export function createGridList<T, C extends GridCollection<T> = GridCollection<T>>(
   props: Accessor<AriaGridListProps>,
   state: Accessor<GridState<T, C>>,
   ref: Accessor<HTMLElement | null>,
