@@ -11,6 +11,11 @@ history:
       at: 2026-10-08,
       note: "visualmode T3. One TreeExpandButton per row. A second control has no upstream equivalent, so its public name is owner-steered. Lower than #624, #329, #84, and #625. Waiting visualmode #10157.",
     }
+  - {
+      state: open,
+      at: 2026-10-08,
+      note: "Held. TreeViewItem renders one TreeExpandButton, and neither TreeItemProps nor TreeExpandButtonProps names a second control. Upstream TreeView has one ExpandableRowChevron and no equivalent, so no second expand control was minted. The name decision is #520.",
+    }
 ---
 
 A TreeView row has one expand control, `TreeExpandButton`, rendered once per
