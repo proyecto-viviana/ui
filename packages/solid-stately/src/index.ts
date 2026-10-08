@@ -119,6 +119,9 @@ export {
   type ComboBoxState,
   type ComboBoxStateProps,
   type ComboBoxValidationValue,
+  type ComboBoxSelectionMode,
+  type ComboBoxValueType,
+  type ComboBoxChangeValueType,
   type FilterFn,
   type MenuTriggerAction,
 } from "./combobox";

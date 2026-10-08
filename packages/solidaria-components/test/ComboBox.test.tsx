@@ -1519,8 +1519,8 @@ describe("ComboBox", () => {
     }
 
     it("allows selecting multiple items", async () => {
-      const onSelectionChangeMultiple = vi.fn();
-      render(() => <MultiSelectComboBox comboBoxProps={{ onSelectionChangeMultiple }} />);
+      const onChange = vi.fn();
+      render(() => <MultiSelectComboBox comboBoxProps={{ onChange }} />);
 
       const button = screen.getByRole("button");
       await user.click(button);
@@ -1534,7 +1534,7 @@ describe("ComboBox", () => {
       await user.click(appleOption);
 
       await waitFor(() => {
-        expect(onSelectionChangeMultiple).toHaveBeenCalledWith(new Set(["1"]));
+        expect(onChange).toHaveBeenCalledWith(["1"]);
       });
 
       // Select second item
@@ -1542,7 +1542,7 @@ describe("ComboBox", () => {
       await user.click(bananaOption);
 
       await waitFor(() => {
-        expect(onSelectionChangeMultiple).toHaveBeenCalledWith(new Set(["1", "2"]));
+        expect(onChange).toHaveBeenCalledWith(["1", "2"]);
       });
     });
 
@@ -1567,7 +1567,7 @@ describe("ComboBox", () => {
     });
 
     it("shows selected items as tags", async () => {
-      render(() => <MultiSelectComboBox comboBoxProps={{ defaultSelectedKeys: ["1", "3"] }} />);
+      render(() => <MultiSelectComboBox comboBoxProps={{ defaultValue: ["1", "3"] }} />);
 
       // Tags should be rendered for the selected items
       await waitFor(() => {
@@ -1581,12 +1581,12 @@ describe("ComboBox", () => {
     });
 
     it("removes last selected item on Backspace when input empty", async () => {
-      const onSelectionChangeMultiple = vi.fn();
+      const onChange = vi.fn();
       render(() => (
         <MultiSelectComboBox
           comboBoxProps={{
-            defaultSelectedKeys: ["1", "2"],
-            onSelectionChangeMultiple,
+            defaultValue: ["1", "2"],
+            onChange,
           }}
         />
       ));
@@ -1599,8 +1599,48 @@ describe("ComboBox", () => {
 
       await waitFor(() => {
         // Should remove the last key ('2')
-        expect(onSelectionChangeMultiple).toHaveBeenCalledWith(new Set(["1"]));
+        expect(onChange).toHaveBeenCalledWith(["1"]);
       });
+    });
+
+    it("reports the next keys while a controlled multiple value stays put", async () => {
+      const onChange = vi.fn();
+      render(() => <MultiSelectComboBox comboBoxProps={{ value: ["1"], onChange }} />);
+
+      const button = screen.getByRole("button", { name: "Show suggestions" });
+      await user.click(button);
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole("option", { name: "Banana" }));
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenCalledWith(["1", "2"]);
+      });
+      expect(screen.getAllByRole("button", { name: /Remove/, hidden: true })).toHaveLength(1);
+    });
+
+    it("renders one hidden input per selected key", () => {
+      render(() => (
+        <MultiSelectComboBox
+          comboBoxProps={{ name: "fruit", formValue: "key", defaultValue: ["1", "3"] }}
+        />
+      ));
+
+      const hiddenInputs = document.querySelectorAll('input[type="hidden"][name="fruit"]');
+      expect(hiddenInputs).toHaveLength(2);
+      expect(hiddenInputs[0]).toHaveValue("1");
+      expect(hiddenInputs[1]).toHaveValue("3");
+    });
+
+    it("renders one empty hidden input when the multiple value is empty", () => {
+      render(() => <MultiSelectComboBox comboBoxProps={{ name: "fruit", formValue: "key" }} />);
+
+      const hiddenInputs = document.querySelectorAll('input[type="hidden"][name="fruit"]');
+      expect(hiddenInputs).toHaveLength(1);
+      expect(hiddenInputs[0]).toHaveValue("");
     });
 
     it("sets aria-multiselectable on listbox", async () => {

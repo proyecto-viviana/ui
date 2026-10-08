@@ -40,16 +40,37 @@ export type { FocusStrategy } from "../collections/types";
 
 export type FilterFn = (textValue: string, inputValue: string) => boolean;
 
-export interface ComboBoxValidationValue {
-  /** The selected key in the ComboBox. */
+export type ComboBoxSelectionMode = "single" | "multiple";
+
+/** Single mode is `Key | null`. Multiple mode is `readonly Key[]`. */
+export type ComboBoxValueType<M extends ComboBoxSelectionMode> = M extends "single"
+  ? Key | null
+  : readonly Key[];
+
+/** `onChange` receives a mutable `Key[]` in multiple mode. */
+export type ComboBoxChangeValueType<M extends ComboBoxSelectionMode> = M extends "single"
+  ? Key | null
+  : Key[];
+
+type ComboBoxValidationType<M extends ComboBoxSelectionMode> = M extends "single"
+  ? Key | null
+  : Key[];
+
+const EMPTY_COMBOBOX_KEYS: readonly Key[] = [];
+
+export interface ComboBoxValidationValue<M extends ComboBoxSelectionMode = "single"> {
+  /**
+   * The selected key in the ComboBox.
+   * @deprecated Use `value`.
+   */
   selectedKey: Key | null;
-  /** The key(s) of the currently selected item(s). */
-  value: Key | null | Iterable<Key>;
+  /** The keys of the currently selected items. */
+  value: ComboBoxValidationType<M>;
   /** The value of the ComboBox input. */
   inputValue: string;
 }
 
-export interface ComboBoxStateProps<T = unknown> {
+export interface ComboBoxStateProps<T = unknown, M extends ComboBoxSelectionMode = "single"> {
   /** The items to display in the combobox dropdown. */
   items?: T[];
   /** Default items when uncontrolled. */
@@ -62,20 +83,35 @@ export interface ComboBoxStateProps<T = unknown> {
   getDisabled?: (item: T) => boolean;
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
-  /** The selection mode for the combobox. */
-  selectionMode?: "single" | "multiple";
-  /** The currently selected key (controlled, single mode). */
+  /**
+   * Whether single or multiple selection is enabled.
+   * @default 'single'
+   */
+  selectionMode?: M;
+  /**
+   * The current value (controlled).
+   * Single mode is `Key | null`. Multiple mode is `readonly Key[]`.
+   */
+  value?: ComboBoxValueType<M>;
+  /** The default value (uncontrolled). */
+  defaultValue?: ComboBoxValueType<M>;
+  /** Handler called when the value changes. */
+  onChange?: (value: ComboBoxChangeValueType<M>) => void;
+  /**
+   * The currently selected key in the collection (controlled).
+   * @deprecated Use `value`.
+   */
   selectedKey?: Key | null;
-  /** The default selected key (uncontrolled, single mode). */
+  /**
+   * The initial selected key in the collection (uncontrolled).
+   * @deprecated Use `defaultValue`.
+   */
   defaultSelectedKey?: Key | null;
-  /** The currently selected keys (controlled, multiple mode). */
-  selectedKeys?: Iterable<Key>;
-  /** The default selected keys (uncontrolled, multiple mode). */
-  defaultSelectedKeys?: Iterable<Key>;
-  /** Handler called when the selection changes (single mode). */
+  /**
+   * Handler that is called when the selection changes.
+   * @deprecated Use `onChange`.
+   */
   onSelectionChange?: (key: Key | null) => void;
-  /** Handler called when the selection changes (multiple mode). */
-  onSelectionChangeMultiple?: (keys: Set<Key>) => void;
   /** The current input value (controlled). */
   inputValue?: string;
   /** The default input value (uncontrolled). */
@@ -109,7 +145,7 @@ export interface ComboBoxStateProps<T = unknown> {
   /** @deprecated Use isInvalid instead. */
   validationState?: "valid" | "invalid";
   /** Custom validation function. */
-  validate?: ValidationFunction<ComboBoxValidationValue | null>;
+  validate?: ValidationFunction<ComboBoxValidationValue<M> | null>;
   /**
    * Whether to use native HTML form validation or ARIA validation semantics.
    * @default "native"
@@ -119,7 +155,10 @@ export interface ComboBoxStateProps<T = unknown> {
   name?: string | string[];
 }
 
-export interface ComboBoxState<T = unknown> extends FormValidationState {
+export interface ComboBoxState<
+  T = unknown,
+  M extends ComboBoxSelectionMode = "single",
+> extends FormValidationState {
   /** The collection of items (may be filtered). */
   readonly collection: Accessor<Collection<T>>;
   /**
@@ -136,19 +175,40 @@ export interface ComboBoxState<T = unknown> extends FormValidationState {
   close(): void;
   /** Toggle the combobox dropdown. */
   toggle(focusStrategy?: FocusStrategy | null, trigger?: MenuTriggerAction): void;
-  /** The currently selected key (single mode). */
+  /**
+   * The key for the first selected item. Null in multiple mode.
+   * @deprecated Use `value`.
+   */
   readonly selectedKey: Accessor<Key | null>;
-  /** The default selected key. */
+  /**
+   * The default selected key.
+   * @deprecated Use `defaultValue`.
+   */
   readonly defaultSelectedKey: Key | null;
-  /** The currently selected item (single mode). */
+  /**
+   * The value of the first selected item.
+   * @deprecated Use `selectedItems`.
+   */
   readonly selectedItem: Accessor<CollectionNode<T> | null>;
-  /** Set the selected key. */
+  /**
+   * Sets the selected key.
+   * @deprecated Use `setValue`.
+   */
   setSelectedKey(key: Key | null): void;
-  /** The currently selected keys (multiple mode). */
+  /** The current combobox value. */
+  readonly value: Accessor<ComboBoxValueType<M>>;
+  /** The default combobox value. */
+  readonly defaultValue: ComboBoxValueType<M>;
+  /** Sets the combobox value. */
+  setValue(value: Key | readonly Key[] | null): void;
+  /**
+   * Selected keys derived from `value`.
+   * Kept for the headless Backspace path and the tag/list adapters.
+   */
   readonly selectedKeys: Accessor<Set<Key>>;
-  /** Replace the selected keys (multiple mode). */
-  setSelectedKeys(keys: Set<Key>): void;
-  /** The currently selected items (multiple mode). */
+  /** Replace the selected keys. */
+  setSelectedKeys(keys: Iterable<Key>): void;
+  /** The currently selected items. */
   readonly selectedItems: Accessor<CollectionNode<T>[]>;
   /** Remove a selected key (multiple mode). */
   removeSelectedKey(key: Key): void;
@@ -177,7 +237,7 @@ export interface ComboBoxState<T = unknown> extends FormValidationState {
   /** Select a key and close the menu (for ListState compatibility). */
   select(key: Key): void;
   /** The selection mode. */
-  readonly selectionMode: Accessor<"single" | "multiple">;
+  readonly selectionMode: Accessor<ComboBoxSelectionMode>;
   /** Check if a key is selected. */
   isSelected(key: Key): boolean;
   /** Whether the combobox is disabled. */
@@ -199,9 +259,9 @@ export const defaultContainsFilter: FilterFn = (textValue, inputValue) => {
  * Creates state for a combobox component.
  * Combines list state with input value management and filtering.
  */
-export function createComboBoxState<T = unknown>(
-  props: MaybeAccessor<ComboBoxStateProps<T>>,
-): ComboBoxState<T> {
+export function createComboBoxState<T = unknown, M extends ComboBoxSelectionMode = "single">(
+  props: MaybeAccessor<ComboBoxStateProps<T, M>>,
+): ComboBoxState<T, M> {
   const getProps = propsAccessor(props);
 
   // Extract options with defaults
@@ -209,7 +269,7 @@ export function createComboBoxState<T = unknown>(
   const allowsEmptyCollection = () => getProps().allowsEmptyCollection ?? false;
   const allowsCustomValue = () => getProps().allowsCustomValue ?? false;
   const shouldCloseOnBlur = () => getProps().shouldCloseOnBlur ?? true;
-  const isMultiple = () => getProps().selectionMode === "multiple";
+  const isMultiple = () => (getProps().selectionMode ?? "single") === "multiple";
 
   // Track focus strategy for list navigation
   const [focusStrategy, setFocusStrategy] = createInternalSignal<FocusStrategy | null>(null);
@@ -220,31 +280,37 @@ export function createComboBoxState<T = unknown>(
   // Track the menu open trigger
   let menuOpenTrigger: MenuTriggerAction = "focus";
 
-  // ---- Multi-select State ----
-  const isMultiSelectionControlled = () => getProps().selectedKeys !== undefined;
-  const [internalSelectedKeys, setInternalSelectedKeys] = createInternalSignal<Set<Key>>(
-    new Set(getProps().defaultSelectedKeys ?? []),
-  );
+  // ---- Value ----
+  // One signal matches upstream ValueType<M>. `selectedKey` stays as a
+  // deprecated single-mode view. Multiple mode reads and writes `value`.
+  type StoredComboBoxValue = Key | readonly Key[] | null;
 
-  const selectedKeys: Accessor<Set<Key>> = () => {
-    return isMultiSelectionControlled()
-      ? new Set(getProps().selectedKeys ?? [])
-      : internalSelectedKeys();
-  };
-
-  const setSelectedKeys = (keys: Set<Key>) => {
-    if (!isMultiSelectionControlled()) {
-      setInternalSelectedKeys(new Set(keys));
+  const controlledPropValue = (): StoredComboBoxValue | undefined => {
+    const propsNow = getProps();
+    if (propsNow.value !== undefined) {
+      return propsNow.value as StoredComboBoxValue;
     }
-    getProps().onSelectionChangeMultiple?.(keys);
+    if (!isMultiple() && propsNow.selectedKey !== undefined) {
+      return propsNow.selectedKey;
+    }
+    return undefined;
   };
 
-  // ---- Selection State (single mode) ----
-  // Note: Selection state is initialized first because input value may depend on it
-  const isSelectionControlled = () => getProps().selectedKey !== undefined;
-  const [internalSelectedKey, setInternalSelectedKey] = createInternalSignal<Key | null>(
-    getProps().defaultSelectedKey ?? null,
-  );
+  const isValueControlled = () => controlledPropValue() !== undefined;
+
+  const initialStoredValue = (): StoredComboBoxValue => {
+    const propsNow = getProps();
+    if (propsNow.defaultValue !== undefined) {
+      return propsNow.defaultValue as StoredComboBoxValue;
+    }
+    if ((propsNow.selectionMode ?? "single") === "multiple") {
+      return [];
+    }
+    return propsNow.defaultSelectedKey ?? null;
+  };
+
+  const [internalValue, setInternalValue] =
+    createInternalSignal<StoredComboBoxValue>(initialStoredValue());
 
   // ---- Input Value State ----
   // Initialized after selection so we can derive from selected item if needed
@@ -274,32 +340,97 @@ export function createComboBoxState<T = unknown>(
   // Track last committed input value
   const [lastValue, setLastValue] = createInternalSignal(inputValue());
 
+  const storedValue = (): StoredComboBoxValue => {
+    const controlled = controlledPropValue();
+    return controlled !== undefined ? controlled : internalValue();
+  };
+
+  const displayValue = (): ComboBoxValueType<M> => {
+    const current = storedValue();
+    if (!isMultiple()) {
+      if (Array.isArray(current)) {
+        return (current[0] ?? null) as ComboBoxValueType<M>;
+      }
+      return (current ?? null) as ComboBoxValueType<M>;
+    }
+    if (Array.isArray(current)) {
+      return current as ComboBoxValueType<M>;
+    }
+    if (current == null) {
+      return EMPTY_COMBOBOX_KEYS as unknown as ComboBoxValueType<M>;
+    }
+    return [current] as unknown as ComboBoxValueType<M>;
+  };
+
   const selectedKey: Accessor<Key | null> = () => {
-    return isSelectionControlled() ? (getProps().selectedKey ?? null) : internalSelectedKey();
+    if (isMultiple()) return null;
+    const current = displayValue();
+    return (Array.isArray(current) ? (current[0] ?? null) : current) as Key | null;
+  };
+
+  const selectedKeys: Accessor<Set<Key>> = () => {
+    const current = displayValue();
+    if (Array.isArray(current)) return new Set(current);
+    return current == null ? new Set() : new Set([current as Key]);
+  };
+
+  const setValue = (next: Key | readonly Key[] | null) => {
+    // Solid 2 batches writes onto a microtask, so a fully controlled
+    // onSelectionChange that updates the value then inputValue settles in
+    // one flush instead of closing then auto-opening.
+    if (!isMultiple()) {
+      const key = Array.isArray(next) ? (next[0] ?? null) : next;
+      const previous = untrack(selectedKey);
+      if (!isValueControlled()) {
+        setInternalValue(key);
+      }
+      getProps().onChange?.(key as ComboBoxChangeValueType<M>);
+      if (key !== previous) {
+        getProps().onSelectionChange?.(key);
+      }
+      return;
+    }
+
+    let keys: Key[];
+    if (Array.isArray(next)) {
+      keys = [...next];
+    } else if (next != null) {
+      keys = [next];
+    } else {
+      keys = [];
+    }
+    if (!isValueControlled()) {
+      setInternalValue(keys);
+    }
+    getProps().onChange?.(keys as ComboBoxChangeValueType<M>);
   };
 
   const setSelectedKey = (key: Key | null) => {
-    // Solid 2 batches writes onto a microtask, so a fully controlled
-    // onSelectionChange that updates selectedKey then inputValue settles in
-    // one flush instead of closing then auto-opening.
-    if (!isSelectionControlled()) {
-      setInternalSelectedKey(key);
-    }
-    getProps().onSelectionChange?.(key);
+    setValue(key);
   };
 
-  const displayValue: Accessor<Key | null | Set<Key>> = () => {
-    return isMultiple() ? selectedKeys() : selectedKey();
-  };
+  const defaultValue: ComboBoxValueType<M> = (() => {
+    const propsNow = getProps();
+    const resolved =
+      propsNow.defaultValue !== undefined
+        ? propsNow.defaultValue
+        : isMultiple()
+          ? (EMPTY_COMBOBOX_KEYS as unknown as ComboBoxValueType<M>)
+          : ((propsNow.defaultSelectedKey ?? null) as ComboBoxValueType<M>);
+    return (resolved ?? untrack(displayValue)) as ComboBoxValueType<M>;
+  })();
 
-  const validationValue = createMemo<ComboBoxValidationValue | null>(() => {
+  const defaultSelectedKey =
+    getProps().defaultSelectedKey ?? (isMultiple() ? null : (untrack(displayValue) as Key | null));
+
+  const validationValue = createMemo<ComboBoxValidationValue<M> | null>(() => {
     const dVal = displayValue();
-    if (dVal instanceof Set && dVal.size === 0) {
+    if (Array.isArray(dVal) && dVal.length === 0) {
       return null;
     }
     return {
       inputValue: inputValue(),
-      value: dVal,
+      value: (Array.isArray(dVal) ? [...dVal] : dVal) as ComboBoxValidationType<M>,
       selectedKey: selectedKey(),
     };
   });
@@ -376,19 +507,13 @@ export function createComboBoxState<T = unknown>(
     },
     allowDuplicateSelectionEvents: true,
     get selectedKeys() {
-      if (isMultiple()) {
-        return Array.from(selectedKeys());
-      }
-      const key = selectedKey();
-      return key != null ? [key] : [];
+      return convertValue(displayValue());
     },
     onSelectionChange(keys) {
       if (keys === "all") return;
 
       if (isMultiple()) {
-        // In multiple mode, toggle selections
-        const newKeys = new Set(keys);
-        setSelectedKeys(newKeys);
+        setValue([...keys]);
         return;
       }
 
@@ -403,7 +528,7 @@ export function createComboBoxState<T = unknown>(
         return;
       }
 
-      setSelectedKey(key);
+      setValue(key);
     },
   });
 
@@ -447,13 +572,16 @@ export function createComboBoxState<T = unknown>(
   // Initialize input value from selected item if not already set
   // This runs once on creation
   if (!inputInitialized && !isInputControlled()) {
-    const defaultKey = getProps().defaultSelectedKey;
-    if (defaultKey != null && !getProps().defaultInputValue) {
-      // Get the text value from the collection for the default selected key
-      const item = originalCollection().getItem(defaultKey);
-      if (item) {
-        setInternalInputValue(item.textValue);
-        setLastValue(item.textValue);
+    // RAC getDefaultInputValue: an explicit empty defaultInputValue wins.
+    // Multiple mode does not seed the input from the first selected item.
+    if (getProps().defaultInputValue == null && !isMultiple()) {
+      const key = selectedKey();
+      if (key != null) {
+        const item = originalCollection().getItem(key);
+        if (item) {
+          setInternalInputValue(item.textValue);
+          setLastValue(item.textValue);
+        }
       }
     }
     inputInitialized = true;
@@ -461,8 +589,8 @@ export function createComboBoxState<T = unknown>(
 
   // ---- Helper Functions ----
   const resetInputValue = () => {
-    const item = selectedItem();
-    const textValue = item?.textValue ?? "";
+    const key = selectedKey();
+    const textValue = key != null ? (originalCollection().getItem(key)?.textValue ?? "") : "";
     setLastValue(textValue);
     setInputValue(textValue);
   };
@@ -556,21 +684,35 @@ export function createComboBoxState<T = unknown>(
 
   // ---- Commit/Revert Logic ----
   const commitCustomValue = () => {
-    setSelectedKey(null);
+    if (isMultiple()) {
+      // Custom text is independent of the selected items.
+      setLastValue(inputValue());
+      closeMenu();
+      return;
+    }
+    setValue(null);
     closeMenu();
   };
 
-  const commitSelection = () => {
-    // If both are controlled, just call onSelectionChange
-    if (isSelectionControlled() && isInputControlled()) {
-      getProps().onSelectionChange?.(selectedKey());
-      const item = selectedItem();
+  const commitSelection = (shouldForceSelectionChange = false) => {
+    // Both the value and the input are controlled: notify, then close.
+    // Otherwise reset the input for the caller.
+    if (isValueControlled() && isInputControlled()) {
+      const key = selectedKey();
+      const itemText = key != null ? (originalCollection().getItem(key)?.textValue ?? "") : "";
+      if (shouldForceSelectionChange || isMultiple() || inputValue() !== itemText) {
+        getProps().onSelectionChange?.(key);
+        const current = displayValue();
+        const changeValue = (
+          Array.isArray(current) ? [...current] : current
+        ) as ComboBoxChangeValueType<M>;
+        getProps().onChange?.(changeValue);
+      }
       // RAC useComboBoxState.ts:543-545 — stop the auto-open-on-input effect
       // from reopening after this close.
-      setLastValue(item?.textValue ?? "");
+      setLastValue(itemText);
       closeMenu();
     } else {
-      // Reset input to selected item's text
       resetInputValue();
       closeMenu();
     }
@@ -593,21 +735,16 @@ export function createComboBoxState<T = unknown>(
   const commit = () => {
     const focusedKey = listState.focusedKey();
 
-    if (isMultiple()) {
-      // In multiple mode, toggle the focused item without closing
-      if (overlayState.isOpen() && focusedKey != null) {
-        select(focusedKey);
-      }
-      return;
-    }
-
     if (overlayState.isOpen() && focusedKey != null) {
-      // RAC useComboBoxState.ts:564-572 — already-selected key goes through
-      // commitSelection. A new key is `selectionManager.select()` without
-      // close; the open/close effect then closes while the menu is still
-      // open, so auto-open (input !== last && !isOpen) is skipped.
-      if (selectedKey() === focusedKey) {
-        commitSelection();
+      // RAC useComboBoxState.ts:564-572 — an already-selected single key goes
+      // through commitSelection. A new single key is `selectionManager.select()`
+      // without close; the open/close effect then closes while the menu is
+      // still open, so auto-open (input !== last && !isOpen) is skipped.
+      // Multiple toggles through setValue and leaves the menu open.
+      if (!isMultiple() && selectedKey() === focusedKey) {
+        commitSelection(true);
+      } else if (isMultiple()) {
+        select(focusedKey);
       } else {
         listState.selectionManager.select(focusedKey);
       }
@@ -627,14 +764,17 @@ export function createComboBoxState<T = unknown>(
   // ---- Focus Handling ----
   const [isFocused, setIsFocused] = createInternalSignal(false);
 
-  let valueOnFocus: [string, Key | null | Set<Key>] = [untrack(inputValue), untrack(displayValue)];
+  let valueOnFocus: [string, Key | readonly Key[] | null] = [
+    untrack(inputValue),
+    untrack(displayValue) as Key | readonly Key[] | null,
+  ];
 
-  const hasMoved = (a: Key | null | Set<Key>, b: Key | null | Set<Key>): boolean => {
+  const hasMoved = (a: Key | readonly Key[] | null, b: Key | readonly Key[] | null): boolean => {
     if (a === b) return false;
-    if (a instanceof Set && b instanceof Set) {
-      if (a.size !== b.size) return true;
-      for (const k of a) {
-        if (!b.has(k)) return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return true;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return true;
       }
       return false;
     }
@@ -646,7 +786,7 @@ export function createComboBoxState<T = unknown>(
   // value moved while focused.
   const setFocused = (focused: boolean) => {
     if (focused) {
-      valueOnFocus = [inputValue(), displayValue()];
+      valueOnFocus = [inputValue(), displayValue() as Key | readonly Key[] | null];
       if (menuTrigger() === "focus" && !getProps().isReadOnly) {
         open(null, "focus");
       }
@@ -654,7 +794,10 @@ export function createComboBoxState<T = unknown>(
       if (shouldCloseOnBlur()) {
         commitValue();
       }
-      if (inputValue() !== valueOnFocus[0] || hasMoved(displayValue(), valueOnFocus[1])) {
+      if (
+        inputValue() !== valueOnFocus[0] ||
+        hasMoved(displayValue() as Key | readonly Key[] | null, valueOnFocus[1])
+      ) {
         validation.commitValidation();
       }
     }
@@ -683,7 +826,8 @@ export function createComboBoxState<T = unknown>(
       trigger: menuTrigger(),
       showingAll: showAllItems(),
       inputControlled: isInputControlled(),
-      selectionControlled: isSelectionControlled(),
+      selectionControlled: isValueControlled(),
+      multiple: isMultiple(),
     }),
     ({
       input,
@@ -697,6 +841,7 @@ export function createComboBoxState<T = unknown>(
       showingAll,
       inputControlled,
       selectionControlled,
+      multiple,
     }) => {
       // Auto-open when typing
       if (
@@ -724,9 +869,10 @@ export function createComboBoxState<T = unknown>(
         listState.setFocusedKey(null);
         setShowAllItems(false);
 
-        // Clear selection when input is cleared (if not fully controlled)
-        if (input === "" && (!inputControlled || !selectionControlled)) {
-          setSelectedKey(null);
+        // Clear selection when the input is cleared. Fully controlled single
+        // values, and every multiple value, stay put.
+        if (!multiple && input === "" && (!inputControlled || !selectionControlled)) {
+          setValue(null);
         }
 
         setLastValue(input);
@@ -761,7 +907,7 @@ export function createComboBoxState<T = unknown>(
         key,
         textValue: item?.textValue ?? "",
         inputControlled: isInputControlled(),
-        selectionControlled: isSelectionControlled(),
+        selectionControlled: isValueControlled(),
       };
     },
     (data) => {
@@ -781,37 +927,31 @@ export function createComboBoxState<T = unknown>(
   // These methods allow createOption to work with ComboBoxState
   const select = (key: Key) => {
     if (isMultiple()) {
-      // Toggle selection in multiple mode
       const current = new Set(selectedKeys());
       if (current.has(key)) {
         current.delete(key);
       } else {
         current.add(key);
       }
-      setSelectedKeys(current);
-      // Don't close menu and don't reset input in multi-select mode
+      setValue([...current]);
     } else {
-      setSelectedKey(key);
+      setValue(key);
       closeMenu();
     }
   };
 
+  const setSelectedKeys = (keys: Iterable<Key>) => {
+    setValue([...keys]);
+  };
+
   const removeSelectedKey = (key: Key) => {
-    if (isMultiple()) {
-      const current = new Set(selectedKeys());
-      current.delete(key);
-      setSelectedKeys(current);
-    }
+    if (!isMultiple()) return;
+    setValue([...selectedKeys()].filter((selected) => selected !== key));
   };
 
-  const selectionMode: Accessor<"single" | "multiple"> = () => getProps().selectionMode ?? "single";
+  const selectionMode: Accessor<ComboBoxSelectionMode> = () => getProps().selectionMode ?? "single";
 
-  const isSelected = (key: Key) => {
-    if (isMultiple()) {
-      return selectedKeys().has(key);
-    }
-    return selectedKey() === key;
-  };
+  const isSelected = (key: Key) => selectedKeys().has(key);
 
   // ---- Return State ----
   return {
@@ -826,9 +966,12 @@ export function createComboBoxState<T = unknown>(
     close: commitValue,
     toggle,
     selectedKey,
-    defaultSelectedKey: getProps().defaultSelectedKey ?? null,
+    defaultSelectedKey,
     selectedItem,
     setSelectedKey,
+    value: displayValue,
+    defaultValue,
+    setValue,
     selectedKeys,
     setSelectedKeys,
     selectedItems,
@@ -859,6 +1002,11 @@ export function createComboBoxState<T = unknown>(
       return getProps().isRequired ?? false;
     },
   };
+}
+
+function convertValue(value: Key | readonly Key[] | null | undefined): Key[] {
+  if (value == null) return [];
+  return Array.isArray(value) ? [...value] : [value];
 }
 
 /**

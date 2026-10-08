@@ -54,6 +54,9 @@ import {
   createComboBoxState,
   defaultContainsFilter,
   type ComboBoxState,
+  type ComboBoxSelectionMode,
+  type ComboBoxValueType,
+  type ComboBoxChangeValueType,
   type ListState,
   type Key,
   type FilterFn,
@@ -116,7 +119,7 @@ export interface ComboBoxRenderProps {
   inputValue: string;
 }
 
-export interface ComboBoxProps<T>
+export interface ComboBoxProps<T, M extends ComboBoxSelectionMode = "single">
   extends Omit<AriaComboBoxProps, "children" | "description" | "errorMessage">, SlotProps {
   /** The items to render in the combobox. */
   items?: T[];
@@ -130,20 +133,35 @@ export interface ComboBoxProps<T>
   getDisabled?: (item: T) => boolean;
   /** Keys of disabled items. */
   disabledKeys?: Iterable<Key>;
-  /** The selection mode for the combobox. */
-  selectionMode?: "single" | "multiple";
-  /** The currently selected key (controlled, single mode). */
+  /**
+   * Whether single or multiple selection is enabled.
+   * @default 'single'
+   */
+  selectionMode?: M;
+  /**
+   * The current value (controlled).
+   * Single mode is `Key | null`. Multiple mode is `readonly Key[]`.
+   */
+  value?: ComboBoxValueType<M>;
+  /** The default value (uncontrolled). */
+  defaultValue?: ComboBoxValueType<M>;
+  /** Handler called when the value changes. */
+  onChange?: (value: ComboBoxChangeValueType<M>) => void;
+  /**
+   * The currently selected key (controlled).
+   * @deprecated Use `value`.
+   */
   selectedKey?: Key | null;
-  /** The default selected key (uncontrolled, single mode). */
+  /**
+   * The initial selected key (uncontrolled).
+   * @deprecated Use `defaultValue`.
+   */
   defaultSelectedKey?: Key | null;
-  /** The currently selected keys (controlled, multiple mode). */
-  selectedKeys?: Iterable<Key>;
-  /** The default selected keys (uncontrolled, multiple mode). */
-  defaultSelectedKeys?: Iterable<Key>;
-  /** Handler called when selection changes (single mode). */
+  /**
+   * Handler called when the selection changes.
+   * @deprecated Use `onChange`.
+   */
   onSelectionChange?: (key: Key | null) => void;
-  /** Handler called when selection changes (multiple mode). */
-  onSelectionChangeMultiple?: (keys: Set<Key>) => void;
   /** The current input value (controlled). */
   inputValue?: string;
   /** The default input value (uncontrolled). */
@@ -185,7 +203,7 @@ export interface ComboBoxProps<T>
   /** Internal alias for libraries that wrap ComboBox and need a root ref. */
   rootRef?: RefLike<HTMLDivElement>;
   /** Slot definitions provided through ComboBoxContext. */
-  slots?: Record<string, Partial<ComboBoxProps<T>>>;
+  slots?: Record<string, Partial<ComboBoxProps<T, M>>>;
 }
 
 export interface ComboBoxInputRenderProps {
@@ -383,12 +401,14 @@ export const ComboBoxValueContext = ComboBoxContext;
 /**
  * A combobox combines a text input with a listbox, allowing users to filter a list of options.
  */
-export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
+export function ComboBox<T, M extends ComboBoxSelectionMode = "single">(
+  props: ComboBoxProps<T, M>,
+): JSX.Element {
   const parentContext = useContext(ComboBoxContext) as ComboBoxContextValue<T> | null;
   const contextSlotProps =
     parentContext?.slots?.[typeof props.slot === "string" ? props.slot : "default"];
   const mergedComboBoxProps = contextSlotProps
-    ? (mergeProps(contextSlotProps, props) as ComboBoxProps<T>)
+    ? (mergeProps(contextSlotProps, props) as ComboBoxProps<T, M>)
     : props;
   const [local, stateProps, ariaProps] = splitProps(
     mergedComboBoxProps,
@@ -401,12 +421,12 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       "getDisabled",
       "disabledKeys",
       "selectionMode",
+      "value",
+      "defaultValue",
+      "onChange",
       "selectedKey",
       "defaultSelectedKey",
-      "selectedKeys",
-      "defaultSelectedKeys",
       "onSelectionChange",
-      "onSelectionChangeMultiple",
       "inputValue",
       "defaultInputValue",
       "onInputChange",
@@ -438,7 +458,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   // is the default when the caller omits `defaultFilter`.
   const intlFilter = createFilter({ sensitivity: "base" });
 
-  const state = createComboBoxState<T>({
+  const state = createComboBoxState<T, M>({
     get items() {
       return stateProps.items;
     },
@@ -460,23 +480,23 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     get selectionMode() {
       return stateProps.selectionMode;
     },
+    get value() {
+      return stateProps.value;
+    },
+    get defaultValue() {
+      return stateProps.defaultValue;
+    },
+    get onChange() {
+      return stateProps.onChange;
+    },
     get selectedKey() {
       return stateProps.selectedKey;
     },
     get defaultSelectedKey() {
       return stateProps.defaultSelectedKey;
     },
-    get selectedKeys() {
-      return stateProps.selectedKeys;
-    },
-    get defaultSelectedKeys() {
-      return stateProps.defaultSelectedKeys;
-    },
     get onSelectionChange() {
       return stateProps.onSelectionChange;
-    },
-    get onSelectionChangeMultiple() {
-      return stateProps.onSelectionChangeMultiple;
     },
     get inputValue() {
       return stateProps.inputValue;
@@ -526,6 +546,13 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     }
     return stateProps.formValue ?? "key";
   });
+
+  const hiddenFormValues = (): string[] => {
+    const current = state.value();
+    const values = Array.isArray(current) ? [...current] : [current];
+    const keys = values.length === 0 ? [null] : values;
+    return keys.map((key) => (key == null ? "" : String(key)));
+  };
 
   const comboBoxAriaProps = createMemo(() => {
     const cleanProps: Record<string, unknown> = {};
@@ -713,12 +740,11 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           </Provider>
           {/* Hidden input last among root children — RAC ComboBox.tsx:373-374 */}
           <Show when={stateProps.name && effectiveFormValue() === "key"}>
-            <input
-              type="hidden"
-              name={stateProps.name}
-              form={ariaProps.form}
-              value={state.selectedKey()?.toString() ?? ""}
-            />
+            <For each={hiddenFormValues()}>
+              {(formKey) => (
+                <input type="hidden" name={stateProps.name} form={ariaProps.form} value={formKey} />
+              )}
+            </For>
           </Show>
         </div>
       </ComboBoxStateContext>

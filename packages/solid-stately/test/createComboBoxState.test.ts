@@ -199,6 +199,118 @@ describe("createComboBoxState", () => {
         dispose();
       });
     });
+
+    it("exposes defaultValue as the single-mode value", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultValue: "2",
+        });
+
+        flush();
+        expect(state.value()).toBe("2");
+        flush();
+        expect(state.selectedKey()).toBe("2");
+        flush();
+        expect(state.inputValue()).toBe("Banana");
+        dispose();
+      });
+    });
+
+    it("stores a multiple value as a key array and reports onChange", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          selectionMode: "multiple",
+          defaultValue: ["1"],
+          onChange,
+        });
+
+        flush();
+        expect(state.value()).toEqual(["1"]);
+        flush();
+        expect(state.selectedKey()).toBe(null);
+
+        state.setValue(["1", "2"]);
+        flush();
+        expect(state.value()).toEqual(["1", "2"]);
+        expect(onChange).toHaveBeenCalledWith(["1", "2"]);
+        dispose();
+      });
+    });
+
+    it("keeps a controlled multiple value and still fires onChange", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          selectionMode: "multiple",
+          value: ["1", "2"],
+          onChange,
+        });
+
+        flush();
+        expect(state.value()).toEqual(["1", "2"]);
+
+        state.setValue(["3"]);
+        flush();
+        expect(state.value()).toEqual(["1", "2"]);
+        expect(onChange).toHaveBeenCalledWith(["3"]);
+        dispose();
+      });
+    });
+
+    it("keeps a controlled single value and still fires onChange", () => {
+      createRoot((dispose) => {
+        const onChange = vi.fn();
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          value: "1",
+          onChange,
+        });
+
+        flush();
+        expect(state.value()).toBe("1");
+
+        state.setValue("2");
+        flush();
+        expect(state.value()).toBe("1");
+        expect(onChange).toHaveBeenCalledWith("2");
+        dispose();
+      });
+    });
+
+    it("does not clear a multiple value when committing custom text", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          selectionMode: "multiple",
+          defaultValue: ["1"],
+          allowsCustomValue: true,
+        });
+
+        state.setInputValue("Custom");
+        state.commit();
+        flush();
+        expect(state.value()).toEqual(["1"]);
+        flush();
+        expect(state.inputValue()).toBe("Custom");
+        flush();
+        expect(state.selectedKey()).toBe(null);
+        dispose();
+      });
+    });
   });
 
   describe("input value", () => {
