@@ -713,6 +713,7 @@ let skip_624 = false;
 let skip_625 = false;
 let skip_626 = false;
 let skip_627 = false;
+let skip_628 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -845,6 +846,23 @@ if args != () {
         }
     } catch (miss) {
         skip_627 = false;
+    }
+    try {
+        if args.skip_628 == true {
+            skip_628 = true;
+            skip_627 = true;
+            skip_626 = true;
+            skip_625 = true;
+            skip_624 = true;
+            resume_visualmode = true;
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_628 = false;
     }
 }
 if smoke_flag == true {
@@ -1088,7 +1106,10 @@ if skip_checkpoint == false && stopped == false {
 
 if skip_landed == true {
     if resume_visualmode == true {
-        if skip_627 == true {
+        if skip_628 == true {
+            log("landed slices already recorded, visualmode queue resumes at 624");
+            next_label = "624";
+        } else if skip_627 == true {
             log("landed slices already recorded, visualmode queue resumes at 630");
             next_label = "630";
         } else if skip_626 == true {
@@ -1157,24 +1178,33 @@ if skip_landed == true {
             book = seed_done(book, "115", "6f5a4213", "ComboBox single and multiple selection follows the upstream value contract. Ticket stays in progress because the public-face site JSON still lists selectedKeys.");
             book = seed_seat(book, "117", "public-face seat", "Ticket #117 remaining proof is comparison page content under apps/comparison/src, which the public-face seat owns while #550 is open.");
             if resume_visualmode == true {
-                book = seed_held(book, "629", "Owner decides whether Stop, snap, key, and easing icons belong in this package. Do not add glyphs.", "G16 stays an owner question.");
+                if skip_628 == false {
+                    book = seed_held(book, "629", "Owner decides whether Stop, snap, key, and easing icons belong in this package. Do not add glyphs.", "G16 stays an owner question.");
+                }
                 if landed_118 != "" {
                     book = seed_done(book, "118", landed_118, "TokenField slice committed before the visualmode queue.");
                 }
-                if skip_624 == true {
+                if skip_624 == true && skip_628 == false {
                     book = seed_held(book, "624", "The shorter TreeView row needs an owner-approved public name; #520.", "No prop was minted. Upstream TreeViewStyleProps is only selectionStyle, and both styled trees still hard-code a 40px row. #624 stays open.");
                 }
                 if skip_625 == true {
                     book = seed_done(book, "329", "d49bd450", "ActionMenu stays mounted on a TreeView item. Pointer, dispatch, and Enter open it. Ticket is verified.");
                     book = seed_done(book, "84", "1fb7ec6f", "Keyboard reorder, reparent, and multi-selection landed, with the styled drag handle, insertion line, and drop-target chrome. Ticket stays in-progress. Touch long-press, TableView, GridList, drag preview, and mobile AT evidence remain.");
                     book = seed_done(book, "623", "fa778c56", "Input and TextArea clear their input id outside the disposing owner and skip the write once the TextField owner is already disposed. Ticket is verified.");
-                    book = seed_held(book, "625", "F2, double press, commit, and cancel need a public edit-mode name the ticket does not approve. The name decision is #520.", "#625 stays open. #623 is on main. No edit-mode prop was minted.");
+                    if skip_628 == false {
+                        book = seed_held(book, "625", "F2, double press, commit, and cancel need a public edit-mode name the ticket does not approve. The name decision is #520.", "#625 stays open. #623 is on main. No edit-mode prop was minted.");
+                    }
                 }
-                if skip_626 == true {
+                if skip_626 == true && skip_628 == false {
                     book = seed_held(book, "626", "The second expand control has no approved public name. The name decision is #520.", "TreeView still renders one TreeExpandButton per row. Upstream TreeView has one ExpandableRowChevron and no second control. No prop was minted. #626 stays open.");
                 }
                 if skip_627 == true {
                     book = seed_done(book, "627", "f3ff1a99", "A static TreeViewItem nested inside another static TreeViewItem mounts as a child row. Ticket is verified.");
+                }
+                if skip_628 == true {
+                    book = seed_done(book, "630", "35e9e13a", "Card and TableCell keep content across hover, press, and focus. Ticket is verified.");
+                    book = seed_done(book, "628", "2513661c", "Workflow icons and DragHandle ship JavaScript on public subpaths. Ticket is verified.");
+                    book = seed_done(book, "125", "cafce46b", "Select matches Select<T, M> with value, defaultValue, and onChange. Ticket stays in progress.");
                 }
             }
         }
@@ -1236,11 +1266,17 @@ if stopped == false {
     if resume_visualmode == true && landed_118 != "" {
         hygiene_ids = [125, 126, 127];
     }
+    if skip_628 == true {
+        hygiene_ids = [126, 127];
+    }
     if stopped == false && resume_visualmode == true {
         log("visualmode queue");
         let vm_ids = [624, 329, 84, 623, 625, 626, 627, 628];
         next_label = "624";
-        if skip_627 == true {
+        if skip_628 == true {
+            vm_ids = [624, 625, 626, 629];
+            next_label = "624";
+        } else if skip_627 == true {
             vm_ids = [630, 628];
             next_label = "630";
         } else if skip_626 == true {
@@ -1253,22 +1289,34 @@ if stopped == false {
             vm_ids = [329, 84, 623, 625, 626, 627, 628];
             next_label = "329";
         }
-        let vm_extra = "Visualmode queue. It runs before the remaining hygiene tickets.\n";
-        vm_extra += "Order: #624 TreeView 24px rows, #329 ActionMenu from a TreeView item, #84 drag and drop, #623 TextField and TextArea unmount write, #625 in-place label edit, #626 second expand control, #627 nested static TreeViewItem children, #628 DragHandle packaging.\n";
-        vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
-        vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
-        vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
-        if skip_627 == true {
+        let vm_extra = "";
+        if skip_628 == true {
+            vm_extra = "Owner exception, these four slices only. The owner approved the names on 2026-10-08. Using exactly these names is not minting and is not a #520 hold. The base rule that says hold and name #520 does not apply to these names. Do not invent any other public name. Do not hold #624, #625, #626, or #629 for #520.\n";
+            vm_extra += "Land only in packages/viviana-ui. Do not edit packages/solid-spectrum for these four. Do not copy a viviana-ui edit into solid-spectrum. The headless tree stays shared. These are extensions of the existing TreeView and the existing icon surface. They are not a new package and not a new viviana-native component. #62 and #145 stay closed.\n";
+            vm_extra += "#624: density=\"compact\" on viviana-ui TreeView in packages/viviana-ui/src/tree/index.tsx. Compact is a 24px row and a 24px expand control. Omitted or regular stays the 40px row. Do not add spacious. Do not patch apps/comparison.\n";
+            vm_extra += "#625: one optional onRename(key, name) on viviana-ui TreeView. Passing it enables F2 or double-press to edit, Enter commits, Escape cancels, blur commits, and arrows and type-ahead stay in the field. The field is an internal TextField. Do not add a Rename item in the row menu. #623 is already on main.\n";
+            vm_extra += "#626: child rows stay on expandedKeys. The second control is hasDetail on the item and detailExpandedKeys / onDetailExpandedChange on the tree. Each control toggles only its own state, does not select the row, and does not steal the existing chevron keyboard path. Do not change the headless expandedKeys path.\n";
+            vm_extra += "#629: new module packages/viviana-ui/src/icon/extra-icons/. Glyphs: StopIcon, SnapIcon, KeyframeIcon, EasingHoldIcon, EasingLinearIcon, EasingInIcon, EasingOutIcon, EasingInOutIcon. Public export is ./icon/extra-icons/* with the same conditions shape as ./icon/s2wf-icons/*. Give each glyph its own vite entry the way workflow icons are entries, and do not re-export them from src/icon/index.tsx or src/index.ts. Do not put them in s2wf-icons, pixel-icons, or solid-spectrum. DragHandle stays the landed #628 path.\n";
+            vm_extra += "#630 is verified at 35e9e13a. #628 is verified at 2513661c. #125 is committed at cafce46b and stays in progress. Do not redo them. #623, #627, and #329 are already committed. #84 stays in progress.\n";
+            vm_extra += "Implement only the current slice id. Run only the tests this slice adds. Do not run the certified suite.\n";
+        } else {
+            vm_extra = "Visualmode queue. It runs before the remaining hygiene tickets.\n";
+            vm_extra += "Order: #624 TreeView 24px rows, #329 ActionMenu from a TreeView item, #84 drag and drop, #623 TextField and TextArea unmount write, #625 in-place label edit, #626 second expand control, #627 nested static TreeViewItem children, #628 DragHandle packaging.\n";
+            vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
+            vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
+            vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
+        }
+        if skip_628 == false && skip_627 == true {
             vm_extra += "#624, #625, and #626 are already held. Do not retry them and do not mint a name.\n";
             vm_extra += "#329, #84, #623, and #627 are already committed. Do not redo them. #84 stays in progress. #627 is verified.\n";
             vm_extra += "#630 is D16 and is next. A Card in a CardView and a TableCell rebuild their content on hover, press, and focus, which drops state held inside. Prove the fix in a real browser. happy-dom does not show the bug. Do not close #630 as unreproduced. Do not mint a public name.\n";
-        } else if skip_626 == true {
+        } else if skip_628 == false && skip_626 == true {
             vm_extra += "#624, #625, and #626 are already held. Do not retry them and do not mint a name.\n";
             vm_extra += "#329, #84, and #623 are already committed. Do not redo them. #84 stays in progress.\n";
-        } else if skip_625 == true {
+        } else if skip_628 == false && skip_625 == true {
             vm_extra += "#624 and #625 are already held. Do not retry them and do not mint a name.\n";
             vm_extra += "#329, #84, and #623 are already committed. Do not redo them. #84 stays in progress.\n";
-        } else if skip_624 == true {
+        } else if skip_628 == false && skip_624 == true {
             vm_extra += "#624 is already held. Do not retry it and do not mint a name for the 24px row.\n";
         }
         let vm = walk(vm_ids, vm_extra, impl_schema, skeptic_schema, commit_schema);
