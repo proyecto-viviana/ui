@@ -104,11 +104,15 @@ once and adds one exact source-path line for every input. A headerless input
 gets a source-path line, not an invented Adobe block. Add a record only after
 you read every listed pinned source.
 
-Reviewed local module surfaces are recorded in
-`scripts/attribution-local-reviews.json`. Each record fixes the local path and
-the reviewed content hash. These files only organize exports. The exported
-implementation files own their source mappings. The guard reopens review if a
-recorded file changes, gains a source marker, or gains an Adobe header.
+Reviewed local source is recorded in `scripts/attribution-local-reviews.json`.
+Each record fixes the local path, classification, and reviewed content hash.
+`local-module-surface` files organize exports; the exported implementations own
+their source mappings. `local-solid-helper` records individually reviewed
+original Solid composition or runtime glue. Referencing a derivative utility
+does not exempt that utility from its own attribution. Add or renew either
+classification only after reviewing the actual source and its provenance.
+The guard reopens review if a recorded file changes, gains a source marker,
+or gains an Adobe header.
 
 `guard:attribution-headers` checks confirmed headers for exact and reviewed
 composite mappings. It also checks content contracts for reviewed local files.

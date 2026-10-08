@@ -4,7 +4,7 @@ type: task
 title: "Refresh and centralize derivative-attribution work"
 created: 2026-08-20
 parent: 35
-status: verified
+status: in-progress
 history:
   - { state: open, at: 2026-08-20, note: "opened from the repository-wide documentation audit" }
   - {
@@ -136,6 +136,11 @@ history:
       state: verified,
       at: 2026-08-22,
       note: "verified every source decision and preserved the required notices in all six public package builds",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-08,
+      note: "reopened bounded attribution qualification after accepted #159; historical verification remains recorded",
     }
 ---
 
@@ -540,3 +545,50 @@ source and build-output regression.
 
 Depends on verified ticket #12. Supplies the one task for initiative #35. The
 duplicate-plan retirement needed by tickets #13 and #16 is complete.
+
+## Bounded qualification — 2026-10-08
+
+Conductor admitted the sole registered source implementer at base
+`3c9b09bb86d0512e60e9952ed028089b74797083`, generation
+`9cd0a97d-bc6b-4b97-8138-f283e0918382`. Registration is recorded in
+`/tmp/ui-19-registration-2026-10-08.json`; prior #159 owned stop records
+`closed=true`. Codex gpt-6-astra LOW is the explicit provider-budget fallback.
+
+Editable scope: ColorField.tsx leading attribution block and Color.tsx obsolete
+header/marker only in `packages/solidaria-components/src`; twelve individually
+reviewed local rows plus Color.tsx, fileTriggerContext.ts and private aria
+callEventHandler.ts additions in `scripts/attribution-local-reviews.json`;
+only Color.tsx removal in `scripts/attribution-composite-reviews.json`;
+`.claude/current/tooling.md`, this ticket, and generated status/roadmap views.
+All other repository paths are read-only. No runtime, declaration, export,
+dependency, release artifact, commit, push, or publish change is admitted.
+
+The earlier inventory and build results above are historical verification,
+not the current candidate's counts. This reopened slice does not settle the
+unreviewed ColorArea, ColorSlider, ColorSwatch, ColorThumb, or ColorWheel exact
+headerless mappings. Final evidence and deferred release proof follow below.
+
+Current bounded result: the complete pinned ColorField notice is restored;
+Color retains its eight byte-identical exports as an original organizer.
+Twelve existing local rows were individually requalified, three reviewed rows
+were added, and only the obsolete Color composite record was removed.
+
+Final managed contracts pass: 480 exact notices, 12 reviewed headerless
+contracts, 75 composite contracts, and 257 local contracts. Inventory review
+requirements fall from 67 to 52; unrelated debt and all five Color sibling
+entries remain exposed and unchanged. Existing guard-contract negative
+controls pass (69 cases), including local-content drift, composite source-set
+drift, and exact-block mismatch. Attribution guard and scoped lint pass.
+
+Sandbox child-process/IPC restrictions interrupted initial guard-contract and
+docs commands; unchanged commands passed with execution escalation. Worker
+`gh` authentication is unavailable, and the hub gate reports 13/38 failures
+including sandbox spawn failures; neither is represented as candidate proof.
+No root typecheck is required for this comment/metadata-only admission.
+Build, package-artifact, and source-map qualification remain deferred to the
+serialized release-candidate lane; historical built outputs are not receipts.
+
+Final scoped formatting, docs, diff and inventory receipts, source hashes,
+and provenance are bound in `/tmp/ui-19-worker-result-2026-10-08.md` and its
+sealed manifests. Status remains in progress pending independent conductor
+review, owned stop, and integration. No commit, push, or publish was performed.
