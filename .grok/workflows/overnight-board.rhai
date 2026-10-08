@@ -712,6 +712,7 @@ let landed_118 = "";
 let skip_624 = false;
 let skip_625 = false;
 let skip_626 = false;
+let skip_627 = false;
 if args != () {
     try {
         smoke_flag = args.smoke;
@@ -828,6 +829,22 @@ if args != () {
         }
     } catch (miss) {
         skip_626 = false;
+    }
+    try {
+        if args.skip_627 == true {
+            skip_627 = true;
+            skip_626 = true;
+            skip_625 = true;
+            skip_624 = true;
+            resume_visualmode = true;
+            resume_118 = true;
+            resume_115 = true;
+            resume_106 = true;
+            skip_landed = true;
+            skip_checkpoint = true;
+        }
+    } catch (miss) {
+        skip_627 = false;
     }
 }
 if smoke_flag == true {
@@ -1071,7 +1088,10 @@ if skip_checkpoint == false && stopped == false {
 
 if skip_landed == true {
     if resume_visualmode == true {
-        if skip_626 == true {
+        if skip_627 == true {
+            log("landed slices already recorded, visualmode queue resumes at 630");
+            next_label = "630";
+        } else if skip_626 == true {
             log("landed slices already recorded, visualmode queue resumes at 627");
             next_label = "627";
         } else if skip_625 == true {
@@ -1153,6 +1173,9 @@ if skip_landed == true {
                 if skip_626 == true {
                     book = seed_held(book, "626", "The second expand control has no approved public name. The name decision is #520.", "TreeView still renders one TreeExpandButton per row. Upstream TreeView has one ExpandableRowChevron and no second control. No prop was minted. #626 stays open.");
                 }
+                if skip_627 == true {
+                    book = seed_done(book, "627", "f3ff1a99", "A static TreeViewItem nested inside another static TreeViewItem mounts as a child row. Ticket is verified.");
+                }
             }
         }
     }
@@ -1217,7 +1240,10 @@ if stopped == false {
         log("visualmode queue");
         let vm_ids = [624, 329, 84, 623, 625, 626, 627, 628];
         next_label = "624";
-        if skip_626 == true {
+        if skip_627 == true {
+            vm_ids = [630, 628];
+            next_label = "630";
+        } else if skip_626 == true {
             vm_ids = [627, 628];
             next_label = "627";
         } else if skip_625 == true {
@@ -1232,7 +1258,11 @@ if stopped == false {
         vm_extra += "#629 is already held. Do not add Stop, snap, key, or easing glyphs.\n";
         vm_extra += "Do not mint a public name. If #624, #625, or #626 needs a name the ticket does not already approve, outcome held and put #520 in hold_reason.\n";
         vm_extra += "#625 waits on the #623 unmount fix. If that fix is not committed on main, hold #625.\n";
-        if skip_626 == true {
+        if skip_627 == true {
+            vm_extra += "#624, #625, and #626 are already held. Do not retry them and do not mint a name.\n";
+            vm_extra += "#329, #84, #623, and #627 are already committed. Do not redo them. #84 stays in progress. #627 is verified.\n";
+            vm_extra += "#630 is D16 and is next. A Card in a CardView and a TableCell rebuild their content on hover, press, and focus, which drops state held inside. Prove the fix in a real browser. happy-dom does not show the bug. Do not close #630 as unreproduced. Do not mint a public name.\n";
+        } else if skip_626 == true {
             vm_extra += "#624, #625, and #626 are already held. Do not retry them and do not mint a name.\n";
             vm_extra += "#329, #84, and #623 are already committed. Do not redo them. #84 stays in progress.\n";
         } else if skip_625 == true {
