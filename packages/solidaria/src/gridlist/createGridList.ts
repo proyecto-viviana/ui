@@ -250,6 +250,16 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         s.replaceSelection(nextKey);
       }
     };
+    // TagGroup sets shouldFocusWrap. GridList leaves it off, so an edge arrow
+    // still stops instead of jumping to the other end.
+    const wrapNavigableKey = (nextKey: Key | null, forward: boolean): Key | null => {
+      if (nextKey != null || !p.shouldFocusWrap || focusedKey == null) return nextKey;
+      return findNextNavigableKey(
+        s,
+        forward ? collection.getFirstKey() : collection.getLastKey(),
+        forward ? (k) => collection.getKeyAfter(k) : (k) => collection.getKeyBefore(k),
+      );
+    };
     const isGrid = p.layout === "grid";
     const columns = Math.max(1, p.columnCount ?? 1);
 
@@ -270,7 +280,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
                 collection.getKeyAfter(k),
               )
             : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
-        moveFocus(nextKey);
+        moveFocus(focusedKey != null ? wrapNavigableKey(nextKey, true) : nextKey);
         break;
       }
       case "ArrowUp": {
@@ -289,7 +299,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
                 collection.getKeyBefore(k),
               )
             : findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k));
-        moveFocus(prevKey);
+        moveFocus(focusedKey != null ? wrapNavigableKey(prevKey, false) : prevKey);
         break;
       }
       case "ArrowRight":
@@ -329,7 +339,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
           focusedKey != null
             ? findNextNavigableKey(s, step(focusedKey), step)
             : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
-        moveFocus(nextKey);
+        moveFocus(focusedKey != null ? wrapNavigableKey(nextKey, forward) : nextKey);
         break;
       }
       case "Home": {

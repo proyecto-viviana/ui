@@ -32,8 +32,8 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createStringFormatter } from "../i18n";
 import { getTagGroupData } from "./createTagGroup";
 import { tagIntlStrings } from "./intl";
-import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
-import type { ListState, Key } from "@proyecto-viviana/solid-stately";
+import { createGridListItem } from "../gridlist/createGridListItem";
+import type { ListState, Key, GridNode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaTagProps {
   /** The unique key for this tag. */
@@ -80,12 +80,17 @@ export function createTag<T>(
 ): TagAria {
   const getProps = () => access(props);
   const stringFormatter = createStringFormatter(tagIntlStrings, "@react-aria/tag");
-  const rowId = createId();
   const cellId = createId();
   const removeButtonId = createId();
 
-  // Get shared data from tag group
   const getData = () => getTagGroupData(state);
+  const gridState = () => {
+    const data = getData();
+    if (!data) {
+      throw new Error("createTag requires createTagGroup on the same list state.");
+    }
+    return data.gridState;
+  };
 
   const { modality } = createInteractionModality();
   // useTag.ts: the row describes Delete only when removal is allowed and the
@@ -102,118 +107,67 @@ export function createTag<T>(
     return stringFormatter().format("removeDescription");
   });
 
-  // Get key
   const key = () => getProps().key;
 
-  // Compute states
+  const node = (): GridNode<unknown> => {
+    const p = getProps();
+    const item = state.collection().getItem(p.key);
+    if (item) {
+      return item as unknown as GridNode<unknown>;
+    }
+    // The row can render one frame after its collection node is gone.
+    return {
+      type: "item",
+      key: p.key,
+      value: null,
+      textValue: p.textValue ?? "",
+      level: 0,
+      index: 0,
+      hasChildNodes: false,
+      childNodes: [],
+      isDisabled: p.isDisabled,
+    };
+  };
+
+  const gridItem = createGridListItem(
+    () => ({
+      node: node(),
+      textValue: getProps().textValue,
+      isDisabled: getProps().isDisabled,
+      onAction: getProps().onAction,
+    }),
+    gridState,
+    ref,
+  );
+
   const isDisabled = createMemo(() => {
     const p = getProps();
     return p.isDisabled || state.isDisabled(key());
   });
 
-  const isSelected = createMemo(() => {
-    return state.isSelected(key());
-  });
+  const isSelected = createMemo(() => state.isSelected(key()));
 
-  const isSelectable = createMemo(() => state.selectionMode() !== "none");
+  // Focused means the roving key, not "the collection currently has DOM focus".
+  // The container blur that follows a move onto the row must not clear the tag.
+  const isFocused = createMemo(() => state.focusedKey() === key());
 
-  const isFocused = createMemo(() => {
-    return state.focusedKey() === key();
-  });
-
-  const getFirstFocusableKey = (): Key | null => {
+  const nextEnabledKey = (fromKey: Key, step: (key: Key) => Key | null): Key | null => {
     const collection = state.collection();
-    let candidate = collection.getFirstKey();
+    let candidate = step(fromKey);
     while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyAfter(candidate);
+      candidate = step(candidate);
     }
     return candidate;
-  };
-
-  const getLastFocusableKey = (): Key | null => {
-    const collection = state.collection();
-    let candidate = collection.getLastKey();
-    while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyBefore(candidate);
-    }
-    return candidate;
-  };
-
-  const getNextFocusableKey = (fromKey: Key): Key | null => {
-    const collection = state.collection();
-    let candidate = collection.getKeyAfter(fromKey);
-    while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyAfter(candidate);
-    }
-
-    if (candidate != null) {
-      return candidate;
-    }
-
-    return getFirstFocusableKey();
-  };
-
-  const getPreviousFocusableKey = (fromKey: Key): Key | null => {
-    const collection = state.collection();
-    let candidate = collection.getKeyBefore(fromKey);
-    while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyBefore(candidate);
-    }
-
-    if (candidate != null) {
-      return candidate;
-    }
-
-    return getLastFocusableKey();
-  };
-
-  const focusKey = (nextKey: Key | null) => {
-    if (nextKey == null) {
-      return;
-    }
-
-    state.setFocusedKey(nextKey);
-    const currentElement = ref();
-
-    if (!currentElement) {
-      return;
-    }
-
-    if (nextKey === key()) {
-      currentElement.focus();
-      return;
-    }
-
-    const tagList = currentElement.parentElement;
-    if (!tagList) {
-      return;
-    }
-
-    const nextTag = Array.from(
-      tagList.querySelectorAll<HTMLElement>('[role="option"], [role="row"]'),
-    ).find((el) => el.getAttribute("data-key") === String(nextKey));
-
-    nextTag?.focus();
-    // RAC useGridList selectOnFocus when selectionBehavior is replace.
-    if (
-      nextKey != null &&
-      state.selectionManager.selectionMode !== "none" &&
-      state.selectionManager.selectionBehavior === "replace"
-    ) {
-      state.selectionManager.replaceSelection(nextKey);
-    }
   };
 
   const removeAndRestoreFocus = (keysToRemove: Set<Key>) => {
     const data = getData();
     if (!data?.onRemove) return;
     const current = key();
-    let nextKey = getNextFocusableKey(current);
-    if (nextKey === current) {
-      nextKey = getPreviousFocusableKey(current);
-    }
-    if (nextKey === current) {
-      nextKey = null;
+    const collection = state.collection();
+    let nextKey = nextEnabledKey(current, (k) => collection.getKeyAfter(k));
+    if (nextKey == null) {
+      nextKey = nextEnabledKey(current, (k) => collection.getKeyBefore(k));
     }
     data.onRemove(keysToRemove);
     if (nextKey == null) {
@@ -233,17 +187,6 @@ export function createTag<T>(
     });
   };
 
-  const selectableItem = createSelectableItem(
-    () => ({
-      key: key(),
-      id: rowId,
-      isDisabled: isDisabled(),
-      onAction: getProps().onAction,
-    }),
-    state as SelectableItemState<T>,
-    ref,
-  );
-
   const { focusProps, isFocusVisible } = createFocusRing();
 
   // Compute tabIndex. Mirror useTag (vendored @react-aria/tag/src/useTag.ts):
@@ -251,145 +194,80 @@ export function createTag<T>(
   // Every non-disabled row is a tab stop when nothing is focused yet (so native
   // Shift+Tab from a following element lands on the LAST row); once a key is
   // focused, only that row keeps tabIndex 0 (roving single tab stop).
+  // createGridListItem's roving tabindex would leave every row at -1 until a
+  // key is focused, so this override stays.
   const tabIndex = createMemo(() => {
     if (isDisabled()) return -1;
     return isFocused() || state.focusedKey() == null ? 0 : -1;
   });
 
-  // Handle keyboard for navigation and removal
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (isDisabled()) return;
-
-    // A TagGroup is inherently horizontal (useTagGroup passes
-    // `orientation: 'horizontal'` to the ListKeyboardDelegate), so the inline
-    // (Left/Right) axis is the navigation axis and flips under RTL, while the
-    // block (Up/Down) axis stays DOM-ordered. Mirror ListKeyboardDelegate:
-    // getKeyRightOf = rtl ? previous : next; getKeyLeftOf = rtl ? next : previous;
-    // getKeyBelow/Above are never direction-flipped.
-    const isRtl = getData()?.direction === "rtl";
-
-    switch (e.key) {
-      case "ArrowRight":
+  // Arrow, Home, End, Escape, and Ctrl+A belong to createGridList. The row
+  // keeps Delete/Backspace removal and the #318 Tab onto the remove button.
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Tab") {
+      const row = ref();
+      if (!row || e.shiftKey || isDisabled()) return;
+      const removeBtn = row.querySelector<HTMLElement>("button");
+      if (removeBtn && document.activeElement !== removeBtn) {
         e.preventDefault();
-        focusKey(isRtl ? getPreviousFocusableKey(key()) : getNextFocusableKey(key()));
-        return;
-      case "ArrowLeft":
-        e.preventDefault();
-        focusKey(isRtl ? getNextFocusableKey(key()) : getPreviousFocusableKey(key()));
-        return;
-      case "ArrowDown":
-        e.preventDefault();
-        focusKey(getNextFocusableKey(key()));
-        return;
-      case "ArrowUp":
-        e.preventDefault();
-        focusKey(getPreviousFocusableKey(key()));
-        return;
-      case "Home":
-        e.preventDefault();
-        focusKey(getFirstFocusableKey());
-        return;
-      case "End":
-        e.preventDefault();
-        focusKey(getLastFocusableKey());
-        return;
-      case "Tab": {
-        // RAC keyboardNavigationBehavior "tab": Tab from the row focuses the
-        // Remove button (which stays tabIndex=-1 so Shift+Tab from After lands
-        // on the focused row, not every Remove). Tab from Remove leaves the grid.
-        const row = ref();
-        if (!row || e.shiftKey) return;
-        const removeBtn = row.querySelector<HTMLElement>("button");
-        if (removeBtn && document.activeElement !== removeBtn) {
-          e.preventDefault();
-          removeBtn.focus();
-        }
-        return;
+        removeBtn.focus();
       }
-      case "Escape":
-        if (state.selectionMode() !== "none") {
-          e.preventDefault();
-          state.clearSelection();
-        }
-        return;
-      case "a":
-      case "A":
-        if ((e.ctrlKey || e.metaKey) && state.selectionMode() === "multiple") {
-          e.preventDefault();
-          state.selectAll();
-        }
-        return;
-      default:
-        break;
+      return;
     }
 
-    if (e.key === "Delete" || e.key === "Backspace") {
-      e.preventDefault();
-      const data = getData();
-      if (data?.onRemove) {
-        // Remove selected keys if this tag is selected, otherwise just this tag
-        if (isSelected()) {
-          const selection = state.selectedKeys();
-          const keysToRemove =
-            selection === "all"
-              ? new Set(Array.from(state.collection()).map((item) => (item as { key: Key }).key))
-              : new Set(selection);
-          removeAndRestoreFocus(keysToRemove);
-        } else {
-          removeAndRestoreFocus(new Set([key()]));
-        }
-      }
+    if (isDisabled()) return;
+    if (e.key !== "Delete" && e.key !== "Backspace") return;
+    const data = getData();
+    if (!data?.onRemove) return;
+    e.preventDefault();
+    if (isSelected()) {
+      const selection = state.selectedKeys();
+      const keysToRemove =
+        selection === "all"
+          ? new Set(Array.from(state.collection()).map((item) => item.key))
+          : new Set(selection);
+      removeAndRestoreFocus(keysToRemove);
+    } else {
+      removeAndRestoreFocus(new Set([key()]));
     }
   };
 
-  // Filter DOM props
   const domProps = () => filterDOMProps(getProps() as unknown as Record<string, unknown>);
-
-  // Check if removal is allowed
-  const allowsRemoving = createMemo(() => {
-    const data = getData();
-    return !!data?.onRemove;
-  });
-
+  const allowsRemoving = createMemo(() => !!getData()?.onRemove);
   const rootRole = createMemo(() => getProps().role ?? "option");
 
   return {
     get rowProps() {
       return mergeProps(
+        gridItem.rowProps as Record<string, unknown>,
         domProps(),
-        selectableItem.itemProps as Record<string, unknown>,
         focusProps as Record<string, unknown>,
+        descriptionProps,
         {
-          id: rowId,
           role: rootRole(),
           tabIndex: tabIndex(),
-          "data-key": String(key()),
-          "aria-label": getProps().textValue,
-          "aria-selected": isSelectable() ? isSelected() : undefined,
-          "aria-disabled": isDisabled() || undefined,
-          onKeyDown: handleKeyDown,
+          onKeyDown,
         },
-        descriptionProps,
       );
     },
     get gridCellProps() {
-      return {
+      return mergeProps(gridItem.gridCellProps as Record<string, unknown>, {
         id: cellId,
-        role: "gridcell",
         "aria-describedby": allowsRemoving() ? removeButtonId : undefined,
-      };
+      });
     },
     get removeButtonProps() {
-      const data = getData();
+      const rowId = (gridItem.rowProps as { id?: string }).id ?? "";
       return {
         id: removeButtonId,
         "aria-label": stringFormatter().format("removeButtonLabel"),
-        "aria-labelledby": `${removeButtonId} ${rowId}`,
+        "aria-labelledby": `${removeButtonId} ${rowId}`.trim(),
         isDisabled: isDisabled(),
         // Keep Removes out of the tab order. Tab from the focused row focuses
         // the button; Shift+Tab from After then lands on the row (#318).
         tabIndex: -1,
         onPress: () => {
+          const data = getData();
           if (data?.onRemove && !isDisabled()) {
             removeAndRestoreFocus(new Set([key()]));
           }
@@ -412,7 +290,7 @@ export function createTag<T>(
       return isFocusVisible();
     },
     get isPressed() {
-      return selectableItem.isPressed();
+      return gridItem.isPressed;
     },
   };
 }

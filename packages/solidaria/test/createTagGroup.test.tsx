@@ -51,6 +51,7 @@ function HookTagList(props: {
   onRemove?: (keys: Set<Key>) => void;
 }) {
   const items = () => props.items ?? sampleItems;
+  let ref: HTMLDivElement | undefined;
 
   const state = createListState({
     get items() {
@@ -76,10 +77,11 @@ function HookTagList(props: {
       },
     },
     state,
+    () => ref ?? null,
   );
 
   return (
-    <div {...tagGroupAria.gridProps}>
+    <div ref={ref} {...tagGroupAria.gridProps}>
       <For each={items()}>{(item) => <HookTag item={item} state={state} />}</For>
     </div>
   );
@@ -123,12 +125,15 @@ describe("createTagGroup/createTag", () => {
 
     alpha.focus();
     fireEvent.keyDown(alpha, { key: "ArrowRight" });
+    flush();
     expect(gamma).toHaveFocus();
 
     fireEvent.keyDown(gamma, { key: "Home" });
+    flush();
     expect(alpha).toHaveFocus();
 
     fireEvent.keyDown(alpha, { key: "End" });
+    flush();
     expect(gamma).toHaveFocus();
   });
 

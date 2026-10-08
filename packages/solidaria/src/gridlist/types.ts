@@ -84,6 +84,12 @@ export interface AriaGridListProps {
    * @default "arrow"
    */
   keyboardNavigationBehavior?: "arrow" | "tab";
+  /**
+   * Whether arrow keys wrap from the last navigable row to the first, and the
+   * reverse. Off unless a caller opts in. TagGroup opts in.
+   * @default false
+   */
+  shouldFocusWrap?: boolean;
   /** Whether the grid list is disabled. */
   isDisabled?: boolean;
   /**

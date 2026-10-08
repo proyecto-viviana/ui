@@ -4,9 +4,14 @@ type: task
 title: "Route TagGroup through the shared collection spine"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task migrate-taggroup-spine" }
+  - {
+      state: verified,
+      at: 2026-10-08,
+      note: "createTagGroup navigates through createGridList. createTag keeps Delete and Backspace removal, the tab stop override, and the remove-button tab. The local arrow, home, and end copy is gone. createTagGroup.test.tsx passed 7 tests and TagGroup.test.tsx passed 49.",
+    }
 ---
 
 Route TagGroup through the shared selection manager and keyboard delegate.

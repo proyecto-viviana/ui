@@ -29,7 +29,15 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import type { ListState, Key } from "@proyecto-viviana/solid-stately";
+import { createGridList } from "../gridlist/createGridList";
+import type {
+  ListState,
+  Key,
+  GridCollection,
+  GridState,
+  SelectionBehavior,
+  FocusStrategy,
+} from "@proyecto-viviana/solid-stately";
 
 export interface AriaTagGroupProps {
   /** An ID for the tag group. */
@@ -82,11 +90,74 @@ const tagGroupData = new WeakMap<object, TagGroupData>();
 interface TagGroupData {
   id: string;
   onRemove?: (keys: Set<Key>) => void;
-  direction: "ltr" | "rtl";
+  /** Stable adapter. createGridList keys its WeakMap by this object. */
+  gridState: GridState<unknown, GridCollection<unknown>>;
 }
 
 export function getTagGroupData(state: ListState): TagGroupData | undefined {
   return tagGroupData.get(state);
+}
+
+/**
+ * ListState stores collection and focus as accessors. createGridList reads a
+ * GridState snapshot. One object per group keeps the grid WeakMap stable.
+ */
+function toGridState<T>(state: ListState<T>): GridState<unknown, GridCollection<unknown>> {
+  const gridState = {
+    get collection() {
+      return state.collection() as unknown as GridCollection<unknown>;
+    },
+    get disabledKeys() {
+      return state.disabledKeys();
+    },
+    get disabledBehavior() {
+      return state.disabledBehavior() ?? "all";
+    },
+    get isKeyboardNavigationDisabled() {
+      return false;
+    },
+    get focusedKey() {
+      return state.focusedKey();
+    },
+    get childFocusStrategy() {
+      return state.childFocusStrategy();
+    },
+    get isFocused() {
+      return state.isFocused();
+    },
+    get selectionMode() {
+      return state.selectionMode();
+    },
+    get selectionBehavior(): SelectionBehavior {
+      return state.selectionBehavior() ?? "toggle";
+    },
+    get disallowEmptySelection() {
+      return state.disallowEmptySelection();
+    },
+    get selectedKeys() {
+      return state.selectedKeys();
+    },
+    get isEmpty() {
+      return state.isEmpty();
+    },
+    get isSelectAll() {
+      return state.isSelectAll();
+    },
+    isSelected: (key: Key) => state.isSelected(key),
+    isDisabled: (key: Key) => state.isDisabled(key),
+    setFocusedKey: (key: Key | null, child?: FocusStrategy) => state.setFocusedKey(key, child),
+    setFocused: (focused: boolean) => state.setFocused(focused),
+    setSelectionBehavior: (behavior: SelectionBehavior) => state.setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => state.toggleSelection(key),
+    replaceSelection: (key: Key) => state.replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => state.setSelectedKeys(keys),
+    extendSelection: (toKey: Key) => state.extendSelection(toKey),
+    selectAll: () => state.selectAll(),
+    clearSelection: () => state.clearSelection(),
+    toggleSelectAll: () => state.toggleSelectAll(),
+    setKeyboardNavigationDisabled: () => {},
+  };
+  return gridState as unknown as GridState<unknown, GridCollection<unknown>>;
 }
 
 /**
@@ -107,14 +178,13 @@ export function createTagGroup<T>(
     const p = getProps();
     return !p.label && !p["aria-label"] && !p["aria-labelledby"] ? "Tag list" : undefined;
   };
+  const gridState = toGridState(state);
   const sharedData: TagGroupData = {
     id,
     get onRemove() {
       return getProps().onRemove;
     },
-    get direction() {
-      return getProps().direction ?? "ltr";
-    },
+    gridState,
   };
 
   // Filter DOM props
@@ -125,6 +195,7 @@ export function createTagGroup<T>(
   // callers pass label props that change after this function returns (a Label
   // slot starts assumed and clears when no Label child mounts).
   const labeling = createLabel({
+    id,
     get label() {
       return getProps().label;
     },
@@ -163,79 +234,27 @@ export function createTagGroup<T>(
 
   const getRef = () => _ref?.() ?? null;
 
-  // First/last navigable (non-disabled) row keys — the entry targets.
-  const getFirstNavigableKey = (): Key | null => {
-    const collection = state.collection();
-    let candidate = collection.getFirstKey();
-    while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyAfter(candidate);
-    }
-    return candidate;
-  };
-
-  const getLastNavigableKey = (): Key | null => {
-    const collection = state.collection();
-    let candidate = collection.getLastKey();
-    while (candidate != null && state.isDisabled(candidate)) {
-      candidate = collection.getKeyBefore(candidate);
-    }
-    return candidate;
-  };
-
-  // Focus marshalling — the grid container is a trampoline. Its roving tabIndex
-  // is 0 only while `focusedKey == null` (see gridProps below), so a forward Tab
-  // that reaches the standalone container lands on the container itself; move the
-  // focused key onto the first/last row and the post-commit effect below pulls
-  // REAL DOM focus there while the container rolls to tabIndex -1. Mirrors
-  // useSelectableCollection's `onFocus` (via useTagGroup → useGridList). A
-  // Shift+Tab arriving directly on a row is handled by the row's own focusable
-  // onFocus, since every non-disabled row is a tab stop when nothing is focused.
-  const onFocus = (e: FocusEvent) => {
-    state.setFocused(true);
-
-    // `focus` is non-bubbling in Solid, so this fires only when the container
-    // itself receives focus; ignore anything that bubbled from a descendant.
-    const container = e.currentTarget as HTMLElement | null;
-    if (container && e.target && !container.contains(e.target as Node)) return;
-    if (state.focusedKey() != null || getProps().isDisabled) return;
-
-    const relatedTarget = e.relatedTarget as Element | null;
-    // Focus arriving from an element that FOLLOWS the group in document order
-    // means the user shift-tabbed backward into it → enter at the LAST row;
-    // otherwise (forward Tab, or programmatic) enter at the FIRST.
-    const enterKey =
-      relatedTarget &&
-      container &&
-      container.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
-        ? getLastNavigableKey()
-        : getFirstNavigableKey();
-    if (enterKey != null) {
-      state.setFocusedKey(enterKey);
-    }
-  };
-
-  const onBlur = () => {
-    state.setFocused(false);
-  };
-
-  // Once the roving tabindex for the focused key has committed to the DOM, move
-  // browser focus onto that row (looked up by its stable data-key), mirroring
-  // useSelectableCollection. Only manage focus while it already lives inside the
-  // container — i.e. the user is navigating via the trampoline — so a background
-  // focusedKey change never yanks focus from elsewhere on the page.
-  createTrackedEffect(() => {
-    const key = state.focusedKey();
-    const el = getRef();
-    if (!el || key == null) return;
-
-    const active = document.activeElement;
-    if (!active || (active !== el && !el.contains(active))) return;
-
-    const target = el.querySelector<HTMLElement>(`[data-key="${CSS.escape(String(key))}"]`);
-    if (target && target !== active) {
-      target.focus();
-    }
-  });
+  // useTagGroup builds useGridList with a horizontal tab delegate and wrap.
+  // Arrow, Home, End, typeahead, Escape, and Ctrl+A live there.
+  const grid = createGridList(
+    () => {
+      const p = getProps();
+      return {
+        id,
+        orientation: "horizontal" as const,
+        keyboardNavigationBehavior: "tab" as const,
+        shouldFocusWrap: true,
+        direction: p.direction ?? "ltr",
+        isDisabled: p.isDisabled,
+        selectionBehavior: state.selectionBehavior(),
+        "aria-label": p["aria-label"] ?? getFallbackAriaLabel(),
+        "aria-labelledby": p["aria-labelledby"],
+        "aria-describedby": getAriaDescribedBy(),
+      };
+    },
+    () => gridState,
+    getRef,
+  );
 
   // useTagGroup.ts:137-150. aria-live is polite only while focus is within.
   // The first run records the mounted size, so an empty mount does not focus.
@@ -259,6 +278,7 @@ export function createTagGroup<T>(
       const hasItems = state.collection().size > 0;
 
       return mergeProps(
+        grid.gridProps as Record<string, unknown>,
         domProps(),
         labeling.fieldProps as Record<string, unknown>,
         focusWithinProps,
@@ -272,12 +292,6 @@ export function createTagGroup<T>(
           "aria-live": isFocusWithin() ? "polite" : "off",
           "aria-describedby": getAriaDescribedBy(),
           "aria-disabled": p.isDisabled || undefined,
-          // Roving container tabIndex mirrors useSelectableCollection: the container
-          // is tabbable (0) only while nothing is focused, then rolls to -1 once a
-          // row takes focus so Tab exits the group.
-          tabIndex: p.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
-          onFocus,
-          onBlur,
         },
       );
     },
