@@ -1022,7 +1022,7 @@ function TreeItemOnDropIndicator(props: {
               id={activateId}
               aria-label={expandLabel()}
               aria-labelledby={`${activateId} ${rowId() ?? ""}`.trim()}
-              tabIndex={-1}
+              tabindex={-1}
               ref={setActivateEl}
             />
           </Show>

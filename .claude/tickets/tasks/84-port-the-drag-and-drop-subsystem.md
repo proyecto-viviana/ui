@@ -53,3 +53,22 @@ pinned upstream source in real mobile-browser evidence.
 Replaces `dnd-subsystem-port` from the retired debt ledger, owns upstream Train
 8 items T-68 and T-88 for #82, and keeps the original external scope in GitHub
 issue #25.
+
+## Bounded typing qualification — 2026-10-08
+
+Registered serial source qualification at base
+`d8b607fe55aaee1ff45c44b777a6a3310f9d0826`, generation
+`283d7315-2e9b-40d6-b9fb-3ee66d8032bf`: repair only the auxiliary
+TreeItemOnDropIndicator div attribute spelling from `tabIndex` to `tabindex`,
+keeping its value `-1` and all control behavior unchanged. Existing Tree tests
+remain read-only. Compiler negative control and bounded checks are recorded in
+`/tmp/ui-84-codex-*` receipts. This typing-only slice needs no Changeset;
+the broader DnD task remains in progress.
+
+Qualification result: the canonical root compiler run removes exactly the owned
+Tree TS2322 (24 diagnostics before, 23 after: eight package and fifteen script
+diagnostics; no new diagnostics). Both compiler exits are 2 from inherited debt.
+The unchanged owning Tree suite passes all 83 tests. Scoped formatting, lint,
+and current-docs checks pass. No runtime failure is claimed for the old spelling;
+the compiler diagnostic is the negative control. Full DnD closure and release
+readiness remain outside this qualification.
