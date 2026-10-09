@@ -150,3 +150,58 @@ Against baseline, eleven suspect facts are added, filetrigger|role|link loses
 gap eligibility, and tokenfield gains a local match. These pre-existing deltas
 are classified in `/tmp/ui-579-classification.md`; baseline remains unchanged.
 This is bounded qualification, not broader certification or growth approval.
+
+## Separate target-attribution admission, 2026-10-09
+
+Sole registered source implementer: Codex gpt-6.1-sol, reasoning medium,
+generation `0e9a47f1-bf3d-4490-85d2-354fcf8ed706`, base
+`0222514cad3ecd2c7a98844aa6eff512250f40ad`. Previous owned generation closed
+with the #547 stop receipt. This serial admission preserves verified status
+and the accepted 2026-10-08 nested-spread qualification. Exact writes: parity
+script, existing CLI regression test, this ticket, and conditional generated
+status/roadmap. Only query-target-proven raw text-input fixture occurrences
+and universal vocabulary wording are admitted. No baseline growth or product
+changes. Evidence root: `/tmp/ui-579-target-proof-20261009`.
+
+Qualification: exact literal `within(root).getByRole("textbox")` occurrences
+are masked only after one imported Dialog/AlertDialog render, one lexical const
+root query, and one explicit raw text input are proven. Ambiguous bindings,
+dynamic/unknown children and competing controls retain the existing rules.
+Independent textbox queries and host assertions remain. Universal diagnostics
+now describe test-vocabulary differences without declaring unsupported semantics.
+
+Final focused CLI suite: 30 passed. Admission source: six expected failures
+(five fixture-attribution expectations and truthful wording), 24 preservation
+controls passed; final source restored with identical SHA256 before final checks.
+Both unchanged real styled caller-contract bodies are exercised. Existing
+textarea ownership still removes textbox in the competing textarea control;
+that inherited rule is preserved, not new target-binding suppression.
+
+Real admission/final guards both exit 1: suspect facts 245 → 244, coverage-gap
+facts 43 → 43, upstream-only suites 10 → 10; ranked rows 48 → 48. Only
+`dialog|role|textbox` is removed, from the two styled Dialog test origins.
+Dialog score moves 14 → 4; ROLE rows 19 → 18. No facts added, no other fact
+origin changes, and no coverage-gap eligibility change. The other ten inherited
+added facts remain scored; they are not established product defects. Pin,
+baseline, product tests and named ignored upstream inputs remain unchanged.
+Scoped formatting/lint and root typecheck pass. Launch guard initially hit
+sandbox tsx IPC EPERM; the recorded admission-source retry measured normally.
+This admission is ready for independent conductor review, not broader
+certification, baseline growth, owned-stop or commit authority.
+
+### Same-generation conservative-proof revision, 2026-10-09
+
+Conductor review requested qualification of outer sibling spans and callback-local
+class bindings. The original sealed proof remains immutable. Revision evidence
+lives at `/tmp/ui-579-target-proof-r2-20261009`; registration/base and exact
+write scope remain unchanged. Outside the imported subject, only text-only spans
+with an optional literal id qualify. Named local classes conservatively reject
+the binding proof. The reviewed revision-1 source fails all four new retained-
+textbox expectations while its 30 preservation cases pass; revised final
+source passes all 34 actual-CLI cases. Temporary substitution restored the
+revised source with identical SHA256 before final checks. Scoped formatting,
+lint and root typecheck pass. The real guard still exits 1 and its report is
+byte-for-byte identical to revision 1: the original admission's sole removed
+fact remains `dialog|role|textbox`. Prior proof and packaging artifacts are
+preserved; revision manifests bind reviewed admission and final identities.
+This is same-scope conservative-proof qualification for conductor review.

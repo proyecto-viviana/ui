@@ -20,10 +20,9 @@
  * The host keeps the role when the host is that owner.
  *
  * …then reports, per component:
- *   - WE-ONLY  roles/aria/keys  → prime suspects: we assert a shape upstream
- *     never asserts (e.g. the Toast `listbox`/`Dismiss` divergence class).
- *   - UPSTREAM-ONLY             → coverage gaps: upstream asserts a shape our
- *     tests never touch.
+ *   - WE-ONLY  roles/aria/keys  → vocabulary found locally and absent from
+ *     the matched upstream test vocabulary.
+ *   - UPSTREAM-ONLY             → vocabulary found upstream and absent locally.
  *
  * This is a discovery/triage aid with a blocking regression floor. The current
  * vocabulary debt is baselined as individual component/category/value facts;
@@ -31,8 +30,7 @@
  * fact exits non-zero. Regenerating the baseline (`--write-baseline`) may not
  * increase counts unless `--allow-growth <ticket>` records the new facts.
  * Names are reported but never scored (they are
- * example-specific); roles dominate the suspect score because a role our test
- * asserts that upstream never does is almost always a genuine wrong-shape bug.
+ * example-specific); roles dominate the suspect score because a role difference receives more weight than an ARIA or key difference.
  *
  * Upstream oracle = the gitignored ./react-spectrum tree, pinned via
  * scripts/upstream-pin.json. Re-materialize / bump it per the playbook at
@@ -965,10 +963,256 @@ function vocabText(sf: ts.SourceFile, node: ts.Node): string {
   let out = "";
   let cursor = 0;
   for (const span of blanks) {
-    out += text.slice(cursor, span.pos) + '""';
+    out += text.slice(cursor, span.pos) + " ".repeat(span.end - span.pos);
     cursor = span.end;
   }
   return out + text.slice(cursor);
+}
+
+/** Narrow occurrence proof: one lexical render, imported dialog, and const root.
+ * Unsupported syntax leaves the query vocabulary intact. This is not general data flow. */
+function fixtureTextboxLiterals(cb: FnLike, ctx: AttrCtx): ts.StringLiteral[] {
+  const declarations = new Map<string, ts.Node[]>();
+  const walk = (node: ts.Node, visit: (n: ts.Node) => void): void => {
+    visit(node);
+    ts.forEachChild(node, (child) => walk(child, visit));
+  };
+  const bind = (name: ts.BindingName, node: ts.Node): void => {
+    if (ts.isIdentifier(name)) {
+      const list = declarations.get(name.text) ?? [];
+      list.push(node);
+      declarations.set(name.text, list);
+    } else {
+      for (const element of name.elements) {
+        if (ts.isBindingElement(element)) bind(element.name, node);
+      }
+    }
+  };
+  walk(cb, (node) => {
+    if (
+      (ts.isVariableDeclaration(node) ||
+        ts.isParameter(node) ||
+        ts.isFunctionDeclaration(node) ||
+        ts.isClassDeclaration(node) ||
+        ts.isClassExpression(node)) &&
+      node.name
+    )
+      bind(node.name, node);
+  });
+  // Ancestor bindings can shadow the imported subject or query helpers too.
+  // Reject these scopes rather than following their values.
+  for (let ancestor: ts.Node | undefined = cb.parent; ancestor; ancestor = ancestor.parent) {
+    if (
+      ts.isArrowFunction(ancestor) ||
+      ts.isFunctionExpression(ancestor) ||
+      ts.isFunctionDeclaration(ancestor)
+    ) {
+      for (const param of ancestor.parameters) bind(param.name, param);
+    }
+    if (ts.isBlock(ancestor) || ts.isSourceFile(ancestor)) {
+      for (const stmt of ancestor.statements) {
+        if (ts.isVariableStatement(stmt)) {
+          for (const decl of stmt.declarationList.declarations) {
+            if (decl.pos < cb.pos || decl.end > cb.end) bind(decl.name, decl);
+          }
+        } else if ((ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt)) && stmt.name)
+          bind(stmt.name, stmt);
+      }
+    }
+  }
+  const lexicalConst = (name: string, at: ts.Node): ts.VariableDeclaration | null => {
+    const list = declarations.get(name);
+    if (list?.length !== 1) return null;
+    const decl = list[0];
+    if (
+      !ts.isVariableDeclaration(decl) ||
+      !ts.isVariableDeclarationList(decl.parent) ||
+      !(decl.parent.flags & ts.NodeFlags.Const)
+    )
+      return null;
+    const scope = decl.parent.parent.parent;
+    if (decl.end > at.pos || at.pos < scope.pos || at.end > scope.end) return null;
+    return decl;
+  };
+  const args = findRenderArgs(cb);
+  if (
+    args.length !== 1 ||
+    declarations.has("render") ||
+    declarations.has("renderToString") ||
+    declarations.has("renderToStaticMarkup")
+  )
+    return [];
+  const selected = subjectsFromRenderArg(args[0], ctx);
+  if (selected.length !== 1 || selected[0] !== "dialog") return [];
+  let rendered = args[0];
+  if (ts.isIdentifier(rendered)) {
+    const decl = lexicalConst(rendered.text, rendered);
+    if (!decl?.initializer) return [];
+    rendered = decl.initializer;
+  }
+  if (!ts.isArrowFunction(rendered) && !ts.isFunctionExpression(rendered)) return [];
+  const returns = returnExprs(rendered);
+  if (returns.length !== 1) return [];
+  const subjects: ts.JsxElement[] = [];
+  let safe = true;
+  const unwrap = (expr: ts.Expression): ts.Expression => {
+    while (ts.isParenthesizedExpression(expr)) expr = expr.expression;
+    return expr;
+  };
+  const outer = (expr: ts.Expression): void => {
+    expr = unwrap(expr);
+    if (ts.isJsxFragment(expr)) {
+      for (const child of expr.children) {
+        if (ts.isJsxText(child)) continue;
+        if (ts.isJsxElement(child) || ts.isJsxSelfClosingElement(child)) outer(child);
+        else safe = false;
+      }
+    } else if (ts.isJsxElement(expr) || ts.isJsxSelfClosingElement(expr)) {
+      const tag = ts.isJsxElement(expr) ? expr.openingElement.tagName : expr.tagName;
+      if (!ts.isIdentifier(tag) || declarations.has(tag.text)) {
+        safe = false;
+        return;
+      }
+      if (ctx.imports.get(tag.text) === "dialog" && ts.isJsxElement(expr)) subjects.push(expr);
+      else if (tag.text === "span") {
+        // Outside the subject, accept only inert text scaffolding with a literal id.
+        // Attributes or descendants could otherwise introduce a competing root.
+        for (const attr of jsxAttributes(expr)) {
+          if (
+            !ts.isJsxAttribute(attr) ||
+            attr.name.getText() !== "id" ||
+            !attr.initializer ||
+            !ts.isStringLiteral(attr.initializer)
+          )
+            safe = false;
+        }
+        if (childList(expr).some((node) => !ts.isJsxText(node))) safe = false;
+      } else safe = false;
+    } else safe = false;
+  };
+  outer(returns[0]);
+  if (!safe || subjects.length !== 1) return [];
+  let inputs = 0;
+  const child = (node: ts.JsxChild): void => {
+    if (ts.isJsxText(node)) return;
+    if (ts.isJsxExpression(node)) {
+      if (
+        !node.expression ||
+        ts.isStringLiteral(node.expression) ||
+        ts.isNumericLiteral(node.expression)
+      )
+        return;
+      safe = false;
+      return;
+    }
+    if (ts.isJsxFragment(node)) {
+      node.children.forEach(child);
+      return;
+    }
+    if (!ts.isJsxElement(node) && !ts.isJsxSelfClosingElement(node)) {
+      safe = false;
+      return;
+    }
+    const tag = ts.isJsxElement(node) ? node.openingElement.tagName : node.tagName;
+    if (!ts.isIdentifier(tag) || !["input", "span"].includes(tag.text)) {
+      safe = false;
+      return;
+    }
+    for (const attr of jsxAttributes(node)) {
+      if (!ts.isJsxAttribute(attr)) {
+        safe = false;
+        continue;
+      }
+      const name = attr.name.getText();
+      if (["hidden", "aria-hidden", "inert", "style", "role", "children"].includes(name))
+        safe = false;
+      if (
+        name === "type" &&
+        (!attr.initializer ||
+          !ts.isStringLiteral(attr.initializer) ||
+          attr.initializer.text !== "text")
+      )
+        safe = false;
+    }
+    if (tag.text === "input") inputs++;
+    childList(node).forEach(child);
+  };
+  subjects[0].children.forEach(child);
+  if (!safe || inputs !== 1) return [];
+  const roots: ts.VariableDeclaration[] = [];
+  walk(cb, (node) => {
+    if (
+      !ts.isVariableDeclaration(node) ||
+      !ts.isIdentifier(node.name) ||
+      !node.initializer ||
+      nearestFunction(node) !== cb
+    )
+      return;
+    const init = node.initializer;
+    if (
+      ts.isCallExpression(init) &&
+      ts.isPropertyAccessExpression(init.expression) &&
+      ts.isIdentifier(init.expression.expression) &&
+      init.expression.expression.text === "screen" &&
+      init.expression.name.text === "getByRole" &&
+      init.arguments.length === 1 &&
+      ts.isStringLiteral(init.arguments[0]) &&
+      ["dialog", "alertdialog"].includes(init.arguments[0].text)
+    )
+      roots.push(node);
+  });
+  if (roots.length !== 1 || !ts.isIdentifier(roots[0].name)) return [];
+  const root = roots[0];
+  if (root.pos < args[0].end) return [];
+  const name = (root.name as ts.Identifier).text;
+  const literals: ts.StringLiteral[] = [];
+  walk(cb, (node) => {
+    if (
+      !ts.isCallExpression(node) ||
+      node.arguments.length !== 1 ||
+      !ts.isStringLiteral(node.arguments[0]) ||
+      node.arguments[0].text !== "textbox" ||
+      !ts.isPropertyAccessExpression(node.expression) ||
+      node.expression.name.text !== "getByRole"
+    )
+      return;
+    const receiver = node.expression.expression;
+    if (
+      !ts.isCallExpression(receiver) ||
+      !ts.isIdentifier(receiver.expression) ||
+      receiver.expression.text !== "within" ||
+      receiver.arguments.length !== 1 ||
+      !ts.isIdentifier(receiver.arguments[0])
+    )
+      return;
+    const id = receiver.arguments[0];
+    if (
+      id.text === name &&
+      lexicalConst(name, id) === root &&
+      !declarations.has("within") &&
+      !declarations.has("screen")
+    )
+      literals.push(node.arguments[0]);
+  });
+  return literals;
+}
+
+function maskFixtureQueries(
+  sf: ts.SourceFile,
+  call: ts.CallExpression,
+  cb: FnLike,
+  ctx: AttrCtx,
+): string {
+  const start = call.getStart(sf);
+  let text = vocabText(sf, call);
+  // Mask before regex extraction; no role-set deletion can erase an independent occurrence.
+  // vocabText preserves offsets so the literal spans refer to this same source part.
+  for (const literal of fixtureTextboxLiterals(cb, ctx)) {
+    const pos = literal.getStart(sf) - start;
+    const end = literal.end - start;
+    text = text.slice(0, pos) + " ".repeat(end - pos) + text.slice(end);
+  }
+  return text;
 }
 
 interface RenderMarks {
@@ -1048,7 +1292,7 @@ function attributeFile(
   for (const { call, cb } of collectTestCalls(sf)) {
     const helpers = collectHelpers(cb, ctx.locals, 2, new Set());
     let renderArgs = findRenderArgs(cb);
-    const vocabParts = [vocabText(sf, call)];
+    const vocabParts = [maskFixtureQueries(sf, call, cb, ctx)];
     if (renderArgs.length === 0) {
       for (const helper of helpers) renderArgs.push(...findRenderArgs(helper));
     }
@@ -1166,10 +1410,8 @@ for (const [key, side] of ours) {
     key,
     ours: side,
     upstream: up,
-    // Roles dominate: a role our test queries that upstream never queries is
-    // almost always a wrong semantic shape (Toast `listbox`, TagGroup `listbox`).
-    // A diverging aria-* / key is usually just broader coverage on our side, so
-    // it only nudges the rank.
+    // Role vocabulary differences receive ten points; ARIA and key differences
+    // receive two and one. Vocabulary differences alone do not establish semantics.
     score: weRoles.length * 10 + weAria.length * 2 + weKeys.length,
     weRoles,
     weAria,
@@ -1209,10 +1451,10 @@ console.log(
 const suspects = rows.filter((r) => r.score > 0);
 const roleSuspects = suspects.filter((r) => r.weRoles.length);
 console.log(
-  `\n══ RANKED SUSPECTS — our tests assert a shape upstream never asserts (${suspects.length}) ══`,
+  `\n══ RANKED SUSPECTS — vocabulary found locally and absent from matched upstream tests (${suspects.length}) ══`,
 );
 console.log(
-  `   ${roleSuspects.length} have a ROLE divergence (the high-signal "wrong shape" bucket); the rest are aria/key-only (usually broader coverage).`,
+  `   ${roleSuspects.length} have a ROLE vocabulary difference; the rest are aria/key-only.`,
 );
 for (const r of suspects) {
   console.log(`\n● ${r.key}  [score ${r.score}]`);
@@ -1237,7 +1479,7 @@ const gaps = rows
   .map((r) => ({ ...r, gap: r.upRoles.length * 5 + r.upAria.length * 2 + r.upKeys.length }))
   .sort((a, b) => b.gap - a.gap);
 console.log(
-  `\n══ COVERAGE GAPS — clean on suspects; upstream asserts shapes we don't (${gaps.length}) ══`,
+  `\n══ COVERAGE GAPS — clean on suspects; upstream vocabulary absent locally (${gaps.length}) ══`,
 );
 for (const r of gaps.slice(0, 20)) {
   const parts = [
