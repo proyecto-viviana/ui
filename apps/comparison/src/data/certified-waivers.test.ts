@@ -158,9 +158,9 @@ describe("certified waivers", () => {
 
   // This held the tracked file at `[]` until #578 carried the three
   // behaviour-class reds of Certification Gates 35668806426 as waivers. An
-  // emptiness assertion cannot survive a list that exists, so what is held
-  // instead is the shape the certified verdict reads: the file loads with no
-  // problems, every entry names a ticket the board still has open, and the
+  // empty list is valid after those rows retire. Hold the shape the certified
+  // verdict reads: the file loads with no problems, every entry names a ticket
+  // the board still has open, and the
   // recorded `ticketStatus` is the board's own. That last read is
   // `guard:certified-waiver-tickets`' job in CI; asserting it here as well
   // means a stale entry fails inside the suite too, not only in the guard.
@@ -168,7 +168,6 @@ describe("certified waivers", () => {
     const root = comparisonRootFrom(import.meta.url);
     const loaded = loadCertifiedWaivers(join(here, "../../e2e/certified-waivers.json"));
     expect(loaded.problems).toEqual([]);
-    expect(loaded.waivers.length).toBeGreaterThan(0);
     expect(
       reconcileWaiverTickets({
         waivers: loaded.waivers,
@@ -265,7 +264,8 @@ describe("certified waivers", () => {
     // declaring-file shape is still graded, and it must match nothing.
     expect(tracked.filter((entry) => new RegExp(entry.pattern).test(haystack)).length).toBe(0);
     const tabsHaystack = failureHaystack(REPORTED_FAILURES.tabs);
-    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(tabsHaystack)).length).toBe(1);
+    // #609 retired Tabs after its historical CI row passed.
+    expect(tracked.filter((entry) => new RegExp(entry.pattern).test(tabsHaystack)).length).toBe(0);
   });
 
   // #578, 2026-09-22. The entries were INERT in CI: each was written
@@ -274,7 +274,7 @@ describe("certified waivers", () => {
   // `0 waived` and listed all five under `Unwaived failures`. The fixture is
   // that run's own records, so the list is graded against what a report writes
   // rather than against a title this file builds for it.
-  it("waives the active rows a certified report really wrote, and leaves #497's alone", () => {
+  it("leaves all historical reported failures unwaived after their waivers retire", () => {
     const root = comparisonRootFrom(import.meta.url);
     const loaded = loadCertifiedWaivers(defaultWaiversPath(root));
     expect(loaded.problems).toEqual([]);
@@ -286,23 +286,20 @@ describe("certified waivers", () => {
     });
 
     expect(evaluation.problems).toEqual([]);
-    expect(evaluation.waived.map((entry) => entry.failure.title)).toEqual([
-      REPORTED_FAILURES.tabs.title,
-    ]);
-    // #497's ComboBox rows, the retired #584 Picker rows, and the retired #583
-    // ToggleButton rows stay unwaived.
+    expect(evaluation.waived).toEqual([]);
+    // #497's ComboBox row and retired #584 Picker, #583 ToggleButton and #609
+    // Tabs rows all remain failures if a future report writes them again.
     expect(evaluation.unwaived).toEqual([
       REPORTED_FAILURES.pickerPointer,
       REPORTED_FAILURES.pickerKeyboard,
       REPORTED_FAILURES.toggleButton,
       REPORTED_FAILURES.toggleButtonGroup,
+      REPORTED_FAILURES.tabs,
       REPORTED_FAILURES.comboboxList,
     ]);
     expect(waiverGateFails(evaluation)).toBe(true);
-    // One entry, one row: no waiver covers a second reported failure.
-    expect(new Set(evaluation.waived.map((entry) => entry.waiver.pattern)).size).toBe(
-      loaded.waivers.length,
-    );
+    // All six historical rows must reach the failing verdict.
+    expect(evaluation.unwaived).toHaveLength(6);
   });
 
   it("rejects a waiver file that is not an array of pattern/ticket/(release|expires)/ticketStatus", () => {

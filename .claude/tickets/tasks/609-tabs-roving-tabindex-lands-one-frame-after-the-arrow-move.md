@@ -26,6 +26,26 @@ history:
       at: 2026-10-07,
       note: "The 2026-09-24 regression read tabindex after keydown returned, which is already correct on the pre-fix tree. It now reads tabindex in the capture phase of focusout and focusin, and that assertion fails when the attributes are not written before nextEl.focus(): the leaving tab is still 0 and the entering tab is still -1. With the write in place, vp test run packages/solidaria/test/createTabs.test.tsx is 60 passed. The certified tabs spec was not re-run on this host, so the waiver stays until a certified report shows arrow-next-from-selected passing. #507's requestAnimationFrame selected-to-focused copy is untouched, and that ticket now says its 2026-09-08 arrow-next pass did not lock this ordering.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Actual conductor admission: sole registered SOURCE IMPLEMENTER, Codex gpt-6.1-sol medium, base c81d34d0bdc470702fb529746c1bbebed78a5d55, launch_generation 1c5f9cf2-8b94-45db-bf8c-e955b1a12f11. Prior owned generation closed=true in /tmp/ui-554-owned-stop-2026-10-08.json; eligibility checked from the hub with explicit Node 24.21.0. This admission supersedes preparation runtime/provider/count/status language. Only #609 waiver removal, this ticket and generated status/roadmap are editable; source/tests remain read-only. Historical CI removal evidence is being independently rebound; fresh candidate certification remains pending. Conductor reviews, owned-stops and commits; no worker commit, push or publish.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Historical CI permits deleting #609 from certified-waivers.json: independently rehashed run 37198709467 report at 9a477baa7093c7931a266279978eb40b5ce0d11d/main, successful certified-report job 111428737087 per stored conductor verification; artifact 11301963773, certified-html-37198709467. Embedded member 07fb8d0005711babeccb.json equals the extracted JSON; all 23 Tabs outcomes expected. Exact Chromium test 07fb8d0005711babeccb-22d402267aa369533fe0, D4 event sequence — Tabs / horizontal-regular · arrow-next-from-selected, drivers/events.ts:124:9, has one passed result, retry 0, errors []. Cached report totals are 2175 passed / 0 failed / 4 skipped / 2 waived; both waivers are Picker. Overall run failed; local possession does not prove current GitHub availability. This satisfies only historical removal, not current certification. Retained capture-phase focusout/focusin regression samples leaving -1 and entering 0 during dispatch; canonical owning suites pass 74/74 with --maxWorkers=1. #507 selectedToFocusedFrame behavior and all source/tests remain unchanged. Current discovery is 2267 cases, 23 Tabs; baseline #609 matched exactly one case, final waiver list is empty. Baseline waiver suite 71/71 and ticket guard exit 0 (1 waiver); post-removal suite 68 passed / 3 failed, ticket guard exit 0 (0 waivers). Failures at certified-waivers.test.ts:171, :268 and :289 require nonempty/Tabs waiver presence; that read-only path needs a conductor amendment before repair. No waiver renewal, RC rebinding or VIVIANA_RELEASE_VERSION override. Fresh post-removal candidate Tabs/native/full-family certification and #194 postcard remain open; conductor must version before final artifact/CI and obtain exact-SHA Certification Gates, Release Readiness and Site Gate evidence. No build/browser/full-port/release pass claimed. Evidence and handoff: /tmp/ui-609-worker-result-2026-10-08.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Conductor amendment /tmp/ui-609-test-scope-amendment-2026-10-09.json admits only apps/comparison/src/data/certified-waivers.test.ts in addition to the original four paths, on the same base c81d34d0bdc470702fb529746c1bbebed78a5d55 and generation 1c5f9cf2-8b94-45db-bf8c-e955b1a12f11. Repair the three obsolete tracked-list assumptions: an empty list remains loadable and ticket-backed, the retired Tabs haystack matches no tracked waiver, and all six historical failure rows remain unwaived. Preserve synthetic positive matcher, expiry, release, ticket and merged-summary coverage. Baseline and post-removal red logs remain evidence; product source and owning regressions are unchanged. Ticket remains in-progress and fresh post-removal candidate certification remains mandatory.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Amended waiver suite now passes 71/71 (3 files); ticket guard passes with 0 waivers. Synthetic positive matcher, expiry, release, ticket and merged-summary tests remain; the tracked-list case explicitly requires all six historical failures to stay unwaived and the gate to fail. Capture-phase owning regressions remain 74/74 and unchanged. Scoped TypeScript lint/format and docs/diff validation are recorded in the handoff. Historical deletion is complete within this slice; fresh current-candidate Tabs/native/full-family/CI proof and #194 remain pending, so status stays in-progress.",
+    }
 ---
 
 ## Scope
