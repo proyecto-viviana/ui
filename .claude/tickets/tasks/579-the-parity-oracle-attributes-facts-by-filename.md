@@ -205,3 +205,66 @@ byte-for-byte identical to revision 1: the original admission's sole removed
 fact remains `dialog|role|textbox`. Prior proof and packaging artifacts are
 preserved; revision manifests bind reviewed admission and final identities.
 This is same-scope conservative-proof qualification for conductor review.
+
+## Separate classified-floor admission, 2026-10-09
+
+Sole registered source implementer: Codex gpt-6.1-sol, reasoning medium,
+generation `2934f818-234f-4e5d-a689-b278a459f189`, base
+`1d4d31d0105269e537fde10df9c283350bcda1d1`. Prior target generation is owned-stopped;
+the accepted target fix is committed at this base. Eligibility matches canonical
+policy. Exact writes: baseline, this ticket, and conditional generated
+status/roadmap. Preserve verified status, accepted spread/target proofs, pin,
+oracle, scoring and product source/tests. Admit only the ten individually
+classified suspect additions and two measurement-confirmed stale removals.
+Evidence: `/tmp/ui-579-floor-proof-20261009`. Conductor alone reviews,
+owned-stops and commits.
+
+Qualification: real pre-write guard exits 1 with exactly ten new suspects.
+Independent full-fact measurement through the unchanged installed oracle over
+symlinked real source inputs confirms suspects 234 → 244, coverage gaps 44 → 43
+(only `filetrigger|role|link` removed), upstream-only 11 → 10 (only `tokenfield`
+removed). No Dialog textbox, other additions/removals or pin drift. The existing
+CLI writes the floor with `--write-baseline --allow-growth 579`; its new
+2026-10-09 growth entry has ten individual reasons and empty added coverage-gap
+and upstream-only arrays. Earlier growth history and description are preserved.
+
+Current scoped product proof: Breadcrumbs, FileTrigger, TokenField and styled
+Tree pass together (81 tests); headless ToggleButton (14) and Spectrum
+ToggleButton (5) pass in separate unchanged-runner invocations. Initial six-file
+run fails 15 of 100 cases with accumulated DOM duplicate matches in both
+ToggleButton files; the individual invocations resolve those failures without
+source/test/config changes. This is a runner-isolation limitation, not a claimed
+six-file green. Breadcrumbs proves actual overflow Files activation and focus
+restoration. FileTrigger proves pending suppression and the slotted child label.
+ToggleButton proves exact change-before-press order/count including Enter.
+TokenField asserts ordinary aria-invalid absence, not invalid=true support.
+Tree proves pointer/virtual/Enter nested menu opening and Copy presence, not
+Copy invocation or a menuitem Tree row. Composed vocabulary remains scored;
+child-target provenance debt stays deferred.
+
+Reused proof is independently bound to unchanged named owners/tests/dependencies:
+Dialog twins 25-pass receipt `/tmp/ui-641-dialog-r2-unit.receipt.json` and raw
+log prove live aria-details relationship, node identity and retained focus;
+revision-2 actual-CLI 34-pass receipt and raw log in
+`/tmp/ui-579-target-proof-r2-20261009` prove novel host role/ARIA/key rejection
+against an empty floor. Original negative fixture receipt/log/input hashes are
+bound separately in this admission. Historical FileTrigger/ToggleButton passes
+are not used as current proof. Tracked source identities and separate immutable
+ignored pinned-input digests bind S2 1.7.0/RAC 1.21.0 commit
+`f56660b234bd588751c9f35b85d6fe6e17e45ccf`.
+
+The initial guard command hit sandbox tsx IPC EPERM; its recorded retry measured
+normally. Argument forwarding is confirmed by local vp help and the actual write
+output. This bounded reconciliation preserves verified status and earlier
+accepted spread/target proofs. A post-write guard pass establishes accounting
+only, not product certification, corrected child attribution or campaign closure.
+
+Post-write real guard: exit 0, no new facts, with floor counts 244 suspects,
+43 coverage gaps and 10 upstream-only suites. Raw command/cwd/exit/output are
+retained in `post-guard.json` and `post-guard.log` under this evidence root.
+The failed combined six-file receipt, raw output and exact command file order
+are retained unchanged in `product-six.json` and `product-six.log`. Isolated
+relevant passes qualify named vocabulary assertions only; they establish no
+suite-order independence or release readiness. Existing #556 cross-file/order
+debt is unresolved; conductor routes the reproducible runner debt separately
+before final readiness. Setup, config, tests and #556 are unchanged.

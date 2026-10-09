@@ -6,8 +6,12 @@
     "actionbuttongroup|key|arrowright",
     "actionbuttongroup|role|group",
     "actionbuttongroup|role|toolbar",
+    "breadcrumbs|aria|aria-disabled",
     "breadcrumbs|aria|aria-hidden",
     "breadcrumbs|aria|aria-labelledby",
+    "breadcrumbs|key|arrowdown",
+    "breadcrumbs|key|enter",
+    "breadcrumbs|key|escape",
     "breadcrumbs|role|button",
     "breadcrumbs|role|menu",
     "breadcrumbs|role|menuitem",
@@ -102,6 +106,7 @@
     "daterangepicker|aria|aria-valuenow",
     "daterangepicker|key|escape",
     "daterangepicker|role|presentation",
+    "dialog|aria|aria-details",
     "dialog|aria|aria-level",
     "disclosure|aria|aria-controls",
     "disclosure|aria|aria-expanded",
@@ -110,6 +115,8 @@
     "disclosure|aria|aria-level",
     "disclosure|role|group",
     "disclosure|role|region",
+    "filetrigger|aria|aria-disabled",
+    "filetrigger|aria|aria-label",
     "form|aria|aria-details",
     "form|aria|aria-disabled",
     "form|aria|aria-invalid",
@@ -229,11 +236,14 @@
     "togglebutton|aria|aria-controls",
     "togglebutton|aria|aria-expanded",
     "togglebutton|aria|aria-haspopup",
+    "togglebutton|key|enter",
+    "tokenfield|aria|aria-invalid",
     "toolbar|aria|aria-orientation",
     "toolbar|key|end",
     "toolbar|key|home",
     "tree|aria|aria-disabled",
     "tree|aria|aria-hidden",
+    "tree|role|menuitem",
     "tree|role|progressbar"
   ],
   "coverageGaps": [
@@ -262,7 +272,6 @@
     "colorpicker|role|textbox",
     "dropzone|key|enter",
     "dropzone|key|escape",
-    "filetrigger|role|link",
     "group|aria|aria-label",
     "group|role|textbox",
     "popover|aria|aria-controls",
@@ -291,7 +300,6 @@
     "rangecalendar.shadow",
     "shadowdomfocus",
     "sidenav",
-    "tokenfield",
     "tokenfield.composition",
     "virtualizedmenu"
   ],
@@ -522,6 +530,38 @@
           "tooltip|role|tooltip"
         ],
         "upstreamOnly": ["rangecalendar.shadow"]
+      }
+    },
+    {
+      "ticket": 579,
+      "at": "2026-10-09",
+      "added": {
+        "suspects": [
+          "breadcrumbs|aria|aria-disabled",
+          "breadcrumbs|key|arrowdown",
+          "breadcrumbs|key|enter",
+          "breadcrumbs|key|escape",
+          "dialog|aria|aria-details",
+          "filetrigger|aria|aria-disabled",
+          "filetrigger|aria|aria-label",
+          "togglebutton|key|enter",
+          "tokenfield|aria|aria-invalid",
+          "tree|role|menuitem"
+        ],
+        "coverageGaps": [],
+        "upstreamOnly": []
+      },
+      "reasons": {
+        "breadcrumbs|aria|aria-disabled": "Disabled breadcrumb Link coverage; pinned S2 composes Link and useLink emits aria-disabled. Retained local-only vocabulary.",
+        "breadcrumbs|key|arrowdown": "Overflow Menu opens and focuses an item; matched RAC Breadcrumbs test vocabulary lacks this stronger local composition scenario.",
+        "breadcrumbs|key|enter": "Focused overflow Files item invokes onAction(files), closes the menu and restores trigger focus. Evidence includes real activation, beyond the disabled focus probe.",
+        "breadcrumbs|key|escape": "Overflow closes and restores trigger focus.",
+        "dialog|aria|aria-details": "Caller attribute set/update/removal and relationship preserve root/child identity and focus; pinned Dialog merges allowed DOM props.",
+        "filetrigger|aria|aria-disabled": "Pending child Button assertion plus picker/reset/callback suppression; pinned Button owns pending aria-disabled, not the hidden file input.",
+        "filetrigger|aria|aria-label": "Slotted ButtonContext label on the composed child Button, recorded under the current outermost-subject vocabulary policy.",
+        "togglebutton|key|enter": "Exact change-before-press callback order and count; pinned useToggleButton chains toggle before onPress via Enter-capable press behavior.",
+        "tokenfield|aria|aria-invalid": "Meaningful absence assertion in an ordinary labeled and described fixture. Does not claim invalid=true implementation; stays scored.",
+        "tree|role|menuitem": "Copy belongs to nested ActionMenu/MenuItem opened by pointer, virtual click and Enter, not a Tree row. Cases prove opening and presence, not Copy invocation. Current aggregation retains composed vocabulary; deferred target-provenance debt remains explicit."
       }
     }
   ]
