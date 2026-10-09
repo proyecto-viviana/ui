@@ -4,7 +4,7 @@ type: task
 title: "Publish the Solid 2 release candidate to the `rc` dist-tag"
 created: 2026-09-20
 parent: 544
-status: verified
+status: in-progress
 history:
   - {
       state: open,
@@ -51,7 +51,59 @@ history:
       at: 2026-09-24,
       note: "All release gates passed cleanly for revision a6830e30 (Certification Gates run 35948468405, Release Readiness run 35948468341, Site Gate run 35948468396). Release workflow run 35949672016 executed `changeset:publish` and published all five packages with OIDC trusted publishing and SLSA provenance (@proyecto-viviana/solid-stately@0.6.0-rc.0, @proyecto-viviana/solidaria@0.6.0-rc.0, @proyecto-viviana/solidaria-components@0.7.0-rc.0, @proyecto-viviana/solid-spectrum@0.8.0-rc.0, @proyecto-viviana/ui@0.8.0-rc.0). Verified live on npm: dist-tag `rc` correctly resolves to each -rc.0 version; dist-tag `latest` remains untouched (0.5.1 / 0.4.3 / 0.5.1 / 0.6.4 / 0.6.3); no `next` tag was created. Clean off-workspace Solid 2 consumer installing from npm @proyecto-viviana/ui@rc built and rendered Button via SSR with full styling classes.",
     }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Actual #547 notes/policy dispatch admitted at base 908817e11dcb0afdce52ca40c97d1426cc0e676c, generation f9743862-713a-4fb7-9c1b-9949c1a38dc7 (registration /tmp/ui-547-notes-registration-2026-10-08.json). Sole registered source implementer; preceding owned generation closed by /tmp/ui-609-owned-stop-2026-10-08.json. Exact scope: ten proposed semantic notes subject to deduplication, one Select note amendment, release-policy prose, release workflow wording, this ticket and generator-only status/roadmap consequences. Separate from #554; no component, version, publication or provider work. Historical RC0 verification remains historical; the next RC is outstanding. Conductor alone reviews, owned-stops and commits after this worker seals its handoff.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "Preparatory notes/policy slice implemented: ten deduplicated patch notes and the S/A/C Select controlled-null amendment (23 note/package entries); protected notes and consumed #114 unchanged. Release policy now describes direct guarded publication after explicit conductor versioning. Workflow changes are comments and publish-step name only; executable lines are equal to base. All 16 admitted paths are changed, including generator-only status/roadmap. Local metadata/status and docs checks pass; scoped fmt checks 16 files. Scoped lint selects no supported Markdown/YAML files and is not a code-lint proof. Standard docs:generate was blocked by sandbox tsx IPC EPERM; pinned Node --import tsx ran the same generator successfully. No compiler run: prose/metadata scope requires none; historical diagnostics are superseded, and no current-candidate green is claimed. No runtime tests, old-source control, new prose tests, provider guards, versioning, builds or publication run. Raw receipts, note/package map, diff, file/evidence manifests and seal are under /tmp/ui-547-notes-*; handoff /tmp/ui-547-notes-worker-result-2026-10-08.md. Worker stops editing after sealing for independent conductor review and exact-generation owned-stop. Next RC publication and final-candidate certification remain outstanding.",
+    }
 ---
+
+## Current preparatory slice — 2026-10-09
+
+The 2026-09-24 verified entry records the delivered RC0 only. This ticket is
+in progress for the next RC; notes and policy preparation do not deliver it.
+The actual dispatch above supersedes historical writer, provider, pending-count
+and preparation-state claims. No additional note paths are admitted by the
+existing #547 admission.
+
+Deduplication against the current pending notes and accepted source leaves ten
+new patch notes plus the Select controlled-null amendment. Existing #625
+inline rename/focus isolation, #630 reactive-getter authoring, Card tabindex,
+#641 focusable context, #633 no-font exports, Menu/Tabs/ComboBox tuple dispatch,
+#628/#629 icons and #115 ComboBox notes remain unchanged. #114 remains consumed
+history. No speculative Visualmode notes are added.
+
+These notes describe implementation slices. #627 is verified after its accepted
+bounded typing qualification; final release-candidate qualification is separate.
+#630 still needs original-node/caret/Card-menu native and installed candidate
+proof. #633 remains in progress: local feature/artifact proof does not establish
+registry availability or final candidate qualification. The distinct #630
+reactive-getter authoring contract stays in its existing note.
+
+The conductor must integrate repairs and notes, explicitly version via
+`release:prepare` (or approved `changeset:version` plus readiness), commit the
+candidate for CI, then obtain the actual certified-report artifact/postcard
+through its owning writer. Any postcard edit requires new evidence at the exact
+final publish SHA: Certification Gates, Release Readiness and Site Gate must
+all be green there; ancestor evidence is insufficient. The current `pre`/`rc`
+state and standing RC-only delegation remain; no `next`, `latest` or pre exit.
+#443 owns stable publication. #609's RC0-bound waiver cannot be extended or
+rebound; its accepted historical CI-backed removal is already recorded in #609.
+The current waiver list is empty; fresh final-candidate Tabs and full-family
+zero-waiver certification remain outstanding.
+
+After the authorized RC publish, actual registry `rc`/closure/dist-tag checks and
+an outside-workspace consumer verification must establish delivery. This worker
+performs none of those later stages and does not commit, push or publish. The
+latest main run supplied by the conductor (37784092746 at old 9a477baa) is not
+candidate evidence. Reviewable proof is handed off at
+`/tmp/ui-547-notes-worker-result-2026-10-08.md`; conductor review and the
+exact-generation owned-stop precede integration, separately from #554.
 
 ## Scope
 
@@ -117,13 +169,13 @@ code moves is a promise that decays on the first re-publish.
 version to be a prerelease of this tag, and all five already have a non-pre
 `latest`:
 
-| package                | published `latest` | local `package.json` |
-| ---------------------- | ------------------ | -------------------- |
-| `solid-stately`        | 0.5.1              | 0.5.2                |
-| `solidaria`            | 0.4.3              | 0.5.0                |
-| `solidaria-components` | 0.5.1              | 0.6.0                |
-| `solid-spectrum`       | 0.6.4              | 0.7.0                |
-| `@proyecto-viviana/ui` | 0.6.3              | 0.7.0                |
+| package                | recorded 2026-09-20 `latest` | local 2026-09-20 `package.json` |
+| ---------------------- | ---------------------------- | ------------------------------- |
+| `solid-stately`        | 0.5.1                        | 0.5.2                           |
+| `solidaria`            | 0.4.3                        | 0.5.0                           |
+| `solidaria-components` | 0.5.1                        | 0.6.0                           |
+| `solid-spectrum`       | 0.6.4                        | 0.7.0                           |
+| `@proyecto-viviana/ui` | 0.6.3                        | 0.7.0                           |
 
 The `latest` column is the repository's own recorded evidence in
 `scripts/release-prerequisites.json:26-90`, five re-runnable

@@ -133,7 +133,7 @@ clean checkout of it; queuing a fresh changeset on top does not republish it.
 
 `Release` no longer races the evidence workflows on every push. A successful
 `Certification Gates` run on `main` triggers it for that run's exact head SHA.
-Before Changesets can create/update a version PR or publish packages,
+Before packages can publish,
 `guard:release-evidence` requires successful `Certification Gates`, `Release
 Readiness`, and `Site Gate` runs for that same SHA. A run is evidence only if it
 is this repository's own `push` or `workflow_dispatch` on `main`: a
@@ -157,9 +157,36 @@ the commit does not make them published. Taken from HEAD it also requires an
 that revision, not about this checkout. Manual dispatch remains available and has
 the same exact-SHA check.
 
-After that evidence barrier, the workflow runs in two Changesets stages. If
-unpublished changesets exist, it creates or updates the version PR. When that
-PR merges, it publishes the changed npm packages.
+`Release` checks out the successful main Certification Gates head SHA (or the
+manual dispatch SHA), requires all three evidence workflows at that SHA,
+installs dependencies, and invokes `changeset:publish` directly. There is no
+version PR mechanism. Publish does not version packages: the conductor must
+explicitly version beforehand with `release:prepare`, or an approved
+`changeset:version` followed by readiness checks, and commit the candidate.
+The early `--version-stage` drift preflight does not replace the decisive plain
+publish-drift guard inside `changeset:publish`.
+
+For the next RC under #547, the required order is:
+
+1. Integrate accepted repairs and their release notes.
+2. Run the explicit conductor version stage and commit the versioned candidate
+   for CI.
+3. Record the actual certified-report artifact and postcard through the owning
+   writer. A postcard edit changes the SHA.
+4. Obtain successful Certification Gates, Release Readiness, and Site Gate runs
+   at the exact final publish SHA. An ancestor green is insufficient.
+5. Publish under the existing authorized RC delegation, then verify the actual
+   registry `rc` versions, dependency closure, dist-tags, and a clean consumer
+   outside the workspace.
+
+`.changeset/pre.json` remains in `pre` mode with tag `rc`. The #547 delegation
+covers RC publication only: no `next` or `latest` movement and no prerelease
+exit. Stable publication remains #443. The #609 waiver was bound to
+`0.8.0-rc.0`, with expiry on advance and no extension or rebinding. Its removal
+is accepted historical work backed by genuine CI proof for the exact D4 case,
+as recorded in #609. The current waiver list is empty. Fresh final-candidate
+Tabs and full-family zero-waiver certification remain outstanding. Notes and
+policy preparation perform none of these later release stages.
 
 Every workflow runs on GitHub-hosted runners. Owner 2026-09-17: the
 third-party runner is removed on cost, reversing the #140 trade. Owner
