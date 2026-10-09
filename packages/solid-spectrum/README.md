@@ -45,6 +45,17 @@ macro generates. Keep whichever you import ahead of your other stylesheets.
 from Adobe's Typekit host, so a page that blocks that host falls back to the
 system font with no error.
 
+To omit the package's font declarations, use this optional entry instead of
+`components.css`:
+
+```ts
+import "@proyecto-viviana/solid-spectrum/components-no-fonts.css";
+```
+
+It imports `theme.css` then `styles.css`, without `font-faces.css`. Spectrum's
+`theme.css` is currently comment-only. Your application can supply its own fonts
+if desired.
+
 ## In the chain
 
 ```text

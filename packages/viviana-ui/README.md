@@ -47,13 +47,21 @@ code. The root barrel is for examples and shared entry points.
 Component styling ships as CSS, not as JavaScript. Import it once, at your app
 entry, before your own stylesheets.
 
-| Subpath              | Contents                                                         |
-| -------------------- | ---------------------------------------------------------------- |
-| `components.css`     | `font-faces.css` + `theme.css` + `styles.css`. The usual import. |
-| `theme.css`          | The token layer alone: it imports `viviana-tokens.css`.          |
-| `styles.css`         | Generated component rules, without fonts or tokens.              |
-| `font-faces.css`     | The Geist register: Geist Pixel, Geist, Geist Mono.              |
-| `viviana-tokens.css` | The tokens themselves, to theme against directly.                |
+| Subpath                   | Contents                                                         |
+| ------------------------- | ---------------------------------------------------------------- |
+| `components.css`          | `font-faces.css` + `theme.css` + `styles.css`. The usual import. |
+| `components-no-fonts.css` | `theme.css` + `styles.css`, without package font declarations.   |
+| `theme.css`               | The token layer alone: it imports `viviana-tokens.css`.          |
+| `styles.css`              | Generated component rules, without fonts or tokens.              |
+| `font-faces.css`          | The Geist register: Geist Pixel, Geist, Geist Mono.              |
+| `viviana-tokens.css`      | The tokens themselves, to theme against directly.                |
+
+To omit the package's font declarations, optionally replace the `components.css`
+import with:
+
+```ts
+import "@proyecto-viviana/ui/components-no-fonts.css";
+```
 
 `font-faces.css` opens with a remote `@import`, and CSS drops an `@import` that
 any rule precedes. Load it after your own rules and the fonts silently fall
