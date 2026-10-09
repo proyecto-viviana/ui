@@ -3,11 +3,19 @@
  * Kept off the comparison *.spec.ts match so it does not boot the preview server.
  */
 import { expect, test as base } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import { createHash } from "node:crypto";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
+import type { Page, Locator, TestInfo } from "@playwright/test";
 
 // Each test owns observers installed before navigation, including the original cases.
-const test = base.extend<{ nativeErrors: string[]; trustedChooser: boolean }>({
+const test = base.extend<{
+  nativeErrors: string[];
+  trustedChooser: boolean;
+  popupCase: string | null;
+}>({
   trustedChooser: [false, { option: true }],
+  popupCase: [null, { option: true }],
   nativeErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
@@ -76,7 +84,7 @@ test.afterEach(async ({ page, nativeErrors }, testInfo) => {
   );
 });
 
-test.beforeEach(async ({ page, trustedChooser }) => {
+test.beforeEach(async ({ page, trustedChooser, popupCase }, testInfo) => {
   await page.addInitScript((trustedChooser) => {
     const rejections: string[] = [];
     (window as FocusWindow).__nativeRejections = rejections;
@@ -96,6 +104,10 @@ test.beforeEach(async ({ page, trustedChooser }) => {
       return original.call(this);
     };
   }, trustedChooser);
+  if (popupCase) {
+    await preparePopup642(page, popupCase, testInfo);
+    return;
+  }
   await page.goto("/");
   await expect(page.locator("#hint")).toBeVisible();
 });
@@ -789,4 +801,898 @@ test.describe("trusted chooser", () => {
         await choose(page, kind, gesture, "A", true);
     });
   }
+});
+
+// #642 phase1 only. Two diagnostic + two timing-comparison attempts per cell;
+// persistent reservations cap ALL focused/final invocations at ten per cell.
+const popup642Prefix = "/tmp/ui-642-popup-20261009";
+const popup642Consumer = "/home/emoporemilio/projects/viviana-hub/visualmode/visualmode";
+const popup642Policy = "/tmp/ui-642-offline-font-2026-10-09/receipt.json";
+const popup642Generation = "28b88444-8143-4feb-a309-5500c28c5879";
+const popup642Hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
+type Popup642Window = Window & {
+  __popup642: {
+    dispose(): void;
+    snapshot(): Record<string, unknown>;
+    refs: Record<string, HTMLButtonElement>;
+    accepted: Record<string, string>;
+  };
+  __popup642Final?: {
+    stop(): void;
+    snapshot(): {
+      startedAt: number;
+      commit: null | {
+        time: number;
+        trusted: boolean;
+        key: string;
+        id: string;
+        text: string;
+        role: string | null;
+        focused: boolean;
+        inOriginalPopup: boolean;
+      };
+      commitCount: number;
+      events: Array<{
+        time: number;
+        phase: number;
+        id?: string;
+        field?: string | null;
+        afterCommit: boolean;
+        originalDirection: boolean;
+      }>;
+      dropped: number;
+    };
+  };
+  __popup642Passive: {
+    events: Array<Record<string, unknown>>;
+    dropped: number;
+    nextNode: number;
+    nodes: WeakMap<Node, number>;
+  };
+};
+type Popup642Run = {
+  case: string;
+  count: number;
+  at: string;
+  errors: string[];
+  network: Array<Record<string, unknown>>;
+  modules: Array<Record<string, unknown>>;
+  pending: Promise<void>[];
+  steps: Array<Record<string, unknown>>;
+};
+const popup642Runs = new WeakMap<Page, Popup642Run>();
+
+async function preparePopup642(page: Page, selected: string, info: TestInfo) {
+  if (!resolve(info.outputDir).startsWith(`${popup642Prefix}-`))
+    throw new Error("#642 requires owned --output prefix");
+  const [implementation, theme, width, lane] = selected.split(":");
+  if (!/^(source|react):(light|dark):(220|280):(diagnostic|uninstrumented)$/.test(selected))
+    throw new Error("invalid #642 test mode");
+  const registration = JSON.parse(
+    readFileSync(`${popup642Prefix}-registration-2026-10-08.json`, "utf8"),
+  );
+  if (registration.launch_generation !== popup642Generation)
+    throw new Error("#642 registration generation changed");
+  // Runtime admission is separate from preparation. Do not infer it from port release.
+  const custodyPath = `${popup642Prefix}-browser-custody.json`;
+  if (!existsSync(custodyPath)) throw new Error(`#642 browser custody absent: ${custodyPath}`);
+  const custody = JSON.parse(readFileSync(custodyPath, "utf8"));
+  if (
+    custody.generation !== popup642Generation ||
+    custody.port !== 4479 ||
+    custody.exclusive !== true ||
+    custody.visualmode10250Released !== true ||
+    custody.cacheDir !== "/tmp/ui-636-native-vite-cache"
+  )
+    throw new Error("#642 incomplete generation-bound browser custody");
+  const ledgerPath = `${popup642Prefix}-attempts.json`;
+  const ledger = existsSync(ledgerPath)
+    ? JSON.parse(readFileSync(ledgerPath, "utf8"))
+    : { generation: popup642Generation, cells: {} };
+  if (ledger.generation !== popup642Generation) throw new Error("#642 attempt generation mismatch");
+  const cell = `${implementation}:${theme}:${width}`;
+  const entries = (ledger.cells[cell] ??= []);
+  if (entries.length >= 10) throw new Error(`#642 ten-attempt TOTAL exhausted: ${cell}`);
+  const reservation = {
+    case: info.title,
+    lane,
+    at: new Date().toISOString(),
+    count: entries.length + 1,
+    status: "reserved-before-navigation",
+  };
+  entries.push(reservation);
+  writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
+  const run: Popup642Run = {
+    ...reservation,
+    errors: [],
+    network: [],
+    modules: [],
+    pending: [],
+    steps: [],
+  };
+  popup642Runs.set(page, run);
+  const geistPath = `${popup642Consumer}/engine/crates/foundation/fixtures/fonts/geist-mono/GeistMono[wght].ttf`;
+  const geist = readFileSync(geistPath);
+  if (
+    geist.length !== 138896 ||
+    popup642Hash(geist) !== "2386ddac2c72b6e0c126561e91486b7284412f303d8d9513da9ffec789e63338"
+  )
+    throw new Error("#642 original Geist bytes mismatch");
+  const policy = JSON.parse(readFileSync(popup642Policy, "utf8"));
+  const adobe = readFileSync(policy.path);
+  if (
+    policy.success !== true ||
+    adobe.length !== 482528 ||
+    popup642Hash(adobe) !== "82d5975ac48b94197a94d944a6a1ee6b234e813e2ee469e2c63e3012319cd416" ||
+    policy.sha256 !== popup642Hash(adobe)
+  )
+    throw new Error("#642 reviewed Adobe input mismatch");
+  const consumerCSS = readFileSync(`${popup642Consumer}/src/styles/design-system.css`, "utf8");
+  // Exact authored consumer rules; only package import and local font URL adapt.
+  const css = consumerCSS
+    .replace("@import '@proyecto-viviana/ui/components.css';", "")
+    .replace(
+      "../../engine/crates/foundation/fixtures/fonts/geist-mono/GeistMono[wght].ttf?no-inline",
+      "/__ui642/GeistMono-variable.ttf",
+    );
+  run.steps.push({
+    type: "font-policy",
+    policy: popup642Policy,
+    policyHash: popup642Hash(readFileSync(popup642Policy)),
+    geistPath,
+    geistHash: popup642Hash(geist),
+    adobePath: policy.path,
+    adobeHash: popup642Hash(adobe),
+    authoredCSSHash: popup642Hash(consumerCSS),
+    boundCSSHash: popup642Hash(css),
+    custody,
+  });
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    const url = request.url();
+    const parsed = new URL(url);
+    if (url === policy.url && request.method() === "GET" && request.resourceType() === "font") {
+      run.network.push({
+        type: "mapped-adobe-preload",
+        url,
+        resourceType: request.resourceType(),
+        hash: popup642Hash(adobe),
+        bytes: adobe.length,
+      });
+      await route.fulfill({
+        status: 200,
+        body: adobe,
+        contentType: "font/woff2",
+        headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
+      });
+    } else if (
+      parsed.origin === "http://127.0.0.1:4479" &&
+      parsed.pathname === "/__ui642/GeistMono-variable.ttf" &&
+      !parsed.search &&
+      request.method() === "GET" &&
+      request.resourceType() === "font"
+    ) {
+      run.network.push({
+        type: "local-original-geist",
+        url,
+        hash: popup642Hash(geist),
+        bytes: geist.length,
+      });
+      await route.fulfill({
+        status: 200,
+        body: geist,
+        contentType: "font/ttf",
+        headers: { "Cache-Control": "no-store" },
+      });
+    } else if (parsed.origin === "http://127.0.0.1:4479" && request.resourceType() !== "font") {
+      await route.continue();
+    } else {
+      run.errors.push(
+        `unadmitted external/font request: ${request.method()} ${request.resourceType()} ${url}`,
+      );
+      run.network.push({ type: "rejected", url, resourceType: request.resourceType() });
+      await route.abort("blockedbyclient");
+    }
+  });
+  page.on("response", (response) => {
+    if (!["script", "stylesheet"].includes(response.request().resourceType())) return;
+    // Hash actual served modules/macro output without browser evaluation or IO
+    // during key pairs. Source/toolchain on-disk identities are separate evidence.
+    const pending = response.body().then(
+      (body) => {
+        run.modules.push({
+          url: response.url(),
+          status: response.status(),
+          sha256: popup642Hash(body),
+          bytes: body.length,
+        });
+      },
+      (error) => {
+        run.errors.push(`module identity: ${response.url()}: ${String(error)}`);
+      },
+    );
+    run.pending.push(pending);
+  });
+  await page.addInitScript(
+    ({ css, diagnostic, optionKeys }) => {
+      const installCSS = () => {
+        if (!document.head) return false;
+        const style = document.createElement("style");
+        style.dataset.ui642ConsumerCSS = "true";
+        style.textContent = css;
+        document.head.append(style);
+        return true;
+      };
+      if (!installCSS()) {
+        const head = new MutationObserver(() => {
+          if (installCSS()) head.disconnect();
+        });
+        head.observe(document, { childList: true, subtree: true });
+      }
+      if (!diagnostic) return;
+      const state = {
+        events: [] as Array<Record<string, unknown>>,
+        dropped: 0,
+        nextNode: 1,
+        nodes: new WeakMap<Node, number>(),
+      };
+      (window as Popup642Window).__popup642Passive = state;
+      const identify = (target: EventTarget | null): Record<string, unknown> | null => {
+        if (!(target instanceof Element)) return target === document ? { document: true } : null;
+        if (!state.nodes.has(target)) state.nodes.set(target, state.nextNode++);
+        return {
+          node: state.nodes.get(target),
+          tag: target.tagName,
+          id: target.id,
+          role: target.getAttribute("role"),
+          key:
+            target.getAttribute("role") === "option"
+              ? optionKeys[target.textContent?.trim() ?? ""]
+              : null,
+          keySource: "fixture-public-options-by-unique-text",
+          nativeDataKey: target.getAttribute("data-key"),
+          text: target.textContent?.trim().slice(0, 160),
+          field: target
+            .closest("[data-canvas-entry-field]")
+            ?.getAttribute("data-canvas-entry-field"),
+          popup: target.closest('[role="listbox"]')?.getAttribute("aria-label"),
+          connected: target.isConnected,
+        };
+      };
+      const record = (row: Record<string, unknown>) => {
+        if (state.events.length === 2048) {
+          state.events.shift();
+          state.dropped++;
+        }
+        row.time = performance.now();
+        state.events.push(row);
+      };
+      for (const type of [
+        "keydown",
+        "keyup",
+        "focusin",
+        "focusout",
+        "react-aria-focus-scope-restore",
+      ]) {
+        document.addEventListener(
+          type,
+          (event) => {
+            const row = {
+              type,
+              key: event instanceof KeyboardEvent ? event.key : undefined,
+              trusted: event.isTrusted,
+              phase: event.eventPhase,
+              target: identify(event.target),
+              currentTarget: identify(event.currentTarget),
+              active: identify(document.activeElement),
+              defaultPreventedAtCapture: event.defaultPrevented,
+              defaultPreventedAfterDispatch: undefined as boolean | undefined,
+            };
+            record(row);
+            // Capture synchronously; cancellation is observed after dispatch only.
+            if (type === "react-aria-focus-scope-restore")
+              queueMicrotask(() => {
+                row.defaultPreventedAfterDispatch = event.defaultPrevented;
+              });
+          },
+          true,
+        );
+      }
+      const popups = (node: Node) =>
+        node instanceof Element
+          ? [
+              node,
+              ...node.querySelectorAll('[role="listbox"], [data-entering], [data-exiting]'),
+            ].filter((el) => el.matches('[role="listbox"], [data-entering], [data-exiting]'))
+          : [];
+      new MutationObserver((records) => {
+        for (const mutation of records) {
+          if (mutation.type === "attributes")
+            record({
+              type: "popup-attribute",
+              attribute: mutation.attributeName,
+              target: identify(mutation.target),
+              entering: (mutation.target as Element).hasAttribute("data-entering"),
+              exiting: (mutation.target as Element).hasAttribute("data-exiting"),
+            });
+          else {
+            for (const node of mutation.addedNodes)
+              for (const el of popups(node))
+                record({ type: "popup-dom-add", target: identify(el) });
+            for (const node of mutation.removedNodes)
+              for (const el of popups(node))
+                record({ type: "popup-dom-remove", target: identify(el) });
+          }
+        }
+      }).observe(document, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ["data-entering", "data-exiting"],
+      });
+    },
+    {
+      css,
+      diagnostic: lane === "diagnostic",
+      optionKeys: {
+        "Default (starter)": "",
+        "LibreBaskerville-Regular": "LibreBaskerville-Regular",
+        "Abel-Regular": "Abel-Regular",
+        "Acme-Regular": "Acme-Regular",
+        "Smokum-Regular": "Smokum-Regular",
+        "GeistMono[wght]": "GeistMono[wght]",
+        Left: "left",
+        Center: "center",
+        Right: "right",
+        ltr: "ltr",
+        rtl: "rtl",
+      } as Record<string, string>,
+    },
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/?ui642=${implementation}&theme=${theme}&width=${width}&lane=${lane}`);
+  await expect(page.locator("#root")).toHaveAttribute("data-popup-ready", "true");
+  await page.evaluate(async () => {
+    await document.fonts.load('16px "Geist Mono"');
+    await document.fonts.ready;
+  });
+  expect(await page.evaluate(() => document.fonts.check('16px "Geist Mono"'))).toBe(true);
+  await expect(page.locator("#hint")).toHaveCount(0);
+  await expect(
+    page.locator("#react-root, #focus-mount, #plain-root, #chooser-headless"),
+  ).toHaveCount(0);
+}
+
+async function popup642Measure(page: Page, step: string) {
+  const result = await page.evaluate((step) => {
+    const measure = (el: Element) => {
+      const s = getComputedStyle(el),
+        r = el.getBoundingClientRect();
+      return {
+        tag: el.tagName,
+        id: el.id,
+        role: el.getAttribute("role"),
+        text: el.textContent?.trim().slice(0, 160),
+        family: s.fontFamily,
+        size: s.fontSize,
+        weight: s.fontWeight,
+        lineHeight: s.lineHeight,
+        displayFamily: s.getPropertyValue("--s2-font-family-display"),
+        sansFamily: s.getPropertyValue("--s2-font-family-sans"),
+        codeFamily: s.getPropertyValue("--s2-font-family-code"),
+        mono: s.getPropertyValue("--font-mono"),
+        animation: s.animation,
+        transition: s.transition,
+        entering: el.hasAttribute("data-entering"),
+        exiting: el.hasAttribute("data-exiting"),
+        x: r.x,
+        y: r.y,
+        width: r.width,
+        height: r.height,
+        right: r.right,
+        bottom: r.bottom,
+      };
+    };
+    const boxes = [...document.querySelectorAll('[role="listbox"]')];
+    const section = document.querySelector("[data-canvas-entry-world-text-section]")!;
+    const plainLabel = (field: string) =>
+      section.querySelector(`[data-canvas-entry-field="${field}"]`)!.closest("label")!
+        .firstElementChild!;
+    return {
+      step,
+      time: performance.now(),
+      fonts: {
+        status: document.fonts.status,
+        geistReady: document.fonts.check('16px "Geist Mono"'),
+        faces: [...document.fonts].map((f) => ({
+          family: f.family,
+          status: f.status,
+          weight: f.weight,
+        })),
+      },
+      // Standalone Text may differ (source meta role vs inherited S2 metrics).
+      // These are measurements, never an equality assertion or style override.
+      standaloneText: {
+        heading: measure(section.firstElementChild!),
+        contentLabel: measure(plainLabel("text-content")),
+        sizeLabel: measure(plainLabel("text-font-size")),
+      },
+      controls: [
+        ...document.querySelectorAll(
+          "[data-canvas-entry-world-text-section] input, [data-canvas-entry-world-text-section] button",
+        ),
+      ].map(measure),
+      popups: boxes.map((el) => ({
+        listbox: measure(el),
+        options: [...el.querySelectorAll('[role="option"]')].map(measure),
+        ancestors: (() => {
+          const parents = [];
+          for (
+            let p = el.parentElement;
+            p && p !== document.body && parents.length < 8;
+            p = p.parentElement
+          )
+            parents.push(measure(p));
+          return parents;
+        })(),
+      })),
+    };
+  }, step);
+  popup642Runs.get(page)!.steps.push(result);
+}
+
+async function popup642Settle(target: Locator) {
+  let previous = "",
+    stable = 0;
+  await expect
+    .poll(
+      async () => {
+        const values = await target.evaluate((el) => {
+          const parents: Element[] = [el];
+          for (
+            let p = el.parentElement;
+            p && p !== document.body && parents.length < 8;
+            p = p.parentElement
+          )
+            parents.push(p);
+          return parents.map((p) => {
+            const r = p.getBoundingClientRect(),
+              s = getComputedStyle(p);
+            return {
+              x: r.x,
+              y: r.y,
+              width: r.width,
+              height: r.height,
+              opacity: s.opacity,
+              entering: p.hasAttribute("data-entering"),
+              exiting: p.hasAttribute("data-exiting"),
+              running: p.getAnimations().some((a) => a.playState === "running" || a.pending),
+            };
+          });
+        });
+        const current = JSON.stringify(values);
+        stable = current === previous ? stable + 1 : 0;
+        previous = current;
+        return stable >= 2 && values.every((v) => !v.entering && !v.exiting && !v.running);
+      },
+      { timeout: 7000, intervals: [100, 100, 100, 200] },
+    )
+    .toBe(true);
+}
+
+async function popup642Sequence(page: Page, diagnostic: boolean) {
+  const section = page.locator('[data-canvas-entry-world-text-section="true"]');
+  const trigger = (field: string) =>
+    section.locator(`[data-canvas-entry-field="${field}"]`).getByRole("button");
+  const listbox = (label: string) => page.getByRole("listbox", { name: label, exact: true });
+  const originalDirection = await trigger("text-direction").elementHandle();
+  if (!originalDirection) throw new Error("missing original Direction");
+  await expect(page.locator("[data-canvas-entry-surface]")).toHaveCSS("isolation", "isolate");
+  await popup642Settle(section);
+  await trigger("text-face").click();
+  await expect(listbox("Face")).toBeVisible();
+  await expect(listbox("Face").getByRole("option")).toHaveCount(6);
+  const longFace = listbox("Face").getByRole("option", {
+    name: "LibreBaskerville-Regular",
+    exact: true,
+  });
+  await expect(longFace).toBeVisible();
+  await popup642Settle(listbox("Face"));
+  expect(Math.round((await listbox("Face").boundingBox())!.width)).toBe(280);
+  await longFace.click();
+  await expect(trigger("text-face")).toContainText("LibreBaskerville-Regular");
+  await expect(listbox("Face")).toBeHidden();
+  await expect(trigger("text-face")).toBeFocused();
+  await popup642Settle(section);
+  const controlFit = await section.evaluate((el) => {
+    const pane = el.closest("[data-canvas-entry-properties-pane]")!,
+      p = pane.getBoundingClientRect();
+    return {
+      paneFit: pane.scrollWidth <= pane.clientWidth,
+      sectionFit: el.scrollWidth <= el.clientWidth,
+      controls: [...el.querySelectorAll("input,button")].map((c) => {
+        const r = c.getBoundingClientRect();
+        return {
+          field: c.closest("[data-canvas-entry-field]")?.getAttribute("data-canvas-entry-field"),
+          inside: r.x >= p.x && r.right <= p.right,
+        };
+      }),
+    };
+  });
+  popup642Runs.get(page)!.steps.push({ type: "closed-fit", ...controlFit });
+  expect(controlFit.paneFit).toBe(true);
+  expect(controlFit.sectionFit).toBe(true);
+  for (const c of controlFit.controls) expect(c.inside, c.field ?? "").toBe(true);
+  for (const [field, label, names, pointer] of [
+    [
+      "text-face",
+      "Face",
+      [
+        "Default (starter)",
+        "LibreBaskerville-Regular",
+        "Abel-Regular",
+        "Acme-Regular",
+        "Smokum-Regular",
+        "GeistMono[wght]",
+      ],
+      "LibreBaskerville-Regular",
+    ],
+    ["text-alignment", "Align", ["Left", "Center", "Right"], "Center"],
+    ["text-direction", "Direction", ["ltr", "rtl"], "ltr"],
+  ] as const) {
+    await trigger(field).click();
+    await expect(listbox(label)).toBeVisible();
+    for (const name of names)
+      await expect(listbox(label).getByRole("option", { name, exact: true })).toBeVisible();
+    await popup642Settle(listbox(label));
+    await popup642Measure(page, `${label} pointer-open settled`);
+    const fit = await listbox(label).evaluate((el) => {
+      const popup = el.closest("[data-placement]") ?? el,
+        p = popup.getBoundingClientRect();
+      const rects = [...el.querySelectorAll('[role="option"]')].map((o) =>
+        o.getBoundingClientRect(),
+      );
+      return {
+        viewport: p.x >= 0 && p.y >= 0 && p.right <= innerWidth && p.bottom <= innerHeight,
+        noOverlap: rects.every((r, i) => i === 0 || r.y >= rects[i - 1].bottom - 1),
+        options: [...el.querySelectorAll('[role="option"]')].map((o) => {
+          const r = o.getBoundingClientRect(),
+            range = document.createRange();
+          range.selectNodeContents(o);
+          return {
+            text: o.textContent,
+            overflow: o.scrollWidth <= o.clientWidth,
+            inside: r.x >= p.x - 1 && r.right <= p.right + 1,
+            fullText: [...range.getClientRects()]
+              .filter((r) => r.width > 0)
+              .every(
+                (r) =>
+                  r.x >= p.x - 1 &&
+                  r.right <= p.right + 1 &&
+                  r.y >= p.y - 1 &&
+                  r.bottom <= p.bottom + 1,
+              ),
+          };
+        }),
+      };
+    });
+    popup642Runs.get(page)!.steps.push({ type: "option-fit", label, ...fit });
+    expect(fit.viewport).toBe(true);
+    expect(fit.noOverlap).toBe(true);
+    for (const o of fit.options) {
+      expect(o.overflow, o.text ?? "").toBe(true);
+      expect(o.inside, o.text ?? "").toBe(true);
+      expect(o.fullText, o.text ?? "").toBe(true);
+    }
+    await page.keyboard.press("Escape");
+    await expect(listbox(label)).toBeHidden();
+    await expect(trigger(field)).toBeFocused();
+    await trigger(field).click();
+    await expect(listbox(label)).toBeVisible();
+    await listbox(label).getByRole("option", { name: pointer, exact: true }).click();
+    await expect(trigger(field)).toContainText(pointer);
+    await expect(listbox(label)).toBeHidden();
+    await expect(trigger(field)).toBeFocused();
+  }
+  const note = async (step: string) => {
+    if (diagnostic)
+      popup642Runs.get(page)!.steps.push(
+        await page.evaluate(
+          (step) => ({
+            step,
+            time: performance.now(),
+            active: document.activeElement?.id,
+            field: document.activeElement
+              ?.closest("[data-canvas-entry-field]")
+              ?.getAttribute("data-canvas-entry-field"),
+          }),
+          step,
+        ),
+      );
+  };
+  const content = section.locator('[data-canvas-entry-field="text-content"]');
+  await content.click();
+  await expect(content).toBeFocused();
+  await note("Content pointer");
+  await page.keyboard.press("Tab");
+  await expect(trigger("text-face")).toBeFocused();
+  await note("Tab Face");
+  await page.keyboard.press("Enter");
+  await expect(listbox("Face")).toBeVisible();
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Enter");
+  await expect(trigger("text-face")).toContainText("Default (starter)");
+  await expect(listbox("Face")).toBeHidden();
+  await expect(trigger("text-face")).toBeFocused();
+  await note("Face starter");
+  await page.keyboard.press("Tab");
+  await expect(section.locator('[data-canvas-entry-field="text-font-size"]')).toBeFocused();
+  await note("Tab Size");
+  await page.keyboard.press("Tab");
+  await expect(trigger("text-alignment")).toBeFocused();
+  await note("Tab Align");
+  await page.keyboard.press("Enter");
+  await expect(listbox("Align")).toBeVisible();
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(trigger("text-alignment")).toContainText("Right");
+  await expect(listbox("Align")).toBeHidden();
+  await expect(trigger("text-alignment")).toBeFocused();
+  await note("Align Right");
+  await page.keyboard.press("Tab");
+  await expect(trigger("text-direction")).toBeFocused();
+  await note("Tab Direction");
+  await page.keyboard.press("Enter");
+  await expect(listbox("Direction")).toBeVisible();
+  const directionPopup = await listbox("Direction").elementHandle();
+  // Minimal in BOTH lanes: one trusted-Enter boundary listener and bounded
+  // focusin recorder, installed before End. This never intervenes in dispatch.
+  await directionPopup!.evaluate((popup) => {
+    const original = (window as Popup642Window).__popup642.refs["text-direction"];
+    const events: ReturnType<NonNullable<Popup642Window["__popup642Final"]>["snapshot"]>["events"] =
+      [];
+    let commit: ReturnType<NonNullable<Popup642Window["__popup642Final"]>["snapshot"]>["commit"] =
+      null;
+    let commitCount = 0,
+      dropped = 0;
+    const startedAt = performance.now();
+    const boundary = (e: KeyboardEvent) => {
+      if (!e.isTrusted || e.key !== "Enter") return;
+      commitCount++;
+      if (commit) return;
+      const target = e.target instanceof Element ? e.target : null;
+      // Capture synchronously, before the product's Enter handler can restore.
+      commit = {
+        time: performance.now(),
+        trusted: e.isTrusted,
+        key: e.key,
+        id: target?.id ?? "",
+        text: target?.textContent?.trim() ?? "",
+        role: target?.getAttribute("role") ?? null,
+        focused: e.target === document.activeElement,
+        inOriginalPopup: !!target && popup.contains(target),
+      };
+    };
+    const capture = (e: FocusEvent) => {
+      const target = e.target instanceof Element ? e.target : null;
+      if (events.length === 2048) {
+        events.shift();
+        dropped++;
+      }
+      events.push({
+        time: performance.now(),
+        phase: e.eventPhase,
+        id: target?.id,
+        field: target
+          ?.closest("[data-canvas-entry-field]")
+          ?.getAttribute("data-canvas-entry-field"),
+        afterCommit: commit !== null,
+        originalDirection: e.target === original,
+      });
+    };
+    document.addEventListener("keydown", boundary, true);
+    document.addEventListener("focusin", capture, true);
+    (window as Popup642Window).__popup642Final = {
+      stop() {
+        document.removeEventListener("keydown", boundary, true);
+        document.removeEventListener("focusin", capture, true);
+      },
+      snapshot: () => ({ startedAt, commit, commitCount, events: [...events], dropped }),
+    };
+  });
+  // No readiness assertion/evaluation between End and Enter. Captures are passive.
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(trigger("text-direction")).toContainText("rtl");
+  await expect(listbox("Direction")).toBeHidden();
+  await expect.poll(() => directionPopup!.evaluate((el) => !el.isConnected)).toBe(true);
+  expect(
+    await page.evaluate(() => (window as Popup642Window).__popup642.accepted["text-direction"]),
+  ).toBe("rtl");
+  await expect
+    .poll(() =>
+      originalDirection.evaluate(
+        (el) =>
+          el.isConnected &&
+          document.activeElement === el &&
+          (window as Popup642Window).__popup642.refs["text-direction"] === el,
+      ),
+    )
+    .toBe(true);
+  const observation = await page.evaluate(async () => {
+    const original = (window as Popup642Window).__popup642.refs["text-direction"];
+    const final = (window as Popup642Window).__popup642Final!;
+    // Exit checks never reset the event history or excuse transient Align focus.
+    const start = performance.now();
+    await new Promise<void>((done) => setTimeout(done, 5000));
+    const end = performance.now();
+    final.stop();
+    return {
+      ...final.snapshot(),
+      start,
+      end,
+      connected: original.isConnected,
+      focused: document.activeElement === original,
+      popupRemoved: document.querySelectorAll('[role="listbox"]').length === 0,
+    };
+  });
+  popup642Runs
+    .get(page)!
+    .steps.push({ type: "commit-through-exit-and-fixed-five-second-final", ...observation });
+  expect(observation.end - observation.start).toBeGreaterThanOrEqual(5000);
+  expect(observation.commitCount).toBe(1);
+  expect(observation.commit).toMatchObject({
+    trusted: true,
+    key: "Enter",
+    text: "rtl",
+    role: "option",
+    focused: true,
+    inOriginalPopup: true,
+  });
+  expect(observation.commit?.id).toBeTruthy();
+  expect(observation.dropped).toBe(0);
+  expect(observation.events.filter((e) => e.afterCommit && e.field === "text-alignment")).toEqual(
+    [],
+  );
+  expect(observation.connected && observation.focused && observation.popupRemoved).toBe(true);
+  if (diagnostic) {
+    const passive = await page.evaluate(() => (window as Popup642Window).__popup642Passive);
+    const keys = passive.events.filter((e) => e.type === "keydown" && e.trusted === true);
+    const optionKeys = keys.filter((e) => (e.target as { role?: string })?.role === "option");
+    const tail = optionKeys.slice(-4);
+    expect(tail.map((e) => ({ key: e.key, text: (e.target as { text: string }).text }))).toEqual([
+      { key: "End", text: "Center" },
+      { key: "Enter", text: "Right" },
+      { key: "End", text: "ltr" },
+      { key: "Enter", text: "rtl" },
+    ]);
+    for (const e of tail) {
+      const t = e.target as { id: string; node: number; key: string | null };
+      const active = e.active as { node: number };
+      expect(t.id).not.toBe("");
+      expect(t.key).toBe(
+        ({ Center: "center", Right: "right", ltr: "ltr", rtl: "rtl" } as Record<string, string>)[
+          (e.target as { text: string }).text
+        ],
+      );
+      expect(t.node).toBe(active.node);
+    }
+    expect(passive.dropped).toBe(0);
+  }
+  await popup642Measure(page, "final original Direction focus");
+  await expect(trigger("text-direction")).toBeFocused();
+}
+
+for (const implementation of ["source", "react"] as const)
+  for (const theme of ["light", "dark"] as const)
+    for (const width of [220, 280] as const)
+      for (const lane of ["diagnostic", "uninstrumented"] as const) {
+        test.describe(`#642 ${implementation} ${theme} ${width} ${lane}`, () => {
+          test.use({
+            popupCase: `${implementation}:${theme}:${width}:${lane}`,
+            trustedChooser: true,
+          });
+          for (const attempt of [1, 2])
+            test(`sequential siblings attempt ${attempt}`, async ({ page }) => {
+              await popup642Sequence(page, lane === "diagnostic");
+            });
+        });
+      }
+
+test.afterEach(async ({ page, popupCase, nativeErrors }, info) => {
+  if (!popupCase) return;
+  const run = popup642Runs.get(page);
+  if (!run) return;
+  await Promise.all(run.pending);
+  let beforeTeardown: unknown, afterTeardown: unknown;
+  let preTeardownRejections: string[] = [],
+    postTeardownRejections: string[] = [];
+  try {
+    const before = await page.evaluate(() => {
+      const final = (window as Popup642Window).__popup642Final;
+      final?.stop(); // Also remove listeners on an earlier assertion failure.
+      const rejections = (window as FocusWindow).__nativeRejections;
+      if (!Array.isArray(rejections)) throw new Error("missing pre-teardown rejection observer");
+      return {
+        fixture: (window as Popup642Window).__popup642?.snapshot(),
+        finalFocus: final?.snapshot(),
+        passive: (window as Popup642Window).__popup642Passive
+          ? {
+              events: [...(window as Popup642Window).__popup642Passive.events],
+              dropped: (window as Popup642Window).__popup642Passive.dropped,
+            }
+          : null,
+        rejections: [...rejections],
+      };
+    });
+    beforeTeardown = before;
+    preTeardownRejections = before.rejections;
+  } catch (error) {
+    run.errors.push(`pre-teardown evidence unavailable: ${String(error)}`);
+  }
+  try {
+    // Cleanup is after the final focus oracle; never a causal control.
+    await page.evaluate(() => (window as Popup642Window).__popup642?.dispose());
+  } catch (error) {
+    run.errors.push(`fixture disposal failed: ${String(error)}`);
+  }
+  try {
+    const after = await page.evaluate(async () => {
+      // Bounded task/microtask drain includes disposal-triggered rejections.
+      await Promise.resolve();
+      await new Promise<void>((done) => setTimeout(done, 0));
+      await Promise.resolve();
+      const rejections = (window as FocusWindow).__nativeRejections;
+      if (!Array.isArray(rejections)) throw new Error("missing post-teardown rejection observer");
+      return {
+        fixture: (window as Popup642Window).__popup642?.snapshot(),
+        rejections: [...rejections],
+      };
+    });
+    afterTeardown = after;
+    postTeardownRejections = after.rejections;
+  } catch (error) {
+    run.errors.push(`post-teardown evidence unavailable: ${String(error)}`);
+  }
+  await Promise.all(run.pending);
+  const browser = { beforeTeardown, afterTeardown, preTeardownRejections, postTeardownRejections };
+  // Soft assertions preserve receipts/raw failures and still fail the test.
+  expect
+    .soft(nativeErrors, "#642 all recorded native page/console errors, including teardown")
+    .toEqual([]);
+  expect.soft(preTeardownRejections, "#642 pre-teardown unhandled rejections").toEqual([]);
+  expect
+    .soft(
+      postTeardownRejections,
+      "#642 post-teardown unhandled rejections after task/microtask drain",
+    )
+    .toEqual([]);
+  expect.soft(run.errors, "#642 offline/module/teardown observation errors").toEqual([]);
+  const receipt = {
+    ...run,
+    pending: undefined,
+    generation: popup642Generation,
+    selected: popupCase,
+    status: info.status,
+    expectedStatus: info.expectedStatus,
+    errors: [...run.errors, ...nativeErrors],
+    assertionErrors: info.errors,
+    browser,
+    atEnd: new Date().toISOString(),
+    limits:
+      "Diagnostic capture/MO and out-of-pair reads affect timing; uninstrumented comparison adds only a trusted final-Enter boundary and bounded focusin observer from before End through exit and the full five-second window, plus fixture refs/acceptance and outside-pair fit/font reads. Post-dispose errors use a bounded task/microtask drain; later asynchronous errors remain outside that observation window. Private lifetimes UNKNOWN; absent document restore event does not prove no private restore.",
+  };
+  const receiptPath = info.outputPath("ui642-attempt.json");
+  writeFileSync(receiptPath, JSON.stringify(receipt, null, 2));
+  await info.attach("ui642-attempt", { path: receiptPath, contentType: "application/json" });
+  const ledgerPath = `${popup642Prefix}-attempts.json`,
+    ledger = JSON.parse(readFileSync(ledgerPath, "utf8"));
+  const cell = popupCase.split(":").slice(0, 3).join(":");
+  const entry = ledger.cells[cell].find((entry: { count: number }) => entry.count === run.count);
+  Object.assign(entry, {
+    status: info.status,
+    receiptPath,
+    sha256: popup642Hash(readFileSync(receiptPath)),
+  });
+  writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
 });

@@ -199,3 +199,70 @@ describe("Picker", () => {
     expect(chevron).not.toHaveAttribute("aria-hidden");
   });
 });
+
+describe("Picker popup focus", () => {
+  it.each(["", "#page-title"])(
+    "restores the original trigger after pointer-open Escape with selectedKey=%s",
+    async (selectedKey) => {
+      const user = setupUser();
+      const onChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      const items: SectionItem[] = [
+        { href: "", label: "Default" },
+        accordion,
+        { href: "#api", label: "API" },
+      ];
+      const { container } = render(() => (
+        <Picker<SectionItem>
+          aria-label="Table of contents"
+          items={items}
+          getKey={(item) => item.href}
+          getTextValue={(item) => item.label}
+          selectedKey={selectedKey}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => <PickerItem id={item.href}>{item.label}</PickerItem>}
+        </Picker>
+      ));
+      const trigger = container.querySelector<HTMLButtonElement>('button[aria-haspopup="listbox"]');
+      expect(trigger).not.toBeNull();
+      const originalTrigger = trigger!;
+
+      await user.click(originalTrigger);
+      await waitFor(() => {
+        expect(screen.getByRole("dialog")).toBe(document.activeElement);
+      });
+      let currentDialog = screen.getByRole("dialog");
+      const selectedOption = screen.getByRole("option", {
+        name: selectedKey === "" ? "Default" : "Accordion",
+      });
+      expect(selectedOption).toHaveAttribute("data-focused");
+      expect(selectedOption).toHaveAttribute("tabindex", "0");
+      expect(selectedOption).not.toBe(document.activeElement);
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+          expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+          expect(currentDialog.isConnected).toBe(false);
+          expect(originalTrigger).toBe(document.activeElement);
+        });
+        expect(originalTrigger.isConnected).toBe(true);
+        expect(container.querySelector('button[aria-haspopup="listbox"]')).toBe(originalTrigger);
+        expect(originalTrigger).toHaveTextContent(selectedKey === "" ? "Default" : "Accordion");
+        expect(onChange).not.toHaveBeenCalled();
+        expect(onSelectionChange).not.toHaveBeenCalled();
+
+        if (attempt === 0) {
+          await user.click(originalTrigger);
+          await waitFor(() => {
+            expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+          });
+          currentDialog = screen.getByRole("dialog");
+        }
+      }
+    },
+  );
+});

@@ -1,7 +1,15 @@
-import { createSignal, onCleanup } from "solid-js";
+import { Picker, PickerItem, PickerContext } from "../../../../viviana-ui/src/picker/index";
+import { Provider } from "../../../../viviana-ui/src/provider/index";
+import { Text as StyledText } from "../../../../viviana-ui/src/text/index";
+import { style } from "../../../../viviana-ui/src/style" with { type: "macro" };
+import "../../../../viviana-ui/src/theme.css";
+import { createSignal, onCleanup, onSettled } from "solid-js";
 import { Menu, MenuItem } from "../../../src/Menu";
 import { Text } from "../../../src/Text";
-import { mountReactMenu } from "../../../../../apps/comparison/e2e/fixtures/menu-react-control.js";
+import {
+  mountReactMenu,
+  mountReactPickers,
+} from "../../../../../apps/comparison/e2e/fixtures/menu-react-control.js";
 import { render } from "@solidjs/web";
 import { createFocusWithin } from "../../../../solidaria/src/interactions/createFocusWithin";
 import { DropZone } from "../../../src/DropZone";
@@ -280,131 +288,443 @@ function ChooserControl(props: { kind: ChooserKind }) {
   );
 }
 
-const root = document.getElementById("root");
-if (root) {
-  render(() => <Page />, root);
-  for (const initialize of initializeChoosers) initialize();
-}
-
-const focusMount = document.getElementById("focus-mount");
-if (!focusMount) throw new Error("missing focus mount");
-const disposeFocus = render(
-  () => (
-    <>
-      <FocusOwner id="owner" />
-      <FocusOwner id="disabled-owner" disabled />
-    </>
-  ),
-  focusMount,
-);
-(
-  window as unknown as { __focusFixture: { events: FocusRecord[]; dispose: () => void } }
-).__focusFixture = {
-  events: focusEvents,
-  dispose: disposeFocus,
-};
-
 function required(id: string): HTMLElement {
   const node = document.getElementById(id);
   if (!node) throw new Error(`missing ${id}`);
   return node;
 }
-const reactControl = mountReactMenu(required("react-root"));
-const plainCounts = {
-  mounts: 1,
-  cleanups: 0,
-  actions: [] as string[],
-  closes: 0,
-  sequence: [] as string[],
-};
-required("plain-item").addEventListener("pointerdown", () => {
-  plainCounts.sequence.push("managed");
-  required("plain-item").setAttribute("data-pressed", "true");
-});
-required("plain-item").addEventListener("pointerup", () =>
-  required("plain-item").removeAttribute("data-pressed"),
-);
 
-// Retain nodes once, before input. Observers are native bubble listeners at the
-// actual framework root, registered after render/createRoot installs delegation.
-function arm(kind: "solid" | "react" | "plain") {
-  const frameworkRoot = required(kind === "solid" ? "root" : `${kind}-root`);
-  const label = required(`${kind}-label`);
-  const menuRoot = label.closest('[role="menu"]');
-  if (!(menuRoot instanceof HTMLElement)) throw new Error("missing menu root");
-  const item = label.closest('[role="menuitem"]');
-  if (!(item instanceof HTMLElement)) throw new Error("missing menuitem");
-  const child = kind === "plain" ? label : required(`${kind}-child`);
-  const counts =
-    kind === "solid" ? solidCounts : kind === "react" ? reactControl.counts : plainCounts;
-  let captured: Event | undefined;
-  const capture: unknown[] = [];
-  const boundary: unknown[] = [];
-  const bubble: unknown[] = [];
-  const snapshot = (event?: Event) => ({
-    sameEvent: event === undefined || event === captured,
-    sameTarget: event === undefined || event.target === label,
-    sameLabel: document.getElementById(`${kind}-label`) === label,
-    sameChild: kind === "plain" || document.getElementById(`${kind}-child`) === child,
-    targetConnected: label.isConnected,
-    menuConnected: menuRoot.isConnected,
-    frameworkConnected: frameworkRoot.isConnected,
-    menuContains: menuRoot.contains(label),
-    frameworkContains: frameworkRoot.contains(label),
-    pressed: item.hasAttribute("data-pressed"),
-    hovered: item.hasAttribute("data-hovered"),
-    focused: document.activeElement === item,
-    livePressed:
-      kind === "plain" ? null : required(`${kind}-live`).getAttribute("data-live-pressed"),
-    mounts: counts.mounts,
-    cleanups: counts.cleanups,
-    actions: [...counts.actions],
-    closes: counts.closes,
-    sequence: [...counts.sequence],
-    path: event
-      ? event
-          .composedPath()
-          .filter((node): node is HTMLElement => node instanceof HTMLElement)
-          .map((node) => node.id)
-      : [],
+function mountLegacy() {
+  const root = document.getElementById("root");
+  if (root) {
+    render(() => <Page />, root);
+    for (const initialize of initializeChoosers) initialize();
+  }
+
+  const focusMount = document.getElementById("focus-mount");
+  if (!focusMount) throw new Error("missing focus mount");
+  const disposeFocus = render(
+    () => (
+      <>
+        <FocusOwner id="owner" />
+        <FocusOwner id="disabled-owner" disabled />
+      </>
+    ),
+    focusMount,
+  );
+  (
+    window as unknown as { __focusFixture: { events: FocusRecord[]; dispose: () => void } }
+  ).__focusFixture = {
+    events: focusEvents,
+    dispose: disposeFocus,
+  };
+
+  const reactControl = mountReactMenu(required("react-root"));
+  const plainCounts = {
+    mounts: 1,
+    cleanups: 0,
+    actions: [] as string[],
+    closes: 0,
+    sequence: [] as string[],
+  };
+  required("plain-item").addEventListener("pointerdown", () => {
+    plainCounts.sequence.push("managed");
+    required("plain-item").setAttribute("data-pressed", "true");
   });
-  const onCapture = (event: Event) => {
-    if (event.target !== label) return;
-    captured = event;
-    counts.sequence.push("capture");
-    capture.push(snapshot(event));
+  required("plain-item").addEventListener("pointerup", () =>
+    required("plain-item").removeAttribute("data-pressed"),
+  );
+
+  // Retain nodes once, before input. Observers are native bubble listeners at the
+  // actual framework root, registered after render/createRoot installs delegation.
+  function arm(kind: "solid" | "react" | "plain") {
+    const frameworkRoot = required(kind === "solid" ? "root" : `${kind}-root`);
+    const label = required(`${kind}-label`);
+    const menuRoot = label.closest('[role="menu"]');
+    if (!(menuRoot instanceof HTMLElement)) throw new Error("missing menu root");
+    const item = label.closest('[role="menuitem"]');
+    if (!(item instanceof HTMLElement)) throw new Error("missing menuitem");
+    const child = kind === "plain" ? label : required(`${kind}-child`);
+    const counts =
+      kind === "solid" ? solidCounts : kind === "react" ? reactControl.counts : plainCounts;
+    let captured: Event | undefined;
+    const capture: unknown[] = [];
+    const boundary: unknown[] = [];
+    const bubble: unknown[] = [];
+    const snapshot = (event?: Event) => ({
+      sameEvent: event === undefined || event === captured,
+      sameTarget: event === undefined || event.target === label,
+      sameLabel: document.getElementById(`${kind}-label`) === label,
+      sameChild: kind === "plain" || document.getElementById(`${kind}-child`) === child,
+      targetConnected: label.isConnected,
+      menuConnected: menuRoot.isConnected,
+      frameworkConnected: frameworkRoot.isConnected,
+      menuContains: menuRoot.contains(label),
+      frameworkContains: frameworkRoot.contains(label),
+      pressed: item.hasAttribute("data-pressed"),
+      hovered: item.hasAttribute("data-hovered"),
+      focused: document.activeElement === item,
+      livePressed:
+        kind === "plain" ? null : required(`${kind}-live`).getAttribute("data-live-pressed"),
+      mounts: counts.mounts,
+      cleanups: counts.cleanups,
+      actions: [...counts.actions],
+      closes: counts.closes,
+      sequence: [...counts.sequence],
+      path: event
+        ? event
+            .composedPath()
+            .filter((node): node is HTMLElement => node instanceof HTMLElement)
+            .map((node) => node.id)
+        : [],
+    });
+    const onCapture = (event: Event) => {
+      if (event.target !== label) return;
+      captured = event;
+      counts.sequence.push("capture");
+      capture.push(snapshot(event));
+    };
+    const onBoundary = (event: Event) => {
+      if (event !== captured) return;
+      counts.sequence.push("boundary");
+      boundary.push(snapshot(event));
+    };
+    const onBubble = (event: Event) => {
+      if (event !== captured) return;
+      counts.sequence.push("document-bubble");
+      bubble.push(snapshot(event));
+    };
+    document.addEventListener("pointerdown", onCapture, true);
+    document.addEventListener("pointerdown", onBubble);
+    frameworkRoot.addEventListener("pointerdown", onBoundary);
+    return {
+      capture,
+      boundary,
+      bubble,
+      snapshot,
+      dispose() {
+        document.removeEventListener("pointerdown", onCapture, true);
+        document.removeEventListener("pointerdown", onBubble);
+        frameworkRoot.removeEventListener("pointerdown", onBoundary);
+      },
+    };
+  }
+  (window as unknown as { __menuFixture: unknown }).__menuFixture = {
+    arm,
+    updateSolid,
+    updateReact: reactControl.update,
+    solidCounts,
+    reactCounts: reactControl.counts,
+    disposeReact: reactControl.dispose,
   };
-  const onBoundary = (event: Event) => {
-    if (event !== captured) return;
-    counts.sequence.push("boundary");
-    boundary.push(snapshot(event));
+  window.addEventListener("pagehide", () => reactControl.dispose(), { once: true });
+}
+
+type PopupOption = { id: string; label: string };
+type PopupField = "text-face" | "text-alignment" | "text-direction";
+type PopupRecord = Record<string, unknown>;
+const popupFields: Array<{
+  field: PopupField;
+  label: string;
+  options: PopupOption[];
+  initial: string;
+}> = [
+  {
+    field: "text-face",
+    label: "Face",
+    initial: "",
+    options: [
+      { id: "", label: "Default (starter)" },
+      ...[
+        "LibreBaskerville-Regular",
+        "Abel-Regular",
+        "Acme-Regular",
+        "Smokum-Regular",
+        "GeistMono[wght]",
+      ].map((label) => ({ id: label, label })),
+    ],
+  },
+  {
+    field: "text-alignment",
+    label: "Align",
+    initial: "left",
+    options: [
+      { id: "left", label: "Left" },
+      { id: "center", label: "Center" },
+      { id: "right", label: "Right" },
+    ],
+  },
+  {
+    field: "text-direction",
+    label: "Direction",
+    initial: "ltr",
+    options: [
+      { id: "ltr", label: "ltr" },
+      { id: "rtl", label: "rtl" },
+    ],
+  },
+];
+const popupChoiceStyle = style({ width: "full", minWidth: 0 });
+const popupLabelStyle = style({ overflowWrap: "anywhere" });
+const popupSectionStyle = style({ display: "grid", gap: 8, minWidth: 0 });
+const popupInputStyle = style({
+  width: "full",
+  minWidth: 0,
+  padding: "[4px]",
+  boxSizing: "border-box",
+  font: "ui-sm",
+  color: "[var(--text-primary)]",
+  backgroundColor: "transparent",
+  borderStyle: "solid",
+  borderWidth: 1,
+  borderColor: "[var(--border-default)]",
+  borderRadius: "[var(--radius-sm)]",
+});
+
+function mountPopup(implementation: "source" | "react") {
+  const root = document.getElementById("root");
+  if (!root) throw new Error("missing popup root");
+  const theme = popupQuery.get("theme");
+  const width = Number(popupQuery.get("width"));
+  if ((theme !== "light" && theme !== "dark") || (width !== 220 && width !== 280))
+    throw new Error("invalid popup parameters");
+  const diagnostic = popupQuery.get("lane") === "diagnostic";
+  document.documentElement.dataset.colorScheme = theme;
+  const events: PopupRecord[] = [];
+  const counts: Record<string, { mounts: number; cleanups: number }> = {};
+  const accepted: Record<string, string> = {};
+  const refs: Record<string, HTMLButtonElement> = {};
+  let dropped = 0;
+  function record(row: PopupRecord) {
+    if (!diagnostic) return;
+    if (events.length === 2048) {
+      events.shift();
+      dropped++;
+    }
+    events.push({ time: performance.now(), ...row });
+  }
+  function lifetime(name: string, phase: "mounts" | "cleanups") {
+    const count = (counts[name] ??= { mounts: 0, cleanups: 0 });
+    count[phase]++;
+    record({ type: "fixture-lifetime", name, phase, ...count });
+  }
+  function retainRefs() {
+    for (const { field } of popupFields) {
+      const trigger = root!.querySelector(`[data-canvas-entry-field="${field}"] button`);
+      if (!(trigger instanceof HTMLButtonElement))
+        throw new Error(`missing original ${field} trigger`);
+      if (!refs[field]) refs[field] = trigger;
+      record({
+        type: "original-ref",
+        field,
+        id: trigger.id,
+        same: refs[field] === trigger,
+        connected: trigger.isConnected,
+      });
+    }
+    root!.dataset.popupReady = "true";
+  }
+  let disposeOwner: (() => void) | undefined;
+  let disposed = false;
+  function disposeFixture() {
+    if (disposed || !disposeOwner) return;
+    disposed = true;
+    disposeOwner();
+    lifetime("root", "cleanups");
+  }
+  const api = {
+    dispose: disposeFixture,
+    implementation,
+    theme,
+    width,
+    diagnostic,
+    events,
+    counts,
+    accepted,
+    refs,
+    snapshot: () => ({
+      implementation,
+      theme,
+      width,
+      diagnostic,
+      events: [...events],
+      counts: Object.fromEntries(
+        Object.entries(counts).map(([name, value]) => [name, { ...value }]),
+      ),
+      accepted: { ...accepted },
+      dropped,
+      originalRefs: Object.fromEntries(
+        Object.entries(refs).map(([field, ref]) => [
+          field,
+          {
+            id: ref.id,
+            connected: ref.isConnected,
+            same: root!.querySelector(`[data-canvas-entry-field="${field}"] button`) === ref,
+            focused: document.activeElement === ref,
+          },
+        ]),
+      ),
+      privatePickerPopoverFocusScope: "UNKNOWN: phase1 has no private instrumentation",
+      reactCollectionRenderIsNativeMount: false,
+    }),
   };
-  const onBubble = (event: Event) => {
-    if (event !== captured) return;
-    counts.sequence.push("document-bubble");
-    bubble.push(snapshot(event));
-  };
-  document.addEventListener("pointerdown", onCapture, true);
-  document.addEventListener("pointerdown", onBubble);
-  frameworkRoot.addEventListener("pointerdown", onBoundary);
-  return {
-    capture,
-    boundary,
-    bubble,
-    snapshot,
-    dispose() {
-      document.removeEventListener("pointerdown", onCapture, true);
-      document.removeEventListener("pointerdown", onBubble);
-      frameworkRoot.removeEventListener("pointerdown", onBoundary);
+  (window as unknown as { __popup642: typeof api }).__popup642 = api;
+  lifetime("root", "mounts");
+  const context = {
+    theme,
+    width,
+    fields: popupFields,
+    record,
+    lifetime,
+    accepted,
+    retainRefs,
+    classes: {
+      choice: popupChoiceStyle,
+      label: popupLabelStyle,
+      section: popupSectionStyle,
+      input: popupInputStyle,
     },
   };
+  if (implementation === "react") {
+    void mountReactPickers(root, context).then((control) => {
+      disposeOwner = control.dispose;
+      window.addEventListener("pagehide", disposeFixture, { once: true });
+    });
+  } else {
+    function Choice(props: { config: (typeof popupFields)[number] }) {
+      const config = props.config;
+      const [value, setValue] = createSignal(config.initial);
+      accepted[config.field] = config.initial;
+      let reported: string | undefined;
+      onSettled(() => {
+        lifetime(`committed-field:${config.field}`, "mounts");
+        return () => lifetime(`committed-field:${config.field}`, "cleanups");
+      });
+      return (
+        <Picker
+          size="S"
+          styles={popupChoiceStyle}
+          label={<StyledText styles={popupLabelStyle}>{config.label}</StyledText>}
+          data-canvas-entry-field={config.field}
+          items={config.options}
+          getKey={(option) => option.id}
+          getTextValue={(option) => option.label}
+          selectedKey={value()}
+          onSelectionChange={(key) => {
+            record({
+              type: "callback",
+              field: config.field,
+              key,
+              deduped: typeof key !== "string" || key === reported,
+            });
+            if (typeof key !== "string" || key === reported) return;
+            reported = key;
+            queueMicrotask(() => {
+              reported = undefined;
+            });
+            // Synchronous external acceptance, matching the consumer DTO projection.
+            accepted[config.field] = key;
+            setValue(key);
+            record({ type: "accepted", field: config.field, key });
+          }}
+        >
+          {(option) => <PickerItem id={option.id}>{option.label}</PickerItem>}
+        </Picker>
+      );
+    }
+    function Owner() {
+      onSettled(() => {
+        lifetime("owner", "mounts");
+        retainRefs();
+        return () => lifetime("owner", "cleanups");
+      });
+      return (
+        <Provider locale="en-US" colorScheme={theme} style={{ display: "contents" }}>
+          <div data-editor-route-frame="true">
+            <div
+              data-canvas-entry-surface="true"
+              tabindex={0}
+              style={{
+                position: "relative",
+                isolation: "isolate",
+                width: "100%",
+                height: "900px",
+                overflow: "hidden",
+              }}
+            >
+              <aside
+                data-canvas-entry-properties-dock="true"
+                style={{ position: "absolute", right: "0", top: "64px", width: `${width}px` }}
+              >
+                <div
+                  data-canvas-entry-properties-pane="true"
+                  style={{ overflow: "auto", "min-width": "0", "min-height": "0" }}
+                >
+                  <div
+                    id="canvas-entry-world-properties-panel"
+                    data-canvas-entry-world-properties-panel="true"
+                    role="region"
+                    aria-label="Properties"
+                    style={{ width: "100%", "min-width": "0", "box-sizing": "border-box" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        "flex-direction": "column",
+                        padding: "8px",
+                        gap: "4px",
+                      }}
+                    >
+                      <section
+                        data-canvas-entry-world-text-section="true"
+                        class={popupSectionStyle}
+                      >
+                        <StyledText>Text</StyledText>
+                        <label style={{ display: "grid", gap: "4px", "min-width": "0" }}>
+                          <StyledText>Content</StyledText>
+                          <input
+                            class={popupInputStyle}
+                            data-canvas-entry-field="text-content"
+                            value="Hello"
+                          />
+                        </label>
+                        <PickerContext value={{ menuWidth: 280 }}>
+                          <Choice config={popupFields[0]} />
+                        </PickerContext>
+                        <label style={{ display: "grid", gap: "4px", "min-width": "0" }}>
+                          <StyledText>Size</StyledText>
+                          <input
+                            class={popupInputStyle}
+                            data-canvas-entry-field="text-font-size"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value="16"
+                          />
+                        </label>
+                        <Choice config={popupFields[1]} />
+                        <Choice config={popupFields[2]} />
+                      </section>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </Provider>
+      );
+    }
+    const dispose = render(() => <Owner />, root);
+    disposeOwner = dispose;
+    window.addEventListener("pagehide", disposeFixture, { once: true });
+  }
 }
-(window as unknown as { __menuFixture: unknown }).__menuFixture = {
-  arm,
-  updateSolid,
-  updateReact: reactControl.update,
-  solidCounts,
-  reactCounts: reactControl.counts,
-  disposeReact: reactControl.dispose,
-};
-window.addEventListener("pagehide", () => reactControl.dispose(), { once: true });
+
+// #642: select the implementation before the first mount. Legacy imperative
+// mounts (including required()/mountReactMenu) run only in the default mode.
+const popupQuery = new URLSearchParams(location.search);
+const popupImplementation = popupQuery.get("ui642");
+if (popupImplementation === null) mountLegacy();
+else if (popupImplementation === "source" || popupImplementation === "react") {
+  mountPopup(popupImplementation);
+} else throw new Error("unknown ui642 implementation");
