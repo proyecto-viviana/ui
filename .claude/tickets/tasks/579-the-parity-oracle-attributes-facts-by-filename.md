@@ -130,3 +130,23 @@ no defect, which is the only thing they share.
 Bears on #568: this guard is one of the 28 blocking gates with no leg in
 `ci:release-readiness`, so it runs only inside `certification-gates.yml`, and
 had longer to accumulate artifact than anyone was watching.
+
+## Bounded qualification admission, 2026-10-08
+
+Sole source implementer generation `19947ee2-194f-431c-b4c8-885c55edbaed`,
+base `f6faa799eac4f206968359ac5e546433b409df94`. Owner admits only the parity
+script, its new CLI regression test, this ticket and generated status/roadmap
+consequences. Previous #95 generation is closed. Preserve verified status and
+prior accepted behavior; this admission qualifies nested literal spreads only.
+No baseline growth authority, alias/fallback changes or campaign closure.
+
+Qualification: spread elements are handled before ordinary expressions. Actual
+CLI fixtures prove nested literal Switch attribution with exact host-file
+provenance; ordinary Button and two-subject filename fallback controls pass.
+Original source fails only the nested case (two controls pass); final suite
+passes all three. Launch compiler had one TS2339 at 779. Real original/final
+reports are identical: exit 1, 245 suspects, 43 coverage gaps, 10 upstream-only.
+Against baseline, eleven suspect facts are added, filetrigger|role|link loses
+gap eligibility, and tokenfield gains a local match. These pre-existing deltas
+are classified in `/tmp/ui-579-classification.md`; baseline remains unchanged.
+This is bounded qualification, not broader certification or growth approval.

@@ -775,8 +775,8 @@ function walkExpr(expr: ts.Expression, found: string[], ctx: AttrCtx, seen: Set<
   }
   if (ts.isArrayLiteralExpression(expr)) {
     for (const el of expr.elements) {
-      if (ts.isExpression(el)) walkExpr(el, found, ctx, seen);
-      else if (ts.isSpreadElement(el)) walkExpr(el.expression, found, ctx, seen);
+      if (ts.isSpreadElement(el)) walkExpr(el.expression, found, ctx, seen);
+      else if (ts.isExpression(el)) walkExpr(el, found, ctx, seen);
     }
     return;
   }
