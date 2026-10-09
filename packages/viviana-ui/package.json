@@ -585,6 +585,7 @@
     "./theme.css": "./dist/theme.css",
     "./font-faces.css": "./dist/font-faces.css",
     "./styles.css": "./dist/styles.css",
+    "./components-no-fonts.css": "./dist/components-no-fonts.css",
     "./components.css": "./dist/components.css",
     "./viviana-tokens.css": "./dist/viviana-tokens.css",
     "./style": {

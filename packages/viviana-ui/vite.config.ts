@@ -200,13 +200,17 @@ const css = {
   minify: true,
 };
 
-const copiedCssFiles = ["components.css", "font-faces.css", "theme.css", "viviana-tokens.css"].map(
-  (fileName) => ({
-    from: `src/${fileName}`,
-    to: "dist",
-    flatten: true,
-  }),
-);
+const copiedCssFiles = [
+  "components.css",
+  "components-no-fonts.css",
+  "font-faces.css",
+  "theme.css",
+  "viviana-tokens.css",
+].map((fileName) => ({
+  from: `src/${fileName}`,
+  to: "dist",
+  flatten: true,
+}));
 
 // The two passes run one process each (`PACK_PASS=dom` then `PACK_PASS=jsx` in
 // the build script) — see selectPackPasses. The DOM pass cleans `dist`; the JSX

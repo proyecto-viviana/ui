@@ -9,9 +9,21 @@
 //
 // Prereq: run `vp run pack:local-chain` first (or `vp run ui:smoke`, which chains
 // both). This script consumes the tarballs that produced; it does not build them.
+import { createHash } from "node:crypto";
+import { createServer } from "node:http";
+import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import {
+  cpSync,
+  realpathSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scratchDir } from "./scratch-dir.mjs";
 
@@ -103,6 +115,8 @@ const overrides = {
   ...Object.fromEntries(packages.map((p) => [p.name, fileSpec(p.name)])),
   "solid-js": "2.0.0-rc.9",
   "@solidjs/web": "2.0.0-rc.9",
+  "@solidjs/compiler": "2.0.0-rc.9",
+  "@solidjs/babel-plugin": "2.0.0-rc.9",
 };
 
 // --- Scaffold the out-of-workspace consumer ------------------------------------
@@ -119,6 +133,7 @@ writeFileSync(
       dependencies: {
         "@proyecto-viviana/kumo": fileSpec("@proyecto-viviana/kumo"),
         "@proyecto-viviana/geist": fileSpec("@proyecto-viviana/geist"),
+        "@proyecto-viviana/solid-spectrum": fileSpec("@proyecto-viviana/solid-spectrum"),
         "@proyecto-viviana/ui": fileSpec("@proyecto-viviana/ui"),
         "@solidjs/web": "2.0.0-rc.9",
         "solid-js": "2.0.0-rc.9",
@@ -277,7 +292,7 @@ if (problems.length > 0) {
 //   2. Node's own resolver (import.meta.resolve) honors every JS subpath
 //      specifier — catches an export-map entry Node rejects (ERR_PACKAGE_*).
 process.stdout.write(`\n=== Export-map completeness + resolution ===\n`);
-const installedPackages = ["ui", "kumo", "geist"].map((directory) => {
+const installedPackages = ["ui", "solid-spectrum", "kumo", "geist"].map((directory) => {
   const installedDir = join(consumerDir, "node_modules", "@proyecto-viviana", directory);
   return {
     name: `@proyecto-viviana/${directory}`,
@@ -507,6 +522,483 @@ if (cssProblems.length > 0) {
 }
 process.stdout.write(
   `no src/ targets; style.css sidecar dropped; styles.css is self-contained and complete\n`,
+);
+
+// G17: inspect actual installed exports, then independently build and mount each
+// CSS choice. Separate outputs prevent Vite from sharing the full font sheet.
+function insist(condition, message) {
+  if (!condition) throw new Error(`G17: ${message}`);
+}
+
+function digest(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function inside(path, root) {
+  const rel = relative(root, path);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel);
+}
+
+// This deliberately accepts only literal local CSS references. Escaped/dynamic
+// references cannot silently bypass the offline contract. Resolve symlinks too.
+function cssClosure(entry, root, allowFonts = false) {
+  root = realpathSync(root);
+  const files = [];
+  const external = [];
+  const externalImports = [];
+  const seen = new Set();
+  function visit(file) {
+    insist(inside(resolve(file), root), `CSS root escape: ${file}`);
+    insist(existsSync(file), `missing CSS target: ${file}`);
+    file = realpathSync(file);
+    insist(inside(file, root), `CSS realpath escape: ${file}`);
+    if (seen.has(file)) return;
+    seen.add(file);
+    const css = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    insist(allowFonts || !/@font-face\b/i.test(css), `font-face in ${file}`);
+    files.push({ path: file, sha256: digest(file) });
+    const imports = [
+      ...css.matchAll(/@import\s+(?:url\(\s*)?(?:"([^"]+)"|'([^']+)'|([^\s);]+))/gi),
+    ];
+    const urls = [...css.matchAll(/url\(\s*(?:"([^"]+)"|'([^']+)'|([^\s)]+))\s*\)/gi)];
+    insist(
+      imports.length === (css.match(/@import\b/gi) ?? []).length,
+      `unparsed import in ${file}`,
+    );
+    insist(urls.length === (css.match(/url\(/gi) ?? []).length, `unparsed URL in ${file}`);
+    for (const [isImport, refs] of [
+      [true, imports],
+      [false, urls],
+    ]) {
+      for (const ref of refs) {
+        const target = ref[1] ?? ref[2] ?? ref[3];
+        insist(!target.includes("\\"), `escaped CSS reference in ${file}`);
+        // Generated checkerboard textures are embedded SVG images, not network
+        // references. Imports and all other schemes still follow the checks below.
+        if (!isImport && /^data:image\/svg\+xml,/i.test(target)) continue;
+        if (/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(target)) {
+          external.push(target);
+          if (isImport) externalImports.push(target);
+          insist(allowFonts, `external CSS reference: ${target}`);
+          continue;
+        }
+        insist(!target.startsWith("/"), `CSS root escape: ${target}`);
+        const local = resolve(dirname(file), decodeURIComponent(target.split(/[?#]/)[0]));
+        insist(inside(local, root), `CSS root escape: ${target}`);
+        insist(existsSync(local), `missing CSS target: ${target}`);
+        insist(inside(realpathSync(local), root), `CSS realpath escape: ${target}`);
+        insist(allowFonts || !/font-faces\.css$/i.test(local), `font-faces import: ${target}`);
+        if (isImport) visit(local);
+      }
+    }
+  }
+  visit(entry);
+  return {
+    files,
+    external: [...new Set(external)],
+    externalImports: [...new Set(externalImports)],
+  };
+}
+
+const styled = installedPackages.filter((pkg) =>
+  ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"].includes(pkg.name),
+);
+const cssSpecs = styled.map((pkg) => `${pkg.name}/components-no-fonts.css`);
+const cssProbe = join(consumerDir, "resolve-css.mjs");
+writeFileSync(
+  cssProbe,
+  `console.log(JSON.stringify(${JSON.stringify(cssSpecs)}.map(spec => ({spec, url: import.meta.resolve(spec)}))));\n`,
+);
+const cssResolutions = JSON.parse(capture(process.execPath, [cssProbe]));
+const cssEvidence = { installed: [], negatives: [], runtime: [] };
+const expectedEntry = '@import "./theme.css";\n@import "./styles.css";\n';
+for (const pkg of styled) {
+  const installed = realpathSync(pkg.installedDir);
+  insist(
+    installed === pkg.installedDir && inside(installed, join(consumerDir, "node_modules")),
+    `${pkg.name} is not a physical installed package`,
+  );
+  const entry = realpathSync(
+    fileURLToPath(
+      cssResolutions.find((item) => item.spec === `${pkg.name}/components-no-fonts.css`).url,
+    ),
+  );
+  const dist = join(installed, "dist");
+  insist(
+    inside(entry, dist) && !inside(entry, repoRoot),
+    `${pkg.name} CSS resolved outside installed dist`,
+  );
+  insist(readFileSync(entry, "utf8") === expectedEntry, `${pkg.name} entry bytes/order differ`);
+  const noFonts = cssClosure(entry, dist);
+  const full = cssClosure(join(dist, "components.css"), dist, true);
+  insist(
+    full.files.some((file) => file.path.endsWith("/font-faces.css")),
+    `${pkg.name} full entry lost font faces`,
+  );
+  insist(
+    full.external.some((url) => new URL(url).hostname === "use.typekit.net"),
+    `${pkg.name} full entry lost Adobe URLs`,
+  );
+  if (pkg.name.endsWith("/ui"))
+    insist(
+      noFonts.files.some((file) => file.path.endsWith("/viviana-tokens.css")),
+      "UI theme tokens were not traversed",
+    );
+  const identity = {
+    name: pkg.name,
+    version: pkg.manifest.version,
+    manifest: join(installed, "package.json"),
+    manifestSha256: digest(join(installed, "package.json")),
+    exports: pkg.manifest.exports,
+    tarball: tarballs[pkg.name],
+    tarballSha256: digest(tarballs[pkg.name]),
+    entry,
+    noFonts,
+    full,
+  };
+  cssEvidence.installed.push(identity);
+
+  // Never corrupt the installed package. Each detector mutation owns a separate
+  // copy, and package hashes are compared again after all negative controls.
+  const mutations = [
+    ["font-face", "@font-face { font-family: forbidden; src: local(forbidden); }", /font-face/],
+    ["font-import", '@import "./font-faces.css";', /font-faces import/],
+    [
+      "external-url",
+      'a { background: url("https://example.invalid/image.png"); }',
+      /external CSS reference/,
+    ],
+    ["external-import", '@import "https://example.invalid/style.css";', /external CSS reference/],
+    ["missing", '@import "./missing.css";', /missing CSS target/],
+    ["escape", '@import "../outside.css";', /CSS root escape/],
+  ];
+  for (const [name, addition, expected] of mutations) {
+    const copy = join(consumerDir, "css-controls", pkg.name.split("/")[1], name);
+    cpSync(dist, copy, { recursive: true });
+    // Mutate the transitive theme sheet, not just the public entry.
+    writeFileSync(
+      join(copy, "theme.css"),
+      `${readFileSync(join(copy, "theme.css"), "utf8")}\n${addition}\n`,
+    );
+    let failure;
+    try {
+      cssClosure(join(copy, "components-no-fonts.css"), copy);
+    } catch (error) {
+      failure = error.message;
+    }
+    insist(
+      failure && expected.test(failure),
+      `${pkg.name} ${name} negative did not reject the intended defect: ${failure}`,
+    );
+    cssEvidence.negatives.push({ package: pkg.name, name, copy, failure });
+  }
+  insist(identity.manifestSha256 === digest(identity.manifest), "installed manifest mutated");
+  for (const file of [...noFonts.files, ...full.files])
+    insist(digest(file.path) === file.sha256, `installed CSS mutated: ${file.path}`);
+}
+process.stdout.write(
+  `G17 installed CSS resolution/closures and ${cssEvidence.negatives.length} separately copied negatives passed\n`,
+);
+
+const casesRoot = join(consumerDir, "css-cases");
+const cases = [];
+for (const pkg of styled) {
+  for (const mode of ["no-css", "no-fonts", "full-fonts"]) {
+    const name = `${pkg.name.split("/")[1]}-${mode}`;
+    const root = join(casesRoot, name);
+    mkdirSync(root, { recursive: true });
+    const sheet =
+      mode === "no-css"
+        ? ""
+        : `import "${pkg.name}/${mode === "no-fonts" ? "components-no-fonts.css" : "components.css"}";`;
+    writeFileSync(
+      join(root, "entry.jsx"),
+      `import { createSignal } from "solid-js";
+import { render } from "@solidjs/web";
+import { Provider } from "${pkg.name}/Provider";
+import { Button } from "${pkg.name}/Button";
+import { ToggleButton } from "${pkg.name}/ToggleButton";
+${sheet}
+function App() {
+  const [dark, setDark] = createSignal(false);
+  const [count, setCount] = createSignal(0);
+  return <Provider colorScheme={dark() ? "dark" : "light"} background="base">
+    <Button onPress={() => setCount(n => n + 1)}>Packed action</Button>
+    <ToggleButton isSelected={dark()} onChange={setDark}>Dark theme</ToggleButton>
+    <output id="count">{count()}</output>
+    ${mode === "full-fonts" ? '<p id="font-control" style={{ "font-family": "adobe-clean-spectrum-vf", "font-size": "24px" }}>Adobe font detector control</p>' : ""}
+  </Provider>;
+}
+render(() => <App />, document.getElementById("root"));\n`,
+    );
+    writeFileSync(
+      join(root, "index.html"),
+      '<!doctype html><html><body><div id="root"></div><script type="module" src="./entry.jsx"></script></body></html>\n',
+    );
+    writeFileSync(
+      join(root, "vite.config.mjs"),
+      `import base from "../../vite.config.mjs";\nexport default { ...base, root: ${JSON.stringify(root)}, base: "./", build: { ...base.build, outDir: "dist" } };\n`,
+    );
+    runVite(["build", "--config", join(root, "vite.config.mjs")]);
+    const output = join(root, "dist");
+    const emittedHtml = readFileSync(join(output, "index.html"), "utf8");
+    const links = [...emittedHtml.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)].map(
+      (match) => match[0].match(/href="([^"]+)"/)[1],
+    );
+    insist(!/<style\b/i.test(emittedHtml), `${name} has an inline style sheet`);
+    insist(
+      mode === "no-css" ? links.length === 0 : links.length > 0,
+      `${name} emitted stylesheet isolation failed`,
+    );
+    const closures = links.map((href) =>
+      cssClosure(resolve(output, href), output, mode === "full-fonts"),
+    );
+    cases.push({ name, package: pkg.name, mode, output, links, closures });
+  }
+}
+
+// Existing browser installation only, resolved from the owning app.
+const { chromium } = createRequire(join(repoRoot, "apps/web/package.json"))("playwright");
+const server = createServer((request, response) => {
+  try {
+    const path = resolve(
+      casesRoot,
+      `.${decodeURIComponent(new URL(request.url, "http://localhost").pathname)}`,
+    );
+    insist(
+      inside(path, casesRoot) && inside(realpathSync(path), casesRoot),
+      "server traversal refused",
+    );
+    const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
+    response.setHeader("Content-Type", types[extname(path)] ?? "application/octet-stream");
+    response.end(readFileSync(path));
+  } catch {
+    response.statusCode = 404;
+    response.end("Not found");
+  }
+});
+let browser;
+try {
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  browser = await chromium.launch({
+    args: (process.env.COMPARISON_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+  });
+  for (const testCase of cases) {
+    const context = await browser.newContext({ serviceWorkers: "block", colorScheme: "light" });
+    const attempts = [];
+    const errors = [];
+    try {
+      // Record before abort and before navigation. No off-origin request is sent.
+      await context.route("**/*", async (route) => {
+        const request = route.request();
+        if (new URL(request.url()).origin !== origin) {
+          attempts.push({ url: request.url(), resourceType: request.resourceType() });
+          await route.abort();
+        } else await route.continue();
+      });
+      const page = await context.newPage();
+      page.on("pageerror", (error) => errors.push(error.message));
+      await page.goto(`${origin}/${testCase.name}/dist/index.html`);
+      const action = page.getByRole("button", { name: "Packed action", exact: true });
+      const toggle = page.getByRole("button", { name: "Dark theme", exact: true });
+      await action.waitFor({ state: "visible" });
+      const fontsReady = await page.evaluate(async () =>
+        Promise.race([
+          document.fonts.ready.then(() => "ready"),
+          new Promise((resolve) => setTimeout(() => resolve("timeout"), 5000)),
+        ]),
+      );
+      insist(fontsReady === "ready", `${testCase.name} fonts.ready timed out`);
+      async function measured() {
+        return page.evaluate(() => {
+          const provider = document.querySelector('[data-background="base"]');
+          const buttons = [...provider.querySelectorAll("button")];
+          const p = getComputedStyle(provider);
+          return {
+            background: p.backgroundColor,
+            scheme: p.colorScheme,
+            container: p.getPropertyValue("--s2-container-bg").trim(),
+            surface: p.getPropertyValue("--surface-app").trim(),
+            buttons: buttons.map((button) => {
+              const s = getComputedStyle(button);
+              const box = button.getBoundingClientRect();
+              return {
+                height: box.height,
+                width: box.width,
+                display: s.display,
+                radius: s.borderRadius,
+                padding: s.padding,
+                background: s.backgroundColor,
+              };
+            }),
+            sheets: [...document.styleSheets].map((sheet) => ({
+              href: sheet.href,
+              tag: sheet.ownerNode.tagName,
+              id: sheet.ownerNode.id,
+              text: sheet.href ? null : sheet.ownerNode.textContent.replace(/\s+/g, " ").trim(),
+              rules: sheet.href
+                ? null
+                : [...sheet.cssRules].map((rule) => rule.cssText.replace(/\s+/g, " ").trim()),
+            })),
+          };
+        });
+      }
+      const light = await measured();
+      await action.click();
+      await page.waitForFunction(() => document.querySelector("#count").textContent === "1");
+      await toggle.click();
+      await page.waitForFunction(
+        () =>
+          document.querySelector('[data-color-scheme="dark"]') &&
+          document.querySelector('button[aria-pressed="true"]'),
+      );
+      const dark = await measured();
+      let fontLoad;
+      if (testCase.mode === "full-fonts") {
+        fontLoad = await page.evaluate(async () =>
+          Promise.race([
+            document.fonts
+              .load('24px "adobe-clean-spectrum-vf"', "Adobe font detector control")
+              .then(
+                () => "loaded",
+                () => "rejected",
+              ),
+            new Promise((resolve) => setTimeout(() => resolve("timeout"), 5000)),
+          ]),
+        );
+        insist(fontLoad !== "timeout", `${testCase.name} font load timed out`);
+        const declared = cssEvidence.installed.find((item) => item.name === testCase.package).full;
+        const declaredUrls = new Set(declared.external);
+        const declaredImports = new Set(declared.externalImports);
+        insist(
+          attempts.every(
+            (item) =>
+              declaredUrls.has(item.url) &&
+              item.resourceType === (declaredImports.has(item.url) ? "stylesheet" : "font"),
+          ),
+          `${testCase.name} attempted undeclared external resources: ${JSON.stringify(attempts)}`,
+        );
+        insist(
+          attempts.some(
+            (item) =>
+              new URL(item.url).hostname === "use.typekit.net" && item.resourceType === "font",
+          ),
+          `${testCase.name} did not observe a Typekit font attempt`,
+        );
+      } else
+        insist(
+          attempts.length === 0,
+          `${testCase.name} attempted external requests: ${JSON.stringify(attempts)}`,
+        );
+      insist(errors.length === 0, `${testCase.name} browser errors: ${errors.join("; ")}`);
+      insist(
+        light.buttons.length === 2 &&
+          light.buttons.every((button) => button.width > 0 && button.height > 0),
+        `${testCase.name} did not mount real visible controls`,
+      );
+      for (const state of [light, dark]) {
+        // createPress injects only touch-action behavior, including in the
+        // missing-CSS control. It supplies no theme or component geometry.
+        const inline = state.sheets.filter((sheet) => !sheet.href);
+        insist(
+          inline.length === 1 &&
+            inline[0].tag === "STYLE" &&
+            inline[0].id === "solidaria-pressable-style" &&
+            inline[0].text ===
+              "@layer { [data-solidaria-pressable] { touch-action: pan-x pan-y pinch-zoom; } }" &&
+            inline[0].rules.length === 1 &&
+            inline[0].rules[0] ===
+              "@layer { [data-solidaria-pressable] { touch-action: pan-x pan-y pinch-zoom; } }",
+          `${testCase.name} unexpected inline behavior sheet: ${JSON.stringify(inline)}`,
+        );
+        const linked = state.sheets.filter((sheet) => sheet.href).map((sheet) => sheet.href);
+        const expected = testCase.links.map(
+          (href) => new URL(href, `${origin}/${testCase.name}/dist/index.html`).href,
+        );
+        insist(
+          linked.length === expected.length && linked.every((href) => expected.includes(href)),
+          `${testCase.name} injected/shared style sheet`,
+        );
+      }
+      cssEvidence.runtime.push({
+        ...testCase,
+        attempts,
+        fontsReady,
+        fontLoad,
+        light,
+        dark,
+        actionCount: 1,
+        selected: true,
+      });
+    } finally {
+      await context.close();
+    }
+  }
+  for (const pkg of styled) {
+    const noCss = cssEvidence.runtime.find(
+      (item) => item.package === pkg.name && item.mode === "no-css",
+    );
+    const noFonts = cssEvidence.runtime.find(
+      (item) => item.package === pkg.name && item.mode === "no-fonts",
+    );
+    // Provider declares background via --s2-container-bg and isolation; buttons
+    // declare flex/grid geometry in the generated S2 sheet. UA buttons cannot
+    // satisfy this conjunction. Both light/dark mounted controls remain usable.
+    const styledPredicate = (state) =>
+      state.container !== "" &&
+      state.background !== "rgba(0, 0, 0, 0)" &&
+      state.buttons[0].display === "flex" &&
+      state.buttons[1].display === "grid" &&
+      state.buttons.every((button) => button.height >= 24);
+    insist(
+      styledPredicate(noFonts.light) && styledPredicate(noFonts.dark),
+      `${pkg.name} no-font authored style predicate failed`,
+    );
+    insist(
+      !styledPredicate(noCss.light) && !styledPredicate(noCss.dark),
+      `${pkg.name} missing-CSS control did not fail style predicate`,
+    );
+    insist(
+      noFonts.light.background !== noFonts.dark.background,
+      `${pkg.name} Provider theme did not change background`,
+    );
+    insist(
+      noFonts.light.buttons.some(
+        (button, i) =>
+          button.height !== noCss.light.buttons[i].height &&
+          button.padding !== noCss.light.buttons[i].padding,
+      ),
+      `${pkg.name} authored geometry matches missing CSS`,
+    );
+    if (pkg.name.endsWith("/ui"))
+      insist(
+        noFonts.light.surface &&
+          noFonts.dark.surface &&
+          noFonts.light.surface !== noFonts.dark.surface &&
+          !noCss.light.surface,
+        "UI theme tokens missing or not reactive",
+      );
+  }
+} finally {
+  try {
+    if (browser) await browser.close();
+  } finally {
+    try {
+      await new Promise((resolve) => server.close(resolve));
+    } finally {
+      writeFileSync(
+        join(consumerDir, "css-evidence.json"),
+        `${JSON.stringify(cssEvidence, null, 2)}\n`,
+      );
+    }
+  }
+}
+process.stdout.write(
+  `G17: ${cssEvidence.runtime.length} isolated browser cases passed; missing CSS rejected, full-font attempts observed and blocked, no-font external attempts zero\n`,
 );
 
 process.stdout.write(

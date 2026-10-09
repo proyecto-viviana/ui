@@ -7,8 +7,8 @@
     "ui": "packages/viviana-ui/src"
   },
   "counts": {
-    "shared": 663,
-    "identical": 579,
+    "shared": 664,
+    "identical": 580,
     "diverged": 84
   },
   "identical": [
@@ -118,6 +118,7 @@
     "cardview/index.tsx",
     "color/ColorSwatchPicker.tsx",
     "color/color-swatch-internal.ts",
+    "components-no-fonts.css",
     "contextualhelp/index.tsx",
     "datepicker/index.tsx",
     "dialog/AlertDialog.tsx",

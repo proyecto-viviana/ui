@@ -163,7 +163,12 @@ const css = {
   minify: true,
 };
 
-const copiedCssFiles = ["components.css", "font-faces.css", "theme.css"].map((fileName) => ({
+const copiedCssFiles = [
+  "components.css",
+  "components-no-fonts.css",
+  "font-faces.css",
+  "theme.css",
+].map((fileName) => ({
   from: `src/${fileName}`,
   to: "dist",
   flatten: true,

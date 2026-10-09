@@ -237,6 +237,10 @@
       "import": "./dist/styles.css",
       "default": "./dist/styles.css"
     },
+    "./components-no-fonts.css": {
+      "import": "./dist/components-no-fonts.css",
+      "default": "./dist/components-no-fonts.css"
+    },
     "./components.css": {
       "import": "./dist/components.css",
       "default": "./dist/components.css"
