@@ -9,13 +9,13 @@ import { copyFileSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
 
-// @ts-expect-error — plain-JS guard, no types
 import {
   IGNORED_DIR,
   ROOT,
   UNBOUNDED_SCAN,
   VENDOR_DIR,
   coldScanReads,
+  // @ts-expect-error — plain-JS guard, no types
 } from "./vite-plus-test-discovery.mjs";
 
 const VENDOR_HTML = join(VENDOR_DIR, "page.html");
