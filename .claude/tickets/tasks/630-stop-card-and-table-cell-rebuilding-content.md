@@ -5,7 +5,6 @@ title: "Stop Card and TableCell from rebuilding their content on hover, press, a
 created: 2026-10-08
 parent: 24
 status: in-progress
-blocked: true
 history:
   - {
       state: open,
@@ -26,6 +25,11 @@ history:
       state: in-progress,
       at: 2026-10-08,
       note: "Owner approved TableCell reactive getter authoring and its React destructuring compatibility consequence. Bounded comments and durable getter preservation controls are qualified; native original-node/caret/Card-menu and installed final-candidate proof remain open.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-10-09,
+      note: "ROOT accepted current owning247/0/0, restored source-native76/0/0 and canonical source typecheck exit0. Fixture sensitivity controls were closed and exactly restored; installed final-candidate/release proof remains open.",
     }
 ---
 
@@ -238,3 +242,175 @@ qualification. No browser, build or packed-consumer qualification was performed.
 Native original-node/caret/Card-menu proof and installed final-candidate evidence
 remain separately admitted debt; #630 stays in progress. Conductor independently
 reviews, owned-stops and integrates; worker does not commit, push or publish.
+
+## Native phase1 source admission — 2026-10-09
+
+Actual registered source implementer generation
+`17c3138e-ecbd-4883-bee5-b659c87f6149` on integrated base
+`ed4262bb909e7cc025bcddb6734d3f176ec8ad75`; preceding #642 owned generation
+reports closed. Registration is `/tmp/ui-630-native-20261009-registration-2026-10-08.json`.
+Owner selected gpt-6.1-sol medium. Exactly fixture, browser spec, this ticket and
+generated status/roadmap are writable. Canonical eligibility was supplied by
+conductor; phase1 forbids runtime eligibility/helper launch and all tests,
+controls, discovery, build, browser, server, cache inspection and network.
+Accepted #642 checkpoint records native 64/64 raw0 and eight original ledger
+cells with eight attempts each (four failed, four passed); original ceiling10
+is unchanged. These are conductor-supplied prerequisite facts, not this
+worker's execution. Accepted getter contract and #643 cleanup remain accepted;
+native retention and installed qualification remain open. No custody is issued.
+
+### Phase1 authored preparation
+
+Prepared an isolated #630 fixture mode using direct Card/CardView/Table/TextField/
+ActionMenu/MenuItem sources for both solid-spectrum and viviana-ui. Twelve new
+cases are authored and UNEXECUTED: each twin has default/custom Table hover/caret
+and focus/press cases, plus Card pointer same-open and keyboard dismissal cases.
+Original32 and #64232 case bodies/oracles are preserved; static byte evidence
+is distinct from served graph, generated matching CSS and one-Solid runtime proof.
+Table callback getter reads, original refs, local signals, separate owner/effect
+cleanup counters, trusted synchronous targets and explicit disposal are asserted.
+Default managed attrs are live; custom spread remains snapshot-limited.
+
+Named fixture-only `snapshot-table-getters` and `fresh-child-remount` sensitivity
+variants are prepared; both must use identical live-text/identity assertions under
+focused #630-only selectors. They have NOT RUN. Future controls must save final
+fixture/spec bytes, mutate only the named fixture value, restore in finally and
+prove exact equality before the single admitted full replay.
+
+The reviewed binding seam is reconciled against exact integrated #642 bytes,
+including explicit originalKey/Object.hasOwn/SHA+bytes linkage. Root addendum
+`/tmp/ui-630-native-20261009-root-replay-guard-instructions-2026-10-09.md`
+pins latest accepted seal/manifest/ledger and actual failed1–4/passed5–8 history.
+Both replay keys are required under #630 output; both absent preserve original
+#642 output behavior. Prepared invocation starting-state and in-memory serialized
+ledger checks reject deletion/truncation across reservation/finalization. This
+does not enforce single-use restart protection; root runner must enforce it.
+Separate replay allowance is four per cell after genuine prior8, cumulative9–12;
+no old ledger/cap/history is rewritten. All guards/controls remain UNEXECUTED.
+
+Root must issue authentic frozen snapshots, binding, unique single-use invocation
+starting-state, exact focused/control and final commands, fresh exclusive custody
+and explicit separate replay allowance. Native #630 cases never reserve #642 cells;
+root must also bound/record their own invocation/attempt inventory before execution.
+No runtime, installed consumer, candidate, publication, closure or workaround
+removal is claimed. Phase1 handoff/seal use `/tmp/ui-630-native-20261009-*`.
+
+### Root static amendment — phase1 revision2
+
+Root adopted review SHA75eca6f506b08ca571941e9a81914649667b2181e16ca15f2e6e505fa6852ba9.
+Preserved the previous sealed revision before editing. Invocation id now requires
+an actual string; focused #630 performs readonly replay-ledger preflight after
+custody, before routes/navigation, without reservation/write. Unique spec-only
+marker comments delimit exact guard declarations/functions; replay custody,
+capacity and finalization validation are shared plain-data helpers called by
+live paths. A later private root adapter may extract these frozen bytes with
+controlled builtins/fs; no full-spec import or control execution is authorized.
+
+Each authored Card pointer case now verifies an original plain surface hit and
+trusted direct-row focus/down/up, live row focused/pressed flags and synchronous
+original target/currentTarget evidence before popup opens. Same-open popup and
+intentional selection/Escape semantics are retained. Twelve cases remain
+UNEXECUTED; original64 bytes remain preserved. Root copied input snapshots are
+readonly external preparation, without binding/custody/runtime authority.
+
+### Present-ledger epoch anchor — phase1 revision3
+
+Root authorized a private metadata correction after independent static review:
+present ledgerBefore now carries epochBindingSha256 as an actual lowercase
+64-hex string. Ledger shape checks retain that original epoch binding hash for
+present-state invocations, avoiding a serialized current-binding/start-ledger
+hash cycle. First absent-state creation still stores the current binding SHA;
+expected.binding and exact custody ledgerBefore remain bound to the current
+invocation SHA. No existing ledger is rewritten and no budget/history is reset.
+Root authenticates the epoch anchor through retained issuance history; spec
+checks do not independently authenticate root or enforce process single use.
+
+Revision2 seal, manifests, handoff, command receipts and changed-source bytes
+were archived with original-path/SHA256/bytes mapping before editing. All64
+legacy bodies and all12 authored tests remain unchanged; guard markers remain
+unique. Only scoped static checks are authorized. Guards, controls, browser
+runner and runtime remain UNEXECUTED pending separate finite root authority.
+
+### Styled forwarding repair preparation — revision4
+
+Root expanded the same generation 17c3138e-ecbd-4883-bee5-b659c87f6149 at
+base ed4262bb909e7cc025bcddb6734d3f176ec8ad75 to ten exact paths: the
+previous five plus both styled Table sources, both owning Table suites and
+.changeset/table-cell-accessor-forwarding.md. Revision3 endpoint/seal/receipts
+were archived before editing with original-path/hash/bytes mapping.
+
+Root reports the first focused native invocation: raw12 failed, zero passed;
+ENOSPC left child exit UNKNOWN and normal teardown unverified. Independent root
+closure observed owned identities absent and exclusive4479 binding succeeded,
+with zero signals. Those receipts remain unchanged. No native identity/lifetime
+qualification passed. Two actual Spectrum pageerrors identify styled forwarding
+of arguments to a zero-argument accessor; the Viviana twin repair follows the
+same source defect without claiming separate runtime causal proof.
+
+Authored and froze owning regressions before changing either old source:
+four default/custom-host zero-argument cases retain connected cell/input/button,
+typed value/focus, one mount/local state and live before/after signal text with
+all argument counts zero; two argument-taking cases retain once-only callbacks
+and live getter reads. Six owning cases are authored, UNEXECUTED. Both styled
+TableCell wrappers now mirror the private headless length discriminator and
+insert zero-argument reads through renderer-owned reactive fragments. Static
+children and argument-taking forwarding, markup/host/attrs/style order remain.
+
+The causal plan records exact old source copies, frozen proposed test bytes,
+focused old-source RED/repaired GREEN and complete owning-suite commands.
+Root must grant each finite runtime command; old-source controls restore exact
+bytes and keep meaningful assertions unchanged, then restore candidate bytes
+in finally. No tests were executed by this source worker. The native fixture
+and spec retain exact revision3 hashes and all64 legacy/all12 authored oracles.
+Owning/browser/installed/release proof remain UNEXECUTED for this repair;
+ticket remains in progress, pending independent root review and authority.
+
+### Shared chevron slot repair preparation — revision5
+
+Same generation 17c3138e-ecbd-4883-bee5-b659c87f6149 and base
+ed4262bb909e7cc025bcddb6734d3f176ec8ad75; root expanded the exact ten-path
+scope to twelve with shared Table.tsx and its owning Table.test.tsx. Revision4
+seal/manifests/handoff/endpoint/causal-plan, proposed tests and checkout endpoint
+were archived before edits; prior helpers, grants, receipts and failures remain.
+
+Root accepted the actual OLD four intended zero-argument failures, zero passes,
+with 33 unrelated filtered cases skipped and complete closure/restoration. The
+complete repaired styled run was physically closed: 36 passed, one failed,
+zero skipped; all six new accessor cases passed. The retained Spectrum chevron
+Collapse assertion instead observed Expand. This is causal label RED, not
+owning GREEN or native qualification. Raw results and root closure stay intact.
+
+Localized shared production change: a stable chevron slot forwards all eight
+existing expandButtonProps fields through live getters. The drag slot, Button,
+hook, styled sources, approved TableCell contract and APIs/styles are unchanged.
+Existing headless uncontrolled and Spectrum tree tests now retain the original
+connected chevron through Expand → Collapse → Expand, preserving row/child
+assertions and the actual failing Collapse oracle. The release note adds the
+shared published package patch and retains both styled package patches.
+
+Revision5 preparation and its repaired-only finite helper successor are
+UNEXECUTED. Proposed qualification runs complete headless and both styled Table
+suites once with maxWorkers=1 and a 300-second deadline after a fresh root grant.
+No old withdrawal or redundant filtered GREEN is proposed. Fixture/spec bytes
+and all64 legacy/all12 authored native tests remain unchanged (76 authored).
+Ticket remains in progress; new owning GREEN, native, installed and release
+qualification remain open. Only bounded static formatting/lint/docs/diff and
+hash preparation run now; root alone accepts proof and issues runtime custody.
+
+## Current owning, restored native and source compiler checkpoint — 2026-10-09
+
+ROOT accepted complete owning suites: 38 + 172 + 29 + 8 = 247 passed, no failures or skips. Both styled TableCell wrappers preserve zero-argument accessor children; shared chevron fields remain live. The localized selectable-item repair guards the complete existing merged keydown/keyup chain, including long-press handlers, around nested interactive targets so typed Space remains input text. Original row activation and the owner-approved TableCell getter contract remain covered.
+
+The restored complete browser file passed 76/0/0: preserved 64 plus 12 Spectrum/Viviana Table and default Card cases. Original connected child/input/menu identities, typed Space and local state, once-only callbacks/mounts, live hover/focus/press state, authored backward caret and intended menu dismissal assertions passed. All 76 error/rejection observers were empty. Explicit bounded disposal balances observed owners/effects; this does not establish unbounded or private-overlay lifetime. Generated CSS, source modules and one observed Solid entry are bounded source-fixture evidence; some intermediate comparisons are assertions rather than persisted snapshots.
+
+Both fixture sensitivity controls failed within their accepted bounded scope and were exactly restored before 76. Corrected snapshot control reaches the identical live-text mismatch; remount control detects replacement/lifetime failure before later typing/caret/hover assertions. These are fixture sensitivity controls, separate from genuine old-product causal tests. Preserve the original unexpected early-remount control, ENOSPC/UNKNOWN first browser result, typedvalue failure, old nested-input 34/4, styled OLD4 and repaired 36/1 chevron-label failure as immutable history.
+
+ROOT accepted physical closure and immutable replay history; the current replay allowance is exhausted. Canonical source typecheck exited 0 with no diagnostics. It covers package source/scripts, not the fixture/spec compiler contract or a full check run. This ticket remains in-progress for the coherent installed final candidate and release. Downstream VisualMode workaround removal has not occurred.
+
+Actual receipts:
+
+- `/tmp/ui-630-native-20261009-space-owning-repaired-20261009T1032Z-51467f3e2a38/root-repaired-247-green-acceptance.json`
+- `/tmp/ui-630-native-20261009-whole76-restored-20261009T1150Z-root-green-acceptance.json`
+- `/tmp/ui-630-native-20261009-corrected-snapshot-control1-20261009T1127Z-root-control-result-review.json`
+- `/tmp/ui-630-native-20261009-remount-control2-20261009T1136Z-root-control-result-review.json`
+- `/tmp/ui-630-final-source-typecheck-20261009T121508Z/result.json`

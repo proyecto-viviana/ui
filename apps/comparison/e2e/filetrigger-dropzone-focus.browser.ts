@@ -4,7 +4,7 @@
  */
 import { expect, test as base } from "@playwright/test";
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, realpathSync, lstatSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page, Locator, TestInfo } from "@playwright/test";
 
@@ -13,9 +13,11 @@ const test = base.extend<{
   nativeErrors: string[];
   trustedChooser: boolean;
   popupCase: string | null;
+  native630Case: string | null;
 }>({
   trustedChooser: [false, { option: true }],
   popupCase: [null, { option: true }],
+  native630Case: [null, { option: true }],
   nativeErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
@@ -84,7 +86,7 @@ test.afterEach(async ({ page, nativeErrors }, testInfo) => {
   );
 });
 
-test.beforeEach(async ({ page, trustedChooser, popupCase }, testInfo) => {
+test.beforeEach(async ({ page, trustedChooser, popupCase, native630Case }, testInfo) => {
   await page.addInitScript((trustedChooser) => {
     const rejections: string[] = [];
     (window as FocusWindow).__nativeRejections = rejections;
@@ -104,6 +106,10 @@ test.beforeEach(async ({ page, trustedChooser, popupCase }, testInfo) => {
       return original.call(this);
     };
   }, trustedChooser);
+  if (native630Case) {
+    await prepareNative630(page, native630Case, testInfo);
+    return;
+  }
   if (popupCase) {
     await preparePopup642(page, popupCase, testInfo);
     return;
@@ -805,11 +811,427 @@ test.describe("trusted chooser", () => {
 
 // #642 phase1 only. Two diagnostic + two timing-comparison attempts per cell;
 // persistent reservations cap ALL focused/final invocations at ten per cell.
+// UI630_REPLAY_GUARDS_BEGIN — exact frozen extraction; no browser registrations or operations.
 const popup642Prefix = "/tmp/ui-642-popup-20261009";
 const popup642Consumer = "/home/emoporemilio/projects/viviana-hub/visualmode/visualmode";
 const popup642Policy = "/tmp/ui-642-offline-font-2026-10-09/receipt.json";
 const popup642Generation = "28b88444-8143-4feb-a309-5500c28c5879";
 const popup642Hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
+type Popup642Input = { path: string; sha256: string; bytes: number };
+type Popup642ReplayBinding = {
+  schema: 1;
+  purpose: "explicit-regression-replay";
+  ownerTicket: 630;
+  sourceTicket: 642;
+  epoch: string;
+  prefix: "/tmp/ui-630-native-20261009";
+  generation: string;
+  base: string;
+  registration: Popup642Input;
+  allowancePerCell: 4;
+  invocation: {
+    id: string;
+    ledgerBefore:
+      | { absent: true }
+      | (Popup642Input & {
+          absent: false;
+          epochBindingSha256: string;
+          counts: Record<string, number>;
+        });
+  };
+  history: {
+    generation: string;
+    seal: Popup642Input;
+    evidenceManifest: Popup642Input & { originalKey: string };
+    ledger: Popup642Input & { originalPath: string };
+  };
+  inputs: { policy: Popup642Input; geist: Popup642Input; adobe: Popup642Input; css: Popup642Input };
+};
+type Popup642Execution = {
+  prefix: string;
+  generation: string;
+  registrationPath: string;
+  policyPath: string;
+  geistPath: string;
+  cssPath: string;
+  adobePath?: string;
+  inputs?: { policy: Buffer; geist: Buffer; adobe: Buffer; css: Buffer };
+  replay?: {
+    binding: Popup642ReplayBinding;
+    path: string;
+    sha256: string;
+    priorCounts: Record<string, number>;
+  };
+};
+
+function popup642Execution(outputDir: string): Popup642Execution {
+  const output630 = resolve(outputDir).startsWith("/tmp/ui-630-native-20261009-");
+  const path = process.env.UI_NATIVE_POPUP_REPLAY_BINDING;
+  const expectedHash = process.env.UI_NATIVE_POPUP_REPLAY_BINDING_SHA256;
+  if (path === undefined && expectedHash === undefined) {
+    if (output630) throw new Error("#630 output requires both explicit replay keys");
+    return {
+      prefix: popup642Prefix,
+      generation: popup642Generation,
+      registrationPath: `${popup642Prefix}-registration-2026-10-08.json`,
+      policyPath: popup642Policy,
+      geistPath: `${popup642Consumer}/engine/crates/foundation/fixtures/fonts/geist-mono/GeistMono[wght].ttf`,
+      cssPath: `${popup642Consumer}/src/styles/design-system.css`,
+    };
+  }
+  if (!output630) throw new Error("explicit popup replay requires #630 output");
+  // Root authenticates the issuance externally. A digest alone grants no authority.
+  if (!path || !expectedHash || !/^[a-f0-9]{64}$/.test(expectedHash))
+    throw new Error("incomplete explicit popup replay binding");
+  if (path !== "/tmp/ui-630-native-20261009-replay-binding.json" || realpathSync(path) !== path)
+    throw new Error("noncanonical popup replay binding path");
+  const bytes = readFileSync(path);
+  if (popup642Hash(bytes) !== expectedHash) throw new Error("popup replay binding changed");
+  const binding: Popup642ReplayBinding = JSON.parse(bytes.toString("utf8"));
+  if (
+    binding.schema !== 1 ||
+    binding.purpose !== "explicit-regression-replay" ||
+    binding.ownerTicket !== 630 ||
+    binding.sourceTicket !== 642 ||
+    binding.prefix !== "/tmp/ui-630-native-20261009" ||
+    typeof binding.epoch !== "string" ||
+    !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(binding.epoch) ||
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(binding.generation) ||
+    !/^[a-f0-9]{40}$/.test(binding.base) ||
+    binding.allowancePerCell !== 4 ||
+    binding.history.generation !== popup642Generation ||
+    binding.generation === binding.history.generation
+  )
+    throw new Error("invalid explicit popup regression epoch");
+  const input = (ref: Popup642Input, registration = false) => {
+    const ownedPath = registration
+      ? ref.path === `${binding.prefix}-registration-2026-10-08.json`
+      : ref.path.startsWith(`${binding.prefix}-inputs/`);
+    if (
+      !ownedPath ||
+      resolve(ref.path) !== ref.path ||
+      realpathSync(ref.path) !== ref.path ||
+      !/^[a-f0-9]{64}$/.test(ref.sha256) ||
+      !Number.isSafeInteger(ref.bytes) ||
+      ref.bytes < 0
+    )
+      throw new Error("noncanonical popup replay input");
+    const value = readFileSync(ref.path);
+    if (value.length !== ref.bytes || popup642Hash(value) !== ref.sha256)
+      throw new Error(`popup replay input changed: ${ref.path}`);
+    return value;
+  };
+  const registration = JSON.parse(input(binding.registration, true).toString("utf8"));
+  if (
+    registration.launch_generation !== binding.generation ||
+    registration.base !== binding.base ||
+    registration.target !== "ui-630-native-20261009" ||
+    registration.repository !== "repo:ui"
+  )
+    throw new Error("popup replay registration mismatch");
+  const seal = JSON.parse(input(binding.history.seal).toString("utf8"));
+  const manifest = JSON.parse(input(binding.history.evidenceManifest).toString("utf8"));
+  const history = JSON.parse(input(binding.history.ledger).toString("utf8"));
+  const priorCounts = popup642LatestHistory(binding, seal, manifest, history);
+  popup642Invocation(binding);
+  const inputs = {
+    policy: input(binding.inputs.policy),
+    geist: input(binding.inputs.geist),
+    adobe: input(binding.inputs.adobe),
+    css: input(binding.inputs.css),
+  };
+  return {
+    prefix: binding.prefix,
+    generation: binding.generation,
+    registrationPath: binding.registration.path,
+    policyPath: binding.inputs.policy.path,
+    geistPath: binding.inputs.geist.path,
+    cssPath: binding.inputs.css.path,
+    adobePath: binding.inputs.adobe.path,
+    inputs,
+    replay: { binding, path, sha256: expectedHash, priorCounts },
+  };
+}
+// Evidence pins supplied by root for this admission, never a selectable older chain.
+const popup642Cells = ["source", "react"].flatMap((implementation) =>
+  ["light", "dark"].flatMap((theme) =>
+    [220, 280].map((width) => `${implementation}:${theme}:${width}`),
+  ),
+);
+type Popup642History = {
+  generation: string;
+  cells: Record<string, Array<{ count: number; status: string; sha256: string }>>;
+};
+function popup642LatestHistory(
+  binding: Popup642ReplayBinding,
+  seal: { generation: string; files: Record<string, Popup642Input> },
+  manifest: { generation: string; files: Record<string, Popup642Input> },
+  history: Popup642History,
+): Record<string, number> {
+  const manifestKey = binding.history.evidenceManifest.originalKey;
+  const ledgerKey = binding.history.ledger.originalPath;
+  if (
+    binding.history.seal.sha256 !==
+      "4e238bbfaf939c3c16c62115cfdbb0474b59b37e272393d9f0f70f90121fa9a1" ||
+    binding.history.seal.bytes !== 4647 ||
+    manifestKey !== "/tmp/ui-642-popup-20261009-evidence-manifest.json" ||
+    binding.history.evidenceManifest.sha256 !==
+      "534927967fcfb4e8ecfa13f261ac2d1d90467fafdd896f76e0e0db991e084d99" ||
+    binding.history.evidenceManifest.bytes !== 549520 ||
+    ledgerKey !== "/tmp/ui-642-popup-20261009-attempts.json" ||
+    binding.history.ledger.sha256 !==
+      "2115e00738c412eb8f9a8a38858d518650a8418b80629c5f6ebc250498f7e876" ||
+    binding.history.ledger.bytes !== 28355 ||
+    binding.history.generation !== popup642Generation
+  )
+    throw new Error("popup replay requires exact latest accepted checkpoint");
+  const manifestRow = Object.hasOwn(seal.files, manifestKey) ? seal.files[manifestKey] : undefined;
+  const ledgerRow = Object.hasOwn(manifest.files, ledgerKey)
+    ? manifest.files[ledgerKey]
+    : undefined;
+  if (
+    seal.generation !== popup642Generation ||
+    manifest.generation !== popup642Generation ||
+    history.generation !== popup642Generation ||
+    manifestRow?.sha256 !== binding.history.evidenceManifest.sha256 ||
+    manifestRow?.bytes !== binding.history.evidenceManifest.bytes ||
+    ledgerRow?.sha256 !== binding.history.ledger.sha256 ||
+    ledgerRow?.bytes !== binding.history.ledger.bytes
+  )
+    throw new Error("popup replay history is not linked to its seal");
+  if (
+    Object.keys(history.cells).length !== 8 ||
+    popup642Cells.some((cell) => !Object.hasOwn(history.cells, cell))
+  )
+    throw new Error("popup replay history cell inventory mismatch");
+  const priorCounts: Record<string, number> = {};
+  for (const cell of popup642Cells) {
+    const entries = history.cells[cell];
+    if (
+      !Array.isArray(entries) ||
+      entries.length !== 8 ||
+      entries.some(
+        (entry, index) =>
+          entry.count !== index + 1 ||
+          entry.status !== (index < 4 ? "failed" : "passed") ||
+          !/^[a-f0-9]{64}$/.test(entry.sha256),
+      )
+    )
+      throw new Error(`invalid latest completed popup history: ${cell}`);
+    priorCounts[cell] = 8;
+  }
+  return priorCounts;
+}
+function popup642Invocation(binding: Popup642ReplayBinding) {
+  const invocation = binding.invocation;
+  if (
+    !invocation ||
+    typeof invocation.id !== "string" ||
+    !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(invocation.id)
+  )
+    throw new Error("missing root invocation starting-state");
+  const before = invocation.ledgerBefore;
+  if (before?.absent === true) {
+    if (Object.keys(before).length !== 1) throw new Error("invalid absent starting-state");
+  } else if (before?.absent === false) {
+    if (
+      before.path !== `${binding.prefix}-attempts.json` ||
+      typeof before.epochBindingSha256 !== "string" ||
+      !/^[a-f0-9]{64}$/.test(before.epochBindingSha256) ||
+      !/^[a-f0-9]{64}$/.test(before.sha256) ||
+      !Number.isSafeInteger(before.bytes) ||
+      before.bytes < 0 ||
+      Object.keys(before.counts).length !== 8 ||
+      popup642Cells.some(
+        (cell) =>
+          !Object.hasOwn(before.counts, cell) ||
+          !Number.isInteger(before.counts[cell]) ||
+          before.counts[cell] < 0 ||
+          before.counts[cell] > 4,
+      )
+    )
+      throw new Error("invalid present invocation starting-state");
+  } else throw new Error("invalid invocation ledger presence");
+}
+type Popup642Reservation = {
+  count: number;
+  priorCount: number;
+  cumulativeCount: number;
+  replayEpoch: string;
+  status: string;
+  case: string;
+  sha256?: string;
+  receiptPath?: string;
+};
+type Popup642Ledger = {
+  generation: string;
+  replayEpoch: string;
+  replayBindingSha256: string;
+  historyLedgerSha256: string;
+  cells: Record<string, Popup642Reservation[]>;
+};
+type Popup642Expected = {
+  invocation: string;
+  binding: string;
+  absent: boolean;
+  sha256?: string;
+  bytes?: number;
+  counts: Record<string, number>;
+};
+let popup642ExpectedLedger: Popup642Expected | undefined;
+function popup642ReplayLedgerShape(
+  ledger: Popup642Ledger,
+  execution: Popup642Execution,
+  reserved = false,
+) {
+  const replay = execution.replay!;
+  const before = replay.binding.invocation.ledgerBefore;
+  if (
+    ledger.generation !== execution.generation ||
+    ledger.replayEpoch !== replay.binding.epoch ||
+    ledger.replayBindingSha256 !== (before.absent ? replay.sha256 : before.epochBindingSha256) ||
+    ledger.historyLedgerSha256 !== replay.binding.history.ledger.sha256 ||
+    Object.keys(ledger.cells).length !== 8 ||
+    popup642Cells.some((cell) => !Object.hasOwn(ledger.cells, cell))
+  )
+    throw new Error("popup replay ledger identity/cell mismatch");
+  const counts: Record<string, number> = {};
+  let reservations = 0;
+  for (const cell of popup642Cells) {
+    const entries = ledger.cells[cell];
+    if (
+      !Array.isArray(entries) ||
+      entries.length > 4 ||
+      entries.some(
+        (entry, index) =>
+          entry.count !== index + 1 ||
+          entry.replayEpoch !== replay.binding.epoch ||
+          entry.priorCount !== 8 ||
+          entry.cumulativeCount !== 9 + index ||
+          (entry.status === "reserved-before-navigation"
+            ? !reserved || index !== entries.length - 1
+            : !["passed", "failed", "interrupted", "timedOut", "skipped"].includes(entry.status) ||
+              !entry.sha256 ||
+              !/^[a-f0-9]{64}$/.test(entry.sha256)),
+      )
+    )
+      throw new Error(`popup replay reservation history mismatch: ${cell}`);
+    reservations += entries.filter((entry) => entry.status === "reserved-before-navigation").length;
+    counts[cell] = entries.length;
+  }
+  if (reservations > 1 || (reserved && reservations !== 1))
+    throw new Error("popup replay requires exactly its current reservation");
+  return counts;
+}
+function popup642ReadReplayLedger(execution: Popup642Execution, reserved = false): Popup642Ledger {
+  const replay = execution.replay!,
+    path = `${execution.prefix}-attempts.json`;
+  const before = replay.binding.invocation.ledgerBefore;
+  const expected = popup642ExpectedLedger ?? {
+    invocation: replay.binding.invocation.id,
+    binding: replay.sha256,
+    absent: before.absent,
+    ...(before.absent ? {} : { sha256: before.sha256, bytes: before.bytes }),
+    counts: before.absent
+      ? Object.fromEntries(popup642Cells.map((cell) => [cell, 0]))
+      : before.counts,
+  };
+  if (expected.invocation !== replay.binding.invocation.id || expected.binding !== replay.sha256)
+    throw new Error("popup replay invocation changed within worker");
+  const stat = lstatSync(path, { throwIfNoEntry: false });
+  if (stat && !stat.isFile()) throw new Error("non-file/symlink popup replay ledger");
+  if (!stat) {
+    if (!expected.absent) throw new Error("popup replay ledger deleted; no recreation");
+    popup642ExpectedLedger = expected;
+    return {
+      generation: execution.generation,
+      replayEpoch: replay.binding.epoch,
+      replayBindingSha256: replay.sha256,
+      historyLedgerSha256: replay.binding.history.ledger.sha256,
+      cells: Object.fromEntries(popup642Cells.map((cell) => [cell, []])),
+    };
+  }
+  if (expected.absent || realpathSync(path) !== path)
+    throw new Error("unexpected/redirected popup replay ledger");
+  const bytes = readFileSync(path);
+  if (bytes.length !== expected.bytes || popup642Hash(bytes) !== expected.sha256)
+    throw new Error("popup replay serialized state changed/truncated");
+  const ledger: Popup642Ledger = JSON.parse(bytes.toString("utf8"));
+  const counts = popup642ReplayLedgerShape(ledger, execution, reserved);
+  if (popup642Cells.some((cell) => counts[cell] !== expected.counts[cell]))
+    throw new Error("popup replay starting-state counts mismatch");
+  popup642ExpectedLedger = expected;
+  return ledger;
+}
+function popup642WriteReplayLedger(
+  ledger: Popup642Ledger,
+  execution: Popup642Execution,
+  reserved = false,
+) {
+  const counts = popup642ReplayLedgerShape(ledger, execution, reserved);
+  const bytes = JSON.stringify(ledger, null, 2);
+  writeFileSync(`${execution.prefix}-attempts.json`, bytes);
+  popup642ExpectedLedger = {
+    invocation: execution.replay!.binding.invocation.id,
+    binding: execution.replay!.sha256,
+    absent: false,
+    sha256: popup642Hash(bytes),
+    bytes: Buffer.byteLength(bytes),
+    counts,
+  };
+}
+function popup642ReplayCustody(custody: Record<string, unknown>, execution: Popup642Execution) {
+  const replay = execution.replay;
+  if (!replay) throw new Error("missing replay custody execution");
+  if (
+    custody.generation !== execution.generation ||
+    custody.base !== replay.binding.base ||
+    custody.target !== "ui-630-native-20261009" ||
+    custody.exclusive !== true ||
+    custody.visualmode10250Released !== true ||
+    custody.revoked === true ||
+    custody.port !== 4479 ||
+    custody.cacheDir !== "/tmp/ui-636-native-vite-cache" ||
+    custody.replayEpoch !== replay.binding.epoch ||
+    custody.replayBindingSha256 !== replay.sha256 ||
+    custody.invocationId !== replay.binding.invocation.id ||
+    JSON.stringify(custody.ledgerBefore) !== JSON.stringify(replay.binding.invocation.ledgerBefore)
+  )
+    throw new Error("popup replay custody invocation mismatch");
+}
+function popup642ReplayCapacity(
+  entries: Popup642Reservation[],
+  execution: Popup642Execution,
+  cell: string,
+) {
+  if (!execution.replay || entries.length >= execution.replay.binding.allowancePerCell)
+    throw new Error(`popup replay explicit regression allowance exhausted: ${cell}`);
+}
+function popup642ReplayFinalization(
+  ledger: Popup642Ledger,
+  execution: Popup642Execution,
+  cell: string,
+  run: { count: number; case: string },
+) {
+  const matches = ledger.cells[cell].filter((entry) => entry.count === run.count);
+  const entry = matches[0];
+  if (
+    !execution.replay ||
+    matches.length !== 1 ||
+    entry.status !== "reserved-before-navigation" ||
+    entry.case !== run.case ||
+    entry.count !== run.count ||
+    entry.priorCount !== 8 ||
+    entry.cumulativeCount !== 8 + run.count ||
+    entry.replayEpoch !== execution.replay.binding.epoch
+  )
+    throw new Error("popup replay finalization lost/changed current reservation");
+  return entry;
+}
+// UI630_REPLAY_GUARDS_END
+const popup642Executions = new WeakMap<Page, Popup642Execution>();
+// Root enforces single-use launch externally. Memory/hash guards cannot prevent
+// a restarted process replaying an old absent-state binding after deletion.
 type Popup642Window = Window & {
   __popup642: {
     dispose(): void;
@@ -863,45 +1285,63 @@ type Popup642Run = {
 const popup642Runs = new WeakMap<Page, Popup642Run>();
 
 async function preparePopup642(page: Page, selected: string, info: TestInfo) {
-  if (!resolve(info.outputDir).startsWith(`${popup642Prefix}-`))
+  const execution = popup642Execution(info.outputDir);
+  if (!resolve(info.outputDir).startsWith(`${execution.prefix}-`))
     throw new Error("#642 requires owned --output prefix");
   const [implementation, theme, width, lane] = selected.split(":");
   if (!/^(source|react):(light|dark):(220|280):(diagnostic|uninstrumented)$/.test(selected))
     throw new Error("invalid #642 test mode");
-  const registration = JSON.parse(
-    readFileSync(`${popup642Prefix}-registration-2026-10-08.json`, "utf8"),
-  );
-  if (registration.launch_generation !== popup642Generation)
+  const registration = JSON.parse(readFileSync(execution.registrationPath, "utf8"));
+  if (registration.launch_generation !== execution.generation)
     throw new Error("#642 registration generation changed");
   // Runtime admission is separate from preparation. Do not infer it from port release.
-  const custodyPath = `${popup642Prefix}-browser-custody.json`;
+  const custodyPath = `${execution.prefix}-browser-custody.json`;
   if (!existsSync(custodyPath)) throw new Error(`#642 browser custody absent: ${custodyPath}`);
   const custody = JSON.parse(readFileSync(custodyPath, "utf8"));
   if (
-    custody.generation !== popup642Generation ||
+    custody.generation !== execution.generation ||
     custody.port !== 4479 ||
     custody.exclusive !== true ||
     custody.visualmode10250Released !== true ||
     custody.cacheDir !== "/tmp/ui-636-native-vite-cache"
   )
     throw new Error("#642 incomplete generation-bound browser custody");
-  const ledgerPath = `${popup642Prefix}-attempts.json`;
-  const ledger = existsSync(ledgerPath)
-    ? JSON.parse(readFileSync(ledgerPath, "utf8"))
-    : { generation: popup642Generation, cells: {} };
-  if (ledger.generation !== popup642Generation) throw new Error("#642 attempt generation mismatch");
+  const replay = execution.replay;
+  if (replay && realpathSync(custodyPath) !== custodyPath)
+    throw new Error("redirected popup replay custody");
+  if (replay) popup642ReplayCustody(custody, execution);
+  const ledgerPath = `${execution.prefix}-attempts.json`;
+  const ledger = replay
+    ? popup642ReadReplayLedger(execution)
+    : existsSync(ledgerPath)
+      ? JSON.parse(readFileSync(ledgerPath, "utf8"))
+      : { generation: execution.generation, cells: {} };
+  if (ledger.generation !== execution.generation)
+    throw new Error("#642 attempt generation mismatch");
   const cell = `${implementation}:${theme}:${width}`;
   const entries = (ledger.cells[cell] ??= []);
-  if (entries.length >= 10) throw new Error(`#642 ten-attempt TOTAL exhausted: ${cell}`);
+  if (replay) popup642ReplayCapacity(entries, execution, cell);
+  if (!replay && entries.length >= 10)
+    throw new Error(
+      `#642 ${replay ? "explicit regression allowance" : "ten-attempt TOTAL"} exhausted: ${cell}`,
+    );
   const reservation = {
     case: info.title,
     lane,
     at: new Date().toISOString(),
     count: entries.length + 1,
     status: "reserved-before-navigation",
+    ...(replay
+      ? {
+          replayEpoch: replay.binding.epoch,
+          priorCount: replay.priorCounts[cell],
+          cumulativeCount: replay.priorCounts[cell] + entries.length + 1,
+        }
+      : {}),
   };
   entries.push(reservation);
-  writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
+  if (replay) popup642WriteReplayLedger(ledger, execution, true);
+  else writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
   const run: Popup642Run = {
     ...reservation,
     errors: [],
@@ -911,15 +1351,19 @@ async function preparePopup642(page: Page, selected: string, info: TestInfo) {
     steps: [],
   };
   popup642Runs.set(page, run);
-  const geistPath = `${popup642Consumer}/engine/crates/foundation/fixtures/fonts/geist-mono/GeistMono[wght].ttf`;
-  const geist = readFileSync(geistPath);
+  popup642Executions.set(page, execution);
+  const geistPath = execution.geistPath;
+  const geist = execution.inputs?.geist ?? readFileSync(geistPath);
   if (
     geist.length !== 138896 ||
     popup642Hash(geist) !== "2386ddac2c72b6e0c126561e91486b7284412f303d8d9513da9ffec789e63338"
   )
     throw new Error("#642 original Geist bytes mismatch");
-  const policy = JSON.parse(readFileSync(popup642Policy, "utf8"));
-  const adobe = readFileSync(policy.path);
+  const policy = JSON.parse(
+    execution.inputs?.policy.toString("utf8") ?? readFileSync(execution.policyPath, "utf8"),
+  );
+  const adobePath = execution.adobePath ?? policy.path;
+  const adobe = execution.inputs?.adobe ?? readFileSync(adobePath);
   if (
     policy.success !== true ||
     adobe.length !== 482528 ||
@@ -927,7 +1371,8 @@ async function preparePopup642(page: Page, selected: string, info: TestInfo) {
     policy.sha256 !== popup642Hash(adobe)
   )
     throw new Error("#642 reviewed Adobe input mismatch");
-  const consumerCSS = readFileSync(`${popup642Consumer}/src/styles/design-system.css`, "utf8");
+  const consumerCSS =
+    execution.inputs?.css.toString("utf8") ?? readFileSync(execution.cssPath, "utf8");
   // Exact authored consumer rules; only package import and local font URL adapt.
   const css = consumerCSS
     .replace("@import '@proyecto-viviana/ui/components.css';", "")
@@ -937,11 +1382,11 @@ async function preparePopup642(page: Page, selected: string, info: TestInfo) {
     );
   run.steps.push({
     type: "font-policy",
-    policy: popup642Policy,
-    policyHash: popup642Hash(readFileSync(popup642Policy)),
+    policy: execution.policyPath,
+    policyHash: popup642Hash(execution.inputs?.policy ?? readFileSync(execution.policyPath)),
     geistPath,
     geistHash: popup642Hash(geist),
-    adobePath: policy.path,
+    adobePath,
     adobeHash: popup642Hash(adobe),
     authoredCSSHash: popup642Hash(consumerCSS),
     boundCSSHash: popup642Hash(css),
@@ -1603,6 +2048,7 @@ test.afterEach(async ({ page, popupCase, nativeErrors }, info) => {
   if (!popupCase) return;
   const run = popup642Runs.get(page);
   if (!run) return;
+  const execution = popup642Executions.get(page)!;
   await Promise.all(run.pending);
   let beforeTeardown: unknown, afterTeardown: unknown;
   let preTeardownRejections: string[] = [],
@@ -1671,7 +2117,8 @@ test.afterEach(async ({ page, popupCase, nativeErrors }, info) => {
   const receipt = {
     ...run,
     pending: undefined,
-    generation: popup642Generation,
+    generation: execution.generation,
+    ...(execution.replay ? { replay: execution.replay } : {}),
     selected: popupCase,
     status: info.status,
     expectedStatus: info.expectedStatus,
@@ -1685,14 +2132,564 @@ test.afterEach(async ({ page, popupCase, nativeErrors }, info) => {
   const receiptPath = info.outputPath("ui642-attempt.json");
   writeFileSync(receiptPath, JSON.stringify(receipt, null, 2));
   await info.attach("ui642-attempt", { path: receiptPath, contentType: "application/json" });
-  const ledgerPath = `${popup642Prefix}-attempts.json`,
-    ledger = JSON.parse(readFileSync(ledgerPath, "utf8"));
+  const ledgerPath = `${execution.prefix}-attempts.json`,
+    ledger = execution.replay
+      ? popup642ReadReplayLedger(execution, true)
+      : JSON.parse(readFileSync(ledgerPath, "utf8"));
   const cell = popupCase.split(":").slice(0, 3).join(":");
-  const entry = ledger.cells[cell].find((entry: { count: number }) => entry.count === run.count);
+  const entry = execution.replay
+    ? popup642ReplayFinalization(ledger, execution, cell, run)
+    : ledger.cells[cell].find((entry: { count: number }) => entry.count === run.count);
   Object.assign(entry, {
     status: info.status,
     receiptPath,
     sha256: popup642Hash(readFileSync(receiptPath)),
   });
-  writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
+  if (execution.replay) popup642WriteReplayLedger(ledger, execution);
+  else writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2));
+});
+
+// #630 authored source-native cases. Runtime/controls require separate root grant.
+type Native630Snapshot = {
+  counts: Record<
+    "table" | "card",
+    { callbacks: number; mounts: number; owners: number; effects: number; effectCleanups: number }
+  > & {
+    root: { mounts: number; owners: number };
+    view: { callbacks: number };
+  };
+  events: {
+    type: string;
+    trusted: boolean;
+    target: string;
+    currentTarget: string;
+    connected: boolean;
+    original: boolean;
+    currentTargetOriginal: boolean;
+  }[];
+  dropped: number;
+  disposed: boolean;
+  state: { isFocused: boolean; isHovered: boolean; isPressed: boolean };
+};
+type Native630Window = FocusWindow & {
+  __native630: {
+    refs: Record<string, HTMLElement>;
+    dispose(): void;
+    capturePopup(): void;
+    snapshot(): Native630Snapshot;
+  };
+};
+type Native630Run = {
+  errors: string[];
+  modules: { url: string; sha256: string; bytes: number }[];
+  pending: Promise<void>[];
+  execution: Popup642Execution;
+};
+const native630Runs = new WeakMap<Page, Native630Run>();
+async function prepareNative630(page: Page, selected: string, info: TestInfo) {
+  if (!/^(spectrum|viviana):(default|custom)$/.test(selected)) throw new Error("invalid #630 mode");
+  const execution = popup642Execution(info.outputDir),
+    replay = execution.replay;
+  if (!replay || !execution.inputs) throw new Error("#630 requires authenticated root snapshots");
+  const custodyPath = `${execution.prefix}-browser-custody.json`;
+  if (realpathSync(custodyPath) !== custodyPath) throw new Error("redirected #630 custody");
+  const custody = JSON.parse(readFileSync(custodyPath, "utf8"));
+  popup642ReplayCustody(custody, execution);
+  // Readonly preflight shares the exact root starting-state and retained-state guard.
+  // It neither reserves a #642 cell nor writes an absent ledger.
+  popup642ReadReplayLedger(execution);
+  // #630 cases never reserve #642 replay cells. Root separately bounds the exact
+  // focused/native invocation; this preparation does not issue its allowance.
+  const inputs = execution.inputs;
+  const policy = JSON.parse(inputs.policy.toString("utf8"));
+  if (
+    policy.success !== true ||
+    policy.sha256 !== popup642Hash(inputs.adobe) ||
+    inputs.adobe.length !== 482528 ||
+    popup642Hash(inputs.adobe) !==
+      "82d5975ac48b94197a94d944a6a1ee6b234e813e2ee469e2c63e3012319cd416" ||
+    inputs.geist.length !== 138896 ||
+    popup642Hash(inputs.geist) !==
+      "2386ddac2c72b6e0c126561e91486b7284412f303d8d9513da9ffec789e63338"
+  )
+    throw new Error("#630 original offline font identity mismatch");
+  const run: Native630Run = { errors: [], modules: [], pending: [], execution };
+  native630Runs.set(page, run);
+  await page.route("**/*", async (route) => {
+    const request = route.request(),
+      url = request.url(),
+      parsed = new URL(url);
+    if (url === policy.url && request.method() === "GET" && request.resourceType() === "font")
+      await route.fulfill({
+        status: 200,
+        body: inputs.adobe,
+        contentType: "font/woff2",
+        headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
+      });
+    else if (
+      parsed.origin === "http://127.0.0.1:4479" &&
+      parsed.pathname === "/__ui642/GeistMono-variable.ttf" &&
+      !parsed.search &&
+      request.method() === "GET" &&
+      request.resourceType() === "font"
+    )
+      await route.fulfill({
+        status: 200,
+        body: inputs.geist,
+        contentType: "font/ttf",
+        headers: { "Cache-Control": "no-store" },
+      });
+    else if (parsed.origin === "http://127.0.0.1:4479" && request.resourceType() !== "font")
+      await route.continue();
+    else {
+      run.errors.push(
+        `unadmitted external/font request: ${request.method()} ${request.resourceType()} ${url}`,
+      );
+      await route.abort("blockedbyclient");
+    }
+  });
+  page.on("response", (response) => {
+    if (!["script", "stylesheet"].includes(response.request().resourceType())) return;
+    run.pending.push(
+      response.body().then(
+        (body) => {
+          run.modules.push({ url: response.url(), sha256: popup642Hash(body), bytes: body.length });
+        },
+        (error) => {
+          run.errors.push(`module identity: ${response.url()}: ${String(error)}`);
+        },
+      ),
+    );
+  });
+  const css = inputs.css
+    .toString("utf8")
+    .replace("@import '@proyecto-viviana/ui/components.css';", "")
+    .replace(
+      "../../engine/crates/foundation/fixtures/fonts/geist-mono/GeistMono[wght].ttf?no-inline",
+      "/__ui642/GeistMono-variable.ttf",
+    );
+  await page.addInitScript((css) => {
+    const install = () => {
+      if (!document.head) return false;
+      const node = document.createElement("style");
+      node.dataset.native630ConsumerCss = "true";
+      node.textContent = css;
+      document.head.append(node);
+      return true;
+    };
+    if (!install()) {
+      const observer = new MutationObserver(() => {
+        if (install()) observer.disconnect();
+      });
+      observer.observe(document, { childList: true, subtree: true });
+    }
+  }, css);
+  const [twin, host] = selected.split(":");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/?ui630=${twin}&host=${host}`);
+  await expect(page.locator("#root")).toHaveAttribute("data-native630-ready", "true");
+  await expect(
+    page.locator("#hint, #react-root, #focus-mount, [data-canvas-entry-surface]"),
+  ).toHaveCount(0);
+  await page.evaluate(async () => {
+    await document.fonts.load('16px "Geist Mono"');
+    await document.fonts.ready;
+  });
+  expect(await page.evaluate(() => document.fonts.check('16px "Geist Mono"'))).toBe(true);
+  await Promise.all(run.pending);
+  const family = twin === "spectrum" ? "solid-spectrum" : "viviana-ui";
+  for (const source of [
+    "card/index",
+    "cardview/index",
+    "table/index",
+    "textfield/index",
+    "menu/ActionMenu",
+    "menu/index",
+  ])
+    expect(
+      run.modules.some((m) => m.url.includes(`${family}/src/${source}.tsx`)),
+      `served ${family}/${source}`,
+    ).toBe(true);
+  for (const source of ["Table.tsx", "GridList.tsx", "Menu.tsx", "TextField.tsx"])
+    expect(
+      run.modules.some((m) => m.url.includes(`solidaria-components/src/${source}`)),
+      `served ${source}`,
+    ).toBe(true);
+  expect(run.modules.filter((m) => /\/solid-js\.js(?:\?|$)/.test(m.url))).toHaveLength(1);
+  expect(
+    run.modules.filter((m) =>
+      /packages\/(solid-spectrum|viviana-ui|solidaria-components|solidaria|solid-stately)\/dist\//.test(
+        m.url,
+      ),
+    ),
+  ).toEqual([]);
+  const styled = await page.evaluate(() => {
+    const refs = (window as Native630Window).__native630.refs;
+    const matched: Record<string, number> = { cell: 0, card: 0, trigger: 0, tableInput: 0 };
+    const inspect = (rules: CSSRuleList) => {
+      for (const rule of rules) {
+        if (rule instanceof CSSStyleRule) {
+          for (const key of Object.keys(matched)) {
+            // Match only actual class rules, not generic consumer/tag rules.
+            if (rule.selectorText.includes(".")) {
+              try {
+                if (refs[key].matches(rule.selectorText)) matched[key]++;
+              } catch {
+                /* pseudo selector */
+              }
+            }
+          }
+        }
+        if ("cssRules" in rule) inspect((rule as CSSGroupingRule).cssRules);
+      }
+    };
+    for (const sheet of document.styleSheets) inspect(sheet.cssRules);
+    return {
+      matched,
+      styles: [...document.querySelectorAll("style[data-vite-dev-id]")].map((node) => ({
+        id: node.getAttribute("data-vite-dev-id"),
+        css: node.textContent,
+      })),
+    };
+  });
+  for (const [name, count] of Object.entries(styled.matched))
+    expect(count, `generated matching ${name} CSS`).toBeGreaterThan(0);
+  await info.attach("native630-source-css", {
+    body: JSON.stringify({ modules: run.modules, styled }),
+    contentType: "application/json",
+  });
+}
+async function native630Snapshot(page: Page) {
+  return page.evaluate(() => {
+    const api = (window as Native630Window).__native630;
+    if (!api || !api.refs || !api.snapshot) throw new Error("missing #630 counters/refs");
+    return api.snapshot();
+  });
+}
+async function native630Retained(page: Page, kind: "table" | "card", popup = false) {
+  const identity = await page.evaluate(
+    ({ kind, popup }) => {
+      const api = (window as Native630Window).__native630,
+        r = api.refs;
+      const names =
+        kind === "table"
+          ? ["cell", "tableInput", "tableButton", "live"]
+          : ["card", "cardInput", "cardButton", "trigger"];
+      if (popup) names.push("menu", "item");
+      for (const name of names) if (!r[name]) throw new Error(`missing original ${name}`);
+      const input = r[`${kind}Input`] as HTMLInputElement;
+      return {
+        connected: names.every((name) => r[name].isConnected),
+        input: document.getElementById(`native630-${kind}-input`) === input,
+        button: document.getElementById(`native630-${kind}-local`) === r[`${kind}Button`],
+        parent:
+          kind === "table"
+            ? input.closest("td") === r.cell
+            : input.closest('[role="row"]') === r.card,
+        live: kind !== "table" || document.getElementById("native630-live") === r.live,
+        popup:
+          !popup ||
+          (document.querySelector('[role="menu"]') === r.menu &&
+            r.menu.querySelector('[role="menuitem"]') === r.item),
+        value: input.value,
+        local: r[`${kind}Button`].textContent,
+      };
+    },
+    { kind, popup },
+  );
+  expect(identity, "original-node/local-state/lifetime oracle").toEqual({
+    connected: true,
+    input: true,
+    button: true,
+    parent: true,
+    live: true,
+    popup: true,
+    value: "typed value",
+    local: "Local 1",
+  });
+  const snapshot = await native630Snapshot(page),
+    c = snapshot.counts[kind];
+  expect(c).toEqual({ callbacks: 1, mounts: 1, owners: 0, effects: 2, effectCleanups: 1 });
+  expect(snapshot.counts.view.callbacks).toBe(1);
+  expect(snapshot.dropped).toBe(0);
+}
+async function native630Local(page: Page, kind: "table" | "card") {
+  await page.locator(`#native630-${kind}-local`).click();
+  await page.locator(`#native630-${kind}-input`).click();
+  await page.keyboard.type("typed value");
+  await expect(page.locator(`#native630-${kind}-local`)).toHaveText("Local 1");
+  await native630Retained(page, kind);
+}
+async function native630Live(
+  page: Page,
+  expected: Partial<Native630Snapshot["state"]>,
+  host: string,
+) {
+  await expect.poll(async () => (await native630Snapshot(page)).state).toMatchObject(expected);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const api = (window as Native630Window).__native630,
+            s = api.snapshot().state;
+          if (!api.refs.live) throw new Error("missing original live text");
+          return (
+            api.refs.live.textContent ===
+            `focused=${s.isFocused};hovered=${s.isHovered};pressed=${s.isPressed}`
+          );
+        }),
+      { message: "identical live-text oracle" },
+    )
+    .toBe(true);
+  if (host === "default") {
+    const attrs = await page.evaluate(() => {
+      const api = (window as Native630Window).__native630;
+      return {
+        focused: api.refs.cell.hasAttribute("data-focused"),
+        hovered: api.refs.cell.hasAttribute("data-hovered"),
+        pressed: api.refs.cell.hasAttribute("data-pressed"),
+      };
+    });
+    const state = (await native630Snapshot(page)).state;
+    expect(attrs).toEqual({
+      focused: state.isFocused,
+      hovered: state.isHovered,
+      pressed: state.isPressed,
+    });
+  }
+}
+for (const twin of ["spectrum", "viviana"] as const) {
+  for (const host of ["default", "custom"] as const) {
+    test.describe(`#630 ${twin} table ${host}`, () => {
+      test.use({ native630Case: `${twin}:${host}`, trustedChooser: true });
+      test("hover retains original input and backward caret", async ({ page }) => {
+        await native630Local(page, "table");
+        await page.evaluate(() => {
+          const input = (window as Native630Window).__native630.refs.tableInput as HTMLInputElement;
+          input.setSelectionRange(2, 7, "backward");
+        });
+        await page.locator("#native630-live").hover();
+        await native630Live(page, { isHovered: true }, host);
+        await page.locator("#native630-adjacent").hover();
+        await expect(page.locator("#native630-adjacent")).toHaveText("adjacent-hovered=true");
+        await native630Live(page, { isHovered: false }, host);
+        await native630Retained(page, "table");
+        const caret = await page.evaluate(() => {
+          const input = (window as Native630Window).__native630.refs.tableInput as HTMLInputElement;
+          return {
+            active: document.activeElement === input,
+            start: input.selectionStart,
+            end: input.selectionEnd,
+            direction: input.selectionDirection,
+          };
+        });
+        expect(caret).toEqual({ active: true, start: 2, end: 7, direction: "backward" });
+      });
+      test("focus press retains original nodes and independent state", async ({ page }) => {
+        await native630Local(page, "table");
+        const cell = page.locator("#native630-table-input").locator("xpath=ancestor::td");
+        await cell.click({ position: { x: 4, y: 4 } });
+        await native630Live(page, { isFocused: true }, host);
+        await native630Retained(page, "table");
+        await cell.hover({ position: { x: 4, y: 4 } });
+        await page.mouse.down();
+        await native630Live(page, { isPressed: true }, host);
+        await native630Retained(page, "table");
+        await page.mouse.up();
+        await native630Live(page, { isPressed: false }, host);
+        await native630Retained(page, "table");
+      });
+    });
+  }
+  test.describe(`#630 ${twin} card`, () => {
+    test.use({ native630Case: `${twin}:default`, trustedChooser: true });
+    test("pointer open retains same-open menu through hover and press", async ({ page }) => {
+      await native630Local(page, "card");
+      const card = page.locator("#native630-card-input").locator('xpath=ancestor::*[@role="row"]');
+      await card.hover({ position: { x: 4, y: 4 } });
+      await expect(card).toHaveAttribute("data-hovered");
+      await native630Retained(page, "card");
+      const rowPoint = await page.evaluate(() => {
+        const api = (window as Native630Window).__native630;
+        const row = api.refs.card,
+          surface = api.refs.cardSurface;
+        if (
+          !row ||
+          !surface ||
+          !row.isConnected ||
+          !surface.isConnected ||
+          surface.closest('[role="row"]') !== row
+        )
+          throw new Error("missing original noninteractive Card row surface");
+        const rect = surface.getBoundingClientRect(),
+          x = rect.left + rect.width / 2,
+          y = rect.top + rect.height / 2;
+        if (
+          document.elementFromPoint(x, y) !== surface ||
+          surface.closest('button,input,a,[role="button"]')
+        )
+          throw new Error("Card row point does not hit original plain surface");
+        return { x, y, before: api.snapshot().events.length };
+      });
+      await page.mouse.click(rowPoint.x, rowPoint.y);
+      await expect(card).toHaveAttribute("data-focused");
+      await native630Retained(page, "card");
+      await page.mouse.move(rowPoint.x, rowPoint.y);
+      await page.mouse.down();
+      await expect(card).toHaveAttribute("data-pressed");
+      await expect(card).toHaveAttribute("data-focused");
+      await native630Retained(page, "card");
+      await page.mouse.up();
+      await expect(card).not.toHaveAttribute("data-pressed");
+      await expect(card).toHaveAttribute("data-focused");
+      await native630Retained(page, "card");
+      const rowEvents = (await native630Snapshot(page)).events.slice(rowPoint.before);
+      for (const type of ["click", "pointerdown", "pointerup"]) {
+        const observed = rowEvents.filter(
+          (event) => event.type === type && event.currentTarget === "native630-card-row",
+        );
+        expect(observed.length).toBeGreaterThan(0);
+        for (const event of observed)
+          expect(event).toMatchObject({
+            trusted: true,
+            target: "native630-card-surface",
+            currentTarget: "native630-card-row",
+            connected: true,
+            original: true,
+            currentTargetOriginal: true,
+          });
+      }
+      const trigger = page.locator("#native630-trigger");
+      await trigger.hover();
+      await page.mouse.down();
+      if (await page.getByRole("menu").isVisible())
+        await page.evaluate(() => (window as Native630Window).__native630.capturePopup());
+      await page.mouse.up();
+      await expect(page.getByRole("menu")).toBeVisible();
+      await page.evaluate(() => (window as Native630Window).__native630.capturePopup());
+      await native630Retained(page, "card", true);
+      await page.getByRole("menuitem", { name: "Retain", exact: true }).hover();
+      await page.keyboard.press("ArrowDown");
+      await native630Retained(page, "card", true);
+      await page.getByRole("menuitem", { name: "Retain", exact: true }).hover();
+      await page.mouse.down();
+      await native630Retained(page, "card", true);
+      await page.mouse.up();
+      await expect(page.getByRole("menu")).toBeHidden();
+      await native630Retained(page, "card");
+    });
+    test("keyboard opens and Escape intentionally dismisses", async ({ page }) => {
+      await native630Local(page, "card");
+      // Input, local button, trigger: trusted Tabs intentionally move focus.
+      await page.keyboard.press("Tab");
+      await expect(page.locator("#native630-card-local")).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(page.locator("#native630-trigger")).toBeFocused();
+      await native630Retained(page, "card");
+      await page.keyboard.press("Enter");
+      await expect(page.getByRole("menu")).toBeVisible();
+      await page.evaluate(() => (window as Native630Window).__native630.capturePopup());
+      await page.keyboard.press("ArrowDown");
+      await native630Retained(page, "card", true);
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("menu")).toBeHidden();
+      await expect(page.locator("#native630-trigger")).toBeFocused();
+    });
+  });
+}
+test.afterEach(async ({ page, native630Case, nativeErrors }, info) => {
+  if (!native630Case) return;
+  const run = native630Runs.get(page);
+  if (!run) throw new Error("missing #630 setup evidence");
+  let before: Native630Snapshot | undefined, after: Native630Snapshot | undefined;
+  try {
+    before = await native630Snapshot(page);
+    await page.evaluate(() => (window as Native630Window).__native630.dispose());
+    const disposal = await page.evaluate(async () => {
+      const api = (window as Native630Window).__native630;
+      const snapshot = api.snapshot();
+      const original = {
+        callbacks: [snapshot.counts.table.callbacks, snapshot.counts.card.callbacks],
+        events: snapshot.events.length,
+      };
+      // Tested callback listeners are removed; disconnected originals must not
+      // produce later fixture callbacks during the bounded task/microtask drain.
+      api.refs.tableInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await Promise.resolve();
+      await new Promise<void>((done) => setTimeout(done, 0));
+      await Promise.resolve();
+      const final = api.snapshot();
+      return {
+        snapshot: final,
+        disconnected: Object.values(api.refs).every((el) => !el.isConnected),
+        empty: document.getElementById("root")!.children.length === 0,
+        callbacks: [final.counts.table.callbacks, final.counts.card.callbacks],
+        events: final.events.length,
+        original,
+        rejections: [...(window as Native630Window).__nativeRejections],
+      };
+    });
+    after = disposal.snapshot;
+    expect.soft(disposal.disconnected && disposal.empty).toBe(true);
+    expect.soft(disposal.callbacks).toEqual(disposal.original.callbacks);
+    expect.soft(disposal.events).toBe(disposal.original.events);
+    for (const kind of ["table", "card"] as const) {
+      expect.soft(after.counts[kind].owners).toBe(1);
+      expect.soft(after.counts[kind].effectCleanups).toBe(after.counts[kind].effects);
+    }
+    expect.soft(after.counts.root).toEqual({ mounts: 1, owners: 1 });
+    expect.soft(disposal.rejections).toEqual([]);
+    expect.soft(before.dropped).toBe(0);
+    const testedKind = info.titlePath.join(" ").includes(" table ") ? "table" : "card";
+    const inputEvents = before.events.filter(
+      (e) => e.type === "input" && e.currentTarget === `native630-${testedKind}-input`,
+    );
+    expect.soft(inputEvents.length, "required trusted original input boundary").toBeGreaterThan(0);
+    for (const event of inputEvents)
+      expect.soft(event).toMatchObject({
+        trusted: true,
+        original: true,
+        connected: true,
+        target: `native630-${testedKind}-input`,
+        currentTarget: `native630-${testedKind}-input`,
+      });
+    const clicks = before.events.filter(
+      (e) => e.type === "click" && e.currentTarget === `native630-${testedKind}-local`,
+    );
+    expect.soft(clicks.length, "required trusted original local-button boundary").toBe(1);
+    expect.soft(clicks[0]).toMatchObject({
+      trusted: true,
+      original: true,
+      connected: true,
+      target: `native630-${testedKind}-local`,
+      currentTarget: `native630-${testedKind}-local`,
+    });
+  } catch (error) {
+    run.errors.push(`#630 lifetime/disposal: ${String(error)}`);
+  }
+  await Promise.all(run.pending);
+  expect.soft(nativeErrors).toEqual([]);
+  expect.soft(run.errors).toEqual([]);
+  const receiptPath = info.outputPath("ui630-source-attempt.json");
+  writeFileSync(
+    receiptPath,
+    JSON.stringify(
+      {
+        selected: native630Case,
+        status: info.status,
+        assertionErrors: info.errors,
+        before,
+        after,
+        errors: [...run.errors, ...nativeErrors],
+        modules: run.modules,
+        binding: run.execution.replay,
+        runtimeQualification: "only this admitted attempt",
+        limits:
+          "Root authenticates issuance and enforces single-use invocation. Bounded task/microtask drain cannot rule out later errors.",
+      },
+      null,
+      2,
+    ),
+  );
+  await info.attach("ui630-source-attempt", { path: receiptPath, contentType: "application/json" });
 });

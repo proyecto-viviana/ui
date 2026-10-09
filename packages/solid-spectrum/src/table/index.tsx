@@ -1609,9 +1609,17 @@ export function TableCell(props: TableCellProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
+  function isCellAccessor(
+    child: (props: TableCellRenderProps) => JSX.Element,
+  ): child is () => JSX.Element {
+    return child.length === 0;
+  }
+
   const renderChildren = (renderProps: TableCellRenderProps) => {
     const rawChildren = local.children;
-    return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+    if (typeof rawChildren !== "function") return rawChildren;
+    if (isCellAccessor(rawChildren)) return <>{rawChildren()}</>;
+    return rawChildren(renderProps);
   };
   const content = (renderProps: TableCellRenderProps) => (
     <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>

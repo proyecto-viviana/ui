@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -159,6 +159,136 @@ function HighlightTable(props: {
 
 describe("TableView (solid-spectrum)", () => {
   afterEach(() => cleanup());
+
+  it.each([false, true])(
+    "keeps live zero-argument cell accessors and retained state (custom render: %s)",
+    (customRender) => {
+      const [value, setValue] = createSignal("before");
+      const argumentCounts: number[] = [];
+      let mounts = 0;
+      function StatefulContent() {
+        mounts++;
+        const [count, setCount] = createSignal(0);
+        return (
+          <>
+            <input aria-label="Retained input" />
+            <button onClick={() => setCount(count() + 1)}>Count {count()}</button>
+          </>
+        );
+      }
+      render(() => (
+        <Table
+          aria-label="Accessor retention"
+          items={[rows[0]]}
+          columns={[columns[0]]}
+          getKey={(item) => item.id}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">Name</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => {
+                      const retained = <StatefulContent />;
+                      function cellAccessor() {
+                        argumentCounts.push(arguments.length);
+                        return [value(), retained];
+                      }
+                      return (
+                        <TableCell render={customRender ? (props) => <td {...props} /> : undefined}>
+                          {cellAccessor}
+                        </TableCell>
+                      );
+                    }}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+      const input = screen.getByRole("textbox", { name: "Retained input" });
+      const cell = input.closest("td");
+      const button = screen.getByRole("button", { name: "Count 0" });
+      if (!cell) throw new Error("missing original retained cell");
+      fireEvent.click(button);
+      fireEvent.input(input, { target: { value: "typed" } });
+      input.focus();
+      expect(document.activeElement).toBe(input);
+      expect(cell).toHaveTextContent("before");
+      setValue("after");
+      flush();
+      expect(input.closest("td")).toBe(cell);
+      expect(screen.getByRole("textbox", { name: "Retained input" })).toBe(input);
+      expect(screen.getByRole("button", { name: "Count 1" })).toBe(button);
+      expect(cell.isConnected).toBe(true);
+      expect(input.isConnected).toBe(true);
+      expect(button.isConnected).toBe(true);
+      expect(input).toHaveValue("typed");
+      expect(document.activeElement).toBe(input);
+      expect(cell).toHaveTextContent("after");
+      expect(cell).not.toHaveTextContent("before");
+      expect(mounts).toBe(1);
+      expect(argumentCounts.length).toBeGreaterThanOrEqual(2);
+      expect(argumentCounts.every((count) => count === 0)).toBe(true);
+    },
+  );
+
+  it("keeps argument-taking cell callback once with live getters", () => {
+    let callbacks = 0;
+    const argumentCounts: number[] = [];
+    render(() => (
+      <Table
+        aria-label="Getter forwarding"
+        items={[rows[0]]}
+        columns={[columns[0]]}
+        getKey={(item) => item.id}
+      >
+        {() => (
+          <>
+            <TableHeader>
+              <TableColumn id="name">Name</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {(item) => (
+                <TableRow id={item.id} item={item}>
+                  {() => (
+                    <TableCell>
+                      {function cellCallback(state) {
+                        callbacks++;
+                        argumentCounts.push(arguments.length);
+                        expect(
+                          typeof Object.getOwnPropertyDescriptor(state, "isFocused")?.get,
+                        ).toBe("function");
+                        return (
+                          <span data-testid="forwarded-getter">{`focused=${state.isFocused}`}</span>
+                        );
+                      }}
+                    </TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </>
+        )}
+      </Table>
+    ));
+    const content = screen.getByTestId("forwarded-getter");
+    const cell = content.closest("td");
+    if (!cell) throw new Error("missing getter cell");
+    expect(content).toHaveTextContent("focused=false");
+    cell.focus();
+    flush();
+    expect(content).toHaveTextContent("focused=true");
+    expect(screen.getByTestId("forwarded-getter")).toBe(content);
+    expect(content.isConnected).toBe(true);
+    expect(cell.isConnected).toBe(true);
+    expect(callbacks).toBe(1);
+    expect(argumentCounts).toEqual([1]);
+  });
 
   it("exports the public TableView aliases", () => {
     expect(TableView).toBe(Table);
@@ -1062,16 +1192,24 @@ describe("TableView tree grid (solid-spectrum)", () => {
   it("toggles row expansion when the chevron is pressed", () => {
     render(() => <TreeTable />);
 
+    const originalChevron = treeChevron("projects")!;
+    expect(originalChevron).toHaveAttribute("aria-label", "Expand");
+    expect(originalChevron.isConnected).toBe(true);
+
     expect(treeRow("project-1")).toBeNull();
 
-    fireEvent.click(treeChevron("projects")!);
+    fireEvent.click(originalChevron);
     expect(treeRow("project-1")).toBeTruthy();
     expect(treeRow("projects")).toHaveAttribute("aria-expanded", "true");
-    // Re-query: toggling recreates the tree-column cell's children.
+    expect(treeChevron("projects")).toBe(originalChevron);
+    expect(originalChevron.isConnected).toBe(true);
     expect(treeChevron("projects")).toHaveAttribute("aria-label", "Collapse");
 
-    fireEvent.click(treeChevron("projects")!);
+    fireEvent.click(originalChevron);
     expect(treeRow("project-1")).toBeNull();
     expect(treeRow("projects")).not.toHaveAttribute("aria-expanded", "true");
+    expect(treeChevron("projects")).toBe(originalChevron);
+    expect(originalChevron.isConnected).toBe(true);
+    expect(originalChevron).toHaveAttribute("aria-label", "Expand");
   });
 });

@@ -1975,10 +1975,8 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       },
     };
   });
-  // A STABLE context object: its identity never changes, so the surrounding ButtonContext.Provider
-  // never tears down and recreates the row's children. The slots are getters, so a slotted
-  // <Button slot="drag"|"chevron"> reads the current drag/expand props each time it is (re)created —
-  // e.g. when the tree column recreates the chevron on expand/collapse.
+  // A stable context keeps the row's children mounted. The stable chevron slot forwards
+  // live expand props through field getters so an existing slotted Button stays reactive.
   const buttonContextValue: ButtonContextValue = {
     slots: {
       default: {},
@@ -1987,9 +1985,32 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
       },
       // Tree-grid expand/collapse chevron; the slotted <Button slot="chevron"> picks these up.
       // The aria hook yields DOM button attributes, merged onto the Button as passthrough props.
-      get chevron() {
-        return rowAria.expandButtonProps as unknown as ButtonProps;
-      },
+      chevron: {
+        get isDisabled() {
+          return rowAria.expandButtonProps.isDisabled;
+        },
+        get onPress() {
+          return rowAria.expandButtonProps.onPress;
+        },
+        get excludeFromTabOrder() {
+          return rowAria.expandButtonProps.excludeFromTabOrder;
+        },
+        get preventFocusOnPress() {
+          return rowAria.expandButtonProps.preventFocusOnPress;
+        },
+        get "data-react-aria-prevent-focus"() {
+          return rowAria.expandButtonProps["data-react-aria-prevent-focus"];
+        },
+        get id() {
+          return rowAria.expandButtonProps.id;
+        },
+        get "aria-label"() {
+          return rowAria.expandButtonProps["aria-label"];
+        },
+        get "aria-labelledby"() {
+          return rowAria.expandButtonProps["aria-labelledby"];
+        },
+      } as unknown as ButtonProps,
     },
   };
 

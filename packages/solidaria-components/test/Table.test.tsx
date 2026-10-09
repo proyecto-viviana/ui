@@ -5663,17 +5663,26 @@ describe("Table (tree grid / expandable rows)", () => {
   it("expands and collapses an uncontrolled row when the chevron is pressed", () => {
     render(() => <TestTreeTable />);
 
+    const originalChevron = chevronOf("projects")!;
+    expect(originalChevron).toHaveAttribute("aria-label", "Expand");
+    expect(originalChevron.isConnected).toBe(true);
+
     expect(rowByKey("project-1")).toBeNull();
 
-    fireEvent.click(chevronOf("projects"));
+    fireEvent.click(originalChevron);
     expect(rowByKey("project-1")).toBeTruthy();
     expect(rowByKey("projects")).toHaveAttribute("aria-expanded", "true");
 
-    // Toggling re-renders the tree-column cell (Solid recreates its children rather than
-    // reconciling), so re-query the chevron before collapsing instead of reusing a stale node.
-    fireEvent.click(chevronOf("projects"));
+    expect(chevronOf("projects")).toBe(originalChevron);
+    expect(originalChevron.isConnected).toBe(true);
+    expect(originalChevron).toHaveAttribute("aria-label", "Collapse");
+
+    fireEvent.click(originalChevron);
     expect(rowByKey("project-1")).toBeNull();
     expect(rowByKey("projects")).not.toHaveAttribute("aria-expanded", "true");
+    expect(chevronOf("projects")).toBe(originalChevron);
+    expect(originalChevron.isConnected).toBe(true);
+    expect(originalChevron).toHaveAttribute("aria-label", "Expand");
   });
 
   it("reports changes but stays put when expansion is controlled", () => {

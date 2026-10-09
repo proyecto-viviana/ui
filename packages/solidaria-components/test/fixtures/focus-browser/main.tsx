@@ -3,7 +3,7 @@ import { Provider } from "../../../../viviana-ui/src/provider/index";
 import { Text as StyledText } from "../../../../viviana-ui/src/text/index";
 import { style } from "../../../../viviana-ui/src/style" with { type: "macro" };
 import "../../../../viviana-ui/src/theme.css";
-import { createSignal, onCleanup, onSettled } from "solid-js";
+import { createSignal, createEffect, For, onCleanup, onSettled, untrack } from "solid-js";
 import { Menu, MenuItem } from "../../../src/Menu";
 import { Text } from "../../../src/Text";
 import {
@@ -720,11 +720,314 @@ function mountPopup(implementation: "source" | "react") {
   }
 }
 
+// #630 fixture-only sensitivity variants. Future controls replace only this value,
+// save both final files, restore in finally and prove byte equality before replay.
+const native630Variant: { name: string } = { name: "live" };
+// Named alternatives: "snapshot-table-getters", "fresh-child-remount".
+async function mountNative630(twin: "spectrum" | "viviana", host: "default" | "custom") {
+  if (twin === "spectrum") await import("../../../../solid-spectrum/src/theme.css");
+  const [cards, views, tables, fields, actions, menus, providers] =
+    twin === "spectrum"
+      ? await Promise.all([
+          import("../../../../solid-spectrum/src/card/index"),
+          import("../../../../solid-spectrum/src/cardview/index"),
+          import("../../../../solid-spectrum/src/table/index"),
+          import("../../../../solid-spectrum/src/textfield/index"),
+          import("../../../../solid-spectrum/src/menu/ActionMenu"),
+          import("../../../../solid-spectrum/src/menu/index"),
+          import("../../../../solid-spectrum/src/provider/index"),
+        ])
+      : await Promise.all([
+          import("../../../../viviana-ui/src/card/index"),
+          import("../../../../viviana-ui/src/cardview/index"),
+          import("../../../../viviana-ui/src/table/index"),
+          import("../../../../viviana-ui/src/textfield/index"),
+          import("../../../../viviana-ui/src/menu/ActionMenu"),
+          import("../../../../viviana-ui/src/menu/index"),
+          import("../../../../viviana-ui/src/provider/index"),
+        ]);
+  const { Card } = cards,
+    { CardView } = views,
+    { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } = tables,
+    { TextField } = fields,
+    { ActionMenu } = actions,
+    { MenuItem: StyledMenuItem } = menus,
+    { Provider: TwinProvider } = providers;
+  const root = required("root");
+  const counts = {
+    table: { callbacks: 0, mounts: 0, owners: 0, effects: 0, effectCleanups: 0 },
+    card: { callbacks: 0, mounts: 0, owners: 0, effects: 0, effectCleanups: 0 },
+    root: { mounts: 0, owners: 0 },
+    view: { callbacks: 0 },
+  };
+  const refs: Record<string, HTMLElement> = {};
+  const events: {
+    type: string;
+    trusted: boolean;
+    target: string;
+    currentTarget: string;
+    connected: boolean;
+    original: boolean;
+    currentTargetOriginal: boolean;
+  }[] = [];
+  let dropped = 0,
+    disposed = false;
+  let tableState:
+    | { readonly isFocused: boolean; readonly isHovered: boolean; readonly isPressed: boolean }
+    | undefined;
+  function capture(event: Event) {
+    if (events.length === 2048) {
+      dropped++;
+      return;
+    }
+    const target = event.target;
+    events.push({
+      type: event.type,
+      trusted: event.isTrusted,
+      target: target instanceof Element ? target.id : "",
+      currentTarget: event.currentTarget instanceof Element ? event.currentTarget.id : "",
+      connected: target instanceof Node && target.isConnected,
+      original: Object.values(refs).includes(target as HTMLElement),
+      currentTargetOriginal: Object.values(refs).includes(event.currentTarget as HTMLElement),
+    });
+  }
+  function retain(name: string, node: HTMLElement) {
+    if (!refs[name]) {
+      refs[name] = node;
+      for (const type of ["input", "click", "pointerdown", "pointerup", "keydown", "focusin"])
+        node.addEventListener(type, capture);
+    }
+  }
+  function Child(props: {
+    kind: "table" | "card";
+    state?: {
+      readonly isFocused: boolean;
+      readonly isHovered: boolean;
+      readonly isPressed: boolean;
+    };
+  }) {
+    const counter = counts[props.kind];
+    counter.mounts++;
+    const [local, setLocal] = createSignal(0);
+    onCleanup(() => counter.owners++);
+    createEffect(local, () => {
+      counter.effects++;
+      return () => {
+        counter.effectCleanups++;
+      };
+    });
+    return (
+      <div id={`native630-${props.kind}-child`}>
+        {props.kind === "card" ? (
+          <span
+            id="native630-card-surface"
+            style={{ display: "block", width: "128px", height: "24px" }}
+          >
+            Card row surface
+          </span>
+        ) : null}
+        {props.state ? (
+          <span id="native630-live">{`focused=${props.state.isFocused};hovered=${props.state.isHovered};pressed=${props.state.isPressed}`}</span>
+        ) : null}
+        <TextField aria-label={`${props.kind} retained input`} />
+        <button
+          id={`native630-${props.kind}-local`}
+          type="button"
+          onClick={() => setLocal(local() + 1)}
+        >
+          Local {local()}
+        </button>
+        {props.kind === "card" ? (
+          <ActionMenu id="native630-trigger" aria-label="Card actions">
+            <StyledMenuItem id="retain" textValue="Retain">
+              Retain
+            </StyledMenuItem>
+            <StyledMenuItem id="close" textValue="Close">
+              Close
+            </StyledMenuItem>
+          </ActionMenu>
+        ) : null}
+      </div>
+    );
+  }
+  const rows = [{ id: "row", label: "Native row" }];
+  function Owner() {
+    counts.root.mounts++;
+    onCleanup(() => counts.root.owners++);
+    onSettled(() => {
+      for (const kind of ["table", "card"] as const) {
+        const child = required(`native630-${kind}-child`);
+        const input = child.querySelector("input");
+        if (!(input instanceof HTMLInputElement)) throw new Error(`missing ${kind} input`);
+        input.id = `native630-${kind}-input`;
+        retain(`${kind}Input`, input);
+        retain(`${kind}Button`, required(`native630-${kind}-local`));
+      }
+      const cell = refs.tableInput.closest("td");
+      const card = refs.cardInput.closest('[role="row"]');
+      if (!(cell instanceof HTMLElement) || !(card instanceof HTMLElement))
+        throw new Error("missing original cell/card");
+      retain("cell", cell);
+      card.id = "native630-card-row";
+      retain("card", card);
+      retain("cardSurface", required("native630-card-surface"));
+      retain("trigger", required("native630-trigger"));
+      retain("live", required("native630-live"));
+      root.dataset.native630Ready = "true";
+    });
+    return (
+      <TwinProvider colorScheme="light">
+        <button id="native630-outside" type="button">
+          Outside
+        </button>
+        <Table
+          aria-label="Native retention"
+          items={rows}
+          columns={[
+            { id: "edit", name: "Edit" },
+            { id: "adjacent", name: "Adjacent" },
+            { id: "static", name: "Static" },
+            { id: "accessor", name: "Accessor" },
+          ]}
+          getKey={(item) => item.id}
+          selectionMode="single"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="edit">Edit</TableColumn>
+                <TableColumn id="adjacent">Adjacent</TableColumn>
+                <TableColumn id="static">Static</TableColumn>
+                <TableColumn id="accessor">Accessor</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell
+                          id="edit"
+                          render={host === "custom" ? (attrs) => <td {...attrs} /> : undefined}
+                        >
+                          {(state) => {
+                            counts.table.callbacks++;
+                            tableState = state;
+                            const observed =
+                              native630Variant.name === "snapshot-table-getters"
+                                ? untrack(() => ({
+                                    isFocused: state.isFocused,
+                                    isHovered: state.isHovered,
+                                    isPressed: state.isPressed,
+                                  }))
+                                : state;
+                            return native630Variant.name === "fresh-child-remount" ? (
+                              <For each={[state.isHovered]}>
+                                {() => <Child kind="table" state={observed} />}
+                              </For>
+                            ) : (
+                              <Child kind="table" state={observed} />
+                            );
+                          }}
+                        </TableCell>
+                        <TableCell id="adjacent">
+                          {(state) => (
+                            <span id="native630-adjacent">{`adjacent-hovered=${state.isHovered}`}</span>
+                          )}
+                        </TableCell>
+                        <TableCell id="static">
+                          <span id="native630-static">Static retained</span>
+                        </TableCell>
+                        <TableCell id="accessor">
+                          {function accessor() {
+                            if (arguments.length !== 0)
+                              throw new Error("accessor received arguments");
+                            return <span id="native630-accessor">Zero arguments</span>;
+                          }}
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+        <CardView
+          aria-label="Native cards"
+          items={rows}
+          getKey={(item) => item.id}
+          selectionMode="single"
+        >
+          {(item) => {
+            counts.view.callbacks++;
+            return (
+              <Card id={item.id} textValue={item.label}>
+                {(state) => {
+                  counts.card.callbacks++;
+                  if (Object.keys(state).some((key) => key !== "size"))
+                    throw new Error("unexpected Card callback contract");
+                  return <Child kind="card" />;
+                }}
+              </Card>
+            );
+          }}
+        </CardView>
+      </TwinProvider>
+    );
+  }
+  const disposeOwner = render(() => <Owner />, root);
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    disposeOwner();
+    for (const node of Object.values(refs))
+      for (const type of ["input", "click", "pointerdown", "pointerup", "keydown", "focusin"])
+        node.removeEventListener(type, capture);
+  }
+  (window as unknown as { __native630: unknown }).__native630 = {
+    refs,
+    dispose,
+    capturePopup() {
+      const menu = document.querySelector('[role="menu"]');
+      const item = menu?.querySelector('[role="menuitem"]');
+      if (!(menu instanceof HTMLElement) || !(item instanceof HTMLElement))
+        throw new Error("missing supported open popup/item");
+      retain("menu", menu);
+      retain("item", item);
+    },
+    snapshot: () => {
+      if (!tableState) throw new Error("missing Table producer getters");
+      return {
+        counts: structuredClone(counts),
+        events: [...events],
+        dropped,
+        disposed,
+        state: {
+          isFocused: tableState.isFocused,
+          isHovered: tableState.isHovered,
+          isPressed: tableState.isPressed,
+        },
+      };
+    },
+  };
+  window.addEventListener("pagehide", dispose, { once: true });
+}
+
 // #642: select the implementation before the first mount. Legacy imperative
 // mounts (including required()/mountReactMenu) run only in the default mode.
 const popupQuery = new URLSearchParams(location.search);
 const popupImplementation = popupQuery.get("ui642");
-if (popupImplementation === null) mountLegacy();
+const native630Twin = popupQuery.get("ui630");
+if (native630Twin !== null) {
+  const host = popupQuery.get("host");
+  if (
+    popupImplementation !== null ||
+    (native630Twin !== "spectrum" && native630Twin !== "viviana") ||
+    (host !== "default" && host !== "custom")
+  )
+    throw new Error("invalid isolated #630 mode");
+  await mountNative630(native630Twin, host);
+} else if (popupImplementation === null) mountLegacy();
 else if (popupImplementation === "source" || popupImplementation === "react") {
   mountPopup(popupImplementation);
 } else throw new Error("unknown ui642 implementation");

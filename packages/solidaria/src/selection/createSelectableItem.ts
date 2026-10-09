@@ -585,7 +585,7 @@ export function createSelectableItem<T>(
       const interactive =
         allowsSelection() || hasPrimaryAction() || (shouldUseVirtualFocus() && !disabled);
 
-      return mergeProps(
+      const itemProps = mergeProps(
         baseProps,
         interactive ? (pressProps as Record<string, unknown>) : {},
         longPressEnabled() ? (longPressProps as Record<string, unknown>) : {},
@@ -593,6 +593,21 @@ export function createSelectableItem<T>(
         // Prevent DOM focus from moving on mouse down when using virtual focus.
         shouldUseVirtualFocus() ? { onMouseDown: (e: MouseEvent) => e.preventDefault() } : {},
       ) as JSX.HTMLAttributes<HTMLElement>;
+
+      // Guard the original keyboard target before either press chain can consume it.
+      const onKeyDown = itemProps.onKeyDown as ((e: KeyboardEvent) => void) | undefined;
+      const onKeyUp = itemProps.onKeyUp as ((e: KeyboardEvent) => void) | undefined;
+      if (onKeyDown) {
+        itemProps.onKeyDown = (e) => {
+          if (!isNestedInteractiveTarget(e.target)) onKeyDown(e);
+        };
+      }
+      if (onKeyUp) {
+        itemProps.onKeyUp = (e) => {
+          if (!isNestedInteractiveTarget(e.target)) onKeyUp(e);
+        };
+      }
+      return itemProps;
     },
     isPressed,
     isSelected,

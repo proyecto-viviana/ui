@@ -324,6 +324,148 @@ describe("createSelectableItem — press path", () => {
     expect(state.isSelected("a")).toBe(false);
   });
 
+  it.each([
+    [false, "row"],
+    [false, "span"],
+    [true, "row"],
+    [true, "span"],
+  ] as const)(
+    "preserves nested input Space/Enter defaults (virtual focus: %s, activation target: %s)",
+    (virtualFocus, activationTarget) => {
+      const onAction = vi.fn();
+      let state!: ListState<Item>;
+      let api!: SelectableItemAria;
+      let container!: HTMLDivElement;
+      let row!: HTMLDivElement;
+      let span!: HTMLSpanElement;
+      let input!: HTMLInputElement;
+      render(() => {
+        state = createListState<Item>({
+          items,
+          getKey: (item) => item.key,
+          selectionMode: "multiple",
+          selectionBehavior: "replace",
+        });
+        api = createSelectableItem(
+          () => ({ key: "a", onAction, shouldUseVirtualFocus: virtualFocus }),
+          state,
+          () => row,
+        );
+        return (
+          <div ref={container}>
+            <div ref={row} {...api.itemProps}>
+              <span ref={span}>Plain row text</span>
+              <input ref={input} aria-label="Nested editor" value="existing value" />
+            </div>
+          </div>
+        );
+      });
+      const originalInput = input;
+      const originalRow = row;
+      input.focus();
+      const focusedKeyBefore = state.focusedKey();
+      const captured: { target: EventTarget | null; currentTarget: EventTarget | null }[] = [];
+      const bubbled: { target: EventTarget | null; currentTarget: EventTarget | null }[] = [];
+      const capture = (e: Event) =>
+        captured.push({ target: e.target, currentTarget: e.currentTarget });
+      const bubble = (e: Event) =>
+        bubbled.push({ target: e.target, currentTarget: e.currentTarget });
+      row.addEventListener("keydown", capture, true);
+      row.addEventListener("keyup", capture, true);
+      container.addEventListener("keydown", bubble);
+      container.addEventListener("keyup", bubble);
+      const keyboard = (type: "keydown" | "keyup", key: " " | "Enter") =>
+        new KeyboardEvent(type, {
+          key,
+          code: key === " " ? "Space" : "Enter",
+          bubbles: true,
+          cancelable: true,
+        });
+      try {
+        for (const key of [" ", "Enter"] as const) {
+          const down = keyboard("keydown", key);
+          const up = keyboard("keyup", key);
+          let released = false;
+          try {
+            const downUnconsumed = originalInput.dispatchEvent(down);
+            flush();
+            expect(downUnconsumed).toBe(true);
+            expect(down.defaultPrevented).toBe(false);
+            expect(api.isPressed()).toBe(false);
+            expect(state.isSelected("a")).toBe(false);
+            expect(onAction).not.toHaveBeenCalled();
+            expect(state.focusedKey()).toBe(focusedKeyBefore);
+            expect(document.activeElement).toBe(originalInput);
+            expect(originalInput.isConnected).toBe(true);
+            expect(originalRow.querySelector("input")).toBe(originalInput);
+            // Synthetic keyboard events do not insert text; retain the existing value.
+            expect(originalInput.value).toBe("existing value");
+
+            const upUnconsumed = originalInput.dispatchEvent(up);
+            released = true;
+            flush();
+            expect(upUnconsumed).toBe(true);
+            expect(up.defaultPrevented).toBe(false);
+            expect(api.isPressed()).toBe(false);
+            expect(state.isSelected("a")).toBe(false);
+            expect(onAction).not.toHaveBeenCalled();
+            expect(state.focusedKey()).toBe(focusedKeyBefore);
+            expect(document.activeElement).toBe(originalInput);
+            expect(originalInput.isConnected).toBe(true);
+            expect(originalRow.isConnected).toBe(true);
+            expect(originalRow.querySelector("input")).toBe(originalInput);
+            expect(originalInput.value).toBe("existing value");
+          } finally {
+            // Release the old-source global press even if a keydown assertion fails.
+            if (!released) originalInput.dispatchEvent(up);
+            flush();
+          }
+        }
+        expect(captured).toEqual(
+          Array.from({ length: 4 }, () => ({ target: originalInput, currentTarget: originalRow })),
+        );
+        expect(bubbled).toEqual(
+          Array.from({ length: 4 }, () => ({ target: originalInput, currentTarget: container })),
+        );
+      } finally {
+        row.removeEventListener("keydown", capture, true);
+        row.removeEventListener("keyup", capture, true);
+        container.removeEventListener("keydown", bubble);
+        container.removeEventListener("keyup", bubble);
+      }
+
+      // Both the row itself and plain text descendants must still activate it.
+      // With virtual focus, keep actual DOM focus on the nested editor.
+      if (!virtualFocus) originalRow.focus();
+      const target = activationTarget === "row" ? originalRow : span;
+      for (const key of [" ", "Enter"] as const) {
+        try {
+          target.dispatchEvent(keyboard("keydown", key));
+          flush();
+          expect(api.isPressed()).toBe(true);
+          expect(state.isSelected("a")).toBe(true);
+          expect(onAction).not.toHaveBeenCalled();
+          if (virtualFocus) {
+            expect(state.focusedKey()).toBe("a");
+            expect(document.activeElement).toBe(originalInput);
+          }
+        } finally {
+          // The unchanged global capture keyup path completes legitimate presses.
+          target.dispatchEvent(keyboard("keyup", key));
+          flush();
+        }
+        vi.runAllTimers();
+        expect(api.isPressed()).toBe(false);
+        expect(onAction).toHaveBeenCalledTimes(key === "Enter" ? 1 : 0);
+        if (virtualFocus) expect(document.activeElement).toBe(originalInput);
+      }
+      expect(originalRow.isConnected).toBe(true);
+      expect(originalRow.querySelector("input")).toBe(originalInput);
+      expect(originalInput.isConnected).toBe(true);
+      expect(originalInput.value).toBe("existing value");
+    },
+  );
+
   it("selects on Space key down", () => {
     const { state, el } = renderItem(
       { key: "a" },
