@@ -3,13 +3,33 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
-import { createSignal, flush } from "solid-js";
+import { createSignal, flush, onCleanup } from "solid-js";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { ToggleButton, type ToggleButtonRenderProps } from "../src/ToggleButton";
 import { ToggleButtonGroup } from "../src/ToggleButtonGroup";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 describe("ToggleButton", () => {
+  let previousRootDisposed = false;
+
+  it("owns a rendered Solid root until case teardown", () => {
+    render(() => {
+      onCleanup(() => {
+        previousRootDisposed = true;
+      });
+      return <ToggleButton aria-label="Pin">Pin</ToggleButton>;
+    });
+
+    expect(previousRootDisposed).toBe(false);
+    expect(screen.getByRole("button", { name: "Pin" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("disposes the previous root before mounting the same accessible label", () => {
+    expect(previousRootDisposed).toBe(true);
+    render(() => <ToggleButton aria-label="Pin">Pin</ToggleButton>);
+    expect(screen.getByRole("button", { name: "Pin" })).toHaveAttribute("aria-pressed", "false");
+  });
+
   let user: ReturnType<typeof setupUser>;
 
   beforeEach(() => {

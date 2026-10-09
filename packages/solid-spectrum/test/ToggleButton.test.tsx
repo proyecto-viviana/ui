@@ -1,4 +1,4 @@
-import { createSignal, flush } from "solid-js";
+import { createSignal, flush, onCleanup } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ToggleButton } from "../src";
@@ -6,6 +6,26 @@ import { BellIcon } from "../src/icon/s2wf-icons/BellIcon";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 describe("ToggleButton (solid-spectrum)", () => {
+  let previousRootDisposed = false;
+
+  it("owns a rendered Solid root until case teardown", () => {
+    render(() => {
+      onCleanup(() => {
+        previousRootDisposed = true;
+      });
+      return <ToggleButton aria-label="Pin">Pin</ToggleButton>;
+    });
+
+    expect(previousRootDisposed).toBe(false);
+    expect(screen.getByRole("button", { name: "Pin" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("disposes the previous root before mounting the same accessible label", () => {
+    expect(previousRootDisposed).toBe(true);
+    render(() => <ToggleButton aria-label="Pin">Pin</ToggleButton>);
+    expect(screen.getByRole("button", { name: "Pin" })).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("forwards standalone id and uncontrolled selection through the styled wrapper", async () => {
     const user = setupUser();
     const onChange = vi.fn();

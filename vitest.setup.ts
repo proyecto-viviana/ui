@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { vi, afterEach } from "vite-plus/test";
+import { cleanup } from "@solidjs/testing-library";
 import { flush } from "solid-js";
 import { cleanupHydrationRoots } from "./packages/solidaria/test-utils/hydrate";
 
@@ -313,6 +314,10 @@ window.scrollTo = vi.fn();
 // ============================================
 // CLEANUP
 // ============================================
+
+// Register for every file: vmThreads caches the library after its one-time auto-hook.
+// A separate hook preserves hydration/mock teardown even if a disposer throws.
+afterEach(cleanup);
 
 afterEach(() => {
   try {
