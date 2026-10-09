@@ -40,3 +40,27 @@ search of the live docs.
 ## Relationship
 
 Child of #136. Supersedes the runner part of #140.
+
+## Bounded typing qualification, 2026-10-08
+
+Admitted source implementer generation `9d80a8a7-47d3-429f-b862-1c21a6856d23`
+at base `1b11206553eaba49624f92adf2b1012d797b7250`; prior owned generation
+closed in `/tmp/ui-633-resume-owned-stop-2026-10-08.json`. Owner-authorized
+Codex astra fallback applies while the saved Grok and AGY quotas persist.
+Admission permits only this ticket, the runner test, and conditional generated
+status/roadmap views. Existing verified behavior and broader limits remain.
+Conductor alone reviews, stops this generation, and commits.
+
+The actual old-source compiler control reported 15 diagnostics, including four
+TS7006 callbacks at test lines 15, 16, 17, and 30. Each now says
+`problem: string`, matching the guard's returned string messages. All assertions
+and the adjacent line 6 expect-error / line 7 import are preserved. The existing
+12-test owning suite passes; the local guard accepts all six workflows.
+The intermediate compiler run removes all four owned errors and retains 11
+inherited diagnostics (eight dependency-ceilings, one upstream-test-parity,
+two test-discovery). Final post-format compiler proof and exact inherited
+locations are in the sealed handoff `/tmp/ui-551-worker-result-2026-10-08.md`.
+Raw commands, exits, logs, source hashes, and the old-source control are bound
+by `/tmp/ui-551-evidence-manifest.json` and `/tmp/ui-551-seal.json`.
+This qualifies only the bounded test typing; it does not establish candidate
+or release readiness, alter runner policy, or reopen prior accepted behavior.

@@ -12,9 +12,11 @@ describe("findRunnerProblems", () => {
   it("names a planted Blacksmith runner", () => {
     const problems = findRunnerProblems("ci.yml", hosted("blacksmith-4vcpu-ubuntu-2404"));
     expect(problems.length).toBeGreaterThan(0);
-    expect(problems.some((problem) => problem.includes("ci.yml:3"))).toBe(true);
-    expect(problems.some((problem) => problem.includes("blacksmith-4vcpu-ubuntu-2404"))).toBe(true);
-    expect(problems.some((problem) => problem.includes("Blacksmith"))).toBe(true);
+    expect(problems.some((problem: string) => problem.includes("ci.yml:3"))).toBe(true);
+    expect(
+      problems.some((problem: string) => problem.includes("blacksmith-4vcpu-ubuntu-2404")),
+    ).toBe(true);
+    expect(problems.some((problem: string) => problem.includes("Blacksmith"))).toBe(true);
   });
 
   it("names a self-hosted label", () => {
@@ -27,7 +29,7 @@ describe("findRunnerProblems", () => {
 
   it("names every label in a self-hosted list", () => {
     const problems = findRunnerProblems("ci.yml", hosted("[self-hosted, linux]"));
-    expect(problems.map((problem) => problem.slice(problem.indexOf("names")))).toEqual([
+    expect(problems.map((problem: string) => problem.slice(problem.indexOf("names")))).toEqual([
       "names self-hosted, which is not a GitHub-hosted runner.",
       "names linux, which is not a GitHub-hosted runner.",
     ]);
