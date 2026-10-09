@@ -42,3 +42,46 @@ suites of the packages touched.
 
 Child of #544. Source `.agents/audit-2026-09-20/lens1-codemod.md`. Post-RC;
 not a blocker for the release candidate.
+
+## Exact-count repair admission — 2026-10-09
+
+Registered sole source worker generation `f6c8acef-8589-4ee4-9b2f-00b424995478`,
+base `5c27e35fd7a07cfa2af3a0d98695ce0a8a77ca78`; prior #579 generation closed.
+Admission: only the HiddenSelect 1→absent and TagGroup 2→1 baseline repair,
+this ticket, and normal generated status/roadmap consequences. Source, tests
+and guards remain read-only. Conductor reviews, stops this exact generation
+and integrates separately from #547; worker does not commit, push or publish.
+Full retirement remains in-progress and separately owned post-RC.
+
+## Bounded repair evidence
+
+The read-only AST scan and pre-edit guard found exactly the admitted drift:
+HiddenSelect 1→absent, TagGroup 2→1. Baseline totals change from 174 calls in
+96 files to 172 calls in 95 files (−2 calls, −1 file). Version, generated date,
+description and unrelated entries are unchanged. Pre-edit guard exit 1 and
+seven-test suite exit 1 (6 passed, 1 live-baseline failure) are preserved in
+`/tmp/ui-554-guard-before.log` and `/tmp/ui-554-tests-before.log`; final guard
+exit 0 and suite 7/7 pass are recorded in their `-after` counterparts. Existing
+synthetic scanner controls cover new files, growth and decreases without
+planting package calls. No old-source behavior failure is claimed.
+
+`cafce46b` (#125) replaced HiddenSelect's tracked reset listener with
+`createFormReset` using the captured default and late-mounted select reference;
+`130b7831` only narrowed readonly values. Existing default-reset and late-mount
+assertions are in `packages/solidaria/test/createHiddenSelect.test.tsx`. The
+#125 ticket records 186 passing tests, but its referenced raw /tmp log is absent
+at this dispatch; that historical result is not newly qualified here.
+
+`662d1e8e` (#54) delegates TagGroup navigation/focus to `createGridList`. The
+shared grid tracked focus effect remains, as does TagGroup's live-region and
+final-removal focus behavior. Existing hook/grid/component tests cover enabled
+focus entry, disabled navigation, announcements, last removal, RTL, Delete and
+tab order. Applicable unchanged-source receipt `/tmp/ui-54-cleanup-repaired-tests.log`
+records 75/75 passes; product and test hashes were checked. Owning behavior
+suites are not rerun for this JSON repair. No root compiler rerun is required;
+current green compiler evidence belongs to #579, not the historical 24-error
+inventory. The real parity guard remains red on 11 inherited findings, neither
+changed nor waived here. No release-readiness or full-retirement claim.
+
+Handoff: `/tmp/ui-554-worker-result-2026-10-08.md`, with manifests, raw receipts
+and seal under `/tmp/ui-554-*`. Full retirement remains in-progress, post-RC.
