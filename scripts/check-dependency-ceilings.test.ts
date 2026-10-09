@@ -5,12 +5,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vite-plus/test";
 
-// @ts-expect-error — plain-JS guard, no types
 import {
   ceilingProblems,
   checkDependencyCeilings,
   satisfiesRange,
   workspaceGlobs,
+  // @ts-expect-error — plain-JS guard, no types
 } from "./check-dependency-ceilings.mjs";
 
 const LOCK = `lockfileVersion: '9.0'
@@ -87,7 +87,7 @@ const report = {
   ],
 };
 
-const manifests = {
+const manifests: Record<string, { devDependencies: Record<string, string> }> = {
   "package.json": {
     devDependencies: {
       "@testing-library/jest-dom": "6.9.1",
@@ -108,7 +108,7 @@ function problemsOf(
     lockText?: string;
     manifestPaths?: string[];
   } = {},
-) {
+): string[] {
   return ceilingProblems({
     report: overrides.report ?? report,
     manifests: overrides.manifests ?? manifests,

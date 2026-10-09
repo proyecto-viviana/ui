@@ -45,3 +45,27 @@ On 2026-10-07 none of the three ceilings moved.
 
 Compatible dependent releases permit each ceiling to move, or the active
 ceilings remain explicit and executable checks hold them.
+
+## Bounded script typing qualification, 2026-10-08
+
+Conductor admission binds base `fea28d7a75ab4e1f66678189a203a56192173165`
+and registered generation `629a02e5-92cc-490f-8467-d9d4d0ef8d53`. The prior
+owned generation is closed. The owner authorizes the Codex gpt-6.1-sol low
+fallback for this bounded repair. Writes are limited to the existing test,
+this ticket, and normal generated status/roadmap consequences.
+
+The existing plain-JS import directive moves to its diagnostic-bearing line.
+The manifest fixture is a path-keyed dependency dictionary, and `problemsOf`
+returns string messages. Existing negative assertions and accepted ceiling
+behavior remain the qualification boundary; this does not qualify newer
+dependency releases or broader compiler debt. Raw evidence is under
+`/tmp/ui-94-sol-*`; conductor review and exact-generation stop precede acceptance.
+
+Old-source compiler control reports 11 diagnostics, including all eight owned
+locations. The unchanged owning suite passes all 10 tests, including missing
+reason, moved pin, peer drift, newly accepted major, and undeclared workspace
+manifest cases. The local guard holds all three pins. Final formatter, lint,
+compiler and documentation receipts are sealed with the handoff; remaining
+inherited compiler failures are reported there without changing this ticket's
+verified behavior status. No runtime negative control applies to this type-only
+repair; the actual old-source compiler failure is the negative control.
