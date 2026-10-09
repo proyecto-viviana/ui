@@ -14,8 +14,263 @@ import {
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import ts from "typescript";
 
 import { sourceAttributionHeader } from "./package-attribution-banner.mjs";
+
+// A fixture path is not a checkout read. Exempt only a narrow, independently
+// recognizable fresh-directory writer; every unproved occurrence stays red.
+function checkoutOracleOccurrences(source, filename) {
+  const token = "react-spectrum/packages/";
+  if (!source.includes(token)) return false;
+  const sf = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  if (sf.parseDiagnostics.length) return true;
+  const nodes = [];
+  const visit = (node) => {
+    nodes.push(node);
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  const text = (node) => node.getText(sf);
+  const compact = (node) => text(node).replace(/\s+/g, "");
+  const call = (node, callee) =>
+    !!node && ts.isCallExpression(node) && text(node.expression) === callee;
+  const imported = (name, module) =>
+    nodes.some(
+      (node) =>
+        ts.isImportDeclaration(node) &&
+        node.moduleSpecifier.text === module &&
+        node.importClause?.namedBindings &&
+        ts.isNamedImports(node.importClause.namedBindings) &&
+        node.importClause.namedBindings.elements.some(
+          (item) => item.name.text === name && !item.propertyName,
+        ),
+    );
+  if (
+    !imported("mkdtempSync", "node:fs") ||
+    !imported("mkdirSync", "node:fs") ||
+    !imported("writeFileSync", "node:fs") ||
+    !imported("spawnSync", "node:child_process")
+  )
+    return true;
+  const pathImport = sf.statements.some(
+    (node) =>
+      ts.isImportDeclaration(node) &&
+      node.moduleSpecifier.text === "node:path" &&
+      node.importClause?.name?.text === "path",
+  );
+  if (!pathImport) return true;
+  const bindingNames = (node) => {
+    if (ts.isIdentifier(node)) return [node.text];
+    if (ts.isObjectBindingPattern(node) || ts.isArrayBindingPattern(node))
+      return node.elements.flatMap((item) =>
+        ts.isBindingElement(item) ? bindingNames(item.name) : [],
+      );
+    return [];
+  };
+  // Reject shadowed helpers or fixture bindings anywhere; do not guess scopes.
+  const declarations = nodes.filter(
+    (node) =>
+      ts.isVariableDeclaration(node) ||
+      ts.isParameter(node) ||
+      ts.isFunctionDeclaration(node) ||
+      ts.isClassDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isClassExpression(node),
+  );
+  if (
+    declarations.some(
+      (node) =>
+        node.name &&
+        bindingNames(node.name).some((name) =>
+          ["path", "mkdtempSync", "mkdirSync", "writeFileSync", "spawnSync"].includes(name),
+        ),
+    )
+  )
+    return true;
+  const roots = nodes.filter(
+    (node) =>
+      ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === "root",
+  );
+  const writers = nodes.filter(
+    (node) =>
+      ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === "write",
+  );
+  if (roots.length !== 1 || writers.length !== 1) return true;
+  const root = roots[0],
+    writer = writers[0];
+  if (
+    !(root.parent.flags & ts.NodeFlags.Const) ||
+    !call(root.initializer, "mkdtempSync") ||
+    root.initializer.arguments.length !== 1 ||
+    !ts.isStringLiteral(root.initializer.arguments[0]) ||
+    !root.initializer.arguments[0].text.startsWith("/tmp/") ||
+    root.initializer.arguments[0].text.includes("..")
+  )
+    return true;
+  if (
+    !(writer.parent.flags & ts.NodeFlags.Const) ||
+    compact(writer.initializer) !==
+      "(name:string,content:string)=>{constfile=path.join(root,name);mkdirSync(path.dirname(file),{recursive:true});writeFileSync(file,content);}"
+  )
+    return true;
+  const fn = root.parent.parent.parent.parent;
+  if (!ts.isFunctionDeclaration(fn) || writer.parent.parent.parent.parent !== fn) return true;
+  const inFunction = (node) => {
+    for (let p = node; p; p = p.parent) if (p === fn) return true;
+    return false;
+  };
+  const spawns = nodes.filter((node) => call(node, "spawnSync") && inFunction(node));
+  if (
+    spawns.length !== 1 ||
+    spawns[0].arguments.length !== 3 ||
+    !ts.isObjectLiteralExpression(spawns[0].arguments[2])
+  )
+    return true;
+  const options = spawns[0].arguments[2].properties;
+  // Duplicate/computed keys and spreads can override an apparently safe cwd.
+  if (
+    options.some((prop) => !ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.name)) ||
+    new Set(options.map((prop) => text(prop.name))).size !== options.length ||
+    !options.some((prop) => text(prop.name) === "cwd" && text(prop.initializer) === "root")
+  )
+    return true;
+  const spawnCwd = options.find((prop) => text(prop.name) === "cwd");
+  // Only the existing direct inline receipt write may mention root outside
+  // the spawn options and proven path joins. Arbitrary cwd objects are aliases.
+  const receiptWrites = nodes.filter(
+    (node) =>
+      inFunction(node) &&
+      call(node, "write") &&
+      node.arguments.length === 2 &&
+      ts.isStringLiteral(node.arguments[0]) &&
+      node.arguments[0].text === "cli-receipt.json" &&
+      call(node.arguments[1], "JSON.stringify") &&
+      compact(node.arguments[1]) ===
+        "JSON.stringify({command:[process.execPath,loader,cli],cwd:root,status:result.status,error:result.error?.message,})",
+  );
+  if (receiptWrites.length !== 1) return true;
+  const receiptCwd = receiptWrites[0].arguments[1].arguments[0].properties.find(
+    (prop) => text(prop.name) === "cwd",
+  );
+  // Fresh root must not escape through arbitrary calls, reassignment or aliases.
+  const writerJoin =
+    writer.initializer.body.statements[0].declarationList.declarations[0].initializer;
+  const admittedRootJoin = (node) =>
+    call(node, "path.join") &&
+    node.arguments.length === 2 &&
+    (node === writerJoin ||
+      (call(node.parent, "mkdirSync") &&
+        node.parent.arguments[0] === node &&
+        (ts.isStringLiteral(node.arguments[1]) ||
+          ts.isNoSubstitutionTemplateLiteral(node.arguments[1]) ||
+          ts.isTemplateExpression(node.arguments[1])) &&
+        text(node.arguments[1]).includes(token)));
+  const rootUses = nodes.filter(
+    (node) => ts.isIdentifier(node) && node.text === "root" && node !== root.name,
+  );
+  if (
+    rootUses.some(
+      (node) =>
+        !inFunction(node) ||
+        !(
+          (admittedRootJoin(node.parent) && node.parent.arguments[0] === node) ||
+          ((node.parent === spawnCwd || node.parent === receiptCwd) &&
+            node.parent.initializer === node)
+        ),
+    )
+  )
+    return true;
+  const writeUses = nodes.filter(
+    (node) => ts.isIdentifier(node) && node.text === "write" && node !== writer.name,
+  );
+  if (
+    writeUses.some(
+      (node) =>
+        !inFunction(node) || !ts.isCallExpression(node.parent) || node.parent.expression !== node,
+    )
+  )
+    return true;
+  const safeTemplate = (node) => {
+    const pieces = ts.isTemplateExpression(node)
+      ? [node.head.text, ...node.templateSpans.map((s) => s.literal.text)]
+      : [node.text];
+    if (pieces.some((piece) => piece.includes("..")) || pieces[0].startsWith("/")) return false;
+    if (!ts.isTemplateExpression(node)) return true;
+    return node.templateSpans.every(
+      (span) =>
+        ts.isIdentifier(span.expression) &&
+        nodes.some(
+          (loop) =>
+            ts.isForOfStatement(loop) &&
+            inFunction(loop) &&
+            (() => {
+              for (let p = node.parent; p; p = p.parent) if (p === loop) return true;
+              return false;
+            })() &&
+            ts.isVariableDeclarationList(loop.initializer) &&
+            loop.initializer.flags & ts.NodeFlags.Const &&
+            loop.initializer.declarations.length === 1 &&
+            ts.isIdentifier(loop.initializer.declarations[0].name) &&
+            text(loop.initializer.declarations[0].name) === span.expression.text &&
+            declarations.filter(
+              (declaration) =>
+                inFunction(declaration) &&
+                declaration.name &&
+                bindingNames(declaration.name).includes(span.expression.text),
+            ).length === 1 &&
+            !nodes.some(
+              (candidate) =>
+                ts.isIdentifier(candidate) &&
+                candidate.text === span.expression.text &&
+                ((ts.isBinaryExpression(candidate.parent) &&
+                  candidate.parent.left === candidate &&
+                  candidate.parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+                  candidate.parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
+                  ((ts.isPrefixUnaryExpression(candidate.parent) ||
+                    ts.isPostfixUnaryExpression(candidate.parent)) &&
+                    [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
+                      candidate.parent.operator,
+                    ))),
+            ) &&
+            ts.isArrayLiteralExpression(loop.expression) &&
+            loop.expression.elements.every(
+              (item) =>
+                ts.isStringLiteral(item) && !item.text.includes("..") && !item.text.startsWith("/"),
+            ),
+        ),
+    );
+  };
+  const allowed = [];
+  for (const node of nodes) {
+    if (
+      !(
+        ts.isStringLiteral(node) ||
+        ts.isNoSubstitutionTemplateLiteral(node) ||
+        ts.isTemplateExpression(node)
+      ) ||
+      !text(node).includes(token)
+    )
+      continue;
+    if (!inFunction(node) || !safeTemplate(node)) continue;
+    const parent = node.parent;
+    const writePath = call(parent, "write") && parent.arguments[0] === node;
+    const mkdirPath =
+      call(parent, "path.join") &&
+      parent.arguments[0]?.getText(sf) === "root" &&
+      parent.arguments[1] === node &&
+      call(parent.parent, "mkdirSync") &&
+      parent.parent.arguments[0] === parent;
+    if (writePath || mkdirPath) allowed.push([node.getStart(sf), node.end]);
+  }
+  // Comments, unknown reads and aliases still count; no token stripping.
+  let at = source.indexOf(token);
+  while (at >= 0) {
+    if (!allowed.some(([start, end]) => at >= start && at < end)) return true;
+    at = source.indexOf(token, at + token.length);
+  }
+  return false;
+}
 
 const ROOT = process.cwd();
 const fixtureRoot = mkdtempSync(path.join(tmpdir(), "viviana-ci-guards-"));
@@ -503,11 +758,9 @@ try {
   }
   console.log("PASS: Certification Gates runs every unit test that holds the certified verdict.");
 
-  // release-readiness runs test:run on a plain checkout: the gitignored
-  // ./react-spectrum oracle is absent there, so an oracle-backed check placed
-  // in `packages/*/test` or `scripts/**/*.test.*` fails with ENOENT instead of
-  // proving anything (2026-09-02: intl-catalog.test.tsx). Oracle-backed
-  // evidence is a guard in Certification Gates, after the oracle materializes.
+  // Ordinary tests must not depend on checkout oracle state. Both workflows
+  // now acquire the oracle for explicit guards; standalone test:run remains
+  // independently runnable. Fresh synthetic fixture construction is allowed.
   const oracleAcquire = gatesJob.indexOf("check-upstream-oracle.mjs --acquire");
   const intlCatalogGuard = gatesJob.indexOf("run: pnpm run guard:s2-intl-catalog\n");
   assert(
@@ -530,12 +783,119 @@ try {
     if (packageEntry.isDirectory() && existsSync(testDir)) collectTests(testDir);
   }
   collectTests(path.join(ROOT, "scripts"));
+  const parityFixtureSource = readFileSync(
+    path.join(ROOT, "scripts/check-upstream-test-parity.test.ts"),
+    "utf8",
+  );
+  assert(
+    !checkoutOracleOccurrences(parityFixtureSource, "fixture.ts"),
+    "fresh synthetic parity tree must be accepted",
+  );
+  const rejectOracleSource = (source, label) =>
+    assert(checkoutOracleOccurrences(source, "fixture.ts"), `oracle scanner must reject ${label}`);
+  rejectOracleSource(
+    'readFileSync("react-spectrum/packages/react-aria-components/test/Button.test.js")',
+    "direct checkout read",
+  );
+  rejectOracleSource(
+    parityFixtureSource +
+      '\nreadFileSync(path.join(checkout, "react-spectrum/packages/react-aria-components/test/Button.test.js"));',
+    "checkout read added to otherwise valid fixture",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace('mkdtempSync("/tmp/ui-579-target-fixture-")', "checkout"),
+    "writer rooted in checkout",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "writeFileSync(file, content);",
+      "writeFileSync(file, content); readFileSync(file);",
+    ),
+    "unproved writer body",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace("cwd: root,", "cwd: checkout,"),
+    "CLI invoked against checkout",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace("cwd: root,", "cwd: root, cwd: checkout,"),
+    "later duplicate cwd overrides fresh root",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace("cwd: root,", "cwd: root, ...{cwd: checkout},"),
+    "spread cwd overrides fresh root",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "function runCase(",
+      "const spawnSync = alternate; function runCase(",
+    ),
+    "shadowed subprocess helper",
+  );
+  const rootSymlinkMutant = parityFixtureSource
+    .replace("import { mkdtempSync,", "import { rmSync, symlinkSync, mkdtempSync,")
+    .replace(
+      "  const result = spawnSync(",
+      '  const link = path.join(root, "react-spectrum");\n  rmSync(link, {recursive:true, force:true});\n  symlinkSync(path.join(checkout, "react-spectrum"), link);\n  const result = spawnSync(',
+    );
+  rejectOracleSource(
+    rootSymlinkMutant,
+    "root-derived alias replacing synthetic oracle with checkout symlink",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace("for (const pkg of", "for (let pkg of"),
+    "mutable interpolation loop",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace("for (const subject of", "for (let subject of"),
+    "mutable subject interpolation loop",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "    write(\n      `react-spectrum/packages/${pkg}/package.json`,",
+      '    { const pkg = "../../checkout"; write(`react-spectrum/packages/${pkg}/package.json`, "unsafe"); }\n    write(\n      `react-spectrum/packages/${pkg}/package.json`,',
+    ),
+    "shadowed interpolation declaration",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "    write(\n      `react-spectrum/packages/${pkg}/package.json`,",
+      '    pkg = "../../checkout";\n    write(\n      `react-spectrum/packages/${pkg}/package.json`,',
+    ),
+    "reassigned const interpolation",
+  );
+
+  const rootObjectSymlinkMutant = parityFixtureSource
+    .replace("import { mkdtempSync,", "import { rmSync, symlinkSync, mkdtempSync,")
+    .replace(
+      "  const result = spawnSync(",
+      '  const bridge = {cwd: root};\n  rmSync(path.join(bridge.cwd, "react-spectrum"), {recursive:true, force:true});\n  symlinkSync(path.join(checkout, "react-spectrum"), path.join(bridge.cwd, "react-spectrum"));\n  const result = spawnSync(',
+    );
+  rejectOracleSource(
+    rootObjectSymlinkMutant,
+    "cwd object escape replacing synthetic oracle with checkout symlink",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "    write(\n      `react-spectrum/packages/${pkg}/package.json`,",
+      '    const invoke = function pkg() { pkg.toString = () => "../../checkout"; write(`react-spectrum/packages/${pkg}/package.json`, "unsafe"); }; invoke();\n    write(\n      `react-spectrum/packages/${pkg}/package.json`,',
+    ),
+    "named function expression interpolation shadow",
+  );
+  rejectOracleSource(
+    parityFixtureSource.replace(
+      "    write(\n      `react-spectrum/packages/${pkg}/package.json`,",
+      '    const Invoke = class pkg { static toString() { return "../../checkout"; } static run() { write(`react-spectrum/packages/${pkg}/package.json`, "unsafe"); } }; Invoke.run();\n    write(\n      `react-spectrum/packages/${pkg}/package.json`,',
+    ),
+    "named class expression interpolation shadow",
+  );
+
   const oracleReaders = testRunFiles.filter((file) =>
-    readFileSync(file, "utf8").includes("react-spectrum/packages/"),
+    checkoutOracleOccurrences(readFileSync(file, "utf8"), file),
   );
   assert(
     oracleReaders.length === 0,
-    `test:run suites must not read the gitignored upstream oracle (release-readiness has none); move the check to an oracle-backed guard:\n${oracleReaders
+    `test:run suites must not read the gitignored checkout upstream oracle; move the check to an oracle-backed guard:\n${oracleReaders
       .map((file) => `  ${path.relative(ROOT, file)}`)
       .join("\n")}`,
   );
@@ -2214,7 +2574,7 @@ try {
     );
     const publishStep = stepBlock(
       jobBlock(releaseWorkflow, "release"),
-      "Create release PR or publish packages",
+      "Publish versioned packages",
     );
     assert(
       publishStep.includes("RELEASE_SHA:"),
@@ -2240,9 +2600,11 @@ try {
     const driftStep = stepBlock(jobBlock(releaseWorkflow, "release"), "guard publish-drift");
     assert(
       driftStep.includes("--version-stage"),
-      "the drift step before changesets/action refuses the bump the version stage exists to clear",
+      "the workflow publish-drift preflight does not use the version-stage deferral flag",
     );
-    console.log("PASS: the drift step before the version stage defers to it, and no further.");
+    console.log(
+      "PASS: the workflow drift preflight allows version-stage deferral; the publish script does not.",
+    );
 
     // With no RELEASE_SHA the sha comes from HEAD, and then `changeset publish`
     // ships this checkout. A green sha with uncommitted edits on top, or a
